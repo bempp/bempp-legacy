@@ -38,7 +38,8 @@ template <typename CoordinateType> class QuadratureDescriptorSelectorForIntegral
 template <typename CoordinateType> class QuadratureDescriptorSelectorForLocalOperators;
 template <typename CoordinateType> class QuadratureDescriptorSelectorForPotentialOperators;
 
-/** \brief Builder of quadrature descriptor selectors.
+/** \ingroup quadrature
+ *  \brief Builder of quadrature descriptor selectors.
  *
  *  This class serves as a factory of quadrature descriptor selectors
  *  for particular grids. Quadrature descriptor selectors are objects

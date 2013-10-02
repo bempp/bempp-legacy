@@ -41,7 +41,7 @@ const int ALL_COMPONENTS = -1;
 
   \f[
   P_{ij} = \int_{E_j} K(x_i, y) f_j(y) \, \mathrm{d}E_j,
-  \]
+  \f]
 
   where \f$\{x_i\}\f$ is a set of points, \f$E_j\f$ a set of elements and \f$f_j\f$
   a set of functions living on the corresponding elements.

@@ -31,7 +31,7 @@
 #include "../common/not_implemented_error.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 #include "../fiber/serial_blas_region.hpp"
-#include "../fiber/local_assembler_for_operators.hpp"
+#include "../fiber/local_assembler_for_integral_operators.hpp"
 #include "../grid/entity.hpp"
 #include "../grid/entity_iterator.hpp"
 #include "../grid/grid.hpp"
@@ -71,7 +71,7 @@ public:
             const std::vector<std::vector<GlobalDofIndex> >& trialGlobalDofs,
             const std::vector<std::vector<BasisFunctionType> >& testLocalDofWeights,
             const std::vector<std::vector<BasisFunctionType> >& trialLocalDofWeights,
-            Fiber::LocalAssemblerForOperators<ResultType>& assembler,
+            Fiber::LocalAssemblerForIntegralOperators<ResultType>& assembler,
             arma::Mat<ResultType>& result, MutexType& mutex) :
         m_testIndices(testIndices),
         m_testGlobalDofs(testGlobalDofs), m_trialGlobalDofs(trialGlobalDofs),
@@ -126,7 +126,7 @@ private:
     const std::vector<std::vector<BasisFunctionType> >& m_trialLocalDofWeights;
     // mutable OK because Assembler is thread-safe. (Alternative to "mutable" here:
     // make assembler's internal integrator map mutable)
-    typename Fiber::LocalAssemblerForOperators<ResultType>& m_assembler;
+    typename Fiber::LocalAssemblerForIntegralOperators<ResultType>& m_assembler;
     // mutable OK because write access to this matrix is protected by a mutex
     arma::Mat<ResultType>& m_result;
 
@@ -173,7 +173,7 @@ DenseGlobalAssembler<BasisFunctionType, ResultType>::
 assembleDetachedWeakForm(
         const Space<BasisFunctionType>& testSpace,
         const Space<BasisFunctionType>& trialSpace,
-        LocalAssemblerForBoundaryOperators& assembler,
+        LocalAssemblerForIntegralOperators& assembler,
         const Context<BasisFunctionType, ResultType>& context)
 {
     const AssemblyOptions& options = context.assemblyOptions();

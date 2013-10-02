@@ -252,10 +252,6 @@ GridFunction<BasisFunctionType, ResultType>::GridFunction(
         throw std::invalid_argument(
                 "GridFunction::GridFunction(): dualSpace must not be null");
 
-    if (space->grid() != dualSpace->grid())
-        throw std::invalid_argument(
-                "GridFunction::GridFunction(): "
-                "space and dualSpace must be defined on the same grid");
     if (space->codomainDimension() != dualSpace->codomainDimension())
         throw std::invalid_argument(
                 "GridFunction::GridFunction(): "
@@ -282,7 +278,7 @@ GridFunction<BasisFunctionType, ResultType>::GridFunction(
                     "space and dualSpace must be defined on the same grid");
 
     if (mode == APPROXIMATE)
-        setProjections(*m_dualSpace,
+        setProjections(m_dualSpace,
                        *calculateProjections(*context, function, *m_dualSpace));
     else // mode == INTERPOLATE
         setCoefficients(interpolate(function, *m_space));
@@ -419,7 +415,7 @@ void GridFunction<BasisFunctionType, ResultType>::initializeFromProjections(
                 "GridFunction::initializeFromProjections(): "
                 "the projections vector has incorrect length");
     m_context = context;
-    setProjections(*m_dualSpace, projections);
+    setProjections(m_dualSpace, projections);
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -695,17 +691,6 @@ GridFunction<BasisFunctionType, ResultType>::shapeset(
     return m_space->shapeset(element);
 }
 
-// Redundant, in fact -- can be obtained directly from Space
-template <typename BasisFunctionType, typename ResultType>
-const Fiber::Basis<BasisFunctionType>&
-GridFunction<BasisFunctionType, ResultType>::basis(
-        const Entity<0>& element) const
-{
-    BOOST_ASSERT_MSG(m_space, "GridFunction::basis() must not be "
-                     "called on an uninitialized GridFunction object");
-    return m_space->basis(element);
-}
-
 template <typename BasisFunctionType, typename ResultType>
 void GridFunction<BasisFunctionType, ResultType>::getLocalCoefficients(
         const Entity<0>& element, std::vector<ResultType>& coeffs) const
@@ -807,7 +792,7 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
             const Entity<0>& element = it->entity();
             const int elementIndex = mapper.entityIndex(element);
             basesAndCornerCounts[elementIndex] = ShapesetAndCornerCount(
-                        &m_space->basis(element),
+                        &m_space->shapeset(element),
                         rawGeometry.elementCornerCount(elementIndex));
             getLocalCoefficients(element, localCoefficients[elementIndex]);
             it->next();
@@ -1061,77 +1046,6 @@ GridFunction<BasisFunctionType, ResultType> operator/(
     return (static_cast<ScalarType>(1.) / scalar) * g1;
 }
 
-BEMPP_GCC_DIAG_OFF(deprecated-declarations);
-
-template <typename BasisFunctionType, typename ResultType>
-GridFunction<BasisFunctionType, ResultType> operator+(
-        const GridFunction<BasisFunctionType, ResultType>& g1,
-        const GridFunction<BasisFunctionType, ResultType>& g2)
-{
-    if (g1.space() != g2.space())
-        throw std::runtime_error("GridFunction::operator+(): spaces don't match");
-    if (g1.wasInitializedFromCoefficients() ||
-            g2.wasInitializedFromCoefficients() ||
-            g1.dualSpace() != g2.dualSpace())
-        return GridFunction<BasisFunctionType, ResultType>(
-                    g1.context(), // arbitrary choice...
-                    g1.space(),
-                    g1.coefficients() + g2.coefficients());
-    else {
-        shared_ptr<const Space<BasisFunctionType> > dualSpace = g1.dualSpace();
-        return GridFunction<BasisFunctionType, ResultType>(
-                    g1.context(), // arbitrary choice...
-                    g1.space(),
-                    dualSpace,
-                    g1.projections(dualSpace) + g2.projections(dualSpace));
-    }
-}
-
-template <typename BasisFunctionType, typename ResultType>
-GridFunction<BasisFunctionType, ResultType> operator-(
-        const GridFunction<BasisFunctionType, ResultType>& g1,
-        const GridFunction<BasisFunctionType, ResultType>& g2)
-{
-    if (g1.space() != g2.space())
-        throw std::runtime_error("GridFunction::operator-(): spaces don't match");
-    // For the sake of old-style code (with dualSpace stored in the GridFunction),
-    // we try to provide a sensible dual space to the composite GridFunction.
-    if (g1.wasInitializedFromCoefficients() ||
-            g2.wasInitializedFromCoefficients() ||
-            g1.dualSpace() != g2.dualSpace())
-        return GridFunction<BasisFunctionType, ResultType>(
-                    g1.context(), // arbitrary choice...
-                    g1.space(),
-                    g1.coefficients() - g2.coefficients());
-    else {
-        shared_ptr<const Space<BasisFunctionType> > dualSpace = g1.dualSpace();
-        return GridFunction<BasisFunctionType, ResultType>(
-                    g1.context(), // arbitrary choice...
-                    g1.space(),
-                    dualSpace,
-                    g1.projections(dualSpace) - g2.projections(dualSpace));
-    }
-}
-
-template <typename BasisFunctionType, typename ResultType, typename ScalarType>
-GridFunction<BasisFunctionType, ResultType> operator*(
-        const GridFunction<BasisFunctionType, ResultType>& g1,
-        const ScalarType& scalar)
-{
-    if (g1.wasInitializedFromCoefficients())
-        return GridFunction<BasisFunctionType, ResultType>(
-                    g1.context(),
-                    g1.space(),
-                    static_cast<ResultType>(scalar) * g1.coefficients());
-    else {
-        shared_ptr<const Space<BasisFunctionType> > dualSpace = g1.dualSpace();
-        return GridFunction<BasisFunctionType, ResultType>(
-                    g1.context(),
-                    g1.space(),
-                    dualSpace,
-                    static_cast<ResultType>(scalar) * g1.projections(dualSpace));
-    }
-}
 
 template <typename BasisFunctionType, typename ResultType>
 void exportToVtk(
@@ -1290,6 +1204,89 @@ void exportToGmsh(
     fout << "3\n0\n" << gridFunction.componentCount() << '\n';
     fout << nodeCount << '\n' << data.str();
     fout << "$EndNodeData\n";
+}
+
+BEMPP_GCC_DIAG_OFF(deprecated-declarations);
+
+// Redundant, in fact -- can be obtained directly from Space
+template <typename BasisFunctionType, typename ResultType>
+const Fiber::Basis<BasisFunctionType>&
+GridFunction<BasisFunctionType, ResultType>::basis(
+        const Entity<0>& element) const
+{
+    BOOST_ASSERT_MSG(m_space, "GridFunction::basis() must not be "
+                     "called on an uninitialized GridFunction object");
+    return m_space->basis(element);
+}
+
+template <typename BasisFunctionType, typename ResultType>
+GridFunction<BasisFunctionType, ResultType> operator+(
+        const GridFunction<BasisFunctionType, ResultType>& g1,
+        const GridFunction<BasisFunctionType, ResultType>& g2)
+{
+    if (g1.space() != g2.space())
+        throw std::runtime_error("GridFunction::operator+(): spaces don't match");
+    if (g1.wasInitializedFromCoefficients() ||
+            g2.wasInitializedFromCoefficients() ||
+            g1.dualSpace() != g2.dualSpace())
+        return GridFunction<BasisFunctionType, ResultType>(
+                    g1.context(), // arbitrary choice...
+                    g1.space(),
+                    g1.coefficients() + g2.coefficients());
+    else {
+        shared_ptr<const Space<BasisFunctionType> > dualSpace = g1.dualSpace();
+        return GridFunction<BasisFunctionType, ResultType>(
+                    g1.context(), // arbitrary choice...
+                    g1.space(),
+                    dualSpace,
+                    g1.projections(dualSpace) + g2.projections(dualSpace));
+    }
+}
+
+template <typename BasisFunctionType, typename ResultType>
+GridFunction<BasisFunctionType, ResultType> operator-(
+        const GridFunction<BasisFunctionType, ResultType>& g1,
+        const GridFunction<BasisFunctionType, ResultType>& g2)
+{
+    if (g1.space() != g2.space())
+        throw std::runtime_error("GridFunction::operator-(): spaces don't match");
+    // For the sake of old-style code (with dualSpace stored in the GridFunction),
+    // we try to provide a sensible dual space to the composite GridFunction.
+    if (g1.wasInitializedFromCoefficients() ||
+            g2.wasInitializedFromCoefficients() ||
+            g1.dualSpace() != g2.dualSpace())
+        return GridFunction<BasisFunctionType, ResultType>(
+                    g1.context(), // arbitrary choice...
+                    g1.space(),
+                    g1.coefficients() - g2.coefficients());
+    else {
+        shared_ptr<const Space<BasisFunctionType> > dualSpace = g1.dualSpace();
+        return GridFunction<BasisFunctionType, ResultType>(
+                    g1.context(), // arbitrary choice...
+                    g1.space(),
+                    dualSpace,
+                    g1.projections(dualSpace) - g2.projections(dualSpace));
+    }
+}
+
+template <typename BasisFunctionType, typename ResultType, typename ScalarType>
+GridFunction<BasisFunctionType, ResultType> operator*(
+        const GridFunction<BasisFunctionType, ResultType>& g1,
+        const ScalarType& scalar)
+{
+    if (g1.wasInitializedFromCoefficients())
+        return GridFunction<BasisFunctionType, ResultType>(
+                    g1.context(),
+                    g1.space(),
+                    static_cast<ResultType>(scalar) * g1.coefficients());
+    else {
+        shared_ptr<const Space<BasisFunctionType> > dualSpace = g1.dualSpace();
+        return GridFunction<BasisFunctionType, ResultType>(
+                    g1.context(),
+                    g1.space(),
+                    dualSpace,
+                    static_cast<ResultType>(scalar) * g1.projections(dualSpace));
+    }
 }
 
 BEMPP_GCC_DIAG_ON(deprecated-declarations);

@@ -57,7 +57,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_works_for_all_dofs_type1,
     const int pointCount = vertexCount;
     typedef Fiber::LinearScalarShapesetBarycentric<ValueType> Shapeset;
     Shapeset basis(Shapeset::TYPE1);
-    arma::Mat<typename Shapeset::CoordinateType> points(elementDim, pointCount);
+    typedef typename Shapeset::CoordinateType CoordinateType;
+    arma::Mat<CoordinateType> points(elementDim, pointCount);
     points.fill(0.);
     points(0, 1) = 1.;
     points(1, 2) = 1.;
@@ -80,7 +81,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_works_for_all_dofs_type1,
     expected(0, 2, 1) = 1./3;
     expected(0, 2, 2) = 1./2;
 
-    BOOST_CHECK(check_arrays_are_close<ValueType>(data.values, expected, 1e-10));
+    const CoordinateType tol =
+        10 * std::numeric_limits<CoordinateType>::epsilon();
+    BOOST_CHECK(check_arrays_are_close<ValueType>(data.values, expected, tol));
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_works_for_all_dofs_type2,
@@ -91,7 +94,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_works_for_all_dofs_type2,
     const int pointCount = vertexCount;
     typedef Fiber::LinearScalarShapesetBarycentric<ValueType> Shapeset;
     Shapeset basis(Shapeset::TYPE2);
-    arma::Mat<typename Shapeset::CoordinateType> points(elementDim, pointCount);
+    typedef typename Shapeset::CoordinateType CoordinateType;
+    arma::Mat<CoordinateType> points(elementDim, pointCount);
     points.fill(0.);
     points(0, 1) = 1.;
     points(1, 2) = 1.;
@@ -114,7 +118,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_works_for_all_dofs_type2,
     expected(0, 2, 1) = 0;
     expected(0, 2, 2) = 1./3;
 
-    BOOST_CHECK(check_arrays_are_close<ValueType>(data.values, expected, 1e-10));
+    const CoordinateType tol =
+        10 * std::numeric_limits<CoordinateType>::epsilon();
+    BOOST_CHECK(check_arrays_are_close<ValueType>(data.values, expected, tol));
 }
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_derivatives_works_for_all_dofs_type1,
@@ -124,8 +130,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_derivatives_works_for_all_dofs_type1,
     const int elementDim = 2;
     const int pointCount = vertexCount;
     typedef Fiber::LinearScalarShapesetBarycentric<ValueType> Shapeset;
+    typedef typename Shapeset::CoordinateType CoordinateType;
     Shapeset basis(Shapeset::TYPE1);
-    arma::Mat<typename Shapeset::CoordinateType> points(elementDim, pointCount);
+    arma::Mat<CoordinateType> points(elementDim, pointCount);
     points.fill(0.);
     points(0, 1) = 1.;
     points(1, 2) = 1.;
@@ -159,7 +166,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_derivatives_works_for_all_dofs_type1,
     expected(0, 0, 2, 2) = 1./3.;
     expected(0, 1, 2, 2) = 1./2;
 
-    BOOST_CHECK(check_arrays_are_close<ValueType>(data.derivatives, expected, 1e-10));
+    const CoordinateType tol =
+        10 * std::numeric_limits<CoordinateType>::epsilon();
+    BOOST_CHECK(check_arrays_are_close<ValueType>(data.derivatives, expected, 
+						  tol));
 }
 
 

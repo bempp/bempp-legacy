@@ -32,7 +32,8 @@ namespace Fiber
 
 template <typename BasisFunctionType> class Shapeset;
 
-/** \brief Quadrature descriptor selector used during the
+/** \ingroup quadrature
+ *  \brief Quadrature descriptor selector used during the
  *  evaluation on potentials. */
 template <typename BasisFunctionType>
 class QuadratureDescriptorSelectorForPotentialOperators

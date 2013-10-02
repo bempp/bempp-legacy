@@ -32,8 +32,8 @@ if (WITH_CUDA)
 endif ()
 
 # Dune
-find_library(LIB_DUNE_COMMON dunecommon ${CMAKE_INSTALL_PREFIX}/bempp/lib)
-find_library(LIB_DUNE_GRID dunegrid ${CMAKE_INSTALL_PREFIX}/bempp/lib)
+find_library(LIB_DUNE_COMMON dunecommon HINTS ${CMAKE_INSTALL_PREFIX}/bempp/lib)
+find_library(LIB_DUNE_GRID dunegrid HINTS ${CMAKE_INSTALL_PREFIX}/bempp/lib)
 file(GLOB_RECURSE DUNE_HEADERS ${CMAKE_INSTALL_PREFIX}/bempp/include/dune/*.hh)
 
 # Trilinos

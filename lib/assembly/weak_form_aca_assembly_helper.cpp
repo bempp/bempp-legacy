@@ -32,7 +32,7 @@
 #include "../common/multidimensional_arrays.hpp"
 #include "../fiber/types.hpp"
 #include "../fiber/explicit_instantiation.hpp"
-#include "../fiber/local_assembler_for_operators.hpp"
+#include "../fiber/local_assembler_for_integral_operators.hpp"
 #include "../grid/grid_view.hpp"
 #include "../space/space.hpp"
 
@@ -67,6 +67,7 @@ WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::WeakFormAcaAssemblyHel
     m_sparseTermsMultipliers(sparseTermsMultipliers),
     m_options(options),
     m_indexWithGlobalDofs(m_options.acaOptions().mode != AcaOptions::HYBRID_ASSEMBLY),
+    m_uniformQuadratureOrder(m_options.isQuadratureOrderUniformInEachCluster()),
     m_testDofListsCache(new LocalDofListsCache<BasisFunctionType>(
                             m_testSpace, m_p2oTestDofs, m_indexWithGlobalDofs)),
     m_trialDofListsCache(new LocalDofListsCache<BasisFunctionType>(
@@ -121,9 +122,6 @@ WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::estimateMinimumDistanc
     // else
         // std::cout << "Warning: clusters not available" << std::endl;
 
-
-
-
     // if (cluster1 && cluster2) {
     //     std::pair<const cluster*, const cluster*> key(cluster1, cluster2);
     //     typename DistanceMap::const_iterator it = m_distancesCache.find(key);
@@ -155,8 +153,8 @@ void WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::cmpbl(
         m_accessedEntryCount += n1 * n2;
 
     // if negative, it means: unknown
-    const CoordinateType minDist = -1;
-    // estimateMinimumDistance(c1, c2);
+    const CoordinateType minDist =
+            m_uniformQuadratureOrder ? estimateMinimumDistance(c1, c2) : -1;
 
     // This is a non-op for real types. For complex types, it converts a pointer
     // to Ahmed's scomp (resp. dcomp) to a pointer to std::complex<float>

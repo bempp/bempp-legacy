@@ -63,42 +63,9 @@ template <typename BasisFunctionType, typename ResultType, typename GeometryFact
 void
 DefaultLocalAssemblerForLocalOperatorsOnSurfaces<BasisFunctionType, ResultType, GeometryFactory>::
 evaluateLocalWeakForms(
-    CallVariant callVariant,
-    const std::vector<int>& elementIndicesA,
-    int elementIndexB,
-    LocalDofIndex localDofIndexB,
-    std::vector<arma::Mat<ResultType> >& result,
-    CoordinateType nominalDistance)
-{
-    // Probably will never be called
-    throw std::runtime_error("DefaultLocalAssemblerForLocalOperatorsOnSurfaces::"
-                             "evaluateLocalWeakForms(): "
-                             "this overload not implemented yet");
-}
-
-template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
-void
-DefaultLocalAssemblerForLocalOperatorsOnSurfaces<BasisFunctionType, ResultType, GeometryFactory>::
-evaluateLocalWeakForms(
-    const std::vector<int>& testElementIndices,
-    const std::vector<int>& trialElementIndices,
-    Fiber::_2dArray<arma::Mat<ResultType> >& result,
-    CoordinateType nominalDistance)
-{
-    // Probably will never be called
-    throw std::runtime_error("DefaultLocalAssemblerForLocalOperatorsOnSurfaces::"
-                             "evaluateLocalWeakForms(): "
-                             "this overload not implemented yet");
-}
-
-template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
-void
-DefaultLocalAssemblerForLocalOperatorsOnSurfaces<BasisFunctionType, ResultType, GeometryFactory>::
-evaluateLocalWeakForms(
     const std::vector<int>& elementIndices,
     std::vector<arma::Mat<ResultType> >& result)
 {
-    // The only overload likely to be needed for identity operators
     typedef TestTrialIntegrator<BasisFunctionType, ResultType> Integrator;
     typedef Shapeset<BasisFunctionType> Shapeset;
 
@@ -154,17 +121,6 @@ evaluateLocalWeakForms(
             if (quadVariants[e] == activeQuadVariant)
                 result[e] = localResult.slice(i++);
     }
-}
-
-template <typename BasisFunctionType,
-          typename ResultType, typename GeometryFactory>
-typename DefaultLocalAssemblerForLocalOperatorsOnSurfaces<BasisFunctionType,
-    ResultType, GeometryFactory>::CoordinateType
-DefaultLocalAssemblerForLocalOperatorsOnSurfaces<BasisFunctionType,
-    ResultType, GeometryFactory>::
-estimateRelativeScale(CoordinateType minDist) const
-{
-    return 1.;
 }
 
 template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>

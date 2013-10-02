@@ -205,9 +205,9 @@ bool Space<BasisFunctionType>::gridIsIdentical(const Space<BasisFunctionType>& o
 
 template <typename BasisFunctionType>
 shared_ptr<const Space<BasisFunctionType> > Space<BasisFunctionType>::barycentricSpace(
-            const shared_ptr<const Space<BasisFunctionType> >& self) const {
-
-    std::runtime_error("Space::barycentricSpace():"
+            const shared_ptr<const Space<BasisFunctionType> >& self) const
+{
+    throw std::runtime_error("Space::barycentricSpace():"
                        "This method is not implemented for this Space type.");
 }
 
@@ -292,7 +292,7 @@ void getAllBases(const Space<BasisFunctionType>& space,
 }
 
 template <typename BasisFunctionType>
-int maximumBasisOrder(const Space<BasisFunctionType>& space)
+int maximumShapesetOrder(const Space<BasisFunctionType>& space)
 {
     const GridView& view = space.gridView();
     const Mapper& mapper = view.elementMapper();
@@ -303,7 +303,7 @@ int maximumBasisOrder(const Space<BasisFunctionType>& space)
 
     while (!it->finished()) {
         const Entity<0>& e = it->entity();
-        maxOrder = std::max(maxOrder, space.basis(e).order());
+        maxOrder = std::max(maxOrder, space.shapeset(e).order());
         it->next();
     }
     return maxOrder;
@@ -359,7 +359,7 @@ BEMPP_GCC_DIAG_ON(deprecated-declarations);
     void getAllShapesets(const Space<BASIS>& space, \
                          std::vector<const Fiber::Shapeset<BASIS>*>& bases); \
     template \
-    int maximumBasisOrder(const Space<BASIS>& space)
+    int maximumShapesetOrder(const Space<BASIS>& space)
 
 #define INSTANTIATE_constructOperators(BASIS, RESULT) \
     template \

@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_piecewise_constant_dual_mesh_scalar_space_hpp
-#define bempp_piecewise_constant_dual_mesh_scalar_space_hpp
+#ifndef bempp_piecewise_constant_dual_grid_discontinuous_scalar_space_hpp
+#define bempp_piecewise_constant_dual_grid_discontinuous_scalar_space_hpp
 
 
 
@@ -45,7 +45,7 @@ class GridView;
 /** \ingroup space
  *  \brief Space of piecewise constant functions define on the dual grid. */
 template <typename BasisFunctionType>
-class PiecewiseConstantDualMeshScalarSpace : public ScalarSpace<BasisFunctionType>
+class PiecewiseConstantDualGridDiscontinuousScalarSpace : public ScalarSpace<BasisFunctionType>
 {
 public:
     typedef typename Space<BasisFunctionType>::CoordinateType CoordinateType;
@@ -58,29 +58,10 @@ public:
      *
      *  An exception is thrown if \p grid is a null pointer.
      */
-    explicit PiecewiseConstantDualMeshScalarSpace(
+    explicit PiecewiseConstantDualGridDiscontinuousScalarSpace(
             const shared_ptr<const Grid>& grid);
 
-    /** \brief Constructor.
-     *
-     *  Construct a space of dual grid piecewise constant scalar functions
-     *  defined on the segment \p segment of the grid \p grid. More precisely,
-     *  the space will encompass those basis functions that are associated with
-     *  vertices belonging to \p segment. If \p strictlyOnSegment is \c true,
-     *  the support of the basis functions is truncated to the elements that
-     *  belong to \p segment, too; in this case, the space may in fact contain
-     *  discontinuous basis functions when considered on the whole \p grid,
-     *  although the basis functions will be continuous when considered on the
-     *  chosen grid segment.
-     *
-     *  An exception is thrown if \p grid is a null pointer.
-     */
-    PiecewiseConstantDualMeshScalarSpace(
-            const shared_ptr<const Grid>& grid,
-            const GridSegment& segment,
-            bool strictlyOnSegment = false);
-
-    virtual ~PiecewiseConstantDualMeshScalarSpace();
+    virtual ~PiecewiseConstantDualGridDiscontinuousScalarSpace();
 
     virtual shared_ptr<const Space<BasisFunctionType> > discontinuousSpace(
         const shared_ptr<const Space<BasisFunctionType> >& self) const;
@@ -89,7 +70,7 @@ public:
     virtual bool spaceIsCompatible(const Space<BasisFunctionType>& other) const;
 
     virtual SpaceIdentifier spaceIdentifier() const {
-        return PIECEWISE_CONSTANT_DUAL_MESH_SCALAR;
+        return PIECEWISE_CONSTANT_DUAL_GRID_DISCONTINUOUS_SCALAR;
     }
 
     virtual int domainDimension() const;
@@ -156,14 +137,10 @@ private:
 
 private:
     /** \cond PRIVATE */
-    GridSegment m_segment;
-    bool m_strictlyOnSegment;
     std::vector<std::vector<GlobalDofIndex> > m_local2globalDofs;
     std::vector<std::vector<LocalDof> > m_global2localDofs;
     std::vector<LocalDof> m_flatLocal2localDofs;
     Fiber::ConstantScalarShapeset<BasisFunctionType> m_basis;
-    mutable shared_ptr<Space<BasisFunctionType> > m_discontinuousSpace;
-    mutable tbb::mutex m_discontinuousSpaceMutex;
     /** \endcond */
 };
 

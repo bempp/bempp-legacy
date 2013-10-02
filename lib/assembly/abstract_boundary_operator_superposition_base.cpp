@@ -26,7 +26,7 @@
 #include "discrete_boundary_operator_sum.hpp"
 #include "discrete_dense_boundary_operator.hpp"
 #include "discrete_null_boundary_operator.hpp"
-#include "elementary_integral_operator.hpp"
+#include "elementary_integral_operator_base.hpp"
 #include "scaled_abstract_boundary_operator.hpp"
 #include "scaled_discrete_boundary_operator.hpp"
 
@@ -34,7 +34,7 @@
 #include "../common/boost_ptr_vector_fwd.hpp"
 #include "../common/to_string.hpp"
 #include "../fiber/explicit_instantiation.hpp"
-#include "../fiber/local_assembler_for_operators.hpp"
+#include "../fiber/local_assembler_for_integral_operators.hpp"
 
 #include <tbb/tick_count.h>
 
@@ -64,8 +64,9 @@ void decomposeBoundaryOperatorRecursively(
     typedef BoundaryOperator<BasisFunctionType, ResultType> Op;
     typedef AbstractBoundaryOperator<BasisFunctionType, ResultType> AOp;
     typedef AbstractBoundaryOperatorSum<BasisFunctionType, ResultType> AOpSum;
-    typedef ElementaryAbstractBoundaryOperator<BasisFunctionType, ResultType>
-            ElemOp;
+    typedef ElementaryIntegralOperatorBase<BasisFunctionType, ResultType>
+            ElemIntegralOp;
+
     typedef ScaledAbstractBoundaryOperator<BasisFunctionType, ResultType> ScaledAOp;
 
     shared_ptr<const AOp> abstractOp = op.abstractOperator();
@@ -106,8 +107,8 @@ void decomposeBoundaryOperatorRecursively(
                         multiplicand, weight * multiplier,
                         joinableOps, nonjoinableOps,
                         joinableOpWeights, nonjoinableOpWeights);
-    } else if (shared_ptr<const ElemOp> concreteOp =
-               boost::dynamic_pointer_cast<const ElemOp>(abstractOp)) {
+    } else if (shared_ptr<const ElemIntegralOp> concreteOp =
+               boost::dynamic_pointer_cast<const ElemIntegralOp>(abstractOp)) {
         if (!op.context()->assemblyOptions().isJointAssemblyEnabled()) {
             nonjoinableOps.push_back(op);
             nonjoinableOpWeights.push_back(weight);
@@ -325,8 +326,8 @@ assembleJointOperatorWeakFormInAcaMode(
     typedef BoundaryOperator<BasisFunctionType, ResultType> Op;
     typedef DiscreteBoundaryOperator<ResultType> DiscreteOp;
     typedef DiscreteBoundaryOperatorSum<ResultType> DiscreteOpSum;
-    typedef ElementaryAbstractBoundaryOperator<BasisFunctionType, ResultType>
-            ElemOp;
+    typedef ElementaryIntegralOperatorBase<BasisFunctionType, ResultType>
+            ElemIntegralOp;
     size_t opCount = ops.size();
     assert(opWeights.size() == opCount);
 
@@ -387,10 +388,10 @@ assembleJointOperatorWeakFormInAcaMode(
         for (size_t i = 0; i < nonlocalOps.size(); ++i) {
             // All operators in the 'ops' list are expected to be joinable, i.e.
             // their abstract operators should be instances of
-            // ElementaryAbstractBoundaryOperator (because it is this interface
+            // ElementaryIntegralOperatorBase (because it is this interface
             // that defines the makeAssembler() function
-            shared_ptr<const ElemOp> elemOp =
-                    boost::dynamic_pointer_cast<const ElemOp>(
+            shared_ptr<const ElemIntegralOp> elemOp =
+                    boost::dynamic_pointer_cast<const ElemIntegralOp>(
                         nonlocalOps[i].abstractOperator());
             assert(elemOp);
             const AssemblyOptions& options =

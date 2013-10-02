@@ -4,11 +4,12 @@
 # object, with Dirichlet boundary conditions given by the exact solution
 # (satisfying the Silver-Mueller radiation conditions)
 #
-#     \vec u(\vec x) = h_1^{(1)}(k r) sin(theta) \hat phi,
+#     \vec u(\vec x) = h_1^{(1)}(k r) \hat phi,
 #
 # where (r, theta, phi) are the radial, zenith angle and azimuthal spherical
-# coordinates, h_1^{(1)}(r) is the spherical Hankel function of the first kind
-# and order 1 and \hat phi is the unit vector oriented along d(\vec x)/d\phi.
+# coordinates in the system anchored at the point (0.1, 0.1, 0.1), h_1^{(1)}(r)
+# is the spherical Hankel function of the first kind and order 1 and \hat phi is
+# the unit vector oriented along d(\vec x)/d\phi.
 
 # Help Python find the bempp module
 import sys
@@ -31,7 +32,7 @@ def evalDirichletData(point, normal):
     r = sqrt(x**2 + y**2 + z**2)
     kr = k * r
     h1kr = (-1j - kr) * exp(1j * kr) / (kr * kr)
-    scale = h1kr / r;
+    scale = h1kr / r
     field = [-y * scale, x * scale, 0.]
     return np.cross(field, normal)
 
@@ -169,27 +170,3 @@ field = (-slPotOp.evaluateAtPoints(neumannData, evaluationPoints,
 exactField = evalExactSolution(np.array([3, 2, 1]))
 print "field:", field.ravel()
 print "exact field:", exactField
-
-# Plot far-field pattern
-
-# Create the necessary potential operators
-
-slFfPot = createMaxwell3dFarFieldSingleLayerPotentialOperator(context, k)
-dlFfPot = createMaxwell3dFarFieldDoubleLayerPotentialOperator(context, k)
-
-# Define a set of points on the unit sphere and evaluate the potentials
-
-theta = np.linspace(0, np.pi, 181)
-points = np.vstack([np.sin(theta), np.zeros_like(theta), np.cos(theta)])
-
-farFieldPattern = (- slFfPot.evaluateAtPoints(neumannData, points, evalOptions)
-                   - dlFfPot.evaluateAtPoints(dirichletData, points, evalOptions))
-
-# Display the graph
-
-import pylab
-pylab.plot(theta,
-           np.sqrt(farFieldPattern[0].real**2 + farFieldPattern[0].imag**2 +
-                   farFieldPattern[1].real**2 + farFieldPattern[1].imag**2 +
-                   farFieldPattern[2].real**2 + farFieldPattern[2].imag**2))
-pylab.show()

@@ -98,6 +98,27 @@ def _constructObjectTemplatedOnBasisKernelAndResult(
         raise TypeError("Class " + fullName + " does not exist.")
     return class_(*args, **kwargs)
 
+def _processBoundaryOperatorLike(boundaryOperator):
+    # Check whether boundaryOperator is in fact a nested list; if so,
+    # convert it to a BlockedBoundaryOperator
+    try:
+        element00 = boundaryOperator[0][0]
+        def findValidContext(blocks):
+            for i in range(len(blocks)):
+                for j in range(len(blocks[i])):
+                    block = blocks[i][j]
+                    if block and block.context():
+                        return block.context()
+        context = findValidContext(boundaryOperator)
+        boundaryOperator = createBlockedBoundaryOperator(
+            context, boundaryOperator)
+    except TypeError:
+        pass
+    except:
+        raise ValueError, ("Expected a BoundaryOperator or a nested list "
+                           "of BoundaryOperators")
+    return boundaryOperator
+
 def createGridFactory():
     """Return a GridFactory object"""
     return core.GridFactory
@@ -209,7 +230,33 @@ def createPiecewiseConstantScalarSpace(context, grid, segment=None):
     return _constructObjectTemplatedOnBasis(
         core, name, context.basisFunctionType(), grid, segment)
 
-def createPiecewiseConstantDualMeshScalarSpace(context, grid, segment=None):
+def createPiecewiseConstantScalarSpaceBarycentric(context, grid, segment=None):
+    """
+    Create and return a space of piecewise constant functions defined over a 
+    barycentric refinement of a grid.
+    
+    *Parameters:*
+       - context (Context)
+            A Context object that will determine the type used to represent the
+            values of the basis functions of the newly constructed space.
+       - grid (Grid)
+            Grid on which the functions from the newly constructed space will be
+            defined.
+       - segment (GridSegment)
+            (Optional) Segment of the grid on which the space should be defined.
+            If set to None (default), the whole grid will be used.
+
+    *Returns* a newly constructed Space_BasisFunctionType object, with
+    BasisFunctionType determined automatically from the context argument and
+    equal to either float32, float64, complex64 or complex128.
+    """
+    name = 'piecewiseConstantScalarSpaceBarycentric'
+    return _constructObjectTemplatedOnBasis(
+        core, name, context.basisFunctionType(), grid, segment)
+
+
+
+def createPiecewiseConstantDualGridScalarSpace(context, grid):
     """
     Create and return a space of scalar functions defined on the dual of a grid (or its
     segment) and constant on each element of the dual grid.
@@ -218,20 +265,13 @@ def createPiecewiseConstantDualMeshScalarSpace(context, grid, segment=None):
        - context (Context)
             A Context object that will determine the type used to represent the
             values of the basis functions of the newly constructed space.
-       - grid (Grid)
-            Grid on which the functions from the newly constructed space will be
-            defined. The grid must have a barycentric refinement level.
-       - segment (GridSegment)
-            (Optional) Segment of the grid on which the space should be defined.
-            If set to None (default), the whole grid will be used.
-
        *Returns* a newly constructed Space_BasisFunctionType object, with
        BasisFunctionType determined automatically from the context argument and
        equal to either float32, float64, complex64 or complex128.
     """
-    name = 'piecewiseConstantDualMeshScalarSpace'
+    name = 'piecewiseConstantDualGridScalarSpace'
     return _constructObjectTemplatedOnBasis(
-          core, name, context.basisFunctionType(), grid, segment)
+          core, name, context.basisFunctionType(), grid)
 
 
 def createPiecewiseLinearContinuousScalarSpace(context, grid, segment=None,
@@ -1947,7 +1987,8 @@ def createDefaultIterativeSolver(
     function.
 
     *Parameters:*
-       - boundaryOperator (BoundaryOperator or BlockedBoundaryOperator)
+       - boundaryOperator (BoundaryOperator, BlockedBoundaryOperator or a nested
+                           list convertible to a BlockedBoundaryOperator)
             The boundary operator A standing on the left-hand-side of the
             equation to be solved.
        - convergenceTestMode (string)
@@ -1968,6 +2009,8 @@ def createDefaultIterativeSolver(
     boundaryOperator argument and equal to either float32, float64, complex64 or
     complex128.
     """
+
+    boundaryOperator = _processBoundaryOperatorLike(boundaryOperator)
     basisFunctionType = boundaryOperator.basisFunctionType()
     resultType = boundaryOperator.resultType()
     result = _constructObjectTemplatedOnBasisAndResult(
@@ -1988,7 +2031,8 @@ def createDefaultDirectSolver(
     function.
 
     *Parameters:*
-       - boundaryOperator (BoundaryOperator or BlockedBoundaryOperator)
+       - boundaryOperator (BoundaryOperator, BlockedBoundaryOperator or a nested
+                           list convertible to a BlockedBoundaryOperator)
             The boundary operator A standing on the left-hand-side of the
             equation to be solved.
 
@@ -1998,6 +2042,8 @@ def createDefaultDirectSolver(
     boundaryOperator argument and equal to either float32, float64, complex64 or
     complex128.
     """
+
+    boundaryOperator = _processBoundaryOperatorLike(boundaryOperator)
     basisFunctionType = boundaryOperator.basisFunctionType()
     resultType = boundaryOperator.resultType()
     result = _constructObjectTemplatedOnBasisAndResult(

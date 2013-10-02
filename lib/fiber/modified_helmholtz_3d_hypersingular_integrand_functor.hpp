@@ -34,7 +34,8 @@
 namespace Fiber
 {
 
-/** \brief .
+/** \brief Functor evaluating the integrand of the hypersingular operator for
+ *  the modified Helmholtz equation in 3D.
  *
  *  \deprecated This class is deprecated and superseded by
  *  ModifiedHelmholtz3dHypersingularIntegrandFunctor2. */

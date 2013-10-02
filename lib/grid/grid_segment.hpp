@@ -46,22 +46,23 @@ class Grid;
 class GridSegment
 {
 public:
-    /** \brief Return a GridSegment representing the whole grid \p grid. */
-    static GridSegment wholeGrid(const Grid& grid);
+    /** \brief Return a GridSegment representing the whole grid \p grid at
+        a given level (level = -1 for leafView). */
+    static GridSegment wholeGrid(const Grid& grid, int level = 0);
 
     /** \brief Return a GridSegment representing an open domain of a grid.
      *
      *  This function returns a GridSegment representing the domain with index
      *  \p domain of the grid \p grid, not including its boundary. The domain
      *  index corresponds to the <it>physical entity index</it> in Gmsh files.*/
-    static GridSegment openDomain(const Grid& grid, int domain);
+    static GridSegment openDomain(const Grid& grid, int domain, int level = 0);
 
     /** \brief Return a GridSegment representing a closed domain of a grid.
      *
      *  This function returns a GridSegment representing the domain with index
      *  \p domain of the grid \p grid, including its boundary. The domain
      *  index corresponds to the <it>physical entity index</it> in Gmsh files.*/
-    static GridSegment closedDomain(const Grid& grid, int domain);
+    static GridSegment closedDomain(const Grid& grid, int domain, int level = 0);
 
     /** \brief Constructor.
      *
@@ -77,7 +78,8 @@ public:
                 const std::set<int>& excludedEntitiesCodim0,
                 const std::set<int>& excludedEntitiesCodim1,
                 const std::set<int>& excludedEntitiesCodim2,
-                const std::set<int>& excludedEntitiesCodim3);
+                const std::set<int>& excludedEntitiesCodim3,
+                int level = 0);
 
     /** \brief Constructor.
      *
@@ -147,7 +149,7 @@ private:
     boost::array<std::set<int>, 4> m_excludedEntities;
 };
 
-GridSegment gridSegmentWithPositiveX(const Grid& grid);
+GridSegment gridSegmentWithPositiveX(const Grid& grid, int level = 0);
 
 } // namespace Bempp
 

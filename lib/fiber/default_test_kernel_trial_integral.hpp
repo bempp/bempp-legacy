@@ -32,7 +32,7 @@ namespace Fiber
   This class implements the interface defined by TestKernelTrialIntegral
   using a functor object to evaluate the integrand \f$I(x, y)\f$ of an integral
   of the form
-  \f[ \int_\Gamma \int_\Sigma I(x, y)\, d\Gamma(x)\, d\Sigma(y),
+  \f[ \int_\Gamma \int_\Sigma I(x, y)\, d\Gamma(x)\, d\Sigma(y), \f]
   where \f$\Gamma\f$ is a test element and \f$\Sigma\f$ a trial element,
   at individual pairs \f$(x, y\f$\f$) of test and trial points.
 

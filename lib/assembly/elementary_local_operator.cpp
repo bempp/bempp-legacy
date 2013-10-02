@@ -39,7 +39,7 @@
 #include "../fiber/basis.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 #include "../fiber/quadrature_strategy.hpp"
-#include "../fiber/local_assembler_for_operators.hpp"
+#include "../fiber/local_assembler_for_local_operators.hpp"
 #include "../fiber/opencl_handler.hpp"
 #include "../fiber/raw_grid_geometry.hpp"
 #include "../fiber/scalar_function_value_functor.hpp"
@@ -218,11 +218,8 @@ ElementaryLocalOperator<BasisFunctionType, ResultType>::ElementaryLocalOperator(
         const std::string& label,
         int symmetry) :
     Base(domain, range, dualToRange, label, symmetry)
+
 {
-    if ((!domain->gridIsIdentical(*range)))
-        throw std::invalid_argument(
-                "ElementaryLocalOperator::ElementaryLocalOperator(): "
-                "all three function spaces must be defined on the same grid.");
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -243,7 +240,7 @@ ElementaryLocalOperator<BasisFunctionType, ResultType>::assembleWeakFormImpl(
                   << this->label() << "'..." << std::endl;
 
     tbb::tick_count start = tbb::tick_count::now();
-    std::auto_ptr<LocalAssembler> assembler =this->makeAssembler(
+    std::auto_ptr<LocalAssembler> assembler = this->makeAssembler(
                 *context.quadStrategy(), context.assemblyOptions());
     shared_ptr<DiscreteBoundaryOperator<ResultType> > result =
             assembleWeakFormInternalImpl2(*assembler, context);
@@ -262,7 +259,7 @@ ElementaryLocalOperator<BasisFunctionType, ResultType>::assembleWeakFormInternal
         const Context<BasisFunctionType, ResultType>& context) const
 {
 #ifdef WITH_TRILINOS
-    if (context.assemblyOptions().isSparseStorageOfMassMatricesEnabled())
+    if (context.assemblyOptions().isSparseStorageOfLocalOperatorsEnabled())
         return shared_ptr<DiscreteBoundaryOperator<ResultType> >(
             assembleWeakFormInSparseMode(assembler, context.assemblyOptions())
             .release());
@@ -470,24 +467,33 @@ ElementaryLocalOperator<BasisFunctionType, ResultType>::assembleWeakFormInSparse
 
 template <typename BasisFunctionType, typename ResultType>
 std::auto_ptr<typename ElementaryLocalOperator<BasisFunctionType, ResultType>::LocalAssembler>
-ElementaryLocalOperator<BasisFunctionType, ResultType>::makeAssemblerImpl(
+ElementaryLocalOperator<BasisFunctionType, ResultType>::makeAssembler(
         const QuadratureStrategy& quadStrategy,
-        const shared_ptr<const GeometryFactory>& testGeometryFactory,
-        const shared_ptr<const GeometryFactory>& trialGeometryFactory,
-        const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& testRawGeometry,
-        const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& trialRawGeometry,
-        const shared_ptr<const std::vector<const Fiber::Shapeset<BasisFunctionType>*> >& testShapesets,
-        const shared_ptr<const std::vector<const Fiber::Shapeset<BasisFunctionType>*> >& trialShapesets,
-        const shared_ptr<const Fiber::OpenClHandler>& openClHandler,
-        const ParallelizationOptions&,
-        VerbosityLevel::Level /* verbosityLevel*/,
-        bool /* cacheSingularIntegrals */) const
+        const AssemblyOptions& options) const
 {
-    if (testGeometryFactory.get() != trialGeometryFactory.get() ||
-            testRawGeometry.get() != trialRawGeometry.get())
-        throw std::invalid_argument("ElementaryLocalOperator::makeAssemblerImpl(): "
-                                    "the test and trial spaces must be defined "
-                                    "on the same grid");
+    typedef Fiber::RawGridGeometry<CoordinateType> RawGridGeometry;
+    typedef std::vector<const Fiber::Shapeset<BasisFunctionType>*> ShapesetPtrVector;
+
+    const bool verbose = (options.verbosityLevel() >= VerbosityLevel::DEFAULT);
+
+    shared_ptr<RawGridGeometry> testRawGeometry, trialRawGeometry;
+    shared_ptr<GeometryFactory> testGeometryFactory, trialGeometryFactory;
+    shared_ptr<Fiber::OpenClHandler> openClHandler;
+    shared_ptr<ShapesetPtrVector> testShapesets, trialShapesets;
+    bool cacheSingularIntegrals;
+
+    if (verbose)
+        std::cout << "Collecting data for assembler construction..." << std::endl;
+       this->collectDataForAssemblerConstruction(options,
+                                        testRawGeometry, trialRawGeometry,
+                                        testGeometryFactory, trialGeometryFactory,
+                                        testShapesets, trialShapesets,
+                                        openClHandler, cacheSingularIntegrals);
+    if (verbose)
+        std::cout << "Data collection finished." << std::endl;
+    assert(testRawGeometry == trialRawGeometry);
+    assert(testGeometryFactory == trialGeometryFactory);
+
     return quadStrategy.makeAssemblerForLocalOperators(
                 testGeometryFactory, testRawGeometry,
                 testShapesets, trialShapesets,

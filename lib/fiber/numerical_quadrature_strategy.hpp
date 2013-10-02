@@ -34,7 +34,8 @@ template <typename BasisFunctionType> class QuadratureDescriptorSelectorFactory;
 template <typename CoordinateType> class DoubleQuadratureRuleFamily;
 template <typename CoordinateType> class SingleQuadratureRuleFamily;
 
-/** \brief Base class for NumericalQuadratureStrategy.
+/** \ingroup quadrature
+ *  \brief Base class for NumericalQuadratureStrategy.
  *
  * This is the base class of the default quadrature strategy available
  * in BEM++. This quadrature strategy evaluates integrals by numerical
@@ -98,7 +99,7 @@ public:
         doubleQuadratureRuleFamily);
 
 public:
-    virtual std::auto_ptr<LocalAssemblerForOperators<ResultType> >
+    virtual std::auto_ptr<LocalAssemblerForLocalOperators<ResultType> >
     makeAssemblerForIdentityOperators(
             const shared_ptr<const GeometryFactory>& geometryFactory,
             const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
@@ -108,7 +109,7 @@ public:
             const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& trialTransformations,
             const shared_ptr<const OpenClHandler>& openClHandler) const;
 
-    virtual std::auto_ptr<LocalAssemblerForOperators<ResultType> >
+    virtual std::auto_ptr<LocalAssemblerForLocalOperators<ResultType> >
     makeAssemblerForLocalOperators(
             const shared_ptr<const GeometryFactory>& geometryFactory,
             const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
@@ -120,7 +121,7 @@ public:
             const shared_ptr<const OpenClHandler>& openClHandler) const;
 
 private:
-    virtual std::auto_ptr<LocalAssemblerForOperators<ResultType> >
+    virtual std::auto_ptr<LocalAssemblerForIntegralOperators<ResultType> >
     makeAssemblerForIntegralOperatorsImplRealKernel(
             const shared_ptr<const GeometryFactory>& testGeometryFactory,
             const shared_ptr<const GeometryFactory>& trialGeometryFactory,
@@ -189,7 +190,8 @@ private:
 };
 
 // Complex ResultType
-/** \brief Quadrature strategy according to which integrals are
+/** \ingroup quadrature
+ * \brief Quadrature strategy according to which integrals are
  * evaluated by numerical quadrature.
  *
  * A quadrature strategy provides functions constructing local assemblers used
@@ -293,7 +295,7 @@ public:
         doubleQuadratureRuleFamily);
 
 private:
-    virtual std::auto_ptr<LocalAssemblerForOperators<ResultType> >
+    virtual std::auto_ptr<LocalAssemblerForIntegralOperators<ResultType> >
     makeAssemblerForIntegralOperatorsImplComplexKernel(
             const shared_ptr<const GeometryFactory>& testGeometryFactory,
             const shared_ptr<const GeometryFactory>& trialGeometryFactory,

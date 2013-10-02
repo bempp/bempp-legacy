@@ -55,6 +55,17 @@ laplace3dSyntheticBoundaryOperator(
         throw std::invalid_argument(
             "makeLaplace3dSyntheticBoundaryOperator(): "
             "domain, range and dualToRange must not be null");
+
+    shared_ptr<const Space<BasisFunctionType> > newDomain = domain;
+    shared_ptr<const Space<BasisFunctionType> > newDualToRange = dualToRange;
+
+    bool isBarycentric = (domain->isBarycentric() || dualToRange->isBarycentric());
+
+    if (isBarycentric) {
+        newDomain = domain->barycentricSpace(domain);
+        newDualToRange = dualToRange->barycentricSpace(dualToRange);
+    }
+
     AssemblyOptions internalAssemblyOptions = context->assemblyOptions();
     AcaOptions internalAcaOptions = internalAssemblyOptions.acaOptions();
     internalAcaOptions.mode = AcaOptions::GLOBAL_ASSEMBLY;
@@ -62,17 +73,17 @@ laplace3dSyntheticBoundaryOperator(
     typedef Context<BasisFunctionType, ResultType> Ctx;
     shared_ptr<Ctx> internalContext(new Ctx(
             context->quadStrategy(), internalAssemblyOptions));
-    shared_ptr<const Space<BasisFunctionType> > internalTrialSpace = 
-        domain->discontinuousSpace(domain);
-    shared_ptr<const Space<BasisFunctionType> > internalTestSpace = 
-        dualToRange->discontinuousSpace(dualToRange);
+    shared_ptr<const Space<BasisFunctionType> > internalTrialSpace =
+        newDomain->discontinuousSpace(domain);
+    shared_ptr<const Space<BasisFunctionType> > internalTestSpace =
+        newDualToRange->discontinuousSpace(dualToRange);
 
     if (label.empty())
         label = AbstractBoundaryOperator<BasisFunctionType, ResultType>::
             uniqueLabel();
 
-    int syntheseSymmetry = 
-        (domain == dualToRange && internalTrialSpace == internalTestSpace) ?
+    int syntheseSymmetry =
+        (newDomain == newDualToRange && internalTrialSpace == internalTestSpace) ?
         maximumSyntheseSymmetry : 0;
     // std::cout << "syntheseSymmetry: " << syntheseSymmetry << std::endl;
     BoundaryOperator<BasisFunctionType, ResultType> internalOp =
@@ -81,7 +92,7 @@ laplace3dSyntheticBoundaryOperator(
             internalTestSpace,
             "(" + label + ")_internal", internalSymmetry);
     return syntheticNonhypersingularIntegralOperator(
-            internalOp, domain, range, dualToRange,
+            internalOp, newDomain, range, newDualToRange,
             internalTrialSpace, internalTestSpace,
             label, syntheseSymmetry); // TODO: use symmetry too
 }

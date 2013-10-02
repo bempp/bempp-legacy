@@ -116,6 +116,12 @@ BEMPP_EXTEND_CLASS_TEMPLATED_ON_VALUE(DiscreteBoundaryOperator)
         return scalar*op;
     }
 
+    static shared_ptr<const DiscreteBoundaryOperator<ValueType> >
+    __opCompositionImpl(const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op1,
+                        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op2){
+        return op1*op2;
+    }
+
     static void
     __matrixMultImpl(const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& op,
                      const arma::Mat<ValueType>& mat_in,
@@ -169,10 +175,19 @@ BEMPP_EXTEND_CLASS_TEMPLATED_ON_VALUE(DiscreteBoundaryOperator)
             if isinstance(other,(Number,np.number)):
                 return self.__scalarMultImpl(other,self)
             elif isinstance(other,np.ndarray):
-                if len(other.shape)==0:
+                ndim = other.ndim
+                if ndim==0:
                     return self.__scalarMultImpl(other,self)
-                else:
+                elif ndim==1:
+                    return self.__matrixMultImpl(self,other[:,np.newaxis])[:,0]
+                elif ndim==2:
                     return self.__matrixMultImpl(self,other)
+                else:
+                    raise ValueError("Discrete boundary operators do not support "
+                                     "multiplication by arrays with more than 2 "
+                                     "dimensions.")
+            elif isinstance(other,type(self)):
+                return self.__opCompositionImpl(self,other)
             else:
                 raise ValueError("Discrete boundary operators do not support "
                                  "multiplication with this type.")

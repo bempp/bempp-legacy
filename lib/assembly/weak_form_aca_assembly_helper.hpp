@@ -41,7 +41,7 @@ namespace Fiber
 {
 
 /** \cond FORWARD_DECL */
-template <typename ResultType> class LocalAssemblerForOperators;
+template <typename ResultType> class LocalAssemblerForIntegralOperators;
 /** \endcond */
 
 } // namespace Fiber
@@ -64,7 +64,7 @@ class WeakFormAcaAssemblyHelper
 {
 public:
     typedef DiscreteBoundaryOperator<ResultType> DiscreteLinOp;
-    typedef Fiber::LocalAssemblerForOperators<ResultType> LocalAssembler;
+    typedef Fiber::LocalAssemblerForIntegralOperators<ResultType> LocalAssembler;
     typedef typename Fiber::ScalarTraits<ResultType>::RealType CoordinateType;
     typedef typename Fiber::ScalarTraits<ResultType>::RealType MagnitudeType;
     typedef typename AhmedTypeTraits<ResultType>::Type AhmedResultType;
@@ -129,6 +129,7 @@ private:
     const std::vector<ResultType>& m_sparseTermsMultipliers;
     const AssemblyOptions& m_options;
     bool m_indexWithGlobalDofs;
+    bool m_uniformQuadratureOrder;
 
     shared_ptr<LocalDofListsCache<BasisFunctionType> >
     m_testDofListsCache, m_trialDofListsCache;
