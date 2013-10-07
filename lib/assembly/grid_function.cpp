@@ -509,9 +509,11 @@ GridFunction<BasisFunctionType, ResultType>::projections(
         throw std::runtime_error("GridFunction::projections() must not be called "
                                  "on an uninitialized GridFunction object");
     if (m_space->grid() != dualSpace_->grid())
-        throw std::invalid_argument(
-                "GridFunction::projections(): "
-                "space and dual space must be defined on the same grid");
+        if (!m_space->grid()->isBarycentricRepresentationOf(*dualSpace_->grid()) &&
+                !dualSpace_->grid()->isBarycentricRepresentationOf(*m_space->grid()))
+            throw std::invalid_argument(
+                    "GridFunction::projections(): "
+                    "space and dual space must be defined on the same grid");
 
     if (!m_coefficients && !m_projections)
         throw std::runtime_error("GridFunction::projections() must not be called "

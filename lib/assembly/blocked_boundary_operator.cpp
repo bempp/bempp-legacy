@@ -60,7 +60,7 @@ BlockedBoundaryOperator<BasisFunctionType, ResultType>::BlockedBoundaryOperator(
                 }
                 else
                     // Verify that this block's domain matches this->m_domains[col]
-                    if (domain != m_domains[col])
+                    if (!domain->spaceIsCompatible(*m_domains[col]))
                         throw std::invalid_argument(
                                 "BlockedOperatorStructure::BlockedOperatorStructure(): "
                                 "domains of operators (" +
@@ -91,7 +91,7 @@ BlockedBoundaryOperator<BasisFunctionType, ResultType>::BlockedBoundaryOperator(
                 else
                     // Verify that this block's range and dualToRange match
                     // this->m_ranges[row] and this->m_dualsToRanges[row]
-                    if (block.range() != m_ranges[row])
+                    if (!block.range()->spaceIsCompatible(*m_ranges[row]))
                         throw std::invalid_argument(
                                 "BlockedOperatorStructure::BlockedOperatorStructure(): "
                                 "ranges of operators (" +
@@ -99,7 +99,7 @@ BlockedBoundaryOperator<BasisFunctionType, ResultType>::BlockedBoundaryOperator(
                                 toString(firstNonemptyCol) + ") and (" +
                                 toString(row) + ", " +
                                 toString(col) + ") differ");
-                if (block.dualToRange() != m_dualsToRanges[row])
+                if (!block.dualToRange()->spaceIsCompatible(*m_dualsToRanges[row]))
                     throw std::invalid_argument(
                             "BlockedOperatorStructure::BlockedOperatorStructure(): "
                             "duals to ranges of operators (" +
