@@ -518,7 +518,7 @@ GridFunction<BasisFunctionType, ResultType>::projections(
     if (!m_coefficients && !m_projections)
         throw std::runtime_error("GridFunction::projections() must not be called "
                                  "on an uninitialized GridFunction object");
-    if (!m_projections || m_dualSpace != dualSpace_)
+    if (!m_projections || !m_dualSpace->spaceIsCompatible(*dualSpace_))
         updateProjectionsFromCoefficients(dualSpace_);
     return *m_projections;
 }
