@@ -82,8 +82,10 @@ def parse_otool_output(output):
 
     # like "@rpath/libmkl_intel.dylib (compatibility version 0.0.0, current version 0.0.0)"
     re1 = re.compile(r"\s*@rpath/(.+) \(.+\)")
+    # like "@loader_path/libmkl_intel.dylib (compatibility version 0.0.0, current version 0.0.0)"
+    re2 = re.compile(r"\s*@loader_path/(.+) \(.+\)")
     # like "/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 111.0.0)"
-    re2 = re.compile(r"\s*(.+) \(.+\)")
+    re3 = re.compile(r"\s*(.+) \(.+\)")
 
     re_fname = re.compile(r"lib(mkl.*|iomp.*)\.(so|dylib)(\.[^ ]*)?")
     # we assume for now that @rpath == <sys.prefix>/lib
@@ -106,12 +108,27 @@ def parse_otool_output(output):
             continue
         m = re2.match(l)
         if m:
+	    #Get Numpy Path
+	    import numpy
+	    numpy_path = numpy.__file__
+	    numpy_dir = os.path.dirname(numpy_path)
+	    loader_path = os.path.join(numpy_dir,"linalg")
+	    full_path = os.path.join(loader_path,m.group(1))
+	    fpath,fname = os.path.split(os.path.abspath(full_path))
+            m_fname = re_fname.match(fname)
+            if m_fname:
+                mkl_libs.append(full_path)
+                mkl_dirs.append(fpath)
+            continue
+        m = re3.match(l)
+        if m:
             path = m.group(1)
             fname = os.path.basename(path)
             m_fname = re_fname.match(fname)
             if m_fname:
                 mkl_libs.append(path)
                 mkl_dirs.append(os.path.dirname(path))
+	    continue
     return mkl_dirs,mkl_libs
 
 def get_mkl_dirs_and_libs_like_numpy(config, lib_dir, extension):
