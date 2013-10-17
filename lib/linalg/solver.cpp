@@ -105,7 +105,7 @@ Solver<BasisFunctionType, ResultType>::canonicalizeBlockedRhs(
     std::vector<GF> result(functionCount);
     for (size_t i = 0; i < functionCount; ++i)
         if (rhs[i].isInitialized()) {
-            if (!testInDualToRange && rhs[i].space() != boundaryOp.range(i))
+            if (!testInDualToRange && !rhs[i].space()->spaceIsCompatible(*boundaryOp.range(i)))
                 throw std::invalid_argument(
                         "Solver::canonicalizeBlockedRhs(): space of "
                         "grid function #" + toString(i) +

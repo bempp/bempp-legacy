@@ -104,6 +104,15 @@ def prepareDependencies(root,config):
     for dep in library_names:
         libraries[dep].prepare(root,config)
 
+    # Add soft link to Python library
+
+    prefix = config.get('Main','prefix')
+    py_lib = config.get('Python','lib')
+    py_lib_name = os.path.basename(py_lib)
+    py_soft_link_path = os.path.join(prefix,'bempp/lib/'+py_lib_name)
+    if not os.path.lexists(py_soft_link_path):
+	    os.symlink(py_lib,py_soft_link_path)
+
 
 def installDependencies(root,config):
 
@@ -209,6 +218,7 @@ def prepare(root,config):
 
     prefix = config.get('Main','prefix')
     setDefaultConfigOption(config,"CMake","exe",prefix+"/bempp/bin/cmake",overwrite=True)
+
 
 
 ###########################
