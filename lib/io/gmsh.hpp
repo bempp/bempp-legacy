@@ -149,13 +149,13 @@ struct ElementNodeDataSet {
 struct InterpolationSchemeSet {
 
     struct InterpolationMatrix {
-        int nrow;
+        int nrows;
         int ncols;
         std::vector<double> values; // Stored in row-major order
     };
 
     std::string name;
-    std::vector<int> topologies;
+    int topology;
     std::vector<InterpolationMatrix> interpolationMatrices;
 
     void write(std::ostream& output) const;
@@ -163,19 +163,21 @@ struct InterpolationSchemeSet {
 
 };
 
-class GmshFile {
+struct GmshFile {
 
     NodeSet nodeSet;
     ElementSet elementSet;
     PeriodicSet periodicSet;
     PhysicalNamesSet physicalNamesSet;
-    NodeDataSet nodeDataSet;
-    ElementDataSet elementDataSet;
-    ElementNodeDataSet elementNodeDataSet;
-    InterpolationSchemeSet interpolationSchemeSet;
+    std::vector<NodeDataSet> nodeDataSets;
+    std::vector<ElementDataSet> elementDataSets;
+    std::vector<ElementNodeDataSet> elementNodeDataSets;
+    std::vector<InterpolationSchemeSet> interpolationSchemeSets;
 
     void write(std::ostream& output) const;
+    void write(std::string fname) const;
     static GmshFile read(std::istream& input);
+    static GmshFile read(std::string fname);
 
 };
 

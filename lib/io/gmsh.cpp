@@ -20,6 +20,8 @@
 
 #include "gmsh.hpp"
 #include <sstream>
+#include <iostream>
+#include <fstream>
 #include <algorithm>
 #include "boost/tokenizer.hpp"
 #include "boost/lexical_cast.hpp"
@@ -246,7 +248,7 @@ void NodeDataSet::write(std::ostream &output) const {
     output << "$NodeData" << std::endl;
     output << stringTags.size() << std::endl;
     for (int i = 0; i< stringTags.size(); ++i) {
-        output << stringTags[i] << std::endl;
+        output << '\"'+stringTags[i]+'\"' << std::endl;
     }
     output << realTags.size() << std::endl;
     for (int i = 0; i < realTags.size(); ++i) {
@@ -320,7 +322,7 @@ void ElementDataSet::write(std::ostream &output) const {
     output << "$ElementData" << std::endl;
     output << stringTags.size() << std::endl;
     for (int i = 0; i< stringTags.size(); ++i) {
-        output << stringTags[i] << std::endl;
+        output << '\"'+stringTags[i]+'\"' << std::endl;
     }
     output << realTags.size() << std::endl;
     for (int i = 0; i < realTags.size(); ++i) {
@@ -394,7 +396,7 @@ void ElementNodeDataSet::write(std::ostream &output) const {
     output << "$ElementNodeData" << std::endl;
     output << stringTags.size() << std::endl;
     for (int i = 0; i< stringTags.size(); ++i) {
-        output << stringTags[i] << std::endl;
+        output << '\"'+stringTags[i]+'\"' << std::endl;
     }
     output << realTags.size() << std::endl;
     for (int i = 0; i < realTags.size(); ++i) {
@@ -469,6 +471,88 @@ ElementNodeDataSet ElementNodeDataSet::read(std::istream &input) {
     }
     return elementNodeDataSet;
 }
+
+void InterpolationSchemeSet::write(std::ostream &output) const {
+
+    if (interpolationMatrices.size() == 0) return;
+    output << "$InterpolationScheme" << std::endl;
+    output << '\"'+name+'\"' << std::endl;
+    output << 1 << std::endl; // Only one element topology supported right now.
+    output << topology << std::endl;
+    output << interpolationMatrices.size() << std::endl;
+    for (int i = 0; i < interpolationMatrices.size(); ++i) {
+        output << interpolationMatrices[i].nrows << std::endl;
+        output << interpolationMatrices[i].ncols << std::endl;
+        for (int j = 0; j < interpolationMatrices[i].nrows; ++j) {
+            output << interpolationMatrices[i].values[j*interpolationMatrices[i].nrows];
+            for (int k = 1; k < interpolationMatrices[i].ncols; ++k)
+                output << " " << interpolationMatrices[i].values[j*interpolationMatrices[i].nrows+k];
+            output << std::endl;
+        }
+    }
+    output << "$EndInterpolationScheme" << std::endl;
+}
+
+InterpolationSchemeSet InterpolationSchemeSet::read(std::istream &input) {
+
+    InterpolationSchemeSet interpolationSchemeSet;
+    std::string line;
+    std::getline(input,line);
+    line.erase(std::remove(line.begin(),line.end(),'\"'),line.end());
+    interpolationSchemeSet.name = line;
+    std::getline(input,line);
+    if (boost::lexical_cast<int>(line) != 1) throw std::runtime_error(
+                "InterpolationSchemSet::read(): Only one topology is currently supported.");
+    std::getline(input,line);
+    interpolationSchemeSet.topology = boost::lexical_cast<int>(line);
+    std::getline(input,line);
+    interpolationSchemeSet.interpolationMatrices.resize(boost::lexical_cast<int>(line));
+    for (int i = 0; i < interpolationSchemeSet.interpolationMatrices.size(); ++i) {
+        InterpolationSchemeSet::InterpolationMatrix& interpolationMatrix = interpolationSchemeSet.interpolationMatrices[i];
+        std::getline(input,line);
+        StringVector tokens = stringTokens(line);
+        if (tokens.size() != 2) throw std::runtime_error(
+                    "InterpolationSchemeSet::read(): Wrong format of interpolation matrices.");
+        interpolationMatrix.nrows = boost::lexical_cast<int>(tokens[0]);
+        interpolationMatrix.ncols = boost::lexical_cast<int>(tokens[1]);
+        interpolationMatrix.values.reserve(interpolationMatrix.nrows*interpolationMatrix.ncols);
+        for (int j = 0; j < interpolationMatrix.nrows; ++j) {
+            std::getline(input,line);
+            StringVector tokens = stringTokens(line);
+            if (tokens.size() != interpolationMatrix.ncols) throw std::runtime_error(
+                        "InterpolationSchemeSet::read(): Wrong format of interpolation matrices.");
+            for (int k = 0;k < interpolationMatrix.ncols; ++k)
+                interpolationMatrix.values.push_back(boost::lexical_cast<double>(tokens[k]));
+        }
+    }
+    return interpolationSchemeSet;
+}
+
+void GmshFile::write(std::ostream &output) const {
+
+    nodeSet.write(output);
+    elementSet.write(output);
+    periodicSet.write(output);
+    physicalNamesSet.write(output);
+    for (int i = 0; i < nodeDataSets.size(); ++i)
+        nodeDataSets[i].write(output);
+    for (int i = 0; i < elementDataSets.size(); ++i)
+        elementDataSets[i].write(output);
+    for (int i = 0; i < elementNodeDataSets.size(); ++i)
+        elementNodeDataSets[i].write(output);
+    for (int i = 0; i < interpolationSchemeSets.size(); ++i)
+        interpolationSchemeSets[i].write(output);
+}
+
+void GmshFile::write(std::string fname) const {
+
+    std::ofstream out;
+    out.open(fname.c_str(), std::ios::trunc);
+    write(out);
+    out.close();
+
+}
+
 
 
 } // namespace bempp
