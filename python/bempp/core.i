@@ -194,3 +194,7 @@ AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
 %include "linalg/preconditioner.i"
 %include "linalg/default_iterative_solver.i"
 %include "linalg/default_direct_solver.i"
+
+// IO
+
+%include "io/gmsh.i"
