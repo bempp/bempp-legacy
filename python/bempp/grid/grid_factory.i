@@ -1,7 +1,5 @@
 %include "std_vector.i"
-namespace std {
-   %template(vectori) vector<int>;
-}
+
 
 %{
 #include "grid/grid_factory.hpp"

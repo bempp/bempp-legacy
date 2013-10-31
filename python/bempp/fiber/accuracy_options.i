@@ -1,7 +1,4 @@
 %include "std_vector.i"
-namespace std {
-   %template(vectord) vector<double>;
-}
 
 %{
 #include "fiber/accuracy_options.hpp"

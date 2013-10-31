@@ -26,13 +26,15 @@
 #include <iostream>
 #include <string>
 #include <memory>
+#include "../common/shared_ptr.hpp"
 
-namespace bempp {
+namespace Bempp {
 
 class GmshData {
 
 public:
 
+    GmshData();
     int numberOfNodes() const;
     int numberOfElements() const;
     int numberOfPeriodicEntities() const;
@@ -210,19 +212,19 @@ private:
     int m_numberOfNodes;
     int m_numberOfElements;
 
-    std::vector<Node*> m_nodes;
-    std::vector<Element*> m_elements;
+    std::vector<shared_ptr<Node> > m_nodes;
+    std::vector<shared_ptr<Element> > m_elements;
 
     std::vector<PeriodicEntity> m_periodicEntities;
     std::vector<PeriodicNode> m_periodicNodes;
 
     std::vector<PhysicalName> m_physicalNames;
 
-    std::vector<NodeDataSet*> m_nodeDataSets;
-    std::vector<ElementDataSet*> m_elementDataSets;
-    std::vector<ElementNodeDataSet*> m_elementNodeDataSets;
+    std::vector<shared_ptr<NodeDataSet> > m_nodeDataSets;
+    std::vector<shared_ptr<ElementDataSet> > m_elementDataSets;
+    std::vector<shared_ptr<ElementNodeDataSet> > m_elementNodeDataSets;
 
-    std::vector<InterpolationSchemeSet*> m_interpolationSchemeSets;
+    std::vector<shared_ptr<InterpolationSchemeSet> > m_interpolationSchemeSets;
 
 };
 

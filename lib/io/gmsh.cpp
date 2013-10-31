@@ -33,7 +33,8 @@ typedef std::vector<std::string> StringVector;
 StringVector stringTokens(std::string input) {
 
     StringVector result;
-    boost::tokenizer<> tok(input);
+    boost::char_delimiters_separator<char> separator(false," ");
+    boost::tokenizer<boost::char_delimiters_separator<char> > tok(input,separator);
     boost::tokenizer<>::iterator it;
     for (it = tok.begin(); it != tok.end(); ++it)
         result.push_back(*it);
@@ -42,7 +43,15 @@ StringVector stringTokens(std::string input) {
 
 } // namespace
 
-namespace bempp {
+namespace Bempp {
+
+GmshData::GmshData() :
+    m_fileType(0),
+    m_dataSize(0),
+    m_numberOfNodes(0),
+    m_numberOfElements(0) {}
+
+
 
 int GmshData::numberOfNodes() const {
 
@@ -99,7 +108,7 @@ void GmshData::addNode(int index, double x, double y, double z){
 
     if (index>=m_nodes.size()) m_nodes.resize(index+1);
     if (!m_nodes[index]) {
-        m_nodes[index] = new Node();
+        m_nodes[index] = shared_ptr<Node>(new Node());
         ++m_numberOfNodes;
     }
 
@@ -115,8 +124,8 @@ void GmshData::addElement(int index, int elementType, const std::vector<int>& no
 
     if (index>=m_elements.size()) m_elements.resize(index+1);
     if (!m_elements[index]) {
-        m_elements[index] = new Element();
-        ++m_numberOfNodes;
+        m_elements[index] = shared_ptr<Element>(new Element());
+        ++m_numberOfElements;
     }
 
     m_elements[index]->type = elementType;
@@ -162,7 +171,7 @@ void GmshData::addPhysicalName(int dimension, int number, std::string name) {
 void GmshData::addNodeDataSet(const std::vector<std::string>& stringTags, const std::vector<double>& realTags, int numberOfFieldComponents,
                     int capacity, int timeStep, int partition) {
 
-    m_nodeDataSets.push_back(new NodeDataSet());
+    m_nodeDataSets.push_back(shared_ptr<NodeDataSet>(new NodeDataSet()));
     NodeDataSet& data = *m_nodeDataSets.back();
 
     data.stringTags = stringTags;
@@ -177,7 +186,7 @@ void GmshData::addNodeDataSet(const std::vector<std::string>& stringTags, const 
 void GmshData::addElementDataSet(const std::vector<std::string>& stringTags, const std::vector<double>& realTags,
                     int capacity, int numberOfFieldComponents, int timeStep, int partition) {
 
-    m_elementDataSets.push_back(new ElementDataSet());
+    m_elementDataSets.push_back(shared_ptr<ElementDataSet>(new ElementDataSet()));
     ElementDataSet& data = *m_elementDataSets.back();
 
     data.stringTags = stringTags;
@@ -194,7 +203,7 @@ void GmshData::addElementNodeDataSet(const std::vector<std::string>& stringTags,
                     int timeStep,
                     int partition) {
 
-    m_elementNodeDataSets.push_back(new ElementNodeDataSet());
+    m_elementNodeDataSets.push_back(shared_ptr<ElementNodeDataSet>(new ElementNodeDataSet()));
     ElementNodeDataSet& data = *m_elementNodeDataSets.back();
 
     data.stringTags = stringTags;
@@ -230,7 +239,7 @@ void GmshData::addElementNodeData(int dataSetIndex, int element, const std::vect
 
 void GmshData::addInterpolationSchemeSet(std::string name, int topology) {
 
-    m_interpolationSchemeSets.push_back(new InterpolationSchemeSet());
+    m_interpolationSchemeSets.push_back(shared_ptr<InterpolationSchemeSet>(new InterpolationSchemeSet()));
     InterpolationSchemeSet& scheme = *m_interpolationSchemeSets.back();
     scheme.name = name;
     scheme.topology = topology;
@@ -247,7 +256,8 @@ void GmshData::addInterpolationMatrix(int dataSetIndex, int nrows, int ncols, co
 
 void GmshData::getNodeIndices(std::vector<int>& indices) const {
 
-    indices.resize(m_numberOfNodes);
+    indices.clear();
+    indices.reserve(m_numberOfNodes);
     for (int i = 0; i < m_nodes.size(); i++ )
         if (m_nodes[i]) indices.push_back(i);
 
@@ -256,8 +266,9 @@ void GmshData::getNodeIndices(std::vector<int>& indices) const {
 
 void GmshData::getElementIndices(std::vector<int>& indices) const {
 
-    indices.resize(m_numberOfElements);
-    for (int i = 0; i < m_nodes.size(); i++ )
+    indices.clear();
+    indices.reserve(m_numberOfElements);
+    for (int i = 0; i < m_elements.size(); i++ )
         if (m_elements[i]) indices.push_back(i);
 
 
@@ -299,7 +310,7 @@ void GmshData::getElement(int index, int& elementType, std::vector<int>& nodes,
                 int& physicalEntity, int& elementaryEntity) const {
 
     std::vector<int> partitions;
-    getElement(index, elementType, nodes, physicalEntity, elementaryEntity);
+    getElement(index, elementType, nodes, physicalEntity, elementaryEntity,partitions);
 
 }
 void GmshData::getPeriodicEntity(int index, int& dimension, int& slaveEntityTag, int& masterEntityTag) const {
@@ -674,6 +685,7 @@ GmshData GmshData::read(std::istream& input) {
         if (line == "$MeshFormat") {
             if (haveMeshFormat) throw std::runtime_error(
                         "GmshData::read(): MeshFormat Section appears more than once.");
+            std::cout << "Reading MeshFormat..." << std::endl;
             std::getline(input,line);
             StringVector tokens = stringTokens(line);
             if (tokens.size() != 3) throw std::runtime_error(
@@ -695,7 +707,7 @@ GmshData GmshData::read(std::istream& input) {
         else if (line == "$Nodes") {
             if (haveNodes) throw std::runtime_error(
                         "GmshData::read(): Nodes section appears more than once. ");
-
+            std::cout << "Reading Nodes..." << std::endl;
             std::getline(input,line);
             int numberOfNodes = boost::lexical_cast<int>(line);
             gmshData.reserveNumberOfNodes(numberOfNodes);
@@ -718,9 +730,11 @@ GmshData GmshData::read(std::istream& input) {
         else if (line == "$Elements") {
             if (haveElements) throw std::runtime_error(
                         "GmshData::read(): Elements section appears more than once.");
+            std::cout << "Reading Elements..." << std::endl;
             std::getline(input,line);
             int numberOfElements = boost::lexical_cast<int>(line);
             for (int i = 0; i < numberOfElements; ++i) {
+                std::getline(input,line);
                     StringVector tokens = stringTokens(line);
                     int index = boost::lexical_cast<int>(tokens.at(0));
                     int elementType = boost::lexical_cast<int>(tokens.at(1));
@@ -746,6 +760,7 @@ GmshData GmshData::read(std::istream& input) {
         else if (line == "$Periodic") {
             if (havePeriodic) throw std::runtime_error(
                         "GmshData::read(): Periodic section appears more than once.");
+            std::cout << "Reading Periodic..." << std::endl;
             std::getline(input,line);
             int numberOfPeriodicEntities = boost::lexical_cast<int>(line);
             for (int i = 0;i < numberOfPeriodicEntities; ++i) {
@@ -778,6 +793,7 @@ GmshData GmshData::read(std::istream& input) {
         else if (line == "$PhysicalNames") {
             if (havePhysicalNames) throw std::runtime_error(
                         "GmshData::read(): PhysicalNames section appears more than once.");
+            std::cout << "Reading PhysicalNames..." << std::endl;
             std::getline(input,line);
             int numberOfPhysicalNames = boost::lexical_cast<int>(line);
             for (int i = 0; i< numberOfPhysicalNames; ++i) {
@@ -799,6 +815,7 @@ GmshData GmshData::read(std::istream& input) {
         }
         else if (line == "$NodeData") {
 
+            std::cout << "Reading NodeData..." << std::endl;
             std::getline(input,line);
             int numberOfStringTags = boost::lexical_cast<int>(line);
             std::vector<std::string> stringTags;
@@ -856,6 +873,7 @@ GmshData GmshData::read(std::istream& input) {
         }
         else if (line == "$ElementData") {
 
+            std::cout << "Reading ElementData..." << std::endl;
             std::getline(input,line);
             int numberOfStringTags = boost::lexical_cast<int>(line);
             std::vector<std::string> stringTags;
@@ -913,6 +931,7 @@ GmshData GmshData::read(std::istream& input) {
         }
         else if (line == "$ElementNodeData") {
 
+            std::cout << "Reading ElementNodeData..." << std::endl;
             std::getline(input,line);
             int numberOfStringTags = boost::lexical_cast<int>(line);
             std::vector<std::string> stringTags;
@@ -970,6 +989,7 @@ GmshData GmshData::read(std::istream& input) {
         }
         else if (line == "$InterpolationSchemeSet") {
 
+            std::cout << "Reading InterpolationSchemSet..." << std::endl;
             std::getline(input,line);
             line.erase(std::remove(line.begin(),line.end(),'\"'),line.end());
             std::string name = line;
@@ -1021,7 +1041,7 @@ GmshData GmshData::read(const std::string& fname) {
 
 }
 
-
+} // namespace
 
 //MeshFormat::MeshFormat() : versionNumber("2.2"),
 //    fileType(0),
@@ -1664,4 +1684,3 @@ GmshData GmshData::read(const std::string& fname) {
 //}
 
 
-} // namespace bempp
