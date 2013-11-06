@@ -106,19 +106,6 @@ public:
      *  \p other, i.e. if this grid was created by \p other.barycentricGrid(). */
     virtual bool isBarycentricRepresentationOf(const Grid& other) const;
 
-    /** \brief Return permutation vector to convert element indices
-         into those of a different format (e.g. Gmsh). Returned vector
-         may be empty.
-    */
-    virtual const std::vector<int>& elementPermutation() const = 0;
-
-    /** \brief Return permutation vector to convert node indices
-         into those of a different format (e.g. Gmsh). Returned vector
-         may be empty.
-    */
-    virtual const std::vector<int>& nodePermutation() const = 0;
-
-
     /** \brief Reference to the grid's global id set. */
     virtual const IdSet& globalIdSet() const = 0;
 

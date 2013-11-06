@@ -72,19 +72,11 @@ public:
      \param[in]  topology   The topology of the grid.
      \param[in]  domainIndices Vector of domain indices.
      \param[in]  own  If true, *dune_grid is deleted in this object's destructor.
-     \param[in]  nodePermutation  Optional permutation vector to store node indices
-                 before conversion to DuneGrid.
-     \param[in]  elementPermutation Optional permutation vector to store element indices
-                 before conversion to DuneGrid.
      */
     explicit ConcreteGrid(DuneGrid* dune_grid,
-                          GridParameters::Topology topology, bool own = false,
-                          const std::vector<int> nodePermutation = std::vector<int>(),
-                          const std::vector<int> elementPermutation = std::vector<int>()) :
+                          GridParameters::Topology topology, bool own = false) :
         m_dune_grid(ensureNotNull(dune_grid)),
         m_topology(topology),
-        m_elementPermutation(elementPermutation),
-        m_nodePermutation(nodePermutation),
         m_owns_dune_grid(own),
         m_global_id_set(&dune_grid->globalIdSet()),
         m_domain_index(*dune_grid,
@@ -233,26 +225,6 @@ public:
 
 
     /** @}
-    @name Others
-    @{ */
-
-    /** \brief Return permutation vector to convert element indices
-         into those of a different format (e.g. Gmsh). Returned vector
-         may be empty.
-    */
-    virtual const std::vector<int>& elementPermutation() const {
-        return m_elementPermutation;
-    }
-
-    /** \brief Return permutation vector to convert node indices
-         into those of a different format (e.g. Gmsh). Returned vector
-         may be empty.
-    */
-    virtual const std::vector<int>& nodePermutation() const {
-        return m_nodePermutation;
-    }
-
-    /** @}
      */
 
 
@@ -263,8 +235,6 @@ private:
     ConcreteGrid& operator =(const ConcreteGrid&);
     mutable shared_ptr<Grid> m_barycentricGrid;
     mutable tbb::mutex m_barycentricSpaceMutex;
-    std::vector<int> m_elementPermutation;
-    std::vector<int> m_nodePermutation;
 
 };
 

@@ -27,12 +27,34 @@
 #include <string>
 #include <memory>
 #include "../common/shared_ptr.hpp"
+#include "../assembly/grid_function.hpp"
+#include <armadillo>
 
 namespace Bempp {
+
+/** \cond FORWARD_DECL */
+class Grid;
+template  <typename BasisFunctionType, typename ResultType> class GridFunction;
+/** \endcond */
+
+
+struct GmshPostData {
+
+        enum  Type {NODE,
+                    ELEMENT,
+                    ELEMENT_NODE
+                    };
+};
 
 class GmshData {
 
 public:
+
+    enum GmshPostDataType {
+        NODE,
+        ELEMENT,
+        ELEMENT_NODE
+    };
 
     GmshData();
     int numberOfNodes() const;
@@ -227,6 +249,43 @@ private:
     std::vector<shared_ptr<InterpolationSchemeSet> > m_interpolationSchemeSets;
 
 };
+
+class GmshIo {
+
+public:
+
+    GmshIo();
+    GmshIo(GmshData gmshData);
+    GmshIo(std::string fname);
+
+    shared_ptr<Grid> grid() const;
+    const std::vector<int>& nodePermutation() const;
+    const std::vector<int>& elementPermutation() const;
+    const std::vector<int>& inverseNodePermutation() const;
+    const std::vector<int>& inverseElementPermutation() const;
+
+//    GridFunction<BasisFunctionType,ResultType> gridFunction(
+//            GmshPostData::Type gmshData = GmshPostData::ELEMENT_NODE,
+//            int index = 0);
+
+private:
+
+    mutable std::vector<int> m_nodePermutation;
+    mutable std::vector<int> m_inverseNodePermutation;
+    mutable std::vector<int> m_elementPermutation;
+    mutable std::vector<int> m_inverseElementPermutation;
+    GmshData m_gmshData;
+    mutable arma::Mat<double> m_nodes;
+    mutable arma::Mat<int> m_elements;
+    mutable shared_ptr<Grid> m_grid;
+};
+
+//template <typename BasisFunctionType, typename ResultType>
+//void exportToGmsh(GridFunction<BasisFunctionType,ResultType> gridFunction,
+//                  const char* dataLabel, const char* fileName,
+//                  GmshPostData::Type gmshDataType = GmshPostData::NODE,
+//                  bool exportGrid = true);
+
 
 
 

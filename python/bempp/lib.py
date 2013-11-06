@@ -2375,4 +2375,4 @@ def exportToVtk(gridFunction, dataType, dataLabel, fileNamesBase, filesPath=None
         gridFunction.basisFunctionType(), gridFunction.resultType(),
         gridFunction, dataType, dataLabel, fileNamesBase, filesPath, type)
 
-from bempp.core import GridSegment, gridSegmentWithPositiveX
+from bempp.core import GridSegment, gridSegmentWithPositiveX, GmshData, GmshIo

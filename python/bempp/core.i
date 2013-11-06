@@ -207,4 +207,4 @@ AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
 
 // IO
 
-//%include "io/gmsh.i"
+%include "io/gmsh.i"
