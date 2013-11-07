@@ -35,10 +35,11 @@ template <typename CoordinateType> class GeometricalData;
 /** \endcond */
 
 /** \brief Function to be used as a source term. */
-template <typename ValueType>
+template <typename ValueType_>
 class Function
 {
 public:
+    typedef ValueType_ ValueType;
     typedef typename ScalarTraits<ValueType>::RealType CoordinateType;
 
     virtual ~Function() {}
