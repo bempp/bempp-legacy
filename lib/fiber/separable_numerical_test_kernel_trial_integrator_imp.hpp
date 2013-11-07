@@ -161,6 +161,8 @@ precalculateGeometricalDataOnSingleGrid(
     for (size_t e = 0; e < rawGeometry.elementCount(); ++e) {
         rawGeometry.setupGeometry(e, *geometry);
         geometry->getData(geomDeps, localQuadPoints, geomData[e]);
+        if (geomDeps & DOMAIN_INDEX)
+            geomData[e].domainIndex = rawGeometry.domainIndex(e);
     }
 }
 
@@ -273,8 +275,11 @@ integrateCpu(
         basisB.evaluate(trialBasisDeps, m_localTrialQuadPoints, localDofIndexB, trialBasisData);
         if (m_cacheGeometricalData)
             constTrialGeomData = &m_cachedTrialGeomData[elementIndexB];
-        else
+        else {
             geometryB->getData(trialGeomDeps, m_localTrialQuadPoints, *trialGeomData);
+            if (trialGeomDeps & DOMAIN_INDEX)
+                trialGeomData->domainIndex = rawGeometryB->domainIndex(elementIndexB);
+        }
         m_trialTransformations.evaluate(trialBasisData, *constTrialGeomData, trialValues);
     }
     else
@@ -283,30 +288,40 @@ integrateCpu(
         basisB.evaluate(testBasisDeps, m_localTestQuadPoints, localDofIndexB, testBasisData);
         if (m_cacheGeometricalData)
             constTestGeomData = &m_cachedTestGeomData[elementIndexB];
-        else
+        else {
             geometryB->getData(testGeomDeps, m_localTestQuadPoints, *testGeomData);
+            if (testGeomDeps & DOMAIN_INDEX)
+                testGeomData->domainIndex = rawGeometryB->domainIndex(elementIndexB);
+        }
         m_testTransformations.evaluate(testBasisData, *constTestGeomData, testValues);
     }
 
     // Iterate over the elements
     for (int indexA = 0; indexA < elementACount; ++indexA)
     {
+        const int elementIndexA = elementIndicesA[indexA];
         if (!m_cacheGeometricalData)
-            rawGeometryA->setupGeometry(elementIndicesA[indexA], *geometryA);
+            rawGeometryA->setupGeometry(elementIndexA, *geometryA);
         if (callVariant == TEST_TRIAL)
         {
             if (m_cacheGeometricalData)
                 constTestGeomData = &m_cachedTestGeomData[elementIndicesA[indexA]];
-            else
+            else {
                 geometryA->getData(testGeomDeps, m_localTestQuadPoints, *testGeomData);
+                if (testGeomDeps & DOMAIN_INDEX)
+                    testGeomData->domainIndex = rawGeometryA->domainIndex(elementIndexA);
+            }
             m_testTransformations.evaluate(testBasisData, *constTestGeomData, testValues);
         }
         else
         {
             if (m_cacheGeometricalData)
                 constTrialGeomData = &m_cachedTrialGeomData[elementIndicesA[indexA]];
-            else
+            else {
                 geometryA->getData(trialGeomDeps, m_localTrialQuadPoints, *trialGeomData);
+                if (trialGeomDeps & DOMAIN_INDEX)
+                    trialGeomData->domainIndex = rawGeometryA->domainIndex(elementIndexA);
+            }
             m_trialTransformations.evaluate(trialBasisData, *constTrialGeomData, trialValues);
         }
 
@@ -735,14 +750,20 @@ integrateCpu(
     // Iterate over the elements
     for (int pairIndex = 0; pairIndex < geometryPairCount; ++pairIndex)
     {
+        const int testElementIndex = elementIndexPairs[pairIndex].first;
+        const int trialElementIndex = elementIndexPairs[pairIndex].second;
         if (m_cacheGeometricalData) {
-            constTestGeomData  = &m_cachedTestGeomData[elementIndexPairs[pairIndex].first];
-            constTrialGeomData = &m_cachedTrialGeomData[elementIndexPairs[pairIndex].second];
+            constTestGeomData  = &m_cachedTestGeomData[testElementIndex];
+            constTrialGeomData = &m_cachedTrialGeomData[trialElementIndex];
         } else {
-            m_testRawGeometry.setupGeometry(elementIndexPairs[pairIndex].first, *testGeometry);
-            m_trialRawGeometry.setupGeometry(elementIndexPairs[pairIndex].second, *trialGeometry);
+            m_testRawGeometry.setupGeometry(testElementIndex, *testGeometry);
+            m_trialRawGeometry.setupGeometry(trialElementIndex, *trialGeometry);
             testGeometry->getData(testGeomDeps, m_localTestQuadPoints, *testGeomData);
+            if (testGeomDeps & DOMAIN_INDEX)
+                testGeomData->domainIndex = m_testRawGeometry.domainIndex(testElementIndex);
             trialGeometry->getData(trialGeomDeps, m_localTrialQuadPoints, *trialGeomData);
+            if (trialGeomDeps & DOMAIN_INDEX)
+                trialGeomData->domainIndex = m_trialRawGeometry.domainIndex(trialElementIndex);
         }
         m_testTransformations.evaluate(testBasisData, *constTestGeomData, testValues);
         m_trialTransformations.evaluate(trialBasisData, *constTrialGeomData, trialValues);

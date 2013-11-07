@@ -381,6 +381,8 @@ ResultType, GeometryFactory>::calcTrialData(
             m_rawGeometry->setupGeometry(e, *geometry);
             geometry->getData(trialGeomDeps, localQuadPoints,
                               geomDataPerElement[e]);
+            if (trialGeomDeps & Fiber::DOMAIN_INDEX)
+                geomDataPerElement[e].domainIndex = m_rawGeometry->domainIndex(e);
 
             m_trialTransformations->evaluate(argumentData, geomDataPerElement[e],
                                              trialValues);
@@ -488,6 +490,9 @@ ResultType, GeometryFactory>::calcTrialData(
                         trialGeomData.jacobianInversesTransposed(r, c, col) =
                             geomDataPerElement[e].jacobianInversesTransposed(
                                 r, c, col - startCol);
+        }
+        if (kernelTrialGeomDeps & DOMAIN_INDEX) {
+            trialGeomData.domainIndex = geomDataPerElement[e].domainIndex;
         }
         for (int transf = 0; transf < transformationCount; ++transf)
             for (size_t point = 0; point < trialTransfValuesPerElement[e][transf].extent(1); ++point)

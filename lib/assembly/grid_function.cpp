@@ -767,10 +767,11 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
     std::fill(multiplicities.begin(), multiplicities.end(), 0);
 
     // Gather geometric data
-    Fiber::RawGridGeometry<CoordinateType> rawGeometry(gridDim, m_space->worldDimension());
+    Fiber::RawGridGeometry<CoordinateType> rawGeometry(
+                gridDim, m_space->worldDimension());
     view.getRawElementData(
                 rawGeometry.vertices(), rawGeometry.elementCornerIndices(),
-                rawGeometry.auxData());
+                rawGeometry.auxData(), rawGeometry.domainIndices());
 
     // Make geometry factory
     shared_ptr<const Grid> grid = m_space->grid();
@@ -922,6 +923,8 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
             // Get geometrical data
             rawGeometry.setupGeometry(e, *geometry);
             geometry->getData(geomDeps, local, geomData);
+            if (geomDeps & Fiber::DOMAIN_INDEX)
+                geomData.domainIndex = rawGeometry.domainIndex(e);
 
             transformations.evaluate(functionData, geomData, functionValues);
             assert(functionValues[0].extent(1) == 1); // one function

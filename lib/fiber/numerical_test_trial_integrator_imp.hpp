@@ -111,8 +111,11 @@ void NumericalTestTrialIntegrator<BasisFunctionType, ResultType, GeometryFactory
     // Iterate over the elements
     for (size_t e = 0; e < elementCount; ++e)
     {
-        m_rawGeometry.setupGeometry(elementIndices[e], *geometry);
+        const int elementIndex = elementIndices[e];
+        m_rawGeometry.setupGeometry(elementIndex, *geometry);
         geometry->getData(geomDeps, m_localQuadPoints, geomData);
+        if (geomDeps & DOMAIN_INDEX)
+            geomData.domainIndex = m_rawGeometry.domainIndex(elementIndex);
         m_testTransformations.evaluate(testBasisData, geomData, testValues);
         m_trialTransformations.evaluate(trialBasisData, geomData, trialValues);
 
