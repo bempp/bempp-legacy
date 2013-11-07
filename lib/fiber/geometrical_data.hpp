@@ -38,7 +38,8 @@ enum GeometricalDataType
     INTEGRATION_ELEMENTS = 0x0002,
     NORMALS = 0x0004,
     JACOBIANS_TRANSPOSED = 0x0008,
-    JACOBIAN_INVERSES_TRANSPOSED = 0x0010
+    JACOBIAN_INVERSES_TRANSPOSED = 0x0010,
+    DOMAIN_INDEX = 0x0020
 };
 
 /** \cond FORWARD_DECL */
@@ -58,6 +59,7 @@ struct GeometricalData
     Fiber::_3dArray<CoordinateType> jacobiansTransposed;
     Fiber::_3dArray<CoordinateType> jacobianInversesTransposed;
     arma::Mat<CoordinateType> normals;
+    int domainIndex;
 
     // For the time being, I (somewhat dangerously) assume that
     // integrationElements or globals or normals are always used
@@ -107,7 +109,9 @@ public:
     CoordinateType normal(int dim) const {
         return m_geomData.normals(dim, m_point);
     }
-
+    int domainIndex() const {
+        return m_geomData.domainIndex;
+    }
     int dimWorld() const {
         return m_geomData.dimWorld();
     }
@@ -136,6 +140,7 @@ public:
         }
         if (!m_geomData.normals.is_empty())
             result.normals = m_geomData.normals.col(m_point);
+        result.domainIndex = m_geomData.domainIndex;
         return result;
     }
 

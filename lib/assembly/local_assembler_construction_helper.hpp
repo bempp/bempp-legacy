@@ -55,7 +55,7 @@ struct LocalAssemblerConstructionHelper
         const GridView& view = space.gridView();
         view.getRawElementData(
                     rawGeometry->vertices(), rawGeometry->elementCornerIndices(),
-                    rawGeometry->auxData());
+                    rawGeometry->auxData(), rawGeometry->domainIndices());
         geometryFactory = space.elementGeometryFactory();
     }
 

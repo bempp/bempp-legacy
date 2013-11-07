@@ -216,6 +216,8 @@ integrate(
         basisA.evaluate(testBasisDeps, m_localTestQuadPoints, ALL_DOFS, testBasisData);
         basisB.evaluate(trialBasisDeps, m_localTrialQuadPoints, localDofIndexB, trialBasisData);
         geometryB->getData(trialGeomDeps, m_localTrialQuadPoints, trialGeomData);
+        if (trialGeomDeps & DOMAIN_INDEX)
+            trialGeomData.domainIndex = rawGeometryB->domainIndex(elementIndexB);
         m_trialTransformations.evaluate(trialBasisData, trialGeomData, trialValues);
     }
     else
@@ -223,21 +225,28 @@ integrate(
         basisA.evaluate(trialBasisDeps, m_localTrialQuadPoints, ALL_DOFS, trialBasisData);
         basisB.evaluate(testBasisDeps, m_localTestQuadPoints, localDofIndexB, testBasisData);
         geometryB->getData(testGeomDeps, m_localTestQuadPoints, testGeomData);
+        if (testGeomDeps & DOMAIN_INDEX)
+            testGeomData.domainIndex = rawGeometryB->domainIndex(elementIndexB);
         m_testTransformations.evaluate(testBasisData, testGeomData, testValues);
     }
 
     // Iterate over the elements
     for (int indexA = 0; indexA < elementACount; ++indexA)
     {
-        rawGeometryA->setupGeometry(elementIndicesA[indexA], *geometryA);
+        const int elementIndexA = elementIndicesA[indexA];
+        rawGeometryA->setupGeometry(elementIndexA, *geometryA);
         if (callVariant == TEST_TRIAL)
         {
             geometryA->getData(testGeomDeps, m_localTestQuadPoints, testGeomData);
+            if (testGeomDeps & DOMAIN_INDEX)
+                testGeomData.domainIndex = rawGeometryA->domainIndex(elementIndexA);
             m_testTransformations.evaluate(testBasisData, testGeomData, testValues);
         }
         else
         {
             geometryA->getData(trialGeomDeps, m_localTrialQuadPoints, trialGeomData);
+            if (trialGeomDeps & DOMAIN_INDEX)
+                trialGeomData.domainIndex = rawGeometryA->domainIndex(elementIndexA);
             m_trialTransformations.evaluate(trialBasisData, trialGeomData, trialValues);
         }
 
@@ -276,7 +285,6 @@ integrate(
     const int testDofCount = testShapeset.size();
     const int trialDofCount = trialShapeset.size();
 
-    // BasisData<BasisFunctionType> testBasisData, trialBasisData;
     const BasisData<BasisFunctionType>& testBasisData
             = basisData(TEST, testShapeset);
     const BasisData<BasisFunctionType>& trialBasisData
@@ -304,16 +312,19 @@ integrate(
         result[i]->set_size(testDofCount, trialDofCount);
     }
 
-//    testShapeset.evaluate(testBasisDeps, m_localTestQuadPoints, ALL_DOFS, testBasisData);
-//    trialShapeset.evaluate(trialBasisDeps, m_localTrialQuadPoints, ALL_DOFS, trialBasisData);
-
     // Iterate over the elements
     for (int pairIndex = 0; pairIndex < geometryPairCount; ++pairIndex)
     {
-        m_testRawGeometry.setupGeometry(elementIndexPairs[pairIndex].first, *testGeometry);
-        m_trialRawGeometry.setupGeometry(elementIndexPairs[pairIndex].second, *trialGeometry);
+        const int testElementIndex = elementIndexPairs[pairIndex].first;
+        const int trialElementIndex = elementIndexPairs[pairIndex].second;
+        m_testRawGeometry.setupGeometry(testElementIndex, *testGeometry);
+        m_trialRawGeometry.setupGeometry(trialElementIndex, *trialGeometry);
         testGeometry->getData(testGeomDeps, m_localTestQuadPoints, testGeomData);
+        if (testGeomDeps & DOMAIN_INDEX)
+            testGeomData.domainIndex = m_testRawGeometry.domainIndex(testElementIndex);
         trialGeometry->getData(trialGeomDeps, m_localTrialQuadPoints, trialGeomData);
+        if (trialGeomDeps & DOMAIN_INDEX)
+            trialGeomData.domainIndex = m_trialRawGeometry.domainIndex(trialElementIndex);
         m_testTransformations.evaluate(testBasisData, testGeomData, testValues);
         m_trialTransformations.evaluate(trialBasisData, trialGeomData, trialValues);
 
