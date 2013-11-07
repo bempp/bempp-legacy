@@ -37,7 +37,8 @@ void ConcreteGridView<DuneGridView>::getRawElementDataDoubleImpl(
 }
 
 template <typename DuneGridView>
-void ConcreteGridView<DuneGridView>::getRawElementDataFloatImpl(arma::Mat<float>& vertices,
+void ConcreteGridView<DuneGridView>::getRawElementDataFloatImpl(
+        arma::Mat<float>& vertices,
         arma::Mat<int>& elementCorners,
         arma::Mat<char>& auxData,
         std::vector<int>* domainIndices) const
