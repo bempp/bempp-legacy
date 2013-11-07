@@ -31,13 +31,38 @@ namespace Bempp
 using Fiber::SurfaceNormalDependentFunction;
 
 /** \ingroup assembly_functions
- *  \brief Construct a SurfaceNormalDependentFunction object from a given functor.
- *
- *  This helper function takes an instance \p functor of a class \p Functor
- *  providing an interface described in the documentation of
- *  SurfaceNormalDependentFunction and uses it to construct a
- *  SurfaceNormalDependentFunction object. The latter can subsequently be
- *  passed into a constructor of the GridFunction class. */
+  \brief Use a functor taking a point's global coordinates and the local
+  surface-normal unit vector to construct an instance of the Function class.
+
+  The template parameter \p Functor should be a class implementing the following
+  interface:
+
+  \code
+  class Functor
+  {
+  public:
+      // Type of the function's values (e.g. float or std::complex<double>)
+      typedef <implementiation-defined> ValueType;
+      typedef ScalarTraits<ValueType>::RealType CoordinateType;
+
+      // Number of components of the function's arguments ("point" and "normal")
+      int argumentDimension() const;
+
+      // Number of components of the function's result
+      int resultDimension() const;
+
+      // Evaluate the function at the point "point", with vector normal to the
+      // grid given in the argument "normal", and store result in the array
+      // "result".
+      // All arrays will be preinitialised to correct dimensions.
+      void evaluate(const arma::Col<CoordinateType>& point,
+                    const arma::Col<CoordinateType>& normal,
+                    arma::Col<ValueType>& result) const;
+  };
+  \endcode
+
+  The constructed Function object can subsequently be passed into a constructor
+  of the GridFunction class. */
 template <typename Functor>
 inline SurfaceNormalDependentFunction<Functor> surfaceNormalDependentFunction(
         const Functor& functor)

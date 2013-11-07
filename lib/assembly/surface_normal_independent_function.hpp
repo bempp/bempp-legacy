@@ -31,13 +31,38 @@ namespace Bempp
 using Fiber::SurfaceNormalIndependentFunction;
 
 /** \ingroup assembly_functions
- *  \brief Construct a SurfaceNormalIndependentFunction object from a given functor.
- *
- *  This helper function takes an instance \p functor of a class \p Functor
- *  providing an interface described in the documentation of
- *  SurfaceNormalIndependentFunction and uses it to construct a
- *  SurfaceNormalIndependentFunction object. The latter can subsequently be
- *  passed into a constructor of the GridFunction class. */
+  \brief Use a functor depending on global coordinates only (independent from
+  the surface normal or the element index) to construct an instance of
+  the Function class.
+
+  The template parameter \p Functor should be a class with the following
+  interface:
+
+  \code
+  class Functor
+  {
+  public:
+      // Type of the function's values (float, double, std::complex<float>
+      // or std::complex<double>)
+      typedef <implementiation-defined> ValueType;
+      typedef typename ScalarTraits<ValueType>::RealType CoordinateType;
+
+      // Number of components of the function's argument
+      int argumentDimension() const;
+
+      // Number of components of the function's result
+      int resultDimension() const;
+
+      // Evaluate the function at the point "point" and store result in
+      // the array "result". The "point" and "result" arrays will be
+      // preinitialized to correct dimensions.
+      void evaluate(const arma::Col<CoordinateType>& point,
+                    arma::Col<ValueType>& result) const;
+  };
+  \endcode
+
+  The constructed Function object can subsequently be passed into a constructor
+  of the GridFunction class. */
 template <typename Functor>
 inline SurfaceNormalIndependentFunction<Functor> surfaceNormalIndependentFunction(
         const Functor& functor)

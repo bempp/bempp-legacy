@@ -29,8 +29,10 @@
 namespace Fiber
 {
 
-/** \brief %Function defined via a user-supplied functor,
-    depending on global coordinates and on the surface normal.
+/** \brief %Function intended to be evaluated on a boundary-element grid,
+  defined via a user-supplied functor depending only on the global coordinates
+  of a point lying on the grid and the unit vector normal to the grid at that
+  point.
 
   The template parameter \p Functor should be a class implementing the following
   interface:
@@ -50,7 +52,7 @@ namespace Fiber
       int resultDimension() const;
 
       // Evaluate the function at the point "point", with vector normal to the
-      // surface given in the argument "normal", and store result in the array
+      // grid given in the argument "normal", and store result in the array
       // "result".
       // All arrays will be preinitialised to correct dimensions.
       void evaluate(const arma::Col<CoordinateType>& point,
@@ -64,7 +66,7 @@ class SurfaceNormalDependentFunction : public Function<typename Functor::ValueTy
 {
 public:
     typedef Function<typename Functor::ValueType> Base;
-    typedef typename Functor::ValueType ValueType;
+    typedef typename Base::ValueType ValueType;
     typedef typename Base::CoordinateType CoordinateType;
 
     SurfaceNormalDependentFunction(const Functor& functor) :
