@@ -29,8 +29,9 @@
 namespace Fiber
 {
 
-/** \brief %Function defined via a user-supplied functor, depending only on
-    global coordinates.
+/** \brief %Function intended to be evaluated on a boundary-element grid,
+  defined via a user-supplied functor depending only on the global coordinates
+  of a point.
 
   The template parameter \p Functor should be a class with the following
   interface:
@@ -65,7 +66,7 @@ class SurfaceNormalIndependentFunction :
 {
 public:
     typedef Function<typename Functor::ValueType> Base;
-    typedef typename Functor::ValueType ValueType;
+    typedef typename Base::ValueType ValueType;
     typedef typename Base::CoordinateType CoordinateType;
 
     SurfaceNormalIndependentFunction(const Functor& functor) :
