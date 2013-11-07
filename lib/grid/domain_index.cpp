@@ -8,7 +8,8 @@
 namespace Bempp
 {
 
-int DomainIndex::domain(const Entity<0>& entity) const {
+int DomainIndex::domain(const Entity<0>& entity) const
+{
     std::auto_ptr<EntityPointer<0> > father;
     const Entity<0>* level0Entity = &entity;
     while (level0Entity->hasFather()) {
@@ -19,7 +20,8 @@ int DomainIndex::domain(const Entity<0>& entity) const {
     return acc(m_domainIndices, index);
 }
 
-std::vector<int> DomainIndex::domainIndices() const {
+std::vector<int> DomainIndex::domainIndices() const
+{
     return m_domainIndices;
 }
 
