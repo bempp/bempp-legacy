@@ -22,6 +22,7 @@
 #include "octree_node.hpp"
 #include "fmm_transform.hpp"
 #include "fmm_cache.hpp"
+//#include "interpolate_on_sphere.hpp"
 
 #include "../common/common.hpp"
 #include "../common/types.hpp"
@@ -394,8 +395,8 @@ public:
 		arma::Col<CoordinateType> R; // center of the node
 		m_octree.nodeCentre(node, m_level, R);
 
-		arma::Col<ResultType> mcoefs(m_fmmTransform.quadraturePointCount());
-		mcoefs.fill(0.0);
+		arma::Col<ResultType> mcoefs;//(m_fmmTransform.quadraturePointCount());
+//		mcoefs.fill(0.0);
 
 		for (unsigned long child = getFirstChild(node); 
 			child <= getLastChild(node); child++) {
@@ -412,16 +413,26 @@ public:
 #if defined USE_FMM_CACHE
 			m2m = m_octree.fmmCache().M2M(m_level, child - getFirstChild(node));
 #else
-			m2m = m_fmmTransform.M2M(Rchild, R);
+			m2m = m_fmmTransform.M2M(Rchild, R, m_level);
 #endif
 			// add contribution of child to the parent
 			const arma::Col<ResultType>& mcoefsChild = 
 				m_octree.getNode(child,m_level+1).getMultipoleCoefficients();
 
+			// interpolate all multipoles from child layer to higher order, then apply M2M
+			arma::Col<ResultType> mcoefsChildInterpolated;
+			m_fmmTransform.interpolate(m_level+1, m_level, mcoefsChild, 
+				mcoefsChildInterpolated);
+
+			if (mcoefs.n_rows==0) {
+				mcoefs.set_size(mcoefsChildInterpolated.n_rows);
+				mcoefs.fill(0.0);
+			}
+
 			if (m2m.n_cols==1) { // diagonal m2m operator
-				mcoefs += m2m % mcoefsChild;
+				mcoefs += m2m % mcoefsChildInterpolated;
 			} else {	// m2m is a full matrix
-				mcoefs += m2m * mcoefsChild;
+				mcoefs += m2m * mcoefsChildInterpolated;
 			}
 
 		} // for each child
@@ -445,6 +456,7 @@ void Octree<ResultType>::upwardsStep(
 		UpwardsStepHelper<ResultType> upwardsStepHelper(
 			*this, fmmTransform, level);
 		tbb::parallel_for<size_t>(0, nNodes, upwardsStepHelper);
+		//for (unsigned int k=0; k<nNodes; k++) upwardsStepHelper(k);
 
 	} // for each level
 } // void Octree::upwardsStep(const FmmTransform &fmmTransform)
@@ -508,7 +520,7 @@ public:
 			m2l = m_octree.fmmCache().M2L(m_level, 
 				m_octree.getNode(node,m_level).interactionItemList(ind));
 #else
-			m2l = m_fmmTransform.M2L(Rinter, R, boxSize);
+			m2l = m_fmmTransform.M2L(Rinter, R, boxSize, m_level);
 #endif
 			// add contribution of interation list node to current node
 			const arma::Col<ResultType>& mcoefs = 
@@ -630,7 +642,7 @@ public:
 #if defined USE_FMM_CACHE
 			l2l = m_octree.fmmCache().L2L(m_level, child - getFirstChild(node));
 #else
-			l2l = m_fmmTransform.L2L(R, Rchild);
+			l2l = m_fmmTransform.L2L(R, Rchild, m_level);
 #endif
 			// add the local coefficients to the current child
 			arma::Col<ResultType> lcoefsChildContrib;
@@ -639,8 +651,13 @@ public:
 			} else {	// l2l is a full matrix
 				lcoefsChildContrib = l2l * lcoefs;
 			}
+			// apply L2L and then anterpolate down. Same accuracy if anterpolate first?
+			arma::Col<ResultType> lcoefsChildContribAnterpolated;
+			m_fmmTransform.interpolate(m_level, m_level+1, lcoefsChildContrib, 
+				lcoefsChildContribAnterpolated);
 
-			m_octree.getNode(child,m_level+1).addLocalCoefficients(lcoefsChildContrib);
+			m_octree.getNode(child,m_level+1).addLocalCoefficients(
+				lcoefsChildContribAnterpolated);
 		} // for each child
 	} // operator()
 private:

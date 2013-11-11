@@ -19,6 +19,7 @@
 // THE SOFTWARE.
 
 #include "fmm_transform.hpp"
+#include "interpolate_on_sphere.hpp"
 #include "lebedev.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
@@ -36,11 +37,66 @@
 namespace Bempp
 {
 
-template <typename ValueType> // must be a real type
-ValueType diff_legendre_p(int n, ValueType x);
+//template <typename ValueType> // must be a real type
+//ValueType diff_legendre_p(int n, ValueType x);
 
-template <typename ValueType>  // must be a real type
-void legendre_roots(unsigned int N, ValueType *roots, ValueType *weights);
+//template <typename ValueType>  // must be a real type
+//void legendre_roots(unsigned int N, ValueType *roots, ValueType *weights);
+
+template <typename ValueType>
+void 
+FmmTransform<ValueType>::interpolate(
+		unsigned int levelOld,
+		unsigned int levelNew,
+		const arma::Col<ValueType>& coefficientsOld, 
+		arma::Col<ValueType>& coefficientsNew) const
+{
+	coefficientsNew = coefficientsOld;
+}
+
+
+template <typename ValueType>
+FmmHighFreq<ValueType>::FmmHighFreq(ValueType kappa, unsigned int L, unsigned int levels)
+	 :	m_kappa(kappa), m_Ls(levels-1),// m_L(L),
+		m_interpolatorsUpwards(levels-2), m_interpolatorsDownwards(levels-2), 
+		FmmTransform<ValueType>((L+1)*(2*L+1), levels, false)
+{
+	// calculate minimum L for the leaf (ignoring mesh size for now since just used to
+	// scale L). Correct box size should be used later
+	unsigned int m_topLevel = 2;
+	int prec = 8;//6; // number of digits of precision
+	CoordinateType boxsize = 2;
+/*	CoordinateType Lmin = abs(kappa)/pow(2, levels)
+	 + 1.8*pow(prec, 2./3)*pow(abs(kappa)/pow(2, levels), 1./3);*/
+	CoordinateType Lmin = sqrt(3.)*abs(kappa)*boxsize/pow(2, levels)
+		+ prec*log10(sqrt(3.)*abs(kappa)*boxsize/pow(2, levels)+M_PI);
+
+	// set number of terms in the expansion used for the M2L operation in each
+	// level. N.B. the stored multipole coefficients should be for the leaves alone?
+	m_Ls[levels-m_topLevel] = L;
+	for (unsigned int level = m_topLevel; level<=levels-1; level++) {
+/*		CoordinateType Llevel = abs(kappa)/pow(2, level)
+		 + 1.8*pow(prec, 2./3)*pow(abs(kappa)/pow(2, level), 1./3);*/
+		CoordinateType Llevel = sqrt(3.)*abs(kappa)*boxsize/pow(2, level)
+			+ prec*log10(sqrt(3.)*abs(kappa)*boxsize/pow(2, level)+M_PI);
+		m_Ls[level-m_topLevel] = ceil(Llevel);
+		//m_Ls[level-m_topLevel] = ceil(L*Llevel/Lmin);
+	//	m_Ls[level-m_topLevel] = std::min(21u, m_Ls[level-m_topLevel]);
+	}
+
+
+	for (unsigned int level = m_topLevel; level<=levels; level++) {
+		std::cout << "level = " << level << ", ";
+		std::cout << "L = " << m_Ls[level-m_topLevel] << ", ngp = " << (m_Ls[level-m_topLevel]+1)*(2*m_Ls[level-m_topLevel]+1) << std::endl;
+	}
+	for (unsigned int level = m_topLevel; level<=levels-1; level++) {
+		m_interpolatorsUpwards[level-m_topLevel] = InterpolateOnSphere<ValueType>(
+			m_Ls[level-m_topLevel+1], m_Ls[level-m_topLevel]);
+		m_interpolatorsDownwards[level-m_topLevel] = InterpolateOnSphere<ValueType>(
+			m_Ls[level-m_topLevel], m_Ls[level-m_topLevel+1]);
+	}
+	generateGaussPoints();
+}
 
 template <typename ValueType>
 void FmmHighFreq<ValueType>::generateGaussPoints()
@@ -57,27 +113,25 @@ void FmmHighFreq<ValueType>::generateGaussPoints()
 	}
 	return;
 */
-	// form Gauss-Legendre quadrature m_fmmTransformpoints along x= cos(theta)
-	CoordinateType costheta[m_L]; // roots along x = cos(theta)
-	CoordinateType sintheta[m_L];
-	CoordinateType wtheta[m_L];
-	legendre_roots(m_L, costheta, wtheta);
-	for (unsigned int l=0; l<m_L; l++) {
+	// form Gauss-Legendre quadrature points along x = cos(theta)
+	unsigned L = m_Ls[m_Ls.size()-1]; // for leaves
+	CoordinateType costheta[L+1], sintheta[L+1], wtheta[L+1];
+	legendre_roots(L+1, costheta, wtheta);
+	for (unsigned int l=0; l<L+1; l++) {
 		sintheta[l] = sqrt(1-costheta[l]*costheta[l]);
 	}
 
 	// form regular grid along phi (periodic function)
-	CoordinateType cosphi[2*m_L+1];
-	CoordinateType sinphi[2*m_L+1];
-	CoordinateType wphi = 2*pi/(2*m_L+1);
-	for (unsigned int l=0; l<=2*m_L; l++) {
-		cosphi[l] = cos(2*pi*l/(2*m_L+1));
-		sinphi[l] = sin(2*pi*l/(2*m_L+1));
+	CoordinateType cosphi[2*L+1], sinphi[2*L+1];
+	CoordinateType wphi = 2*pi/(2*L+1);
+	for (unsigned int l=0; l<=2*L; l++) {
+		cosphi[l] = cos(2*pi*l/(2*L+1));
+		sinphi[l] = sin(2*pi*l/(2*L+1));
 	}
 	// form pairs of Gauss points along (theta, phi)
 	unsigned int ind = 0;
-	for (unsigned int l=0; l<m_L; l++) {
-		for (unsigned int m=0; m<=2*m_L; m++) {
+	for (unsigned int l=0; l<L+1; l++) {
+		for (unsigned int m=0; m<=2*L; m++) {
 			this->m_quadraturePoints(0, ind) = sintheta[l]*cosphi[m];	// x
 			this->m_quadraturePoints(1, ind) = sintheta[l]*sinphi[m];	// y
 			this->m_quadraturePoints(2, ind) = costheta[l];			// z
@@ -87,19 +141,47 @@ void FmmHighFreq<ValueType>::generateGaussPoints()
 	}
 }
 
+// Because M2M and L2L are cached, cannot take coefficients are arguments
+// therefore need a separate interpolate operation.
+// Might be necessary for bbFMM if use a more intelligent interpolation scheme
+// e.g. DFT bases
 template <typename ValueType>
 arma::Mat<ValueType> FmmHighFreq<ValueType>::M2M(
 		const arma::Col<CoordinateType>& childPosition, 
-		const arma::Col<CoordinateType>& parentPosition) const
+		const arma::Col<CoordinateType>& parentPosition,
+		unsigned int level) const
 {
-	arma::Col<ValueType> T(this->quadraturePointCount());
+	// form quadrature point helper arrays
+	unsigned L = m_Ls[level-2];
+	CoordinateType costheta[L+1], sintheta[L+1], wtheta[L+1];
+	legendre_roots(L+1, costheta, wtheta);
+	for (unsigned int l=0; l<L+1; l++) {
+		sintheta[l] = sqrt(1-costheta[l]*costheta[l]);
+	}
+	CoordinateType cosphi[2*L+1], sinphi[2*L+1];
+	for (unsigned int l=0; l<=2*L; l++) {
+		cosphi[l] = cos(2*M_PI*l/(2*L+1));
+		sinphi[l] = sin(2*M_PI*l/(2*L+1));
+	}
+	unsigned int quadraturePointCount = (L+1)*(2*L+1);
+
+	arma::Col<ValueType> T(quadraturePointCount);
 
 	arma::Col<CoordinateType> R = parentPosition - childPosition;
 	arma::Col<CoordinateType> khat(3);
-	for (unsigned int p=0; p < this->quadraturePointCount(); p++) {
-		khat = this->getQuadraturePoint(p);
-		CoordinateType rcostheta = dot(R, khat);
-		T[p] = exp(-m_kappa*rcostheta);
+	//for (unsigned int p=0; p < this->quadraturePointCount(); p++) {
+		//khat = this->getQuadraturePoint(p);
+	unsigned int p = 0;
+	for (unsigned int ntheta=0; ntheta<L+1; ntheta++) {
+		for (unsigned int m=0; m<=2*L; m++) {
+			khat(0) = sintheta[ntheta]*cosphi[m];
+			khat(1) = sintheta[ntheta]*sinphi[m];
+			khat(2) = costheta[ntheta];
+
+			CoordinateType rcostheta = dot(R, khat);
+			T[p] = exp(-m_kappa*rcostheta);
+			p++;
+		}
 	} // for each quadrature point
 	return T;
 }
@@ -107,9 +189,29 @@ arma::Mat<ValueType> FmmHighFreq<ValueType>::M2M(
 template <typename ValueType>
 arma::Mat<ValueType> FmmHighFreq<ValueType>::L2L(
 		const arma::Col<CoordinateType>& parentPosition, 
-		const arma::Col<CoordinateType>& childPosition) const
+		const arma::Col<CoordinateType>& childPosition,
+		unsigned int level) const
 {
-	return M2M(parentPosition, childPosition);
+	return M2M(parentPosition, childPosition, level);
+}
+
+
+template <typename ValueType>
+void 
+FmmHighFreq<ValueType>::interpolate(
+		unsigned int levelOld,
+		unsigned int levelNew,
+		const arma::Col<ValueType>& coefficientsOld, 
+		arma::Col<ValueType>& coefficientsNew) const
+{
+	// verify that levelOld and levelNew differ by one only
+	if (levelOld > levelNew) { // upwards - interpolation
+		m_interpolatorsUpwards[levelNew-2].interpolate(
+			coefficientsOld, coefficientsNew);
+	} else { // downwards - anterpolation
+		m_interpolatorsDownwards[levelOld-2].interpolate(
+			coefficientsOld, coefficientsNew);
+	}
 }
 
 template <typename ValueType>
@@ -142,12 +244,27 @@ arma::Mat<ValueType>
 FmmHighFreq<ValueType>::M2L(
 		const arma::Col<CoordinateType>& sourceCentre, 
 		const arma::Col<CoordinateType>& fieldCentre,
-		const arma::Col<CoordinateType>& boxSize) const
+		const arma::Col<CoordinateType>& boxSize, // get rid of later
+		unsigned int level) const
 {
 	using namespace boost::math;
 	CoordinateType pi = boost::math::constants::pi<CoordinateType>();
 
-	arma::Col<ValueType> T(this->quadraturePointCount());
+	// form quadrature point helper arrays
+	unsigned L = m_Ls[level-2];
+	CoordinateType costheta[L+1], sintheta[L+1], wtheta[L+1];
+	legendre_roots(L+1, costheta, wtheta);
+	for (unsigned int l=0; l<L+1; l++) {
+		sintheta[l] = sqrt(1-costheta[l]*costheta[l]);
+	}
+	CoordinateType cosphi[2*L+1], sinphi[2*L+1];
+	for (unsigned int l=0; l<=2*L; l++) {
+		cosphi[l] = cos(2*pi*l/(2*L+1));
+		sinphi[l] = sin(2*pi*l/(2*L+1));
+	}
+	unsigned int quadraturePointCount = (L+1)*(2*L+1);
+
+	arma::Col<ValueType> T(quadraturePointCount);
 	T.fill(0.0);
 
 	arma::Col<CoordinateType> xvec = fieldCentre - sourceCentre;
@@ -156,9 +273,14 @@ FmmHighFreq<ValueType>::M2L(
 
 	ValueType i = getI<ValueType>();
 
-	for (unsigned int l=0; l<=m_L; l++) {
-		ValueType hl;
+	unsigned int Ldash = L;
+	//L = (3*L)/4;
+	for (unsigned int l=0; l<=Ldash; l++) {
+		ValueType scaledhl;
+		CoordinateType CLLdash = 1.;
 
+		if (l <= L) {
+		ValueType hl;
 #if defined USE_AMOS_SPECIAL_FUNCTIONS
 		ValueType z = i*m_kappa*r;
 		double zr = real(z);
@@ -180,7 +302,7 @@ FmmHighFreq<ValueType>::M2L(
 			"IERR=1, INPUT ERROR   - NO COMPUTATION",
 			"IERR=2, OVERFLOW      - NO COMPUTATION, FNU IS"
 			"        TOO LARGE OR CABS(Z) IS TOO SMALL OR BOTH",
-			"IERR=3, CABS(Z) OR FNU+N-1 LARGE - COMPUTATION DONE"
+			"IERR=3, CABS(Z) OR FNU+N-1 LARempp/bempp/lib/fmm/fmm_black_box.cpp:156:47: error:GE - COMPUTATION DONE"
 			"        BUT LOSSES OF SIGNIFCANCE BY ARGUMENT"
 			"        REDUCTION PRODUCE LESS THAN HALF OF MACHINE"
 			"        ACCURACY",
@@ -207,65 +329,37 @@ FmmHighFreq<ValueType>::M2L(
      			"boost special functions only support purely real or imaginary args");
 		}
 #endif
-		ValueType scaledhl = -m_kappa/(16*pi*pi)*pow(i,l)*CoordinateType(2*l+1)*hl;
+		scaledhl = -m_kappa/(16*pi*pi)*pow(i,l)*CoordinateType(2*l+1)*hl;
+		} else { // l > L
+			CLLdash = pow(cos((l-L)*pi/(2*(Ldash-L))), 2);
+		}
 
 		arma::Col<CoordinateType> khat(3); // slow! do not perform in loop!
-		for (unsigned int p = 0; p < this->quadraturePointCount(); p++) {
-			khat = this->getQuadraturePoint(p);
-			CoordinateType costheta = dot(Rhat, khat);
-			if(costheta> 1.0) costheta =  1.0;
-			if(costheta<-1.0) costheta = -1.0;
-			T(p) += scaledhl*legendre_p(l, costheta);
+//		for (unsigned int p = 0; p < this->quadraturePointCount(); p++) {
+//			khat = this->getQuadraturePoint(p);
+		// TODO: calculate Pl recursively for the sake of efficiency
+		unsigned int p = 0;
+		for (unsigned int ntheta=0; ntheta<L+1; ntheta++) {
+			for (unsigned int m=0; m<=2*L; m++) { // if symmetric quad point along phi 2L->L+1
+				khat(0) = sintheta[ntheta]*cosphi[m];
+				khat(1) = sintheta[ntheta]*sinphi[m];
+				khat(2) = costheta[ntheta];
+
+				CoordinateType costheta = dot(Rhat, khat);
+				if(costheta> 1.0) costheta =  1.0;
+				if(costheta<-1.0) costheta = -1.0;
+				ValueType Tlocal = scaledhl*CLLdash*legendre_p(l, costheta);
+				T(p) += Tlocal;
+				//T(p+L+1) += pow(-1, l)*Tlocal; // if symmetric quad point along phi 
+				p++;
+			}
 		}
 	}
 	return T;
 }
 
-// P'_n(x): Derivative of the n_{th} order Legendre polynomial w.r.t. x
-template <typename ValueType> // must be a real type
-ValueType diff_legendre_p(int n, ValueType x)
-{
-	using namespace boost::math;
-	return n*( x*legendre_p(n, x) - legendre_p(n-1, x) ) / (x*x - 1);
-}
 
-// from http://rosettacode.org/wiki/Numerical_integration/Gauss-Legendre_Quadrature
-// find the Gauss Legendre quadrature points, P_n(xi) = 0
-template <typename ValueType>  // must be a real type
-void legendre_roots(unsigned int N, ValueType *roots, ValueType *weights)
-{
-	using namespace boost::math;
-	ValueType pi = boost::math::constants::pi<ValueType>();
 
-	roots[int(N/2)] = 0; // take advantage of symmetry
-	for (unsigned int i = 1; i <= int(N/2); i++) {
-		ValueType x, x1;
-		x = cos(pi * (i - .25) / (N + .5)); // guess root position
-		int iter=100;
-		do { // apply Newton-Raphson method to find roots
-			x1 = x;
-			x -= legendre_p(N, x) / diff_legendre_p(N, x);
-		} while (x != x1 && --iter); // well-behaved function, convergence guaranteed
-		roots[i-1] =  x;
-		roots[N-i] = -x;
- 	}
-
-	for (unsigned int i = 1; i <= int(N/2)+1; i++) {
-		ValueType x = roots[i-1];
-		ValueType diffPx = diff_legendre_p(N, x);
-		weights[i-1] = 2 / ((1 - x*x) * diffPx*diffPx);
-		weights[N-i] = weights[i-1];
-	}
-
-/*	for (unsigned int i = 1; i <= N; i++)
-		std::cout << roots[i - 1] << ", ";
-	std::cout <<std::endl;
- 
-	for (unsigned int i = 1; i <= N; i++)
-		std::cout << weights[i - 1] << ", ";
-	std::cout <<std::endl;
-*/
-}
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(FmmTransform);
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(FmmHighFreq);

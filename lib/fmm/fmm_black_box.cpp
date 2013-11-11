@@ -80,7 +80,8 @@ void FmmBlackBox<KernelType, ValueType>::generateGaussPoints()
 template <typename KernelType, typename ValueType>
 arma::Mat<ValueType> FmmBlackBox<KernelType, ValueType>::M2M(
 		const arma::Col<CoordinateType>& childPosition,
-		const arma::Col<CoordinateType>& parentPosition) const
+		const arma::Col<CoordinateType>& parentPosition,
+		unsigned int level) const
 {
 	// change to use interpolation at this stage in future
 	arma::Mat<ValueType> T(this->quadraturePointCount(), 
@@ -96,7 +97,7 @@ arma::Mat<ValueType> FmmBlackBox<KernelType, ValueType>::M2M(
 		sourcePos.col(dim) = (m_Tk.col(1) + childOffset)/2;  // T_1 are nodes
 	}
 
-	// calculate S(m,n) = \sum T_k(x_m) sources_k(x_n), independently for 
+	// calculate S(m,n) = \sum T_k(x_m) T_k(x_n), independently for 
 	// each dimension using Clenshaw algorithm to avoid forming T_k(x_s) explicitly
 	CoordinateType S[getN()][sourcePos.n_rows][3];
 
@@ -148,10 +149,11 @@ arma::Mat<ValueType> FmmBlackBox<KernelType, ValueType>::M2M(
 template <typename KernelType, typename ValueType>
 arma::Mat<ValueType> FmmBlackBox<KernelType, ValueType>::L2L(
 		const arma::Col<CoordinateType>& parentPosition,
-		const arma::Col<CoordinateType>& childPosition) const
+		const arma::Col<CoordinateType>& childPosition,
+		unsigned int level) const
 {
 	 // argument order swapped, L2L = M2M' exactly
-	return M2M(childPosition, parentPosition).st();
+	return M2M(childPosition, parentPosition, level).st();
 }
 
 template <typename KernelType, typename ValueType>
@@ -159,7 +161,8 @@ arma::Mat<ValueType>
 FmmBlackBox<KernelType, ValueType>::M2L(
 		const arma::Col<CoordinateType>& sourceCentre, // loops over interaction list
 		const arma::Col<CoordinateType>& fieldCentre,  // origin
-		const arma::Col<CoordinateType>& boxSize) const
+		const arma::Col<CoordinateType>& boxSize,
+		unsigned int level) const
 {
 	Fiber::GeometricalData<CoordinateType> fieldData;
 	Fiber::GeometricalData<CoordinateType> sourceData;

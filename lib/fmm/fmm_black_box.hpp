@@ -53,23 +53,26 @@ public:
 	typedef Fiber::CollectionOfKernels<KernelType> CollectionOfKernels;
 
 	template <typename KernelFunctor>
-	FmmBlackBox(const KernelFunctor& kernelFunctor, unsigned int n);
+	FmmBlackBox(const KernelFunctor& kernelFunctor, unsigned int n, unsigned int levels);
 
 	// multipole to multipole (M2M) translation matrix
 	virtual arma::Mat<ValueType> M2M(
 		const arma::Col<CoordinateType>& childPosition, 
-		const arma::Col<CoordinateType>& parentPosition) const;
+		const arma::Col<CoordinateType>& parentPosition,
+		unsigned int level) const;
 
 	// multipole to local (M2L) translation matrix
 	virtual arma::Mat<ValueType> M2L(
 		const arma::Col<CoordinateType>& sourceCentre, 
 		const arma::Col<CoordinateType>& fieldCentre,
-		const arma::Col<CoordinateType>& boxSize) const;
+		const arma::Col<CoordinateType>& boxSize,
+		unsigned int level) const;
 
 	// local to local (L2L) translation matrix
 	virtual arma::Mat<ValueType> L2L(
 		const arma::Col<CoordinateType>& parentPosition, 
-		const arma::Col<CoordinateType>& childPosition) const;
+		const arma::Col<CoordinateType>& childPosition,
+		unsigned int level) const;
 
 	virtual void generateGaussPoints();
 
@@ -110,10 +113,10 @@ private:
 template <typename KernelType, typename ValueType>
 template <typename KernelFunctor>
 FmmBlackBox<KernelType, ValueType>::FmmBlackBox(
-	const KernelFunctor& kernelFunctor, unsigned int n)
+	const KernelFunctor& kernelFunctor, unsigned int n, unsigned int levels)
  :	m_kernels(
         new Fiber::DefaultCollectionOfKernels<KernelFunctor>(kernelFunctor)),
-	m_n(n), m_Tk(n, n), FmmTransform<ValueType>(n*n*n, true)
+	m_n(n), m_Tk(n, n), FmmTransform<ValueType>(n*n*n, levels, true)
 {
 	generateGaussPoints();
 }
@@ -125,8 +128,8 @@ public:
 	typedef typename FmmBlackBox<KernelType, ValueType>::CoordinateType CoordinateType;
 
 	template <typename KernelFunctor>
-	FmmSingleLayerBlackBox(const KernelFunctor& kernelFunctor, unsigned int n)
-		: FmmBlackBox<KernelType, ValueType>(kernelFunctor, n) {}
+	FmmSingleLayerBlackBox(const KernelFunctor& kernelFunctor, unsigned int n, unsigned int levels)
+		: FmmBlackBox<KernelType, ValueType>(kernelFunctor, n, levels) {}
 
 	virtual void evaluateTrial(
 			const arma::Col<CoordinateType>& point,
@@ -152,8 +155,8 @@ public:
 	typedef typename FmmBlackBox<KernelType, ValueType>::CoordinateType CoordinateType;
 
 	template <typename KernelFunctor>
-	FmmDoubleLayerBlackBox(const KernelFunctor& kernelFunctor, unsigned int n)
-		: FmmBlackBox<KernelType, ValueType>(kernelFunctor, n) {}
+	FmmDoubleLayerBlackBox(const KernelFunctor& kernelFunctor, unsigned int n, unsigned int levels)
+		: FmmBlackBox<KernelType, ValueType>(kernelFunctor, n, levels) {}
 
 	virtual void evaluateTrial(
 			const arma::Col<CoordinateType>& point,
@@ -179,8 +182,8 @@ public:
 	typedef typename FmmBlackBox<KernelType, ValueType>::CoordinateType CoordinateType;
 
 	template <typename KernelFunctor>
-	FmmAdjointDoubleLayerBlackBox(const KernelFunctor& kernelFunctor, unsigned int n)
-		: FmmBlackBox<KernelType, ValueType>(kernelFunctor, n) {}
+	FmmAdjointDoubleLayerBlackBox(const KernelFunctor& kernelFunctor, unsigned int n, unsigned int levels)
+		: FmmBlackBox<KernelType, ValueType>(kernelFunctor, n, levels) {}
 
 	virtual void evaluateTrial(
 			const arma::Col<CoordinateType>& point,
@@ -206,8 +209,8 @@ public:
 	typedef typename FmmBlackBox<KernelType, ValueType>::CoordinateType CoordinateType;
 
 	template <typename KernelFunctor>
-	FmmHypersingularBlackBox(const KernelFunctor& kernelFunctor, unsigned int n)
-		: FmmBlackBox<KernelType, ValueType>(kernelFunctor, n) {}
+	FmmHypersingularBlackBox(const KernelFunctor& kernelFunctor, unsigned int n, unsigned int levels)
+		: FmmBlackBox<KernelType, ValueType>(kernelFunctor, n, levels) {}
 
 	virtual void evaluateTrial(
 			const arma::Col<CoordinateType>& point,

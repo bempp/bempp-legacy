@@ -75,7 +75,7 @@ FmmCache<ValueType>::initCache(
 
 					if (abs(indx) > 1 || abs(indy) > 1 || abs(indz) > 1) {
 
-						arma::Mat<ValueType> m2l = m_fmmTransform.M2L(centre, origin, boxSize);
+						arma::Mat<ValueType> m2l = m_fmmTransform.M2L(centre, origin, boxSize, level);
 
 						m_cacheM2L[level-m_topLevel][index++] = m2l;
 
@@ -106,11 +106,11 @@ FmmCache<ValueType>::initCache(
 			Rchild(0) = ind[0]; Rchild(1) = ind[1]; Rchild(2) = ind[2];
 			Rchild = (Rchild-0.5) % boxSize/2;
 
-			arma::Mat<ValueType> m2m = m_fmmTransform.M2M(Rchild, origin);
+			arma::Mat<ValueType> m2m = m_fmmTransform.M2M(Rchild, origin, level);
 
 			m_cacheM2M[level-m_topLevel][child] = m2m;
 
-			arma::Mat<ValueType> l2l = m_fmmTransform.L2L(origin, Rchild);
+			arma::Mat<ValueType> l2l = m_fmmTransform.L2L(origin, Rchild, level);
 
 			m_cacheL2L[level-m_topLevel][child] = l2l;
 		} // for each child
@@ -236,6 +236,8 @@ arma::Mat<ValueType>
 FmmCache<ValueType>::M2L(unsigned int level, unsigned int item) const
 {
 	return m_cacheM2L[level-m_topLevel][item];
+	//unsigned int boxesPerSide = getNodesPerSide(level);
+	//return m_cacheM2L[0][item]*(4./boxesPerSide); // 1/r singularity test
 }
 
 template <typename ValueType>

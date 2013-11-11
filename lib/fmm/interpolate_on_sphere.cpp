@@ -166,6 +166,10 @@ InterpolateOnSphere<ResultType>::InterpolateOnSphere(
 	unsigned int Lold, unsigned int Lnew)
 	: m_Lold(Lold), m_Lnew(Lnew), m_BT(std::min(Lold, Lnew)+1)
 {
+	if (m_Lold == m_Lnew || m_Lnew == 0) {
+		return;
+	}
+
 	// can use precalculated Gauss-Legendre nodes, but just calculate for now
 	CoordinateType xoldMem[Lold+1], woldMem[Lold+1];
 	legendre_roots(Lold+1, xoldMem, woldMem);
@@ -223,12 +227,13 @@ InterpolateOnSphere<ResultType>::InterpolateOnSphere(
 		// Apply L'Hopital's rule to treat coincident nodes at xnew = xold = 0
 		if ( (Lold&1)==0 && (Lnew&1)==0 ) {
 			arma::Col<CoordinateType> diffQ0(2); //dQ_n^m(x)/dx|_{x=0} for n={l, l+1}
-			// dQ_n^m(x)/dx|_{x=0} = sqrt((2*l+1)*(l^2-m^2)/(2*l-1))*Q_{n-1}^m(0)
+			// dQ_l^m(x)/dx|_{x=0} = sqrt((2*l+1)*(l^2-m^2)/(2*l-1))*Q_{l-1}^m(0)
 			for (unsigned int l = Lold; l <= Lold+1; l++) {
 				diffQ0(l-Lold) = sqrt((2*l+1.)*(l*l-m*m)/(2*l-1))*Qold(l-Lold, Lold/2);	
 			}
 			m_BT[m](Lold/2, Lnew/2) = epsilon*wold(Lold/2)*( 
 				 Qold(1, Lold/2)*diffQ0(2-1) - Qold(2, Lold/2)*diffQ0(1-1));
+			// alternatively set Qnew(1:2, Lnew/2) = diffQ0(0:1)
 		}
 	//	std::cout << m_B[m] << std::endl;
 	} // for each m
@@ -240,8 +245,16 @@ template <typename ResultType>
 void 
 InterpolateOnSphere<ResultType>::interpolate(
 	const arma::Col<ResultType>& coefsOld,
-	arma::Col<ResultType>& coefsNew)
+	arma::Col<ResultType>& coefsNew) const
 {
+	if (m_Lold == m_Lnew) {
+		coefsNew = coefsOld;
+		return;
+	} else if (m_Lnew == 0) {
+		coefsNew = coefsOld;
+		return;
+	}
+
 	// test with an arbitrary function
 /*	arma::Mat<ResultType> fold(2*m_Lold+1, m_Lold+1);
 	CoordinateType xold[m_Lold+1], wold[m_Lold+1];

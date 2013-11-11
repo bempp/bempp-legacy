@@ -28,7 +28,6 @@
 
 namespace Bempp
 {
-//over Sphere?
 
 template <typename ResultType>
 class InterpolateOnSphere
@@ -37,12 +36,12 @@ public:
 	typedef typename Fiber::ScalarTraits<ResultType>::RealType CoordinateType;
 
 	InterpolateOnSphere(
-		unsigned int Lold, 
-		unsigned int Lnew);
+		unsigned int Lold=0, 
+		unsigned int Lnew=0);
 
 	void interpolate(
 		const arma::Col<ResultType>& coefsOld,
-		arma::Col<ResultType>& coefsNew);
+		arma::Col<ResultType>& coefsNew) const;
 
 private:
 	// store the transpose of B for the sake of efficiency

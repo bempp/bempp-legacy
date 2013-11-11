@@ -86,7 +86,7 @@ modifiedHelmholtz3dSingleLayerBoundaryOperator(
     if (assemblyOptions.assemblyMode() == AssemblyOptions::FMM) {
         const FmmOptions& fmmOptions = assemblyOptions.fmmOptions();
         fmmTransform = boost::make_shared<FmmSingleLayerHighFreq<ResultType> >
-            (waveNumber, fmmOptions.L);
+            (waveNumber, fmmOptions.L, fmmOptions.levels);
     }
 
     typedef GeneralElementarySingularIntegralOperator<

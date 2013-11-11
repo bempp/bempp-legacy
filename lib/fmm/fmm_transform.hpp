@@ -26,11 +26,65 @@
 #include "../common/armadillo_fwd.hpp"
 #include "../fiber/scalar_traits.hpp"
 
+// must include interpolate_on_sphere since cannot have vectors of incomplete types
+#include "interpolate_on_sphere.hpp"
+#include <boost/math/special_functions/legendre.hpp>
+
 namespace Bempp
 {
 
+/** \cond FORWARD_DECL */
+//template <typename ValueType> class InterpolateOnSphere;
+/** \endcond */
+
 template <typename ValueType>
 ValueType getI();
+
+// P'_n(x): Derivative of the n_{th} order Legendre polynomial w.r.t. x
+template <typename ValueType> // must be a real type
+ValueType diff_legendre_p(int n, ValueType x)
+{
+	using namespace boost::math;
+	return n*( x*legendre_p(n, x) - legendre_p(n-1, x) ) / (x*x - 1);
+}
+
+// from http://rosettacode.org/wiki/Numerical_integration/Gauss-Legendre_Quadrature
+// find the Gauss Legendre quadrature points, P_n(xi) = 0
+template <typename ValueType>  // must be a real type
+void legendre_roots(unsigned int N, ValueType *roots, ValueType *weights)
+{
+	using namespace boost::math;
+	ValueType pi = boost::math::constants::pi<ValueType>();
+
+	roots[int(N/2)] = 0; // take advantage of symmetry
+	for (unsigned int i = 1; i <= int(N/2); i++) {
+		ValueType x, x1;
+		x = cos(pi * (i - .25) / (N + .5)); // guess root position
+		int iter=100;
+		do { // apply Newton-Raphson method to find roots
+			x1 = x;
+			x -= legendre_p(N, x) / diff_legendre_p(N, x);
+		} while (x != x1 && --iter); // well-behaved function, convergence guaranteed
+		roots[i-1] =  x;
+		roots[N-i] = -x;
+ 	}
+
+	for (unsigned int i = 1; i <= int(N/2)+1; i++) {
+		ValueType x = roots[i-1];
+		ValueType diffPx = diff_legendre_p(N, x);
+		weights[i-1] = 2 / ((1 - x*x) * diffPx*diffPx);
+		weights[N-i] = weights[i-1];
+	}
+
+/*	for (unsigned int i = 1; i <= N; i++)
+		std::cout << roots[i - 1] << ", ";, unsigned int levels
+	std::cout <<std::endl;
+ 
+	for (unsigned int i = 1; i <= N; i++)
+		std::cout << weights[i - 1] << ", ";
+	std::cout <<std::endl;
+*/
+}
 
 // abstract for now, will use Chebyshev as default in future versions
 template <typename ValueType>
@@ -39,7 +93,9 @@ class FmmTransform
 public:
 	typedef typename Fiber::ScalarTraits<ValueType>::RealType CoordinateType;
 
-	FmmTransform(unsigned int quadraturePointCount, bool isCompressedM2L)
+	FmmTransform(	unsigned int quadraturePointCount, 
+				unsigned int levels, 
+				bool isCompressedM2L)
 	 : 	m_quadraturePoints(3, quadraturePointCount),
 		m_quadratureWeights(quadraturePointCount),
 		m_isCompressedM2L(isCompressedM2L)
@@ -64,18 +120,29 @@ public:
 	// multipole to multipole (M2M) translation matrix
 	virtual arma::Mat<ValueType> M2M(
 		const arma::Col<CoordinateType>& x1, 
-		const arma::Col<CoordinateType>& x2) const = 0;
+		const arma::Col<CoordinateType>& x2,
+		unsigned int level) const = 0;
 
 	// multipole to local (M2L) translation matrix
 	virtual arma::Mat<ValueType> M2L(
 		const arma::Col<CoordinateType>& x1, 
 		const arma::Col<CoordinateType>& x2,
-		const arma::Col<CoordinateType>& boxSize) const = 0;
+		const arma::Col<CoordinateType>& boxSize,
+		unsigned int level) const = 0;
 
 	// local to local (L2L) translation matrix
 	virtual arma::Mat<ValueType> L2L(
 		const arma::Col<CoordinateType>& x1, 
-		const arma::Col<CoordinateType>& x2) const = 0;
+		const arma::Col<CoordinateType>& x2,
+		unsigned int level) const = 0;
+
+	// interpolate multipole and local coefficients between levels
+	// default implementation: coefficientsNew = coefficientsOld
+	virtual void interpolate(
+		unsigned int levelOld,
+		unsigned int levelNew,
+		const arma::Col<ValueType>& coefficientsOld, 
+		arma::Col<ValueType>& coefficientsNew) const;
 
 	// multipole expansion coefficients (MEC)
 	virtual void evaluateTrial(
@@ -112,30 +179,33 @@ class FmmHighFreq : public FmmTransform<ValueType>
 public:
 	typedef typename FmmTransform<ValueType>::CoordinateType CoordinateType;
 
-	FmmHighFreq(ValueType kappa, unsigned int L)//, unsigned int numQuadPoints)
-	 : m_kappa(kappa), m_L(L), FmmTransform<ValueType>(L*(2*L+1), false)//numQuadPoints)//(770)//86)//
-	{
-		generateGaussPoints();
-		// finally all levels in the octree will have their own set of Gauss points
-		// will need to interpolate functions here, between each level
-		// also cache T matrix
-	}
+	FmmHighFreq(ValueType kappa, unsigned int L, unsigned int levels);
 
 	// multipole to multipole (M2M) translation matrix
 	virtual arma::Mat<ValueType> M2M(
 		const arma::Col<CoordinateType>& childPosition, 
-		const arma::Col<CoordinateType>& parentPosition) const;
+		const arma::Col<CoordinateType>& parentPosition,
+		unsigned int level) const;
 
 	// multipole to local (M2L) translation matrix
 	virtual arma::Mat<ValueType> M2L(
 		const arma::Col<CoordinateType>& sourceCentre, 
 		const arma::Col<CoordinateType>& fieldCentre,
-		const arma::Col<CoordinateType>& boxSize) const;
+		const arma::Col<CoordinateType>& boxSize,
+		unsigned int level) const;
 
 	// local to local (L2L) translation matrix
 	virtual arma::Mat<ValueType> L2L(
 		const arma::Col<CoordinateType>& parentPosition, 
-		const arma::Col<CoordinateType>& childPosition) const;
+		const arma::Col<CoordinateType>& childPosition,
+		unsigned int level) const;
+
+	// interpolate multipole and local coefficients between levels
+	virtual void interpolate(
+		unsigned int levelOld,
+		unsigned int levelNew,
+		const arma::Col<ValueType>& coefficientsOld, 
+		arma::Col<ValueType>& coefficientsNew) const;
 
 	virtual void generateGaussPoints();
 
@@ -144,7 +214,11 @@ public:
 	ValueType kappa() const {return m_kappa;}
 private:
 	ValueType m_kappa;
-	unsigned int m_L;
+	//unsigned int m_L;
+	std::vector<unsigned int> m_Ls;
+
+	std::vector<InterpolateOnSphere<ValueType> > m_interpolatorsUpwards;
+	std::vector<InterpolateOnSphere<ValueType> > m_interpolatorsDownwards;
 };
 
 } // namespace Bempp
