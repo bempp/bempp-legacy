@@ -2375,4 +2375,11 @@ def exportToVtk(gridFunction, dataType, dataLabel, fileNamesBase, filesPath=None
         gridFunction.basisFunctionType(), gridFunction.resultType(),
         gridFunction, dataType, dataLabel, fileNamesBase, filesPath, type)
 
+def gridFunctionFromGmsh(context,gmshIo,grid=None,gmshPostDataType='element_node',index=0):
+    """
+    """
+    return _constructObjectTemplatedOnBasisAndResult(
+        core, "gridFunctionFromGmsh",context.basisFunctionType(),context.resultType(),
+        context, gmshIo,grid, gmshPostDataType, index)
+
 from bempp.core import GridSegment, gridSegmentWithPositiveX, GmshData, GmshIo

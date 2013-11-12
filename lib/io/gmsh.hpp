@@ -109,7 +109,7 @@ public:
                         int& timeStep, int& partition) const;
     void getNodeDataSet(int index, std::vector<std::string>& stringTags, std::vector<double>& realTags,
                         int& numberOfFieldComponents,
-                        std::vector<int>& nodeIndices, std::vector<std::vector<double> >& values);
+                        std::vector<int>& nodeIndices, std::vector<std::vector<double> >& values) const;
     void getElementDataSet(int index, std::vector<std::string>& stringTags, std::vector<double>& realTags,
                         int& numberOfFieldComponents,
                         std::vector<int>& elementIndices, std::vector<std::vector<double> >& values,
@@ -254,19 +254,18 @@ class GmshIo {
 
 public:
 
-    GmshIo();
+    GmshIo(const shared_ptr<const Grid>& grid);
     GmshIo(GmshData gmshData);
     GmshIo(std::string fname);
 
-    shared_ptr<Grid> grid() const;
+    shared_ptr<const Grid> grid() const;
     const std::vector<int>& nodePermutation() const;
     const std::vector<int>& elementPermutation() const;
     const std::vector<int>& inverseNodePermutation() const;
     const std::vector<int>& inverseElementPermutation() const;
+    const GmshData& gmshData() const;
+    GmshData& gmshData();
 
-//    GridFunction<BasisFunctionType,ResultType> gridFunction(
-//            GmshPostData::Type gmshData = GmshPostData::ELEMENT_NODE,
-//            int index = 0);
 
 private:
 
@@ -275,16 +274,28 @@ private:
     mutable std::vector<int> m_elementPermutation;
     mutable std::vector<int> m_inverseElementPermutation;
     GmshData m_gmshData;
-    mutable arma::Mat<double> m_nodes;
-    mutable arma::Mat<int> m_elements;
-    mutable shared_ptr<Grid> m_grid;
+    mutable shared_ptr<const Grid> m_grid;
 };
 
-//template <typename BasisFunctionType, typename ResultType>
-//void exportToGmsh(GridFunction<BasisFunctionType,ResultType> gridFunction,
-//                  const char* dataLabel, const char* fileName,
-//                  GmshPostData::Type gmshDataType = GmshPostData::NODE,
-//                  bool exportGrid = true);
+template <typename BasisFunctionType, typename ResultType>
+GridFunction<BasisFunctionType,ResultType> gridFunctionFromGmsh(
+        const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
+        const GmshIo& gmshIo, shared_ptr<const Grid> grid = shared_ptr<Grid>(),
+            GmshPostData::Type gmshPostDataType = GmshPostData::ELEMENT_NODE,
+            int index = 0);
+
+
+template <typename BasisFunctionType, typename ResultType>
+void exportToGmsh(GridFunction<BasisFunctionType,ResultType> gridFunction,
+                  const char* dataLabel,
+                  GmshIo& gmshIo,
+                  GmshPostData::Type gmshPostDataType,
+                  std::string complexMode = "real");
+
+
+template <typename BasisFunctionType, typename ResultType>
+void exportToGmsh(GridFunction<BasisFunctionType,ResultType> gridFunction,
+                  const char* dataLabel, const char* fileName);
 
 
 

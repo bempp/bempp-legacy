@@ -294,21 +294,81 @@ public:
 namespace Bempp
 {
 
+%typemap(typecheck) GmshPostData::Type
+{
+    $1 = PyString_Check($input);
+}
+%typemap(in) (GmshPostData::Type gmshPostDataType)
+{
+    if (!PyString_Check($input))
+    {
+        PyErr_SetString(PyExc_TypeError, "in method '$symname', argument $argnum: expected a string");
+        SWIG_fail;
+    }
+    const std::string s(PyString_AsString($input));
+    if (s == "node")
+        $1 = Bempp::GmshPostData::NODE;
+    else if (s == "element")
+        $1 = Bempp::GmshPostData::ELEMENT;
+    else if (s == "element_node")
+        $1 = Bempp::GmshPostData::ELEMENT_NODE;
+    else
+    {
+        PyErr_SetString(PyExc_ValueError,
+                        "in method '$symname', argument $argnum: "
+                        "expected either 'node', 'element' or 'element_node'");
+        SWIG_fail;
+    }
+}
+
+
+struct GmshPostData {
+
+        enum  Type {NODE,
+                    ELEMENT,
+                    ELEMENT_NODE
+                    };
+};
+
+
 class GmshIo {
 
 public:
 
-    GmshIo();
+    GmshIo(const boost::shared_ptr<const Grid>& grid);
     GmshIo(GmshData gmshData);
     GmshIo(std::string fname);
 
-    boost::shared_ptr<Grid> grid() const;
+    boost::shared_ptr<const Grid> grid() const;
     const std::vector<int>& nodePermutation() const;
     const std::vector<int>& elementPermutation() const;
     const std::vector<int>& inverseNodePermutation() const;
     const std::vector<int>& inverseElementPermutation() const;
-
+    const GmshData& gmshData() const;
 };
+
+template <typename BasisFunctionType, typename ResultType>
+GridFunction<BasisFunctionType,ResultType> gridFunctionFromGmsh(
+        const boost::shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
+        const GmshIo& gmshIo, boost::shared_ptr<Grid> grid = boost::shared_ptr<Grid>(),
+            GmshPostData::Type gmshPostDataType = GmshPostData::ELEMENT_NODE,
+            int index = 0);
+
+//template <typename BasisFunctionType, typename ResultType>
+//void exportToGmsh(GridFunction<BasisFunctionType,ResultType> gridFunction,
+//                  const char* dataLabel, const char* fileName);
+
+template <typename BasisFunctionType, typename ResultType>
+void exportToGmsh(GridFunction<BasisFunctionType,ResultType> gridFunction,
+                                    const char* dataLabel,
+                                    GmshIo& gmshIo,
+                                    GmshPostData::Type gmshPostDataType,
+                                    std::string complexMode = "real");
+
+
+BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(gridFunctionFromGmsh);
+BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(exportToGmsh);
+
 
 }
 
