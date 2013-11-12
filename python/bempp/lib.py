@@ -232,9 +232,9 @@ def createPiecewiseConstantScalarSpace(context, grid, segment=None):
 
 def createPiecewiseConstantScalarSpaceBarycentric(context, grid, segment=None):
     """
-    Create and return a space of piecewise constant functions defined over a 
+    Create and return a space of piecewise constant functions defined over a
     barycentric refinement of a grid.
-    
+
     *Parameters:*
        - context (Context)
             A Context object that will determine the type used to represent the
@@ -1761,7 +1761,8 @@ def __gridFunctionFromFunctor(
 
 def createGridFunction(
         context, space, dualSpace=None,
-        function=None, surfaceNormalDependent=False,
+        function=None,
+        surfaceNormalDependent=False, domainIndexDependent=False,
         coefficients=None, projections=None,
         mode='approximate'):
     """
@@ -1775,20 +1776,23 @@ def createGridFunction(
             Function space to expand the grid function in.
        - dualSpace (Space)
             Function space dual to 'space'.
-       - surfaceNormalDependent (bool)
-            Indicates whether the grid function depends on the unit vector
-            normal to the grid or not.
        - function (a Python callable object)
             Function object whose values on 'space.grid()' will be used to
-            construct the new grid function. If 'surfaceNormalDependent' is set
-            to False (default), 'function' will be passed a single argument
-            containing a 1D array of the coordinates of a point lying on the
-            grid 'space.grid()'. If 'surfaceNormalDependent' is set to True, the
-            function will be passed one more argument, a 1D array containing the
-            components of the unit vector normal to 'space.grid()' at the point
-            given in the first argument. In both cases 'function' should return
-            its value at the given point, in the form of a scalar or a 1D array
-            with dimension equal to 'space.codomainDimension()'.
+            construct the new grid function. By default, 'function' will be
+            passed a single argument containing a 1D array of the coordinates of
+            a point lying on the grid 'space.grid()'. If
+            'surfaceNormalDependent' is set to True, the function will be passed
+            another argument, a 1D array containing the components of the unit
+            vector normal to 'space.grid()' at the point given in the first
+            argument. If 'domainIndexDependent' is set to True, the function will
+            be passed another argument, the index of the domain containing the
+            element to which the point belongs. In all cases, 'function' should
+            return its value at the given point, in the form of a scalar or a 1D
+            array with dimension equal to 'space.codomainDimension()'.
+       - surfaceNormalDependent (bool)
+            See the description of the 'function' parameter above.
+       - domainIndex (bool)
+            See the description of the 'function' parameter above.
        - coefficients (Vector)
             A vector of the coefficients of the function in the basis of space
             'space'.
@@ -1804,14 +1808,16 @@ def createGridFunction(
 
     Variant 1: construction of a grid function from a Python function::
 
-        createGridFunction(context, space, dualSpace, function,
-                           surfaceNormalDependent)
+        createGridFunction(context, space, dualSpace, function=myFunction,
+                           surfaceNormalDependent=mySurfaceNormalDependent,
+                           domainIndexDependent=myDomainIndexDependent)
 
     if the best approximation of the function in the chosen space should be
     found by projecting it on the chosen dual space, or
 
-        createGridFunction(context, space, function=function,
-                           surfaceNormalDependent=surfaceNormalDependent,
+        createGridFunction(context, space, function=myFunction,
+                           surfaceNormalDependent=mySurfaceNormalDependent,
+                           domainIndexDependent=myDomainIndexDependent,
                            mode='interpolate')
 
     if the function's expansion in the chosen space should be found by
@@ -1820,15 +1826,16 @@ def createGridFunction(
     Variant 2: construction of a grid function from the vector of its
     coefficients in the basis of the space 'space'::
 
-        createGridFunction(context, space, coefficients=coefficients)
+        createGridFunction(context, space, coefficients=myCoefficients)
 
     Variant 3: construction of a grid function from the vector of its
     projections on the basis functions of the space 'dualSpace'::
 
-        createGridFunction(context, space, dualSpace, projections=projections)
+        createGridFunction(context, space, dualSpace, projections=myProjections)
 
     Example scalar-valued function defined in a 3D space that can be passed to
-    'createGridFunction' with 'surfaceNormalDependent = False'::
+    'createGridFunction' with 'surfaceNormalDependent = False' and
+    'domainIndex = False'::
 
         def fun1(point):
             x, y, z = point
@@ -1836,7 +1843,8 @@ def createGridFunction(
             return 2 * x * z / r**5 - y / r**3
 
     Example scalar-valued function defined in a 3D space that can be passed to
-    'createGridFunction' with 'surfaceNormalDependent = True'::
+    'createGridFunction' with 'surfaceNormalDependent = True' and
+    'domainIndex = False'::
 
         import cmath
         def fun2(point, normal):
@@ -1844,9 +1852,20 @@ def createGridFunction(
             nx, ny, nz = normal
             k = 5
             return cmath.exp(1j * k * x) * (nx - 1)
+
+    Example vector-valued function defined in a 3D space that can be passed to
+    'createGridFunction' with 'surfaceNormalDependent = False' and
+    'domainIndex = True'::
+
+        def fun3(point, domainIndex):
+            x, y, z = point
+            if domainIndex == 1:
+                return [5 * x, 0, 0]
+            else:
+                return [0, -7 * x, 0]
     """
 
-    params = [function,coefficients,projections]
+    params = [function, coefficients, projections]
     params_active = sum([0 if p is None else 1 for p in params])
     if params_active != 1 :
         raise ValueError("createGridFunction(): Exactly one of 'function', "
@@ -1874,9 +1893,15 @@ def createGridFunction(
             context.resultType(), context, space, dualSpace, projections)
 
     if surfaceNormalDependent:
-        className = "SurfaceNormalDependentFunctor"
+        if domainIndexDependent:
+            className = "SurfaceNormalAndDomainIndexDependentFunctor"
+        else:
+            className = "SurfaceNormalDependentFunctor"
     else:
-        className = "SurfaceNormalIndependentFunctor"
+        if domainIndexDependent:
+            className = "DomainIndexDependentFunctor"
+        else:
+            className = "SurfaceNormalIndependentFunctor"
     return __gridFunctionFromFunctor(
         className, context, space, dualSpace, function,
         argumentDimension=space.grid().dimWorld(),

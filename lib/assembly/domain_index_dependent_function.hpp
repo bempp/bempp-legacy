@@ -18,45 +18,45 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_surface_normal_independent_function_hpp
-#define bempp_surface_normal_independent_function_hpp
+#ifndef bempp_domain_index_dependent_function_hpp
+#define bempp_domain_index_dependent_function_hpp
 
 #include "../common/common.hpp"
 
-#include "../fiber/surface_normal_independent_function.hpp"
+#include "../fiber/domain_index_dependent_function.hpp"
 
 namespace Bempp
 {
 
-using Fiber::SurfaceNormalIndependentFunction;
+using Fiber::DomainIndexDependentFunction;
 
 /** \ingroup assembly_functions
-  \brief Use a functor depending on global coordinates only (independent from
-  the surface normal or the element index) to construct an instance of
-  the Function class.
+  \brief Use a functor taking a point's global coordinates and the domain index
+  of the element containing the point to construct an instance of the Function
+  class.
 
-  The template parameter \p Functor should be a class with the following
+  The template parameter \p Functor should be a class implementing the following
   interface:
 
   \code
   class Functor
   {
   public:
-      // Type of the function's values (float, double, std::complex<float>
-      // or std::complex<double>)
+      // Type of the function's values (e.g. float or std::complex<double>)
       typedef <implementiation-defined> ValueType;
-      typedef typename ScalarTraits<ValueType>::RealType CoordinateType;
+      typedef ScalarTraits<ValueType>::RealType CoordinateType;
 
-      // Number of components of the function's argument
+      // Number of components of the function's argument ("point")
       int argumentDimension() const;
 
       // Number of components of the function's result
       int resultDimension() const;
 
-      // Evaluate the function at the point "point" and store result in
-      // the array "result". The "point" and "result" arrays will be
-      // preinitialized to correct dimensions.
+      // Evaluate the function at the point "point" lying on an element from
+      // domain "domainIndex" and store result in the array "result".
+      // All arrays will be preinitialised to correct dimensions.
       void evaluate(const arma::Col<CoordinateType>& point,
+                    int domainIndex,
                     arma::Col<ValueType>& result) const;
   };
   \endcode
@@ -64,10 +64,10 @@ using Fiber::SurfaceNormalIndependentFunction;
   The constructed Function object can subsequently be passed into a constructor
   of the GridFunction class. */
 template <typename Functor>
-inline SurfaceNormalIndependentFunction<Functor> surfaceNormalIndependentFunction(
-        const Functor& functor)
+inline DomainIndexDependentFunction<Functor>
+domainIndexDependentFunction(const Functor& functor)
 {
-    return SurfaceNormalIndependentFunction<Functor>(functor);
+    return DomainIndexDependentFunction<Functor>(functor);
 }
 
 } // namespace Bempp

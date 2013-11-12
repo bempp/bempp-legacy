@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_surface_normal_dependent_function_hpp
-#define fiber_surface_normal_dependent_function_hpp
+#ifndef fiber_surface_normal_and_domain_index_dependent_function_hpp
+#define fiber_surface_normal_and_domain_index_dependent_function_hpp
 
 #include "../common/common.hpp"
 
@@ -30,9 +30,9 @@ namespace Fiber
 {
 
 /** \brief %Function intended to be evaluated on a boundary-element grid,
-  defined via a user-supplied functor depending only on the global coordinates
-  of a point lying on the grid and the unit vector normal to the grid at that
-  point.
+  defined via a user-supplied functor depending on the global coordinates
+  of a point lying on the grid, the local unit vector normal to the grid and the
+  index of the domain containing the point.
 
   The template parameter \p Functor should be a class implementing the following
   interface:
@@ -51,25 +51,27 @@ namespace Fiber
       // Number of components of the function's result
       int resultDimension() const;
 
-      // Evaluate the function at the point "point", with vector normal to the
-      // grid given in the argument "normal", and store result in the array
-      // "result".
-      // All arrays will be preinitialised to correct dimensions.
+      // Evaluate the function at the point "point" lying on an element from
+      // domain "domainIndex", with "normal" the local unit normal vector, and
+      // store result in the array "result". All arrays will be preinitialised
+      // to correct dimensions.
       void evaluate(const arma::Col<CoordinateType>& point,
                     const arma::Col<CoordinateType>& normal,
+                    int domainIndex,
                     arma::Col<ValueType>& result) const;
   };
   \endcode
 */
 template <typename Functor>
-class SurfaceNormalDependentFunction : public Function<typename Functor::ValueType>
+class SurfaceNormalAndDomainIndexDependentFunction :
+        public Function<typename Functor::ValueType>
 {
 public:
     typedef Function<typename Functor::ValueType> Base;
     typedef typename Base::ValueType ValueType;
     typedef typename Base::CoordinateType CoordinateType;
 
-    SurfaceNormalDependentFunction(const Functor& functor) :
+    SurfaceNormalAndDomainIndexDependentFunction(const Functor& functor) :
         m_functor(functor) {
     }
 
@@ -82,7 +84,7 @@ public:
     }
 
     virtual void addGeometricalDependencies(size_t& geomDeps) const {
-        geomDeps |= GLOBALS | NORMALS;
+        geomDeps |= GLOBALS | NORMALS | DOMAIN_INDEX;
     }
 
     virtual void evaluate(const GeometricalData<CoordinateType>& geomData,
@@ -91,9 +93,10 @@ public:
         const arma::Mat<CoordinateType>& normals = geomData.normals;
 
 #ifndef NDEBUG
-        if ((int)points.n_rows != worldDimension())
+        if ((int)points.n_rows != worldDimension() ||
+                (int)points.n_rows != worldDimension())
             throw std::invalid_argument(
-                    "SurfaceNormalDependentFunction::evaluate(): "
+                    "SurfaceNormalAndDomainIndexDependentFunction::evaluate(): "
                     "incompatible world dimension");
 #endif
 
@@ -102,7 +105,7 @@ public:
         for (size_t i = 0; i < pointCount; ++i) {
             arma::Col<ValueType> activeResultColumn = result.unsafe_col(i);
             m_functor.evaluate(points.unsafe_col(i), normals.unsafe_col(i),
-                               activeResultColumn);
+                               geomData.domainIndex, activeResultColumn);
         }
     }
 

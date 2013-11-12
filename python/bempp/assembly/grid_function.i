@@ -1,11 +1,15 @@
 %{
 #include "assembly/grid_function.hpp"
+#include "assembly/domain_index_dependent_function.hpp"
+#include "assembly/surface_normal_and_domain_index_dependent_function.hpp"
 #include "assembly/surface_normal_dependent_function.hpp"
 #include "assembly/surface_normal_independent_function.hpp"
 %}
 
-%newobject gridFunctionFromPythonSurfaceNormalIndependentFunctor;
+%newobject gridFunctionFromPythonDomainIndexDependentFunctor;
+%newobject gridFunctionFromPythonSurfaceNormalAndDomainIndexDependentFunctor;
 %newobject gridFunctionFromPythonSurfaceNormalDependentFunctor;
+%newobject gridFunctionFromPythonSurfaceNormalIndependentFunctor;
 
 namespace Bempp {
 
@@ -38,16 +42,31 @@ uninitializedGridFunction()
 
 template <typename BasisFunctionType, typename ResultType>
 GridFunction<BasisFunctionType, ResultType>*
-gridFunctionFromPythonSurfaceNormalIndependentFunctor(
+gridFunctionFromPythonDomainIndexDependentFunctor(
     const boost::shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
     const boost::shared_ptr<const Space<BasisFunctionType> >& space,
     const boost::shared_ptr<const Space<BasisFunctionType> >& dualSpace,
-    const PythonSurfaceNormalIndependentFunctor<ResultType>& functor,
+    const PythonDomainIndexDependentFunctor<ResultType>& functor,
     typename GridFunction<BasisFunctionType, ResultType>::ConstructionMode mode)
 {
     return new GridFunction<BasisFunctionType, ResultType>(
         context, space, dualSpace,
-        surfaceNormalIndependentFunction(functor),
+        domainIndexDependentFunction(functor),
+        mode);
+}
+
+template <typename BasisFunctionType, typename ResultType>
+GridFunction<BasisFunctionType, ResultType>*
+gridFunctionFromPythonSurfaceNormalAndDomainIndexDependentFunctor(
+    const boost::shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
+    const boost::shared_ptr<const Space<BasisFunctionType> >& space,
+    const boost::shared_ptr<const Space<BasisFunctionType> >& dualSpace,
+    const PythonSurfaceNormalAndDomainIndexDependentFunctor<ResultType>& functor,
+    typename GridFunction<BasisFunctionType, ResultType>::ConstructionMode mode)
+{
+    return new GridFunction<BasisFunctionType, ResultType>(
+        context, space, dualSpace,
+        surfaceNormalAndDomainIndexDependentFunction(functor),
         mode);
 }
 
@@ -63,6 +82,21 @@ gridFunctionFromPythonSurfaceNormalDependentFunctor(
     return new GridFunction<BasisFunctionType, ResultType>(
         context, space, dualSpace,
         surfaceNormalDependentFunction(functor),
+        mode);
+}
+
+template <typename BasisFunctionType, typename ResultType>
+GridFunction<BasisFunctionType, ResultType>*
+gridFunctionFromPythonSurfaceNormalIndependentFunctor(
+    const boost::shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
+    const boost::shared_ptr<const Space<BasisFunctionType> >& space,
+    const boost::shared_ptr<const Space<BasisFunctionType> >& dualSpace,
+    const PythonSurfaceNormalIndependentFunctor<ResultType>& functor,
+    typename GridFunction<BasisFunctionType, ResultType>::ConstructionMode mode)
+{
+    return new GridFunction<BasisFunctionType, ResultType>(
+        context, space, dualSpace,
+        surfaceNormalIndependentFunction(functor),
         mode);
 }
 
@@ -308,8 +342,10 @@ BEMPP_EXTEND_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(GridFunction)
 
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(GridFunction);
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(uninitializedGridFunction);
-BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(gridFunctionFromPythonSurfaceNormalIndependentFunctor);
+BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(gridFunctionFromPythonDomainIndexDependentFunctor);
+BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(gridFunctionFromPythonSurfaceNormalAndDomainIndexDependentFunctor);
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(gridFunctionFromPythonSurfaceNormalDependentFunctor);
+BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(gridFunctionFromPythonSurfaceNormalIndependentFunctor);
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(gridFunctionFromCoefficients);
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(gridFunctionFromProjections);
 %feature("compactdefaultargs") exportToVtk;

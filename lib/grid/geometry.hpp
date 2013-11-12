@@ -265,6 +265,19 @@ public:
     void getNormals(const arma::Mat<float>& local,
                     arma::Mat<float>& normal) const;
 
+    /** \brief Get several types of geometrical data.
+     *
+     *  \param[in]  what
+     *    Superposition of zero or more flags from the enum GeometricalDataType.
+     *    The flag DOMAIN_INDEX is ignored.
+     *  \param[in]  local
+     *    Matrix whose \f$i\f$th column contains the local coordinates of a
+     *    point \f$x_i \in D\f$.
+     *  \param[out]  data
+     *    Structure whose fields corresponding to the flags present in \p what
+     *    will be filled with the appropriate geometrical data. The remaining
+     *    fields (and the field \c domainIndex) are not accessed.
+     */
     void getData(size_t what, const arma::Mat<double>& local,
                  Fiber::GeometricalData<double>& data) const;
     /** \overload */

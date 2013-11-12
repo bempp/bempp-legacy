@@ -120,6 +120,8 @@ integrate(const std::vector<int>& pointIndices,
     trialShapeset.evaluate(trialBasisDeps, m_localQuadPoints,
                         localTrialDofIndex, trialBasisData);
     trialGeometry->getData(trialGeomDeps, m_localQuadPoints, trialGeomData);
+    if (trialGeomDeps & DOMAIN_INDEX)
+        trialGeomData.domainIndex = m_rawGeometry.domainIndex(trialElementIndex);
     m_trialTransformations.evaluate(trialBasisData, trialGeomData, trialValues);
 
     // Iterate over the points
@@ -187,10 +189,13 @@ integrate(int pointIndex,
 
     // Iterate over the trial elements
     for (int i = 0; i < trialElementCount; ++i) {
-        m_rawGeometry.setupGeometry(trialElementIndices[i], *trialGeometry);
+        const int trialElementIndex = trialElementIndices[i];
+        m_rawGeometry.setupGeometry(trialElementIndex, *trialGeometry);
         trialShapeset.evaluate(trialBasisDeps, m_localQuadPoints,
                             ALL_DOFS, trialBasisData);
         trialGeometry->getData(trialGeomDeps, m_localQuadPoints, trialGeomData);
+        if (trialGeomDeps & DOMAIN_INDEX)
+            trialGeomData.domainIndex = m_rawGeometry.domainIndex(trialElementIndex);
         m_trialTransformations.evaluate(trialBasisData, trialGeomData,
                                         trialValues);
         m_kernels.evaluateOnGrid(pointGeomData, trialGeomData, kernelValues);
@@ -265,6 +270,9 @@ integrate(const std::vector<PointElementIndexPair>& pointElementIndexPairs,
         trialShapeset.evaluate(trialBasisDeps, m_localQuadPoints,
                             ALL_DOFS, trialBasisData);
         trialGeometry->getData(trialGeomDeps, m_localQuadPoints, trialGeomData);
+        if (trialGeomDeps & DOMAIN_INDEX)
+            trialGeomData.domainIndex =
+                    m_rawGeometry.domainIndex(activeTrialElementIndex);
         m_trialTransformations.evaluate(trialBasisData, trialGeomData, trialValues);
         m_kernels.evaluateOnGrid(pointGeomData, trialGeomData, kernelValues);
         _3dArray<ResultType> result3dView(componentCount, trialDofCount, 1,
