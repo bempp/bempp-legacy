@@ -39,10 +39,11 @@ struct FmmOptions
     /*  Number of levels in the octree. Default value: 3. */
     unsigned int levels;
 
-    /*  Number of terms in transfer function expansion: Default value: 8. */
-    unsigned int L;
+    /*  Number of terms in transfer function expansion: Default value: 6. */
+    unsigned int expansionOrder;
 
-    unsigned int numQuadPoints;
+    /*  Maximum number of terms in transfer function expansion at each level (0 = no limit) */
+    unsigned int expansionOrderMax;
 };
 
 } // namespace Bempp

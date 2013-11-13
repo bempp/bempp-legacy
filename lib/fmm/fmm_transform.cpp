@@ -56,39 +56,37 @@ FmmTransform<ValueType>::interpolate(
 
 
 template <typename ValueType>
-FmmHighFreq<ValueType>::FmmHighFreq(ValueType kappa, unsigned int L, unsigned int levels)
-	 :	m_kappa(kappa), m_Ls(levels-1),// m_L(L),
+FmmHighFreq<ValueType>::FmmHighFreq(ValueType kappa, unsigned int expansionOrder, 
+	unsigned int expansionOrderMax, unsigned int levels)
+	 :	m_kappa(kappa), m_Ls(levels-1),
 		m_interpolatorsUpwards(levels-2), m_interpolatorsDownwards(levels-2), 
-		FmmTransform<ValueType>((L+1)*(2*L+1), levels, false)
+		FmmTransform<ValueType>((expansionOrder+1)*(2*expansionOrder+1), levels, false)
 {
 	// calculate minimum L for the leaf (ignoring mesh size for now since just used to
 	// scale L). Correct box size should be used later
 	unsigned int m_topLevel = 2;
-	int prec = 8;//6; // number of digits of precision
+	int prec = 8;
 	CoordinateType boxsize = 2;
-/*	CoordinateType Lmin = abs(kappa)/pow(2, levels)
-	 + 1.8*pow(prec, 2./3)*pow(abs(kappa)/pow(2, levels), 1./3);*/
 	CoordinateType Lmin = sqrt(3.)*abs(kappa)*boxsize/pow(2, levels)
 		+ prec*log10(sqrt(3.)*abs(kappa)*boxsize/pow(2, levels)+M_PI);
 
 	// set number of terms in the expansion used for the M2L operation in each
 	// level. N.B. the stored multipole coefficients should be for the leaves alone?
-	m_Ls[levels-m_topLevel] = L;
+	m_Ls[levels-m_topLevel] = expansionOrder;
 	for (unsigned int level = m_topLevel; level<=levels-1; level++) {
-/*		CoordinateType Llevel = abs(kappa)/pow(2, level)
-		 + 1.8*pow(prec, 2./3)*pow(abs(kappa)/pow(2, level), 1./3);*/
 		CoordinateType Llevel = sqrt(3.)*abs(kappa)*boxsize/pow(2, level)
 			+ prec*log10(sqrt(3.)*abs(kappa)*boxsize/pow(2, level)+M_PI);
-		m_Ls[level-m_topLevel] = ceil(Llevel);
-		//m_Ls[level-m_topLevel] = ceil(L*Llevel/Lmin);
-	//	m_Ls[level-m_topLevel] = std::min(21u, m_Ls[level-m_topLevel]);
+		m_Ls[level-m_topLevel] = ceil(expansionOrder*Llevel/Lmin);
+		if (expansionOrderMax!=0) {
+			m_Ls[level-m_topLevel] = std::min(expansionOrderMax, m_Ls[level-m_topLevel]);
+		}
 	}
 
 
-	for (unsigned int level = m_topLevel; level<=levels; level++) {
+	/*for (unsigned int level = m_topLevel; level<=levels; level++) {
 		std::cout << "level = " << level << ", ";
 		std::cout << "L = " << m_Ls[level-m_topLevel] << ", ngp = " << (m_Ls[level-m_topLevel]+1)*(2*m_Ls[level-m_topLevel]+1) << std::endl;
-	}
+	}*/
 	for (unsigned int level = m_topLevel; level<=levels-1; level++) {
 		m_interpolatorsUpwards[level-m_topLevel] = InterpolateOnSphere<ValueType>(
 			m_Ls[level-m_topLevel+1], m_Ls[level-m_topLevel]);

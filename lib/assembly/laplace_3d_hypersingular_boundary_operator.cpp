@@ -171,7 +171,7 @@ laplace3dHypersingularBoundaryOperator(
     if (assemblyOptions.assemblyMode() == AssemblyOptions::FMM) {
         const FmmOptions& fmmOptions = assemblyOptions.fmmOptions();
         fmmTransform = boost::make_shared<FmmHypersingularBlackBox<KernelType, ResultType> >
-            (KernelFunctor(), fmmOptions.L, fmmOptions.levels);
+            (KernelFunctor(), fmmOptions.expansionOrder, fmmOptions.levels);
     }
 
     typedef GeneralHypersingularIntegralOperator<

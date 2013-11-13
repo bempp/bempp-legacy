@@ -312,25 +312,7 @@ applyBuiltInImpl(const TranspositionMode trans,
                  const ValueType alpha,
                  const ValueType beta) const
 {
-/*    if (trans != NO_TRANSPOSE && trans != TRANSPOSE && trans != CONJUGATE_TRANSPOSE)
-        throw std::runtime_error(
-                "DiscreteFmmBoundaryOperator::applyBuiltInImpl(): "
-                "transposition modes other than NO_TRANSPOSE, TRANSPOSE and "
-                "CONJUGATE_TRANSPOSE are not supported");
-    bool transposed = (trans & TRANSPOSE);
-
-    const blcluster* blockCluster = m_blockCluster.get();
-    blcluster* nonconstBlockCluster = const_cast<blcluster*>(blockCluster);
-
-    if ((!transposed && (columnCount() != x_in.n_rows ||
-                         rowCount() != y_inout.n_rows)) ||
-            (transposed && (rowCount() != x_in.n_rows ||
-                            columnCount() != y_inout.n_rows)))
-        throw std::invalid_argument(
-                "DiscreteFmmBoundaryOperator::applyBuiltInImpl(): "
-                "incorrect vector length");
-
-    if (beta == static_cast<ValueType>(0.))
+/*  if (beta == static_cast<ValueType>(0.))
         y_inout.fill(static_cast<ValueType>(0.));
     else
         y_inout *= beta;
@@ -432,9 +414,18 @@ applyBuiltInImpl(const TranspositionMode trans,
                 "CONJUGATE_TRANSPOSE are not supported");
 
 	bool transposed = (trans & TRANSPOSE);
+
+    if ((!transposed && (columnCount() != x_in.n_rows ||
+                         rowCount() != y_inout.n_rows)) ||
+            (transposed && (rowCount() != x_in.n_rows ||
+                            columnCount() != y_inout.n_rows)))
+        throw std::invalid_argument(
+                "DiscreteFmmBoundaryOperator::applyBuiltInImpl(): "
+                "incorrect vector length");
+
 	arma::Col<ValueType> y_in = y_inout;
 	y_inout.fill(0.0);
-	m_octree->matrixVectorProduct(x_in, y_inout);
+	m_octree->matrixVectorProduct(x_in, y_inout, trans);
 	y_inout = alpha*y_inout + beta*y_in;
 	//std::cout << "transposed = " << transposed << std::endl;
 	//std::cout << "alpha = " << alpha << std::endl;

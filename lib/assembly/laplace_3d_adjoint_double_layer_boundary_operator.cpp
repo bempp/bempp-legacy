@@ -71,7 +71,7 @@ laplace3dAdjointDoubleLayerBoundaryOperator(
     if (assemblyOptions.assemblyMode() == AssemblyOptions::FMM) {
         const FmmOptions& fmmOptions = assemblyOptions.fmmOptions();
         fmmTransform = boost::make_shared<FmmAdjointDoubleLayerBlackBox<KernelType, ResultType> >
-            (FmmKernelFunctor(), fmmOptions.L, fmmOptions.levels);
+            (FmmKernelFunctor(), fmmOptions.expansionOrder, fmmOptions.levels);
     }
 
     typedef GeneralElementarySingularIntegralOperator<

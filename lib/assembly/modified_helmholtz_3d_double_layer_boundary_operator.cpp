@@ -84,7 +84,8 @@ modifiedHelmholtz3dDoubleLayerBoundaryOperator(
     if (assemblyOptions.assemblyMode() == AssemblyOptions::FMM) {
         const FmmOptions& fmmOptions = assemblyOptions.fmmOptions();
         fmmTransform = boost::make_shared<FmmDoubleLayerHighFreq<ResultType> >
-            (waveNumber, fmmOptions.L, fmmOptions.levels);
+            (waveNumber, fmmOptions.expansionOrder, fmmOptions.expansionOrderMax, 
+			fmmOptions.levels);
     }
 
     typedef GeneralElementarySingularIntegralOperator<

@@ -27,6 +27,7 @@
 #include "../common/armadillo_fwd.hpp"
 #include "../common/common.hpp"
 #include "../common/types.hpp"
+#include "../assembly/transposition_mode.hpp"
 
 #include "../common/shared_ptr.hpp"
 #include "../fiber/scalar_traits.hpp"
@@ -81,7 +82,8 @@ public:
 	// affects the local and multipole coefficients in the the leaves
 	void matrixVectorProduct(
 		const arma::Col<ResultType>& x_in,
-		arma::Col<ResultType>& y_out);
+		arma::Col<ResultType>& y_out,
+		const TranspositionMode trans);
 
 	unsigned int levels() const {return m_levels;}
 	OctreeNode<ResultType> &getNode(unsigned long number, unsigned int level);

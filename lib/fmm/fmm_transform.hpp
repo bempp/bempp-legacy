@@ -179,7 +179,8 @@ class FmmHighFreq : public FmmTransform<ValueType>
 public:
 	typedef typename FmmTransform<ValueType>::CoordinateType CoordinateType;
 
-	FmmHighFreq(ValueType kappa, unsigned int L, unsigned int levels);
+	FmmHighFreq(ValueType kappa, unsigned int expansionOrder, 
+		unsigned int expansionOrderMax, unsigned int levels);
 
 	// multipole to multipole (M2M) translation matrix
 	virtual arma::Mat<ValueType> M2M(

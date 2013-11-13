@@ -25,7 +25,7 @@ namespace Bempp
 {
 
 FmmOptions::FmmOptions()
-	: levels(3), L(8), numQuadPoints(770)
+	: levels(3), expansionOrder(6), expansionOrderMax(0)
 {
 }
 

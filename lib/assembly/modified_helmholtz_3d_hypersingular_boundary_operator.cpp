@@ -231,7 +231,8 @@ modifiedHelmholtz3dHypersingularBoundaryOperator(
     if (assemblyOptions.assemblyMode() == AssemblyOptions::FMM) {
         const FmmOptions& fmmOptions = assemblyOptions.fmmOptions();
         fmmTransform = boost::make_shared<FmmHypersingularHighFreq<ResultType> >
-            (waveNumber, fmmOptions.L, fmmOptions.levels);
+            (waveNumber, fmmOptions.expansionOrder, fmmOptions.expansionOrderMax, 
+			fmmOptions.levels);
     }
 
     typedef GeneralHypersingularIntegralOperator<

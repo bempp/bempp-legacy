@@ -306,15 +306,21 @@ void Octree<ResultType>::nodeSize(unsigned int level,
 template <typename ResultType>
 void Octree<ResultType>::matrixVectorProduct(
 		const arma::Col<ResultType>& x_in,
-		arma::Col<ResultType>& y_out)
+		arma::Col<ResultType>& y_out,
+		const TranspositionMode trans)
 {
 	//arma::Col<ResultType> x_in(x_in2.n_rows);
 	//x_in.fill(0.);
 	//x_in(0) = 1;
 	const unsigned int nLeaves = getNodesPerLevel(m_levels);
+	bool transposed = (trans & TRANSPOSE);
 
 	arma::Col<ResultType> x_in_permuted(x_in.n_rows);
-	m_trial_p2o->unpermuteVector(x_in, x_in_permuted); // o to p
+	if (!transposed) {
+		m_trial_p2o->unpermuteVector(x_in, x_in_permuted); // o to p
+	} else {
+		m_test_p2o->unpermuteVector(x_in, x_in_permuted); // o to p
+	}
 
 	arma::Col<ResultType> y_out_permuted(y_out.n_rows);
 	y_out_permuted.fill(0.0);
@@ -366,7 +372,11 @@ void Octree<ResultType>::matrixVectorProduct(
 			*this, m_fmmTransform.getWeights(), y_out_permuted);
 	tbb::parallel_for<size_t>(0, nLeaves, evaluateFarFieldMatrixVectorProductHelper);
 
-	m_test_p2o->permuteVector(y_out_permuted, y_out); // p to o
+	if (!transposed) {
+		m_test_p2o->permuteVector(y_out_permuted, y_out); // p to o
+	} else {
+		m_trial_p2o->permuteVector(y_out_permuted, y_out); // p to o
+	}
 }
 
 

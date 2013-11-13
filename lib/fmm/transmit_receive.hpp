@@ -99,8 +99,10 @@ class FmmDoubleLayerHighFreq : public FmmHighFreq<ValueType>
 public:
 	typedef typename FmmHighFreq<ValueType>::CoordinateType CoordinateType;
 
-	FmmDoubleLayerHighFreq(ValueType kappa, unsigned int L, unsigned int levels)
-		: FmmHighFreq<ValueType>(kappa, L, levels) {}
+	FmmDoubleLayerHighFreq(ValueType kappa, unsigned int expansionOrder, 
+		unsigned int expansionOrderMax, unsigned int levels)
+		: FmmHighFreq<ValueType>(kappa, expansionOrder, 
+			expansionOrderMax, levels) {}
 
 	virtual void evaluateTrial(
 			const arma::Col<CoordinateType>& point,
@@ -125,8 +127,10 @@ class FmmAdjointDoubleLayerHighFreq : public FmmHighFreq<ValueType>
 public:
 	typedef typename FmmHighFreq<ValueType>::CoordinateType CoordinateType;
 
-	FmmAdjointDoubleLayerHighFreq(ValueType kappa, unsigned int L, unsigned int levels)
-		: FmmHighFreq<ValueType>(kappa, L, levels) {}
+	FmmAdjointDoubleLayerHighFreq(ValueType kappa, unsigned int expansionOrder, 
+		unsigned int expansionOrderMax, unsigned int levels)
+		: FmmHighFreq<ValueType>(kappa, expansionOrder, 
+			expansionOrderMax, levels) {}
 
 	virtual void evaluateTrial(
 			const arma::Col<CoordinateType>& point,
@@ -151,8 +155,10 @@ class FmmSingleLayerHighFreq : public FmmHighFreq<ValueType>
 public:
 	typedef typename FmmHighFreq<ValueType>::CoordinateType CoordinateType;
 
-	FmmSingleLayerHighFreq(ValueType kappa, unsigned int L, unsigned int levels)
-		: FmmHighFreq<ValueType>(kappa, L, levels) {}
+	FmmSingleLayerHighFreq(ValueType kappa, unsigned int expansionOrder, 
+		unsigned int expansionOrderMax, unsigned int levels)
+		: FmmHighFreq<ValueType>(kappa, expansionOrder, 
+			expansionOrderMax, levels) {}
 
 	virtual void evaluateTrial(
 			const arma::Col<CoordinateType>& point,
@@ -177,8 +183,10 @@ class FmmHypersingularHighFreq : public FmmHighFreq<ValueType>
 public:
 	typedef typename FmmHighFreq<ValueType>::CoordinateType CoordinateType;
 
-	FmmHypersingularHighFreq(ValueType kappa, unsigned int L, unsigned int levels)
-		: FmmHighFreq<ValueType>(kappa, L, levels) {}
+	FmmHypersingularHighFreq(ValueType kappa, unsigned int expansionOrder, 
+		unsigned int expansionOrderMax, unsigned int levels)
+		: FmmHighFreq<ValueType>(kappa, expansionOrder, 
+			expansionOrderMax, levels) {}
 
 	virtual void evaluateTrial(
 			const arma::Col<CoordinateType>& point,
