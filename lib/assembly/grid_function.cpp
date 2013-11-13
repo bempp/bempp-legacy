@@ -49,6 +49,7 @@
 #include "../grid/vtk_writer_helper.hpp"
 #include "../space/space.hpp"
 #include "identity_operator.hpp"
+#include "../io/gmsh.hpp"
 
 #include <boost/array.hpp>
 #include <fstream>
@@ -1022,12 +1023,12 @@ void GridFunction<BasisFunctionType, ResultType>::evaluate(
                 values(dim, p) += functionValues[0](dim, f, p) * localCoefficients[f];
 }
 
-//template <typename BasisFunctionType, typename ResultType>
-//void GridFunction<BasisFunctionType, ResultType>::exportToGmsh(
-//        const char* dataLabel, const char* fileName) const
-//{
-//    Bempp::exportToGmsh(*this, dataLabel, fileName);
-//}
+template <typename BasisFunctionType, typename ResultType>
+void GridFunction<BasisFunctionType, ResultType>::exportToGmsh(
+        const char* dataLabel, const char* fileName) const
+{
+    Bempp::exportToGmsh(*this, dataLabel, fileName);
+}
 
 template <typename BasisFunctionType, typename ResultType>
 GridFunction<BasisFunctionType, ResultType> operator+(
@@ -1087,142 +1088,6 @@ void exportToVtk(
                              fileNamesBase, filesPath, outputType);
 }
 
-//template <typename BasisFunctionType, typename ResultType>
-//void exportToGmsh(
-//        const GridFunction<BasisFunctionType, ResultType>& gridFunction,
-//        const char* dataLabel, const char* fileName)
-//{
-//    shared_ptr<const Space<BasisFunctionType> > space = gridFunction.space();
-//    if (!space)
-//        throw std::runtime_error("exportToGmsh() must not be "
-//                                 "called on an uninitialized GridFunction object");
-//    const size_t dimWorld = 3;
-//    if (space->grid()->dimWorld() != 3 || space->grid()->dim() != 2)
-//        throw std::runtime_error("exportToGmsh(): currently only "
-//                                 "2D grids in 3D spaces are supported");
-
-//    typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
-//    boost::array<arma::Mat<CoordinateType>, 5> localCoordsOnTriangles;
-
-//    localCoordsOnTriangles[0].set_size(2, 3);
-//    localCoordsOnTriangles[0].fill(0.);
-//    localCoordsOnTriangles[0](0, 1) = 1.;
-//    localCoordsOnTriangles[0](1, 2) = 1.;
-
-//    localCoordsOnTriangles[1] = localCoordsOnTriangles[0];
-
-//    localCoordsOnTriangles[2].set_size(2, 6);
-//    localCoordsOnTriangles[2].fill(0.);
-//    localCoordsOnTriangles[2](0, 1) = 1.;
-//    localCoordsOnTriangles[2](1, 2) = 1.;
-//    localCoordsOnTriangles[2](0, 3) = 0.5;
-//    localCoordsOnTriangles[2](0, 4) = 0.5;
-//    localCoordsOnTriangles[2](1, 4) = 0.5;
-//    localCoordsOnTriangles[2](1, 5) = 0.5;
-
-//    localCoordsOnTriangles[3].set_size(2, 10);
-//    localCoordsOnTriangles[3].fill(0.);
-//    localCoordsOnTriangles[3](0, 1) = 1.;
-//    localCoordsOnTriangles[3](1, 2) = 1.;
-//    localCoordsOnTriangles[3](0, 3) = 1./3.;
-//    localCoordsOnTriangles[3](0, 4) = 2./3.;
-//    localCoordsOnTriangles[3](0, 5) = 2./3.;
-//    localCoordsOnTriangles[3](1, 5) = 1./3.;
-//    localCoordsOnTriangles[3](0, 6) = 1./3.;
-//    localCoordsOnTriangles[3](1, 6) = 2./3.;
-//    localCoordsOnTriangles[3](1, 7) = 2./3.;
-//    localCoordsOnTriangles[3](1, 8) = 1./3.;
-//    localCoordsOnTriangles[3](0, 9) = 1./3.;
-//    localCoordsOnTriangles[3](1, 9) = 1./3.;
-
-//    localCoordsOnTriangles[4].set_size(2, 15);
-//    localCoordsOnTriangles[4].fill(0.);
-//    localCoordsOnTriangles[4](0, 1) = 1.;
-//    localCoordsOnTriangles[4](1, 2) = 1.;
-//    localCoordsOnTriangles[4](0, 3) = 0.25;
-//    localCoordsOnTriangles[4](0, 4) = 0.5;
-//    localCoordsOnTriangles[4](0, 5) = 0.75;
-//    localCoordsOnTriangles[4](0, 6) = 0.75;
-//    localCoordsOnTriangles[4](1, 6) = 0.25;
-//    localCoordsOnTriangles[4](0, 7) = 0.5;
-//    localCoordsOnTriangles[4](1, 7) = 0.5;
-//    localCoordsOnTriangles[4](0, 8) = 0.25;
-//    localCoordsOnTriangles[4](1, 8) = 0.75;
-//    localCoordsOnTriangles[4](1, 9) = 0.75;
-//    localCoordsOnTriangles[4](1, 10) = 0.5;
-//    localCoordsOnTriangles[4](1, 11) = 0.25;
-//    localCoordsOnTriangles[4](0, 12) = 0.25;
-//    localCoordsOnTriangles[4](1, 12) = 0.25;
-//    localCoordsOnTriangles[4](0, 13) = 0.5;
-//    localCoordsOnTriangles[4](1, 13) = 0.25;
-//    localCoordsOnTriangles[4](0, 14) = 0.25;
-//    localCoordsOnTriangles[4](1, 14) = 0.5;
-
-//    boost::array<int, 5> elementTypes;
-//    elementTypes[0] = 2;
-//    elementTypes[1] = 2;
-//    elementTypes[2] = 9;
-//    elementTypes[3] = 21;
-//    elementTypes[4] = 25;
-
-//    arma::Mat<ResultType> values;
-//    arma::Mat<CoordinateType> globalCoords;
-//    const GridView& view = space->gridView();
-//    std::auto_ptr<EntityIterator<0> > it = view.entityIterator<0>();
-
-//    size_t nodeCount = 0;
-//    size_t elementCount = 0;
-//    std::stringstream nodes, elements, data;
-//    while (!it->finished()) {
-//        const Entity<0>& element = it->entity();
-//        const Geometry& geo = element.geometry();
-//        if (!element.type().isTriangle())
-//            throw std::runtime_error(
-//                "GridFunction::exportToGmsh(): "
-//                "at present only triangular elements are supported");
-//        int order = space->shapeset(element).order();
-//        if (order >= localCoordsOnTriangles.size())
-//            throw std::runtime_error(
-//                "GridFunction::exportToGmsh(): "
-//                "Gmsh does not support triangular elements of order larger than 5");
-//        gridFunction.evaluate(element, localCoordsOnTriangles[order], values);
-//        geo.local2global(localCoordsOnTriangles[order], globalCoords);
-
-//        const size_t pointCount = localCoordsOnTriangles[order].n_cols;
-//        for (size_t p = 0; p < pointCount; ++p) {
-//            nodes << nodeCount + 1 + p;
-//            for (size_t d = 0; d < dimWorld; ++d)
-//                nodes  << ' ' << globalCoords(d, p);
-//            nodes << '\n';
-//        }
-
-//        elements << ++elementCount << ' ' << elementTypes[order] << " 2 1 1";
-//        for (size_t p = 0; p < pointCount; ++p)
-//            elements << ' ' << nodeCount + 1 + p;
-//        elements << '\n';
-
-//        for (size_t p = 0; p < pointCount; ++p) {
-//            data << nodeCount + 1 + p;
-//            for (size_t d = 0; d < values.n_rows; ++d)
-//                data << ' ' << realPart(values(d, p)); // TODO: export imag. part too
-//            data << '\n';
-//        }
-//        nodeCount += pointCount;
-//        it->next();
-//    }
-
-//    std::ofstream fout(fileName);
-//    fout << "$MeshFormat\n2.2 0 8\n$EndMeshFormat\n$Nodes\n";
-//    fout << nodeCount << '\n' << nodes.str();
-//    fout << "$EndNodes\n$Elements\n";
-//    fout << elementCount << '\n' << elements.str();
-//    fout << "$EndElements\n$NodeData\n";
-//    fout << "1\n\"" << dataLabel << "\"\n";
-//    fout << "1\n0.\n";
-//    fout << "3\n0\n" << gridFunction.componentCount() << '\n';
-//    fout << nodeCount << '\n' << data.str();
-//    fout << "$EndNodeData\n";
-//}
 
 BEMPP_GCC_DIAG_OFF(deprecated-declarations);
 

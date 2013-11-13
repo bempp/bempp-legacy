@@ -362,8 +362,16 @@ template <typename BasisFunctionType, typename ResultType>
 void exportToGmsh(GridFunction<BasisFunctionType,ResultType> gridFunction,
                                     const char* dataLabel,
                                     GmshIo& gmshIo,
-                                    GmshPostData::Type gmshPostDataType,
+                                    GmshPostData::Type gmshPostDataType = GmshPostData::ELEMENT_NODE,
                                     std::string complexMode = "real");
+
+template <typename BasisFunctionType, typename ResultType>
+void exportToGmsh(GridFunction<BasisFunctionType,ResultType> gridFunction,
+                                    const char* dataLabel,
+                                    const char* fileName,
+                                    GmshPostData::Type gmshPostDataType = GmshPostData::ELEMENT_NODE,
+                                    std::string complexMode = "real");
+
 
 
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(gridFunctionFromGmsh);

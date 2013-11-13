@@ -132,9 +132,9 @@ public:
     void reserveNumberOfElements(int n);
 
     void write(std::ostream& output) const;
-    void write(const std::string& fname) const;
+    void write(const std::string& fileName) const;
     static GmshData read(std::istream& input);
-    static GmshData read(const std::string& fname);
+    static GmshData read(const std::string& fileName);
 
 
 private:
@@ -256,7 +256,7 @@ public:
 
     GmshIo(const shared_ptr<const Grid>& grid);
     GmshIo(GmshData gmshData);
-    GmshIo(std::string fname);
+    GmshIo(std::string fileName);
 
     shared_ptr<const Grid> grid() const;
     const std::vector<int>& nodePermutation() const;
@@ -264,6 +264,7 @@ public:
     const std::vector<int>& inverseNodePermutation() const;
     const std::vector<int>& inverseElementPermutation() const;
     const GmshData& gmshData() const;
+    void write(std::string fileName) const;
     GmshData& gmshData();
 
 
@@ -289,13 +290,16 @@ template <typename BasisFunctionType, typename ResultType>
 void exportToGmsh(GridFunction<BasisFunctionType,ResultType> gridFunction,
                   const char* dataLabel,
                   GmshIo& gmshIo,
-                  GmshPostData::Type gmshPostDataType,
+                  GmshPostData::Type gmshPostDataType = GmshPostData::ELEMENT_NODE,
                   std::string complexMode = "real");
-
 
 template <typename BasisFunctionType, typename ResultType>
 void exportToGmsh(GridFunction<BasisFunctionType,ResultType> gridFunction,
-                  const char* dataLabel, const char* fileName);
+                  const char* dataLabel,
+                  const char* fileName,
+                  GmshPostData::Type gmshPostDataType = GmshPostData::ELEMENT_NODE,
+                  std::string complexMode = "real");
+
 
 
 

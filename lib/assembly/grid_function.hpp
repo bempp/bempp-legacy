@@ -476,9 +476,9 @@ public:
       \deprecated This member function is deprecated. Use the standalone
       function ::exportToGmsh() instead.
     */
-//    BEMPP_DEPRECATED
-//    void exportToGmsh(
-//        const char* dataLabel, const char* fileName) const;
+    BEMPP_DEPRECATED
+    void exportToGmsh(
+        const char* dataLabel, const char* fileName) const;
 
 private:
     void initializeFromCoefficients(

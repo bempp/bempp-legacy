@@ -683,10 +683,10 @@ void GmshData::write(std::ostream& output) const {
 
 
 }
-void GmshData::write(const std::string& fname) const {
+void GmshData::write(const std::string& fileName) const {
 
     std::ofstream out;
-    out.open(fname.c_str(), std::ios::trunc);
+    out.open(fileName.c_str(), std::ios::trunc);
     write(out);
     out.close();
 
@@ -1060,10 +1060,10 @@ GmshData GmshData::read(std::istream& input) {
 
 }
 
-GmshData GmshData::read(const std::string& fname) {
+GmshData GmshData::read(const std::string& fileName) {
 
     std::ifstream(input);
-    input.open(fname.c_str());
+    input.open(fileName.c_str());
     GmshData gmshData = read(input);
     input.close();
     return gmshData;
@@ -1128,7 +1128,7 @@ GmshIo::GmshIo(const shared_ptr<const Grid>& grid) : m_grid(grid) {
 
 GmshIo::GmshIo(GmshData gmshData) : m_gmshData(gmshData){}
 
-GmshIo::GmshIo(std::string fname) : m_gmshData(GmshData::read(fname)){}
+GmshIo::GmshIo(std::string fileName) : m_gmshData(GmshData::read(fileName)){}
 
 
 shared_ptr<const Grid> GmshIo::grid() const {
@@ -1249,6 +1249,12 @@ GmshData& GmshIo::gmshData() {
 
 }
 
+void GmshIo::write(std::string fileName) const {
+
+    m_gmshData.write(fileName);
+
+}
+
 template <typename BasisFunctionType, typename ResultType>
 GridFunction<BasisFunctionType,ResultType> gridFunctionFromGmsh(const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
             const GmshIo& gmshIo, shared_ptr<const Grid> grid,
@@ -1364,7 +1370,8 @@ void exportToGmsh(GridFunction<BasisFunctionType,ResultType> gridFunction,
                   std::string complexMode){
 
 
-    if (complexMode != "real" && complexMode != "imag" && complexMode != "abs")
+    if (complexMode != "real" && complexMode != "imag" &&
+            complexMode != "abs" && complexMode != "all")
         throw std::runtime_error("exportToGmsh(): complexMode must be one of 'real', 'imag', or 'abs'");
 
     shared_ptr<const Space<BasisFunctionType> > space = gridFunction.space();
@@ -1380,6 +1387,21 @@ void exportToGmsh(GridFunction<BasisFunctionType,ResultType> gridFunction,
         gmshIo = GmshIo(gridFunction.grid());
     if (gmshIo.grid()!= gridFunction.grid()) throw
         std::runtime_error("exportToGmsh(): gmshIo.grid()!= gridFunction.grid().");
+
+
+    if (complexMode =="all") {
+
+        std::string realLabel = std::string(dataLabel)+"_real";
+        std::string imagLabel = std::string(dataLabel)+"_imag";
+        std::string absLabel = std::string(dataLabel)+"_abs";
+
+        exportToGmsh(gridFunction,realLabel.c_str(),gmshIo,gmshPostDataType,"real");
+        exportToGmsh(gridFunction,imagLabel.c_str(),gmshIo,gmshPostDataType,"imag");
+        exportToGmsh(gridFunction,absLabel.c_str(),gmshIo,gmshPostDataType,"abs");
+
+        return;
+
+    }
 
     GmshData& gmshData = gmshIo.gmshData();
 
@@ -1541,140 +1563,154 @@ void exportToGmsh(GridFunction<BasisFunctionType,ResultType> gridFunction,
 
 template <typename BasisFunctionType, typename ResultType>
 void exportToGmsh(GridFunction<BasisFunctionType,ResultType> gridFunction,
-                  const char* dataLabel, const char* fileName)
-{
-    shared_ptr<const Space<BasisFunctionType> > space = gridFunction.space();
-    if (!space)
-        throw std::runtime_error("exportToGmsh() must not be "
-                                 "called on an uninitialized GridFunction object");
-    const size_t dimWorld = 3;
-    if (space->grid()->dimWorld() != 3 || space->grid()->dim() != 2)
-        throw std::runtime_error("exportToGmsh(): currently only "
-                                 "2D grids in 3D spaces are supported");
+                  const char* dataLabel,
+                  const char* fileName,
+                  GmshPostData::Type gmshPostDataType,
+                  std::string complexMode) {
 
-    typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
-    boost::array<arma::Mat<CoordinateType>, 5> localCoordsOnTriangles;
+    GmshIo gmshIo(gridFunction.grid());
+    exportToGmsh(gridFunction,dataLabel,gmshIo,gmshPostDataType,complexMode);
+    gmshIo.write(fileName);
 
-    localCoordsOnTriangles[0].set_size(2, 3);
-    localCoordsOnTriangles[0].fill(0.);
-    localCoordsOnTriangles[0](0, 1) = 1.;
-    localCoordsOnTriangles[0](1, 2) = 1.;
-
-    localCoordsOnTriangles[1] = localCoordsOnTriangles[0];
-
-    localCoordsOnTriangles[2].set_size(2, 6);
-    localCoordsOnTriangles[2].fill(0.);
-    localCoordsOnTriangles[2](0, 1) = 1.;
-    localCoordsOnTriangles[2](1, 2) = 1.;
-    localCoordsOnTriangles[2](0, 3) = 0.5;
-    localCoordsOnTriangles[2](0, 4) = 0.5;
-    localCoordsOnTriangles[2](1, 4) = 0.5;
-    localCoordsOnTriangles[2](1, 5) = 0.5;
-
-    localCoordsOnTriangles[3].set_size(2, 10);
-    localCoordsOnTriangles[3].fill(0.);
-    localCoordsOnTriangles[3](0, 1) = 1.;
-    localCoordsOnTriangles[3](1, 2) = 1.;
-    localCoordsOnTriangles[3](0, 3) = 1./3.;
-    localCoordsOnTriangles[3](0, 4) = 2./3.;
-    localCoordsOnTriangles[3](0, 5) = 2./3.;
-    localCoordsOnTriangles[3](1, 5) = 1./3.;
-    localCoordsOnTriangles[3](0, 6) = 1./3.;
-    localCoordsOnTriangles[3](1, 6) = 2./3.;
-    localCoordsOnTriangles[3](1, 7) = 2./3.;
-    localCoordsOnTriangles[3](1, 8) = 1./3.;
-    localCoordsOnTriangles[3](0, 9) = 1./3.;
-    localCoordsOnTriangles[3](1, 9) = 1./3.;
-
-    localCoordsOnTriangles[4].set_size(2, 15);
-    localCoordsOnTriangles[4].fill(0.);
-    localCoordsOnTriangles[4](0, 1) = 1.;
-    localCoordsOnTriangles[4](1, 2) = 1.;
-    localCoordsOnTriangles[4](0, 3) = 0.25;
-    localCoordsOnTriangles[4](0, 4) = 0.5;
-    localCoordsOnTriangles[4](0, 5) = 0.75;
-    localCoordsOnTriangles[4](0, 6) = 0.75;
-    localCoordsOnTriangles[4](1, 6) = 0.25;
-    localCoordsOnTriangles[4](0, 7) = 0.5;
-    localCoordsOnTriangles[4](1, 7) = 0.5;
-    localCoordsOnTriangles[4](0, 8) = 0.25;
-    localCoordsOnTriangles[4](1, 8) = 0.75;
-    localCoordsOnTriangles[4](1, 9) = 0.75;
-    localCoordsOnTriangles[4](1, 10) = 0.5;
-    localCoordsOnTriangles[4](1, 11) = 0.25;
-    localCoordsOnTriangles[4](0, 12) = 0.25;
-    localCoordsOnTriangles[4](1, 12) = 0.25;
-    localCoordsOnTriangles[4](0, 13) = 0.5;
-    localCoordsOnTriangles[4](1, 13) = 0.25;
-    localCoordsOnTriangles[4](0, 14) = 0.25;
-    localCoordsOnTriangles[4](1, 14) = 0.5;
-
-    boost::array<int, 5> elementTypes;
-    elementTypes[0] = 2;
-    elementTypes[1] = 2;
-    elementTypes[2] = 9;
-    elementTypes[3] = 21;
-    elementTypes[4] = 25;
-
-    arma::Mat<ResultType> values;
-    arma::Mat<CoordinateType> globalCoords;
-    const GridView& view = space->gridView();
-
-    std::auto_ptr<EntityIterator<0> > it = view.entityIterator<0>();
-
-    size_t nodeCount = 0;
-    size_t elementCount = 0;
-    std::stringstream nodes, elements, data;
-    while (!it->finished()) {
-        const Entity<0>& element = it->entity();
-        const Geometry& geo = element.geometry();
-        if (!element.type().isTriangle())
-            throw std::runtime_error(
-                "GridFunction::exportToGmsh(): "
-                "at present only triangular elements are supported");
-        int order = space->shapeset(element).order();
-        if (order >= localCoordsOnTriangles.size())
-            throw std::runtime_error(
-                "GridFunction::exportToGmsh(): "
-                "Gmsh does not support triangular elements of order larger than 5");
-        gridFunction.evaluate(element, localCoordsOnTriangles[order], values);
-        geo.local2global(localCoordsOnTriangles[order], globalCoords);
-
-        const size_t pointCount = localCoordsOnTriangles[order].n_cols;
-        for (size_t p = 0; p < pointCount; ++p) {
-            nodes << nodeCount + 1 + p;
-            for (size_t d = 0; d < dimWorld; ++d)
-                nodes  << ' ' << globalCoords(d, p);
-            nodes << '\n';
-        }
-
-        elements << ++elementCount << ' ' << elementTypes[order] << " 2 1 1";
-        for (size_t p = 0; p < pointCount; ++p)
-            elements << ' ' << nodeCount + 1 + p;
-        elements << '\n';
-
-        for (size_t p = 0; p < pointCount; ++p) {
-            data << nodeCount + 1 + p;
-            for (size_t d = 0; d < values.n_rows; ++d)
-                data << ' ' << realPart(values(d, p)); // TODO: export imag. part too
-            data << '\n';
-        }
-        nodeCount += pointCount;
-        it->next();
-    }
-
-    std::ofstream fout(fileName);
-    fout << "$MeshFormat\n2.2 0 8\n$EndMeshFormat\n$Nodes\n";
-    fout << nodeCount << '\n' << nodes.str();
-    fout << "$EndNodes\n$Elements\n";
-    fout << elementCount << '\n' << elements.str();
-    fout << "$EndElements\n$NodeData\n";
-    fout << "1\n\"" << dataLabel << "\"\n";
-    fout << "1\n0.\n";
-    fout << "3\n0\n" << gridFunction.componentCount() << '\n';
-    fout << nodeCount << '\n' << data.str();
-    fout << "$EndNodeData\n";
 }
+
+
+//template <typename BasisFunctionType, typename ResultType>
+//void exportToGmsh(GridFunction<BasisFunctionType,ResultType> gridFunction,
+//                  const char* dataLabel, const char* fileName)
+//{
+//    shared_ptr<const Space<BasisFunctionType> > space = gridFunction.space();
+//    if (!space)
+//        throw std::runtime_error("exportToGmsh() must not be "
+//                                 "called on an uninitialized GridFunction object");
+//    const size_t dimWorld = 3;
+//    if (space->grid()->dimWorld() != 3 || space->grid()->dim() != 2)
+//        throw std::runtime_error("exportToGmsh(): currently only "
+//                                 "2D grids in 3D spaces are supported");
+
+//    typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
+//    boost::array<arma::Mat<CoordinateType>, 5> localCoordsOnTriangles;
+
+//    localCoordsOnTriangles[0].set_size(2, 3);
+//    localCoordsOnTriangles[0].fill(0.);
+//    localCoordsOnTriangles[0](0, 1) = 1.;
+//    localCoordsOnTriangles[0](1, 2) = 1.;
+
+//    localCoordsOnTriangles[1] = localCoordsOnTriangles[0];
+
+//    localCoordsOnTriangles[2].set_size(2, 6);
+//    localCoordsOnTriangles[2].fill(0.);
+//    localCoordsOnTriangles[2](0, 1) = 1.;
+//    localCoordsOnTriangles[2](1, 2) = 1.;
+//    localCoordsOnTriangles[2](0, 3) = 0.5;
+//    localCoordsOnTriangles[2](0, 4) = 0.5;
+//    localCoordsOnTriangles[2](1, 4) = 0.5;
+//    localCoordsOnTriangles[2](1, 5) = 0.5;
+
+//    localCoordsOnTriangles[3].set_size(2, 10);
+//    localCoordsOnTriangles[3].fill(0.);
+//    localCoordsOnTriangles[3](0, 1) = 1.;
+//    localCoordsOnTriangles[3](1, 2) = 1.;
+//    localCoordsOnTriangles[3](0, 3) = 1./3.;
+//    localCoordsOnTriangles[3](0, 4) = 2./3.;
+//    localCoordsOnTriangles[3](0, 5) = 2./3.;
+//    localCoordsOnTriangles[3](1, 5) = 1./3.;
+//    localCoordsOnTriangles[3](0, 6) = 1./3.;
+//    localCoordsOnTriangles[3](1, 6) = 2./3.;
+//    localCoordsOnTriangles[3](1, 7) = 2./3.;
+//    localCoordsOnTriangles[3](1, 8) = 1./3.;
+//    localCoordsOnTriangles[3](0, 9) = 1./3.;
+//    localCoordsOnTriangles[3](1, 9) = 1./3.;
+
+//    localCoordsOnTriangles[4].set_size(2, 15);
+//    localCoordsOnTriangles[4].fill(0.);
+//    localCoordsOnTriangles[4](0, 1) = 1.;
+//    localCoordsOnTriangles[4](1, 2) = 1.;
+//    localCoordsOnTriangles[4](0, 3) = 0.25;
+//    localCoordsOnTriangles[4](0, 4) = 0.5;
+//    localCoordsOnTriangles[4](0, 5) = 0.75;
+//    localCoordsOnTriangles[4](0, 6) = 0.75;
+//    localCoordsOnTriangles[4](1, 6) = 0.25;
+//    localCoordsOnTriangles[4](0, 7) = 0.5;
+//    localCoordsOnTriangles[4](1, 7) = 0.5;
+//    localCoordsOnTriangles[4](0, 8) = 0.25;
+//    localCoordsOnTriangles[4](1, 8) = 0.75;
+//    localCoordsOnTriangles[4](1, 9) = 0.75;
+//    localCoordsOnTriangles[4](1, 10) = 0.5;
+//    localCoordsOnTriangles[4](1, 11) = 0.25;
+//    localCoordsOnTriangles[4](0, 12) = 0.25;
+//    localCoordsOnTriangles[4](1, 12) = 0.25;
+//    localCoordsOnTriangles[4](0, 13) = 0.5;
+//    localCoordsOnTriangles[4](1, 13) = 0.25;
+//    localCoordsOnTriangles[4](0, 14) = 0.25;
+//    localCoordsOnTriangles[4](1, 14) = 0.5;
+
+//    boost::array<int, 5> elementTypes;
+//    elementTypes[0] = 2;
+//    elementTypes[1] = 2;
+//    elementTypes[2] = 9;
+//    elementTypes[3] = 21;
+//    elementTypes[4] = 25;
+
+//    arma::Mat<ResultType> values;
+//    arma::Mat<CoordinateType> globalCoords;
+//    const GridView& view = space->gridView();
+
+//    std::auto_ptr<EntityIterator<0> > it = view.entityIterator<0>();
+
+//    size_t nodeCount = 0;
+//    size_t elementCount = 0;
+//    std::stringstream nodes, elements, data;
+//    while (!it->finished()) {
+//        const Entity<0>& element = it->entity();
+//        const Geometry& geo = element.geometry();
+//        if (!element.type().isTriangle())
+//            throw std::runtime_error(
+//                "GridFunction::exportToGmsh(): "
+//                "at present only triangular elements are supported");
+//        int order = space->shapeset(element).order();
+//        if (order >= localCoordsOnTriangles.size())
+//            throw std::runtime_error(
+//                "GridFunction::exportToGmsh(): "
+//                "Gmsh does not support triangular elements of order larger than 5");
+//        gridFunction.evaluate(element, localCoordsOnTriangles[order], values);
+//        geo.local2global(localCoordsOnTriangles[order], globalCoords);
+
+//        const size_t pointCount = localCoordsOnTriangles[order].n_cols;
+//        for (size_t p = 0; p < pointCount; ++p) {
+//            nodes << nodeCount + 1 + p;
+//            for (size_t d = 0; d < dimWorld; ++d)
+//                nodes  << ' ' << globalCoords(d, p);
+//            nodes << '\n';
+//        }
+
+//        elements << ++elementCount << ' ' << elementTypes[order] << " 2 1 1";
+//        for (size_t p = 0; p < pointCount; ++p)
+//            elements << ' ' << nodeCount + 1 + p;
+//        elements << '\n';
+
+//        for (size_t p = 0; p < pointCount; ++p) {
+//            data << nodeCount + 1 + p;
+//            for (size_t d = 0; d < values.n_rows; ++d)
+//                data << ' ' << realPart(values(d, p)); // TODO: export imag. part too
+//            data << '\n';
+//        }
+//        nodeCount += pointCount;
+//        it->next();
+//    }
+
+//    std::ofstream fout(fileName);
+//    fout << "$MeshFormat\n2.2 0 8\n$EndMeshFormat\n$Nodes\n";
+//    fout << nodeCount << '\n' << nodes.str();
+//    fout << "$EndNodes\n$Elements\n";
+//    fout << elementCount << '\n' << elements.str();
+//    fout << "$EndElements\n$NodeData\n";
+//    fout << "1\n\"" << dataLabel << "\"\n";
+//    fout << "1\n0.\n";
+//    fout << "3\n0\n" << gridFunction.componentCount() << '\n';
+//    fout << nodeCount << '\n' << data.str();
+//    fout << "$EndNodeData\n";
+//}
 
 
 #define INSTANTIATE_FREE_FUNCTIONS(BASIS, RESULT) \
@@ -1684,7 +1720,8 @@ template GridFunction<BASIS, RESULT> gridFunctionFromGmsh( \
                 GmshPostData::Type gmshPostData, \
                 int index = 0); \
 template void exportToGmsh(GridFunction<BASIS, RESULT> gridFunction, \
-                      const char* dataLabel, const char* fileName); \
+                      const char* dataLabel, const char* fileName, \
+                      GmshPostData::Type gmshPostDataType, std::string complexMode); \
 template void exportToGmsh(GridFunction<BASIS, RESULT> gridFunction, \
                       const char* dataLabel, \
                       GmshIo& gmshIo, GmshPostData::Type gmshPostDataType, \

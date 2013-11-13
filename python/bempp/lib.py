@@ -2358,7 +2358,7 @@ def areInside(grid, points):
                          "dimensions of the world in which 'grid' is embedded")
     return numpy.array(core.areInside(grid, points))
 
-def exportToGmsh(gridFunction, dataLabel, fileName):
+def exportToGmsh(gridFunction,*args):
     """
     Export a grid function to a Gmsh file.
 
@@ -2369,11 +2369,38 @@ def exportToGmsh(gridFunction, dataLabel, fileName):
            Label for the data series in the Gmsh file.
        - fileName (string)
            Name of the file to be created.
+       - gmshPostDataType (string)
+           Type of Gmsh dataset to use,
+           either 'node', 'element', or 'element_node'.
+           Default is 'element_node'.
+       - complexMode (string)
+           Either 'real', 'imag', 'abs', or 'all'. Describes
+           whether the real part, complex, part, absolute value or
+           all of them are saved as Gmsh datasets. Default is 'real'
+
+    *Parameters:* (Overload)
+       - gridFunction (GridFunction)
+           The grid function to be exported.
+       - dataLabel (string)
+           Label for the data series in the Gmsh file.
+       - gmshIo (GmshIo object)
+           Name of a GmshIo object that administrates dof numbering
+           for the Gmsh file.
+       - gmshPostDataType (string)
+           Type of Gmsh dataset to use,
+         either 'node', 'element', or 'element_node'.
+           Default is 'element_node'.
+       - complexMode (string)
+           Either 'real', 'imag', 'abs', or 'all'. Describes
+           whether the real part, complex, part, absolute value or
+           all of them are saved as Gmsh datasets. Default is 'real'
+
+
     """
     return _constructObjectTemplatedOnBasisAndResult(
         core, "exportToGmsh",
         gridFunction.basisFunctionType(), gridFunction.resultType(),
-        gridFunction, dataLabel, fileName)
+        gridFunction,*args)
 
 def exportToVtk(gridFunction, dataType, dataLabel, fileNamesBase, filesPath=None, type='ascii'):
     """
