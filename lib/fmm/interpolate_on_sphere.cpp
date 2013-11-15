@@ -19,7 +19,7 @@
 // THE SOFTWARE.
 
 #include "interpolate_on_sphere.hpp"
-#include "fmm_transform.hpp"
+#include "legendre_roots.hpp"
 
 #include "../fiber/explicit_instantiation.hpp"
 
@@ -172,12 +172,12 @@ InterpolateOnSphere<ResultType>::InterpolateOnSphere(
 
 	// can use precalculated Gauss-Legendre nodes, but just calculate for now
 	CoordinateType xoldMem[Lold+1], woldMem[Lold+1];
-	legendre_roots(Lold+1, xoldMem, woldMem);
+	LegendreRoots<CoordinateType>(Lold+1, xoldMem, woldMem);
 	const arma::Row<CoordinateType> xold(xoldMem, Lold+1);
 	const arma::Row<CoordinateType> wold(woldMem, Lold+1);
 
 	CoordinateType xnewMem[Lnew+1], wnewMem[Lnew+1];
-	legendre_roots(Lnew+1, xnewMem, wnewMem);
+	LegendreRoots<CoordinateType>(Lnew+1, xnewMem, wnewMem);
 	const arma::Row<CoordinateType> xnew(xnewMem, Lnew+1);
 
 	// As a starting point we have implemented the "semi-naive" implementation of 

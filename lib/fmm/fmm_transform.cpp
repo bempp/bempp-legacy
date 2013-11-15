@@ -21,6 +21,7 @@
 #include "fmm_transform.hpp"
 #include "interpolate_on_sphere.hpp"
 #include "lebedev.hpp"
+#include "legendre_roots.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
 #include <complex>
@@ -42,6 +43,10 @@ namespace Bempp
 
 //template <typename ValueType>  // must be a real type
 //void legendre_roots(unsigned int N, ValueType *roots, ValueType *weights);
+
+template <typename ValueType>
+ValueType getI();
+
 
 template <typename ValueType>
 void 
@@ -114,7 +119,7 @@ void FmmHighFreq<ValueType>::generateGaussPoints()
 	// form Gauss-Legendre quadrature points along x = cos(theta)
 	unsigned L = m_Ls[m_Ls.size()-1]; // for leaves
 	CoordinateType costheta[L+1], sintheta[L+1], wtheta[L+1];
-	legendre_roots(L+1, costheta, wtheta);
+	LegendreRoots<CoordinateType>(L+1, costheta, wtheta);
 	for (unsigned int l=0; l<L+1; l++) {
 		sintheta[l] = sqrt(1-costheta[l]*costheta[l]);
 	}
@@ -152,7 +157,7 @@ arma::Mat<ValueType> FmmHighFreq<ValueType>::M2M(
 	// form quadrature point helper arrays
 	unsigned L = m_Ls[level-2];
 	CoordinateType costheta[L+1], sintheta[L+1], wtheta[L+1];
-	legendre_roots(L+1, costheta, wtheta);
+	LegendreRoots<CoordinateType>(L+1, costheta, wtheta);
 	for (unsigned int l=0; l<L+1; l++) {
 		sintheta[l] = sqrt(1-costheta[l]*costheta[l]);
 	}
@@ -251,7 +256,7 @@ FmmHighFreq<ValueType>::M2L(
 	// form quadrature point helper arrays
 	unsigned L = m_Ls[level-2];
 	CoordinateType costheta[L+1], sintheta[L+1], wtheta[L+1];
-	legendre_roots(L+1, costheta, wtheta);
+	LegendreRoots<CoordinateType>(L+1, costheta, wtheta);
 	for (unsigned int l=0; l<L+1; l++) {
 		sintheta[l] = sqrt(1-costheta[l]*costheta[l]);
 	}

@@ -37,54 +37,6 @@ namespace Bempp
 //template <typename ValueType> class InterpolateOnSphere;
 /** \endcond */
 
-template <typename ValueType>
-ValueType getI();
-
-// P'_n(x): Derivative of the n_{th} order Legendre polynomial w.r.t. x
-template <typename ValueType> // must be a real type
-ValueType diff_legendre_p(int n, ValueType x)
-{
-	using namespace boost::math;
-	return n*( x*legendre_p(n, x) - legendre_p(n-1, x) ) / (x*x - 1);
-}
-
-// from http://rosettacode.org/wiki/Numerical_integration/Gauss-Legendre_Quadrature
-// find the Gauss Legendre quadrature points, P_n(xi) = 0
-template <typename ValueType>  // must be a real type
-void legendre_roots(unsigned int N, ValueType *roots, ValueType *weights)
-{
-	using namespace boost::math;
-	ValueType pi = boost::math::constants::pi<ValueType>();
-
-	roots[int(N/2)] = 0; // take advantage of symmetry
-	for (unsigned int i = 1; i <= int(N/2); i++) {
-		ValueType x, x1;
-		x = cos(pi * (i - .25) / (N + .5)); // guess root position
-		int iter=100;
-		do { // apply Newton-Raphson method to find roots
-			x1 = x;
-			x -= legendre_p(N, x) / diff_legendre_p(N, x);
-		} while (x != x1 && --iter); // well-behaved function, convergence guaranteed
-		roots[i-1] =  x;
-		roots[N-i] = -x;
- 	}
-
-	for (unsigned int i = 1; i <= int(N/2)+1; i++) {
-		ValueType x = roots[i-1];
-		ValueType diffPx = diff_legendre_p(N, x);
-		weights[i-1] = 2 / ((1 - x*x) * diffPx*diffPx);
-		weights[N-i] = weights[i-1];
-	}
-
-/*	for (unsigned int i = 1; i <= N; i++)
-		std::cout << roots[i - 1] << ", ";, unsigned int levels
-	std::cout <<std::endl;
- 
-	for (unsigned int i = 1; i <= N; i++)
-		std::cout << weights[i - 1] << ", ";
-	std::cout <<std::endl;
-*/
-}
 
 // abstract for now, will use Chebyshev as default in future versions
 template <typename ValueType>
