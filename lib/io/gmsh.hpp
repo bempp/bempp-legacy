@@ -26,6 +26,7 @@
 #include <iostream>
 #include <string>
 #include <memory>
+#include <set>
 #include "../common/shared_ptr.hpp"
 #include "../assembly/grid_function.hpp"
 #include <armadillo>
@@ -131,10 +132,16 @@ public:
     void reserveNumberOfNodes(int n);
     void reserveNumberOfElements(int n);
 
+    void resetNodeDataSets();
+    void resetElementDataSets();
+    void resetElementNodeDataSets();
+
+    void resetDataSets();
+
     void write(std::ostream& output) const;
     void write(const std::string& fileName) const;
-    static GmshData read(std::istream& input);
-    static GmshData read(const std::string& fileName);
+    static GmshData read(std::istream& input, int elementType = 2, int physicalEntity = -1);
+    static GmshData read(const std::string& fileName, int elementType = 2, int physicalEntity = -1);
 
 
 private:
@@ -237,6 +244,8 @@ private:
     std::vector<shared_ptr<Node> > m_nodes;
     std::vector<shared_ptr<Element> > m_elements;
 
+    std::set<int> m_elementIndices;
+
     std::vector<PeriodicEntity> m_periodicEntities;
     std::vector<PeriodicNode> m_periodicNodes;
 
@@ -256,7 +265,7 @@ public:
 
     GmshIo(const shared_ptr<const Grid>& grid);
     GmshIo(GmshData gmshData);
-    GmshIo(std::string fileName);
+    GmshIo(std::string fileName, int physicalEntity = -1);
 
     shared_ptr<const Grid> grid() const;
     const std::vector<int>& nodePermutation() const;
@@ -266,6 +275,13 @@ public:
     const GmshData& gmshData() const;
     void write(std::string fileName) const;
     GmshData& gmshData();
+
+    void resetNodeDataSets();
+    void resetElementDataSets();
+    void resetElementNodeDataSets();
+
+    void resetDataSets();
+
 
 
 private:

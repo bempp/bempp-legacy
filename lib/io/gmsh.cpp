@@ -693,7 +693,7 @@ void GmshData::write(const std::string& fileName) const {
 }
 
 
-GmshData GmshData::read(std::istream& input) {
+GmshData GmshData::read(std::istream& input, int elementType, int physicalEntity) {
 
     bool haveMeshFormat = false;
     bool haveNodes = false;
@@ -761,9 +761,9 @@ GmshData GmshData::read(std::istream& input) {
                 std::getline(input,line);
                     StringVector tokens = stringTokens(line);
                     int index = boost::lexical_cast<int>(tokens.at(0));
-                    int elementType = boost::lexical_cast<int>(tokens.at(1));
+                    int currentElementType = boost::lexical_cast<int>(tokens.at(1));
                     int ntags = boost::lexical_cast<int>(tokens.at(2));
-                    int physicalEntity = boost::lexical_cast<int>(tokens.at(3));
+                    int currentPhysicalEntity = boost::lexical_cast<int>(tokens.at(3));
                     int elementaryEntity = boost::lexical_cast<int>(tokens.at(4));
                     int npartitions = 0;
                     if (ntags > 5) npartitions = boost::lexical_cast<int>(tokens.at(5));
@@ -773,7 +773,11 @@ GmshData GmshData::read(std::istream& input) {
                     std::vector<int> nodes;
                     for (int i = 3 + ntags; i < tokens.size(); ++i)
                         nodes.push_back(boost::lexical_cast<int>(tokens.at(i)));
-                    gmshData.addElement(index,elementType,nodes,physicalEntity,elementaryEntity,partitions);
+                    if ((elementType == -1 || currentElementType == elementType) &&
+                            (physicalEntity == -1 || currentPhysicalEntity == physicalEntity)) {
+                            gmshData.addElement(index,currentElementType,nodes,physicalEntity,elementaryEntity,partitions);
+                            gmshData.m_elementIndices.insert(index);
+                    }
                 }
             std::getline(input,line);
             if (line != "$EndElements") throw std::runtime_error(
@@ -944,7 +948,8 @@ GmshData GmshData::read(std::istream& input) {
                 for (int j = 1; j < tokens.size(); ++j) {
                     values.push_back(boost::lexical_cast<double>(tokens[j]));
                 }
-                gmshData.addElementData(dataSetIndex,index,values);
+                if (gmshData.m_elementIndices.find(index)!=gmshData.m_elementIndices.end())
+                    gmshData.addElementData(dataSetIndex,index,values);
             }
 
             std::getline(input,line);
@@ -1007,7 +1012,8 @@ GmshData GmshData::read(std::istream& input) {
                     for (int k = 0; k < numberOfFieldComponents; ++k)
                         values[j].push_back(boost::lexical_cast<double>(tokens[2+j*numberOfFieldComponents+k]));
                 }
-                gmshData.addElementNodeData(dataSetIndex,index,values);
+                if (gmshData.m_elementIndices.find(index)!=gmshData.m_elementIndices.end())
+                    gmshData.addElementNodeData(dataSetIndex,index,values);
             }
 
             std::getline(input,line);
@@ -1060,15 +1066,36 @@ GmshData GmshData::read(std::istream& input) {
 
 }
 
-GmshData GmshData::read(const std::string& fileName) {
+GmshData GmshData::read(const std::string& fileName, int elementType, int physicalEntity) {
 
     std::ifstream(input);
     input.open(fileName.c_str());
-    GmshData gmshData = read(input);
+    GmshData gmshData = read(input,elementType,physicalEntity);
     input.close();
     return gmshData;
 
 }
+
+void GmshData::resetNodeDataSets() {
+    m_nodeDataSets.clear();
+}
+
+void GmshData::resetElementDataSets() {
+    m_elementDataSets.clear();
+}
+
+void GmshData::resetElementNodeDataSets(){
+    m_elementNodeDataSets.clear();
+}
+
+void GmshData::resetDataSets() {
+
+    resetNodeDataSets();
+    resetElementDataSets();
+    resetElementNodeDataSets();
+
+}
+
 
 GmshIo::GmshIo(const shared_ptr<const Grid>& grid) : m_grid(grid) {
 
@@ -1128,7 +1155,7 @@ GmshIo::GmshIo(const shared_ptr<const Grid>& grid) : m_grid(grid) {
 
 GmshIo::GmshIo(GmshData gmshData) : m_gmshData(gmshData){}
 
-GmshIo::GmshIo(std::string fileName) : m_gmshData(GmshData::read(fileName)){}
+GmshIo::GmshIo(std::string fileName, int physicalEntity) : m_gmshData(GmshData::read(fileName,2,physicalEntity)){}
 
 
 shared_ptr<const Grid> GmshIo::grid() const {
@@ -1142,38 +1169,30 @@ shared_ptr<const Grid> GmshIo::grid() const {
     std::vector<int> elementIndices;
     m_gmshData.getElementIndices(elementIndices);
 
-    for (int i = 0 ; i < nodeIndices.size() ; ++i) {
-
-        if (nodeIndices[i] != i+1) throw std::runtime_error(
-                    "Node indices must be of the form 1,2,3,...");
-    }
-
-    for (int i = 0 ; i < elementIndices.size() ; ++ i) {
-
-        if (elementIndices[i] != i+1) throw std::runtime_error(
-                    "Element indices must be of the form 1,2,3,...");
-    }
-
     int numberOfGmshNodes = m_gmshData.numberOfNodes();
     int numberOfGmshElements = m_gmshData.numberOfElements();
 
+    int maxNodeIndex = *(std::max_element(nodeIndices.begin(),nodeIndices.end()));
+    int maxElementIndex = *(std::max_element(elementIndices.begin(),elementIndices.end()));
+
     std::vector<std::vector<int> > elements;
 
-    m_inverseNodePermutation.resize(numberOfGmshNodes+1,-1);
-    m_inverseElementPermutation.resize(numberOfGmshElements+1,-1);
+    m_inverseNodePermutation.resize(maxNodeIndex+1,-1);
+    m_inverseElementPermutation.resize(maxElementIndex+1,-1);
     std::vector<int> domainIndices;
 
-    for (int i = 0; i < numberOfGmshElements; ++i) {
+    for (int i = 0; i < elementIndices.size(); ++i) {
         int physicalEntity;
         int elementaryEntity;
         int elementType;
+        int index = elementIndices[i];
         std::vector<int> nodes;
 
-        m_gmshData.getElement(i+1,elementType,nodes,physicalEntity,elementaryEntity);
+        m_gmshData.getElement(index,elementType,nodes,physicalEntity,elementaryEntity);
         if (elementType == 2) {
             int elementIndex = m_elementPermutation.size();
-            m_elementPermutation.push_back(i+1);
-            m_inverseElementPermutation[i+1] = elementIndex;
+            m_elementPermutation.push_back(index);
+            m_inverseElementPermutation[index] = elementIndex;
             elements.push_back(std::vector<int>());
             domainIndices.push_back(physicalEntity);
             std::vector<int>& currentNodes = elements.back();
@@ -1255,6 +1274,23 @@ void GmshIo::write(std::string fileName) const {
 
 }
 
+void GmshIo::resetNodeDataSets() {
+    m_gmshData.resetNodeDataSets();
+}
+
+void GmshIo::resetElementDataSets() {
+    m_gmshData.resetElementDataSets();
+}
+
+void GmshIo::resetElementNodeDataSets() {
+    m_gmshData.resetElementNodeDataSets();
+}
+
+void GmshIo::resetDataSets() {
+    m_gmshData.resetDataSets();
+}
+
+
 template <typename BasisFunctionType, typename ResultType>
 GridFunction<BasisFunctionType,ResultType> gridFunctionFromGmsh(const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
             const GmshIo& gmshIo, shared_ptr<const Grid> grid,
@@ -1317,6 +1353,7 @@ GridFunction<BasisFunctionType,ResultType> gridFunctionFromGmsh(const shared_ptr
         }
         const std::vector<int>& inverseElementPermutation = gmshIo.inverseElementPermutation();
         int numberOfElements = currentGrid->leafView()->entityCount(0);
+        std::cout << elementIndices.size() << " " << numberOfElements << std::endl;
         if (elementIndices.size() != numberOfElements) throw
             std::runtime_error("gridFunctionFromGmsh(): Number of element indices does not agree with the number of grid elements.");
         arma::Col<ResultType> coefficients(3*numberOfElements);

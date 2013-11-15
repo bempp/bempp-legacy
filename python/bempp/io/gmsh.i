@@ -255,8 +255,15 @@ public:
     void reserveNumberOfNodes(int n);
     void reserveNumberOfElements(int n);
 
+    void resetNodeDataSets();
+    void resetElementDataSets();
+    void resetElementNodeDataSets();
+
+    void resetDataSets();
+
+
     void write(const std::string& fname) const;
-    static GmshData read(const std::string& fname);
+    static GmshData read(const std::string& fname, int elementType = 2, int physicalEntity = -1);
 
 
     %clear double& x;
@@ -337,14 +344,22 @@ public:
 
     GmshIo(const boost::shared_ptr<const Grid>& grid);
     GmshIo(GmshData gmshData);
-    GmshIo(std::string fname);
+    GmshIo(std::string fname, int physicalEntity = -1);
 
     boost::shared_ptr<const Grid> grid() const;
     const std::vector<int>& nodePermutation() const;
     const std::vector<int>& elementPermutation() const;
     const std::vector<int>& inverseNodePermutation() const;
     const std::vector<int>& inverseElementPermutation() const;
+    void write(std::string fileName) const;
     const GmshData& gmshData() const;
+
+    void resetNodeDataSets();
+    void resetElementDataSets();
+    void resetElementNodeDataSets();
+
+    void resetDataSets();
+
 };
 
 template <typename BasisFunctionType, typename ResultType>
