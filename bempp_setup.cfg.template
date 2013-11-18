@@ -53,7 +53,7 @@ build_jobs=2
 # cflags =
 
 # C++ Compiler flags
-#  cxxflags =
+cxxflags = -std=c++11
 
 # Optimization flags
 # optflags = -O3 -march=native (Default on Linux)
