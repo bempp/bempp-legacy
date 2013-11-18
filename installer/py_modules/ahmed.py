@@ -72,7 +72,9 @@ def prepare(root,config):
                   "ahmed_retry_if_zero_and_orig_cross_ACA.h.patch",
                   "ahmed_changelog_ACA.h.patch",
                   "ahmed_permuted_indices_bemcluster.h.patch",
-                  "ahmed_changelog_bemcluster.h.patch"):
+                  "ahmed_changelog_bemcluster.h.patch",
+		  "ahmed_omp.patch",
+                  "ahmed_basmod_h.patch"):
             py_patch.fromfile(root+"/installer/patches/"+s).apply()
         shutil.copy(root+"/installer/patches/ahmed_bbx_bbxbemcluster.h",
                     "./Include/bbxbemcluster.h")

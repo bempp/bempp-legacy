@@ -75,6 +75,24 @@ def prepare(root,config):
             patch.apply()
 
             os.chdir(cwd)
+        elif i==2:
+            print "Patching "+dune_names[i]
+            cwd = os.getcwd()
+            os.chdir(dep_build_dir+"/dune")
+            patch = py_patch.fromfile(root+"/installer/patches/dune-grid_dgfparser.patch")
+            patch.apply()
+            
+            patch = py_patch.fromfile(root+"/installer/patches/dune-grid_yaspgrid.patch")
+            patch.apply()
+            os.chdir(cwd)
+        elif i==0:
+            print "Patching "+dune_names[i]
+            cwd = os.getcwd()
+            os.chdir(dep_build_dir+"/dune")
+            patch = py_patch.fromfile(root+"/installer/patches/dune-common_nullptr.patch")
+            patch.apply()
+            os.chdir(cwd)
+
 
     # Copy over dune-foamgrid
     tools.checkDeleteDirectory(dep_build_dir+"/dune/dune-foamgrid")
@@ -99,7 +117,6 @@ def configure(root,config):
                             "' CXXFLAGS='"+cxxflags+
                             "' ./configure --disable-documentation "
                             "--enable-shared=yes --enable-static=no "
-                            "--disable-gxx0xcheck "
                             "--enable-fieldvector-size-is-method=yes "
                             "--prefix='"+dune_install_dir+"' "
                             "--libdir='"+dune_install_dir+"/lib' "

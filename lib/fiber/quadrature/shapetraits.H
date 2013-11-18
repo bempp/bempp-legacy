@@ -68,7 +68,7 @@ template<> struct ShapeTraits<LINE>
 	   num_edges = 2};
 
 	// CollocationPoints on DISCONTINUOUS boundaries need to be indented
-	static const double indent = 0.25;
+	static constexpr double indent = 0.25;
 };
 
 
@@ -92,7 +92,7 @@ template<> struct ShapeTraits<TRIANGLE>
 	   num_edges = 3};
 	
 	// CollocationPoints on DISCONTINUOUS boundaries need to be indented
-	static const double indent = 0.16666666666;
+	static constexpr double indent = 0.16666666666;
 };
 
 
@@ -116,7 +116,7 @@ template<> struct ShapeTraits<QUADRANGLE>
 	   num_edges = 4};
 	
 	// CollocationPoints on DISCONTINUOUS boundaries need to be indented
-	static const double indent = 0.125;
+	static constexpr double indent = 0.125;
 };
 
 

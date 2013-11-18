@@ -35,15 +35,17 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <complex>
+#include "../common/armadillo_fwd.hpp"
 
-namespace arma
-{
+//namespace arma
+//{
 
-/** \cond FORWARD_DECL */
-template <typename eT> class Mat;
-/** \endcond */
-
-}
+///** \cond FORWARD_DECL */
+//template <typename eT> class Mat;
+///** \endcond */
+//
+//}
 
 namespace Bempp
 {

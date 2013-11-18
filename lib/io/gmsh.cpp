@@ -1295,7 +1295,7 @@ template <typename BasisFunctionType, typename ResultType>
 GridFunction<BasisFunctionType,ResultType> gridFunctionFromGmsh(const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
             const GmshIo& gmshIo, shared_ptr<const Grid> grid,
             GmshPostData::Type gmshPostDataType,
-            int index = 0) {
+            int index) {
 
     typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
     typedef typename ScalarTraits<ResultType>::RealType ResultRealType;
@@ -1391,10 +1391,11 @@ GridFunction<BasisFunctionType,ResultType> gridFunctionFromGmsh(const shared_ptr
         const shared_ptr<const Space<BasisFunctionType> > space
                 (new PiecewiseLinearContinuousScalarSpace<BasisFunctionType>(currentGrid));
         return GridFunction<BasisFunctionType,ResultType>(context,space,coefficients);
+   }
+   else
+        throw std::runtime_error("gridFunctionFromGmsh(): Given gmshPostDataType not supported.");	    
 
-
-    }
-
+ 
 
 
 

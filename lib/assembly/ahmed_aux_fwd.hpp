@@ -23,6 +23,7 @@
 #define bempp_ahmed_aux_fwd_hpp
 
 #include "../common/common.hpp"
+#include <complex>
 
 #include "bempp/common/config_ahmed.hpp"
 
@@ -31,15 +32,6 @@ template <class T1, class T2> class bbxbemblcluster;
 template <class T> class mblock;
 class blcluster;
 /** \endcond */
-
-namespace std
-{
-
-/** \cond FORWARD_DECL */
-template <typename _Tp> class complex;
-/** \endcond */
-
-} // namespace std
 
 #ifdef AHMED_USES_STD_COMPLEX
 typedef std::complex<float> scomp;
