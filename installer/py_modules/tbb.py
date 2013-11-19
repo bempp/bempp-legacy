@@ -79,7 +79,7 @@ def prepare(root,config):
         arch = config.get('Main','architecture')
         if arch in ('intel64','ia32','ia64'):
             libdir_orig = (dep_build_dir+"/tbb/lib/"+arch+
-                           "/cc4.1.0_libc2.4_kernel2.6.16.21")
+                           "/gcc4.4")
         else:
             raise Exception("Unrecognized architecture: '"+arch+"'")
     else:
