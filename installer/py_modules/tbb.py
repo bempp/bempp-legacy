@@ -20,7 +20,7 @@
 
 import os,urllib,shutil,subprocess,sys
 from py_modules import tools
-
+from py_modules import python_patch as py_patch
 import struct
 
 tbb_fname_mac='tbb42_20131003oss_osx.tgz'
@@ -62,8 +62,17 @@ def prepare(root,config):
         download(root,config,force=True)
         tools.extract_file(dep_download_dir+"/"+tbb_fname_short,dep_build_dir)
     os.rename(dep_build_dir+"/"+tbb_extract_dir,dep_build_dir+"/tbb")
+    print "Patching Tbb"
+    cwd=os.getcwd()
+
+    os.chdir(dep_build_dir+"/tbb")
+    patch=py_patch.fromfile(root+"/installer/patches/tbb_pipeline.patch")
+    patch.apply()
+    os.chdir(cwd)
+
     subprocess.check_call("cp -R "+dep_build_dir+"/tbb/include/* "+
                           prefix+"/bempp/include/",shell=True)
+
 
     if sys.platform.startswith('darwin'):
         libdir_orig = dep_build_dir+"/tbb/lib"
