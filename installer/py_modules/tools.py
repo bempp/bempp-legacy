@@ -217,11 +217,6 @@ def testBlas(root,config):
 
     checkCreateDir(root+"/test_blas/build")
     os.chdir(root+"/test_blas/build")
-    print "cc",cc
-    print "CXX",cxx
-    print "cflags",cflags
-    print "cxxflags",cxxflags
-    print "cmake_exe",cmake_exe
     config_string = "CC="+cc+" CXX="+cxx+" CFLAGS='"+cflags+"' CXXFLAGS='"+cxxflags+"' "+cmake_exe+" -D BLAS_LIBRARIES:STRING=\""+blas+"\" .."
     try:
         check_output(config_string,shell=True,stderr=subprocess.STDOUT)
