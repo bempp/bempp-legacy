@@ -53,7 +53,7 @@ def parse_ldd_output(output):
             m_fname = re_fname.match(fname)
             if m_fname:
                 # can't do better than this since the full path is unknown...
-                mkl_libs.append("-l"+re_fname.group(1))
+                mkl_libs.append("-l"+m_fname.group(1))
                 print "Warning: NumPy MKL dependency '"+fname+"' not found"
             continue
         m = re2.match(l)
@@ -82,8 +82,10 @@ def parse_otool_output(output):
 
     # like "@rpath/libmkl_intel.dylib (compatibility version 0.0.0, current version 0.0.0)"
     re1 = re.compile(r"\s*@rpath/(.+) \(.+\)")
+    # like "@loader_path/libmkl_intel.dylib (compatibility version 0.0.0, current version 0.0.0)"
+    re2 = re.compile(r"\s*@loader_path/(.+) \(.+\)")
     # like "/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 111.0.0)"
-    re2 = re.compile(r"\s*(.+) \(.+\)")
+    re3 = re.compile(r"\s*(.+) \(.+\)")
 
     re_fname = re.compile(r"lib(mkl.*|iomp.*)\.(so|dylib)(\.[^ ]*)?")
     # we assume for now that @rpath == <sys.prefix>/lib
@@ -106,12 +108,27 @@ def parse_otool_output(output):
             continue
         m = re2.match(l)
         if m:
+	    #Get Numpy Path
+	    import numpy
+	    numpy_path = numpy.__file__
+	    numpy_dir = os.path.dirname(numpy_path)
+	    loader_path = os.path.join(numpy_dir,"linalg")
+	    full_path = os.path.join(loader_path,m.group(1))
+	    fpath,fname = os.path.split(os.path.abspath(full_path))
+            m_fname = re_fname.match(fname)
+            if m_fname:
+                mkl_libs.append(full_path)
+                mkl_dirs.append(fpath)
+            continue
+        m = re3.match(l)
+        if m:
             path = m.group(1)
             fname = os.path.basename(path)
             m_fname = re_fname.match(fname)
             if m_fname:
                 mkl_libs.append(path)
                 mkl_dirs.append(os.path.dirname(path))
+	    continue
     return mkl_dirs,mkl_libs
 
 def get_mkl_dirs_and_libs_like_numpy(config, lib_dir, extension):
@@ -131,7 +148,12 @@ def get_mkl_dirs_and_libs_like_numpy(config, lib_dir, extension):
         otool_output = tools.check_output(['otool','-L',lapack_lite_path])
         mkl_dirs,mkl_libs = parse_otool_output(otool_output)
     else: # 'linux' -- we've checked that its 'darwin' or 'linux' before
-        ldd_output = tools.check_output(['ldd',lapack_lite_path])
+        env = os.environ.copy()
+        # Fix for Canopy 1.0.3: ensure that LD_LIBRARY_PATH contains the
+        # appdata/canopy-*/lib directory
+        if "VENV_LD_LIBRARY_PATH" in env:
+            env["LD_LIBRARY_PATH"] = env["VENV_LD_LIBRARY_PATH"]
+        ldd_output = tools.check_output(['ldd',lapack_lite_path],env=env)
         mkl_dirs,mkl_libs = parse_ldd_output(ldd_output)
     return mkl_dirs,mkl_libs
 
@@ -177,7 +199,7 @@ def create_symlinks(lib_dir, extension, mkl_dirs, mkl_libs):
             fname = "lib"+l[2:]+extension
             path = find_file_in_dirs(fname, mkl_dirs)
             if not path:
-                raise Exception("MKL library '"+fname+"' not found in any"
+                raise Exception("MKL library '"+fname+"' not found in any "
                                 "of these directories: '"+
                                 "', '".join(mkl_dirs)+"'")
         elif os.path.isfile(l):

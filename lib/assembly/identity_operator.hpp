@@ -90,8 +90,9 @@ public:
     typedef typename Base::CoordinateType CoordinateType;
     /** \copydoc ElementaryLocalOperator::QuadratureStrategy */
     typedef typename Base::QuadratureStrategy QuadratureStrategy;
-    /** \copydoc ElementaryLocalOperator::LocalAssembler */
-    typedef typename Base::LocalAssembler LocalAssembler;
+    /** \copydoc ElementaryLocalOperator::CollectionOfShapesetTransformations */
+    typedef typename Base::CollectionOfShapesetTransformations
+    CollectionOfShapesetTransformations;
     /** \copydoc ElementaryLocalOperator::CollectionOfBasisTransformations */
     typedef typename Base::CollectionOfBasisTransformations
     CollectionOfBasisTransformations;
@@ -136,10 +137,10 @@ public:
     BEMPP_DEPRECATED virtual shared_ptr<const AbstractBoundaryOperatorId> id() const;
 
 private:
-    virtual const CollectionOfBasisTransformations&
+    virtual const CollectionOfShapesetTransformations&
     testTransformations() const;
 
-    virtual const CollectionOfBasisTransformations&
+    virtual const CollectionOfShapesetTransformations&
     trialTransformations() const;
 
     virtual const TestTrialIntegral& integral() const;

@@ -21,15 +21,19 @@ template<typename BasisFunctionType> class Space;
 
 // this function is only for internal use
 %ignore basis;
+%ignore shapeset;
 
 // this function is only for internal use
 %ignore shapeFunctionValue;
+%ignore basisFunctionValue;
 
 // to be wrapped later...
 %ignore setElementVariant;
 
 // to be wrapped later...
 %ignore elementVariant;
+
+%ignore operator=;
 
 %ignore getGlobalDofs;
 

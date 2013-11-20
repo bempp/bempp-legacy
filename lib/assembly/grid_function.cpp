@@ -35,9 +35,10 @@
 #include "../fiber/basis_data.hpp"
 #include "../fiber/collection_of_basis_transformations.hpp"
 #include "../fiber/explicit_instantiation.hpp"
-#include "../fiber/quadrature_strategy.hpp"
+#include "../fiber/function.hpp"
 #include "../fiber/local_assembler_for_grid_functions.hpp"
 #include "../fiber/opencl_handler.hpp"
+#include "../fiber/quadrature_strategy.hpp"
 #include "../fiber/raw_grid_geometry.hpp"
 #include "../grid/geometry_factory.hpp"
 #include "../grid/grid.hpp"
@@ -47,21 +48,13 @@
 #include "../grid/mapper.hpp"
 #include "../grid/vtk_writer_helper.hpp"
 #include "../space/space.hpp"
+#include "identity_operator.hpp"
+#include "../io/gmsh.hpp"
 
 #include <boost/array.hpp>
 #include <fstream>
 #include <set>
 #include <sstream>
-
-// TODO: rewrite the constructor of OpenClHandler.
-// It should take a bool useOpenCl and *in addition to that* openClOptions.
-// The role of the latter should be to e.g. select the device to use
-// and other configurable execution parameters.
-// If there are no such parameters, OpenClOptions should just be removed.
-
-// Justification: right now there can be a conflict: the user can invoke
-// AssemblyOptions::switchToOpenCl() and pass to it an instance of OpenClOptions
-// with useOpenCl set to false. This makes no sense.
 
 namespace Bempp
 {
@@ -80,16 +73,16 @@ shared_ptr<arma::Col<ResultType> > reallyCalculateProjections(
     // TODO: parallelise using TBB (the parameter options will then start be used)
 
     // Get the grid's leaf view so that we can iterate over elements
-    std::auto_ptr<GridView> view = dualSpace.grid()->leafView();
-    const size_t elementCount = view->entityCount(0);
+    const GridView& view = dualSpace.gridView();
+    const size_t elementCount = view.entityCount(0);
 
     // Global DOF indices corresponding to local DOFs on elements
     std::vector<std::vector<GlobalDofIndex> > testGlobalDofs(elementCount);
     std::vector<std::vector<BasisFunctionType> > testLocalDofWeights(elementCount);
 
     // Gather global DOF lists
-    const Mapper& mapper = view->elementMapper();
-    std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
+    const Mapper& mapper = view.elementMapper();
+    std::auto_ptr<EntityIterator<0> > it = view.entityIterator<0>();
     while (!it->finished()) {
         const Entity<0>& element = it->entity();
         const int elementIndex = mapper.entityIndex(element);
@@ -141,34 +134,75 @@ shared_ptr<arma::Col<ResultType> > calculateProjections(
     // Prepare local assembler
     typedef typename Fiber::ScalarTraits<ResultType>::RealType CoordinateType;
     typedef Fiber::RawGridGeometry<CoordinateType> RawGridGeometry;
-    typedef std::vector<const Fiber::Basis<BasisFunctionType>*> BasisPtrVector;
+    typedef std::vector<const Fiber::Shapeset<BasisFunctionType>*> ShapesetPtrVector;
     typedef LocalAssemblerConstructionHelper Helper;
 
     shared_ptr<RawGridGeometry> rawGeometry;
     shared_ptr<GeometryFactory> geometryFactory;
     shared_ptr<Fiber::OpenClHandler> openClHandler;
-    shared_ptr<BasisPtrVector> testBases;
+    shared_ptr<ShapesetPtrVector> testShapesets;
 
-    Helper::collectGridData(*dualSpace.grid(),
+    Helper::collectGridData(dualSpace,
                             rawGeometry, geometryFactory);
     Helper::makeOpenClHandler(options.parallelizationOptions().openClOptions(),
                               rawGeometry, openClHandler);
-    Helper::collectBases(dualSpace, testBases);
+    Helper::collectShapesets(dualSpace, testShapesets);
 
-    // Get reference to the test basis transformation
-    const Fiber::CollectionOfBasisTransformations<CoordinateType>&
-            testTransformations = dualSpace.shapeFunctionValue();
+    // Get reference to the test shapeset transformation
+    const Fiber::CollectionOfShapesetTransformations<CoordinateType>&
+            testTransformations = dualSpace.basisFunctionValue();
 
     typedef Fiber::LocalAssemblerForGridFunctions<ResultType> LocalAssembler;
     std::auto_ptr<LocalAssembler> assembler =
             context.quadStrategy()->makeAssemblerForGridFunctions(
                 geometryFactory, rawGeometry,
-                testBases,
+                testShapesets,
                 make_shared_from_ref(testTransformations),
                 make_shared_from_ref(globalFunction),
                 openClHandler);
 
     return reallyCalculateProjections(dualSpace, *assembler, options);
+}
+
+/** \brief Evaluate the function at the interpolation points of the chosen space. */
+template <typename BasisFunctionType, typename ResultType>
+arma::Col<ResultType> interpolate(
+        const Function<ResultType>& globalFunction,
+        const Space<BasisFunctionType>& space)
+{
+    size_t deps = 0;
+    globalFunction.addGeometricalDependencies(deps);
+    if (deps & ~(Fiber::GLOBALS | Fiber::NORMALS))
+        throw std::invalid_argument(
+                "interpolate(): functions to be interpolated "
+                "must not depend on any geometrical data besides global "
+                "coordinates and normal vectors");
+
+    typedef typename Fiber::ScalarTraits<ResultType>::RealType CoordinateType;
+    Fiber::GeometricalData<CoordinateType> geomData;
+    if (deps & Fiber::GLOBALS) {
+        space.getGlobalDofInterpolationPoints(geomData.globals);
+    }
+    if (deps & Fiber::NORMALS) {
+        space.getNormalsAtGlobalDofInterpolationPoints(geomData.normals);
+    }
+    arma::Mat<ResultType> values;
+    globalFunction.evaluate(geomData, values);
+
+    const size_t componentCount = values.n_rows;
+    const size_t pointCount = values.n_cols;
+
+    arma::Mat<CoordinateType> directions;
+    space.getGlobalDofInterpolationDirections(directions);
+    assert(directions.n_rows == values.n_rows);
+    assert(directions.n_cols == pointCount);
+
+    arma::Col<ResultType> result(pointCount);
+    result.fill(0);
+    for (size_t p = 0; p < pointCount; ++p)
+        for (size_t d = 0; d < componentCount; ++d)
+            result(p) += values(d, p) * directions(d, p);
+    return result;
 }
 
 } // namespace
@@ -196,7 +230,7 @@ GridFunction<BasisFunctionType, ResultType>::GridFunction(
         const shared_ptr<const Space<BasisFunctionType> >& dualSpace,
         const arma::Col<ResultType>& projections)
 {
-    // We ignore the vector of projections.
+
     initializeFromProjections(context, space, dualSpace, projections);
     m_dualSpace = dualSpace;
 }
@@ -206,7 +240,8 @@ GridFunction<BasisFunctionType, ResultType>::GridFunction(
         const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
         const shared_ptr<const Space<BasisFunctionType> >& space,
         const shared_ptr<const Space<BasisFunctionType> >& dualSpace,
-        const Function<ResultType>& function) :
+        const Function<ResultType>& function,
+        ConstructionMode mode) :
     m_context(context), m_space(space), m_dualSpace(dualSpace)
 {
     if (!context)
@@ -218,12 +253,37 @@ GridFunction<BasisFunctionType, ResultType>::GridFunction(
     if (!dualSpace)
         throw std::invalid_argument(
                 "GridFunction::GridFunction(): dualSpace must not be null");
-    if (space->grid() != dualSpace->grid())
+
+    if (space->codomainDimension() != dualSpace->codomainDimension())
         throw std::invalid_argument(
                 "GridFunction::GridFunction(): "
-                "space and dualSpace must be defined on the same grid");
-    setProjections(*m_dualSpace,
-                   *calculateProjections(*context, function, *m_dualSpace));
+                "functions from 'space' and 'dualSpace' have a different "
+                "number of components");
+    if (function.codomainDimension() != space->codomainDimension())
+        throw std::invalid_argument(
+                "GridFunction::GridFunction(): "
+                "functions from 'space' have a different number of "
+                "components than 'function'");
+    if (mode != APPROXIMATE && mode != INTERPOLATE)
+        throw std::invalid_argument(
+                "GridFunction::GridFunction(): "
+                "'mode' must be either APPROXIMATE or INTERPOLATE");
+
+    bool isBarycentricSpace = (space->isBarycentric() || dualSpace->isBarycentric());
+    if (isBarycentricSpace) {
+        m_space = space->barycentricSpace(space);
+        m_dualSpace = dualSpace->barycentricSpace(dualSpace);
+    }
+    if (m_space->grid() != m_dualSpace->grid())
+            throw std::invalid_argument(
+                    "GridFunction::GridFunction(): "
+                    "space and dualSpace must be defined on the same grid");
+
+    if (mode == APPROXIMATE)
+        setProjections(m_dualSpace,
+                       *calculateProjections(*context, function, *m_dualSpace));
+    else // mode == INTERPOLATE
+        setCoefficients(interpolate(function, *m_space));
 }
 
 // Deprecated constructors
@@ -236,16 +296,31 @@ GridFunction<BasisFunctionType, ResultType>::GridFunction(
         const arma::Col<ResultType>& data,
         DataType dataType)
 {
+    bool isBarycentricSpace=false;
+    if (space && space->isBarycentric())
+        isBarycentricSpace = true;
+
+    if (dualSpace && dualSpace->isBarycentric())
+        isBarycentricSpace = true;
+
+    shared_ptr<const Space<BasisFunctionType> > newSpace(space);
+    shared_ptr<const Space<BasisFunctionType> > newDualSpace(dualSpace);
+    if (isBarycentricSpace){
+        newSpace = space->barycentricSpace(space);
+        if (dualSpace)
+            newDualSpace = dualSpace->barycentricSpace(dualSpace);
+    }
+
     if (dataType == COEFFICIENTS) {
-        if (dualSpace && space->grid() != dualSpace->grid())
+        if (newDualSpace && newSpace->grid() != newDualSpace->grid())
             throw std::invalid_argument(
                     "GridFunction::GridFunction(): "
                     "space and dualSpace must be defined on the same grid");
-        initializeFromCoefficients(context, space, data);
-        m_dualSpace = dualSpace;
+        initializeFromCoefficients(context, newSpace, data);
+        m_dualSpace = newDualSpace;
     } else if (dataType == PROJECTIONS) {
-        initializeFromProjections(context, space, dualSpace, data);
-        m_dualSpace = dualSpace;
+        initializeFromProjections(context, newSpace, newDualSpace, data);
+        m_dualSpace = newDualSpace;
     } else
         throw std::invalid_argument(
                 "GridFunction::GridFunction(): invalid dataType");
@@ -259,13 +334,29 @@ GridFunction<BasisFunctionType, ResultType>::GridFunction(
         const arma::Col<ResultType>& coefficients,
         const arma::Col<ResultType>& projections)
 {
+    bool isBarycentricSpace=false;
+    if (space && space->isBarycentric())
+        isBarycentricSpace = true;
+
+    if (dualSpace && dualSpace->isBarycentric())
+        isBarycentricSpace = true;
+
+    shared_ptr<const Space<BasisFunctionType> > newSpace(space);
+    shared_ptr<const Space<BasisFunctionType> > newDualSpace(dualSpace);
+    if (isBarycentricSpace){
+        newSpace = space->barycentricSpace(space);
+        if (dualSpace)
+            newDualSpace = dualSpace->barycentricSpace(dualSpace);
+    }
+
+
     // We ignore the vector of projections.
-    initializeFromCoefficients(context, space, coefficients);
-    if (dualSpace && space->grid() != dualSpace->grid())
+    initializeFromCoefficients(context, newSpace, coefficients);
+    if (newDualSpace && newSpace->grid() != newDualSpace->grid())
         throw std::invalid_argument(
                 "GridFunction::GridFunction(): "
                 "space and dualSpace must be defined on the same grid");
-    m_dualSpace = dualSpace;
+    m_dualSpace = newDualSpace;
 }
 
 // Member functions
@@ -288,7 +379,7 @@ void GridFunction<BasisFunctionType, ResultType>::initializeFromCoefficients(
                 "the coefficients vector has incorrect length");
     m_context = context;
     m_space = space;
-    m_coefficients = boost::make_shared<arma::Col<ResultType> >(coefficients);
+    setCoefficients(coefficients);
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -307,23 +398,39 @@ void GridFunction<BasisFunctionType, ResultType>::initializeFromProjections(
     if (!dualSpace)
         throw std::invalid_argument(
                 "GridFunction::initializeFromProjections(): dualSpace must not be null");
-    if (space->grid() != dualSpace->grid())
-        throw std::invalid_argument(
-                "GridFunction::initializeFromProjections(): "
-                "space and dualSpace must be defined on the same grid");
+    bool isBarycentricSpace = (space->isBarycentric() || dualSpace->isBarycentric());
+    if (isBarycentricSpace) {
+        m_space = space->barycentricSpace(space);
+        m_dualSpace = dualSpace->barycentricSpace(dualSpace);
+    }
+    else {
+        m_space = space;
+        m_dualSpace = dualSpace;
+    }
+    if (m_space->grid() != m_dualSpace->grid())
+            throw std::invalid_argument(
+                    "GridFunction::initializeFromProjections(): "
+                    "space and dualSpace must be defined on the same grid");
+
     if (projections.n_rows != dualSpace->globalDofCount())
         throw std::invalid_argument(
                 "GridFunction::initializeFromProjections(): "
                 "the projections vector has incorrect length");
     m_context = context;
-    m_space = space;
-    setProjections(*dualSpace, projections);
+    setProjections(m_dualSpace, projections);
 }
 
 template <typename BasisFunctionType, typename ResultType>
 bool GridFunction<BasisFunctionType, ResultType>::isInitialized() const
 {
     return m_space;
+}
+
+template <typename BasisFunctionType, typename ResultType>
+bool GridFunction<BasisFunctionType, ResultType>::
+wasInitializedFromCoefficients() const
+{
+    return m_wasInitializedFromCoefficients;
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -368,12 +475,26 @@ int GridFunction<BasisFunctionType, ResultType>::componentCount() const
 }
 
 template <typename BasisFunctionType, typename ResultType>
+GridFunction<BasisFunctionType,ResultType> GridFunction<BasisFunctionType,ResultType>::approximateInSpace(
+        const shared_ptr<Space<BasisFunctionType> >& space ) const {
+
+    BoundaryOperator<BasisFunctionType,ResultType> id =
+            identityOperator<BasisFunctionType,ResultType> (m_context,m_space,space,space);
+    return id*(*this);
+
+
+}
+
+
+template <typename BasisFunctionType, typename ResultType>
 const arma::Col<ResultType>&
 GridFunction<BasisFunctionType, ResultType>::coefficients() const
 {
-    if (!m_space)
+    if (!m_space || (!m_coefficients && !m_projections))
         throw std::runtime_error("GridFunction::coefficients() must not be called "
                                  "on an uninitialized GridFunction object");
+    if (!m_coefficients)
+        updateCoefficientsFromProjections();
     return *m_coefficients;
 }
 
@@ -389,8 +510,53 @@ void GridFunction<BasisFunctionType, ResultType>::setCoefficients(
                 "GridFunction::setCoefficients(): dimension of the provided "
                 "vector does not match the number of global DOFs in the primal space");
     m_coefficients.reset(new arma::Col<ResultType>(coeffs));
+    m_projections.reset();
+    m_wasInitializedFromCoefficients = true;
 }
 
+template <typename BasisFunctionType, typename ResultType>
+arma::Col<ResultType>
+GridFunction<BasisFunctionType, ResultType>::projections(
+        const shared_ptr<const Space<BasisFunctionType> >& dualSpace_) const
+{
+    if (!m_space)
+        throw std::runtime_error("GridFunction::projections() must not be called "
+                                 "on an uninitialized GridFunction object");
+    if (m_space->grid() != dualSpace_->grid())
+        if (!m_space->grid()->isBarycentricRepresentationOf(*dualSpace_->grid()) &&
+                !dualSpace_->grid()->isBarycentricRepresentationOf(*m_space->grid()))
+            throw std::invalid_argument(
+                    "GridFunction::projections(): "
+                    "space and dual space must be defined on the same grid");
+
+    if (!m_coefficients && !m_projections)
+        throw std::runtime_error("GridFunction::projections() must not be called "
+                                 "on an uninitialized GridFunction object");
+    if (!m_projections || !m_dualSpace->spaceIsCompatible(*dualSpace_))
+        updateProjectionsFromCoefficients(dualSpace_);
+    return *m_projections;
+}
+
+// Deprecated version
+template <typename BasisFunctionType, typename ResultType>
+arma::Col<ResultType>
+GridFunction<BasisFunctionType, ResultType>::projections(
+        const Space<BasisFunctionType>& dualSpace_) const
+{
+    if (!m_dualSpace)
+        throw std::runtime_error(
+                "You must provide the dualSpace_ argument in the call to "
+                "GridFunction::projections() if you did not specify the "
+                "dual space when constructing the GridFunction.");
+    arma::Col<ResultType> result = projections(
+                make_shared_from_ref(dualSpace_));
+    // update the coefficients because we can't guarantee
+    // dualSpace_ will stay alive until they are needed
+    coefficients();
+    return result;
+}
+
+// Deprecated version
 template <typename BasisFunctionType, typename ResultType>
 arma::Col<ResultType>
 GridFunction<BasisFunctionType, ResultType>::projections() const
@@ -400,35 +566,45 @@ GridFunction<BasisFunctionType, ResultType>::projections() const
                 "You must provide the dualSpace_ argument in the call to "
                 "GridFunction::projections() if you did not specify the "
                 "dual space when constructing the GridFunction.");
-    return projections(*m_dualSpace);
+    return projections(m_dualSpace);
 }
 
 template <typename BasisFunctionType, typename ResultType>
-arma::Col<ResultType>
-GridFunction<BasisFunctionType, ResultType>::projections(
-        const Space<BasisFunctionType>& dualSpace_) const
+void GridFunction<BasisFunctionType, ResultType>::setProjections(
+        const shared_ptr<const Space<BasisFunctionType> >& dualSpace_,
+        const arma::Col<ResultType>& projects)
 {
     if (!m_space)
-        throw std::runtime_error("GridFunction::projections() must not be called "
+        throw std::runtime_error("GridFunction::setProjections() must not be called "
                                  "on an uninitialized GridFunction object");
-    if (m_space->grid() != dualSpace_.grid())
+    if (m_space->grid() != dualSpace_->grid())
         throw std::invalid_argument(
-                "GridFunction::projections(): "
+                "GridFunction::setProjections(): "
                 "space and dual space must be defined on the same grid");
+    if (projects.n_rows != dualSpace_->globalDofCount())
+        throw std::invalid_argument(
+                "GridFunction::setProjections(): dimension of the provided "
+                "vector does not match the number of global DOFs in the dual space");
 
-    // Calculate the mass matrix
-    typedef BoundaryOperator<BasisFunctionType, ResultType> BoundaryOp;
-    BoundaryOp id = identityOperator(
-                m_context, m_space, m_space,
-                make_shared_from_ref(dualSpace_));
-
-    arma::Col<ResultType> projects(dualSpace_.globalDofCount());
-    id.weakForm()->apply(NO_TRANSPOSE, *m_coefficients, projects,
-                         static_cast<ResultType>(1.),
-                         static_cast<ResultType>(0.));
-    return projects;
+    m_projections = boost::make_shared<arma::Col<ResultType> >(projects);
+    m_dualSpace = dualSpace_;
+    m_coefficients.reset();
+    m_wasInitializedFromCoefficients = false;
 }
 
+// Deprecated version
+template <typename BasisFunctionType, typename ResultType>
+void GridFunction<BasisFunctionType, ResultType>::setProjections(
+        const Space<BasisFunctionType>& dualSpace_,
+        const arma::Col<ResultType>& projects)
+{
+    setProjections(make_shared_from_ref(dualSpace_), projects);
+    // update the coefficients because we can't guarantee
+    // dualSpace_ will stay alive until they are needed
+    coefficients();
+}
+
+// Deprecated version
 template <typename BasisFunctionType, typename ResultType>
 void GridFunction<BasisFunctionType, ResultType>::setProjections(
         const arma::Col<ResultType>& projects)
@@ -438,41 +614,54 @@ void GridFunction<BasisFunctionType, ResultType>::setProjections(
                 "You must provide the dualSpace_ argument in the call to "
                 "GridFunction::setProjections() if you did not specify the "
                 "dual space when constructing the GridFunction.");
-    setProjections(*m_dualSpace, projects);
+    setProjections(m_dualSpace, projects);
 }
 
 template <typename BasisFunctionType, typename ResultType>
-void GridFunction<BasisFunctionType, ResultType>::setProjections(
-        const Space<BasisFunctionType>& dualSpace_,
-        const arma::Col<ResultType>& projects)
+void GridFunction<BasisFunctionType, ResultType>::
+updateProjectionsFromCoefficients(
+        const shared_ptr<const Space<BasisFunctionType> >& dualSpace_) const
 {
-    if (!m_space)
-        throw std::runtime_error("GridFunction::setProjections() must not be called "
-                                 "on an uninitialized GridFunction object");
-    if (m_space->grid() != dualSpace_.grid())
-        throw std::invalid_argument(
-                "GridFunction::setProjections(): "
-                "space and dual space must be defined on the same grid");
-    if (projects.n_rows != dualSpace_.globalDofCount())
-        throw std::invalid_argument(
-                "GridFunction::setProjections(): dimension of the provided "
-                "vector does not match the number of global DOFs in the dual space");
+    // This should have been checked beforehand, this is after all a private
+    // function. So omit these checks in release mode.
+    assert(isInitialized());
+    assert(dualSpace_);
+    assert(m_coefficients);
 
-    // This is not thread-safe. Different threads shouldn't share
-    // GridFunction instances (but copying a GridFunction is fairly
-    // cheap since it only stores shared pointers).
+    // Calculate the mass matrix
+    typedef BoundaryOperator<BasisFunctionType, ResultType> BoundaryOp;
+    BoundaryOp id = identityOperator(
+                m_context, m_space, m_space, dualSpace_);
+
+    shared_ptr<arma::Col<ResultType> > newProjections(
+                new arma::Col<ResultType>(dualSpace_->globalDofCount()));
+    id.weakForm()->apply(NO_TRANSPOSE, *m_coefficients, *newProjections,
+                         static_cast<ResultType>(1.),
+                         static_cast<ResultType>(0.));
+    m_projections = newProjections;
+    m_dualSpace = dualSpace_;
+}
+
+template <typename BasisFunctionType, typename ResultType>
+void GridFunction<BasisFunctionType, ResultType>::
+updateCoefficientsFromProjections() const
+{
+    // This should have been checked beforehand, this is after all a private
+    // function. So omit these checks in release mode.
+    assert(isInitialized());
+    assert(m_projections);
+    assert(m_dualSpace);
 
     // Calculate the (pseudo)inverse mass matrix
     typedef BoundaryOperator<BasisFunctionType, ResultType> BoundaryOp;
     BoundaryOp id = identityOperator(
-                m_context, m_space, m_space,
-                make_shared_from_ref(dualSpace_));
+                m_context, m_space, m_space, m_dualSpace);
     BoundaryOp pinvId = pseudoinverse(id);
 
     shared_ptr<arma::Col<ResultType> > newCoefficients(
                 new arma::Col<ResultType>(m_space->globalDofCount()));
     pinvId.weakForm()->apply(
-                NO_TRANSPOSE, projects, *newCoefficients,
+                NO_TRANSPOSE, *m_projections, *newCoefficients,
                 static_cast<ResultType>(1.), static_cast<ResultType>(0.));
     m_coefficients = newCoefficients;
 }
@@ -509,13 +698,13 @@ GridFunction<BasisFunctionType, ResultType>::L2Norm() const
 
 // Redundant, in fact -- can be obtained directly from Space
 template <typename BasisFunctionType, typename ResultType>
-const Fiber::Basis<BasisFunctionType>&
-GridFunction<BasisFunctionType, ResultType>::basis(
+const Fiber::Shapeset<BasisFunctionType>&
+GridFunction<BasisFunctionType, ResultType>::shapeset(
         const Entity<0>& element) const
 {
-    BOOST_ASSERT_MSG(m_space, "GridFunction::basis() must not be "
+    BOOST_ASSERT_MSG(m_space, "GridFunction::shapeset() must not be "
                      "called on an uninitialized GridFunction object");
-    return m_space->basis(element);
+    return m_space->shapeset(element);
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -546,17 +735,8 @@ void GridFunction<BasisFunctionType, ResultType>::exportToVtk(
         const char* fileNamesBase, const char* filesPath,
         VtkWriter::OutputType outputType) const
 {
-    if (!m_space)
-        throw std::runtime_error("GridFunction::exportToVtk() must not be "
-                                 "called on an uninitialized GridFunction object");
-    arma::Mat<ResultType> data;
-    evaluateAtSpecialPoints(dataType, data);
-
-    std::auto_ptr<GridView> view = m_space->grid()->leafView();
-    std::auto_ptr<VtkWriter> vtkWriter = view->vtkWriter();
-
-    exportSingleDataSetToVtk(*vtkWriter, data, dataType, dataLabel,
-                             fileNamesBase, filesPath, outputType);
+    Bempp::exportToVtk(*this, dataType, dataLabel,
+                       fileNamesBase, filesPath, outputType);
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -579,16 +759,16 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
         throw std::invalid_argument("GridFunction::evaluateAtSpecialPoints(): "
                                     "invalid data type");
 
-    shared_ptr<const Grid> grid = m_space->grid();
-    const int gridDim = grid->dim();
-    const int worldDim = grid->dimWorld();
+    const GridView& view = m_space->gridView();
+    const int gridDim = m_space->gridDimension();
+    const int worldDim = m_space->worldDimension();
     const int elementCodim = 0;
     const int vertexCodim = gridDim;
     const int nComponents = componentCount();
 
-    std::auto_ptr<GridView> view = grid->leafView();
-    const size_t elementCount = view->entityCount(elementCodim);
-    const size_t vertexCount = view->entityCount(vertexCodim);
+
+    const size_t elementCount = view.entityCount(elementCodim);
+    const size_t vertexCount = view.entityCount(vertexCodim);
 
     values.set_size(nComponents,
                      dataType == VtkWriter::CELL_DATA ? elementCount : vertexCount);
@@ -601,58 +781,61 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
     std::fill(multiplicities.begin(), multiplicities.end(), 0);
 
     // Gather geometric data
-    Fiber::RawGridGeometry<CoordinateType> rawGeometry(gridDim, grid->dimWorld());
-    view->getRawElementData(
+    Fiber::RawGridGeometry<CoordinateType> rawGeometry(
+                gridDim, m_space->worldDimension());
+    view.getRawElementData(
                 rawGeometry.vertices(), rawGeometry.elementCornerIndices(),
-                rawGeometry.auxData());
+                rawGeometry.auxData(), rawGeometry.domainIndices());
 
     // Make geometry factory
+    shared_ptr<const Grid> grid = m_space->grid();
     std::auto_ptr<GeometryFactory> geometryFactory =
             grid->elementGeometryFactory();
     std::auto_ptr<typename GeometryFactory::Geometry> geometry(
                 geometryFactory->make());
     Fiber::GeometricalData<CoordinateType> geomData;
 
-    // For each element, get its basis and corner count (this is sufficient
+    // For each element, get its shapeset and corner count (this is sufficient
     // to identify its geometry) as well as its local coefficients
-    typedef std::pair<const Fiber::Basis<BasisFunctionType>*, int> BasisAndCornerCount;
-    typedef std::vector<BasisAndCornerCount> BasisAndCornerCountVector;
-    BasisAndCornerCountVector basesAndCornerCounts(elementCount);
+    typedef std::pair<const Fiber::Shapeset<BasisFunctionType>*, int>
+            ShapesetAndCornerCount;
+    typedef std::vector<ShapesetAndCornerCount> ShapesetAndCornerCountVector;
+    ShapesetAndCornerCountVector basesAndCornerCounts(elementCount);
     std::vector<std::vector<ResultType> > localCoefficients(elementCount);
     {
-        const Mapper& mapper = view->elementMapper();
-        std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
+        const Mapper& mapper = view.elementMapper();
+        std::auto_ptr<EntityIterator<0> > it = view.entityIterator<0>();
         for (size_t e = 0; e < elementCount; ++e) {
             const Entity<0>& element = it->entity();
             const int elementIndex = mapper.entityIndex(element);
-            basesAndCornerCounts[elementIndex] = BasisAndCornerCount(
-                        &m_space->basis(element),
+            basesAndCornerCounts[elementIndex] = ShapesetAndCornerCount(
+                        &m_space->shapeset(element),
                         rawGeometry.elementCornerCount(elementIndex));
             getLocalCoefficients(element, localCoefficients[elementIndex]);
             it->next();
         }
     }
 
-    typedef std::set<BasisAndCornerCount> BasisAndCornerCountSet;
-    BasisAndCornerCountSet uniqueBasesAndCornerCounts(
+    typedef std::set<ShapesetAndCornerCount> ShapesetAndCornerCountSet;
+    ShapesetAndCornerCountSet uniqueShapesetsAndCornerCounts(
                 basesAndCornerCounts.begin(), basesAndCornerCounts.end());
 
     // Find out which basis data need to be calculated
     size_t basisDeps = 0, geomDeps = Fiber::GLOBALS;
     // Find out which geometrical data need to be calculated, in addition
     // to those needed by the kernel
-    const Fiber::CollectionOfBasisTransformations<CoordinateType>& transformations =
-            m_space->shapeFunctionValue();
+    const Fiber::CollectionOfShapesetTransformations<CoordinateType>& transformations =
+            m_space->basisFunctionValue();
     assert(nComponents == transformations.resultDimension(0));
     transformations.addDependencies(basisDeps, geomDeps);
 
     // Loop over unique combinations of basis and element corner count
-    typedef typename BasisAndCornerCountSet::const_iterator
+    typedef typename ShapesetAndCornerCountSet::const_iterator
             BasisAndCornerCountSetConstIt;
-    for (BasisAndCornerCountSetConstIt it = uniqueBasesAndCornerCounts.begin();
-         it != uniqueBasesAndCornerCounts.end(); ++it) {
-        const BasisAndCornerCount& activeBasisAndCornerCount = *it;
-        const Fiber::Basis<BasisFunctionType>& activeBasis =
+    for (BasisAndCornerCountSetConstIt it = uniqueShapesetsAndCornerCounts.begin();
+         it != uniqueShapesetsAndCornerCounts.end(); ++it) {
+        const ShapesetAndCornerCount& activeBasisAndCornerCount = *it;
+        const Fiber::Shapeset<BasisFunctionType>& activeShapeset =
                 *activeBasisAndCornerCount.first;
         int activeCornerCount = activeBasisAndCornerCount.second;
 
@@ -704,7 +887,7 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
 
         // Get basis data
         Fiber::BasisData<BasisFunctionType> basisData;
-        activeBasis.evaluate(basisDeps, local, ALL_DOFS, basisData);
+        activeShapeset.evaluate(basisDeps, local, ALL_DOFS, basisData);
 
         Fiber::BasisData<ResultType> functionData;
         if (basisDeps & Fiber::VALUES)
@@ -718,9 +901,9 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
                                               basisData.derivatives.extent(3));
         Fiber::CollectionOf3dArrays<ResultType> functionValues;
 
-        // Loop over elements and process those that use the active basis
+        // Loop over elements and process those that use the active shapeset
         for (size_t e = 0; e < elementCount; ++e) {
-            if (basesAndCornerCounts[e].first != &activeBasis)
+            if (basesAndCornerCounts[e].first != &activeShapeset)
                 continue;
 
             // Local coefficients of the argument in the current element
@@ -754,6 +937,8 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
             // Get geometrical data
             rawGeometry.setupGeometry(e, *geometry);
             geometry->getData(geomDeps, local, geomData);
+            if (geomDeps & Fiber::DOMAIN_INDEX)
+                geomData.domainIndex = rawGeometry.domainIndex(e);
 
             transformations.evaluate(functionData, geomData, functionValues);
             assert(functionValues[0].extent(1) == 1); // one function
@@ -783,7 +968,7 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
                 }
             }
         } // end of loop over elements
-    } // end of loop over unique combinations of basis and corner count
+    } // end of loop over unique combinations of shapeset and corner count
 
     // Take average of the vertex values obtained in each of the adjacent elements
     if (dataType == VtkWriter::VERTEX_DATA)
@@ -805,16 +990,16 @@ void GridFunction<BasisFunctionType, ResultType>::evaluate(
     // Find out which basis data need to be calculated
     size_t basisDeps = 0, geomDeps = 0;
     // Find out which geometrical data need to be calculated,
-    const Fiber::CollectionOfBasisTransformations<CoordinateType>& transformations =
-        m_space->shapeFunctionValue();
+    const Fiber::CollectionOfShapesetTransformations<CoordinateType>& transformations =
+        m_space->basisFunctionValue();
     assert(transformations.transformationCount() == 1);
     assert(nComponents == transformations.resultDimension(0));
     transformations.addDependencies(basisDeps, geomDeps);
 
     // Get basis data
-    const Fiber::Basis<BasisFunctionType>& basis = m_space->basis(element);
+    const Fiber::Shapeset<BasisFunctionType>& shapeset = m_space->shapeset(element);
     Fiber::BasisData<BasisFunctionType> basisData;
-    basis.evaluate(basisDeps, local, ALL_DOFS, basisData);
+    shapeset.evaluate(basisDeps, local, ALL_DOFS, basisData);
     // Get geometrical data
     Fiber::GeometricalData<CoordinateType> geomData;
     element.geometry().getData(geomDeps, local, geomData);
@@ -825,9 +1010,9 @@ void GridFunction<BasisFunctionType, ResultType>::evaluate(
     assert(functionValues.size() == 1);
 
     // Get local coefficients
-    std::vector<ResultType> localCoefficients(basis.size());
+    std::vector<ResultType> localCoefficients(shapeset.size());
     getLocalCoefficients(element, localCoefficients);
-    assert(localCoefficients.size() == basis.size());
+    assert(localCoefficients.size() == shapeset.size());
 
     // Calculate grid function values
     values.set_size(functionValues[0].extent(0), local.n_cols);
@@ -842,133 +1027,7 @@ template <typename BasisFunctionType, typename ResultType>
 void GridFunction<BasisFunctionType, ResultType>::exportToGmsh(
         const char* dataLabel, const char* fileName) const
 {
-    if (!m_space)
-        throw std::runtime_error("GridFunction::exportToGmsh() must not be "
-                                 "called on an uninitialized GridFunction object");
-    const size_t dimWorld = 3;
-    if (m_space->grid()->dimWorld() != 3 || m_space->grid()->dim() != 2)
-        throw std::runtime_error("GridFunction::exportToGmsh(): currently only "
-                                 "2D grids in 3D spaces are supported");
-
-    boost::array<arma::Mat<CoordinateType>, 5> localCoordsOnTriangles;
-
-    localCoordsOnTriangles[0].set_size(2, 3);
-    localCoordsOnTriangles[0].fill(0.);
-    localCoordsOnTriangles[0](0, 1) = 1.;
-    localCoordsOnTriangles[0](1, 2) = 1.;
-
-    localCoordsOnTriangles[1] = localCoordsOnTriangles[0];
-
-    localCoordsOnTriangles[2].set_size(2, 6);
-    localCoordsOnTriangles[2].fill(0.);
-    localCoordsOnTriangles[2](0, 1) = 1.;
-    localCoordsOnTriangles[2](1, 2) = 1.;
-    localCoordsOnTriangles[2](0, 3) = 0.5;
-    localCoordsOnTriangles[2](0, 4) = 0.5;
-    localCoordsOnTriangles[2](1, 4) = 0.5;
-    localCoordsOnTriangles[2](1, 5) = 0.5;
-
-    localCoordsOnTriangles[3].set_size(2, 10);
-    localCoordsOnTriangles[3].fill(0.);
-    localCoordsOnTriangles[3](0, 1) = 1.;
-    localCoordsOnTriangles[3](1, 2) = 1.;
-    localCoordsOnTriangles[3](0, 3) = 1./3.;
-    localCoordsOnTriangles[3](0, 4) = 2./3.;
-    localCoordsOnTriangles[3](0, 5) = 2./3.;
-    localCoordsOnTriangles[3](1, 5) = 1./3.;
-    localCoordsOnTriangles[3](0, 6) = 1./3.;
-    localCoordsOnTriangles[3](1, 6) = 2./3.;
-    localCoordsOnTriangles[3](1, 7) = 2./3.;
-    localCoordsOnTriangles[3](1, 8) = 1./3.;
-    localCoordsOnTriangles[3](0, 9) = 1./3.;
-    localCoordsOnTriangles[3](1, 9) = 1./3.;
-
-    localCoordsOnTriangles[4].set_size(2, 15);
-    localCoordsOnTriangles[4].fill(0.);
-    localCoordsOnTriangles[4](0, 1) = 1.;
-    localCoordsOnTriangles[4](1, 2) = 1.;
-    localCoordsOnTriangles[4](0, 3) = 0.25;
-    localCoordsOnTriangles[4](0, 4) = 0.5;
-    localCoordsOnTriangles[4](0, 5) = 0.75;
-    localCoordsOnTriangles[4](0, 6) = 0.75;
-    localCoordsOnTriangles[4](1, 6) = 0.25;
-    localCoordsOnTriangles[4](0, 7) = 0.5;
-    localCoordsOnTriangles[4](1, 7) = 0.5;
-    localCoordsOnTriangles[4](0, 8) = 0.25;
-    localCoordsOnTriangles[4](1, 8) = 0.75;
-    localCoordsOnTriangles[4](1, 9) = 0.75;
-    localCoordsOnTriangles[4](1, 10) = 0.5;
-    localCoordsOnTriangles[4](1, 11) = 0.25;
-    localCoordsOnTriangles[4](0, 12) = 0.25;
-    localCoordsOnTriangles[4](1, 12) = 0.25;
-    localCoordsOnTriangles[4](0, 13) = 0.5;
-    localCoordsOnTriangles[4](1, 13) = 0.25;
-    localCoordsOnTriangles[4](0, 14) = 0.25;
-    localCoordsOnTriangles[4](1, 14) = 0.5;
-
-    boost::array<int, 5> elementTypes;
-    elementTypes[0] = 2;
-    elementTypes[1] = 2;
-    elementTypes[2] = 9;
-    elementTypes[3] = 21;
-    elementTypes[4] = 25;
-
-    arma::Mat<ResultType> values;
-    arma::Mat<CoordinateType> globalCoords;
-    std::auto_ptr<GridView> view = m_space->grid()->leafView();
-    std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
-    size_t nodeCount = 0;
-    size_t elementCount = 0;
-    std::stringstream nodes, elements, data;
-    while (!it->finished()) {
-        const Entity<0>& element = it->entity();
-        const Geometry& geo = element.geometry();
-        if (!element.type().isTriangle())
-            throw std::runtime_error(
-                "GridFunction::exportToGmsh(): "
-                "at present only triangular elements are supported");
-        int order = m_space->basis(element).order();
-        if (order >= localCoordsOnTriangles.size())
-            throw std::runtime_error(
-                "GridFunction::exportToGmsh(): "
-                "Gmsh does not support triangular elements of order larger than 5");
-        evaluate(element, localCoordsOnTriangles[order], values);
-        geo.local2global(localCoordsOnTriangles[order], globalCoords);
-
-        const size_t pointCount = localCoordsOnTriangles[order].n_cols;
-        for (size_t p = 0; p < pointCount; ++p) {
-            nodes << nodeCount + 1 + p;
-            for (size_t d = 0; d < dimWorld; ++d)
-                nodes  << ' ' << globalCoords(d, p);
-            nodes << '\n';
-        }
-
-        elements << ++elementCount << ' ' << elementTypes[order] << " 2 1 1";
-        for (size_t p = 0; p < pointCount; ++p)
-            elements << ' ' << nodeCount + 1 + p;
-        elements << '\n';
-
-        for (size_t p = 0; p < pointCount; ++p) {
-            data << nodeCount + 1 + p;
-            for (size_t d = 0; d < values.n_rows; ++d)
-                data << ' ' << values(d, p);
-            data << '\n';
-        }
-        nodeCount += pointCount;
-        it->next();
-    }
-
-    std::ofstream fout(fileName);
-    fout << "$MeshFormat\n2.2 0 8\n$EndMeshFormat\n$Nodes\n";
-    fout << nodeCount << '\n' << nodes.str();
-    fout << "$EndNodes\n$Elements\n";
-    fout << elementCount << '\n' << elements.str();
-    fout << "$EndElements\n$NodeData\n";
-    fout << "1\n\"" << dataLabel << "\"\n";
-    fout << "1\n0.\n";
-    fout << "3\n0\n" << componentCount() << '\n';
-    fout << nodeCount << '\n' << data.str();
-    fout << "$EndNodeData\n";
+    Bempp::exportToGmsh(*this, dataLabel, fileName);
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -1006,7 +1065,42 @@ GridFunction<BasisFunctionType, ResultType> operator/(
     return (static_cast<ScalarType>(1.) / scalar) * g1;
 }
 
+
+template <typename BasisFunctionType, typename ResultType>
+void exportToVtk(
+        const GridFunction<BasisFunctionType, ResultType>& gridFunction,
+        VtkWriter::DataType dataType,
+        const char* dataLabel,
+        const char* fileNamesBase, const char* filesPath,
+        VtkWriter::OutputType outputType)
+{
+    shared_ptr<const Space<BasisFunctionType> > space = gridFunction.space();
+    if (!space)
+        throw std::runtime_error("exportToVtk(): gridFunction must not be "
+                                 "an uninitialized GridFunction object");
+    arma::Mat<ResultType> data;
+    gridFunction.evaluateAtSpecialPoints(dataType, data);
+
+    std::auto_ptr<GridView> view = space->grid()->leafView();
+    std::auto_ptr<VtkWriter> vtkWriter = view->vtkWriter();
+
+    exportSingleDataSetToVtk(*vtkWriter, data, dataType, dataLabel,
+                             fileNamesBase, filesPath, outputType);
+}
+
+
 BEMPP_GCC_DIAG_OFF(deprecated-declarations);
+
+// Redundant, in fact -- can be obtained directly from Space
+template <typename BasisFunctionType, typename ResultType>
+const Fiber::Basis<BasisFunctionType>&
+GridFunction<BasisFunctionType, ResultType>::basis(
+        const Entity<0>& element) const
+{
+    BOOST_ASSERT_MSG(m_space, "GridFunction::basis() must not be "
+                     "called on an uninitialized GridFunction object");
+    return m_space->basis(element);
+}
 
 template <typename BasisFunctionType, typename ResultType>
 GridFunction<BasisFunctionType, ResultType> operator+(
@@ -1015,17 +1109,21 @@ GridFunction<BasisFunctionType, ResultType> operator+(
 {
     if (g1.space() != g2.space())
         throw std::runtime_error("GridFunction::operator+(): spaces don't match");
-    // For the sake of old-style code (with dualSpace stored in the GridFunction),
-    // we try to provide a sensible dual space to the composite GridFunction.
-    shared_ptr<const Space<BasisFunctionType> > dualSpace = g1.dualSpace();
-    if (!dualSpace)
-        dualSpace = g2.dualSpace();
-    return GridFunction<BasisFunctionType, ResultType>(
-                g1.context(), // arbitrary choice...
-                g1.space(),
-                dualSpace,
-                g1.coefficients() + g2.coefficients(),
-                GridFunction<BasisFunctionType, ResultType>::COEFFICIENTS);
+    if (g1.wasInitializedFromCoefficients() ||
+            g2.wasInitializedFromCoefficients() ||
+            g1.dualSpace() != g2.dualSpace())
+        return GridFunction<BasisFunctionType, ResultType>(
+                    g1.context(), // arbitrary choice...
+                    g1.space(),
+                    g1.coefficients() + g2.coefficients());
+    else {
+        shared_ptr<const Space<BasisFunctionType> > dualSpace = g1.dualSpace();
+        return GridFunction<BasisFunctionType, ResultType>(
+                    g1.context(), // arbitrary choice...
+                    g1.space(),
+                    dualSpace,
+                    g1.projections(dualSpace) + g2.projections(dualSpace));
+    }
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -1037,27 +1135,41 @@ GridFunction<BasisFunctionType, ResultType> operator-(
         throw std::runtime_error("GridFunction::operator-(): spaces don't match");
     // For the sake of old-style code (with dualSpace stored in the GridFunction),
     // we try to provide a sensible dual space to the composite GridFunction.
-    shared_ptr<const Space<BasisFunctionType> > dualSpace = g1.dualSpace();
-    if (!dualSpace)
-        dualSpace = g2.dualSpace();
-    return GridFunction<BasisFunctionType, ResultType>(
-                g1.context(), // arbitrary choice...
-                g1.space(),
-                dualSpace,
-                g1.coefficients() - g2.coefficients(),
-                GridFunction<BasisFunctionType, ResultType>::COEFFICIENTS);
+    if (g1.wasInitializedFromCoefficients() ||
+            g2.wasInitializedFromCoefficients() ||
+            g1.dualSpace() != g2.dualSpace())
+        return GridFunction<BasisFunctionType, ResultType>(
+                    g1.context(), // arbitrary choice...
+                    g1.space(),
+                    g1.coefficients() - g2.coefficients());
+    else {
+        shared_ptr<const Space<BasisFunctionType> > dualSpace = g1.dualSpace();
+        return GridFunction<BasisFunctionType, ResultType>(
+                    g1.context(), // arbitrary choice...
+                    g1.space(),
+                    dualSpace,
+                    g1.projections(dualSpace) - g2.projections(dualSpace));
+    }
 }
 
 template <typename BasisFunctionType, typename ResultType, typename ScalarType>
 GridFunction<BasisFunctionType, ResultType> operator*(
-        const GridFunction<BasisFunctionType, ResultType>& g1, const ScalarType& scalar)
+        const GridFunction<BasisFunctionType, ResultType>& g1,
+        const ScalarType& scalar)
 {
-    return GridFunction<BasisFunctionType, ResultType>(
-                g1.context(),
-                g1.space(),
-                g1.dualSpace(),
-                static_cast<ResultType>(scalar) * g1.coefficients(),
-                GridFunction<BasisFunctionType, ResultType>::COEFFICIENTS);
+    if (g1.wasInitializedFromCoefficients())
+        return GridFunction<BasisFunctionType, ResultType>(
+                    g1.context(),
+                    g1.space(),
+                    static_cast<ResultType>(scalar) * g1.coefficients());
+    else {
+        shared_ptr<const Space<BasisFunctionType> > dualSpace = g1.dualSpace();
+        return GridFunction<BasisFunctionType, ResultType>(
+                    g1.context(),
+                    g1.space(),
+                    dualSpace,
+                    static_cast<ResultType>(scalar) * g1.projections(dualSpace));
+    }
 }
 
 BEMPP_GCC_DIAG_ON(deprecated-declarations);
@@ -1074,7 +1186,13 @@ FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(GridFunction);
     const GridFunction<BASIS, RESULT>& op2); \
     template GridFunction<BASIS, RESULT> operator-( \
     const GridFunction<BASIS, RESULT>& op1, \
-    const GridFunction<BASIS, RESULT>& op2)
+    const GridFunction<BASIS, RESULT>& op2); \
+    template void exportToVtk( \
+    const GridFunction<BASIS, RESULT>& gridFunction, \
+    VtkWriter::DataType dataType, \
+    const char* dataLabel, \
+    const char* fileNamesBase, const char* filesPath, \
+    VtkWriter::OutputType outputType)
 #define INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(BASIS, RESULT, SCALAR) \
     template GridFunction<BASIS, RESULT> operator*( \
     const GridFunction<BASIS, RESULT>& op, const SCALAR& scalar); \

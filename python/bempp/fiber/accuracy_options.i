@@ -1,3 +1,5 @@
+%include "std_vector.i"
+
 %{
 #include "fiber/accuracy_options.hpp"
 %}

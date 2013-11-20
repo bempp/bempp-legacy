@@ -23,7 +23,7 @@
 
 #include "../common/common.hpp"
 
-#include "local_assembler_for_operators.hpp"
+#include "local_assembler_for_integral_operators.hpp"
 
 #include "_2d_array.hpp"
 #include "accuracy_options.hpp"
@@ -50,17 +50,22 @@ namespace Fiber
 
 /** \cond FORWARD_DECL */
 class OpenClHandler;
-template <typename CoordinateType> class CollectionOfBasisTransformations;
+template <typename CoordinateType> class CollectionOfShapesetTransformations;
 template <typename ValueType> class CollectionOfKernels;
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 class TestKernelTrialIntegral;
+
 template <typename CoordinateType> class RawGridGeometry;
+
+template <typename CoordinateType>
+class QuadratureDescriptorSelectorForIntegralOperators;
+template <typename CoordinateType> class DoubleQuadratureRuleFamily;
 /** \endcond */
 
 template <typename BasisFunctionType, typename KernelType,
           typename ResultType, typename GeometryFactory>
 class DefaultLocalAssemblerForIntegralOperatorsOnSurfaces :
-        public LocalAssemblerForOperators<ResultType>
+        public LocalAssemblerForIntegralOperators<ResultType>
 {
 public:
     typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
@@ -70,17 +75,18 @@ public:
             const shared_ptr<const GeometryFactory>& trialGeometryFactory,
             const shared_ptr<const RawGridGeometry<CoordinateType> >& testRawGeometry,
             const shared_ptr<const RawGridGeometry<CoordinateType> >& trialRawGeometry,
-            const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
-            const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
-            const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& testTransformations,
+            const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& testShapesets,
+            const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& trialShapesets,
+            const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& testTransformations,
             const shared_ptr<const CollectionOfKernels<KernelType> >& kernel,
-            const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
+            const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& trialTransformations,
             const shared_ptr<const TestKernelTrialIntegral<BasisFunctionType, KernelType, ResultType> >& integral,
             const shared_ptr<const OpenClHandler>& openClHandler,
             const ParallelizationOptions& parallelizationOptions,
             VerbosityLevel::Level verbosityLevel,
             bool cacheSingularIntegrals,
-            const AccuracyOptionsEx& accuracyOptions);
+            const shared_ptr<const QuadratureDescriptorSelectorForIntegralOperators<CoordinateType> >& quadDescSelector,
+            const shared_ptr<const DoubleQuadratureRuleFamily<CoordinateType> >& quadRuleFamily);
     virtual ~DefaultLocalAssemblerForIntegralOperatorsOnSurfaces();
 
 public:
@@ -97,10 +103,6 @@ public:
             const std::vector<int>& trialElementIndices,
             Fiber::_2dArray<arma::Mat<ResultType> >& result,
             CoordinateType nominalDistance = -1.);
-
-    virtual void evaluateLocalWeakForms(
-            const std::vector<int>& elementIndices,
-            std::vector<arma::Mat<ResultType> >& result);
 
     virtual CoordinateType estimateRelativeScale(CoordinateType minDist) const;
 
@@ -152,37 +154,24 @@ private:
             int testElementIndex, int trialElementIndex,
             CoordinateType nominalDistance = -1.);
 
-    enum ElementType {
-        TEST, TRIAL
-    };
-
     const Integrator& getIntegrator(const DoubleQuadratureDescriptor& index);
-
-    void getRegularOrders(int testElementIndex, int trialElementIndex,
-                          int& testQuadOrder, int& trialQuadOrder,
-                          CoordinateType nominalDistance) const;
-    int singularOrder(int elementIndex, ElementType elementType) const;
-
-    CoordinateType elementDistanceSquared(
-            int testElementIndex, int trialElementIndex) const;
-
-    void precalculateElementSizesAndCenters();
 
 private:
     shared_ptr<const GeometryFactory> m_testGeometryFactory;
     shared_ptr<const GeometryFactory> m_trialGeometryFactory;
     shared_ptr<const RawGridGeometry<CoordinateType> > m_testRawGeometry;
     shared_ptr<const RawGridGeometry<CoordinateType> > m_trialRawGeometry;
-    shared_ptr<const std::vector<const Basis<BasisFunctionType>*> > m_testBases;
-    shared_ptr<const std::vector<const Basis<BasisFunctionType>*> > m_trialBases;
-    shared_ptr<const CollectionOfBasisTransformations<CoordinateType> > m_testTransformations;
+    shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> > m_testShapesets;
+    shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> > m_trialShapesets;
+    shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> > m_testTransformations;
     shared_ptr<const CollectionOfKernels<KernelType> > m_kernels;
-    shared_ptr<const CollectionOfBasisTransformations<CoordinateType> > m_trialTransformations;
+    shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> > m_trialTransformations;
     shared_ptr<const TestKernelTrialIntegral<BasisFunctionType, KernelType, ResultType> > m_integral;
     shared_ptr<const OpenClHandler> m_openClHandler;
     ParallelizationOptions m_parallelizationOptions;
     VerbosityLevel::Level m_verbosityLevel;
-    AccuracyOptionsEx m_accuracyOptions;
+    shared_ptr<const QuadratureDescriptorSelectorForIntegralOperators<CoordinateType> > m_quadDescSelector;
+    shared_ptr<const DoubleQuadratureRuleFamily<CoordinateType> > m_quadRuleFamily;
 
     typedef tbb::concurrent_unordered_map<DoubleQuadratureDescriptor,
     Integrator*> IntegratorMap;
@@ -202,13 +191,6 @@ private:
      *  element index set to INVALID_INDEX (= INT_MAX, so that the sorting is
      *  preserved). */
     Cache m_cache;
-    std::vector<CoordinateType> m_testElementSizesSquared;
-    std::vector<CoordinateType> m_trialElementSizesSquared;
-    arma::Mat<CoordinateType> m_testElementCenters;
-    arma::Mat<CoordinateType> m_trialElementCenters;
-    CoordinateType m_averageElementSize;
-
-    // tbb::atomic<size_t> m_foundInCache;
     /** \endcond */
 };
 

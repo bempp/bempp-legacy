@@ -18,9 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-
-#ifndef bempp_elementary_boundary_operator_hpp
-#define bempp_elementary_boundary_operator_hpp
+#ifndef bempp_elementary_integral_operator_base_hpp
+#define bempp_elementary_integral_operator_base_hpp
 
 #include "../common/common.hpp"
 
@@ -35,7 +34,7 @@ namespace Fiber
 {
 
 /** \cond FORWARD_DECL */
-template <typename ResultType> class LocalAssemblerForOperators;
+template <typename ResultType> class LocalAssemblerForIntegralOperators;
 template <typename CoordinateType> class RawGridGeometry;
 template <typename ValueType> class Basis;
 class OpenClHandler;
@@ -47,17 +46,12 @@ namespace Bempp
 {
 
 /** \ingroup abstract_boundary_operators
- *  \brief Linear operator whose weak form can be constructed with a single assembler.
- *
- *  The distinction between elementary and "non-elementary" linear operators is
- *  purely technical. An operator is considered elementary if its weak form can
- *  be constructed using a single instance of a subclass of
- *  Fiber::LocalAssemblerForOperators. Currently this is possible for the
- *  identity operator and for integral operators as defined in the
- *  documentation of ElementaryIntegralOperator.
+ *  \brief Base class of ElementaryIntegralOperator, containing functionality
+ *  independent from \c KernelType.
  */
 template <typename BasisFunctionType_, typename ResultType_>
-class ElementaryAbstractBoundaryOperator : public AbstractBoundaryOperator<BasisFunctionType_, ResultType_>
+class ElementaryIntegralOperatorBase :
+        public AbstractBoundaryOperator<BasisFunctionType_, ResultType_>
 {
     typedef AbstractBoundaryOperator<BasisFunctionType_, ResultType_> Base;
 public:
@@ -70,10 +64,10 @@ public:
     /** \copydoc AbstractBoundaryOperator::QuadratureStrategy */
     typedef typename Base::QuadratureStrategy QuadratureStrategy;
     /** \brief Type of the appropriate instantiation of Fiber::LocalAssemblerForOperators. */
-    typedef Fiber::LocalAssemblerForOperators<ResultType> LocalAssembler;
+    typedef Fiber::LocalAssemblerForIntegralOperators<ResultType> LocalAssembler;
 
     /** \copydoc AbstractBoundaryOperator::AbstractBoundaryOperator */
-    ElementaryAbstractBoundaryOperator(
+    ElementaryIntegralOperatorBase(
             const shared_ptr<const Space<BasisFunctionType> >& domain,
             const shared_ptr<const Space<BasisFunctionType> >& range,
             const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
@@ -81,7 +75,7 @@ public:
             int symmetry);
 
     /** \brief Destructor. */
-    ~ElementaryAbstractBoundaryOperator();
+    ~ElementaryIntegralOperatorBase();
 
     /** \brief Construct a local assembler suitable for this operator.
      *
@@ -95,8 +89,8 @@ public:
             const shared_ptr<const GeometryFactory>& trialGeometryFactory,
             const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& testRawGeometry,
             const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& trialRawGeometry,
-            const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& testBases,
-            const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& trialBases,
+            const shared_ptr<const std::vector<const Fiber::Shapeset<BasisFunctionType>*> >& testShapesets,
+            const shared_ptr<const std::vector<const Fiber::Shapeset<BasisFunctionType>*> >& trialShapesets,
             const shared_ptr<const Fiber::OpenClHandler>& openClHandler,
             const ParallelizationOptions& parallelizationOptions,
             VerbosityLevel::Level verbosityLevel,
@@ -120,15 +114,7 @@ public:
      *
      *  This function is intended for internal use of the library. End users
      *  should not need to call it directly. They should use
-     *  AbstractBoundaryOperator::assembleWeakForm() instead.
-     *
-     *  \deprecated This function is deprecated and will be removed in a future
-     *  release of the library. */
-    shared_ptr<DiscreteBoundaryOperator<ResultType_> >
-    assembleWeakFormInternal(
-            LocalAssembler& assembler,
-            const AssemblyOptions& options) const;
-
+     *  AbstractBoundaryOperator::assembleWeakForm() instead. */
     shared_ptr<DiscreteBoundaryOperator<ResultType_> >
     assembleWeakFormInternal(
             LocalAssembler& assembler,
@@ -137,7 +123,7 @@ public:
 private:
     /** \brief Construct a local assembler suitable for this operator.
      *
-     *  This virtual function is invoked by both overloads of makeAssembler()
+     *  This function is invoked by both overloads of makeAssembler()
      *  to do the actual work. */
     virtual std::auto_ptr<LocalAssembler> makeAssemblerImpl(
             const QuadratureStrategy& quadStrategy,
@@ -145,8 +131,8 @@ private:
             const shared_ptr<const GeometryFactory>& trialGeometryFactory,
             const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& testRawGeometry,
             const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& trialRawGeometry,
-            const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& testBases,
-            const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& trialBases,
+            const shared_ptr<const std::vector<const Fiber::Shapeset<BasisFunctionType>*> >& testShapesets,
+            const shared_ptr<const std::vector<const Fiber::Shapeset<BasisFunctionType>*> >& trialShapesets,
             const shared_ptr<const Fiber::OpenClHandler>& openClHandler,
             const ParallelizationOptions& parallelizationOptions,
             VerbosityLevel::Level verbosityLevel,
@@ -156,11 +142,6 @@ private:
      *
      *  This virtual function is invoked by assembleWeakFormInternal()
      *  to do the actual work. */
-    virtual shared_ptr<DiscreteBoundaryOperator<ResultType_> >
-    assembleWeakFormInternalImpl(
-            LocalAssembler& assembler,
-            const AssemblyOptions& options) const;
-
     virtual shared_ptr<DiscreteBoundaryOperator<ResultType_> >
     assembleWeakFormInternalImpl2(
             LocalAssembler& assembler,

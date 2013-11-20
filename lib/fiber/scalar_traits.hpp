@@ -36,13 +36,12 @@ namespace Fiber
  *  specialization <tt>ScalarTraits<T></tt> provides the typedefs \c RealType
  *  (denoting the real type of the same precision as \c T) and \c ComplexType
  *  (denoting the complex type of the same precision as \c T). */
-template <typename T>
-struct ScalarTraits
-{
-    // If you get a compilation error here, you are probably trying to use an
-    // unsupported floating-point type. The supported types are: float, double,
-    // std::complex<float> and std::complex<double>.
-};
+template <typename T> 
+struct ScalarTraits {
+
+    typedef T RealType;	
+    typedef T ComplexType;
+};    
 
 template <>
 struct ScalarTraits<float>

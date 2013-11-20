@@ -37,7 +37,7 @@ namespace Fiber
 
 /** \cond FORWARD_DECL */
 template <typename KernelType> class CollectionOfKernels;
-template <typename ResultType> class LocalAssemblerForOperators;
+template <typename ResultType> class LocalAssemblerForIntegralOperators;
 /** \endcond */
 
 } // namespace Fiber
@@ -61,7 +61,7 @@ class FmmGlobalAssembler
 public:
     typedef typename Fiber::ScalarTraits<ResultType>::RealType CoordinateType;
     typedef DiscreteBoundaryOperator<ResultType> DiscreteBndOp;
-    typedef Fiber::LocalAssemblerForOperators<ResultType> LocalAssembler;
+    typedef Fiber::LocalAssemblerForIntegralOperators<ResultType> LocalAssembler;
     /** \brief Type of the appropriate instantiation of Fiber::CollectionOfKernels. */
     typedef Fiber::CollectionOfKernels<KernelType> CollectionOfKernels;
 

@@ -29,7 +29,7 @@ namespace Fiber
 {
 
 /** \cond FORWARD_DECL */
-template <typename CoordinateType> class CollectionOfBasisTransformations;
+template <typename CoordinateType> class CollectionOfShapesetTransformations;
 template <typename ValueType> class CollectionOfKernels;
 template <typename CoordinateType> class RawGridGeometry;
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
@@ -54,13 +54,13 @@ public:
             const GeometryFactory& geometryFactory,
             const RawGridGeometry<CoordinateType>& rawGeometry,
             const CollectionOfKernels<KernelType>& kernels,
-            const CollectionOfBasisTransformations<CoordinateType>& trialTransformations,
+            const CollectionOfShapesetTransformations<CoordinateType>& trialTransformations,
             const KernelTrialIntegral<BasisFunctionType, KernelType, ResultType>& integral);
 
     virtual void integrate(
             const std::vector<int>& pointIndices,
             int trialElementIndex,
-            const Basis<BasisFunctionType>& trialBasis,
+            const Shapeset<BasisFunctionType>& trialShapeset,
             LocalDofIndex localTrialDofIndex,
             const std::vector<arma::Mat<ResultType>*>& result) const;
 
@@ -68,12 +68,12 @@ public:
             int pointIndex,
             int componentIndex,
             const std::vector<int>& trialElementIndices,
-            const Basis<BasisFunctionType>& trialBasis,
+            const Shapeset<BasisFunctionType>& trialShapeset,
             const std::vector<arma::Mat<ResultType>*>& result) const;
 
     virtual void integrate(
             const std::vector<PointElementIndexPair>& pointElementIndexPairs,
-            const Basis<BasisFunctionType>& trialBasis,
+            const Shapeset<BasisFunctionType>& trialShapeset,
             const std::vector<arma::Mat<ResultType>*>& result) const;
 
 private:
@@ -87,7 +87,7 @@ private:
     const RawGridGeometry<CoordinateType>& m_rawGeometry;
 
     const CollectionOfKernels<KernelType>& m_kernels;
-    const CollectionOfBasisTransformations<CoordinateType>& m_trialTransformations;
+    const CollectionOfShapesetTransformations<CoordinateType>& m_trialTransformations;
     const KernelTrialIntegral<BasisFunctionType, KernelType, ResultType>& m_integral;
     /** \endcond */
 };

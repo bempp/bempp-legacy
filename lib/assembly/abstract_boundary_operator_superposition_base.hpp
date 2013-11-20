@@ -30,7 +30,7 @@ namespace Fiber
 {
 
 /** \cond FORWARD_DECL */
-template <typename ResultType> class LocalAssemblerForOperators;
+template <typename ResultType> class LocalAssemblerForIntegralOperators;
 /** \endcond */
 
 } // namespace Fiber
@@ -59,7 +59,7 @@ public:
     /** \copydoc AbstractBoundaryOperator::QuadratureStrategy */
     typedef typename Base::QuadratureStrategy QuadratureStrategy;
     /** \brief Type of the appropriate instantiation of Fiber::LocalAssemblerForOperators. */
-    typedef typename Fiber::LocalAssemblerForOperators<ResultType>
+    typedef typename Fiber::LocalAssemblerForIntegralOperators<ResultType>
     LocalAssembler;
 
     /** \copydoc AbstractBoundaryOperator::AbstractBoundaryOperator */

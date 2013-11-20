@@ -30,7 +30,7 @@ namespace Fiber
 
 /** \cond FORWARD_DECL */
 class OpenClHandler;
-template <typename CoordinateType> class CollectionOfBasisTransformations;
+template <typename CoordinateType> class CollectionOfShapesetTransformations;
 template <typename ValueType> class Function;
 template <typename CoordinateType> class RawGridGeometry;
 /** \endcond */
@@ -50,13 +50,14 @@ public:
             const std::vector<CoordinateType> quadWeights,
             const GeometryFactory& geometryFactory,
             const RawGridGeometry<CoordinateType>& rawGeometry,
-            const CollectionOfBasisTransformations<CoordinateType>& testTransformations,
+            const CollectionOfShapesetTransformations<CoordinateType>& testTransformations,
             const Function<UserFunctionType>& function,
-            const OpenClHandler& openClHandler);
+            const OpenClHandler& openClHandler,
+            bool conjugate = true);
 
     virtual void integrate(
             const std::vector<int>& elementIndices,
-            const Basis<BasisFunctionType>& testBasis,
+            const Shapeset<BasisFunctionType>& testShapeset,
             arma::Mat<ResultType>& result) const;
 
 private:
@@ -65,10 +66,11 @@ private:
 
     const GeometryFactory& m_geometryFactory;
     const RawGridGeometry<CoordinateType>& m_rawGeometry;
-    const CollectionOfBasisTransformations<CoordinateType>& m_testTransformations;
+    const CollectionOfShapesetTransformations<CoordinateType>& m_testTransformations;
     const Function<UserFunctionType>& m_function;
 
     const OpenClHandler& m_openClHandler;
+    bool m_conjugate;
 };
 
 } // namespace Fiber

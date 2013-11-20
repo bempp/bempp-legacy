@@ -1,3 +1,22 @@
+// Copyright (C) 2011-2012 by the BEM++ Authors
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
 
 #include "fmm_local_assembler.hpp"
 
@@ -9,7 +28,6 @@
 
 #include "../fiber/collection_of_3d_arrays.hpp"
 #include "../fiber/numerical_test_function_integrator.hpp"
-#include "../fiber/numerical_trial_function_integrator.hpp"
 #include "../fiber/test_function_integrator.hpp"
 #include "../fiber/quadrature_options.hpp"
 #include "../grid/geometry_factory.hpp" // defines GeometryFactory
@@ -39,12 +57,10 @@ FmmLocalAssembler<BasisFunctionType, ResultType>::FmmLocalAssembler(
 
 	// initialise objects required to make integrator
 	// from /assembly/grid_function.cpp
-	typedef Fiber::RawGridGeometry<CoordinateType> RawGridGeometry;
-	typedef std::vector<const Fiber::Basis<BasisFunctionType>*> BasisPtrVector;
 	typedef LocalAssemblerConstructionHelper Helper;
 
 	// Collect grid data, formerly this worked on the dualToRange space = test
-	Helper::collectGridData(*space.grid(),
+	Helper::collectGridData(space,
 		m_rawGeometry, m_geometryFactory);
 
 	// Get reference to the basis transformation
@@ -53,7 +69,7 @@ FmmLocalAssembler<BasisFunctionType, ResultType>::FmmLocalAssembler(
 	Helper::makeOpenClHandler(options.parallelizationOptions().openClOptions(),
                               m_rawGeometry, m_openClHandler);
 
-	Helper::collectBases(space, m_bases);
+	Helper::collectShapesets(space, m_shapesets);
 }
 
 /*
@@ -94,7 +110,7 @@ FmmLocalAssembler<BasisFunctionType, ResultType>::selectIntegrator(int elementIn
 	// Get number of corners of the specified element
 	desc.vertexCount = m_rawGeometry->elementCornerCount(elementIndex);
 
-	const int defaultOrder = 2 * (*m_bases)[elementIndex]->order() + 1;
+	const int defaultOrder = 2 * (*m_shapesets)[elementIndex]->order() + 1;
 	Fiber::QuadratureOptions quadratureOptions;		// use default quadrature (where is user var?)
 	quadratureOptions.setRelativeQuadratureOrder(2);	// uncomment to increase accuracy
 	desc.order = quadratureOptions.quadratureOrder(defaultOrder);
@@ -135,13 +151,13 @@ FmmLocalAssembler<BasisFunctionType, ResultType>::getIntegrator(
                                        *m_transformations, *m_function,
                                        *m_openClHandler );
 	} else {
-		typedef Fiber::NumericalTrialFunctionIntegrator<BasisFunctionType, UserFunctionType,
+		typedef Fiber::NumericalTestFunctionIntegrator<BasisFunctionType, UserFunctionType,
 			ResultType, GeometryFactory> ConcreteIntegrator;
 
 			integrator = new ConcreteIntegrator(points, weights,
                                        *m_geometryFactory, *m_rawGeometry,
                                        *m_transformations, *m_function,
-                                       *m_openClHandler );
+                                       *m_openClHandler, false );
 	}
 
 	// Attempt to insert the newly created integrator into the map
@@ -166,13 +182,13 @@ void FmmLocalAssembler<BasisFunctionType, ResultType>::evaluateLocalWeakForms(
 	const std::vector<int>& elementIndices,
 	std::vector<arma::Col<ResultType> > & result)
 {
-	typedef Fiber::Basis<BasisFunctionType> Basis;
+	typedef Fiber::Shapeset<BasisFunctionType> Shapeset;
 
 	const int elementCount = elementIndices.size();
 	result.resize(elementCount);
 
     // Find cached matrices; select integrators to calculate non-cached ones
-    typedef std::pair<const Integrator*, const Basis*> QuadVariant;
+    typedef std::pair<const Integrator*, const Shapeset*> QuadVariant;
     std::vector<QuadVariant> quadVariants(elementCount);
 
 	for (int testIndex = 0; testIndex < elementCount; ++testIndex)
@@ -181,7 +197,7 @@ void FmmLocalAssembler<BasisFunctionType, ResultType>::evaluateLocalWeakForms(
 		const Integrator* integrator =
 			&selectIntegrator(activeTestElementIndex);
 		quadVariants[testIndex] =
-			QuadVariant(integrator, (*m_bases)[activeTestElementIndex]);
+			QuadVariant(integrator, (*m_shapesets)[activeTestElementIndex]);
 	}
 
 	// Integration will proceed in batches of element pairs having the same
@@ -201,7 +217,7 @@ void FmmLocalAssembler<BasisFunctionType, ResultType>::evaluateLocalWeakForms(
 	{
 		const QuadVariant activeQuadVariant = *it;
 		const Integrator& activeIntegrator = *it->first;
-		const Basis& activeTestBasis = *it->second;
+		const Shapeset& activeTestShapeset = *it->second;
 
 		// Find all the test elements for which quadrature should proceed
 		// according to the current quadrature variant
@@ -213,7 +229,7 @@ void FmmLocalAssembler<BasisFunctionType, ResultType>::evaluateLocalWeakForms(
 		// Integrate!
 		arma::Mat<ResultType> localResult;
 		activeIntegrator.integrate(activeElementIndices,
-					activeTestBasis,
+					activeTestShapeset,
 					localResult);
 
 		// Distribute the just calculated integrals into the result array

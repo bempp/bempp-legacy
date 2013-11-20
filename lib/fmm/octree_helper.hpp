@@ -38,7 +38,7 @@ namespace Fiber
 {
 
 /** \cond FORWARD_DECL */
-template <typename ResultType> class LocalAssemblerForOperators;
+template <typename ResultType> class LocalAssemblerForIntegralOperators;
 /** \endcond */
 
 } // namespace Fiber
@@ -62,7 +62,7 @@ template <typename BasisFunctionType, typename ResultType>
 class OctreeNearHelper
 {
 public:
-	typedef Fiber::LocalAssemblerForOperators<ResultType> LocalAssembler;
+	typedef Fiber::LocalAssemblerForIntegralOperators<ResultType> LocalAssembler;
 	typedef typename Fiber::ScalarTraits<BasisFunctionType>::RealType CoordinateType;
 
 	OctreeNearHelper(
@@ -103,7 +103,7 @@ template <typename BasisFunctionType, typename ResultType>
 class OctreeFarHelper
 {
 public:
-	typedef Fiber::LocalAssemblerForOperators<ResultType> LocalAssembler;
+	typedef Fiber::LocalAssemblerForIntegralOperators<ResultType> LocalAssembler;
 	typedef typename Fiber::ScalarTraits<BasisFunctionType>::RealType CoordinateType;
 
 	OctreeFarHelper(

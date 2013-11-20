@@ -17,6 +17,8 @@ set(ARMADILLO_INCLUDE_DIR "" CACHE PATH "Directory containing Armadillo header f
 set(TBB_INCLUDE_DIR "" CACHE PATH "Directory containing Intel TBB header files")
 set(TBB_LIBRARY "" CACHE PATH "Full path to the TBB library")
 set(TBB_LIBRARY_DEBUG "" CACHE PATH "Full path to the TBB debug library")
+set(TBB_MALLOC_LIBRARY "" CACHE PATH "Full path to the TBB malloc library")
+set(TBB_MALLOC_LIBRARY_DEBUG "" CACHE PATH "Full path to the TBB malloc debug library")
 
 # Ahmed (optional, used only if WITH_AHMED is set)
 if (WITH_AHMED)
@@ -30,8 +32,8 @@ if (WITH_CUDA)
 endif ()
 
 # Dune
-find_library(LIB_DUNE_COMMON dunecommon ${CMAKE_INSTALL_PREFIX}/bempp/lib)
-find_library(LIB_DUNE_GRID dunegrid ${CMAKE_INSTALL_PREFIX}/bempp/lib)
+find_library(LIB_DUNE_COMMON dunecommon HINTS ${CMAKE_INSTALL_PREFIX}/bempp/lib)
+find_library(LIB_DUNE_GRID dunegrid HINTS ${CMAKE_INSTALL_PREFIX}/bempp/lib)
 file(GLOB_RECURSE DUNE_HEADERS ${CMAKE_INSTALL_PREFIX}/bempp/include/dune/*.hh)
 
 # Trilinos

@@ -28,10 +28,10 @@
 #include "_3d_array.hpp"
 #include "_4d_array.hpp"
 
-#include "basis.hpp"
+#include "shapeset.hpp"
 #include "basis_data.hpp"
 #include "conjugate.hpp"
-#include "collection_of_basis_transformations.hpp"
+#include "collection_of_shapeset_transformations.hpp"
 #include "geometrical_data.hpp"
 #include "collection_of_kernels.hpp"
 #include "opencl_handler.hpp"
@@ -61,9 +61,9 @@ SeparableNumericalTestKernelTrialIntegrator(
         const GeometryFactory& trialGeometryFactory,
         const RawGridGeometry<CoordinateType>& testRawGeometry,
         const RawGridGeometry<CoordinateType>& trialRawGeometry,
-        const CollectionOfBasisTransformations<CoordinateType>& testTransformations,
+        const CollectionOfShapesetTransformations<CoordinateType>& testTransformations,
         const CollectionOfKernels<KernelType>& kernels,
-        const CollectionOfBasisTransformations<CoordinateType>& trialTransformations,
+        const CollectionOfShapesetTransformations<CoordinateType>& trialTransformations,
         const TestKernelTrialIntegral<BasisFunctionType, KernelType, ResultType>& integral,
         const OpenClHandler& openClHandler,
         bool cacheGeometricalData) :
@@ -95,9 +95,9 @@ SeparableNumericalTestKernelTrialIntegrator(
     if (openClHandler.UseOpenCl()) {
         // push integration points to CL device
         clTestQuadPoints = openClHandler.pushMatrix<CoordinateType> (localTestQuadPoints);
-	clTrialQuadPoints = openClHandler.pushMatrix<CoordinateType> (localTrialQuadPoints);
-	clTestQuadWeights = openClHandler.pushVector<CoordinateType> (testQuadWeights);
-	clTrialQuadWeights = openClHandler.pushVector<CoordinateType> (trialQuadWeights);
+    clTrialQuadPoints = openClHandler.pushMatrix<CoordinateType> (localTrialQuadPoints);
+    clTestQuadWeights = openClHandler.pushVector<CoordinateType> (testQuadWeights);
+    clTrialQuadWeights = openClHandler.pushVector<CoordinateType> (trialQuadWeights);
     }
 #endif
 
@@ -114,9 +114,9 @@ BasisFunctionType, KernelType, ResultType, GeometryFactory>::
 #ifdef WITH_OPENCL
     if (m_openClHandler.UseOpenCl()) {
         delete clTestQuadPoints;
-	delete clTrialQuadPoints;
-	delete clTestQuadWeights;
-	delete clTrialQuadWeights;
+    delete clTrialQuadPoints;
+    delete clTestQuadWeights;
+    delete clTrialQuadWeights;
     }
 #endif
 }
@@ -161,6 +161,8 @@ precalculateGeometricalDataOnSingleGrid(
     for (size_t e = 0; e < rawGeometry.elementCount(); ++e) {
         rawGeometry.setupGeometry(e, *geometry);
         geometry->getData(geomDeps, localQuadPoints, geomData[e]);
+        if (geomDeps & DOMAIN_INDEX)
+            geomData[e].domainIndex = rawGeometry.domainIndex(e);
     }
 }
 
@@ -172,20 +174,20 @@ integrate(
         CallVariant callVariant,
         const std::vector<int>& elementIndicesA,
         int elementIndexB,
-        const Basis<BasisFunctionType>& basisA,
-        const Basis<BasisFunctionType>& basisB,
+        const Shapeset<BasisFunctionType>& basisA,
+        const Shapeset<BasisFunctionType>& basisB,
         LocalDofIndex localDofIndexB,
         const std::vector<arma::Mat<ResultType>*>& result) const
 {
     if (m_openClHandler.UseOpenCl())
     {
         integrateCl (callVariant, elementIndicesA, elementIndexB, basisA, basisB,
-		     localDofIndexB, result);
+             localDofIndexB, result);
     }
     else
     {
         integrateCpu (callVariant, elementIndicesA, elementIndexB, basisA, basisB,
-		      localDofIndexB, result);
+              localDofIndexB, result);
     }
 }
 
@@ -197,8 +199,8 @@ integrateCpu(
         CallVariant callVariant,
         const std::vector<int>& elementIndicesA,
         int elementIndexB,
-        const Basis<BasisFunctionType>& basisA,
-        const Basis<BasisFunctionType>& basisB,
+        const Shapeset<BasisFunctionType>& basisA,
+        const Shapeset<BasisFunctionType>& basisB,
         LocalDofIndex localDofIndexB,
         const std::vector<arma::Mat<ResultType>*>& result) const
 {
@@ -209,8 +211,8 @@ integrateCpu(
     if (result.size() != elementIndicesA.size())
         throw std::invalid_argument(
         "SeparableNumericalTestKernelTrialIntegrator::integrate(): "
-	    "arrays 'result' and 'elementIndicesA' must have the same number "
-	    "of elements");
+        "arrays 'result' and 'elementIndicesA' must have the same number "
+        "of elements");
     if (testPointCount == 0 || trialPointCount == 0 || elementACount == 0)
         return;
     // TODO: in the (pathological) case that pointCount == 0 but
@@ -273,8 +275,11 @@ integrateCpu(
         basisB.evaluate(trialBasisDeps, m_localTrialQuadPoints, localDofIndexB, trialBasisData);
         if (m_cacheGeometricalData)
             constTrialGeomData = &m_cachedTrialGeomData[elementIndexB];
-        else
+        else {
             geometryB->getData(trialGeomDeps, m_localTrialQuadPoints, *trialGeomData);
+            if (trialGeomDeps & DOMAIN_INDEX)
+                trialGeomData->domainIndex = rawGeometryB->domainIndex(elementIndexB);
+        }
         m_trialTransformations.evaluate(trialBasisData, *constTrialGeomData, trialValues);
     }
     else
@@ -283,30 +288,40 @@ integrateCpu(
         basisB.evaluate(testBasisDeps, m_localTestQuadPoints, localDofIndexB, testBasisData);
         if (m_cacheGeometricalData)
             constTestGeomData = &m_cachedTestGeomData[elementIndexB];
-        else
+        else {
             geometryB->getData(testGeomDeps, m_localTestQuadPoints, *testGeomData);
+            if (testGeomDeps & DOMAIN_INDEX)
+                testGeomData->domainIndex = rawGeometryB->domainIndex(elementIndexB);
+        }
         m_testTransformations.evaluate(testBasisData, *constTestGeomData, testValues);
     }
 
     // Iterate over the elements
     for (int indexA = 0; indexA < elementACount; ++indexA)
     {
+        const int elementIndexA = elementIndicesA[indexA];
         if (!m_cacheGeometricalData)
-            rawGeometryA->setupGeometry(elementIndicesA[indexA], *geometryA);
+            rawGeometryA->setupGeometry(elementIndexA, *geometryA);
         if (callVariant == TEST_TRIAL)
         {
             if (m_cacheGeometricalData)
                 constTestGeomData = &m_cachedTestGeomData[elementIndicesA[indexA]];
-            else
+            else {
                 geometryA->getData(testGeomDeps, m_localTestQuadPoints, *testGeomData);
+                if (testGeomDeps & DOMAIN_INDEX)
+                    testGeomData->domainIndex = rawGeometryA->domainIndex(elementIndexA);
+            }
             m_testTransformations.evaluate(testBasisData, *constTestGeomData, testValues);
         }
         else
         {
             if (m_cacheGeometricalData)
                 constTrialGeomData = &m_cachedTrialGeomData[elementIndicesA[indexA]];
-            else
+            else {
                 geometryA->getData(trialGeomDeps, m_localTrialQuadPoints, *trialGeomData);
+                if (trialGeomDeps & DOMAIN_INDEX)
+                    trialGeomData->domainIndex = rawGeometryA->domainIndex(elementIndexA);
+            }
             m_trialTransformations.evaluate(trialBasisData, *constTrialGeomData, trialValues);
         }
 
@@ -327,8 +342,8 @@ integrateCl(
         CallVariant callVariant,
         const std::vector<int>& elementIndicesA,
         int elementIndexB,
-        const Basis<BasisFunctionType>& basisA,
-        const Basis<BasisFunctionType>& basisB,
+        const Shapeset<BasisFunctionType>& basisA,
+        const Shapeset<BasisFunctionType>& basisB,
         LocalDofIndex localDofIndexB,
         const std::vector<arma::Mat<ResultType>*>& result) const
 {
@@ -655,17 +670,17 @@ void
 SeparableNumericalTestKernelTrialIntegrator<
 BasisFunctionType, KernelType, ResultType, GeometryFactory>::
 integrate(const std::vector<ElementIndexPair>& elementIndexPairs,
-	  const Basis<BasisFunctionType>& testBasis,
-	  const Basis<BasisFunctionType>& trialBasis,
-	  const std::vector<arma::Mat<ResultType>*>& result) const
+      const Shapeset<BasisFunctionType>& testShapeset,
+      const Shapeset<BasisFunctionType>& trialShapeset,
+      const std::vector<arma::Mat<ResultType>*>& result) const
 {
     if (m_openClHandler.UseOpenCl())
     {
-        integrateCl (elementIndexPairs, testBasis, trialBasis, result);
+        integrateCl (elementIndexPairs, testShapeset, trialShapeset, result);
     }
     else
     {
-        integrateCpu (elementIndexPairs, testBasis, trialBasis, result);
+        integrateCpu (elementIndexPairs, testShapeset, trialShapeset, result);
     }
 }
 
@@ -676,8 +691,8 @@ SeparableNumericalTestKernelTrialIntegrator<
 BasisFunctionType, KernelType, ResultType, GeometryFactory>::
 integrateCpu(
             const std::vector<ElementIndexPair>& elementIndexPairs,
-            const Basis<BasisFunctionType>& testBasis,
-            const Basis<BasisFunctionType>& trialBasis,
+            const Shapeset<BasisFunctionType>& testShapeset,
+            const Shapeset<BasisFunctionType>& trialShapeset,
             const std::vector<arma::Mat<ResultType>*>& result) const
 {
     const int testPointCount = m_localTestQuadPoints.n_cols;
@@ -686,9 +701,9 @@ integrateCpu(
 
     if (result.size() != elementIndexPairs.size())
         throw std::invalid_argument(
-  	    "NonseparableNumericalTestKernelTrialIntegrator::integrate(): "
-	    "arrays 'result' and 'elementIndicesA' must have the same number "
-	    "of elements");
+        "NonseparableNumericalTestKernelTrialIntegrator::integrate(): "
+        "arrays 'result' and 'elementIndicesA' must have the same number "
+        "of elements");
     if (testPointCount == 0 || trialPointCount == 0 || geometryPairCount == 0)
         return;
     // TODO: in the (pathological) case that pointCount == 0 but
@@ -696,8 +711,8 @@ integrateCpu(
 
     // Evaluate constants
 
-    const int testDofCount = testBasis.size();
-    const int trialDofCount = trialBasis.size();
+    const int testDofCount = testShapeset.size();
+    const int trialDofCount = trialShapeset.size();
 
     BasisData<BasisFunctionType> testBasisData, trialBasisData;
     GeometricalData<CoordinateType>* testGeomData = &m_testGeomData.local();
@@ -729,20 +744,26 @@ integrateCpu(
         result[i]->set_size(testDofCount, trialDofCount);
     }
 
-    testBasis.evaluate(testBasisDeps, m_localTestQuadPoints, ALL_DOFS, testBasisData);
-    trialBasis.evaluate(trialBasisDeps, m_localTrialQuadPoints, ALL_DOFS, trialBasisData);
+    testShapeset.evaluate(testBasisDeps, m_localTestQuadPoints, ALL_DOFS, testBasisData);
+    trialShapeset.evaluate(trialBasisDeps, m_localTrialQuadPoints, ALL_DOFS, trialBasisData);
 
     // Iterate over the elements
     for (int pairIndex = 0; pairIndex < geometryPairCount; ++pairIndex)
     {
+        const int testElementIndex = elementIndexPairs[pairIndex].first;
+        const int trialElementIndex = elementIndexPairs[pairIndex].second;
         if (m_cacheGeometricalData) {
-            constTestGeomData  = &m_cachedTestGeomData[elementIndexPairs[pairIndex].first];
-            constTrialGeomData = &m_cachedTrialGeomData[elementIndexPairs[pairIndex].second];
+            constTestGeomData  = &m_cachedTestGeomData[testElementIndex];
+            constTrialGeomData = &m_cachedTrialGeomData[trialElementIndex];
         } else {
-            m_testRawGeometry.setupGeometry(elementIndexPairs[pairIndex].first, *testGeometry);
-            m_trialRawGeometry.setupGeometry(elementIndexPairs[pairIndex].second, *trialGeometry);
+            m_testRawGeometry.setupGeometry(testElementIndex, *testGeometry);
+            m_trialRawGeometry.setupGeometry(trialElementIndex, *trialGeometry);
             testGeometry->getData(testGeomDeps, m_localTestQuadPoints, *testGeomData);
+            if (testGeomDeps & DOMAIN_INDEX)
+                testGeomData->domainIndex = m_testRawGeometry.domainIndex(testElementIndex);
             trialGeometry->getData(trialGeomDeps, m_localTrialQuadPoints, *trialGeomData);
+            if (trialGeomDeps & DOMAIN_INDEX)
+                trialGeomData->domainIndex = m_trialRawGeometry.domainIndex(trialElementIndex);
         }
         m_testTransformations.evaluate(testBasisData, *constTestGeomData, testValues);
         m_trialTransformations.evaluate(trialBasisData, *constTrialGeomData, trialValues);
@@ -762,8 +783,8 @@ void SeparableNumericalTestKernelTrialIntegrator<
 BasisFunctionType, KernelType, ResultType, GeometryFactory>::
 integrateCl(
             const std::vector<ElementIndexPair>& elementIndexPairs,
-            const Basis<BasisFunctionType>& testBasis,
-            const Basis<BasisFunctionType>& trialBasis,
+            const Shapeset<BasisFunctionType>& testShapeset,
+            const Shapeset<BasisFunctionType>& trialShapeset,
             const std::vector<arma::Mat<ResultType>*>& result) const
 {
 //#ifdef WITH_OPENCL
@@ -789,8 +810,8 @@ integrateCl(
 //    // Evaluate constants
 //    const int testComponentCount = m_testExpression.codomainDimension();
 //    const int trialComponentCount = m_trialExpression.codomainDimension();
-//    const int testDofCount = testBasis.size();
-//    const int trialDofCount = trialBasis.size();
+//    const int testDofCount = testShapeset.size();
+//    const int trialDofCount = trialShapeset.size();
 
 //    const int kernelRowCount = m_kernels.codomainDimension();
 //    const int kernelColCount = m_kernels.domainDimension();
@@ -827,8 +848,8 @@ integrateCl(
 //    //std::vector<std::string> sources;
 //    cl::Program::Sources sources;
 //    sources.push_back (m_openClHandler.initStr());
-//    sources.push_back (testBasis.clCodeString(true));
-//    sources.push_back (trialBasis.clCodeString(false));
+//    sources.push_back (testShapeset.clCodeString(true));
+//    sources.push_back (trialShapeset.clCodeString(false));
 //    sources.push_back (m_kernels.evaluateClCode());
 //    sources.push_back (clStrIntegrateRowOrCol());
 //    m_openClHandler.loadProgramFromStringArray (sources);
@@ -963,7 +984,7 @@ BasisFunctionType, KernelType, ResultType, GeometryFactory>::
 clStrIntegrateRowOrCol () const
 {
   return std::make_pair (separable_numerical_double_integrator_cl,
-			 separable_numerical_double_integrator_cl_len);
+             separable_numerical_double_integrator_cl_len);
 }
 
 } // namespace Fiber

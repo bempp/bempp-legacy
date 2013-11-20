@@ -22,9 +22,9 @@
 
 #include "../common/common.hpp"
 
-#include "basis.hpp"
+#include "shapeset.hpp"
 #include "basis_data.hpp"
-#include "collection_of_basis_transformations.hpp"
+#include "collection_of_shapeset_transformations.hpp"
 #include "conjugate.hpp"
 #include "function.hpp"
 #include "geometrical_data.hpp"
@@ -47,16 +47,18 @@ NumericalTestFunctionIntegrator(
         const std::vector<CoordinateType> quadWeights,
         const GeometryFactory& geometryFactory,
         const RawGridGeometry<CoordinateType>& rawGeometry,
-        const CollectionOfBasisTransformations<CoordinateType>& testTransformations,
+        const CollectionOfShapesetTransformations<CoordinateType>& testTransformations,
         const Function<UserFunctionType>& function,
-        const OpenClHandler& openClHandler) :
+        const OpenClHandler& openClHandler,
+        bool conjugate) :
     m_localQuadPoints(localQuadPoints),
     m_quadWeights(quadWeights),
     m_geometryFactory(geometryFactory),
     m_rawGeometry(rawGeometry),
     m_testTransformations(testTransformations),
     m_function(function),
-    m_openClHandler(openClHandler)
+    m_openClHandler(openClHandler),
+    m_conjugate(conjugate)
 {
     if (localQuadPoints.n_cols != quadWeights.size())
         throw std::invalid_argument("NumericalTestTrialIntegrator::"
@@ -77,7 +79,7 @@ void NumericalTestFunctionIntegrator<
 BasisFunctionType, UserFunctionType, ResultType, GeometryFactory>::
 integrate(
         const std::vector<int>& elementIndices,
-        const Basis<BasisFunctionType>& testBasis,
+        const Shapeset<BasisFunctionType>& testShapeset,
         arma::Mat<ResultType>& result) const
 {
     const size_t pointCount = m_localQuadPoints.n_cols;
@@ -90,7 +92,7 @@ integrate(
 
     // Evaluate constants
     const int componentCount = m_testTransformations.resultDimension(0);
-    const int testDofCount = testBasis.size();
+    const int testDofCount = testShapeset.size();
 
     if (m_function.codomainDimension() != componentCount)
         throw std::runtime_error("NumericalTestFunctionIntegrator::integrate(): "
@@ -114,25 +116,37 @@ integrate(
 
     result.set_size(testDofCount, elementCount);
 
-    testBasis.evaluate(testBasisDeps, m_localQuadPoints, ALL_DOFS, testBasisData);
+    testShapeset.evaluate(testBasisDeps, m_localQuadPoints, ALL_DOFS, testBasisData);
 
     // Iterate over the elements
     for (size_t e = 0; e < elementCount; ++e)
     {
-        m_rawGeometry.setupGeometry(elementIndices[e], *geometry);
+        const int elementIndex = elementIndices[e];
+        m_rawGeometry.setupGeometry(elementIndex, *geometry);
         geometry->getData(geomDeps, m_localQuadPoints, geomData);
+        if (geomDeps & DOMAIN_INDEX)
+            geomData.domainIndex = m_rawGeometry.domainIndex(elementIndex);
         m_testTransformations.evaluate(testBasisData, geomData, testValues);
         m_function.evaluate(geomData, functionValues);
 
         for (int testDof = 0; testDof < testDofCount; ++testDof)
         {
             ResultType sum = 0.;
-            for (size_t point = 0; point < pointCount; ++point)
-                for (int dim = 0; dim < componentCount; ++dim)
-                    sum +=  m_quadWeights[point] *
-                            geomData.integrationElements(point) *
-                            conjugate(testValues[0](dim, testDof, point)) *
-                            functionValues(dim, point);
+            if (m_conjugate) {
+                for (size_t point = 0; point < pointCount; ++point)
+                    for (int dim = 0; dim < componentCount; ++dim)
+                        sum +=  m_quadWeights[point] *
+                                geomData.integrationElements(point) *
+                                conjugate(testValues[0](dim, testDof, point)) *
+                                functionValues(dim, point);
+            } else {
+                for (size_t point = 0; point < pointCount; ++point)
+                    for (int dim = 0; dim < componentCount; ++dim)
+                        sum +=  m_quadWeights[point] *
+                                geomData.integrationElements(point) *
+                                testValues[0](dim, testDof, point) *
+                                functionValues(dim, point);
+            }
             result(testDof, e) = sum;
         }
     }

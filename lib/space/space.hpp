@@ -21,14 +21,19 @@
 #ifndef bempp_space_hpp
 #define bempp_space_hpp
 
+#include "space_identifier.hpp"
+
 #include "../common/common.hpp"
 #include "bempp/common/config_trilinos.hpp"
+
 
 #include "../common/bounding_box.hpp"
 #include "../common/not_implemented_error.hpp"
 #include "../common/deprecated.hpp"
 #include "../common/shared_ptr.hpp"
 #include "../common/types.hpp"
+#include "../fiber/basis.hpp"
+#include "../fiber/collection_of_basis_transformations.hpp"
 #include "../fiber/scalar_traits.hpp"
 
 #include "../common/armadillo_fwd.hpp"
@@ -38,9 +43,7 @@ namespace Fiber
 {
 
 /** \cond FORWARD_DECL */
-template <typename ValueType> class Basis;
 template <typename ValueType> class BasisData;
-template <typename CoordinateType> class CollectionOfBasisTransformations;
 template <typename CoordinateType> class GeometricalData;
 /** \endcond */
 
@@ -51,9 +54,12 @@ namespace Bempp
 
 /** \cond FORWARD_DECL */
 class Grid;
+class GridView;
+class GeometryFactory;
 template <int codim> class Entity;
 template <int codim> class EntityPointer;
 template <typename ValueType> class DiscreteSparseBoundaryOperator;
+template <typename ValueType> class DiscreteBoundaryOperator;
 /** \endcond */
 
 enum DofType
@@ -85,6 +91,9 @@ public:
     typedef typename Fiber::ScalarTraits<BasisFunctionType>::RealType CoordinateType;
     /** \brief Equivalent to std::complex<CoordinateType>. */
     typedef typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType ComplexType;
+    /** \brief Appropriate instantiation of Fiber::CollectionOfShapesetTransformations. */
+    typedef Fiber::CollectionOfShapesetTransformations<CoordinateType>
+    CollectionOfShapesetTransformations;
     /** \brief Appropriate instantiation of Fiber::CollectionOfBasisTransformations. */
     typedef Fiber::CollectionOfBasisTransformations<CoordinateType>
     CollectionOfBasisTransformations;
@@ -96,11 +105,23 @@ public:
     /** \brief Constructor.
      *
      *  \param[in] grid Grid on which functions from this space should be
-     *  defined. */
+     *  defined.
+     *
+     *  \param[in] level Level of the grid on which the space should be defined.
+     *
+     *  An exception is thrown if \p grid is a null pointer.
+     */
     explicit Space(const shared_ptr<const Grid>& grid);
+
+    /** \brief Copy Constructor */
+    Space(const Space<BasisFunctionType>& other);
 
     /** \brief Destructor. */
     virtual ~Space();
+
+    /** \brief Assignment operator */
+    Space<BasisFunctionType>& operator=(const Space<BasisFunctionType>& other);
+
 
     /** @name Attributes
     @{ */
@@ -143,6 +164,10 @@ public:
      *  only a single element, false otherwise. */
     virtual bool isDiscontinuous() const = 0;
 
+    /** \brief Return \p true if space is based on a barycentric refinement */
+
+    virtual bool isBarycentric() const = 0;
+
     /** \brief Dimension of the grid on which functions from this space are
      *  defined. */
     virtual int domainDimension() const = 0;
@@ -157,25 +182,78 @@ public:
      *  are defined. */
     shared_ptr<const Grid> grid() const { return m_grid; }
 
-    /** \brief Reference to the basis attached to the specified element. */
-    virtual const Fiber::Basis<BasisFunctionType>& basis(
-            const Entity<0>& element) const = 0;
-
-    /** \brief Transformation mapping basis functions to shape functions.
+    /** \brief Reference to the shapeset attached to the specified element.
      *
-     *  This function returns a CollectionOfBasisTransformations object
-     *  consisting of a single transformation that maps values of basis
-     *  functions defined on a reference element to those of *shape functions*
+     *  \deprecated This function is deprecated and will be removed in a future
+     *  release of BEM++. Use shapeset() instead.
+     */
+    virtual BEMPP_DEPRECATED const Fiber::Basis<BasisFunctionType>& basis(
+            const Entity<0>& element) const {
+        // It might be good to print a deprecation warning
+        return dynamic_cast<const Fiber::Basis<BasisFunctionType>& >(
+                    shapeset(element));
+    }
+
+    /** \brief Reference to the shapeset attached to the specified element.
+     */
+    virtual const Fiber::Shapeset<BasisFunctionType>& shapeset(
+            const Entity<0>& element) const {
+        throw NotImplementedError(
+                    "Space::shapeset(): not implemented.\nNote that the "
+                    "Space::basis() function has been renamed to shapeset(). "
+                    "If you have implemented basis() in a subclass of Space, "
+                    "please implement shapeset() instead.");
+    }
+
+    /** \brief Transformation mapping shape functions to basis functions.
+     *
+     *  \deprecated This function is deprecated and will be removed in a future
+     *  release of BEM++. Use basisFunctionValue() instead.
+     */
+    virtual BEMPP_DEPRECATED const CollectionOfBasisTransformations&
+    shapeFunctionValue() const {
+        return dynamic_cast<const CollectionOfBasisTransformations&>(
+                    basisFunctionValue());
+    }
+
+    /** \brief Return an equivalent space (in terms of global Dofs), but defined using
+     *  local dofs on the barycentrically refined grid. */
+    virtual shared_ptr<const Space<BasisFunctionType> > barycentricSpace(
+            const shared_ptr<const Space<BasisFunctionType> >& self) const;
+
+    /** \brief Return the grid level of the current space */
+    unsigned int level() const {return m_level; }
+
+    /** \brief Return the underlying grid dimension */
+    int gridDimension() const;
+
+    /** \brief Return the underlying world dimension */
+    int worldDimension() const;
+
+    /** \brief Return the grid view of the current space */
+    const GridView& gridView() const;
+
+    /** \brief Transformation mapping shape functions to basis functions.
+     *
+     *  This function returns a CollectionOfShapesetTransformations object
+     *  consisting of a single transformation that maps values of shape
+     *  functions defined on a reference element to those of *basis functions*
      *  defined on a particular element of the grid.
      *
      *  This transformation is the identity for spaces of scalar-valued
      *  functions, but may be more complicated for spaces of vector-valued
      *  functions, e.g. \f$H(\mathrm{curl})\f$.
      *
-     *  \todo Perhaps change the name of this method to something more
-     *  understandable, like basisToShapeFunctionTransformation. */
-    virtual const CollectionOfBasisTransformations&
-    shapeFunctionValue() const = 0;
+     */
+    virtual const CollectionOfShapesetTransformations&
+    basisFunctionValue() const {
+        throw NotImplementedError(
+                    "Space::basisFunctionValue(): not implemented.\n"
+                    "Note that the Space::shapeFunctionValue() function has "
+                    "been renamed to basisFunctionValue(). If you have "
+                    "implemented shapeFunctionValue() in a subclass of Space, "
+                    "please implement basisFunctionValue() instead.");
+    }
 
     /** @}
         @name Element order management
@@ -196,6 +274,12 @@ public:
      *
      *  See the documentation of setElementVariant() for more information. */
     virtual ElementVariant elementVariant(const Entity<0>& element) const = 0;
+
+    /** \brief Return the GeometryFactory associated with the mesh. */
+
+    shared_ptr<GeometryFactory> elementGeometryFactory() const {
+        return m_elementGeometryFactory;
+    }
 
     // additional functions for e.g. increasing polynomial order of all elements
     // ...
@@ -228,16 +312,47 @@ public:
     /** \brief Map local degrees of freedom residing on an element to global
      *  degrees of freedom.
      *
-     *  \param[in] element An element of the grid grid().
-     *  \param[out] dofs   Indices of the global degrees of freedom
-     *                     corresponding to the local degrees of freedom
-     *                     residing on \p element. */
+     *  \param[in] element
+     *    An element of the grid grid().
+     *  \param[out] dofs
+     *    Vector whose <em>i</em>th element is the index of the global degrees
+     *    of freedom to which the <em>i</em>th local degree of freedom residing
+     *    on \p element contributes. A negative number means that a given local
+     *    degree of freedom does not contribute to any global one.
+     *
+     *  \note This function is deprecated. Use the other overload taking the
+     *  additional output parameter \p localDofWeights.
+     */
     virtual void getGlobalDofs(const Entity<0>& element,
                                std::vector<GlobalDofIndex>& dofs) const;
 
+    /** \brief Map local degrees of freedom residing on an element to global
+     *  degrees of freedom.
+     *
+     *  \param[in] element
+     *    An element of the grid grid().
+     *  \param[out] dofs
+     *    Vector whose <em>i</em>th element is the index of the global degrees
+     *    of freedom to which the <em>i</em>th local degree of freedom residing
+     *    on \p element contributes. A negative number means that a given local
+     *    degree of freedom does not contribute to any global one.
+     *  \param[out] localDofWeights
+     *    Vector whose <em>i</em>th element is the weight with which the
+     *    <em>i</em>th local degree of freedom residing on \p element
+     *    contributes to "its" global degree of freedom. */
     virtual void getGlobalDofs(const Entity<0>& element,
                                std::vector<GlobalDofIndex>& dofs,
                                std::vector<BasisFunctionType>& localDofWeights) const;
+
+    /** \brief Return true if both spaces act on the same grid. */
+    virtual bool gridIsIdentical(const Space<BasisFunctionType>& other) const;
+
+    /** \brief Return the identifier of the space. */
+    virtual SpaceIdentifier spaceIdentifier() const = 0;
+
+    /** \brief Return true if \p other is compatible to this space, i.e. the global
+     * dofs of the two spaces agree with each other. */
+    virtual bool spaceIsCompatible(const Space<BasisFunctionType>& other) const = 0;
 
     /** \brief Map global degrees of freedom to local degrees of freedom.
      *
@@ -272,23 +387,79 @@ public:
             const std::vector<FlatLocalDofIndex>& flatLocalDofs,
             std::vector<LocalDof>& localDofs) const = 0;
 
+    /** @}
+        @name Function interpolation
+        @} */
+
+    /** \brief Retrieve the interpolation points of the global degrees of freedom.
+     *
+     *  This function, along with getNormalsAtGlobalDofInterpolationPoints()
+     *  and getGlobalDofInterpolationDirections(), can be used in the
+     *  interpolation of functions in finite-dimensional function spaces
+     *  represented with classes derived from Space. Let \f$V\f$ be a function
+     *  space defined on grid \f$\Gamma\f$ with a basis \f$(f_i)_{i=1}^N\f$ of
+     *  functions \f$f_i : \Gamma \to \mathbb{R}^n\f$ (or \f$\mathbb{C}^n\f$.
+     *  We say that this basis is *interpolatory* if there exist points \f$x_j
+     *  \in \Gamma\f$ and \f$n\f$-dimensional vectors \f$d_j\f$ (\f$j = 1, 2,
+     *  \dots, N\f$ such that
+     *
+     *  \f[
+     *      f_i(x_j) \cdot d_j =
+     *      \begin{cases}
+     *         1 &\text{for} i = j,\\
+     *         0 &\text{otherwise}.
+     *      \end{cases}
+     *  \f]
+     *
+     *  For any appropriate function \f$u\f$ defined on \f$Gamma\f$ the numbers
+     *  \f$u(x_i) \cdot d_i\f$ can then be taken as the expansion coefficients
+     *  in the basis \f$(f_i)_{i=1}^N\f$ of its interpolation. ("Appropriate"
+     *  means that if, for example, the space \f$V\f$ is a space of functions
+     *  tangential to the grid, then \f$u\f$ should also be tangential to the
+     *  grid.)
+     *
+     *  This function fills the 2D array \p points whose <em>(i, j)</em>th
+     *  element contains the <em>i</em>th coordinate of the interpolation point
+     *  \f$x_j\f$. */
+    virtual void getGlobalDofInterpolationPoints(
+            arma::Mat<CoordinateType>& points) const {
+        throw NotImplementedError(
+                    "Space::getGlobalDofInterpolationPoints(): not implemented");
+    }
+
+    /** \brief Retrieve the unit vectors normal to the grid at the
+     *  interpolation points of the global degrees of freedom.
+     *
+     *  This function fills the 2D array \p normals whose <em>(i, j)</em>th
+     *  element contains the <em>i</em>th component of the unit vector normal
+     *  to the grid at the interpolation point \f$x_j\f$ defined in the
+     *  documentation of getGlobalDofInterpolationPoints(). */
+    virtual void getNormalsAtGlobalDofInterpolationPoints(
+            arma::Mat<CoordinateType>& normals) const {
+        throw NotImplementedError(
+                    "Space::getNormalsAtGlobalDofInterpolationPoints(): not implemented");
+    }
+
+    /** \brief Retrieve the interpolation directions of the global degrees of
+     *  freedom.
+     *
+     *  This function fills the 2D array \p points whose <em>(i, j)</em>th
+     *  element contains the <em>i</em>th component of the vector \f$d_j\f$
+     *  defined in the documentation of getGlobalDofInterpolationPoints(). */
+    virtual void getGlobalDofInterpolationDirections(
+            arma::Mat<CoordinateType>& directions) const {
+        throw NotImplementedError(
+                    "Space::getGlobalDofInterpolationDirections(): not implemented");
+    }
+
+    /** @}
+        @name DOF reference positions (functions used in ACA assembly)
+        @} */
+
     // These functions are used only by the ACA assembler.
     // For the moment, Point will always be 3D, independently from the
     // actual dimension of the space. Once Ahmed's bemcluster is made dimension-
     // independent, we may come up with a more elegant solution.
-    /** \brief Retrieve positions of global degrees of freedom.
-     *
-     *  \param[out] positions
-     *    Vector whose <em>i</em>th element contains the coordinates
-     *    of the point taken to be the "position" (in some sense) of
-     *    <em>i</em>th global degree of freedom.
-     *
-     *  \note This function is intended as a helper for clustering algorithms
-     *  used in matrix compression algorithms such as adaptive cross
-     *  approximation. */
-    virtual void getGlobalDofPositions(
-            std::vector<Point3D<CoordinateType> >& positions) const = 0;
-
     /** \brief Retrieve bounding boxes of global degrees of freedom.
      *
      *  \param[out] boundingBoxes
@@ -320,12 +491,25 @@ public:
                                  "implementation missing");
     }
 
-    /** \brief Retrieve positions of local degrees of freedom ordered by their
-     *  flat index.
+    /** \brief Retrieve the reference positions of global degrees of freedom.
      *
      *  \param[out] positions
      *    Vector whose <em>i</em>th element contains the coordinates
-     *    of the point taken to be the ``position'' (in some sense) of
+     *    of the point taken to be the "reference position" (in some sense) of
+     *    <em>i</em>th global degree of freedom.
+     *
+     *  \note This function is intended as a helper for clustering algorithms
+     *  used in matrix compression algorithms such as adaptive cross
+     *  approximation. */
+    virtual void getGlobalDofPositions(
+            std::vector<Point3D<CoordinateType> >& positions) const = 0;
+
+    /** \brief Retrieve the reference positions of local degrees of freedom
+     *  ordered by their flat index.
+     *
+     *  \param[out] positions
+     *    Vector whose <em>i</em>th element contains the coordinates
+     *    of the point taken to be the ``reference position'' (in some sense) of
      *    the local degree of freedom with flat index <em>i</em>.
      *
      *  \note This function is intended as a helper for clustering algorithms
@@ -334,10 +518,25 @@ public:
     virtual void getFlatLocalDofPositions(
             std::vector<Point3D<CoordinateType> >& positions) const = 0;
 
+    /** \brief Retrieve the unit vectors normal to the grid at the positions of
+     *  global degrees of freedom.
+     *
+     *  \param[out] normals
+     *    Vector whose <em>i</em>th element contains the unit vector normal to
+     *    the grid at the reference position of <em>i</em>th global degree of
+     *    freedom. */
     virtual void getGlobalDofNormals(
             std::vector<Point3D<CoordinateType> >& normals) const {
         throw NotImplementedError("Space::getGlobalDofNormals(): not implemented");
     }
+
+    /** \brief Retrieve the unit vectors normal to the grid at the positions of
+     *  global degrees of freedom.
+     *
+     *  \param[out] normals
+     *    Vector whose <em>i</em>th element contains the unit vector normal to
+     *    the grid at the reference position of the local degree of freedom with
+     *    flat index <em>i</em>. */
     virtual void getFlatLocalDofNormals(
             std::vector<Point3D<CoordinateType> >& normals) const {
         throw NotImplementedError("Space::getFlatLocalDofNormals(): not implemented");
@@ -399,6 +598,9 @@ public:
 private:
     /** \cond PRIVATE */
     shared_ptr<const Grid> m_grid;
+    shared_ptr<GeometryFactory> m_elementGeometryFactory;
+    unsigned int m_level;
+    std::auto_ptr<GridView> m_view;
     /** \endcond */
 };
 
@@ -416,8 +618,23 @@ private:
  *  An exception is raised if <tt>space.assignDofs()</tt> has not been called
  *  prior to calling this function. */
 template <typename BasisFunctionType>
-void getAllBases(const Space<BasisFunctionType>& space,
+void getAllShapesets(const Space<BasisFunctionType>& space,
+        std::vector<const Fiber::Shapeset<BasisFunctionType>*>& shapesets);
+
+/** \relates Space
+ *  \brief Get pointers to Basis objects corresponding to all elements of the grid
+ *  on which a function space is defined.
+ *
+ *  \deprecated This function is deprecated. Use getAllShapesets() instead. */
+template <typename BasisFunctionType>
+void BEMPP_DEPRECATED getAllBases(const Space<BasisFunctionType>& space,
         std::vector<const Fiber::Basis<BasisFunctionType>*>& bases);
+
+/** \relates Space
+ *  \brief Return the maximum polynomial order of the shapesets
+ *  defined by \p space on the elements of the space's underlying grid. */
+template <typename BasisFunctionType>
+int maximumShapesetOrder(const Space<BasisFunctionType>& space);
 
 #ifdef WITH_TRILINOS
 template <typename BasisFunctionType, typename ResultType>

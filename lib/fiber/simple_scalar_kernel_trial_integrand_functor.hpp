@@ -51,7 +51,7 @@ public:
     }
 
     // It is possible that this function could be generalised to
-    // multiple basis transformations or kernels and that the additional
+    // multiple shapeset transformations or kernels and that the additional
     // loops could be optimised away by the compiler.
     template <template<typename T> class CollectionOf1dSlicesOfConstNdArrays,
               typename TrialValueType>

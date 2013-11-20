@@ -29,7 +29,6 @@
 
 #include "../common/boost_make_shared_fwd.hpp"
 #include "../fiber/explicit_instantiation.hpp"
-#include "../fiber/local_assembler_for_operators.hpp"
 
 #include <stdexcept>
 
@@ -123,15 +122,6 @@ NullOperator<BasisFunctionType, ResultType>::assembleWeakFormImpl(
 
 template <typename BasisFunctionType, typename ResultType>
 shared_ptr<DiscreteBoundaryOperator<ResultType> >
-NullOperator<BasisFunctionType, ResultType>::assembleWeakFormInternalImpl2(
-        LocalAssembler& assembler,
-        const Context<BasisFunctionType, ResultType>& context) const
-{
-    return reallyAssembleWeakForm();
-}
-
-template <typename BasisFunctionType, typename ResultType>
-shared_ptr<DiscreteBoundaryOperator<ResultType> >
 NullOperator<BasisFunctionType, ResultType>::reallyAssembleWeakForm() const
 {
     shared_ptr<DiscreteBoundaryOperator<ResultType> > result(
@@ -139,25 +129,6 @@ NullOperator<BasisFunctionType, ResultType>::reallyAssembleWeakForm() const
                     this->dualToRange()->globalDofCount(),
                     this->domain()->globalDofCount()));
     return result;
-}
-
-template <typename BasisFunctionType, typename ResultType>
-std::auto_ptr<typename NullOperator<BasisFunctionType, ResultType>::LocalAssembler>
-NullOperator<BasisFunctionType, ResultType>::makeAssemblerImpl(
-        const QuadratureStrategy& quadStrategy,
-        const shared_ptr<const GeometryFactory>& testGeometryFactory,
-        const shared_ptr<const GeometryFactory>& trialGeometryFactory,
-        const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& testRawGeometry,
-        const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& trialRawGeometry,
-        const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& testBases,
-        const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& trialBases,
-        const shared_ptr<const Fiber::OpenClHandler>& openClHandler,
-        const ParallelizationOptions&,
-        VerbosityLevel::Level verbosityLevel,
-        bool cacheSingularIntegrals) const
-{
-    // return null pointer
-    return std::auto_ptr<LocalAssembler>();
 }
 
 template <typename BasisFunctionType, typename ResultType>

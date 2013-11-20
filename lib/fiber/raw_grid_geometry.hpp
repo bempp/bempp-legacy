@@ -54,6 +54,10 @@ public:
         return m_auxData;
     }
 
+    const std::vector<int>& domainIndices() const {
+        return m_domainIndices;
+    }
+
     int elementCount() const {
         return m_elementCornerIndices.n_cols;
     }
@@ -80,6 +84,11 @@ public:
         return n;
     }
 
+    /** \brief Domain index of the given element. */
+    int domainIndex(int elementIndex) const {
+        return m_domainIndices[elementIndex];
+    }
+
     // Non-const accessors (currently needed for construction)
 
     arma::Mat<CoordinateType>& vertices() {
@@ -92,6 +101,10 @@ public:
 
     arma::Mat<char>& auxData() {
         return m_auxData;
+    }
+
+    std::vector<int>& domainIndices() {
+        return m_domainIndices;
     }
 
     // Auxiliary functions
@@ -117,6 +130,7 @@ private:
     arma::Mat<CoordinateType> m_vertices;
     arma::Mat<int> m_elementCornerIndices;
     arma::Mat<char> m_auxData;
+    std::vector<int> m_domainIndices;
 };
 
 } // namespace Fiber

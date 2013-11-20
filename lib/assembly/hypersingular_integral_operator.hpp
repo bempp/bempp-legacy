@@ -34,7 +34,7 @@ namespace Fiber
 {
 
 /** \cond FORWARD_DECL */
-template <typename CoordinateType> class CollectionOfBasisTransformations;
+template <typename CoordinateType> class CollectionOfShapesetTransformations;
 template <typename KernelType> class CollectionOfKernels;
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 class TestKernelTrialIntegral;
@@ -117,11 +117,17 @@ public:
     /** \copydoc AbstractBoundaryOperator::QuadratureStrategy */
     typedef typename Base::QuadratureStrategy QuadratureStrategy;
     /** \brief Type of the appropriate instantiation of Fiber::LocalAssemblerForOperators. */
-    typedef Fiber::LocalAssemblerForOperators<ResultType> LocalAssembler;
+    typedef Fiber::LocalAssemblerForIntegralOperators<ResultType> LocalAssembler;
     /** \brief Type of the values of the (components of the) kernel functions. */
     typedef KernelType_ KernelType;
-    /** \brief Type of the appropriate instantiation of Fiber::CollectionOfBasisTransformations. */
-    typedef Fiber::CollectionOfBasisTransformations<CoordinateType>
+    /** \brief Type of the appropriate instantiation of Fiber::CollectionOfShapesetTransformations. */
+    typedef Fiber::CollectionOfShapesetTransformations<CoordinateType>
+    CollectionOfShapesetTransformations;
+    /** \brief Type of the appropriate instantiation of Fiber::CollectionOfBasisTransformations.
+     *
+     *  \deprecated This type is deprecated; use CollectionOfShapesetTransformations
+     *  instead. */
+    typedef Fiber::CollectionOfShapesetTransformations<CoordinateType>
     CollectionOfBasisTransformations;
     /** \brief Type of the appropriate instantiation of Fiber::CollectionOfKernels. */
     typedef Fiber::CollectionOfKernels<KernelType> CollectionOfKernels;
@@ -153,13 +159,13 @@ private:
     /** \brief Return the collection of test-function transformations occurring
      *  in the first representation of the weak form of this operator (valid for
      *  all pairs of test and trial functions). */
-    virtual const CollectionOfBasisTransformations&
+    virtual const CollectionOfShapesetTransformations&
     testTransformations() const = 0;
 
     /** \brief Return the collection of trial-function transformations occurring
      *  in the first representation of the weak form of this operator (valid for
      *  all pairs of test and trial functions). */
-    virtual const CollectionOfBasisTransformations&
+    virtual const CollectionOfShapesetTransformations&
     trialTransformations() const = 0;
 
     /** \brief Return an object representing the integral that
@@ -169,8 +175,8 @@ private:
      *  Subclasses of #TestKernelTrialIntegral implement functions that evaluate
      *  the integral using the data provided by a #CollectionOfKernels
      *  representing the kernel functions occurring in the integrand and a pair
-     *  of #CollectionOfBasisTransformations objects representing the test and
-     *  trial basis function transformations occurring in the integrand. */
+     *  of #CollectionOfShapesetTransformations objects representing the test and
+     *  trial function transformations occurring in the integrand. */
     virtual const TestKernelTrialIntegral& integral() const = 0;
 
     /** \brief Return the collection of kernel functions occurring in the
@@ -184,10 +190,10 @@ private:
      *  least for pairs of test and trial functions with nonoverlapping
      *  supports).
      *
-     *  It should normally be the mapping of basis functions (defined on the
-     *  reference element) to shape functions (defined on the physical
+     *  It should normally be the mapping of shape functions (defined on the
+     *  reference element) to basis functions (defined on the physical
      *  elements). */
-    virtual const CollectionOfBasisTransformations&
+    virtual const CollectionOfShapesetTransformations&
     offDiagonalTestTransformations() const = 0;
 
     /** \brief Return the collection of trial-function transformations occurring
@@ -195,10 +201,10 @@ private:
      *  least for pairs of test and trial functions with nonoverlapping
      *  supports).
      *
-     *  It should normally be the mapping of basis functions (defined on the
-     *  reference element) to shape functions (defined on the physical
+     *  It should normally be the mapping of shape functions (defined on the
+     *  reference element) to basis functions (defined on the physical
      *  elements). */
-    virtual const CollectionOfBasisTransformations&
+    virtual const CollectionOfShapesetTransformations&
     offDiagonalTrialTransformations() const = 0;
 
     /** \brief Return an object representing the integral that
@@ -209,7 +215,7 @@ private:
      *  Subclasses of #TestKernelTrialIntegral implement functions that evaluate
      *  the integral using the data provided by a #CollectionOfKernels
      *  representing the kernel functions occurring in the integrand and a pair
-     *  of #CollectionOfBasisTransformations objects representing the test and
+     *  of #CollectionOfShapesetTransformations objects representing the test and
      *  trial basis function transformations occurring in the integrand. */
     virtual const TestKernelTrialIntegral& offDiagonalIntegral() const = 0;
 
@@ -230,8 +236,8 @@ private:
             const shared_ptr<const GeometryFactory>& trialGeometryFactory,
             const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& testRawGeometry,
             const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& trialRawGeometry,
-            const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& testBases,
-            const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& trialBases,
+            const shared_ptr<const std::vector<const Fiber::Shapeset<BasisFunctionType>*> >& testShapesets,
+            const shared_ptr<const std::vector<const Fiber::Shapeset<BasisFunctionType>*> >& trialShapesets,
             const shared_ptr<const Fiber::OpenClHandler>& openClHandler,
             const ParallelizationOptions& parallelizationOptions,
             VerbosityLevel::Level verbosityLevel,

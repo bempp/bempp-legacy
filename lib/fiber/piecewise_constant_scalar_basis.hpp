@@ -21,56 +21,19 @@
 #ifndef fiber_piecewise_constant_scalar_basis_hpp
 #define fiber_piecewise_constant_scalar_basis_hpp
 
-#include "../common/common.hpp"
-
-#include "basis.hpp"
-#include "basis_data.hpp"
-
-#include <algorithm>
+#include "constant_scalar_shapeset.hpp"
+#include "../common/deprecated.hpp"
 
 namespace Fiber
 {
 
+/** \brief A shapeset containing only one function: the constant function.
+ *
+ *  \deprecated This class is deprecated, use ConstantScalarShapeset instead. */
 template <typename ValueType>
-class PiecewiseConstantScalarBasis : public Basis<ValueType>
+class BEMPP_DEPRECATED PiecewiseConstantScalarBasis :
+        public ConstantScalarShapeset<ValueType>
 {
-public:
-    typedef typename Basis<ValueType>::CoordinateType CoordinateType;
-
-    virtual int size() const {
-        return 1;
-    }
-
-    virtual int order() const {
-        return 0;
-    }
-
-    virtual void evaluate(size_t what,
-                          const arma::Mat<CoordinateType>& points,
-                          LocalDofIndex localDofIndex,
-                          BasisData<ValueType>& data) const {
-        if (localDofIndex != ALL_DOFS && localDofIndex != 0)
-            throw std::invalid_argument("PiecewiseConstantScalarBasis::evaluate(): "
-                                        "Invalid localDofIndex");
-        // Since there is only one basis function, there is no difference
-        // between calculating all basis functions and just one.
-
-        const int componentCount = 1;
-        const int functionCount = 1;
-        const int pointCount = points.n_cols;
-        if (what & VALUES)
-        {
-            data.values.set_size(componentCount, functionCount, pointCount);
-            std::fill(data.values.begin(), data.values.end(), 1.);
-        }
-        if (what & DERIVATIVES)
-        {
-            const int coordCount = points.n_rows;
-            data.derivatives.set_size(componentCount, coordCount,
-                                 functionCount, pointCount);
-            std::fill(data.derivatives.begin(), data.derivatives.end(), 0.);
-        }
-    }
 };
 
 } // namespace Fiber

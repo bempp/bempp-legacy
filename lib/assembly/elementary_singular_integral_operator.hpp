@@ -48,6 +48,9 @@ public:
     /** \copydoc ElementaryIntegralOperator::CollectionOfBasisTransformations */
     typedef typename Base::CollectionOfBasisTransformations
     CollectionOfBasisTransformations;
+    /** \copydoc ElementaryIntegralOperator::CollectionOfShapesetTransformations */
+    typedef typename Base::CollectionOfShapesetTransformations
+    CollectionOfShapesetTransformations;
     /** \copydoc ElementaryIntegralOperator::CollectionOfKernels */
     typedef typename Base::CollectionOfKernels CollectionOfKernels;
     /** \copydoc ElementaryIntegralOperator::TestKernelTrialIntegral */

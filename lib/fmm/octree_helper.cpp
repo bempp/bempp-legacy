@@ -31,7 +31,7 @@
 
 #include "../fiber/types.hpp"
 #include "../fiber/explicit_instantiation.hpp"
-#include "../fiber/local_assembler_for_operators.hpp"
+#include "../fiber/local_assembler_for_integral_operators.hpp"
 #include "../fiber/conjugate.hpp"
 
 #include "../space/space.hpp"

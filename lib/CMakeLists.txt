@@ -56,7 +56,9 @@ include_directories(${BOOST_INCLUDE_DIR})
 
 # TBB
 include_directories(${TBB_INCLUDE_DIR})
-target_link_libraries (bempp debug ${TBB_LIBRARY_DEBUG} optimized ${TBB_LIBRARY})
+target_link_libraries (bempp
+   debug ${TBB_LIBRARY_DEBUG} ${TBB_MALLOC_LIBRARY_DEBUG}
+   optimized ${TBB_LIBRARY} ${TBB_MALLOC_LIBRARY})
 set_property(
    TARGET bempp
    PROPERTY COMPILE_DEFINITIONS_DEBUG TBB_USE_DEBUG=1

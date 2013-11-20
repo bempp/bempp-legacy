@@ -138,6 +138,27 @@ inline void _2dArray<T>::set_size(size_t extent0, size_t extent1)
 }
 
 template <typename T>
+inline _2dArray<T>& _2dArray<T>::operator+=(const _2dArray<T>& other){
+    if ((this->extent(0)!= other.extent(0))||
+            (this->extent(1)!= other.extent(1)))
+        std::runtime_error("_2dArray<T> operator+=: Array sizes don't agree.");
+    for (size_t i=0;i<this->extent(1);++i)
+        for (size_t j=0;j<this->extent(0);++j)
+            (*this)(j,i)+=other(j,i);
+    return *this;
+
+}
+
+template <typename T>
+inline _2dArray<T>& _2dArray<T>::operator*=(const T& other) {
+    for (size_t i=0;i<this->extent(1);++i)
+        for (size_t j=0;j<this->extent(0);++j)
+            (*this)(j,i)*=other;
+    return *this;
+}
+
+
+template <typename T>
 inline typename _2dArray<T>::iterator _2dArray<T>::begin()
 {
     return m_storage;
@@ -172,8 +193,6 @@ inline void _2dArray<T>::check_dimension(size_t dimension) const
 template <typename T>
 inline void _2dArray<T>::check_extents(size_t extent0, size_t extent1) const
 {
-    if (extent0 <= 0 || extent1 <= 0)
-        throw std::length_error("Invalid extent");
 }
 
 template <typename T>

@@ -20,6 +20,7 @@
 
 #include "modified_helmholtz_3d_double_layer_boundary_operator.hpp"
 
+#include "blas_quadrature_helper.hpp"
 #include "context.hpp"
 #include "general_elementary_singular_integral_operator_imp.hpp"
 #include "modified_helmholtz_3d_synthetic_boundary_operator_builder.hpp"
@@ -28,6 +29,7 @@
 
 #include "../fiber/explicit_instantiation.hpp"
 
+#include "../fiber/typical_test_scalar_kernel_trial_integral.hpp"
 #include "../fiber/modified_helmholtz_3d_double_layer_potential_kernel_functor.hpp"
 #include "../fiber/modified_helmholtz_3d_double_layer_potential_kernel_interpolated_functor.hpp"
 #include "../fiber/scalar_function_value_functor.hpp"
@@ -59,7 +61,7 @@ modifiedHelmholtz3dDoubleLayerBoundaryOperator(
         return modifiedHelmholtz3dSyntheticBoundaryOperator(
             &modifiedHelmholtz3dDoubleLayerBoundaryOperator<
                 BasisFunctionType, KernelType, ResultType>,
-            context, domain, range, dualToRange, waveNumber, label, symmetry, 
+            context, domain, range, dualToRange, waveNumber, label, symmetry,
             useInterpolation, interpPtsPerWavelength,
             NO_SYMMETRY);
 
@@ -71,8 +73,8 @@ modifiedHelmholtz3dDoubleLayerBoundaryOperator(
     InterpolatedKernelFunctor;
     typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
     TransformationFunctor;
-    typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctor<
-    BasisFunctionType, KernelType, ResultType> IntegrandFunctor;
+    typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctorExt<
+    BasisFunctionType, KernelType, ResultType, 1> IntegrandFunctor;
 
     if (!domain || !range || !dualToRange)
         throw std::invalid_argument(
@@ -90,6 +92,16 @@ modifiedHelmholtz3dDoubleLayerBoundaryOperator(
 
     typedef GeneralElementarySingularIntegralOperator<
             BasisFunctionType, KernelType, ResultType> Op;
+
+    shared_ptr<Fiber::TestKernelTrialIntegral<
+            BasisFunctionType, KernelType, ResultType> > integral;
+    if (shouldUseBlasInQuadrature(assemblyOptions, *domain, *dualToRange))
+        integral.reset(new Fiber::TypicalTestScalarKernelTrialIntegral<
+                       BasisFunctionType, KernelType, ResultType>());
+    else
+        integral.reset(new Fiber::DefaultTestKernelTrialIntegral<
+                       IntegrandFunctor>(IntegrandFunctor()));
+
     shared_ptr<Op> newOp;
     if (useInterpolation)
         newOp.reset(new Op(
@@ -100,7 +112,7 @@ modifiedHelmholtz3dDoubleLayerBoundaryOperator(
                             interpPtsPerWavelength),
                         TransformationFunctor(),
                         TransformationFunctor(),
-                        IntegrandFunctor(),
+                        integral,
                         fmmTransform));
     else
         newOp.reset(new Op(
@@ -109,7 +121,7 @@ modifiedHelmholtz3dDoubleLayerBoundaryOperator(
                             waveNumber),
                         TransformationFunctor(),
                         TransformationFunctor(),
-                        IntegrandFunctor(),
+                        integral,
                         fmmTransform));
     return BoundaryOperator<BasisFunctionType, ResultType>(context, newOp);
 }

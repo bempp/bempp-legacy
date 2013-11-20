@@ -27,8 +27,19 @@
 #include <complex>
 %}
 
+%include "numpy.i"
 
 %include "std_vector.i"
+%include "std_string.i"
+
+namespace std {
+
+    %template(IntVector) vector<int>;
+    %template(DoubleVector) vector<double>;
+    %template(VectorDoubleVector) vector<vector<double> >;
+    %template(StringVector) vector<std::string>;
+
+}
 
 %include "config.i"
 
@@ -118,6 +129,7 @@ AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
 %include "grid/entity_pointer.i"
 %include "grid/entity_iterator.i"
 %include "grid/grid.i"
+%include "grid/grid_segment.i"
 %include "grid/id_set.i"
 %include "grid/grid_view.i"
 %include "grid/index_set.i"
@@ -138,10 +150,14 @@ AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
 // Space
 %include "space/space.i"
 %include "space/piecewise_constant_scalar_space.i"
+%include "space/piecewise_constant_scalar_space_barycentric.i"
+%include "space/piecewise_constant_dual_grid_scalar_space.i"
 %include "space/piecewise_linear_continuous_scalar_space.i"
 %include "space/piecewise_linear_discontinuous_scalar_space.i"
 %include "space/piecewise_polynomial_continuous_scalar_space.i"
 %include "space/piecewise_polynomial_discontinuous_scalar_space.i"
+%include "space/piecewise_linear_continuous_scalar_space_barycentric.i"
+%include "space/piecewise_linear_discontinuous_scalar_space_barycentric.i"
 %include "space/raviart_thomas_0_vector_space.i"
 %include "space/unit_scalar_space.i"
 
@@ -152,8 +168,10 @@ AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
 %include "assembly/numerical_quadrature_strategy.i"
 %include "assembly/transposition_mode.i"
 %include "assembly/symmetry.i"
-%include "assembly/python_surface_normal_independent_functor.i"
+%include "assembly/python_domain_index_dependent_functor.i"
+%include "assembly/python_surface_normal_and_domain_index_dependent_functor.i"
 %include "assembly/python_surface_normal_dependent_functor.i"
+%include "assembly/python_surface_normal_independent_functor.i"
 %include "assembly/discrete_boundary_operator.i"
 %include "assembly/context.i"
 %include "assembly/grid_function.i"
@@ -189,3 +207,7 @@ AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
 %include "linalg/preconditioner.i"
 %include "linalg/default_iterative_solver.i"
 %include "linalg/default_direct_solver.i"
+
+// IO
+
+%include "io/gmsh.i"

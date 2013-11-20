@@ -23,7 +23,7 @@
 
 #include "../common/common.hpp"
 
-#include "elementary_abstract_boundary_operator.hpp"
+#include "abstract_boundary_operator.hpp"
 
 #include "abstract_boundary_operator_id.hpp"
 #include <boost/scoped_ptr.hpp>
@@ -32,7 +32,8 @@ namespace Fiber
 {
 
 /** \cond FORWARD_DECL */
-template <typename ResultType> class LocalAssemblerForOperators;
+template <typename BasisFunctionType> class CollectionOfShapesetTransformations;
+template <typename ResultType> class LocalAssemblerForLocalOperators;
 template <typename BasisFunctionType, typename ResultType> class TestTrialIntegral;
 /** \endcond */
 
@@ -53,23 +54,26 @@ template <typename BasisFunctionType, typename ResultType> class BoundaryOperato
  */
 template <typename BasisFunctionType_, typename ResultType_>
 class ElementaryLocalOperator :
-        public ElementaryAbstractBoundaryOperator<BasisFunctionType_, ResultType_>
+        public AbstractBoundaryOperator<BasisFunctionType_, ResultType_>
 {
-    typedef ElementaryAbstractBoundaryOperator<BasisFunctionType_, ResultType_> Base;
+    typedef AbstractBoundaryOperator<BasisFunctionType_, ResultType_> Base;
 public:
-    /** \copydoc ElementaryAbstractBoundaryOperator::BasisFunctionType */
+    /** \copydoc AbstractBoundaryOperator::BasisFunctionType */
     typedef typename Base::BasisFunctionType BasisFunctionType;
-    /** \copydoc ElementaryAbstractBoundaryOperator::ResultType */
+    /** \copydoc AbstractBoundaryOperator::ResultType */
     typedef typename Base::ResultType ResultType;
-    /** \copydoc ElementaryAbstractBoundaryOperator::CoordinateType */
+    /** \copydoc AbstractBoundaryOperator::CoordinateType */
     typedef typename Base::CoordinateType CoordinateType;
-    /** \copydoc ElementaryAbstractBoundaryOperator::QuadratureStrategy */
+    /** \copydoc AbstractBoundaryOperator::QuadratureStrategy */
     typedef typename Base::QuadratureStrategy QuadratureStrategy;
-    /** \copydoc ElementaryAbstractBoundaryOperator::LocalAssembler */
-    typedef typename Base::LocalAssembler LocalAssembler;
-    /** \brief Type of the appropriate instantiation of
-     *  Fiber::CollectionOfBasisTransformations. */
-    typedef Fiber::CollectionOfBasisTransformations<CoordinateType>
+    /** \brief Type of the appropriate instantiation of Fiber::CollectionOfShapesetTransformations. */
+    typedef Fiber::CollectionOfShapesetTransformations<CoordinateType>
+    CollectionOfShapesetTransformations;
+    /** \brief Type of the appropriate instantiation of Fiber::CollectionOfBasisTransformations.
+     *
+     *  \deprecated This type is deprecated; use CollectionOfShapesetTransformations
+     *  instead. */
+    typedef Fiber::CollectionOfShapesetTransformations<CoordinateType>
     CollectionOfBasisTransformations;
     /** \brief Type of the appropriate instantiation of Fiber::TestTrialIntegral. */
     typedef Fiber::TestTrialIntegral<BasisFunctionType, ResultType>
@@ -91,15 +95,19 @@ protected:
     assembleWeakFormImpl(
             const Context<BasisFunctionType, ResultType>& context) const;
 
-private:    
-    /** \brief Return the collection of test-function transformations occurring
+private:
+    /** \brief Type of the appropriate instantiation of
+     *  Fiber::LocalAssemblerForLocalOperators. */
+    typedef Fiber::LocalAssemblerForLocalOperators<ResultType> LocalAssembler;
+
+    /** \brief Return the collection of test function transformations occurring
      *  in the weak form of this operator. */
-    virtual const CollectionOfBasisTransformations&
+    virtual const CollectionOfShapesetTransformations&
     testTransformations() const = 0;
 
-    /** \brief Return the collection of trial-function transformations occurring
+    /** \brief Return the collection of trial function transformations occurring
      *  in the weak form of this operator. */
-    virtual const CollectionOfBasisTransformations&
+    virtual const CollectionOfShapesetTransformations&
     trialTransformations() const = 0;
 
     /** \brief Return an object representing the integral that is the weak form
@@ -107,22 +115,9 @@ private:
      *
      *  Subclasses of #TestTrialIntegral implement functions that evaluate
      *  the integral using the data provided by a pair
-     *  of #CollectionOfBasisTransformations objects representing the test and
-     *  trial basis function transformations occurring in the integrand. */
+     *  of #CollectionOfShapesetTransformations objects representing the test and
+     *  trial function transformations occurring in the integrand. */
     virtual const TestTrialIntegral& integral() const = 0;
-
-    virtual std::auto_ptr<LocalAssembler> makeAssemblerImpl(
-            const QuadratureStrategy& quadStrategy,
-            const shared_ptr<const GeometryFactory>& testGeometryFactory,
-            const shared_ptr<const GeometryFactory>& trialGeometryFactory,
-            const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& testRawGeometry,
-            const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& trialRawGeometry,
-            const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& testBases,
-            const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& trialBases,
-            const shared_ptr<const Fiber::OpenClHandler>& openClHandler,
-            const ParallelizationOptions& parallelizationOptions,
-            VerbosityLevel::Level verbosityLevel,
-            bool cacheSingularIntegrals) const;
 
     virtual shared_ptr<DiscreteBoundaryOperator<ResultType_> >
     assembleWeakFormInternalImpl2(
@@ -137,6 +132,10 @@ private:
     std::auto_ptr<DiscreteBoundaryOperator<ResultType_> >
     assembleWeakFormInSparseMode(
             LocalAssembler& assembler,
+            const AssemblyOptions& options) const;
+
+    std::auto_ptr<LocalAssembler> makeAssembler(
+            const QuadratureStrategy& quadStrategy,
             const AssemblyOptions& options) const;
 
 private:

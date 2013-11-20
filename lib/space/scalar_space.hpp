@@ -38,6 +38,8 @@ class ScalarSpace : public Space<BasisFunctionType>
     typedef Space<BasisFunctionType> Base;
 public:
     typedef typename Base::CoordinateType CoordinateType;
+    typedef typename Base::CollectionOfShapesetTransformations
+    CollectionOfShapesetTransformations;
     typedef typename Base::CollectionOfBasisTransformations
     CollectionOfBasisTransformations;
 
@@ -48,8 +50,11 @@ public:
     /** \brief Assignment operator. */
     ScalarSpace& operator=(const ScalarSpace& other);
 
-    virtual const CollectionOfBasisTransformations&
-    shapeFunctionValue() const;
+    virtual const CollectionOfShapesetTransformations&
+    basisFunctionValue() const;
+
+    virtual void getGlobalDofInterpolationDirections(
+            arma::Mat<CoordinateType>& directions) const;
 
 private:
     struct Impl;

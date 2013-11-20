@@ -21,74 +21,21 @@
 #ifndef fiber_lagrange_scalar_basis_hpp
 #define fiber_lagrange_scalar_basis_hpp
 
-#include "../common/common.hpp"
-
-#include "basis.hpp"
-
-#include "basis_data.hpp"
-#include "dune_basis_helper.hpp"
-
-#include <dune/localfunctions/lagrange/pk2d/pk2dlocalbasis.hh>
+#include "lagrange_scalar_shapeset.hpp"
+#include "../common/deprecated.hpp"
 
 namespace Fiber
 {
 
-// So far, this basis is only implemented for triangular elements.
-// In future it may be extended to quadrilaterals and lines.
 
-template <int elementVertexCount, typename CoordinateType, typename ValueType,
-          int polynomialOrder>
-struct LagrangeScalarBasisTraits
-{
-};
-
-// Triangle
-template <typename CoordinateType, typename ValueType, int polynomialOrder>
-struct LagrangeScalarBasisTraits<3, CoordinateType, ValueType, polynomialOrder>
-{
-public:
-    typedef Dune::Pk2DLocalBasis<CoordinateType, ValueType, polynomialOrder>
-    DuneBasis;
-};
-
+/** \brief Shapeset composed of the Lagrange polynomials up to a specified order.
+ *
+ *  \deprecated This class is deprecated, use LagrangeScalarShapeset instead. */
 template <int elementVertexCount, typename ValueType, int polynomialOrder>
-class LagrangeScalarBasis : public Basis<ValueType>
+class BEMPP_DEPRECATED LagrangeScalarBasis :
+        public LagrangeScalarShapeset<elementVertexCount, ValueType,
+                                      polynomialOrder>
 {
-public:
-    typedef typename Basis<ValueType>::CoordinateType CoordinateType;
-
-private:
-    typedef typename LagrangeScalarBasisTraits<
-    elementVertexCount, CoordinateType, ValueType, polynomialOrder>::DuneBasis
-    DuneBasis;
-    DuneBasis m_duneBasis;
-
-public:
-    virtual int size() const {
-        return m_duneBasis.size();
-    }
-
-    virtual int order() const {
-        return polynomialOrder;
-    }
-
-    virtual void evaluate(size_t what,
-                          const arma::Mat<CoordinateType>& points,
-                          LocalDofIndex localDofIndex,
-                          BasisData<ValueType>& data) const {
-        if (localDofIndex != ALL_DOFS &&
-                (localDofIndex < 0 || size() <= localDofIndex))
-            throw std::invalid_argument("LagrangeScalarBasis::"
-                                        "evaluate(): Invalid localDofIndex");
-
-        if (what & VALUES)
-            evaluateBasisFunctionsWithDune<CoordinateType, ValueType, DuneBasis>(
-                        points, localDofIndex, data.values, m_duneBasis);
-        if (what & DERIVATIVES)
-            evaluateBasisFunctionDerivativesWithDune<
-                    CoordinateType, ValueType, DuneBasis>(
-                        points, localDofIndex, data.derivatives, m_duneBasis);
-    }
 };
 
 } // namespace Fiber

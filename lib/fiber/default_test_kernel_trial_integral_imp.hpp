@@ -18,6 +18,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#ifndef fiber_default_test_kernel_trial_integral_imp_hpp
+#define fiber_default_test_kernel_trial_integral_imp_hpp
+
 #include "default_test_kernel_trial_integral.hpp"
 
 #include "geometrical_data.hpp"
@@ -67,6 +70,9 @@ evaluateWithTensorQuadratureRule(
         assert(testValues[i].extent(2) == testPointCount);
     for (size_t i = 0; i < trialValues.size(); ++i)
         assert(trialValues[i].extent(2) == trialPointCount);
+
+    assert(result.n_rows == testDofCount);
+    assert(result.n_cols == trialDofCount);
 
     // Integrate
 
@@ -145,3 +151,5 @@ evaluateWithNontensorQuadratureRule(
 }
 
 } // namespace Fiber
+
+#endif

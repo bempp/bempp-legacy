@@ -49,11 +49,14 @@ namespace Fiber
 
 /** \cond FORWARD_DECL */
 class OpenClHandler;
-template <typename CoordinateType> class CollectionOfBasisTransformations;
+template <typename CoordinateType> class CollectionOfShapesetTransformations;
 template <typename ValueType> class CollectionOfKernels;
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 class KernelTrialIntegral;
 template <typename CoordinateType> class RawGridGeometry;
+template <typename BasisFunctionType>
+class QuadratureDescriptorSelectorForPotentialOperators;
+template <typename CoordinateType> class SingleQuadratureRuleFamily;
 /** \endcond */
 
 template <typename BasisFunctionType, typename KernelType,
@@ -68,13 +71,15 @@ public:
             const arma::Mat<CoordinateType>& points,
             const shared_ptr<const GeometryFactory>& geometryFactory,
             const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
-            const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
+            const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& trialShapesets,
             const shared_ptr<const CollectionOfKernels<KernelType> >& kernels,
-            const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
+            const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& trialTransformations,
             const shared_ptr<const KernelTrialIntegral<BasisFunctionType, KernelType, ResultType> >& integral,
             const ParallelizationOptions& parallelizationOptions,
             VerbosityLevel::Level verbosityLevel,
-            const AccuracyOptionsEx& accuracyOptions);
+            const shared_ptr<const QuadratureDescriptorSelectorForPotentialOperators<
+                BasisFunctionType> >& quadDescSelector,
+            const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType> >& quadRuleFamily);
     virtual ~DefaultLocalAssemblerForPotentialOperatorsOnSurfaces();
 
     virtual void evaluateLocalContributions(
@@ -126,22 +131,22 @@ private:
     arma::Mat<CoordinateType> m_points;
     shared_ptr<const GeometryFactory> m_geometryFactory;
     shared_ptr<const RawGridGeometry<CoordinateType> > m_rawGeometry;
-    shared_ptr<const std::vector<const Basis<BasisFunctionType>*> > m_trialBases;
+    shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> > m_trialShapesets;
     shared_ptr<const CollectionOfKernels<KernelType> > m_kernels;
-    shared_ptr<const CollectionOfBasisTransformations<CoordinateType> > m_trialTransformations;
+    shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> > m_trialTransformations;
     shared_ptr<const KernelTrialIntegral<BasisFunctionType, KernelType, ResultType> > m_integral;
     ParallelizationOptions m_parallelizationOptions;
     VerbosityLevel::Level m_verbosityLevel;
-    AccuracyOptionsEx m_accuracyOptions;
+    shared_ptr<const QuadratureDescriptorSelectorForPotentialOperators<BasisFunctionType> >
+    m_quadDescSelector;
+    shared_ptr<const SingleQuadratureRuleFamily<CoordinateType> > m_quadRuleFamily;
+
 
     typedef tbb::concurrent_unordered_map<SingleQuadratureDescriptor,
     Integrator*> IntegratorMap;
     IntegratorMap m_kernelTrialIntegrators;
 
     enum { INVALID_INDEX = INT_MAX };
-    std::vector<CoordinateType> m_elementSizesSquared;
-    arma::Mat<CoordinateType> m_elementCenters;
-    CoordinateType m_averageElementSize;
     /** \endcond */
 };
 

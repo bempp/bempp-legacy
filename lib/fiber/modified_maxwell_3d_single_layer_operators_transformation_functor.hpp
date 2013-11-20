@@ -23,23 +23,23 @@
 
 #include "../common/common.hpp"
 
-#include "basis_transformation_functor_wrappers.hpp"
+#include "shape_transformation_functor_wrappers.hpp"
 #include "hdiv_function_value_functor.hpp"
 #include "surface_div_3d_functor.hpp"
 
 namespace Fiber
 {
 
-/** \brief Functor calculating basis-function transformations necessary for
+/** \brief Functor calculating shape-function transformations necessary for
  *  the implementation of the single-layer potential boundary operator for the
  *  modified Maxwell equations in 3D.
  *
  *  Two following quantities are calculated:
- *  * shape-function value
- *  * shape-function surface div. */
+ *  * basis-function value
+ *  * basis-function surface div. */
 template <typename CoordinateType_>
 class ModifiedMaxwell3dSingleLayerOperatorsTransformationFunctor :
-        public ElementaryBasisTransformationFunctorPairWrapper<
+        public ElementaryShapeTransformationFunctorPairWrapper<
         HdivFunctionValueElementaryFunctor<CoordinateType_>,
         SurfaceDiv3dElementaryFunctor<CoordinateType_> >
 {

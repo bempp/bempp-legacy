@@ -32,7 +32,7 @@
 #include "../common/multidimensional_arrays.hpp"
 #include "../fiber/types.hpp"
 #include "../fiber/explicit_instantiation.hpp"
-#include "../fiber/local_assembler_for_operators.hpp"
+#include "../fiber/local_assembler_for_integral_operators.hpp"
 #include "../grid/grid_view.hpp"
 #include "../space/space.hpp"
 
@@ -67,6 +67,7 @@ WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::WeakFormAcaAssemblyHel
     m_sparseTermsMultipliers(sparseTermsMultipliers),
     m_options(options),
     m_indexWithGlobalDofs(m_options.acaOptions().mode != AcaOptions::HYBRID_ASSEMBLY),
+    m_uniformQuadratureOrder(m_options.isQuadratureOrderUniformInEachCluster()),
     m_testDofListsCache(new LocalDofListsCache<BasisFunctionType>(
                             m_testSpace, m_p2oTestDofs, m_indexWithGlobalDofs)),
     m_trialDofListsCache(new LocalDofListsCache<BasisFunctionType>(
@@ -114,16 +115,29 @@ WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::estimateMinimumDistanc
             dynamic_cast<const AhmedBemCluster*>(c2));
     // Lower bound on the minimum distance between elements from the two clusters
     CoordinateType minDist = -1.; // negative, read: unknown
-    if (cluster1 && cluster2) {
-        // both getdiam2() and dist2() are effectively const, but not declared so
-        // in AHMED
-        const double diam1 = sqrt(cluster1->getdiam2());
-        const double diam2 = sqrt(cluster2->getdiam2());
-        const double dist = sqrt(cluster1->extDist2(cluster2));
-        minDist = std::max(0., dist - (diam1 + diam2) / 2.);
-    }
+
+   if (cluster1 && cluster2)
+       minDist = sqrt(cluster1->extDist2(cluster2));
+
     // else
         // std::cout << "Warning: clusters not available" << std::endl;
+
+    // if (cluster1 && cluster2) {
+    //     std::pair<const cluster*, const cluster*> key(cluster1, cluster2);
+    //     typename DistanceMap::const_iterator it = m_distancesCache.find(key);
+    //     if (it != m_distancesCache.end())
+    //         minDist = it->second;
+    //     else {
+    //         shared_ptr<const LocalDofLists<BasisFunctionType> > testDofLists =
+    //                 m_testDofListsCache->get(c1->getnbeg(), c1->size());
+    //         shared_ptr<const LocalDofLists<BasisFunctionType> > trialDofLists =
+    //                 m_trialDofListsCache->get(c2->getnbeg(), c2->size());
+    //         minDist = m_assemblers[0]->estimateMinimumDistance(
+    //                     testDofLists->elementIndices, trialDofLists->elementIndices);
+    //         m_distancesCache.insert(std::make_pair(key, minDist));
+    //     }
+    // }
+
     return minDist;
 }
 
@@ -139,7 +153,8 @@ void WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::cmpbl(
         m_accessedEntryCount += n1 * n2;
 
     // if negative, it means: unknown
-    const CoordinateType minDist = estimateMinimumDistance(c1, c2);
+    const CoordinateType minDist =
+            m_uniformQuadratureOrder ? estimateMinimumDistance(c1, c2) : -1;
 
     // This is a non-op for real types. For complex types, it converts a pointer
     // to Ahmed's scomp (resp. dcomp) to a pointer to std::complex<float>

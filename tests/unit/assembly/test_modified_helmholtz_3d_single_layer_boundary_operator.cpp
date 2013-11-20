@@ -43,6 +43,24 @@
 #include <boost/version.hpp>
 #include <complex>
 
+namespace Bempp
+{
+
+namespace
+{
+
+template <typename T> T initWaveNumber();
+template <> float initWaveNumber() { return 1.2f; }
+template <> double initWaveNumber(){ return 1.2; }
+template <> std::complex<float> initWaveNumber()
+{ return std::complex<float>(1.2f, 0.7f); }
+template <> std::complex<double> initWaveNumber()
+{ return std::complex<double>(1.2, 0.7); }
+
+}
+
+}
+
 // Tests
 
 using namespace Bempp;
@@ -102,6 +120,67 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(interpolated_matches_noniterpolated,
     const CT eps = std::numeric_limits<CT>::epsilon();
     BOOST_CHECK(check_arrays_are_close<RT>(
                     matNoninterpolated, matInterpolated, 100 * eps));
+}
+
+BOOST_AUTO_TEST_CASE_TEMPLATE(symmetric_matches_nonsymmetric_in_aca_mode,
+                              ValueType, result_types)
+{
+    typedef ValueType RT;
+    typedef typename Fiber::ScalarTraits<ValueType>::RealType RealType;
+    typedef RealType BFT;
+
+    if (boost::is_same<RT, std::complex<float> >::value) {
+        // The AHMED support for single-precision complex symmetric matrices
+        // is broken
+        BOOST_CHECK(true);
+        return;
+    }
+
+    GridParameters params;
+    params.topology = GridParameters::TRIANGULAR;
+    shared_ptr<Grid> grid = GridFactory::importGmshGrid(
+                params, "../../examples/meshes/sphere-h-0.4.msh",
+                false /* verbose */);
+
+    PiecewiseLinearContinuousScalarSpace<BFT> pwiseLinears(grid);
+    PiecewiseConstantScalarSpace<BFT> pwiseConstants(grid);
+
+    AssemblyOptions assemblyOptions;
+    assemblyOptions.setVerbosityLevel(VerbosityLevel::LOW);
+    AcaOptions acaOptions;
+    acaOptions.minimumBlockSize = 4;
+    assemblyOptions.switchToAcaMode(acaOptions);
+    AccuracyOptions accuracyOptions;
+    accuracyOptions.doubleRegular.setRelativeQuadratureOrder(4);
+    accuracyOptions.doubleSingular.setRelativeQuadratureOrder(2);
+    NumericalQuadratureStrategy<BFT, RT> quadStrategy(accuracyOptions);
+
+    Context<BFT, RT> context(make_shared_from_ref(quadStrategy), assemblyOptions);
+
+    const RT waveNumber = initWaveNumber<RT>();
+
+    BoundaryOperator<BFT, RT> opNonsymmetric =
+            modifiedHelmholtz3dSingleLayerBoundaryOperator<BFT, RT, RT>(
+                make_shared_from_ref(context),
+                make_shared_from_ref(pwiseLinears),
+                make_shared_from_ref(pwiseConstants),
+                make_shared_from_ref(pwiseLinears),
+                waveNumber,
+                "", NO_SYMMETRY);
+    BoundaryOperator<BFT, RT> opSymmetric =
+            modifiedHelmholtz3dSingleLayerBoundaryOperator<BFT, RT, RT>(
+                make_shared_from_ref(context),
+                make_shared_from_ref(pwiseLinears),
+                make_shared_from_ref(pwiseConstants),
+                make_shared_from_ref(pwiseLinears),
+                waveNumber,
+                "", SYMMETRIC);
+
+    arma::Mat<RT> matNonsymmetric = opNonsymmetric.weakForm()->asMatrix();
+    arma::Mat<RT> matSymmetric = opSymmetric.weakForm()->asMatrix();
+
+    BOOST_CHECK(check_arrays_are_close<RT>(
+                    matNonsymmetric, matSymmetric, 2 * acaOptions.eps));
 }
 
 BOOST_AUTO_TEST_SUITE_END()

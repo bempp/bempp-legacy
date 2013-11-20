@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_local_assembler_for_operators_hpp
-#define fiber_local_assembler_for_operators_hpp
+#ifndef fiber_local_assembler_for_integral_operators_hpp
+#define fiber_local_assembler_for_integral_operators_hpp
 
 #include "../common/common.hpp"
 
@@ -32,30 +32,25 @@
 namespace Fiber
 {
 
-/** \brief Abstract interface of a local assembler for operators.
+/** \brief Abstract interface of a local assembler for integral operators.
 
-  A local assembler constructs local (element-by-element) matrix
-  representations of linear operators used in boundary-element methods.
+  Let \f$A\f$ be an integral boundary operator. A local assembler associated
+  with this operator constructs matrices \f$A_{mn}\f$, where \f$m\f$ is a test
+  element number and \f$n\f$ a trial element number, with entries
+  \f$(A_{mn})_{ij} = (u_{mi}, A v_{nj}\f$) where \f$(\cdot, \cdot)\f$ is the
+  standard scalar product, \f$(u_{mi})_{i=1}^m\f$ are the element-level test
+  functions defined on element \f$m\f$ and \f$(v_{nj})_{j=1}^n\f$ are the
+  element-level trial functions defined on element \f$n\f$.
 
-  Typically, a separate local assembler must be constructed for each elementary
-  integral operator and for the identity operator.
-
-  Concrete subclasses of this interface class automatically select integrators
-  well-adapted for evaluation of specific integrals occurring in matrix
-  representations of different classes of operators.
- */
+  The local assembler is responsible for choosing an appropriate way of evaluating
+  the necessary integrals. */
 template <typename ResultType>
-class LocalAssemblerForOperators
+class LocalAssemblerForIntegralOperators
 {
 public:
     typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
 
-    virtual ~LocalAssemblerForOperators() {}
-
-//    /** \brief Number of dimensions over which integration takes place. */
-//    int elementDimension() const {
-//        asImp().elementDimension();
-//    }
+    virtual ~LocalAssemblerForIntegralOperators() {}
 
     /** \brief Assemble local weak forms.
 
@@ -104,17 +99,19 @@ public:
             Fiber::_2dArray<arma::Mat<ResultType> >& result,
             CoordinateType nominalDistance = -1.) = 0;
 
-    /** \brief Assemble local weak forms.
-
-      \param[in]  elementIndices Vector of element indices.
-      \param[out] result         Vector of weak forms of the operator on
-                                 element pairs
-                                 (\p element(\p i), \p element(\p i))
-                                 for \p i in \p elementIndices. */
-    virtual void evaluateLocalWeakForms(
-            const std::vector<int>& elementIndices,
-            std::vector<arma::Mat<ResultType> >& result) = 0;
-
+    /** \brief Estimate how fast the entries in the matrix of
+     *  this operator decay with interelement distance.
+     *
+     *  This function should return a rough (!) estimate of the magnitude of
+     *  the entries in the matrix of this operator associated with a pair of
+     *  test and trial elements lying a distance minDist from each other,
+     *  relative to the estimated magnitude of entries associated with
+     *  coincident elements. If no good estimate can be given, the function can
+     *  return 1.
+     *
+     *  \note This function is called during ACA to detect block clusters on
+     *  which the operator becomes very small and so can be safely approximated
+     *  with 0. */
     virtual CoordinateType estimateRelativeScale(CoordinateType minDist) const = 0;
 };
 

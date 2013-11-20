@@ -7,6 +7,38 @@ started in October 2011.
 History
 =======
 
+2.0.1 (17 October 2013)
+------------------------
+
+A maintenance release that fixes the following issues
+- Support for barycentric grids on block operators
+- An MKL linking issue introduced in Version 2.0.0
+- Support for Anaconda Python 1.7
+
+
+2.0.0 (27 September 2013)
+-------------------------
+
+This is a major new release. It contains many bugfixes to the 1.9 beta release and supports opposite order preconditioning for Dirichlet and Helmholtz problems.
+
+
+1.9.2 (7 August 2013)
+--------------------
+
+A maintenance release fixing a compatibility problem with Canopy 1.0.3 on
+Linux. The MKL libraries installed by Canopy should now be automatically
+detected without the necessity of setting the ``LD_LIBRARY_PATH`` environmental
+variable manually.
+
+1.9.1 (7 August 2013)
+--------------------
+
+A maintenance release fixing two bugs in the installer:
+
+- Prevented Dune from using different BLAS and LAPACK libraries
+  than BEM++ itself.
+- Corrected the code detecting paths to MKL libraries.
+
 1.9.0 (22 June 2013)
 --------------------
 

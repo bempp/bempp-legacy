@@ -28,9 +28,15 @@
 #include "default_local_assembler_for_local_operators_on_surfaces.hpp"
 #include "default_local_assembler_for_potential_operators_on_surfaces.hpp"
 #include "default_evaluator_for_integral_operators.hpp"
+#include "default_quadrature_descriptor_selector_factory.hpp"
+
+#include "default_double_quadrature_rule_family.hpp"
+#include "default_single_quadrature_rule_family.hpp"
 
 #include "default_test_trial_integral_imp.hpp"
 #include "simple_test_trial_integrand_functor.hpp"
+
+#include "../common/boost_make_shared_fwd.hpp"
 
 #include <stdexcept>
 
@@ -41,32 +47,32 @@ template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory, typename Enable>
 NumericalQuadratureStrategyBase<
 BasisFunctionType, ResultType, GeometryFactory, Enable>::
-NumericalQuadratureStrategyBase()
-{
-}
-
-template <typename BasisFunctionType, typename ResultType,
-          typename GeometryFactory, typename Enable>
-NumericalQuadratureStrategyBase<
-BasisFunctionType, ResultType, GeometryFactory, Enable>::
 NumericalQuadratureStrategyBase(
-        const AccuracyOptionsEx& accuracyOptions) :
-    m_accuracyOptions(accuracyOptions)
+    const shared_ptr<const QuadratureDescriptorSelectorFactory<BasisFunctionType> >&
+    quadratureDescriptorSelectorFactory,
+    const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType> >&
+    singleQuadratureRuleFamily,
+    const shared_ptr<const DoubleQuadratureRuleFamily<CoordinateType> >&
+    doubleQuadratureRuleFamily) :
+    m_quadratureDescriptorSelectorFactory(
+        quadratureDescriptorSelectorFactory),
+    m_singleQuadratureRuleFamily(singleQuadratureRuleFamily),
+    m_doubleQuadratureRuleFamily(doubleQuadratureRuleFamily)
 {
 }
 
 template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory, typename Enable>
-std::auto_ptr<LocalAssemblerForOperators<ResultType> >
+std::auto_ptr<LocalAssemblerForLocalOperators<ResultType> >
 NumericalQuadratureStrategyBase<
 BasisFunctionType, ResultType, GeometryFactory, Enable>::
 makeAssemblerForIdentityOperators(
         const shared_ptr<const GeometryFactory>& geometryFactory,
         const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
-        const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
-        const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
-        const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& testTransformations,
-        const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
+        const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& testShapesets,
+        const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& trialShapesets,
+        const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& testTransformations,
+        const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& trialTransformations,
         const shared_ptr<const OpenClHandler>& openClHandler) const
 {
     typedef Fiber::SimpleTestTrialIntegrandFunctor<BasisFunctionType, ResultType>
@@ -76,40 +82,44 @@ makeAssemblerForIdentityOperators(
                     IntegrandFunctor()));
     return makeAssemblerForLocalOperators(
                 geometryFactory, rawGeometry,
-                testBases, trialBases,
+                testShapesets, trialShapesets,
                 testTransformations, trialTransformations, integral,
                 openClHandler);
 }
 
 template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory, typename Enable>
-std::auto_ptr<LocalAssemblerForOperators<ResultType> >
+std::auto_ptr<LocalAssemblerForLocalOperators<ResultType> >
 NumericalQuadratureStrategyBase<
 BasisFunctionType, ResultType, GeometryFactory, Enable>::
 makeAssemblerForLocalOperators(
         const shared_ptr<const GeometryFactory>& geometryFactory,
         const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
-        const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
-        const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
-        const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& testTransformations,
-        const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
+        const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& testShapesets,
+        const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& trialShapesets,
+        const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& testTransformations,
+        const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& trialTransformations,
         const shared_ptr<const TestTrialIntegral<BasisFunctionType, ResultType> >& integral,
         const shared_ptr<const OpenClHandler>& openClHandler) const
 {
     typedef DefaultLocalAssemblerForLocalOperatorsOnSurfaces<
             BasisFunctionType, ResultType, GeometryFactory>
             LocalAssemblerForLocalOperators_;
-    return std::auto_ptr<LocalAssemblerForOperators<ResultType> >(
+    return std::auto_ptr<LocalAssemblerForLocalOperators<ResultType> >(
                 new LocalAssemblerForLocalOperators_(
                     geometryFactory, rawGeometry,
-                    testBases, trialBases,
+                    testShapesets, trialShapesets,
                     testTransformations, trialTransformations, integral,
-                    openClHandler));
+                    openClHandler,
+                    this->quadratureDescriptorSelectorFactory()->
+                    makeQuadratureDescriptorSelectorForLocalOperators(
+                        rawGeometry, testShapesets, trialShapesets),
+                    this->singleQuadratureRuleFamily()));
 }
 
 template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory, typename Enable>
-std::auto_ptr<LocalAssemblerForOperators<ResultType> >
+std::auto_ptr<LocalAssemblerForIntegralOperators<ResultType> >
 NumericalQuadratureStrategyBase<
 BasisFunctionType, ResultType, GeometryFactory, Enable>::
 makeAssemblerForIntegralOperatorsImplRealKernel(
@@ -117,11 +127,11 @@ makeAssemblerForIntegralOperatorsImplRealKernel(
         const shared_ptr<const GeometryFactory>& trialGeometryFactory,
         const shared_ptr<const RawGridGeometry<CoordinateType> >& testRawGeometry,
         const shared_ptr<const RawGridGeometry<CoordinateType> >& trialRawGeometry,
-        const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
-        const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
-        const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& testTransformations,
+        const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& testShapesets,
+        const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& trialShapesets,
+        const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& testTransformations,
         const shared_ptr<const CollectionOfKernels<CoordinateType> >& kernels,
-        const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
+        const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& trialTransformations,
         const shared_ptr<const TestKernelTrialIntegral<BasisFunctionType, CoordinateType, ResultType> >& integral,
         const shared_ptr<const OpenClHandler>& openClHandler,
         const ParallelizationOptions& parallelizationOptions,
@@ -132,16 +142,20 @@ makeAssemblerForIntegralOperatorsImplRealKernel(
     typedef DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
             BasisFunctionType, KernelType, ResultType, GeometryFactory>
             LocalAssemblerForIntegralOperators_;
-    return std::auto_ptr<LocalAssemblerForOperators<ResultType> >(
+    return std::auto_ptr<LocalAssemblerForIntegralOperators<ResultType> >(
                 new LocalAssemblerForIntegralOperators_(
                     testGeometryFactory, trialGeometryFactory,
                     testRawGeometry, trialRawGeometry,
-                    testBases, trialBases,
+                    testShapesets, trialShapesets,
                     testTransformations, kernels, trialTransformations, integral,
                     openClHandler, parallelizationOptions,
                     verbosityLevel,
                     cacheSingularIntegrals,
-                    this->accuracyOptions()));
+                    this->quadratureDescriptorSelectorFactory()->
+                    makeQuadratureDescriptorSelectorForIntegralOperators(
+                        testRawGeometry, trialRawGeometry,
+                        testShapesets, trialShapesets),
+                    this->doubleQuadratureRuleFamily()));
 }
 
 template <typename BasisFunctionType, typename ResultType,
@@ -152,8 +166,8 @@ BasisFunctionType, ResultType, GeometryFactory, Enable>::
 makeAssemblerForGridFunctionsImplRealUserFunction(
         const shared_ptr<const GeometryFactory>& geometryFactory,
         const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
-        const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
-        const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& testTransformations,
+        const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& testShapesets,
+        const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& testTransformations,
         const shared_ptr<const Function<CoordinateType> >& function,
         const shared_ptr<const OpenClHandler>& openClHandler) const
 {
@@ -164,9 +178,13 @@ makeAssemblerForGridFunctionsImplRealUserFunction(
     return std::auto_ptr<LocalAssemblerForGridFunctions<ResultType> >(
                 new LocalAssemblerForGridFunctions_(
                     geometryFactory, rawGeometry,
-                    testBases,
+                    testShapesets,
                     testTransformations, function,
-                    openClHandler, this->accuracyOptions().singleRegular()));
+                    openClHandler,
+                    this->quadratureDescriptorSelectorFactory()->
+                    makeQuadratureDescriptorSelectorForGridFunctions(
+                        rawGeometry, testShapesets),
+                    this->singleQuadratureRuleFamily()));
 }
 
 template <typename BasisFunctionType, typename ResultType,
@@ -177,9 +195,9 @@ BasisFunctionType, ResultType, GeometryFactory, Enable>::
 makeEvaluatorForIntegralOperatorsImplRealKernel(
         const shared_ptr<const GeometryFactory>& geometryFactory,
         const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
-        const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
+        const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& trialShapesets,
         const shared_ptr<const CollectionOfKernels<CoordinateType> >& kernels,
-        const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
+        const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& trialTransformations,
         const shared_ptr<const KernelTrialIntegral<BasisFunctionType, CoordinateType, ResultType> >& integral,
         const shared_ptr<const std::vector<std::vector<ResultType> > >& argumentLocalCoefficients,
         const shared_ptr<const OpenClHandler>& openClHandler,
@@ -192,12 +210,15 @@ makeEvaluatorForIntegralOperatorsImplRealKernel(
     return std::auto_ptr<EvaluatorForIntegralOperators<ResultType> >(
                 new EvaluatorForIntegralOperators_(
                     geometryFactory, rawGeometry,
-                    trialBases,
+                    trialShapesets,
                     kernels, trialTransformations, integral,
                     argumentLocalCoefficients,
                     openClHandler,
                     parallelizationOptions,
-                    this->accuracyOptions().singleRegular()));
+                    this->quadratureDescriptorSelectorFactory()->
+                    makeQuadratureDescriptorSelectorForPotentialOperators(
+                        rawGeometry, trialShapesets),
+                    this->singleQuadratureRuleFamily()));
 }
 
 template <typename BasisFunctionType, typename ResultType,
@@ -209,9 +230,9 @@ makeAssemblerForPotentialOperatorsImplRealKernel(
         const arma::Mat<CoordinateType>& evaluationPoints,
         const shared_ptr<const GeometryFactory>& geometryFactory,
         const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
-        const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
+        const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& trialShapesets,
         const shared_ptr<const CollectionOfKernels<CoordinateType> >& kernels,
-        const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
+        const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& trialTransformations,
         const shared_ptr<const KernelTrialIntegral<BasisFunctionType, CoordinateType, ResultType> >& integral,
         const shared_ptr<const OpenClHandler>& openClHandler,
         const ParallelizationOptions& parallelizationOptions,
@@ -225,21 +246,48 @@ makeAssemblerForPotentialOperatorsImplRealKernel(
                 new LocalAssemblerForPotentialOperators_(
                     evaluationPoints,
                     geometryFactory, rawGeometry,
-                    trialBases,
+                    trialShapesets,
                     kernels, trialTransformations, integral,
                     parallelizationOptions,
                     verbosityLevel,
-                    this->accuracyOptions()));
+                    this->quadratureDescriptorSelectorFactory()->
+                    makeQuadratureDescriptorSelectorForPotentialOperators(
+                        rawGeometry, trialShapesets),
+                    this->singleQuadratureRuleFamily()));
 }
 
 template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory, typename Enable>
-const AccuracyOptionsEx&
+shared_ptr<const QuadratureDescriptorSelectorFactory<BasisFunctionType> >
 NumericalQuadratureStrategyBase<
 BasisFunctionType, ResultType, GeometryFactory, Enable>::
-accuracyOptions() const
+quadratureDescriptorSelectorFactory() const
 {
-    return m_accuracyOptions;
+    return m_quadratureDescriptorSelectorFactory;
+}
+
+template <typename BasisFunctionType, typename ResultType,
+          typename GeometryFactory, typename Enable>
+shared_ptr<const DoubleQuadratureRuleFamily<
+typename NumericalQuadratureStrategyBase<
+    BasisFunctionType, ResultType, GeometryFactory, Enable>::CoordinateType> >
+NumericalQuadratureStrategyBase<
+BasisFunctionType, ResultType, GeometryFactory, Enable>::
+doubleQuadratureRuleFamily() const
+{
+    return m_doubleQuadratureRuleFamily;
+}
+
+template <typename BasisFunctionType, typename ResultType,
+          typename GeometryFactory, typename Enable>
+shared_ptr<const SingleQuadratureRuleFamily<
+typename NumericalQuadratureStrategyBase<
+    BasisFunctionType, ResultType, GeometryFactory, Enable>::CoordinateType> >
+NumericalQuadratureStrategyBase<
+BasisFunctionType, ResultType, GeometryFactory, Enable>::
+singleQuadratureRuleFamily() const
+{
+    return m_singleQuadratureRuleFamily;
 }
 
 // Complex ResultType
@@ -248,7 +296,13 @@ template <typename BasisFunctionType, typename ResultType,
 NumericalQuadratureStrategy<
 BasisFunctionType, ResultType, GeometryFactory, Enable>::
 NumericalQuadratureStrategy() :
-    Base()
+    Base(
+        boost::make_shared<
+            DefaultQuadratureDescriptorSelectorFactory<BasisFunctionType> >(),
+        boost::make_shared<
+            DefaultSingleQuadratureRuleFamily<CoordinateType> >(),
+        boost::make_shared<
+            DefaultDoubleQuadratureRuleFamily<CoordinateType> >())
 {
 }
 
@@ -258,13 +312,56 @@ NumericalQuadratureStrategy<
 BasisFunctionType, ResultType, GeometryFactory, Enable>::
 NumericalQuadratureStrategy(
         const AccuracyOptionsEx& accuracyOptions) :
-    Base(accuracyOptions)
+    Base(
+        boost::make_shared<
+            DefaultQuadratureDescriptorSelectorFactory<BasisFunctionType> >(
+                accuracyOptions),
+        boost::make_shared<
+            DefaultSingleQuadratureRuleFamily<CoordinateType> >(),
+        boost::make_shared<
+            DefaultDoubleQuadratureRuleFamily<CoordinateType> >())
 {
 }
 
 template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory, typename Enable>
-std::auto_ptr<LocalAssemblerForOperators<ResultType> >
+NumericalQuadratureStrategy<
+BasisFunctionType, ResultType, GeometryFactory, Enable>::
+NumericalQuadratureStrategy(
+        const AccuracyOptionsEx& accuracyOptions,
+        const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType> >&
+        singleQuadratureRuleFamily,
+        const shared_ptr<const DoubleQuadratureRuleFamily<CoordinateType> >&
+        doubleQuadratureRuleFamily) :
+    Base(
+        boost::make_shared<
+            DefaultQuadratureDescriptorSelectorFactory<BasisFunctionType> >(accuracyOptions),
+        singleQuadratureRuleFamily,
+        doubleQuadratureRuleFamily)
+{
+}
+
+template <typename BasisFunctionType, typename ResultType,
+          typename GeometryFactory, typename Enable>
+NumericalQuadratureStrategy<
+BasisFunctionType, ResultType, GeometryFactory, Enable>::
+NumericalQuadratureStrategy(
+    const shared_ptr<const QuadratureDescriptorSelectorFactory<BasisFunctionType> >&
+    quadratureDescriptorSelectorFactory,
+    const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType> >&
+    singleQuadratureRuleFamily,
+    const shared_ptr<const DoubleQuadratureRuleFamily<CoordinateType> >&
+    doubleQuadratureRuleFamily) :
+    Base(
+        quadratureDescriptorSelectorFactory,
+        singleQuadratureRuleFamily,
+        doubleQuadratureRuleFamily)
+{
+}
+
+template <typename BasisFunctionType, typename ResultType,
+          typename GeometryFactory, typename Enable>
+std::auto_ptr<LocalAssemblerForIntegralOperators<ResultType> >
 NumericalQuadratureStrategy<
 BasisFunctionType, ResultType, GeometryFactory, Enable>::
 makeAssemblerForIntegralOperatorsImplComplexKernel(
@@ -272,11 +369,11 @@ makeAssemblerForIntegralOperatorsImplComplexKernel(
         const shared_ptr<const GeometryFactory>& trialGeometryFactory,
         const shared_ptr<const RawGridGeometry<CoordinateType> >& testRawGeometry,
         const shared_ptr<const RawGridGeometry<CoordinateType> >& trialRawGeometry,
-        const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
-        const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
-        const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& testTransformations,
+        const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& testShapesets,
+        const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& trialShapesets,
+        const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& testTransformations,
         const shared_ptr<const CollectionOfKernels<ResultType> >& kernels,
-        const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
+        const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& trialTransformations,
         const shared_ptr<const TestKernelTrialIntegral<BasisFunctionType, ResultType, ResultType> >& integral,
         const shared_ptr<const OpenClHandler>& openClHandler,
         const ParallelizationOptions& parallelizationOptions,
@@ -287,16 +384,20 @@ makeAssemblerForIntegralOperatorsImplComplexKernel(
     typedef DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
             BasisFunctionType, KernelType, ResultType, GeometryFactory>
             LocalAssemblerForIntegralOperators_;
-    return std::auto_ptr<LocalAssemblerForOperators<ResultType> >(
+    return std::auto_ptr<LocalAssemblerForIntegralOperators<ResultType> >(
                 new LocalAssemblerForIntegralOperators_(
                     testGeometryFactory, trialGeometryFactory,
                     testRawGeometry, trialRawGeometry,
-                    testBases, trialBases,
+                    testShapesets, trialShapesets,
                     testTransformations, kernels, trialTransformations, integral,
                     openClHandler, parallelizationOptions,
                     verbosityLevel,
                     cacheSingularIntegrals,
-                    this->accuracyOptions()));
+                    this->quadratureDescriptorSelectorFactory()->
+                    makeQuadratureDescriptorSelectorForIntegralOperators(
+                        testRawGeometry, trialRawGeometry,
+                        testShapesets, trialShapesets),
+                    this->doubleQuadratureRuleFamily()));
 }
 
 template <typename BasisFunctionType, typename ResultType,
@@ -307,8 +408,8 @@ BasisFunctionType, ResultType, GeometryFactory, Enable>::
 makeAssemblerForGridFunctionsImplComplexUserFunction(
         const shared_ptr<const GeometryFactory>& geometryFactory,
         const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
-        const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
-        const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& testTransformations,
+        const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& testShapesets,
+        const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& testTransformations,
         const shared_ptr<const Function<ResultType> >& function,
         const shared_ptr<const OpenClHandler>& openClHandler) const
 {
@@ -319,10 +420,13 @@ makeAssemblerForGridFunctionsImplComplexUserFunction(
     return std::auto_ptr<LocalAssemblerForGridFunctions<ResultType> >(
                 new LocalAssemblerForGridFunctions_(
                     geometryFactory, rawGeometry,
-                    testBases,
+                    testShapesets,
                     testTransformations, function,
                     openClHandler,
-                    this->accuracyOptions().singleRegular()));
+                    this->quadratureDescriptorSelectorFactory()->
+                    makeQuadratureDescriptorSelectorForGridFunctions(
+                        rawGeometry, testShapesets),
+                    this->singleQuadratureRuleFamily()));
 }
 
 template <typename BasisFunctionType, typename ResultType,
@@ -333,9 +437,9 @@ BasisFunctionType, ResultType, GeometryFactory, Enable>::
 makeEvaluatorForIntegralOperatorsImplComplexKernel(
         const shared_ptr<const GeometryFactory>& geometryFactory,
         const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
-        const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
+        const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& trialShapesets,
         const shared_ptr<const CollectionOfKernels<ResultType> >& kernels,
-        const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
+        const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& trialTransformations,
         const shared_ptr<const KernelTrialIntegral<BasisFunctionType, ResultType, ResultType> >& integral,
         const shared_ptr<const std::vector<std::vector<ResultType> > >& argumentLocalCoefficients,
         const shared_ptr<const OpenClHandler>& openClHandler,
@@ -348,12 +452,15 @@ makeEvaluatorForIntegralOperatorsImplComplexKernel(
     return std::auto_ptr<EvaluatorForIntegralOperators<ResultType> >(
                 new EvaluatorForIntegralOperators_(
                     geometryFactory, rawGeometry,
-                    trialBases,
+                    trialShapesets,
                     kernels, trialTransformations, integral,
                     argumentLocalCoefficients,
                     openClHandler,
                     parallelizationOptions,
-                    this->accuracyOptions().singleRegular()));
+                    this->quadratureDescriptorSelectorFactory()->
+                    makeQuadratureDescriptorSelectorForPotentialOperators(
+                        rawGeometry, trialShapesets),
+                    this->singleQuadratureRuleFamily()));
 }
 
 template <typename BasisFunctionType, typename ResultType,
@@ -365,9 +472,9 @@ makeAssemblerForPotentialOperatorsImplComplexKernel(
         const arma::Mat<CoordinateType>& evaluationPoints,
         const shared_ptr<const GeometryFactory>& geometryFactory,
         const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
-        const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
+        const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& trialShapesets,
         const shared_ptr<const CollectionOfKernels<ResultType> >& kernels,
-        const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
+        const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& trialTransformations,
         const shared_ptr<const KernelTrialIntegral<BasisFunctionType, ResultType, ResultType> >& integral,
         const shared_ptr<const OpenClHandler>& openClHandler,
         const ParallelizationOptions& parallelizationOptions,
@@ -381,11 +488,14 @@ makeAssemblerForPotentialOperatorsImplComplexKernel(
                 new LocalAssemblerForPotentialOperators_(
                     evaluationPoints,
                     geometryFactory, rawGeometry,
-                    trialBases,
+                    trialShapesets,
                     kernels, trialTransformations, integral,
                     parallelizationOptions,
                     verbosityLevel,
-                    this->accuracyOptions()));
+                    this->quadratureDescriptorSelectorFactory()->
+                    makeQuadratureDescriptorSelectorForPotentialOperators(
+                        rawGeometry, trialShapesets),
+                    this->singleQuadratureRuleFamily()));
 }
 
 template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
@@ -395,7 +505,13 @@ NumericalQuadratureStrategy<
         boost::is_same<ResultType,
         typename ScalarTraits<ResultType>::RealType> >::type>::
 NumericalQuadratureStrategy() :
-    Base()
+    Base(
+        boost::make_shared<
+            DefaultQuadratureDescriptorSelectorFactory<BasisFunctionType> >(),
+        boost::make_shared<
+            DefaultSingleQuadratureRuleFamily<CoordinateType> >(),
+        boost::make_shared<
+            DefaultDoubleQuadratureRuleFamily<CoordinateType> >())
 {
 }
 
@@ -407,7 +523,54 @@ NumericalQuadratureStrategy<
         typename ScalarTraits<ResultType>::RealType> >::type>::
 NumericalQuadratureStrategy(
         const AccuracyOptionsEx& accuracyOptions) :
-    Base(accuracyOptions)
+    Base(
+        boost::make_shared<
+            DefaultQuadratureDescriptorSelectorFactory<BasisFunctionType> >(
+                accuracyOptions),
+        boost::make_shared<
+            DefaultSingleQuadratureRuleFamily<CoordinateType> >(),
+        boost::make_shared<
+            DefaultDoubleQuadratureRuleFamily<CoordinateType> >())
+{
+}
+
+template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
+NumericalQuadratureStrategy<
+        BasisFunctionType, ResultType, GeometryFactory,
+        typename boost::enable_if<
+        boost::is_same<ResultType,
+        typename ScalarTraits<ResultType>::RealType> >::type>::
+NumericalQuadratureStrategy(
+        const AccuracyOptionsEx& accuracyOptions,
+        const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType> >&
+        singleQuadratureRuleFamily,
+        const shared_ptr<const DoubleQuadratureRuleFamily<CoordinateType> >&
+        doubleQuadratureRuleFamily) :
+    Base(
+        boost::make_shared<
+            DefaultQuadratureDescriptorSelectorFactory<BasisFunctionType> >(accuracyOptions),
+        singleQuadratureRuleFamily,
+        doubleQuadratureRuleFamily)
+{
+}
+
+template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
+NumericalQuadratureStrategy<
+        BasisFunctionType, ResultType, GeometryFactory,
+        typename boost::enable_if<
+        boost::is_same<ResultType,
+        typename ScalarTraits<ResultType>::RealType> >::type>::
+NumericalQuadratureStrategy(
+    const shared_ptr<const QuadratureDescriptorSelectorFactory<BasisFunctionType> >&
+    quadratureDescriptorSelectorFactory,
+    const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType> >&
+    singleQuadratureRuleFamily,
+    const shared_ptr<const DoubleQuadratureRuleFamily<CoordinateType> >&
+    doubleQuadratureRuleFamily) :
+    Base(
+        quadratureDescriptorSelectorFactory,
+        singleQuadratureRuleFamily,
+        doubleQuadratureRuleFamily)
 {
 }
 

@@ -45,10 +45,10 @@ GeneralElementaryLocalOperator(
         const IntegrandFunctor& integrandFunctor) :
     Base(domain, range, dualToRange, label, symmetry),
     m_testTransformations(
-        new Fiber::DefaultCollectionOfBasisTransformations<TestTransformationsFunctor>(
+        new Fiber::DefaultCollectionOfShapesetTransformations<TestTransformationsFunctor>(
             testTransformationsFunctor)),
     m_trialTransformations(
-        new Fiber::DefaultCollectionOfBasisTransformations<TrialTransformationsFunctor>(
+        new Fiber::DefaultCollectionOfShapesetTransformations<TrialTransformationsFunctor>(
             trialTransformationsFunctor)),
     m_integral(
         new Fiber::DefaultTestTrialIntegral<IntegrandFunctor>(

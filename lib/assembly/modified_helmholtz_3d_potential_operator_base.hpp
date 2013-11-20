@@ -62,6 +62,9 @@ public:
     typedef typename Base::ResultType ResultType;
     /** \copydoc ElementaryPotentialOperator::CoordinateType */
     typedef typename Base::CoordinateType CoordinateType;
+    /** \copydoc ElementaryPotentialOperator::CollectionOfShapesetTransformations */
+    typedef typename Base::CollectionOfShapesetTransformations
+    CollectionOfShapesetTransformations;
     /** \copydoc ElementaryPotentialOperator::CollectionOfBasisTransformations */
     typedef typename Base::CollectionOfBasisTransformations
     CollectionOfBasisTransformations;
@@ -88,7 +91,7 @@ public:
 
 private:
     virtual const CollectionOfKernels& kernels() const;
-    virtual const CollectionOfBasisTransformations&
+    virtual const CollectionOfShapesetTransformations&
     trialTransformations() const;
     virtual const KernelTrialIntegral& integral() const;
 

@@ -21,11 +21,13 @@
 // Keep IDEs happy
 #include "default_local_assembler_for_potential_operators_on_surfaces.hpp"
 
-#include "basis.hpp"
 #include "kernel_trial_integral.hpp"
 #include "numerical_kernel_trial_integrator.hpp"
+#include "quadrature_descriptor_selector_for_potential_operators.hpp"
 #include "raw_grid_geometry.hpp"
 #include "serial_blas_region.hpp"
+#include "shapeset.hpp"
+#include "single_quadrature_rule_family.hpp"
 
 #include <cassert>
 #include <tbb/parallel_for.h>
@@ -44,26 +46,29 @@ DefaultLocalAssemblerForPotentialOperatorsOnSurfaces(
         const arma::Mat<CoordinateType>& points,
         const shared_ptr<const GeometryFactory>& geometryFactory,
         const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
-        const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& trialBases,
+        const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& trialShapesets,
         const shared_ptr<const CollectionOfKernels<KernelType> >& kernels,
-        const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& trialTransformations,
+        const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& trialTransformations,
         const shared_ptr<const KernelTrialIntegral<BasisFunctionType, KernelType, ResultType> >& integral,
         const ParallelizationOptions& parallelizationOptions,
         VerbosityLevel::Level verbosityLevel,
-        const AccuracyOptionsEx& accuracyOptions) :
+        const shared_ptr<const QuadratureDescriptorSelectorForPotentialOperators<
+            BasisFunctionType> >& quadDescSelector,
+        const shared_ptr<const SingleQuadratureRuleFamily<
+            CoordinateType> >& quadRuleFamily) :
     m_points(points),
     m_geometryFactory(geometryFactory),
     m_rawGeometry(rawGeometry),
-    m_trialBases(trialBases),
+    m_trialShapesets(trialShapesets),
     m_kernels(kernels),
     m_trialTransformations(trialTransformations),
     m_integral(integral),
     m_parallelizationOptions(parallelizationOptions),
     m_verbosityLevel(verbosityLevel),
-    m_accuracyOptions(accuracyOptions)
+    m_quadDescSelector(quadDescSelector),
+    m_quadRuleFamily(quadRuleFamily)
 {
-    Utilities::checkConsistencyOfGeometryAndBases(*rawGeometry, *trialBases);
-    precalculateElementSizesAndCenters();
+    Utilities::checkConsistencyOfGeometryAndShapesets(*rawGeometry, *trialShapesets);
 }
 
 template <typename BasisFunctionType, typename KernelType,
@@ -93,15 +98,15 @@ evaluateLocalContributions(
         std::vector<arma::Mat<ResultType> >& result,
         CoordinateType nominalDistance)
 {
-    typedef Basis<BasisFunctionType> Basis;
+    typedef Shapeset<BasisFunctionType> Shapeset;
 
     const int pointCount = pointIndices.size();
     // const int componentCount = m_integral->resultDimension();
 
-    // Get basis
-    const Basis& trialBasis = *((*m_trialBases)[trialElementIndex]);
+    // Get shapeset
+    const Shapeset& trialShapeset = *((*m_trialShapesets)[trialElementIndex]);
     assert(localTrialDofIndex == ALL_DOFS ||
-           (localTrialDofIndex >= 0 && localTrialDofIndex < trialBasis.size()));
+           (localTrialDofIndex >= 0 && localTrialDofIndex < trialShapeset.size()));
     result.resize(pointCount);
 
     // Select integrators
@@ -115,7 +120,7 @@ evaluateLocalContributions(
     }
 
     // Integration will proceed in batches of test elements having the same
-    // "quadrature variant", i.e. integrator and basis
+    // "quadrature variant", i.e. integrator and shapeset
 
     // Find all the unique quadrature variants present
     typedef std::set<QuadVariant> QuadVariantSet;
@@ -145,7 +150,7 @@ evaluateLocalContributions(
 
         // Integrate!
         activeIntegrator.integrate(activePointIndices, trialElementIndex,
-                                   trialBasis, localTrialDofIndex,
+                                   trialShapeset, localTrialDofIndex,
                                    activeLocalResults);
     }
 }
@@ -162,7 +167,7 @@ evaluateLocalContributions(
         std::vector<arma::Mat<ResultType> >& result,
         CoordinateType nominalDistance)
 {
-    typedef Basis<BasisFunctionType> Basis;
+    typedef Shapeset<BasisFunctionType> Shapeset;
 
     const int trialElementCount = trialElementIndices.size();
     // const int componentCount = m_integral->resultDimension();
@@ -170,7 +175,7 @@ evaluateLocalContributions(
     result.resize(trialElementCount);
 
     // Select integrators
-    typedef std::pair<const Integrator*, const Basis*> QuadVariant;
+    typedef std::pair<const Integrator*, const Shapeset*> QuadVariant;
     std::vector<QuadVariant> quadVariants(trialElementCount);
     for (int i = 0; i < trialElementCount; ++i) {
         const int activeTrialElementIndex = trialElementIndices[i];
@@ -178,11 +183,11 @@ evaluateLocalContributions(
                 &selectIntegrator(pointIndex, activeTrialElementIndex,
                                   nominalDistance);
         quadVariants[i] = QuadVariant(integrator,
-                                      (*m_trialBases)[activeTrialElementIndex]);
+                                      (*m_trialShapesets)[activeTrialElementIndex]);
     }
 
     // Integration will proceed in batches of test elements having the same
-    // "quadrature variant", i.e. integrator and basis
+    // "quadrature variant", i.e. integrator and shapeset
 
     // Find all the unique quadrature variants present
     typedef std::set<QuadVariant> QuadVariantSet;
@@ -199,7 +204,7 @@ evaluateLocalContributions(
          it != uniqueQuadVariants.end(); ++it) {
         const QuadVariant activeQuadVariant = *it;
         const Integrator& activeIntegrator = *activeQuadVariant.first;
-        const Basis& activeTrialBasis = *activeQuadVariant.second;
+        const Shapeset& activeTrialShapeset = *activeQuadVariant.second;
 
         // Find all the test elements for which quadrature should proceed
         // according to the current quadrature variant
@@ -214,7 +219,7 @@ evaluateLocalContributions(
         // Integrate!
         activeIntegrator.integrate(pointIndex, componentIndex,
                                    activeTrialElementIndices,
-                                   activeTrialBasis,
+                                   activeTrialShapeset,
                                    activeLocalResults);
     }
 }
@@ -230,14 +235,14 @@ evaluateLocalContributions(
         Fiber::_2dArray<arma::Mat<ResultType> >& result,
         CoordinateType nominalDistance)
 {
-    typedef Fiber::Basis<BasisFunctionType> Basis;
+    typedef Fiber::Shapeset<BasisFunctionType> Shapeset;
 
     const int pointCount = pointIndices.size();
     const int trialElementCount = trialElementIndices.size();
     result.set_size(pointCount, trialElementCount);
 
     // Find cached matrices; select integrators to calculate non-cached ones
-    typedef std::pair<const Integrator*, const Basis*> QuadVariant;
+    typedef std::pair<const Integrator*, const Shapeset*> QuadVariant;
     Fiber::_2dArray<QuadVariant> quadVariants(pointCount, trialElementCount);
 
     for (int trialIndex = 0; trialIndex < trialElementCount; ++trialIndex)
@@ -248,11 +253,11 @@ evaluateLocalContributions(
                     &selectIntegrator(activePointIndex,
                                       activeTrialElementIndex, nominalDistance);
             quadVariants(pointIndex, trialIndex) = QuadVariant(
-                        integrator, (*m_trialBases)[activeTrialElementIndex]);
+                        integrator, (*m_trialShapesets)[activeTrialElementIndex]);
         }
 
     // Integration will proceed in batches of element pairs having the same
-    // "quadrature variant", i.e. integrator, test basis and trial basis
+    // "quadrature variant", i.e. integrator, test shapeset and trial shapeset
 
     // Find all the unique quadrature variants present
     typedef std::set<QuadVariant> QuadVariantSet;
@@ -272,7 +277,7 @@ evaluateLocalContributions(
          it != uniqueQuadVariants.end(); ++it) {
         const QuadVariant activeQuadVariant = *it;
         const Integrator& activeIntegrator = *it->first;
-        const Basis& activeTrialBasis = *it->second;
+        const Shapeset& activeTrialShapeset = *it->second;
 
         // Find all the element pairs for which quadrature should proceed
         // according to the current quadrature variant
@@ -290,7 +295,7 @@ evaluateLocalContributions(
 
         // Integrate!
         activeIntegrator.integrate(activePointElementPairs,
-                                   activeTrialBasis, activeLocalResults);
+                                   activeTrialShapeset, activeLocalResults);
     }
 }
 
@@ -316,73 +321,18 @@ estimateRelativeScale(CoordinateType minDist) const
 
 template <typename BasisFunctionType, typename KernelType,
           typename ResultType, typename GeometryFactory>
-void
-DefaultLocalAssemblerForPotentialOperatorsOnSurfaces<BasisFunctionType,
-KernelType, ResultType, GeometryFactory>::
-precalculateElementSizesAndCenters()
-{
-    Utilities::precalculateElementSizesAndCentersForSingleGrid(
-                *m_rawGeometry,
-                m_elementSizesSquared, m_elementCenters,
-                m_averageElementSize);
-}
-
-template <typename BasisFunctionType, typename KernelType,
-          typename ResultType, typename GeometryFactory>
 const KernelTrialIntegrator<BasisFunctionType, KernelType, ResultType>&
 DefaultLocalAssemblerForPotentialOperatorsOnSurfaces<BasisFunctionType,
 KernelType, ResultType, GeometryFactory>::
 selectIntegrator(int pointIndex, int trialElementIndex,
                  CoordinateType nominalDistance)
 {
-    SingleQuadratureDescriptor desc;
-    desc.vertexCount = m_rawGeometry->elementCornerCount(trialElementIndex);
-    desc.order = order(pointIndex, trialElementIndex, nominalDistance);
+    const arma::Col<CoordinateType>& pointCoords =
+        m_points.unsafe_col(pointIndex);
+    SingleQuadratureDescriptor desc =
+        m_quadDescSelector->quadratureDescriptor(
+            pointCoords, trialElementIndex, nominalDistance);
     return getIntegrator(desc);
-}
-
-template <typename BasisFunctionType, typename KernelType,
-          typename ResultType, typename GeometryFactory>
-int
-DefaultLocalAssemblerForPotentialOperatorsOnSurfaces<BasisFunctionType,
-KernelType, ResultType, GeometryFactory>::order(
-        int pointIndex, int trialElementIndex,
-        CoordinateType nominalDistance) const
-{
-    // Order required for exact quadrature on affine elements with a constant kernel
-    int trialBasisOrder = (*m_trialBases)[trialElementIndex]->order();
-    int defaultQuadOrder = 2 * trialBasisOrder;
-
-    CoordinateType normalisedDistance;
-    if (nominalDistance < 0.) {
-        CoordinateType elementSizeSquared =
-                m_elementSizesSquared[trialElementIndex];
-        CoordinateType distanceSquared =
-                pointElementDistanceSquared(pointIndex, trialElementIndex);
-        CoordinateType normalisedDistanceSquared =
-                distanceSquared / elementSizeSquared;
-        normalisedDistance = sqrt(normalisedDistanceSquared);
-    } else
-        normalisedDistance = nominalDistance / m_averageElementSize;
-
-    const QuadratureOptions& options =
-            m_accuracyOptions.singleRegular(normalisedDistance);
-    return options.quadratureOrder(defaultQuadOrder);
-}
-
-template <typename BasisFunctionType, typename KernelType,
-          typename ResultType, typename GeometryFactory>
-inline
-typename DefaultLocalAssemblerForPotentialOperatorsOnSurfaces<
-BasisFunctionType, KernelType, ResultType, GeometryFactory>::CoordinateType
-DefaultLocalAssemblerForPotentialOperatorsOnSurfaces<
-BasisFunctionType, KernelType, ResultType, GeometryFactory>::pointElementDistanceSquared(
-        int pointIndex, int trialElementIndex) const
-{
-    arma::Col<CoordinateType> diff =
-            m_points.col(pointIndex) -
-            m_elementCenters.col(trialElementIndex);
-    return arma::dot(diff, diff);
 }
 
 template <typename BasisFunctionType, typename KernelType,
@@ -407,9 +357,8 @@ getIntegrator(const SingleQuadratureDescriptor& desc)
     arma::Mat<CoordinateType> trialPoints;
     std::vector<CoordinateType> trialWeights;
 
-    fillSingleQuadraturePointsAndWeights(desc.vertexCount,
-                                         desc.order,
-                                         trialPoints, trialWeights);
+    m_quadRuleFamily->fillQuadraturePointsAndWeights(
+        desc, trialPoints, trialWeights);
     typedef NumericalKernelTrialIntegrator<BasisFunctionType,
             KernelType, ResultType, GeometryFactory> ConcreteIntegrator;
     integrator = new ConcreteIntegrator(

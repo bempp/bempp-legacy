@@ -29,8 +29,10 @@ AssemblyOptions::AssemblyOptions() :
     m_assemblyMode(DENSE),
     m_verbosityLevel(VerbosityLevel::DEFAULT),
     m_singularIntegralCaching(true),
-    m_sparseStorageOfMassMatrices(true),
-    m_jointAssembly(false)
+    m_sparseStorageOfLocalOperators(true),
+    m_jointAssembly(false),
+    m_uniformQuadrature(true),
+    m_blasInQuadrature(AUTO)
 {
 }
 
@@ -126,14 +128,24 @@ bool AssemblyOptions::isSingularIntegralCachingEnabled() const
     return m_singularIntegralCaching;
 }
 
+void AssemblyOptions::enableSparseStorageOfLocalOperators(bool value)
+{
+    m_sparseStorageOfLocalOperators = value;
+}
+
+bool AssemblyOptions::isSparseStorageOfLocalOperatorsEnabled() const
+{
+    return m_sparseStorageOfLocalOperators;
+}
+
 void AssemblyOptions::enableSparseStorageOfMassMatrices(bool value)
 {
-    m_sparseStorageOfMassMatrices = value;
+    enableSparseStorageOfLocalOperators(value);
 }
 
 bool AssemblyOptions::isSparseStorageOfMassMatricesEnabled() const
 {
-    return m_sparseStorageOfMassMatrices;
+    return isSparseStorageOfLocalOperatorsEnabled();
 }
 
 void AssemblyOptions::enableJointAssembly(bool value)
@@ -144,6 +156,29 @@ void AssemblyOptions::enableJointAssembly(bool value)
 bool AssemblyOptions::isJointAssemblyEnabled() const
 {
     return m_jointAssembly;
+}
+
+void AssemblyOptions::enableBlasInQuadrature(Value value)
+{
+    if (value != AUTO && value != YES && value != NO)
+        throw std::invalid_argument("AssemblyOptions::enableBlasInQuadrature(): "
+                                    "allowed values: AUTO, YES and NO");
+    m_blasInQuadrature = value;
+}
+
+AssemblyOptions::Value AssemblyOptions::isBlasEnabledInQuadrature() const
+{
+    return m_blasInQuadrature;
+}
+
+void AssemblyOptions::makeQuadratureOrderUniformInEachCluster(bool value)
+{
+    m_uniformQuadrature = value;
+}
+
+bool AssemblyOptions::isQuadratureOrderUniformInEachCluster() const
+{
+    return m_uniformQuadrature;
 }
 
 } // namespace Bempp

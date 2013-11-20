@@ -20,6 +20,8 @@
 
 #include "piecewise_linear_scalar_space.hpp"
 
+#include "space_helper.hpp"
+
 #include "../fiber/explicit_instantiation.hpp"
 #include "../grid/entity.hpp"
 #include "../grid/geometry.hpp"
@@ -35,7 +37,7 @@ template <typename BasisFunctionType>
 PiecewiseLinearScalarSpace<BasisFunctionType>::
 PiecewiseLinearScalarSpace(const shared_ptr<const Grid>& grid) :
     ScalarSpace<BasisFunctionType>(grid)
-{    
+{
 }
 
 template <typename BasisFunctionType>
@@ -57,20 +59,20 @@ int PiecewiseLinearScalarSpace<BasisFunctionType>::codomainDimension() const
 }
 
 template <typename BasisFunctionType>
-const Fiber::Basis<BasisFunctionType>&
-PiecewiseLinearScalarSpace<BasisFunctionType>::basis(
+const Fiber::Shapeset<BasisFunctionType>&
+PiecewiseLinearScalarSpace<BasisFunctionType>::shapeset(
         const Entity<0>& element) const
 {
     switch (elementVariant(element))
     {
     case 3:
-        return m_triangleBasis;
+        return m_triangleShapeset;
     case 4:
-        return m_quadrilateralBasis;
+        return m_quadrilateralShapeset;
     case 2:
-        return m_lineBasis;
+        return m_lineShapeset;
     default:
-        throw std::logic_error("PiecewiseLinearScalarSpace::basis(): "
+        throw std::logic_error("PiecewiseLinearScalarSpace::shapeset(): "
                                "invalid element variant, this shouldn't happen!");
     }
 }
@@ -100,6 +102,24 @@ void PiecewiseLinearScalarSpace<BasisFunctionType>::setElementVariant(
         // for this space, the element variants are unmodifiable,
         throw std::runtime_error("PiecewiseLinearScalarSpace::"
                                  "setElementVariant(): invalid variant");
+}
+
+template <typename BasisFunctionType>
+void PiecewiseLinearScalarSpace<BasisFunctionType>::
+getGlobalDofInterpolationPoints(arma::Mat<CoordinateType>& points) const
+{
+    SpaceHelper<BasisFunctionType>::
+            getGlobalDofInterpolationPoints_defaultImplementation(
+                *this, points);
+}
+
+template <typename BasisFunctionType>
+void PiecewiseLinearScalarSpace<BasisFunctionType>::
+getNormalsAtGlobalDofInterpolationPoints(arma::Mat<CoordinateType>& normals) const
+{
+    SpaceHelper<BasisFunctionType>::
+            getNormalsAtGlobalDofInterpolationPoints_defaultImplementation(
+                *this, normals);
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(PiecewiseLinearScalarSpace);

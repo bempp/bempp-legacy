@@ -18,13 +18,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-%include "numpy.i"
-
 %header %{
 #include <algorithm> // std::copy
 #include <armadillo>
 #include <iostream>
 #include <new>
+#include <vector>
 %}
 
 // This must be called at the start of each module to import numpy.
@@ -303,6 +302,30 @@ return pointers to the SWIG wrappers of the Numpy array and the Armadillo array
     if (!array$argnum)
         SWIG_fail;
     std::copy(arma_array$argnum.begin(), arma_array$argnum.end(),
+        reinterpret_cast<DATA_TYPE*>(array_data(array$argnum)));
+    $result = SWIG_Python_AppendOutput($result,
+        reinterpret_cast<PyObject*>(array$argnum));
+}
+
+/* ------------------------------------------------------------------------- */
+
+%typemap(in, numinputs=0,
+         fragment="NumPy_Fragments")
+    (std::vector< DATA_TYPE >& ARGOUT_VEC)
+    (PyArrayObject* array=NULL, std::vector< DATA_TYPE > std_vector)
+{
+    $1 = &std_vector;
+}
+%typemap(argout)
+    (std::vector< DATA_TYPE >& ARGOUT_VEC)
+{
+    npy_intp dims[1];
+    dims[0] = std_vector$argnum.size();
+    array$argnum = reinterpret_cast<PyArrayObject*>(
+        PyArray_EMPTY(1, dims, DATA_TYPECODE, NPY_FORTRAN));
+    if (!array$argnum)
+        SWIG_fail;
+    std::copy(std_vector$argnum.begin(), std_vector$argnum.end(),
         reinterpret_cast<DATA_TYPE*>(array_data(array$argnum)));
     $result = SWIG_Python_AppendOutput($result,
         reinterpret_cast<PyObject*>(array$argnum));

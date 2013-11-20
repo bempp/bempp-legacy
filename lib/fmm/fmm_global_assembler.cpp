@@ -43,7 +43,7 @@
 #include "../common/boost_make_shared_fwd.hpp"
 #include "../common/chunk_statistics.hpp"
 #include "../fiber/explicit_instantiation.hpp"
-#include "../fiber/local_assembler_for_operators.hpp"
+#include "../fiber/local_assembler_for_integral_operators.hpp"
 #include "../fiber/serial_blas_region.hpp"
 #include "../fiber/scalar_traits.hpp"
 #include "../space/space.hpp"

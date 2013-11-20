@@ -23,6 +23,7 @@
 #include "../common/boost_make_shared_fwd.hpp"
 
 #include "abstract_boundary_operator.hpp"
+#include "blas_quadrature_helper.hpp"
 #include "context.hpp"
 #include "general_elementary_local_operator_imp.hpp"
 #include "general_elementary_singular_integral_operator_imp.hpp"
@@ -32,11 +33,13 @@
 
 #include "../fiber/explicit_instantiation.hpp"
 
+#include "../fiber/typical_test_scalar_kernel_trial_integral.hpp"
 #include "../fiber/modified_helmholtz_3d_hypersingular_kernel_functor.hpp"
 #include "../fiber/modified_helmholtz_3d_hypersingular_kernel_interpolated_functor.hpp"
 #include "../fiber/modified_helmholtz_3d_hypersingular_off_diagonal_kernel_functor.hpp"
 #include "../fiber/modified_helmholtz_3d_hypersingular_off_diagonal_interpolated_kernel_functor.hpp"
 #include "../fiber/modified_helmholtz_3d_hypersingular_transformation_functor.hpp"
+#include "../fiber/modified_helmholtz_3d_hypersingular_transformation_functor_2.hpp"
 #include "../fiber/modified_helmholtz_3d_hypersingular_integrand_functor_2.hpp"
 #include "../fiber/scalar_function_value_functor.hpp"
 #include "../fiber/scalar_function_value_times_normal_functor.hpp"
@@ -85,14 +88,24 @@ modifiedHelmholtz3dSyntheticHypersingularBoundaryOperator(
             "modifiedHelmholtz3dSyntheticHypersingularBoundaryOperator(): "
             "domain, range and dualToRange must not be null");
 
+    shared_ptr<const Space<BasisFunctionType> > newDomain = domain;
+    shared_ptr<const Space<BasisFunctionType> > newDualToRange = dualToRange;
+
+    bool isBarycentric = (domain->isBarycentric() || dualToRange->isBarycentric());
+
+    if (isBarycentric) {
+        newDomain = domain->barycentricSpace(domain);
+        newDualToRange = dualToRange->barycentricSpace(dualToRange);
+    }
+
     shared_ptr<const Context<BasisFunctionType, ResultType> >
         internalContext, auxContext;
     SyntheticOp::getContextsForInternalAndAuxiliaryOperators(
         context, internalContext, auxContext);
-    shared_ptr<const Space<BasisFunctionType> > internalTrialSpace = 
-        domain->discontinuousSpace(domain);
-    shared_ptr<const Space<BasisFunctionType> > internalTestSpace = 
-        dualToRange->discontinuousSpace(dualToRange);
+    shared_ptr<const Space<BasisFunctionType> > internalTrialSpace =
+        newDomain->discontinuousSpace(newDomain);
+    shared_ptr<const Space<BasisFunctionType> > internalTestSpace =
+        newDualToRange->discontinuousSpace(newDualToRange);
 
     // Note: we don't really need to care about ranges and duals to domains of
     // the internal operator. The only range space that matters is that of the
@@ -115,7 +128,7 @@ modifiedHelmholtz3dSyntheticHypersingularBoundaryOperator(
 
     // symmetry of the decomposition
     int syntheseSymmetry = 0; // symmetry of the decomposition
-    if (domain == dualToRange && internalTrialSpace == internalTestSpace)
+    if (newDomain == newDualToRange && internalTrialSpace == internalTestSpace)
         syntheseSymmetry = HERMITIAN |
                 (boost::is_complex<BasisFunctionType>() ? 0 : SYMMETRIC);
 
@@ -126,7 +139,7 @@ modifiedHelmholtz3dSyntheticHypersingularBoundaryOperator(
         testLocalOps[i] =
                 BoundaryOperator<BasisFunctionType, ResultType>(
                     auxContext, boost::make_shared<LocalOp>(
-                        internalTestSpace, range, dualToRange,
+                        internalTestSpace, range, newDualToRange,
                         ("(" + label + ")_test_curl_") + xyz[i], NO_SYMMETRY,
                         CurlFunctor(),
                         ValueFunctor(),
@@ -138,7 +151,7 @@ modifiedHelmholtz3dSyntheticHypersingularBoundaryOperator(
             trialLocalOps[i] =
                     BoundaryOperator<BasisFunctionType, ResultType>(
                         auxContext, boost::make_shared<LocalOp>(
-                            domain, internalTrialSpace /* or whatever */,
+                            newDomain, internalTrialSpace /* or whatever */,
                             internalTrialSpace,
                             ("(" + label + ")_trial_curl_") + xyz[i], NO_SYMMETRY,
                             ValueFunctor(),
@@ -156,7 +169,7 @@ modifiedHelmholtz3dSyntheticHypersingularBoundaryOperator(
         testLocalOps[i] =
                 BoundaryOperator<BasisFunctionType, ResultType>(
                     auxContext, boost::make_shared<LocalOp>(
-                        internalTestSpace, range, dualToRange,
+                        internalTestSpace, range, newDualToRange,
                         ("(" + label + ")_test_k_value_n_") + xyz[i], NO_SYMMETRY,
                         ValueTimesNormalFunctor(),
                         ValueFunctor(),
@@ -166,7 +179,7 @@ modifiedHelmholtz3dSyntheticHypersingularBoundaryOperator(
             trialLocalOps[i] =
                     BoundaryOperator<BasisFunctionType, ResultType>(
                         auxContext, boost::make_shared<LocalOp>(
-                            domain, internalTrialSpace /* or whatever */,
+                            newDomain, internalTrialSpace /* or whatever */,
                             internalTrialSpace,
                             ("(" + label + ")_trial_k_value_n_") + xyz[i], NO_SYMMETRY,
                             ValueFunctor(),
@@ -199,7 +212,7 @@ modifiedHelmholtz3dHypersingularBoundaryOperator(
     if (assemblyOptions.assemblyMode() == AssemblyOptions::ACA &&
          assemblyOptions.acaOptions().mode == AcaOptions::LOCAL_ASSEMBLY)
         return modifiedHelmholtz3dSyntheticHypersingularBoundaryOperator(
-            context, domain, range, dualToRange, waveNumber, label, 
+            context, domain, range, dualToRange, waveNumber, label,
             symmetry, useInterpolation, interpPtsPerWavelength);
 
     typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
@@ -213,14 +226,17 @@ modifiedHelmholtz3dHypersingularBoundaryOperator(
     typedef Fiber::ModifiedHelmholtz3dHypersingularIntegrandFunctor2<
             BasisFunctionType, KernelType, ResultType> IntegrandFunctor;
 
+    typedef Fiber::ModifiedHelmholtz3dHypersingularTransformationFunctor2<CoordinateType>
+            TransformationFunctorWithBlas;
+
     typedef Fiber::ModifiedHelmholtz3dHypersingularOffDiagonalInterpolatedKernelFunctor<KernelType>
             OffDiagonalInterpolatedKernelFunctor;
     typedef Fiber::ModifiedHelmholtz3dHypersingularOffDiagonalKernelFunctor<KernelType>
             OffDiagonalNoninterpolatedKernelFunctor;
     typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
             OffDiagonalTransformationFunctor;
-    typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctor<
-            BasisFunctionType, KernelType, ResultType>
+    typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctorExt<
+            BasisFunctionType, KernelType, ResultType, 1>
             OffDiagonalIntegrandFunctor;
 
     CoordinateType maxDistance_ =
@@ -235,35 +251,86 @@ modifiedHelmholtz3dHypersingularBoundaryOperator(
 			fmmOptions.levels);
     }
 
+    shared_ptr<Fiber::TestKernelTrialIntegral<
+            BasisFunctionType, KernelType, ResultType> >
+            integral, offDiagonalIntegral;
+    if (shouldUseBlasInQuadrature(assemblyOptions, *domain, *dualToRange)) {
+        integral.reset(new Fiber::TypicalTestScalarKernelTrialIntegral<
+                       BasisFunctionType, KernelType, ResultType>());
+        offDiagonalIntegral = integral;
+    }
+    else {
+        integral.reset(new Fiber::DefaultTestKernelTrialIntegral<IntegrandFunctor>(
+                           IntegrandFunctor()));
+        offDiagonalIntegral.reset(new Fiber::DefaultTestKernelTrialIntegral<
+                                  OffDiagonalIntegrandFunctor>(
+                           OffDiagonalIntegrandFunctor()));
+    }
+
     typedef GeneralHypersingularIntegralOperator<
             BasisFunctionType, KernelType, ResultType> Op;
     shared_ptr<Op> newOp;
-    if (useInterpolation)
-        newOp.reset(new Op(
-                        domain, range, dualToRange, label, symmetry,
-                        InterpolatedKernelFunctor(
-                            waveNumber, maxDistance_, interpPtsPerWavelength),
-                        TransformationFunctor(),
-                        TransformationFunctor(),
-                        IntegrandFunctor(),
-                        OffDiagonalInterpolatedKernelFunctor(
-                            waveNumber, maxDistance_, interpPtsPerWavelength),
-                        OffDiagonalTransformationFunctor(),
-                        OffDiagonalTransformationFunctor(),
-                        OffDiagonalIntegrandFunctor(),
-                        fmmTransform));
-    else
-        newOp.reset(new Op(
-                        domain, range, dualToRange, label, symmetry,
-                        NoninterpolatedKernelFunctor(waveNumber),
-                        TransformationFunctor(),
-                        TransformationFunctor(),
-                        IntegrandFunctor(),
-                        OffDiagonalNoninterpolatedKernelFunctor(waveNumber),
-                        OffDiagonalTransformationFunctor(),
-                        OffDiagonalTransformationFunctor(),
-                        OffDiagonalIntegrandFunctor(),
-                        fmmTransform));
+    if (shouldUseBlasInQuadrature(assemblyOptions, *domain, *dualToRange)) {
+        shared_ptr<Fiber::TestKernelTrialIntegral<
+                BasisFunctionType, KernelType, ResultType> >
+                integral, offDiagonalIntegral;
+        integral.reset(new Fiber::TypicalTestScalarKernelTrialIntegral<
+                       BasisFunctionType, KernelType, ResultType>());
+        offDiagonalIntegral = integral;
+        if (useInterpolation)
+            newOp.reset(new Op(
+                            domain, range, dualToRange, label, symmetry,
+                            InterpolatedKernelFunctor(
+                                waveNumber, maxDistance_, interpPtsPerWavelength),
+                            TransformationFunctorWithBlas(),
+                            TransformationFunctorWithBlas(),
+                            integral,
+                            OffDiagonalInterpolatedKernelFunctor(
+                                waveNumber, maxDistance_, interpPtsPerWavelength),
+                            OffDiagonalTransformationFunctor(),
+                            OffDiagonalTransformationFunctor(),
+                            offDiagonalIntegral,
+                            fmmTransform));
+        else
+            newOp.reset(new Op(
+                            domain, range, dualToRange, label, symmetry,
+                            NoninterpolatedKernelFunctor(waveNumber),
+                            TransformationFunctorWithBlas(),
+                            TransformationFunctorWithBlas(),
+                            integral,
+                            OffDiagonalNoninterpolatedKernelFunctor(waveNumber),
+                            OffDiagonalTransformationFunctor(),
+                            OffDiagonalTransformationFunctor(),
+                            offDiagonalIntegral,
+                            fmmTransform));
+    } else { // no blas
+        if (useInterpolation)
+            newOp.reset(new Op(
+                            domain, range, dualToRange, label, symmetry,
+                            InterpolatedKernelFunctor(
+                                waveNumber, maxDistance_, interpPtsPerWavelength),
+                            TransformationFunctor(),
+                            TransformationFunctor(),
+                            IntegrandFunctor(),
+                            OffDiagonalInterpolatedKernelFunctor(
+                                waveNumber, maxDistance_, interpPtsPerWavelength),
+                            OffDiagonalTransformationFunctor(),
+                            OffDiagonalTransformationFunctor(),
+                            OffDiagonalIntegrandFunctor(),
+                            fmmTransform));
+        else
+            newOp.reset(new Op(
+                            domain, range, dualToRange, label, symmetry,
+                            NoninterpolatedKernelFunctor(waveNumber),
+                            TransformationFunctor(),
+                            TransformationFunctor(),
+                            IntegrandFunctor(),
+                            OffDiagonalNoninterpolatedKernelFunctor(waveNumber),
+                            OffDiagonalTransformationFunctor(),
+                            OffDiagonalTransformationFunctor(),
+                            OffDiagonalIntegrandFunctor(),
+                            fmmTransform));
+    }
     return BoundaryOperator<BasisFunctionType, ResultType>(context, newOp);
 }
 

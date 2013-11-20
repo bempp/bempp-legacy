@@ -20,12 +20,14 @@
 
 #include "laplace_3d_adjoint_double_layer_boundary_operator.hpp"
 
+#include "blas_quadrature_helper.hpp"
 #include "context.hpp"
 #include "general_elementary_singular_integral_operator_imp.hpp"
 #include "laplace_3d_synthetic_boundary_operator_builder.hpp"
 
 #include "../fiber/explicit_instantiation.hpp"
 
+#include "../fiber/typical_test_scalar_kernel_trial_integral.hpp"
 #include "../fiber/laplace_3d_adjoint_double_layer_potential_kernel_functor.hpp"
 #include "../fiber/laplace_3d_single_layer_potential_kernel_functor.hpp"
 #include "../fiber/scalar_function_value_functor.hpp"
@@ -52,7 +54,7 @@ laplace3dAdjointDoubleLayerBoundaryOperator(
         assemblyOptions.acaOptions().mode == AcaOptions::LOCAL_ASSEMBLY)
         return laplace3dSyntheticBoundaryOperator(
             &laplace3dAdjointDoubleLayerBoundaryOperator<BasisFunctionType, ResultType>,
-            context, domain, range, dualToRange, label, symmetry, 
+            context, domain, range, dualToRange, label, symmetry,
             NO_SYMMETRY);
 
     typedef typename ScalarTraits<BasisFunctionType>::RealType KernelType;
@@ -64,8 +66,17 @@ laplace3dAdjointDoubleLayerBoundaryOperator(
     FmmKernelFunctor;
     typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
     TransformationFunctor;
-    typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctor<
-    BasisFunctionType, KernelType, ResultType> IntegrandFunctor;
+    typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctorExt<
+    BasisFunctionType, KernelType, ResultType, 1> IntegrandFunctor;
+
+    shared_ptr<Fiber::TestKernelTrialIntegral<
+            BasisFunctionType, KernelType, ResultType> > integral;
+    if (shouldUseBlasInQuadrature(assemblyOptions, *domain, *dualToRange))
+        integral.reset(new Fiber::TypicalTestScalarKernelTrialIntegral<
+                       BasisFunctionType, KernelType, ResultType>());
+    else
+        integral.reset(new Fiber::DefaultTestKernelTrialIntegral<IntegrandFunctor>(
+                           IntegrandFunctor()));
 
     shared_ptr<FmmTransform<ResultType> > fmmTransform;
     if (assemblyOptions.assemblyMode() == AssemblyOptions::FMM) {
@@ -81,7 +92,7 @@ laplace3dAdjointDoubleLayerBoundaryOperator(
                              KernelFunctor(),
                              TransformationFunctor(),
                              TransformationFunctor(),
-                             IntegrandFunctor(),
+                             integral,
                              fmmTransform));
     return BoundaryOperator<BasisFunctionType, ResultType>(context, newOp);
 }

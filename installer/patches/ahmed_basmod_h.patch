@@ -1,0 +1,31 @@
+--- Include/basmod.h	2012-06-11 15:50:28.000000000 +0100
++++ Include/basmod.h.new	2013-11-18 10:55:09.000000000 +0000
+@@ -29,6 +29,8 @@ extern void progressbar(std::ostream&, s
+ 
+ #define PRINT(X) std::cout << #X << " = " << X << std::endl;
+ 
++using std::swap;
++
+ //#define ABS(x) ((x)<0?-(x):(x))
+ //#define MAKEPOS(x) (x=ABS(x))
+ //#define SGN(x) ((x)==0?0:((x)>0?1:-1))
+@@ -45,12 +47,13 @@ inline double inMB(const double n)
+   return n/(1024.0*1024.0);
+ }
+ 
+-template<class T> void swap(T& arg0, T& arg1)
+-{
+-  T temp(arg0);
+-  arg0 = arg1;
+-  arg1 = temp;
+-}
++
++//template<class T> void swap(T& arg0, T& arg1)
++//{
++//  T temp(arg0);
++//  arg0 = arg1;
++//  arg1 = temp;
++//}
+ 
+ template<class T> T max(T x, T y)
+ {

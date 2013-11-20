@@ -22,34 +22,24 @@
 
 #include "../fiber/explicit_instantiation.hpp"
 
-#include "aca_global_assembler.hpp"
 #include "assembly_options.hpp"
 #include "discrete_dense_boundary_operator.hpp"
 #include "context.hpp"
-#include "evaluation_options.hpp"
-#include "grid_function.hpp"
-#include "interpolated_function.hpp"
-#include "local_assembler_construction_helper.hpp"
 
 #include "../common/auto_timer.hpp"
 #include "../common/multidimensional_arrays.hpp"
 #include "../common/not_implemented_error.hpp"
-#include "../fiber/evaluator_for_integral_operators.hpp"
 #include "../fiber/explicit_instantiation.hpp"
-#include "../fiber/collection_of_basis_transformations.hpp"
-#include "../fiber/quadrature_strategy.hpp"
 #include "../fiber/serial_blas_region.hpp"
-#include "../fiber/local_assembler_for_operators.hpp"
+#include "../fiber/local_assembler_for_integral_operators.hpp"
 #include "../grid/entity.hpp"
 #include "../grid/entity_iterator.hpp"
-#include "../grid/geometry_factory.hpp"
 #include "../grid/grid.hpp"
 #include "../grid/grid_view.hpp"
 #include "../grid/mapper.hpp"
 #include "../space/space.hpp"
 
 #include "../common/armadillo_fwd.hpp"
-#include "../common/boost_make_shared_fwd.hpp"
 #include "../common/complex_aux.hpp"
 #include <stdexcept>
 #include <iostream>
@@ -81,7 +71,7 @@ public:
             const std::vector<std::vector<GlobalDofIndex> >& trialGlobalDofs,
             const std::vector<std::vector<BasisFunctionType> >& testLocalDofWeights,
             const std::vector<std::vector<BasisFunctionType> >& trialLocalDofWeights,
-            Fiber::LocalAssemblerForOperators<ResultType>& assembler,
+            Fiber::LocalAssemblerForIntegralOperators<ResultType>& assembler,
             arma::Mat<ResultType>& result, MutexType& mutex) :
         m_testIndices(testIndices),
         m_testGlobalDofs(testGlobalDofs), m_trialGlobalDofs(trialGlobalDofs),
@@ -136,7 +126,7 @@ private:
     const std::vector<std::vector<BasisFunctionType> >& m_trialLocalDofWeights;
     // mutable OK because Assembler is thread-safe. (Alternative to "mutable" here:
     // make assembler's internal integrator map mutable)
-    typename Fiber::LocalAssemblerForOperators<ResultType>& m_assembler;
+    typename Fiber::LocalAssemblerForIntegralOperators<ResultType>& m_assembler;
     // mutable OK because write access to this matrix is protected by a mutex
     arma::Mat<ResultType>& m_result;
 
@@ -152,9 +142,9 @@ void gatherGlobalDofs(
     std::vector<std::vector<GlobalDofIndex> >& globalDofs,
     std::vector<std::vector<BasisFunctionType> >& localDofWeights)
 {
-    // Get the grid's leaf view so that we can iterate over elements
-    std::auto_ptr<GridView> view = space.grid()->leafView();
-    const int elementCount = view->entityCount(0);
+    // Get the grid's view so that we can iterate over elements
+    const GridView& view = space.gridView();
+    const int elementCount = view.entityCount(0);
 
     // Global DOF indices corresponding to local DOFs on elements
     globalDofs.clear();
@@ -164,8 +154,8 @@ void gatherGlobalDofs(
     localDofWeights.resize(elementCount);
 
     // Gather global DOF lists
-    const Mapper& mapper = view->elementMapper();
-    std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
+    const Mapper& mapper = view.elementMapper();
+    std::auto_ptr<EntityIterator<0> > it = view.entityIterator<0>();
     while (!it->finished()) {
         const Entity<0>& element = it->entity();
         const int elementIndex = mapper.entityIndex(element);
@@ -183,7 +173,7 @@ DenseGlobalAssembler<BasisFunctionType, ResultType>::
 assembleDetachedWeakForm(
         const Space<BasisFunctionType>& testSpace,
         const Space<BasisFunctionType>& trialSpace,
-        LocalAssemblerForBoundaryOperators& assembler,
+        LocalAssemblerForIntegralOperators& assembler,
         const Context<BasisFunctionType, ResultType>& context)
 {
     const AssemblyOptions& options = context.assemblyOptions();

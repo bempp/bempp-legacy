@@ -23,7 +23,7 @@
 
 #include "../common/common.hpp"
 
-#include "elementary_abstract_boundary_operator.hpp"
+#include "elementary_integral_operator_base.hpp"
 #include "../common/multidimensional_arrays.hpp"
 #include "../common/types.hpp"
 #include "../fiber/types.hpp"
@@ -35,7 +35,7 @@ namespace Fiber
 {
 
 /** \cond FORWARD_DECL */
-template <typename CoordinateType> class CollectionOfBasisTransformations;
+template <typename CoordinateType> class CollectionOfShapesetTransformations;
 template <typename KernelType> class CollectionOfKernels;
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 class TestKernelTrialIntegral;
@@ -98,24 +98,30 @@ template <typename ResultType> class FmmTransform;
  *  must be set to the same type. */
 template <typename BasisFunctionType_, typename KernelType_, typename ResultType_>
 class ElementaryIntegralOperator :
-        public ElementaryAbstractBoundaryOperator<BasisFunctionType_, ResultType_>
+        public ElementaryIntegralOperatorBase<BasisFunctionType_, ResultType_>
 {
-    typedef ElementaryAbstractBoundaryOperator<BasisFunctionType_, ResultType_> Base;
+    typedef ElementaryIntegralOperatorBase<BasisFunctionType_, ResultType_> Base;
 public:
-    /** \copydoc ElementaryAbstractBoundaryOperator::BasisFunctionType */
+    /** \copydoc ElementaryIntegralOperatorBase::BasisFunctionType */
     typedef typename Base::BasisFunctionType BasisFunctionType;
-    /** \copydoc ElementaryAbstractBoundaryOperator::ResultType */
+    /** \copydoc ElementaryIntegralOperatorBase::ResultType */
     typedef typename Base::ResultType ResultType;
-    /** \copydoc ElementaryAbstractBoundaryOperator::CoordinateType */
+    /** \copydoc ElementaryIntegralOperatorBase::CoordinateType */
     typedef typename Base::CoordinateType CoordinateType;
-    /** \copydoc ElementaryAbstractBoundaryOperator::QuadratureStrategy */
+    /** \copydoc ElementaryIntegralOperatorBase::QuadratureStrategy */
     typedef typename Base::QuadratureStrategy QuadratureStrategy;
-    /** \copydoc ElementaryAbstractBoundaryOperator::LocalAssembler */
+    /** \copydoc ElementaryIntegralOperatorBase::LocalAssembler */
     typedef typename Base::LocalAssembler LocalAssembler;
     /** \brief Type of the values of the (components of the) kernel functions. */
     typedef KernelType_ KernelType;
-    /** \brief Type of the appropriate instantiation of Fiber::CollectionOfBasisTransformations. */
-    typedef Fiber::CollectionOfBasisTransformations<CoordinateType>
+    /** \brief Type of the appropriate instantiation of Fiber::CollectionOfShapesetTransformations. */
+    typedef Fiber::CollectionOfShapesetTransformations<CoordinateType>
+    CollectionOfShapesetTransformations;
+    /** \brief Type of the appropriate instantiation of Fiber::CollectionOfBasisTransformations.
+     *
+     *  \deprecated This type is deprecated; use CollectionOfShapesetTransformations
+     *  instead. */
+    typedef Fiber::CollectionOfShapesetTransformations<CoordinateType>
     CollectionOfBasisTransformations;
     /** \brief Type of the appropriate instantiation of Fiber::CollectionOfKernels. */
     typedef Fiber::CollectionOfKernels<KernelType> CollectionOfKernels;
@@ -148,14 +154,14 @@ private:
      *  weak form of this operator. */
     virtual const CollectionOfKernels& kernels() const = 0;
 
-    /** \brief Return the collection of test-function transformations occurring
+    /** \brief Return the collection of test function transformations occurring
      *  in the weak form of this operator. */
-    virtual const CollectionOfBasisTransformations&
+    virtual const CollectionOfShapesetTransformations&
     testTransformations() const = 0;
 
-    /** \brief Return the collection of trial-function transformations occurring
+    /** \brief Return the collection of trial function transformations occurring
      *  in the weak form of this operator. */
-    virtual const CollectionOfBasisTransformations&
+    virtual const CollectionOfShapesetTransformations&
     trialTransformations() const = 0;
 
     virtual const FmmTransform<ResultType>& fmmTransform() const = 0;
@@ -166,8 +172,8 @@ private:
      *  Subclasses of #TestKernelTrialIntegral implement functions that evaluate
      *  the integral using the data provided by a #CollectionOfKernels
      *  representing the kernel functions occurring in the integrand and a pair
-     *  of #CollectionOfBasisTransformations objects representing the test and
-     *  trial basis function transformations occurring in the integrand. */
+     *  of #CollectionOfShapesetTransformations objects representing the test and
+     *  trial function transformations occurring in the integrand. */
     virtual const TestKernelTrialIntegral& integral() const = 0;
 
     virtual std::auto_ptr<LocalAssembler> makeAssemblerImpl(
@@ -176,8 +182,8 @@ private:
             const shared_ptr<const GeometryFactory>& trialGeometryFactory,
             const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& testRawGeometry,
             const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& trialRawGeometry,
-            const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& testBases,
-            const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& trialBases,
+            const shared_ptr<const std::vector<const Fiber::Shapeset<BasisFunctionType>*> >& testShapesets,
+            const shared_ptr<const std::vector<const Fiber::Shapeset<BasisFunctionType>*> >& trialShapesets,
             const shared_ptr<const Fiber::OpenClHandler>& openClHandler,
             const ParallelizationOptions& parallelizationOptions,
             VerbosityLevel::Level verbosityLevel,

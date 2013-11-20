@@ -42,9 +42,9 @@ void Solver<BasisFunctionType, ResultType>::checkConsistency(
         ConvergenceTestMode::Mode mode)
 {
     if ((mode == ConvergenceTestMode::TEST_CONVERGENCE_IN_DUAL_TO_RANGE &&
-         rhs.dualSpace() != boundaryOp.dualToRange()) ||
+         !rhs.dualSpace()->spaceIsCompatible(*boundaryOp.dualToRange())) ||
         (mode == ConvergenceTestMode::TEST_CONVERGENCE_IN_RANGE &&
-         rhs.space() != boundaryOp.range()))
+         !rhs.space()->spaceIsCompatible(*boundaryOp.range())))
         throw std::invalid_argument(
             "Solver::checkConsistency(): spaces do not match");
 }
@@ -61,15 +61,8 @@ void Solver<BasisFunctionType, ResultType>::checkConsistency(
     if (rhs.size() != rowCount)
         throw std::invalid_argument(
             "Solver::checkConsistency(): incorrect number of grid functions");
-    if (mode == ConvergenceTestMode::TEST_CONVERGENCE_IN_DUAL_TO_RANGE) {
-        for (size_t i = 0; i < rhs.size(); ++i)
-            if (rhs[i].dualSpace() != boundaryOp.dualToRange(i))
-                throw std::invalid_argument(
-                    "Solver::checkConsistency(): dual space of grid function #" +
-                    toString(i) + 
-                    " does not match the dual to the range space of the "
-                    "corresponding row of the blocked boundary operator");
-    }
+    if (mode == ConvergenceTestMode::TEST_CONVERGENCE_IN_DUAL_TO_RANGE)
+        ; // don't do anything
     else if (mode == ConvergenceTestMode::TEST_CONVERGENCE_IN_RANGE) {
         for (size_t i = 0; i < rhs.size(); ++i)
             if (rhs[i].space() != boundaryOp.range(i))
@@ -112,13 +105,7 @@ Solver<BasisFunctionType, ResultType>::canonicalizeBlockedRhs(
     std::vector<GF> result(functionCount);
     for (size_t i = 0; i < functionCount; ++i)
         if (rhs[i].isInitialized()) {
-            if (testInDualToRange && rhs[i].dualSpace() != boundaryOp.dualToRange(i))
-                throw std::invalid_argument(
-                        "Solver::canonicalizeBlockedRhs(): dual space of "
-                        "grid function #" + toString(i) +
-                        " does not match the space dual to the range of the "
-                        "corresponding row of the blocked boundary operator");
-            else if (!testInDualToRange && rhs[i].space() != boundaryOp.range(i))
+            if (!testInDualToRange && !rhs[i].space()->spaceIsCompatible(*boundaryOp.range(i)))
                 throw std::invalid_argument(
                         "Solver::canonicalizeBlockedRhs(): space of "
                         "grid function #" + toString(i) +

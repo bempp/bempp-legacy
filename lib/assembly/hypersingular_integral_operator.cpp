@@ -32,7 +32,7 @@
 #include "local_assembler_construction_helper.hpp"
 
 #include "../fiber/explicit_instantiation.hpp"
-#include "../fiber/local_assembler_for_operators.hpp"
+#include "../fiber/local_assembler_for_integral_operators.hpp"
 #include "../fiber/quadrature_strategy.hpp"
 
 #include "../common/boost_make_shared_fwd.hpp"
@@ -76,14 +76,14 @@ HypersingularIntegralOperator<BasisFunctionType, KernelType, ResultType>::makeAs
         const AssemblyOptions& options) const
 {
     typedef Fiber::RawGridGeometry<CoordinateType> RawGridGeometry;
-    typedef std::vector<const Fiber::Basis<BasisFunctionType>*> BasisPtrVector;
+    typedef std::vector<const Fiber::Shapeset<BasisFunctionType>*> ShapesetPtrVector;
 
     const bool verbose = (options.verbosityLevel() >= VerbosityLevel::DEFAULT);
 
     shared_ptr<RawGridGeometry> testRawGeometry, trialRawGeometry;
     shared_ptr<GeometryFactory> testGeometryFactory, trialGeometryFactory;
     shared_ptr<Fiber::OpenClHandler> openClHandler;
-    shared_ptr<BasisPtrVector> testBases, trialBases;
+    shared_ptr<ShapesetPtrVector> testShapesets, trialShapesets;
     bool cacheSingularIntegrals;
 
     if (verbose)
@@ -91,7 +91,7 @@ HypersingularIntegralOperator<BasisFunctionType, KernelType, ResultType>::makeAs
        this->collectDataForAssemblerConstruction(options,
                                         testRawGeometry, trialRawGeometry,
                                         testGeometryFactory, trialGeometryFactory,
-                                        testBases, trialBases,
+                                        testShapesets, trialShapesets,
                                         openClHandler, cacheSingularIntegrals);
     if (verbose)
         std::cout << "Data collection finished." << std::endl;
@@ -103,7 +103,7 @@ HypersingularIntegralOperator<BasisFunctionType, KernelType, ResultType>::makeAs
     return reallyMakeAssemblers(quadStrategy,
                                 testGeometryFactory, trialGeometryFactory,
                                 testRawGeometry, trialRawGeometry,
-                                testBases, trialBases, openClHandler,
+                                testShapesets, trialShapesets, openClHandler,
                                 options.parallelizationOptions(),
                                 options.verbosityLevel(),
                                 cacheSingularIntegrals,
@@ -124,8 +124,8 @@ reallyMakeAssemblers(
         const shared_ptr<const GeometryFactory>& trialGeometryFactory,
         const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& testRawGeometry,
         const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& trialRawGeometry,
-        const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& testBases,
-        const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& trialBases,
+        const shared_ptr<const std::vector<const Fiber::Shapeset<BasisFunctionType>*> >& testShapesets,
+        const shared_ptr<const std::vector<const Fiber::Shapeset<BasisFunctionType>*> >& trialShapesets,
         const shared_ptr<const Fiber::OpenClHandler>& openClHandler,
         const ParallelizationOptions& parallelizationOptions,
         VerbosityLevel::Level verbosityLevel,
@@ -139,7 +139,7 @@ reallyMakeAssemblers(
     result.first.reset(quadStrategy.makeAssemblerForIntegralOperators(
                            testGeometryFactory, trialGeometryFactory,
                            testRawGeometry, trialRawGeometry,
-                           testBases, trialBases,
+                           testShapesets, trialShapesets,
                            make_shared_from_ref(testTransformations()),
                            make_shared_from_ref(kernels()),
                            make_shared_from_ref(trialTransformations()),
@@ -150,7 +150,7 @@ reallyMakeAssemblers(
         result.second.reset(quadStrategy.makeAssemblerForIntegralOperators(
                                 testGeometryFactory, trialGeometryFactory,
                                 testRawGeometry, trialRawGeometry,
-                                testBases, trialBases,
+                                testShapesets, trialShapesets,
                                 make_shared_from_ref(offDiagonalTestTransformations()),
                                 make_shared_from_ref(offDiagonalKernels()),
                                 make_shared_from_ref(offDiagonalTrialTransformations()),

@@ -1,11 +1,15 @@
 %{
 #include "assembly/grid_function.hpp"
+#include "assembly/domain_index_dependent_function.hpp"
+#include "assembly/surface_normal_and_domain_index_dependent_function.hpp"
 #include "assembly/surface_normal_dependent_function.hpp"
 #include "assembly/surface_normal_independent_function.hpp"
 %}
 
-%newobject gridFunctionFromPythonSurfaceNormalIndependentFunctor;
+%newobject gridFunctionFromPythonDomainIndexDependentFunctor;
+%newobject gridFunctionFromPythonSurfaceNormalAndDomainIndexDependentFunctor;
 %newobject gridFunctionFromPythonSurfaceNormalDependentFunctor;
+%newobject gridFunctionFromPythonSurfaceNormalIndependentFunctor;
 
 namespace Bempp {
 
@@ -38,15 +42,32 @@ uninitializedGridFunction()
 
 template <typename BasisFunctionType, typename ResultType>
 GridFunction<BasisFunctionType, ResultType>*
-gridFunctionFromPythonSurfaceNormalIndependentFunctor(
+gridFunctionFromPythonDomainIndexDependentFunctor(
     const boost::shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
     const boost::shared_ptr<const Space<BasisFunctionType> >& space,
     const boost::shared_ptr<const Space<BasisFunctionType> >& dualSpace,
-    const PythonSurfaceNormalIndependentFunctor<ResultType>& functor)
+    const PythonDomainIndexDependentFunctor<ResultType>& functor,
+    typename GridFunction<BasisFunctionType, ResultType>::ConstructionMode mode)
 {
     return new GridFunction<BasisFunctionType, ResultType>(
         context, space, dualSpace,
-        surfaceNormalIndependentFunction(functor));
+        domainIndexDependentFunction(functor),
+        mode);
+}
+
+template <typename BasisFunctionType, typename ResultType>
+GridFunction<BasisFunctionType, ResultType>*
+gridFunctionFromPythonSurfaceNormalAndDomainIndexDependentFunctor(
+    const boost::shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
+    const boost::shared_ptr<const Space<BasisFunctionType> >& space,
+    const boost::shared_ptr<const Space<BasisFunctionType> >& dualSpace,
+    const PythonSurfaceNormalAndDomainIndexDependentFunctor<ResultType>& functor,
+    typename GridFunction<BasisFunctionType, ResultType>::ConstructionMode mode)
+{
+    return new GridFunction<BasisFunctionType, ResultType>(
+        context, space, dualSpace,
+        surfaceNormalAndDomainIndexDependentFunction(functor),
+        mode);
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -55,11 +76,28 @@ gridFunctionFromPythonSurfaceNormalDependentFunctor(
     const boost::shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
     const boost::shared_ptr<const Space<BasisFunctionType> >& space,
     const boost::shared_ptr<const Space<BasisFunctionType> >& dualSpace,
-    const PythonSurfaceNormalDependentFunctor<ResultType>& functor)
+    const PythonSurfaceNormalDependentFunctor<ResultType>& functor,
+    typename GridFunction<BasisFunctionType, ResultType>::ConstructionMode mode)
 {
     return new GridFunction<BasisFunctionType, ResultType>(
         context, space, dualSpace,
-        surfaceNormalDependentFunction(functor));
+        surfaceNormalDependentFunction(functor),
+        mode);
+}
+
+template <typename BasisFunctionType, typename ResultType>
+GridFunction<BasisFunctionType, ResultType>*
+gridFunctionFromPythonSurfaceNormalIndependentFunctor(
+    const boost::shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
+    const boost::shared_ptr<const Space<BasisFunctionType> >& space,
+    const boost::shared_ptr<const Space<BasisFunctionType> >& dualSpace,
+    const PythonSurfaceNormalIndependentFunctor<ResultType>& functor,
+    typename GridFunction<BasisFunctionType, ResultType>::ConstructionMode mode)
+{
+    return new GridFunction<BasisFunctionType, ResultType>(
+        context, space, dualSpace,
+        surfaceNormalIndependentFunction(functor),
+        mode);
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -84,7 +122,7 @@ gridFunctionFromProjections(
     const arma::Col<ResultType>& data)
 {
     return new GridFunction<BasisFunctionType, ResultType>(
-        context, space, dualSpace, data, 
+        context, space, dualSpace, data,
         GridFunction<BasisFunctionType, ResultType>::PROJECTIONS);
 }
 
@@ -135,6 +173,13 @@ BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(GridFunction);
     %ignore basis;
     %ignore getLocalCoefficients;
 
+    %apply const arma::Mat<float>& IN_MAT {
+        arma::Mat<float>& local
+    };
+    %apply const arma::Mat<double>& IN_MAT {
+        arma::Mat<double>& local
+    };
+
     %apply arma::Col<float>& ARGOUT_COL {
         arma::Col<float>& col_out
     };
@@ -164,6 +209,45 @@ BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(GridFunction);
         arma::Mat<std::complex<double> >& result_
     };
 
+    %apply arma::Mat< float >& ARGOUT_MAT {
+        arma::Mat< float >& points
+    };
+
+    %apply arma::Mat< double >& ARGOUT_MAT {
+        arma::Mat< double >& points
+    };
+
+    %apply arma::Mat< float >& ARGOUT_MAT {
+        arma::Mat< float >& values
+    };
+
+    %apply arma::Mat< double >& ARGOUT_MAT {
+        arma::Mat< double >& values
+    };
+
+    %apply arma::Mat< std::complex<float> >& ARGOUT_MAT {
+        arma::Mat<std::complex<flaot> >& values
+    };
+
+    %apply arma::Mat< std::complex<double> >& ARGOUT_MAT {
+        arma::Mat<std::complex<double> >& values
+    };
+
+    %ignore evaluateAtSpecialPoints;
+    void _evaluateAtSpecialPoints(
+            VtkWriter::DataType dataType,
+            arma::Mat<CoordinateType>& points, arma::Mat<ResultType>& values) const {
+        $self->evaluateAtSpecialPoints(dataType, points, values);
+    }
+
+    %pythoncode %{
+    def evaluateAtSpecialPoints(self, dataType, returnPoints=False):
+       points, values = self._evaluateAtSpecialPoints(dataType)
+       if returnPoints:
+          return points, values
+       else:
+          return values
+    %}
 
     void coefficients(arma::Col<ResultType>& col_out)
     {
@@ -175,7 +259,7 @@ BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(GridFunction);
         col_out = $self->projections();
     }
 
-    void projections(const Space<BasisFunctionType>& dualSpace,
+    void projections(const boost::shared_ptr<const Space<BasisFunctionType> >& dualSpace,
                      arma::Col<ResultType>& col_out)
     {
         col_out = $self->projections(dualSpace);
@@ -232,8 +316,15 @@ BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(GridFunction);
 
           from visualization import plotGridFunction
           plotGridFunction(self)
-	    %}
+    %}
 
+    void evaluate(const EntityPointer<0>& ep,
+                  const arma::Mat<CoordinateType>& local,
+                  arma::Mat<ResultType>& values) const {
+        $self->evaluate(ep.entity(), local, values);
+    }
+
+    %ignore evaluate;
 }
 
 %ignore gridFunctionFromFiberFunction;
@@ -251,27 +342,41 @@ BEMPP_EXTEND_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(GridFunction)
 
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(GridFunction);
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(uninitializedGridFunction);
-BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(gridFunctionFromPythonSurfaceNormalIndependentFunctor);
+BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(gridFunctionFromPythonDomainIndexDependentFunctor);
+BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(gridFunctionFromPythonSurfaceNormalAndDomainIndexDependentFunctor);
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(gridFunctionFromPythonSurfaceNormalDependentFunctor);
+BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(gridFunctionFromPythonSurfaceNormalIndependentFunctor);
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(gridFunctionFromCoefficients);
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(gridFunctionFromProjections);
+%feature("compactdefaultargs") exportToVtk;
+BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(exportToVtk);
+//BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_AND_RESULT(exportToGmsh);
 
 
+%clear const arma::Mat<float>& local;
+%clear const arma::Mat<double>& local;
 
 %clear arma::Col<float>& col_out;
 %clear arma::Col<double>& col_out;
 %clear arma::Col<std::complex<float> >& col_out;
-%clear arma::Col<std::complex<float> >& col_out;
+%clear arma::Col<std::complex<double> >& col_out;
 
 %clear arma::Mat<float>& result_;
 %clear arma::Mat<double>& result_;
 %clear arma::Mat<std::complex<float> >& result_;
-%clear arma::Mat<std::complex<float> >& result_;
+%clear arma::Mat<std::complex<double> >& result_;
+
+%clear arma::Mat<float>& points;
+%clear arma::Mat<double>& points;
+%clear arma::Mat<float>& values;
+%clear arma::Mat<double>& values;
+%clear arma::Mat<std::complex<float> >& values;
+%clear arma::Mat<std::complex<double> >& values;
 
 %clear arma::Mat<float>& data;
 %clear arma::Mat<double>& data;
 %clear arma::Mat<std::complex<float> >& data;
-%clear arma::Mat<std::complex<float> >& data;
+%clear arma::Mat<std::complex<double> >& data;
 
 
 } // Namespace Bempp

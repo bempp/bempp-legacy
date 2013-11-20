@@ -36,7 +36,7 @@ namespace Bempp
  *  operator's weak form: collections of test and trial
  *  basis function transformations and the weak form integrand. These functors
  *  are used to construct instances of appropriate instantiations of
- *  DefaultCollectionOfBasisTransformations and
+ *  DefaultCollectionOfShapesetTransformations and
  *  DefaultTestKernelTrialIntegral. These objects are stored as private member
  *  variables and are returned by the implementations of the virtual methods
  *  testTransformations(), trialTransformations() and integral().
@@ -66,6 +66,9 @@ public:
     typedef typename Base::ResultType ResultType;
     /** \copydoc ElementaryIntegralOperator::CoordinateType */
     typedef typename Base::CoordinateType CoordinateType;
+    /** \copydoc ElementaryIntegralOperator::CollectionOfShapesetTransformations */
+    typedef typename Base::CollectionOfShapesetTransformations
+    CollectionOfShapesetTransformations;
     /** \copydoc ElementaryIntegralOperator::CollectionOfBasisTransformations */
     typedef typename Base::CollectionOfBasisTransformations
     CollectionOfBasisTransformations;
@@ -87,15 +90,15 @@ public:
      *    Symmetry of the weak form of the operator. Can be any combination of
      *    the flags defined in the enumeration type Symmetry.
      *  \param[in] testTransformationsFunctor
-     *    A functor object to be used to evaluate the collection of test basis
+     *    A functor object to be used to evaluate the collection of test
      *    function transformations at a single point. The
      *    TestTransformationsFunctor class must provide the interface defined in
-     *    the documentation of DefaultCollectionOfBasisTransformations.
+     *    the documentation of DefaultCollectionOfShapesetTransformations.
      *  \param[in] trialTransformationsFunctor
-     *    A functor object to be used to evaluate the collection of trial basis
+     *    A functor object to be used to evaluate the collection of trial
      *    function transformations at a single point. The
      *    TrialTransformationsFunctor class must provide the interface defined
-     *    in the documentation of DefaultCollectionOfBasisTransformations.
+     *    in the documentation of DefaultCollectionOfShapesetTransformations.
      *  \param[in] integrandFunctor
      *    A functor object to be used to evaluate the integrand of the weak form
      *    at a single point. The IntegrandFunctor class must provide
@@ -123,17 +126,17 @@ public:
             const TrialTransformationsFunctor& trialTransformationsFunctor,
             const IntegrandFunctor& integrandFunctor);
 
-    virtual const CollectionOfBasisTransformations& testTransformations() const
+    virtual const CollectionOfShapesetTransformations& testTransformations() const
     { return *m_testTransformations; }
-    virtual const CollectionOfBasisTransformations& trialTransformations() const
+    virtual const CollectionOfShapesetTransformations& trialTransformations() const
     { return *m_trialTransformations; }
     virtual const TestTrialIntegral& integral() const
     { return *m_integral; }
 
 private:
     /** \cond PRIVATE */
-    shared_ptr<CollectionOfBasisTransformations> m_testTransformations;
-    shared_ptr<CollectionOfBasisTransformations> m_trialTransformations;
+    shared_ptr<CollectionOfShapesetTransformations> m_testTransformations;
+    shared_ptr<CollectionOfShapesetTransformations> m_trialTransformations;
     shared_ptr<TestTrialIntegral> m_integral;
     /** \endcond */
 };

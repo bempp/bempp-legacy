@@ -60,7 +60,7 @@ BlockedBoundaryOperator<BasisFunctionType, ResultType>::BlockedBoundaryOperator(
                 }
                 else
                     // Verify that this block's domain matches this->m_domains[col]
-                    if (domain != m_domains[col])
+                    if (!domain->spaceIsCompatible(*m_domains[col]))
                         throw std::invalid_argument(
                                 "BlockedOperatorStructure::BlockedOperatorStructure(): "
                                 "domains of operators (" +
@@ -91,7 +91,7 @@ BlockedBoundaryOperator<BasisFunctionType, ResultType>::BlockedBoundaryOperator(
                 else
                     // Verify that this block's range and dualToRange match
                     // this->m_ranges[row] and this->m_dualsToRanges[row]
-                    if (block.range() != m_ranges[row])
+                    if (!block.range()->spaceIsCompatible(*m_ranges[row]))
                         throw std::invalid_argument(
                                 "BlockedOperatorStructure::BlockedOperatorStructure(): "
                                 "ranges of operators (" +
@@ -99,7 +99,7 @@ BlockedBoundaryOperator<BasisFunctionType, ResultType>::BlockedBoundaryOperator(
                                 toString(firstNonemptyCol) + ") and (" +
                                 toString(row) + ", " +
                                 toString(col) + ") differ");
-                if (block.dualToRange() != m_dualsToRanges[row])
+                if (!block.dualToRange()->spaceIsCompatible(*m_dualsToRanges[row]))
                     throw std::invalid_argument(
                             "BlockedOperatorStructure::BlockedOperatorStructure(): "
                             "duals to ranges of operators (" +
@@ -269,7 +269,7 @@ void BlockedBoundaryOperator<BasisFunctionType, ResultType>::apply(
     arma::Col<ResultType> yVals(ySize);
     for (size_t row = 0, start = 0; row < rowCount; ++row) {
         arma::Col<ResultType> chunk =
-                y_inout[row].projections(*m_dualsToRanges[row]);
+                y_inout[row].projections(m_dualsToRanges[row]);
         size_t chunkSize = chunk.n_rows;
         yVals.rows(start, start + chunkSize - 1) = chunk;
         start += chunkSize;
@@ -281,7 +281,7 @@ void BlockedBoundaryOperator<BasisFunctionType, ResultType>::apply(
     // Assign the result to the grid functions from y_inout
     for (size_t row = 0, start = 0; row < rowCount; ++row) {
         size_t chunkSize = m_dualsToRanges[row]->globalDofCount();
-        y_inout[row].setProjections(*m_dualsToRanges[row],
+        y_inout[row].setProjections(m_dualsToRanges[row],
                                     yVals.rows(start, start + chunkSize - 1));
         start += chunkSize;
     }
@@ -314,6 +314,39 @@ BlockedBoundaryOperator<BasisFunctionType, ResultType>::constructWeakForm() cons
                 blocks, rowCounts, columnCounts);
 }
 
+template <typename BasisFunctionType, typename ResultType>
+std::vector<GridFunction<BasisFunctionType, ResultType> > operator*(
+        const BlockedBoundaryOperator<BasisFunctionType, ResultType>& op,
+        const std::vector<GridFunction<BasisFunctionType, ResultType> >& funs)
+{
+    if (funs.size() != op.columnCount())
+        throw std::invalid_argument(
+            "operator*(BlockedBoundaryOperator, GridFunction): "
+            "'funs' has incorrect length");
+    for (size_t i = 0; i < funs.size(); ++i)
+        if (!funs[i].isInitialized())
+            throw std::invalid_argument(
+                "operator*(BlockedBoundaryOperator, GridFunction): "
+                "at least one function in 'funs' is uninitialized");
+
+    typedef GridFunction<BasisFunctionType, ResultType> GF;
+
+    std::vector<GF> result(op.rowCount());
+    for (size_t i = 0; i < op.rowCount(); ++i) {
+        shared_ptr<const Space<BasisFunctionType> > space = op.range(i);
+        arma::Col<ResultType> coefficients(space->globalDofCount());
+        coefficients.fill(0.);
+        result[i] = GF(funs[0].context(), space, coefficients);
+    }
+    op.apply(NO_TRANSPOSE, funs, result, 1., 0.);
+    return result;
+}
+
+#define INSTANTIATE_NONMEMBER_FUNCTIONS(BASIS, RESULT) \
+    template std::vector<GridFunction<BASIS, RESULT> > operator*( \
+        const BlockedBoundaryOperator<BASIS, RESULT>&, \
+        const std::vector<GridFunction<BASIS, RESULT> >&)
+FIBER_ITERATE_OVER_BASIS_AND_RESULT_TYPES(INSTANTIATE_NONMEMBER_FUNCTIONS);
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(BlockedBoundaryOperator);
 
 } // namespace Bempp

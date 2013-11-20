@@ -56,14 +56,14 @@ template <typename BasisFunctionType, typename ResultType>
 const typename Maxwell3dIdentityOperator<BasisFunctionType, ResultType>::CollectionOfBasisTransformations&
 Maxwell3dIdentityOperator<BasisFunctionType, ResultType>::testTransformations() const
 {
-    return this->dualToRange()->shapeFunctionValue();
+    return this->dualToRange()->basisFunctionValue();
 }
 
 template <typename BasisFunctionType, typename ResultType>
 const typename Maxwell3dIdentityOperator<BasisFunctionType, ResultType>::CollectionOfBasisTransformations&
 Maxwell3dIdentityOperator<BasisFunctionType, ResultType>::trialTransformations() const
 {
-    return this->domain()->shapeFunctionValue();
+    return this->domain()->basisFunctionValue();
 }
 
 template <typename BasisFunctionType, typename ResultType>

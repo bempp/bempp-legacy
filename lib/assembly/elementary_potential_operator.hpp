@@ -30,6 +30,7 @@ namespace Fiber
 
 /** \cond FORWARD_DECL */
 template <typename CoordinateType> class CollectionOfBasisTransformations;
+template <typename CoordinateType> class CollectionOfShapesetTransformations;
 template <typename KernelType> class CollectionOfKernels;
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 class KernelTrialIntegral;
@@ -108,9 +109,14 @@ public:
     /** \brief Type of the appropriate instantiation of
      *  Fiber::LocalAssemblerForPotentialOperators. */
     typedef Fiber::LocalAssemblerForPotentialOperators<ResultType> LocalAssembler;
-    /** \brief Type of the appropriate instantiation of
-     *  Fiber::CollectionOfBasisTransformations. */
-    typedef Fiber::CollectionOfBasisTransformations<CoordinateType>
+    /** \brief Type of the appropriate instantiation of Fiber::CollectionOfShapesetTransformations. */
+    typedef Fiber::CollectionOfShapesetTransformations<CoordinateType>
+    CollectionOfShapesetTransformations;
+    /** \brief Type of the appropriate instantiation of Fiber::CollectionOfBasisTransformations.
+     *
+     *  \deprecated This type is deprecated; use CollectionOfShapesetTransformations
+     *  instead. */
+    typedef Fiber::CollectionOfShapesetTransformations<CoordinateType>
     CollectionOfBasisTransformations;
     /** \brief Type of the appropriate instantiation of
      *  Fiber::CollectionOfKernels. */

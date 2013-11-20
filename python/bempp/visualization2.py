@@ -73,7 +73,7 @@ class _VectorVisualization(HasTraits):
         else:
             self.tvtkStructuredGridDataSrcs = []
 
-                # Retrieve and store the overall range of the real and imaginary parts and squared norm
+        # Retrieve and store the overall range of the real and imaginary parts and squared norm
         def extendRange(range, data_source, vector=False):
             if data_source is None:
                 return
@@ -88,11 +88,15 @@ class _VectorVisualization(HasTraits):
         if dataRange is not None:
             if len(dataRange) != 2:
                 raise ValueError, "dataRange must be a two-element iterable"
+            dataRange = np.asarray(dataRange)
             if dataRange[0] > dataRange[1]:
                 raise ValueError, "lower bound of data range must not be larger than its upper bound"
             self.realDataRange = dataRange
             self.imagDataRange = dataRange
-            self.abs2DataRange = dataRange
+            if np.all(dataRange >= 0) or np.all(dataRange <= 0):
+                self.abs2DataRange = (dataRange**2).min(), (dataRange**2).max()
+            else:
+                self.abs2DataRange = 0, (dataRange**2).max()
         else:
             self.realDataRange = [1e100, -1e100]
             self.imagDataRange = [1e100, -1e100]
@@ -337,11 +341,15 @@ class _ScalarVisualization(HasTraits):
         if dataRange is not None:
             if len(dataRange) != 2:
                 raise ValueError, "dataRange must be a two-element iterable"
+            dataRange = np.asarray(dataRange)
             if dataRange[0] > dataRange[1]:
                 raise ValueError, "lower bound of data range must not be larger than its upper bound"
             self.realDataRange = dataRange
             self.imagDataRange = dataRange
-            self.abs2DataRange = dataRange
+            if np.all(dataRange >= 0) or np.all(dataRange <= 0):
+                self.abs2DataRange = (dataRange**2).min(), (dataRange**2).max()
+            else:
+                self.abs2DataRange = 0, (dataRange**2).max()
         else:
             self.realDataRange = [1e100, -1e100]
             self.imagDataRange = [1e100, -1e100]
@@ -798,3 +806,6 @@ def plotThreePlanes(points, vals):
                             plane_orientation='z_axes')
     mlab.outline()
 
+def show():
+    """Display the graphical objects created so far"""
+    mlab.show()

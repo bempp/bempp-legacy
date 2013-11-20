@@ -21,7 +21,7 @@
 #include "scalar_space.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 #include "../fiber/scalar_function_value_functor.hpp"
-#include "../fiber/default_collection_of_basis_transformations.hpp"
+#include "../fiber/default_collection_of_shapeset_transformations.hpp"
 
 namespace Bempp
 {
@@ -36,7 +36,7 @@ struct ScalarSpace<BasisFunctionType>::Impl
     Impl() : transformations(TransformationFunctor())
     {}
 
-    Fiber::DefaultCollectionOfBasisTransformations<TransformationFunctor>
+    Fiber::DefaultCollectionOfShapesetTransformations<TransformationFunctor>
     transformations;
 };
 /** \endcond */
@@ -68,13 +68,21 @@ operator=(const ScalarSpace& rhs)
         Base::operator=(rhs);
         m_impl.reset(new Impl(*rhs.m_impl));
     }
+    return *this;
 }
 
 template <typename BasisFunctionType>
-const typename ScalarSpace<BasisFunctionType>::CollectionOfBasisTransformations&
-ScalarSpace<BasisFunctionType>::shapeFunctionValue() const
+const typename ScalarSpace<BasisFunctionType>::CollectionOfShapesetTransformations&
+ScalarSpace<BasisFunctionType>::basisFunctionValue() const
 {
     return m_impl->transformations;
+}
+
+template <typename BasisFunctionType>
+void ScalarSpace<BasisFunctionType>::getGlobalDofInterpolationDirections(
+        arma::Mat<CoordinateType>& directions) const {
+    directions.set_size(1 /* scalar space */, this->globalDofCount());
+    directions.fill(1);
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(ScalarSpace);

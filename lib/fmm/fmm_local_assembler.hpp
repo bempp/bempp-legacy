@@ -83,14 +83,14 @@ private:
 
 
 	typedef Fiber::RawGridGeometry<CoordinateType> RawGridGeometry;
-	typedef std::vector<const Fiber::Basis<BasisFunctionType>*> BasisPtrVector;
+	typedef std::vector<const Fiber::Shapeset<BasisFunctionType>*> ShapesetPtrVector;
 
 	shared_ptr<Fiber::RawGridGeometry<CoordinateType> > m_rawGeometry;
 	shared_ptr<GeometryFactory> m_geometryFactory;
 //	shared_ptr<Fiber::Function<ResultType> > m_function;
 	Fiber::Function<ResultType> *m_function;
 	shared_ptr<Fiber::OpenClHandler> m_openClHandler;
-	shared_ptr<BasisPtrVector> m_bases;
+	shared_ptr<ShapesetPtrVector> m_shapesets;
 	shared_ptr<const Fiber::CollectionOfBasisTransformations<CoordinateType> > 
 		m_transformations;
 

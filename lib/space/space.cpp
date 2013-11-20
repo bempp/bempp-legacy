@@ -22,9 +22,11 @@
 #include "bempp/common/config_trilinos.hpp"
 
 #include "../assembly/discrete_sparse_boundary_operator.hpp"
+#include "../assembly/discrete_boundary_operator.hpp"
 
 #include "../common/boost_make_shared_fwd.hpp"
 
+#include "../fiber/basis.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
 #include "../grid/entity.hpp"
@@ -32,6 +34,7 @@
 #include "../grid/grid.hpp"
 #include "../grid/grid_view.hpp"
 #include "../grid/mapper.hpp"
+#include "../grid/geometry_factory.hpp"
 
 #ifdef WITH_TRILINOS
 #include <Epetra_CrsMatrix.h>
@@ -54,17 +57,17 @@ void constructGlobalToFlatLocalDofsMappingVectors(
 {
     const int ldofCount = space.flatLocalDofCount();
 
-    std::auto_ptr<GridView> view = space.grid()->leafView();
-    const IndexSet& indexSet = view->indexSet();
-    const size_t elementCount = view->entityCount(0);
+    const GridView& view = space.gridView();
+    const IndexSet& indexSet = view.indexSet();
+    const size_t elementCount = view.entityCount(0);
 
-    std::vector<std::vector<GlobalDofIndex> > gdofs;
-    gdofs.resize(elementCount);
-    std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
+    std::vector<std::vector<GlobalDofIndex> > gdofs(elementCount);
+    std::vector<std::vector<BasisFunctionType> > ldofWeights(elementCount);
+    std::auto_ptr<EntityIterator<0> > it = view.entityIterator<0>();
     while (!it->finished()) {
         const Entity<0>& e = it->entity();
         int index = indexSet.entityIndex(e);
-        space.getGlobalDofs(e, gdofs[index]);
+        space.getGlobalDofs(e, gdofs[index], ldofWeights[index]);
         it->next();
     }
 
@@ -76,13 +79,19 @@ void constructGlobalToFlatLocalDofsMappingVectors(
     size_t flatLdofIndex = 0;
     for (size_t e = 0; e < gdofs.size(); ++e) {
         for (size_t v = 0; v < gdofs[e].size(); ++v) {
-            rows.push_back(flatLdofIndex);
-            cols.push_back(gdofs[e][v]);
-            ++flatLdofIndex;
+            int gdofIndex = gdofs[e][v];
+            if (gdofIndex >= 0) {
+                rows.push_back(flatLdofIndex);
+                cols.push_back(gdofIndex);
+                ++flatLdofIndex;
+            }
         }
     }
-    assert(rows.size() == ldofCount);
-    assert(cols.size() == ldofCount);
+    if (rows.size() != ldofCount || cols.size() != ldofCount)
+        throw std::runtime_error(
+                "constructGlobalToFlatLocalDofsMappingVectors(): "
+                "internal error: the number of local DOFs is different from "
+                "expected. Report this problem to BEM++ developers");
 
     std::vector<double> tmp(ldofCount, 1.);
     values.swap(tmp);
@@ -126,13 +135,32 @@ constructGlobalToFlatLocalDofsMappingEpetraMatrix(
 
 template <typename BasisFunctionType>
 Space<BasisFunctionType>::Space(const shared_ptr<const Grid>& grid) :
-    m_grid(grid)
+    m_grid(grid),
+    m_view(grid->leafView()),
+    m_elementGeometryFactory(grid->elementGeometryFactory().release())
+{
+    if (!grid)
+        throw std::invalid_argument("Space::Space(): grid must not be a null "
+                                    "pointer");
+}
+
+template <typename BasisFunctionType>
+Space<BasisFunctionType>::Space(const Space<BasisFunctionType> &other) :
+    m_grid(other.m_grid),
+    m_view(other.m_grid->levelView(other.m_level)),
+    m_elementGeometryFactory(other.m_elementGeometryFactory)
+{
+}
+template <typename BasisFunctionType>
+Space<BasisFunctionType>::~Space()
 {
 }
 
 template <typename BasisFunctionType>
-Space<BasisFunctionType>::~Space()
-{
+Space<BasisFunctionType>& Space<BasisFunctionType>::operator=(const Space<BasisFunctionType>& other){
+    m_grid = other.m_grid;
+    m_view = m_grid->levelView(m_level);
+    m_elementGeometryFactory = other.m_elementGeometryFactory;
 }
 
 template <typename BasisFunctionType>
@@ -144,6 +172,43 @@ template <typename BasisFunctionType>
 bool Space<BasisFunctionType>::dofsAssigned() const
 {
     return true;
+}
+
+
+template <typename BasisFunctionType>
+int Space<BasisFunctionType>::gridDimension() const{
+    return m_grid->dim();
+}
+
+
+template <typename BasisFunctionType>
+int Space<BasisFunctionType>::worldDimension() const{
+    return m_grid->dimWorld();
+}
+
+template <typename BasisFunctionType>
+const GridView& Space<BasisFunctionType>::gridView() const {
+    return *m_view;
+}
+
+
+template <typename BasisFunctionType>
+bool Space<BasisFunctionType>::gridIsIdentical(const Space<BasisFunctionType>& other) const {
+    if (this->isBarycentric()!=other.isBarycentric()){
+        return false;
+    }
+    else{
+        return m_grid==other.m_grid;
+    }
+
+}
+
+template <typename BasisFunctionType>
+shared_ptr<const Space<BasisFunctionType> > Space<BasisFunctionType>::barycentricSpace(
+            const shared_ptr<const Space<BasisFunctionType> >& self) const
+{
+    throw std::runtime_error("Space::barycentricSpace():"
+                       "This method is not implemented for this Space type.");
 }
 
 template <typename BasisFunctionType>
@@ -192,21 +257,56 @@ void Space<BasisFunctionType>::global2localDofs(
 }
 
 template <typename BasisFunctionType>
-void getAllBases(const Space<BasisFunctionType>& space,
-        std::vector<const Fiber::Basis<BasisFunctionType>*>& bases)
+void getAllShapesets(const Space<BasisFunctionType>& space,
+        std::vector<const Fiber::Shapeset<BasisFunctionType>*>& shapesets)
 {
     std::auto_ptr<GridView> view = space.grid()->leafView();
     const Mapper& mapper = view->elementMapper();
     const int elementCount = view->entityCount(0);
 
-    bases.resize(elementCount);
+    shapesets.resize(elementCount);
 
     std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
     while (!it->finished()) {
         const Entity<0>& e = it->entity();
-        bases[mapper.entityIndex(e)] = &space.basis(e);
+        shapesets[mapper.entityIndex(e)] = &space.shapeset(e);
         it->next();
     }
+}
+
+template <typename BasisFunctionType>
+void getAllBases(const Space<BasisFunctionType>& space,
+        std::vector<const Fiber::Basis<BasisFunctionType>*>& bases)
+{
+    std::vector<const Fiber::Shapeset<BasisFunctionType>*> shapesets;
+    getAllShapesets(space, shapesets);
+    bases.resize(shapesets.size());
+    for (size_t i = 0; i < bases.size(); ++i) {
+        bases[i] = dynamic_cast<const Fiber::Basis<BasisFunctionType>*>(
+                    shapesets[i]);
+        if (!bases[i])
+            throw std::runtime_error(
+                "getAllBases(): not all Shapeset objects "
+                "could be cast to Basis objects");
+    }
+}
+
+template <typename BasisFunctionType>
+int maximumShapesetOrder(const Space<BasisFunctionType>& space)
+{
+    const GridView& view = space.gridView();
+    const Mapper& mapper = view.elementMapper();
+    const int elementCount = view.entityCount(0);
+
+    int maxOrder = 0;
+    std::auto_ptr<EntityIterator<0> > it = view.entityIterator<0>();
+
+    while (!it->finished()) {
+        const Entity<0>& e = it->entity();
+        maxOrder = std::max(maxOrder, space.shapeset(e).order());
+        it->next();
+    }
+    return maxOrder;
 }
 
 #ifdef WITH_TRILINOS
@@ -251,10 +351,15 @@ void Space<BasisFunctionType>::dumpClusterIdsEx(
 
 BEMPP_GCC_DIAG_ON(deprecated-declarations);
 
-#define INSTANTIATE_getAllBases(BASIS) \
+#define INSTANTIATE_FUNCTIONS_DEPENDENT_ON_BASIS(BASIS) \
     template \
     void getAllBases(const Space<BASIS>& space, \
-                std::vector<const Fiber::Basis<BASIS>*>& bases)
+                     std::vector<const Fiber::Basis<BASIS>*>& bases); \
+    template \
+    void getAllShapesets(const Space<BASIS>& space, \
+                         std::vector<const Fiber::Shapeset<BASIS>*>& bases); \
+    template \
+    int maximumShapesetOrder(const Space<BASIS>& space)
 
 #define INSTANTIATE_constructOperators(BASIS, RESULT) \
     template \
@@ -266,7 +371,7 @@ BEMPP_GCC_DIAG_ON(deprecated-declarations);
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(Space);
 
-FIBER_ITERATE_OVER_BASIS_TYPES(INSTANTIATE_getAllBases);
+FIBER_ITERATE_OVER_BASIS_TYPES(INSTANTIATE_FUNCTIONS_DEPENDENT_ON_BASIS);
 FIBER_ITERATE_OVER_BASIS_AND_RESULT_TYPES(INSTANTIATE_constructOperators);
 
 } // namespace Bempp

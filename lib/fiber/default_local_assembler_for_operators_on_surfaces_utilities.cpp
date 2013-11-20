@@ -1,6 +1,6 @@
 #include "default_local_assembler_for_operators_on_surfaces_utilities.hpp"
 
-#include "basis.hpp"
+#include "shapeset.hpp"
 #include "explicit_instantiation.hpp"
 #include "raw_grid_geometry.hpp"
 
@@ -10,34 +10,34 @@ namespace Fiber
 template <typename BasisFunctionType>
 void
 DefaultLocalAssemblerForOperatorsOnSurfacesUtilities<BasisFunctionType>::
-checkConsistencyOfGeometryAndBases(
+checkConsistencyOfGeometryAndShapesets(
         const RawGridGeometry<CoordinateType>& rawGeometry,
-        const std::vector<const Basis<BasisFunctionType>*>& bases)
+        const std::vector<const Shapeset<BasisFunctionType>*>& shapesets)
 {
     if (rawGeometry.vertices().n_rows != 3)
         throw std::invalid_argument(
-            "DefaultLocalAssemblerForIntegralOperatorsOnSurfaces::"
-            "checkConsistencyOfGeometryAndBases(): "
+            "DefaultLocalAssemblerForOperatorsOnSurfacesUtilities::"
+            "checkConsistencyOfGeometryAndShapesets(): "
             "vertex coordinates must be three-dimensional");
     const size_t elementCount = rawGeometry.elementCornerIndices().n_cols;
     if (rawGeometry.elementCornerIndices().n_rows < 3 ||
             4 < rawGeometry.elementCornerIndices().n_rows)
         throw std::invalid_argument(
-            "DefaultLocalAssemblerForIntegralOperatorsOnSurfaces::"
-            "checkConsistencyOfGeometryAndBases(): "
+            "DefaultLocalAssemblerForOperatorsOnSurfacesUtilities::"
+            "checkConsistencyOfGeometryAndShapesets(): "
             "Elements must have either 3 or 4 corners");
     if (!rawGeometry.auxData().is_empty() &&
             rawGeometry.auxData().n_cols != elementCount)
         throw std::invalid_argument(
-            "DefaultLocalAssemblerForIntegralOperatorsOnSurfaces::"
-            "checkConsistencyOfGeometryAndBases(): "
+            "DefaultLocalAssemblerForOperatorsOnSurfacesUtilities::"
+            "checkConsistencyOfGeometryAndShapesets(): "
             "number of columns of auxData must match that of "
             "elementCornerIndices");
-    if (bases.size() != elementCount)
+    if (shapesets.size() != elementCount)
         throw std::invalid_argument(
-            "DefaultLocalAssemblerForIntegralOperatorsOnSurfaces::"
-            "checkConsistencyOfGeometryAndBases(): "
-            "size of bases must match the number of columns of "
+            "DefaultLocalAssemblerForOperatorsOnSurfacesUtilities::"
+            "checkConsistencyOfGeometryAndShapesets(): "
+            "size of shapesets must match the number of columns of "
             "elementCornerIndices");
 }
 

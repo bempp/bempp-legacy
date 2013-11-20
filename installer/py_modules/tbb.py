@@ -20,14 +20,14 @@
 
 import os,urllib,shutil,subprocess,sys
 from py_modules import tools
-
+from py_modules import python_patch as py_patch
 import struct
 
-tbb_fname_mac='tbb40_297oss_mac.tgz'
-tbb_fname_linux='tbb40_297oss_lin.tgz'
-tbb_url_mac='http://threadingbuildingblocks.org/sites/default/files/software_releases/mac/tbb40_20120613oss_mac.tgz'
-tbb_url_linux='http://threadingbuildingblocks.org/sites/default/files/software_releases/linux/tbb40_20120613oss_lin_0.tgz'
-tbb_extract_dir='tbb40_20120613oss'
+tbb_fname_mac='tbb42_20131003oss_osx.tgz'
+tbb_fname_linux='tbb42_20131003oss_lin.tgz'
+tbb_url_mac='http://threadingbuildingblocks.org/sites/default/files/software_releases/mac/tbb42_20131003oss_osx.tgz'
+tbb_url_linux='http://threadingbuildingblocks.org/sites/default/files/software_releases/linux/tbb42_20131003oss_lin.tgz'
+tbb_extract_dir='tbb42_20131003oss'
 tbb_dir='tbb'
 tbb_fname_short='tbb.tgz'
 
@@ -62,20 +62,33 @@ def prepare(root,config):
         download(root,config,force=True)
         tools.extract_file(dep_download_dir+"/"+tbb_fname_short,dep_build_dir)
     os.rename(dep_build_dir+"/"+tbb_extract_dir,dep_build_dir+"/tbb")
+    print "Patching Tbb"
+    cwd=os.getcwd()
+
+    os.chdir(dep_build_dir+"/tbb")
+    patch=py_patch.fromfile(root+"/installer/patches/tbb_pipeline.patch")
+    patch.apply()
+    os.chdir(cwd)
+
     subprocess.check_call("cp -R "+dep_build_dir+"/tbb/include/* "+
                           prefix+"/bempp/include/",shell=True)
+
 
     if sys.platform.startswith('darwin'):
         libdir_orig = dep_build_dir+"/tbb/lib"
         tbb_lib_name="libtbb.dylib"
         tbb_lib_name_debug="libtbb_debug.dylib"
+        tbb_libmalloc_name="libtbbmalloc.dylib"
+        tbb_libmalloc_name_debug="libtbbmalloc_debug.dylib"
     elif sys.platform.startswith('linux'):
         tbb_lib_name = "libtbb.so"
         tbb_lib_name_debug = "libtbb_debug.so"
+        tbb_libmalloc_name = "libtbbmalloc.so"
+        tbb_libmalloc_name_debug = "libtbbmalloc_debug.so"
         arch = config.get('Main','architecture')
         if arch in ('intel64','ia32','ia64'):
             libdir_orig = (dep_build_dir+"/tbb/lib/"+arch+
-                           "/cc4.1.0_libc2.4_kernel2.6.16.21")
+                           "/gcc4.4")
         else:
             raise Exception("Unrecognized architecture: '"+arch+"'")
     else:
@@ -85,6 +98,8 @@ def prepare(root,config):
 
     tools.setDefaultConfigOption(config,"Tbb",'lib',prefix+"/bempp/lib/"+tbb_lib_name,overwrite=True)
     tools.setDefaultConfigOption(config,"Tbb","lib_debug",prefix+"/bempp/lib/"+tbb_lib_name_debug,overwrite=True)
+    tools.setDefaultConfigOption(config,"Tbb",'libmalloc',prefix+"/bempp/lib/"+tbb_libmalloc_name,overwrite=True)
+    tools.setDefaultConfigOption(config,"Tbb","libmalloc_debug",prefix+"/bempp/lib/"+tbb_libmalloc_name_debug,overwrite=True)
     tools.setDefaultConfigOption(config,"Tbb",'include_dir',prefix+"/bempp/include",overwrite=True)
 
 def configure(root,config):

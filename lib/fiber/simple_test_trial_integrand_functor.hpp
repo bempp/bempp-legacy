@@ -36,8 +36,8 @@ namespace Fiber
  *  \brief Functor evaluating the integrand of the standard identity operator.
  *
  *  This functor evaluates the integrand having the form of the scalar product
- *  of a single test basis function transformation and a single trial basis
- *  function transformation.
+ *  of a single test function transformation and a single trial function
+ *  transformation.
  */
 template <typename BasisFunctionType_, typename ResultType_>
 class SimpleTestTrialIntegrandFunctor

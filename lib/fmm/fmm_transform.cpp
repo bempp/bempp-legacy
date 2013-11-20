@@ -332,7 +332,8 @@ FmmHighFreq<ValueType>::M2L(
      			"boost special functions only support purely real or imaginary args");
 		}
 #endif
-		scaledhl = -m_kappa/(16*pi*pi)*pow(i,l)*CoordinateType(2*l+1)*hl;
+		scaledhl = -(m_kappa/CoordinateType(16*M_PI*M_PI))
+			*ValueType(pow(i,l))*CoordinateType(2*l+1)*hl;
 		} else { // l > L
 			CLLdash = pow(cos((l-L)*pi/(2*(Ldash-L))), 2);
 		}

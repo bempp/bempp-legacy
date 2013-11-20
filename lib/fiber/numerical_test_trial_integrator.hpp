@@ -30,7 +30,7 @@ namespace Fiber
 
 /** \cond FORWARD_DECL */
 class OpenClHandler;
-template <typename CoordinateType> class CollectionOfBasisTransformations;
+template <typename CoordinateType> class CollectionOfShapesetTransformations;
 template <typename CoordinateType> class RawGridGeometry;
 template <typename BasisFunctionType, typename ResultType> class TestTrialIntegral;
 /** \endcond */
@@ -49,15 +49,15 @@ public:
             const std::vector<CoordinateType> quadWeights,
             const GeometryFactory& geometryFactory,
             const RawGridGeometry<CoordinateType>& rawGeometry,
-            const CollectionOfBasisTransformations<CoordinateType>& testTransformations,
-            const CollectionOfBasisTransformations<CoordinateType>& trialTransformations,
+            const CollectionOfShapesetTransformations<CoordinateType>& testTransformations,
+            const CollectionOfShapesetTransformations<CoordinateType>& trialTransformations,
             const TestTrialIntegral<BasisFunctionType, ResultType>& integral,
             const OpenClHandler& openClHandler);
 
     virtual void integrate(
             const std::vector<int>& elementIndices,
-            const Basis<BasisFunctionType>& testBasis,
-            const Basis<BasisFunctionType>& trialBasis,
+            const Shapeset<BasisFunctionType>& testShapeset,
+            const Shapeset<BasisFunctionType>& trialShapeset,
             arma::Cube<ResultType>& result) const;
 
 private:
@@ -66,8 +66,8 @@ private:
 
     const GeometryFactory& m_geometryFactory;
     const RawGridGeometry<CoordinateType>& m_rawGeometry;
-    const CollectionOfBasisTransformations<CoordinateType>& m_testTransformations;
-    const CollectionOfBasisTransformations<CoordinateType>& m_trialTransformations;
+    const CollectionOfShapesetTransformations<CoordinateType>& m_testTransformations;
+    const CollectionOfShapesetTransformations<CoordinateType>& m_trialTransformations;
     const TestTrialIntegral<BasisFunctionType, ResultType>& m_integral;
 
     const OpenClHandler& m_openClHandler;

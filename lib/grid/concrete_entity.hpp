@@ -45,7 +45,8 @@ inline typename boost::enable_if_c<(codimSub <= DuneEntity::dimension), std::aut
 ConcreteEntity<0, DuneEntity>::subEntityCodimNIterator() const
 {
     typedef ConcreteSubentityIterator<DuneEntity, codimSub> ConcIterator;
-    return std::auto_ptr<EntityIterator<codimSub> >(new ConcIterator(m_dune_entity));
+    return std::auto_ptr<EntityIterator<codimSub> >(
+                new ConcIterator(m_dune_entity, m_domain_index));
 }
 
 template<typename DuneEntity>
@@ -53,7 +54,8 @@ std::auto_ptr<EntityPointer<0> > ConcreteEntity<0, DuneEntity>::father() const
 {
     typedef ConcreteEntityPointer<typename DuneEntity::EntityPointer> ConcPointer;
     if (m_dune_entity->hasFather())
-      return std::auto_ptr<EntityPointer<0> >(new ConcPointer(m_dune_entity->father()));
+      return std::auto_ptr<EntityPointer<0> >(
+                  new ConcPointer(m_dune_entity->father(), m_domain_index));
     else
       return std::auto_ptr<EntityPointer<0> >(0);
 }
@@ -67,7 +69,8 @@ std::auto_ptr<EntityIterator<0> > ConcreteEntity<0, DuneEntity>::sonIterator(
     typedef ConcreteRangeEntityIterator<DuneIterator, DuneEntityPointer> ConcIterator;
     return std::auto_ptr<EntityIterator<0> >(
                new ConcIterator(m_dune_entity->hbegin(maxlevel),
-                                m_dune_entity->hend(maxlevel)));
+                                m_dune_entity->hend(maxlevel),
+                                m_domain_index));
 }
 
 } // namespace Bempp

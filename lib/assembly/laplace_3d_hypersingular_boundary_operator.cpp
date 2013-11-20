@@ -20,6 +20,7 @@
 
 #include "laplace_3d_hypersingular_boundary_operator.hpp"
 
+#include "blas_quadrature_helper.hpp"
 #include "context.hpp"
 #include "general_elementary_local_operator_imp.hpp"
 #include "general_hypersingular_integral_operator_imp.hpp"
@@ -40,6 +41,9 @@
 #include "../fiber/default_collection_of_kernels.hpp"
 #include "../fiber/default_collection_of_basis_transformations.hpp"
 #include "../fiber/default_test_kernel_trial_integral.hpp"
+
+#include "general_elementary_singular_integral_operator_imp.hpp"
+#include "../fiber/typical_test_scalar_kernel_trial_integral.hpp"
 
 #include <boost/type_traits/is_complex.hpp>
 
@@ -75,14 +79,24 @@ laplace3dSyntheticHypersingularBoundaryOperator(
             "laplace3dSyntheticHypersingularBoundaryOperator(): "
             "domain, range and dualToRange must not be null");
 
+    shared_ptr<const Space<BasisFunctionType> > newDomain = domain;
+    shared_ptr<const Space<BasisFunctionType> > newDualToRange = dualToRange;
+
+    bool isBarycentric = (domain->isBarycentric() || dualToRange->isBarycentric());
+
+    if (isBarycentric) {
+        newDomain = domain->barycentricSpace(domain);
+        newDualToRange = dualToRange->barycentricSpace(dualToRange);
+    }
+
     shared_ptr<const Context<BasisFunctionType, ResultType> >
         internalContext, auxContext;
     SyntheticOp::getContextsForInternalAndAuxiliaryOperators(
         context, internalContext, auxContext);
     shared_ptr<const Space<BasisFunctionType> > internalTrialSpace =
-        domain->discontinuousSpace(domain);
+        newDomain->discontinuousSpace(newDomain);
     shared_ptr<const Space<BasisFunctionType> > internalTestSpace =
-        dualToRange->discontinuousSpace(dualToRange);
+        newDualToRange->discontinuousSpace(newDualToRange);
 
     // Note: we don't really need to care about ranges and duals to domains of
     // the internal operator. The only range space that matters is that of the
@@ -107,13 +121,13 @@ laplace3dSyntheticHypersingularBoundaryOperator(
     for (size_t i = 0; i < dimWorld; ++i)
         testCurlComponents[i] = BoundaryOperator<BasisFunctionType, ResultType>(
                     auxContext, boost::make_shared<LocalOp>(
-                        internalTestSpace, range, dualToRange,
+                        internalTestSpace, range, newDualToRange,
                         ("(" + label + ")_test_curl_") + xyz[i], NO_SYMMETRY,
                         CurlFunctor(),
                         ValueFunctor(),
                         IntegrandFunctor(i, 0)));
     int syntheseSymmetry = 0; // symmetry of the decomposition
-    if (domain == dualToRange && internalTrialSpace == internalTestSpace)
+    if (newDomain == newDualToRange && internalTrialSpace == internalTestSpace)
         syntheseSymmetry = HERMITIAN |
                 (boost::is_complex<BasisFunctionType>() ? 0 : SYMMETRIC);
     else {
@@ -121,7 +135,7 @@ laplace3dSyntheticHypersingularBoundaryOperator(
         for (size_t i = 0; i < dimWorld; ++i)
             trialCurlComponents[i] = BoundaryOperator<BasisFunctionType, ResultType>(
                         auxContext, boost::make_shared<LocalOp>(
-                            domain, internalTrialSpace /* or whatever */, internalTrialSpace,
+                            newDomain, internalTrialSpace /* or whatever */, internalTrialSpace,
                             ("(" + label + ")_trial_curl_") + xyz[i], NO_SYMMETRY,
                             ValueFunctor(),
                             CurlFunctor(),
@@ -157,15 +171,15 @@ laplace3dHypersingularBoundaryOperator(
     KernelFunctor;
     typedef Fiber::SurfaceCurl3dFunctor<CoordinateType>
     TransformationFunctor;
-    typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctor<
-    BasisFunctionType, KernelType, ResultType> IntegrandFunctor;
+    typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctorExt<
+    BasisFunctionType, KernelType, ResultType, 3> IntegrandFunctor;
 
     typedef Fiber::Laplace3dHypersingularOffDiagonalKernelFunctor<KernelType>
     OffDiagonalKernelFunctor;
     typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
     OffDiagonalTransformationFunctor;
-    typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctor<
-    BasisFunctionType, KernelType, ResultType> OffDiagonalIntegrandFunctor;
+    typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctorExt<
+    BasisFunctionType, KernelType, ResultType, 1> OffDiagonalIntegrandFunctor;
 
     shared_ptr<FmmTransform<ResultType> > fmmTransform;
     if (assemblyOptions.assemblyMode() == AssemblyOptions::FMM) {
@@ -176,16 +190,33 @@ laplace3dHypersingularBoundaryOperator(
 
     typedef GeneralHypersingularIntegralOperator<
             BasisFunctionType, KernelType, ResultType> Op;
+
+    shared_ptr<Fiber::TestKernelTrialIntegral<
+            BasisFunctionType, KernelType, ResultType> >
+            integral, offDiagonalIntegral;
+    if (shouldUseBlasInQuadrature(assemblyOptions, *domain, *dualToRange)) {
+        integral.reset(new Fiber::TypicalTestScalarKernelTrialIntegral<
+                       BasisFunctionType, KernelType, ResultType>());
+        offDiagonalIntegral = integral;
+    }
+    else {
+        integral.reset(new Fiber::DefaultTestKernelTrialIntegral<IntegrandFunctor>(
+                           IntegrandFunctor()));
+        offDiagonalIntegral.reset(new Fiber::DefaultTestKernelTrialIntegral<
+                                  OffDiagonalIntegrandFunctor>(
+                           OffDiagonalIntegrandFunctor()));
+    }
+
     shared_ptr<Op> newOp(new Op(
                              domain, range, dualToRange, label, symmetry,
                              KernelFunctor(),
                              TransformationFunctor(),
                              TransformationFunctor(),
-                             IntegrandFunctor(),
+                             integral,
                              OffDiagonalKernelFunctor(),
                              OffDiagonalTransformationFunctor(),
                              OffDiagonalTransformationFunctor(),
-                             OffDiagonalIntegrandFunctor(), 
+                             offDiagonalIntegral, 
                              fmmTransform));
     return BoundaryOperator<BasisFunctionType, ResultType>(context, newOp);
 }

@@ -32,7 +32,7 @@
 #include "local_assembler_construction_helper.hpp"
 
 #include "../fiber/explicit_instantiation.hpp"
-#include "../fiber/local_assembler_for_operators.hpp"
+#include "../fiber/local_assembler_for_integral_operators.hpp"
 #include "../fiber/quadrature_strategy.hpp"
 
 #include "../common/boost_make_shared_fwd.hpp"
@@ -73,8 +73,8 @@ makeAssemblerImpl(
         const shared_ptr<const GeometryFactory>& trialGeometryFactory,
         const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& testRawGeometry,
         const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& trialRawGeometry,
-        const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& testBases,
-        const shared_ptr<const std::vector<const Fiber::Basis<BasisFunctionType>*> >& trialBases,
+        const shared_ptr<const std::vector<const Fiber::Shapeset<BasisFunctionType>*> >& testShapesets,
+        const shared_ptr<const std::vector<const Fiber::Shapeset<BasisFunctionType>*> >& trialShapesets,
         const shared_ptr<const Fiber::OpenClHandler>& openClHandler,
         const ParallelizationOptions& parallelizationOptions,
         VerbosityLevel::Level verbosityLevel,
@@ -83,7 +83,7 @@ makeAssemblerImpl(
     return quadStrategy.makeAssemblerForIntegralOperators(
                 testGeometryFactory, trialGeometryFactory,
                 testRawGeometry, trialRawGeometry,
-                testBases, trialBases,
+                testShapesets, trialShapesets,
                 make_shared_from_ref(testTransformations()),
                 make_shared_from_ref(kernels()),
                 make_shared_from_ref(trialTransformations()),
@@ -136,7 +136,7 @@ assembleWeakFormInternalImpl2(
                     assembleWeakFormInFmmMode(assembler, context).release());
     default:
         throw std::runtime_error(
-                    "ElementaryIntegralOperator::assembleWeakFormInternalImpl(): "
+                    "ElementaryIntegralOperator::assembleWeakFormInternalImpl2(): "
                     "invalid assembly mode");
     }
 }

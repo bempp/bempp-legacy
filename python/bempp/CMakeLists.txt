@@ -37,12 +37,16 @@ add_custom_command(
     COMMAND ${PYTHON_EXECUTABLE}
             ${CMAKE_CURRENT_SOURCE_DIR}/postprocess_docstrings.py
             ${CMAKE_CURRENT_BINARY_DIR}/core.py)
+configure_file(
+	${CMAKE_SOURCE_DIR}/python/bempp/pyfragments.swg
+        ${CMAKE_BINARY_DIR}/python/bempp/pyfragments.swg)
 
 ### Move __init__.py to the build directory ###################################
 
 if (NOT (${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR}))
     #set(PYTHON_SOURCES "__init__.py")
     file(GLOB_RECURSE PYTHON_SOURCES RELATIVE ${CMAKE_SOURCE_DIR}/python/bempp  ${CMAKE_SOURCE_DIR}/python/bempp/*.py)
+
     foreach (py_file ${PYTHON_SOURCES})
     add_custom_command(
 	OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${py_file}

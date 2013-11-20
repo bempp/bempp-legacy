@@ -113,17 +113,17 @@ IdentityOperator<BasisFunctionType, ResultType>::id() const
 }
 
 template <typename BasisFunctionType, typename ResultType>
-const typename IdentityOperator<BasisFunctionType, ResultType>::CollectionOfBasisTransformations&
+const typename IdentityOperator<BasisFunctionType, ResultType>::CollectionOfShapesetTransformations&
 IdentityOperator<BasisFunctionType, ResultType>::testTransformations() const
 {
-    return this->dualToRange()->shapeFunctionValue();
+    return this->dualToRange()->basisFunctionValue();
 }
 
 template <typename BasisFunctionType, typename ResultType>
-const typename IdentityOperator<BasisFunctionType, ResultType>::CollectionOfBasisTransformations&
+const typename IdentityOperator<BasisFunctionType, ResultType>::CollectionOfShapesetTransformations&
 IdentityOperator<BasisFunctionType, ResultType>::trialTransformations() const
 {
-    return this->domain()->shapeFunctionValue();
+    return this->domain()->basisFunctionValue();
 }
 
 template <typename BasisFunctionType, typename ResultType>

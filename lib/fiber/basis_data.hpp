@@ -39,49 +39,75 @@ enum BasisDataType
 template <typename ValueType> class ConstBasisDataSlice;
 /** \endcond */
 
+/** \brief Storage of values and/or derivatives of shape functions. */
 template <typename ValueType>
 struct BasisData
 {
-    // values(i,k,l) = (f_k)_i(x_l) ->
-    // ith component of kth basis function at lth point
+    /** \brief Values of shape functions.
+     *
+     *  Data format:
+     *  <tt>values(i, k, l) =</tt> \f$(f_k)_i(x_l)\f$, i.e.
+     *  ith component of kth shape function at lth point. */
     _3dArray<ValueType> values;
-    // derivatives(i,j,k,l) = (d_j (f_k)_i)(x_l) ->
-    // derivative in direction j of ith component of kth basis function at lth point
+
+    /** \brief Derivatives of shape functions.
+     *
+     *  Data format:
+     *  <tt>derivatives(i, j, k, l) =</tt> \f$(d_j (f_k)_i)(x_l)\f$, i.e.
+     *  the derivative in direction j of ith component of kth shape function at
+     *  lth point. */
     _4dArray<ValueType> derivatives;
 
+    /** \brief Return number of components of shape functions. */
     int componentCount() const {
         return std::max<int>(values.extent(0), derivatives.extent(0));
     }
 
+    /** \brief Return number of shape functions. */
     int functionCount() const {
         return std::max<int>(values.extent(1), derivatives.extent(2));
     }
 
+    /** \brief Return number of points at which the shape functions have been
+     *  calculated. */
     int pointCount() const {
         return std::max<int>(values.extent(2), derivatives.extent(3));
     }
 
+    /** \brief Return a constant slice of the data, corresponding to a given
+     *  shape function and point. */
     ConstBasisDataSlice<ValueType> const_slice(int function, int point) const {
         return ConstBasisDataSlice<ValueType>(*this, function, point);
     }
+
 };
 
+/** \brief Access to values and/or derivatives of shape functions.
+ *
+ *  This class gives access to a "slice" of data stored in a BasisData object,
+ *  corresponding to a single shape function and point.
+ */
 template <typename ValueType>
 class ConstBasisDataSlice
 {
 public:
+    /** \brief Constructor. */
     ConstBasisDataSlice(const BasisData<ValueType>& basisData,
                         int function, int point) :
         m_basisData(basisData), m_function(function), m_point(point) {}
 
+    /** \brief Return the value of the \p dim'th component of the function. */
     ValueType values(int dim) const {
         return m_basisData.values(dim, m_function, m_point);
     }
 
+    /** \brief Return the value of the \p dim'th component of the derivative of
+     *  the function in a given direction. */
     ValueType derivatives(int dim, int direction) const {
         return m_basisData.derivatives(dim, direction, m_function, m_point);
     }
 
+    /** \brief Return the number of components of the function. */
     int componentCount() const {
         return m_basisData.componentCount();
     }

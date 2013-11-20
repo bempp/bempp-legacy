@@ -44,7 +44,7 @@ using Fiber::VerbosityLevel;
 class AssemblyOptions
 {
 public:
-    enum { AUTO = -1 };
+    enum Value { AUTO = -1, NO = 0, YES = 1 };
 
     AssemblyOptions();
 
@@ -161,18 +161,31 @@ public:
      *  See enableSingularIntegralCaching() for more information. */
     bool isSingularIntegralCachingEnabled() const;
 
-    /** \brief Specify whether mass matrices should be stored in sparse format.
+    /** \brief Specify whether discrete weak forms of local operators should be
+     *  stored in sparse format.
      *
-     *  If <tt>value == true</tt>, assembled mass matrices are stored as sparse
-     *  matrices. Otherwise they are stored as dense matrices.
+     *  If <tt>value == true</tt> (default), discretized local operators are
+     *  stored as sparse matrices, otherwise as dense matrices. */
+    void enableSparseStorageOfLocalOperators(bool value = true);
+
+    /** \brief Return whether discrete weak forms of local operators should be
+     *  stored in sparse format.
      *
-     *  By default, sparse storage of mass matrices is enabled. */
-    void enableSparseStorageOfMassMatrices(bool value = true);
+     *  See enableSparseStorageOfLocalOperators() for more information. */
+    bool isSparseStorageOfLocalOperatorsEnabled() const;
+
+    /** \brief Specify whether discrete weak forms of local operators should be
+     *  stored in sparse format.
+     *
+     *  \deprecated This function is deprecated and will be removed in a future
+     *  version of BEM++. Use enableSparseStorageOfLocalOperators() instead.
+     */
+    void BEMPP_DEPRECATED enableSparseStorageOfMassMatrices(bool value = true);
 
     /** \brief Return whether mass matrices should be stored in sparse format.
      *
      *  See enableSparseStorageOfMassMatrices() for more information. */
-    bool isSparseStorageOfMassMatricesEnabled() const;
+    bool BEMPP_DEPRECATED isSparseStorageOfMassMatricesEnabled() const;
 
     /** \brief Enable or disable joint assembly of integral-operator superpositions.
      *
@@ -185,10 +198,57 @@ public:
     void enableJointAssembly(bool value = true);
 
     /** \brief Return whether joint assembly of integral-operator superpositions
-     *  is enabled
+     *  is enabled.
      *
      * See enableJointAssembly() for more information. */
     bool isJointAssemblyEnabled() const;
+
+    /** \brief Specify whether BLAS matrix multiplication routines should be
+     *  used during evaluation of elementary integrals.
+     *
+     *  If this option is set to AUTO (default), BLAS is used in the evaluation
+     *  of integrals occurring in the weak forms of operators whose test or
+     *  trial space is composed of quadratic or higher-order elements; for the
+     *  remaining operators, BLAS routines are not used. You can force
+     *  BLAS-based integration routines to be used always (or never) by setting
+     *  this option to \c YES (or \c NO).
+     */
+    void enableBlasInQuadrature(Value value = AUTO);
+
+    /** \brief Indicate whether BLAS matrix multiplication routines are used
+     *  during evaluation of elementary integrals.
+     *
+     *  See enableBlasInQuadrature() for more information. */
+    Value isBlasEnabledInQuadrature() const;
+
+    /** \brief Instruct the ACA assembler to use the same quadrature order for
+     *  the evaluation of all regular integrals over pairs of test and trial
+     *  elements belonging to a single block cluster.
+     *
+     *  Use of different quadrature rules to evaluate regular integrals making
+     *  up the entries of a single block of an H-matrix may lead to an increase
+     *  in the block rank, and hence memory consumption, if these quadrature
+     *  rules are not accurate enough (if their error is greater than the ACA
+     *  tolerance \f$\epsilon\f$). However, evaluation of the entries of large
+     *  blocks using a uniform quadrature rule may be unnecessarily
+     *  time-consuming.
+     *
+     *  If this option is set to \c false and one uses a quadrature strategy
+     *  that takes the interlement distance into account when selecting
+     *  quadrature order, the true interelement distance is calculated and used
+     *  for each pair of elements. Otherwise, instead of the distance between
+     *  elements the quadrature-rule selector is passed the distance between
+     *  the clusters to which these elements belong.
+     *
+     *  By default, this option is set to \c true. */
+    void makeQuadratureOrderUniformInEachCluster(bool value = true);
+
+    /** \brief Return whether the same quadrature order is used for all regular
+     *  integrals over pairs of test and trial elements belonging to a single
+     *  block cluster.
+     *
+     *  See makeQuadratureOrderUniformInEachCluster() for more information. */
+    bool isQuadratureOrderUniformInEachCluster() const;
 
     /** @} */
 
@@ -200,8 +260,10 @@ private:
     ParallelizationOptions m_parallelizationOptions;
     VerbosityLevel::Level m_verbosityLevel;
     bool m_singularIntegralCaching;
-    bool m_sparseStorageOfMassMatrices;
+    bool m_sparseStorageOfLocalOperators;
     bool m_jointAssembly;
+    bool m_uniformQuadrature;
+    Value m_blasInQuadrature;
     /** \endcond */
 };
 

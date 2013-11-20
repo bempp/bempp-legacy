@@ -43,30 +43,29 @@ namespace Bempp
  */
 struct LocalAssemblerConstructionHelper
 {
-    template <typename CoordinateType>
+    template <typename CoordinateType, typename BasisFunctionType>
     static void collectGridData(
-            const Grid& grid,
+            const Space<BasisFunctionType>& space,
             shared_ptr<Fiber::RawGridGeometry<CoordinateType> >& rawGeometry,
             shared_ptr<GeometryFactory>& geometryFactory) {
         typedef Fiber::RawGridGeometry<CoordinateType> RawGridGeometry;
 
-        rawGeometry = boost::make_shared<RawGridGeometry>(grid.dim(),
-                                                          grid.dimWorld());
-        std::auto_ptr<GridView> view = grid.leafView();
-        view->getRawElementData(
+        rawGeometry = boost::make_shared<RawGridGeometry>(space.gridDimension(),
+                                                          space.worldDimension());
+        const GridView& view = space.gridView();
+        view.getRawElementData(
                     rawGeometry->vertices(), rawGeometry->elementCornerIndices(),
-                    rawGeometry->auxData());
-        geometryFactory = shared_ptr<GeometryFactory>(
-                grid.elementGeometryFactory().release());
+                    rawGeometry->auxData(), rawGeometry->domainIndices());
+        geometryFactory = space.elementGeometryFactory();
     }
 
     template <typename BasisFunctionType>
-    static void collectBases(
+    static void collectShapesets(
             const Space<BasisFunctionType>& space,
-            shared_ptr<std::vector<const Fiber::Basis<BasisFunctionType>*> >& bases) {
-        typedef std::vector<const Fiber::Basis<BasisFunctionType>*> BasisPtrVector;
-        bases = boost::make_shared<BasisPtrVector>();
-        getAllBases(space, *bases);
+            shared_ptr<std::vector<const Fiber::Shapeset<BasisFunctionType>*> >& shapesets) {
+        typedef std::vector<const Fiber::Shapeset<BasisFunctionType>*> ShapesetPtrVector;
+        shapesets = boost::make_shared<ShapesetPtrVector>();
+        getAllShapesets(space, *shapesets);
     }
 
     // Probably in future will be generalised to arbitrary number of grids

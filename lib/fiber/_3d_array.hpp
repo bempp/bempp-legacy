@@ -22,6 +22,7 @@
 #define fiber_3d_array_hpp
 
 #include "../common/common.hpp"
+#include "boost/operators.hpp"
 
 #include <stdexcept>
 
@@ -44,7 +45,8 @@ template <typename T> class Const1dSliceOf3dArray;
 Bound checking can optionally be activated by defining the symbol
 FIBER_CHECK_ARRAY_BOUNDS. */
 template <typename T>
-class _3dArray
+class _3dArray : boost::additive<_3dArray<T>
+        , boost::multiplicative<_3dArray<T>,T > >
 {
 public:
     _3dArray();
@@ -58,6 +60,10 @@ public:
 
     T& operator()(size_t index0, size_t index1, size_t index2);
     const T& operator()(size_t index0, size_t index1, size_t index2) const;
+
+    _3dArray<T>& operator+=(const _3dArray<T>& other);
+    _3dArray<T>& operator*=(const T& other);
+
 
 //    so far unused, to be implemented later
 //    _2dSliceOf3dArray slice(size_t index2);

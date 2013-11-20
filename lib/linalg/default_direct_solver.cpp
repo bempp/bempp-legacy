@@ -33,7 +33,7 @@ namespace Bempp
 
 /** \cond HIDDEN_INTERNAL */
 
-template <typename BasisFunctionType, typename ResultType> 
+template <typename BasisFunctionType, typename ResultType>
 struct DefaultDirectSolver<BasisFunctionType, ResultType>::Impl
 {
     Impl(const BoundaryOperator<BasisFunctionType, ResultType>& op_) :
@@ -45,7 +45,7 @@ struct DefaultDirectSolver<BasisFunctionType, ResultType>::Impl
         op(op_)
     {
     }
-    
+
     boost::variant<
         BoundaryOperator<BasisFunctionType, ResultType>,
         BlockedBoundaryOperator<BasisFunctionType, ResultType> > op;
@@ -73,7 +73,7 @@ DefaultDirectSolver<BasisFunctionType, ResultType>::~DefaultDirectSolver()
 }
 
 template <typename BasisFunctionType, typename ResultType>
-Solution<BasisFunctionType, ResultType> 
+Solution<BasisFunctionType, ResultType>
 DefaultDirectSolver<BasisFunctionType, ResultType>::solveImplNonblocked(
         const GridFunction<BasisFunctionType, ResultType>& rhs) const
 {
@@ -90,8 +90,8 @@ DefaultDirectSolver<BasisFunctionType, ResultType>::solveImplNonblocked(
 
     arma::Col<ResultType> armaSolution = arma::solve(
                 boundaryOp->weakForm()->asMatrix(),
-                rhs.projections(*boundaryOp->dualToRange()));
-    
+                rhs.projections(boundaryOp->dualToRange()));
+
     return Solution<BasisFunctionType, ResultType>(
         GridFunction<BasisFunctionType, ResultType>(
             boundaryOp->context(), boundaryOp->domain(), armaSolution),
@@ -126,17 +126,17 @@ DefaultDirectSolver<BasisFunctionType, ResultType>::solveImplBlocked(
     arma::Col<ResultType> armaRhs(boundaryOp->totalGlobalDofCountInDualsToRanges());
     for (size_t i = 0, start = 0; i < canonicalRhs.size(); ++i) {
         const arma::Col<ResultType>& chunkProjections =
-                canonicalRhs[i].projections(*boundaryOp->dualToRange(i));
+                canonicalRhs[i].projections(boundaryOp->dualToRange(i));
         size_t chunkSize = chunkProjections.n_rows;
         armaRhs.rows(start, start + chunkSize - 1) = chunkProjections;
         start += chunkSize;
-    }        
+    }
 
     // Solve
     arma::Col<ResultType> armaSolution = arma::solve(
                 boundaryOp->weakForm()->asMatrix(),
                 armaRhs);
-    
+
     // Convert chunks of the solution vector into grid functions
     std::vector<GridFunction<BasisFunctionType, ResultType> > solutionFunctions;
     Solver<BasisFunctionType, ResultType>::constructBlockedGridFunction(

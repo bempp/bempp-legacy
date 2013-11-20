@@ -22,6 +22,7 @@
 #define bempp_ahmed_complex_hpp
 
 #include "../common/common.hpp"
+#include <complex>
 
 /** \file
  *

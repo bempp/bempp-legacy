@@ -24,6 +24,8 @@ CXXFLAGS="$Bempp_cxxflags" CFLAGS="$Bempp_cflags" "$CMake_exe" \
     -D TBB_INCLUDE_DIR:PATH="$Tbb_include_dir" \
     -D TBB_LIBRARY:PATH="$Tbb_lib" \
     -D TBB_LIBRARY_DEBUG:PATH="$Tbb_lib_debug" \
+    -D TBB_MALLOC_LIBRARY:PATH="$Tbb_libmalloc" \
+    -D TBB_MALLOC_LIBRARY_DEBUG:PATH="$Tbb_libmalloc_debug" \
     -D AHMED_INCLUDE_DIR:PATH="$AHMED_include_dir" \
     -D AHMED_LIB:PATH="$AHMED_lib" \
     -D PYTHON_EXECUTABLE:PATH="$Python_exe" \

@@ -24,12 +24,15 @@
 #include "../common/common.hpp"
 
 #include "../grid/grid_view.hpp"
+#include "../grid/grid_segment.hpp"
 #include "scalar_space.hpp"
 #include "../common/types.hpp"
-#include "../fiber/piecewise_constant_scalar_basis.hpp"
+#include "../fiber/constant_scalar_shapeset.hpp"
 
 #include <map>
 #include <memory>
+#include <tbb/mutex.h>
+
 
 namespace Bempp
 {
@@ -46,11 +49,36 @@ class PiecewiseConstantScalarSpace : public ScalarSpace<BasisFunctionType>
 public:
     typedef typename ScalarSpace<BasisFunctionType>::CoordinateType CoordinateType;
 
+    /** \brief Constructor.
+     *
+     *  Construct a space of piecewise constant scalar functions
+     *  defined on the grid \p grid.
+     *
+     *  An exception is thrown if \p grid is a null pointer.
+     */
     explicit PiecewiseConstantScalarSpace(const shared_ptr<const Grid>& grid);
+
+    /** \brief Constructor.
+     *
+     *  Construct a space of piecewise constant scalar functions defined on the
+     *  elements of the grid \p grid belonging to the segment \p segment.
+     *
+     *  An exception is thrown if \p grid is a null pointer.
+     */
+    PiecewiseConstantScalarSpace(const shared_ptr<const Grid>& grid,
+                                 const GridSegment& segment);
 
     virtual shared_ptr<const Space<BasisFunctionType> > discontinuousSpace(
         const shared_ptr<const Space<BasisFunctionType> >& self) const;
     virtual bool isDiscontinuous() const;
+
+    virtual bool isBarycentric() const {
+        return false;
+    }
+
+    virtual shared_ptr<const Space<BasisFunctionType> > barycentricSpace(
+            const shared_ptr<const Space<BasisFunctionType> >& self) const;
+
 
     virtual int domainDimension() const;
     virtual int codomainDimension() const;
@@ -65,7 +93,14 @@ public:
     virtual void setElementVariant(const Entity<0>& element,
                                    ElementVariant variant);
 
-    virtual const Fiber::Basis<BasisFunctionType>& basis(const Entity<0>& element) const;
+    virtual const Fiber::Shapeset<BasisFunctionType>& shapeset(
+            const Entity<0>& element) const;
+
+    virtual bool spaceIsCompatible(const Space<BasisFunctionType>& other) const;
+
+    virtual SpaceIdentifier spaceIdentifier() const {
+        return PIECEWISE_CONSTANT_SCALAR;
+    }
 
     virtual size_t globalDofCount() const;
     virtual size_t flatLocalDofCount() const;
@@ -77,6 +112,11 @@ public:
     virtual void flatLocal2localDofs(
             const std::vector<FlatLocalDofIndex>& globalDofs,
             std::vector<LocalDof>& localDofs) const;
+
+    virtual void getGlobalDofInterpolationPoints(
+            arma::Mat<CoordinateType>& points) const;
+    virtual void getNormalsAtGlobalDofInterpolationPoints(
+            arma::Mat<CoordinateType>& normals) const;
 
     virtual void getGlobalDofPositions(
             std::vector<Point3D<CoordinateType> >& positions) const;
@@ -102,13 +142,17 @@ public:
             DofType dofType) const;
 
 private:
-    void assignDofsImpl();
+    void assignDofsImpl(const GridSegment& segment);
 
 private:
     std::auto_ptr<GridView> m_view;
-    Fiber::PiecewiseConstantScalarBasis<BasisFunctionType> m_basis;
+    GridSegment m_segment;
+    Fiber::ConstantScalarShapeset<BasisFunctionType> m_shapeset;
     std::vector<std::vector<GlobalDofIndex> > m_local2globalDofs;
     std::vector<std::vector<LocalDof> > m_global2localDofs;
+    mutable shared_ptr<Space<BasisFunctionType> > m_barycentricSpace;
+    mutable tbb::mutex m_barycentricSpaceMutex;
+
 };
 
 } // namespace Bempp

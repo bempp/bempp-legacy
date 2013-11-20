@@ -145,6 +145,31 @@ inline size_t _3dArray<T>::extent(size_t dimension) const
 }
 
 template <typename T>
+inline _3dArray<T>& _3dArray<T>::operator+=(const _3dArray<T>& other){
+    if ((this->extent(0)!= other.extent(0))||
+            (this->extent(1)!= other.extent(1))||
+            (this->extent(2)!= other.extent(2)))
+        std::runtime_error("_3dArray<T> operator+=: Array sizes don't agree.");
+    for (size_t i=0;i<this->extent(2);++i)
+        for (size_t j=0;j<this->extent(1);++j)
+            for (size_t k=0;k<this->extent(0);++k)
+                (*this)(k,j,i)+=other(k,j,i);
+    return *this;
+
+}
+
+template <typename T>
+inline _3dArray<T>& _3dArray<T>::operator*=(const T& other) {
+    for (size_t i=0;i<this->extent(2);++i)
+        for (size_t j=0;j<this->extent(1);++j)
+            for (size_t k=0;k<this->extent(0);++k)
+                (*this)(k,j,i)*=other;
+    return *this;
+}
+
+
+
+template <typename T>
 inline void _3dArray<T>::set_size(size_t extent0, size_t extent1, size_t extent2)
 {
     if (extent0 * extent1 * extent2 ==
@@ -152,7 +177,7 @@ inline void _3dArray<T>::set_size(size_t extent0, size_t extent1, size_t extent2
         m_extents[0] = extent0;
         m_extents[1] = extent1;
         m_extents[2] = extent2;
-    }    
+    }
     else {
         if (m_strict)
             throw std::runtime_error("_3dArray::set_size(): Changing the total "
@@ -210,8 +235,6 @@ inline void _3dArray<T>::check_dimension(size_t dimension) const
 template <typename T>
 inline void _3dArray<T>::check_extents(size_t extent0, size_t extent1, size_t extent2) const
 {
-    if (extent0 <= 0 || extent1 <= 0 || extent2 <= 0)
-        throw std::length_error("Invalid extent");
 }
 
 template <typename T>

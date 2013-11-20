@@ -46,21 +46,9 @@ if 0: # Use ACA to accelerate the assembly
 else: # Use FMM to accelerate the assembly
 	fmmOptions = lib.createFmmOptions()
 	fmmOptions.levels = 4
-	fmmOptions.L = 8
-#	fmmOptions.numQuadPoints = 266
+	fmmOptions.expansionOrder = 3 # number of terms in addition theorem in leaves
+	#fmmOptions.expansionOrderMax = 6 # max number of terms in addition theorem
 	options.switchToFmmMode(fmmOptions)
-
-	minL = k*2**-fmmOptions.levels + 6*(k*2**-fmmOptions.levels)**(1.0/3)
-	if fmmOptions.levels>2:
-		print 'required value of L = ' + repr(minL) + ' (level=' + repr(fmmOptions.levels) + ')'
-	if fmmOptions.L<minL:
-		print 'L is too small'
-		sys.exit()
-
-	print 'rough number of quadrature points needed = ' + repr(fmmOptions.L*(2*fmmOptions.L+1))
-	if fmmOptions.numQuadPoints<fmmOptions.L*(2*fmmOptions.L+1):
-		print 'too few quadrature points'
-		sys.exit()
 
 # The context object combines these settings
 
@@ -102,7 +90,7 @@ idOp = lib.createIdentityOperator(
 # boundary operators.
 
 #lhsOp = idOp + 2 * adlpOp - 2j * k * slpOp
-lhsOp = hypOp
+lhsOp = dlpOp
 
 res = lhsOp*dirichletData
 

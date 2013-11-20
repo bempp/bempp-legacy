@@ -31,8 +31,10 @@
 namespace Fiber
 {
 
+/** \brief Configuration of a pair of elements. */
 struct ElementPairTopology
 {
+    /** \brief Constructor. */
     ElementPairTopology() :
         type(Disjoint),
         testVertexCount(0), trialVertexCount(0),
@@ -40,13 +42,29 @@ struct ElementPairTopology
         trialSharedVertex0(-1), trialSharedVertex1(-1)
     {}
 
+    /** \brief Location of one element with respect to the other. */
     enum Type { Disjoint, SharedVertex, SharedEdge, Coincident };
+    /** \brief Location of one element with respect to the other. */
     Type type;
+    /** \brief Number of vertices of the test element. */
     unsigned char testVertexCount;
+    /** \brief Number of vertices of the trial element. */
     unsigned char trialVertexCount;
+    /** \brief Index of the first vertex of the test element that is
+     *  shared with the trial element, or -1 if no vertices are
+     *  shared. */
     signed char testSharedVertex0;
+    /** \brief Index of the second vertex of the test element that is
+     *  shared with the trial element, or -1 if at most one vertex is
+     *  shared. */
     signed char testSharedVertex1;
+    /** \brief Index of the first vertex of the trial element that is
+     *  shared with the test element, or -1 if no vertices are
+     *  shared. */
     signed char trialSharedVertex0;
+    /** \brief Index of the second vertex of the trial element that is
+     *  shared with the test element, or -1 if at most one vertex is
+     *  shared. */
     signed char trialSharedVertex1;
 
     bool operator<(const ElementPairTopology& other) const {

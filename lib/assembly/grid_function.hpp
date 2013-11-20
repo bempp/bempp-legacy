@@ -66,7 +66,16 @@ using Fiber::Function;
  *  \brief Function defined on a grid.
  *
  *  This class represents a function defined on a grid and expanded in a
- *  particular function space. */
+ *  particular function space.
+ *
+ *  \internal A GridFunction can be constructed either from the list of its
+ *  coefficients in the basis of an expansion space or from the list of its
+ *  projections on the basis functions of a dual space. Both these
+ *  representations are useful in different circumstances, and both can be
+ *  stored inside a GridFunction object. In the current implementation setting
+ *  one of these representations invalidates the other, which is afterwards
+ *  recalculated when (and if) it is needed.
+ */
 template <typename BasisFunctionType, typename ResultType>
 class GridFunction
 {
@@ -75,6 +84,7 @@ public:
     typedef typename Fiber::ScalarTraits<ResultType>::RealType MagnitudeType;
 
     enum DataType { COEFFICIENTS, PROJECTIONS };
+    enum ConstructionMode { APPROXIMATE, INTERPOLATE };
 
     // Recommended constructors
 
@@ -129,21 +139,33 @@ public:
      *  \param[in] function     Function object whose values on
      *                          <tt>space.grid()</tt> will be used to construct
      *                          the new grid function.
+     *  \param[in] mode         Determines the way the expansion coefficients
+     *                          of the function are determined. Can be set to
+     *                          #APPROXIMATE or #INTERPOLATE. These options are
+     *                          discussed below.
      *
      *  This constructor builds a grid function belonging to the space
      *  \p space and approximating the function \f$f\f$ defined by the
-     *  object \p function. The approximate coefficients \f$\{f_i\}\f$
+     *  object \p function.
+     *
+     *  If \p mode is set to #APPROXIMATE, the approximate coefficients \f$\{f_i\}\f$
      *  of \p function in the basis \f$\{\phi_i\}\f$ of \p space are
      *  determined by solving the equation
      *  \f[ \sum_j \langle \psi_i, \phi_j \rangle f_i =
      *      \langle \psi_i, f \rangle \f]
      *  in the least-squares sense, with \f$\{\psi_i\}\f$ denoting the
      *  set of basis functions of \p dualSpace. The two spaces must be
-     *  defined on the same grid. */
+     *  defined on the same grid.
+     *
+     *  Otherwise (if \p mode is set to #INTERPOLATE), the approximate
+     *  coefficients \f$\{f_i\}\f$ are determined by evaluating \p function at
+     *  the interpolation points of the global degrees of freedom of \p space
+     *  (see Space::getGlobalDofInterpolationPoints() for more details). */
     GridFunction(const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
                  const shared_ptr<const Space<BasisFunctionType> >& space,
                  const shared_ptr<const Space<BasisFunctionType> >& dualSpace,
-                 const Function<ResultType>& function);
+                 const Function<ResultType>& function,
+                 ConstructionMode mode = APPROXIMATE);
 
     // Deprecated constructors
 
@@ -212,11 +234,26 @@ public:
     /** \brief Return whether this function has been properly initialized. */
     bool isInitialized() const;
 
+    /** \brief Returns \c true if the GridFunction was initialized with a list
+     *  of coefficients and \c false if it was initialized with a list of
+     *  projections.
+     *
+     *  This means that the other quantity (projections or coefficients,
+     *  respectively) is a derived quantity and may therefore be less accurate.
+     */
+    bool wasInitializedFromCoefficients() const;
+
     /** \brief Grid on which this function is defined.
      *
      * \note An exception is thrown if this function is called on an
      * uninitialized GridFunction object. */
     shared_ptr<const Grid> grid() const;
+
+    /** \brief Create a new Gridfunction by approximating this GridFunction in
+     *  a given space. */
+
+    GridFunction<BasisFunctionType,ResultType> approximateInSpace(
+            const shared_ptr<Space<BasisFunctionType> >& space ) const ;
 
     /** \brief Space in which this function is expanded. */
     shared_ptr<const Space<BasisFunctionType> > space() const;
@@ -255,19 +292,7 @@ public:
      *  An exception is thrown if this function is called on an uninitialized
      *  GridFunction object (one constructed with the default constructor). */
     arma::Col<ResultType> projections(
-            const Space<BasisFunctionType>& dualSpace_) const;
-
-    /** \brief %Vector of scalar products of this function with the basis
-     *  functions of its dual space.
-     *
-     *  \deprecated This function is provided only for backward compatibility
-     *  purposes. It works only if the dual space was specified during the
-     *  construction of the GridFunction. In new code the other overload of
-     *  projections() should be used.
-     *
-     *  An exception is thrown if this function is called on an uninitialized
-     *  GridFunction object (one constructed with the default constructor). */
-    BEMPP_DEPRECATED arma::Col<ResultType> projections() const;
+            const shared_ptr<const Space<BasisFunctionType> >& dualSpace_) const;
 
     /** \brief Reset the expansion coefficients of this function in the basis
      *  of its primal space.
@@ -283,17 +308,8 @@ public:
      *  \p dualSpace must be defined on the same grid as the space in which the
      *  GridFunction is expanded. */
     void setProjections(
-            const Space<BasisFunctionType>& dualSpace_,
+            const shared_ptr<const Space<BasisFunctionType> >& dualSpace_,
             const arma::Col<ResultType>& projects);
-
-    /** \brief Reset the vector of scalar products of this function with the
-     *  basis functions of its dual space.
-     *
-     *  \deprecated This function is provided only for backward compatibility
-     *  purposes. It works only if the dual space was specified during the
-     *  construction of the GridFunction. In new code the other overload of
-     *  setProjections() should be used. */
-    BEMPP_DEPRECATED void setProjections(const arma::Col<ResultType>& projects);
 
     /** \brief Return the \f$L^2\f$-norm of the grid function.
      *
@@ -303,7 +319,16 @@ public:
      */
     MagnitudeType L2Norm() const;
 
-    const Fiber::Basis<BasisFunctionType>& basis(const Entity<0>& element) const;
+    /** \brief Return the shapeset associated with the given element.
+     *
+     *  \note The results of calling this function on an uninitialized
+     *  GridFunction object are undefined. */
+    const Fiber::Shapeset<BasisFunctionType>& shapeset(const Entity<0>& element) const;
+
+    /** \brief Return the shapeset associated with the given element.
+     *
+     *  \deprecated This function is deprecated. Use shapeset() instead. */
+    const BEMPP_DEPRECATED Fiber::Basis<BasisFunctionType>& basis(const Entity<0>& element) const;
 
     /** \brief Retrieve the expansion coefficients of this function on a single element.
      *
@@ -316,54 +341,6 @@ public:
      *  GridFunction object are undefined. */
     void getLocalCoefficients(const Entity<0>& element,
                               std::vector<ResultType>& coeffs) const;
-
-    /** \brief Export this function to a VTK file.
-
-      \param[in] dataType
-        Determines whether data are attaches to vertices or cells.
-
-      \param[in] dataLabel
-        Label used to identify the function in the VTK file.
-
-      \param[in] fileNamesBase
-        Base name of the output files. It should not contain any directory
-        part or filename extensions.
-
-      \param[in] filesPath
-        Output directory. Can be set to NULL, in which case the files are
-        output in the current directory.
-
-      \param[in] type
-        Output type (default: ASCII). See Dune reference manual for more
-        details.
-
-      \note An exception is thrown if this function is called on an
-        uninitialized GridFunction object. */
-    void exportToVtk(VtkWriter::DataType dataType,
-                     const char* dataLabel,
-                     const char* fileNamesBase, const char* filesPath = 0,
-                     VtkWriter::OutputType type = VtkWriter::ASCII) const;
-
-    /** \brief Export this function to a Gmsh (.msh) file.
-
-      \param[in] dataLabel
-        Label used to identify the function in the Gmsh file.
-
-      \param[in] fileName
-        Name of the file to be written.
-
-      \note An exception is thrown if this function is called on an
-        uninitialized GridFunction object.
-
-      \note Currently this function treats all elements as independent from each
-      other, so that for example each internal mesh node is output as many
-      times as there are elements adjacent to it. This makes it possible to
-      export GridFunctions expanded in spaces with discontinuous bases. However,
-      it also means that a \c .msh file generated by exportToGmsh cannot be
-      imported back by BEM++ and used to create a Grid object.
-    */
-    void exportToGmsh(
-        const char* dataLabel, const char* fileName) const;
 
     /** \brief Evaluate function at either vertices or barycentres.
      *
@@ -391,6 +368,118 @@ public:
         const arma::Mat<CoordinateType>& local,
         arma::Mat<ResultType>& values) const;
 
+    // Deprecated functions
+
+#ifndef SWIG
+    /** \brief %Vector of scalar products of this function with the basis
+     *  functions of \p dualSpace.
+     *
+     *  \p dualSpace must be defined on the same grid as the space in which the
+     *  GridFunction is expanded.
+     *
+     *  An exception is thrown if this function is called on an uninitialized
+     *  GridFunction object (one constructed with the default constructor).
+     *
+     *  \deprecated This function is deprecated; use the variant taking a
+     *  shared pointer to the dual space instead. */
+    BEMPP_DEPRECATED arma::Col<ResultType> projections(
+            const Space<BasisFunctionType>& dualSpace_) const;
+#endif
+
+    /** \brief %Vector of scalar products of this function with the basis
+     *  functions of its dual space.
+     *
+     *  \deprecated This function is provided only for backward compatibility
+     *  purposes. It works only if the dual space was specified during the
+     *  construction of the GridFunction. In new code the other overload of
+     *  projections() should be used.
+     *
+     *  An exception is thrown if this function is called on an uninitialized
+     *  GridFunction object (one constructed with the default constructor). */
+    BEMPP_DEPRECATED arma::Col<ResultType> projections() const;
+
+#ifndef SWIG
+    /** \brief Reinitialize the function by specifying the vector of its scalar
+     *  products with the basis functions of \p dualSpace.
+     *
+     *  \p dualSpace must be defined on the same grid as the space in which the
+     *  GridFunction is expanded.
+     *
+     *  \deprecated This function is deprecated. Use the other variant taking
+     *  a shared pointer to the dual space. If you use this function, it is
+     *  your responsibility to ensure that \p dualSpace_ is not destroyed
+     *  as long as this GridFunction object is alive. */
+    BEMPP_DEPRECATED void setProjections(
+            const Space<BasisFunctionType>& dualSpace_,
+            const arma::Col<ResultType>& projects);
+#endif
+
+    /** \brief Reset the vector of scalar products of this function with the
+     *  basis functions of its dual space.
+     *
+     *  \deprecated This function is provided only for backward compatibility
+     *  purposes. It works only if the dual space was specified during the
+     *  construction of the GridFunction. In new code the other overload of
+     *  setProjections() should be used. */
+    BEMPP_DEPRECATED void setProjections(const arma::Col<ResultType>& projects);
+
+    /** \brief Export this function to a VTK file.
+
+      \param[in] dataType
+        Determines whether data are attaches to vertices or cells.
+
+      \param[in] dataLabel
+        Label used to identify the function in the VTK file.
+
+      \param[in] fileNamesBase
+        Base name of the output files. It should not contain any directory
+        part or filename extensions.
+
+      \param[in] filesPath
+        Output directory. Can be set to NULL, in which case the files are
+        output in the current directory.
+
+      \param[in] type
+        Output type (default: ASCII). See Dune reference manual for more
+        details.
+
+      \note An exception is thrown if this function is called on an
+        uninitialized GridFunction object.
+
+      \deprecated This member function is deprecated. Use the standalone
+      function ::exportToVtk() instead.
+      */
+    BEMPP_DEPRECATED
+    void exportToVtk(VtkWriter::DataType dataType,
+                     const char* dataLabel,
+                     const char* fileNamesBase, const char* filesPath = 0,
+                     VtkWriter::OutputType type = VtkWriter::ASCII) const;
+
+    /** \brief Export this function to a Gmsh (.msh) file.
+
+      \param[in] dataLabel
+        Label used to identify the function in the Gmsh file.
+
+      \param[in] fileName
+        Name of the file to be written.
+
+      \note An exception is thrown if this function is called on an
+        uninitialized GridFunction object.
+
+      \note Currently this function treats all elements as independent from each
+      other, so that for example each internal mesh node is output as many
+      times as there are elements adjacent to it. This makes it possible to
+      export GridFunctions expanded in spaces with discontinuous bases. However,
+      it also means that a \c .msh file generated by exportToGmsh cannot be
+      imported back by BEM++ and used to create a Grid object.
+
+      \deprecated This member function is deprecated. Use the standalone
+      function ::exportToGmsh() instead.
+    */
+    BEMPP_DEPRECATED
+    void exportToGmsh(
+        const char* dataLabel, const char* fileName) const;
+
 private:
     void initializeFromCoefficients(
             const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
@@ -401,13 +490,17 @@ private:
             const shared_ptr<const Space<BasisFunctionType> >& space,
             const shared_ptr<const Space<BasisFunctionType> >& dualSpace,
             const arma::Col<ResultType>& projections);
+    void updateProjectionsFromCoefficients(
+            const shared_ptr<const Space<BasisFunctionType> >& dualSpace_) const;
+    void updateCoefficientsFromProjections() const;
 
 private:
     shared_ptr<const Context<BasisFunctionType, ResultType> > m_context;
     shared_ptr<const Space<BasisFunctionType> > m_space;
-    shared_ptr<const Space<BasisFunctionType> > m_dualSpace;
+    mutable shared_ptr<const Space<BasisFunctionType> > m_dualSpace; // the dual space that was used to calculate m_projections
     mutable shared_ptr<const arma::Col<ResultType> > m_coefficients;
-    // mutable shared_ptr<const arma::Col<ResultType> > m_projections;
+    mutable shared_ptr<const arma::Col<ResultType> > m_projections;
+    bool m_wasInitializedFromCoefficients;
 };
 
 // Overloaded operators
@@ -480,6 +573,61 @@ operator*(
 template <typename BasisFunctionType, typename ResultType, typename ScalarType>
 GridFunction<BasisFunctionType, ResultType> operator/(
         const GridFunction<BasisFunctionType, ResultType>& g1, const ScalarType& scalar);
+
+// Export
+
+/** \relates GridFunction
+  \brief Export this function to a VTK file.
+
+  \param[in] dataType
+    Determines whether data are attaches to vertices or cells.
+
+  \param[in] dataLabel
+    Label used to identify the function in the VTK file.
+
+  \param[in] fileNamesBase
+    Base name of the output files. It should not contain any directory
+    part or filename extensions.
+
+  \param[in] filesPath
+    Output directory. Can be set to NULL, in which case the files are
+    output in the current directory.
+
+  \param[in] type
+    Output type (default: ASCII). See Dune reference manual for more
+    details.
+
+  \note An exception is thrown if this function is called on an
+    uninitialized GridFunction object. */
+template <typename BasisFunctionType, typename ResultType>
+void exportToVtk(const GridFunction<BasisFunctionType, ResultType>& gridFunction,
+                 VtkWriter::DataType dataType,
+                 const char* dataLabel,
+                 const char* fileNamesBase, const char* filesPath = 0,
+                 VtkWriter::OutputType type = VtkWriter::ASCII);
+
+///** \relates GridFunction
+//  \brief Export this function to a Gmsh (.msh) file.
+
+//  \param[in] dataLabel
+//    Label used to identify the function in the Gmsh file.
+
+//  \param[in] fileName
+//    Name of the file to be written.
+
+//  \note An exception is thrown if this function is called on an
+//    uninitialized GridFunction object.
+
+//  \note Currently this function treats all elements as independent from each
+//  other, so that for example each internal mesh node is output as many
+//  times as there are elements adjacent to it. This makes it possible to
+//  export GridFunctions expanded in spaces with discontinuous bases. However,
+//  it also means that a \c .msh file generated by exportToGmsh cannot be
+//  imported back by BEM++ and used to create a Grid object.
+//*/
+//template <typename BasisFunctionType, typename ResultType>
+//void exportToGmsh(const GridFunction<BasisFunctionType, ResultType>& gridFunction,
+//                  const char* dataLabel, const char* fileName);
 
 } // namespace Bempp
 

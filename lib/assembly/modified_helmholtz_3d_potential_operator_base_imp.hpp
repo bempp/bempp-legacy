@@ -66,6 +66,7 @@ operator=(const ModifiedHelmholtz3dPotentialOperatorBase& rhs)
         Base::operator=(rhs);
         m_impl.reset(new Impl(*rhs.m_impl));
     }
+    return *this;
 }
 
 template <typename Impl, typename BasisFunctionType>
@@ -87,7 +88,7 @@ kernels() const
 
 template <typename Impl, typename BasisFunctionType>
 const typename ModifiedHelmholtz3dPotentialOperatorBase<Impl, BasisFunctionType>::
-CollectionOfBasisTransformations&
+CollectionOfShapesetTransformations&
 ModifiedHelmholtz3dPotentialOperatorBase<Impl, BasisFunctionType>::
 trialTransformations() const
 {

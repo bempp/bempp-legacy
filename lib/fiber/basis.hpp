@@ -21,46 +21,20 @@
 #ifndef fiber_basis_hpp
 #define fiber_basis_hpp
 
-#include "../common/common.hpp"
-
-#include "scalar_traits.hpp"
-#include "types.hpp"
-
-#include "../common/armadillo_fwd.hpp"
+#include "shapeset.hpp"
 
 namespace Fiber
 {
 
-/** \cond FORWARD_DECL */
-template <typename ValueType> struct BasisData;
-/** \endcond */
-
 /** \ingroup fiber
- *  \brief Collection of basis functions defined on a reference element. */
+ *  \brief Collection of shape functions defined on a reference element.
+ *
+ *  \deprecated This class is deprecated and provided only for compatibility
+ *  reasons. Use Shapeset instead.
+ */
 template <typename ValueType>
-class Basis
+class Basis : public Shapeset<ValueType>
 {
-public:
-    typedef typename ScalarTraits<ValueType>::RealType CoordinateType;
-
-    virtual ~Basis() {}
-
-    /** \brief Return the number of basis functions. */
-    virtual int size() const = 0;
-    /** \brief Return the maximum polynomial order of basis functions. */
-    virtual int order() const = 0;
-    virtual void evaluate(size_t what,
-                          const arma::Mat<CoordinateType>& points,
-                          LocalDofIndex localDofIndex,
-                          BasisData<ValueType>& data) const = 0;
-
-    /**
-     * \brief Returns an OpenCL code snippet for basis function evaluation
-     * \note The code snippet must provide device function devBasisEval
-     */
-    virtual std::pair<const char*,int> clCodeString (bool isTestBasis) const {
-        throw std::runtime_error("Basis: clCodeString not implemented yet");
-    }
 };
 
 } // namespace Fiber

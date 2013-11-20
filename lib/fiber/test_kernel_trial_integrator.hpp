@@ -34,7 +34,7 @@ namespace Fiber
 {
 
 /** \cond FORWARD_DECL */
-template <typename ValueType> class Basis;
+template <typename ValueType> class Shapeset;
 /** \endcond */
 
 /** \brief Integration over pairs of elements. */
@@ -51,15 +51,15 @@ public:
             CallVariant callVariant,
             const std::vector<int>& elementIndicesA,
             int elementIndexB,
-            const Basis<BasisFunctionType>& basisA,
-            const Basis<BasisFunctionType>& basisB,
+            const Shapeset<BasisFunctionType>& basisA,
+            const Shapeset<BasisFunctionType>& basisB,
             LocalDofIndex localDofIndexB,
             const std::vector<arma::Mat<ResultType>*>& result) const = 0;
 
     virtual void integrate(
             const std::vector<ElementIndexPair>& elementIndexPairs,
-            const Basis<BasisFunctionType>& testBasis,
-            const Basis<BasisFunctionType>& trialBasis,
+            const Shapeset<BasisFunctionType>& testShapeset,
+            const Shapeset<BasisFunctionType>& trialShapeset,
             const std::vector<arma::Mat<ResultType>*>& result) const = 0;
 };
 

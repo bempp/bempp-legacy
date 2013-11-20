@@ -82,6 +82,25 @@ inline std::complex<double> conj(const std::complex<double>& x)
     return std::conj(x);
 }
 
+/** \brief Returns exp(-x).
+ *
+ *  Uses only standard-library functions taking real arguments. */
+template <typename ValueType>
+inline ValueType expm(const ValueType& x)
+{
+    return std::exp(-x);
+}
+
+/** \brief Returns exp(-x).
+ *
+ *  Uses only standard-library functions taking real arguments. */
+template <typename ValueType>
+inline std::complex<ValueType> expm(const std::complex<ValueType>& x)
+{
+    ValueType emx = std::exp(-x.real());
+    return std::complex<ValueType>(cos(x.imag()) * emx, -sin(x.imag() * emx));
+}
+
 } // namespace Fiber
 
 namespace Bempp

@@ -152,31 +152,30 @@ makeEvaluator(
     // evaluators and assemblers
     typedef typename Fiber::ScalarTraits<BasisFunctionType>::RealType CoordinateType;
     typedef Fiber::RawGridGeometry<CoordinateType> RawGridGeometry;
-    typedef std::vector<const Fiber::Basis<BasisFunctionType>*> BasisPtrVector;
+    typedef std::vector<const Fiber::Shapeset<BasisFunctionType>*> ShapesetPtrVector;
     typedef std::vector<std::vector<ResultType> > CoefficientsVector;
     typedef LocalAssemblerConstructionHelper Helper;
 
     shared_ptr<RawGridGeometry> rawGeometry;
     shared_ptr<GeometryFactory> geometryFactory;
     shared_ptr<Fiber::OpenClHandler> openClHandler;
-    shared_ptr<BasisPtrVector> bases;
+    shared_ptr<ShapesetPtrVector> shapesets;
 
     const Space<BasisFunctionType>& space = *gridFunction.space();
-    shared_ptr<const Grid> grid = space.grid();
-    Helper::collectGridData(*grid,
+    Helper::collectGridData(space,
                             rawGeometry, geometryFactory);
     Helper::makeOpenClHandler(options.parallelizationOptions().openClOptions(),
                               rawGeometry, openClHandler);
-    Helper::collectBases(space, bases);
+    Helper::collectShapesets(space, shapesets);
 
     // In addition, get coefficients of argument's expansion in each element
-    std::auto_ptr<GridView> view = grid->leafView();
-    const int elementCount = view->entityCount(0);
+    const GridView& view = space.gridView();
+    const int elementCount = view.entityCount(0);
 
     shared_ptr<CoefficientsVector> localCoefficients =
             boost::make_shared<CoefficientsVector>(elementCount);
 
-    std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
+    std::auto_ptr<EntityIterator<0> > it = view.entityIterator<0>();
     for (int i = 0; i < elementCount; ++i) {
         const Entity<0>& element = it->entity();
         gridFunction.getLocalCoefficients(element, (*localCoefficients)[i]);
@@ -190,8 +189,8 @@ makeEvaluator(
         boost::make_shared<Kernels>(KernelFunctor(refFunction));
 
     // Construct trial function transformations collection
-    const Fiber::CollectionOfBasisTransformations<CoordinateType>&
-        trialTransformations = space.shapeFunctionValue();
+    const Fiber::CollectionOfShapesetTransformations<CoordinateType>&
+        trialTransformations = space.basisFunctionValue();
 
     // Construct integral
     typedef L2NormOfDifferenceIntegrandFunctor<BasisFunctionType, ResultType, ResultType>
@@ -204,7 +203,7 @@ makeEvaluator(
     // Now create the evaluator
     return quadStrategy.makeEvaluatorForIntegralOperators(
                 geometryFactory, rawGeometry,
-                bases,
+                shapesets,
                 kernels,
                 make_shared_from_ref(trialTransformations), // lives as long as space does
                 integral,

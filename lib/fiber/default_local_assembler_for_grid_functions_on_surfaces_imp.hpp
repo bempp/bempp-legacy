@@ -24,6 +24,8 @@
 #include "../common/common.hpp"
 
 #include "numerical_test_function_integrator.hpp"
+#include "quadrature_descriptor_selector_for_grid_functions.hpp"
+#include "single_quadrature_rule_family.hpp"
 
 #include <set>
 #include <utility>
@@ -38,44 +40,21 @@ BasisFunctionType, UserFunctionType, ResultType, GeometryFactory>::
 DefaultLocalAssemblerForGridFunctionsOnSurfaces(
         const shared_ptr<const GeometryFactory>& geometryFactory,
         const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
-        const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
-        const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& testTransformations,
+        const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& testShapesets,
+        const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& testTransformations,
         const shared_ptr<const Function<UserFunctionType> >& function,
         const shared_ptr<const OpenClHandler>& openClHandler,
-        const QuadratureOptions& quadratureOptions) :
+        const shared_ptr<const QuadratureDescriptorSelectorForGridFunctions<CoordinateType> >& quadDescSelector,
+        const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType> >& quadRuleFamily) :
     m_geometryFactory(geometryFactory),
     m_rawGeometry(rawGeometry),
-    m_testBases(testBases),
+    m_testShapesets(testShapesets),
     m_testTransformations(testTransformations),
     m_function(function),
     m_openClHandler(openClHandler),
-    m_quadratureOptions(quadratureOptions)
+    m_quadDescSelector(quadDescSelector),
+    m_quadRuleFamily(quadRuleFamily)
 {
-    if (rawGeometry->vertices().n_rows != 3)
-        throw std::invalid_argument(
-                "DefaultLocalAssemblerForGridFunctionsOnSurfaces::"
-                "DefaultLocalAssemblerForGridFunctionsOnSurfaces(): "
-                "vertex coordinates must be three-dimensional");
-    if (rawGeometry->elementCornerIndices().n_rows < 3 ||
-            4 < rawGeometry->elementCornerIndices().n_rows)
-        throw std::invalid_argument(
-                "DefaultLocalAssemblerForGridFunctionsOnSurfaces::"
-                "DefaultLocalAssemblerForGridFunctionsOnSurfaces(): "
-                "all elements must be triangular or quadrilateral");
-    const size_t elementCount = rawGeometry->elementCornerIndices().n_cols;
-    if (!rawGeometry->auxData().is_empty() &&
-            rawGeometry->auxData().n_cols != elementCount)
-        throw std::invalid_argument(
-                "DefaultLocalAssemblerForGridFunctionsOnSurfaces::"
-                "DefaultLocalAssemblerForGridFunctionsOnSurfaces(): "
-                "number of columns of auxData must match that of "
-                "elementCornerIndices");
-    if (testBases->size() != elementCount)
-        throw std::invalid_argument(
-                "DefaultLocalAssemblerForGridFunctionsOnSurfaces::"
-                "DefaultLocalAssemblerForGridFunctionsOnSurfaces(): "
-                "size of testBases must match the number of columns of "
-                "elementCornerIndices");
 }
 
 template <typename BasisFunctionType, typename UserFunctionType,
@@ -102,13 +81,13 @@ evaluateLocalWeakForms(
         const std::vector<int>& elementIndices,
         std::vector<arma::Col<ResultType> >& result)
 {
-    typedef Fiber::Basis<BasisFunctionType> Basis;
+    typedef Fiber::Shapeset<BasisFunctionType> Shapeset;
 
     const int elementCount = elementIndices.size();
     result.resize(elementCount);
 
     // Find cached matrices; select integrators to calculate non-cached ones
-    typedef std::pair<const Integrator*, const Basis*> QuadVariant;
+    typedef std::pair<const Integrator*, const Shapeset*> QuadVariant;
     std::vector<QuadVariant> quadVariants(elementCount);
 
     for (int testIndex = 0; testIndex < elementCount; ++testIndex)
@@ -117,11 +96,11 @@ evaluateLocalWeakForms(
         const Integrator* integrator =
                 &selectIntegrator(activeTestElementIndex);
         quadVariants[testIndex] =
-                QuadVariant(integrator, (*m_testBases)[activeTestElementIndex]);
+                QuadVariant(integrator, (*m_testShapesets)[activeTestElementIndex]);
     }
 
     // Integration will proceed in batches of element pairs having the same
-    // "quadrature variant", i.e. integrator and test basis
+    // "quadrature variant", i.e. integrator and test shapeset
 
     // Find all the unique quadrature variants present
     typedef std::set<QuadVariant> QuadVariantSet;
@@ -137,7 +116,7 @@ evaluateLocalWeakForms(
     {
         const QuadVariant activeQuadVariant = *it;
         const Integrator& activeIntegrator = *it->first;
-        const Basis& activeTestBasis = *it->second;
+        const Shapeset& activeTestShapeset = *it->second;
 
         // Find all the test elements for which quadrature should proceed
         // according to the current quadrature variant
@@ -149,7 +128,7 @@ evaluateLocalWeakForms(
         // Integrate!
         arma::Mat<ResultType> localResult;
         activeIntegrator.integrate(activeElementIndices,
-                                   activeTestBasis,
+                                   activeTestShapeset,
                                    localResult);
 
         // Distribute the just calculated integrals into the result array
@@ -168,17 +147,8 @@ DefaultLocalAssemblerForGridFunctionsOnSurfaces<
 BasisFunctionType, UserFunctionType, ResultType, GeometryFactory>::
 selectIntegrator(int elementIndex)
 {
-    SingleQuadratureDescriptor desc;
-
-    // Get number of corners of the specified element
-    desc.vertexCount = m_rawGeometry->elementCornerCount(elementIndex);
-
-    // Determine integrand's order and required quadrature order
-//    desc.order = (*m_testBases)[elementIndex]->order() +
-//            orderIncrement(elementIndex);
-    const int defaultOrder = 2 * (*m_testBases)[elementIndex]->order() + 1;
-    desc.order = m_quadratureOptions.quadratureOrder(defaultOrder);
-
+    SingleQuadratureDescriptor desc =
+        m_quadDescSelector->quadratureDescriptor(elementIndex);
     return getIntegrator(desc);
 }
 
@@ -200,8 +170,7 @@ getIntegrator(const SingleQuadratureDescriptor& desc)
     // Integrator doesn't exist yet and must be created.
     arma::Mat<CoordinateType> points;
     std::vector<CoordinateType> weights;
-    fillSingleQuadraturePointsAndWeights(desc.vertexCount, desc.order,
-                                         points, weights);
+    m_quadRuleFamily->fillQuadraturePointsAndWeights(desc, points, weights);
 
     typedef NumericalTestFunctionIntegrator<BasisFunctionType, UserFunctionType,
             ResultType, GeometryFactory> ConcreteIntegrator;
@@ -225,17 +194,6 @@ getIntegrator(const SingleQuadratureDescriptor& desc)
 
     // Return pointer to the integrator that ended up in the map.
     return *result.first->second;
-}
-
-template <typename BasisFunctionType, typename UserFunctionType,
-          typename ResultType, typename GeometryFactory>
-inline int
-DefaultLocalAssemblerForGridFunctionsOnSurfaces<
-BasisFunctionType, UserFunctionType, ResultType, GeometryFactory>::
-orderIncrement(int elementIndex) const
-{
-    // TODO: add to constructor an option for increased-order quadrature
-    return (*m_testBases)[elementIndex]->order() + 1;
 }
 
 } // namespace Fiber

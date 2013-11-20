@@ -38,27 +38,35 @@ namespace Fiber
 
 /** \cond FORWARD_DECL */
 class OpenClHandler;
-template <typename CoordinateType> class CollectionOfBasisTransformations;
+template <typename CoordinateType> class CollectionOfShapesetTransformations;
 template <typename ValueType> class Function;
 template <typename CoordinateType> class RawGridGeometry;
+
+template <typename CoordinateType> class QuadratureDescriptorSelectorForGridFunctions;
+template <typename CoordinateType> class SingleQuadratureRuleFamily;
 /** \endcond */
 
 template <typename BasisFunctionType, typename UserFunctionType,
           typename ResultType, typename GeometryFactory>
 class DefaultLocalAssemblerForGridFunctionsOnSurfaces :
         public LocalAssemblerForGridFunctions<ResultType>
-{    
+{
 public:
     typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
 
     DefaultLocalAssemblerForGridFunctionsOnSurfaces(
             const shared_ptr<const GeometryFactory>& geometryFactory,
             const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
-            const shared_ptr<const std::vector<const Basis<BasisFunctionType>*> >& testBases,
-            const shared_ptr<const CollectionOfBasisTransformations<CoordinateType> >& testTransformations,
+            const shared_ptr<const std::vector<
+                const Shapeset<BasisFunctionType>*> >& testShapesets,
+            const shared_ptr<const CollectionOfShapesetTransformations<
+                CoordinateType> >& testTransformations,
             const shared_ptr<const Function<UserFunctionType> >& function,
             const shared_ptr<const OpenClHandler>& openClHandler,
-            const QuadratureOptions& quadratureOptions = QuadratureOptions());
+            const shared_ptr<const QuadratureDescriptorSelectorForGridFunctions<
+                CoordinateType> >& quadDescSelector,
+            const shared_ptr<const SingleQuadratureRuleFamily<
+                CoordinateType> >& quadRuleFamily);
     virtual ~DefaultLocalAssemblerForGridFunctionsOnSurfaces();
 
 public:
@@ -71,8 +79,6 @@ private:
 
     const Integrator& selectIntegrator(int elementIndex);
 
-    int orderIncrement(int elementIndex) const;
-
     const Integrator& getIntegrator(const SingleQuadratureDescriptor& index);
 
 private:
@@ -82,11 +88,12 @@ private:
 private:
     shared_ptr<const GeometryFactory> m_geometryFactory;
     shared_ptr<const RawGridGeometry<CoordinateType> > m_rawGeometry;
-    shared_ptr<const std::vector<const Basis<BasisFunctionType>*> > m_testBases;
-    shared_ptr<const CollectionOfBasisTransformations<CoordinateType> > m_testTransformations;
+    shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> > m_testShapesets;
+    shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> > m_testTransformations;
     shared_ptr<const Function<UserFunctionType> > m_function;
     shared_ptr<const OpenClHandler> m_openClHandler;
-    QuadratureOptions m_quadratureOptions;
+    shared_ptr<const QuadratureDescriptorSelectorForGridFunctions<CoordinateType> > m_quadDescSelector;
+    shared_ptr<const SingleQuadratureRuleFamily<CoordinateType> > m_quadRuleFamily;
 
     IntegratorMap m_testFunctionIntegrators;
 };

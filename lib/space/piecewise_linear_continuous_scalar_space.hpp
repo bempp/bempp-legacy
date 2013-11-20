@@ -23,8 +23,10 @@
 
 #include "../common/common.hpp"
 
-#include "../grid/grid_view.hpp"
 #include "piecewise_linear_scalar_space.hpp"
+
+#include "../grid/grid_segment.hpp"
+#include "../grid/grid_view.hpp"
 #include "../common/types.hpp"
 #include "../fiber/piecewise_linear_continuous_scalar_basis.hpp"
 
@@ -37,6 +39,7 @@ namespace Bempp
 
 /** \cond FORWARD_DECL */
 class GridView;
+template <typename ValueType> class DiscreteBoundaryOperator;
 /** \endcond */
 
 /** \ingroup space
@@ -48,11 +51,52 @@ public:
     typedef typename Space<BasisFunctionType>::CoordinateType CoordinateType;
     typedef typename Space<BasisFunctionType>::ComplexType ComplexType;
 
-    explicit PiecewiseLinearContinuousScalarSpace(const shared_ptr<const Grid>& grid);
+    /** \brief Constructor.
+     *
+     *  Construct a space of piecewise linear, continuous scalar functions
+     *  defined on the grid \p grid.
+     *
+     *  An exception is thrown if \p grid is a null pointer.
+     */
+    explicit PiecewiseLinearContinuousScalarSpace(
+            const shared_ptr<const Grid>& grid);
+
+    /** \brief Constructor.
+     *
+     *  Construct a space of piecewise linear, continuous scalar functions
+     *  defined on the segment \p segment of the grid \p grid. More precisely,
+     *  the space will encompass those basis functions that are associated with
+     *  vertices belonging to \p segment. If \p strictlyOnSegment is \c true,
+     *  the support of the basis functions is truncated to the elements that
+     *  belong to \p segment, too; in this case, the space may in fact contain
+     *  discontinuous basis functions when considered on the whole \p grid,
+     *  although the basis functions will be continuous when considered on the
+     *  chosen grid segment.
+     *
+     *  An exception is thrown if \p grid is a null pointer.
+     */
+    PiecewiseLinearContinuousScalarSpace(
+            const shared_ptr<const Grid>& grid,
+            const GridSegment& segment,
+            bool strictlyOnSegment = false);
     virtual ~PiecewiseLinearContinuousScalarSpace();
 
     virtual shared_ptr<const Space<BasisFunctionType> > discontinuousSpace(
         const shared_ptr<const Space<BasisFunctionType> >& self) const;
+
+    virtual bool isBarycentric() const {
+        return false;
+    }
+
+    virtual SpaceIdentifier spaceIdentifier() const {
+        return PIECEWISE_LINEAR_CONTINUOUS_SCALAR;
+    }
+
+    virtual bool spaceIsCompatible(const Space<BasisFunctionType>& other) const;
+
+    virtual shared_ptr<const Space<BasisFunctionType> > barycentricSpace(
+            const shared_ptr<const Space<BasisFunctionType> >& self) const;
+
     virtual bool isDiscontinuous() const;
 
     virtual size_t globalDofCount() const;
@@ -90,17 +134,21 @@ public:
             DofType dofType) const;
 
 private:
+    void initialize();
     void assignDofsImpl();
 
 private:
     /** \cond PRIVATE */
+    GridSegment m_segment;
+    bool m_strictlyOnSegment;
     std::auto_ptr<GridView> m_view;
     std::vector<std::vector<GlobalDofIndex> > m_local2globalDofs;
     std::vector<std::vector<LocalDof> > m_global2localDofs;
     std::vector<LocalDof> m_flatLocal2localDofs;
-    size_t m_flatLocalDofCount;
     mutable shared_ptr<Space<BasisFunctionType> > m_discontinuousSpace;
+    mutable shared_ptr<Space<BasisFunctionType> > m_barycentricSpace;
     mutable tbb::mutex m_discontinuousSpaceMutex;
+    mutable tbb::mutex m_barycentricSpaceMutex;
     /** \endcond */
 };
 

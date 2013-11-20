@@ -95,11 +95,14 @@ public:
     %apply const arma::Mat<ctype>& IN_MAT { const arma::Mat<ctype>& global_ };
     %apply arma::Mat<ctype>& ARGOUT_MAT { arma::Mat<ctype>& outLocal };
     %apply arma::Mat<ctype>& ARGOUT_MAT { arma::Mat<ctype>& outGlobal };
+    %apply arma::Mat<ctype>& ARGOUT_MAT { arma::Mat<ctype>& outNormal };
 
     virtual void local2global(const arma::Mat<ctype>& local,
                             arma::Mat<ctype>& outGlobal) const = 0;
     virtual void global2local(const arma::Mat<ctype>& global_,
                             arma::Mat<ctype>& outLocal) const = 0;
+    virtual void getNormals(const arma::Mat<ctype>& local,
+                            arma::Mat<ctype>& outNormal) const = 0;
 
     %apply arma::Row<ctype>& ARGOUT_ROW { arma::Row<ctype>& outIntElement };
     virtual void getIntegrationElements(const arma::Mat<ctype>& local,
@@ -127,6 +130,7 @@ public:
     %clear const arma::Mat<ctype>& global_;
     %clear arma::Mat<ctype>& outLocal;
     %clear arma::Mat<ctype>& outGlobal;
+    %clear arma::Mat<ctype>& outNormal;
 };
 
 } // namespace Bempp

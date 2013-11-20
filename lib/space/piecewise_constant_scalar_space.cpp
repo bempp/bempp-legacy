@@ -19,13 +19,19 @@
 // THE SOFTWARE.
 
 #include "piecewise_constant_scalar_space.hpp"
+#include "piecewise_constant_scalar_space_barycentric.hpp"
 
+#include "space_helper.hpp"
+
+#include "../common/acc.hpp"
+#include "../common/bounding_box_helpers.hpp"
 #include "../common/not_implemented_error.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 #include "../grid/entity.hpp"
 #include "../grid/entity_iterator.hpp"
 #include "../grid/geometry.hpp"
 #include "../grid/grid.hpp"
+#include "../grid/grid_segment.hpp"
 #include "../grid/grid_view.hpp"
 #include "../grid/mapper.hpp"
 #include "../grid/vtk_writer.hpp"
@@ -36,9 +42,20 @@ namespace Bempp
 template <typename BasisFunctionType>
 PiecewiseConstantScalarSpace<BasisFunctionType>::
 PiecewiseConstantScalarSpace(const shared_ptr<const Grid>& grid) :
-     ScalarSpace<BasisFunctionType>(grid), m_view(grid->leafView())
+     ScalarSpace<BasisFunctionType>(grid), m_view(grid->leafView()),
+     m_segment(GridSegment::wholeGrid(*grid))
 {
-    assignDofsImpl();
+    assignDofsImpl(m_segment);
+}
+
+template <typename BasisFunctionType>
+PiecewiseConstantScalarSpace<BasisFunctionType>::
+PiecewiseConstantScalarSpace(const shared_ptr<const Grid>& grid,
+                             const GridSegment& segment) :
+     ScalarSpace<BasisFunctionType>(grid), m_view(grid->leafView()),
+     m_segment(segment)
+{
+    assignDofsImpl(m_segment);
 }
 
 template <typename BasisFunctionType>
@@ -73,11 +90,11 @@ int PiecewiseConstantScalarSpace<BasisFunctionType>::codomainDimension() const
 }
 
 template <typename BasisFunctionType>
-const Fiber::Basis<BasisFunctionType>&
-PiecewiseConstantScalarSpace<BasisFunctionType>::basis(
+const Fiber::Shapeset<BasisFunctionType>&
+PiecewiseConstantScalarSpace<BasisFunctionType>::shapeset(
         const Entity<0>& element) const
 {
-    return m_basis;
+    return m_shapeset;
 }
 
 template <typename BasisFunctionType>
@@ -94,6 +111,44 @@ ElementVariant PiecewiseConstantScalarSpace<BasisFunctionType>::elementVariant(
 }
 
 template <typename BasisFunctionType>
+bool PiecewiseConstantScalarSpace<BasisFunctionType>::
+spaceIsCompatible(const Space<BasisFunctionType>& other) const
+{
+
+    if (other.grid().get()==this->grid().get()){
+        return (other.spaceIdentifier()==this->spaceIdentifier());
+    }
+    else {
+        if (other.spaceIdentifier()==PIECEWISE_CONSTANT_SCALAR_BARYCENTRIC){
+            // Check if the other grid is the barycentric version of this grid
+            return other.grid()->isBarycentricRepresentationOf(*(this->grid()));
+        }
+        else {
+            return false;
+        }
+    }
+}
+
+template <typename BasisFunctionType>
+shared_ptr<const Space<BasisFunctionType> >
+PiecewiseConstantScalarSpace<BasisFunctionType>::barycentricSpace(
+            const shared_ptr<const Space<BasisFunctionType> >& self) const {
+
+    if (!m_barycentricSpace) {
+        tbb::mutex::scoped_lock lock(m_barycentricSpaceMutex);
+        typedef PiecewiseConstantScalarSpaceBarycentric<BasisFunctionType>
+                BarycentricSpace;
+        if (!m_barycentricSpace)
+            m_barycentricSpace.reset(
+                        new BarycentricSpace(this->grid(), m_segment));
+    }
+    return m_barycentricSpace;
+
+
+}
+
+
+template <typename BasisFunctionType>
 void PiecewiseConstantScalarSpace<BasisFunctionType>::setElementVariant(
         const Entity<0>& element, ElementVariant variant)
 {
@@ -104,7 +159,8 @@ void PiecewiseConstantScalarSpace<BasisFunctionType>::setElementVariant(
 }
 
 template <typename BasisFunctionType>
-void PiecewiseConstantScalarSpace<BasisFunctionType>::assignDofsImpl()
+void PiecewiseConstantScalarSpace<BasisFunctionType>::assignDofsImpl(
+        const GridSegment& segment)
 {
     const Mapper& mapper = m_view->elementMapper();
     std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
@@ -128,13 +184,18 @@ void PiecewiseConstantScalarSpace<BasisFunctionType>::assignDofsImpl()
     while (!it->finished())
     {
         EntityIndex index = mapper.entityIndex(it->entity());
-        globalDofs[0] = globalDofCount_++;
-        localDofs[0] = LocalDof(index, 0 /* local DOF #0 */);
+        if (segment.contains(0, index)) {
+            // std::cout << "contains " << index << "\n";
+            localDofs[0] = LocalDof(index, 0 /* local DOF #0 */);
+            m_global2localDofs.push_back(localDofs);
+            globalDofs[0] = globalDofCount_++;
+        } else {
+            // std::cout << "does not contain " << index << "\n";
+            globalDofs[0] = -1;
+        }
         m_local2globalDofs[index] = globalDofs;
-        m_global2localDofs.push_back(localDofs);
         it->next();
     }
-    assert(globalDofCount_ == elementCount);
 }
 
 template <typename BasisFunctionType>
@@ -180,34 +241,33 @@ void PiecewiseConstantScalarSpace<BasisFunctionType>::flatLocal2localDofs(
 }
 
 template <typename BasisFunctionType>
+void PiecewiseConstantScalarSpace<BasisFunctionType>::
+getGlobalDofInterpolationPoints(arma::Mat<CoordinateType>& points) const
+{
+    SpaceHelper<BasisFunctionType>::
+            getGlobalDofInterpolationPoints_defaultImplementation(
+                *this, points);
+}
+
+template <typename BasisFunctionType>
+void PiecewiseConstantScalarSpace<BasisFunctionType>::
+getNormalsAtGlobalDofInterpolationPoints(arma::Mat<CoordinateType>& normals) const
+{
+    SpaceHelper<BasisFunctionType>::
+            getNormalsAtGlobalDofInterpolationPoints_defaultImplementation(
+                *this, normals);
+}
+
+template <typename BasisFunctionType>
 void PiecewiseConstantScalarSpace<BasisFunctionType>::getGlobalDofPositions(
         std::vector<Point3D<CoordinateType> >& positions) const
 {
-    const int gridDim = domainDimension();
-    const int globalDofCount_ = globalDofCount();
-    positions.resize(globalDofCount_);
+    std::vector<BoundingBox<CoordinateType> > bboxes;
+    getGlobalDofBoundingBoxes(bboxes);
 
-    const Mapper& mapper = m_view->elementMapper();
-
-    if (gridDim == 1)
-        throw NotImplementedError(
-                "PiecewiseConstantScalarSpace::globalDofPositions(): "
-                "not implemented for 2D yet.");
-    else {
-        std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
-        while (!it->finished())
-        {
-            const Entity<0>& e = it->entity();
-            int index = mapper.entityIndex(e);
-            arma::Col<CoordinateType> center;
-            e.geometry().getCenter(center);
-
-            positions[index].x = center(0);
-            positions[index].y = center(1);
-            positions[index].z = center(2);
-            it->next();
-        }
-    }
+    positions.resize(bboxes.size());
+    for (int i = 0; i < positions.size(); ++i)
+        positions[i] = bboxes[i].reference;
 }
 
 template <typename BasisFunctionType>
@@ -221,56 +281,42 @@ template <typename BasisFunctionType>
 void PiecewiseConstantScalarSpace<BasisFunctionType>::getGlobalDofBoundingBoxes(
        std::vector<BoundingBox<CoordinateType> >& bboxes) const
 {
-   const int gridDim = domainDimension();
-   const int globalDofCount_ = globalDofCount();
-   bboxes.resize(globalDofCount_);
+    const IndexSet& indexSet = m_view->indexSet();
+    const int elementCount = m_view->entityCount(0);
 
-   const Mapper& mapper = m_view->elementMapper();
-   arma::Mat<CoordinateType> corners;
+    std::vector<arma::Mat<CoordinateType> > elementCorners(elementCount);
+    std::vector<arma::Col<CoordinateType> > elementCenters(elementCount);
+    std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
+    while (!it->finished()) {
+        const Entity<0>& e = it->entity();
+        int index = indexSet.entityIndex(e);
+        const Geometry& geo = e.geometry();
+        geo.getCorners(acc(elementCorners, index));
+        geo.getCenter(acc(elementCenters, index));
+        it->next();
+    }
 
-   if (gridDim == 1)
-       throw NotImplementedError(
-               "PiecewiseConstantScalarSpace::globalDofPositions(): "
-               "not implemented for 2D yet.");
-   else {
-       std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
-       while (!it->finished())
-       {
-           const Entity<0>& e = it->entity();
-           int index = mapper.entityIndex(e);
-           arma::Col<CoordinateType> center;
-           const Geometry& geo = e.geometry();
-           geo.getCenter(center);
-           BoundingBox<CoordinateType>& bbox = bboxes[index];
-           bbox.reference.x = center(0);
-           bbox.reference.y = center(1);
-           bbox.reference.z = center(2);
+    BoundingBox<CoordinateType> model;
+    const CoordinateType maxCoord = std::numeric_limits<CoordinateType>::max();
+    model.lbound.x = model.lbound.y = model.lbound.z = maxCoord;
+    model.ubound.x = model.ubound.y = model.ubound.z = -maxCoord;
 
-           geo.getCorners(corners);
-           assert(corners.n_cols > 0);
-           bbox.lbound.x = corners(0, 0);
-           bbox.lbound.y = corners(1, 0);
-           bbox.lbound.z = corners(2, 0);
-           bbox.ubound = bbox.lbound;
-           for (size_t i = 1; i < corners.n_cols; ++i) {
-               bbox.lbound.x = std::min(bbox.lbound.x, corners(0, i));
-               bbox.lbound.y = std::min(bbox.lbound.y, corners(1, i));
-               bbox.lbound.z = std::min(bbox.lbound.z, corners(2, i));
-               bbox.ubound.x = std::max(bbox.ubound.x, corners(0, i));
-               bbox.ubound.y = std::max(bbox.ubound.y, corners(1, i));
-               bbox.ubound.z = std::max(bbox.ubound.z, corners(2, i));
-           }
-           it->next();
-       }
-   }
+    const int globalDofCount_ = m_global2localDofs.size();
+    bboxes.resize(globalDofCount_, model);
+    for (int i = 0; i < globalDofCount_; ++i) {
+        const std::vector<LocalDof>& localDofs = acc(m_global2localDofs, i);
+        BoundingBox<CoordinateType>& bbox = acc(bboxes, i);
+        for (int j = 0; j < localDofs.size(); ++j)
+            extendBoundingBox(bbox, acc(elementCorners,
+                                        acc(localDofs, j).entityIndex));
+        assert(!localDofs.empty());
+        setBoundingBoxReference<CoordinateType>(
+                    bbox,
+                    acc(elementCenters, localDofs[0].entityIndex));
+    }
 
 #ifndef NDEBUG
-   std::vector<Point3D<CoordinateType> > positions;
-   getGlobalDofPositions(positions);
    for (size_t i = 0; i < globalDofCount_; ++i) {
-       assert(bboxes[i].reference.x == positions[i].x);
-       assert(bboxes[i].reference.y == positions[i].y);
-       assert(bboxes[i].reference.z == positions[i].z);
        assert(bboxes[i].reference.x >= bboxes[i].lbound.x);
        assert(bboxes[i].reference.y >= bboxes[i].lbound.y);
        assert(bboxes[i].reference.z >= bboxes[i].lbound.z);
@@ -292,33 +338,9 @@ template <typename BasisFunctionType>
 void PiecewiseConstantScalarSpace<BasisFunctionType>::getGlobalDofNormals(
         std::vector<Point3D<CoordinateType> >& normals) const
 {
-    const int gridDim = domainDimension();
-    const int globalDofCount_ = globalDofCount();
-    normals.resize(globalDofCount_);
-
-    const Mapper& mapper = m_view->elementMapper();
-
-    arma::Col<CoordinateType> center(gridDim);
-    center.fill(0.5);
-    arma::Col<CoordinateType> normal;
-    if (gridDim == 1)
-        throw NotImplementedError(
-                "PiecewiseConstantScalarSpace::globalDofPositions(): "
-                "not implemented for 2D yet.");
-    else {
-        std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
-        while (!it->finished())
-        {
-            const Entity<0>& e = it->entity();
-            int index = mapper.entityIndex(e);
-            e.geometry().getNormals(center, normal);
-
-            normals[index].x = normal(0);
-            normals[index].y = normal(1);
-            normals[index].z = normal(2);
-            it->next();
-        }
-    }
+    SpaceHelper<BasisFunctionType>::
+            getGlobalDofNormals_defaultImplementation(
+                *m_view, m_global2localDofs, normals);
 }
 
 template <typename BasisFunctionType>

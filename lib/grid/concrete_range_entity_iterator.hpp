@@ -29,6 +29,8 @@
 namespace Bempp
 {
 
+class DomainIndex;
+
 /** \ingroup grid_internal
 \brief Iterator over entities referenced by a range of Dune iterators of
 type \p DuneEntityIt.
@@ -45,6 +47,7 @@ private:
     DuneEntityIt m_begin, m_end, m_cur;
     ConcreteEntity<ConcreteRangeEntityIterator::codimension,
                    typename DuneEntityIt::Entity> m_entity;
+    const DomainIndex& m_domain_index;
 
     void updateEntity() {
         if (!this->finished())
@@ -58,8 +61,10 @@ private:
 public:
     /** \brief Constructor. The iterator will go over the range [\p begin, \p end). */
     ConcreteRangeEntityIterator(const DuneEntityIt& begin,
-                                const DuneEntityIt& end) :
-        m_begin(begin), m_end(end), m_cur(begin) {
+                                const DuneEntityIt& end,
+                                const DomainIndex& domain_index) :
+        m_begin(begin), m_end(end), m_cur(begin), m_entity(domain_index),
+        m_domain_index(domain_index) {
         updateFinished();
         updateEntity();
     }
@@ -77,7 +82,8 @@ public:
     virtual std::auto_ptr<EntityPointer<ConcreteRangeEntityIterator::codimension> > frozen() const {
         const int codim = ConcreteRangeEntityIterator::codimension;
         return std::auto_ptr<EntityPointer<codim> >(
-                    new ConcreteEntityPointer<DuneEntityPointer>(*m_cur));
+                    new ConcreteEntityPointer<DuneEntityPointer>(
+                        *m_cur, m_domain_index));
     }
 };
 

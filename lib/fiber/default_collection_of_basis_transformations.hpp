@@ -21,100 +21,27 @@
 #ifndef fiber_default_collection_of_basis_transformations_hpp
 #define fiber_default_collection_of_basis_transformations_hpp
 
-#include "collection_of_basis_transformations.hpp"
+#include "default_collection_of_shapeset_transformations.hpp"
 
 namespace Fiber
 {
 
 /** \ingroup weak_form_elements
- *  \brief Default implementation of a collection of basis function transformations.
-
-    This class implements the interface defined by
-    CollectionOfBasisTransformations using a functor object to evaluate the
-    transformations at specific points.
-
-    \tparam Functor
-      Type of the functor that will be passed to the constructor and used to
-      evaluate a number of basis function transformations at individual points.
-
-    The Functor class should provide the following interface:
-
-    \code
-    class TransformationCollectionFunctor
-    {
-    public:
-        typedef ... CoordinateType; // should be either float or double
-
-        // Return the number of transformations in the collection
-        int transformationCount() const;
-        // Return the dimension of vectors being the values of basis functions
-        // to be transformed
-        int argumentDimension() const;
-        // Return the dimension of vectors produced by i'th transformation
-        int resultDimension(int i) const;
-
-        // Specify types of data required by the transformations (see the
-        // documentation of CollectionOfBasisTransformations::addDependencies()
-        // for details)
-        void addDependencies(size_t& basisDeps, size_t& geomDeps) const;
-
-        // Evaluate the transformation of a basis function whose values and/or
-        // derivatives are provided in the basisData argument, at the point
-        // whose geometrical data are provided in the geomData argument. The
-        // j'th component of the vector being the value of i'th transformation
-        // of the basis function should be written to result[i](j).
-        // This function should accept ValueType equal to either
-        // CoordinateType or std::complex<CoordinateType>
-        template <typename ValueType>
-        void evaluate(
-                const ConstBasisDataSlice<ValueType>& basisData,
-                const ConstGeometricalDataSlice<CoordinateType>& geomData,
-                CollectionOf1dSlicesOf3dArrays<ValueType>& result) const;
-    };
-   \endcode
+ *  \brief Default implementation of a collection of shape function transformations.
+ *
+ *  \deprecated This class is deprecated and provided only for compatibility
+ *  reasons. Use DefaultCollectionOfShapesetTransformations instead.
  */
 template <typename Functor>
 class DefaultCollectionOfBasisTransformations :
-        public CollectionOfBasisTransformations<typename Functor::CoordinateType>
+        public DefaultCollectionOfShapesetTransformations<Functor>
 {
-    typedef CollectionOfBasisTransformations<typename Functor::CoordinateType>
-    Base;
 public:
-    typedef typename Base::CoordinateType CoordinateType;
-    typedef typename Base::ComplexType ComplexType;
-
     explicit DefaultCollectionOfBasisTransformations(const Functor& functor) :
-        m_functor(functor)
+        DefaultCollectionOfShapesetTransformations<Functor>(functor)
     {}
-
-    virtual int transformationCount() const;
-    virtual int argumentDimension() const;
-    virtual int resultDimension(int transformationIndex) const;
-    virtual void addDependencies(size_t& basisDeps, size_t& geomDeps) const;
-
-private:
-    template <typename ValueType>
-    void evaluateImpl(
-            const BasisData<ValueType>& basisData,
-            const GeometricalData<CoordinateType>& geomData,
-            CollectionOf3dArrays<ValueType>& result) const;
-
-    virtual void evaluateImplReal(
-            const BasisData<CoordinateType>& basisData,
-            const GeometricalData<CoordinateType>& geomData,
-            CollectionOf3dArrays<CoordinateType>& result) const;
-
-    virtual void evaluateImplComplex(
-            const BasisData<ComplexType>& basisData,
-            const GeometricalData<CoordinateType>& geomData,
-            CollectionOf3dArrays<ComplexType>& result) const;
-
-private:
-    Functor m_functor;
 };
 
 } // namespace Fiber
-
-#include "default_collection_of_basis_transformations_imp.hpp"
 
 #endif

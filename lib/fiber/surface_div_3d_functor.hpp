@@ -26,7 +26,7 @@
 #include "basis_data.hpp"
 #include "geometrical_data.hpp"
 #include "collection_of_3d_arrays.hpp"
-#include "basis_transformation_functor_wrappers.hpp"
+#include "shape_transformation_functor_wrappers.hpp"
 
 #include <boost/array.hpp>
 
@@ -65,7 +65,7 @@ public:
  *  \brief Functor calculating the surface div of a scalar field in 3D. */
 template <typename CoordinateType_>
 class SurfaceDiv3dFunctor :
-        public ElementaryBasisTransformationFunctorWrapper<
+        public ElementaryShapeTransformationFunctorWrapper<
         SurfaceDiv3dElementaryFunctor<CoordinateType_> >
 {
 public:

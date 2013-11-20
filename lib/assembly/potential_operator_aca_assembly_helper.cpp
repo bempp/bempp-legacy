@@ -116,14 +116,8 @@ PotentialOperatorAcaAssemblyHelper<BasisFunctionType, ResultType>::estimateMinim
             dynamic_cast<const AhmedBemCluster*>(c2));
     // Lower bound on the minimum distance between elements from the two clusters
     CoordinateType minDist = -1.; // negative, read: unknown
-    if (cluster1 && cluster2) {
-        // both getdiam2() and dist2() are effectively const, but not declared so
-        // in AHMED
-        const double diam1 = sqrt(cluster1->getdiam2());
-        const double diam2 = sqrt(cluster2->getdiam2());
-        const double dist = sqrt(cluster1->extDist2(cluster2));
-        minDist = std::max(0., dist - (diam1 + diam2) / 2.);
-    }
+    if (cluster1 && cluster2)
+        minDist = sqrt(cluster1->extDist2(cluster2));
     // else
         // std::cout << "Warning: clusters not available" << std::endl;
     return minDist;

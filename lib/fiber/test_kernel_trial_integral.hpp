@@ -46,7 +46,7 @@ template <typename CoordinateType> class GeometricalData;
  *
  *  defined on a pair of test and trial elements \f$(\Gamma, \Sigma)\f$,
  *  where the integrand \f$f(x, y)\f$ may depend on any number of kernels, test
- *  and trial basis function transformations, and on any geometrical data
+ *  and trial function transformations, and on any geometrical data
  *  related to the points \f$x\f$ and \f$y\f$ (e.g. their global coordinates or
  *  the unit vector normal to \f$\Gamma\f$ and \f$\Sigma\f$ at these points).
  *
@@ -98,7 +98,7 @@ public:
 
         \note It is only necessary to modify \p testGeomDeps and \p
         trialGeomDeps if the geometric quantities occur in the integral
-        <em>outside any kernels or basis function transformations</em>. For
+        <em>outside any kernels or shape function transformations</em>. For
         example, it is not necessary to add \c NORMALS to \p trialGeomDeps just
         because a weak form contains the double-layer-potential boundary
         operator, which requires the normal to the trial element. It is not
@@ -117,7 +117,7 @@ public:
      *  \f[ \int_\Gamma \int_\Sigma I(x, y)\, d\Gamma(x)\, d\Sigma(y) =
      *      \int_{\hat\Gamma} \int_{\hat\Sigma} I(x(\hat x), y(\hat y)) \,
      *      \mu(\hat x) \, \nu(\hat y) \,
-     *      d\hat\Gamma(\hat x)\, d\hat\Sigma(\hat y) \approx1
+     *      d\hat\Gamma(\hat x)\, d\hat\Sigma(\hat y) \approx
      *      \sum_{p=1}^P \sum_{q=1}^Q w_p w_q \, I(x(\hat x_p), y(\hat y_q)) \,
      *      \mu(\hat x_p) \, \nu(\hat y_q), \f]
      *  where \f$\Gamma\f$ and \f$\Sigma\f$ are the test and trial elements,
@@ -141,18 +141,18 @@ public:
      *    The set of available geometrical data always includes integration
      *    elements.
      *  \param[in] testTransformations
-     *    Collection of 3D arrays containing the values of test basis function
+     *    Collection of 3D arrays containing the values of test function
      *    transformations at quadrature points. The number
      *    <tt>testTransformations[i](j, k, p)</tt> is the <em>j</em>th
      *    component of the vector being the value of the <em>i</em>th
-     *    transformation of the <em>k</em>th test basis function at the
+     *    transformation of the <em>k</em>th test function at the
      *    <em>p</em>th test quadrature point.
      *  \param[in] trialTransformations
-     *    Collection of 3D arrays containing the values of trial basis function
+     *    Collection of 3D arrays containing the values of trial function
      *    transformations at quadrature points. The number
      *    <tt>trialTransformations[i](j, k, p)</tt> is the <em>j</em>th
      *    component of the vector being the value of the <em>i</em>th
-     *    transformation of the <em>k</em>th trial basis function at the
+     *    transformation of the <em>k</em>th trial function at the
      *    <em>p</em>th trial quadrature point.
      *  \param[in] kernels
      *    Collection of 4D arrays containing the values of kernels. The number
@@ -168,8 +168,7 @@ public:
      *  \param[out] result
      *    Two-dimensional array whose (<em>i</em>, <em>j</em>)th element should
      *    contain, on output, the value of the integral involving the
-     *    <em>i</em>th test basis function and <em>j</em>th trial basis
-     *    function.
+     *    <em>i</em>th test function and <em>j</em>th trial function.
      */
     virtual void evaluateWithTensorQuadratureRule(
             const GeometricalData<CoordinateType>& testGeomData,
@@ -181,6 +180,63 @@ public:
             const std::vector<CoordinateType>& trialQuadWeights,
             arma::Mat<ResultType>& result) const = 0;
 
+    /** \brief Evaluate the integral using a non-tensor-product quadrature rule.
+     *
+     *  This function should evaluate the integral using a quadrature rule of the
+     *  form
+     *  \f[ \int_\Gamma \int_\Sigma I(x, y)\, d\Gamma(x)\, d\Sigma(y) =
+     *      \int_{\hat\Gamma} \int_{\hat\Sigma} I(x(\hat x), y(\hat y)) \,
+     *      \mu(\hat x) \, \nu(\hat y) \,
+     *      d\hat\Gamma(\hat x)\, d\hat\Sigma(\hat y) \approx
+     *      \sum_{p=1}^P w_p \, I(x(\hat x_p), y(\hat y_p)) \,
+     *      \mu(\hat x_p) \, \nu(\hat y_p), \f]
+     *  where \f$\Gamma\f$ and \f$\Sigma\f$ are the test and trial elements,
+     *  \f$x\f$ and \f$y\f$ the physical coordinates on these elements (global
+     *  coordinates), \f$\hat\Gamma\f$ and \f$\hat\Sigma\f$ the reference test
+     *  and trial elements, \f$\hat x\f$ and \f$\hat y\f$ the coordinates on
+     *  the reference elements (local coordinates), \f$\hat x_p\f$ and \f$\hat
+     *  y_p\f$ the local coordinates of quadrature points on the test and trial
+     *  elements, \f$\hat w_p\f$ the corresponding
+     *  quadrature weights, and \f$\mu(\hat x_p)\f$ and \f$\nu(\hat y_p)\f$ the
+     *  "integration elements" at the quadrature points, defined as
+     *  \f$\sqrt{\lvert\det J^T J\rvert}\f$, where \f$J\f$ is the Jacobian matrix
+     *  of the local-to-global coordinate mapping.
+     *
+     *  \param[in] testGeomData
+     *    Geometrical data related to the quadrature points on the test element.
+     *    The set of available geometrical data always includes integration
+     *    elements.
+     *  \param[in] trialGeomData
+     *    Geometrical data related to the quadrature points on the trial element.
+     *    The set of available geometrical data always includes integration
+     *    elements.
+     *  \param[in] testTransformations
+     *    Collection of 3D arrays containing the values of test function
+     *    transformations at quadrature points. The number
+     *    <tt>testTransformations[i](j, k, p)</tt> is the <em>j</em>th
+     *    component of the vector being the value of the <em>i</em>th
+     *    transformation of the <em>k</em>th test function at the
+     *    <em>p</em>th test quadrature point.
+     *  \param[in] trialTransformations
+     *    Collection of 3D arrays containing the values of trial function
+     *    transformations at quadrature points. The number
+     *    <tt>trialTransformations[i](j, k, p)</tt> is the <em>j</em>th
+     *    component of the vector being the value of the <em>i</em>th
+     *    transformation of the <em>k</em>th trial function at the
+     *    <em>p</em>th trial quadrature point.
+     *  \param[in] kernels
+     *    Collection of 3D arrays containing the values of kernels. The number
+     *    <tt>kernels[i][(j, k, p)</tt> is the (<em>j</em>, <em>k</em>)th
+     *    entry in the tensor being the value of the <em>i</em>th kernel at the
+     *    <em>p</em>th test and trial point.
+     *  \param[in] testQuadWeights
+     *    Vector of the quadrature weights corresponding to the quadrature
+     *    points.
+     *  \param[out] result
+     *    Two-dimensional array whose (<em>i</em>, <em>j</em>)th element should
+     *    contain, on output, the value of the integral involving the
+     *    <em>i</em>th test function and <em>j</em>th trial function.
+     */
     virtual void evaluateWithNontensorQuadratureRule(
             const GeometricalData<CoordinateType>& testGeomData,
             const GeometricalData<CoordinateType>& trialGeomData,

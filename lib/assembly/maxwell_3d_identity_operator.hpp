@@ -82,8 +82,6 @@ public:
     typedef typename Base::CoordinateType CoordinateType;
     /** \copydoc ElementaryLocalOperator::QuadratureStrategy */
     typedef typename Base::QuadratureStrategy QuadratureStrategy;
-    /** \copydoc ElementaryLocalOperator::LocalAssembler */
-    typedef typename Base::LocalAssembler LocalAssembler;
     /** \copydoc ElementaryLocalOperator::CollectionOfBasisTransformations */
     typedef typename Base::CollectionOfBasisTransformations
     CollectionOfBasisTransformations;

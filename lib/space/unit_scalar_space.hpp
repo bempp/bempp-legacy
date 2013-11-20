@@ -26,7 +26,7 @@
 #include "../grid/grid_view.hpp"
 #include "scalar_space.hpp"
 #include "../common/types.hpp"
-#include "../fiber/piecewise_constant_scalar_basis.hpp"
+#include "../fiber/constant_scalar_shapeset.hpp"
 
 #include <map>
 #include <memory>
@@ -55,6 +55,10 @@ public:
         const shared_ptr<const Space<BasisFunctionType> >& self) const;
     virtual bool isDiscontinuous() const;
 
+    virtual SpaceIdentifier spaceIdentifier() const {
+        return UNIT_SCALAR;
+    }
+
     /** \brief Return the variant of element \p element.
      *
      *  Possible return values:
@@ -65,7 +69,15 @@ public:
     virtual void setElementVariant(const Entity<0>& element,
                                    ElementVariant variant);
 
-    virtual const Fiber::Basis<BasisFunctionType>& basis(const Entity<0>& element) const;
+
+    virtual const Fiber::Shapeset<BasisFunctionType>& shapeset(
+            const Entity<0>& element) const;
+
+    virtual bool isBarycentric() const {
+        return false;
+    }
+
+    virtual bool spaceIsCompatible(const Space<BasisFunctionType>& other) const;
 
     virtual size_t globalDofCount() const;
     virtual size_t flatLocalDofCount() const;
@@ -101,7 +113,7 @@ private:
 
 private:
     std::auto_ptr<GridView> m_view;
-    Fiber::PiecewiseConstantScalarBasis<BasisFunctionType> m_basis;
+    Fiber::ConstantScalarShapeset<BasisFunctionType> m_shapeset;
     std::vector<std::vector<GlobalDofIndex> > m_local2globalDofs;
     std::vector<std::vector<LocalDof> > m_global2localDofs;
 };
