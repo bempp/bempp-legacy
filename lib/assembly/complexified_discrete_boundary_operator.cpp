@@ -4,7 +4,7 @@
 #include "../fiber/explicit_instantiation.hpp"
 
 #ifdef WITH_TRILINOS
-#include <Thyra_SpmdVectorSpaceDefaultBase.hpp>
+#include <Thyra_DefaultSpmdVectorSpace_decl.hpp>
 #endif
 
 namespace Bempp

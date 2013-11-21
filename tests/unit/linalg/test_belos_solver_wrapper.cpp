@@ -38,6 +38,7 @@
 #include <boost/version.hpp>
 
 #include <Thyra_DefaultSpmdVector.hpp>
+#include <Thyra_DefaultSpmdVectorSpace_decl.hpp>
 #include <Thyra_DefaultPreconditioner.hpp>
 
 // Tests

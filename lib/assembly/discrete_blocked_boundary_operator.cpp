@@ -33,7 +33,7 @@
 
 #include <numeric>
 #ifdef WITH_TRILINOS
-#include <Thyra_SpmdVectorSpaceDefaultBase.hpp>
+#include <Thyra_DefaultSpmdVectorSpace_decl.hpp>
 #endif // WITH_TRILINOS
 
 namespace Bempp

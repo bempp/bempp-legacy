@@ -13,8 +13,6 @@ from bempp import lib
 # Define the wavenumber
 
 k = 5
-#print 'required value of L = ' + repr(k*2**-2 + 1.8*(6.0)^(2.0/3)*(k*2**-2)**(1.0/3)) + ' (level=2)'
-print 'required value of L = ' + repr(k*2**-2 + 6*(k*2**-2)**(1.0/3)) + ' (level=2)'
 
 def evalDirichletData(point):
     x, y, z = point

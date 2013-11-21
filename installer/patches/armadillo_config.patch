@@ -1,13 +1,13 @@
---- ./config.hpp	2012-05-14 08:28:41.000000000 +0100
-+++ ./config.new.hpp	2012-05-20 17:03:24.000000000 +0100
-@@ -13,14 +13,14 @@
+--- ./config.hpp	2013-08-02 08:05:38.000000000 +0100
++++ ./config.hpp.new	2013-11-20 14:48:08.000000000 +0000
+@@ -8,14 +8,14 @@
  
  
  #if !defined(ARMA_USE_LAPACK)
 -// #define ARMA_USE_LAPACK
 +#define ARMA_USE_LAPACK
  //// Uncomment the above line if you have LAPACK or a high-speed replacement for LAPACK,
- //// such as Intel's MKL, AMD's ACML, or the Accelerate framework.
+ //// such as Intel MKL, AMD ACML, or the Accelerate framework.
  //// LAPACK is required for matrix decompositions (eg. SVD) and matrix inverse.
  #endif
  
@@ -15,5 +15,5 @@
 -// #define ARMA_USE_BLAS
 +#define ARMA_USE_BLAS
  //// Uncomment the above line if you have BLAS or a high-speed replacement for BLAS,
- //// such as GotoBLAS, Intel's MKL, AMD's ACML, or the Accelerate framework.
+ //// such as OpenBLAS, GotoBLAS, Intel MKL, AMD ACML, or the Accelerate framework.
  //// BLAS is used for matrix multiplication.

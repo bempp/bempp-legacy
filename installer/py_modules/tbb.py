@@ -29,7 +29,13 @@ tbb_url_mac='http://threadingbuildingblocks.org/sites/default/files/software_rel
 tbb_url_linux='http://threadingbuildingblocks.org/sites/default/files/software_releases/linux/tbb42_20131003oss_lin.tgz'
 tbb_extract_dir='tbb42_20131003oss'
 tbb_dir='tbb'
-tbb_fname_short='tbb.tgz'
+
+if sys.platform.startswith('darwin'):
+    tbb_fname = tbb_fname_mac
+elif sys.platform.startswith('linux'):
+    tbb_fname = tbb_fname_linux
+else:
+    raise Exception("Platform not supported")
 
 def download(root,config,force=False):
     dep_build_dir=config.get('Main','dependency_build_dir')
@@ -38,14 +44,12 @@ def download(root,config,force=False):
     if sys.platform.startswith('darwin'):
         tbb_download_name=dep_download_dir+"/"+tbb_fname_mac
         tbb_url=tbb_url_mac
-        tbb_fname=tbb_fname_mac
     elif sys.platform.startswith('linux'):
         tbb_download_name=dep_download_dir+"/"+tbb_fname_linux
         tbb_url=tbb_url_linux
-        tbb_fname=tbb_fname_linux
     else:
         raise Exception("Platform not supported")
-    tools.download(tbb_fname_short,tbb_url,dep_download_dir,force)
+    tools.download(tbb_fname,tbb_url,dep_download_dir,force)
 
 def prepare(root,config):
     dep_build_dir=config.get('Main','dependency_build_dir')
@@ -56,11 +60,11 @@ def prepare(root,config):
 
     tools.checkDeleteDirectory(dep_build_dir+"/tbb")
     try:
-        tools.extract_file(dep_download_dir+"/"+tbb_fname_short,dep_build_dir)
+        tools.extract_file(dep_download_dir+"/"+tbb_fname,dep_build_dir)
     except IOError:
         # Possibly a corrupted/truncated file. Try to download once again
         download(root,config,force=True)
-        tools.extract_file(dep_download_dir+"/"+tbb_fname_short,dep_build_dir)
+        tools.extract_file(dep_download_dir+"/"+tbb_fname,dep_build_dir)
     os.rename(dep_build_dir+"/"+tbb_extract_dir,dep_build_dir+"/tbb")
     print "Patching Tbb"
     cwd=os.getcwd()
