@@ -1,6 +1,6 @@
---- ./Teuchos_LAPACK.cpp	2013-04-25 18:15:35.000000000 +0100
-+++ ./Teuchos_LAPACK.new.cpp	2013-04-29 10:42:30.000000000 +0100
-@@ -333,8 +333,8 @@
+--- ./Teuchos_LAPACK.cpp	2013-10-22 17:55:11.000000000 +0100
++++ ./Teuchos_LAPACK.cpp.new	2013-11-20 11:40:51.000000000 +0000
+@@ -333,8 +333,8 @@ namespace Teuchos
    { SGEEVX_F77(CHAR_MACRO(BALANC), CHAR_MACRO(JOBVL), CHAR_MACRO(JOBVR), CHAR_MACRO(SENSE), &n, A, &lda, WR, WI, VL, &ldvl, VR, &ldvr, ilo, ihi, SCALE, abnrm, RCONDE, RCONDV, WORK, &lwork, IWORK, info); }
  
  
@@ -11,7 +11,7 @@
  
  
    void LAPACK<int, float>::GGEV(const char JOBVL, const char JOBVR, const int n, float *A, const int lda, float *B, const int ldb, float *ALPHAR, float *ALPHAI, float *BETA, float *VL, const int ldvl, float *VR, const int ldvr, float *WORK, const int lwork, int *info) const
-@@ -705,9 +705,9 @@
+@@ -721,9 +721,9 @@ namespace Teuchos
    }
  
  
@@ -23,7 +23,7 @@
    }
  
  
-@@ -1149,9 +1149,9 @@
+@@ -1180,9 +1180,9 @@ namespace Teuchos
    }
  
  
@@ -35,7 +35,7 @@
    }
  
  
-@@ -1528,9 +1528,9 @@
+@@ -1559,9 +1559,9 @@ namespace Teuchos
      ZGEEVX_F77(CHAR_MACRO(BALANC), CHAR_MACRO(JOBVL), CHAR_MACRO(JOBVR), CHAR_MACRO(SENSE), &n, A, &lda, W, VL, &ldvl, VR, &ldvr, ilo, ihi, SCALE, abnrm, RCONDE, RCONDV, WORK, &lwork, RWORK, info);
    }
  

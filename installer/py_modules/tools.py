@@ -440,9 +440,44 @@ def which(program):
 
 
         return None
+ 
+def cxxCompilerId(config):
+    """Return the C++ compiler id as string (i.e. "GNU", "CLANG", or "INTEL")
+    """
 
+    if cxxCompilerId.compilerId is not None:
+	    return cxxCompilerId.compilerId
 
+    import tempfile,os,shutil
+    tempDir = tempfile.mkdtemp()
+    cwd = os.getcwd()
+    os.chdir(tempDir)
+    f = open('CMakeLists.txt','w')
+    f.write('cmake_minimum_required(VERSION 2.8) \n file(WRITE "compiler_id" ${CMAKE_CXX_COMPILER_ID})\n')
 
+    f.close()
+    cmake_exe = config.get('CMake','exe')
+    cxx = config.get('Main','cxx')
+    FNULL = open(os.devnull,'w')
+    try:
+        output = check_call(cmake_exe+" -DCMAKE_CXX_COMPILER:STRING="+cxx,shell=True,stdout=FNULL,stderr=subprocess.STDOUT)
+    except subprocess.CalledProcessError, ex:
+	os.chdir(cwd)
+	raise Exception("Call to CMake failed.")
+    try:
+	compilerId = [line.strip() for line in open('compiler_id')][0]
+    except:
+	 os.chdir(cwd)
+	 raise Exception("Cannot read compiler id")
+    #Clean up
+    os.chdir(cwd)
+    shutil.rmtree(tempDir)
+
+    cxxCompilerId.compilerId = compilerId.upper()
+    return cxxCompilerId.compilerId
+
+#Persistent storage of compilerID
+cxxCompilerId.compilerId = None
 
 
 

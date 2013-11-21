@@ -237,7 +237,7 @@ def prepare(root,config):
             cmake.configure(root,config)
             cmake.build(root,config)
             cmake.install(root,config)
-            tools.setDefaultConfigOption(config,"CMake","exe",cmake_executable,overwrite=True)
+            tools.setDefaultConfigOption(config,"CMake","exe",cmake_trial_path,overwrite=True)
         else:
             raise Exception("On OS X Mavericks 'cmake' must be manually specified in the config file.") 
 

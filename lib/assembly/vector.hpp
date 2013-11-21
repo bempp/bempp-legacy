@@ -28,7 +28,8 @@
 #include "../common/armadillo_fwd.hpp"
 
 #ifdef WITH_TRILINOS
-#include <Thyra_DefaultSpmdVector.hpp>
+#include <Thyra_DefaultSpmdVectorSpace_decl.hpp>
+#include <Thyra_DefaultSpmdVector_decl.hpp>
 #endif
 
 namespace Bempp {

@@ -23,9 +23,9 @@ from py_modules import tools
 from py_modules import python_patch as py_patch
 
 
-arma_fname='armadillo-3.2.0.tar.gz'
-arma_url='http://sourceforge.net/projects/arma/files/armadillo-3.2.0.tar.gz'
-arma_extract_dir='armadillo-3.2.0'
+arma_fname='armadillo-3.920.3.tar.gz'
+arma_url='http://sourceforge.net/projects/arma/files/armadillo-3.920.3.tar.gz'
+arma_extract_dir='armadillo-3.920.3'
 arma_dir='armadillo'
 
 

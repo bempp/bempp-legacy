@@ -40,7 +40,7 @@
 #include <Epetra_Vector.h>
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_SerialComm.h>
-#include <Thyra_SpmdVectorSpaceDefaultBase.hpp>
+#include <Thyra_DefaultSpmdVectorSpace_decl.hpp>
 
 namespace Bempp
 {

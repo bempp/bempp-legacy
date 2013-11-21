@@ -33,7 +33,7 @@
 
 #ifdef WITH_TRILINOS
 #include <Thyra_DetachedSpmdVectorView.hpp>
-#include <Thyra_SpmdVectorSpaceDefaultBase.hpp>
+#include <Thyra_DefaultSpmdVectorSpace_decl.hpp>
 #endif
 
 #include <tbb/tick_count.h>
