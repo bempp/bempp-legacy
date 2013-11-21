@@ -441,6 +441,17 @@ def which(program):
 
         return None
 
+def cxxCompilerId(config):
+    """Return the C++ compiler id as string (i.e. "GNU", "CLANG", or "INTEL")
+    """
+
+    import tempfile
+    tempDir = tempfile.mkdtemp()
+    cwd = os.getcwd()
+    os.chdir(tempDir)
+    f = open('CMakeLists.txt','w')
+    f.write('cmake_minimum_required(VERSION 2.8) \n
+             file(WRITE "compiler_id" ${CMAKE_CXX_COMPILER_ID})\n')
 
 
 

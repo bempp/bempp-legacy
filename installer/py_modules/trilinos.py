@@ -78,9 +78,9 @@ def prepare(root,config):
     tools.setDefaultConfigOption(config,'Trilinos','cmake_path',prefix+"/bempp/lib/cmake/Trilinos/",overwrite=True)
 
     tools.setCompilerOptions(config,'Trilinos')
-    trilinos_cxxflags = config.get('Trilinos','cxxflags')
-    trilinos_cxxflags = trilinos_cxxflags+" -Wno-c++11-narrowing"
-    config.set('Trilinos','cxxflags',trilinos_cxxflags)
+    #trilinos_cxxflags = config.get('Trilinos','cxxflags')
+    #trilinos_cxxflags = trilinos_cxxflags+" -Wno-c++11-narrowing"
+    #config.set('Trilinos','cxxflags',trilinos_cxxflags)
    
 
 def configure(root,config):
