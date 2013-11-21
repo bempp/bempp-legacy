@@ -20,7 +20,6 @@
 
 #include "fmm_transform.hpp"
 #include "interpolate_on_sphere.hpp"
-#include "lebedev.hpp"
 #include "legendre_roots.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
@@ -106,16 +105,6 @@ void FmmHighFreq<ValueType>::generateGaussPoints()
 {
 	CoordinateType pi = boost::math::constants::pi<CoordinateType>();
 
-/*	std::vector<lebedev_point_t> lebedev = getLebedevSphere(this->quadraturePointCount());
-
-	for (unsigned int p=0; p < this->quadraturePointCount(); p++) {
-		this->m_s[3*p+0] = lebedev[p].x;
-		this->m_s[3*p+1] = lebedev[p].y;
-		this->m_s[3*p+2] = lebedev[p].z;
-		this->m_w[p] = lebedev[p].w;
-	}
-	return;
-*/
 	// form Gauss-Legendre quadrature points along x = cos(theta)
 	unsigned L = m_Ls[m_Ls.size()-1]; // for leaves
 	CoordinateType costheta[L+1], sintheta[L+1], wtheta[L+1];
