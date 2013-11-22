@@ -33,7 +33,8 @@
 #include "../fiber/simple_test_scalar_kernel_trial_integrand_functor.hpp"
 
 #include "../common/boost_make_shared_fwd.hpp"
-#include "../fmm/fmm_black_box.hpp"
+
+#include "../fmm/fmm_black_box_double_layer.hpp"
 
 #include "../fiber/typical_test_scalar_kernel_trial_integral.hpp"
 
@@ -75,7 +76,7 @@ laplace3dDoubleLayerBoundaryOperator(
     shared_ptr<FmmTransform<ResultType> > fmmTransform;
     if (assemblyOptions.assemblyMode() == AssemblyOptions::FMM) {
         const FmmOptions& fmmOptions = assemblyOptions.fmmOptions();
-        fmmTransform = boost::make_shared<FmmDoubleLayerBlackBox<KernelType, ResultType> >
+        fmmTransform = boost::make_shared<FmmBlackBoxDoubleLayer<KernelType, ResultType> >
             (FmmKernelFunctor(), fmmOptions.expansionOrder, fmmOptions.levels);
     }
 

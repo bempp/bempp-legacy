@@ -34,7 +34,8 @@
 #include "../fiber/simple_test_scalar_kernel_trial_integrand_functor.hpp"
 
 #include "../common/boost_make_shared_fwd.hpp"
-#include "../fmm/fmm_black_box.hpp"
+
+#include "../fmm/fmm_black_box_adjoint_double_layer.hpp"
 
 namespace Bempp
 {
@@ -81,7 +82,7 @@ laplace3dAdjointDoubleLayerBoundaryOperator(
     shared_ptr<FmmTransform<ResultType> > fmmTransform;
     if (assemblyOptions.assemblyMode() == AssemblyOptions::FMM) {
         const FmmOptions& fmmOptions = assemblyOptions.fmmOptions();
-        fmmTransform = boost::make_shared<FmmAdjointDoubleLayerBlackBox<KernelType, ResultType> >
+        fmmTransform = boost::make_shared<FmmBlackBoxAdjointDoubleLayer<KernelType, ResultType> >
             (FmmKernelFunctor(), fmmOptions.expansionOrder, fmmOptions.levels);
     }
 

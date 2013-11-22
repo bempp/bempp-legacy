@@ -26,17 +26,9 @@
 #include "../common/armadillo_fwd.hpp"
 #include "../fiber/scalar_traits.hpp"
 
-// must include interpolate_on_sphere since cannot have vectors of incomplete types
-#include "interpolate_on_sphere.hpp"
-#include <boost/math/special_functions/legendre.hpp>
 
 namespace Bempp
 {
-
-/** \cond FORWARD_DECL */
-//template <typename ValueType> class InterpolateOnSphere;
-/** \endcond */
-
 
 // abstract for now, will use Chebyshev as default in future versions
 template <typename ValueType>
@@ -122,56 +114,6 @@ protected:
 	arma::Mat<CoordinateType> m_quadraturePoints;
 	arma::Col<CoordinateType> m_quadratureWeights;
 	bool m_isCompressedM2L;
-};
-
-// all operations are diagonal in the case of plane wave expansion
-template <typename ValueType>
-class FmmHighFreq : public FmmTransform<ValueType>
-{
-public:
-	typedef typename FmmTransform<ValueType>::CoordinateType CoordinateType;
-
-	FmmHighFreq(ValueType kappa, unsigned int expansionOrder, 
-		unsigned int expansionOrderMax, unsigned int levels);
-
-	// multipole to multipole (M2M) translation matrix
-	virtual arma::Mat<ValueType> M2M(
-		const arma::Col<CoordinateType>& childPosition, 
-		const arma::Col<CoordinateType>& parentPosition,
-		unsigned int level) const;
-
-	// multipole to local (M2L) translation matrix
-	virtual arma::Mat<ValueType> M2L(
-		const arma::Col<CoordinateType>& sourceCentre, 
-		const arma::Col<CoordinateType>& fieldCentre,
-		const arma::Col<CoordinateType>& boxSize,
-		unsigned int level) const;
-
-	// local to local (L2L) translation matrix
-	virtual arma::Mat<ValueType> L2L(
-		const arma::Col<CoordinateType>& parentPosition, 
-		const arma::Col<CoordinateType>& childPosition,
-		unsigned int level) const;
-
-	// interpolate multipole and local coefficients between levels
-	virtual void interpolate(
-		unsigned int levelOld,
-		unsigned int levelNew,
-		const arma::Col<ValueType>& coefficientsOld, 
-		arma::Col<ValueType>& coefficientsNew) const;
-
-	virtual void generateGaussPoints();
-
-	//virtual void getKernelWeight(arma::Mat<ValueType>& kernelWeight) const;
-
-	ValueType kappa() const {return m_kappa;}
-private:
-	ValueType m_kappa;
-	//unsigned int m_L;
-	std::vector<unsigned int> m_Ls;
-
-	std::vector<InterpolateOnSphere<ValueType> > m_interpolatorsUpwards;
-	std::vector<InterpolateOnSphere<ValueType> > m_interpolatorsDownwards;
 };
 
 } // namespace Bempp

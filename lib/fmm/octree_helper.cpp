@@ -19,10 +19,13 @@
 // THE SOFTWARE.
 
 #include "octree_helper.hpp"
-#include "fmm_transform.hpp"
-#include "transmit_receive.hpp"
 #include "octree.hpp"
 #include "octree_node.hpp"
+
+#include "fmm_transform.hpp"
+#include "fmm_farfield_function_multiplying_test.hpp"
+#include "fmm_farfield_function_multiplying_trial.hpp"
+#include "fmm_local_assembler.hpp"
 
 #include "../common/common.hpp"
 #include "../common/types.hpp"
@@ -38,9 +41,6 @@
 #include "../assembly/local_dof_lists_cache.hpp"
 #include "../assembly/surface_normal_independent_function.hpp"
 #include "../assembly/surface_normal_dependent_function.hpp"
-
-#include "transmit_receive.hpp"
-#include "fmm_local_assembler.hpp"
 
 #include <tbb/parallel_for.h>
 #include <tbb/task_scheduler_init.h>
@@ -293,7 +293,7 @@ OctreeFarHelper<BasisFunctionType, ResultType>::evaluateFarFieldIntegrals(
 
 		if (isTest) {
 			// functor reference used in function, so must keep in memory
-			typedef FmmFunctionMultiplyingTest<UserFunctionType> FunctorType;
+			typedef FmmFarfieldFunctionMultiplyingTest<UserFunctionType> FunctorType;
 			FunctorType functor(khat, nodeCentre, nodeSize, fmmTransform);
 			SurfaceNormalDependentFunction<FunctorType> function(functor);
 
@@ -313,7 +313,7 @@ OctreeFarHelper<BasisFunctionType, ResultType>::evaluateFarFieldIntegrals(
 						localResult[nElem]
 						(localDofs[nElem][nDof]);
 		} else {
-			typedef FmmFunctionMultiplyingTrial<UserFunctionType> FunctorType;
+			typedef FmmFarfieldFunctionMultiplyingTrial<UserFunctionType> FunctorType;
 			FunctorType functor(khat, nodeCentre, nodeSize, fmmTransform);
 			SurfaceNormalDependentFunction<FunctorType> function(functor);
 

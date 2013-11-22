@@ -39,7 +39,7 @@
 
 #include <boost/type_traits/is_complex.hpp>
 
-#include "../fmm/transmit_receive.hpp"
+#include "../fmm/fmm_high_frequency_single_layer.hpp"
 
 namespace Bempp
 {
@@ -87,7 +87,7 @@ modifiedHelmholtz3dSingleLayerBoundaryOperator(
     shared_ptr<FmmTransform<ResultType> > fmmTransform;
     if (assemblyOptions.assemblyMode() == AssemblyOptions::FMM) {
         const FmmOptions& fmmOptions = assemblyOptions.fmmOptions();
-        fmmTransform = boost::make_shared<FmmSingleLayerHighFreq<ResultType> >
+        fmmTransform = boost::make_shared<FmmHighFrequencySingleLayer<ResultType> >
             (waveNumber, fmmOptions.expansionOrder, fmmOptions.expansionOrderMax, 
 			fmmOptions.levels);
     }

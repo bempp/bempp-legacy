@@ -18,8 +18,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_black_box_hpp
-#define bempp_black_box_hpp
+#ifndef bempp_fmm_black_box_hpp
+#define bempp_fmm_black_box_hpp
+
+#include "fmm_transform.hpp"
 
 #include <vector>
 
@@ -40,10 +42,6 @@ template <typename KernelFunctor> class DefaultCollectionOfKernels;
 
 namespace Bempp
 {
-
-/** \cond FORWARD_DECL */
-template <typename ValueType> class FmmTransform;
-/** \endcond */
 
 template <typename KernelType, typename ValueType>
 class FmmBlackBox : public FmmTransform<ValueType>
@@ -120,115 +118,6 @@ FmmBlackBox<KernelType, ValueType>::FmmBlackBox(
 {
 	generateGaussPoints();
 }
-
-template <typename KernelType, typename ValueType>
-class FmmSingleLayerBlackBox : public FmmBlackBox<KernelType, ValueType>
-{
-public:
-	typedef typename FmmBlackBox<KernelType, ValueType>::CoordinateType CoordinateType;
-
-	template <typename KernelFunctor>
-	FmmSingleLayerBlackBox(const KernelFunctor& kernelFunctor, unsigned int n, unsigned int levels)
-		: FmmBlackBox<KernelType, ValueType>(kernelFunctor, n, levels) {}
-
-	virtual void evaluateTrial(
-			const arma::Col<CoordinateType>& point,
-			const arma::Col<CoordinateType>& normal,
-			const arma::Col<CoordinateType>& khat,
-			const arma::Col<CoordinateType>& nodeCentre,
-			const arma::Col<CoordinateType>& nodeSize,
-			arma::Col<ValueType>& result) const;
-
-	virtual void evaluateTest(
-			const arma::Col<CoordinateType>& point,
-			const arma::Col<CoordinateType>& normal,
-			const arma::Col<CoordinateType>& khat,
-			const arma::Col<CoordinateType>& nodeCentre,
-			const arma::Col<CoordinateType>& nodeSize,
-			arma::Col<ValueType>& result) const;
-};
-
-template <typename KernelType, typename ValueType>
-class FmmDoubleLayerBlackBox : public FmmBlackBox<KernelType, ValueType>
-{
-public:
-	typedef typename FmmBlackBox<KernelType, ValueType>::CoordinateType CoordinateType;
-
-	template <typename KernelFunctor>
-	FmmDoubleLayerBlackBox(const KernelFunctor& kernelFunctor, unsigned int n, unsigned int levels)
-		: FmmBlackBox<KernelType, ValueType>(kernelFunctor, n, levels) {}
-
-	virtual void evaluateTrial(
-			const arma::Col<CoordinateType>& point,
-			const arma::Col<CoordinateType>& normal,
-			const arma::Col<CoordinateType>& khat,
-			const arma::Col<CoordinateType>& nodeCentre,
-			const arma::Col<CoordinateType>& nodeSize,
-			arma::Col<ValueType>& result) const;
-
-	virtual void evaluateTest(
-			const arma::Col<CoordinateType>& point,
-			const arma::Col<CoordinateType>& normal,
-			const arma::Col<CoordinateType>& khat,
-			const arma::Col<CoordinateType>& nodeCentre,
-			const arma::Col<CoordinateType>& nodeSize,
-			arma::Col<ValueType>& result) const;
-};
-
-template <typename KernelType, typename ValueType>
-class FmmAdjointDoubleLayerBlackBox : public FmmBlackBox<KernelType, ValueType>
-{
-public:
-	typedef typename FmmBlackBox<KernelType, ValueType>::CoordinateType CoordinateType;
-
-	template <typename KernelFunctor>
-	FmmAdjointDoubleLayerBlackBox(const KernelFunctor& kernelFunctor, unsigned int n, unsigned int levels)
-		: FmmBlackBox<KernelType, ValueType>(kernelFunctor, n, levels) {}
-
-	virtual void evaluateTrial(
-			const arma::Col<CoordinateType>& point,
-			const arma::Col<CoordinateType>& normal,
-			const arma::Col<CoordinateType>& khat,
-			const arma::Col<CoordinateType>& nodeCentre,
-			const arma::Col<CoordinateType>& nodeSize,
-			arma::Col<ValueType>& result) const;
-
-	virtual void evaluateTest(
-			const arma::Col<CoordinateType>& point,
-			const arma::Col<CoordinateType>& normal,
-			const arma::Col<CoordinateType>& khat,
-			const arma::Col<CoordinateType>& nodeCentre,
-			const arma::Col<CoordinateType>& nodeSize,
-			arma::Col<ValueType>& result) const;
-};
-
-template <typename KernelType, typename ValueType>
-class FmmHypersingularBlackBox : public FmmBlackBox<KernelType, ValueType>
-{
-public:
-	typedef typename FmmBlackBox<KernelType, ValueType>::CoordinateType CoordinateType;
-
-	template <typename KernelFunctor>
-	FmmHypersingularBlackBox(const KernelFunctor& kernelFunctor, unsigned int n, unsigned int levels)
-		: FmmBlackBox<KernelType, ValueType>(kernelFunctor, n, levels) {}
-
-	virtual void evaluateTrial(
-			const arma::Col<CoordinateType>& point,
-			const arma::Col<CoordinateType>& normal,
-			const arma::Col<CoordinateType>& khat,
-			const arma::Col<CoordinateType>& nodeCentre,
-			const arma::Col<CoordinateType>& nodeSize,
-			arma::Col<ValueType>& result) const;
-
-	virtual void evaluateTest(
-			const arma::Col<CoordinateType>& point,
-			const arma::Col<CoordinateType>& normal,
-			const arma::Col<CoordinateType>& khat,
-			const arma::Col<CoordinateType>& nodeCentre,
-			const arma::Col<CoordinateType>& nodeSize,
-			arma::Col<ValueType>& result) const;
-};
-
 
 } // namespace Bempp
 

@@ -37,7 +37,7 @@
 
 #include <boost/type_traits/is_complex.hpp>
 
-#include "../fmm/fmm_black_box.hpp"
+#include "../fmm/fmm_black_box_single_layer.hpp"
 
 namespace Bempp
 {
@@ -72,7 +72,7 @@ laplace3dSingleLayerBoundaryOperator(
     shared_ptr<FmmTransform<ResultType> > fmmTransform;
     if (assemblyOptions.assemblyMode() == AssemblyOptions::FMM) {
         const FmmOptions& fmmOptions = assemblyOptions.fmmOptions();
-        fmmTransform = boost::make_shared<FmmSingleLayerBlackBox<KernelType, ResultType> >
+        fmmTransform = boost::make_shared<FmmBlackBoxSingleLayer<KernelType, ResultType> >
             (KernelFunctor(), fmmOptions.expansionOrder, fmmOptions.levels);
     }
 
