@@ -66,7 +66,7 @@ modifiedHelmholtz3dSyntheticHypersingularBoundaryOperator(
         int internalSymmetry,
         bool useInterpolation,
         int interpPtsPerWavelength,
-        const shared_ptr<const BoundaryOperator<BasisFunctionType, ResultType> >& externalSlp)
+        const BoundaryOperator<BasisFunctionType, ResultType>& externalSlp)
 {
     typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
 
@@ -118,7 +118,7 @@ modifiedHelmholtz3dSyntheticHypersingularBoundaryOperator(
             uniqueLabel();
 
     BoundaryOperator<BasisFunctionType,ResultType> slp;
-    if (!externalSlp) {
+    if (!externalSlp.isInitialized()) {
 
         slp =
             modifiedHelmholtz3dSingleLayerBoundaryOperator<
@@ -130,7 +130,7 @@ modifiedHelmholtz3dSyntheticHypersingularBoundaryOperator(
     }
     else {
 
-        slp = *externalSlp;
+        slp = externalSlp;
 
     }
 
@@ -205,8 +205,7 @@ modifiedHelmholtz3dSyntheticHypersingularBoundaryOperator(
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType>
-modifiedHelmholtz3dHypersingularBoundaryOperator(
-        const shared_ptr<const Context<BasisFunctionType,ResultType> >& context,
+modifiedHelmholtz3dHypersingularBoundaryOperator(const shared_ptr<const Context<BasisFunctionType,ResultType> >& context,
         const shared_ptr<const Space<BasisFunctionType> >& domain,
         const shared_ptr<const Space<BasisFunctionType> >& range,
         const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
@@ -215,12 +214,12 @@ modifiedHelmholtz3dHypersingularBoundaryOperator(
         int symmetry,
         bool useInterpolation,
         int interpPtsPerWavelength,
-        const shared_ptr<const BoundaryOperator<BasisFunctionType, ResultType> >& externalSlp)
+        const BoundaryOperator<BasisFunctionType, ResultType> &externalSlp)
 {
     const AssemblyOptions& assemblyOptions = context->assemblyOptions();
     if ((assemblyOptions.assemblyMode() == AssemblyOptions::ACA &&
          assemblyOptions.acaOptions().mode == AcaOptions::LOCAL_ASSEMBLY) ||
-            externalSlp)
+            externalSlp.isInitialized())
         return modifiedHelmholtz3dSyntheticHypersingularBoundaryOperator(
             context, domain, range, dualToRange, waveNumber, label,
             symmetry, useInterpolation, interpPtsPerWavelength,externalSlp);
@@ -341,7 +340,7 @@ modifiedHelmholtz3dHypersingularBoundaryOperator(
         const shared_ptr<const Space<BASIS> >&, \
         KERNEL, \
         const std::string&, int, bool, int, \
-        const shared_ptr<const BoundaryOperator<BASIS, RESULT> >& externalSlp)
+        const BoundaryOperator<BASIS, RESULT>& externalSlp)
 
 FIBER_ITERATE_OVER_BASIS_KERNEL_AND_RESULT_TYPES(INSTANTIATE_NONMEMBER_CONSTRUCTOR);
 

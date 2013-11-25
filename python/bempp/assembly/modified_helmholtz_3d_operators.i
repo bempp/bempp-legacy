@@ -3,6 +3,7 @@
 #include "assembly/modified_helmholtz_3d_double_layer_boundary_operator.hpp"
 #include "assembly/modified_helmholtz_3d_adjoint_double_layer_boundary_operator.hpp"
 #include "assembly/modified_helmholtz_3d_hypersingular_boundary_operator.hpp"
+#include "assembly/modified_helmholtz_3d_calderon_projector.hpp"
 %}
 
 namespace Bempp
@@ -15,6 +16,9 @@ namespace Bempp
     modifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator;
 %feature("compactdefaultargs")
     modifiedHelmholtz3dHypersingularBoundaryOperatorPython;
+%feature("compactdefaultargs")
+    modifiedHelmholtz3dExteriorCalderonProjector;
+
 
 %ignore modifiedHelmholtz3dHypersingularBoundaryOperator;
 
@@ -55,6 +59,7 @@ modifiedHelmholtz3dHypersingularBoundaryOperatorPython(
 %include "assembly/modified_helmholtz_3d_single_layer_boundary_operator.hpp"
 %include "assembly/modified_helmholtz_3d_double_layer_boundary_operator.hpp"
 %include "assembly/modified_helmholtz_3d_adjoint_double_layer_boundary_operator.hpp"
+%include "assembly/modified_helmholtz_3d_calderon_projector.hpp"
 //%include "assembly/modified_helmholtz_3d_hypersingular_boundary_operator.hpp"
 #undef shared_ptr
 
@@ -69,6 +74,8 @@ BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(
     modifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator);
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(
     modifiedHelmholtz3dHypersingularBoundaryOperatorPython);
+BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(
+    modifiedHelmholtz3dExteriorCalderonProjector);
 
 
 } // namespace Bempp

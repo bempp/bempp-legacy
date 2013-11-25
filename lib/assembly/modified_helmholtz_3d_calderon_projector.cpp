@@ -19,27 +19,77 @@
 // THE SOFTWARE.
 
 #include "modified_helmholtz_3d_calderon_projector.hpp"
+#include "../common/shared_ptr.hpp"
+
+#include "modified_helmholtz_3d_single_layer_boundary_operator.hpp"
+#include "modified_helmholtz_3d_double_layer_boundary_operator.hpp"
+#include "modified_helmholtz_3d_hypersingular_boundary_operator.hpp"
+#include "identity_operator.hpp"
+#include "blocked_operator_structure.hpp"
+#include "../fiber/explicit_instantiation.hpp"
+
+#include <boost/make_shared.hpp>
+
 
 namespace Bempp {
 
-//template <typename BasisFunctionType>
-//BoundaryOperator<BasisFunctionType,
-//typename ScalarTraits<BasisFunctionType>::ComplexType>
-//externalCalderonProjector(
-//        const shared_ptr<const Context<BasisFunctionType,
-//        typename ScalarTraits<BasisFunctionType>::ComplexType> >& context,
-//        const shared_ptr<const Space<BasisFunctionType> >& hminusSpace,
-//        const shared_ptr<const Space<BasisFunctionType> >& hplusSpace,
-//        typename ScalarTraits<BasisFunctionType>::ComplexType waveNumber,
-//        const std::string& label,
-//        int symmetry,
-//        bool useInterpolation,
-//        int interpPtsPerWavelength) {
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+BlockedBoundaryOperator<BasisFunctionType, ResultType>
+modifiedHelmholtz3dExteriorCalderonProjector(
+        const shared_ptr<const Context<BasisFunctionType,ResultType> >& context,
+        const shared_ptr<const Space<BasisFunctionType> >& hminusSpace,
+        const shared_ptr<const Space<BasisFunctionType> >& hplusSpace,
+        KernelType waveNumber,
+        const std::string& label,
+        int symmetry,
+        bool useInterpolation,
+        int interpPtsPerWavelength) {
+
+    typedef BoundaryOperator<BasisFunctionType,ResultType> BdOp;
+
+    shared_ptr<const Space<BasisFunctionType> > internalHplusSpace = hplusSpace->discontinuousSpace(hplusSpace);
+
+    BdOp internalSlp = modifiedHelmholtz3dSingleLayerBoundaryOperator(context,internalHplusSpace,internalHplusSpace,internalHplusSpace,waveNumber,label+"_slp",symmetry,
+                                                                          useInterpolation,interpPtsPerWavelength);
+
+    BdOp dlp = modifiedHelmholtz3dDoubleLayerBoundaryOperator(context,hplusSpace,hplusSpace,hminusSpace,waveNumber,label+"_dlp",symmetry,
+                                                                                  useInterpolation,interpPtsPerWavelength);
+
+    BdOp adjDlp = adjoint(dlp);
+
+    BdOp hyp = modifiedHelmholtz3dHypersingularBoundaryOperator(context,hplusSpace,hminusSpace,hplusSpace,waveNumber,label+"_hyp",symmetry,
+                                                                        useInterpolation,interpPtsPerWavelength,internalSlp);
+
+    BdOp idSpaceTransformation1 = identityOperator(context,hminusSpace,internalHplusSpace,internalHplusSpace);
+    BdOp idSpaceTransformation2 = identityOperator(context,internalHplusSpace,hplusSpace,hminusSpace);
+    BdOp idDouble = identityOperator(context,hplusSpace,hplusSpace,hminusSpace);
+    BdOp idAdjDouble = identityOperator(context,hminusSpace,hminusSpace,hplusSpace);
+
+    // Now Assemble the entries of the Calderon Projector
+
+    BlockedOperatorStructure<BasisFunctionType,ResultType> structure;
+
+    structure.setBlock(0,0,.5*idDouble+dlp);
+    structure.setBlock(0,1,-1.*idSpaceTransformation2*internalSlp*idSpaceTransformation1);
+    structure.setBlock(1,0,-1.*hyp);
+    structure.setBlock(1,1,.5*idAdjDouble-adjDlp);
+
+    return BlockedBoundaryOperator<BasisFunctionType,ResultType>(structure);
 
 
 
-//}
+}
 
+#define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS, KERNEL, RESULT) \
+    template BlockedBoundaryOperator<BASIS, RESULT> \
+    modifiedHelmholtz3dExteriorCalderonProjector( \
+        const shared_ptr<const Context<BASIS, RESULT> >&, \
+        const shared_ptr<const Space<BASIS> >&, \
+        const shared_ptr<const Space<BASIS> >&, \
+        KERNEL, \
+        const std::string&, int, bool, int)
+
+FIBER_ITERATE_OVER_BASIS_KERNEL_AND_RESULT_TYPES(INSTANTIATE_NONMEMBER_CONSTRUCTOR);
 
 
 } // Bempp
