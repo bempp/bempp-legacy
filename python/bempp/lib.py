@@ -1314,7 +1314,7 @@ def createModifiedHelmholtz3dHypersingularBoundaryOperator(
     complex128.
     """
     return _constructModifiedHelmholtzOperator(
-        "modifiedHelmholtz3dHypersingularBoundaryOperator", context,
+        "modifiedHelmholtz3dHypersingularBoundaryOperatorPython", context,
         domain, range, dualToRange, waveNumber,
         label, useInterpolation, interpPtsPerWavelength)
 

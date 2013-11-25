@@ -1,10 +1,19 @@
 %{
 #include "assembly/boundary_operator.hpp"
+#include <complex>
 %}
 
 // TODO
 // %include "boundary_operator_docstrings.i"
 
+%shared_ptr(Bempp::BoundaryOperator<float,float>);
+%shared_ptr(Bempp::BoundaryOperator<float,std::complex<float> >);
+%shared_ptr(Bempp::BoundaryOperator<double,double >);
+%shared_ptr(Bempp::BoundaryOperator<double,std::complex<double> >);
+%shared_ptr(Bempp::BoundaryOperator<std::complex<float>,std::complex<float> >);
+%shared_ptr(Bempp::BoundaryOperator<std::complex<double>,std::complex<double> >);
+
+#define shared_ptr boost::shared_ptr
 namespace Bempp
 {
 
@@ -78,7 +87,6 @@ BEMPP_EXTEND_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(BoundaryOperator);
 
 } // namespace Bempp
 
-#define shared_ptr boost::shared_ptr
 %include "assembly/boundary_operator.hpp"
 #undef shared_ptr
 

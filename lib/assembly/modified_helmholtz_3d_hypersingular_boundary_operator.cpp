@@ -65,7 +65,8 @@ modifiedHelmholtz3dSyntheticHypersingularBoundaryOperator(
         std::string label,
         int internalSymmetry,
         bool useInterpolation,
-        int interpPtsPerWavelength)
+        int interpPtsPerWavelength,
+        const shared_ptr<const BoundaryOperator<BasisFunctionType, ResultType> >& externalSlp)
 {
     typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
 
@@ -116,13 +117,22 @@ modifiedHelmholtz3dSyntheticHypersingularBoundaryOperator(
         label = AbstractBoundaryOperator<BasisFunctionType, ResultType>::
             uniqueLabel();
 
-    BoundaryOperator<BasisFunctionType, ResultType> slp =
+    BoundaryOperator<BasisFunctionType,ResultType> slp;
+    if (!externalSlp) {
+
+        slp =
             modifiedHelmholtz3dSingleLayerBoundaryOperator<
                     BasisFunctionType, KernelType, ResultType>(
                 internalContext, internalTrialSpace, internalTestSpace /* or whatever */,
                 internalTestSpace,
                 waveNumber, "(" + label + ")_internal_SLP", internalSymmetry,
                 useInterpolation, interpPtsPerWavelength);
+    }
+    else {
+
+        slp = *externalSlp;
+
+    }
 
     // symmetry of the decomposition
     int syntheseSymmetry = 0; // symmetry of the decomposition
@@ -204,14 +214,16 @@ modifiedHelmholtz3dHypersingularBoundaryOperator(
         const std::string& label,
         int symmetry,
         bool useInterpolation,
-        int interpPtsPerWavelength)
+        int interpPtsPerWavelength,
+        const shared_ptr<const BoundaryOperator<BasisFunctionType, ResultType> >& externalSlp)
 {
     const AssemblyOptions& assemblyOptions = context->assemblyOptions();
-    if (assemblyOptions.assemblyMode() == AssemblyOptions::ACA &&
-         assemblyOptions.acaOptions().mode == AcaOptions::LOCAL_ASSEMBLY)
+    if ((assemblyOptions.assemblyMode() == AssemblyOptions::ACA &&
+         assemblyOptions.acaOptions().mode == AcaOptions::LOCAL_ASSEMBLY) ||
+            externalSlp)
         return modifiedHelmholtz3dSyntheticHypersingularBoundaryOperator(
             context, domain, range, dualToRange, waveNumber, label,
-            symmetry, useInterpolation, interpPtsPerWavelength);
+            symmetry, useInterpolation, interpPtsPerWavelength,externalSlp);
 
     typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
 
@@ -328,7 +340,9 @@ modifiedHelmholtz3dHypersingularBoundaryOperator(
         const shared_ptr<const Space<BASIS> >&, \
         const shared_ptr<const Space<BASIS> >&, \
         KERNEL, \
-        const std::string&, int, bool, int)
+        const std::string&, int, bool, int, \
+        const shared_ptr<const BoundaryOperator<BASIS, RESULT> >& externalSlp)
+
 FIBER_ITERATE_OVER_BASIS_KERNEL_AND_RESULT_TYPES(INSTANTIATE_NONMEMBER_CONSTRUCTOR);
 
 } // namespace Bempp
