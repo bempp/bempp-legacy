@@ -18,6 +18,8 @@ namespace Bempp
     modifiedHelmholtz3dHypersingularBoundaryOperatorPython;
 %feature("compactdefaultargs")
     modifiedHelmholtz3dExteriorCalderonProjector;
+%feature("compactdefaultargs")
+    modifiedHelmholtz3dInteriorCalderonProjector;
 
 
 %ignore modifiedHelmholtz3dHypersingularBoundaryOperator;
@@ -76,6 +78,8 @@ BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(
     modifiedHelmholtz3dHypersingularBoundaryOperatorPython);
 BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(
     modifiedHelmholtz3dExteriorCalderonProjector);
+BEMPP_INSTANTIATE_SYMBOL_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(
+    modifiedHelmholtz3dInteriorCalderonProjector);
 
 
 } // namespace Bempp

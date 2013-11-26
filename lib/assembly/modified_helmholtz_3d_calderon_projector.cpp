@@ -80,6 +80,54 @@ modifiedHelmholtz3dExteriorCalderonProjector(
 
 }
 
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+BlockedBoundaryOperator<BasisFunctionType, ResultType>
+modifiedHelmholtz3dInteriorCalderonProjector(
+        const shared_ptr<const Context<BasisFunctionType,ResultType> >& context,
+        const shared_ptr<const Space<BasisFunctionType> >& hminusSpace,
+        const shared_ptr<const Space<BasisFunctionType> >& hplusSpace,
+        KernelType waveNumber,
+        const std::string& label,
+        int symmetry,
+        bool useInterpolation,
+        int interpPtsPerWavelength) {
+
+    typedef BoundaryOperator<BasisFunctionType,ResultType> BdOp;
+
+    shared_ptr<const Space<BasisFunctionType> > internalHplusSpace = hplusSpace->discontinuousSpace(hplusSpace);
+
+    BdOp internalSlp = modifiedHelmholtz3dSingleLayerBoundaryOperator(context,internalHplusSpace,internalHplusSpace,internalHplusSpace,waveNumber,label+"_slp",symmetry,
+                                                                          useInterpolation,interpPtsPerWavelength);
+
+    BdOp dlp = modifiedHelmholtz3dDoubleLayerBoundaryOperator(context,hplusSpace,hplusSpace,hminusSpace,waveNumber,label+"_dlp",symmetry,
+                                                                                  useInterpolation,interpPtsPerWavelength);
+
+    BdOp adjDlp = adjoint(dlp);
+
+    BdOp hyp = modifiedHelmholtz3dHypersingularBoundaryOperator(context,hplusSpace,hminusSpace,hplusSpace,waveNumber,label+"_hyp",symmetry,
+                                                                        useInterpolation,interpPtsPerWavelength,internalSlp);
+
+    BdOp idSpaceTransformation1 = identityOperator(context,hminusSpace,internalHplusSpace,internalHplusSpace);
+    BdOp idSpaceTransformation2 = identityOperator(context,internalHplusSpace,hplusSpace,hminusSpace);
+    BdOp idDouble = identityOperator(context,hplusSpace,hplusSpace,hminusSpace);
+    BdOp idAdjDouble = identityOperator(context,hminusSpace,hminusSpace,hplusSpace);
+
+    // Now Assemble the entries of the Calderon Projector
+
+    BlockedOperatorStructure<BasisFunctionType,ResultType> structure;
+
+    structure.setBlock(0,0,.5*idDouble-dlp);
+    structure.setBlock(0,1,idSpaceTransformation2*internalSlp*idSpaceTransformation1);
+    structure.setBlock(1,0,hyp);
+    structure.setBlock(1,1,.5*idAdjDouble+adjDlp);
+
+    return BlockedBoundaryOperator<BasisFunctionType,ResultType>(structure);
+
+
+
+}
+
+
 #define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS, KERNEL, RESULT) \
     template BlockedBoundaryOperator<BASIS, RESULT> \
     modifiedHelmholtz3dExteriorCalderonProjector( \
