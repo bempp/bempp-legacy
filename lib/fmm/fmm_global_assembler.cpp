@@ -81,8 +81,13 @@ FmmGlobalAssembler<BasisFunctionType, KernelType, ResultType>::assembleDetachedW
         const FmmTransform<ResultType>& fmmTransform,
         const CollectionOfKernels& kernels)
 {
-	//std::cout << "There are " << localAssemblers.size() << " assembler(s)"<< std::endl;
 	const AssemblyOptions& options = context.assemblyOptions();
+
+	const bool verbosityAtLeastDefault =
+            (options.verbosityLevel() >= VerbosityLevel::DEFAULT);
+	const bool verbosityAtLeastHigh =
+            (options.verbosityLevel() >= VerbosityLevel::HIGH);
+
 	const FmmOptions& fmmOptions = options.fmmOptions();
 
 	const bool indexWithGlobalDofs = true;//fmmOptions.globalAssemblyBeforeCompression;
@@ -92,8 +97,6 @@ FmmGlobalAssembler<BasisFunctionType, KernelType, ResultType>::assembleDetachedW
 	const size_t trialDofCount = indexWithGlobalDofs ?
 		trialSpace.globalDofCount() : trialSpace.flatLocalDofCount();
 
-	std::cout << "assembleDetachedWeakForm: test " << testDofCount;
-	std::cout << " trial " << trialDofCount << " herm " << hermitian << std::endl;
 	if (hermitian && testDofCount != trialDofCount)
         throw std::invalid_argument("FmmGlobalAssembler::assembleDetachedWeakForm(): "
                                     "you cannot generate a Hermitian weak form "
@@ -114,12 +117,14 @@ FmmGlobalAssembler<BasisFunctionType, KernelType, ResultType>::assembleDetachedW
 	lowerBound = arma::min(arma::join_rows(lowerBoundTest, lowerBoundTrial), 1);
 	upperBound = arma::max(arma::join_rows(upperBoundTest, upperBoundTrial), 1);
 
-	std::cout << "lower bound = (" << lowerBound[0] << ", ";
-	std::cout << lowerBound[1] << ", " << lowerBound[2] << ')' << std::endl;
-	std::cout << "upper bound = (" << upperBound[0] << ", ";
-	std::cout << upperBound[1] << ", " << upperBound[2] << ')' << std::endl;
+	if (verbosityAtLeastDefault) {
+		std::cout << "lower bound = (" << lowerBound[0] << ", ";
+		std::cout << lowerBound[1] << ", " << lowerBound[2] << ')' << std::endl;
+		std::cout << "upper bound = (" << upperBound[0] << ", ";
+		std::cout << upperBound[1] << ", " << upperBound[2] << ')' << std::endl;
 
-	std::cout << "Caching M2M, M2L and L2L operators" << std::endl;
+		std::cout << "Caching M2M, M2L and L2L operators" << std::endl;
+	}
 	shared_ptr<FmmCache<ResultType> > fmmCache = 
 		boost::make_shared<FmmCache<ResultType> > (fmmTransform, fmmOptions.levels);
 	fmmCache->initCache(
@@ -133,7 +138,8 @@ FmmGlobalAssembler<BasisFunctionType, KernelType, ResultType>::assembleDetachedW
 	shared_ptr<Octree<ResultType> > octree = 
 		boost::make_shared<Octree<ResultType> >(nLevels, fmmTransform, fmmCache, 
 			arma::conv_to<arma::Col<CoordinateType> >::from(lowerBound),
-			arma::conv_to<arma::Col<CoordinateType> >::from(upperBound));
+			arma::conv_to<arma::Col<CoordinateType> >::from(upperBound),
+			verbosityAtLeastDefault, verbosityAtLeastHigh);
 
 	std::vector<Point3D<CoordinateType> > testDofCenters, trialDofCenters;
 	if (indexWithGlobalDofs) {
@@ -147,7 +153,9 @@ FmmGlobalAssembler<BasisFunctionType, KernelType, ResultType>::assembleDetachedW
 	octree->assignPoints(hermitian, testDofCenters, trialDofCenters,
 		test_p2o, trial_p2o);
 
-	std::cout << "Caching near field interactions" << std::endl;
+	if (verbosityAtLeastDefault) {
+		std::cout << "Caching near field interactions" << std::endl;
+	}
 
 	OctreeNearHelper<BasisFunctionType, ResultType> octreeNearHelper(
 		octree, testSpace, trialSpace, localAssemblers, denseTermsMultipliers, 
@@ -163,7 +171,9 @@ FmmGlobalAssembler<BasisFunctionType, KernelType, ResultType>::assembleDetachedW
 	//std::cout << "Caching test far-field interactions" << std::endl;
 	//octreeHelper.evaluateTestFarField(octree, fmmTransform);
 
-	std::cout << "Caching test and trial far-field interactions" << std::endl;
+	if (verbosityAtLeastDefault) {
+		std::cout << "Caching test and trial far-field interactions" << std::endl;
+	}
 
 	OctreeFarHelper<BasisFunctionType, ResultType> octreeFarHelper(
 		octree, testSpace, trialSpace, options, test_p2o, trial_p2o, 

@@ -219,33 +219,54 @@ FmmHighFrequency<ValueType>::M2L(
         unsigned int level) const
 {
     using namespace boost::math;
-    CoordinateType pi = boost::math::constants::pi<CoordinateType>();
+    CoordinateType pi(M_PI);
 
     // form quadrature point helper arrays
     unsigned L = m_Ls[level-2];
-    CoordinateType costheta[L+1], sintheta[L+1], wtheta[L+1];
-    LegendreRoots<CoordinateType>(L+1, costheta, wtheta);
-    for (unsigned int l=0; l<L+1; l++) {
-        sintheta[l] = sqrt(1-costheta[l]*costheta[l]);
-    }
-    CoordinateType cosphi[2*L+1], sinphi[2*L+1];
-    for (unsigned int l=0; l<=2*L; l++) {
-        cosphi[l] = cos(2*pi*l/(2*L+1));
-        sinphi[l] = sin(2*pi*l/(2*L+1));
-    }
     unsigned int quadraturePointCount = (L+1)*(2*L+1);
 
     arma::Col<ValueType> T(quadraturePointCount);
     T.fill(0.0);
 
-    arma::Col<CoordinateType> xvec = fieldCentre - sourceCentre;
-    CoordinateType r = norm(xvec, 2);
-    const arma::Col<CoordinateType>& Rhat = xvec/r;
+    arma::Col<CoordinateType> rvec = fieldCentre - sourceCentre;
+    CoordinateType r = norm(rvec, 2);
+    const arma::Col<CoordinateType>& Rhat = rvec/r;
+
+    // calculate the cos of the angle between Rhat and all quadrature points
+    CoordinateType cosangle[quadraturePointCount];
+    CoordinateType legendreCosangle[2][quadraturePointCount]; // store Legendre polys for (l, l+1)
+    {
+        CoordinateType costheta[L+1], sintheta[L+1], wtheta[L+1];
+        LegendreRoots<CoordinateType>(L+1, costheta, wtheta);
+        for (unsigned int l=0; l<L+1; l++) {
+            sintheta[l] = sqrt(1-costheta[l]*costheta[l]);
+        }
+        CoordinateType cosphi[2*L+1], sinphi[2*L+1];
+        for (unsigned int l=0; l<=2*L; l++) {
+            cosphi[l] = cos(2*pi*l/(2*L+1));
+            sinphi[l] = sin(2*pi*l/(2*L+1));
+        }
+        arma::Col<CoordinateType> khat(3); // slow, do not perform in loop
+        unsigned int p = 0;
+        for (unsigned int ntheta=0; ntheta<L+1; ntheta++) {
+            for (unsigned int m=0; m<=2*L; m++) { // if symmetric quad point along phi 2L->L+1
+                khat(0) = sintheta[ntheta]*cosphi[m];
+                khat(1) = sintheta[ntheta]*sinphi[m];
+                khat(2) = costheta[ntheta];
+
+                cosangle[p] = dot(Rhat, khat);
+                if(cosangle[p]> 1.0) cosangle[p] =  1.0;
+                if(cosangle[p]<-1.0) cosangle[p] = -1.0;
+                legendreCosangle[0][p] = 1;
+                legendreCosangle[1][p] = cosangle[p];
+                p++;
+            }
+        }
+    }
 
     ValueType i = getI<ValueType>();
 
     unsigned int Ldash = L;
-    //L = (3*L)/4;
     for (unsigned int l=0; l<=Ldash; l++) {
         ValueType scaledhl;
         CoordinateType CLLdash = 1.;
@@ -306,25 +327,19 @@ FmmHighFrequency<ValueType>::M2L(
             CLLdash = pow(cos((l-L)*pi/(2*(Ldash-L))), 2);
         }
 
-        arma::Col<CoordinateType> khat(3); // slow! do not perform in loop!
 //        for (unsigned int p = 0; p < this->quadraturePointCount(); p++) {
 //            khat = this->getQuadraturePoint(p);
         // TODO: calculate Pl recursively for the sake of efficiency
         unsigned int p = 0;
-        for (unsigned int ntheta=0; ntheta<L+1; ntheta++) {
-            for (unsigned int m=0; m<=2*L; m++) { // if symmetric quad point along phi 2L->L+1
-                khat(0) = sintheta[ntheta]*cosphi[m];
-                khat(1) = sintheta[ntheta]*sinphi[m];
-                khat(2) = costheta[ntheta];
-
-                CoordinateType costheta = dot(Rhat, khat);
-                if(costheta> 1.0) costheta =  1.0;
-                if(costheta<-1.0) costheta = -1.0;
-                ValueType Tlocal = scaledhl*CLLdash*legendre_p(l, costheta);
-                T(p) += Tlocal;
-                //T(p+L+1) += pow(-1, l)*Tlocal; // if symmetric quad point along phi 
-                p++;
-            }
+        for (unsigned int p=0; p<quadraturePointCount; p++) {
+           //ValueType Tlocal = scaledhl*CLLdash*legendre_p(l, cosangle[p]);
+           ValueType Tlocal = scaledhl*CLLdash*legendreCosangle[0][p];
+           T(p) += Tlocal;
+           //T(p+L+1) += pow(-1, l)*Tlocal; // if symmetric quad point along phi
+           CoordinateType tmp = legendreCosangle[1][p];
+           legendreCosangle[1][p] = ( (2*l+3)*cosangle[p]*legendreCosangle[1][p]
+                - (l+1)*legendreCosangle[0][p] )/(l+2.0);
+           legendreCosangle[0][p] = tmp;
         }
     }
     return T;

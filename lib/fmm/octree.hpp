@@ -65,7 +65,9 @@ public:
 		const FmmTransform<ResultType> &fmmTransform,
 		const shared_ptr<FmmCache<ResultType> > &fmmCache,
 		const arma::Col<CoordinateType> &lowerBound,
-		const arma::Col<CoordinateType> &upperBound);
+		const arma::Col<CoordinateType> &upperBound,
+		bool verbosityAtLeastDefault,
+		bool verbosityAtLeastHigh);
 
 	const OctreeNode<ResultType> &getNodeConst(
 		unsigned long number, unsigned int level) const;
@@ -102,6 +104,8 @@ private:
 	const FmmTransform<ResultType>& m_fmmTransform;
 	arma::Col<CoordinateType> m_lowerBound, m_upperBound;
 	shared_ptr<FmmCache<ResultType> > m_fmmCache;
+	bool m_verbosityAtLeastDefault;
+	bool m_verbosityAtLeastHigh;
 };
 
 } // namespace Bempp

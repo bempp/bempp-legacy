@@ -125,13 +125,16 @@ Octree<ResultType>::Octree(
 		const FmmTransform<ResultType>& fmmTransform,
 		const shared_ptr<FmmCache<ResultType> > &fmmCache,
 		const arma::Col<CoordinateType> &lowerBound,
-		const arma::Col<CoordinateType> &upperBound)
+		const arma::Col<CoordinateType> &upperBound,
+		bool verbosityAtLeastDefault,
+		bool verbosityAtLeastHigh)
 	:	m_topLevel(2), m_levels(levels), 
 		m_fmmTransform(fmmTransform), m_fmmCache(fmmCache),
-		m_lowerBound(lowerBound), m_upperBound(upperBound)
+		m_lowerBound(lowerBound), m_upperBound(upperBound),
+		m_verbosityAtLeastDefault(verbosityAtLeastDefault),
+		m_verbosityAtLeastHigh(verbosityAtLeastHigh)
 {
 	m_OctreeNodes.resize(levels-m_topLevel+1);
-	std::cout << "Octree constructor " << std::endl;
 	// initialise octree stucture (don't bother storing the lowest two levels)
 	for (unsigned int level = m_topLevel; level<=levels; level++) {
 		unsigned int nNodes = getNodesPerLevel(level);
@@ -151,7 +154,9 @@ void Octree<ResultType>::assignPoints(
 	const std::vector<Point3D<CoordinateType> > &trialDofCenters,
 	std::vector<unsigned int> &test_p2o, std::vector<unsigned int> &trial_p2o)
 {
-	std::cout << "Adding points to octree" << std::endl;
+	if (m_verbosityAtLeastDefault) {
+		std::cout << "Adding points to octree" << std::endl;
+	}
 	const unsigned int nLeaves = getNodesPerLevel(m_levels);
 
 	// get permutation for test space
@@ -241,7 +246,9 @@ void Octree<ResultType>::assignPoints(
 	}
 	m_trial_p2o = boost::make_shared<IndexPermutation>(trial_p2o); // check p2o persists
 
-	std::cout << "Building neighbour and interaction lists" << std::endl;
+	if (m_verbosityAtLeastHigh) {
+		std::cout << "Building neighbour and interaction lists" << std::endl;
+	}
 	// generate neighbour information and interaction lists, taking into account empty leaves
 	for (unsigned int level = m_topLevel; level<=m_levels; level++) {
 		unsigned int nNodes = getNodesPerLevel(level);
@@ -326,7 +333,9 @@ void Octree<ResultType>::matrixVectorProduct(
 	y_out_permuted.fill(0.0);
 
 //	std::cout << "Evaluating near field matrix vector product" << std::endl;
-	std::cout << "Near-field, ";
+	if (m_verbosityAtLeastHigh) {
+		std::cout << "Near-field, ";
+	}
 //	for (unsigned int n=0; n<nLeaves; n++) {
 //		getNode(n, m_levels).evaluateNearFieldMatrixVectorProduct(
 //			*this, x_in_permuted, y_out_permuted);
@@ -336,7 +345,9 @@ void Octree<ResultType>::matrixVectorProduct(
 	tbb::parallel_for<size_t>(0, nLeaves, evaluateNearFieldHelper);
 
 //	std::cout << "Evaluating multipole coefficients for leaves" << std::endl;
-	std::cout << "M, ";
+	if (m_verbosityAtLeastHigh) {
+		std::cout << "M, ";
+	}
 //	for (unsigned int n=0; n<nLeaves; n++) {
 //		getNode(n, m_levels).evaluateMultipoleCoefficients(
 //			x_in_permuted);
@@ -347,22 +358,30 @@ void Octree<ResultType>::matrixVectorProduct(
 
 #if defined MULTILEVEL_FMM
 //	std::cout << "Performing upwards step (M2M)" << std::endl;
-	std::cout << "M2M, ";
+	if (m_verbosityAtLeastHigh) {
+		std::cout << "M2M, ";
+	}
 	upwardsStep(m_fmmTransform);
 #endif
 
 	//std::cout << "Performing translation step (M2L): level ";
-	std::cout << "M2L: level";
+	if (m_verbosityAtLeastHigh) {
+		std::cout << "M2L: level";
+	}
 	translationStep(m_fmmTransform);
 
 #if defined MULTILEVEL_FMM
 //	std::cout << "Performing downwards step (L2L)" << std::endl;
-	std::cout << ", L2L, ";
+	if (m_verbosityAtLeastHigh) {
+		std::cout << ", L2L, ";
+	}
 	downwardsStep(m_fmmTransform);
 #endif
 
 //	std::cout << "Evaluating local coefficients for leaves" << std::endl;
-	std::cout << "L." << std::endl;
+	if (m_verbosityAtLeastHigh) {
+		std::cout << "L." << std::endl;
+	}
 //	for (unsigned int n=0; n<nLeaves; n++) {
 //		getNode(n, m_levels).evaluateFarFieldMatrixVectorProduct(
 //			m_fmmTransform.getWeights(), y_out_permuted);
@@ -583,7 +602,9 @@ void Octree<ResultType>::translationStep(
 		unsigned int level = m_levels;
 #endif
 		//std::cout << " - level " << level << " / " << m_levels << std::endl;
-		std::cout << " " << level;
+		if (m_verbosityAtLeastHigh) {
+			std::cout << " " << level;
+		}
 		unsigned int nNodes = getNodesPerLevel(level);
 
 		TranslationStepHelper<ResultType> translationStepHelper(

@@ -31,7 +31,6 @@ namespace Bempp
 
 // see examples/tutorial_dirichlet.cpp
 // and fiber/surface_normal_independent_function.hpp
-// returns the TransmitFunction (Antenna) function for a given Gauss point khat
 
 template <typename ResultType>
 FmmFarfieldFunctionMultiplyingTest<ResultType>::FmmFarfieldFunctionMultiplyingTest(
