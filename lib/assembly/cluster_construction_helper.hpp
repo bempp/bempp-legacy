@@ -38,13 +38,14 @@ template <typename BasisFunctionType> class Space;
 template <typename CoordinateType> struct AhmedDofWrapper;
 template <typename CoordinateType> struct Point3D;
 template <typename CoordinateType> struct BoundingBox;
-class AcaOptions;
+struct AcaOptions;
 class IndexPermutation;
 /** \endcond */
 
 template <typename BasisFunctionType>
-struct ClusterConstructionHelper
+class ClusterConstructionHelper
 {
+  public:
     typedef typename Fiber::ScalarTraits<BasisFunctionType>::RealType CoordinateType;
     typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
     typedef ExtendedBemCluster<AhmedDofType> AhmedBemCluster;

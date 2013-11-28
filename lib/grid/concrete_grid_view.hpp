@@ -54,9 +54,9 @@ public:
     explicit ConcreteGridView(const DuneGridView& dune_gv,
                               const DomainIndex& domain_index) :
         m_dune_gv(dune_gv), m_index_set(&dune_gv.indexSet()),
-        m_element_mapper(dune_gv), m_reverse_element_mapper(*this),
-        m_reverse_element_mapper_is_up_to_date(false),
-        m_domain_index(domain_index)
+        m_element_mapper(dune_gv), m_domain_index(domain_index),
+        m_reverse_element_mapper(*this),
+        m_reverse_element_mapper_is_up_to_date(false)
     {
     }
 

@@ -49,9 +49,9 @@ template <typename BasisFunctionType>
 PiecewiseLinearContinuousScalarSpaceBarycentric<BasisFunctionType>::
 PiecewiseLinearContinuousScalarSpaceBarycentric(const shared_ptr<const Grid>& grid) :
     PiecewiseLinearScalarSpace<BasisFunctionType>(grid->barycentricGrid()),
-    m_originalGrid(grid),
     m_segment(GridSegment::wholeGrid(*grid)),
     m_strictlyOnSegment(false),
+    m_originalGrid(grid),
     m_linearBasisType1(Shapeset::TYPE1),
     m_linearBasisType2(Shapeset::TYPE2)
 {
@@ -65,8 +65,8 @@ PiecewiseLinearContinuousScalarSpaceBarycentric(const shared_ptr<const Grid>& gr
                                      bool strictlyOnSegment) :
     PiecewiseLinearScalarSpace<BasisFunctionType>(grid->barycentricGrid()),
     m_segment(segment),
-    m_originalGrid(grid),
     m_strictlyOnSegment(strictlyOnSegment),
+    m_originalGrid(grid),
     m_linearBasisType1(Shapeset::TYPE1),
     m_linearBasisType2(Shapeset::TYPE2)
 {
@@ -181,9 +181,7 @@ void PiecewiseLinearContinuousScalarSpaceBarycentric<BasisFunctionType>::assignD
     int vertexCountCoarseGrid = viewCoarseGrid.entityCount(gridDim);
     int elementCountCoarseGrid = viewCoarseGrid.entityCount(0);
 
-    const IndexSet& indexSet = view.indexSet();
     const IndexSet& indexSetCoarseGrid = viewCoarseGrid.indexSet();
-
 
     // Assign gdofs to grid vertices (choosing only those that belong to
     // the selected grid segment)

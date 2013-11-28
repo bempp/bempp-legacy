@@ -208,7 +208,6 @@ void UnitScalarSpace<BasisFunctionType>::getGlobalDofPositions(
         while (!it->finished())
         {
             const Entity<0>& e = it->entity();
-            int index = mapper.entityIndex(e);
             arma::Col<CoordinateType> center;
             e.geometry().getCenter(center);
 
@@ -260,7 +259,9 @@ void UnitScalarSpace<BasisFunctionType>::getGlobalDofBoundingBoxes(
        std::vector<BoundingBox<CoordinateType> >& bboxes) const
 {
    const int gridDim = domainDimension();
+#  ifndef NDEBUG
    const int globalDofCount_ = 1;
+#  endif
    assert(globalDofCount() == globalDofCount_);
 
    bboxes.resize(1);

@@ -206,8 +206,6 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::setElementVariant(
 template <typename BasisFunctionType>
 void RaviartThomas0VectorSpace<BasisFunctionType>::assignDofsImpl()
 {
-    const int gridDim = 2;
-
     const Mapper& elementMapper = m_view->elementMapper();
     const IndexSet& indexSet = m_view->indexSet();
 
@@ -216,7 +214,6 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::assignDofsImpl()
 
     // std::cout << "dofMode: " << m_dofMode << std::endl;
 
-    const int vertexCodim = 2;
     const int edgeCodim = 1;
     const int elementCodim = 0;
 

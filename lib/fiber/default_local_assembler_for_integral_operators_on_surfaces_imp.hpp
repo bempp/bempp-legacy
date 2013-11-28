@@ -622,7 +622,6 @@ getIntegrator(const DoubleQuadratureDescriptor& desc)
                 desc, testPoints, trialPoints,
                 testWeights, trialWeights, isTensor);
             Integrator* integrator = 0;
-            const ElementPairTopology& topology = desc.topology;
             if (isTensor) {
                 typedef SeparableNumericalTestKernelTrialIntegrator<BasisFunctionType,
                         KernelType, ResultType, GeometryFactory> ConcreteIntegrator;

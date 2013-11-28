@@ -1169,9 +1169,6 @@ shared_ptr<const Grid> GmshIo::grid() const {
     std::vector<int> elementIndices;
     m_gmshData.getElementIndices(elementIndices);
 
-    int numberOfGmshNodes = m_gmshData.numberOfNodes();
-    int numberOfGmshElements = m_gmshData.numberOfElements();
-
     int maxNodeIndex = *(std::max_element(nodeIndices.begin(),nodeIndices.end()));
     int maxElementIndex = *(std::max_element(elementIndices.begin(),elementIndices.end()));
 
@@ -1416,7 +1413,6 @@ void exportToGmsh(GridFunction<BasisFunctionType,ResultType> gridFunction,
     if (!space)
         throw std::runtime_error("exportToGmsh() must not be "
                                  "called on an uninitialized GridFunction object");
-    const size_t dimWorld = 3;
     if (space->grid()->dimWorld() != 3 || space->grid()->dim() != 2)
         throw std::runtime_error("exportToGmsh(): currently only "
                                  "2D grids in 3D spaces are supported");
@@ -1573,7 +1569,6 @@ void exportToGmsh(GridFunction<BasisFunctionType,ResultType> gridFunction,
 
             const Entity<0>& element = it->entity();
             int elementIndex = indexSet.entityIndex(element);
-            const Geometry& geo = element.geometry();
             arma::Mat<ResultType> values;
             arma::Mat<CoordinateType> modifiedValues;
             gridFunction.evaluate(element, localCoordsOnTriangles[0], values);

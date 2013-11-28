@@ -44,7 +44,7 @@ namespace Dune {
 %extend GeometryType
 {
     GeometryType(unsigned int d) {
-        if (d < 0 || d > 1) {
+        if (d > 1) {
             throw std::invalid_argument("this constructor works only for dimensions 0 and 1");        
         }
         return new Dune::GeometryType(d);

@@ -31,7 +31,7 @@ namespace Fiber
 {
 
 /** \cond FORWARD_DECL */
-template <typename CoordinateType> class GeometricalData;
+template <typename CoordinateType> struct GeometricalData;
 /** \endcond */
 
 /** \brief %Function intended to be evaluated on a boundary-element grid. */

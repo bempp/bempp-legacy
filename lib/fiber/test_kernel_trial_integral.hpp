@@ -34,7 +34,7 @@ namespace Fiber
 /** \cond FORWARD_DECL */
 template <typename T> class CollectionOf3dArrays;
 template <typename T> class CollectionOf4dArrays;
-template <typename CoordinateType> class GeometricalData;
+template <typename CoordinateType> struct GeometricalData;
 /** \endcond */
 
 /** \ingroup weak_form_elements

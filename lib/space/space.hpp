@@ -43,8 +43,8 @@ namespace Fiber
 {
 
 /** \cond FORWARD_DECL */
-template <typename ValueType> class BasisData;
-template <typename CoordinateType> class GeometricalData;
+template <typename ValueType> struct BasisData;
+template <typename CoordinateType> struct GeometricalData;
 /** \endcond */
 
 } // namespace Fiber

@@ -358,7 +358,6 @@ assembleWeakFormImpl(const Context<BasisFunctionType, ResultType>& context) cons
     getContextsForInternalAndAuxiliaryOperators(
         make_shared_from_ref(context), internalContext, auxContext);
 
-    size_t localOperatorCount = m_testLocalOps.size();
     shared_ptr<const DiscreteLinOp> discreteIntegralOp =
         m_integralOp.weakForm();
     std::vector<shared_ptr<const DiscreteLinOp> >

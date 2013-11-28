@@ -59,7 +59,9 @@ public:
             const CollectionOf2dSlicesOfConst4dArrays<KernelType>& kernelValues,
             const CollectionOf1dSlicesOfConstNdArrays<TrialValueType>& trialValues,
             std::vector<ResultType>& result) const {
+#       ifndef NDEBUG
         const int dimWorld = 3;
+#       endif
 
         // Assert that there is at least one vector-valued kernel
         assert(kernelValues.size() >= 1);

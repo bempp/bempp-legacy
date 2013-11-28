@@ -30,8 +30,8 @@ namespace Fiber
 
 /** \cond FORWARD_DECL */
 template <typename T> class CollectionOf3dArrays;
-template <typename ValueType> class BasisData;
-template <typename CoordinateType> class GeometricalData;
+template <typename ValueType> struct BasisData;
+template <typename CoordinateType> struct GeometricalData;
 /** \endcond */
 
 /** \ingroup weak_form_elements

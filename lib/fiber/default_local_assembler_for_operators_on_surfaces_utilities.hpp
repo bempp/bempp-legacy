@@ -39,8 +39,9 @@ template <typename CoordinateType> class RawGridGeometry;
 // the public interface of BEM++ and may change at any time.
 
 template <typename BasisFunctionType>
-struct DefaultLocalAssemblerForOperatorsOnSurfacesUtilities
+class DefaultLocalAssemblerForOperatorsOnSurfacesUtilities
 {
+public:
     typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
 
     static void checkConsistencyOfGeometryAndShapesets(
