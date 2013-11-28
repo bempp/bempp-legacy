@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "fmm_high_frequency.hpp"
+#include "fmm_modified_helmholtz_3d_high_frequency.hpp"
 #include "fmm_transform.hpp"
 #include "interpolate_on_sphere.hpp"
 #include "legendre_roots.hpp"
@@ -42,9 +42,10 @@ template <typename ValueType>
 ValueType getI();
 
 template <typename ValueType>
-FmmHighFrequency<ValueType>::FmmHighFrequency(ValueType kappa, unsigned int expansionOrder, 
+FmmModifiedHelmholtz3dHighFrequency<ValueType>::FmmModifiedHelmholtz3dHighFrequency(
+    ValueType kappa, unsigned int expansionOrder, 
     unsigned int expansionOrderMax, unsigned int levels)
-     :    m_kappa(kappa), m_Ls(levels-1),
+     :  m_kappa(kappa), m_Ls(levels-1),
         m_interpolatorsUpwards(levels-2), m_interpolatorsDownwards(levels-2), 
         FmmTransform<ValueType>((expansionOrder+1)*(2*expansionOrder+1), levels, false)
 {
@@ -80,7 +81,7 @@ FmmHighFrequency<ValueType>::FmmHighFrequency(ValueType kappa, unsigned int expa
 }
 
 template <typename ValueType>
-void FmmHighFrequency<ValueType>::generateGaussPoints()
+void FmmModifiedHelmholtz3dHighFrequency<ValueType>::generateGaussPoints()
 {
     CoordinateType pi = boost::math::constants::pi<CoordinateType>();
 
@@ -117,7 +118,7 @@ void FmmHighFrequency<ValueType>::generateGaussPoints()
 // Might be necessary for bbFMM if use a more intelligent interpolation scheme
 // e.g. DFT bases
 template <typename ValueType>
-arma::Mat<ValueType> FmmHighFrequency<ValueType>::M2M(
+arma::Mat<ValueType> FmmModifiedHelmholtz3dHighFrequency<ValueType>::M2M(
         const arma::Col<CoordinateType>& childPosition, 
         const arma::Col<CoordinateType>& parentPosition,
         unsigned int level) const
@@ -158,7 +159,7 @@ arma::Mat<ValueType> FmmHighFrequency<ValueType>::M2M(
 }
 
 template <typename ValueType>
-arma::Mat<ValueType> FmmHighFrequency<ValueType>::L2L(
+arma::Mat<ValueType> FmmModifiedHelmholtz3dHighFrequency<ValueType>::L2L(
         const arma::Col<CoordinateType>& parentPosition, 
         const arma::Col<CoordinateType>& childPosition,
         unsigned int level) const
@@ -169,7 +170,7 @@ arma::Mat<ValueType> FmmHighFrequency<ValueType>::L2L(
 
 template <typename ValueType>
 void 
-FmmHighFrequency<ValueType>::interpolate(
+FmmModifiedHelmholtz3dHighFrequency<ValueType>::interpolate(
         unsigned int levelOld,
         unsigned int levelNew,
         const arma::Col<ValueType>& coefficientsOld, 
@@ -212,7 +213,7 @@ double imag(double x)
 
 template <typename ValueType>
 arma::Mat<ValueType> 
-FmmHighFrequency<ValueType>::M2L(
+FmmModifiedHelmholtz3dHighFrequency<ValueType>::M2L(
         const arma::Col<CoordinateType>& sourceCentre, 
         const arma::Col<CoordinateType>& fieldCentre,
         const arma::Col<CoordinateType>& boxSize, // get rid of later
@@ -345,6 +346,6 @@ FmmHighFrequency<ValueType>::M2L(
     return T;
 }
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(FmmHighFrequency);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(FmmModifiedHelmholtz3dHighFrequency);
 
 } // namespace Bempp

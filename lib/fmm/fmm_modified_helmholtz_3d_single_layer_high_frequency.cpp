@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "fmm_high_frequency_single_layer.hpp"
-#include "fmm_high_frequency.hpp"
+#include "fmm_modified_helmholtz_3d_single_layer_high_frequency.hpp"
+#include "fmm_modified_helmholtz_3d_high_frequency.hpp"
 
 #include "../fiber/explicit_instantiation.hpp"
 
@@ -27,7 +27,7 @@ namespace Bempp
 {
 
 template <typename ValueType>
-void FmmHighFrequencySingleLayer<ValueType>::evaluateTrial(
+void FmmModifiedHelmholtz3dSingleLayerHighFrequency<ValueType>::evaluateTrial(
             const arma::Col<CoordinateType>& point,
             const arma::Col<CoordinateType>& normal,
             const arma::Col<CoordinateType>& khat,
@@ -35,13 +35,13 @@ void FmmHighFrequencySingleLayer<ValueType>::evaluateTrial(
             const arma::Col<CoordinateType>& nodeSize,
             arma::Col<ValueType>& result) const
 {
-    ValueType kappa = FmmHighFrequency<ValueType>::kappa();
+    ValueType kappa = FmmModifiedHelmholtz3dHighFrequency<ValueType>::kappa();
     arma::Col<CoordinateType> r = nodeCentre - point;
     result(0) =  exp( -kappa*dot(khat, r) );
 }
 
 template <typename ValueType>
-void FmmHighFrequencySingleLayer<ValueType>::evaluateTest(
+void FmmModifiedHelmholtz3dSingleLayerHighFrequency<ValueType>::evaluateTest(
             const arma::Col<CoordinateType>& point,
             const arma::Col<CoordinateType>& normal,
             const arma::Col<CoordinateType>& khat,
@@ -49,11 +49,11 @@ void FmmHighFrequencySingleLayer<ValueType>::evaluateTest(
             const arma::Col<CoordinateType>& nodeSize,
             arma::Col<ValueType>& result) const
 {
-    ValueType kappa = FmmHighFrequency<ValueType>::kappa();
+    ValueType kappa = FmmModifiedHelmholtz3dHighFrequency<ValueType>::kappa();
     arma::Col<CoordinateType> r = point - nodeCentre;
     result(0) =  exp( -kappa*dot(khat, r) );
 }
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(FmmHighFrequencySingleLayer);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(FmmModifiedHelmholtz3dSingleLayerHighFrequency);
 
 } // namespace Bempp

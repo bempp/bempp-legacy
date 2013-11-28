@@ -51,7 +51,7 @@
 
 #include <boost/type_traits/is_complex.hpp>
 
-#include "../fmm/fmm_high_frequency_hypersingular.hpp"
+#include "../fmm/fmm_modified_helmholtz_3d_hypersingular_high_frequency.hpp"
 
 namespace Bempp
 {
@@ -246,7 +246,7 @@ modifiedHelmholtz3dHypersingularBoundaryOperator(
     shared_ptr<FmmTransform<ResultType> > fmmTransform;
     if (assemblyOptions.assemblyMode() == AssemblyOptions::FMM) {
         const FmmOptions& fmmOptions = assemblyOptions.fmmOptions();
-        fmmTransform = boost::make_shared<FmmHighFrequencyHypersingular<ResultType> >
+        fmmTransform = boost::make_shared<FmmModifiedHelmholtz3dHypersingularHighFrequency<ResultType> >
             (waveNumber, fmmOptions.expansionOrder, fmmOptions.expansionOrderMax, 
 			fmmOptions.levels);
     }

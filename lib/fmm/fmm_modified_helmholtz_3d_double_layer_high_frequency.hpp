@@ -18,41 +18,46 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "fmm_high_frequency_adjoint_double_layer.hpp"
-#include "fmm_high_frequency.hpp"
+#ifndef bempp_fmm_modified_helmholtz_3d_double_layer_high_frequency_hpp
+#define bempp_fmm_modified_helmholtz_3d_double_layer_high_frequency_hpp
 
-#include "../fiber/explicit_instantiation.hpp"
+#include "fmm_modified_helmholtz_3d_high_frequency.hpp"
+
+#include "../common/scalar_traits.hpp"
+#include "../common/armadillo_fwd.hpp"
 
 namespace Bempp
 {
+
 template <typename ValueType>
-void FmmHighFrequencyAdjointDoubleLayer<ValueType>::evaluateTrial(
+class FmmModifiedHelmholtz3dDoubleLayerHighFrequency
+    : public FmmModifiedHelmholtz3dHighFrequency<ValueType>
+{
+public:
+    typedef typename FmmModifiedHelmholtz3dHighFrequency<ValueType>::CoordinateType CoordinateType;
+
+    FmmModifiedHelmholtz3dDoubleLayerHighFrequency(ValueType kappa, unsigned int expansionOrder, 
+        unsigned int expansionOrderMax, unsigned int levels)
+        : FmmModifiedHelmholtz3dHighFrequency<ValueType>(kappa, expansionOrder, 
+            expansionOrderMax, levels) {}
+
+    virtual void evaluateTrial(
             const arma::Col<CoordinateType>& point,
             const arma::Col<CoordinateType>& normal,
             const arma::Col<CoordinateType>& khat,
             const arma::Col<CoordinateType>& nodeCentre,
             const arma::Col<CoordinateType>& nodeSize,
-            arma::Col<ValueType>& result) const
-{
-    ValueType kappa = FmmHighFrequency<ValueType>::kappa();
-    arma::Col<CoordinateType> r = nodeCentre - point;
-    result(0) =  exp( -kappa*dot(khat, r) );
-}
+            arma::Col<ValueType>& result) const;
 
-template <typename ValueType>
-void FmmHighFrequencyAdjointDoubleLayer<ValueType>::evaluateTest(
+    virtual void evaluateTest(
             const arma::Col<CoordinateType>& point,
             const arma::Col<CoordinateType>& normal,
             const arma::Col<CoordinateType>& khat,
             const arma::Col<CoordinateType>& nodeCentre,
             const arma::Col<CoordinateType>& nodeSize,
-            arma::Col<ValueType>& result) const
-{
-    ValueType kappa = FmmHighFrequency<ValueType>::kappa();
-    arma::Col<CoordinateType> r = point - nodeCentre;
-    result(0) =  -kappa*exp( -kappa*dot(khat, r) )*dot(khat, normal);
-}
-
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(FmmHighFrequencyAdjointDoubleLayer);
+            arma::Col<ValueType>& result) const;
+};
 
 } // namespace Bempp
+
+#endif

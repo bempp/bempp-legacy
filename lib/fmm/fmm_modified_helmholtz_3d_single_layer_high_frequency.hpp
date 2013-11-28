@@ -18,10 +18,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_fmm_high_frequency_double_layer_hpp
-#define bempp_fmm_high_frequency_double_layer_hpp
+#ifndef bempp_fmm_modified_helmholtz_3d_single_layer_high_frequency_hpp
+#define bempp_fmm_modified_helmholtz_3d_single_layer_high_frequency_hpp
 
-#include "fmm_high_frequency.hpp"
+#include "fmm_modified_helmholtz_3d_high_frequency.hpp"
 
 #include "../common/scalar_traits.hpp"
 #include "../common/armadillo_fwd.hpp"
@@ -29,19 +29,16 @@
 namespace Bempp
 {
 
-/** \cond FORWARD_DECL */
-//template <typename ResultType> class FmmHighFrequency;
-/** \endcond */
-
 template <typename ValueType>
-class FmmHighFrequencyDoubleLayer : public FmmHighFrequency<ValueType>
+class FmmModifiedHelmholtz3dSingleLayerHighFrequency
+    : public FmmModifiedHelmholtz3dHighFrequency<ValueType>
 {
 public:
-    typedef typename FmmHighFrequency<ValueType>::CoordinateType CoordinateType;
+    typedef typename FmmModifiedHelmholtz3dHighFrequency<ValueType>::CoordinateType CoordinateType;
 
-    FmmHighFrequencyDoubleLayer(ValueType kappa, unsigned int expansionOrder, 
+    FmmModifiedHelmholtz3dSingleLayerHighFrequency(ValueType kappa, unsigned int expansionOrder, 
         unsigned int expansionOrderMax, unsigned int levels)
-        : FmmHighFrequency<ValueType>(kappa, expansionOrder, 
+        : FmmModifiedHelmholtz3dHighFrequency<ValueType>(kappa, expansionOrder, 
             expansionOrderMax, levels) {}
 
     virtual void evaluateTrial(

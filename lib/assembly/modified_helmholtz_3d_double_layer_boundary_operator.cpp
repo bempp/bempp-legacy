@@ -37,7 +37,7 @@
 
 #include "../grid/max_distance.hpp"
 
-#include "../fmm/fmm_high_frequency_double_layer.hpp"
+#include "../fmm/fmm_modified_helmholtz_3d_double_layer_high_frequency.hpp"
 
 namespace Bempp
 {
@@ -85,7 +85,7 @@ modifiedHelmholtz3dDoubleLayerBoundaryOperator(
     shared_ptr<FmmTransform<ResultType> > fmmTransform;
     if (assemblyOptions.assemblyMode() == AssemblyOptions::FMM) {
         const FmmOptions& fmmOptions = assemblyOptions.fmmOptions();
-        fmmTransform = boost::make_shared<FmmHighFrequencyDoubleLayer<ResultType> >
+        fmmTransform = boost::make_shared<FmmModifiedHelmholtz3dDoubleLayerHighFrequency<ResultType> >
             (waveNumber, fmmOptions.expansionOrder, fmmOptions.expansionOrderMax, 
 			fmmOptions.levels);
     }

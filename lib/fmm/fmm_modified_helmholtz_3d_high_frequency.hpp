@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_fmm_high_frequency_hpp
-#define bempp_fmm_high_frequency_hpp
+#ifndef bempp_fmm_modified_helmholtz_3d_high_frequency_hpp
+#define bempp_fmm_modified_helmholtz_3d_high_frequency_hpp
 
 #include "fmm_transform.hpp"
 
@@ -41,12 +41,12 @@ namespace Bempp
 
 // all operations are diagonal in the case of plane wave expansion
 template <typename ValueType>
-class FmmHighFrequency : public FmmTransform<ValueType>
+class FmmModifiedHelmholtz3dHighFrequency : public FmmTransform<ValueType>
 {
 public:
     typedef typename FmmTransform<ValueType>::CoordinateType CoordinateType;
 
-    FmmHighFrequency(ValueType kappa, unsigned int expansionOrder, 
+    FmmModifiedHelmholtz3dHighFrequency(ValueType kappa, unsigned int expansionOrder, 
         unsigned int expansionOrderMax, unsigned int levels);
 
     // multipole to multipole (M2M) translation matrix
