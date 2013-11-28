@@ -60,5 +60,4 @@ modifiedHelmholtz3dInteriorCalderonProjector(
 
 } // Bempp
 
-
 #endif

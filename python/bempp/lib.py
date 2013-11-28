@@ -952,6 +952,133 @@ def createHelmholtz3dHypersingularBoundaryOperator(
         domain, range, dualToRange, waveNumber,
         label, useInterpolation, interpPtsPerWavelength)
 
+def createHelmholtz3dExteriorCalderonProjector(
+    context, hminusSpace, hplusSpace, waveNumber,
+    label=None, useInterpolation=False, interpPtsPerWavelength=5000):
+    """
+    Create and return the exterior Calderon projector for the
+    Helmholtz equation in 3D.
+
+    *Parameters:*
+       - context (Context)
+            A Context object to control the assembly of the weak form of the
+            newly constructed operator.
+       - hminusSpace (Space)
+            Function space representing functions in H^{-1/2}.
+       - hplusSpace (Space)
+            Function space representing functions in H^{+1/2}.
+       - waveNumber (float or complex)
+            Wave number, i.e. the number k in the Helmholtz equation
+            nabla^2 u + k^2 u = 0.
+       - label (string)
+            Textual label of the operator. If set to None (default), a unique
+            label will be generated automatically.
+       - useInterpolation (bool)
+            If set to False (default), the standard exp() function will be used
+            to evaluate the exponential factor occurring in the kernel. If set
+            to True, the exponential factor will be evaluated by piecewise-cubic
+            interpolation of values calculated in advance on a regular
+            grid. This normally speeds up calculations, but might result in a
+            loss of accuracy. This is an experimental feature: use it at your
+            own risk.
+        - interpPtsPerWavelength (int)
+            If useInterpolation is set to True, this parameter determines the
+            number of points per "effective wavelength" (defined as 2 pi /
+            abs(waveNumber)) used to construct the interpolation grid. The
+            default value (5000) is normally enough to reduce the relative or
+            absolute error, *whichever is smaller*, below 100 * machine
+            precision. If useInterpolation is set to False, this parameter is
+            ignored.
+
+    *Returns* a newly constructed BoundaryOperator_BasisFunctionType_ResultType
+    object, with BasisFunctionType and ResultType determined automatically from
+    the context argument and equal to either float32, float64, complex64 or
+    complex128.
+    """
+
+    basisFunctionType = context.basisFunctionType()
+    if (basisFunctionType != hminusSpace.basisFunctionType() or
+        basisFunctionType != hplusSpace.basisFunctionType()):
+            raise TypeError("BasisFunctionType of context and all spaces must be the same")
+    resultType = context.resultType()
+
+    # construct object
+    if not label:
+        label = ""
+    symmetry = 0
+    result = _constructObjectTemplatedOnBasisAndResult(
+        core, 'helmholtz3dExteriorCalderonProjector', basisFunctionType, resultType,
+        context, hminusSpace, hplusSpace, waveNumber, label,
+        symmetry, useInterpolation, interpPtsPerWavelength)
+    result._context = context
+    result._hminusSpace = hminusSpace
+    result._hplusSpace = hplusSpace
+    return result
+
+def createHelmholtz3dInteriorCalderonProjector(
+    context, hminusSpace, hplusSpace, waveNumber,
+    label=None, useInterpolation=False, interpPtsPerWavelength=5000):
+    """
+    Create and return the interior Calderon projector for the
+    Helmholtz equation in 3D.
+
+    *Parameters:*
+       - context (Context)
+            A Context object to control the assembly of the weak form of the
+            newly constructed operator.
+       - hminusSpace (Space)
+            Function space representing functions in H^{-1/2}.
+       - hplusSpace (Space)
+            Function space representing functions in H^{+1/2}.
+       - waveNumber (float or complex)
+            Wave number, i.e. the number k in the Helmholtz equation
+            nabla^2 u + k^2 u = 0.
+       - label (string)
+            Textual label of the operator. If set to None (default), a unique
+            label will be generated automatically.
+       - useInterpolation (bool)
+            If set to False (default), the standard exp() function will be used
+            to evaluate the exponential factor occurring in the kernel. If set
+            to True, the exponential factor will be evaluated by piecewise-cubic
+            interpolation of values calculated in advance on a regular
+            grid. This normally speeds up calculations, but might result in a
+            loss of accuracy. This is an experimental feature: use it at your
+            own risk.
+        - interpPtsPerWavelength (int)
+            If useInterpolation is set to True, this parameter determines the
+            number of points per "effective wavelength" (defined as 2 pi /
+            abs(waveNumber)) used to construct the interpolation grid. The
+            default value (5000) is normally enough to reduce the relative or
+            absolute error, *whichever is smaller*, below 100 * machine
+            precision. If useInterpolation is set to False, this parameter is
+            ignored.
+
+    *Returns* a newly constructed BoundaryOperator_BasisFunctionType_ResultType
+    object, with BasisFunctionType and ResultType determined automatically from
+    the context argument and equal to either float32, float64, complex64 or
+    complex128.
+    """
+
+    basisFunctionType = context.basisFunctionType()
+    if (basisFunctionType != hminusSpace.basisFunctionType() or
+        basisFunctionType != hplusSpace.basisFunctionType()):
+            raise TypeError("BasisFunctionType of context and all spaces must be the same")
+    resultType = context.resultType()
+
+    # construct object
+    if not label:
+        label = ""
+    symmetry = 0
+    result = _constructObjectTemplatedOnBasisAndResult(
+        core, 'helmholtz3dInteriorCalderonProjector', basisFunctionType, resultType,
+        context, hminusSpace, hplusSpace, waveNumber, label,
+        symmetry, useInterpolation, interpPtsPerWavelength)
+    result._context = context
+    result._hminusSpace = hminusSpace
+    result._hplusSpace = hplusSpace
+    return result
+
+
 def _constructHelmholtzPotentialOperator(className, context, waveNumber):
     basisFunctionType = context.basisFunctionType()
     resultType = context.resultType()

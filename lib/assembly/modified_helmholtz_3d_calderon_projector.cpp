@@ -135,7 +135,14 @@ modifiedHelmholtz3dInteriorCalderonProjector(
         const shared_ptr<const Space<BASIS> >&, \
         const shared_ptr<const Space<BASIS> >&, \
         KERNEL, \
-        const std::string&, int, bool, int)
+        const std::string&, int, bool, int); \
+template BlockedBoundaryOperator<BASIS, RESULT> \
+modifiedHelmholtz3dInteriorCalderonProjector( \
+    const shared_ptr<const Context<BASIS, RESULT> >&, \
+    const shared_ptr<const Space<BASIS> >&, \
+    const shared_ptr<const Space<BASIS> >&, \
+    KERNEL, \
+    const std::string&, int, bool, int)
 
 FIBER_ITERATE_OVER_BASIS_KERNEL_AND_RESULT_TYPES(INSTANTIATE_NONMEMBER_CONSTRUCTOR);
 
