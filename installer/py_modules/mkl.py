@@ -81,12 +81,11 @@ def parse_otool_output(output):
     Return (mkl_dirs, mkl_libs)."""
 
     # like "@rpath/libmkl_intel.dylib (compatibility version 0.0.0, current version 0.0.0)"
-    re1 = re.compile(r"\s*@rpath/(.+) \(.+\)")
+    re1 = re.compile(r"\s*@rpath/lib/(.+) \(.+\)")
     # like "@loader_path/libmkl_intel.dylib (compatibility version 0.0.0, current version 0.0.0)"
     re2 = re.compile(r"\s*@loader_path/(.+) \(.+\)")
     # like "/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 111.0.0)"
     re3 = re.compile(r"\s*(.+) \(.+\)")
-
     re_fname = re.compile(r"lib(mkl.*|iomp.*)\.(so|dylib)(\.[^ ]*)?")
     # we assume for now that @rpath == <sys.prefix>/lib
     if hasattr(sys,'base_prefix'):

@@ -161,6 +161,7 @@ Space<BasisFunctionType>& Space<BasisFunctionType>::operator=(const Space<BasisF
     m_grid = other.m_grid;
     m_view = m_grid->levelView(m_level);
     m_elementGeometryFactory = other.m_elementGeometryFactory;
+    return *this;
 }
 
 template <typename BasisFunctionType>

@@ -22,6 +22,7 @@
 #define fiber_scalar_traits_hpp
 
 #include "../common/common.hpp"
+#include <type_traits>
 
 #include <complex>
 
@@ -41,6 +42,10 @@ struct ScalarTraits {
 
     typedef T RealType;	
     typedef T ComplexType;
+
+    ScalarTraits() {
+        static_assert(sizeof(T)==0,"ScalarTraits only implemented for real/complex float/double types.");
+    }
 };    
 
 template <>
