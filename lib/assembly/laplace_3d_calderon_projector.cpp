@@ -18,12 +18,13 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "modified_helmholtz_3d_calderon_projector.hpp"
+#include "laplace_3d_calderon_projector.hpp"
+
 #include "../common/shared_ptr.hpp"
 
-#include "modified_helmholtz_3d_single_layer_boundary_operator.hpp"
-#include "modified_helmholtz_3d_double_layer_boundary_operator.hpp"
-#include "modified_helmholtz_3d_hypersingular_boundary_operator.hpp"
+#include "laplace_3d_single_layer_boundary_operator.hpp"
+#include "laplace_3d_double_layer_boundary_operator.hpp"
+#include "laplace_3d_hypersingular_boundary_operator.hpp"
 #include "identity_operator.hpp"
 #include "blocked_operator_structure.hpp"
 #include "../fiber/explicit_instantiation.hpp"
@@ -33,31 +34,26 @@
 
 namespace Bempp {
 
-template <typename BasisFunctionType, typename KernelType, typename ResultType>
+template <typename BasisFunctionType, typename ResultType>
 BlockedBoundaryOperator<BasisFunctionType, ResultType>
-modifiedHelmholtz3dExteriorCalderonProjector(
+laplace3dExteriorCalderonProjector(
         const shared_ptr<const Context<BasisFunctionType,ResultType> >& context,
         const shared_ptr<const Space<BasisFunctionType> >& hminusSpace,
         const shared_ptr<const Space<BasisFunctionType> >& hplusSpace,
-        KernelType waveNumber,
-        const std::string& label,
-        bool useInterpolation,
-        int interpPtsPerWavelength) {
+        const std::string& label) {
 
     typedef BoundaryOperator<BasisFunctionType,ResultType> BdOp;
 
     shared_ptr<const Space<BasisFunctionType> > internalHplusSpace = hplusSpace->discontinuousSpace(hplusSpace);
 
-    BdOp internalSlp = modifiedHelmholtz3dSingleLayerBoundaryOperator(context,internalHplusSpace,internalHplusSpace,internalHplusSpace,waveNumber,label+"_slp",SYMMETRIC,
-                                                                          useInterpolation,interpPtsPerWavelength);
+    BdOp internalSlp = laplace3dSingleLayerBoundaryOperator(context,internalHplusSpace,internalHplusSpace,internalHplusSpace,label+"_slp",SYMMETRIC);
 
-    BdOp dlp = modifiedHelmholtz3dDoubleLayerBoundaryOperator(context,hplusSpace,hplusSpace,hminusSpace,waveNumber,label+"_dlp",NO_SYMMETRY,
-                                                                                  useInterpolation,interpPtsPerWavelength);
+    BdOp dlp = laplace3dDoubleLayerBoundaryOperator(context,hplusSpace,hplusSpace,hminusSpace,label+"_dlp",NO_SYMMETRY);
+
 
     BdOp adjDlp = adjoint(dlp);
 
-    BdOp hyp = modifiedHelmholtz3dHypersingularBoundaryOperator(context,hplusSpace,hminusSpace,hplusSpace,waveNumber,label+"_hyp",SYMMETRIC,
-                                                                        useInterpolation,interpPtsPerWavelength,internalSlp);
+    BdOp hyp = laplace3dHypersingularBoundaryOperator(context,hplusSpace,hminusSpace,hplusSpace,label+"_hyp",SYMMETRIC,internalSlp);
 
     BdOp idSpaceTransformation1 = identityOperator(context,hminusSpace,internalHplusSpace,internalHplusSpace);
     BdOp idSpaceTransformation2 = identityOperator(context,internalHplusSpace,hplusSpace,hminusSpace);
@@ -79,31 +75,25 @@ modifiedHelmholtz3dExteriorCalderonProjector(
 
 }
 
-template <typename BasisFunctionType, typename KernelType, typename ResultType>
+template <typename BasisFunctionType, typename ResultType>
 BlockedBoundaryOperator<BasisFunctionType, ResultType>
-modifiedHelmholtz3dInteriorCalderonProjector(
+laplace3dInteriorCalderonProjector(
         const shared_ptr<const Context<BasisFunctionType,ResultType> >& context,
         const shared_ptr<const Space<BasisFunctionType> >& hminusSpace,
         const shared_ptr<const Space<BasisFunctionType> >& hplusSpace,
-        KernelType waveNumber,
-        const std::string& label,
-        bool useInterpolation,
-        int interpPtsPerWavelength) {
+        const std::string& label) {
 
     typedef BoundaryOperator<BasisFunctionType,ResultType> BdOp;
 
     shared_ptr<const Space<BasisFunctionType> > internalHplusSpace = hplusSpace->discontinuousSpace(hplusSpace);
 
-    BdOp internalSlp = modifiedHelmholtz3dSingleLayerBoundaryOperator(context,internalHplusSpace,internalHplusSpace,internalHplusSpace,waveNumber,label+"_slp",SYMMETRIC,
-                                                                          useInterpolation,interpPtsPerWavelength);
+    BdOp internalSlp = laplace3dSingleLayerBoundaryOperator(context,internalHplusSpace,internalHplusSpace,internalHplusSpace,label+"_slp",SYMMETRIC);
 
-    BdOp dlp = modifiedHelmholtz3dDoubleLayerBoundaryOperator(context,hplusSpace,hplusSpace,hminusSpace,waveNumber,label+"_dlp",NO_SYMMETRY,
-                                                                                  useInterpolation,interpPtsPerWavelength);
+    BdOp dlp = laplace3dDoubleLayerBoundaryOperator(context,hplusSpace,hplusSpace,hminusSpace,label+"_dlp",NO_SYMMETRY);
 
     BdOp adjDlp = adjoint(dlp);
 
-    BdOp hyp = modifiedHelmholtz3dHypersingularBoundaryOperator(context,hplusSpace,hminusSpace,hplusSpace,waveNumber,label+"_hyp",SYMMETRIC,
-                                                                        useInterpolation,interpPtsPerWavelength,internalSlp);
+    BdOp hyp = laplace3dHypersingularBoundaryOperator(context,hplusSpace,hminusSpace,hplusSpace,label+"_hyp",SYMMETRIC,internalSlp);
 
     BdOp idSpaceTransformation1 = identityOperator(context,hminusSpace,internalHplusSpace,internalHplusSpace);
     BdOp idSpaceTransformation2 = identityOperator(context,internalHplusSpace,hplusSpace,hminusSpace);
@@ -126,23 +116,23 @@ modifiedHelmholtz3dInteriorCalderonProjector(
 }
 
 
-#define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS, KERNEL, RESULT) \
+
+#define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS, RESULT) \
     template BlockedBoundaryOperator<BASIS, RESULT> \
-    modifiedHelmholtz3dExteriorCalderonProjector( \
+    laplace3dExteriorCalderonProjector( \
         const shared_ptr<const Context<BASIS, RESULT> >&, \
         const shared_ptr<const Space<BASIS> >&, \
         const shared_ptr<const Space<BASIS> >&, \
-        KERNEL, \
-        const std::string&, bool, int); \
+        const std::string&); \
 template BlockedBoundaryOperator<BASIS, RESULT> \
-modifiedHelmholtz3dInteriorCalderonProjector( \
+laplace3dInteriorCalderonProjector( \
     const shared_ptr<const Context<BASIS, RESULT> >&, \
     const shared_ptr<const Space<BASIS> >&, \
     const shared_ptr<const Space<BASIS> >&, \
-    KERNEL, \
-    const std::string&, bool, int)
+    const std::string&)
 
-FIBER_ITERATE_OVER_BASIS_KERNEL_AND_RESULT_TYPES(INSTANTIATE_NONMEMBER_CONSTRUCTOR);
+FIBER_ITERATE_OVER_BASIS_AND_RESULT_TYPES(INSTANTIATE_NONMEMBER_CONSTRUCTOR);
 
 
 } // Bempp
+

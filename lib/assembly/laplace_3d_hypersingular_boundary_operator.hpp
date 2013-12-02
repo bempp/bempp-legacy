@@ -90,7 +90,9 @@ laplace3dHypersingularBoundaryOperator(
         const shared_ptr<const Space<BasisFunctionType> >& range,
         const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
         const std::string& label = "",
-        int symmetry = NO_SYMMETRY);
+        int symmetry = NO_SYMMETRY,
+        const BoundaryOperator<BasisFunctionType, ResultType>& externalSlp =
+            BoundaryOperator<BasisFunctionType, ResultType>());
 
 } // namespace Bempp
 

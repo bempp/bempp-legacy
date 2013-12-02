@@ -667,8 +667,94 @@ def createLaplace3dHypersingularBoundaryOperator(
     complex128.
     """
     return _constructOperator(
-        "laplace3dHypersingularBoundaryOperator",
+        "laplace3dHypersingularBoundaryOperatorPython",
         context, domain, range, dualToRange, label)
+
+def createLaplace3dExteriorCalderonProjector(
+    context, hminusSpace, hplusSpace,
+    label=None):
+    """
+    Create and return the exterior Calderon projector for the
+    Laplace equation in 3D.
+
+    *Parameters:*
+       - context (Context)
+            A Context object to control the assembly of the weak form of the
+            newly constructed operator.
+       - hminusSpace (Space)
+            Function space representing functions in H^{-1/2}.
+       - hplusSpace (Space)
+            Function space representing functions in H^{+1/2}.
+       - label (string)
+            Textual label of the operator. If set to None (default), a unique
+            label will be generated automatically.
+
+    *Returns* a newly constructed BoundaryOperator_BasisFunctionType_ResultType
+    object, with BasisFunctionType and ResultType determined automatically from
+    the context argument and equal to either float32, float64, complex64 or
+    complex128.
+    """
+
+    basisFunctionType = context.basisFunctionType()
+    if (basisFunctionType != hminusSpace.basisFunctionType() or
+        basisFunctionType != hplusSpace.basisFunctionType()):
+            raise TypeError("BasisFunctionType of context and all spaces must be the same")
+    resultType = context.resultType()
+
+    # construct object
+    if not label:
+        label = ""
+    result = _constructObjectTemplatedOnBasisAndResult(
+        core, 'laplace3dExteriorCalderonProjector', basisFunctionType, resultType,
+        context, hminusSpace, hplusSpace, label)
+    result._context = context
+    result._hminusSpace = hminusSpace
+    result._hplusSpace = hplusSpace
+    return result
+
+
+def createLaplace3dInteriorCalderonProjector(
+    context, hminusSpace, hplusSpace,
+    label=None):
+    """
+    Create and return the interior Calderon projector for the
+    Laplace equation in 3D.
+
+    *Parameters:*
+       - context (Context)
+            A Context object to control the assembly of the weak form of the
+            newly constructed operator.
+       - hminusSpace (Space)
+            Function space representing functions in H^{-1/2}.
+       - hplusSpace (Space)
+            Function space representing functions in H^{+1/2}.
+       - label (string)
+            Textual label of the operator. If set to None (default), a unique
+            label will be generated automatically.
+
+    *Returns* a newly constructed BoundaryOperator_BasisFunctionType_ResultType
+    object, with BasisFunctionType and ResultType determined automatically from
+    the context argument and equal to either float32, float64, complex64 or
+    complex128.
+    """
+
+    basisFunctionType = context.basisFunctionType()
+    if (basisFunctionType != hminusSpace.basisFunctionType() or
+        basisFunctionType != hplusSpace.basisFunctionType()):
+            raise TypeError("BasisFunctionType of context and all spaces must be the same")
+    resultType = context.resultType()
+
+    # construct object
+    if not label:
+        label = ""
+    result = _constructObjectTemplatedOnBasisAndResult(
+        core, 'laplace3dInteriorCalderonProjector', basisFunctionType, resultType,
+        context, hminusSpace, hplusSpace, label)
+    result._context = context
+    result._hminusSpace = hminusSpace
+    result._hplusSpace = hplusSpace
+    return result
+
 
 def _constructLaplacePotentialOperator(className, context):
     basisFunctionType = context.basisFunctionType()
@@ -1005,11 +1091,10 @@ def createHelmholtz3dExteriorCalderonProjector(
     # construct object
     if not label:
         label = ""
-    symmetry = 0
-    result = _constructObjectTemplatedOnBasisAndResult(
-        core, 'helmholtz3dExteriorCalderonProjector', basisFunctionType, resultType,
+    result = _constructObjectTemplatedOnBasis(
+        core, 'helmholtz3dExteriorCalderonProjector', basisFunctionType,
         context, hminusSpace, hplusSpace, waveNumber, label,
-        symmetry, useInterpolation, interpPtsPerWavelength)
+        useInterpolation, interpPtsPerWavelength)
     result._context = context
     result._hminusSpace = hminusSpace
     result._hplusSpace = hplusSpace
@@ -1068,11 +1153,10 @@ def createHelmholtz3dInteriorCalderonProjector(
     # construct object
     if not label:
         label = ""
-    symmetry = 0
-    result = _constructObjectTemplatedOnBasisAndResult(
-        core, 'helmholtz3dInteriorCalderonProjector', basisFunctionType, resultType,
+    result = _constructObjectTemplatedOnBasis(
+        core, 'helmholtz3dInteriorCalderonProjector', basisFunctionType,
         context, hminusSpace, hplusSpace, waveNumber, label,
-        symmetry, useInterpolation, interpPtsPerWavelength)
+        useInterpolation, interpPtsPerWavelength)
     result._context = context
     result._hminusSpace = hminusSpace
     result._hplusSpace = hplusSpace
@@ -1513,11 +1597,10 @@ def createModifiedHelmholtz3dExteriorCalderonProjector(
     # construct object
     if not label:
         label = ""
-    symmetry = 0
     result = _constructObjectTemplatedOnBasisKernelAndResult(
     core, 'modifiedHelmholtz3dExteriorCalderonProjector', basisFunctionType, kernelType, resultType,
     context, hminusSpace, hplusSpace, waveNumber, label,
-    symmetry, useInterpolation, interpPtsPerWavelength)
+    useInterpolation, interpPtsPerWavelength)
     result._context = context
     result._hminusSpace = hminusSpace
     result._hplusSpace = hplusSpace
@@ -1591,11 +1674,10 @@ def createModifiedHelmholtz3dInteriorCalderonProjector(
     # construct object
     if not label:
         label = ""
-    symmetry = 0
     result = _constructObjectTemplatedOnBasisKernelAndResult(
     core, 'modifiedHelmholtz3dInteriorCalderonProjector', basisFunctionType, kernelType, resultType,
     context, hminusSpace, hplusSpace, waveNumber, label,
-    symmetry, useInterpolation, interpPtsPerWavelength)
+    useInterpolation, interpPtsPerWavelength)
     result._context = context
     result._hminusSpace = hminusSpace
     result._hplusSpace = hplusSpace

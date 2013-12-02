@@ -32,14 +32,13 @@ helmholtz3dExteriorCalderonProjector(
         const shared_ptr<const Space<BasisFunctionType> >& hplusSpace,
         typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType waveNumber,
         const std::string& label,
-        int symmetry,
         bool useInterpolation,
         int interpPtsPerWavelength) {
 
     typedef typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType ComplexType;
     return modifiedHelmholtz3dExteriorCalderonProjector(context,hminusSpace,hplusSpace,
                                                         waveNumber / ComplexType(0,1),
-                                                        label, symmetry, useInterpolation, interpPtsPerWavelength);
+                                                        label, useInterpolation, interpPtsPerWavelength);
 
 }
 
@@ -52,14 +51,13 @@ helmholtz3dInteriorCalderonProjector(
         const shared_ptr<const Space<BasisFunctionType> >& hplusSpace,
         typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType waveNumber,
         const std::string& label,
-        int symmetry,
         bool useInterpolation,
         int interpPtsPerWavelength) {
 
     typedef typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType ComplexType;
     return modifiedHelmholtz3dInteriorCalderonProjector(context,hminusSpace,hplusSpace,
                                                         waveNumber / ComplexType(0,1),
-                                                        label, symmetry, useInterpolation, interpPtsPerWavelength);
+                                                        label, useInterpolation, interpPtsPerWavelength);
 
 }
 
@@ -71,14 +69,14 @@ helmholtz3dInteriorCalderonProjector(
         const shared_ptr<const Space<BASIS> >&, \
         const shared_ptr<const Space<BASIS> >&, \
         typename Fiber::ScalarTraits<BASIS>::ComplexType, \
-        const std::string&, int, bool, int); \
+        const std::string&, bool, int); \
 template BlockedBoundaryOperator<BASIS, typename Fiber::ScalarTraits<BASIS>::ComplexType> \
 helmholtz3dInteriorCalderonProjector( \
     const shared_ptr<const Context<BASIS, typename Fiber::ScalarTraits<BASIS>::ComplexType> >&, \
     const shared_ptr<const Space<BASIS> >&, \
     const shared_ptr<const Space<BASIS> >&, \
     typename Fiber::ScalarTraits<BASIS>::ComplexType, \
-    const std::string&, int, bool, int)
+    const std::string&, bool, int)
 FIBER_ITERATE_OVER_BASIS_TYPES(INSTANTIATE_NONMEMBER_CONSTRUCTOR);
 
 

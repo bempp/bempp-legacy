@@ -43,7 +43,6 @@ helmholtz3dExteriorCalderonProjector(
         const shared_ptr<const Space<BasisFunctionType> >& hplusSpace,
         typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType waveNumber,
         const std::string& label = "",
-        int symmetry = NO_SYMMETRY,
         bool useInterpolation = false,
         int interpPtsPerWavelength = DEFAULT_HELMHOLTZ_INTERPOLATION_DENSITY);
 
@@ -56,7 +55,6 @@ helmholtz3dInteriorCalderonProjector(
         const shared_ptr<const Space<BasisFunctionType> >& hplusSpace,
         typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType waveNumber,
         const std::string& label = "",
-        int symmetry = NO_SYMMETRY,
         bool useInterpolation = false,
         int interpPtsPerWavelength = DEFAULT_HELMHOLTZ_INTERPOLATION_DENSITY);
 

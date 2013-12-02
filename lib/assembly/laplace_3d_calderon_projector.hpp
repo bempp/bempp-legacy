@@ -17,9 +17,8 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-#ifndef modified_helmholtz_3d_calderon_projector_hpp
-#define modified_helmholtz_3d_calderon_projector_hpp
-
+#ifndef laplace_3d_calderon_projector_hpp
+#define laplace_3d_calderon_projector_hpp
 
 #include "blocked_boundary_operator.hpp"
 #include "../fiber/scalar_traits.hpp"
@@ -27,35 +26,25 @@
 #include "symmetry.hpp"
 
 
-
 namespace Bempp {
 
-template <typename BasisFunctionType, typename ResultType>  class Context;
-template <typename BasisFunctionType> class Space;
-
-template <typename BasisFunctionType, typename KernelType, typename ResultType>
+template <typename BasisFunctionType, typename ResultType>
 BlockedBoundaryOperator<BasisFunctionType, ResultType>
-modifiedHelmholtz3dExteriorCalderonProjector(
-        const shared_ptr<const Context<BasisFunctionType,ResultType> >& context,
+laplace3dExteriorCalderonProjector(
+        const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
         const shared_ptr<const Space<BasisFunctionType> >& hminusSpace,
         const shared_ptr<const Space<BasisFunctionType> >& hplusSpace,
-        KernelType waveNumber,
-        const std::string& label = "",
-        bool useInterpolation = false,
-        int interpPtsPerWavelength = DEFAULT_HELMHOLTZ_INTERPOLATION_DENSITY);
+        const std::string& label = "");
 
-template <typename BasisFunctionType, typename KernelType, typename ResultType>
+template <typename BasisFunctionType, typename ResultType>
 BlockedBoundaryOperator<BasisFunctionType, ResultType>
-modifiedHelmholtz3dInteriorCalderonProjector(
-        const shared_ptr<const Context<BasisFunctionType,ResultType> >& context,
+laplace3dInteriorCalderonProjector(
+        const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
         const shared_ptr<const Space<BasisFunctionType> >& hminusSpace,
         const shared_ptr<const Space<BasisFunctionType> >& hplusSpace,
-        KernelType waveNumber,
-        const std::string& label = "",
-        bool useInterpolation = false,
-        int interpPtsPerWavelength = DEFAULT_HELMHOLTZ_INTERPOLATION_DENSITY);
+        const std::string& label = "");
+
+} // namespace Bempp
 
 
-} // Bempp
-
-#endif
+#endif // laplace_3d_calderon_projector_hpp
