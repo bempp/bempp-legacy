@@ -24,7 +24,8 @@
 #include "fmm_global_assembler.hpp"
 #include "fmm_transform.hpp"
 #include "fmm_cache.hpp"
-#include "octree_helper.hpp"
+#include "fmm_far_field_helper.hpp"
+#include "fmm_near_field_helper.hpp"
 #include "octree.hpp"
 #include "octree_node.hpp"
 #include "discrete_fmm_boundary_operator.hpp"
@@ -157,12 +158,12 @@ FmmGlobalAssembler<BasisFunctionType, KernelType, ResultType>::assembleDetachedW
 		std::cout << "Caching near field interactions" << std::endl;
 	}
 
-	OctreeNearHelper<BasisFunctionType, ResultType> octreeNearHelper(
+	FmmNearFieldHelper<BasisFunctionType, ResultType> fmmNearFieldHelper(
 		octree, testSpace, trialSpace, localAssemblers, denseTermsMultipliers, 
 		options, test_p2o, trial_p2o, indexWithGlobalDofs);
 
 	unsigned int nLeaves = getNodesPerLevel(octree->levels());
-	tbb::parallel_for<unsigned int>(0, nLeaves, octreeNearHelper);
+	tbb::parallel_for<unsigned int>(0, nLeaves, fmmNearFieldHelper);
 	//octreeHelper.evaluateNearField(octree);
 
 	//std::cout << "Caching trial far-field interactions" << std::endl;
@@ -175,12 +176,12 @@ FmmGlobalAssembler<BasisFunctionType, KernelType, ResultType>::assembleDetachedW
 		std::cout << "Caching test and trial far-field interactions" << std::endl;
 	}
 
-	OctreeFarHelper<BasisFunctionType, ResultType> octreeFarHelper(
+	FmmFarFieldHelper<BasisFunctionType, ResultType> fmmFarFieldHelper(
 		octree, testSpace, trialSpace, options, test_p2o, trial_p2o, 
 		indexWithGlobalDofs, fmmTransform);
 
 	tbb::parallel_for(tbb::blocked_range<unsigned int>(0, nLeaves, 100), 
-		octreeFarHelper);
+		fmmFarFieldHelper);
 
 	unsigned int symmetry = NO_SYMMETRY;
 	if (hermitian) {
