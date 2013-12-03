@@ -458,7 +458,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_conjugate_transp
     arma::Mat<RT> mat = fixture.op->asMatrix().t();
     shared_ptr<const DiscreteBoundaryOperator<RT> > dop = fixture.conjugateTransposedOp;
 
-    RT alpha = static_cast<RT>(2., 3.);
+    std::complex<double> tempa(2.,3.);
+    RT alpha = static_cast<RT>(tempa);
     RT beta = static_cast<RT>(0.);
 
     arma::Col<RT> x = generateRandomVector<RT>(dop->columnCount());
