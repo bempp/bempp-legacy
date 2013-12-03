@@ -75,19 +75,54 @@ def downloadDependencies(root,config):
     for dep in library_names:
         libraries[dep].download(root,config)
 
-def bootstrap(root,config):
+def createDirectories(root,config):
 
-    cleanUp(root,config)
     dep_build_dir=config.get('Main','dependency_build_dir')
     checkCreateDir(dep_build_dir)
     dep_download_dir=config.get('Main','dependency_download_dir')
     checkCreateDir(dep_download_dir)
     bempp_build_dir=config.get('Bempp','build_dir')
     checkCreateDir(bempp_build_dir)
+    checkCreateDir(root+"/installer/files")
 
+    prefix = config.get('Main','prefix')
     checkCreateDir(prefix+"/bempp")
     checkCreateDir(prefix+"/bempp/lib")
     checkCreateDir(prefix+"/bempp/include")
+
+
+def bootstrap(root,config):
+
+
+    # Check for OS X Mavericks
+    have_mavericks = False
+    import platform
+    plat = platform.system()
+    if plat == 'Darwin':
+        have_mavericks = True if platform.mac_ver()[0]=='10.9' else False
+
+    cleanUp(root,config)
+    createDirectories(root,config)
+
+    prefix = config.get('Main','prefix')
+    cmake_path = prefix+'/bempp/bin/cmake'
+    if config.has_option('CMake','exe'):
+	cmake_executable = tools.which(config.get('CMake','exe'))
+	if cmake_executable is None:
+	    raise Exception("CMake command specified in [CMake] section not found.")
+        else:
+            tools.setDefaultConfigOption(config,"CMake","exe",cmake_executable,overwrite=True)
+    else:
+        if not have_mavericks:
+            print "CMake not found. Downloading and installing CMake..."
+            cmake.download(root,config)
+            cmake.prepare(root,config)
+            cmake.configure(root,config)
+            cmake.build(root,config)
+            cmake.install(root,config)
+            tools.setDefaultConfigOption(config,"CMake","exe",cmake_path,overwrite=True)
+        else:
+            raise Exception("On OS X Mavericks 'cmake' must be manually specified in the config file.") 
 
     downloadDependencies(root,config)
 
@@ -215,31 +250,16 @@ def prepare(root,config):
         have_mavericks = True if platform.mac_ver()[0]=='10.9' else False
         # Add the CMake configuration
 
-    cmake_found = False
-
-    cmake_trial_path = prefix+'/bempp/bin/cmake'
-    cmake_executable = tools.which(cmake_trial_path)
-    if cmake_executable is not None:
-	    # CMake already installed in BEM++ directory. Use this CMake
-	    tools.setDefaultConfigOption(config,"CMake","exe",cmake_executable,overwrite=True)
-	    cmake_found = True
-    if config.has_option('CMake','exe') and not cmake_found:
-	    cmake_executable = config.get('CMake','exe')
-	    cmake_executable = tools.which(cmake_executable)
-            if cmake_executable is not None:
-                tools.setDefaultConfigOption(config,"CMake","exe",cmake_executable,overwrite=True)
-		cmake_found = True
-    if not cmake_found:
-        if not have_mavericks:
-            print "CMake not found. Downloading and installing CMake..."
-            cmake.download(root,config)
-            cmake.prepare(root,config)
-            cmake.configure(root,config)
-            cmake.build(root,config)
-            cmake.install(root,config)
-            tools.setDefaultConfigOption(config,"CMake","exe",cmake_trial_path,overwrite=True)
-        else:
-            raise Exception("On OS X Mavericks 'cmake' must be manually specified in the config file.") 
+    if config.has_option('CMake','exe'):
+        cmake_executable = tools.which(config.get('CMake','exe'))
+        if cmake_executable is None:
+            raise Exception("CMake command specified in [CMake] section not found.")
+        tools.setDefaultConfigOption(config,'CMake','exe',cmake_executable,overwrite=True)
+    else:
+        # CMake must have been or will be  downloaded by the bootstrap mechanism
+        cmake_executable = prefix+'/bempp/bin/cmake'
+        if os.path.isfile(cmake_executable):
+            tools.setDefaultConfigOption(config,'CMake','exe',cmake_executable,overwrite=True)
 
 ###########################
 
