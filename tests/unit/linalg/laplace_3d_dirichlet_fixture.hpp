@@ -57,14 +57,14 @@ enum SpaceType {
 };
 
 template <typename BFT, typename RT>
-struct Laplace3dDirichletFixture
+class Laplace3dDirichletFixture
 {
+    public:
     Laplace3dDirichletFixture(
         SpaceType dirichletDataDomain = PIECEWISE_LINEARS,
         SpaceType neumannDataDomain = PIECEWISE_CONSTANTS,
         SpaceType range = PIECEWISE_LINEARS,
         SpaceType dualToRange = PIECEWISE_CONSTANTS);
-
     shared_ptr<Grid> grid;
     BoundaryOperator<BFT, RT> lhsOp;
     GridFunction<BFT, RT> rhs;
