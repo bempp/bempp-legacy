@@ -197,8 +197,6 @@ void UnitScalarSpace<BasisFunctionType>::getGlobalDofPositions(
     positions[0].y = 0.;
     positions[0].z = 0.;
 
-    const Mapper& mapper = m_view->elementMapper();
-
     if (gridDim == 1)
         throw NotImplementedError(
                 "UnitScalarSpace::getGlobalDofPositions(): "
