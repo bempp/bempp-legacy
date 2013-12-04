@@ -918,9 +918,9 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assemblePotentialOperator(
         const std::vector<ResultType>& termMultipliers,
         const EvaluationOptions& options)
 {
-    const int symmetric = false;
-
+    
 #ifdef WITH_AHMED
+    const int symmetric = false;
     typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
     typedef ExtendedBemCluster<AhmedDofType> AhmedBemCluster;
     typedef bbxbemblcluster<AhmedDofType, AhmedDofType> AhmedBemBlcluster;
