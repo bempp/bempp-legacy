@@ -155,8 +155,9 @@ void DefaultCollectionOfKernels<Functor>::evaluateOnGrid(
                            m_functor.kernelColCount(k),
                            testPointCount,
                            trialPointCount);
-
+#ifdef  __INTEL_COMPILER
 #pragma ivdep
+#endif
     for (size_t trialIndex = 0; trialIndex < trialPointCount; ++trialIndex)
         for (size_t testIndex = 0; testIndex < testPointCount; ++testIndex)
             m_functor.evaluate(testGeomData.const_slice(testIndex),
