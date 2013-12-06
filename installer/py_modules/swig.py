@@ -22,9 +22,9 @@ import os,urllib,shutil,subprocess,sys
 from py_modules import tools
 
 
-swig_fname='swig-2.0.8.tar.gz'
-swig_url='http://prdownloads.sourceforge.net/swig/swig-2.0.8.tar.gz'
-swig_extract_dir='swig-2.0.8'
+swig_fname='swig-2.0.10.tar.gz'
+swig_url='http://prdownloads.sourceforge.net/swig/swig-2.0.10.tar.gz'
+swig_extract_dir='swig-2.0.10'
 swig_dir='swig'
 
 def download(root,config,force=False):
