@@ -112,7 +112,7 @@ laplace3dSyntheticHypersingularBoundaryOperator(
 
     if (!externalSlp.isInitialized()) {
 
-    BoundaryOperator<BasisFunctionType, ResultType> slp =
+        slp =
             laplace3dSingleLayerBoundaryOperator<BasisFunctionType, ResultType>(
                 internalContext, internalTrialSpace, internalTestSpace /* or whatever */,
                 internalTestSpace,
