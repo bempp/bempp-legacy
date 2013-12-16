@@ -219,9 +219,10 @@ modifiedHelmholtz3dHypersingularBoundaryOperator(const shared_ptr<const Context<
         const BoundaryOperator<BasisFunctionType, ResultType> &externalSlp)
 {
     const AssemblyOptions& assemblyOptions = context->assemblyOptions();
-    if ((assemblyOptions.assemblyMode() == AssemblyOptions::ACA &&
+    if (assemblyOptions.assemblyVariant() == AssemblyOptions::LOCAL_ASSEMBLY ||
+         (assemblyOptions.assemblyMode() == AssemblyOptions::ACA &&
          assemblyOptions.acaOptions().mode == AcaOptions::LOCAL_ASSEMBLY) ||
-            externalSlp.isInitialized())
+            externalSlp.isInitialized() )
         return modifiedHelmholtz3dSyntheticHypersingularBoundaryOperator(
             context, domain, range, dualToRange, waveNumber, label,
             symmetry, useInterpolation, interpPtsPerWavelength,externalSlp);

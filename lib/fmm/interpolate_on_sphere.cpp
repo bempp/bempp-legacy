@@ -181,7 +181,7 @@ InterpolateOnSphere<ResultType>::InterpolateOnSphere(
 	const arma::Row<CoordinateType> xnew(xnewMem, Lnew+1);
 
 	// As a starting point we have implemented the "semi-naive" implementation of 
-	// Alpert for interpolation. Could be improved by 1D FFT (see Darve 2000).
+	// Alpert for interpolation. Could be improved by 1D FMM (see Darve 2000).
 	// N.B. weight function sometimes omitted from presentation, but it is essential
 	// (omitted so that weight funtion can be used in up and down pass)
 	// B. Alpert and R. Jakob-Chien, A fast spherical filter with uniform resolution, 
@@ -190,7 +190,7 @@ InterpolateOnSphere<ResultType>::InterpolateOnSphere(
 	// 160:195–240, 2000.
 
 	// instead of calculating the \sum_l=|m|^L^(l+1) Q_l^m(x)Q_l^m(x') directly,
-	// use method of Christofell-Darboux (1.60) via Sylvand thesis
+	// We use method of Christofell-Darboux (1.60) (see Alpert paper)
 
 	// create B matrices that map from one set of Gauss-Legendre nodes to
 	// another for a given order m. B^m = B^{-m} so only need to store the positive

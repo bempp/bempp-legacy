@@ -32,7 +32,8 @@ AssemblyOptions::AssemblyOptions() :
     m_sparseStorageOfLocalOperators(true),
     m_jointAssembly(false),
     m_uniformQuadrature(true),
-    m_blasInQuadrature(AUTO)
+    m_blasInQuadrature(AUTO),
+    m_assemblyVariant(GLOBAL_ASSEMBLY)
 {
 }
 
@@ -44,6 +45,12 @@ void AssemblyOptions::switchToDenseMode()
 void AssemblyOptions::switchToAcaMode(const AcaOptions& acaOptions)
 {
     AcaOptions canonicalAcaOptions = acaOptions;
+    if (canonicalAcaOptions.mode == AUTO) {
+		if (m_assemblyVariant == GLOBAL_ASSEMBLY)
+            canonicalAcaOptions.mode  = AcaOptions::GLOBAL_ASSEMBLY;
+		if (m_assemblyVariant == LOCAL_ASSEMBLY)
+            canonicalAcaOptions.mode  = AcaOptions::LOCAL_ASSEMBLY;
+	}
     if (!canonicalAcaOptions.globalAssemblyBeforeCompression) {
         canonicalAcaOptions.globalAssemblyBeforeCompression = true;
         canonicalAcaOptions.mode = AcaOptions::HYBRID_ASSEMBLY;
@@ -63,6 +70,8 @@ void AssemblyOptions::switchToAcaMode(const AcaOptions& acaOptions)
 void AssemblyOptions::switchToFmmMode(const FmmOptions& fmmOptions)
 {
     m_assemblyMode = FMM;
+    // Force local assembly mode FMM to achieve a triangle based octree
+    m_assemblyVariant = LOCAL_ASSEMBLY;
     m_fmmOptions = fmmOptions;
 }
 
@@ -78,6 +87,14 @@ void AssemblyOptions::switchToAca(const AcaOptions& acaOptions)
 
 AssemblyOptions::Mode AssemblyOptions::assemblyMode() const {
     return m_assemblyMode;
+}
+
+AssemblyOptions::Variant AssemblyOptions::assemblyVariant() const {
+    return m_assemblyVariant;
+}
+
+void AssemblyOptions::setAssemblyVariant(const Variant &method) {
+    m_assemblyVariant = method;
 }
 
 const AcaOptions& AssemblyOptions::acaOptions() const {

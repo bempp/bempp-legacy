@@ -30,7 +30,7 @@ AcaOptions::AcaOptions() :
     minimumBlockSize(16),
     maximumBlockSize(std::numeric_limits<int>::max()),
     maximumRank(std::numeric_limits<int>::max()),
-    mode(GLOBAL_ASSEMBLY),
+    mode(AUTO),
     reactionToUnsupportedMode(WARNING),
     recompress(false),
     outputPostscript(false),

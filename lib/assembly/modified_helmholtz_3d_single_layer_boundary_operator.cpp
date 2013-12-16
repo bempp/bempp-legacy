@@ -58,8 +58,9 @@ modifiedHelmholtz3dSingleLayerBoundaryOperator(
         int interpPtsPerWavelength)
 {
     const AssemblyOptions& assemblyOptions = context->assemblyOptions();
-    if (assemblyOptions.assemblyMode() == AssemblyOptions::ACA &&
-         assemblyOptions.acaOptions().mode == AcaOptions::LOCAL_ASSEMBLY)
+    if (assemblyOptions.assemblyVariant() == AssemblyOptions::LOCAL_ASSEMBLY ||
+         (assemblyOptions.assemblyMode() == AssemblyOptions::ACA &&
+          assemblyOptions.acaOptions().mode == AcaOptions::LOCAL_ASSEMBLY) )
         return modifiedHelmholtz3dSyntheticBoundaryOperator(
             &modifiedHelmholtz3dSingleLayerBoundaryOperator<
                 BasisFunctionType, KernelType, ResultType>,

@@ -74,7 +74,8 @@ struct AcaOptions
      *  more information. */
     enum AcaAssemblyMode {
         MIN_ASSEMBLY_MODE,
-        GLOBAL_ASSEMBLY = MIN_ASSEMBLY_MODE,
+        AUTO = MIN_ASSEMBLY_MODE,
+        GLOBAL_ASSEMBLY,
         LOCAL_ASSEMBLY,
         HYBRID_ASSEMBLY,
         MAX_ASSEMBLY_MODE = HYBRID_ASSEMBLY

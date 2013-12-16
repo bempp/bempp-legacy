@@ -61,6 +61,12 @@ public:
         FMM
     };
 
+    /** \brief See AcaAssemblyMode for a description of each method */
+    enum Variant {
+        GLOBAL_ASSEMBLY,
+        LOCAL_ASSEMBLY,
+    };
+
     /** \brief Use dense-matrix representations of weak forms of boundary integral operators.
      *
      *  This is the default assembly mode. */
@@ -94,6 +100,10 @@ public:
      *  The assembly mode can be changed by calling switchToDenseMode() or
      *  switchToAcaMode(). */
     Mode assemblyMode() const;
+
+    Variant assemblyVariant() const;
+
+    void setAssemblyVariant(const Variant &method);
 
     /** \brief Return the current adaptive cross approximation (ACA) settings.
      *
@@ -255,6 +265,7 @@ public:
 private:
     /** \cond */
     Mode m_assemblyMode;
+    Variant m_assemblyVariant;
     AcaOptions m_acaOptions;
     FmmOptions m_fmmOptions;
     ParallelizationOptions m_parallelizationOptions;

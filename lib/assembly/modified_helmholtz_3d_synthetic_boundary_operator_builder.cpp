@@ -74,8 +74,10 @@ modifiedHelmholtz3dSyntheticBoundaryOperator(
 
     AssemblyOptions internalAssemblyOptions = context->assemblyOptions();
     AcaOptions internalAcaOptions = internalAssemblyOptions.acaOptions();
+    // avoid infinite loop by changing assembly method
     internalAcaOptions.mode = AcaOptions::GLOBAL_ASSEMBLY;
-    internalAssemblyOptions.switchToAcaMode(internalAcaOptions);
+    internalAssemblyOptions.setAssemblyVariant(AssemblyOptions::GLOBAL_ASSEMBLY);
+    //internalAssemblyOptions.switchToAcaMode(internalAcaOptions);
     typedef Context<BasisFunctionType, ResultType> Ctx;
     shared_ptr<Ctx> internalContext(new Ctx(
             context->quadStrategy(), internalAssemblyOptions));

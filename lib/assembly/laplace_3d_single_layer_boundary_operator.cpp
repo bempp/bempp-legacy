@@ -53,8 +53,9 @@ laplace3dSingleLayerBoundaryOperator(
         int symmetry)
 {
     const AssemblyOptions& assemblyOptions = context->assemblyOptions();
-    if (assemblyOptions.assemblyMode() == AssemblyOptions::ACA &&
-         assemblyOptions.acaOptions().mode == AcaOptions::LOCAL_ASSEMBLY)
+    if (assemblyOptions.assemblyVariant() == AssemblyOptions::LOCAL_ASSEMBLY ||
+        (assemblyOptions.assemblyMode() == AssemblyOptions::ACA &&
+         assemblyOptions.acaOptions().mode == AcaOptions::LOCAL_ASSEMBLY) )
         return laplace3dSyntheticBoundaryOperator(
             &laplace3dSingleLayerBoundaryOperator<BasisFunctionType, ResultType>,
             context, domain, range, dualToRange, label, symmetry,
