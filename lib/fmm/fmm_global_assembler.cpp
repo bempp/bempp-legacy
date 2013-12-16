@@ -73,9 +73,9 @@
 namespace Bempp
 {
 
-template <typename BasisFunctionType, typename KernelType, typename ResultType>
+template <typename BasisFunctionType, typename ResultType>
 std::auto_ptr<DiscreteBoundaryOperator<ResultType> >
-FmmGlobalAssembler<BasisFunctionType, KernelType, ResultType>::assembleDetachedWeakForm(
+FmmGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
         const Space<BasisFunctionType>& testSpace,
         const Space<BasisFunctionType>& trialSpace,
         const std::vector<LocalAssembler*>& localAssemblers,
@@ -84,8 +84,7 @@ FmmGlobalAssembler<BasisFunctionType, KernelType, ResultType>::assembleDetachedW
         const std::vector<ResultType>& sparseTermsMultipliers,
         const Context<BasisFunctionType, ResultType>& context,
         bool hermitian,
-        const FmmTransform<ResultType>& fmmTransform,
-        const CollectionOfKernels& kernels)
+        const FmmTransform<ResultType>& fmmTransform)
 {
     const AssemblyOptions& options = context.assemblyOptions();
 
@@ -294,16 +293,15 @@ FmmGlobalAssembler<BasisFunctionType, KernelType, ResultType>::assembleDetachedW
     return result;
 }
 
-template <typename BasisFunctionType, typename KernelType, typename ResultType>
+template <typename BasisFunctionType, typename ResultType>
 std::auto_ptr<DiscreteBoundaryOperator<ResultType> >
-FmmGlobalAssembler<BasisFunctionType, KernelType, ResultType>::assembleDetachedWeakForm(
+FmmGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
         const Space<BasisFunctionType>& testSpace,
         const Space<BasisFunctionType>& trialSpace,
         LocalAssembler& localAssembler,
         const Context<BasisFunctionType, ResultType>& context,
         bool hermitian,
-        const FmmTransform<ResultType>& fmmTransform,
-        const CollectionOfKernels& kernels)
+        const FmmTransform<ResultType>& fmmTransform)
 {
     std::vector<LocalAssembler*> localAssemblers(1, &localAssembler);
     std::vector<const DiscreteBndOp*> sparseTermsToAdd;
@@ -314,10 +312,9 @@ FmmGlobalAssembler<BasisFunctionType, KernelType, ResultType>::assembleDetachedW
                             sparseTermsToAdd,
                             denseTermsMultipliers,
                             sparseTermsMultipliers,
-                            context, hermitian, fmmTransform, kernels);
+                            context, hermitian, fmmTransform);
 }
 
-//FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(FmmGlobalAssembler);
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(FmmGlobalAssembler);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(FmmGlobalAssembler);
 
 } // namespace Bempp
