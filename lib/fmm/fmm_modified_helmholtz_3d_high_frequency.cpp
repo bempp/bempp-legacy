@@ -39,9 +39,6 @@ namespace Bempp
 {
 
 template <typename ValueType>
-ValueType getI();
-
-template <typename ValueType>
 FmmModifiedHelmholtz3dHighFrequency<ValueType>::FmmModifiedHelmholtz3dHighFrequency(
     ValueType kappa, unsigned int expansionOrder, 
     unsigned int expansionOrderMax, unsigned int levels)
@@ -186,29 +183,90 @@ FmmModifiedHelmholtz3dHighFrequency<ValueType>::interpolate(
     }
 }
 
+// Returns the spherical Bessel function of degree n evaluated at kappa*r
+// as used in the M2L operator. The result is scaled by
+// -(kappa/(16*pi^2))*i^n*(2*l+1), as appears in the addition theorem.
+// The first function below applies only for purely real kappa
+// Calculate the Besssel function using boost, but could change to AMOS
+// Here we exploit the relationship
+// h_n^{(1)}(ix) = -\sqrt{\frac{2}{\pi x}} i^{-n} K_{n+1/2}(x)
+// The i^{-n} term cancels with the scaling factor, to give a purely real M2L matrix
 template <typename ValueType>
-ValueType getI()
+ValueType 
+scaledSphericalBessel(
+    unsigned int n,
+    ValueType kappa,
+    ValueType r)
 {
-    throw std::invalid_argument("getI(): "
-        "can only be called for complex result types");
+    using namespace boost::math;
+    // hlReal is the real part of h_n^{(1)}(ix)
+    ValueType hlReal = -sqrt(ValueType(2)/(M_PI*kappa*r))
+        *cyl_bessel_k(ValueType(n+0.5), kappa*r);
+
+    return -(kappa/ValueType(16*M_PI*M_PI))*ValueType(2*n+1)*hlReal;
 }
-template <>
-std::complex<float> getI()
+
+// Template specialisation for complex kappa
+// Returns the spherical Bessel function of degree n evaluated at kappa*r
+// scaled by -(kappa/(16*pi^2))*i^n*(2*l+1), as given by the addition theorem
+template <typename CoordinateType>
+std::complex<CoordinateType> 
+scaledSphericalBessel(
+    unsigned int n,
+    std::complex<CoordinateType> kappa,
+    CoordinateType r)
 {
-    return std::complex<float>(0.0, 1.0);
-}
-template <>
-std::complex<double> getI()
-{
-    return std::complex<double>(0.0, 1.0);
-}
-double real(double x)
-{
-    return x;
-}
-double imag(double x)
-{
-    return 0.0;
+	std::complex<CoordinateType> hl;
+    std::complex<CoordinateType> i(0., 1.);
+
+#if defined USE_AMOS_SPECIAL_FUNCTIONS
+    std::complex<CoordinateType> z = i*kappa*r;
+    double zr = real(z);
+    double zi = imag(z);
+    double nu = n+0.5;
+    int kode = 1;
+    int N = 1;
+    int kind = 1;
+
+    double cyr,cyi;     // Output values
+    int nz,ierr;
+    amos::zbesh(&zr,&zi,&nu,&kode,&kind,&N,&cyr,&cyi,&nz,&ierr);
+    hl = sqrt(CoordinateType(M_PI)/(CoordinateType(2)*z))
+        *(CoordinateType(cyr)+i*CoordinateType(cyi));
+
+    std::string amosErrorMessages[6] = {
+        "IERR=0, NORMAL RETURN - COMPUTATION COMPLETED",
+        "IERR=1, INPUT ERROR   - NO COMPUTATION",
+        "IERR=2, OVERFLOW      - NO COMPUTATION, FNU IS"
+        "        TOO LARGE OR CABS(Z) IS TOO SMALL OR BOTH",
+        "IERR=3, CABS(Z) OR FNU+N-1 LARGE - COMPUTATION DONE"
+        "        BUT LOSSES OF SIGNIFCANCE BY ARGUMENT"
+        "        REDUCTION PRODUCE LESS THAN HALF OF MACHINE"
+        "        ACCURACY",
+        "IERR=4, CABS(Z) OR FNU+N-1 TOO LARGE - NO COMPUTA-"
+        "        TION BECAUSE OF COMPLETE LOSSES OF SIGNIFI-"
+        "        CANCE BY ARGUMENT REDUCTION",
+        "IERR=5, ERROR              - NO COMPUTATION,"
+        "        ALGORITHM TERMINATION CONDITION NOT MET"
+        };
+    if (ierr != 0) {
+        throw std::invalid_argument(std::string("FmmHighFrequency::M2L(x1, x2): "
+        "AMOS: ")+amosErrorMessages[ierr] );
+    }
+#else
+    // Use boost special functions for purely imaginary kappa
+    // Purely real case is dealt with by the template specialisation below
+    if (real(kappa)!=0) {
+        throw std::invalid_argument("FmmHighFrequency::M2L(x1, x2): "
+            "boost special functions only support purely real or imaginary args");
+    }
+    using namespace boost::math;
+    CoordinateType z = -imag(kappa)*r;
+    hl = sph_bessel(n, z) + i*sph_neumann(n, z);
+#endif
+
+    return -(kappa/CoordinateType(16*M_PI*M_PI))
+        *std::complex<CoordinateType>(pow(i,n))*CoordinateType(2*n+1)*hl;
 }
 
 template <typename ValueType>
@@ -265,78 +323,23 @@ FmmModifiedHelmholtz3dHighFrequency<ValueType>::M2L(
         }
     }
 
-    ValueType i = getI<ValueType>();
-
     unsigned int Ldash = L;
     for (unsigned int l=0; l<=Ldash; l++) {
         ValueType scaledhl;
         CoordinateType CLLdash = 1.;
 
         if (l <= L) {
-        ValueType hl;
-#if defined USE_AMOS_SPECIAL_FUNCTIONS
-        ValueType z = i*m_kappa*r;
-        double zr = real(z);
-        double zi = imag(z);
-        double nu = l+0.5;
-        int kode = 1;
-        int N = 1;
-        int kind = 1;
-
-        double cyr,cyi;     // Output values
-        int nz,ierr;
-
-        amos::zbesh(&zr,&zi,&nu,&kode,&kind,&N,&cyr,&cyi,&nz,&ierr);
-        hl = sqrt(pi/(CoordinateType(2)*z))
-            *(CoordinateType(cyr)+i*CoordinateType(cyi));
-
-        std::string amosErrorMessages[6] = {
-            "IERR=0, NORMAL RETURN - COMPUTATION COMPLETED",
-            "IERR=1, INPUT ERROR   - NO COMPUTATION",
-            "IERR=2, OVERFLOW      - NO COMPUTATION, FNU IS"
-            "        TOO LARGE OR CABS(Z) IS TOO SMALL OR BOTH",
-            "IERR=3, CABS(Z) OR FNU+N-1 LARempp/bempp/lib/fmm/fmm_black_box.cpp:156:47: error:GE - COMPUTATION DONE"
-            "        BUT LOSSES OF SIGNIFCANCE BY ARGUMENT"
-            "        REDUCTION PRODUCE LESS THAN HALF OF MACHINE"
-            "        ACCURACY",
-            "IERR=4, CABS(Z) OR FNU+N-1 TOO LARGE - NO COMPUTA-"
-            "        TION BECAUSE OF COMPLETE LOSSES OF SIGNIFI-"
-            "        CANCE BY ARGUMENT REDUCTION",
-            "IERR=5, ERROR              - NO COMPUTATION,"
-            "        ALGORITHM TERMINATION CONDITION NOT MET"
-        };
-        if (ierr != 0) {
-            throw std::invalid_argument(std::string("FmmHighFrequency::M2L(x1, x2): "
-                "AMOS: ")+amosErrorMessages[ierr] );
-        }
-#else // use boost special functions, only works for purely real or imag kappa
-        if (real(m_kappa)==0) { // purely imaginary
-            CoordinateType z = -imag(m_kappa)*r;
-            hl = sph_bessel(l, z) + i*sph_neumann(l, z);
-        } else if (imag(m_kappa)==0 && real(m_kappa)>0) { // purely real and decaying
-            CoordinateType zi = real(m_kappa)*r;
-            hl = -sqrt(ValueType(2)/(zi*pi))*pow(i,-l)
-                *cyl_bessel_k(CoordinateType(l+0.5), zi);
-        } else {
-            throw std::invalid_argument("FmmHighFrequency::M2L(x1, x2): "
-                 "boost special functions only support purely real or imaginary args");
-        }
-#endif
-        scaledhl = -(m_kappa/CoordinateType(16*M_PI*M_PI))
-            *ValueType(pow(i,l))*CoordinateType(2*l+1)*hl;
+            scaledhl = scaledSphericalBessel(l, m_kappa, r);
         } else { // l > L
             CLLdash = pow(cos((l-L)*pi/(2*(Ldash-L))), 2);
         }
 
-//        for (unsigned int p = 0; p < this->quadraturePointCount(); p++) {
-//            khat = this->getQuadraturePoint(p);
-        // TODO: calculate Pl recursively for the sake of efficiency
         unsigned int p = 0;
         for (unsigned int p=0; p<quadraturePointCount; p++) {
            //ValueType Tlocal = scaledhl*CLLdash*legendre_p(l, cosangle[p]);
            ValueType Tlocal = scaledhl*CLLdash*legendreCosangle[0][p];
            T(p) += Tlocal;
-           //T(p+L+1) += pow(-1, l)*Tlocal; // if symmetric quad point along phi
+           //T(p+L+1) += pow(-1, l)*Tlocal; // if symmetric quad points along phi
            CoordinateType tmp = legendreCosangle[1][p];
            legendreCosangle[1][p] = ( (2*l+3)*cosangle[p]*legendreCosangle[1][p]
                 - (l+1)*legendreCosangle[0][p] )/(l+2.0);
