@@ -1,6 +1,6 @@
---- ./Thyra_BelosLinearOpWithSolve_def.hpp	2012-04-24 20:30:54.000000000 +0100
-+++ ./Thyra_BelosLinearOpWithSolve_def_new.hpp	2012-05-03 17:34:53.000000000 +0100
-@@ -124,6 +124,7 @@
+--- ./Thyra_BelosLinearOpWithSolve_def.hpp	2013-10-22 17:56:39.000000000 +0100
++++ ./Thyra_BelosLinearOpWithSolve_def.hpp.new	2013-11-20 11:50:17.000000000 +0000
+@@ -167,6 +167,7 @@ void BelosLinearOpWithSolve<Scalar>::ini
    const int convergenceTestFrequency
    )
  {
@@ -8,7 +8,7 @@
    this->setLinePrefix("BELOS/T");
    // ToDo: Validate input
    lp_ = lp;
-@@ -139,13 +140,13 @@
+@@ -182,13 +183,13 @@ void BelosLinearOpWithSolve<Scalar>::ini
    // not, use the default from the solver.
    if ( !is_null(solverPL_) ) {
      if (solverPL_->isParameter("Convergence Tolerance")) {

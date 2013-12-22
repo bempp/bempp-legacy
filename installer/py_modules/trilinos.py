@@ -23,10 +23,10 @@ from py_modules import tools
 from py_modules import python_patch as py_patch
 
 
-trilinos_fname='trilinos-11.4.2-Source.tar.gz'
-trilinos_extract_dir='trilinos-11.4.2-Source'
+trilinos_fname='trilinos-11.2.3-Source.tar.gz'
+trilinos_extract_dir='trilinos-11.2.3-Source'
 trilinos_dir='trilinos'
-trilinos_url='http://trilinos.sandia.gov/download/files/trilinos-11.4.2-Source.tar.gz'
+trilinos_url='http://trilinos.sandia.gov/download/files/trilinos-11.2.3-Source.tar.gz'
 
 def download(root,config,force=False):
     dep_download_dir=config.get('Main','dependency_download_dir')
@@ -59,12 +59,12 @@ def prepare(root,config):
     os.chdir(dep_build_dir+"/trilinos/packages/stratimikos/adapters/belos/src")
     patch=py_patch.fromfile(root+"/installer/patches/Thyra_BelosLinearOpWithSolve_def.patch")
     patch.apply()
-    os.chdir(dep_build_dir+"/trilinos/packages/PyTrilinos/src")
-    patch=py_patch.fromfile(root+"/installer/patches/pytrilinos_src_cmake.patch")
+    os.chdir(dep_build_dir+"/trilinos/packages/thyra/core/src/support/nonlinear/model_evaluator/client_support")
+    patch=py_patch.fromfile(root+"/installer/patches/thyra_static_initialization_order.patch")
     patch.apply()
-    #os.chdir(dep_build_dir+"/trilinos/cmake/tribits/modules")
-    #patch=py_patch.fromfile(root+"/installer/patches/trilinos_find_python_interp.patch")
-    #patch.apply()
+    os.chdir(dep_build_dir+"/trilinos/cmake/tribits/modules")
+    patch=py_patch.fromfile(root+"/installer/patches/trilinos_find_python_interp.patch")
+    patch.apply()
     os.chdir(dep_build_dir+"/trilinos/packages/teuchos/numerics/src")
     patch=py_patch.fromfile(root+"/installer/patches/Teuchos_LAPACK.hpp.patch")
     patch.apply()
@@ -78,10 +78,10 @@ def prepare(root,config):
     tools.setDefaultConfigOption(config,'Trilinos','cmake_path',prefix+"/bempp/lib/cmake/Trilinos/",overwrite=True)
 
     tools.setCompilerOptions(config,'Trilinos')
-    if tools.cxxCompilerId(config) == 'CLANG':
-        trilinos_cxxflags = config.get('Trilinos','cxxflags')
-        trilinos_cxxflags = trilinos_cxxflags+" -Wno-c++11-narrowing"
-        config.set('Trilinos','cxxflags',trilinos_cxxflags)
+    trilinos_cxxflags = config.get('Trilinos','cxxflags')
+    trilinos_cxxflags = trilinos_cxxflags+" -Wno-c++11-narrowing"
+    config.set('Trilinos','cxxflags',trilinos_cxxflags)
+   
 
 def configure(root,config):
     dep_build_dir=config.get('Main','dependency_build_dir')
