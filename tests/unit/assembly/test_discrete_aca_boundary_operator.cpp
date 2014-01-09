@@ -698,51 +698,51 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(acaOperatorSum_works_correctly_for_complex_symmetr
                                            eps));
 }
 
-BOOST_AUTO_TEST_CASE_TEMPLATE(acaOperatorSum_works_correctly_for_sum_of_real_symmetric_and_nonsymmetric_operators,
-                              ResultType, complex_result_types)
-{
-    if (boost::is_same<ResultType, std::complex<float> >())
-        return; // this type is not supported because of a deficiency in AHMED
+//BOOST_AUTO_TEST_CASE_TEMPLATE(acaOperatorSum_works_correctly_for_sum_of_real_symmetric_and_nonsymmetric_operators,
+//                              ResultType, complex_result_types)
+//{
+//    if (boost::is_same<ResultType, std::complex<float> >())
+//        return; // this type is not supported because of a deficiency in AHMED
 
-    typedef ResultType RT;
-    typedef typename Fiber::ScalarTraits<RT>::RealType BFT;
-    typedef typename Fiber::ScalarTraits<RT>::RealType CT;
+//    typedef ResultType RT;
+//    typedef typename Fiber::ScalarTraits<RT>::RealType BFT;
+//    typedef typename Fiber::ScalarTraits<RT>::RealType CT;
 
-    shared_ptr<Grid> grid = createRegularTriangularGrid(10, 3);
+//    shared_ptr<Grid> grid = createRegularTriangularGrid(10, 3);
 
-    shared_ptr<Space<BFT> > pwiseLinears(
-        new PiecewiseLinearContinuousScalarSpace<BFT>(grid));
+//    shared_ptr<Space<BFT> > pwiseLinears(
+//        new PiecewiseLinearContinuousScalarSpace<BFT>(grid));
 
-    AssemblyOptions assemblyOptions;
-    assemblyOptions.setVerbosityLevel(VerbosityLevel::LOW);
-    assemblyOptions.switchToAcaMode(AcaOptions());
-    shared_ptr<NumericalQuadratureStrategy<BFT, RT> > quadStrategy(
-        new NumericalQuadratureStrategy<BFT, RT>);
-    shared_ptr<Context<BFT, RT> > context(
-        new Context<BFT, RT>(quadStrategy, assemblyOptions));
+//    AssemblyOptions assemblyOptions;
+//    assemblyOptions.setVerbosityLevel(VerbosityLevel::LOW);
+//    assemblyOptions.switchToAcaMode(AcaOptions());
+//    shared_ptr<NumericalQuadratureStrategy<BFT, RT> > quadStrategy(
+//        new NumericalQuadratureStrategy<BFT, RT>);
+//    shared_ptr<Context<BFT, RT> > context(
+//        new Context<BFT, RT>(quadStrategy, assemblyOptions));
 
-    BoundaryOperator<BFT, RT> op =
-            laplace3dSingleLayerBoundaryOperator<BFT, RT>(
-                context, pwiseLinears, pwiseLinears, pwiseLinears, "SLP",
-                SYMMETRIC | HERMITIAN);
-    shared_ptr<const DiscreteBoundaryOperator<RT> > dop = op.weakForm();
+//    BoundaryOperator<BFT, RT> op =
+//            laplace3dSingleLayerBoundaryOperator<BFT, RT>(
+//                context, pwiseLinears, pwiseLinears, pwiseLinears, "SLP",
+//                SYMMETRIC | HERMITIAN);
+//    shared_ptr<const DiscreteBoundaryOperator<RT> > dop = op.weakForm();
 
-    BoundaryOperator<BFT, RT> op2 =
-            laplace3dDoubleLayerBoundaryOperator<BFT, RT>(
-                context, pwiseLinears, pwiseLinears, pwiseLinears, "DLP");
-    shared_ptr<const DiscreteBoundaryOperator<RT> > dop2 = op2.weakForm();
+//    BoundaryOperator<BFT, RT> op2 =
+//            laplace3dDoubleLayerBoundaryOperator<BFT, RT>(
+//                context, pwiseLinears, pwiseLinears, pwiseLinears, "DLP");
+//    shared_ptr<const DiscreteBoundaryOperator<RT> > dop2 = op2.weakForm();
 
-    arma::Mat<RT> expected = dop->asMatrix() + dop2->asMatrix();
+//    arma::Mat<RT> expected = dop->asMatrix() + dop2->asMatrix();
 
-    const double eps = 1e-4;
-    shared_ptr<const DiscreteBoundaryOperator<RT> > acaSum =
-            acaOperatorSum(dop,
-                           dop2,
-                           eps, UINT_MAX);
+//    const double eps = 1e-4;
+//    shared_ptr<const DiscreteBoundaryOperator<RT> > acaSum =
+//            acaOperatorSum(dop,
+//                           dop2,
+//                           eps, UINT_MAX);
 
-    BOOST_CHECK(check_arrays_are_close<RT>(acaSum->asMatrix(), expected,
-                                           eps));
-}
+//    BOOST_CHECK(check_arrays_are_close<RT>(acaSum->asMatrix(), expected,
+//                                           eps));
+//}
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(scaledAcaOperator_works_correctly_for_nonsymmetric_operators,
                               ResultType, result_types)
