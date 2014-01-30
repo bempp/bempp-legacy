@@ -79,7 +79,7 @@ void NumericalTestTrialIntegrator<BasisFunctionType, ResultType, GeometryFactory
     // elementCount != 0, set elements of result to 0.
 
     // Evaluate constants
-    const int componentCount = m_testTransformations.resultDimension(0);
+//   const int componentCount = m_testTransformations.resultDimension(0);
     const int testDofCount = testShapeset.size();
     const int trialDofCount = trialShapeset.size();
 

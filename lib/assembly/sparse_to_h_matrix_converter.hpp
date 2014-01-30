@@ -37,8 +37,9 @@ namespace Bempp
 
 // This structure is intended for internal BEM++ use only.
 template <typename ValueType>
-struct SparseToHMatrixConverter
+class SparseToHMatrixConverter
 {
+  public:
     typedef typename Fiber::ScalarTraits<ValueType>::RealType CoordinateType;
     typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
     typedef bbxbemblcluster<AhmedDofType, AhmedDofType> AhmedBemBlcluster;

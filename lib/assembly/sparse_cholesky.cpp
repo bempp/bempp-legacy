@@ -54,7 +54,10 @@ shared_ptr<Epetra_CrsMatrix> sparseCholesky(const Epetra_CrsMatrix& mat)
         for (int s = 0; s < localSize; ++s) {
             int row = colIndices[rowOffsets[r]+s];
             processed[row] = true;
-            int errorCode = result->InsertGlobalValues(
+#           ifndef NDEBUG
+            int errorCode =
+#           endif
+              result->InsertGlobalValues(
                         row, s + 1 /* number of values */,
                         localCholesky.colptr(s),
                         colIndices + rowOffsets[r]);

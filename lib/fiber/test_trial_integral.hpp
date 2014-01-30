@@ -31,7 +31,7 @@ namespace Fiber
 
 /** \cond FORWARD_DECL */
 template <typename T> class CollectionOf3dArrays;
-template <typename CoordinateType> class GeometricalData;
+template <typename CoordinateType> struct GeometricalData;
 /** \endcond */
 
 template <typename BasisFunctionType_, typename ResultType_>

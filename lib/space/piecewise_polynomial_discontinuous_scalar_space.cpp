@@ -341,8 +341,6 @@ void PiecewisePolynomialDiscontinuousScalarSpace<BasisFunctionType>::assignDofsI
 
                 // edge dofs
                 if (m_polynomialOrder >= 2) {
-                    int start, end, step;
-
                     subEntityIndex = indexSet.subEntityIndex(element, 0, edgeCodim);
                     if (elementContained &&
                             (!(dofMode & REFERENCE_POINT_ON_SEGMENT) ||

@@ -120,7 +120,10 @@ constructGlobalToFlatLocalDofsMappingEpetraMatrix(
                 Copy, rowMap, columnMap, 1 /* entries per row */);
 
     for (size_t i = 0; i < entryCount; ++i) {
-        int errorCode = result->InsertGlobalValues(
+#       ifndef NDEBUG
+        int errorCode = 
+#       endif
+          result->InsertGlobalValues(
                     rows[i], 1 /* number of inserted entries */,
                     &values[i], &cols[i]);
         assert(errorCode == 0);
@@ -136,8 +139,8 @@ constructGlobalToFlatLocalDofsMappingEpetraMatrix(
 template <typename BasisFunctionType>
 Space<BasisFunctionType>::Space(const shared_ptr<const Grid>& grid) :
     m_grid(grid),
-    m_view(grid->leafView()),
-    m_elementGeometryFactory(grid->elementGeometryFactory().release())
+    m_elementGeometryFactory(grid->elementGeometryFactory().release()),
+    m_view(grid->leafView())
 {
     if (!grid)
         throw std::invalid_argument("Space::Space(): grid must not be a null "
@@ -147,8 +150,8 @@ Space<BasisFunctionType>::Space(const shared_ptr<const Grid>& grid) :
 template <typename BasisFunctionType>
 Space<BasisFunctionType>::Space(const Space<BasisFunctionType> &other) :
     m_grid(other.m_grid),
-    m_view(other.m_grid->levelView(other.m_level)),
-    m_elementGeometryFactory(other.m_elementGeometryFactory)
+    m_elementGeometryFactory(other.m_elementGeometryFactory),
+    m_view(other.m_grid->levelView(other.m_level))
 {
 }
 template <typename BasisFunctionType>
@@ -296,8 +299,6 @@ template <typename BasisFunctionType>
 int maximumShapesetOrder(const Space<BasisFunctionType>& space)
 {
     const GridView& view = space.gridView();
-    const Mapper& mapper = view.elementMapper();
-    const int elementCount = view.entityCount(0);
 
     int maxOrder = 0;
     std::auto_ptr<EntityIterator<0> > it = view.entityIterator<0>();

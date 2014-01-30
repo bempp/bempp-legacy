@@ -52,14 +52,6 @@ using namespace Bempp;
 namespace 
 {
 
-template <typename T> T initWaveNumber();
-template <> float initWaveNumber() { return 1.2f; }
-template <> double initWaveNumber(){ return 1.2; }
-template <> std::complex<float> initWaveNumber() 
-{ return std::complex<float>(1.2f, 0.7f); }
-template <> std::complex<double> initWaveNumber()
-{ return std::complex<double>(1.2, 0.7); }
-
 template <typename BFT, typename RT> 
 struct DiscreteNullBoundaryOperatorFixture
 {
@@ -129,7 +121,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2
     DiscreteNullBoundaryOperatorFixture<BFT, RT> fixture;
     shared_ptr<const DiscreteBoundaryOperator<RT> > dop = fixture.op.weakForm();
 
-    RT alpha = static_cast<RT>(2., 3.);
+    std::complex<double> tempa(2.,3.);
+    RT alpha = static_cast<RT>(tempa);
     RT beta = static_cast<RT>(0.);
 
     arma::Col<RT> x = generateRandomVector<RT>(dop->columnCount());
@@ -181,8 +174,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2
     DiscreteNullBoundaryOperatorFixture<BFT, RT> fixture;
     shared_ptr<const DiscreteBoundaryOperator<RT> > dop = fixture.op.weakForm();
 
-    RT alpha = static_cast<RT>(2., 3.);
-    RT beta = static_cast<RT>(4., -5.);
+    std::complex<double> tempa(2.,3.);
+    RT alpha = static_cast<RT>(tempa);
+    std::complex<double> tempb(4.,-5.);
+    RT beta = static_cast<RT>(tempb);
 
     arma::Col<RT> x = generateRandomVector<RT>(dop->columnCount());
     arma::Col<RT> y = generateRandomVector<RT>(dop->rowCount());

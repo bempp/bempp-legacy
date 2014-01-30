@@ -134,11 +134,11 @@ public:
         m_admissibleHelper(admissibleHelper),
         m_leafClusters(leafClusters),
         m_localLeafClusters(localLeafClusters),
-        m_leafClusterIndexQueue(leafClusterIndexQueue),
         m_blocks(blocks),
         m_flatLocalBlocks(flatLocalBlocks),
         m_coalescer(coalescer),
         m_options(options), m_done(done), m_verbose(verbose),
+        m_leafClusterIndexQueue(leafClusterIndexQueue),
         m_symmetric(symmetric),
         m_stats(stats)
     {
@@ -235,27 +235,28 @@ private:
     std::vector<ChunkStatistics>& m_stats;
 };
 
-void reallyGetClusterIds(const cluster& clusterTree,
-                         const std::vector<unsigned int>& p2oDofs,
-                         std::vector<unsigned int>& clusterIds,
-                         unsigned int& id)
-{
-    if (clusterTree.isleaf())
-        for (unsigned int nDof = clusterTree.getnbeg(); nDof < clusterTree.getnend(); ++nDof)
-            clusterIds[p2oDofs[nDof]] = id;
-    else
-        for (unsigned int nSon = 0; nSon < clusterTree.getns(); ++nSon)
-            reallyGetClusterIds(*clusterTree.getson(nSon), p2oDofs, clusterIds, ++id);
-}
+// Avoids "unused function" warnings
+// void reallyGetClusterIds(const cluster& clusterTree,
+//                          const std::vector<unsigned int>& p2oDofs,
+//                          std::vector<unsigned int>& clusterIds,
+//                          unsigned int& id)
+// {
+//     if (clusterTree.isleaf())
+//         for (unsigned int nDof = clusterTree.getnbeg(); nDof < clusterTree.getnend(); ++nDof)
+//             clusterIds[p2oDofs[nDof]] = id;
+//     else
+//         for (unsigned int nSon = 0; nSon < clusterTree.getns(); ++nSon)
+//             reallyGetClusterIds(*clusterTree.getson(nSon), p2oDofs, clusterIds, ++id);
+// }
 
-void getClusterIds(const cluster& clusterTree,
-                   const std::vector<unsigned int>& p2oDofs,
-                   std::vector<unsigned int>& clusterIds)
-{
-    clusterIds.resize(p2oDofs.size());
-    unsigned int id = 0;
-    reallyGetClusterIds(clusterTree, p2oDofs, clusterIds, id);
-}
+// void getClusterIds(const cluster& clusterTree,
+//                    const std::vector<unsigned int>& p2oDofs,
+//                    std::vector<unsigned int>& clusterIds)
+// {
+//     clusterIds.resize(p2oDofs.size());
+//     unsigned int id = 0;
+//     reallyGetClusterIds(clusterTree, p2oDofs, clusterIds, id);
+// }
 
 template <typename T>
 void save_arma_matrix(const arma::Mat<T>& a, const std::string& fname)
@@ -917,9 +918,9 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assemblePotentialOperator(
         const std::vector<ResultType>& termMultipliers,
         const EvaluationOptions& options)
 {
-    const int symmetric = false;
-
+    
 #ifdef WITH_AHMED
+    const int symmetric = false;
     typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
     typedef ExtendedBemCluster<AhmedDofType> AhmedBemCluster;
     typedef bbxbemblcluster<AhmedDofType, AhmedDofType> AhmedBemBlcluster;
@@ -944,11 +945,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assemblePotentialOperator(
         throw std::runtime_error("AcaGlobalAssembler::assemblePotentialOperator(): "
                                  "the 'localAssemblers' vector must not be empty");
 
-    const size_t pointCount = points.n_cols;
     const int componentCount = localAssemblers[0]->resultDimension();
-    const size_t testDofCount = pointCount * componentCount;
-    const size_t trialDofCount = indexWithGlobalDofs ?
-                trialSpace.globalDofCount() : trialSpace.flatLocalDofCount();
 
     // o2p: map of original indices to permuted indices
     // p2o: map of permuted indices to original indices

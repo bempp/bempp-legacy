@@ -35,20 +35,21 @@
 namespace Bempp
 {
 
-namespace
-{
-
-void dumpBlockCluster(blcluster& bc, int indent)
-{
-    for (int i = 0; i < indent; ++i)
-        std::cout << " ";
-    std::cout << bc.isadm() << "\n";
-    for (int r = 0; r < bc.getnrs(); ++r)
-        for (int c = 0; c < bc.getncs(); ++c)
-            dumpBlockCluster(*bc.getson(r, c), indent + 4);
-}
-
-} // namespace
+// Unused function. Avoids a warning.
+// namespace
+// {
+// 
+// void dumpBlockCluster(blcluster& bc, int indent)
+// {
+//     for (int i = 0; i < indent; ++i)
+//         std::cout << " ";
+//     std::cout << bc.isadm() << "\n";
+//     for (int r = 0; r < bc.getnrs(); ++r)
+//         for (int c = 0; c < bc.getncs(); ++c)
+//             dumpBlockCluster(*bc.getson(r, c), indent + 4);
+// }
+// 
+// } // namespace
 
 template <typename BasisFunctionType>
 void ClusterConstructionHelper<BasisFunctionType>::constructBemCluster(

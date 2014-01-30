@@ -55,7 +55,6 @@ void Solver<BasisFunctionType, ResultType>::checkConsistency(
         const std::vector<GridFunction<BasisFunctionType, ResultType> >& rhs,
         ConvergenceTestMode::Mode mode)
 {
-    const size_t columnCount = boundaryOp.columnCount();
     const size_t rowCount = boundaryOp.rowCount();
 
     if (rhs.size() != rowCount)

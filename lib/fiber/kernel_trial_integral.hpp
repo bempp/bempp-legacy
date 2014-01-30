@@ -34,7 +34,7 @@ template <typename T> class _3dArray;
 template <typename T> class CollectionOf2dArrays;
 template <typename T> class CollectionOf3dArrays;
 template <typename T> class CollectionOf4dArrays;
-template <typename CoordinateType> class GeometricalData;
+template <typename CoordinateType> struct GeometricalData;
 /** \endcond */
 
 template <typename BasisFunctionType_, typename KernelType_,

@@ -33,12 +33,13 @@ namespace Bempp
 
 class GridView;
 struct LocalDof;
-template <typename CoordinateType> class BoundingBox;
+template <typename CoordinateType> struct BoundingBox;
 template <typename BasisFunctionType> class Space;
 
 template <typename BasisFunctionType>
-struct SpaceHelper
+class SpaceHelper
 {
+public:
     typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
 
     static void getGlobalDofInterpolationPoints_defaultImplementation(

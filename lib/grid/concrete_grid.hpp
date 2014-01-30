@@ -76,8 +76,8 @@ public:
     explicit ConcreteGrid(DuneGrid* dune_grid,
                           GridParameters::Topology topology, bool own = false) :
         m_dune_grid(ensureNotNull(dune_grid)),
-        m_topology(topology),
         m_owns_dune_grid(own),
+        m_topology(topology),
         m_global_id_set(&dune_grid->globalIdSet()),
         m_domain_index(*dune_grid,
                        std::vector<int>(
@@ -97,8 +97,8 @@ public:
                           const std::vector<int>& domainIndices,
                           bool own = false) :
         m_dune_grid(ensureNotNull(dune_grid)),
-        m_topology(topology),
         m_owns_dune_grid(own),
+        m_topology(topology),
         m_global_id_set(&dune_grid->globalIdSet()),
         m_domain_index(*dune_grid, domainIndices)
     {
