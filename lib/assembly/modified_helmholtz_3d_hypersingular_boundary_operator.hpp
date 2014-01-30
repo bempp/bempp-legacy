@@ -137,7 +137,9 @@ modifiedHelmholtz3dHypersingularBoundaryOperator(
         const std::string& label = "",
         int symmetry = NO_SYMMETRY,
         bool useInterpolation = false,
-        int interpPtsPerWavelength = DEFAULT_HELMHOLTZ_INTERPOLATION_DENSITY);
+        int interpPtsPerWavelength = DEFAULT_HELMHOLTZ_INTERPOLATION_DENSITY,
+        const BoundaryOperator<BasisFunctionType, ResultType>& externalSlp =
+            BoundaryOperator<BasisFunctionType, ResultType>());
 
 } // namespace Bempp
 

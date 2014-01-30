@@ -486,7 +486,8 @@ getContextsForInternalAndAuxiliaryOperators(
     AssemblyOptions assemblyOptions = context->assemblyOptions();
     AcaOptions acaOptions = assemblyOptions.acaOptions();
     acaOptions.mode = AcaOptions::GLOBAL_ASSEMBLY;
-    assemblyOptions.switchToAcaMode(acaOptions);
+    if (assemblyOptions.assemblyMode() == AssemblyOptions::ACA)
+        assemblyOptions.switchToAcaMode(acaOptions);
     internalContext.reset(new Ctx(
             context->quadStrategy(), assemblyOptions));
     auxContext = internalContext;

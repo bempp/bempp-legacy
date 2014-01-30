@@ -58,7 +58,8 @@ laplace3dSyntheticHypersingularBoundaryOperator(
         const shared_ptr<const Space<BasisFunctionType> >& range,
         const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
         std::string label,
-        int internalSymmetry)
+        int internalSymmetry,
+        const BoundaryOperator<BasisFunctionType,ResultType>& externalSlp)
 {
     typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
 
@@ -107,11 +108,21 @@ laplace3dSyntheticHypersingularBoundaryOperator(
         label = AbstractBoundaryOperator<BasisFunctionType, ResultType>::
             uniqueLabel();
 
-    BoundaryOperator<BasisFunctionType, ResultType> slp =
+    BoundaryOperator<BasisFunctionType,ResultType> slp;
+
+    if (!externalSlp.isInitialized()) {
+
+        slp =
             laplace3dSingleLayerBoundaryOperator<BasisFunctionType, ResultType>(
                 internalContext, internalTrialSpace, internalTestSpace /* or whatever */,
                 internalTestSpace,
                 "(" + label + ")_internal_SLP", internalSymmetry);
+
+    }
+    else {
+
+        slp = externalSlp;
+    }
 
     std::vector<BoundaryOperator<BasisFunctionType, ResultType> > trialCurlComponents;
     std::vector<BoundaryOperator<BasisFunctionType, ResultType> > testCurlComponents;
@@ -148,19 +159,20 @@ laplace3dSyntheticHypersingularBoundaryOperator(
 
 template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType>
-laplace3dHypersingularBoundaryOperator(
-        const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
+laplace3dHypersingularBoundaryOperator(const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
         const shared_ptr<const Space<BasisFunctionType> >& domain,
         const shared_ptr<const Space<BasisFunctionType> >& range,
         const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
         const std::string& label,
-        int symmetry)
+        int symmetry,
+        const BoundaryOperator<BasisFunctionType, ResultType> &externalSlp)
 {
     const AssemblyOptions& assemblyOptions = context->assemblyOptions();
-    if (assemblyOptions.assemblyMode() == AssemblyOptions::ACA &&
-         assemblyOptions.acaOptions().mode == AcaOptions::LOCAL_ASSEMBLY)
+    if ((assemblyOptions.assemblyMode() == AssemblyOptions::ACA &&
+         assemblyOptions.acaOptions().mode == AcaOptions::LOCAL_ASSEMBLY) ||
+            (externalSlp.isInitialized()))
         return laplace3dSyntheticHypersingularBoundaryOperator(
-            context, domain, range, dualToRange, label, symmetry);
+            context, domain, range, dualToRange, label, symmetry,externalSlp);
 
     typedef typename ScalarTraits<BasisFunctionType>::RealType KernelType;
     typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
@@ -219,7 +231,8 @@ laplace3dHypersingularBoundaryOperator(
     const shared_ptr<const Space<BASIS> >&, \
     const shared_ptr<const Space<BASIS> >&, \
     const shared_ptr<const Space<BASIS> >&, \
-    const std::string&, int)
+    const std::string&, int, \
+    const BoundaryOperator<BASIS, RESULT > &)
 FIBER_ITERATE_OVER_BASIS_AND_RESULT_TYPES(INSTANTIATE_NONMEMBER_CONSTRUCTOR);
 
 } // namespace Bempp
