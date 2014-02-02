@@ -375,7 +375,7 @@ if __name__ == "__main__":
             error_log.close()
             print ("-" * 78 + "\n"
                    "Note: A stack trace of the BEM++ installer, providing detailed "
-                   "information\non where the problem occured, has been written "
+                   "information\non where the problem occurred, has been written "
                    "to the file 'bempp_setup.err'.\nPlease include this "
                    "file if you report the problem to BEM++ developers.")
         except:
