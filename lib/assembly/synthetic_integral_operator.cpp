@@ -82,7 +82,7 @@ coalesceTestOperators(
         if (op) {
             shared_ptr<const Epetra_CrsMatrix> opMat = op->epetraMatrix();
             shared_ptr<Epetra_CrsMatrix> composition(
-                new Epetra_CrsMatrix(Copy, opMat->Graph()));
+                new Epetra_CrsMatrix(Copy, opMat->RowMap(),0));
             int err = EpetraExt::MatrixMatrix::Multiply(
                 *opMat, false /* transpose */, *idInverse, false, *composition);
             if (err != 0)
@@ -118,7 +118,7 @@ coalesceTrialOperators(
         if (op) {
             shared_ptr<const Epetra_CrsMatrix> opMat = op->epetraMatrix();
             shared_ptr<Epetra_CrsMatrix> composition(
-                new Epetra_CrsMatrix(Copy, opMat->Graph()));
+                new Epetra_CrsMatrix(Copy, opMat->RowMap(),0));
             int err = EpetraExt::MatrixMatrix::Multiply(
                 *idInverse, true /* transpose */, *opMat, false, *composition);
             if (err != 0)

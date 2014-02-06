@@ -1,6 +1,6 @@
---- ./Thyra_BelosLinearOpWithSolve_def.hpp	2012-04-24 20:30:54.000000000 +0100
-+++ ./Thyra_BelosLinearOpWithSolve_def_new.hpp	2012-05-03 17:34:53.000000000 +0100
-@@ -124,6 +124,7 @@
+--- ./packages/stratimikos/adapters/belos/src/Thyra_BelosLinearOpWithSolve_def.hpp	2014-01-29 23:00:36.000000000 +0000
++++ ./packages/stratimikos/adapters/belos/src/Thyra_BelosLinearOpWithSolve_def.hpp.patched	2014-02-06 15:03:42.000000000 +0000
+@@ -167,6 +167,7 @@
    const int convergenceTestFrequency
    )
  {
@@ -8,7 +8,7 @@
    this->setLinePrefix("BELOS/T");
    // ToDo: Validate input
    lp_ = lp;
-@@ -139,13 +140,13 @@
+@@ -182,13 +183,13 @@
    // not, use the default from the solver.
    if ( !is_null(solverPL_) ) {
      if (solverPL_->isParameter("Convergence Tolerance")) {
