@@ -10,18 +10,18 @@ if(NOT BOOST_UNIT_TEST_LIB)
     else()
       set(BOOST_UNIT_TEST_LIB ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY_DEBUG})
     endif()
-  endif()
 
-  set(
-    BOOST_UNIT_TEST_LIB ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY_RELEASE} 
-    CACHE INTERNAL
-    "Path to unit test framework"
-  )
-  set(
-    BOOST_INCLUDE_DIR ${Boost_INCLUDE_DIR}
-    CACHE INTERNAL
-    "Path to boost include directory"
-  )
+    set(
+      BOOST_UNIT_TEST_LIB ${BOOST_UNIT_TEST_LIB} 
+      CACHE INTERNAL
+      "Path to unit test framework"
+    )
+    set(
+      BOOST_INCLUDE_DIR ${Boost_INCLUDE_DIR}
+      CACHE INTERNAL
+      "Path to boost include directory"
+    )
+  endif()
 endif()
 
 
