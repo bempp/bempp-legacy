@@ -1,38 +1,26 @@
-# Look for boost the easy way first
-if(NOT BOOST_UNIT_TEST_LIB)
+# Not clear that parsing works in find_package. So setting variable directly.
+set(Boost_FIND_COMPONENTS unit_test_framework)
+find_package(boost COMPONENTS ${Boost_FIND_COMPONENTS})
 
-  # Not clear that parsing works in find_package. So setting variable directly.
-  set(Boost_FIND_COMPONENTS unit_test_framework)
-  find_package(boost COMPONENTS ${Boost_FIND_COMPONENTS})
-  if(Boost_FOUND)
-    if(CMAKE_BUILD_TYPE STREQUAL "Release" OR MAKE_BUILD_TYPE STREQUAL "RelWithDebInfo") 
-      set(BOOST_UNIT_TEST_LIB ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY_RELEASE})
-    else()
-      set(BOOST_UNIT_TEST_LIB ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY_DEBUG})
-    endif()
-
-    set(
-      BOOST_UNIT_TEST_LIB ${BOOST_UNIT_TEST_LIB} 
-      CACHE INTERNAL
-      "Path to unit test framework"
-    )
-    set(
-      BOOST_INCLUDE_DIR ${Boost_INCLUDE_DIR}
-      CACHE INTERNAL
-      "Path to boost include directory"
-    )
+if(Boost_FOUND)
+  if(CMAKE_BUILD_TYPE STREQUAL "Release" OR MAKE_BUILD_TYPE STREQUAL "RelWithDebInfo") 
+    set(BOOST_UNIT_TEST_LIB ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY_RELEASE})
+  else()
+    set(BOOST_UNIT_TEST_LIB ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY_DEBUG})
   endif()
-endif()
 
-
-# Install it if not found
-if(NOT Boost_FOUND)
-  if(NOT EXTERNAL_ROOT)
-    set(EXTERNAL_ROOT ${CMAKE_BINARY_DIR}/external)
-  endif(NOT EXTERNAL_ROOT)
-
+  set(
+    BOOST_UNIT_TEST_LIB ${BOOST_UNIT_TEST_LIB} 
+    CACHE INTERNAL
+    "Path to unit test framework"
+  )
+  set(
+    BOOST_INCLUDE_DIR ${Boost_INCLUDE_DIR}
+    CACHE INTERNAL
+    "Path to boost include directory"
+  )
+else()
   message(STATUS "Boost not found. Will attempt to download it.")
-  include(ExternalProject)
   
   # Downloads boost from svn
   ExternalProject_Add(
@@ -70,17 +58,8 @@ if(NOT Boost_FOUND)
     COMMAND ./b2 link=static variant=release --with-test --prefix=${EXTERNAL_ROOT} install
     WORKING_DIRECTORY ${EXTERNAL_ROOT}/src/boost
   )
-  # Set include and libs
-  set(
-    BOOST_UNIT_TEST_LIB ${EXTERNAL_ROOT}/lib/libboost_unit_test_framework.a 
-    CACHE INTERNAL
-    "Path to unit test framework"
-  )
-  set(
-    BOOST_INCLUDE_DIR ${EXTERNAL_ROOT}/include
-    CACHE INTERNAL
-    "Path to boost include directory"
-  )
+  # Rerun cmake to capture new boost install
+  add_rerun_cmake_step(boost DEPENDEES Install)
     
 endif()
 

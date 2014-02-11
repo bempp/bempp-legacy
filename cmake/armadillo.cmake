@@ -1,24 +1,7 @@
 # Look for boost the easy way first
+# Not clear that parsing works in find_package. So setting variable directly.
+find_package(Armadillo)
 if(NOT ARMADILLO_INCLUDE_DIR)
-
-  # Not clear that parsing works in find_package. So setting variable directly.
-  find_package(Armadillo)
-  if(Armadillo_FOUND)
-    set(
-      ARMADILLO_INCLUDE_DIR ${Armadillo_INCLUDE_DIR}
-      CACHE INTERNAL
-      "Path to armadillo include directory"
-    )
-  endif()
-endif()
-
-
-# Install it if not found
-if(NOT Armadillo_FOUND)
-  if(NOT EXTERNAL_ROOT)
-    set(EXTERNAL_ROOT ${CMAKE_BINARY_DIR}/external)
-  endif(NOT EXTERNAL_ROOT)
-
   message(STATUS "Armadillo not found. Will attempt to download it.")
   include(ExternalProject)
   
@@ -34,12 +17,8 @@ if(NOT Armadillo_FOUND)
       LOG_CONFIGURE ON
       LOG_BUILD ON
   )
-  set(
-    ARMADILLO_INCLUDE_DIR ${EXTERNAL_ROOT}/include
-    CACHE INTERNAL
-    "Path to armadillo include directory"
-  )
+  # Rerun cmake to capture new armadillo install
+  add_rerun_cmake_step(armadillo DEPENDEES install)
   add_compile_options(ARMA_USE_LAPACK)
   add_compile_options(ARMA_USE_BLAS)
 endif()
-
