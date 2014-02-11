@@ -39,5 +39,7 @@ if(NOT Armadillo_FOUND)
     CACHE INTERNAL
     "Path to armadillo include directory"
   )
+  add_compile_options(ARMA_USE_LAPACK)
+  add_compile_options(ARMA_USE_BLAS)
 endif()
 
