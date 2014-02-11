@@ -1,19 +1,31 @@
-# A function that looks for boost library
-macro(look_for_boost) 
+# Look for boost the easy way first
+if(NOT BOOST_UNIT_TEST_LIB)
+
   # Not clear that parsing works in find_package. So setting variable directly.
-  set(Boost_FIND_COMPONENTS test_exec_monitor unit_test_framework prg_exec_monitor)
+  set(Boost_FIND_COMPONENTS unit_test_framework)
   find_package(boost COMPONENTS ${Boost_FIND_COMPONENTS})
-  if(NOT Boost_FOUND)
+  if(Boost_FOUND)
     if(CMAKE_BUILD_TYPE STREQUAL "Release" OR MAKE_BUILD_TYPE STREQUAL "RelWithDebInfo") 
       set(BOOST_UNIT_TEST_LIB ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY_RELEASE})
     else()
       set(BOOST_UNIT_TEST_LIB ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY_DEBUG})
     endif()
   endif()
-endmacro()
 
-# look_for_boost()
+  set(
+    BOOST_UNIT_TEST_LIB ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY_RELEASE} 
+    CACHE INTERNAL
+    "Path to unit test framework"
+  )
+  set(
+    BOOST_INCLUDE_DIR ${Boost_INCLUDE_DIR}
+    CACHE INTERNAL
+    "Path to boost include directory"
+  )
+endif()
 
+
+# Install it if not found
 if(NOT Boost_FOUND)
   if(NOT EXTERNAL_ROOT)
     set(EXTERNAL_ROOT ${CMAKE_BINARY_DIR}/external)
@@ -21,7 +33,7 @@ if(NOT Boost_FOUND)
 
   message(STATUS "Boost not found. Will attempt to download it.")
   include(ExternalProject)
-
+  
   # Downloads boost from svn
   ExternalProject_Add(
       boost
@@ -58,8 +70,18 @@ if(NOT Boost_FOUND)
     COMMAND ./b2 link=static variant=release --with-test --prefix=${EXTERNAL_ROOT} install
     WORKING_DIRECTORY ${EXTERNAL_ROOT}/src/boost
   )
-  set(BOOST_ROOT ${EXTERNAL_ROOT})
-  look_for_boost()
-  message(STATUS "[boost] ${Boost_FOUND} ${Boost_LIBRARIES}")
+  # Set include and libs
+  set(
+    BOOST_UNIT_TEST_LIB ${EXTERNAL_ROOT}/lib/libboost_unit_test_framework.a 
+    CACHE INTERNAL
+    "Path to unit test framework"
+  )
+  set(
+    BOOST_INCLUDE_DIR ${EXTERNAL_ROOT}/include
+    CACHE INTERNAL
+    "Path to boost include directory"
+  )
     
 endif()
+
+message(STATUS "[Boost unit-test] ${BOOST_UNIT_TEST_LIB}")
