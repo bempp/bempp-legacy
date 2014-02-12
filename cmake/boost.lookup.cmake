@@ -22,43 +22,20 @@ if(Boost_FOUND)
 else()
   message(STATUS "Boost not found. Will attempt to download it.")
   
-  # Downloads boost from svn
   ExternalProject_Add(
       boost
       PREFIX ${EXTERNAL_ROOT}
-      SVN_REPOSITORY http://svn.boost.org/svn/boost/tags/release/Boost_1_55_0
-      TIMEOUT 10
-      UPDATE_COMMAND ""
-      CONFIGURE_COMMAND ""
-      BUILD_COMMAND  ""
-      INSTALL_COMMAND ""
-      # Wrap download, configure and build steps in a script to log output
+      # Downloads boost from url -- much faster than svn
+      URL http://sourceforge.net/projects/boost/files/boost/1.55.0/boost_1_55_0.tar.bz2/download
+      BUILD_IN_SOURCE 1
+      CONFIGURE_COMMAND ./bootstrap.sh
+      BUILD_COMMAND  ./b2 link=static variant=release --with-test
+      INSTALL_COMMAND ./b2 link=static variant=release --with-test --prefix=${EXTERNAL_ROOT} install
       LOG_DOWNLOAD ON
       LOG_CONFIGURE ON
       LOG_BUILD ON
   )
-  # create bjam
-  ExternalProject_Add_Step(
-    boost Configure
-    DEPENDEES download
-    COMMAND ./bootstrap.sh
-    WORKING_DIRECTORY ${EXTERNAL_ROOT}/src/boost
-  )
-  # build
-  ExternalProject_Add_Step(
-    boost Build
-    DEPENDEES Configure
-    COMMAND ./b2 link=static variant=release --with-test 
-    WORKING_DIRECTORY ${EXTERNAL_ROOT}/src/boost
-  )
-  # install
-  ExternalProject_Add_Step(
-    boost Install
-    DEPENDEES Build
-    COMMAND ./b2 link=static variant=release --with-test --prefix=${EXTERNAL_ROOT} install
-    WORKING_DIRECTORY ${EXTERNAL_ROOT}/src/boost
-  )
   # Rerun cmake to capture new boost install
-  add_recursive_cmake_step(boost DEPENDEES Install)
+  add_recursive_cmake_step(boost DEPENDEES install)
     
 endif()
