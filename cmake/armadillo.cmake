@@ -1,6 +1,8 @@
 # Look for boost the easy way first
 # Not clear that parsing works in find_package. So setting variable directly.
-find_package(Armadillo)
+if(USE_OWN_armadillo)
+  find_package(Armadillo)
+endif()
 if(NOT ARMADILLO_INCLUDE_DIR)
   message(STATUS "Armadillo not found. Will attempt to download it.")
   include(ExternalProject)
@@ -18,7 +20,7 @@ if(NOT ARMADILLO_INCLUDE_DIR)
       LOG_BUILD ON
   )
   # Rerun cmake to capture new armadillo install
-  add_rerun_cmake_step(armadillo DEPENDEES install)
+  add_recursive_cmake_step(armadillo DEPENDEES install)
   add_compile_options(ARMA_USE_LAPACK)
   add_compile_options(ARMA_USE_BLAS)
 endif()

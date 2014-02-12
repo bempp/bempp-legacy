@@ -59,8 +59,6 @@ else()
     WORKING_DIRECTORY ${EXTERNAL_ROOT}/src/boost
   )
   # Rerun cmake to capture new boost install
-  add_rerun_cmake_step(boost DEPENDEES Install)
+  add_recursive_cmake_step(boost DEPENDEES Install)
     
 endif()
-
-message(STATUS "[Boost unit-test] ${BOOST_UNIT_TEST_LIB}")
