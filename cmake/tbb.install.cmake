@@ -5,7 +5,6 @@ cmake_minimum_required(VERSION 2.8)
 file(GLOB PATCH_FILES ${ROOT}/install/tbb_*.patch)
 find_program(PATCH_EXECUTABLE patch)
 foreach(patch ${PATCH_FILES})
-  message(STATUS "[PATCH] ${PATCH_EXECUTABLE} ${patch}")
   execute_process(
     COMMAND ${PATCH_EXECUTABLE} ${patch}
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
