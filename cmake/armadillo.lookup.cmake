@@ -9,7 +9,7 @@ if(NOT ARMADILLO_INCLUDE_DIR)
   
   # Downloads armadillo
   ExternalProject_Add(
-      armadillo
+      Armadillo
       PREFIX ${EXTERNAL_ROOT}
       URL http://sourceforge.net/projects/arma/files/armadillo-4.000.4.tar.gz
       CMAKE_ARGS -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=${EXTERNAL_ROOT}
@@ -20,7 +20,7 @@ if(NOT ARMADILLO_INCLUDE_DIR)
       LOG_BUILD ON
   )
   # Rerun cmake to capture new armadillo install
-  add_recursive_cmake_step(armadillo DEPENDEES install)
+  add_recursive_cmake_step(Armadillo Armadillo_FOUND DEPENDEES install)
   add_compile_options(ARMA_USE_LAPACK)
   add_compile_options(ARMA_USE_BLAS)
 endif()

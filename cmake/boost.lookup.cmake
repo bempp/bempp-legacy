@@ -23,7 +23,7 @@ else()
   message(STATUS "Boost not found. Will attempt to download it.")
   
   ExternalProject_Add(
-      boost
+      Boost
       PREFIX ${EXTERNAL_ROOT}
       # Downloads boost from url -- much faster than svn
       URL http://sourceforge.net/projects/boost/files/boost/1.55.0/boost_1_55_0.tar.bz2/download
@@ -36,6 +36,6 @@ else()
       LOG_BUILD ON
   )
   # Rerun cmake to capture new boost install
-  add_recursive_cmake_step(boost DEPENDEES install)
+  add_recursive_cmake_step(Boost Boost_FOUND DEPENDEES install)
     
 endif()

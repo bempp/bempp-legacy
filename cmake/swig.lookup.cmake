@@ -5,7 +5,7 @@ if(NOT SWIG_FOUND)
   
   # Downloads armadillo
   ExternalProject_Add(
-      swig
+      SWIG
       PREFIX ${EXTERNAL_ROOT}
       URL http://prdownloads.sourceforge.net/swig/swig-2.0.12.tar.gz
       CONFIGURE_COMMAND ./configure --prefix=${EXTERNAL_ROOT}
@@ -19,6 +19,6 @@ if(NOT SWIG_FOUND)
       LOG_BUILD ON
   )
   # Rerun cmake to capture new armadillo install
-  add_recursive_cmake_step(swig DEPENDEES install)
+  add_recursive_cmake_step(SWIG SWIG_FOUND DEPENDEES install)
 
 endif()

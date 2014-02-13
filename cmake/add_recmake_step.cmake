@@ -30,21 +30,25 @@ include(ExternalProject)
 #     ExternalProject_Add(...)
 #     add_recursive_cmake_step(something)
 #   endif()
-macro(add_recursive_cmake_step name) 
-  # If statements limits the depth of the recursive call to cmake
-  if(NOT "${PLEASE_NO_RECURSION_ON_${name}}" STREQUAL "PLEASE_NO_RECURSION_ON_${name}")
-    ExternalProject_Add_Step(
-      ${name} reCMake
-      COMMAND ${CMAKE_COMMAND} ${CMAKE_SOURCE_DIR} 
-                       -DCMAKE_PROGRAM_PATH:PATH=${EXTERNAL_ROOT}/bin
-                       -DCMAKE_LIBRARY_PATH:PATH=${EXTERNAL_ROOT}/lib
-                       -DCMAKE_INCLUDE_PATH:PATH=${EXTERNAL_ROOT}/include
-                       -DPLEASE_NO_RECURSION_ON_${name}:STRING=PLEASE_NO_RECURSION_ON_${name}
-                       -DUSE_OWN_${name}:BOOL=TRUE
-                       --no-warn-unused-cli
-      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-      ${ARGN}
-    )
+macro(add_recursive_cmake_step name check_var) 
+  set(cmake_arguments -DCMAKE_PROGRAM_PATH:PATH=${EXTERNAL_ROOT}/bin
+                      -DCMAKE_LIBRARY_PATH:PATH=${EXTERNAL_ROOT}/lib
+                      -DCMAKE_INCLUDE_PATH:PATH=${EXTERNAL_ROOT}/include
+                      -DUSE_OWN_${name}:BOOL=TRUE
+                      --no-warn-unused-cli)
+  if(NOT "${check_var}" STREQUAL "NOCHECK")
+    set(cmake_arguments ${cmake_arguments} -D${name}_REQUIRED:INTERNAL=TRUE)
+  endif()
+  ExternalProject_Add_Step(
+    ${name} reCMake
+    COMMAND ${CMAKE_COMMAND} ${CMAKE_SOURCE_DIR} ${cmake_arguments}
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    ${ARGN}
+  )
+  if(${${name}_REQUIRED})
+    if(NOT ${${check_var}})
+      message(FATAL_ERROR "[${name}] Could not be downloaded and installed")
+    endif()
   endif()
 endmacro() 
 

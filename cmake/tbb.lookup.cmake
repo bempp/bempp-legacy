@@ -18,7 +18,7 @@ if(NOT TBB_FOUND)
     message(FATAL_ERROR "Automatic install of TBB in windows not implemented")
   endif()
   ExternalProject_Add(
-      tbb
+      TBB
       PREFIX ${EXTERNAL_ROOT}
       # Downloads boost from url -- much faster than svn
       URL ${TBB_URL}
@@ -33,7 +33,7 @@ if(NOT TBB_FOUND)
       LOG_CONFIGURE ON
       LOG_BUILD ON
   )
-  # Rerun cmake to capture new boost install
-  add_recursive_cmake_step(tbb DEPENDEES install)
+  # Rerun cmake to capture new TBB install
+  add_recursive_cmake_step(TBB TBB_FOUND DEPENDEES install)
     
 endif()
