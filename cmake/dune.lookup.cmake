@@ -1,5 +1,5 @@
 # Needs boost: include this after boost.lookup.
-if(USE_OWN_dune)
+if(USE_OWN_dune-bempp)
   find_package(dune 2.3.0 COMPONENTS geometry grid localfunctions foamgrid)
 endif()
 if(NOT DUNE_FOUND)
@@ -57,6 +57,9 @@ if(NOT DUNE_FOUND)
       dune-localfunctions
       DEPENDS dune-grid dune-geometry dune-common
       PREFIX ${EXTERNAL_ROOT}
+      PATCH_COMMAND
+        ${CMAKE_COMMAND} -DROOT=${EXTERNAL_ROOT}/src/dune-localfunctions
+                         -P ${PROJECT_SOURCE_DIR}/cmake/dune-localfunctions-patch.cmake
       URL http://www.dune-project.org/download/2.3.0/dune-localfunctions-2.3.0.tar.gz
       CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${EXTERNAL_ROOT}
                  -DCMAKE_DISABLE_FIND_PACKAGE_MPI=TRUE
@@ -90,7 +93,7 @@ if(NOT DUNE_FOUND)
 
   # This file helps to create a fake dune project
   # It answers the question posed by the duneproject script, including the subsidiary
-  # "this directory already exits..."
+  # "this directory already exists..."
   file(
     WRITE ${EXTERNAL_ROOT}/src/bempp.dune.input
     "dune-bempp
@@ -109,11 +112,16 @@ y
     DOWNLOAD_COMMAND dune-common/bin/duneproject < bempp.dune.input
     DEPENDS dune-foamgrid dune-foamgrid dune-grid dune-geometry dune-common dune-localfunctions
     PREFIX ${EXTERNAL_ROOT}
+    CMAKE_ARGS -DCMAKE_PROGRAM_PATH:PATH=${EXTERNAL_ROOT}/bin
+               -DCMAKE_LIBRARY_PATH:PATH=${EXTERNAL_ROOT}/lib
+               -DCMAKE_INCLUDE_PATH:PATH=${EXTERNAL_ROOT}/include
+               -DDUNE_USE_ONLY_STATIC_LIBS=TRUE
+               -DCMAKE_DISABLE_FIND_PACKAGE_MPI=TRUE
     INSTALL_COMMAND
       ${CMAKE_COMMAND} -E copy_if_different
              ${EXTERNAL_ROOT}/src/dune-bempp-build/config.h 
              ${EXTERNAL_ROOT}/include/dune_config.h
   )
   # Rerun cmake to capture new dune install
-  add_recursive_cmake_step(dune-bempp dune_FOUND DEPENDEES build)
+  add_recursive_cmake_step(dune-bempp dune_FOUND DEPENDEES install)
 endif()

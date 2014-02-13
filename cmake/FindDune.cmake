@@ -6,7 +6,7 @@ if(NOT dune_common_LIBRARY)
   message(STATUS "[dune] common library not found")
   return()
 endif()
-set(dune_LIBRARIES ${Dune_COMMON_LIBRARY})
+set(dune_LIBRARIES ${dune_COMMON_LIBRARY})
 
 # Look for common include second
 find_path(dune_INCLUDE_DIR array.hh PATH_SUFFIXES dune/common)
@@ -17,8 +17,8 @@ endif()
 
 # Then look for extra components
 # Get directories where to look for stuff
-get_filename_component(dune_LIBRARY_DIR ${Dune_common_LIBRARY} PATH)
-get_filename_component(dune_INCLUDE_COMPONENT_DIR ${Dune_INCLUDE_DIR} PATH)
+get_filename_component(dune_LIBRARY_DIR ${dune_common_LIBRARY} PATH)
+get_filename_component(dune_INCLUDE_COMPONENT_DIR ${dune_INCLUDE_DIR} PATH)
 set(LIBRARY_COMPONENTS dune_common_LIBRARY)
 # Some components have libraries, others not
 set(LIBRARIZED_COMPONENTS geometry grid)
@@ -33,10 +33,10 @@ foreach(COMPONENT ${dune_FIND_COMPONENTS})
       NO_DEFAULT_PATH
     )
     set(LIBRARY_COMPONENTS ${LIBRARY_COMPONENTS} dune_${COMPONENT}_LIBRARY)
-    if("${dune_${COMPONENT}_LIBRARY}" STREQUAL "Dune_${COMPONENT}_LIBRARY-NOTFOUND")
+    if("${dune_${COMPONENT}_LIBRARY}" STREQUAL "dune_${COMPONENT}_LIBRARY-NOTFOUND")
       message(STATUS "[dune-${COMPONENT}] library NOT found")
     else()
-      set(dune_LIBRARIES ${Dune_LIBRARIES} Dune_${COMPONENT}_LIBRARY)
+      set(dune_LIBRARIES ${dune_LIBRARIES} dune_${COMPONENT}_LIBRARY)
       message(STATUS "[dune-${COMPONENT}] library found")
     endif()
   endif()
@@ -57,7 +57,7 @@ FIND_PACKAGE_HANDLE_STANDARD_ARGS(
 )
 
 if(NOT dune_FOUND)
-  foreach(COMPONENT ${LIBRARY_COMPONENTS} dune_INCLUDE_DIR Dune_LIBRARIES)
+  foreach(COMPONENT ${LIBRARY_COMPONENTS} dune_INCLUDE_DIR dune_LIBRARIES)
     unset(${COMPONENT} CACHE)
   endforeach()
 endif()
