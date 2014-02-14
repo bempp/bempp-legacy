@@ -50,6 +50,8 @@ macro(add_recursive_cmake_step name check_var)
       message(FATAL_ERROR "[${name}] Could not be downloaded and installed")
     endif()
   endif()
+  # Sets a variable saying we are building this source externally
+  set(${name}_BUILT_AS_EXTERNAL_PROJECT TRUE)
 endmacro() 
 
 # Avoids anoying cmake warning, by actually using the variables.
