@@ -2,6 +2,8 @@
 if(NOT EXTERNAL_ROOT)
   set(EXTERNAL_ROOT ${CMAKE_BINARY_DIR}/external)
 endif(NOT EXTERNAL_ROOT)
+# Makes sure external projects are found by cmake
+list(APPEND CMAKE_PREFIX_PATH ${EXTERNAL_ROOT})
 
 include(ExternalProject)
 
