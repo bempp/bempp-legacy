@@ -20,7 +20,7 @@ if(Boost_FOUND)
     "Path to boost include directory"
   )
 else()
-  message(STATUS "Boost not found. Will attempt to download it.")
+  message(STATUS "[Boost] not found. Will attempt to download and install it.")
   
   ExternalProject_Add(
       Boost

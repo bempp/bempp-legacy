@@ -1,10 +1,7 @@
-# Look for boost the easy way first
-# Not clear that parsing works in find_package. So setting variable directly.
-if(USE_OWN_armadillo)
-  find_package(Armadillo)
-endif()
+# Looks for armadillo. If not found, download and install it.
+find_package(Armadillo)
 if(NOT ARMADILLO_INCLUDE_DIR)
-  message(STATUS "Armadillo not found. Will attempt to download it.")
+  message(STATUS "[Armadillo] not found. Will attempt to download and install it.")
   include(ExternalProject)
   
   # Downloads armadillo

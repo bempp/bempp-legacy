@@ -1,6 +1,6 @@
 find_package(SWIG 2.0.4)
 if(NOT SWIG_FOUND)
-  message(STATUS "SWIG not found. Will attempt to download it.")
+  message(STATUS "[SWIG] not found. Will attempt to download and install it.")
   include(ExternalProject)
   
   # Downloads armadillo

@@ -3,10 +3,15 @@ if(USE_OWN_dune-bempp)
   find_package(dune 2.3.0 COMPONENTS geometry grid localfunctions foamgrid)
 endif()
 if(NOT DUNE_FOUND)
+  if(Boost_BUILT_AS_EXTERNAL_PROJECT)
+    set(depends_on Boost)
+  endif()
   ExternalProject_Add(
       dune-common
       PREFIX ${EXTERNAL_ROOT}
+      DEPENDS ${depends_on}
       URL http://www.dune-project.org/download/2.3.0/dune-common-2.3.0.tar.gz
+      URL_HASH MD5=8a45ef8af6b8eab9e4959f7256d310b9
       CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${EXTERNAL_ROOT}
                  -DCMAKE_DISABLE_FIND_PACKAGE_MPI=TRUE
                  -DCMAKE_PROGRAM_PATH:PATH=${EXTERNAL_ROOT}/bin
@@ -23,8 +28,9 @@ if(NOT DUNE_FOUND)
       DEPENDS dune-common
       PREFIX ${EXTERNAL_ROOT}
       URL http://www.dune-project.org/download/2.3.0/dune-geometry-2.3.0.tar.gz
+      URL_HASH MD5=b56d9ebde36d88de18d2853a766a4d24
       CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${EXTERNAL_ROOT}
-                  -DCMAKE_DISABLE_FIND_PACKAGE_MPI=TRUE
+                 -DCMAKE_DISABLE_FIND_PACKAGE_MPI=TRUE
                  -DCMAKE_PROGRAM_PATH:PATH=${EXTERNAL_ROOT}/bin
                  -DCMAKE_LIBRARY_PATH:PATH=${EXTERNAL_ROOT}/lib
                  -DCMAKE_INCLUDE_PATH:PATH=${EXTERNAL_ROOT}/include
@@ -40,6 +46,7 @@ if(NOT DUNE_FOUND)
       DEPENDS dune-geometry dune-common
       PREFIX ${EXTERNAL_ROOT}
       URL http://www.dune-project.org/download/2.3.0/dune-grid-2.3.0.tar.gz
+      URL_HASH MD5=9b533c66d04db39f653a6436d626218b
       CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${EXTERNAL_ROOT}
                  -DCMAKE_DISABLE_FIND_PACKAGE_MPI=TRUE
                  -DCMAKE_PROGRAM_PATH:PATH=${EXTERNAL_ROOT}/bin
@@ -61,6 +68,7 @@ if(NOT DUNE_FOUND)
         ${CMAKE_COMMAND} -DROOT=${EXTERNAL_ROOT}/src/dune-localfunctions
                          -P ${PROJECT_SOURCE_DIR}/cmake/dune-localfunctions-patch.cmake
       URL http://www.dune-project.org/download/2.3.0/dune-localfunctions-2.3.0.tar.gz
+      URL_HASH MD5=284cf9c8c8202e2f441cc3263db2b60d
       CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${EXTERNAL_ROOT}
                  -DCMAKE_DISABLE_FIND_PACKAGE_MPI=TRUE
                  -DCMAKE_PROGRAM_PATH:PATH=${EXTERNAL_ROOT}/bin
