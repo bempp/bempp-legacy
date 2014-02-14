@@ -8,6 +8,7 @@ option(WITH_ALUGRID "Have Alugrid" OFF)
 option(WITH_MKL "Use Intel MKL for BLAS and LAPACK functionality" OFF)
 option(WITH_GOTOBLAS "Use GotoBLAS for BLAS and LAPACK functionality" OFF)
 option(WITH_OPENBLAS "Use OpenBLAS for BLAS and LAPACK functionality" OFF)
+option(WITH_MPI "Whether to compile with MPI" OFF)
 
 option(ENABLE_SINGLE_PRECISION "Enable support for single-precision calculations" ON)
 option(ENABLE_DOUBLE_PRECISION "Enable support for double-precision calculations" ON)
