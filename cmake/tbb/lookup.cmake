@@ -28,7 +28,7 @@ if(NOT TBB_FOUND)
       BUILD_IN_SOURCE 1
       PATCH_COMMAND
        ${CMAKE_COMMAND} -E copy_if_different
-                        ${CMAKE_SOURCE_DIR}/cmake/tbb.install.cmake
+                        ${CURRENT_LOOKUP_DIRECTORY}/install.cmake
                         ${EXTERNAL_ROOT}/src/tbb/CMakeLists.txt
       CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${EXTERNAL_ROOT}
                  -DROOT=${PROJECT_SOURCE_DIR}

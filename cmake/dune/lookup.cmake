@@ -66,7 +66,7 @@ if(NOT DUNE_FOUND)
       PREFIX ${EXTERNAL_ROOT}
       PATCH_COMMAND
         ${CMAKE_COMMAND} -DROOT=${EXTERNAL_ROOT}/src/dune-localfunctions
-                         -P ${PROJECT_SOURCE_DIR}/cmake/dune-localfunctions-patch.cmake
+                         -P ${CURRENT_LOOKUP_DIRECTORY}/patch-localfunctions.make
       URL http://www.dune-project.org/download/2.3.0/dune-localfunctions-2.3.0.tar.gz
       URL_HASH MD5=284cf9c8c8202e2f441cc3263db2b60d
       CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${EXTERNAL_ROOT}
@@ -90,7 +90,7 @@ if(NOT DUNE_FOUND)
       URL ${PROJECT_SOURCE_DIR}/contrib/dune/dune-foamgrid
       PATCH_COMMAND 
          ${CMAKE_COMMAND} -E copy_if_different
-                          ${CMAKE_SOURCE_DIR}/cmake/dune-foamgrid.install.cmake
+                          ${CURRENT_LOOKUP_DIRECTORY}/foamgrid-install.cmake
                           ${EXTERNAL_ROOT}/src/dune-foamgrid/CMakeLists.txt
       CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${EXTERNAL_ROOT}
                  -DROOT=${PROJECT_SOURCE_DIR}
