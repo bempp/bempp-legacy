@@ -1,14 +1,21 @@
---- ./Epetra_ConfigDefs.h	2013-04-25 18:16:47.000000000 +0100
-+++ ./Epetra_ConfigDefs.h.new	2013-04-29 11:43:51.000000000 +0100
-@@ -162,11 +162,9 @@
- For xlC 12.1, malloc and related functions are provided outside the std
- namespace, so the below three using statements cause conflicting declarations.
- */
+--- ./Epetra_ConfigDefs.h.orig	2014-03-20 22:07:35.423208940 +0000
++++ ./Epetra_ConfigDefs.h	2014-03-20 22:07:54.157211006 +0000
+@@ -158,18 +158,9 @@ using std::strcmp;
+ using std::strlen;
+ using std::strchr;
+ using std::strtok;
+-/*
+-For xlC 12.1, malloc and related functions are provided outside the std
+-namespace, so the below three using statements cause conflicting declarations.
+-*/
+-#ifndef __clang__
 -#if !defined __IBMCPP__ || ( __IBMCPP__ != 1210 )
  using std::realloc;
  using std::malloc;
  using std::free;
 -#endif
- 
- using std::istream;
- using std::ostream;
+-#endif
+-
+ //using std::istream;
+ //using std::ostream;
+ //using std::cerr;

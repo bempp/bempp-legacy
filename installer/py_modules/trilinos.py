@@ -71,10 +71,10 @@ def prepare(root,config):
     #patch.apply()
     #patch=py_patch.fromfile(root+"/installer/patches/Teuchos_LAPACK.cpp.patch")
     #patch.apply()
-    #os.chdir(dep_build_dir+"/trilinos/packages/epetra/src")
-    #patch=py_patch.fromfile(root+"/installer/patches/Epetra_ConfigDefs.h.patch")
-    #patch.apply()
-    #os.chdir(cwd)
+    os.chdir(dep_build_dir+"/trilinos/packages/epetra/src")
+    patch=py_patch.fromfile(root+"/installer/patches/Epetra_ConfigDefs.h.patch")
+    patch.apply()
+    os.chdir(cwd)
 
     tools.setDefaultConfigOption(config,'Trilinos','cmake_path',prefix+"/bempp/lib/cmake/Trilinos/",overwrite=True)
 
