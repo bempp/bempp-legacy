@@ -54,6 +54,41 @@ namespace {
 
 typedef std::vector<std::string> StringVector;
 
+std::istream& safeGetline(std::istream& is, std::string& t)
+{
+    t.clear();
+
+    // The characters in the stream are read one-by-one using a std::streambuf.
+    // That is faster than reading them one-by-one using the std::istream.
+    // Code that uses streambuf this way must be guarded by a sentry object.
+    // The sentry object performs various tasks,
+    // such as thread synchronization and updating the stream state.
+
+    // This function is adapted from http://stackoverflow.com/questions/6089231/getting-std-ifstream-to-handle-lf-cr-and-crlf
+
+    std::istream::sentry se(is, true);
+    std::streambuf* sb = is.rdbuf();
+
+    for(;;) {
+        int c = sb->sbumpc();
+        switch (c) {
+        case '\n':
+            return is;
+        case '\r':
+            if(sb->sgetc() == '\n')
+                sb->sbumpc();
+            return is;
+        case EOF:
+            // Also handle the case when the last line has no line ending
+            if(t.empty())
+                is.setstate(std::ios::eofbit);
+            return is;
+        default:
+            t += (char)c;
+        }
+    }
+}
+
 StringVector stringTokens(std::string input) {
 
     StringVector result;
@@ -704,13 +739,12 @@ GmshData GmshData::read(std::istream& input, int elementType, int physicalEntity
     GmshData gmshData;
 
     std::string line;
-    while (std::getline(input,line)) {
-
+    while (safeGetline(input,line)) {
         if (line == "$MeshFormat") {
             if (haveMeshFormat) throw std::runtime_error(
                         "GmshData::read(): MeshFormat Section appears more than once.");
             std::cout << "Reading MeshFormat..." << std::endl;
-            std::getline(input,line);
+            safeGetline(input,line);
             StringVector tokens = stringTokens(line);
             if (tokens.size() != 3) throw std::runtime_error(
                         "GmshData::read(): Wrong format of MeshFormat");
@@ -721,22 +755,21 @@ GmshData GmshData::read(std::istream& input, int elementType, int physicalEntity
             int dataSize = boost::lexical_cast<int>(tokens[2]);
             if (dataSize != sizeof(double)) throw std::runtime_error(
                         "MeshFormat::read(): Data size not supported.");
-            std::getline(input,line);
+            safeGetline(input,line);
             if (line != "$EndMeshFormat") throw std::runtime_error(
                         "GmshData::read(): Error reading MeshFormat section.");
             haveMeshFormat = true;
-
 
         }
         else if (line == "$Nodes") {
             if (haveNodes) throw std::runtime_error(
                         "GmshData::read(): Nodes section appears more than once. ");
             std::cout << "Reading Nodes..." << std::endl;
-            std::getline(input,line);
+            safeGetline(input,line);
             int numberOfNodes = boost::lexical_cast<int>(line);
             gmshData.reserveNumberOfNodes(numberOfNodes);
             for (int i = 0; i < numberOfNodes; ++i){
-                std::getline(input,line);
+                safeGetline(input,line);
                 StringVector tokens = stringTokens(line);
                 if (tokens.size() != 4) throw std::runtime_error(
                             "GmshData::read(): Wrong format of node definition detected.");
@@ -746,7 +779,7 @@ GmshData GmshData::read(std::istream& input, int elementType, int physicalEntity
                 double z = boost::lexical_cast<double>(tokens[3]);
                 gmshData.addNode(index,x,y,z);
             }
-            std::getline(input,line);
+            safeGetline(input,line);
             if (line != "$EndNodes") throw std::runtime_error(
                         "GmshData::read(): Error reading Nodes section. ");
             haveNodes = true;
@@ -755,10 +788,10 @@ GmshData GmshData::read(std::istream& input, int elementType, int physicalEntity
             if (haveElements) throw std::runtime_error(
                         "GmshData::read(): Elements section appears more than once.");
             std::cout << "Reading Elements..." << std::endl;
-            std::getline(input,line);
+            safeGetline(input,line);
             int numberOfElements = boost::lexical_cast<int>(line);
             for (int i = 0; i < numberOfElements; ++i) {
-                std::getline(input,line);
+                safeGetline(input,line);
                     StringVector tokens = stringTokens(line);
                     int index = boost::lexical_cast<int>(tokens.at(0));
                     int currentElementType = boost::lexical_cast<int>(tokens.at(1));
@@ -779,7 +812,7 @@ GmshData GmshData::read(std::istream& input, int elementType, int physicalEntity
                             gmshData.m_elementIndices.insert(index);
                     }
                 }
-            std::getline(input,line);
+            safeGetline(input,line);
             if (line != "$EndElements") throw std::runtime_error(
                         "GmshData::read(): Error reading Elements section. ");
             haveElements = true;
@@ -789,10 +822,10 @@ GmshData GmshData::read(std::istream& input, int elementType, int physicalEntity
             if (havePeriodic) throw std::runtime_error(
                         "GmshData::read(): Periodic section appears more than once.");
             std::cout << "Reading Periodic..." << std::endl;
-            std::getline(input,line);
+            safeGetline(input,line);
             int numberOfPeriodicEntities = boost::lexical_cast<int>(line);
             for (int i = 0;i < numberOfPeriodicEntities; ++i) {
-                std::getline(input,line);
+                safeGetline(input,line);
                 StringVector tokens = stringTokens(line);
                 if (tokens.size()!= 3) throw std::runtime_error(
                             "GmshData::read(): Wrong format for periodic entities.");
@@ -802,10 +835,10 @@ GmshData GmshData::read(std::istream& input, int elementType, int physicalEntity
                 gmshData.addPeriodicEntity(dimension,slaveTag,masterTag);
             }
 
-            std::getline(input,line);
+            safeGetline(input,line);
             int numberOfPeriodicNodes = boost::lexical_cast<int>(line);
             for (int i = 0; i < numberOfPeriodicNodes; ++i) {
-                std::getline(input,line);
+                safeGetline(input,line);
                 StringVector tokens = stringTokens(line);
                 if (tokens.size() != 2) throw std::runtime_error(
                             "GmshData::read(): Wrong format for periodic nodes.");
@@ -813,7 +846,7 @@ GmshData GmshData::read(std::istream& input, int elementType, int physicalEntity
                 int masterNode = boost::lexical_cast<int>(tokens[1]);
                 gmshData.addPeriodicNode(slaveNode,masterNode);
             }
-            std::getline(input,line);
+            safeGetline(input,line);
             if (line != "$EndPeriodic") throw std::runtime_error(
                         "GmshData::read(): Error reading Periodic section.");
             havePeriodic = true;
@@ -822,10 +855,10 @@ GmshData GmshData::read(std::istream& input, int elementType, int physicalEntity
             if (havePhysicalNames) throw std::runtime_error(
                         "GmshData::read(): PhysicalNames section appears more than once.");
             std::cout << "Reading PhysicalNames..." << std::endl;
-            std::getline(input,line);
+            safeGetline(input,line);
             int numberOfPhysicalNames = boost::lexical_cast<int>(line);
             for (int i = 0; i< numberOfPhysicalNames; ++i) {
-                std::getline(input,line);
+                safeGetline(input,line);
                 StringVector tokens = stringTokens(line);
                 if (tokens.size() != 3) throw std::runtime_error(
                             "PhysicalNamesSet::read(): Wrong format for physical names.");
@@ -834,7 +867,7 @@ GmshData GmshData::read(std::istream& input, int elementType, int physicalEntity
                 std::string name = tokens[2];
                 gmshData.addPhysicalName(dimension,number,name);
             }
-            std::getline(input,line);
+            safeGetline(input,line);
             if (line != "$EndPhysicalNames") throw std::runtime_error(
                         "GmshData::read(): Error reading PhysicalNames section.");
             havePhysicalNames = true;
@@ -844,32 +877,32 @@ GmshData GmshData::read(std::istream& input, int elementType, int physicalEntity
         else if (line == "$NodeData") {
 
             std::cout << "Reading NodeData..." << std::endl;
-            std::getline(input,line);
+            safeGetline(input,line);
             int numberOfStringTags = boost::lexical_cast<int>(line);
             std::vector<std::string> stringTags;
             for (int i = 0; i < numberOfStringTags; ++i) {
-                std::getline(input,line);
+                safeGetline(input,line);
                 line.erase(std::remove(line.begin(),line.end(),'\"'),line.end());
                 stringTags.push_back(line);
             }
 
             // Real tags
-            std::getline(input,line);
+            safeGetline(input,line);
             int numberOfRealTags = boost::lexical_cast<int>(line);
             std::vector<double> realTags;
             for (int i = 0; i < numberOfRealTags; ++i ) {
-                std::getline(input,line);
+                safeGetline(input,line);
                 realTags.push_back(boost::lexical_cast<double>(line));
             }
 
             // Integer tags
-            std::getline(input,line);
+            safeGetline(input,line);
             int numberOfIntegerTags = boost::lexical_cast<int>(line);
             if (numberOfIntegerTags < 3) throw std::runtime_error(
                         "GmshData::read(): At least 3 integer tags required.");
             std::vector<int> integerTags;
             for (int i = 0; i < numberOfIntegerTags; ++i) {
-                std::getline(input,line);
+                safeGetline(input,line);
                 integerTags.push_back(boost::lexical_cast<int>(line));
             }
             int timeStep = integerTags[0];
@@ -881,7 +914,7 @@ GmshData GmshData::read(std::istream& input, int elementType, int physicalEntity
             gmshData.addNodeDataSet(stringTags,realTags,numberOfFieldComponents,numberOfNodes,timeStep,partition);
 
             for (int i = 0; i < numberOfNodes; ++i) {
-                std::getline(input,line);
+                safeGetline(input,line);
                 StringVector tokens = stringTokens(line);
                 if (tokens.size() != 1+numberOfFieldComponents) throw std::runtime_error(
                             "GmshData::read(): Data has wrong format.");
@@ -893,7 +926,7 @@ GmshData GmshData::read(std::istream& input, int elementType, int physicalEntity
                 gmshData.addNodeData(dataSetIndex,index,values);
             }
 
-            std::getline(input,line);
+            safeGetline(input,line);
             if (line != "$EndNodeData") throw std::runtime_error(
                         "GmshData::read(): Error reading NodeData section.");
 
@@ -902,32 +935,32 @@ GmshData GmshData::read(std::istream& input, int elementType, int physicalEntity
         else if (line == "$ElementData") {
 
             std::cout << "Reading ElementData..." << std::endl;
-            std::getline(input,line);
+            safeGetline(input,line);
             int numberOfStringTags = boost::lexical_cast<int>(line);
             std::vector<std::string> stringTags;
             for (int i = 0; i < numberOfStringTags; ++i) {
-                std::getline(input,line);
+                safeGetline(input,line);
                 line.erase(std::remove(line.begin(),line.end(),'\"'),line.end());
                 stringTags.push_back(line);
             }
 
             // Real tags
-            std::getline(input,line);
+            safeGetline(input,line);
             int numberOfRealTags = boost::lexical_cast<int>(line);
             std::vector<double> realTags;
             for (int i = 0; i < numberOfRealTags; ++i ) {
-                std::getline(input,line);
+                safeGetline(input,line);
                 realTags.push_back(boost::lexical_cast<double>(line));
             }
 
             // Integer tags
-            std::getline(input,line);
+            safeGetline(input,line);
             int numberOfIntegerTags = boost::lexical_cast<int>(line);
             if (numberOfIntegerTags < 3) throw std::runtime_error(
                         "GmshData::read(): At least 3 integer tags required.");
             std::vector<int> integerTags;
             for (int i = 0; i < numberOfIntegerTags; ++i) {
-                std::getline(input,line);
+                safeGetline(input,line);
                 integerTags.push_back(boost::lexical_cast<int>(line));
             }
             int timeStep = integerTags[0];
@@ -939,7 +972,7 @@ GmshData GmshData::read(std::istream& input, int elementType, int physicalEntity
             gmshData.addElementDataSet(stringTags,realTags,numberOfFieldComponents,numberOfElements,timeStep,partition);
 
             for (int i = 0; i < numberOfElements; ++i) {
-                std::getline(input,line);
+                safeGetline(input,line);
                 StringVector tokens = stringTokens(line);
                 if (tokens.size() != 1+numberOfFieldComponents) throw std::runtime_error(
                             "GmshData::read(): Data has wrong format.");
@@ -952,7 +985,7 @@ GmshData GmshData::read(std::istream& input, int elementType, int physicalEntity
                     gmshData.addElementData(dataSetIndex,index,values);
             }
 
-            std::getline(input,line);
+            safeGetline(input,line);
             if (line != "$EndElementData") throw std::runtime_error(
                         "GmshData::read(): Error reading ElementData section.");
 
@@ -961,32 +994,32 @@ GmshData GmshData::read(std::istream& input, int elementType, int physicalEntity
         else if (line == "$ElementNodeData") {
 
             std::cout << "Reading ElementNodeData..." << std::endl;
-            std::getline(input,line);
+            safeGetline(input,line);
             int numberOfStringTags = boost::lexical_cast<int>(line);
             std::vector<std::string> stringTags;
             for (int i = 0; i < numberOfStringTags; ++i) {
-                std::getline(input,line);
+                safeGetline(input,line);
                 line.erase(std::remove(line.begin(),line.end(),'\"'),line.end());
                 stringTags.push_back(line);
             }
 
             // Real tags
-            std::getline(input,line);
+            safeGetline(input,line);
             int numberOfRealTags = boost::lexical_cast<int>(line);
             std::vector<double> realTags;
             for (int i = 0; i < numberOfRealTags; ++i ) {
-                std::getline(input,line);
+                safeGetline(input,line);
                 realTags.push_back(boost::lexical_cast<double>(line));
             }
 
             // Integer tags
-            std::getline(input,line);
+            safeGetline(input,line);
             int numberOfIntegerTags = boost::lexical_cast<int>(line);
             if (numberOfIntegerTags < 3) throw std::runtime_error(
                         "GmshData::read(): At least 3 integer tags required.");
             std::vector<int> integerTags;
             for (int i = 0; i < numberOfIntegerTags; ++i) {
-                std::getline(input,line);
+                safeGetline(input,line);
                 integerTags.push_back(boost::lexical_cast<int>(line));
             }
             int timeStep = integerTags[0];
@@ -998,7 +1031,7 @@ GmshData GmshData::read(std::istream& input, int elementType, int physicalEntity
             gmshData.addElementNodeDataSet(stringTags,realTags,numberOfFieldComponents,numberOfElements,timeStep,partition);
 
             for (int i = 0; i < numberOfElements; ++i) {
-                std::getline(input,line);
+                safeGetline(input,line);
                 StringVector tokens = stringTokens(line);
                 if (tokens.size() < 2) throw std::runtime_error(
                             "GmshData::read(): Data has wrong format.");
@@ -1016,7 +1049,7 @@ GmshData GmshData::read(std::istream& input, int elementType, int physicalEntity
                     gmshData.addElementNodeData(dataSetIndex,index,values);
             }
 
-            std::getline(input,line);
+            safeGetline(input,line);
             if (line != "$EndElementNodeData") throw std::runtime_error(
                         "GmshData::read(): Error reading ElementNodeData section.");
 
@@ -1025,21 +1058,21 @@ GmshData GmshData::read(std::istream& input, int elementType, int physicalEntity
         else if (line == "$InterpolationSchemeSet") {
 
             std::cout << "Reading InterpolationSchemSet..." << std::endl;
-            std::getline(input,line);
+            safeGetline(input,line);
             line.erase(std::remove(line.begin(),line.end(),'\"'),line.end());
             std::string name = line;
-            std::getline(input,line);
+            safeGetline(input,line);
             if (boost::lexical_cast<int>(line) != 1) throw std::runtime_error(
                         "GmshData::read(): Only one topology is currently supported.");
-            std::getline(input,line);
+            safeGetline(input,line);
             int topology = boost::lexical_cast<int>(line);
             int dataSetIndex = gmshData.numberOfInterpolationSchemeSets();
             gmshData.addInterpolationSchemeSet(name,topology);
-            std::getline(input,line);
+            safeGetline(input,line);
             int numberOfInterpolationMatrices = boost::lexical_cast<int>(line);
             for (int i = 0; i < numberOfInterpolationMatrices; ++i) {
                 std::vector<double> matrix;
-                std::getline(input,line);
+                safeGetline(input,line);
                 StringVector tokens = stringTokens(line);
                 if (tokens.size() != 2) throw std::runtime_error(
                             "GmshData::read(): Wrong format of interpolation matrices.");
@@ -1047,7 +1080,7 @@ GmshData GmshData::read(std::istream& input, int elementType, int physicalEntity
                 int ncols = boost::lexical_cast<int>(tokens[1]);
                 matrix.reserve(nrows*ncols);
                 for (int j = 0; j < nrows; ++j) {
-                    std::getline(input,line);
+                    safeGetline(input,line);
                     StringVector tokens = stringTokens(line);
                     if (tokens.size() != ncols) throw std::runtime_error(
                                 "GmshData::read(): Wrong format of interpolation matrices.");
@@ -1056,7 +1089,7 @@ GmshData GmshData::read(std::istream& input, int elementType, int physicalEntity
                 }
                 gmshData.addInterpolationMatrix(dataSetIndex,nrows,ncols,matrix);
             }
-            std::getline(input,line);
+            safeGetline(input,line);
             if (line != "$EndInterpolationSchemeSet") throw std::runtime_error(
                         "GmshData::read(): Error reading InterpolationSchemeSet section.");
         }
