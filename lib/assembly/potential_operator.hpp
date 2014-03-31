@@ -86,6 +86,9 @@ public:
      *  Fiber::QuadratureStrategy. */
     typedef Fiber::QuadratureStrategy<BasisFunctionType, ResultType, GeometryFactory>
     QuadratureStrategy;
+    /** \brief Type of the appropriate instantiation of
+     *  Fiber::EvaluatorForIntegralOperators. */
+    typedef Fiber::EvaluatorForIntegralOperators<ResultType> Evaluator;
 
     /** \brief Destructor */
     virtual ~PotentialOperator() {}
@@ -189,6 +192,43 @@ public:
     assemble(
             const shared_ptr<const Space<BasisFunctionType> >& space,
             const shared_ptr<const arma::Mat<CoordinateType> >& evaluationPoints,
+            const QuadratureStrategy& quadStrategy,
+            const EvaluationOptions& options) const = 0;
+
+    /** \brief Create and return an evaluator object that can be used to optimise
+     *  repeated application of this potential operator to a particular grid
+     *  function at different points.
+     *
+     *  Use of the returned evaluator object is advantageous compared to calling
+     *  evaluateAtPoints() or evaluateOnGrid() when the evaluation points are
+     *  determined iteratively rather than being all known in advance.
+     *
+     *  Example:
+        \code
+        GridFunction<BFT, RT> function = ...;
+        Laplace3dSingleLayerPotentialOperator<BFT, RT> slPotOp;
+        typedef Fiber::EvaluatorForIntegralOperators<RT> Evaluator;
+        NumericalQuadratureStrategy<BFT, RT> quadStrategy;
+        EvaluationOptions evaluationOptions;
+        std::auto_ptr<Evaluator> slPotOpEvaluator =
+            slPotOp.makeEvaluator(function, quadStrategy, evaluationOptions);
+        std::auto_ptr<Evaluator> dlPotOpEvaluator =
+            dlPotOp.makeEvaluator(solFun, quadStrategy, evaluationOptions);
+        arma::Mat<RT> slPotValues;
+        slPotEvaluator->evaluate(Evaluator::FAR_FIELD,
+                                 evaluationPoints, slPotValues);
+        \endcode
+     *
+     * \param[in] argument
+     *   The grid function to which this potential operator will be applied.
+     * \param[in] quadStrategy
+     *   A #QuadratureStrategy object controlling how the integrals will be
+     *   evaluated.
+     * \param[in] options
+     *   Evaluation options.
+     */
+    virtual std::auto_ptr<Evaluator> makeEvaluator(
+            const GridFunction<BasisFunctionType, ResultType>& argument,
             const QuadratureStrategy& quadStrategy,
             const EvaluationOptions& options) const = 0;
 

@@ -29,6 +29,8 @@
 namespace Fiber
 {
 
+/** \brief Interface of classes used to evaluate potentials defined by the
+ *  application of integral operators to functions defined on surfaces. */
 template <typename ResultType>
 class EvaluatorForIntegralOperators
 {
@@ -41,6 +43,19 @@ public:
 
     virtual ~EvaluatorForIntegralOperators() {}
 
+    /** \brief Evaluate the operator at a given list of points.
+     *
+     *  \param[in] region
+     *   Obsolete. Always use FAR_FIELD.
+     *
+     *  \param[in] points
+     *   2D array whose (i, j)th element is the ith coordinate of the jth point
+     *   at which the potential should be evaluated.
+     *
+     *  \param[out] result
+     *   On output, a 2D array whose (i, j)th element is the ith component of the
+     *   potential at the jth point.
+     */
     virtual void evaluate(Region region,
                           const arma::Mat<CoordinateType>& points,
                           arma::Mat<ResultType>& result) const = 0;

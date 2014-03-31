@@ -103,9 +103,8 @@ public:
     typedef typename Base::CoordinateType CoordinateType;
     /** \copydoc PotentialOperator::QuadratureStrategy */
     typedef typename Base::QuadratureStrategy QuadratureStrategy;
-    /** \brief Type of the appropriate instantiation of
-     *  Fiber::EvaluatorForIntegralOperators. */
-    typedef Fiber::EvaluatorForIntegralOperators<ResultType> Evaluator;
+    /** \copydoc PotentialOperator::Evaluator */
+    typedef typename Base::Evaluator Evaluator;
     /** \brief Type of the appropriate instantiation of
      *  Fiber::LocalAssemblerForPotentialOperators. */
     typedef Fiber::LocalAssemblerForPotentialOperators<ResultType> LocalAssembler;
@@ -145,6 +144,11 @@ public:
             const QuadratureStrategy& quadStrategy,
             const EvaluationOptions& options) const;
 
+    virtual std::auto_ptr<Evaluator> makeEvaluator(
+            const GridFunction<BasisFunctionType, ResultType>& argument,
+            const QuadratureStrategy& quadStrategy,
+            const EvaluationOptions& options) const;
+
     virtual int componentCount() const;
 
 private:
@@ -166,11 +170,6 @@ private:
     virtual const KernelTrialIntegral& integral() const = 0;
 
     /** \cond PRIVATE */
-    std::auto_ptr<Evaluator> makeEvaluator(
-            const GridFunction<BasisFunctionType, ResultType>& argument,
-            const QuadratureStrategy& quadStrategy,
-            const EvaluationOptions& options) const;
-
     std::auto_ptr<LocalAssembler> makeAssembler(
             const Space<BasisFunctionType>& space,
             const arma::Mat<CoordinateType>& evaluationPoints,
