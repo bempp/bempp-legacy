@@ -205,18 +205,20 @@ public:
      *
      *  Example:
         \code
-        GridFunction<BFT, RT> function = ...;
-        Laplace3dSingleLayerPotentialOperator<BFT, RT> slPotOp;
-        typedef Fiber::EvaluatorForIntegralOperators<RT> Evaluator;
-        NumericalQuadratureStrategy<BFT, RT> quadStrategy;
+        GridFunction<double, double> function = ...;
+        Laplace3dSingleLayerPotentialOperator<double, double> slPotOp;
+        typedef Fiber::EvaluatorForIntegralOperators<double> Evaluator;
+        NumericalQuadratureStrategy<double, double> quadStrategy;
         EvaluationOptions evaluationOptions;
         std::auto_ptr<Evaluator> slPotOpEvaluator =
             slPotOp.makeEvaluator(function, quadStrategy, evaluationOptions);
-        std::auto_ptr<Evaluator> dlPotOpEvaluator =
-            dlPotOp.makeEvaluator(solFun, quadStrategy, evaluationOptions);
-        arma::Mat<RT> slPotValues;
+        // Evaluate the potential at points (1, 0, 0) and (2, 3, 4)
+        arma::Mat<double> points(3, 2);
+        points(0, 0) = 1.; points(1, 0) = 0.; points(2, 0) = 0.;
+        points(0, 1) = 2.; points(1, 1) = 3.; points(2, 1) = 4.;
+        arma::Mat<double> slPotValues;
         slPotEvaluator->evaluate(Evaluator::FAR_FIELD,
-                                 evaluationPoints, slPotValues);
+                                 points, slPotValues);
         \endcode
      *
      * \param[in] argument
