@@ -29,6 +29,7 @@ BEMPP_FORWARD_DECLARE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(PotentialOperator);
         { arma::Mat<std::complex<double> >& result_ };
 
     %ignore evaluateOnGrid;
+    %ignore makeEvaluator;
 
     void _evaluateAtPoints(
         arma::Mat<ResultType>& result_,
