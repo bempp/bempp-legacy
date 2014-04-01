@@ -217,8 +217,32 @@ public:
         points(0, 0) = 1.; points(1, 0) = 0.; points(2, 0) = 0.;
         points(0, 1) = 2.; points(1, 1) = 3.; points(2, 1) = 4.;
         arma::Mat<double> slPotValues;
-        slPotEvaluator->evaluate(Evaluator::FAR_FIELD,
-                                 points, slPotValues);
+        slPotOpEvaluator->evaluate(Evaluator::FAR_FIELD,
+                                   points, slPotValues);
+        \endcode
+     *
+     *  \note If evaluate() is to be called many times in a loop, it
+     *  is recommended to construct a TBB task scheduler before the
+     *  loop and maintain it alive until the last call to
+     *  evaluate(). Otherwise a new task scheduler may be created and
+     *  destroyed during each call to evaluate(), which may degrade
+     *  performance.
+     *
+     *  Example:
+        \code
+        #include <tbb/task_scheduler_init.h>
+        ...
+        int main()
+        {
+            ...
+            tbb::task_scheduler_init scheduler;
+            std::auto_ptr<Evaluator> evaluator = ...
+            for (int i = 0; i < 1000; ++i)
+            {
+                evaluator->evaluate(...);
+            }
+            ...
+        }
         \endcode
      *
      * \param[in] argument
