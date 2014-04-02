@@ -32,4 +32,4 @@ ExternalProject_Add(
     LOG_BUILD ON
 )
 # Rerun cmake to capture new TBB install
-add_recursive_cmake_step(TBB TBB_FOUND DEPENDEES install)
+add_recursive_cmake_step(TBB DEPENDEES install)

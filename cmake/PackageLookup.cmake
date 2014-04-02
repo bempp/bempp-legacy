@@ -122,6 +122,9 @@ function(_find_lookup_recipe package OUTVAR)
     endif()
 endfunction()
 
+macro(_get_sane_name name OUTVAR)
+    string(REGEX REPLACE "\\-" "_" ${OUTVAR} "${name}")
+endmacro()
 # Looks for a lookup package file and includes it.
 macro(lookup_package package)
     set(solitos "DOWNLOAD_BY_DEFAULT;REQUIRED;QUIET;")
@@ -135,7 +138,7 @@ macro(lookup_package package)
     endif()
     # Check whether recursive
     unset(recursive)
-    set(REGEX REPLACE "(-|+| )" "_" SANENAME "${name}")
+    _get_sane_name(${package} SANENAME)
     if(${SANENAME}_RECURSIVE)
         set(recursive TRUE)
     endif()
@@ -200,32 +203,40 @@ macro(depends_on_lookups TARGET)
 endmacro()
 
 # Adds an external step to an external project to rerun cmake
-macro(add_recursive_cmake_step name check_var)
-  set(REGEX REPLACE "(-|+| )" "_" SANENAME "${name}")
-  set(cmake_arguments -DCMAKE_PROGRAM_PATH:PATH=${EXTERNAL_ROOT}/bin
-                      -DCMAKE_LIBRARY_PATH:PATH=${EXTERNAL_ROOT}/lib
-                      -DCMAKE_INCLUDE_PATH:PATH=${EXTERNAL_ROOT}/include
-                      -DCMAKE_PREFIX_PATH:PATH=${EXTERNAL_ROOT}
-                      -D${SANENAME}_RECURSIVE:BOOL=TRUE
-                      --no-warn-unused-cli)
-  if(NOT "${check_var}" STREQUAL "NOCHECK")
-      set(cmake_arguments ${cmake_arguments} -D${SANENAME}_REQUIREDONRECURSE:INTERNAL=TRUE)
-  endif()
-  ExternalProject_Add_Step(
-    ${name} reCMake
-    COMMAND ${CMAKE_COMMAND} ${CMAKE_SOURCE_DIR} ${cmake_arguments}
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-    ${ARGN}
-  )
-  if(${${SANENAME}_REQUIREDONRECURSE})
-    if(NOT ${${check_var}})
-      message(FATAL_ERROR "[${name}] Could not be downloaded and installed")
-    else()
-        message(STATUS "[${name}] ${check_var} ${${check_var}} Found")
+macro(add_recursive_cmake_step name)
+    cmake_parse_arguments(recursive "NOCHECK" "FOUND_VAR;PACKAGE_NAME" "" ${ARGN})
+    set(recurse_name "${name}")
+    if(recursive_PACKAGE_NAME)
+        set(recurse_name "${recursive_PACKAGE_NAME}")
     endif()
-  endif()
-  # Sets a variable saying we are building this source externally
-  set(${name}_BUILT_AS_EXTERNAL_PROJECT TRUE)
+    set(found_var ${name}_FOUND)
+    if(recursive_FOUND_VAR)
+        set(found_var ${recursive_FOUND_VAR})
+    endif()
+    _get_sane_name(${recurse_name} SANENAME)
+    set(cmake_arguments -DCMAKE_PROGRAM_PATH:PATH=${EXTERNAL_ROOT}/bin
+                        -DCMAKE_LIBRARY_PATH:PATH=${EXTERNAL_ROOT}/lib
+                        -DCMAKE_INCLUDE_PATH:PATH=${EXTERNAL_ROOT}/include
+                        -DCMAKE_PREFIX_PATH:PATH=${EXTERNAL_ROOT}
+                        -D${SANENAME}_RECURSIVE:BOOL=TRUE
+                        --no-warn-unused-cli)
+    if(NOT recursive_NOCHECK)
+        set(cmake_arguments ${cmake_arguments} -D${SANENAME}_REQUIREDONRECURSE:INTERNAL=TRUE)
+    endif()
+    ExternalProject_Add_Step(
+      ${name} reCMake
+      COMMAND ${CMAKE_COMMAND} ${CMAKE_SOURCE_DIR} ${cmake_arguments}
+      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+      ${recursive_UNPARSED_ARGUMENTS}
+    )
+    if(${${SANENAME}_REQUIREDONRECURSE})
+      if(NOT ${found_var} OR "${${found_var}}" STREQUAL "")
+          unset(${SANENAME}_REQUIREDONRECURSE CACHE)
+          message(FATAL_ERROR "[${name}] Could not be downloaded and installed")
+      endif()
+    endif()
+    # Sets a variable saying we are building this source externally
+    set(${name}_BUILT_AS_EXTERNAL_PROJECT TRUE)
 endmacro()
 
 # Avoids anoying cmake warning, by actually using the variables.

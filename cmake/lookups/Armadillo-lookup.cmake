@@ -11,6 +11,6 @@ ExternalProject_Add(
     LOG_BUILD ON
 )
 # Rerun cmake to capture new armadillo install
-add_recursive_cmake_step(Armadillo Armadillo_FOUND DEPENDEES install)
+add_recursive_cmake_step(Armadillo DEPENDEES install)
 add_compile_options(ARMA_USE_LAPACK)
 add_compile_options(ARMA_USE_BLAS)

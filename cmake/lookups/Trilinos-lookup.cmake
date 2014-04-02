@@ -76,4 +76,4 @@ ExternalProject_Add(
     LOG_BUILD ON
 )
 # Rerun cmake to capture new armadillo install
-add_recursive_cmake_step(Trilinos Trilinos_FOUND DEPENDEES install)
+add_recursive_cmake_step(Trilinos DEPENDEES install)

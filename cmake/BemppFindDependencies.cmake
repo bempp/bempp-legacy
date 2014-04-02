@@ -3,7 +3,18 @@ lookup_package(Boost COMPONENTS unit_test_framework REQUIRED)
 lookup_package(Armadillo REQUIRED)
 lookup_package(TBB REQUIRED)
 lookup_package(Dune REQUIRED DOWNLOAD_BY_DEFAULT
-    COMPONENTS geometry grid localfunctions foamgrid)
+    COMPONENTS geometry grid localfunctions foamgrid
+    ARGUMENTS
+        common_URL http://www.dune-project.org/download/2.3.0/dune-common-2.3.0.tar.gz
+        common_MD5 8a45ef8af6b8eab9e4959f7256d310b9
+        geometry_URL http://www.dune-project.org/download/2.3.0/dune-geometry-2.3.0.tar.gz
+        geometry_MD5 b56d9ebde36d88de18d2853a766a4d24
+        grid_URL http://www.dune-project.org/download/2.3.0/dune-grid-2.3.0.tar.gz
+        grid_MD5 9b533c66d04db39f653a6436d626218b
+        localfunctions_URL http://www.dune-project.org/download/2.3.0/dune-localfunctions-2.3.0.tar.gz
+        localfunctions_MD5 284cf9c8c8202e2f441cc3263db2b60d
+)
+
 lookup_package(Trilinos
     REQUIRED
     ARGUMENTS
@@ -12,6 +23,25 @@ lookup_package(Trilinos
 )
 lookup_package(SWIG 2.0.4 REQUIRED)
 
+find_package(Doxygen)
+
+find_package(BLAS REQUIRED)
+if(NOT BLAS_INCLUDE_DIR)
+    # find_package blas does not look for cblas.h
+    find_path(BLAS_INCLUDE_DIR cblas.h)
+endif()
+
+find_package(LAPACK REQUIRED)
+if(NOT LAPACK_INCLUDE_DIR)
+    find_path(LAPACK_INCLUDE_DIR clapack.h)
+endif()
+
+if (WITH_CUDA)
+   FIND_PACKAGE(CUDA)
+endif ()
+
+
+### The following sets bempp specific variables, for ease of use
 if(Boost_FOUND)
   if(CMAKE_BUILD_TYPE STREQUAL "Release" OR MAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
     set(BOOST_UNIT_TEST_LIB ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY_RELEASE})
@@ -31,18 +61,6 @@ if(Boost_FOUND)
   )
 endif()
 
-# BLAS
-find_package(BLAS REQUIRED)
-# find_package blas does not look for cblas.h
-if(NOT BLAS_INCLUDE_DIR)
-    find_path(BLAS_INCLUDE_DIR cblas.h)
-endif()
-
-# LAPACK
-find_package(LAPACK REQUIRED)
-if(NOT LAPACK_INCLUDE_DIR)
-    find_path(LAPACK_INCLUDE_DIR lapack.h)
-endif()
 
 # Ahmed (optional, used only if WITH_AHMED is set)
 if (WITH_AHMED)
@@ -50,10 +68,9 @@ if (WITH_AHMED)
     set(AHMED_LIB "" CACHE PATH "Full path to AHMED library")
 endif ()
 
-# CUDA support
-if (WITH_CUDA)
-   FIND_PACKAGE(CUDA)
-endif ()
-
 # Dune
 file(GLOB_RECURSE DUNE_HEADERS ${CMAKE_INSTALL_PREFIX}/bempp/include/dune/*.hh)
+# Adds fake FC.h file cos dune incorrectly includes it in dune_config.h
+file(WRITE ${PROJECT_BINARY_DIR}/fakery/FC.h "// fake Fortran-C file")
+include_directories(${PROJECT_BINARY_DIR}/fakery/)
+

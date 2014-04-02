@@ -12,4 +12,4 @@ ExternalProject_Add(
     LOG_BUILD ON
 )
 # Rerun cmake to capture new boost install
-add_recursive_cmake_step(Boost Boost_FOUND DEPENDEES install)
+add_recursive_cmake_step(Boost DEPENDEES install)
