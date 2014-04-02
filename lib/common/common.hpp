@@ -28,5 +28,6 @@
 
 // Yes, use the new syntax from Dune 2.2
 #define DUNE_COMMON_FIELDVECTOR_SIZE_IS_METHOD 1
+#include <dune_config.h>
 
 #endif
