@@ -423,7 +423,7 @@ void GridFunction<BasisFunctionType, ResultType>::initializeFromProjections(
 template <typename BasisFunctionType, typename ResultType>
 bool GridFunction<BasisFunctionType, ResultType>::isInitialized() const
 {
-    return m_space;
+    return (bool)m_space;
 }
 
 template <typename BasisFunctionType, typename ResultType>

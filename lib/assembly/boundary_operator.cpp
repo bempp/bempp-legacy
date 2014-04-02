@@ -81,7 +81,7 @@ void BoundaryOperator<BasisFunctionType, ResultType>::uninitialize()
 template <typename BasisFunctionType, typename ResultType>
 bool BoundaryOperator<BasisFunctionType, ResultType>::isInitialized() const
 {
-    return m_abstractOp;
+    return (bool)m_abstractOp;
 }
 
 template <typename BasisFunctionType, typename ResultType>
