@@ -118,15 +118,21 @@ function(_find_lookup_recipe package OUTVAR)
 
     if(LOOKUP_RECIPE)
       set(${OUTVAR}_DIR "${LOOKUP_RECIPE}" PARENT_SCOPE)
-      set(${OUTVAR}_FILE "${LOOKUP_RECIPE}/${filename}" PARENT_SCOPE)
+      set(${OUTVAR}_FILE "${LOOKUP_RECIPE}/lookup.cmake" PARENT_SCOPE)
     endif()
 endfunction()
 
 # Looks for a lookup package file and includes it.
 macro(lookup_package package)
-    set(solitos "DOWNLOAD_BY_DEFAULT;REQUIRED;QUIET;DOWNLOAD_WARNING")
-    cmake_parse_arguments(${package} "${solitos}" "" "ARGUMENTS" ${ARGN})
+    set(solitos "DOWNLOAD_BY_DEFAULT;REQUIRED;QUIET;")
+    set(multiplos "ARGUMENTS;COMPONENTS")
+    cmake_parse_arguments(${package} "${solitos}" "" "${multiplos}" ${ARGN})
 
+    # Reappends components
+    if(${package}_COMPONENTS)
+        list(APPEND ${package}_UNPARSED_ARGUMENTS COMPONENTS)
+        list(APPEND ${package}_UNPARSED_ARGUMENTS ${${package}_COMPONENTS})
+    endif()
     # First try and find package (unless downloading by default)
     set(dolook TRUE)
     if(${package}_DOWNLOAD_BY_DEFAULT AND NOT ${package}_RECURSIVE)
@@ -144,7 +150,16 @@ macro(lookup_package package)
         set(quiet QUIET)
     endif()
     if(dolook)
-        find_package(${package} ${${package}_UNPARSED_ARGUMENTS} ${required} ${quiet})
+        find_package(${package} ${${package}_UNPARSED_ARGUMENTS}
+            ${required} ${quiet}
+        )
+    endif()
+    # Sets lower and upper case versions.
+    # Otherwise some package will be registered as not found.
+    # This is a problem with changing cmake practices.
+    string(TOUPPER "${package}" PACKAGE)
+    if(${PACKAGE}_FOUND AND NOT "${package}" STREQUAL "${PACKAGE}")
+        set(${package}_FOUND ${${PACKAGE}_FOUND})
     endif()
     # If package is not found, then look for a recipe to download and build it
     if(NOT ${package}_FOUND)
@@ -159,10 +174,15 @@ macro(lookup_package package)
               message(STATUS ${msg})
             endif()
         else()
-            if(${package}_DOWNLOAD_WARNING)
+            if(NOT ${package}_QUIET AND NOT ${package}_DOWNLOAD_BY_DEFAULT)
                 message(STATUS "Will attempt to download and install ${package}")
+            elseif(NOT ${package}_QUIET)
+                message(STATUS "Will download, build,"
+                   " and install a local version of ${package}")
             endif()
+            set(CURRENT_LOOKUP_DIRECTORY "${${package}_LOOKUP_RECIPE_DIR}")
             include(${${package}_LOOKUP_RECIPE_FILE})
+            unset(CURRENT_LOOKUP_DIRECTORY)
             add_dependencies(lookup_dependencies ${package})
         endif()
     endif()

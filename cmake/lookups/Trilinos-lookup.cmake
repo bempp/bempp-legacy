@@ -1,10 +1,18 @@
 # Looks for trilinos. If not found, download and install it.
-
 if(Trilinos_ARGUMENTS)
-    cmake_parse_arguments(Trilinos "" "LOCATION" "" ${Trilinos_ARGUMENTS})
+    cmake_parse_arguments(Trilinos "" "URL;MD5" "" ${Trilinos_ARGUMENTS})
 endif()
-if(NOT Trillinos_LOCATION)
-    set(Trilinos_location http://trilinos.sandia.gov/download/files)
+if(NOT Trilinos_URL)
+    set(arguments 
+        URL;
+        http://trilinos.sandia.gov/download/files/trilinos-11.6.1-Source.tar.bz2
+        URL_HASH;
+        MD5=b97d882535fd1856599b1c7338f5b45a
+    )
+elseif(Trilinos_MD5)
+    set(arguments URL;${Trilinos_URL};URL_HASH;MD5=${Trilinos_MD5})
+else()
+    message(FATAL_ERROR "URL specified, but no MD5. Aborting")
 endif()
 
 # Create list of dependencies
@@ -24,8 +32,7 @@ ExternalProject_Add(
     Trilinos
     PREFIX ${EXTERNAL_ROOT}
     DEPENDS ${depends_on}
-    URL ${Trilinos_location}/trilinos-11.6.1-Source.tar.bz2
-    URL_HASH MD5=b97d882535fd1856599b1c7338f5b45a
+    ${arguments}
     CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${EXTERNAL_ROOT}
                -DCMAKE_PROGRAM_PATH:PATH=${EXTERNAL_ROOT}/bin
                -DCMAKE_LIBRARY_PATH:PATH=${EXTERNAL_ROOT}/lib
