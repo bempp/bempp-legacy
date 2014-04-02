@@ -2,7 +2,8 @@ list(INSERT CMAKE_LOOKUP_PATH 0 ${PROJECT_SOURCE_DIR}/cmake/lookups)
 lookup_package(Boost COMPONENTS unit_test_framework REQUIRED)
 lookup_package(Armadillo REQUIRED)
 lookup_package(TBB REQUIRED)
-lookup_package(Dune REQUIRED DOWNLOAD_BY_DEFAULT)
+lookup_package(Dune REQUIRED DOWNLOAD_BY_DEFAULT
+    COMPONENTS geometry grid localfunctions foamgrid)
 lookup_package(Trilinos
     REQUIRED
     ARGUMENTS

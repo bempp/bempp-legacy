@@ -127,4 +127,4 @@ ExternalProject_Add(
            ${EXTERNAL_ROOT}/include/dune_config.h
 )
 # Rerun cmake to capture new dune install
-add_recursive_cmake_step(dune-bempp dune_FOUND DEPENDEES install)
+add_recursive_cmake_step(dune-bempp Dune_FOUND DEPENDEES install)

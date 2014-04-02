@@ -1,12 +1,11 @@
 # Trie and finds dune
-
 # Look for common library first
 find_library(Dune_common_LIBRARY NAMES dunecommon DOC "Common dune functionalities")
 if(NOT Dune_common_LIBRARY)
   message(STATUS "[dune] common library not found")
   return()
 endif()
-set(Dune_LIBRARIES ${Dune_COMMON_LIBRARY})
+set(Dune_LIBRARIES ${Dune_common_LIBRARY})
 
 # Look for common include second
 find_path(Dune_INCLUDE_DIR array.hh PATH_SUFFIXES dune/common)
@@ -26,23 +25,24 @@ foreach(COMPONENT ${Dune_FIND_COMPONENTS})
   # First look for library, if it is expected to exist
   list(FIND LIBRARIZED_COMPONENTS ${COMPONENT} DO_LIBRARY)
   if(DO_LIBRARY GREATER -1)
-    find_library( 
+    find_library(
       Dune_${COMPONENT}_LIBRARY NAMES dune${COMPONENT}
       PATHS ${Dune_LIBRARY_DIR}
-      DOC "dune component library ${COMPONENT}." 
+      DOC "dune component library ${COMPONENT}."
       NO_DEFAULT_PATH
     )
     set(LIBRARY_COMPONENTS ${LIBRARY_COMPONENTS} Dune_${COMPONENT}_LIBRARY)
     set(Dune_${COMPONENT}_FOUND TRUE)
   endif()
   # Then looks for include directory
-  if(NOT IS_DIRECTORY ${Dune_INCLUDE_COMPONENT_DIR}/${COMPONENT})
-    set(Dune_${COMPONENT}_FOUND FALSE)
+  unset(Dune_${COMPONENT}_FOUND)
+  if(IS_DIRECTORY ${Dune_INCLUDE_COMPONENT_DIR}/${COMPONENT})
+      set(Dune_${COMPONENT}_FOUND TRUE)
   endif()
 endforeach()
 
 include(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(Dune 
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(Dune
     REQUIRED_VARS Dune_LIBRARIES Dune_INCLUDE_DIR
     HANDLE_COMPONENTS
 )
