@@ -84,7 +84,7 @@ ExternalProject_Add(
     DEPENDS dune-grid dune-geometry dune-common dune-localfunctions
     PREFIX ${EXTERNAL_ROOT}
     URL ${PROJECT_SOURCE_DIR}/contrib/dune/dune-foamgrid
-    PATCH_COMMAND 
+    PATCH_COMMAND
        ${CMAKE_COMMAND} -E copy_if_different
                         ${CURRENT_LOOKUP_DIRECTORY}/foamgrid-install.cmake
                         ${EXTERNAL_ROOT}/src/dune-foamgrid/CMakeLists.txt
@@ -123,7 +123,7 @@ ExternalProject_Add(
              -DCMAKE_DISABLE_FIND_PACKAGE_MPI=TRUE
   INSTALL_COMMAND
     ${CMAKE_COMMAND} -E copy_if_different
-           ${EXTERNAL_ROOT}/src/dune-bempp-build/config.h 
+           ${EXTERNAL_ROOT}/src/dune-bempp-build/config.h
            ${EXTERNAL_ROOT}/include/dune_config.h
 )
 # Rerun cmake to capture new dune install
