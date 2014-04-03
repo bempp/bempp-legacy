@@ -56,9 +56,11 @@ include_directories(${BOOST_INCLUDE_DIR})
 
 # TBB
 include_directories(${TBB_INCLUDE_DIR})
-target_link_libraries (bempp
-   debug ${TBB_LIBRARY_DEBUG} ${TBB_MALLOC_LIBRARY_DEBUG}
-   optimized ${TBB_LIBRARY} ${TBB_MALLOC_LIBRARY})
+if(TBB_LIBRARY_FOUND)
+    target_link_libraries (bempp
+       debug ${TBB_LIBRARY_DEBUG} ${TBB_MALLOC_LIBRARY_DEBUG}
+       optimized ${TBB_LIBRARY} ${TBB_MALLOC_LIBRARY})
+endif()
 set_property(
    TARGET bempp
    PROPERTY COMPILE_DEFINITIONS_DEBUG TBB_USE_DEBUG=1
@@ -78,28 +80,27 @@ endif ()
 # Dune
 include_directories(${CMAKE_INSTALL_PREFIX}/bempp/include)
 target_link_libraries (bempp
-	${LIB_DUNE_COMMON}
-	${LIB_DUNE_GRID}
-	)
+    ${dune-common_STATIC_LDFLAGS}
+    ${dune-grid_STATIC_LDFLAGS}
+    ${ARMADILLO_LIBRARY}
+    debug ${TBB_LIBRARY_DEBUG} ${TBB_MALLOC_LIBRARY_DEBUG}
+    optimized ${TBB_LIBRARY} ${TBB_MALLOC_LIBRARY}
+)
 
 #Trilinos
 include_directories(${Trilinos_INCLUDE_DIRS} ${Trilinos_TPL_INCLUDE_DIRS})
 target_link_libraries (bempp amesos
-                             stratimikos
-                             stratimikosbelos
-                             belos
-                             epetra
-                             thyracore
-			     teuchoscomm
-                 teuchoscore
-                 teuchosnumerics
-                 teuchosparameterlist
-                 teuchosremainder
-			     rtop
+    stratimikos stratimikosbelos
+    belos epetra thyracore
+    teuchoscomm teuchoscore
+    teuchosnumerics teuchosparameterlist
+    teuchosremainder rtop
 )
 
 # ARMADILLO
-include_directories(${ARMADILLO_INCLUDE_DIR})
+if(ARMADILLO_FOUND)
+    include_directories(${ARMADILLO_INCLUDE_DIR})
+endif()
 
 # Install library
 install(TARGETS bempp
@@ -135,7 +136,6 @@ install(FILES ${CMAKE_BINARY_DIR}/lib/cmake/Bempp/BemppConfigLocation DESTINATIO
 SET(BEMPP_RPATH "\$ORIGIN")
 
 # Add a target to generate API documentation with Doxygen
-find_package(Doxygen)
 if (DOXYGEN_FOUND)
   configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in
     ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
