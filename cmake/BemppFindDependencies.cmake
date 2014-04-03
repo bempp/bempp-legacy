@@ -1,20 +1,39 @@
+include(FindPkgConfig)
+
+# A function to add to the path that pkgconfig trolls.
+function(add_to_pkgconfig_path PATH)
+    if("$ENV{PKG_CONFIG_PATH}" STREQUAL "")
+        set(ENV{PKG_CONFIG_PATH} "${PATH}")
+    elseif(WIN32)
+        set(ENV{PKG_CONFIG_PATH} "${PATH};$ENV{PKG_CONFIG_PATH}")
+    else()
+        set(ENV{PKG_CONFIG_PATH} "${PATH}:$ENV{PKG_CONFIG_PATH}")
+    endif()
+endfunction()
+add_to_pkgconfig_path("${EXTERNAL_ROOT}/lib64/pkgconfig")
+add_to_pkgconfig_path("${EXTERNAL_ROOT}/lib/pkgconfig")
+
+# First, find general packages
+find_package(Doxygen)
+find_package(BLAS REQUIRED)
+find_package(LAPACK REQUIRED)
+if (WITH_CUDA)
+   find_package(CUDA)
+endif ()
+if(NOT BLAS_INCLUDE_DIR)
+    find_path(BLAS_INCLUDE_DIR cblas.h)
+endif()
+if(NOT LAPACK_INCLUDE_DIR)
+    find_path(LAPACK_INCLUDE_DIR clapack.h)
+endif()
+
 list(INSERT CMAKE_LOOKUP_PATH 0 ${PROJECT_SOURCE_DIR}/cmake/lookups)
 lookup_package(Boost COMPONENTS unit_test_framework REQUIRED)
 lookup_package(Armadillo REQUIRED)
-lookup_package(TBB REQUIRED)
+lookup_package(TBB DOWNLOAD_BY_DEFAULT REQUIRED)
 lookup_package(Dune REQUIRED DOWNLOAD_BY_DEFAULT
     COMPONENTS geometry grid localfunctions foamgrid
-    ARGUMENTS
-        common_URL http://www.dune-project.org/download/2.3.0/dune-common-2.3.0.tar.gz
-        common_MD5 8a45ef8af6b8eab9e4959f7256d310b9
-        geometry_URL http://www.dune-project.org/download/2.3.0/dune-geometry-2.3.0.tar.gz
-        geometry_MD5 b56d9ebde36d88de18d2853a766a4d24
-        grid_URL http://www.dune-project.org/download/2.3.0/dune-grid-2.3.0.tar.gz
-        grid_MD5 9b533c66d04db39f653a6436d626218b
-        localfunctions_URL http://www.dune-project.org/download/2.3.0/dune-localfunctions-2.3.0.tar.gz
-        localfunctions_MD5 284cf9c8c8202e2f441cc3263db2b60d
 )
-
 lookup_package(Trilinos
     REQUIRED
     ARGUMENTS
@@ -22,23 +41,6 @@ lookup_package(Trilinos
         MD5 b97d882535fd1856599b1c7338f5b45a
 )
 lookup_package(SWIG 2.0.4 REQUIRED)
-
-find_package(Doxygen)
-
-find_package(BLAS REQUIRED)
-if(NOT BLAS_INCLUDE_DIR)
-    # find_package blas does not look for cblas.h
-    find_path(BLAS_INCLUDE_DIR cblas.h)
-endif()
-
-find_package(LAPACK REQUIRED)
-if(NOT LAPACK_INCLUDE_DIR)
-    find_path(LAPACK_INCLUDE_DIR clapack.h)
-endif()
-
-if (WITH_CUDA)
-   FIND_PACKAGE(CUDA)
-endif ()
 
 
 ### The following sets bempp specific variables, for ease of use

@@ -2,7 +2,7 @@
 if(Boost_BUILT_AS_EXTERNAL_PROJECT)
   set(depends_on Boost)
 endif()
-set(default_common_URL 
+set(default_common_URL
     http://www.dune-project.org/download/2.2.1/dune-common-2.2.1.tar.gz)
 set(default_common_MD5 4001d4c95f06e22ded41abeb063c561c)
 set(default_geometry_URL
@@ -24,33 +24,47 @@ macro(_get_arguments component)
     else()
         set(prefix "default_")
     endif()
-    set(${component}_ARGUMENTS 
+    set(${component}_ARGUMENTS
         URL ${${prefix}${component}_URL}
         URL_HASH MD5=${${prefix}${component}_MD5}
     )
 endmacro()
 
-set(cmake_args 
-    -DCMAKE_INSTALL_PREFIX=${EXTERNAL_ROOT}
-    -DCMAKE_DISABLE_FIND_PACKAGE_MPI=TRUE
-    -DCMAKE_BUILD_TYPE=Release
-    -DCMAKE_PROGRAM_PATH:PATH=${EXTERNAL_ROOT}/bin
-    -DCMAKE_LIBRARY_PATH:PATH=${EXTERNAL_ROOT}/lib
-    -DCMAKE_INCLUDE_PATH:PATH=${EXTERNAL_ROOT}/include
-    -DDUNE_USE_ONLY_STATIC_LIBS=TRUE
-    -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
-    -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
-    -DCMAKE_C_FLAGS_DEBUG=${CMAKE_C_FLAGS_DEBUG}
-    -DCMAKE_CXX_FLAGS_DEBUG=${CMAKE_CXX_FLAGS_DEBUG}
-    -DCMAKE_C_FLAGS_RELEASE=${CMAKE_C_FLAGS_RELEASE}
-    -DCMAKE_CXX_FLAGS_RELEASE=${CMAKE_CXX_FLAGS_RELEASE}
-    -DCMAKE_C_FLAGS_RELWITHDEBINFO=${CMAKE_C_FLAGS_RELWITHDEBINFO}
-    -DCMAKE_CXX_FLAGS_RELWITHDEBINFO=${CMAKE_CXX_FLAGS_RELWITHDEBINFO}
-)       
-set(log_args
+set(build_args
+    BUILD_IN_SOURCE 1
+    BUILD_COMMAND make
     LOG_DOWNLOAD ON
     LOG_CONFIGURE ON
     LOG_BUILD ON
+)
+macro(_file_args OUTVAR withname)
+    unset(result_var)
+    foreach(filename ${ARGN})
+        if(EXISTS ${filename} AND NOT IS_DIRECTORY ${filename})
+            list(APPEND result_var "${filename}")
+        endif()
+    endforeach()
+    if(result_var)
+        set(${OUTVAR} "--with-${withname}=\"${result_var}\"")
+    endif()
+endmacro()
+
+_file_args(blas_args blas ${BLAS_LIBRARIES})
+_file_args(lapack_args lapack ${LAPACK_LIBRARIES})
+
+set(configure_args
+    CC=${CMAKE_C_COMPILER}
+    CFLAGS=${CMAKE_C_FLAGS}
+    CXX=${CMAKE_CXX_COMPILER}
+    CXXFLAGS=${CMAKE_CXX_FLAGS}
+    PKG_CONFIG_PATH=$ENV{PKG_CONFIG_PATH}
+    --enable-shared=no
+    --enable-static=yes
+    --with-pic
+    --disable-documentation
+    --prefix=${EXTERNAL_ROOT}
+    ${blas_args}
+    ${lapack_args}
 )
 
 _get_arguments(common)
@@ -59,8 +73,9 @@ ExternalProject_Add(
     PREFIX ${EXTERNAL_ROOT}
     DEPENDS ${depends_on}
     ${common_ARGUMENTS}
-    CMAKE_ARGS ${cmake_args}
-    ${log_args}
+    CONFIGURE_COMMAND ./configure ${configure_args}
+    INSTALL_COMMAND make install
+    ${build_args}
 )
 
 _get_arguments(geometry)
@@ -69,21 +84,36 @@ ExternalProject_Add(
     DEPENDS dune-common
     PREFIX ${EXTERNAL_ROOT}
     ${geometry_ARGUMENTS}
-    CMAKE_ARGS ${cmake_args}
-        -Ddune-common_DIR=${EXTERNAL_ROOT}/src/dune-common-build
-    ${log_args}
+    CONFIGURE_COMMAND ./configure ${configure_args}
+    INSTALL_COMMAND make install
+    ${build_args}
 )
 
+find_program(PATCH_EXECUTABLE patch REQUIRED)
 _get_arguments(grid)
 ExternalProject_Add(
     dune-grid
     DEPENDS dune-geometry dune-common
     PREFIX ${EXTERNAL_ROOT}
     ${grid_ARGUMENTS}
-    CMAKE_ARGS ${cmake_args}
-        -Ddune-common_DIR=${EXTERNAL_ROOT}/src/dune-common-build
-        -Ddune-geometry_DIR=${EXTERNAL_ROOT}/src/dune-geometry-build
-    ${log_args}
+    CONFIGURE_COMMAND ./configure ${configure_args}
+    INSTALL_COMMAND make install
+    ${build_args}
+)
+ExternalProject_Add_Step(dune-grid
+    PATCH
+    COMMAND
+        ${PATCH_EXECUTABLE} -p0
+            < ${PROJECT_SOURCE_DIR}/installer/patches/dune-grid_yaspgrid.patch
+    COMMAND
+        ${PATCH_EXECUTABLE} -p0
+            < ${PROJECT_SOURCE_DIR}/installer/patches/dune-grid_dgfparser.patch
+    WORKING_DIRECTORY ${EXTERNAL_ROOT}/src
+    DEPENDS
+        ${PROJECT_SOURCE_DIR}/installer/patches/dune-grid_dgfparser.patch
+        ${PROJECT_SOURCE_DIR}/installer/patches/dune-grid_yaspgrid.patch
+    DEPENDEES download
+    DEPENDERS configure
 )
 
 _get_arguments(localfunctions)
@@ -91,31 +121,26 @@ ExternalProject_Add(
     dune-localfunctions
     DEPENDS dune-grid dune-geometry dune-common
     PREFIX ${EXTERNAL_ROOT}
+    ${localfunctions_ARGUMENTS}
+    CONFIGURE_COMMAND ./configure ${configure_args}
     PATCH_COMMAND
         ${CMAKE_COMMAND} -DROOT=${EXTERNAL_ROOT}/src/dune-localfunctions
             -P ${CURRENT_LOOKUP_DIRECTORY}/patch-localfunctions.cmake
-    ${localfunctions_ARGUMENTS}
-    CMAKE_ARGS ${cmake_args}
-        -Ddune-common_DIR=${EXTERNAL_ROOT}/src/dune-common-build
-        -Ddune-geometry_DIR=${EXTERNAL_ROOT}/src/dune-geometry-build
-        -Ddune-grid_DIR=${EXTERNAL_ROOT}/src/dune-grid-build
-    ${log_args}
+    INSTALL_COMMAND make install
+    ${build_args}
 )
 
 ExternalProject_Add(
     dune-foamgrid
     DEPENDS dune-grid dune-geometry dune-common dune-localfunctions
     PREFIX ${EXTERNAL_ROOT}
-    GIT_REPOSITORY https://users.dune-project.org/repositories/projects/dune-foamgrid.git 
+    URL ${PROJECT_SOURCE_DIR}/contrib/dune/dune-foamgrid
     PATCH_COMMAND
        ${CMAKE_COMMAND} -E copy_if_different
                         ${CURRENT_LOOKUP_DIRECTORY}/foamgrid-install.cmake
                         ${EXTERNAL_ROOT}/src/dune-foamgrid/CMakeLists.txt
     CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${EXTERNAL_ROOT}
-               -DROOT=${PROJECT_SOURCE_DIR}
-    ${log_args}
 )
-#   URL ${PROJECT_SOURCE_DIR}/contrib/dune/dune-foamgrid
 
 # This file helps to create a fake dune project
 # It answers the question posed by the duneproject script, including the subsidiary
@@ -134,20 +159,26 @@ y
 # Create fake dune project, with the sole goal of generating a config.h file!
 # First, generate a new project
 ExternalProject_Add(
-  dune-bempp
-  DOWNLOAD_COMMAND dune-common/bin/duneproject < bempp.dune.input
-  DEPENDS dune-common dune-foamgrid dune-foamgrid dune-grid dune-geometry dune-localfunctions
-  PREFIX ${EXTERNAL_ROOT}
-  CMAKE_ARGS -DCMAKE_PROGRAM_PATH:PATH=${EXTERNAL_ROOT}/bin
-             -DCMAKE_LIBRARY_PATH:PATH=${EXTERNAL_ROOT}/lib
-             -DCMAKE_INCLUDE_PATH:PATH=${EXTERNAL_ROOT}/include
-             -DDUNE_USE_ONLY_STATIC_LIBS=TRUE
-             -DCMAKE_DISABLE_FIND_PACKAGE_MPI=TRUE
-  INSTALL_COMMAND
-    ${CMAKE_COMMAND} -E copy_if_different
-           ${EXTERNAL_ROOT}/src/dune-bempp-build/config.h
-           ${EXTERNAL_ROOT}/include/dune_config.h
+    dune-bempp
+    DEPENDS dune-foamgrid dune-grid dune-geometry dune-common dune-localfunctions
+    PREFIX ${EXTERNAL_ROOT}
+    DOWNLOAD_COMMAND ""
+    CONFIGURE_COMMAND ./configure ${configure_args}
+    MAKE_COMMAND make
+    INSTALL_COMMAND
+        ${CMAKE_COMMAND} -E copy_if_different
+               ${EXTERNAL_ROOT}/src/dune-bempp/config.h
+               ${EXTERNAL_ROOT}/include/dune_config.h
+    ${build_args}
 )
+ExternalProject_Add_Step(dune-bempp
+    CREATE_PROJECT
+    COMMAND dune-common/bin/duneproject < bempp.dune.input
+    COMMAND dune-common/bin/dunecontrol --module=dune-bempp autogen
+    WORKING_DIRECTORY ${EXTERNAL_ROOT}/src
+    DEPENDERS configure
+)
+
 # Rerun cmake to capture new dune install
 add_recursive_cmake_step(dune-bempp
     PACKAGE_NAME Dune
