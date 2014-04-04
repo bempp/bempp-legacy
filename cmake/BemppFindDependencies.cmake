@@ -1,18 +1,5 @@
 include(FindPkgConfig)
 
-# A function to add to the path that pkgconfig trolls.
-function(add_to_pkgconfig_path PATH)
-    if("$ENV{PKG_CONFIG_PATH}" STREQUAL "")
-        set(ENV{PKG_CONFIG_PATH} "${PATH}")
-    elseif(WIN32)
-        set(ENV{PKG_CONFIG_PATH} "${PATH};$ENV{PKG_CONFIG_PATH}")
-    else()
-        set(ENV{PKG_CONFIG_PATH} "${PATH}:$ENV{PKG_CONFIG_PATH}")
-    endif()
-endfunction()
-add_to_pkgconfig_path("${EXTERNAL_ROOT}/lib64/pkgconfig")
-add_to_pkgconfig_path("${EXTERNAL_ROOT}/lib/pkgconfig")
-
 # First, find general packages
 find_package(Doxygen)
 find_package(BLAS REQUIRED)
