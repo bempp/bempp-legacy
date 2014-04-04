@@ -20,11 +20,11 @@
         npy_intp dims[1];
         dims[0] = std_vecvec$argnum[i].size();
         array$argnum = reinterpret_cast<PyArrayObject*>(
-            PyArray_EMPTY(1, dims, NPY_DOUBLE, NPY_FORTRAN));
+            PyArray_EMPTY(1, dims, NPY_DOUBLE, NPY_ARRAY_F_CONTIGUOUS));
         if (!array$argnum)
             SWIG_fail;
         std::copy(std_vecvec$argnum[i].begin(), std_vecvec$argnum[i].end(),
-            reinterpret_cast<double*>(array_data(array$argnum)));
+            reinterpret_cast<double*>(swig_array_data(array$argnum)));
         PyList_SET_ITEM(outerList$argnum,i,reinterpret_cast<PyObject*>(array$argnum));
     }
         $result = SWIG_Python_AppendOutput($result,outerList$argnum);
@@ -67,11 +67,11 @@
             npy_intp dims[1];
             dims[0] = std_vecvecvec$argnum[i][j].size();
             array$argnum = reinterpret_cast<PyArrayObject*>(
-            PyArray_EMPTY(1, dims, NPY_DOUBLE, NPY_FORTRAN));
+            PyArray_EMPTY(1, dims, NPY_DOUBLE, NPY_ARRAY_F_CONTIGUOUS));
             if (!array$argnum)
                 SWIG_fail;
             std::copy(std_vecvecvec$argnum[i][j].begin(), std_vecvecvec$argnum[i][j].end(),
-                reinterpret_cast<double*>(array_data(array$argnum)));
+                reinterpret_cast<double*>(swig_array_data(array$argnum)));
             PyList_SET_ITEM(nodeList,j,reinterpret_cast<PyObject*>(array$argnum));
          }
          PyList_SET_ITEM(elementList$argnum,i,nodeList);

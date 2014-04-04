@@ -49,10 +49,10 @@ public:
         // Create the input array
         npy_intp dims1[1];
         dims1[0] = point.n_rows;
-        PyObject* pyPoint = PyArray_ZEROS(1, dims1, coordinateNumpyType, NPY_FORTRAN);
+        PyObject* pyPoint = PyArray_ZEROS(1, dims1, coordinateNumpyType, NPY_ARRAY_F_CONTIGUOUS);
         if (!pyPoint)
             throw std::runtime_error("Point array creation failed");
-        CoordinateType* pdata = (CoordinateType*) array_data(pyPoint);
+        CoordinateType* pdata = (CoordinateType*) swig_array_data(pyPoint);
         for (size_t i = 0; i < dims1[0]; i++)
             pdata[i] = point(i);
 
@@ -80,7 +80,7 @@ public:
         }
         else {
             // Check number of dimensions
-            if (array_numdims(pyReturnValArrayCont) != 1) {
+            if (swig_array_numdims(pyReturnValArrayCont) != 1) {
                 Py_XDECREF(pyPoint);
                 Py_XDECREF(pyReturnVal);
                 Py_XDECREF(pyReturnValArray);
@@ -88,7 +88,7 @@ public:
                     Py_XDECREF(pyReturnValArrayCont);
                 throw std::runtime_error("Return array has wrong dimensions!");
             }
-            asize = array_size(pyReturnValArrayCont, 0);
+            asize = swig_array_size(pyReturnValArrayCont, 0);
         }
         if (asize != m_resultDimension) {
             Py_XDECREF(pyPoint);
@@ -100,7 +100,7 @@ public:
         }
 
         // Copy data back
-        ValueType* data = (ValueType*) array_data(pyReturnValArrayCont);
+        ValueType* data = (ValueType*) swig_array_data(pyReturnValArrayCont);
         for (size_t i = 0; i < m_resultDimension; i++)
             result_(i) = data[i];
 

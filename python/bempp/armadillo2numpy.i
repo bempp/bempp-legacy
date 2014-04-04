@@ -41,7 +41,7 @@
            fragment="NumPy_Macros")
     (const arma::Col< DATA_TYPE >& IN_COL)
 {
-    $1 = is_array($input) || PySequence_Check($input);
+    $1 = swig_is_array($input) || PySequence_Check($input);
 }
 %typemap(in,
          fragment="NumPy_Fragments")
@@ -52,8 +52,8 @@
                                                    &is_new_object);
     if (!array || !require_dimensions(array, 1))
         SWIG_fail;
-    arma_array = arma::Col< DATA_TYPE >((DATA_TYPE*) array_data(array),
-                               array_size(array, 0),
+    arma_array = arma::Col< DATA_TYPE >((DATA_TYPE*) swig_array_data(array),
+                               swig_array_size(array, 0),
                                false); // don't copy data
     $1 = &arma_array;
 }
@@ -71,7 +71,7 @@
            fragment="NumPy_Macros")
     (const arma::Mat< DATA_TYPE >& IN_MAT)
 {
-    $1 = is_array($input) || PySequence_Check($input);
+    $1 = swig_is_array($input) || PySequence_Check($input);
 }
 %typemap(in,
          fragment="NumPy_Fragments")
@@ -82,9 +82,9 @@
         &is_new_object);
     if (!array || !require_dimensions(array, 2) || !require_fortran(array))
         SWIG_fail;
-    arma_array = arma::Mat< DATA_TYPE >((DATA_TYPE*) array_data(array),
-                                      array_size(array, 0),
-                                      array_size(array, 1),
+    arma_array = arma::Mat< DATA_TYPE >((DATA_TYPE*) swig_array_data(array),
+                                      swig_array_size(array, 0),
+                                      swig_array_size(array, 1),
                                       false); // don't copy data
     $1 = &arma_array;
 }
@@ -102,7 +102,7 @@
 /*            fragment="NumPy_Macros") */
 /*     (const shared_ptr<const arma::Mat< DATA_TYPE > >& IN_SP_MAT) */
 /* { */
-/*     $1 = is_array($input) || PySequence_Check($input); */
+/*     $1 = swig_is_array($input) || PySequence_Check($input); */
 /* } */
 /* %typemap(in, */
 /*          fragment="NumPy_Fragments") */
@@ -114,9 +114,9 @@
 /*         &is_new_object); */
 /*     if (!array || !require_dimensions(array, 2) || !require_fortran(array)) */
 /*         SWIG_fail; */
-/*     arma_array.reset(new arma::Mat< DATA_TYPE >((DATA_TYPE*) array_data(array), */
-/*                                                 array_size(array, 0), */
-/*                                                 array_size(array, 1), */
+/*     arma_array.reset(new arma::Mat< DATA_TYPE >((DATA_TYPE*) swig_array_data(array), */
+/*                                                 swig_array_size(array, 0), */
+/*                                                 swig_array_size(array, 1), */
 /*                                                 true)); // copy data */
 /*     $1 = &arma_array; */
 /* } */
@@ -132,7 +132,7 @@
            fragment="NumPy_Macros")
     (const boost::shared_ptr<const arma::Mat< DATA_TYPE > >& IN_SP_MAT)
 {
-    $1 = is_array($input) || PySequence_Check($input);
+    $1 = swig_is_array($input) || PySequence_Check($input);
 }
 %typemap(in,
          fragment="NumPy_Fragments")
@@ -144,9 +144,9 @@
         &is_new_object);
     if (!array || !require_dimensions(array, 2) || !require_fortran(array))
         SWIG_fail;
-    arma_array.reset(new arma::Mat< DATA_TYPE >((DATA_TYPE*) array_data(array),
-                                                array_size(array, 0),
-                                                array_size(array, 1),
+    arma_array.reset(new arma::Mat< DATA_TYPE >((DATA_TYPE*) swig_array_data(array),
+                                                swig_array_size(array, 0),
+                                                swig_array_size(array, 1),
                                                 true)); // copy data
     $1 = &arma_array;
 }
@@ -167,7 +167,7 @@ return pointers to the SWIG wrappers of the Numpy array and the Armadillo array
            fragment="NumPy_Macros")
     (const arma::Mat< DATA_TYPE >& IN_MAT_OUT_WRAPPERS)
 {
-    $1 = is_array($input) || PySequence_Check($input);
+    $1 = swig_is_array($input) || PySequence_Check($input);
 }
 %typemap(in, fragment="NumPy_Fragments")
     (const arma::Mat< DATA_TYPE >& IN_MAT_OUT_WRAPPERS)
@@ -177,9 +177,9 @@ return pointers to the SWIG wrappers of the Numpy array and the Armadillo array
         &is_new_object);
     if (!array || !require_dimensions(array, 2) || !require_fortran(array))
         SWIG_fail;
-    arma_array = new arma::Mat< DATA_TYPE >((DATA_TYPE*) array_data(array),
-                                          array_size(array, 0),
-                                          array_size(array, 1),
+    arma_array = new arma::Mat< DATA_TYPE >((DATA_TYPE*) swig_array_data(array),
+                                          swig_array_size(array, 0),
+                                          swig_array_size(array, 1),
                                           false); // don't copy data
     if (!arma_array) {
         if (is_new_object && array)
@@ -223,11 +223,11 @@ return pointers to the SWIG wrappers of the Numpy array and the Armadillo array
     npy_intp dims[1];
     dims[0] = arma_array$argnum.n_rows;
     array$argnum = reinterpret_cast<PyArrayObject*>(
-        PyArray_EMPTY(1, dims, DATA_TYPECODE, NPY_FORTRAN));
+        PyArray_EMPTY(1, dims, DATA_TYPECODE, NPY_ARRAY_F_CONTIGUOUS));
     if (!array$argnum)
         SWIG_fail;
     std::copy(arma_array$argnum.begin(), arma_array$argnum.end(),
-        reinterpret_cast<DATA_TYPE*>(array_data(array$argnum)));
+        reinterpret_cast<DATA_TYPE*>(swig_array_data(array$argnum)));
     $result = SWIG_Python_AppendOutput($result,
         reinterpret_cast<PyObject*>(array$argnum));
 }
@@ -247,11 +247,11 @@ return pointers to the SWIG wrappers of the Numpy array and the Armadillo array
     npy_intp dims[1];
     dims[0] = arma_array$argnum.n_cols;
     array$argnum = reinterpret_cast<PyArrayObject*>(
-        PyArray_EMPTY(1, dims, DATA_TYPECODE, NPY_FORTRAN));
+        PyArray_EMPTY(1, dims, DATA_TYPECODE, NPY_ARRAY_F_CONTIGUOUS));
     if (!array$argnum)
         SWIG_fail;
     std::copy(arma_array$argnum.begin(), arma_array$argnum.end(),
-	    reinterpret_cast<DATA_TYPE*>(array_data(array$argnum)));
+	    reinterpret_cast<DATA_TYPE*>(swig_array_data(array$argnum)));
     $result = SWIG_Python_AppendOutput($result,
         reinterpret_cast<PyObject*>(array$argnum));
 }
@@ -272,11 +272,11 @@ return pointers to the SWIG wrappers of the Numpy array and the Armadillo array
     dims[0] = arma_array$argnum.n_rows;
     dims[1] = arma_array$argnum.n_cols;
     array$argnum = reinterpret_cast<PyArrayObject*>(
-        PyArray_EMPTY(2, dims, DATA_TYPECODE, NPY_FORTRAN));
+        PyArray_EMPTY(2, dims, DATA_TYPECODE, NPY_ARRAY_F_CONTIGUOUS));
     if (!array$argnum)
         SWIG_fail;
     std::copy(arma_array$argnum.begin(), arma_array$argnum.end(),
-        reinterpret_cast<DATA_TYPE*>(array_data(array$argnum)));
+        reinterpret_cast<DATA_TYPE*>(swig_array_data(array$argnum)));
     $result = SWIG_Python_AppendOutput($result,
         reinterpret_cast<PyObject*>(array$argnum));
 }
@@ -298,11 +298,11 @@ return pointers to the SWIG wrappers of the Numpy array and the Armadillo array
     dims[1] = arma_array$argnum.n_cols;
     dims[2] = arma_array$argnum.n_slices;
     array$argnum = reinterpret_cast<PyArrayObject*>(
-        PyArray_EMPTY(3, dims, DATA_TYPECODE, NPY_FORTRAN));
+        PyArray_EMPTY(3, dims, DATA_TYPECODE, NPY_ARRAY_F_CONTIGUOUS));
     if (!array$argnum)
         SWIG_fail;
     std::copy(arma_array$argnum.begin(), arma_array$argnum.end(),
-        reinterpret_cast<DATA_TYPE*>(array_data(array$argnum)));
+        reinterpret_cast<DATA_TYPE*>(swig_array_data(array$argnum)));
     $result = SWIG_Python_AppendOutput($result,
         reinterpret_cast<PyObject*>(array$argnum));
 }
@@ -322,11 +322,11 @@ return pointers to the SWIG wrappers of the Numpy array and the Armadillo array
     npy_intp dims[1];
     dims[0] = std_vector$argnum.size();
     array$argnum = reinterpret_cast<PyArrayObject*>(
-        PyArray_EMPTY(1, dims, DATA_TYPECODE, NPY_FORTRAN));
+        PyArray_EMPTY(1, dims, DATA_TYPECODE, NPY_ARRAY_F_CONTIGUOUS));
     if (!array$argnum)
         SWIG_fail;
     std::copy(std_vector$argnum.begin(), std_vector$argnum.end(),
-        reinterpret_cast<DATA_TYPE*>(array_data(array$argnum)));
+        reinterpret_cast<DATA_TYPE*>(swig_array_data(array$argnum)));
     $result = SWIG_Python_AppendOutput($result,
         reinterpret_cast<PyObject*>(array$argnum));
 }
@@ -341,7 +341,7 @@ return pointers to the SWIG wrappers of the Numpy array and the Armadillo array
            fragment="NumPy_Macros")
   (arma::Col< DATA_TYPE >& INPLACE_COL)
 {
-  $1 = is_array($input) && PyArray_EquivTypenums(array_type($input),
+  $1 = swig_is_array($input) && PyArray_EquivTypenums(swig_array_type($input),
                                                  DATA_TYPECODE);
 }
 %typemap(in,
@@ -357,8 +357,8 @@ return pointers to the SWIG wrappers of the Numpy array and the Armadillo array
   // because SWIG initialises variables with the default constructor.
   // (Another way would be to allocate a new Col object on the heap),
   arma_array.~Col< DATA_TYPE >();
-  new (&arma_array) arma::Col< DATA_TYPE >((DATA_TYPE*) array_data(array),
-                                           array_size(array, 0),
+  new (&arma_array) arma::Col< DATA_TYPE >((DATA_TYPE*) swig_array_data(array),
+                                           swig_array_size(array, 0),
                                            false); // don't copy data
   $1 = &arma_array;
 }
@@ -369,7 +369,7 @@ return pointers to the SWIG wrappers of the Numpy array and the Armadillo array
            fragment="NumPy_Macros")
   (arma::Mat< DATA_TYPE >& INPLACE_MAT)
 {
-  $1 = is_array($input) && PyArray_EquivTypenums(array_type($input),
+  $1 = swig_is_array($input) && PyArray_EquivTypenums(swig_array_type($input),
                                                  DATA_TYPECODE);
 }
 %typemap(in,
@@ -385,9 +385,9 @@ return pointers to the SWIG wrappers of the Numpy array and the Armadillo array
   // because SWIG initialises variables with the default constructor.
   // (Another way would be to allocate a new Mat object on the heap),
   arma_array.~Mat< DATA_TYPE >();
-  new (&arma_array) arma::Mat< DATA_TYPE >((DATA_TYPE*) array_data(array),
-                                           array_size(array, 0),
-                                           array_size(array, 1),
+  new (&arma_array) arma::Mat< DATA_TYPE >((DATA_TYPE*) swig_array_data(array),
+                                           swig_array_size(array, 0),
+                                           swig_array_size(array, 1),
                                            false); // don't copy data
   $1 = &arma_array;
 }
