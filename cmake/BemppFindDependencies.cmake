@@ -60,7 +60,20 @@ endif ()
 
 # Dune
 file(GLOB_RECURSE DUNE_HEADERS ${CMAKE_INSTALL_PREFIX}/bempp/include/dune/*.hh)
+
 # Adds fake FC.h file cos dune incorrectly includes it in dune_config.h
 file(WRITE ${PROJECT_BINARY_DIR}/fakery/FC.h "// fake Fortran-C file")
-include_directories(${PROJECT_BINARY_DIR}/fakery/)
 
+# Now include all dependency directories once and for all
+include_directories(
+    ${PROJECT_BINARY_DIR}/fakery/
+    ${CMAKE_BINARY_DIR}/include
+    ${CMAKE_SOURCE_DIR}/lib
+    ${BLAS_INCLUDE_DIR}
+    ${LAPACK_INCLUDE_DIR}
+    ${BOOST_INCLUDE_DIR}
+    ${TBB_INCLUDE_DIR}
+    ${dune-common_INCLUDE_DIRS}
+    ${ARMADILLO_INCLUDE_DIR}
+    ${Trilinos_INCLUDE_DIRS} ${Trilinos_TPL_INCLUDE_DIRS}
+)

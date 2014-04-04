@@ -1,7 +1,3 @@
-include_directories(${CMAKE_BINARY_DIR}/include)
-include_directories(${CMAKE_INSTALL_PREFIX}/bempp/include)
-include_directories ("${CMAKE_SOURCE_DIR}/lib")
-
 # Examples
 add_executable(tutorial_dirichlet tutorial_dirichlet.cpp)
 target_link_libraries(tutorial_dirichlet bempp)

@@ -1,22 +1,23 @@
-include_directories(${CMAKE_BINARY_DIR}/include)
-
 add_definitions(-DBOOST_TEST_DYN_LINK)
-#find_package(Boost COMPONENTS unit_test_framework REQUIRED)
-include_directories(${CMAKE_SOURCE_DIR}/lib)
-include_directories(${CMAKE_INSTALL_PREFIX}/bempp/include)
 
 file(GLOB_RECURSE TEST_SOURCES *.cpp)
 file(GLOB_RECURSE TEST_HEADERS *.hpp)
-add_executable(run_tests
-  ${TEST_SOURCES} ${TEST_HEADERS}
-  )
-  
-target_link_libraries(run_tests bempp ${BOOST_UNIT_TEST_LIB})
+add_executable(run_tests ${TEST_SOURCES} ${TEST_HEADERS})
 
-add_custom_target(test
-  ${CMAKE_CURRENT_BINARY_DIR}/run_tests
-  COMMENT "Run unit tests" VERBATIM
-  )
+target_link_libraries(run_tests bempp ${BOOST_UNIT_TEST_LIB})
+add_test(unittests run_tests)
+if(NOT "$ENV{LD_LIBRARY_PATH}" STREQUAL "")
+    list(APPEND ENVIRONMENT_VARIABLES
+        "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}")
+endif()
+if(NOT "$ENV{DYLD_LIBRARY_PATH}" STREQUAL "")
+    list(APPEND ENVIRONMENT_VARIABLES
+        "DYLD_LIBRARY_PATH=$ENV{DYLD_LIBRARY_PATH}")
+endif()
+# message("Env ${ENVIRONMENT_VARIABLES}")
+set_tests_properties(unittests
+    PROPERTIES ENVIRONMENT "${ENVIRONMENT_VARIABLES}"
+)
 
 # Meshes
 file(GLOB_RECURSE TEST_MESHES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}

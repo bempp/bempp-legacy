@@ -46,61 +46,38 @@ else ()
 endif ()
 
 # Add includes and target links
+target_link_libraries (bempp
+    ${BLAS_LIBRARIES}
+    ${LAPACK_LIBRARIES}
+    ${dune-common_STATIC_LDFLAGS}
+    ${dune-grid_STATIC_LDFLAGS}
+    armadillo
 
-# BLAS and LAPACK
-target_link_libraries(bempp ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
-include_directories(${BLAS_INCLUDE_DIR} ${LAPACK_INCLUDE_DIR})
+    # Trilinos libraries, imported by cmake as targets
+    amesos stratimikos stratimikosbelos
+    belos epetra thyracore
+    teuchoscomm teuchoscore
+    teuchosnumerics teuchosparameterlist
+    teuchosremainder rtop
 
-# Boost
-include_directories(${BOOST_INCLUDE_DIR})
+    debug ${TBB_LIBRARY_DEBUG} ${TBB_MALLOC_LIBRARY_DEBUG}
+    optimized ${TBB_LIBRARY} ${TBB_MALLOC_LIBRARY}
+)
 
-# TBB
-include_directories(${TBB_INCLUDE_DIR})
-if(TBB_LIBRARY_FOUND)
-    target_link_libraries (bempp
-       debug ${TBB_LIBRARY_DEBUG} ${TBB_MALLOC_LIBRARY_DEBUG}
-       optimized ${TBB_LIBRARY} ${TBB_MALLOC_LIBRARY})
-endif()
 set_property(
    TARGET bempp
    PROPERTY COMPILE_DEFINITIONS_DEBUG TBB_USE_DEBUG=1
-   )
+)
 
-# CUDA
 if (WITH_CUDA)
    include(FindCUDA)
 endif ()
 
-# AHMED
 if (WITH_AHMED)
     target_link_libraries (bempp ${AHMED_LIB})
     include_directories(${AHMED_INCLUDE_DIR})
 endif ()
 
-# Dune
-include_directories(${CMAKE_INSTALL_PREFIX}/bempp/include)
-target_link_libraries (bempp
-    ${dune-common_STATIC_LDFLAGS}
-    ${dune-grid_STATIC_LDFLAGS}
-    ${ARMADILLO_LIBRARY}
-    debug ${TBB_LIBRARY_DEBUG} ${TBB_MALLOC_LIBRARY_DEBUG}
-    optimized ${TBB_LIBRARY} ${TBB_MALLOC_LIBRARY}
-)
-
-#Trilinos
-include_directories(${Trilinos_INCLUDE_DIRS} ${Trilinos_TPL_INCLUDE_DIRS})
-target_link_libraries (bempp amesos
-    stratimikos stratimikosbelos
-    belos epetra thyracore
-    teuchoscomm teuchoscore
-    teuchosnumerics teuchosparameterlist
-    teuchosremainder rtop
-)
-
-# ARMADILLO
-if(ARMADILLO_FOUND)
-    include_directories(${ARMADILLO_INCLUDE_DIR})
-endif()
 
 # Install library
 install(TARGETS bempp
@@ -110,8 +87,8 @@ install(TARGETS bempp
   ARCHIVE DESTINATION bempp/lib)
 
 # Get output name of the library
-find_library(BEMPP_LIBRARY bempp PATHS ${CMAKE_INSTALL_PREFIX}/bempp/lib)
-find_library(BEMPP_TEUCHOS_LIBRARY teuchos PATHS ${CMAKE_INSTALL_PREFIX}/bempp/lib)
+get_target_property(BEMPP_LIBRARY bempp OUTPUT_NAME)
+get_target_property(BEMPP_TEUCHOS_LIBRARY teuchos OUTPUT_NAME)
 
 # Install CMake files for the library
 install(EXPORT BemppLibraryDepends DESTINATION bempp/lib/cmake/Bempp)
