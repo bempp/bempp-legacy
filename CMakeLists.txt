@@ -1,11 +1,18 @@
 cmake_minimum_required(VERSION 2.8)
-project(bempp)
+project(bempp CXX)
 
 set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -DNDEBUG -O3")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -DNDEBUG -O3")
 
-# Module Path
+# Tells cmake where to find bem++ specific files
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
+
+# Download and installs the cookoff in the build tree
+# From here on we can use cookoff recipes
+include(LookUp-GreatCMakeCookOff)
+
+# Makes this a c++11 project
+include(AddCPP11Flags)
 
 # Macros needed
 include(BemppOptions)

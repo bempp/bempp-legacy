@@ -31,27 +31,6 @@ lookup_package(Trilinos
 lookup_package(SWIG 2.0.4 REQUIRED)
 
 
-### The following sets bempp specific variables, for ease of use
-if(Boost_FOUND)
-  if(CMAKE_BUILD_TYPE STREQUAL "Release" OR MAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
-    set(BOOST_UNIT_TEST_LIB ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY_RELEASE})
-  else()
-    set(BOOST_UNIT_TEST_LIB ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY_DEBUG})
-  endif()
-
-  set(
-    BOOST_UNIT_TEST_LIB ${BOOST_UNIT_TEST_LIB}
-    CACHE INTERNAL
-    "Path to unit test framework"
-  )
-  set(
-    BOOST_INCLUDE_DIR ${Boost_INCLUDE_DIR}
-    CACHE INTERNAL
-    "Path to boost include directory"
-  )
-endif()
-
-
 # Ahmed (optional, used only if WITH_AHMED is set)
 if (WITH_AHMED)
     set(AHMED_INCLUDE_DIR "" CACHE PATH "Full path to the AHMED include directory")
@@ -71,7 +50,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/lib
     ${BLAS_INCLUDE_DIR}
     ${LAPACK_INCLUDE_DIR}
-    ${BOOST_INCLUDE_DIR}
+    ${Boost_INCLUDE_DIR}
     ${TBB_INCLUDE_DIR}
     ${dune-common_INCLUDE_DIRS}
     ${ARMADILLO_INCLUDE_DIR}

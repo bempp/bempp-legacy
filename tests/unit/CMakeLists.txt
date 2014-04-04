@@ -4,7 +4,10 @@ file(GLOB_RECURSE TEST_SOURCES *.cpp)
 file(GLOB_RECURSE TEST_HEADERS *.hpp)
 add_executable(run_tests ${TEST_SOURCES} ${TEST_HEADERS})
 
-target_link_libraries(run_tests bempp ${BOOST_UNIT_TEST_LIB})
+target_link_libraries(run_tests bempp
+    debug ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY_DEBUG}
+    optimized ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY_RELEASE}
+)
 add_test(unittests run_tests)
 if(NOT "$ENV{LD_LIBRARY_PATH}" STREQUAL "")
     list(APPEND ENVIRONMENT_VARIABLES
