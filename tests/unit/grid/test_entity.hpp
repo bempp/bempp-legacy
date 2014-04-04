@@ -19,7 +19,7 @@
 // THE SOFTWARE.
 
 #ifndef bempp_test_entity_hpp
-#define bempp_test_entityr_hpp
+#define bempp_test_entity_hpp
 
 #include "test_grid.hpp"
 #include "grid/entity.hpp"
