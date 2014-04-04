@@ -407,4 +407,6 @@ public:
 
 } // namespace Fiber
 
+#include "numerical_quadrature_strategy_imp.hpp"
+
 #endif
