@@ -3,7 +3,7 @@ if(Trilinos_ARGUMENTS)
     cmake_parse_arguments(Trilinos "" "URL;MD5" "" ${Trilinos_ARGUMENTS})
 endif()
 if(NOT Trilinos_URL)
-    set(arguments 
+    set(arguments
         URL;
         http://trilinos.sandia.gov/download/files/trilinos-11.6.1-Source.tar.bz2
         URL_HASH;
@@ -23,21 +23,28 @@ foreach(component TBB Boost SWIG)
   endif()
 endforeach()
 
-set(
-  tbb_libraries
-  ${TBB_LIBRARY};${TBB_LIBRARY_DEBUG};${TBB_MALLOC_LIBRARY};${TBB_MALLOC_LIBRARY_DEBUG} 
+set(tbb_libraries
+    ${TBB_LIBRARY} ${TBB_LIBRARY_DEBUG}
+    ${TBB_MALLOC_LIBRARY} ${TBB_MALLOC_LIBRARY_DEBUG}
 )
-# Downloads armadillo
+
+find_program(PATCH_EXECUTABLE patch REQUIRED)
+set(filename "${EXTERNAL_ROOT}/src/Trilinos/packages")
+set(filename "${filename}/stratimikos/adapters/belos")
+set(filename "${filename}/src/Thyra_BelosLinearOpWithSolve_def.hpp")
+set(patchname "${PROJECT_SOURCE_DIR}/installer/patches")
+set(patchname "${patchname}/Thyra_BelosLinearOpWithSolve_def.patch")
 ExternalProject_Add(
     Trilinos
     PREFIX ${EXTERNAL_ROOT}
     DEPENDS ${depends_on}
     ${arguments}
+    PATCH_COMMAND ${PATCH_EXECUTABLE} -p0 ${filename} < ${patchname}
     CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${EXTERNAL_ROOT}
                -DCMAKE_PROGRAM_PATH:PATH=${EXTERNAL_ROOT}/bin
                -DCMAKE_LIBRARY_PATH:PATH=${EXTERNAL_ROOT}/lib
-               -DCMAKE_INCLUDE_PATH:PATH=${EXTERNAL_ROOT}/include
-               -DBUILD_SHARED_LIBS:BOOL=ON 
+               -DCMAKE_INCLUDE_PATH:PATH=${EXTERNAL_ROOT}/include/trilinos
+               -DBUILD_SHARED_LIBS:BOOL=ON
                -DTPL_TBB_LIBRARIES:STRING=${tbb_libraries}
                -DTPL_TBB_INCLUDE_DIRS:PATH=${TBB_INCLUDE_DIR}
                -DTPL_ENABLE_BLAS:BOOL=ON

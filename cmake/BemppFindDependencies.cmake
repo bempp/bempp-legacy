@@ -35,6 +35,7 @@ lookup_package(Dune REQUIRED DOWNLOAD_BY_DEFAULT
     COMPONENTS geometry grid localfunctions foamgrid
 )
 lookup_package(Trilinos
+    DOWNLOAD_BY_DEFAULT
     REQUIRED
     ARGUMENTS
         URL /Users/mdavezac/workspace/bempp/trilinos-11.6.1-Source.tar.bz2
