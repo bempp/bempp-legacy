@@ -176,11 +176,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(symmetric_matches_nonsymmetric_in_aca_mode,
                 waveNumber,
                 "", SYMMETRIC);
 
-    arma::Mat<RT> matNonsymmetric = opNonsymmetric.weakForm()->asMatrix();
-    arma::Mat<RT> matSymmetric = opSymmetric.weakForm()->asMatrix();
+#   ifdef WITH_AHMED
+        arma::Mat<RT> matNonsymmetric = opNonsymmetric.weakForm()->asMatrix();
+        arma::Mat<RT> matSymmetric = opSymmetric.weakForm()->asMatrix();
 
-    BOOST_CHECK(check_arrays_are_close<RT>(
-                    matNonsymmetric, matSymmetric, 2 * acaOptions.eps));
+        BOOST_CHECK(check_arrays_are_close<RT>(
+                        matNonsymmetric, matSymmetric, 2 * acaOptions.eps));
+#   else
+        BOOST_CHECK_THROW(opNonsymmetric.weakForm(), std::runtime_error);
+        BOOST_CHECK_THROW(opSymmetric.weakForm(), std::runtime_error);
+#   endif
 }
 
 BOOST_AUTO_TEST_SUITE_END()
