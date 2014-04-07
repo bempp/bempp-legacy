@@ -35,6 +35,10 @@
 //    - The `is_array` macro is changed to `swig_is_array`
 //    - The `array_*` macro are changed to `swig_array_*`
 //    - `NPY_ARRAY_F_CONTIGUOUS` is defined from `NPY_FORTRAN` for numpy < 1.7
+//    - An `expect_fortran` function is added that mirrors the behavior of the `require_*`
+//    functions. The original `require_fortran` is inconsistent with  the other funtions in that it
+//    ensures the result is a fortran array, as opposed to checking that is and setting an exception
+//    if it is not.
 // These changes make name conflicts less likely.
 
 /* -*- C -*-  (not really, but good for syntax highlighting) */
@@ -56,7 +60,6 @@
 %#if NPY_API_VERSION < 0x00000007
 %#define NPY_ARRAY_DEFAULT NPY_DEFAULT
 %#define NPY_ARRAY_FARRAY  NPY_FARRAY
-%#define NPY_FORTRANORDER  NPY_FORTRAN
 %#define NPY_ARRAY_F_CONTIGUOUS  NPY_FORTRAN
 %#endif
 }
@@ -301,7 +304,7 @@
       Py_INCREF(swig_array_descr(ary));
       result = (PyArrayObject*) PyArray_FromArray(ary,
                                                   swig_array_descr(ary),
-                                                  NPY_FORTRANORDER);
+                                                  NPY_ARRAY_F_CONTIGUOUS);
       *is_new_object = 1;
     }
     return result;
@@ -530,6 +533,17 @@
     for (i=1; i < nd; ++i)
       strides[i] = strides[i-1] * swig_array_size(ary,i-1);
     return success;
+  }
+
+  /* Require the given PyArrayObject to to be Fortran ordered.  If the
+   * the PyArrayObject is already Fortran ordered, do nothing.  Else,
+   * set an error
+   */
+  int expect_fortran(PyArrayObject* ary)
+  {
+    if (swig_array_is_fortran(ary) || PyArray_SIZE(ary) == 0) return 1;
+    PyErr_SetString(PyExc_TypeError, "Array is not fortran-style");
+    return 0;
   }
 }
 

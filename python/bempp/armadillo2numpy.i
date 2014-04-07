@@ -80,7 +80,7 @@
 {
     array = obj_to_array_fortran_allow_conversion($input, DATA_TYPECODE,
         &is_new_object);
-    if (!array || !require_dimensions(array, 2) || !require_fortran(array))
+    if (!array || !require_dimensions(array, 2) || !expect_fortran(array))
         SWIG_fail;
     arma_array = arma::Mat< DATA_TYPE >((DATA_TYPE*) swig_array_data(array),
                                       swig_array_size(array, 0),
@@ -112,7 +112,7 @@
 /* { */
 /*     array = obj_to_array_fortran_allow_conversion($input, DATA_TYPECODE, */
 /*         &is_new_object); */
-/*     if (!array || !require_dimensions(array, 2) || !require_fortran(array)) */
+/*     if (!array || !require_dimensions(array, 2) || !expect_fortran(array)) */
 /*         SWIG_fail; */
 /*     arma_array.reset(new arma::Mat< DATA_TYPE >((DATA_TYPE*) swig_array_data(array), */
 /*                                                 swig_array_size(array, 0), */
@@ -142,7 +142,7 @@
 {
     array = obj_to_array_fortran_allow_conversion($input, DATA_TYPECODE,
         &is_new_object);
-    if (!array || !require_dimensions(array, 2) || !require_fortran(array))
+    if (!array || !require_dimensions(array, 2) || !expect_fortran(array))
         SWIG_fail;
     arma_array.reset(new arma::Mat< DATA_TYPE >((DATA_TYPE*) swig_array_data(array),
                                                 swig_array_size(array, 0),
@@ -175,7 +175,7 @@ return pointers to the SWIG wrappers of the Numpy array and the Armadillo array
 {
     array = obj_to_array_fortran_allow_conversion($input, DATA_TYPECODE,
         &is_new_object);
-    if (!array || !require_dimensions(array, 2) || !require_fortran(array))
+    if (!array || !require_dimensions(array, 2) || !expect_fortran(array))
         SWIG_fail;
     arma_array = new arma::Mat< DATA_TYPE >((DATA_TYPE*) swig_array_data(array),
                                           swig_array_size(array, 0),
