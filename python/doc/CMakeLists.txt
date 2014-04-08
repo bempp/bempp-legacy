@@ -1,7 +1,4 @@
-#Configure All Option files
-
 # Add a python_doc target to generate Python API documentation with Sphinx
-find_package(Sphinx)
 if (SPHINX_FOUND)
    configure_file(
 	${CMAKE_CURRENT_SOURCE_DIR}/conf.py.in

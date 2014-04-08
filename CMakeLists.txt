@@ -1,8 +1,12 @@
 cmake_minimum_required(VERSION 2.8)
 project(bempp CXX)
 
+# Needed to find BLAS
+enable_language(C)
+
 set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -DNDEBUG -O3")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -DNDEBUG -O3")
+# set(CMAKE_CXX_FLAGS "-Wall -Wnon-virtual-dtor -Wno-sign-compare")
 
 # Tells cmake where to find bem++ specific files
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
@@ -19,28 +23,33 @@ include(BemppOptions)
 include(PackageLookUp)
 include(BemppFindDependencies)
 
-# set(CMAKE_CXX_FLAGS "-Wall -Wnon-virtual-dtor -Wno-sign-compare")
+# Tests
+if(WITH_TESTS)
+    include(PythonVirtualEnv)
+    enable_testing()
+    add_subdirectory(tests)
+    # Adds a bash script to run cpp unit tests
+    if(UNIX)
+        set(EXECUTABLE "cd ${PROJECT_BINARY_DIR}/tests/unit && ./run_tests")
+        configure_file("${GreatCMakeCookOff_DIR}/../scripts/localbash.in.sh"
+            "${PROJECT_BINARY_DIR}/CMakeFiles/run_cpptests.sh"
+            @ONLY
+        )
+        file(COPY "${PROJECT_BINARY_DIR}/CMakeFiles/run_cpptests.sh"
+            DESTINATION ${PROJECT_BINARY_DIR}
+            FILE_PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
+        )
+    endif()
+endif(WITH_TESTS)
 
-
-# Main library
 add_subdirectory(lib)
-#
-# # Python Support
-# add_subdirectory(python)
-#
-# Examples
+add_subdirectory(python)
 add_subdirectory(examples)
 
 # Scratch
-if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/scratch/CMakeLists.txt")
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/scratch/CMakeLists.txt")
   add_subdirectory(scratch)
-endif ()
-
-# Tests
-if (WITH_TESTS)
-  enable_testing()
-  add_subdirectory(tests)
-endif (WITH_TESTS)
+endif()
 
 # Uninstall target
 configure_file(

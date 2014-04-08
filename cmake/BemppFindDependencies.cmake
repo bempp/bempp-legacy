@@ -2,8 +2,10 @@ include(FindPkgConfig)
 
 # First, find general packages
 find_package(Doxygen)
+find_package(Sphinx)
 find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
+find_package(CoherentPython REQUIRED)
 if (WITH_CUDA)
    find_package(CUDA)
 endif ()
@@ -28,7 +30,32 @@ lookup_package(Trilinos
         URL /Users/mdavezac/workspace/bempp/trilinos-11.6.1-Source.tar.bz2
         MD5 b97d882535fd1856599b1c7338f5b45a
 )
+
+
+# Then look for python related packages
+include(PythonPackage)
+function(find_or_fail package what)
+    find_python_package(${package})
+    if(NOT ${package}_FOUND)
+        message("*********")
+        message("${package} is required to ${what}")
+        message("It can likely be installed with pip")
+        message("*********")
+        message(FATAL_ERROR "Aborting")
+    endif()
+endfunction()
+
+# first looks for python package, second for linkage/include stuff
+find_or_fail(numpy "by Purify's python bindings")
+find_package(Numpy REQUIRED)
+
 lookup_package(SWIG 2.0.4 REQUIRED)
+if (SWIG_VERSION VERSION_LESS 2.0.7)
+    message(WARNING "Swig version 2.0.7 or higher is strongly "
+        "recommended to compile BEM++ Python wrappers; "
+        "older versions may produce incorrect docstrings"
+    )
+endif ()
 
 
 # Ahmed (optional, used only if WITH_AHMED is set)
@@ -53,6 +80,19 @@ include_directories(
     ${Boost_INCLUDE_DIR}
     ${TBB_INCLUDE_DIR}
     ${dune-common_INCLUDE_DIRS}
-    ${ARMADILLO_INCLUDE_DIR}
     ${Trilinos_INCLUDE_DIRS} ${Trilinos_TPL_INCLUDE_DIRS}
 )
+if(ARMADILLO_INCLUDE_DIR)
+    include_directories(${ARMADILLO_INCLUDE_DIR})
+endif()
+
+
+if(WITH_TESTS)
+    # Adds a virtual environment
+    find_or_fail(virtualenv "to run the unit-tests for the python bindings")
+    include(PythonVirtualEnv)
+    # Add paths so we can run tests effectively
+    add_to_python_path("${PROJECT_BINARY_DIR}/python")
+    add_to_ld_path("${EXTERNAL_ROOT}/lib")
+    add_package_to_virtualenv(pytest)
+endif()

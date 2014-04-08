@@ -164,7 +164,6 @@ ExternalProject_Add(
     PREFIX ${EXTERNAL_ROOT}
     DOWNLOAD_COMMAND ""
     CONFIGURE_COMMAND ./configure ${configure_args}
-    MAKE_COMMAND make
     INSTALL_COMMAND
         ${CMAKE_COMMAND} -E copy_if_different
                ${EXTERNAL_ROOT}/src/dune-bempp/config.h

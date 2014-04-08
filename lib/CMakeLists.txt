@@ -59,10 +59,13 @@ target_link_libraries (bempp
     teuchoscomm teuchoscore
     teuchosnumerics teuchosparameterlist
     teuchosremainder rtop
-
-    debug ${TBB_LIBRARY_DEBUG} ${TBB_MALLOC_LIBRARY_DEBUG}
-    optimized ${TBB_LIBRARY} ${TBB_MALLOC_LIBRARY}
 )
+if(TBB_LIBRARY_DEBUG)
+    target_link_libraries (bempp
+        debug ${TBB_LIBRARY_DEBUG} ${TBB_MALLOC_LIBRARY_DEBUG}
+        optimized ${TBB_LIBRARY} ${TBB_MALLOC_LIBRARY}
+    )
+endif()
 
 set_property(
    TARGET bempp
@@ -85,6 +88,9 @@ install(TARGETS bempp
   RUNTIME DESTINATION bempp/bin
   LIBRARY DESTINATION bempp/lib
   ARCHIVE DESTINATION bempp/lib)
+
+# Make sure its built after the external projects
+depends_on_lookups(bempp)
 
 # Get output name of the library
 get_target_property(BEMPP_LIBRARY bempp OUTPUT_NAME)
