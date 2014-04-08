@@ -14,13 +14,13 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 # Download and installs the cookoff in the build tree
 # From here on we can use cookoff recipes
 include(LookUp-GreatCMakeCookOff)
+message("${CMAKE_MODULE_PATH}")
 
 # Makes this a c++11 project
 include(AddCPP11Flags)
 
 # Macros needed
 include(BemppOptions)
-include(PackageLookUp)
 include(BemppFindDependencies)
 
 # Tests
