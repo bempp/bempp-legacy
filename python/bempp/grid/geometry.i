@@ -96,6 +96,16 @@ public:
     %apply arma::Mat<ctype>& ARGOUT_MAT { arma::Mat<ctype>& outLocal };
     %apply arma::Mat<ctype>& ARGOUT_MAT { arma::Mat<ctype>& outGlobal };
     %apply arma::Mat<ctype>& ARGOUT_MAT { arma::Mat<ctype>& outNormal };
+#   ifdef NDEBUG
+      %typemap(check) (const arma::Mat<ctype>& local,
+                              arma::Mat<ctype>& outGlobal) {
+          // $self does not seem to work here. So using arg1 explicitly...
+          if((int)$1->n_rows != arg1->dim()) {
+              PyErr_SetString(PyExc_RuntimeError, "Incorrect number of dimensions");
+              SWIG_fail;
+          }
+      }
+#   endif
 
     virtual void local2global(const arma::Mat<ctype>& local,
                             arma::Mat<ctype>& outGlobal) const = 0;
