@@ -17,9 +17,9 @@ if(NOT "$ENV{DYLD_LIBRARY_PATH}" STREQUAL "")
     list(APPEND ENVIRONMENT_VARIABLES
         "DYLD_LIBRARY_PATH=$ENV{DYLD_LIBRARY_PATH}")
 endif()
-# message("Env ${ENVIRONMENT_VARIABLES}")
 set_tests_properties(unittests
     PROPERTIES ENVIRONMENT "${ENVIRONMENT_VARIABLES}"
+    LABELS "cpp;unit"
 )
 
 # Meshes
