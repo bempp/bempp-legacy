@@ -76,16 +76,15 @@ include_directories(
     ${PROJECT_BINARY_DIR}/fakery/
     ${CMAKE_BINARY_DIR}/include
     ${CMAKE_SOURCE_DIR}/lib
-    ${BLAS_INCLUDE_DIR}
-    ${LAPACK_INCLUDE_DIR}
-    ${Boost_INCLUDE_DIR}
-    ${TBB_INCLUDE_DIR}
     ${dune-common_INCLUDE_DIRS}
-    ${Trilinos_INCLUDE_DIRS} ${Trilinos_TPL_INCLUDE_DIRS}
+    ${Trilinos_INCLUDE_DIRS}
+    ${Trilinos_TPL_INCLUDE_DIRS}
 )
-if(ARMADILLO_INCLUDE_DIR)
-    include_directories(${ARMADILLO_INCLUDE_DIR})
-endif()
+foreach(component Boost BLAS LAPACK ARMADILLO TBB)
+    if(${component}_INCLUDE_DIR)
+        include_directories(${${component}_INCLUDE_DIR})
+    endif()
+endforeach()
 
 
 if(WITH_TESTS)
