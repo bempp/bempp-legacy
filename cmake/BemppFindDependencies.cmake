@@ -1,4 +1,5 @@
 include(FindPkgConfig)
+include(PackageLookup)
 
 # First, find general packages
 find_package(Doxygen)
