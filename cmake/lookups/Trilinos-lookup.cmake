@@ -29,17 +29,11 @@ set(tbb_libraries
 )
 
 find_program(PATCH_EXECUTABLE patch REQUIRED)
-set(filename "${EXTERNAL_ROOT}/src/Trilinos/packages")
-set(filename "${filename}/stratimikos/adapters/belos")
-set(filename "${filename}/src/Thyra_BelosLinearOpWithSolve_def.hpp")
-set(patchname "${PROJECT_SOURCE_DIR}/installer/patches")
-set(patchname "${patchname}/Thyra_BelosLinearOpWithSolve_def.patch")
 ExternalProject_Add(
     Trilinos
     PREFIX ${EXTERNAL_ROOT}
     DEPENDS ${depends_on}
     ${arguments}
-    PATCH_COMMAND ${PATCH_EXECUTABLE} -p0 ${filename} < ${patchname}
     CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${EXTERNAL_ROOT}
                -DCMAKE_PROGRAM_PATH:PATH=${EXTERNAL_ROOT}/bin
                -DCMAKE_LIBRARY_PATH:PATH=${EXTERNAL_ROOT}/lib
@@ -81,6 +75,22 @@ ExternalProject_Add(
     LOG_DOWNLOAD ON
     LOG_CONFIGURE ON
     LOG_BUILD ON
+)
+set(patchdir "${PROJECT_SOURCE_DIR}/installer/patches")
+ExternalProject_Add_Step(Trilinos
+    PATCH
+    COMMAND
+        ${PATCH_EXECUTABLE} -p0
+            < ${patchdir}/Thyra_BelosLinearOpWithSolve_def.patch
+    COMMAND
+        ${PATCH_EXECUTABLE} -p0
+            < ${patchdir}/Epetra_ConfigDefs.h.patch
+    WORKING_DIRECTORY ${EXTERNAL_ROOT}/src/Trilinos
+    DEPENDS
+        ${patchdir}/Thyra_BelosLinearOpWithSolve_def.patch
+        ${patchdir}/Epetra_ConfigDefs.h.patch
+    DEPENDEES download
+    DEPENDERS configure
 )
 # Rerun cmake to capture new armadillo install
 add_recursive_cmake_step(Trilinos DEPENDEES install)

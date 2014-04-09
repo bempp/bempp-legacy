@@ -1,5 +1,5 @@
---- ./Thyra_BelosLinearOpWithSolve_def.hpp	2012-04-24 20:30:54.000000000 +0100
-+++ ./Thyra_BelosLinearOpWithSolve_def_new.hpp	2012-05-03 17:34:53.000000000 +0100
+--- ./packages/stratimikos/adapters/belos/src/Thyra_BelosLinearOpWithSolve_def.hpp	2012-04-24 20:30:54.000000000 +0100
++++ ./packages/stratimikos/adapters/belos/src/Thyra_BelosLinearOpWithSolve_def_new.hpp	2012-05-03 17:34:53.000000000 +0100
 @@ -124,6 +124,7 @@
    const int convergenceTestFrequency
    )
