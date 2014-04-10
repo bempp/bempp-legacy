@@ -13,5 +13,16 @@ ExternalProject_Add(
     LOG_CONFIGURE ON
     LOG_BUILD ON
 )
+if(NOT PCRE_CONFIG_EXECUTABLE)
+    ExternalProject_Add_Step(SWIG
+        pcre
+        COMMAND ${CMAKE_COMMAND} -P "${EXTERNAL_ROOT}/src/pcre.cmake"
+        COMMAND Tools/pcre-build.sh
+        WORKING_DIRECTORY "${EXTERNAL_ROOT}/src/SWIG"
+        DEPENDERS configure
+        DEPENDEES download
+    )
+
+endif()
 # Rerun cmake to capture new armadillo install
 add_recursive_cmake_step(SWIG DEPENDEES install)
