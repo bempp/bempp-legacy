@@ -3,10 +3,10 @@ include(PackageLookup)
 
 # First, find general packages
 find_package(Doxygen)
-find_package(Sphinx)
 find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
 find_package(CoherentPython REQUIRED)
+find_package(Sphinx)
 if (WITH_CUDA)
    find_package(CUDA)
 endif ()
@@ -34,6 +34,14 @@ lookup_package(Trilinos
 
 
 # Then look for python related packages
+lookup_package(SWIG 2.0.4 REQUIRED)
+if (SWIG_FOUND AND SWIG_VERSION VERSION_LESS 2.0.7)
+    message(WARNING "Swig version 2.0.7 or higher is strongly "
+        "recommended to compile BEM++ Python wrappers; "
+        "older versions may produce incorrect docstrings"
+    )
+endif()
+
 include(PythonPackage)
 function(find_or_fail package what)
     find_python_package(${package})
@@ -49,14 +57,6 @@ endfunction()
 # first looks for python package, second for linkage/include stuff
 find_or_fail(numpy "by Purify's python bindings")
 find_package(Numpy REQUIRED)
-
-lookup_package(SWIG 2.0.4 REQUIRED)
-if (SWIG_VERSION VERSION_LESS 2.0.7)
-    message(WARNING "Swig version 2.0.7 or higher is strongly "
-        "recommended to compile BEM++ Python wrappers; "
-        "older versions may produce incorrect docstrings"
-    )
-endif ()
 
 
 # Ahmed (optional, used only if WITH_AHMED is set)
