@@ -85,6 +85,7 @@ foreach(component Boost BLAS LAPACK ARMADILLO TBB)
         include_directories(${${component}_INCLUDE_DIR})
     endif()
 endforeach()
+add_definitions(-DARMA_USE_LAPACK -DARMA_USE_BLAS)
 
 
 if(WITH_TESTS)
