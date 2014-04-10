@@ -20,13 +20,13 @@ ExternalProject_Add(
     # Downloads boost from url -- much faster than svn
     URL ${TBB_URL}
     URL_HASH MD5=${TBB_URL_MD5}
-    BUILD_IN_SOURCE 1
     PATCH_COMMAND
      ${CMAKE_COMMAND} -E copy_if_different
                       ${CURRENT_LOOKUP_DIRECTORY}/install.cmake
-                      ${EXTERNAL_ROOT}/src/tbb/CMakeLists.txt
-    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${EXTERNAL_ROOT}
-               -DROOT=${PROJECT_SOURCE_DIR}
+                      ${EXTERNAL_ROOT}/src/TBB/CMakeLists.txt
+    CMAKE_ARGS  -DCMAKE_INSTALL_PREFIX=${EXTERNAL_ROOT}
+                -DCMAKE_MODULE_PATH=${PROJECT_SOURCE_DIR}/cmake
+                -DROOT=${PROJECT_SOURCE_DIR}
     LOG_DOWNLOAD ON
     LOG_CONFIGURE ON
     LOG_BUILD ON
