@@ -6,6 +6,7 @@ endif()
 file(GLOB_RECURSE TEST_SOURCES *.cpp)
 file(GLOB_RECURSE TEST_HEADERS *.hpp)
 add_executable(run_tests ${TEST_SOURCES} ${TEST_HEADERS})
+depends_on_lookups(run_tests)
 
 if(Boost_UNIT_TEST_FRAMEWORK_LIBRARY_DEBUG)
     target_link_libraries(run_tests bempp
