@@ -1,13 +1,22 @@
-add_definitions(-DBOOST_TEST_DYN_LINK)
+include(BoostUnitTestFlags)
+if(Boost_UNIT_TEST_CXXFLAGS)
+    add_definitions(${Boost_UNIT_TEST_CXXFLAGS})
+endif()
 
 file(GLOB_RECURSE TEST_SOURCES *.cpp)
 file(GLOB_RECURSE TEST_HEADERS *.hpp)
 add_executable(run_tests ${TEST_SOURCES} ${TEST_HEADERS})
 
-target_link_libraries(run_tests bempp
-    debug ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY_DEBUG}
-    optimized ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY_RELEASE}
-)
+if(Boost_UNIT_TEST_FRAMEWORK_LIBRARY_DEBUG)
+    target_link_libraries(run_tests bempp
+        debug ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY_DEBUG}
+    )
+endif()
+if(Boost_UNIT_TEST_FRAMEWORK_LIBRARY_RELEASE)
+    target_link_libraries(run_tests bempp
+        optimized ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY_RELEASE}
+    )
+endif()
 add_test(unittests run_tests)
 if(NOT "$ENV{LD_LIBRARY_PATH}" STREQUAL "")
     list(APPEND ENVIRONMENT_VARIABLES
