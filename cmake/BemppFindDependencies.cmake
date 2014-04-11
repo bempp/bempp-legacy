@@ -24,6 +24,8 @@ lookup_package(TBB DOWNLOAD_BY_DEFAULT REQUIRED)
 lookup_package(Dune REQUIRED DOWNLOAD_BY_DEFAULT
     COMPONENTS geometry grid localfunctions foamgrid
 )
+# Using cmake_policy does not seem to work here.
+set(CMAKE_POLICY_DEFAULT_CMP0012 NEW CACHE STRING "Avoids anoying messages")
 lookup_package(Trilinos
     DOWNLOAD_BY_DEFAULT
     REQUIRED
@@ -31,6 +33,7 @@ lookup_package(Trilinos
         URL /Users/mdavezac/workspace/bempp/trilinos-11.6.1-Source.tar.bz2
         MD5 b97d882535fd1856599b1c7338f5b45a
 )
+unset(CMAKE_POLICY_DEFAULT_CMP0012 CACHE)
 
 
 # Then look for python related packages
