@@ -14,6 +14,23 @@ set(default_grid_MD5 21f1a53949c1d21682101552e3b5bc5c)
 set(default_localfunctions_URL
     http://www.dune-project.org/download/2.2.1/dune-localfunctions-2.2.1.tar.gz)
 set(default_localfunctions_MD5 49a8f85802ff5d9ed917c71181dc2fbd)
+
+# Needed by dune
+enable_language(Fortran)
+macro(find_program_or_fail VARIABLE)
+    find_program(${VARIABLE} ${ARGN})
+    if(NOT ${VARIABLE})
+        message(FATAL_ERROR
+	    "Program needed for Dune was not found: ${VARIABLE}")
+    endif()
+endmacro()
+find_package(PkgConfig REQUIRED)
+find_program_or_fail(libtoolize_EXECUTABLE
+    NAMES libtoolize glibtoolize)
+find_program_or_fail(autoconf_EXECUTABLE autoconf)
+find_program_or_fail(aclocal_EXECUTABLE aclocal)
+find_program_or_fail(automake_EXECUTABLE automake)
+
 macro(_get_arguments component)
     set(keyvalues  ${component}_URL;${component}_MD5)
     cmake_parse_arguments(_ "" "${keyvalues}" "" ${Dune_ARGUMENTS})
@@ -71,6 +88,10 @@ set(configure_args
     CFLAGS=${CMAKE_C_FLAGS}
     CXX=${CMAKE_CXX_COMPILER}
     CXXFLAGS=${CMAKE_CXX_FLAGS}
+    FC=${CMAKE_Fortran_COMPILER}
+    F77=${CMAKE_Fortran_COMPILER}
+    F90=${CMAKE_Fortran_COMPILER}
+    FCFLAGS=${CMAKE_Fortran_FLAGS}
     PKG_CONFIG_PATH=$ENV{PKG_CONFIG_PATH}
     --enable-shared=no
     --enable-static=yes
