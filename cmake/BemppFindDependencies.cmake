@@ -24,7 +24,10 @@ lookup_package(TBB DOWNLOAD_BY_DEFAULT REQUIRED)
 lookup_package(Dune REQUIRED DOWNLOAD_BY_DEFAULT
     COMPONENTS geometry grid localfunctions foamgrid
 )
+# Using cmake_policy does not seem to work here.
+set(CMAKE_POLICY_DEFAULT_CMP0012 NEW CACHE STRING "Avoids anoying messages")
 lookup_package(Trilinos DOWNLOAD_BY_DEFAULT REQUIRED)
+unset(CMAKE_POLICY_DEFAULT_CMP0012 CACHE)
 
 # Then look for python related packages
 lookup_package(SWIG 2.0.4 REQUIRED)
