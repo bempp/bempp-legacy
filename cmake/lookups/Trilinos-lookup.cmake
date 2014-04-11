@@ -71,6 +71,8 @@ ExternalProject_Add(
                -DTpetra_INST_COMPLEX_FLOAT:BOOL=ON
                -DTpetra_INST_FLOAT:BOOL=ON
                -DTPL_ENABLE_MPI:BOOL=${WITH_MPI}
+               -DTPL_BLAS_LIBRARIES=${BLAS_LIBRARIES}
+               -DTPL_LAPACK_LIBRARIES=${LAPACK_LIBRARIES}
     # Wrap download, configure and build steps in a script to log output
     LOG_DOWNLOAD ON
     LOG_CONFIGURE ON
