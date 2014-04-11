@@ -24,14 +24,7 @@ lookup_package(TBB DOWNLOAD_BY_DEFAULT REQUIRED)
 lookup_package(Dune REQUIRED DOWNLOAD_BY_DEFAULT
     COMPONENTS geometry grid localfunctions foamgrid
 )
-lookup_package(Trilinos
-    DOWNLOAD_BY_DEFAULT
-    REQUIRED
-    ARGUMENTS
-        URL /Users/mdavezac/workspace/bempp/trilinos-11.6.1-Source.tar.bz2
-        MD5 b97d882535fd1856599b1c7338f5b45a
-)
-
+lookup_package(Trilinos DOWNLOAD_BY_DEFAULT REQUIRED)
 
 # Then look for python related packages
 lookup_package(SWIG 2.0.4 REQUIRED)
@@ -55,7 +48,7 @@ function(find_or_fail package what)
 endfunction()
 
 # first looks for python package, second for linkage/include stuff
-find_or_fail(numpy "by Purify's python bindings")
+find_or_fail(numpy "by BEM++'s python bindings")
 find_package(Numpy REQUIRED)
 
 
