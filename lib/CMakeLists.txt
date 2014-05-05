@@ -110,7 +110,7 @@ install(TARGETS bempp
 
 # Get output name of the library
 find_library(BEMPP_LIBRARY bempp PATHS ${CMAKE_INSTALL_PREFIX}/bempp/lib)
-find_library(BEMPP_TEUCHOS_LIBRARY teuchos PATHS ${CMAKE_INSTALL_PREFIX}/bempp/lib)
+find_library(BEMPP_TEUCHOS_LIBRARY teuchoscore PATHS ${CMAKE_INSTALL_PREFIX}/bempp/lib)
 
 # Install CMake files for the library
 install(EXPORT BemppLibraryDepends DESTINATION bempp/lib/cmake/Bempp)
