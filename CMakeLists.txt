@@ -18,6 +18,9 @@ include(LookUp-GreatCMakeCookOff)
 # Makes this a c++11 project
 include(AddCPP11Flags)
 
+# Add rpath information so installed libraries can find each other
+include(rpath)
+
 # Macros needed
 include(BemppOptions)
 include(BemppFindDependencies)
