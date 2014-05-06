@@ -8,13 +8,14 @@ file(GLOB_RECURSE TEST_HEADERS *.hpp)
 add_executable(run_tests ${TEST_SOURCES} ${TEST_HEADERS})
 depends_on_lookups(run_tests)
 
+target_link_libraries(run_tests bempp)
 if(Boost_UNIT_TEST_FRAMEWORK_LIBRARY_DEBUG)
-    target_link_libraries(run_tests bempp
+    target_link_libraries(run_tests
         debug ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY_DEBUG}
     )
 endif()
 if(Boost_UNIT_TEST_FRAMEWORK_LIBRARY_RELEASE)
-    target_link_libraries(run_tests bempp
+    target_link_libraries(run_tests
         optimized ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY_RELEASE}
     )
 endif()
