@@ -98,10 +98,14 @@ ExternalProject_Add_Step(Trilinos
     COMMAND
         ${PATCH_EXECUTABLE} -p0
             < ${patchdir}/Epetra_ConfigDefs.h.patch
+    COMMAND
+        ${PATCH_EXECUTABLE} -p0
+            < ${patchdir}/pytrilinos_eigenvalue_typemap.patch
     WORKING_DIRECTORY ${EXTERNAL_ROOT}/src/Trilinos
     DEPENDS
         ${patchdir}/Thyra_BelosLinearOpWithSolve_def.patch
         ${patchdir}/Epetra_ConfigDefs.h.patch
+        ${patchdir}/pytrilinos_eigenvalue_typemap.patch
     DEPENDEES download
     DEPENDERS configure
 )
