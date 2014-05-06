@@ -28,25 +28,37 @@ set(tbb_libraries
     ${TBB_MALLOC_LIBRARY} ${TBB_MALLOC_LIBRARY_DEBUG}
 )
 
+# Create a file of variables which is parsed by cmake when configuring Trilinos.
+include(PassonVariables)
+passon_variables(Trilinos
+    FILENAME "${EXTERNAL_ROOT}/src/TrilinosVariables.cmake"
+    PATTERNS
+        "CMAKE_[^_]*_R?PATH" "CMAKE_C_.*" "CMAKE_CXX_.*"
+        "BLAS_.*" "LAPACK_.*"
+)
+file(APPEND "${EXTERNAL_ROOT}/src/TrilinosVariables.cmake"
+    "\nset(CMAKE_INSTALL_PREFIX \"${EXTERNAL_ROOT}\" CACHE PATH \"\" FORCE)\n"
+    "\nlist(APPEND CMAKE_INCLUDE_PATH \"${EXTERNAL_ROOT}/include/trilinos\")\n"
+    "set(CMAKE_INCLUDE_PATH \"\${CMAKE_INCLUDE_PATH}\" CACHE PATH \"\" FORCE)\n"
+    "\nset(TPL_TBB_LIBRARIES \"${tbb_libraries}\" CACHE STRING \"\")\n"
+    "\nset(TPL_TBB_INCLUDE_DIRS \"${TBB_INCLUDE_DIR}\" CACHE STRING \"\")\n"
+    "\nset(TPL_BLAS_LIBRARIES \"${BLAS_LIBRARIES}\" CACHE STRING \"\")\n"
+    "\nset(TPL_LAPACK_LIBRARIES \"${LAPACK_LIBRARIES}\" CACHE STRING \"\")\n"
+    "\nset(TPL_BOOST_INCLUDE_DIRS \"${Boost_INCLUDE_DIR}\" CACHE STRING \"\")\n"
+)
+
 find_program(PATCH_EXECUTABLE patch REQUIRED)
 ExternalProject_Add(
     Trilinos
     PREFIX ${EXTERNAL_ROOT}
     DEPENDS ${depends_on}
     ${arguments}
-    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${EXTERNAL_ROOT}
-               -DCMAKE_PROGRAM_PATH:PATH=${EXTERNAL_ROOT}/bin
-               -DCMAKE_LIBRARY_PATH:PATH=${EXTERNAL_ROOT}/lib
-               -DCMAKE_INCLUDE_PATH:PATH=${EXTERNAL_ROOT}/include/trilinos
-               -DBUILD_SHARED_LIBS:BOOL=ON
-               -DTPL_TBB_LIBRARIES:STRING=${tbb_libraries}
-               -DTPL_TBB_INCLUDE_DIRS:PATH=${TBB_INCLUDE_DIR}
+    CMAKE_ARGS -DBUILD_SHARED_LIBS:BOOL=ON
                -DTPL_ENABLE_BLAS:BOOL=ON
                -DTPL_ENABLE_LAPACK:BOOL=ON
                -DTPL_ENABLE_TBB:BOOL=ON
                -DTPL_ENABLE_Boost:BOOL=ON
                -DTPL_ENABLE_MPI:BOOL=OFF
-               -DTPL_Boost_INCLUDE_DIRS:STRING=${Boost_INCLUDE_DIR}
                -DTrilinos_ENABLE_Amesos:BOOL=ON
                -DTrilinos_ENABLE_Anasazi:BOOL=ON
                -DTrilinos_ENABLE_Belos:BOOL=ON
@@ -71,8 +83,7 @@ ExternalProject_Add(
                -DTpetra_INST_COMPLEX_FLOAT:BOOL=ON
                -DTpetra_INST_FLOAT:BOOL=ON
                -DTPL_ENABLE_MPI:BOOL=${WITH_MPI}
-               -DTPL_BLAS_LIBRARIES=${BLAS_LIBRARIES}
-               -DTPL_LAPACK_LIBRARIES=${LAPACK_LIBRARIES}
+               -C "${EXTERNAL_ROOT}/src/TrilinosVariables.cmake"
     # Wrap download, configure and build steps in a script to log output
     LOG_DOWNLOAD ON
     LOG_CONFIGURE ON

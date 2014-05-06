@@ -16,12 +16,11 @@ set(default_localfunctions_URL
 set(default_localfunctions_MD5 49a8f85802ff5d9ed917c71181dc2fbd)
 
 # Needed by dune
-enable_language(Fortran)
+#enable_language(Fortran)
 macro(find_program_or_fail VARIABLE)
     find_program(${VARIABLE} ${ARGN})
     if(NOT ${VARIABLE})
-        message(FATAL_ERROR
-	    "Program needed for Dune was not found: ${VARIABLE}")
+        message(FATAL_ERROR "Program needed for Dune was not found: ${VARIABLE}")
     endif()
 endmacro()
 find_package(PkgConfig REQUIRED)
@@ -83,24 +82,41 @@ endmacro()
 _file_args(blas_args blas ${BLAS_LIBRARIES})
 _file_args(lapack_args lapack ${LAPACK_LIBRARIES})
 
-set(configure_args
-    CC=${CMAKE_C_COMPILER}
-    CFLAGS=${CMAKE_C_FLAGS}
-    CXX=${CMAKE_CXX_COMPILER}
-    CXXFLAGS=${CMAKE_CXX_FLAGS}
-    FC=${CMAKE_Fortran_COMPILER}
-    F77=${CMAKE_Fortran_COMPILER}
-    F90=${CMAKE_Fortran_COMPILER}
-    FCFLAGS=${CMAKE_Fortran_FLAGS}
-    PKG_CONFIG_PATH=$ENV{PKG_CONFIG_PATH}
-    --enable-shared=no
-    --enable-static=yes
-    --with-pic
-    --disable-documentation
-    --prefix=${EXTERNAL_ROOT}
-    ${blas_args}
-    ${lapack_args}
+find_program(bash_EXECUTABLE bash REQUIRED)
+
+# Create a script that cmake can call
+# This should remove some issues that arises when cmake tries to build
+# a complicated command line
+file(WRITE "${PROJECT_BINARY_DIR}/CMakeFiles/external/dune_configure.sh"
+    "#!${bash_EXECUTABLE}\n"
+    "# Calls configure script for Dune packages\n"
+    "export CC=${CMAKE_C_COMPILER}\n"
+    "export CFLAGS=\"${CMAKE_C_FLAGS} "
+        "-I${BLAS_INCLUDE_DIR} -I${LAPACK_INCLUDE_DIR}\"\n"
+    "export CXX=${CMAKE_CXX_COMPILER}\n"
+    "export CXXFLAGS=\"${CMAKE_CXX_FLAGS}\"\n"
+    "export FC=${CMAKE_Fortran_COMPILER}\n"
+    "export F77=${CMAKE_Fortran_COMPILER}\n"
+    "export F90=${CMAKE_Fortran_COMPILER}\n"
+    "export FCFLAGS=\"${CMAKE_Fortran_FLAGS}\"\n"
+    "export LDFLAGS=\"${CMAKE_LDFLAGS_FLAGS}\"\n"
+    "export PKG_CONFIG_PATH=\"$ENV{PKG_CONFIG_PATH}\"\n"
+    "\n"
+    "./configure"
+       " --enable-shared=no"
+       " --enable-static=yes"
+       " --with-pic"
+       " --disable-documentation"
+       " --prefix=\"${EXTERNAL_ROOT}\""
+       " --with-blas=\"${BLAS_LIBRARIES}\""
+       " --with-blas=\"${LAPACK_LIBRARIES}\""
 )
+set(configure_command "${EXTERNAL_ROOT}/src/dune_configure.sh")
+file(COPY "${PROJECT_BINARY_DIR}/CMakeFiles/external/dune_configure.sh"
+    DESTINATION "${EXTERNAL_ROOT}/src/"
+    FILE_PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
+)
+
 
 _get_arguments(common)
 ExternalProject_Add(
@@ -108,7 +124,7 @@ ExternalProject_Add(
     PREFIX ${EXTERNAL_ROOT}
     DEPENDS ${depends_on}
     ${common_ARGUMENTS}
-    CONFIGURE_COMMAND ./configure ${configure_args}
+    CONFIGURE_COMMAND ${configure_command}
     INSTALL_COMMAND make install
     ${build_args}
 )
@@ -119,7 +135,7 @@ ExternalProject_Add(
     DEPENDS dune-common
     PREFIX ${EXTERNAL_ROOT}
     ${geometry_ARGUMENTS}
-    CONFIGURE_COMMAND ./configure ${configure_args}
+    CONFIGURE_COMMAND ${configure_command}
     INSTALL_COMMAND make install
     ${build_args}
 )
@@ -131,7 +147,7 @@ ExternalProject_Add(
     DEPENDS dune-geometry dune-common
     PREFIX ${EXTERNAL_ROOT}
     ${grid_ARGUMENTS}
-    CONFIGURE_COMMAND ./configure ${configure_args}
+    CONFIGURE_COMMAND ${configure_command}
     INSTALL_COMMAND make install
     ${build_args}
 )
@@ -157,7 +173,7 @@ ExternalProject_Add(
     DEPENDS dune-grid dune-geometry dune-common
     PREFIX ${EXTERNAL_ROOT}
     ${localfunctions_ARGUMENTS}
-    CONFIGURE_COMMAND ./configure ${configure_args}
+    CONFIGURE_COMMAND ${configure_command}
     PATCH_COMMAND
         ${CMAKE_COMMAND} -DROOT=${EXTERNAL_ROOT}/src/dune-localfunctions
             -P ${CURRENT_LOOKUP_DIRECTORY}/patch-localfunctions.cmake
@@ -198,7 +214,7 @@ ExternalProject_Add(
     DEPENDS dune-foamgrid dune-grid dune-geometry dune-common dune-localfunctions
     PREFIX ${EXTERNAL_ROOT}
     DOWNLOAD_COMMAND ""
-    CONFIGURE_COMMAND ./configure ${configure_args}
+    CONFIGURE_COMMAND ${configure_command}
     INSTALL_COMMAND
         ${CMAKE_COMMAND} -E copy_if_different
                ${EXTERNAL_ROOT}/src/dune-bempp/config.h
@@ -219,3 +235,4 @@ add_recursive_cmake_step(dune-bempp
     FOUND_VAR Dune_FOUND
     DEPENDEES install
 )
+add_dependencies(lookup_dependencies dune-bempp)

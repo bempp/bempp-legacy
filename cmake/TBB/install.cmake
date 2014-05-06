@@ -30,13 +30,10 @@ install(FILES ${LIBRARIES} DESTINATION lib)
 # Now deal with recursive install of headers
 function(add_headers directory relative)
     # Find headers and install them
-        message("Hello from ${directory}")
     file(GLOB HEADERS RELATIVE "${relative}" "${directory}/*.h")
     if(HEADERS)
-        message("  with ${HEADERS}")
         list(GET HEADERS 0 header_file)
         get_filename_component(relative_directory "${header_file}" PATH)
-        message("  installed to ${relative_directory}")
         install(FILES ${HEADERS} DESTINATION "${relative_directory}")
     endif()
     # Recurse

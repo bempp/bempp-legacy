@@ -14,6 +14,14 @@ elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 else()
   message(FATAL_ERROR "Automatic install of TBB in windows not implemented")
 endif()
+
+# Writes a script of cached variables
+file(WRITE "${EXTERNAL_ROOT}/src/TBBVariables.cmake"
+    "\nset(CMAKE_INSTALL_PREFIX \"${EXTERNAL_ROOT} CACHE STRING \"\"\")\n"
+    "\nset(CMAKE_MODULE_PATH \"${CMAKE_MODULE_PATH}\" CACHE STRING \"\")\n"
+    "\nset(ROOT \"${PROJECT_SOURCE_DIR} CACHE STRING \"\" \")\n"
+)
+
 ExternalProject_Add(
     TBB
     PREFIX ${EXTERNAL_ROOT}
@@ -24,9 +32,7 @@ ExternalProject_Add(
      ${CMAKE_COMMAND} -E copy_if_different
                       ${CURRENT_LOOKUP_DIRECTORY}/install.cmake
                       ${EXTERNAL_ROOT}/src/TBB/CMakeLists.txt
-    CMAKE_ARGS  -DCMAKE_INSTALL_PREFIX=${EXTERNAL_ROOT}
-                -DCMAKE_MODULE_PATH=${PROJECT_SOURCE_DIR}/cmake
-                -DROOT=${PROJECT_SOURCE_DIR}
+    CMAKE_ARGS  -C "${EXTERNAL_ROOT}/src/TBBVariables.cmake"
     LOG_DOWNLOAD ON
     LOG_CONFIGURE ON
     LOG_BUILD ON
