@@ -13,3 +13,7 @@ ExternalProject_Add(
 )
 # Rerun cmake to capture new boost install
 add_recursive_cmake_step(Boost DEPENDEES install)
+set(BOOST_ROOT "${EXTERNAL_ROOT}" CACHE INTERNAL "Prefix for Boost install")
+# Makes sure those are not in the CACHE, otherwise, new version will not be found
+unset(Boost_INCLUDE_DIR CACHE)
+unset(Boost_LIBRARY_DIR CACHE)
