@@ -1,7 +1,7 @@
 # Checks that boost whether to have BOOST_TEST_DYN_LINK defined or not.
 # It should be defined if linking to a dynamic boost unit test library,
 # and absent when linking to a static boost unit test library.
-if(NOT Boost_UNIT_TEST_FRAMEWORK_LIBRARY OR DEFINED Boost_UNIT_TEST_CXXFLAGS)
+if(NOT Boost_FOUND OR DEFINED Boost_UNIT_TEST_CXXFLAGS)
     return()
 endif()
 set(rootdir "${PROJECT_BINARY_DIR}/CMakeFiles/boostStuff")
