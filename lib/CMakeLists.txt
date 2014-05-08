@@ -1,31 +1,33 @@
 #Configure All Option files
 configure_file(
-	${CMAKE_SOURCE_DIR}/lib/common/config_trilinos.hpp.in
-        ${CMAKE_BINARY_DIR}/include/bempp/common/config_trilinos.hpp)
+	${PROJECT_SOURCE_DIR}/lib/common/config_trilinos.hpp.in
+        ${PROJECT_BINARY_DIR}/include/bempp/common/config_trilinos.hpp)
 configure_file(
-	${CMAKE_SOURCE_DIR}/lib/common/config_ahmed.hpp.in
-        ${CMAKE_BINARY_DIR}/include/bempp/common/config_ahmed.hpp)
+	${PROJECT_SOURCE_DIR}/lib/common/config_ahmed.hpp.in
+        ${PROJECT_BINARY_DIR}/include/bempp/common/config_ahmed.hpp)
 configure_file(
-	${CMAKE_SOURCE_DIR}/lib/common/config_opencl.hpp.in
-        ${CMAKE_BINARY_DIR}/include/bempp/common/config_opencl.hpp)
+	${PROJECT_SOURCE_DIR}/lib/common/config_opencl.hpp.in
+        ${PROJECT_BINARY_DIR}/include/bempp/common/config_opencl.hpp)
 configure_file(
-        ${CMAKE_SOURCE_DIR}/lib/common/config_alugrid.hpp.in
-        ${CMAKE_BINARY_DIR}/include/bempp/common/config_alugrid.hpp)
+        ${PROJECT_SOURCE_DIR}/lib/common/config_alugrid.hpp.in
+        ${PROJECT_BINARY_DIR}/include/bempp/common/config_alugrid.hpp)
 configure_file(
-        ${CMAKE_SOURCE_DIR}/lib/common/config_data_types.hpp.in
-        ${CMAKE_BINARY_DIR}/include/bempp/common/config_data_types.hpp)
+        ${PROJECT_SOURCE_DIR}/lib/common/config_data_types.hpp.in
+        ${PROJECT_BINARY_DIR}/include/bempp/common/config_data_types.hpp)
 # TODO: check that at most one of WITH_MKL, WITH_GOTOBLAS and WITH_OPENBLAS is set
 configure_file(
-        ${CMAKE_SOURCE_DIR}/lib/common/config_blas_and_lapack.hpp.in
-        ${CMAKE_BINARY_DIR}/include/bempp/common/config_blas_and_lapack.hpp)
-include_directories(${CMAKE_BINARY_DIR}/include)
+        ${PROJECT_SOURCE_DIR}/lib/common/config_blas_and_lapack.hpp.in
+        ${PROJECT_BINARY_DIR}/include/bempp/common/config_blas_and_lapack.hpp)
+
+configure_file(${PROJECT_SOURCE_DIR}/lib/config_bempp.in.hpp
+    ${PROJECT_BINARY_DIR}/include/bempp/config_bempp.hpp)
 
 # Find all source and header files
 file(GLOB_RECURSE LIB_SOURCES *.cpp)
 file(GLOB_RECURSE LIB_HEADERS *.hpp)
-file(GLOB COMMON_HEADERS ${CMAKE_BINARY_DIR}/include/bempp/common/*.hpp)
-file(GLOB CL_FILES ${CMAKE_SOURCE_DIR}/lib/fiber/CL/*.cl)
-file(GLOB CL_STRING_FILES ${CMAKE_SOURCE_DIR}/lib/fiber/CL/*.str)
+file(GLOB COMMON_HEADERS ${PROJECT_BINARY_DIR}/include/bempp/common/*.hpp)
+file(GLOB CL_FILES ${PROJECT_SOURCE_DIR}/lib/fiber/CL/*.cl)
+file(GLOB CL_STRING_FILES ${PROJECT_SOURCE_DIR}/lib/fiber/CL/*.str)
 
 # Headers are ignored by make, but their list is used by IDEs
 # like Qt Creator and Visual Studio to generate project file list.
@@ -99,21 +101,21 @@ get_target_property(BEMPP_TEUCHOS_LIBRARY teuchos OUTPUT_NAME)
 # Install CMake files for the library
 install(EXPORT BemppLibraryDepends DESTINATION bempp/lib/cmake/Bempp)
 configure_file(
-	${CMAKE_SOURCE_DIR}/cmake/BemppConfig.cmake.in
-        ${CMAKE_BINARY_DIR}/lib/cmake/Bempp/BemppConfig.cmake
+	${PROJECT_SOURCE_DIR}/cmake/BemppConfig.cmake.in
+        ${PROJECT_BINARY_DIR}/lib/cmake/Bempp/BemppConfig.cmake
         @ONLY)
 configure_file(
-	${CMAKE_SOURCE_DIR}/cmake/BemppConfigLocation.in
-        ${CMAKE_BINARY_DIR}/lib/cmake/Bempp/BemppConfigLocation
+	${PROJECT_SOURCE_DIR}/cmake/BemppConfigLocation.in
+        ${PROJECT_BINARY_DIR}/lib/cmake/Bempp/BemppConfigLocation
         @ONLY)
 
 # Install headers
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/lib/ DESTINATION bempp/include/bempp FILES_MATCHING PATTERN "*.hpp")
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/lib/ DESTINATION bempp/include/bempp FILES_MATCHING PATTERN "*.hpp")
 install(FILES ${COMMON_HEADERS} DESTINATION bempp/include/bempp/common)
 install(FILES ${CL_FILES} DESTINATION bempp/include/bempp/fiber/CL)
 install(FILES ${CL_STRING_FILES} DESTINATION bempp/include/bempp/fiber/CL)
-install(FILES ${CMAKE_BINARY_DIR}/lib/cmake/Bempp/BemppConfig.cmake DESTINATION bempp/lib/cmake/Bempp)
-install(FILES ${CMAKE_BINARY_DIR}/lib/cmake/Bempp/BemppConfigLocation DESTINATION $ENV{HOME}/.cmake/packages/Bempp)
+install(FILES ${PROJECT_BINARY_DIR}/lib/cmake/Bempp/BemppConfig.cmake DESTINATION bempp/lib/cmake/Bempp)
+install(FILES ${PROJECT_BINARY_DIR}/lib/cmake/Bempp/BemppConfigLocation DESTINATION $ENV{HOME}/.cmake/packages/Bempp)
 
 # Create correct rpath for installation
 SET(BEMPP_RPATH "\$ORIGIN")

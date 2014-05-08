@@ -18,7 +18,7 @@ if(NOT LAPACK_INCLUDE_DIR)
 endif()
 
 list(INSERT CMAKE_LOOKUP_PATH 0 ${PROJECT_SOURCE_DIR}/cmake/lookups)
-lookup_package(Boost COMPONENTS unit_test_framework REQUIRED)
+lookup_package(Boost 1.35 COMPONENTS unit_test_framework REQUIRED)
 lookup_package(Armadillo REQUIRED)
 lookup_package(TBB DOWNLOAD_BY_DEFAULT REQUIRED)
 lookup_package(Dune REQUIRED DOWNLOAD_BY_DEFAULT
@@ -65,13 +65,13 @@ endif ()
 file(GLOB_RECURSE DUNE_HEADERS ${CMAKE_INSTALL_PREFIX}/bempp/include/dune/*.hh)
 
 # Adds fake FC.h file cos dune incorrectly includes it in dune_config.h
-file(WRITE ${PROJECT_BINARY_DIR}/fakery/FC.h "// fake Fortran-C file")
+file(WRITE ${PROJECT_BINARY_DIR}/include/FC.h "// fake Fortran-C file")
 
 # Now include all dependency directories once and for all
 include_directories(
-    ${PROJECT_BINARY_DIR}/fakery/
-    ${CMAKE_BINARY_DIR}/include
-    ${CMAKE_SOURCE_DIR}/lib
+    ${PROJECT_BINARY_DIR}/include/
+    ${PROJECT_BINARY_DIR}/include/bempp
+    ${PROJECT_SOURCE_DIR}/lib
     ${dune-common_INCLUDE_DIRS}
     ${Trilinos_INCLUDE_DIRS}
     ${Trilinos_TPL_INCLUDE_DIRS}
