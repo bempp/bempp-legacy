@@ -16,7 +16,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 include(LookUp-GreatCMakeCookOff)
 
 # Makes this a c++11 project
-include(AddCPP11Flags)
+include(cpp11_project)
 
 # Add rpath information so installed libraries can find each other
 include(rpath)

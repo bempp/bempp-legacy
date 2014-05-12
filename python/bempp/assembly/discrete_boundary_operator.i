@@ -1,4 +1,6 @@
 %{
+#include "config_bempp.hpp"
+#include "common/armadillo_fwd.hpp"
 #include "assembly/discrete_boundary_operator.hpp"
 #include <iostream>
 #include <complex>

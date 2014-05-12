@@ -22,12 +22,23 @@
 #ifndef bempp_armadillo_fwd_hpp
 #define bempp_armadillo_fwd_hpp
 
+#include "config_bempp.hpp"
+
 // Disable diagnostic 2089: definition of base class type not completed yet
 // Disable diagnostic 488: entity-kind "entity" is not used in declaring the
 // parameter types of entity-kind "entity"
 
 #ifdef __INTEL_COMPILER
 #pragma warning(disable:2089 488)
+#endif
+
+#ifdef BEMPP_ADD_STEADY_CLOCK_FROM_MONOTONIC_CLOCK
+# include <chrono>
+  namespace std {
+    namespace chrono {
+      typedef monotonic_clock steady_clock;
+    }
+  }
 #endif
 
 #include <armadillo>

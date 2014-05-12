@@ -17,9 +17,9 @@ endif()
 
 # Writes a script of cached variables
 file(WRITE "${EXTERNAL_ROOT}/src/TBBVariables.cmake"
-    "\nset(CMAKE_INSTALL_PREFIX \"${EXTERNAL_ROOT} CACHE STRING \"\"\")\n"
+    "\nset(CMAKE_INSTALL_PREFIX \"${EXTERNAL_ROOT}\" CACHE PATH \"\")\n"
     "\nset(CMAKE_MODULE_PATH \"${CMAKE_MODULE_PATH}\" CACHE STRING \"\")\n"
-    "\nset(ROOT \"${PROJECT_SOURCE_DIR} CACHE STRING \"\" \")\n"
+    "\nset(ROOT \"${PROJECT_SOURCE_DIR}\" CACHE STRING \"\")\n"
 )
 
 ExternalProject_Add(

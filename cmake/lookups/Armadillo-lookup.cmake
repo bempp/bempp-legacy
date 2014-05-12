@@ -7,6 +7,12 @@ passon_variables(Armadillo
     ALSOADD
         "\nset(CMAKE_INSTALL_PREFIX \"${EXTERNAL_ROOT}\" CACHE STRING \"\")\n"
 )
+if(BLAS_mkl_core_LIBRARY)
+    get_filename_component(libdir "${BLAS_mkl_core_LIBRARY}" PATH)
+    file(APPEND "${EXTERNAL_ROOT}/src/ArmadilloVariables.cmake"
+       "set(CMAKE_LIBRARY_PATH \${CMAKE_LIBRARY_PATH} \"${libdir}\" CACHE PATH \"\")\n"
+    )
+endif()
 ExternalProject_Add(
     Armadillo
     PREFIX ${EXTERNAL_ROOT}

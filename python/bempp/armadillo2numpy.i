@@ -19,8 +19,9 @@
 // THE SOFTWARE.
 
 %header %{
+#include "config_bempp.hpp"
+#include "common/armadillo_fwd.hpp"
 #include <algorithm> // std::copy
-#include <armadillo>
 #include <iostream>
 #include <new>
 #include <vector>
