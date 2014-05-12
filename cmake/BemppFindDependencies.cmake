@@ -39,19 +39,12 @@ if (SWIG_FOUND AND SWIG_VERSION VERSION_LESS 2.0.7)
 endif()
 
 include(PythonPackage)
-function(find_or_fail package what)
-    find_python_package(${package})
-    if(NOT ${package}_FOUND)
-        message("*********")
-        message("${package} is required to ${what}")
-        message("It can likely be installed with pip")
-        message("*********")
-        message(FATAL_ERROR "Aborting")
-    endif()
-endfunction()
 
 # first looks for python package, second for linkage/include stuff
-find_or_fail(numpy "by BEM++'s python bindings")
+find_python_package(numpy REQUIRED
+    ERROR_MESSAGE
+        "numpy is required by the BEM++ python bindings"
+)
 find_package(Numpy REQUIRED)
 
 
@@ -84,12 +77,19 @@ endforeach()
 add_definitions(-DARMA_USE_LAPACK -DARMA_USE_BLAS)
 
 
+# Creates script for running python with the bempp package available
+include(EnvironmentScript)
+add_to_ld_path("${EXTERNAL_ROOT}/lib")
+add_to_python_path("${PROJECT_BINARY_DIR}/python")
+add_to_python_path("${EXTERNAL_ROOT}/python")
+set(LOCAL_PYTHON_EXECUTABLE "${PROJECT_BINARY_DIR}/localpython.sh")
+create_environment_script(
+    EXECUTABLE "${PYTHON_EXECUTABLE}"
+    PATH "${LOCAL_PYTHON_EXECUTABLE}"
+    PYTHON
+)
+
 if(WITH_TESTS)
-    # Adds a virtual environment
-    find_or_fail(virtualenv "to run the unit-tests for the python bindings")
-    include(PythonVirtualEnv)
-    # Add paths so we can run tests effectively
-    add_to_python_path("${PROJECT_BINARY_DIR}/python")
-    add_to_ld_path("${EXTERNAL_ROOT}/lib")
-    add_package_to_virtualenv(pytest)
+    include(PythonPackageLookup)
+    lookup_python_package(pytest REQUIRED PATH "${EXTERNAL_ROOT}/python")
 endif()
