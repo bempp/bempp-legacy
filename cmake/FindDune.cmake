@@ -1,7 +1,7 @@
 # Pulls together different dune components, some which are exported, some which are not.
 
 # Look for common library first
-if(Dune_REQUIRED)
+if(Dune_FIND_REQUIRED)
     list(APPEND arguments REQUIRED)
 endif()
 unset(quietly)
