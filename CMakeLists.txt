@@ -27,7 +27,6 @@ include(BemppFindDependencies)
 
 # Tests
 if(WITH_TESTS)
-    include(PythonVirtualEnv)
     enable_testing()
     add_subdirectory(tests)
     # Adds a bash script to run cpp unit tests
