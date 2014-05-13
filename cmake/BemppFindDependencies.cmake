@@ -20,13 +20,14 @@ endif()
 list(INSERT CMAKE_LOOKUP_PATH 0 ${PROJECT_SOURCE_DIR}/cmake/lookups)
 lookup_package(Boost 1.35 COMPONENTS unit_test_framework REQUIRED)
 lookup_package(Armadillo REQUIRED)
-lookup_package(TBB DOWNLOAD_BY_DEFAULT REQUIRED)
+lookup_package(TBB DOWNLOAD_BY_DEFAULT REQUIRED CHECK_EXTERNAL)
 lookup_package(Dune REQUIRED DOWNLOAD_BY_DEFAULT
     COMPONENTS geometry grid localfunctions foamgrid
+    CHECK_EXTERNAL
 )
 # Using cmake_policy does not seem to work here.
 set(CMAKE_POLICY_DEFAULT_CMP0012 NEW CACHE STRING "Avoids anoying messages")
-lookup_package(Trilinos DOWNLOAD_BY_DEFAULT REQUIRED)
+lookup_package(Trilinos DOWNLOAD_BY_DEFAULT REQUIRED CHECK_EXTERNAL)
 unset(CMAKE_POLICY_DEFAULT_CMP0012 CACHE)
 
 # Then look for python related packages
