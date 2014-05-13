@@ -7,4 +7,4 @@ if (NOT (${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR}))
     endforeach ()
 endif ()
 
-install(PROGRAMS ${PYTHON_EXAMPLE_SOURCES} DESTINATION bempp/python/examples)
+install_python(PROGRAMS ${PYTHON_EXAMPLE_SOURCES} DESTINATION bempp/examples)

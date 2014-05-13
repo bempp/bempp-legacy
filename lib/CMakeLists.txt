@@ -87,38 +87,18 @@ endif ()
 # Install library
 install(TARGETS bempp
   EXPORT BemppLibraryDepends
-  RUNTIME DESTINATION bempp/bin
-  LIBRARY DESTINATION bempp/lib
-  ARCHIVE DESTINATION bempp/lib)
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib)
 
 # Make sure its built after the external projects
 depends_on_lookups(bempp)
 
-# Get output name of the library
-get_target_property(BEMPP_LIBRARY bempp OUTPUT_NAME)
-get_target_property(BEMPP_TEUCHOS_LIBRARY teuchos OUTPUT_NAME)
-
-# Install CMake files for the library
-install(EXPORT BemppLibraryDepends DESTINATION bempp/lib/cmake/Bempp)
-configure_file(
-	${PROJECT_SOURCE_DIR}/cmake/BemppConfig.cmake.in
-        ${PROJECT_BINARY_DIR}/lib/cmake/Bempp/BemppConfig.cmake
-        @ONLY)
-configure_file(
-	${PROJECT_SOURCE_DIR}/cmake/BemppConfigLocation.in
-        ${PROJECT_BINARY_DIR}/lib/cmake/Bempp/BemppConfigLocation
-        @ONLY)
-
 # Install headers
-install(DIRECTORY ${PROJECT_SOURCE_DIR}/lib/ DESTINATION bempp/include/bempp FILES_MATCHING PATTERN "*.hpp")
-install(FILES ${COMMON_HEADERS} DESTINATION bempp/include/bempp/common)
-install(FILES ${CL_FILES} DESTINATION bempp/include/bempp/fiber/CL)
-install(FILES ${CL_STRING_FILES} DESTINATION bempp/include/bempp/fiber/CL)
-install(FILES ${PROJECT_BINARY_DIR}/lib/cmake/Bempp/BemppConfig.cmake DESTINATION bempp/lib/cmake/Bempp)
-install(FILES ${PROJECT_BINARY_DIR}/lib/cmake/Bempp/BemppConfigLocation DESTINATION $ENV{HOME}/.cmake/packages/Bempp)
-
-# Create correct rpath for installation
-SET(BEMPP_RPATH "\$ORIGIN")
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/lib/ DESTINATION include/bempp FILES_MATCHING PATTERN "*.hpp")
+install(FILES ${COMMON_HEADERS} DESTINATION include/bempp/common)
+install(FILES ${CL_FILES} DESTINATION include/bempp/fiber/CL)
+install(FILES ${CL_STRING_FILES} DESTINATION include/bempp/fiber/CL)
 
 # Add a target to generate API documentation with Doxygen
 if (DOXYGEN_FOUND)
@@ -130,8 +110,5 @@ if (DOXYGEN_FOUND)
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../doc
     COMMENT "Generate API documentation with Doxygen" VERBATIM)
   install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../doc
-          DESTINATION bempp)
+          DESTINATION doc/bempp)
 endif(DOXYGEN_FOUND)
-
-SET_TARGET_PROPERTIES(bempp
-	PROPERTIES INSTALL_RPATH "${BEMPP_RPATH}")

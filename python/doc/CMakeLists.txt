@@ -17,8 +17,10 @@ if (SPHINX_FOUND)
                 ${CMAKE_CURRENT_BINARY_DIR}/build/html
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
         COMMENT "Generate Python API documentation with Sphinx" VERBATIM)
-    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/build/html
-            DESTINATION bempp/python/doc)
+    if(EXISTS "${CMAKE_CURRENT_BINARY_DIR}/build/html")
+        install_python(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/build/html"
+            DESTINATION bempp/doc)
+    endif()
 else (SPHINX_FOUND)
     message(WARNING "Sphinx not found; Python documentation will not be created")
 endif (SPHINX_FOUND)

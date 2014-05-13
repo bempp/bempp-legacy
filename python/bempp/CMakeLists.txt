@@ -1,13 +1,9 @@
-
+# include swig functionality
 include(${SWIG_USE_FILE})
-
-include_directories(
-    ${PYTHON_INCLUDE_DIR}
-    ${NUMPY_INCLUDE_DIRS}
-)
-
 # Remove "-modern" if you need compatibility with Python 2.1.x and older
 set(CMAKE_SWIG_FLAGS "-modern")
+
+include_directories(${PYTHON_INCLUDE_DIR} ${NUMPY_INCLUDE_DIRS})
 
 set_source_files_properties(core.i PROPERTIES CPLUSPLUS ON)
 # Use the following to debug swig
@@ -59,14 +55,10 @@ endif ()
 
 ###############################################################################
 
-install(DIRECTORY ${CMAKE_BINARY_DIR}/python/bempp
-    DESTINATION bempp/python FILES_MATCHING
-	PATTERN "CMakeFiles" EXCLUDE
-	PATTERN "determineNumpyPath.py" EXCLUDE
-    PATTERN "postprocess_docstrings.py" EXCLUDE
-	PATTERN "*.py" PATTERN "*.so")
-
-# install SWIG source files. Don't delete the trailing slash in directory name!
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/python/bempp/
-    DESTINATION bempp/include/bempp/swig
-    FILES_MATCHING PATTERN "*.i" PATTERN "*.swg")
+file(GLOB SWIG_SWG_FILES *.swg)
+file(GLOB PYTHON_FILES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" *.py)
+list(REMOVE_ITEM PYTHON_FILES "determineNumpyPath.py" "postprocess_docstrings.py")
+install_python(TARGETS _core DESTINATION bempp)
+install_python(FILES ${PYTHON_FILES}
+    "${CMAKE_CURRENT_BINARY_DIR}/core.py" DESTINATION bempp)
+install_python(FILES ${SWIG_SWG_FILES} ${SWIG_SOURCES} core.i DESTINATION bempp/include)
