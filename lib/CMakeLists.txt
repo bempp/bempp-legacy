@@ -73,6 +73,16 @@ set_property(
    TARGET bempp
    PROPERTY COMPILE_DEFINITIONS_DEBUG TBB_USE_DEBUG=1
 )
+if(ALUGrid_GITTER_INCLUDE_DIR)
+    get_source_file_property(file_flags
+        grid/grid_factory.cpp COMPILE_FLAGS
+    )
+    set_source_files_properties(
+        grid/grid_factory.cpp
+        PROPERTIES
+        COMPILE_FLAGS "${file_flagS} -I${ALUGrid_GITTER_INCLUDE_DIR}"
+    )
+endif()
 
 if (WITH_CUDA)
    include(FindCUDA)

@@ -1,0 +1,11 @@
+--- dune-grid/dune/grid/alugrid/2d/grid_imp.cc	2014-05-14 10:23:02.000000000 +0100
++++ dune-grid/dune/grid/alugrid/2d/grid_imp.new.cc	2014-05-14 10:22:27.000000000 +0100
+@@ -117,7 +117,7 @@
+     : mygrid_ (0) 
+     , maxLevel_(0)
+     , coarsenMarked_(0) , refineMarked_(0)    
+-    , geomTypes_(dim+1,1)
++    , geomTypes_(dim+1, std::vector<GeometryType>(1))
+     , hIndexSet_(*this)
+     , localIdSet_ (*this)   
+     , levelIndexVec_( MAXL, (LevelIndexSetImp *) 0 ) 

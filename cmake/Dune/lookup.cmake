@@ -123,6 +123,21 @@ endfunction()
 set(configure_command "${EXTERNAL_ROOT}/src/dune_configure.sh")
 write_configure_file("${configure_command}")
 
+# Special stuff for dune-grid + ALUGrid
+set(grid_configure_command "${configure_command}")
+set(grid_depends "")
+if(ALUGrid_FOUND OR TARGET ALUGrid)
+    set(dune_grid_configure_command "${EXTERNAL_ROOT}/src/dune_grid_configure.sh")
+    get_filename_component(ALUGrid_DIRECTORY "${ALUGrid_LIBRARIES}" PATH)
+    get_filename_component(ALUGrid_DIRECTORY "${ALUGrid_DIRECTORY}" PATH)
+    write_configure_file("${grid_configure_command}"
+        "--with-alugrid=\"${ALUGrid_DIRECTORY}\""
+    )
+    if(TARGET ALUGrid)
+        set(grid_depends ALUGrid)
+    endif()
+endif()
+
 
 _get_arguments(common)
 ExternalProject_Add(
@@ -165,10 +180,14 @@ ExternalProject_Add_Step(dune-grid
     COMMAND
         ${PATCH_EXECUTABLE} -p0
             < ${PROJECT_SOURCE_DIR}/cmake/patches/dune/grid_dgfparser.patch
+    COMMAND
+        ${PATCH_EXECUTABLE} -p0
+            < ${PROJECT_SOURCE_DIR}/cmake/patches/dune/grid_alugrid.patch
     WORKING_DIRECTORY ${EXTERNAL_ROOT}/src
     DEPENDS
         ${PROJECT_SOURCE_DIR}/cmake/patches/dune/grid_dgfparser.patch
         ${PROJECT_SOURCE_DIR}/cmake/patches/dune/grid_yaspgrid.patch
+        ${PROJECT_SOURCE_DIR}/cmake/patches/dune/grid_alugrid.patch
     DEPENDEES download
     DEPENDERS configure
 )

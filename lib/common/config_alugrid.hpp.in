@@ -23,8 +23,8 @@
 
 #cmakedefine WITH_ALUGRID
 #ifdef WITH_ALUGRID
-#define HAVE_ALUGRID 1
 #define ENABLE_ALUGRID 1
+#include <dune_config.h>
 #endif
 
 #endif

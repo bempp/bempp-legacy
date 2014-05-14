@@ -18,6 +18,9 @@ if(NOT LAPACK_INCLUDE_DIR)
 endif()
 
 list(INSERT CMAKE_LOOKUP_PATH 0 ${PROJECT_SOURCE_DIR}/cmake/lookups)
+if(WITH_ALUGRID)
+    lookup_package(ALUGrid)
+endif()
 lookup_package(Boost 1.35 COMPONENTS unit_test_framework REQUIRED)
 lookup_package(Armadillo REQUIRED)
 lookup_package(TBB DOWNLOAD_BY_DEFAULT REQUIRED CHECK_EXTERNAL)
@@ -70,7 +73,7 @@ include_directories(
     ${Trilinos_INCLUDE_DIRS}
     ${Trilinos_TPL_INCLUDE_DIRS}
 )
-foreach(component Boost BLAS LAPACK ARMADILLO TBB)
+foreach(component Boost BLAS LAPACK ARMADILLO TBB ALUGrid)
     if(${component}_INCLUDE_DIR)
         include_directories(${${component}_INCLUDE_DIR})
     endif()
