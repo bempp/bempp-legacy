@@ -48,7 +48,7 @@ endmacro()
 
 set(build_args
     BUILD_IN_SOURCE 1
-    BUILD_COMMAND make
+    BUILD_COMMAND ${CMAKE_MAKE_PROGRAM}
     LOG_DOWNLOAD ON
     LOG_CONFIGURE ON
     LOG_BUILD ON
@@ -87,35 +87,41 @@ find_program(bash_EXECUTABLE bash REQUIRED)
 # Create a script that cmake can call
 # This should remove some issues that arises when cmake tries to build
 # a complicated command line
-file(WRITE "${PROJECT_BINARY_DIR}/CMakeFiles/external/dune_configure.sh"
-    "#!${bash_EXECUTABLE}\n"
-    "# Calls configure script for Dune packages\n"
-    "export CC=${CMAKE_C_COMPILER}\n"
-    "export CFLAGS=\"${CMAKE_C_FLAGS} "
-        "-I${BLAS_INCLUDE_DIR} -I${LAPACK_INCLUDE_DIR}\"\n"
-    "export CXX=${CMAKE_CXX_COMPILER}\n"
-    "export CXXFLAGS=\"${CMAKE_CXX_FLAGS}\"\n"
-    "export FC=${CMAKE_Fortran_COMPILER}\n"
-    "export F77=${CMAKE_Fortran_COMPILER}\n"
-    "export F90=${CMAKE_Fortran_COMPILER}\n"
-    "export FCFLAGS=\"${CMAKE_Fortran_FLAGS}\"\n"
-    "export LDFLAGS=\"${CMAKE_LDFLAGS_FLAGS}\"\n"
-    "export PKG_CONFIG_PATH=\"$ENV{PKG_CONFIG_PATH}\"\n"
-    "\n"
-    "./configure"
-       " --enable-shared=no"
-       " --enable-static=yes"
-       " --with-pic"
-       " --disable-documentation"
-       " --prefix=\"${EXTERNAL_ROOT}\""
-       " --with-blas=\"${BLAS_LIBRARIES}\""
-       " --with-blas=\"${LAPACK_LIBRARIES}\""
-)
+function(write_configure_file path)
+    get_filename_component(filename "${path}" NAME)
+    file(WRITE "${PROJECT_BINARY_DIR}/CMakeFiles/external/${filename}"
+        "#!${bash_EXECUTABLE}\n"
+        "# Calls configure script for Dune packages\n"
+        "export CC=${CMAKE_C_COMPILER}\n"
+        "export CFLAGS=\"${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_RELEASE} "
+            "-I${BLAS_INCLUDE_DIR} -I${LAPACK_INCLUDE_DIR}\"\n"
+        "export CXX=${CMAKE_CXX_COMPILER}\n"
+        "export CXXFLAGS=\"${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELEASE}\"\n"
+        "export FC=${CMAKE_Fortran_COMPILER}\n"
+        "export F77=${CMAKE_Fortran_COMPILER}\n"
+        "export F90=${CMAKE_Fortran_COMPILER}\n"
+        "export FCFLAGS=\"${CMAKE_Fortran_FLAGS} ${CMAKE_Fortran_FLAGS_RELEASE}\"\n"
+        "export PKG_CONFIG_PATH=\"$ENV{PKG_CONFIG_PATH}\"\n"
+        "\n"
+        "./configure"
+           " --enable-shared=no"
+           " --enable-static=yes"
+           " --with-pic"
+           " --disable-documentation"
+           " --enable-fieldvector-size-is-method"
+           " --prefix=\"${EXTERNAL_ROOT}\""
+           " --with-blas=\"${BLAS_LIBRARIES}\""
+           " --with-blas=\"${LAPACK_LIBRARIES}\""
+        ${ARGN}
+    )
+    file(COPY "${PROJECT_BINARY_DIR}/CMakeFiles/external/${filename}"
+        DESTINATION "${EXTERNAL_ROOT}/src/"
+        FILE_PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
+    )
+endfunction()
+
 set(configure_command "${EXTERNAL_ROOT}/src/dune_configure.sh")
-file(COPY "${PROJECT_BINARY_DIR}/CMakeFiles/external/dune_configure.sh"
-    DESTINATION "${EXTERNAL_ROOT}/src/"
-    FILE_PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
-)
+write_configure_file("${configure_command}")
 
 
 _get_arguments(common)
@@ -125,7 +131,7 @@ ExternalProject_Add(
     DEPENDS ${depends_on}
     ${common_ARGUMENTS}
     CONFIGURE_COMMAND ${configure_command}
-    INSTALL_COMMAND make install
+    INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
     ${build_args}
 )
 
@@ -136,7 +142,7 @@ ExternalProject_Add(
     PREFIX ${EXTERNAL_ROOT}
     ${geometry_ARGUMENTS}
     CONFIGURE_COMMAND ${configure_command}
-    INSTALL_COMMAND make install
+    INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
     ${build_args}
 )
 
@@ -144,25 +150,25 @@ find_program(PATCH_EXECUTABLE patch REQUIRED)
 _get_arguments(grid)
 ExternalProject_Add(
     dune-grid
-    DEPENDS dune-geometry dune-common
+    DEPENDS dune-geometry dune-common ${grid_depends}
     PREFIX ${EXTERNAL_ROOT}
     ${grid_ARGUMENTS}
-    CONFIGURE_COMMAND ${configure_command}
-    INSTALL_COMMAND make install
+    CONFIGURE_COMMAND ${grid_configure_command}
+    INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
     ${build_args}
 )
 ExternalProject_Add_Step(dune-grid
     PATCH
     COMMAND
         ${PATCH_EXECUTABLE} -p0
-            < ${PROJECT_SOURCE_DIR}/installer/patches/dune-grid_yaspgrid.patch
+            < ${PROJECT_SOURCE_DIR}/cmake/patches/dune/grid_yaspgrid.patch
     COMMAND
         ${PATCH_EXECUTABLE} -p0
-            < ${PROJECT_SOURCE_DIR}/installer/patches/dune-grid_dgfparser.patch
+            < ${PROJECT_SOURCE_DIR}/cmake/patches/dune/grid_dgfparser.patch
     WORKING_DIRECTORY ${EXTERNAL_ROOT}/src
     DEPENDS
-        ${PROJECT_SOURCE_DIR}/installer/patches/dune-grid_dgfparser.patch
-        ${PROJECT_SOURCE_DIR}/installer/patches/dune-grid_yaspgrid.patch
+        ${PROJECT_SOURCE_DIR}/cmake/patches/dune/grid_dgfparser.patch
+        ${PROJECT_SOURCE_DIR}/cmake/patches/dune/grid_yaspgrid.patch
     DEPENDEES download
     DEPENDERS configure
 )
@@ -170,20 +176,20 @@ ExternalProject_Add_Step(dune-grid
 _get_arguments(localfunctions)
 ExternalProject_Add(
     dune-localfunctions
-    DEPENDS dune-grid dune-geometry dune-common
+    DEPENDS dune-geometry dune-common
     PREFIX ${EXTERNAL_ROOT}
     ${localfunctions_ARGUMENTS}
     CONFIGURE_COMMAND ${configure_command}
     PATCH_COMMAND
         ${CMAKE_COMMAND} -DROOT=${EXTERNAL_ROOT}/src/dune-localfunctions
             -P ${CURRENT_LOOKUP_DIRECTORY}/patch-localfunctions.cmake
-    INSTALL_COMMAND make install
+    INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
     ${build_args}
 )
 
 ExternalProject_Add(
     dune-foamgrid
-    DEPENDS dune-grid dune-geometry dune-common dune-localfunctions
+    DEPENDS dune-grid dune-geometry dune-common
     PREFIX ${EXTERNAL_ROOT}
     URL ${PROJECT_SOURCE_DIR}/contrib/dune/dune-foamgrid
     PATCH_COMMAND
