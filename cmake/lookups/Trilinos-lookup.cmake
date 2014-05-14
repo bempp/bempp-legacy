@@ -36,12 +36,14 @@ passon_variables(Trilinos
         "CMAKE_[^_]*_R?PATH" "CMAKE_C_.*" "CMAKE_CXX_.*"
         "BLAS_.*" "LAPACK_.*"
 )
+get_filename_component(TPL_TBB_INCLUDE_DIRS "${TBB_INCLUDE_DIR}" PATH)
 file(APPEND "${EXTERNAL_ROOT}/src/TrilinosVariables.cmake"
+    "\nset(Trilinos_INSTALL_INCLUDE_DIR \"include/Trilinos\" CACHE PATH \"\")\n"
     "\nset(CMAKE_INSTALL_PREFIX \"${EXTERNAL_ROOT}\" CACHE PATH \"\" FORCE)\n"
     "\nlist(APPEND CMAKE_INCLUDE_PATH \"${EXTERNAL_ROOT}/include/trilinos\")\n"
     "set(CMAKE_INCLUDE_PATH \"\${CMAKE_INCLUDE_PATH}\" CACHE PATH \"\" FORCE)\n"
     "\nset(TPL_TBB_LIBRARIES \"${tbb_libraries}\" CACHE STRING \"\")\n"
-    "\nset(TPL_TBB_INCLUDE_DIRS \"${TBB_INCLUDE_DIR}\" CACHE STRING \"\")\n"
+    "\nset(TPL_TBB_INCLUDE_DIRS \"${TPL_TBB_INCLUDE_DIRS}\" CACHE STRING \"\")\n"
     "\nset(TPL_BLAS_LIBRARIES \"${BLAS_LIBRARIES}\" CACHE STRING \"\")\n"
     "\nset(TPL_LAPACK_LIBRARIES \"${LAPACK_LIBRARIES}\" CACHE STRING \"\")\n"
     "\nset(TPL_BOOST_INCLUDE_DIRS \"${Boost_INCLUDE_DIR}\" CACHE STRING \"\")\n"
@@ -83,6 +85,7 @@ ExternalProject_Add(
                -DTpetra_INST_COMPLEX_FLOAT:BOOL=ON
                -DTpetra_INST_FLOAT:BOOL=ON
                -DTPL_ENABLE_MPI:BOOL=${WITH_MPI}
+               -DCMAKE_BUILD_TYPE=Release
                -C "${EXTERNAL_ROOT}/src/TrilinosVariables.cmake"
     # Wrap download, configure and build steps in a script to log output
     LOG_DOWNLOAD ON
