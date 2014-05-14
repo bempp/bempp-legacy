@@ -103,3 +103,8 @@ endif()
 if(EXISTS "${EXTERNAL_ROOT}/share")
     install(DIRECTORY "${EXTERNAL_ROOT}/share/" DESTINATION share)
 endif()
+
+if(WITH_OPENCL)
+    find_package(OPENCL REQUIRED)
+    include_directories(${OPENCL_INCLUDE_DIR})
+endif()
