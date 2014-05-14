@@ -4,6 +4,7 @@ include(PackageLookup)
 # First, find general packages
 find_package(Doxygen)
 find_package(CBLAS REQUIRED)
+include(BlasThreads)
 find_package(LAPACK REQUIRED)
 find_package(CoherentPython REQUIRED)
 find_package(Sphinx)
@@ -54,9 +55,6 @@ if (WITH_AHMED)
     set(AHMED_INCLUDE_DIR "" CACHE PATH "Full path to the AHMED include directory")
     set(AHMED_LIB "" CACHE PATH "Full path to AHMED library")
 endif ()
-
-# Dune
-file(GLOB_RECURSE DUNE_HEADERS ${CMAKE_INSTALL_PREFIX}/bempp/include/dune/*.hh)
 
 # Adds fake FC.h file cos dune incorrectly includes it in dune_config.h
 file(WRITE ${PROJECT_BINARY_DIR}/include/FC.h "// fake Fortran-C file")

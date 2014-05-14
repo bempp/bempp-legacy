@@ -34,17 +34,12 @@ file(GLOB CL_STRING_FILES ${PROJECT_SOURCE_DIR}/lib/fiber/CL/*.str)
 if (WITH_CUDA)
    file(GLOB_RECURSE CUDA_SOURCES *.cu)
    cuda_add_library(bempp SHARED
-	${LIB_SOURCES}
-	${CUDA_SOURCES}
-	${LIB_HEADERS}
-	${DUNE_HEADERS}
+        ${LIB_SOURCES}
+        ${CUDA_SOURCES}
+        ${LIB_HEADERS}
 	)
 else ()
-     add_library(bempp SHARED
-	${LIB_SOURCES}
-	${LIB_HEADERS}
-	${DUNE_HEADERS}
-	)
+    add_library(bempp SHARED ${LIB_SOURCES} ${LIB_HEADERS})
 endif ()
 
 # Add includes and target links
