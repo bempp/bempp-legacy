@@ -92,28 +92,33 @@ endif ()
 # Install library
 install(TARGETS bempp
   EXPORT BemppLibraryDepends
-  RUNTIME DESTINATION bin
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib)
+  RUNTIME DESTINATION "${RUNTIME_INSTALL_PATH}"
+  LIBRARY DESTINATION "${LIBRARY_INSTALL_PATH}"
+  ARCHIVE DESTINATION "${LIBRARY_INSTALL_PATH}"
+)
 
 # Make sure its built after the external projects
 depends_on_lookups(bempp)
 
 # Install headers
-install(DIRECTORY ${PROJECT_SOURCE_DIR}/lib/ DESTINATION include/bempp FILES_MATCHING PATTERN "*.hpp")
-install(FILES ${COMMON_HEADERS} DESTINATION include/bempp/common)
-install(FILES ${CL_FILES} DESTINATION include/bempp/fiber/CL)
-install(FILES ${CL_STRING_FILES} DESTINATION include/bempp/fiber/CL)
+set(incpath "${INCLUDE_INSTALL_PATH}/bempp")
+install(DIRECTORY "${PROJECT_SOURCE_DIR}/lib/"
+    DESTINATION "${incpath}"
+    FILES_MATCHING PATTERN "*.hpp"
+)
+install(FILES ${COMMON_HEADERS} DESTINATION "${incpath}/common")
+install(FILES ${CL_FILES} DESTINATION "${incpath}/fiber/CL")
+install(FILES ${CL_STRING_FILES} DESTINATION "${incpath}/fiber/CL")
 
 # Add a target to generate API documentation with Doxygen
 if (DOXYGEN_FOUND)
-  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in
-    ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
-  file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../doc)
+  configure_file("${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile" @ONLY)
+  file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../doc")
   add_custom_target(doc
-    ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../doc
+    ${DOXYGEN_EXECUTABLE} "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile"
+    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../doc"
     COMMENT "Generate API documentation with Doxygen" VERBATIM)
-  install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/../doc
-          DESTINATION doc/bempp)
+  install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/../doc"
+      DESTINATION ${DOC_INSTALL_PATH}/bempp)
 endif(DOXYGEN_FOUND)

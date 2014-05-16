@@ -61,4 +61,5 @@ list(REMOVE_ITEM PYTHON_FILES "determineNumpyPath.py" "postprocess_docstrings.py
 install_python(TARGETS _core DESTINATION bempp)
 install_python(FILES ${PYTHON_FILES}
     "${CMAKE_CURRENT_BINARY_DIR}/core.py" DESTINATION bempp)
-install_python(FILES ${SWIG_SWG_FILES} ${SWIG_SOURCES} core.i DESTINATION bempp/include)
+install_python(FILES ${SWIG_SWG_FILES} ${SWIG_SOURCES} core.i
+    DESTINATION bempp/include/bempp)

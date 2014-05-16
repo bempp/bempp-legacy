@@ -9,10 +9,13 @@ endif()
 
 # Set RPATH to location where libraries will be installed,
 # unless it is already part of the platform
-list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES
-    "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
+list(FIND
+    CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES
+    "${LIBRARY_INSTALL_PATH}"
+    isSystemDir
+)
 if("${isSystemDir}" STREQUAL "-1")
-    list(APPEND CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+    list(APPEND CMAKE_INSTALL_RPATH "${LIBRARY_INSTALL_PATH}")
     list(REMOVE_DUPLICATES CMAKE_INSTALL_RPATH)
     set(CMAKE_INSTALL_RPATH
         ${CMAKE_INSTALL_RPATH}

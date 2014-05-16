@@ -1,9 +1,6 @@
 # Examples
 add_executable(tutorial_dirichlet tutorial_dirichlet.cpp)
 target_link_libraries(tutorial_dirichlet bempp)
-set_target_properties(tutorial_dirichlet PROPERTIES
-    INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/bempp/lib")
-install(TARGETS tutorial_dirichlet RUNTIME DESTINATION share/bempp/examples)
 
 # Meshes
 file(GLOB_RECURSE EXAMPLE_MESHES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
@@ -16,5 +13,7 @@ if (NOT (${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR}))
     endforeach ()
 endif ()
 
+install(TARGETS tutorial_dirichlet RUNTIME
+    DESTINATION ${SHARE_INSTALL_PATH}/bempp/examples)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/meshes
-        DESTINATION share/bempp/examples)
+    DESTINATION ${SHARE_INSTALL_PATH}/bempp/examples)

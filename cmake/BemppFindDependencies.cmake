@@ -96,13 +96,13 @@ endif()
 
 # Now adds commands to install external packages
 if(EXISTS "${EXTERNAL_ROOT}/lib")
-    install(DIRECTORY "${EXTERNAL_ROOT}/lib/" DESTINATION lib)
+    install(DIRECTORY "${EXTERNAL_ROOT}/lib/" DESTINATION ${LIBRARY_INSTALL_PATH})
 endif()
 if(EXISTS "${EXTERNAL_ROOT}/include")
-    install(DIRECTORY "${EXTERNAL_ROOT}/include/" DESTINATION include)
+    install(DIRECTORY "${EXTERNAL_ROOT}/include/" DESTINATION ${INCLUDE_INSTALL_PATH})
 endif()
 if(EXISTS "${EXTERNAL_ROOT}/share")
-    install(DIRECTORY "${EXTERNAL_ROOT}/share/" DESTINATION share)
+    install(DIRECTORY "${EXTERNAL_ROOT}/share/" DESTINATION ${SHARE_INSTALL_PATH})
 endif()
 
 if(WITH_OPENCL)

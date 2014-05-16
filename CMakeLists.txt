@@ -21,6 +21,11 @@ include(cpp11_project)
 # Add rpath information so installed libraries can find each other
 include(rpath)
 
+# Macros to install python
+include(PythonInstall)
+# Defines where to install libraries, headers
+include(InstallPaths)
+
 # Macros needed
 include(BemppOptions)
 include(BemppFindDependencies)
