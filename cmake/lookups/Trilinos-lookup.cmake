@@ -1,6 +1,11 @@
 # Looks for trilinos. If not found, download and install it.
 if(Trilinos_ARGUMENTS)
-    cmake_parse_arguments(Trilinos "" "URL;MD5" "" ${Trilinos_ARGUMENTS})
+    cmake_parse_arguments(Trilinos
+        ""
+        "URL;MD5;BUILD_TYPE"
+        ""
+        ${Trilinos_ARGUMENTS}
+    )
 endif()
 if(NOT Trilinos_URL)
     set(arguments
@@ -13,6 +18,9 @@ elseif(Trilinos_MD5)
     set(arguments URL;${Trilinos_URL};URL_HASH;MD5=${Trilinos_MD5})
 else()
     message(FATAL_ERROR "URL specified, but no MD5. Aborting")
+endif()
+if(NOT Trilinos_BUILD_TYPE)
+    set(Trilinos_BUILD_TYPE Release)
 endif()
 
 # Create list of dependencies
@@ -85,8 +93,8 @@ ExternalProject_Add(
                -DTpetra_INST_COMPLEX_FLOAT:BOOL=ON
                -DTpetra_INST_FLOAT:BOOL=ON
                -DTPL_ENABLE_MPI:BOOL=${WITH_MPI}
-               -DCMAKE_BUILD_TYPE=Release
-               -C "${EXTERNAL_ROOT}/src/TrilinosVariables.cmake"
+               -DCMAKE_BUILD_TYPE=${Trilinos_BUILD_TYPE}
+               -DTrilinos_CONFIGURE_OPTIONS_FILE:FILEPATH=../TrilinosVariables.cmake
     # Wrap download, configure and build steps in a script to log output
     LOG_DOWNLOAD ON
     LOG_CONFIGURE ON
