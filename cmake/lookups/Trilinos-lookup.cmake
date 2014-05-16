@@ -1,7 +1,7 @@
 # Looks for trilinos. If not found, download and install it.
 if(Trilinos_ARGUMENTS)
     cmake_parse_arguments(Trilinos
-        ""
+        "PYPACKED"
         "URL;MD5;BUILD_TYPE"
         ""
         ${Trilinos_ARGUMENTS}
@@ -45,16 +45,28 @@ passon_variables(Trilinos
         "BLAS_.*" "LAPACK_.*"
 )
 get_filename_component(TPL_TBB_INCLUDE_DIRS "${TBB_INCLUDE_DIR}" PATH)
+if(Trilinos_PYPACKED)
+    set(prefix_location "${EXTERNAL_ROOT}/python/PyTrilinos")
+    file(APPEND "${EXTERNAL_ROOT}/src/TrilinosVariables.cmake"
+        "\nset(PyTrilinos_INSTALL_DIR \"${prefix_location}\"\n"
+        "   CACHE PATH \"The path where PyTrilinos will be installed\"\n"
+        ")\n"
+        "\nset(CMAKE_INSTALL_PREFIX \"\${PyTrilinos_INSTALL_DIR}\" CACHE PATH \"\" FORCE)\n"
+    )
+else()
+    file(APPEND "${EXTERNAL_ROOT}/src/TrilinosVariables.cmake"
+        "\nset(Trilinos_INSTALL_INCLUDE_DIR \"include/Trilinos\" CACHE PATH \"\")\n"
+        "\nset(CMAKE_INSTALL_PREFIX \"${EXTERNAL_ROOT}\" CACHE PATH \"\")\n"
+        "\nlist(APPEND CMAKE_INCLUDE_PATH \"${EXTERNAL_ROOT}/include/trilinos\")\n"
+    )
+endif()
 file(APPEND "${EXTERNAL_ROOT}/src/TrilinosVariables.cmake"
-    "\nset(Trilinos_INSTALL_INCLUDE_DIR \"include/Trilinos\" CACHE PATH \"\")\n"
-    "\nset(CMAKE_INSTALL_PREFIX \"${EXTERNAL_ROOT}\" CACHE PATH \"\" FORCE)\n"
-    "\nlist(APPEND CMAKE_INCLUDE_PATH \"${EXTERNAL_ROOT}/include/trilinos\")\n"
-    "set(CMAKE_INCLUDE_PATH \"\${CMAKE_INCLUDE_PATH}\" CACHE PATH \"\" FORCE)\n"
     "\nset(TPL_TBB_LIBRARIES \"${tbb_libraries}\" CACHE STRING \"\")\n"
     "\nset(TPL_TBB_INCLUDE_DIRS \"${TPL_TBB_INCLUDE_DIRS}\" CACHE STRING \"\")\n"
     "\nset(TPL_BLAS_LIBRARIES \"${BLAS_LIBRARIES}\" CACHE STRING \"\")\n"
     "\nset(TPL_LAPACK_LIBRARIES \"${LAPACK_LIBRARIES}\" CACHE STRING \"\")\n"
     "\nset(TPL_BOOST_INCLUDE_DIRS \"${Boost_INCLUDE_DIR}\" CACHE STRING \"\")\n"
+    "\nlist(APPEND CMAKE_PREFIX_PATH \"${EXTERNAL_ROOT}\")\n"
 )
 
 find_program(PATCH_EXECUTABLE patch REQUIRED)
@@ -122,3 +134,13 @@ ExternalProject_Add_Step(Trilinos
 )
 # Rerun cmake to capture new armadillo install
 add_recursive_cmake_step(Trilinos DEPENDEES install)
+# If installing in bizarre location (ie all under python package dir), then add post-lookup script
+# sot that the package can be found.
+if(Trilinos_PYPACKED)
+    write_lookup_hook(POST_LOOKUP Trilinos
+        "list(FIND CMAKE_PREFIX_PATH \"${prefix_location}\" has_prefix)\n"
+        "if(has_prefix EQUAL -1)\n"
+        "   list(APPEND CMAKE_PREFIX_PATH \"${prefix_location}\")\n"
+        "endif()\n"
+    )
+endif()
