@@ -18,7 +18,7 @@ endif()
 # Create list of dependencies
 set(depends_on)
 foreach(component TBB Boost SWIG)
-  if(${component}_BUILT_AS_EXTERNAL_PROJECT)
+  if(TARGET ${component})
     list(APPEND depends_on ${component})
   endif()
 endforeach()

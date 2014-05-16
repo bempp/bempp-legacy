@@ -1,5 +1,5 @@
 # Needs boost: include this after boost.lookup.
-if(Boost_BUILT_AS_EXTERNAL_PROJECT)
+if(TARGET Boost)
   set(depends_on Boost)
 endif()
 set(default_common_URL
