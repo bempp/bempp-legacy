@@ -1,3 +1,30 @@
+if(Armadillo_ARGUMENTS)
+    cmake_parse_arguments(Armadillo
+        ""
+        "URL;MD5;TIMEOUT"
+        ""
+        ${Armadillo_ARGUMENTS}
+    )
+endif()
+if(NOT Armadillo_URL)
+    set(arguments
+        URL;
+        http://sourceforge.net/projects/arma/files/armadillo-4.000.4.tar.gz
+        URL_HASH;
+        MD5=c548089e29ee69e9a6e9bce76d270bea
+    )
+elseif(Armadillo_MD5)
+    set(arguments URL;${Armadillo_URL};URL_HASH;MD5=${Armadillo_MD5})
+else()
+    message(FATAL_ERROR "URL specified, but no MD5. Aborting")
+endif()
+if(NOT Armadillo_BUILD_TYPE)
+    set(Armadillo_BUILD_TYPE Release)
+endif()
+if(NOT Armadillo_TIMEOUT)
+    set(Armadillo_TIMEOUT 15)
+endif()
+
 include(PassonVariables)
 passon_variables(Armadillo
     FILENAME "${EXTERNAL_ROOT}/src/ArmadilloVariables.cmake"
@@ -16,7 +43,8 @@ endif()
 ExternalProject_Add(
     Armadillo
     PREFIX ${EXTERNAL_ROOT}
-    URL http://sourceforge.net/projects/arma/files/armadillo-4.000.4.tar.gz
+    ${arguments}
+    TIMEOUT ${Armadillo_TIMEOUT}
     CMAKE_ARGS
         -C "${EXTERNAL_ROOT}/src/ArmadilloVariables.cmake"
         -DCMAKE_BUILD_TYPE=Release

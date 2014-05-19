@@ -20,7 +20,7 @@ if(WITH_ALUGRID)
     lookup_package(ALUGrid)
 endif()
 lookup_package(Boost 1.35 COMPONENTS unit_test_framework REQUIRED)
-lookup_package(Armadillo REQUIRED)
+lookup_package(Armadillo REQUIRED ARGUMENTS TIMEOUT 60)
 lookup_package(TBB DOWNLOAD_BY_DEFAULT REQUIRED CHECK_EXTERNAL)
 lookup_package(Dune REQUIRED DOWNLOAD_BY_DEFAULT
     COMPONENTS geometry grid localfunctions foamgrid
