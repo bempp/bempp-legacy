@@ -1,0 +1,17 @@
+# Declares files to include in python distribution
+
+include MANIFEST.*.in
+include README
+include VERSION
+include LICENSE.txt
+include setup.py
+
+global-include CMakeLists.txt
+recursive-include cmake *.cmake
+recursive-include contrib **
+recursive-include doc **
+recursive-include examples **
+recursive-include lib **
+recursive-include python **
+recursive-include tests **
+recursive-include installer/patches **

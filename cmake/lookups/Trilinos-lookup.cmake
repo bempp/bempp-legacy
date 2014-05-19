@@ -2,7 +2,7 @@
 if(Trilinos_ARGUMENTS)
     cmake_parse_arguments(Trilinos
         "PYPACKED"
-        "URL;MD5;BUILD_TYPE"
+        "URL;MD5;BUILD_TYPE;INSTALL_PREFIX"
         ""
         ${Trilinos_ARGUMENTS}
     )
@@ -111,7 +111,7 @@ ExternalProject_Add(
                -DTpetra_INST_FLOAT:BOOL=ON
                -DTPL_ENABLE_MPI:BOOL=${WITH_MPI}
                -DCMAKE_BUILD_TYPE=${Trilinos_BUILD_TYPE}
-               -DTrilinos_CONFIGURE_OPTIONS_FILE:FILEPATH=../TrilinosVariables.cmake
+               -C ${EXTERNAL_ROOT}/src/TrilinosVariables.cmake
     # Wrap download, configure and build steps in a script to log output
     LOG_DOWNLOAD ON
     LOG_CONFIGURE ON
@@ -148,25 +148,18 @@ if(Trilinos_PYPACKED)
         "   list(APPEND CMAKE_PREFIX_PATH \"${prefix_location}\")\n"
         "endif()\n"
     )
-    # Write a script in the same location as install hooks with variables
-    file(WRITE "${EXTERNAL_ROOT}/src/Trilinos-build/InstallLocations.cmake"
-        "set(PyTrilinos_INSTALL_DIR \"${PYTHON_PKG_DIR}/PyTrilinos\"\n"
-        "   CACHE PATH \"The path where PyTrilinos will be installed\"\n"
-        "   FORCE\n"
-        ")\n"
-        "\nset(PyTrilinos_INSTALL_PREFIX \"\${PyTrilinos_INSTALL_DIR}\"\n"
-        "   CACHE PATH \"The path where PyTrilinos will be installed\"\n"
-        "   FORCE\n"
-        ")\n"
-        "\nset(CMAKE_INSTALL_PREFIX \"\${PyTrilinos_INSTALL_DIR}\" CACHE PATH \"\" FORCE)\n"
-    )
     write_lookup_hook(INSTALL Trilinos
         "message(STATUS \"Installing Trilinos\")\n"
+        "set(location \"${PyTrilinos_INSTALL_DIR}\")\n"
+        "if(NOT location)\n"
+        "    set(location \"${PYTHON_PKG_DIR}\")\n"
+        "endif()\n"
         "execute_process(\n"
-        "   COMMAND\n"
-        "       \${CMAKE_COMMAND} "
-            "-DTrilinos_CONFIGURE_OPTIONS_FILE:FILEPATH="
-            "${EXTERNAL_ROOT}/src/Trilinos-build/InstallLocations.cmake .\n"
+        "   COMMAND \${CMAKE_COMMAND} "
+        " -DPyTrilinos_INSTALL_DIR=\${location}"
+        " -DPyTrilinos_INSTALL_PREFIX=\${location}"
+        " -DCMAKE_INSTALL_PREFIX=\${location}"
+        " .\n"
         "   WORKING_DIRECTORY \"${EXTERNAL_ROOT}/src/Trilinos-build/\"\n"
         "   RESULT_VARIABLE result\n"
         "   ERROR_VARIABLE error\n"
@@ -179,9 +172,9 @@ if(Trilinos_PYPACKED)
         "   ERROR_VARIABLE error\n"
         ")\n"
         "if(NOT \${result} EQUAL 0)\n"
-        "    message(\"error: ${error}\")\n"
-        "    message(\"error code: ${result}\")\n"
-        "    message(FATAL_ERROR \"Could not install Trilinos to ${PYTHON_PKG_DIR}\")\n"
+        "    message(\"error: \${error}\")\n"
+        "    message(\"error code: \${result}\")\n"
+        "    message(FATAL_ERROR \"Could not install Trilinos to \${PYTHON_PKG_DIR}\")\n"
         "endif()\n"
         "execute_process(\n"
         "   COMMAND\n"
