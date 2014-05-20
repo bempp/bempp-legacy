@@ -121,13 +121,13 @@ set(patchdir "${PROJECT_SOURCE_DIR}/installer/patches")
 ExternalProject_Add_Step(Trilinos
     PATCH
     COMMAND
-        ${PATCH_EXECUTABLE} -p0
+       ${PATCH_EXECUTABLE} -p0 -N
             < ${patchdir}/Thyra_BelosLinearOpWithSolve_def.patch
     COMMAND
-        ${PATCH_EXECUTABLE} -p0
+       ${PATCH_EXECUTABLE} -p0 -N
             < ${patchdir}/Epetra_ConfigDefs.h.patch
     COMMAND
-        ${PATCH_EXECUTABLE} -p0
+       ${PATCH_EXECUTABLE} -p0 -N
             < ${patchdir}/pytrilinos_eigenvalue_typemap.patch
     WORKING_DIRECTORY ${EXTERNAL_ROOT}/src/Trilinos
     DEPENDS

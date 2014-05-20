@@ -175,13 +175,13 @@ ExternalProject_Add(
 ExternalProject_Add_Step(dune-grid
     PATCH
     COMMAND
-        ${PATCH_EXECUTABLE} -p0
+       ${PATCH_EXECUTABLE} -p0 -N
             < ${PROJECT_SOURCE_DIR}/cmake/patches/dune/grid_yaspgrid.patch
     COMMAND
-        ${PATCH_EXECUTABLE} -p0
+       ${PATCH_EXECUTABLE} -p0 -N
             < ${PROJECT_SOURCE_DIR}/cmake/patches/dune/grid_dgfparser.patch
     COMMAND
-        ${PATCH_EXECUTABLE} -p0
+       ${PATCH_EXECUTABLE} -p0 -N
             < ${PROJECT_SOURCE_DIR}/cmake/patches/dune/grid_alugrid.patch
     WORKING_DIRECTORY ${EXTERNAL_ROOT}/src
     DEPENDS
