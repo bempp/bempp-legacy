@@ -42,7 +42,7 @@ passon_variables(Trilinos
     FILENAME "${EXTERNAL_ROOT}/src/TrilinosVariables.cmake"
     PATTERNS
         "CMAKE_[^_]*_R?PATH" "CMAKE_C_.*" "CMAKE_CXX_.*"
-        "BLAS_.*" "LAPACK_.*"
+        "BLAS_.*" "LAPACK_.*" "PYTHON_*"
 )
 get_filename_component(TPL_TBB_INCLUDE_DIRS "${TBB_INCLUDE_DIR}" PATH)
 if(Trilinos_PYPACKED)
@@ -158,8 +158,7 @@ if(Trilinos_PYPACKED)
         "   COMMAND \${CMAKE_COMMAND} "
         " -DPyTrilinos_INSTALL_DIR=\${location}"
         " -DPyTrilinos_INSTALL_PREFIX=\${location}"
-        " -DCMAKE_INSTALL_PREFIX=\${location}"
-        " .\n"
+        " -DCMAKE_INSTALL_PREFIX=\${location} .\n"
         "   WORKING_DIRECTORY \"${EXTERNAL_ROOT}/src/Trilinos-build/\"\n"
         "   RESULT_VARIABLE result\n"
         "   ERROR_VARIABLE error\n"
@@ -178,9 +177,7 @@ if(Trilinos_PYPACKED)
         "endif()\n"
         "execute_process(\n"
         "   COMMAND\n"
-        "       \${CMAKE_COMMAND} "
-            "-DTrilinos_CONFIGURE_OPTIONS_FILE:FILEPATH="
-            "${EXTERNAL_ROOT}/src/TrilinosVariables.cmake .\n"
+        "       \${CMAKE_COMMAND} -C ${EXTERNAL_ROOT}/src/TrilinosVariables.cmake .\n"
         "   WORKING_DIRECTORY \"${EXTERNAL_ROOT}/src/Trilinos-build/\"\n"
         "   RESULT_VARIABLE result\n"
         "   ERROR_VARIABLE error\n"

@@ -150,6 +150,7 @@ class Build(dBuild):
             ])
             self.spawn([cmake, '--build', '.', '--target', 'install'])
         finally: chdir(current_cwd)
+        self.distribution.running_binary = True
 
 class Install(dInstall):
     def run(self):
@@ -175,7 +176,7 @@ class Install(dInstall):
 
         try:
             prior = getattr(self.distribution, 'running_binary', False)
-            self.distribution.running_binary = prior
+            self.distribution.running_binary = True
             self.distribution.have_run['egg_info'] = 0
             dInstall.run(self)
         finally: self.distribution.running_binary = prior
@@ -208,7 +209,7 @@ class EggInfo(dEggInfo):
         dist = self.distribution
         old_values = dist.ext_modules, dist.ext_package, \
             dist.packages, dist.package_dir
-        if len(listdir(package_dir)) == 0  \
+        if len(listdir(package_dir)) != 0  \
             and getattr(self.distribution, 'running_binary', False):
             which_template = 'MANIFEST.binary.in'
         else:
