@@ -121,7 +121,7 @@ ExternalProject_Add(
                -DTPL_ENABLE_MPI:BOOL=${WITH_MPI}
                -DCMAKE_BUILD_TYPE=${Trilinos_BUILD_TYPE}
                -C ${EXTERNAL_ROOT}/src/TrilinosVariables.cmake
-    PATCH_COMMAND ${CMAKE_COMMAND} -P ${patch_script}
+    PATCH_COMMAND ${patch_script}
     # Wrap download, configure and build steps in a script to log output
     LOG_DOWNLOAD ON
     LOG_CONFIGURE ON

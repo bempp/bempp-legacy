@@ -163,9 +163,9 @@ ExternalProject_Add(
 
 include(PatchScript)
 set(patchdir "${PROJECT_SOURCE_DIR}/cmake/patches/dune")
-create_patch_script(Trilinos patch_script
+create_patch_script(Dune dune_patch_script
     CMDLINE "-p0"
-    WORKING_DIRECTORY "${EXTERNAL_ROOT}/src/dune-grid"
+    WORKING_DIRECTORY "${EXTERNAL_ROOT}/src"
     "${patchdir}/grid_yaspgrid.patch"
     "${patchdir}/grid_dgfparser.patch"
     "${patchdir}/grid_alugrid.patch"
@@ -177,9 +177,9 @@ ExternalProject_Add(
     DEPENDS dune-geometry dune-common ${grid_depends}
     PREFIX ${EXTERNAL_ROOT}
     ${grid_ARGUMENTS}
+    PATCH_COMMAND ${dune_patch_script}
     CONFIGURE_COMMAND ${grid_configure_command}
     INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
-    PATCH_COMMAND ${CMAKE_COMMAND} -P ${patch_script}
     ${build_args}
 )
 
