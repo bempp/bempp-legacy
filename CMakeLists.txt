@@ -18,13 +18,14 @@ include(LookUp-GreatCMakeCookOff)
 # Makes this a c++11 project
 include(cpp11_project)
 
-# Add rpath information so installed libraries can find each other
-include(rpath)
 
 # Macros to install python
 include(PythonInstall)
 # Defines where to install libraries, headers
 include(InstallPaths)
+# Add rpath information so installed libraries can find each other
+# It uses LIBRARY_INSTALL_PATH and should be included after InstallPaths
+include(rpath)
 
 # Macros needed
 include(BemppOptions)
