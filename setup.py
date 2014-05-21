@@ -168,7 +168,7 @@ class Install(dInstall):
             self.spawn([cmake,
                 '-DPYTHON_PKG_DIR=\'%s\'' % pkg,
                 '-DPYPACK=TRUE',
-                '-DPyTrilinos_INSTALL_DIR=\'%s\'' % pkg,
+                '-DPyTrilinos_INSTALL_DIR=\'%s\'' % join(pkg, 'PyTrilinos'),
                 '..'
             ])
             self.spawn([cmake, '--build', '.', '--target', 'install'])

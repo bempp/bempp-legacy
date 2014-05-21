@@ -138,17 +138,19 @@ if(Trilinos_PYPACKED)
         "   list(APPEND CMAKE_PREFIX_PATH \"${prefix_location}\")\n"
         "endif()\n"
     )
+    set(location "${PyTrilinos_INSTALL_DIR}")
+    if(NOT location)
+        set(location "${PYTHON_PKG_DIR}")
+    endif()
+    add_to_rpath("${location}/lib")
+
     write_lookup_hook(INSTALL Trilinos
         "message(STATUS \"Installing Trilinos\")\n"
-        "set(location \"${PyTrilinos_INSTALL_DIR}\")\n"
-        "if(NOT location)\n"
-        "    set(location \"${PYTHON_PKG_DIR}\")\n"
-        "endif()\n"
         "execute_process(\n"
         "   COMMAND \${CMAKE_COMMAND} "
-        " -DPyTrilinos_INSTALL_DIR=\${location}"
-        " -DPyTrilinos_INSTALL_PREFIX=\${location}"
-        " -DCMAKE_INSTALL_PREFIX=\${location} .\n"
+        " -DPyTrilinos_INSTALL_DIR=${location}"
+        " -DPyTrilinos_INSTALL_PREFIX=${location}"
+        " -DCMAKE_INSTALL_PREFIX=${location} .\n"
         "   WORKING_DIRECTORY \"${EXTERNAL_ROOT}/src/Trilinos-build/\"\n"
         "   RESULT_VARIABLE result\n"
         "   ERROR_VARIABLE error\n"
@@ -163,7 +165,7 @@ if(Trilinos_PYPACKED)
         "if(NOT \${result} EQUAL 0)\n"
         "    message(\"error: \${error}\")\n"
         "    message(\"error code: \${result}\")\n"
-        "    message(FATAL_ERROR \"Could not install Trilinos to \${PYTHON_PKG_DIR}\")\n"
+        "    message(FATAL_ERROR \"Could not install Trilinos to ${location}\")\n"
         "endif()\n"
         "execute_process(\n"
         "   COMMAND\n"

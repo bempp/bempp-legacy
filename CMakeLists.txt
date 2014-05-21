@@ -24,8 +24,8 @@ include(PythonInstall)
 # Defines where to install libraries, headers
 include(InstallPaths)
 # Add rpath information so installed libraries can find each other
-# It uses LIBRARY_INSTALL_PATH and should be included after InstallPaths
 include(rpath)
+add_to_rpath("${LIBRARY_INSTALL_PATH}")
 
 # Macros needed
 include(BemppOptions)

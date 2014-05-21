@@ -1,5 +1,4 @@
 # Sets RPATH so that the executable
-# and python extensions can find libpurify.dylib
 if("${CMAKE_SYSTEM_NAME}" STREQUAL "Darwin")
     if(NOT DEFINED CMAKE_MACOSX_RPATH)
         set(CMAKE_MACOSX_RPATH TRUE CACHE BOOL
@@ -7,15 +6,14 @@ if("${CMAKE_SYSTEM_NAME}" STREQUAL "Darwin")
     endif()
 endif()
 
-# Set RPATH to location where libraries will be installed,
-# unless it is already part of the platform
-list(FIND
-    CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES
-    "${LIBRARY_INSTALL_PATH}"
-    isSystemDir
-)
-if("${isSystemDir}" STREQUAL "-1")
-    list(APPEND CMAKE_INSTALL_RPATH "${LIBRARY_INSTALL_PATH}")
+function(add_to_rpath)
+    foreach(path ${ARGN})
+        list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${path}" system_dir)
+        if("${system_dir}" STREQUAL "-1")
+            list(APPEND CMAKE_INSTALL_RPATH "${path}")
+        endif()
+    endforeach()
+
     list(REMOVE_DUPLICATES CMAKE_INSTALL_RPATH)
     set(CMAKE_INSTALL_RPATH
         ${CMAKE_INSTALL_RPATH}
@@ -23,4 +21,4 @@ if("${isSystemDir}" STREQUAL "-1")
         "Path where shared libraries should be installed"
         FORCE
     )
-endif()
+endfunction()
