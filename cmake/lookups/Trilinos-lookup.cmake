@@ -74,7 +74,16 @@ file(APPEND "${EXTERNAL_ROOT}/src/TrilinosVariables.cmake"
     "\nlist(APPEND CMAKE_PREFIX_PATH \"${EXTERNAL_ROOT}\")\n"
 )
 
-find_program(PATCH_EXECUTABLE patch REQUIRED)
+include(PatchScript)
+set(patchdir "${PROJECT_SOURCE_DIR}/installer/patches")
+create_patch_script(Trilinos patch_script
+    CMDLINE "-p0"
+    WORKING_DIRECTORY "${EXTERNAL_ROOT}/src/Trilinos"
+    "${patchdir}/Thyra_BelosLinearOpWithSolve_def.patch"
+    "${patchdir}/Epetra_ConfigDefs.h.patch"
+    "${patchdir}/pytrilinos_eigenvalue_typemap.patch"
+)
+
 ExternalProject_Add(
     Trilinos
     PREFIX ${EXTERNAL_ROOT}
@@ -112,30 +121,11 @@ ExternalProject_Add(
                -DTPL_ENABLE_MPI:BOOL=${WITH_MPI}
                -DCMAKE_BUILD_TYPE=${Trilinos_BUILD_TYPE}
                -C ${EXTERNAL_ROOT}/src/TrilinosVariables.cmake
+    PATCH_COMMAND ${CMAKE_COMMAND} -P ${patch_script}
     # Wrap download, configure and build steps in a script to log output
     LOG_DOWNLOAD ON
     LOG_CONFIGURE ON
     LOG_BUILD ON
-)
-set(patchdir "${PROJECT_SOURCE_DIR}/installer/patches")
-ExternalProject_Add_Step(Trilinos
-    PATCH
-    COMMAND
-       ${PATCH_EXECUTABLE} -p0 -N
-            < ${patchdir}/Thyra_BelosLinearOpWithSolve_def.patch
-    COMMAND
-       ${PATCH_EXECUTABLE} -p0 -N
-            < ${patchdir}/Epetra_ConfigDefs.h.patch
-    COMMAND
-       ${PATCH_EXECUTABLE} -p0 -N
-            < ${patchdir}/pytrilinos_eigenvalue_typemap.patch
-    WORKING_DIRECTORY ${EXTERNAL_ROOT}/src/Trilinos
-    DEPENDS
-        ${patchdir}/Thyra_BelosLinearOpWithSolve_def.patch
-        ${patchdir}/Epetra_ConfigDefs.h.patch
-        ${patchdir}/pytrilinos_eigenvalue_typemap.patch
-    DEPENDEES download
-    DEPENDERS configure
 )
 # Rerun cmake to capture new armadillo install
 add_recursive_cmake_step(Trilinos DEPENDEES install)

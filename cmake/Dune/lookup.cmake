@@ -161,7 +161,16 @@ ExternalProject_Add(
     ${build_args}
 )
 
-find_program(PATCH_EXECUTABLE patch REQUIRED)
+include(PatchScript)
+set(patchdir "${PROJECT_SOURCE_DIR}/cmake/patches/dune")
+create_patch_script(Trilinos patch_script
+    CMDLINE "-p0"
+    WORKING_DIRECTORY "${EXTERNAL_ROOT}/src/dune-grid"
+    "${patchdir}/grid_yaspgrid.patch"
+    "${patchdir}/grid_dgfparser.patch"
+    "${patchdir}/grid_alugrid.patch"
+)
+
 _get_arguments(grid)
 ExternalProject_Add(
     dune-grid
@@ -170,26 +179,8 @@ ExternalProject_Add(
     ${grid_ARGUMENTS}
     CONFIGURE_COMMAND ${grid_configure_command}
     INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
+    PATCH_COMMAND ${CMAKE_COMMAND} -P ${patch_script}
     ${build_args}
-)
-ExternalProject_Add_Step(dune-grid
-    PATCH
-    COMMAND
-       ${PATCH_EXECUTABLE} -p0 -N
-            < ${PROJECT_SOURCE_DIR}/cmake/patches/dune/grid_yaspgrid.patch
-    COMMAND
-       ${PATCH_EXECUTABLE} -p0 -N
-            < ${PROJECT_SOURCE_DIR}/cmake/patches/dune/grid_dgfparser.patch
-    COMMAND
-       ${PATCH_EXECUTABLE} -p0 -N
-            < ${PROJECT_SOURCE_DIR}/cmake/patches/dune/grid_alugrid.patch
-    WORKING_DIRECTORY ${EXTERNAL_ROOT}/src
-    DEPENDS
-        ${PROJECT_SOURCE_DIR}/cmake/patches/dune/grid_dgfparser.patch
-        ${PROJECT_SOURCE_DIR}/cmake/patches/dune/grid_yaspgrid.patch
-        ${PROJECT_SOURCE_DIR}/cmake/patches/dune/grid_alugrid.patch
-    DEPENDEES download
-    DEPENDERS configure
 )
 
 _get_arguments(localfunctions)
