@@ -22,7 +22,7 @@ foreach(tbb "@TBB_LIBRARY@" "@TBB_LIBRARY_DEBUG@"
     "@TBB_MALLOC_LIBRARY@" "@TBB_MALLOC_LIBRARY_DEBUG@")
     if(EXISTS "${tbb}")
         get_filename_component(tbb_name "${tbb}" NAME)
-        list(APPEND tbb_names "${tbb}")
+        list(APPEND tbb_names "${tbb_name}")
     endif()
 endforeach()
 # Loop over each shared object and add rpaths and change tbbs
