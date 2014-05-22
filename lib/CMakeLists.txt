@@ -64,10 +64,10 @@ if(TBB_LIBRARY_DEBUG)
     )
 endif()
 
-set_property(
-   TARGET bempp
-   PROPERTY COMPILE_DEFINITIONS_DEBUG TBB_USE_DEBUG=1
+set_target_properties(bempp
+    PROPERTIES COMPILE_DEFINITIONS_DEBUG TBB_USE_DEBUG=1
 )
+change_tbb_install_name(bempp)
 if(ALUGrid_GITTER_INCLUDE_DIR)
     get_source_file_property(file_flags
         grid/grid_factory.cpp COMPILE_FLAGS

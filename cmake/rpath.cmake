@@ -15,10 +15,29 @@ function(add_to_rpath)
     endforeach()
 
     list(REMOVE_DUPLICATES CMAKE_INSTALL_RPATH)
-    set(CMAKE_INSTALL_RPATH
-        ${CMAKE_INSTALL_RPATH}
-        CACHE PATH
-        "Path where shared libraries should be installed"
-        FORCE
+    set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_RPATH})
+endfunction()
+
+function(change_tbb_install_name target)
+    if(NOT "${CMAKE_SYSTEM_NAME}" STREQUAL "Darwin" OR NOT TBB_LIBRARY)
+        return()
+    endif()
+    unset(commands)
+    foreach(version "" _DEBUG)
+        foreach(library "" MALLOC_)
+            set(varname TBB_${library}LIBRARY${version})
+            if(${varname})
+                get_filename_component(library "${${varname}}" NAME)
+                list(APPEND commands COMMAND
+                    install_name_tool -change
+                    ${library} @rpath/${library} $<TARGET_LINKER_FILE:${target}>
+                )
+            endif()
+        endforeach()
+    endforeach()
+
+    add_custom_command(TARGET ${target} POST_BUILD
+        ${commands}
+        COMMENT "${target} to locate TBB libraries with @rpath"
     )
 endfunction()
