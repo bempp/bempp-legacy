@@ -31,10 +31,8 @@ foreach(library ${shared_objects})
     set(current_directories ${directories})
     list(REMOVE_ITEM current_directories "${current}")
     foreach(directory ${current_directories})
-        file(RELATIVE_PATH relative "${current}" "${directory}/fake")
-        get_filename_component(relative "${relative}" PATH)
         execute_process(COMMAND
-            install_name_tool -add_rpath ${relative} ${library}
+            install_name_tool -add_rpath ${directory} ${library}
             ERROR_QUIET
         )
     endforeach()
