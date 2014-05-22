@@ -79,5 +79,6 @@ if("${CMAKE_SYSTEM_NAME}" STREQUAL "Darwin")
     file(WRITE "${PROJECT_BINARY_DIR}/post_install/CMakeLists.txt"
         "install(SCRIPT FixRPaths.cmake)"
     )
-    add_subdirectory("${PROJECT_BINARY_DIR}/post_install")
+    add_subdirectory("${PROJECT_BINARY_DIR}/post_install"
+        "${PROJECT_BINARY_DIR}/post_install-build")
 endif()
