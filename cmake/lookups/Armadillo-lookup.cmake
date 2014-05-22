@@ -33,6 +33,7 @@ passon_variables(Armadillo
         "BLAS_.*" "LAPACK_.*"
     ALSOADD
         "\nset(CMAKE_INSTALL_PREFIX \"${EXTERNAL_ROOT}\" CACHE STRING \"\")\n"
+        "\nset(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_RPATH} CACHE INTERNAL \"\")\n"
 )
 if(BLAS_mkl_core_LIBRARY)
     get_filename_component(libdir "${BLAS_mkl_core_LIBRARY}" PATH)

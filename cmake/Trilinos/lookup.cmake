@@ -1,7 +1,7 @@
 # Looks for trilinos. If not found, download and install it.
 if(Trilinos_ARGUMENTS)
     cmake_parse_arguments(Trilinos
-        "PYPACKED;CHANGE_TBB"
+        "PYPACKED"
         "URL;MD5;BUILD_TYPE;INSTALL_PREFIX"
         ""
         ${Trilinos_ARGUMENTS}
@@ -72,6 +72,7 @@ file(APPEND "${EXTERNAL_ROOT}/src/TrilinosVariables.cmake"
     "\nset(TPL_LAPACK_LIBRARIES \"${LAPACK_LIBRARIES}\" CACHE STRING \"\")\n"
     "\nset(TPL_BOOST_INCLUDE_DIRS \"${Boost_INCLUDE_DIR}\" CACHE STRING \"\")\n"
     "\nlist(APPEND CMAKE_PREFIX_PATH \"${EXTERNAL_ROOT}\")\n"
+    "\nset(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_RPATH} CACHE PATH \"\")\n"
 )
 
 include(PatchScript)
@@ -127,21 +128,6 @@ ExternalProject_Add(
     LOG_CONFIGURE ON
     LOG_BUILD ON
 )
-# Add a step to make tbb accessible via rpath
-if(Trilinos_CHANGE_TBB AND "${CMAKE_SYSTEM_NAME}" STREQUAL "Darwin")
-    configure_file("${CMAKE_CURRENT_LIST_DIR}/tbb.in.cmake"
-        "${EXTERNAL_ROOT}/src/Trilinos-build/tbb_rpath.cmake"
-        @ONLY
-    )
-    ExternalProject_Add_Step(Trilinos rpath_fix
-        COMMAND ${CMAKE_COMMAND} -P tbb_rpath.cmake
-        COMMENT "Fixing TBB to be accessible via @rpath"
-        DEPENDEES build
-        DEPENDERS install
-        DEPENDS "${CMAKE_CURRENT_LIST_DIR}/tbb.in.cmake"
-        WORKING_DIRECTORY "${EXTERNAL_ROOT}/src/Trilinos-build"
-    )
-endif()
 # Rerun cmake to capture new armadillo install
 add_recursive_cmake_step(Trilinos DEPENDEES install)
 # If installing in bizarre location (ie all under python package dir), then add post-lookup script
@@ -153,14 +139,4 @@ if(Trilinos_PYPACKED)
         "   list(APPEND CMAKE_PREFIX_PATH \"${prefix_location}\")\n"
         "endif()\n"
     )
-    set(location "${PyTrilinos_INSTALL_DIR}")
-    if(NOT location)
-        set(location "${PYTHON_PKG_DIR}")
-    endif()
-    add_to_rpath("${location}/lib")
-
-    set(install_location "${location}")
-    write_lookup_hook(INSTALL Trilinos CONFIGURE
-        "${CMAKE_CURRENT_LIST_DIR}/install_hook.in.cmake")
-    unset(install_location)
 endif()

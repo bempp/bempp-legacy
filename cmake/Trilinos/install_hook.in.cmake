@@ -3,7 +3,7 @@ execute_process(
     COMMAND ${CMAKE_COMMAND}
         -DPyTrilinos_INSTALL_DIR=@install_location@
         -DPyTrilinos_INSTALL_PREFIX=@install_location@
-        -DCMAKE_INSTALL_PREFIX=@install_location .
+        -DCMAKE_INSTALL_PREFIX=@install_location@ .
     WORKING_DIRECTORY "@EXTERNAL_ROOT@/src/Trilinos-build/"
     RESULT_VARIABLE result
     ERROR_VARIABLE error

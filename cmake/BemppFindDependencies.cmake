@@ -30,7 +30,7 @@ lookup_package(Dune REQUIRED DOWNLOAD_BY_DEFAULT
 set(CMAKE_POLICY_DEFAULT_CMP0012 NEW CACHE STRING "Avoids anoying messages")
 lookup_package(Trilinos
     DOWNLOAD_BY_DEFAULT REQUIRED CHECK_EXTERNAL
-    ARGUMENTS PYPACKED CHANGE_TBB KEEP
+    ARGUMENTS PYPACKED
 )
 unset(CMAKE_POLICY_DEFAULT_CMP0012 CACHE)
 
@@ -98,13 +98,21 @@ endif()
 
 # Now adds commands to install external packages
 if(EXISTS "${EXTERNAL_ROOT}/lib")
-    install(DIRECTORY "${EXTERNAL_ROOT}/lib/" DESTINATION ${LIBRARY_INSTALL_PATH})
+    install(DIRECTORY "${EXTERNAL_ROOT}/lib/"
+        DESTINATION "${LIBRARY_INSTALL_PATH}")
 endif()
 if(EXISTS "${EXTERNAL_ROOT}/include")
-    install(DIRECTORY "${EXTERNAL_ROOT}/include/" DESTINATION ${INCLUDE_INSTALL_PATH})
+    install(DIRECTORY "${EXTERNAL_ROOT}/include/"
+        DESTINATION "${INCLUDE_INSTALL_PATH}")
 endif()
 if(EXISTS "${EXTERNAL_ROOT}/share")
-    install(DIRECTORY "${EXTERNAL_ROOT}/share/" DESTINATION ${SHARE_INSTALL_PATH})
+    install(DIRECTORY "${EXTERNAL_ROOT}/share/"
+        DESTINATION "${SHARE_INSTALL_PATH}")
+endif()
+# Trilinos is installed in its own subdirectory, since it is a python package.
+if(EXISTS "${EXTERNAL_ROOT}/python/PyTrilinos")
+    install(DIRECTORY "${EXTERNAL_ROOT}/python/PyTrilinos"
+        DESTINATION "${PYTHON_PKG_DIR}")
 endif()
 
 if(WITH_OPENCL)

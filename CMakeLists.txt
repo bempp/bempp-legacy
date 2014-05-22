@@ -66,3 +66,18 @@ configure_file(
 
 add_custom_target(uninstall
   COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
+
+
+# An install script to brutally modify the rpaths on Darwin machines
+# It ensures that python extensions and libraries can see each other
+# Importantly, it works for external projects as well as bemmp objects
+if("${CMAKE_SYSTEM_NAME}" STREQUAL "Darwin")
+    configure_file("${PROJECT_SOURCE_DIR}/cmake/PostInstall_FixRpaths.in.cmake"
+        "${PROJECT_BINARY_DIR}/post_install/FixRPaths.cmake"
+        @ONLY
+    )
+    file(WRITE "${PROJECT_BINARY_DIR}/post_install/CMakeLists.txt"
+        "install(SCRIPT FixRPaths.cmake)"
+    )
+    add_subdirectory("${PROJECT_BINARY_DIR}/post_install")
+endif()

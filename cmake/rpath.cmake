@@ -15,7 +15,7 @@ function(add_to_rpath)
     endforeach()
 
     list(REMOVE_DUPLICATES CMAKE_INSTALL_RPATH)
-    set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_RPATH})
+    set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_RPATH} PARENT_SCOPE)
 endfunction()
 
 function(change_tbb_install_name target)
