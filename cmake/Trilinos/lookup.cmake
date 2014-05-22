@@ -1,7 +1,7 @@
 # Looks for trilinos. If not found, download and install it.
 if(Trilinos_ARGUMENTS)
     cmake_parse_arguments(Trilinos
-        "PYPACKED"
+        "PYPACKED;CHANGE_TBB"
         "URL;MD5;BUILD_TYPE;INSTALL_PREFIX"
         ""
         ${Trilinos_ARGUMENTS}
@@ -127,6 +127,21 @@ ExternalProject_Add(
     LOG_CONFIGURE ON
     LOG_BUILD ON
 )
+# Add a step to make tbb accessible via rpath
+if(Trilinos_CHANGE_TBB AND "${CMAKE_SYSTEM_NAME}" STREQUAL "Darwin")
+    configure_file("${CMAKE_CURRENT_LIST_DIR}/tbb.in.cmake"
+        "${EXTERNAL_ROOT}/src/Trilinos-build/tbb_rpath.cmake"
+        @ONLY
+    )
+    ExternalProject_Add_Step(Trilinos rpath_fix
+        COMMAND ${CMAKE_COMMAND} -P tbb_rpath.cmake
+        COMMENT "Fixing TBB to be accessible via @rpath"
+        DEPENDEES build
+        DEPENDERS install
+        DEPENDS "${CMAKE_CURRENT_LIST_DIR}/tbb.in.cmake"
+        WORKING_DIRECTORY "${EXTERNAL_ROOT}/src/Trilinos-build"
+    )
+endif()
 # Rerun cmake to capture new armadillo install
 add_recursive_cmake_step(Trilinos DEPENDEES install)
 # If installing in bizarre location (ie all under python package dir), then add post-lookup script
@@ -144,35 +159,8 @@ if(Trilinos_PYPACKED)
     endif()
     add_to_rpath("${location}/lib")
 
-    write_lookup_hook(INSTALL Trilinos
-        "message(STATUS \"Installing Trilinos\")\n"
-        "execute_process(\n"
-        "   COMMAND \${CMAKE_COMMAND} "
-        " -DPyTrilinos_INSTALL_DIR=${location}"
-        " -DPyTrilinos_INSTALL_PREFIX=${location}"
-        " -DCMAKE_INSTALL_PREFIX=${location} .\n"
-        "   WORKING_DIRECTORY \"${EXTERNAL_ROOT}/src/Trilinos-build/\"\n"
-        "   RESULT_VARIABLE result\n"
-        "   ERROR_VARIABLE error\n"
-        ")\n"
-        "execute_process(\n"
-        "   COMMAND\n"
-        "       \${CMAKE_COMMAND} --build . --target install\n"
-        "   WORKING_DIRECTORY \"${EXTERNAL_ROOT}/src/Trilinos-build/\"\n"
-        "   RESULT_VARIABLE result\n"
-        "   ERROR_VARIABLE error\n"
-        ")\n"
-        "if(NOT \${result} EQUAL 0)\n"
-        "    message(\"error: \${error}\")\n"
-        "    message(\"error code: \${result}\")\n"
-        "    message(FATAL_ERROR \"Could not install Trilinos to ${location}\")\n"
-        "endif()\n"
-        "execute_process(\n"
-        "   COMMAND\n"
-        "       \${CMAKE_COMMAND} -C ${EXTERNAL_ROOT}/src/TrilinosVariables.cmake .\n"
-        "   WORKING_DIRECTORY \"${EXTERNAL_ROOT}/src/Trilinos-build/\"\n"
-        "   RESULT_VARIABLE result\n"
-        "   ERROR_VARIABLE error\n"
-        ")\n"
-    )
+    set(install_location "${location}")
+    write_lookup_hook(INSTALL Trilinos CONFIGURE
+        "${CMAKE_CURRENT_LIST_DIR}/install_hook.in.cmake")
+    unset(install_location)
 endif()
