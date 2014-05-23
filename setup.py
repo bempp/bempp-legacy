@@ -56,6 +56,10 @@ def cmake_executable():
 
 class Build(dBuild):
     """ Build that runs cmake. """
+    description = "Compiles BEM++ using cmake"
+    user_options = dBuild.user_options + [
+        ("external=", None, "Location with external packages")
+    ]
 
     def configure_cmdl(self, filename):
         """ Creates cmake command-line
