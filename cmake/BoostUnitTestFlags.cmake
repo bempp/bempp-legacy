@@ -4,6 +4,12 @@
 if(NOT Boost_FOUND OR DEFINED Boost_UNIT_TEST_CXXFLAGS)
     return()
 endif()
+if(Boost_BUILT_AS_EXTERNAL_PROJECT)
+    # Weird things can happen if half-way through installing boost
+    if(NOT EXISTS "${Boost_INCLUDE_DIR}/boost/test/unit_test.hpp")
+        return()
+    endif()
+endif()
 set(rootdir "${PROJECT_BINARY_DIR}/CMakeFiles/boostStuff")
 file(WRITE "${rootdir}/main.cc"
     "#define BOOST_TEST_MODULE something\n"
@@ -35,8 +41,10 @@ try_compile(with_flag
 )
 if(without_flag AND NOT with_flag)
     set(result FALSE)
+    message(STATUS "Compiling boost unit-tests without BOOST_TEST_DYN_LINK")
 elseif(NOT without_flag AND with_flag)
     set(result -DBOOST_TEST_DYN_LINK)
+    message(STATUS "Compiling boost unit-tests with BOOST_TEST_DYN_LINK")
 else()
     message("without: ${OUTPUT_WITHOUT}")
     message("with: ${OUTPUT_WITH}")
