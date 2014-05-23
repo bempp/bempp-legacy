@@ -39,9 +39,9 @@ if(without_flag AND NOT with_flag)
 elseif(NOT without_flag AND with_flag)
     set(result -DBOOST_TEST_DYN_LINK)
     message(STATUS "Compiling boost unit-tests with BOOST_TEST_DYN_LINK")
-elseif(Boost_BUILD_AS_EXTERNAL_PROJECT AND Boost_LOOKUP_BUILD)
+elseif(Boost_BUILT_AS_EXTERNAL_PROJECT)
     # Weird things can happen if half-way through installing boost
-    # Assume this is the case right now
+    # Assume this is the case if boost is an external project
     return()
 else()
     message("without: ${OUTPUT_WITHOUT}")
