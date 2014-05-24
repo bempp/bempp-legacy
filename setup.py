@@ -58,8 +58,11 @@ class Build(dBuild):
     """ Build that runs cmake. """
     description = "Compiles BEM++ using cmake"
     user_options = dBuild.user_options + [
-        ("external=", None, "Location with external packages")
+        ("external=", None, "Location for external packages")
     ]
+    def initialize_options(self):
+        self.external = None
+        dBuild.initialize_options(self)
 
     def configure_cmdl(self, filename):
         """ Creates cmake command-line
@@ -72,9 +75,17 @@ class Build(dBuild):
         other_args = [
             cmake_cache_line('nobins', 'TRUE', 'BOOL'),
             cmake_cache_line('PYTHON_EXECUTABLE', executable, 'PATH'),
-            cmake_cache_line('dont_install_headers', 'TRUE', 'BOOL'),
-            '\n',
+            cmake_cache_line('dont_install_headers', 'TRUE', 'BOOL')
         ]
+        if(self.external):
+            other_args.extend([
+                cmake_cache_line('EXTERNAL_ROOT', self.external, 'PATH'),
+                cmake_cache_line('CMAKE_PREFIX_PATH',
+                    self.external + ";" + join(self.external, 'python', 'PyTrilinos'),
+                    'PATH'
+                )
+            ])
+        other_args.append('\n')
 
         with open(filename, 'w') as file: file.writelines(other_args)
         return ['-C%s' % filename]
@@ -148,7 +159,6 @@ class Build(dBuild):
             chdir(build_dir)
             self.spawn([cmake,
                 '-DPYTHON_PKG_DIR=\'%s\'' % install_dir,
-                '-DPyTrilinos_INSTALL_DIR=\'%s\'' % join(install_dir, 'PyTrilinos'),
                 '-DPYPACK=TRUE',
                 source_dir
             ])
@@ -172,7 +182,6 @@ class Install(dInstall):
             self.spawn([cmake,
                 '-DPYTHON_PKG_DIR=\'%s\'' % pkg,
                 '-DPYPACK=TRUE',
-                '-DPyTrilinos_INSTALL_DIR=\'%s\'' % join(pkg, 'PyTrilinos'),
                 '..'
             ])
             self.spawn([cmake, '--build', '.', '--target', 'install'])
