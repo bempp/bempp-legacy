@@ -1,0 +1,6 @@
+find_program(PATCHELF_EXECUTABLE patchelf)
+if(PATCHELF_EXECUTABLE)
+    set(PATCHELF_FOUND TRUE)
+    set(Patchelf_FOUND TRUE)
+    set(Patchelf_EXECUTABLE "${PATCHELF_EXECUTABLE}")
+endif()

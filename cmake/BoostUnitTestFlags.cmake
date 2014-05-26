@@ -35,8 +35,14 @@ try_compile(with_flag
 )
 if(without_flag AND NOT with_flag)
     set(result FALSE)
+    message(STATUS "Compiling boost unit-tests without BOOST_TEST_DYN_LINK")
 elseif(NOT without_flag AND with_flag)
     set(result -DBOOST_TEST_DYN_LINK)
+    message(STATUS "Compiling boost unit-tests with BOOST_TEST_DYN_LINK")
+elseif(Boost_BUILT_AS_EXTERNAL_PROJECT)
+    # Weird things can happen if half-way through installing boost
+    # Assume this is the case if boost is an external project
+    return()
 else()
     message("without: ${OUTPUT_WITHOUT}")
     message("with: ${OUTPUT_WITH}")

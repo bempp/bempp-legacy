@@ -38,6 +38,12 @@ lookup_package(Trilinos
 )
 unset(CMAKE_POLICY_DEFAULT_CMP0012 CACHE)
 
+if("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
+    # Patchelf allows us to patch the rpath at install time.
+    # That's the only time when we know for sure where libraries will be going.
+    lookup_package(Patchelf REQUIRED)
+endif()
+
 # Then look for python related packages
 lookup_package(SWIG 2.0.4 REQUIRED)
 if (SWIG_FOUND AND SWIG_VERSION VERSION_LESS 2.0.7)

@@ -25,7 +25,6 @@ file(WRITE "${EXTERNAL_ROOT}/src/TBBVariables.cmake"
 ExternalProject_Add(
     TBB
     PREFIX ${EXTERNAL_ROOT}
-    # Downloads boost from url -- much faster than svn
     URL ${TBB_URL}
     URL_HASH MD5=${TBB_URL_MD5}
     PATCH_COMMAND
