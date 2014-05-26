@@ -76,7 +76,7 @@ file(APPEND "${EXTERNAL_ROOT}/src/TrilinosVariables.cmake"
 )
 
 include(PatchScript)
-set(patchdir "${PROJECT_SOURCE_DIR}/installer/patches")
+set(patchdir "${PROJECT_SOURCE_DIR}/cmake/patches/Trilinos")
 create_patch_script(Trilinos patch_script
     CMDLINE "-p0"
     WORKING_DIRECTORY "${EXTERNAL_ROOT}/src/Trilinos"

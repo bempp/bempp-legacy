@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 2.8)
 
 # Find patch files and apply
-file(GLOB PATCH_FILES ${ROOT}/install/tbb_*.patch)
+file(GLOB PATCH_FILES ${ROOT}/cmake/patches/tbb/*.patch)
 find_program(PATCH_EXECUTABLE patch)
 foreach(patch ${PATCH_FILES})
   execute_process(
