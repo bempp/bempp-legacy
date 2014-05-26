@@ -9,14 +9,13 @@ if(NOT NOEXPORT)
         "${CMAKE_CURRENT_BINARY_DIR}/ExampleProject/CMakeLists.txt"
         @ONLY
     )
-    configure_file("ProjectInclusionUnitTests.in.cmake"
-        "${CMAKE_CURRENT_BINARY_DIR}/ExampleProject/ProjectInclusionUnitTests.cmake"
+    configure_file("ConfigureProject.in.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/ExampleProject/ConfigureProject.cmake"
         @ONLY
     )
-    file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/ExampleProject/build")
     add_test(NAME configure_test_project
-        COMMAND ${CMAKE_COMMAND} .. -DPROJECT_INCLUSION_UNIT_TESTS=ON
-        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/ExampleProject/build"
+        COMMAND ${CMAKE_COMMAND} -P ConfigureProject.cmake
+        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/ExampleProject"
     )
     add_test(NAME build_test_project
         COMMAND ${CMAKE_COMMAND} --build .
