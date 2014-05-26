@@ -25,7 +25,7 @@ ExternalProject_Add(
     # Downloads boost from url -- much faster than svn
     URL http://sourceforge.net/projects/boost/files/boost/1.55.0/boost_1_55_0.tar.bz2/download
     BUILD_IN_SOURCE 1
-    CONFIGURE_COMMAND ./bootstrap.sh 
+    CONFIGURE_COMMAND ./bootstrap.sh
     PATCH_COMMAND ${PATCH_EXECUTABLE} -p0 -N < "${EXTERNAL_ROOT}/src/boost.patch"
     BUILD_COMMAND  ./b2 ${toolset} link=static variant=release --with-test
     INSTALL_COMMAND ./b2 ${toolset} link=static variant=release --with-test
