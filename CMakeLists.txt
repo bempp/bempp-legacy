@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
-project(bempp CXX)
+project(Bempp CXX)
+set(Bempp_VERSION 2.0)
 
 # Needed to find BLAS
 enable_language(C)
@@ -67,6 +68,8 @@ configure_file(
 add_custom_target(uninstall
   COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
 
+# Exports all Bempp so other packages can access it
+include(BemppExport)
 
 # An install script to brutally modify the rpaths on Darwin machines
 # It ensures that python extensions and libraries can see each other

@@ -1,6 +1,6 @@
 # Sets up install paths
 # Mostly, add option to easily install as a python package
-if(PYPACK)
+if(PYPACKED)
     if("${PYTHON_PKG_DIR}" STREQUAL "")
         # Should not happen if PythonInstall has already been included
         message(FATAL_ERROR "PYTHON_PKG_DIR is not set")

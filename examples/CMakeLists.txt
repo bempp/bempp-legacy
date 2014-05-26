@@ -13,7 +13,9 @@ if (NOT (${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR}))
     endforeach ()
 endif ()
 
-install(TARGETS tutorial_dirichlet RUNTIME
-    DESTINATION ${SHARE_INSTALL_PATH}/bempp/examples)
+install(TARGETS tutorial_dirichlet
+    EXPORT BemppTargets
+    RUNTIME
+    DESTINATION ${RUNTIME_INSTALL_PATH}/bempp/examples)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/meshes
     DESTINATION ${SHARE_INSTALL_PATH}/bempp/examples)

@@ -22,7 +22,7 @@
 #ifndef bempp_armadillo_fwd_hpp
 #define bempp_armadillo_fwd_hpp
 
-#include "config_bempp.hpp"
+#include <bempp/config_bempp.hpp>
 
 // Disable diagnostic 2089: definition of base class type not completed yet
 // Disable diagnostic 488: entity-kind "entity" is not used in declaring the

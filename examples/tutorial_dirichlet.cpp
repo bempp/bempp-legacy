@@ -18,30 +18,30 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "assembly/assembly_options.hpp"
-#include "assembly/boundary_operator.hpp"
-#include "assembly/context.hpp"
-#include "assembly/evaluation_options.hpp"
-#include "assembly/grid_function.hpp"
-#include "assembly/l2_norm.hpp"
-#include "assembly/numerical_quadrature_strategy.hpp"
-#include "assembly/surface_normal_independent_function.hpp"
+#include "bempp/assembly/assembly_options.hpp"
+#include "bempp/assembly/boundary_operator.hpp"
+#include "bempp/assembly/context.hpp"
+#include "bempp/assembly/evaluation_options.hpp"
+#include "bempp/assembly/grid_function.hpp"
+#include "bempp/assembly/l2_norm.hpp"
+#include "bempp/assembly/numerical_quadrature_strategy.hpp"
+#include "bempp/assembly/surface_normal_independent_function.hpp"
 
-#include "assembly/identity_operator.hpp"
-#include "assembly/laplace_3d_single_layer_boundary_operator.hpp"
-#include "assembly/laplace_3d_double_layer_boundary_operator.hpp"
-#include "assembly/laplace_3d_single_layer_potential_operator.hpp"
-#include "assembly/laplace_3d_double_layer_potential_operator.hpp"
+#include "bempp/assembly/identity_operator.hpp"
+#include "bempp/assembly/laplace_3d_single_layer_boundary_operator.hpp"
+#include "bempp/assembly/laplace_3d_double_layer_boundary_operator.hpp"
+#include "bempp/assembly/laplace_3d_single_layer_potential_operator.hpp"
+#include "bempp/assembly/laplace_3d_double_layer_potential_operator.hpp"
 
-#include "common/boost_make_shared_fwd.hpp"
+#include "bempp/common/boost_make_shared_fwd.hpp"
 
-#include "grid/grid.hpp"
-#include "grid/grid_factory.hpp"
+#include "bempp/grid/grid.hpp"
+#include "bempp/grid/grid_factory.hpp"
 
-#include "linalg/default_iterative_solver.hpp"
+#include "bempp/linalg/default_iterative_solver.hpp"
 
-#include "space/piecewise_linear_continuous_scalar_space.hpp"
-#include "space/piecewise_constant_scalar_space.hpp"
+#include "bempp/space/piecewise_linear_continuous_scalar_space.hpp"
+#include "bempp/space/piecewise_constant_scalar_space.hpp"
 
 #include <iostream>
 #include <fstream>

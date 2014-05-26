@@ -28,9 +28,13 @@ lookup_package(Dune REQUIRED DOWNLOAD_BY_DEFAULT
 )
 # Using cmake_policy does not seem to work here.
 set(CMAKE_POLICY_DEFAULT_CMP0012 NEW CACHE STRING "Avoids anoying messages")
+unset(arguments)
+if(PYPACKED)
+    set(arguments ARGUMENTS PYPACKED)
+endif()
 lookup_package(Trilinos
     DOWNLOAD_BY_DEFAULT REQUIRED CHECK_EXTERNAL
-    ARGUMENTS PYPACKED
+    ${arguments}
 )
 unset(CMAKE_POLICY_DEFAULT_CMP0012 CACHE)
 
@@ -63,17 +67,15 @@ endif ()
 file(WRITE ${PROJECT_BINARY_DIR}/include/FC.h "// fake Fortran-C file")
 
 # Now include all dependency directories once and for all
-include_directories(
-    ${PROJECT_BINARY_DIR}/include/
-    ${PROJECT_BINARY_DIR}/include/bempp
-    ${PROJECT_SOURCE_DIR}/lib
-    ${dune-common_INCLUDE_DIRS}
-    ${Trilinos_INCLUDE_DIRS}
-    ${Trilinos_TPL_INCLUDE_DIRS}
+set(BEMPP_INCLUDE_DIRS
+   "${PROJECT_BINARY_DIR}/include/"
+   ${dune-common_INCLUDE_DIRS}
+   ${Trilinos_INCLUDE_DIRS}
+   ${Trilinos_TPL_INCLUDE_DIRS}
 )
 foreach(component Boost BLAS LAPACK ARMADILLO TBB ALUGrid)
     if(${component}_INCLUDE_DIR)
-        include_directories(${${component}_INCLUDE_DIR})
+        list(APPEND BEMPP_INCLUDE_DIRS ${${component}_INCLUDE_DIR})
     endif()
 endforeach()
 add_definitions(-DARMA_USE_LAPACK -DARMA_USE_BLAS)
@@ -117,5 +119,10 @@ endif()
 
 if(WITH_OPENCL)
     find_package(OPENCL REQUIRED)
-    include_directories(${OPENCL_INCLUDE_DIR})
+    list(APPEND BEMPP_INCLUDE_DIRS ${OPENCL_INCLUDE_DIR})
 endif()
+
+list(REMOVE_DUPLICATES BEMPP_INCLUDE_DIRS)
+include_directories(${BEMPP_INCLUDE_DIRS}
+    "${PROJECT_BINARY_DIR}/include/bempp"
+)

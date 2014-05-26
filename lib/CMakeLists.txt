@@ -91,7 +91,7 @@ endif ()
 
 # Install library
 install(TARGETS bempp
-  EXPORT BemppLibraryDepends
+  EXPORT BemppTargets
   RUNTIME DESTINATION "${RUNTIME_INSTALL_PATH}"
   LIBRARY DESTINATION "${LIBRARY_INSTALL_PATH}"
   ARCHIVE DESTINATION "${LIBRARY_INSTALL_PATH}"
@@ -99,6 +99,17 @@ install(TARGETS bempp
 
 # Make sure its built after the external projects
 depends_on_lookups(bempp)
+
+# Adds a target to copy headers
+# Makes it possible to export the build directory,
+# and have other projects build directly from the build tree.
+include(TargetCopyFiles)
+add_copy_directory(bempp
+    "${CMAKE_CURRENT_SOURCE_DIR}"
+    DESTINATION "${PROJECT_BINARY_DIR}/include/bempp"
+    GLOB *.h *.hpp *.cl.str
+    EXCLUDE *.in.h *.in.hpp
+)
 
 # Install headers
 set(incpath "${INCLUDE_INSTALL_PATH}/bempp")
