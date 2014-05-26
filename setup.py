@@ -69,6 +69,7 @@ class Build(dBuild):
             cmake_cache_line('nobins', 'TRUE', 'BOOL'),
             cmake_cache_line('PYTHON_EXECUTABLE', executable, 'PATH'),
             cmake_cache_line('dont_install_headers', 'TRUE', 'BOOL'),
+            cmake_cache_line('NOEXPORT', 'TRUE', 'BOOL'),
             '\n',
         ]
 
@@ -144,8 +145,7 @@ class Build(dBuild):
             chdir(build_dir)
             self.spawn([cmake,
                 '-DPYTHON_PKG_DIR=\'%s\'' % install_dir,
-                '-DPyTrilinos_INSTALL_DIR=\'%s\'' % join(install_dir, 'PyTrilinos'),
-                '-DPYPACK=TRUE',
+                '-DPYPACKED=TRUE',
                 source_dir
             ])
             self.spawn([cmake, '--build', '.', '--target', 'install'])
@@ -168,7 +168,6 @@ class Install(dInstall):
             self.spawn([cmake,
                 '-DPYTHON_PKG_DIR=\'%s\'' % pkg,
                 '-DPYPACK=TRUE',
-                '-DPyTrilinos_INSTALL_DIR=\'%s\'' % join(pkg, 'PyTrilinos'),
                 '..'
             ])
             self.spawn([cmake, '--build', '.', '--target', 'install'])
