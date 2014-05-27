@@ -75,6 +75,7 @@ class Build(dBuild):
         other_args = [
             cmake_cache_line('PYTHON_EXECUTABLE', executable, 'PATH'),
             cmake_cache_line('NOEXPORT', 'TRUE', 'BOOL'),
+            cmake_cache_line('PYPACKED', 'TRUE', 'BOOL'),
         ]
         if(self.external):
             other_args.extend([
@@ -158,7 +159,6 @@ class Build(dBuild):
             chdir(build_dir)
             self.spawn([cmake,
                 '-DPYTHON_PKG_DIR=\'%s\'' % install_dir,
-                '-DPYPACKED=TRUE',
                 source_dir
             ])
             self.spawn([cmake, '--build', '.', '--target', 'install'])
