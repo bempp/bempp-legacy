@@ -94,7 +94,17 @@ function(write_configure_file path)
         "# Calls configure script for Dune packages\n"
         "export CC=${CMAKE_C_COMPILER}\n"
         "export CFLAGS=\"${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_RELEASE} "
-            "-I${BLAS_INCLUDE_DIR} -I${LAPACK_INCLUDE_DIR}\"\n"
+    )
+    if(BLAS_INCLUDE_DIR)
+        file(APPEND "${PROJECT_BINARY_DIR}/CMakeFiles/external/${filename}"
+            "-I${BLAS_INCLUDE_DIR}")
+    endif()
+    if(LAPACK_INCLUDE_DIR)
+        file(APPEND "${PROJECT_BINARY_DIR}/CMakeFiles/external/${filename}"
+            "-I${LAPACK_INCLUDE_DIR}")
+    endif()
+    file(APPEND "${PROJECT_BINARY_DIR}/CMakeFiles/external/${filename}"
+        "\"\n"
         "export CXX=${CMAKE_CXX_COMPILER}\n"
         "export CXXFLAGS=\"${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELEASE}\"\n"
         "export FC=${CMAKE_Fortran_COMPILER}\n"
