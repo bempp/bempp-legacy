@@ -23,14 +23,21 @@ endforeach()
 list(REMOVE_DUPLICATES shared_objects)
 list(REMOVE_DUPLICATES directories)
 
-# Gets list of tbbs on Darwin
-unset(tbb_names)
+# Gets list of libraries that need @rpath added to on Darwin
+unset(rpathless_libraries)
 if("@CMAKE_SYSTEM_NAME@" STREQUAL "Darwin")
-    foreach(tbb "@TBB_LIBRARY@" "@TBB_LIBRARY_DEBUG@"
-        "@TBB_MALLOC_LIBRARY@" "@TBB_MALLOC_LIBRARY_DEBUG@")
-        if(EXISTS "${tbb}")
-            get_filename_component(tbb_name "${tbb}" NAME)
-            list(APPEND tbb_names "${tbb_name}")
+    set(libraries
+        "@TBB_LIBRARY@" "@TBB_LIBRARY_DEBUG@"
+        "@TBB_MALLOC_LIBRARY@" "@TBB_MALLOC_LIBRARY_DEBUG@"
+    )
+    set(NumpyMKL_FOUND @NumpyMKL_FOUND@)
+    if(NumpyMKL_FOUND)
+        list(APPEND libraries @NumpyMKL_LIBRARIES@)
+    endif()
+    foreach(library ${libraries})
+        if(EXISTS "${library}")
+            get_filename_component(filename "${library}" NAME)
+            list(APPEND rpathless_libraries "${filename}")
         endif()
     endforeach()
 endif()
@@ -74,9 +81,9 @@ foreach(library ${shared_objects})
     list(REMOVE_ITEM current_directories "${current}")
     change_object_rpath("${library}" ${current_directories})
 
-    foreach(tbb_name ${tbb_names})
+    foreach(rpathless ${rpathless_libraries})
         execute_process(COMMAND
-            install_name_tool -change ${tbb_name} @rpath/${tbb_name} ${library}
+            install_name_tool -change ${rpathless} @rpath/${rpathless} ${library}
             ERROR_QUIET
         )
     endforeach()

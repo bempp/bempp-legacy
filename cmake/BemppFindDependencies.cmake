@@ -3,17 +3,39 @@ include(PackageLookup)
 
 # First, find general packages
 find_package(Doxygen)
+# Look for mkl libraries linked to numpy first and use those if available
+find_package(NumpyMKL)
+if(NumpyMKL_FOUND)
+    if(NumpyMKL_PREFIXES)
+        list(INSERT CMAKE_PREFIX_PATH 0 ${NumpyMKL_PREFIXES})
+        add_to_rpath(${NumpyMKL_LIBRARIES})
+    endif()
+    set(BLA_VENDOR ${NumpyMKL_VENDOR})
+    list(INSERT CMAKE_LIBRARY_PATH 0 ${NumpyMKL_LIBRARY_DIRS})
+    set(BLAS_LIBRARIES ${NumpyMKL_LIBRARIES})
+    set(LAPACK_LIBRARIES ${NumpyMKL_LIBRARIES})
+    set(LAPACK_FOUND TRUE)
+endif()
+       message(STATUS "${CMAKE_PREFIX_PATH}")
+# Then look for other possible blas libraries. The last few lines should ensure
+# we are using the numpy MKLs, if found.
 find_package(CBLAS REQUIRED)
+# Check if threading exists in library
 include(BlasThreads)
-find_package(LAPACK REQUIRED)
+if(NOT NumpyMKL_FOUND)
+    # Assume mkls have Lapack. Not sure this is true... but can't use numpy's mkl otherwise.
+    find_package(LAPACK REQUIRED)
+endif()
+if(NOT LAPACK_INCLUDE_DIR)
+    find_path(LAPACK_INCLUDE_DIR clapack.h)
+endif()
+# Look for python libraries corresponding to the python interpreter
+# This step is likely not compatible with (automatic) cross-compilation
 find_package(CoherentPython REQUIRED)
 find_package(Sphinx)
 if (WITH_CUDA)
    find_package(CUDA)
 endif ()
-if(NOT LAPACK_INCLUDE_DIR)
-    find_path(LAPACK_INCLUDE_DIR clapack.h)
-endif()
 
 list(INSERT CMAKE_LOOKUP_PATH 0 ${PROJECT_SOURCE_DIR}/cmake/lookups)
 if(WITH_ALUGRID)
@@ -89,7 +111,17 @@ add_definitions(-DARMA_USE_LAPACK -DARMA_USE_BLAS)
 
 # Creates script for running python with the bempp package available
 include(EnvironmentScript)
-add_to_ld_path("${EXTERNAL_ROOT}/lib")
+add_to_ld_path(
+    "${EXTERNAL_ROOT}/lib"
+    ${BLAS_LIBRARIES}
+    ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY_DEBUG}
+    ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY_RELEASE}
+    ${TBB_LIBRARY}
+    ${TBB_LIBRARY_DEBUG}
+    ${TBB_MALLOC_LIBRARY}
+    ${TBB_MALLOC_LIBRARY_DEBUG}
+    ${ARMADILLO_LIBRARY}
+)
 add_to_python_path("${PROJECT_BINARY_DIR}/python")
 add_to_python_path("${EXTERNAL_ROOT}/python")
 set(LOCAL_PYTHON_EXECUTABLE "${PROJECT_BINARY_DIR}/localpython.sh")

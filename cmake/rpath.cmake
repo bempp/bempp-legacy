@@ -8,9 +8,17 @@ endif()
 
 function(add_to_rpath)
     foreach(path ${ARGN})
-        list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${path}" system_dir)
-        if("${system_dir}" STREQUAL "-1")
-            list(APPEND CMAKE_INSTALL_RPATH "${path}")
+        # If quacks like a library, get directory where it resides
+        get_filename_component(extension "${path}" EXT)
+        if("${extension}" MATCHES "\\.so.*" OR "${extension}" MATCHES "\\.dylib")
+            get_filename_component(path "${path}" PATH)
+        endif()
+        if(NOT "${extensopm}" MATCHES "\\.a")
+            # Checks whether it is a system library
+            list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${path}" system_dir)
+            if("${system_dir}" STREQUAL "-1")
+                list(APPEND CMAKE_INSTALL_RPATH "${path}")
+            endif()
         endif()
     endforeach()
 
