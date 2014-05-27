@@ -19,7 +19,11 @@ if(Boost_UNIT_TEST_FRAMEWORK_LIBRARY_RELEASE)
         optimized ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY_RELEASE}
     )
 endif()
-add_test(unittests run_tests)
+
+add_test(NAME unittests
+    COMMAND ${PROJECT_BINARY_DIR}/run_cpptests.sh $<TARGET_FILE:run_tests>
+    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+)
 if(NOT "$ENV{LD_LIBRARY_PATH}" STREQUAL "")
     list(APPEND ENVIRONMENT_VARIABLES
         "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}")
