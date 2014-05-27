@@ -6,7 +6,7 @@ file(GLOB PATCH_FILES ${ROOT}/cmake/patches/tbb/*.patch)
 find_program(PATCH_EXECUTABLE patch)
 foreach(patch ${PATCH_FILES})
   execute_process(
-      COMMAND ${PATCH_EXECUTABLE} -N ${patch}
+      COMMAND ${PATCH_EXECUTABLE} -N < ${patch}
       WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
   )
 endforeach()
