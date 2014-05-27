@@ -15,4 +15,7 @@ test_lapack/build
 .options.cfg
 installer/files
 bempp_setup.err
+.*.swpbempp-egg.info/bempp-egg.info/
 .*.swp
+bempp.egg-info/
+pkg_install/
