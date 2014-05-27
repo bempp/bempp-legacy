@@ -5,12 +5,18 @@ endif ()
 
 # Tries and creates an example project
 if(NOT NOEXPORT)
+    # A mostly standard CMakeLists.txt file
     configure_file("ExampleProject_CMakeLists.cmake"
         "${CMAKE_CURRENT_BINARY_DIR}/ExampleProject/CMakeLists.txt"
         @ONLY
     )
+    # Runs configuration step -- ie makes sure build directory exists and is empty
     configure_file("ConfigureProject.in.cmake"
         "${CMAKE_CURRENT_BINARY_DIR}/ExampleProject/ConfigureProject.cmake"
+        @ONLY
+    )
+    configure_file("ProjectInclusionUnitTests.in.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/ExampleProject/ProjectInclusionUnitTests.cmake"
         @ONLY
     )
     add_test(NAME configure_test_project
