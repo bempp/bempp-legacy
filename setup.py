@@ -158,11 +158,7 @@ class Build(dBuild):
             chdir(build_dir)
             self.spawn([cmake,
                 '-DPYTHON_PKG_DIR=\'%s\'' % install_dir,
-<<<<<<< HEAD
                 '-DPYPACKED=TRUE',
-=======
-                '-DPYPACK=TRUE',
->>>>>>> 5dfb642b62fc3dd951bc829b85d8c1a893224527
                 source_dir
             ])
             self.spawn([cmake, '--build', '.', '--target', 'install'])
