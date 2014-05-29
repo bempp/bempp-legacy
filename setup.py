@@ -255,6 +255,7 @@ setup(
     name = "bempp",
     version = "2.0",
 
+    setup_requires = ['numpy', 'pytest'],
     install_requires = ['numpy', 'pytest'],
     platforms = ['GNU/Linux','Unix','Mac OS-X'],
 
