@@ -37,17 +37,11 @@ if(WITH_TESTS)
     enable_testing()
     add_subdirectory(tests)
     # Adds a bash script to run cpp unit tests
-    if(UNIX)
-        set(EXECUTABLE "cd ${PROJECT_BINARY_DIR}/tests/unit && ./run_tests")
-        configure_file("${GreatCMakeCookOff_DIR}/../scripts/localbash.in.sh"
-            "${PROJECT_BINARY_DIR}/CMakeFiles/run_cpptests.sh"
-            @ONLY
-        )
-        file(COPY "${PROJECT_BINARY_DIR}/CMakeFiles/run_cpptests.sh"
-            DESTINATION ${PROJECT_BINARY_DIR}
-            FILE_PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
-        )
-    endif()
+    create_environment_script(
+        WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/tests/unit"
+        EXECUTABLE "./run_tests"
+        PATH "${PROJECT_BINARY_DIR}/run_cpptests.sh"
+    )
 endif(WITH_TESTS)
 
 add_subdirectory(lib)
