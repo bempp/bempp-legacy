@@ -18,6 +18,7 @@ if(NumpyMKL_FOUND)
 endif()
 # Then look for other possible blas libraries. The last few lines should ensure
 # we are using the numpy MKLs, if found.
+set(BLAS_INCLUDE_DIR_OPTIONAL TRUE)
 find_package(CBLAS REQUIRED)
 # Check if threading exists in library
 include(BlasThreads)
