@@ -16,7 +16,6 @@ if(NumpyMKL_FOUND)
     set(LAPACK_LIBRARIES ${NumpyMKL_LIBRARIES})
     set(LAPACK_FOUND TRUE)
 endif()
-       message(STATUS "${CMAKE_PREFIX_PATH}")
 # Then look for other possible blas libraries. The last few lines should ensure
 # we are using the numpy MKLs, if found.
 find_package(CBLAS REQUIRED)
