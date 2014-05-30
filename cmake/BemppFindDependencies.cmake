@@ -19,6 +19,8 @@ if(WITH_ALUGRID)
 endif()
 lookup_package(Boost 1.35 COMPONENTS unit_test_framework REQUIRED)
 lookup_package(Armadillo REQUIRED ARGUMENTS TIMEOUT 60)
+# test whether armadillo is compiled with LAPACK and BLAS. Otherwise issue warning.
+include(check_armadillo_linkage)
 lookup_package(TBB DOWNLOAD_BY_DEFAULT REQUIRED CHECK_EXTERNAL)
 lookup_package(Dune REQUIRED DOWNLOAD_BY_DEFAULT
     COMPONENTS geometry grid localfunctions foamgrid
@@ -82,7 +84,6 @@ foreach(component Boost BLAS LAPACK ARMADILLO TBB ALUGrid)
         list(APPEND BEMPP_INCLUDE_DIRS ${${component}_INCLUDE_DIR})
     endif()
 endforeach()
-add_definitions(-DARMA_USE_LAPACK -DARMA_USE_BLAS)
 
 
 # Creates script for running python with the bempp package available
