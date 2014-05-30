@@ -1,5 +1,23 @@
-include(FindPkgConfig)
-include(PackageLookup)
+include(FindPkgConfig)  # use pkg-config to find stuff
+include(PythonPackage)  # check for existence of python packages
+include(PackageLookup)  # check for existence, or install external projects
+include(EnvironmentScript) # scripts to run stuff from build directory
+
+# Creates script for running python with the bempp package available
+# Also makes python packages and selected directories available to the build system
+add_to_python_path("${PROJECT_BINARY_DIR}/python")
+add_to_python_path("${EXTERNAL_ROOT}/python")
+add_python_eggs("${PROJECT_SOURCE_DIR}"
+    EXCLUDE
+        "${PROJECT_SOURCE_DIR}/bempp*egg"
+        "${PROJECT_SOURCE_DIR}/Bempp*egg"
+)
+set(LOCAL_PYTHON_EXECUTABLE "${PROJECT_BINARY_DIR}/localpython.sh")
+create_environment_script(
+    EXECUTABLE "${PYTHON_EXECUTABLE}"
+    PATH "${LOCAL_PYTHON_EXECUTABLE}"
+    PYTHON
+)
 
 # First, find general packages
 find_package(Doxygen)
@@ -53,7 +71,6 @@ if (SWIG_FOUND AND SWIG_VERSION VERSION_LESS 2.0.7)
     )
 endif()
 
-include(PythonPackage)
 
 # first looks for python package, second for linkage/include stuff
 find_python_package(numpy REQUIRED
@@ -86,8 +103,7 @@ foreach(component Boost BLAS LAPACK ARMADILLO TBB ALUGrid)
 endforeach()
 
 
-# Creates script for running python with the bempp package available
-include(EnvironmentScript)
+# Add locations of different libraries
 add_to_ld_path(
     "${EXTERNAL_ROOT}/lib"
     ${BLAS_LIBRARIES}
@@ -98,14 +114,6 @@ add_to_ld_path(
     ${TBB_MALLOC_LIBRARY}
     ${TBB_MALLOC_LIBRARY_DEBUG}
     ${ARMADILLO_LIBRARY}
-)
-add_to_python_path("${PROJECT_BINARY_DIR}/python")
-add_to_python_path("${EXTERNAL_ROOT}/python")
-set(LOCAL_PYTHON_EXECUTABLE "${PROJECT_BINARY_DIR}/localpython.sh")
-create_environment_script(
-    EXECUTABLE "${PYTHON_EXECUTABLE}"
-    PATH "${LOCAL_PYTHON_EXECUTABLE}"
-    PYTHON
 )
 
 if(WITH_TESTS)
