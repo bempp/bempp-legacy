@@ -2,7 +2,7 @@ ExternalProject_Add(
     Patchelf
     PREFIX ${EXTERNAL_ROOT}
     URL http://releases.nixos.org/patchelf/patchelf-0.8/patchelf-0.8.tar.gz
-    URL_HASH MD5=407b229e6a681ffb0e2cdd5915cb2d01
+    URL_HASH SHA256=14af06a2da688d577d64ff8dac065bb8903bbffbe01d30c62df7af9bf4ce72fe
     CONFIGURE_COMMAND ./configure --prefix=${EXTERNAL_ROOT}
     BUILD_IN_SOURCE 1
     BUILD_COMMAND make

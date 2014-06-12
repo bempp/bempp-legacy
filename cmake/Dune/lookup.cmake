@@ -4,16 +4,16 @@ if(TARGET Boost)
 endif()
 set(default_common_URL
     http://www.dune-project.org/download/2.2.1/dune-common-2.2.1.tar.gz)
-set(default_common_MD5 4001d4c95f06e22ded41abeb063c561c)
+set(default_common_SHA256 6b16b2390af79e2ca93367c95d06ed536b58422034cf34e4437fc6201bb1ab85)
 set(default_geometry_URL
     http://www.dune-project.org/download/2.2.1/dune-geometry-2.2.1.tar.gz)
-set(default_geometry_MD5 35bfc7656549abb2a414ecbd06108384)
+set(default_geometry_SHA256 5ee2e8f514018f4e2f775c3c751764637895efd3851b33ab6eb91e2add5d9066)
 set(default_grid_URL
     http://www.dune-project.org/download/2.2.1/dune-grid-2.2.1.tar.gz)
-set(default_grid_MD5 21f1a53949c1d21682101552e3b5bc5c)
+set(default_grid_SHA256 9f90e9a1f690a026f5dfee79c857f149cb219c10b6064fcb92a0e36c1d6364c0)
 set(default_localfunctions_URL
     http://www.dune-project.org/download/2.2.1/dune-localfunctions-2.2.1.tar.gz)
-set(default_localfunctions_MD5 49a8f85802ff5d9ed917c71181dc2fbd)
+set(default_localfunctions_SHA256 cf0fd7c486a2d417d4e959cf9246e13b73ce66702c4dc4c0b2eec3e8c0a50db9)
 
 # Needed by dune
 #enable_language(Fortran)
@@ -31,18 +31,18 @@ find_program_or_fail(aclocal_EXECUTABLE aclocal)
 find_program_or_fail(automake_EXECUTABLE automake)
 
 macro(_get_arguments component)
-    set(keyvalues  ${component}_URL;${component}_MD5)
+    set(keyvalues  ${component}_URL;${component}_SHA256)
     cmake_parse_arguments(_ "" "${keyvalues}" "" ${Dune_ARGUMENTS})
-    if(__${component}_URL AND NOT __${component}_MD5)
-        message(FATAL_ERROR "${component} given a URL but no MD5 hash")
-    elseif(__${component}_URL AND __${component}_MD5)
+    if(__${component}_URL AND NOT __${component}_SHA256)
+        message(FATAL_ERROR "${component} given a URL but no SHA256 hash")
+    elseif(__${component}_URL AND __${component}_SHA256)
         set(prefix "__")
     else()
         set(prefix "default_")
     endif()
     set(${component}_ARGUMENTS
         URL ${${prefix}${component}_URL}
-        URL_HASH MD5=${${prefix}${component}_MD5}
+        URL_HASH SHA256=${${prefix}${component}_SHA256}
     )
 endmacro()
 
