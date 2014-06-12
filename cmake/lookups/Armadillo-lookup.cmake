@@ -9,9 +9,9 @@ endif()
 if(NOT Armadillo_URL)
     set(arguments
         URL;
-        http://sourceforge.net/projects/arma/files/armadillo-4.000.4.tar.gz
+        http://sourceforge.net/projects/arma/files/armadillo-4.300.8.tar.gz
         URL_HASH;
-        MD5=c548089e29ee69e9a6e9bce76d270bea
+        SHA256=1d1a77ad7a74e8b4a74d7b71c5e3fe488e26283907b316618de0a8558c60173a
     )
 elseif(Armadillo_MD5)
     set(arguments URL;${Armadillo_URL};URL_HASH;MD5=${Armadillo_MD5})
