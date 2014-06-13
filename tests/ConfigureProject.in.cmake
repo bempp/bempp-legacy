@@ -10,11 +10,24 @@ if(EXISTS "${build_dir}")
     endif()
 endif()
 file(MAKE_DIRECTORY "${build_dir}")
-execute_process(
-    COMMAND ${CMAKE_COMMAND} .. -DPROJECT_INCLUSION_UNIT_TESTS=ON
-    WORKING_DIRECTORY "${build_dir}"
-    RESULT_VARIABLE result
-)
+
+# Point explicitly to directory if NOEXPORT
+if(NOT "@NOEXPORT@" STREQUAL "")
+    execute_process(
+        COMMAND ${CMAKE_COMMAND} ..
+            -DPROJECT_INCLUSION_UNIT_TESTS=ON
+            -DBempp_DIR=@PROJECT_BINARY_DIR@
+        WORKING_DIRECTORY "${build_dir}"
+        RESULT_VARIABLE result
+    )
+else()
+    execute_process(
+        COMMAND ${CMAKE_COMMAND} .. -DPROJECT_INCLUSION_UNIT_TESTS=ON
+        WORKING_DIRECTORY "${build_dir}"
+        RESULT_VARIABLE result
+    )
+endif()
+
 if(NOT result STREQUAL 0)
     message(FATAL_ERROR "Could not configure test project in ${build_dir}")
 endif()
