@@ -18,6 +18,19 @@ file(WRITE "${EXTERNAL_ROOT}/src/boost.patch"
     " };\n"
 )
 
+
+file(WRITE "${PROJECT_BINARY_DIR}/CMakeFiles/external/boost_configure.sh"
+    "#!${bash_EXECUTABLE}\n"
+    "\n"
+    "./b2 ${toolset} link=static variant=release --with-test \\\n"
+    "    cxxflags=\"${CMAKE_CXX_FLAGS}\"\n"
+)
+set(configure_command "${EXTERNAL_ROOT}/src/boost_configure.sh")
+file(COPY "${PROJECT_BINARY_DIR}/CMakeFiles/external/boost_configure.sh"
+    DESTINATION "${EXTERNAL_ROOT}/src"
+    FILE_PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
+)
+
 find_program(PATCH_EXECUTABLE patch REQUIRED)
 ExternalProject_Add(
     Boost
@@ -28,7 +41,7 @@ ExternalProject_Add(
     BUILD_IN_SOURCE 1
     CONFIGURE_COMMAND ./bootstrap.sh
     PATCH_COMMAND ${PATCH_EXECUTABLE} -p0 -N < "${EXTERNAL_ROOT}/src/boost.patch"
-    BUILD_COMMAND  ./b2 ${toolset} link=static variant=release --with-test
+    BUILD_COMMAND ${configure_command}
     INSTALL_COMMAND ./b2 ${toolset} link=static variant=release --with-test
         --prefix=${EXTERNAL_ROOT} install
     LOG_DOWNLOAD ON
