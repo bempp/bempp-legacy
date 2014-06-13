@@ -19,3 +19,6 @@ bempp_setup.err
 .*.swp
 bempp.egg-info/
 pkg_install/
+py-*/
+pytest*/
+external/
