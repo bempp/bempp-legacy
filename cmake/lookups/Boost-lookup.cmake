@@ -3,21 +3,13 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
   set(toolset "toolset=intel-linux")
 endif()
 
-# Patches class for intel 13 c++11 (miss?)behavior
-# Resolution from https://svn.boost.org/trac/boost/ticket/9417
-file(WRITE "${EXTERNAL_ROOT}/src/boost.patch"
-    "--- boost/test/utils/trivial_singleton.hpp	2008-10-13 09:20:26.000000000 +0100\n"
-    "+++ boost/test/utils/trivial_singleton.new.hpp	2014-05-08 12:46:52.711942285 +0100\n"
-    "@@ -37,7 +37,7 @@\n"
-    " public:\n"
-    "     static Derived& instance() { static Derived the_inst; return the_inst; }    \n"
-    " protected:\n"
-    "-    singleton()  {}\n"
-    "+    singleton() : noncopyable() {}\n"
-    "     ~singleton() {}\n"
-    " };\n"
+include(PatchScript)
+set(patchdir "${PROJECT_SOURCE_DIR}/cmake/patches/boost")
+create_patch_script(Boost patch_script
+    CMDLINE "-p0"
+    WORKING_DIRECTORY "${EXTERNAL_ROOT}/src/Boost"
+    "${patchdir}/unittests_noncopyable.patch"
 )
-
 
 file(WRITE "${PROJECT_BINARY_DIR}/CMakeFiles/external/boost_configure.sh"
     "#!${bash_EXECUTABLE}\n"
@@ -40,7 +32,7 @@ ExternalProject_Add(
     URL_HASH SHA256=fff00023dd79486d444c8e29922f4072e1d451fc5a4d2b6075852ead7f2b7b52
     BUILD_IN_SOURCE 1
     CONFIGURE_COMMAND ./bootstrap.sh
-    PATCH_COMMAND ${PATCH_EXECUTABLE} -p0 -N < "${EXTERNAL_ROOT}/src/boost.patch"
+    PATCH_COMMAND ${patch_script}
     BUILD_COMMAND ${configure_command}
     INSTALL_COMMAND ./b2 ${toolset} link=static variant=release --with-test
         --prefix=${EXTERNAL_ROOT} install
