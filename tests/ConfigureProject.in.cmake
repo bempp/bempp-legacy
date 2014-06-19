@@ -10,6 +10,9 @@ if(EXISTS "${build_dir}")
     endif()
 endif()
 file(MAKE_DIRECTORY "${build_dir}")
+file(WRITE "${build_dir}/CacheVar.cmake"
+    "set(CMAKE_CXX_COMPILER \"@CMAKE_CXX_COMPILER@\" CACHE PATH \"\")\n"
+)
 
 # Point explicitly to directory if NOEXPORT
 if(NOT "@NOEXPORT@" STREQUAL "")
@@ -17,6 +20,7 @@ if(NOT "@NOEXPORT@" STREQUAL "")
         COMMAND ${CMAKE_COMMAND} ..
             -DPROJECT_INCLUSION_UNIT_TESTS=ON
             -DBempp_DIR=@PROJECT_BINARY_DIR@
+            -C CacheVar.cmake
         WORKING_DIRECTORY "${build_dir}"
         RESULT_VARIABLE result
     )
