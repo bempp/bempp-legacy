@@ -10,28 +10,27 @@ if(EXISTS "${build_dir}")
     endif()
 endif()
 file(MAKE_DIRECTORY "${build_dir}")
+
+# Make sure that some test project picks up some things we know from this
+# build:
+# - compiler should be the same
+# - Bempp_DIR should point build dir, so that this build is picked up, rather
+# than any other versions of bem++ that may be lying around.
 file(WRITE "${build_dir}/CacheVar.cmake"
     "set(CMAKE_CXX_COMPILER \"@CMAKE_CXX_COMPILER@\" CACHE PATH \"\")\n"
+    "set(Bempp_DIR \"@PROJECT_BINARY_DIR@\" CACHE PATH \"\")\n"
 )
 
-# Point explicitly to directory if NOEXPORT
-if(NOT "@NOEXPORT@" STREQUAL "")
-    execute_process(
-        COMMAND ${CMAKE_COMMAND} ..
-            -DPROJECT_INCLUSION_UNIT_TESTS=ON
-            -DBempp_DIR=@PROJECT_BINARY_DIR@
-            -C CacheVar.cmake
-        WORKING_DIRECTORY "${build_dir}"
-        RESULT_VARIABLE result
-    )
-else()
-    execute_process(
-        COMMAND ${CMAKE_COMMAND} .. -DPROJECT_INCLUSION_UNIT_TESTS=ON
-        WORKING_DIRECTORY "${build_dir}"
-        RESULT_VARIABLE result
-    )
-endif()
+execute_process(
+    COMMAND ${CMAKE_COMMAND}
+        -DPROJECT_INCLUSION_UNIT_TESTS=ON
+        -CCacheVar.cmake ..
+    WORKING_DIRECTORY "${build_dir}"
+    RESULT_VARIABLE result
+)
 
 if(NOT result STREQUAL 0)
+    message("error: ${error}\n")
+    message("output: ${output}\n")
     message(FATAL_ERROR "Could not configure test project in ${build_dir}")
 endif()
