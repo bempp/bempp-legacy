@@ -1,6 +1,14 @@
 set(toolset "")
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
-  set(toolset "toolset=intel-linux")
+    set(toolset "toolset=intel-linux")
+    file(WRITE "${EXTERNAL_ROOT}/src/user-config.jam"
+      "using intel : : \"${CMAKE_CXX_COMPILER}\" ; \n"
+    )
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    set(toolset "toolset=gcc")
+    file(WRITE "${EXTERNAL_ROOT}/src/user-config.jam"
+      "using gcc : : \"${CMAKE_CXX_COMPILER}\" ; \n"
+    )
 endif()
 
 include(PatchScript)
@@ -13,6 +21,8 @@ create_patch_script(Boost patch_script
 
 file(WRITE "${PROJECT_BINARY_DIR}/CMakeFiles/external/boost_configure.sh"
     "#!${bash_EXECUTABLE}\n"
+    "userjam=\"${EXTERNAL_ROOT}/src/user-config.jam\"\n"
+    "[ -e $userjam ] && cp $userjam tools/build/v2\n"
     "\n"
     "./b2 ${toolset} link=static variant=release --with-test \\\n"
     "    cxxflags=\"${CMAKE_CXX_FLAGS}\"\n"
