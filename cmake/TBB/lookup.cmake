@@ -22,19 +22,36 @@ file(WRITE "${EXTERNAL_ROOT}/src/TBBVariables.cmake"
     "\nset(ROOT \"${PROJECT_SOURCE_DIR}\" CACHE STRING \"\")\n"
 )
 
+include(PatchScript)
+set(patchdir "${PROJECT_SOURCE_DIR}/cmake/patches/tbb")
+create_patch_script(Boost patch_script
+    CMDLINE "-p0"
+    WORKING_DIRECTORY "${EXTERNAL_ROOT}/src/TBB"
+    "${patchdir}/pipeline.patch"
+)
+
+
+set(patch_file "${PROJECT_SOURCE_DIR}/cmake/patches/tbb/pipeline.patch")
 ExternalProject_Add(
     TBB
     PREFIX ${EXTERNAL_ROOT}
     URL ${TBB_URL}
     URL_HASH SHA256=${TBB_URL_SHA256}
-    PATCH_COMMAND
-     ${CMAKE_COMMAND} -E copy_if_different
-                      ${CURRENT_LOOKUP_DIRECTORY}/install.cmake
-                      ${EXTERNAL_ROOT}/src/TBB/CMakeLists.txt
+    PATCH_COMMAND ${patch_script}
     CMAKE_ARGS  -C "${EXTERNAL_ROOT}/src/TBBVariables.cmake"
     LOG_DOWNLOAD ON
     LOG_CONFIGURE ON
     LOG_BUILD ON
 )
+ExternalProject_Add_Step(TBB
+    add_cmake
+    COMMAND
+     ${CMAKE_COMMAND} -E copy_if_different
+                      ${CURRENT_LOOKUP_DIRECTORY}/install.cmake
+                      ${EXTERNAL_ROOT}/src/TBB/CMakeLists.txt
+    DEPENDERS build
+)
+
+
 # Rerun cmake to capture new TBB install
 add_recursive_cmake_step(TBB DEPENDEES install)
