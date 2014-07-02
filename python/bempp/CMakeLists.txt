@@ -2,6 +2,8 @@
 include(${SWIG_USE_FILE})
 # Remove "-modern" if you need compatibility with Python 2.1.x and older
 set(CMAKE_SWIG_FLAGS "-modern")
+# Include target for copy files
+include(TargetCopyFiles)
 
 include_directories(${PYTHON_INCLUDE_DIR} ${NUMPY_INCLUDE_DIRS})
 
@@ -30,28 +32,7 @@ configure_file(
     ${CMAKE_BINARY_DIR}/python/bempp/pyfragments.swg)
 
 ### Move __init__.py to the build directory ###################################
-if (NOT (${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR}))
-    #set(PYTHON_SOURCES "__init__.py")
-    file(GLOB_RECURSE PYTHON_SOURCES RELATIVE
-        ${CMAKE_SOURCE_DIR}/python/bempp
-        ${CMAKE_SOURCE_DIR}/python/bempp/*.py
-    )
-
-    foreach(py_file ${PYTHON_SOURCES})
-        list(APPEND PYTHON_DEPS "${CMAKE_CURRENT_BINARY_DIR}/${py_file}")
-        add_custom_command(
-            OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/${py_file}
-            COMMAND ${CMAKE_COMMAND} -E copy
-                ${CMAKE_CURRENT_SOURCE_DIR}/${py_file}
-                ${CMAKE_CURRENT_BINARY_DIR}/${py_file}
-            DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${py_file}
-            COMMENT "Copying file ${CMAKE_CURRENT_SOURCE_DIR}/${py_file}"
-            VERBATIM
-        )
-    endforeach()
-
-    add_custom_target(copy_python_bempp ALL DEPENDS ${PYTHON_DEPS})
-endif ()
+add_copy_files(${SWIG_MODULE_core_REAL_NAME} GLOB *.py VERBOSE)
 
 ###############################################################################
 
