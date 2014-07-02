@@ -18,7 +18,7 @@ change_tbb_install_name(_core)
 add_custom_command(
     TARGET ${SWIG_MODULE_core_REAL_NAME}
     POST_BUILD
-    COMMAND ${CMAKE_COMMAND} copy -E
+    COMMAND ${CMAKE_COMMAND} -E copy
         ${CMAKE_CURRENT_BINARY_DIR}/core.py
         ${CMAKE_CURRENT_BINARY_DIR}/core.py.orig
     COMMAND ${PYTHON_EXECUTABLE}
