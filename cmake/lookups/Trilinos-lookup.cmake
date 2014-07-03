@@ -10,9 +10,9 @@ endif()
 if(NOT Trilinos_URL)
     set(arguments
         URL;
-        http://trilinos.sandia.gov/download/files/trilinos-11.6.1-Source.tar.bz2
+        http://trilinos.sandia.gov/download/files/trilinos-11.6.2-Source.tar.bz2
         URL_HASH;
-        SHA256=e2deb00f612431ac68468735b8eba6ff752053063dfb9d5cb490f5401e65f06f
+        SHA256=c1f8c15f263161a8a2c1211b177122721cf268dd24d192925beb91cdf21ae6ba
     )
 elseif(Trilinos_SHA256)
     set(arguments URL;${Trilinos_URL};URL_HASH;SHA256=${Trilinos_SHA256})
@@ -130,8 +130,8 @@ ExternalProject_Add(
 )
 # Rerun cmake to capture new armadillo install
 add_recursive_cmake_step(Trilinos DEPENDEES install)
-# If installing in bizarre location (ie all under python package dir), then add post-lookup script
-# sot that the package can be found.
+# If installing in bizarre location (ie all under python package dir), then add
+# post-lookup script sot that the package can be found.
 if(Trilinos_PYPACKED)
     write_lookup_hook(POST_LOOKUP Trilinos
         "list(FIND CMAKE_PREFIX_PATH \"${prefix_location}\" has_prefix)\n"
