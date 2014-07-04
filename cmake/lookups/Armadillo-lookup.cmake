@@ -25,6 +25,20 @@ if(NOT Armadillo_TIMEOUT)
     set(Armadillo_TIMEOUT 15)
 endif()
 
+# Create list of library paths.
+# They will be added to CMAKE_LIBRARY_PATH
+set(library_dirs ${CMAKE_LIBRARY_PATH})
+foreach(library ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+   get_filename_component(directory "${library}" PATH)
+   list(FIND library_dirs "${directory}" index)
+   if(NOT index EQUAL -1)
+       list(APPEND library_dirs "${directory}")
+   endif()
+endforeach()
+string(REGEX REPLACE ";" " " library_dirs "${library_dirs}")
+string(REGEX REPLACE ";" " " rpath_dirs "${CMAKE_INSTALL_RPATH}")
+
+# Create script to pass variables to Armadillo
 include(PassonVariables)
 passon_variables(Armadillo
     FILENAME "${EXTERNAL_ROOT}/src/ArmadilloVariables.cmake"
@@ -33,8 +47,8 @@ passon_variables(Armadillo
         "BLAS_.*" "LAPACK_.*"
     ALSOADD
         "\nset(CMAKE_INSTALL_PREFIX \"${EXTERNAL_ROOT}\" CACHE STRING \"\")\n"
-        "\nset(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_RPATH} CACHE INTERNAL \"\")\n"
-	"\nset(ARMA_USE_HDF5 \"OFF\")\n"
+        "set(CMAKE_LIBRARY_PATH ${library_dirs} CACHE PATH \"\" FORCE)\n"
+        "set(CMAKE_INSTALL_RPATH ${rpath_dirs} CACHE INTERNAL \"\")\n"
 )
 if(BLAS_mkl_core_LIBRARY)
     get_filename_component(libdir "${BLAS_mkl_core_LIBRARY}" PATH)
@@ -51,6 +65,8 @@ create_patch_script(armadillo patch_script
 	    "${patchdir}/armadillo_disable_hdf5.patch"
 			    )
 
+
+# Finally, we can create external project
 ExternalProject_Add(
     Armadillo
     PREFIX ${EXTERNAL_ROOT}
