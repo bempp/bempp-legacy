@@ -2,15 +2,17 @@
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   set(
     TBB_URL
-    http://threadingbuildingblocks.org/sites/default/files/software_releases/mac/tbb42_20131003oss_osx.tgz
+    http://www.threadingbuildingblocks.org/sites/default/files/software_releases/mac/tbb42_20140601oss_osx.tgz
   )
-  set(TBB_URL_SHA256 4610965583e8a1f0dff2b6385789a994399804513f39330f7234cc74473f8edc)
+  set(TBB_URL_SHA256 
+      63078757f3f65abb3ef568e75568e721fa83efdecad4d6a060b010255ddbdee3)
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
   set(
     TBB_URL
-    http://threadingbuildingblocks.org/sites/default/files/software_releases/linux/tbb42_20131003oss_lin.tgz
+    http://www.threadingbuildingblocks.org/sites/default/files/software_releases/linux/tbb42_20140601oss_lin.tgz
   )
-  set(TBB_URL_SHA256 a18e810300cc410034d4d77dc7ff2882b8b5b51630c8b5a8a38d3b84c2951ce5)
+  set(TBB_URL_SHA256
+      95aab3f82f435aff8aa1f63d1e3608e3181fc66d2d52d0c429873af8c69af882)
 else()
   message(FATAL_ERROR "Automatic install of TBB in windows not implemented")
 endif()
@@ -22,34 +24,19 @@ file(WRITE "${EXTERNAL_ROOT}/src/TBBVariables.cmake"
     "\nset(ROOT \"${PROJECT_SOURCE_DIR}\" CACHE STRING \"\")\n"
 )
 
-include(PatchScript)
-set(patchdir "${PROJECT_SOURCE_DIR}/cmake/patches/tbb")
-create_patch_script(Boost patch_script
-    CMDLINE "-p0"
-    WORKING_DIRECTORY "${EXTERNAL_ROOT}/src/TBB"
-    "${patchdir}/pipeline.patch"
-)
-
-
-set(patch_file "${PROJECT_SOURCE_DIR}/cmake/patches/tbb/pipeline.patch")
 ExternalProject_Add(
     TBB
     PREFIX ${EXTERNAL_ROOT}
     URL ${TBB_URL}
     URL_HASH SHA256=${TBB_URL_SHA256}
-    PATCH_COMMAND ${patch_script}
+    PATCH_COMMAND 
+        ${CMAKE_COMMAND} -E copy_if_different
+            ${CURRENT_LOOKUP_DIRECTORY}/install.cmake
+            ${EXTERNAL_ROOT}/src/TBB/CMakeLists.txt
     CMAKE_ARGS  -C "${EXTERNAL_ROOT}/src/TBBVariables.cmake"
     LOG_DOWNLOAD ON
     LOG_CONFIGURE ON
     LOG_BUILD ON
-)
-ExternalProject_Add_Step(TBB
-    add_cmake
-    COMMAND
-     ${CMAKE_COMMAND} -E copy_if_different
-                      ${CURRENT_LOOKUP_DIRECTORY}/install.cmake
-                      ${EXTERNAL_ROOT}/src/TBB/CMakeLists.txt
-    DEPENDERS build
 )
 
 

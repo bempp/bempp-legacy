@@ -23,7 +23,7 @@ inline void makeGridParameters(GridParameters& params, const std::string& topolo
     else if (topology == "tetrahedral")
         params.topology = Bempp::GridParameters::TETRAHEDRAL;
     else
-        throw std::runtime_error("Invalid grid topology requested");
+        throw std::invalid_argument("Invalid grid topology requested");
 }
 
 } // namespace Bempp
