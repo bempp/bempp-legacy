@@ -34,6 +34,7 @@ passon_variables(Armadillo
     ALSOADD
         "\nset(CMAKE_INSTALL_PREFIX \"${EXTERNAL_ROOT}\" CACHE STRING \"\")\n"
         "\nset(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_RPATH} CACHE INTERNAL \"\")\n"
+	"\nset(ARMA_USE_HDF5 \"OFF\")\n"
 )
 if(BLAS_mkl_core_LIBRARY)
     get_filename_component(libdir "${BLAS_mkl_core_LIBRARY}" PATH)
@@ -41,6 +42,15 @@ if(BLAS_mkl_core_LIBRARY)
        "set(CMAKE_LIBRARY_PATH \${CMAKE_LIBRARY_PATH} \"${libdir}\" CACHE PATH \"\")\n"
     )
 endif()
+
+include(PatchScript)
+set(patchdir "${PROJECT_SOURCE_DIR}/cmake/patches/armadillo")
+create_patch_script(armadillo patch_script
+	    CMDLINE "-p0"
+	    WORKING_DIRECTORY "${EXTERNAL_ROOT}/src/Armadillo"
+	    "${patchdir}/armadillo_disable_hdf5.patch"
+			    )
+
 ExternalProject_Add(
     Armadillo
     PREFIX ${EXTERNAL_ROOT}
@@ -51,6 +61,7 @@ ExternalProject_Add(
         -DCMAKE_BUILD_TYPE=Release
     TIMEOUT 10
     # Wrap download, configure and build steps in a script to log output
+    PATCH_COMMAND ${patch_script}
     LOG_DOWNLOAD ON
     LOG_CONFIGURE ON
     LOG_BUILD ON
