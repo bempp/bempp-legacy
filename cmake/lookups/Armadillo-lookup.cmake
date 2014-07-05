@@ -50,12 +50,6 @@ passon_variables(Armadillo
         "set(CMAKE_LIBRARY_PATH ${library_dirs} CACHE PATH \"\" FORCE)\n"
         "set(CMAKE_INSTALL_RPATH ${rpath_dirs} CACHE INTERNAL \"\")\n"
 )
-if(BLAS_mkl_core_LIBRARY)
-    get_filename_component(libdir "${BLAS_mkl_core_LIBRARY}" PATH)
-    file(APPEND "${EXTERNAL_ROOT}/src/ArmadilloVariables.cmake"
-       "set(CMAKE_LIBRARY_PATH \${CMAKE_LIBRARY_PATH} \"${libdir}\" CACHE PATH \"\")\n"
-    )
-endif()
 
 include(PatchScript)
 set(patchdir "${PROJECT_SOURCE_DIR}/cmake/patches/armadillo")
