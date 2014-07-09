@@ -35,7 +35,7 @@ list(INSERT CMAKE_LOOKUP_PATH 0 ${PROJECT_SOURCE_DIR}/cmake/lookups)
 if(WITH_ALUGRID)
     lookup_package(ALUGrid)
 endif()
-lookup_package(Boost 1.35 COMPONENTS unit_test_framework REQUIRED)
+lookup_package(Boost 1.55 COMPONENTS unit_test_framework REQUIRED)
 lookup_package(Armadillo REQUIRED ARGUMENTS TIMEOUT 60)
 # test whether armadillo is compiled with LAPACK and BLAS. Otherwise issue warning.
 include(check_armadillo_linkage)
