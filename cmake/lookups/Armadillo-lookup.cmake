@@ -51,6 +51,15 @@ passon_variables(Armadillo
         "set(CMAKE_INSTALL_RPATH ${rpath_dirs} CACHE INTERNAL \"\")\n"
 )
 
+include(PatchScript)
+set(patchdir "${PROJECT_SOURCE_DIR}/cmake/patches/armadillo")
+create_patch_script(armadillo patch_script
+	    CMDLINE "-p0"
+	    WORKING_DIRECTORY "${EXTERNAL_ROOT}/src/Armadillo"
+	    "${patchdir}/armadillo_disable_hdf5.patch"
+)
+
+
 # Finally, we can create external project
 ExternalProject_Add(
     Armadillo
@@ -62,6 +71,7 @@ ExternalProject_Add(
         -DCMAKE_BUILD_TYPE=Release
     TIMEOUT 10
     # Wrap download, configure and build steps in a script to log output
+    PATCH_COMMAND ${patch_script}
     LOG_DOWNLOAD ON
     LOG_CONFIGURE ON
     LOG_BUILD ON

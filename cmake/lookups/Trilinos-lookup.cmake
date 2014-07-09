@@ -80,7 +80,6 @@ set(patchdir "${PROJECT_SOURCE_DIR}/cmake/patches/Trilinos")
 create_patch_script(Trilinos patch_script
     CMDLINE "-p0"
     WORKING_DIRECTORY "${EXTERNAL_ROOT}/src/Trilinos"
-    "${patchdir}/Thyra_BelosLinearOpWithSolve_def.patch"
     "${patchdir}/Epetra_ConfigDefs.h.patch"
     "${patchdir}/pytrilinos_eigenvalue_typemap.patch"
 )
