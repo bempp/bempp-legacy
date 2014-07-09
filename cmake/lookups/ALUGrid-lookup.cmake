@@ -31,7 +31,6 @@ file(COPY "${PROJECT_BINARY_DIR}/CMakeFiles/external/alugrid_configure.sh"
 ExternalProject_Add(
     ALUGrid
     PREFIX ${EXTERNAL_ROOT}
-    DEPENDS ${depends_on}
     URL http://aam.mathematik.uni-freiburg.de/IAM/Research/alugrid/ALUGrid-1.52.tar.gz
     URL_HASH MD5=393c3d8ac1e9def4280765b16b95f5f1
     CONFIGURE_COMMAND ${configure_command}
