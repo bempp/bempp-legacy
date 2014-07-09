@@ -44,12 +44,22 @@ lookup_package(Dune REQUIRED DOWNLOAD_BY_DEFAULT
     COMPONENTS geometry grid localfunctions foamgrid
     CHECK_EXTERNAL
 )
+lookup_package(SWIG 2.0.4 REQUIRED)
+if (SWIG_FOUND AND SWIG_VERSION VERSION_LESS 2.0.7)
+    message(WARNING "Swig version 2.0.7 or higher is strongly "
+        "recommended to compile BEM++ Python wrappers; "
+        "older versions may produce incorrect docstrings"
+    )
+endif()
+
 # Using cmake_policy does not seem to work here.
 set(CMAKE_POLICY_DEFAULT_CMP0012 NEW CACHE STRING "Avoids anoying messages")
 unset(arguments)
 if(PYPACKED)
     set(arguments ARGUMENTS PYPACKED)
 endif()
+# Trilinos depends on SWIG, Boost and TBB, so those packages must be looked up
+# first.
 lookup_package(Trilinos
     DOWNLOAD_BY_DEFAULT REQUIRED CHECK_EXTERNAL
     ${arguments}
@@ -63,14 +73,6 @@ if("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
 endif()
 
 # Then look for python related packages
-lookup_package(SWIG 2.0.4 REQUIRED)
-if (SWIG_FOUND AND SWIG_VERSION VERSION_LESS 2.0.7)
-    message(WARNING "Swig version 2.0.7 or higher is strongly "
-        "recommended to compile BEM++ Python wrappers; "
-        "older versions may produce incorrect docstrings"
-    )
-endif()
-
 
 # first looks for python package, second for linkage/include stuff
 find_python_package(numpy REQUIRED
