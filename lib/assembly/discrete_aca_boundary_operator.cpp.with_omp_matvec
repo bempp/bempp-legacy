@@ -146,7 +146,7 @@ DiscreteAcaBoundaryOperator<ValueType>::
 DiscreteAcaBoundaryOperator(
         unsigned int rowCount, unsigned int columnCount,
         int maximumRank,
-        std::auto_ptr<AhmedBemblcluster> blockCluster,
+        std::unique_ptr<AhmedBemblcluster> blockCluster,
         boost::shared_array<AhmedMblock*> blocks,
         const IndexPermutation& domainPermutation,
         const IndexPermutation& rangePermutation) :
