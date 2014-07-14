@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityIterator_number_of_iterations_agrees_wit
 {
     const int codim = T::value;
 
-    std::auto_ptr<EntityIterator<codim> > it = bemppGridView->entityIterator<codim>();
+    std::unique_ptr<EntityIterator<codim> > it = bemppGridView->entityIterator<codim>();
     int numIterations = 0;
     while (!it->finished()) {
         it->next();
@@ -110,7 +110,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityIterator_finished_does_not_return_true_i
                                   T, list_0_to_2)
 {
     const int codim = T::value;
-    std::auto_ptr<EntityIterator<codim> > it = bemppGridView->entityIterator<codim>();
+    std::unique_ptr<EntityIterator<codim> > it = bemppGridView->entityIterator<codim>();
     BOOST_CHECK(!it->finished());
 }
 
@@ -121,7 +121,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityIterator_second_entity_agrees_with_Dune_
 
     arma::Col<double> elementCenter;
     {
-        std::auto_ptr<EntityIterator<codim> > it = bemppGridView->entityIterator<codim>();
+        std::unique_ptr<EntityIterator<codim> > it = bemppGridView->entityIterator<codim>();
         it->next();
         const Entity<codim>& e = it->entity();
         const Geometry& geo = e.geometry();
@@ -149,7 +149,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityIterator_order_agrees_with_index_set_for
                                   T, list_0_to_2)
 {
     const int codim = T::value;
-    std::auto_ptr<EntityIterator<codim> > it = bemppGridView->entityIterator<codim>();
+    std::unique_ptr<EntityIterator<codim> > it = bemppGridView->entityIterator<codim>();
     const IndexSet& indexSet = bemppGridView->indexSet();
     IndexSet::IndexType i = 0;
     while (!it->finished()) {
@@ -169,9 +169,9 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityIterator_order_agrees_with_index_set_for
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
         params, "../../meshes/sphere-h-0.2.msh", false /* verbose */);
-    std::auto_ptr<GridView> view = grid->levelView(0);
+    std::unique_ptr<GridView> view = grid->levelView(0);
     const int codim = T::value;
-    std::auto_ptr<EntityIterator<codim> > it = view->entityIterator<codim>();
+    std::unique_ptr<EntityIterator<codim> > it = view->entityIterator<codim>();
     const IndexSet& indexSet = view->indexSet();
     IndexSet::IndexType i = 0;
     while (!it->finished()) {
@@ -189,7 +189,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(containsEntity_returns_true_for_second_entity_
 {
     const int codim = T::value;
 
-    std::auto_ptr<EntityIterator<codim> > it = bemppGridView->entityIterator<codim>();
+    std::unique_ptr<EntityIterator<codim> > it = bemppGridView->entityIterator<codim>();
     it->next();
     BOOST_CHECK(bemppGridView->containsEntity(it->entity()));
 }
@@ -270,7 +270,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityIterator_number_of_iterations_agrees_wit
 {
     const int codim = T::value;
 
-    std::auto_ptr<EntityIterator<codim> > it = bemppGridView->entityIterator<codim>();
+    std::unique_ptr<EntityIterator<codim> > it = bemppGridView->entityIterator<codim>();
     int numIterations = 0;
     while (!it->finished()) {
         it->next();
@@ -296,7 +296,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityIterator_finished_does_not_return_true_i
     // Testing behaviour at failure
     //    if (codim == 1)
     //        BOOST_CHECK(0);
-    std::auto_ptr<EntityIterator<codim> > it = bemppGridView->entityIterator<codim>();
+    std::unique_ptr<EntityIterator<codim> > it = bemppGridView->entityIterator<codim>();
     BOOST_CHECK(!it->finished());
 }
 
@@ -307,7 +307,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityIterator_second_entity_agrees_with_Dune_
 
     arma::Col<double> elementCenter;
     {
-        std::auto_ptr<EntityIterator<codim> > it = bemppGridView->entityIterator<codim>();
+        std::unique_ptr<EntityIterator<codim> > it = bemppGridView->entityIterator<codim>();
         it->next();
         const Entity<codim>& e = it->entity();
         const Geometry& geo = e.geometry();
@@ -335,7 +335,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityIterator_order_agrees_with_index_set,
                                   T, list_0_to_2)
 {
     const int codim = T::value;
-    std::auto_ptr<EntityIterator<codim> > it = bemppGridView->entityIterator<codim>();
+    std::unique_ptr<EntityIterator<codim> > it = bemppGridView->entityIterator<codim>();
     const IndexSet& indexSet = bemppGridView->indexSet();
     IndexSet::IndexType i = 0;
     while (!it->finished()) {
@@ -355,9 +355,9 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityIterator_order_agrees_with_index_set_for
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
         params, "../../meshes/sphere-h-0.2.msh", false /* verbose */);
-    std::auto_ptr<GridView> view = grid->leafView();
+    std::unique_ptr<GridView> view = grid->leafView();
     const int codim = T::value;
-    std::auto_ptr<EntityIterator<codim> > it = view->entityIterator<codim>();
+    std::unique_ptr<EntityIterator<codim> > it = view->entityIterator<codim>();
     const IndexSet& indexSet = view->indexSet();
     IndexSet::IndexType i = 0;
     while (!it->finished()) {
@@ -374,7 +374,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(containsEntity_returns_true_for_second_entity_
 {
     const int codim = T::value;
 
-    std::auto_ptr<EntityIterator<codim> > it = bemppGridView->entityIterator<codim>();
+    std::unique_ptr<EntityIterator<codim> > it = bemppGridView->entityIterator<codim>();
     it->next();
     BOOST_CHECK(bemppGridView->containsEntity(it->entity()));
 }

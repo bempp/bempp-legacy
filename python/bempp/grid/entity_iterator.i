@@ -47,16 +47,16 @@ namespace Bempp
         val._parentGrid = self._parentGrid
     %}
 
-    std::auto_ptr<EntityPointer<codim> > next()
+    std::unique_ptr<EntityPointer<codim> > next()
     {
         if (!$self->finished()) {
-            std::auto_ptr<Bempp::EntityPointer<codim> > result = $self->frozen();
+            std::unique_ptr<Bempp::EntityPointer<codim> > result = $self->frozen();
             $self->next();
             return result;
         } 
         else {
             PyErr_SetNone(PyExc_StopIteration);
-            return std::auto_ptr<Bempp::EntityPointer<codim> >(NULL);
+            return nullptr;
         }
     }
 

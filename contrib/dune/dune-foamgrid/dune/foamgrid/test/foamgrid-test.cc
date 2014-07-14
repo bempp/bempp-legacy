@@ -17,7 +17,7 @@ int main (int argc, char *argv[]) try
     const std::string dune_grid_path = std::string(DUNE_GRID_EXAMPLE_GRIDS_PATH) + "gmsh/";
     const std::string dune_foamgrid_path = std::string(DUNE_FOAMGRID_EXAMPLE_GRIDS_PATH) + "gmsh/";
 
-    std::auto_ptr<FoamGrid<2> > grid2d( GmshReader<FoamGrid<2> >::read( dune_grid_path + "curved2d.msh", false, false ) );
+    std::unique_ptr<FoamGrid<2> > grid2d( GmshReader<FoamGrid<2> >::read( dune_grid_path + "curved2d.msh", false, false ) );
 
         
     gridcheck(*grid2d);
@@ -30,7 +30,7 @@ int main (int argc, char *argv[]) try
     checkIntersectionIterator(*grid3d);
 
     // dimworld == 3,  and a grid containing a T-Junction
-    std::auto_ptr<FoamGrid<3> > gridTJunction( GmshReader<FoamGrid<3> >::read( dune_foamgrid_path + "tjunction-2d.msh", false, false ) );
+    std::unique_ptr<FoamGrid<3> > gridTJunction( GmshReader<FoamGrid<3> >::read( dune_foamgrid_path + "tjunction-2d.msh", false, false ) );
 
     gridcheck(*gridTJunction);
     checkIntersectionIterator(*gridTJunction);

@@ -157,7 +157,7 @@ private:
     GridSegment m_segment;
     bool m_strictlyOnSegment;
     boost::scoped_ptr<Fiber::Shapeset<BasisFunctionType> > m_triangleShapeset;
-    std::auto_ptr<GridView> m_view;
+    std::unique_ptr<GridView> m_view;
     std::vector<std::vector<GlobalDofIndex> > m_local2globalDofs;
     std::vector<std::vector<LocalDof> > m_global2localDofs;
     std::vector<LocalDof> m_flatLocal2localDofs;

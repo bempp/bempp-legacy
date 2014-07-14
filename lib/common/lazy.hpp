@@ -36,7 +36,7 @@ namespace Bempp
   \tparam T           Type of the stored object.
   \tparam Initializer Type of a copy-constructible functor providing the
                       member function
-                        std::auto_ptr<T> operator()()
+                        std::unique_ptr<T> operator()()
                       that will be used to construct the object the first time
                       it is requested.
   \tparam Mutex       Type of the mutex to be used to lock the object during
@@ -58,7 +58,7 @@ public:
         if (!m_value) {
             typename Mutex::scoped_lock lock(m_mutex);
             if (!m_value) {
-                std::auto_ptr<T> t = m_init();
+                std::unique_ptr<T> t = m_init();
                 m_value = t.release();
             }
         }

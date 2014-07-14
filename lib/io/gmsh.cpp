@@ -1102,7 +1102,7 @@ GmshIo::GmshIo(const shared_ptr<const Grid>& grid) : m_grid(grid) {
     if (!m_grid) throw std::runtime_error(
                 "GmshIo(): Grid is not initialized.");
 
-    std::auto_ptr<GridView> viewPtr = m_grid->leafView();
+    std::unique_ptr<GridView> viewPtr = m_grid->leafView();
     const GridView& view = *viewPtr;
 
     m_nodePermutation.resize(view.entityCount(2));
@@ -1123,7 +1123,7 @@ GmshIo::GmshIo(const shared_ptr<const Grid>& grid) : m_grid(grid) {
 
     const IndexSet& indexSet = view.indexSet();
 
-    std::auto_ptr<EntityIterator<2> > nodeIterator = view.entityIterator<2>();
+    std::unique_ptr<EntityIterator<2> > nodeIterator = view.entityIterator<2>();
     while (!nodeIterator->finished()) {
         const Entity<2>& node = nodeIterator->entity();
         int index = m_nodePermutation[indexSet.entityIndex(node)];
@@ -1134,7 +1134,7 @@ GmshIo::GmshIo(const shared_ptr<const Grid>& grid) : m_grid(grid) {
         nodeIterator->next();
     }
 
-    std::auto_ptr<EntityIterator<0> > elementIterator = view.entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > elementIterator = view.entityIterator<0>();
 
     while (!elementIterator->finished()) {
 
@@ -1565,7 +1565,7 @@ void exportToGmsh(GridFunction<BasisFunctionType,ResultType> gridFunction,
     else if (gmshPostDataType == GmshPostData::ELEMENT_NODE) {
 
         const std::vector<int>& elementPermutation = gmshIo.elementPermutation();
-        std::auto_ptr<EntityIterator<0> > it = view.entityIterator<0>();
+        std::unique_ptr<EntityIterator<0> > it = view.entityIterator<0>();
 
         int dataSetIndex = gmshData.numberOfElementNodeDataSets();
         gmshData.addElementNodeDataSet(stringTags,realTags,gridFunction.componentCount(),numberOfElements);
@@ -1694,7 +1694,7 @@ void exportToGmsh(GridFunction<BasisFunctionType,ResultType> gridFunction,
 //    arma::Mat<CoordinateType> globalCoords;
 //    const GridView& view = space->gridView();
 
-//    std::auto_ptr<EntityIterator<0> > it = view.entityIterator<0>();
+//    std::unique_ptr<EntityIterator<0> > it = view.entityIterator<0>();
 
 //    size_t nodeCount = 0;
 //    size_t elementCount = 0;

@@ -130,8 +130,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(works_for_complex_kernel, BasisFunctionType, basis
     basis.evaluate(basisDeps, points, Fiber::ALL_DOFS, basisData);
 
     Fiber::GeometricalData<CT> geomData[2];
-    std::auto_ptr<GridView> view = grid->leafView();
-    std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
+    std::unique_ptr<GridView> view = grid->leafView();
+    std::unique_ptr<EntityIterator<0> > it = view->entityIterator<0>();
     it->entity().geometry().getData(geomDeps, points, geomData[0]);
     it->next();
     it->entity().geometry().getData(geomDeps, points, geomData[1]);
@@ -239,8 +239,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(works_for_real_kernel, BasisFunctionType, basis_fu
     basis.evaluate(basisDeps, points, Fiber::ALL_DOFS, basisData);
 
     Fiber::GeometricalData<CT> geomData[2];
-    std::auto_ptr<GridView> view = grid->leafView();
-    std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
+    std::unique_ptr<GridView> view = grid->leafView();
+    std::unique_ptr<EntityIterator<0> > it = view->entityIterator<0>();
     it->entity().geometry().getData(geomDeps, points, geomData[0]);
     it->next();
     it->entity().geometry().getData(geomDeps, points, geomData[1]);

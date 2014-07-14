@@ -93,10 +93,10 @@ public:
         return m_subentity;
     }
 
-    virtual std::auto_ptr<EntityPointer<ConcreteSubentityIterator::codimension> >
+    virtual std::unique_ptr<EntityPointer<ConcreteSubentityIterator::codimension> >
     frozen() const {
         const int codim = ConcreteSubentityIterator::codimension;
-        return std::auto_ptr<EntityPointer<codim> >(
+        return std::unique_ptr<EntityPointer<codim> >(
                     new ConcreteEntityPointer<DuneSubentityPointer>(
                         m_subentity.duneEntity(), m_domain_index));
     }

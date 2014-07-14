@@ -225,7 +225,7 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::assignDofsImpl()
     // number of element adjacent to each edge
     std::vector<int> elementsAdjacentToEdges(edgeCount, 0);
     std::vector<bool> noAdjacentElementsAreInSegment(edgeCount, true);
-    std::auto_ptr<EntityIterator<elementCodim> > it =
+    std::unique_ptr<EntityIterator<elementCodim> > it =
             m_view->entityIterator<elementCodim>();
     while (!it->finished()) {
         const Entity<elementCodim>& element = it->entity();
@@ -361,7 +361,7 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::assignDofsImpl()
                 flatLocalDofCount, m_local2globalDofs, m_flatLocal2localDofs);
 
 //    // Iterate over elements
-//    std::auto_ptr<EntityIterator<elementCodim> > it =
+//    std::unique_ptr<EntityIterator<elementCodim> > it =
 //        m_view->entityIterator<elementCodim>();
 //    m_flatLocalDofCount = 0;
 //    while (!it->finished())
@@ -520,7 +520,7 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::getFlatLocalDofBoundingBoxes(
     int elementCount = m_view->entityCount(0);
 
     std::vector<arma::Mat<CoordinateType> > elementCorners(elementCount);
-    std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
     while (!it->finished())
     {
         const Entity<0>& e = it->entity();
@@ -567,7 +567,7 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::getGlobalDofNormals(
     int elementCount = m_view->entityCount(0);
 
     arma::Mat<CoordinateType> elementNormals(worldDim, elementCount);
-    std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
     arma::Col<CoordinateType> center(gridDim);
     center.fill(0.5);
     arma::Col<CoordinateType> normal;
@@ -609,7 +609,7 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::getFlatLocalDofNormals(
     int elementCount = m_view->entityCount(0);
 
     arma::Mat<CoordinateType> elementNormals(worldDim, elementCount);
-    std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
     arma::Col<CoordinateType> center(gridDim);
     center.fill(0.5);
     arma::Col<CoordinateType> normal;

@@ -107,7 +107,7 @@ integrate(
     m_function.addGeometricalDependencies(geomDeps);
 
     typedef typename GeometryFactory::Geometry Geometry;
-    std::auto_ptr<Geometry> geometry(m_geometryFactory.make());
+    std::unique_ptr<Geometry> geometry(m_geometryFactory.make());
 
     Fiber::CollectionOf3dArrays<BasisFunctionType> testValues;
     arma::Mat<UserFunctionType> functionValues;

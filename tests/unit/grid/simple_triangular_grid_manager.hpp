@@ -33,7 +33,7 @@ public:
     typedef Bempp::Default2dIn3dDuneGrid DuneGrid;
 
     /** Create two identical simple 2D structured Bempp grids composed of 2 * 3 * 4 triangles.
-        Store an auto_ptr to the first one as bemppGrid; from the second one,
+        Store an unique_ptr to the first one as bemppGrid; from the second one,
         extract the pointer to the underlying Dune grid and store it as duneGrid. */
     SimpleTriangularGridManager() {
         // Create a Bempp grid
@@ -43,7 +43,7 @@ public:
         duneGrid = createDuneGrid();
     }
 
-    // No destructor is needed since auto_ptrs release memory automatically
+    // No destructor is needed since unique_ptrs release memory automatically
 
 private:
     Bempp::shared_ptr<Bempp::Grid> createGrid();

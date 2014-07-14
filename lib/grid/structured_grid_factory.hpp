@@ -50,7 +50,7 @@ namespace Dune
 \li Grids embedded in higher-dimensional spaces are supported. In this case the last (dimworld - dim)
   coordinates of all vertices, where dim is the grid dimension and dimworld the world dimension,
   are set to zero.
-\li Automatic pointers (std::auto_ptr) instead of shared pointers (Dune::shared_ptr) are returned.
+\li Automatic pointers (std::unique_ptr) instead of shared pointers (Dune::shared_ptr) are returned.
 */
 template <class GridType>
 class BemppStructuredGridFactory
@@ -158,7 +158,7 @@ public:
         \param upperRight Upper right corner of the grid
         \param elements Number of elements in each coordinate direction
     */
-    static std::auto_ptr<GridType> createCubeGrid(const FieldVector<ctype,dim>& lowerLeft,
+    static std::unique_ptr<GridType> createCubeGrid(const FieldVector<ctype,dim>& lowerLeft,
             const FieldVector<ctype,dim>& upperRight,
             const array<int,dim>& elements) {
         // The grid factory
@@ -215,7 +215,7 @@ public:
         } // if(rank == 0)
 
         // Create the grid and hand it to the calling method
-        return std::auto_ptr<GridType>(factory.createGrid());
+        return std::unique_ptr<GridType>(factory.createGrid());
 
     }
 
@@ -225,7 +225,7 @@ public:
         used, which splits each cube into dim! simplices.  See Allgower and Georg,
         'Numerical Path Following' for a description.
     */
-    static std::auto_ptr<GridType> createSimplexGrid(const FieldVector<ctype,dim>& lowerLeft,
+    static std::unique_ptr<GridType> createSimplexGrid(const FieldVector<ctype,dim>& lowerLeft,
             const FieldVector<ctype,dim>& upperRight,
             const array<int,dim>& elements) {
         // The grid factory
@@ -293,7 +293,7 @@ public:
         } // if(rank == 0)
 
         // Create the grid and hand it to the calling method
-        return std::auto_ptr<GridType>(factory.createGrid());
+        return std::unique_ptr<GridType>(factory.createGrid());
     }
 
 };
@@ -324,7 +324,7 @@ public:
         \note YaspGrid only supports lowerLeft at the origin.  This
               function throws a GridError if this requirement is not met.
     */
-    static std::auto_ptr<GridType>
+    static std::unique_ptr<GridType>
     createCubeGrid(const FieldVector<ctype,dimworld>& lowerLeft,
                    const FieldVector<ctype,dimworld>& upperRight,
                    const array<int,dim>& elements) {
@@ -337,7 +337,7 @@ public:
         FieldVector<int, dim> elements_;
         std::copy(elements.begin(), elements.end(), elements_.begin());
 
-        return std::auto_ptr<GridType>
+        return std::unique_ptr<GridType>
                (new GridType(upperRight, elements_,
                              FieldVector<bool,dim>(false), 0));
     }
@@ -347,7 +347,7 @@ public:
         \note Simplices are not supported in YaspGrid, so this functions
               unconditionally throws a GridError.
     */
-    static std::auto_ptr<GridType>
+    static std::unique_ptr<GridType>
     createSimplexGrid(const FieldVector<ctype,dimworld>& lowerLeft,
                       const FieldVector<ctype,dimworld>& upperRight,
                       const array<int,dim>& elements) {

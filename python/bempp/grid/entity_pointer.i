@@ -90,7 +90,7 @@ template<int codim> class EntityIterator;
             val._parentGrid = self._parentGrid
     %}
     
-    std::auto_ptr<EntityPointer<0> > father() const {
+    std::unique_ptr<EntityPointer<0> > father() const {
         return $self->entity().father();
     }
     
@@ -111,7 +111,7 @@ template<int codim> class EntityIterator;
         val._parentGrid = self._parentGrid
     %}
     
-    std::auto_ptr<EntityIterator<0> > sons(int maxLevel) const {
+    std::unique_ptr<EntityIterator<0> > sons(int maxLevel) const {
         return $self->entity().sonIterator(maxLevel);
     }
     

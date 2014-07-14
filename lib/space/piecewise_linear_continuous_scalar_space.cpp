@@ -168,7 +168,7 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::assignDofsImpl()
     if (m_strictlyOnSegment) {
         std::vector<bool> noAdjacentElementsInsideSegment(vertexCount, true);
         segmentContainsElement.resize(elementCount);
-        std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
+        std::unique_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
         while (!it->finished()) {
             const Entity<0>& element = it->entity();
             EntityIndex elementIndex = elementMapper.entityIndex(element);
@@ -209,7 +209,7 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::assignDofsImpl()
     // grid of dimension gridDim
 
     // Iterate over elements
-    std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
     int flatLocalDofCount_ = 0;
     while (!it->finished()) {
         const Entity<0>& element = it->entity();
@@ -333,7 +333,7 @@ getFlatLocalDofBoundingBoxes(
     const int elementCount = m_view->entityCount(0);
 
     std::vector<arma::Mat<CoordinateType> > elementCorners(elementCount);
-    std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
     while (!it->finished()) {
         const Entity<0>& e = it->entity();
         int index = indexSet.entityIndex(e);
@@ -393,7 +393,7 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::getFlatLocalDofNor
     int elementCount = m_view->entityCount(0);
 
     arma::Mat<CoordinateType> elementNormals(worldDim, elementCount);
-    std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
     arma::Col<CoordinateType> center(gridDim);
     center.fill(0.5);
     arma::Col<CoordinateType> normal;
@@ -449,8 +449,8 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::dumpClusterIdsEx(
         throw std::invalid_argument("PiecewiseLinearContinuousScalarSpace::"
                                     "dumpClusterIds(): incorrect dimension");
 
-    std::auto_ptr<GridView> view = this->grid()->leafView();
-    std::auto_ptr<VtkWriter> vtkWriter = view->vtkWriter();
+    std::unique_ptr<GridView> view = this->grid()->leafView();
+    std::unique_ptr<VtkWriter> vtkWriter = view->vtkWriter();
     if (dofType == GLOBAL_DOFS) {
         arma::Row<double> data(idCount);
         for (size_t i = 0; i < idCount; ++i)

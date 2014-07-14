@@ -71,7 +71,7 @@ shared_ptr<Grid> GridFactory::createStructuredGrid(
     duneNElements[0] = nElements(0);
     duneNElements[1] = nElements(1);
 
-    std::auto_ptr<Default2dIn3dDuneGrid> apDuneGrid;
+    std::unique_ptr<Default2dIn3dDuneGrid> apDuneGrid;
     // TODO: Support quadrilateral grids using createCubeGrid()
     apDuneGrid = Dune::BemppStructuredGridFactory<Default2dIn3dDuneGrid>::
                  createSimplexGrid(duneLowerLeft, duneUpperRight, duneNElements);

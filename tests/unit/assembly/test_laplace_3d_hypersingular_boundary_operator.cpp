@@ -120,8 +120,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(works, ValueType, kernel_types)
     basis.evaluate(basisDeps, points, Fiber::ALL_DOFS, basisData);
 
     Fiber::GeometricalData<CT> geomData1, geomData2;
-    std::auto_ptr<GridView> view = grid->leafView();
-    std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
+    std::unique_ptr<GridView> view = grid->leafView();
+    std::unique_ptr<EntityIterator<0> > it = view->entityIterator<0>();
     it->entity().geometry().getData(geomDeps, points, geomData1);
     it->next();
     it->entity().geometry().getData(geomDeps, points, geomData2);

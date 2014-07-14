@@ -80,7 +80,7 @@ public:
     The returned pointer is guaranteed to keep referring to the same entity
     even if the iterator is incremented or destroyed, as long as the grid is
     not adapted and the grid object itself stays alive. */
-    virtual std::auto_ptr<EntityPointer<codim> > frozen() const = 0;
+    virtual std::unique_ptr<EntityPointer<codim> > frozen() const = 0;
 };
 
 } // namespace Bempp

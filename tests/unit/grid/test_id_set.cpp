@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityId_agrees_with_Dune_for_second_entity_of
 {
     const int codim = T::value;
 
-    std::auto_ptr<EntityIterator<codim> > it = bemppGridView->entityIterator<codim>();
+    std::unique_ptr<EntityIterator<codim> > it = bemppGridView->entityIterator<codim>();
     it->next();
 
     typename DuneGridView::Codim<codim>::Iterator duneIt = duneGridView.begin<codim>();
@@ -50,7 +50,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(subEntityId_agrees_with_Dune_for_first_entity_
 {
     const int codimSub = T::value;
 
-    std::auto_ptr<EntityIterator<0> > it = bemppGridView->entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > it = bemppGridView->entityIterator<0>();
     it->next();
 
     typename DuneGridView::Codim<0>::Iterator duneIt = duneGridView.begin<0>();
@@ -67,10 +67,10 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(subEntityId_and_entityId_agree_for_the_same_en
 {
     const int codimSub = T::value;
 
-    std::auto_ptr<EntityIterator<0> > it = bemppGridView->entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > it = bemppGridView->entityIterator<0>();
     it->next();
 
-    std::auto_ptr<EntityIterator<codimSub> > subIt = it->entity().subEntityIterator<codimSub>();
+    std::unique_ptr<EntityIterator<codimSub> > subIt = it->entity().subEntityIterator<codimSub>();
     subIt->next();
 
     int idDirect = bemppIdSet.entityId(subIt->entity());
@@ -81,7 +81,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(subEntityId_and_entityId_agree_for_the_same_en
 
 BOOST_AUTO_TEST_CASE(subEntityId_returns_the_same_as_entityId_for_entity_of_codim_0)
 {
-    std::auto_ptr<EntityIterator<0> > it = bemppGridView->entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > it = bemppGridView->entityIterator<0>();
     it->next();
 
     int idDirect = bemppIdSet.entityId(it->entity());
@@ -93,7 +93,7 @@ BOOST_AUTO_TEST_CASE(subEntityId_returns_the_same_as_entityId_for_entity_of_codi
 #ifndef NDEBUG
 BOOST_AUTO_TEST_CASE(subEntityId_throws_for_invalid_codimension)
 {
-    std::auto_ptr<EntityIterator<0> > it = bemppGridView->entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > it = bemppGridView->entityIterator<0>();
     it->next();
 
     BOOST_CHECK_THROW(bemppIdSet.subEntityId(it->entity(), 0, 3 /* codimSub */), std::invalid_argument);

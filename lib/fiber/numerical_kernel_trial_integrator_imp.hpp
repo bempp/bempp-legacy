@@ -106,7 +106,7 @@ integrate(const std::vector<int>& pointIndices,
     m_integral.addGeometricalDependencies(trialGeomDeps);
 
     typedef typename GeometryFactory::Geometry Geometry;
-    std::auto_ptr<Geometry> trialGeometry = m_geometryFactory.make();
+    std::unique_ptr<Geometry> trialGeometry = m_geometryFactory.make();
 
     CollectionOf3dArrays<BasisFunctionType> trialValues;
     CollectionOf4dArrays<KernelType> kernelValues;
@@ -174,7 +174,7 @@ integrate(int pointIndex,
     m_integral.addGeometricalDependencies(trialGeomDeps);
 
     typedef typename GeometryFactory::Geometry Geometry;
-    std::auto_ptr<Geometry> trialGeometry = m_geometryFactory.make();
+    std::unique_ptr<Geometry> trialGeometry = m_geometryFactory.make();
 
     CollectionOf3dArrays<BasisFunctionType> trialValues;
     CollectionOf4dArrays<KernelType> kernelValues;
@@ -250,7 +250,7 @@ integrate(const std::vector<PointElementIndexPair>& pointElementIndexPairs,
     m_integral.addGeometricalDependencies(trialGeomDeps);
 
     typedef typename GeometryFactory::Geometry Geometry;
-    std::auto_ptr<Geometry> trialGeometry = m_geometryFactory.make();
+    std::unique_ptr<Geometry> trialGeometry = m_geometryFactory.make();
 
     CollectionOf3dArrays<BasisFunctionType> trialValues;
     CollectionOf4dArrays<KernelType> kernelValues;

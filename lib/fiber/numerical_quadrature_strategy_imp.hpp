@@ -63,7 +63,7 @@ NumericalQuadratureStrategyBase(
 
 template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory, typename Enable>
-std::auto_ptr<LocalAssemblerForLocalOperators<ResultType> >
+std::unique_ptr<LocalAssemblerForLocalOperators<ResultType> >
 NumericalQuadratureStrategyBase<
 BasisFunctionType, ResultType, GeometryFactory, Enable>::
 makeAssemblerForIdentityOperators(
@@ -89,7 +89,7 @@ makeAssemblerForIdentityOperators(
 
 template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory, typename Enable>
-std::auto_ptr<LocalAssemblerForLocalOperators<ResultType> >
+std::unique_ptr<LocalAssemblerForLocalOperators<ResultType> >
 NumericalQuadratureStrategyBase<
 BasisFunctionType, ResultType, GeometryFactory, Enable>::
 makeAssemblerForLocalOperators(
@@ -105,7 +105,7 @@ makeAssemblerForLocalOperators(
     typedef DefaultLocalAssemblerForLocalOperatorsOnSurfaces<
             BasisFunctionType, ResultType, GeometryFactory>
             LocalAssemblerForLocalOperators_;
-    return std::auto_ptr<LocalAssemblerForLocalOperators<ResultType> >(
+    return std::unique_ptr<LocalAssemblerForLocalOperators<ResultType> >(
                 new LocalAssemblerForLocalOperators_(
                     geometryFactory, rawGeometry,
                     testShapesets, trialShapesets,
@@ -119,7 +119,7 @@ makeAssemblerForLocalOperators(
 
 template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory, typename Enable>
-std::auto_ptr<LocalAssemblerForIntegralOperators<ResultType> >
+std::unique_ptr<LocalAssemblerForIntegralOperators<ResultType> >
 NumericalQuadratureStrategyBase<
 BasisFunctionType, ResultType, GeometryFactory, Enable>::
 makeAssemblerForIntegralOperatorsImplRealKernel(
@@ -142,7 +142,7 @@ makeAssemblerForIntegralOperatorsImplRealKernel(
     typedef DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
             BasisFunctionType, KernelType, ResultType, GeometryFactory>
             LocalAssemblerForIntegralOperators_;
-    return std::auto_ptr<LocalAssemblerForIntegralOperators<ResultType> >(
+    return std::unique_ptr<LocalAssemblerForIntegralOperators<ResultType> >(
                 new LocalAssemblerForIntegralOperators_(
                     testGeometryFactory, trialGeometryFactory,
                     testRawGeometry, trialRawGeometry,
@@ -160,7 +160,7 @@ makeAssemblerForIntegralOperatorsImplRealKernel(
 
 template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory, typename Enable>
-std::auto_ptr<LocalAssemblerForGridFunctions<ResultType> >
+std::unique_ptr<LocalAssemblerForGridFunctions<ResultType> >
 NumericalQuadratureStrategyBase<
 BasisFunctionType, ResultType, GeometryFactory, Enable>::
 makeAssemblerForGridFunctionsImplRealUserFunction(
@@ -175,7 +175,7 @@ makeAssemblerForGridFunctionsImplRealUserFunction(
     typedef DefaultLocalAssemblerForGridFunctionsOnSurfaces<
             BasisFunctionType, UserFunctionType, ResultType, GeometryFactory>
             LocalAssemblerForGridFunctions_;
-    return std::auto_ptr<LocalAssemblerForGridFunctions<ResultType> >(
+    return std::unique_ptr<LocalAssemblerForGridFunctions<ResultType> >(
                 new LocalAssemblerForGridFunctions_(
                     geometryFactory, rawGeometry,
                     testShapesets,
@@ -189,7 +189,7 @@ makeAssemblerForGridFunctionsImplRealUserFunction(
 
 template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory, typename Enable>
-std::auto_ptr<EvaluatorForIntegralOperators<ResultType> >
+std::unique_ptr<EvaluatorForIntegralOperators<ResultType> >
 NumericalQuadratureStrategyBase<
 BasisFunctionType, ResultType, GeometryFactory, Enable>::
 makeEvaluatorForIntegralOperatorsImplRealKernel(
@@ -207,7 +207,7 @@ makeEvaluatorForIntegralOperatorsImplRealKernel(
     typedef DefaultEvaluatorForIntegralOperators<
             BasisFunctionType, KernelType, ResultType, GeometryFactory>
             EvaluatorForIntegralOperators_;
-    return std::auto_ptr<EvaluatorForIntegralOperators<ResultType> >(
+    return std::unique_ptr<EvaluatorForIntegralOperators<ResultType> >(
                 new EvaluatorForIntegralOperators_(
                     geometryFactory, rawGeometry,
                     trialShapesets,
@@ -223,7 +223,7 @@ makeEvaluatorForIntegralOperatorsImplRealKernel(
 
 template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory, typename Enable>
-std::auto_ptr<LocalAssemblerForPotentialOperators<ResultType> >
+std::unique_ptr<LocalAssemblerForPotentialOperators<ResultType> >
 NumericalQuadratureStrategyBase<
 BasisFunctionType, ResultType, GeometryFactory, Enable>::
 makeAssemblerForPotentialOperatorsImplRealKernel(
@@ -242,7 +242,7 @@ makeAssemblerForPotentialOperatorsImplRealKernel(
     typedef DefaultLocalAssemblerForPotentialOperatorsOnSurfaces<
             BasisFunctionType, KernelType, ResultType, GeometryFactory>
             LocalAssemblerForPotentialOperators_;
-    return std::auto_ptr<LocalAssemblerForPotentialOperators<ResultType> >(
+    return std::unique_ptr<LocalAssemblerForPotentialOperators<ResultType> >(
                 new LocalAssemblerForPotentialOperators_(
                     evaluationPoints,
                     geometryFactory, rawGeometry,
@@ -361,7 +361,7 @@ NumericalQuadratureStrategy(
 
 template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory, typename Enable>
-std::auto_ptr<LocalAssemblerForIntegralOperators<ResultType> >
+std::unique_ptr<LocalAssemblerForIntegralOperators<ResultType> >
 NumericalQuadratureStrategy<
 BasisFunctionType, ResultType, GeometryFactory, Enable>::
 makeAssemblerForIntegralOperatorsImplComplexKernel(
@@ -384,7 +384,7 @@ makeAssemblerForIntegralOperatorsImplComplexKernel(
     typedef DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
             BasisFunctionType, KernelType, ResultType, GeometryFactory>
             LocalAssemblerForIntegralOperators_;
-    return std::auto_ptr<LocalAssemblerForIntegralOperators<ResultType> >(
+    return std::unique_ptr<LocalAssemblerForIntegralOperators<ResultType> >(
                 new LocalAssemblerForIntegralOperators_(
                     testGeometryFactory, trialGeometryFactory,
                     testRawGeometry, trialRawGeometry,
@@ -402,7 +402,7 @@ makeAssemblerForIntegralOperatorsImplComplexKernel(
 
 template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory, typename Enable>
-std::auto_ptr<LocalAssemblerForGridFunctions<ResultType> >
+std::unique_ptr<LocalAssemblerForGridFunctions<ResultType> >
 NumericalQuadratureStrategy<
 BasisFunctionType, ResultType, GeometryFactory, Enable>::
 makeAssemblerForGridFunctionsImplComplexUserFunction(
@@ -417,7 +417,7 @@ makeAssemblerForGridFunctionsImplComplexUserFunction(
     typedef DefaultLocalAssemblerForGridFunctionsOnSurfaces<
             BasisFunctionType, UserFunctionType, ResultType, GeometryFactory>
             LocalAssemblerForGridFunctions_;
-    return std::auto_ptr<LocalAssemblerForGridFunctions<ResultType> >(
+    return std::unique_ptr<LocalAssemblerForGridFunctions<ResultType> >(
                 new LocalAssemblerForGridFunctions_(
                     geometryFactory, rawGeometry,
                     testShapesets,
@@ -431,7 +431,7 @@ makeAssemblerForGridFunctionsImplComplexUserFunction(
 
 template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory, typename Enable>
-std::auto_ptr<EvaluatorForIntegralOperators<ResultType> >
+std::unique_ptr<EvaluatorForIntegralOperators<ResultType> >
 NumericalQuadratureStrategy<
 BasisFunctionType, ResultType, GeometryFactory, Enable>::
 makeEvaluatorForIntegralOperatorsImplComplexKernel(
@@ -449,7 +449,7 @@ makeEvaluatorForIntegralOperatorsImplComplexKernel(
     typedef DefaultEvaluatorForIntegralOperators<
             BasisFunctionType, KernelType, ResultType, GeometryFactory>
             EvaluatorForIntegralOperators_;
-    return std::auto_ptr<EvaluatorForIntegralOperators<ResultType> >(
+    return std::unique_ptr<EvaluatorForIntegralOperators<ResultType> >(
                 new EvaluatorForIntegralOperators_(
                     geometryFactory, rawGeometry,
                     trialShapesets,
@@ -465,7 +465,7 @@ makeEvaluatorForIntegralOperatorsImplComplexKernel(
 
 template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory, typename Enable>
-std::auto_ptr<LocalAssemblerForPotentialOperators<ResultType> >
+std::unique_ptr<LocalAssemblerForPotentialOperators<ResultType> >
 NumericalQuadratureStrategy<
 BasisFunctionType, ResultType, GeometryFactory, Enable>::
 makeAssemblerForPotentialOperatorsImplComplexKernel(
@@ -484,7 +484,7 @@ makeAssemblerForPotentialOperatorsImplComplexKernel(
     typedef DefaultLocalAssemblerForPotentialOperatorsOnSurfaces<
             BasisFunctionType, KernelType, ResultType, GeometryFactory>
             LocalAssemblerForPotentialOperators_;
-    return std::auto_ptr<LocalAssemblerForPotentialOperators<ResultType> >(
+    return std::unique_ptr<LocalAssemblerForPotentialOperators<ResultType> >(
                 new LocalAssemblerForPotentialOperators_(
                     evaluationPoints,
                     geometryFactory, rawGeometry,

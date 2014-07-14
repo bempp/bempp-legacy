@@ -146,7 +146,7 @@ private:
     GridSegment m_segment;
     bool m_putDofsOnBoundaries;
     int m_dofMode;
-    std::auto_ptr<GridView> m_view;
+    std::unique_ptr<GridView> m_view;
     Fiber::RaviartThomas0Shapeset<3, BasisFunctionType> m_triangleShapeset;
     std::vector<std::vector<GlobalDofIndex> > m_local2globalDofs;
     std::vector<std::vector<BasisFunctionType> > m_local2globalDofWeights;

@@ -69,7 +69,7 @@ public:
 
     /** \brief Allocate a Galerkin-mode local assembler for an integral operator
         with real kernel. */
-    std::auto_ptr<LocalAssemblerForIntegralOperators<ResultType> >
+    std::unique_ptr<LocalAssemblerForIntegralOperators<ResultType> >
     makeAssemblerForIntegralOperators(
             const shared_ptr<const GeometryFactory>& testGeometryFactory,
             const shared_ptr<const GeometryFactory>& trialGeometryFactory,
@@ -100,7 +100,7 @@ public:
      *  \deprecated This method is deprecated. Use the more general
      *  makeAssemblerForLocalOperators() method, passing an appropriate
      *  TestTrialIntegral object. */
-    virtual std::auto_ptr<LocalAssemblerForLocalOperators<ResultType> >
+    virtual std::unique_ptr<LocalAssemblerForLocalOperators<ResultType> >
     makeAssemblerForIdentityOperators(
             const shared_ptr<const GeometryFactory>& geometryFactory,
             const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
@@ -111,7 +111,7 @@ public:
             const shared_ptr<const OpenClHandler>& openClHandler) const = 0;
 
     /** \brief Allocate a Galerkin-mode local assembler for a local operator. */
-    virtual std::auto_ptr<LocalAssemblerForLocalOperators<ResultType> >
+    virtual std::unique_ptr<LocalAssemblerForLocalOperators<ResultType> >
     makeAssemblerForLocalOperators(
             const shared_ptr<const GeometryFactory>& geometryFactory,
             const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
@@ -124,7 +124,7 @@ public:
 
     /** \brief Allocate a local assembler for calculations of the projections
       of functions from a given space on a Fiber::Function. */
-    std::auto_ptr<LocalAssemblerForGridFunctions<ResultType> >
+    std::unique_ptr<LocalAssemblerForGridFunctions<ResultType> >
     makeAssemblerForGridFunctions(
             const shared_ptr<const GeometryFactory>& geometryFactory,
             const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
@@ -139,7 +139,7 @@ public:
 
     /** \brief Allocate an evaluator for an integral operator with real kernel
       applied to a grid function. */
-    std::auto_ptr<EvaluatorForIntegralOperators<ResultType> >
+    std::unique_ptr<EvaluatorForIntegralOperators<ResultType> >
     makeEvaluatorForIntegralOperators(
             const shared_ptr<const GeometryFactory>& geometryFactory,
             const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
@@ -158,7 +158,7 @@ public:
     }
 
     /** \brief Allocate a local assembler for a potential operator with real kernel. */
-    std::auto_ptr<LocalAssemblerForPotentialOperators<ResultType> >
+    std::unique_ptr<LocalAssemblerForPotentialOperators<ResultType> >
     makeAssemblerForPotentialOperators(
             const arma::Mat<CoordinateType>& evaluationPoints,
             const shared_ptr<const GeometryFactory>& geometryFactory,
@@ -178,7 +178,7 @@ public:
     }
 
 private:
-    virtual std::auto_ptr<LocalAssemblerForIntegralOperators<ResultType> >
+    virtual std::unique_ptr<LocalAssemblerForIntegralOperators<ResultType> >
     makeAssemblerForIntegralOperatorsImplRealKernel(
             const shared_ptr<const GeometryFactory>& testGeometryFactory,
             const shared_ptr<const GeometryFactory>& trialGeometryFactory,
@@ -195,7 +195,7 @@ private:
             VerbosityLevel::Level verbosityLevel,
             bool cacheSingularIntegrals) const = 0;
 
-    virtual std::auto_ptr<LocalAssemblerForGridFunctions<ResultType> >
+    virtual std::unique_ptr<LocalAssemblerForGridFunctions<ResultType> >
     makeAssemblerForGridFunctionsImplRealUserFunction(
             const shared_ptr<const GeometryFactory>& geometryFactory,
             const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
@@ -204,7 +204,7 @@ private:
             const shared_ptr<const Function<CoordinateType> >& function,
             const shared_ptr<const OpenClHandler>& openClHandler) const = 0;
 
-    virtual std::auto_ptr<EvaluatorForIntegralOperators<ResultType> >
+    virtual std::unique_ptr<EvaluatorForIntegralOperators<ResultType> >
     makeEvaluatorForIntegralOperatorsImplRealKernel(
             const shared_ptr<const GeometryFactory>& geometryFactory,
             const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
@@ -216,7 +216,7 @@ private:
             const shared_ptr<const OpenClHandler>& openClHandler,
             const ParallelizationOptions& parallelizationOptions) const = 0;
 
-    virtual std::auto_ptr<LocalAssemblerForPotentialOperators<ResultType> >
+    virtual std::unique_ptr<LocalAssemblerForPotentialOperators<ResultType> >
     makeAssemblerForPotentialOperatorsImplRealKernel(
             const arma::Mat<CoordinateType>& evaluationPoints,
             const shared_ptr<const GeometryFactory>& geometryFactory,
@@ -253,7 +253,7 @@ public:
 
     /** \brief Allocate a Galerkin-mode local assembler for an integral operator
         with complex kernel. */
-    std::auto_ptr<LocalAssemblerForIntegralOperators<ResultType> >
+    std::unique_ptr<LocalAssemblerForIntegralOperators<ResultType> >
     makeAssemblerForIntegralOperators(
             const shared_ptr<const GeometryFactory>& testGeometryFactory,
             const shared_ptr<const GeometryFactory>& trialGeometryFactory,
@@ -281,7 +281,7 @@ public:
 
     /** \brief Allocate a local assembler for calculations of the projections
       of complex-valued functions from a given space on a Fiber::Function. */
-    std::auto_ptr<LocalAssemblerForGridFunctions<ResultType> >
+    std::unique_ptr<LocalAssemblerForGridFunctions<ResultType> >
     makeAssemblerForGridFunctions(
             const shared_ptr<const GeometryFactory>& geometryFactory,
             const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
@@ -296,7 +296,7 @@ public:
 
     /** \brief Allocate an evaluator for an integral operator with
       complex-valued kernel applied to a grid function. */
-    std::auto_ptr<EvaluatorForIntegralOperators<ResultType> >
+    std::unique_ptr<EvaluatorForIntegralOperators<ResultType> >
     makeEvaluatorForIntegralOperators(
             const shared_ptr<const GeometryFactory>& geometryFactory,
             const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
@@ -316,7 +316,7 @@ public:
 
     /** \brief Allocate a local assembler for a potential operator with complex
      *  kernel. */
-    std::auto_ptr<LocalAssemblerForPotentialOperators<ResultType> >
+    std::unique_ptr<LocalAssemblerForPotentialOperators<ResultType> >
     makeAssemblerForPotentialOperators(
             const arma::Mat<CoordinateType>& evaluationPoints,
             const shared_ptr<const GeometryFactory>& geometryFactory,
@@ -336,7 +336,7 @@ public:
     }
 
 private:
-    virtual std::auto_ptr<LocalAssemblerForIntegralOperators<ResultType> >
+    virtual std::unique_ptr<LocalAssemblerForIntegralOperators<ResultType> >
     makeAssemblerForIntegralOperatorsImplComplexKernel(
             const shared_ptr<const GeometryFactory>& testGeometryFactory,
             const shared_ptr<const GeometryFactory>& trialGeometryFactory,
@@ -353,7 +353,7 @@ private:
             VerbosityLevel::Level verbosityLevel,
             bool cacheSingularIntegrals) const = 0;
 
-    virtual std::auto_ptr<LocalAssemblerForGridFunctions<ResultType> >
+    virtual std::unique_ptr<LocalAssemblerForGridFunctions<ResultType> >
     makeAssemblerForGridFunctionsImplComplexUserFunction(
             const shared_ptr<const GeometryFactory>& geometryFactory,
             const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
@@ -362,7 +362,7 @@ private:
             const shared_ptr<const Function<ResultType> >& function,
             const shared_ptr<const OpenClHandler>& openClHandler) const = 0;
 
-    virtual std::auto_ptr<EvaluatorForIntegralOperators<ResultType> >
+    virtual std::unique_ptr<EvaluatorForIntegralOperators<ResultType> >
     makeEvaluatorForIntegralOperatorsImplComplexKernel(
             const shared_ptr<const GeometryFactory>& geometryFactory,
             const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
@@ -374,7 +374,7 @@ private:
             const shared_ptr<const OpenClHandler>& openClHandler,
             const ParallelizationOptions& parallelizationOptions) const = 0;
 
-    virtual std::auto_ptr<LocalAssemblerForPotentialOperators<ResultType> >
+    virtual std::unique_ptr<LocalAssemblerForPotentialOperators<ResultType> >
     makeAssemblerForPotentialOperatorsImplComplexKernel(
             const arma::Mat<CoordinateType>& evaluationPoints,
             const shared_ptr<const GeometryFactory>& geometryFactory,

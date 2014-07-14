@@ -63,7 +63,7 @@ void constructGlobalToFlatLocalDofsMappingVectors(
 
     std::vector<std::vector<GlobalDofIndex> > gdofs(elementCount);
     std::vector<std::vector<BasisFunctionType> > ldofWeights(elementCount);
-    std::auto_ptr<EntityIterator<0> > it = view.entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > it = view.entityIterator<0>();
     while (!it->finished()) {
         const Entity<0>& e = it->entity();
         int index = indexSet.entityIndex(e);
@@ -261,13 +261,13 @@ template <typename BasisFunctionType>
 void getAllShapesets(const Space<BasisFunctionType>& space,
         std::vector<const Fiber::Shapeset<BasisFunctionType>*>& shapesets)
 {
-    std::auto_ptr<GridView> view = space.grid()->leafView();
+    std::unique_ptr<GridView> view = space.grid()->leafView();
     const Mapper& mapper = view->elementMapper();
     const int elementCount = view->entityCount(0);
 
     shapesets.resize(elementCount);
 
-    std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > it = view->entityIterator<0>();
     while (!it->finished()) {
         const Entity<0>& e = it->entity();
         shapesets[mapper.entityIndex(e)] = &space.shapeset(e);
@@ -300,7 +300,7 @@ int maximumShapesetOrder(const Space<BasisFunctionType>& space)
     const int elementCount = view.entityCount(0);
 
     int maxOrder = 0;
-    std::auto_ptr<EntityIterator<0> > it = view.entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > it = view.entityIterator<0>();
 
     while (!it->finished()) {
         const Entity<0>& e = it->entity();

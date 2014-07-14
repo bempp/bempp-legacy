@@ -112,7 +112,7 @@ private:
     void assignDofsImpl();
 
 private:
-    std::auto_ptr<GridView> m_view;
+    std::unique_ptr<GridView> m_view;
     Fiber::ConstantScalarShapeset<BasisFunctionType> m_shapeset;
     std::vector<std::vector<GlobalDofIndex> > m_local2globalDofs;
     std::vector<std::vector<LocalDof> > m_global2localDofs;

@@ -275,7 +275,7 @@ ResultType, GeometryFactory>::calcTrialData(
 
     // Initialise the geometry factory
     typedef typename GeometryFactory::Geometry Geometry;
-    std::auto_ptr<Geometry> geometry(m_geometryFactory->make());
+    std::unique_ptr<Geometry> geometry(m_geometryFactory->make());
 
     // Find all unique trial shapesets
     // Set of unique quadrature variants

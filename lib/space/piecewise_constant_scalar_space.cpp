@@ -163,7 +163,7 @@ void PiecewiseConstantScalarSpace<BasisFunctionType>::assignDofsImpl(
         const GridSegment& segment)
 {
     const Mapper& mapper = m_view->elementMapper();
-    std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
 
     // List of local DOFs corresponding to a single global DOF.
     std::vector<LocalDof> localDofs(1);
@@ -286,7 +286,7 @@ void PiecewiseConstantScalarSpace<BasisFunctionType>::getGlobalDofBoundingBoxes(
 
     std::vector<arma::Mat<CoordinateType> > elementCorners(elementCount);
     std::vector<arma::Col<CoordinateType> > elementCenters(elementCount);
-    std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
     while (!it->finished()) {
         const Entity<0>& e = it->entity();
         int index = indexSet.entityIndex(e);
@@ -374,8 +374,8 @@ void PiecewiseConstantScalarSpace<BasisFunctionType>::dumpClusterIdsEx(
                 "PiecewiseConstantScalarSpace::dumpClusterIds(): "
                 "clusterIds has incorrect length");
 
-    std::auto_ptr<GridView> view = this->grid()->leafView();
-    std::auto_ptr<VtkWriter> vtkWriter = view->vtkWriter();
+    std::unique_ptr<GridView> view = this->grid()->leafView();
+    std::unique_ptr<VtkWriter> vtkWriter = view->vtkWriter();
     arma::Row<double> data(idCount);
     for (size_t i = 0; i < idCount; ++i)
         data(i) = clusterIdsOfGlobalDofs[i];

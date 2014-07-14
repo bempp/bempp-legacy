@@ -162,7 +162,7 @@ void PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::assignDofsImpl(
     // grid of dimension gridDim
 
     // Iterate over elements
-    std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
     size_t globalDofCount = 0;
     while (!it->finished()) {
         const Entity<0>& element = it->entity();
@@ -317,8 +317,8 @@ void PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::dumpClusterIdsE
         throw std::invalid_argument("PiecewiseLinearDiscontinuousScalarSpace::"
                                     "dumpClusterIds(): incorrect dimension");
 
-    std::auto_ptr<GridView> view = this->grid()->leafView();
-    std::auto_ptr<VtkWriter> vtkWriter = view->vtkWriter();
+    std::unique_ptr<GridView> view = this->grid()->leafView();
+    std::unique_ptr<VtkWriter> vtkWriter = view->vtkWriter();
 
     arma::Mat<double> data(idCount, globalDofCount());
     data.fill(0.);

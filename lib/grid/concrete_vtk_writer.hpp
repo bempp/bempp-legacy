@@ -45,7 +45,7 @@ class ConcreteVtkWriter : public VtkWriter
     Dune::VTKWriter<DuneGridView> m_dune_vtk_writer;
     const DuneGridView* m_dune_gv;
 
-    friend std::auto_ptr<VtkWriter> ConcreteGridView<DuneGridView>::vtkWriter(
+    friend std::unique_ptr<VtkWriter> ConcreteGridView<DuneGridView>::vtkWriter(
             Dune::VTK::DataMode dm) const;
 
     /** \brief Construct a VtkWriter working on a specific \p DuneGridView.
