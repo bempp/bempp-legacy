@@ -49,6 +49,7 @@ passon_variables(Armadillo
         "\nset(CMAKE_INSTALL_PREFIX \"${EXTERNAL_ROOT}\" CACHE STRING \"\")\n"
         "set(CMAKE_LIBRARY_PATH ${library_dirs} CACHE PATH \"\" FORCE)\n"
         "set(CMAKE_INSTALL_RPATH ${rpath_dirs} CACHE INTERNAL \"\")\n"
+        "set(CMAKE_DISABLE_FIND_PACKAGE_HDF5 TRUE CACHE BOOL \"\" FORCE)\n"
 )
 
 include(PatchScript)
