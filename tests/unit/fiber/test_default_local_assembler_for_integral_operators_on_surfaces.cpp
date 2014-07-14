@@ -126,7 +126,7 @@ public:
     BoundaryOperator<BFT, RT> bop;
 
     shared_ptr<QuadratureStrategy> quadStrategy;
-    std::auto_ptr<typename Operator::LocalAssembler> assembler;
+    std::unique_ptr<typename Operator::LocalAssembler> assembler;
 };
 
 // Tests

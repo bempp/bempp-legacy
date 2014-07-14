@@ -66,7 +66,7 @@ struct ClusterConstructionHelper
         shared_ptr<IndexPermutation>& o2p,
         shared_ptr<IndexPermutation>& p2o);
 
-    static std::auto_ptr<AhmedBemBlcluster>
+    static std::unique_ptr<AhmedBemBlcluster>
     constructBemBlockCluster(
         const AcaOptions& acaOptions,
         bool symmetric,

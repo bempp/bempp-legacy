@@ -211,7 +211,7 @@ assembleWeakFormInternal(
 /** \cond PRIVATE */
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
-std::auto_ptr<DiscreteBoundaryOperator<ResultType> >
+std::unique_ptr<DiscreteBoundaryOperator<ResultType> >
 HypersingularIntegralOperator<BasisFunctionType, KernelType, ResultType>::
 assembleWeakFormInDenseMode(
         LocalAssembler& assembler,
@@ -225,7 +225,7 @@ assembleWeakFormInDenseMode(
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
-std::auto_ptr<DiscreteBoundaryOperator<ResultType> >
+std::unique_ptr<DiscreteBoundaryOperator<ResultType> >
 HypersingularIntegralOperator<BasisFunctionType, KernelType, ResultType>::
 assembleWeakFormInAcaMode(
         LocalAssembler& standardAssembler, LocalAssembler& offDiagonalAssembler,

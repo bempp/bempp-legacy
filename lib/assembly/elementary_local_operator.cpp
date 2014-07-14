@@ -193,7 +193,7 @@ void gatherGlobalDofs(
 
     // Gather global DOF lists
     const Mapper& mapper = view.elementMapper();
-    std::auto_ptr<EntityIterator<0> > it = view.entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > it = view.entityIterator<0>();
     while (!it->finished()) {
         const Entity<0>& element = it->entity();
         const int elementIndex = mapper.entityIndex(element);
@@ -240,7 +240,7 @@ ElementaryLocalOperator<BasisFunctionType, ResultType>::assembleWeakFormImpl(
                   << this->label() << "'..." << std::endl;
 
     tbb::tick_count start = tbb::tick_count::now();
-    std::auto_ptr<LocalAssembler> assembler = this->makeAssembler(
+    std::unique_ptr<LocalAssembler> assembler = this->makeAssembler(
                 *context.quadStrategy(), context.assemblyOptions());
     shared_ptr<DiscreteBoundaryOperator<ResultType> > result =
             assembleWeakFormInternalImpl2(*assembler, context);
@@ -270,7 +270,7 @@ ElementaryLocalOperator<BasisFunctionType, ResultType>::assembleWeakFormInternal
 }
 
 template <typename BasisFunctionType, typename ResultType>
-std::auto_ptr<DiscreteBoundaryOperator<ResultType> >
+std::unique_ptr<DiscreteBoundaryOperator<ResultType> >
 ElementaryLocalOperator<BasisFunctionType, ResultType>::assembleWeakFormInDenseMode(
         LocalAssembler& assembler,
         const AssemblyOptions& options) const
@@ -317,12 +317,12 @@ ElementaryLocalOperator<BasisFunctionType, ResultType>::assembleWeakFormInDenseM
             }
         }
 
-    return std::auto_ptr<DiscreteBoundaryOperator<ResultType> >(
+    return std::unique_ptr<DiscreteBoundaryOperator<ResultType> >(
                 new DiscreteDenseBoundaryOperator<ResultType>(result));
 }
 
 template <typename BasisFunctionType, typename ResultType>
-std::auto_ptr<DiscreteBoundaryOperator<ResultType> >
+std::unique_ptr<DiscreteBoundaryOperator<ResultType> >
 ElementaryLocalOperator<BasisFunctionType, ResultType>::assembleWeakFormInSparseMode(
         LocalAssembler& assembler,
         const AssemblyOptions& options) const
@@ -454,7 +454,7 @@ ElementaryLocalOperator<BasisFunctionType, ResultType>::assembleWeakFormInSparse
 
     // Create and return a discrete operator represented by the matrix that
     // has just been calculated
-    return std::auto_ptr<DiscreteBoundaryOperator<ResultType> >(
+    return std::unique_ptr<DiscreteBoundaryOperator<ResultType> >(
         new DiscreteSparseBoundaryOperator<ResultType>(
                     result, this->symmetry(), NO_TRANSPOSE,
                     blockCluster, trial_o2pPermutation, test_o2pPermutation));
@@ -466,7 +466,7 @@ ElementaryLocalOperator<BasisFunctionType, ResultType>::assembleWeakFormInSparse
 }
 
 template <typename BasisFunctionType, typename ResultType>
-std::auto_ptr<typename ElementaryLocalOperator<BasisFunctionType, ResultType>::LocalAssembler>
+std::unique_ptr<typename ElementaryLocalOperator<BasisFunctionType, ResultType>::LocalAssembler>
 ElementaryLocalOperator<BasisFunctionType, ResultType>::makeAssembler(
         const QuadratureStrategy& quadStrategy,
         const AssemblyOptions& options) const

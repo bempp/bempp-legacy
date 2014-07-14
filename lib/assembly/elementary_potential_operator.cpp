@@ -54,7 +54,7 @@ componentCount() const
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
-std::auto_ptr<InterpolatedFunction<ResultType> >
+std::unique_ptr<InterpolatedFunction<ResultType> >
 ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
 evaluateOnGrid(
         const GridFunction<BasisFunctionType, ResultType>& argument,
@@ -71,7 +71,7 @@ evaluateOnGrid(
 
     // Get coordinates of interpolation points, i.e. the evaluationGrid's vertices
 
-    std::auto_ptr<GridView> evalView = evaluationGrid.leafView();
+    std::unique_ptr<GridView> evalView = evaluationGrid.leafView();
     const int evalGridDim = evaluationGrid.dim();
     const int evalPointCount = evalView->entityCount(evalGridDim);
     arma::Mat<CoordinateType> evalPoints(evalGridDim, evalPointCount);
@@ -80,7 +80,7 @@ evaluateOnGrid(
     // TODO: extract into template function, perhaps add case evalGridDim == 1
     if (evalGridDim == 2) {
         const int vertexCodim = 2;
-        std::auto_ptr<EntityIterator<vertexCodim> > it =
+        std::unique_ptr<EntityIterator<vertexCodim> > it =
                 evalView->entityIterator<vertexCodim>();
         while (!it->finished()) {
             const Entity<vertexCodim>& vertex = it->entity();
@@ -92,7 +92,7 @@ evaluateOnGrid(
         }
     } else if (evalGridDim == 3) {
         const int vertexCodim = 3;
-        std::auto_ptr<EntityIterator<vertexCodim> > it =
+        std::unique_ptr<EntityIterator<vertexCodim> > it =
                 evalView->entityIterator<vertexCodim>();
         while (!it->finished()) {
             const Entity<vertexCodim>& vertex = it->entity();
@@ -107,7 +107,7 @@ evaluateOnGrid(
     arma::Mat<ResultType> result;
     result = evaluateAtPoints(argument, evalPoints, quadStrategy, options);
 
-    return std::auto_ptr<InterpolatedFunction<ResultType> >(
+    return std::unique_ptr<InterpolatedFunction<ResultType> >(
                 new InterpolatedFunction<ResultType>(evaluationGrid, result));
 }
 
@@ -128,7 +128,7 @@ evaluateAtPoints(
                 "on which the grid function 'argument' is defined");
 
     if (options.evaluationMode() == EvaluationOptions::DENSE) {
-        std::auto_ptr<Evaluator> evaluator =
+        std::unique_ptr<Evaluator> evaluator =
                 makeEvaluator(argument, quadStrategy, options);
 
         // right now we don't bother about far and near field
@@ -172,7 +172,7 @@ assemble(
                 "equal to the dimension of the space containing the surface "
                 "on which the function space 'space' is defined");
 
-    std::auto_ptr<LocalAssembler> assembler =
+    std::unique_ptr<LocalAssembler> assembler =
             makeAssembler(*space, *evaluationPoints, quadStrategy, options);
     shared_ptr<DiscreteBoundaryOperator<ResultType> > discreteOperator =
         assembleOperator(*space, *evaluationPoints /*TODO*/,
@@ -186,7 +186,7 @@ assemble(
 /** \cond PRIVATE */
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
-std::auto_ptr<typename ElementaryPotentialOperator<
+std::unique_ptr<typename ElementaryPotentialOperator<
 BasisFunctionType, KernelType, ResultType>::Evaluator>
 ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
 makeEvaluator(
@@ -221,7 +221,7 @@ makeEvaluator(
     shared_ptr<CoefficientsVector> localCoefficients =
             boost::make_shared<CoefficientsVector>(elementCount);
 
-    std::auto_ptr<EntityIterator<0> > it = view.entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > it = view.entityIterator<0>();
     for (int i = 0; i < elementCount; ++i) {
         const Entity<0>& element = it->entity();
         argument.getLocalCoefficients(element, (*localCoefficients)[i]);
@@ -241,7 +241,7 @@ makeEvaluator(
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
-std::auto_ptr<typename ElementaryPotentialOperator<
+std::unique_ptr<typename ElementaryPotentialOperator<
 BasisFunctionType, KernelType, ResultType>::LocalAssembler>
 ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
 makeAssembler(
@@ -308,7 +308,7 @@ assembleOperator(
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
-std::auto_ptr<DiscreteBoundaryOperator<ResultType> >
+std::unique_ptr<DiscreteBoundaryOperator<ResultType> >
 ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
 assembleOperatorInDenseMode(
         const Space<BasisFunctionType>& space,
@@ -387,12 +387,12 @@ assembleOperatorInDenseMode(
 
 //    // Create and return a discrete operator represented by the matrix that
 //    // has just been calculated
-//    return std::auto_ptr<DiscreteBoundaryOperator<ResultType> >(
+//    return std::unique_ptr<DiscreteBoundaryOperator<ResultType> >(
 //                new DiscreteDenseBoundaryOperator<ResultType>(result));
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
-std::auto_ptr<DiscreteBoundaryOperator<ResultType> >
+std::unique_ptr<DiscreteBoundaryOperator<ResultType> >
 ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
 assembleOperatorInAcaMode(
         const Space<BasisFunctionType>& space,

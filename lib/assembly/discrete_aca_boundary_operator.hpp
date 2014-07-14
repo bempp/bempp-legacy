@@ -257,7 +257,7 @@ public:
             unsigned int rowCount, unsigned int columnCount,
             int maximumRankUsedInAssembly,
             int symmetry,
-            std::auto_ptr<const AhmedBemBlcluster> blockCluster_,
+            std::unique_ptr<const AhmedBemBlcluster> blockCluster_,
             AhmedMblockArray blocks_,
             const IndexPermutation& domainPermutation_,
             const IndexPermutation& rangePermutation_,

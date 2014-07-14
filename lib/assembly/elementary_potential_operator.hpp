@@ -126,7 +126,7 @@ public:
     typedef Fiber::KernelTrialIntegral<BasisFunctionType, KernelType, ResultType>
     KernelTrialIntegral;
 
-    virtual std::auto_ptr<InterpolatedFunction<ResultType_> > evaluateOnGrid(
+    virtual std::unique_ptr<InterpolatedFunction<ResultType_> > evaluateOnGrid(
             const GridFunction<BasisFunctionType, ResultType>& argument,
             const Grid& evaluationGrid,
             const QuadratureStrategy& quadStrategy,
@@ -166,12 +166,12 @@ private:
     virtual const KernelTrialIntegral& integral() const = 0;
 
     /** \cond PRIVATE */
-    std::auto_ptr<Evaluator> makeEvaluator(
+    std::unique_ptr<Evaluator> makeEvaluator(
             const GridFunction<BasisFunctionType, ResultType>& argument,
             const QuadratureStrategy& quadStrategy,
             const EvaluationOptions& options) const;
 
-    std::auto_ptr<LocalAssembler> makeAssembler(
+    std::unique_ptr<LocalAssembler> makeAssembler(
             const Space<BasisFunctionType>& space,
             const arma::Mat<CoordinateType>& evaluationPoints,
             const QuadratureStrategy& quadStrategy,
@@ -183,14 +183,14 @@ private:
             LocalAssembler& assembler,
             const EvaluationOptions& options) const;
 
-    std::auto_ptr<DiscreteBoundaryOperator<ResultType_> >
+    std::unique_ptr<DiscreteBoundaryOperator<ResultType_> >
     assembleOperatorInDenseMode(
             const Space<BasisFunctionType>& space,
             const arma::Mat<CoordinateType>& evaluationPoints,
             LocalAssembler& assembler,
             const EvaluationOptions& options) const;
 
-    std::auto_ptr<DiscreteBoundaryOperator<ResultType_> >
+    std::unique_ptr<DiscreteBoundaryOperator<ResultType_> >
     assembleOperatorInAcaMode(
             const Space<BasisFunctionType>& space,
             const arma::Mat<CoordinateType>& evaluationPoints,
