@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityIndex_agrees_with_Dune_for_second_entity
 {
     const int codim = T::value;
 
-    std::auto_ptr<EntityIterator<codim> > it = bemppGridView->entityIterator<codim>();
+    std::unique_ptr<EntityIterator<codim> > it = bemppGridView->entityIterator<codim>();
     it->next();
 
     typename DuneGridView::Codim<codim>::Iterator duneIt = duneGridView.begin<codim>();
@@ -51,7 +51,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(subEntityIndex_agrees_with_Dune_for_first_enti
 {
     const int codimSub = T::value;
 
-    std::auto_ptr<EntityIterator<0> > it = bemppGridView->entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > it = bemppGridView->entityIterator<0>();
     it->next();
 
     typename DuneGridView::Codim<0>::Iterator duneIt = duneGridView.begin<0>();
@@ -68,10 +68,10 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(subEntityIndex_and_entityIndex_agree_for_the_s
 {
     const int codimSub = T::value;
 
-    std::auto_ptr<EntityIterator<0> > it = bemppGridView->entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > it = bemppGridView->entityIterator<0>();
     it->next();
 
-    std::auto_ptr<EntityIterator<codimSub> > subIt = it->entity().subEntityIterator<codimSub>();
+    std::unique_ptr<EntityIterator<codimSub> > subIt = it->entity().subEntityIterator<codimSub>();
     subIt->next();
 
     int indexDirect = bemppIndexSet.entityIndex(subIt->entity());
@@ -82,7 +82,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(subEntityIndex_and_entityIndex_agree_for_the_s
 
 BOOST_AUTO_TEST_CASE(subEntityIndex_returns_the_same_as_entityIndex_for_entity_of_codim_0)
 {
-    std::auto_ptr<EntityIterator<0> > it = bemppGridView->entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > it = bemppGridView->entityIterator<0>();
     it->next();
 
     int indexDirect = bemppIndexSet.entityIndex(it->entity());
@@ -96,7 +96,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(subEntityIndex_throws_for_invalid_codimension_
 {
     //const int codimSub = T::value;
 
-    std::auto_ptr<EntityIterator<0> > it = bemppGridView->entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > it = bemppGridView->entityIterator<0>();
     it->next();
 
     BOOST_CHECK_THROW(bemppIndexSet.subEntityIndex(it->entity(), 0, 3 /* codimSub */), std::invalid_argument);
@@ -113,7 +113,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityIndex_agrees_with_Dune_for_second_entity
 {
     const int codim = T::value;
 
-    std::auto_ptr<EntityIterator<codim> > it = bemppGridView->entityIterator<codim>();
+    std::unique_ptr<EntityIterator<codim> > it = bemppGridView->entityIterator<codim>();
     it->next();
 
     typename DuneGridView::Codim<codim>::Iterator duneIt = duneGridView.begin<codim>();
@@ -128,7 +128,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(subEntityIndex_agrees_with_Dune_for_first_enti
 {
     const int codimSub = T::value;
 
-    std::auto_ptr<EntityIterator<0> > it = bemppGridView->entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > it = bemppGridView->entityIterator<0>();
     it->next();
 
     typename DuneGridView::Codim<0>::Iterator duneIt = duneGridView.begin<0>();
@@ -145,10 +145,10 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(subEntityIndex_and_entityIndex_agree_for_the_s
 {
     const int codimSub = T::value;
 
-    std::auto_ptr<EntityIterator<0> > it = bemppGridView->entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > it = bemppGridView->entityIterator<0>();
     it->next();
 
-    std::auto_ptr<EntityIterator<codimSub> > subIt = it->entity().subEntityIterator<codimSub>();
+    std::unique_ptr<EntityIterator<codimSub> > subIt = it->entity().subEntityIterator<codimSub>();
     subIt->next();
 
     int indexDirect = bemppIndexSet.entityIndex(subIt->entity());
@@ -159,7 +159,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(subEntityIndex_and_entityIndex_agree_for_the_s
 
 BOOST_AUTO_TEST_CASE(subEntityIndex_returns_the_same_as_entityIndex_for_entity_of_codim_0)
 {
-    std::auto_ptr<EntityIterator<0> > it = bemppGridView->entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > it = bemppGridView->entityIterator<0>();
     it->next();
 
     int indexDirect = bemppIndexSet.entityIndex(it->entity());
@@ -171,7 +171,7 @@ BOOST_AUTO_TEST_CASE(subEntityIndex_returns_the_same_as_entityIndex_for_entity_o
 #ifndef NDEBUG
 BOOST_AUTO_TEST_CASE(subEntityIndex_throws_for_invalid_codimension)
 {
-    std::auto_ptr<EntityIterator<0> > it = bemppGridView->entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > it = bemppGridView->entityIterator<0>();
     it->next();
 
     BOOST_CHECK_THROW(bemppIndexSet.subEntityIndex(it->entity(), 0, 3 /* codimSub */), std::invalid_argument);

@@ -79,9 +79,9 @@ public:
         return m_entity;
     }
 
-    virtual std::auto_ptr<EntityPointer<ConcreteRangeEntityIterator::codimension> > frozen() const {
+    virtual std::unique_ptr<EntityPointer<ConcreteRangeEntityIterator::codimension> > frozen() const {
         const int codim = ConcreteRangeEntityIterator::codimension;
-        return std::auto_ptr<EntityPointer<codim> >(
+        return std::unique_ptr<EntityPointer<codim> >(
                     new ConcreteEntityPointer<DuneEntityPointer>(
                         *m_cur, m_domain_index));
     }

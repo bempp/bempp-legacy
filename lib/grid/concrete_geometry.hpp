@@ -77,7 +77,7 @@ class ConcreteGeometry : public Geometry
                        "number of coordinates");
 
 private:
-    std::auto_ptr<DuneGeometry> m_dune_geometry;
+    std::unique_ptr<DuneGeometry> m_dune_geometry;
 
     void setDuneGeometry(const DuneGeometry& dune_geometry) {
         m_dune_geometry.reset(new DuneGeometry(dune_geometry));

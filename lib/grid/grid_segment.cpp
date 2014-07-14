@@ -41,7 +41,7 @@ template <int codim>
 std::set<int> entitiesWithNonpositiveX(const GridView& view)
 {
     std::set<int> result;
-    std::auto_ptr<EntityIterator<codim> > it = view.entityIterator<codim>();
+    std::unique_ptr<EntityIterator<codim> > it = view.entityIterator<codim>();
     const IndexSet& indexSet = view.indexSet();
     arma::Col<double> center;
     while (!it->finished()) {
@@ -64,7 +64,7 @@ GridSegment::GridSegment(const Grid& grid,
                          int level)
 {
 
-    std::auto_ptr<GridView> view;
+    std::unique_ptr<GridView> view;
     if (level==-1)
         view = grid.leafView();
     else
@@ -105,7 +105,7 @@ GridSegment GridSegment::wholeGrid(const Grid& grid, int level)
 GridSegment GridSegment::openDomain(const Grid& grid, int domain, int level)
 {
     const int gridDim = grid.dim();
-    std::auto_ptr<GridView> view;
+    std::unique_ptr<GridView> view;
     if (level==-1)
         view = grid.leafView();
     else
@@ -117,7 +117,7 @@ GridSegment GridSegment::openDomain(const Grid& grid, int domain, int level)
         entirelyInDomain[codim].resize(view->entityCount(codim), true);
 
     boost::array<std::set<int>, 4> excludedEntities;
-    std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > it = view->entityIterator<0>();
     while (!it->finished()) {
         const Entity<0>& e = it->entity();
         if (e.domain() != domain) {
@@ -148,7 +148,7 @@ GridSegment GridSegment::openDomain(const Grid& grid, int domain, int level)
 GridSegment GridSegment::closedDomain(const Grid& grid, int domain, int level)
 {
     const int gridDim = grid.dim();
-    std::auto_ptr<GridView> view;
+    std::unique_ptr<GridView> view;
     if (level==-1)
         view = grid.leafView();
     else
@@ -160,7 +160,7 @@ GridSegment GridSegment::closedDomain(const Grid& grid, int domain, int level)
         adjacentToDomain[codim].resize(view->entityCount(codim), false);
 
     boost::array<std::set<int>, 4> excludedEntities;
-    std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > it = view->entityIterator<0>();
     while (!it->finished()) {
         const Entity<0>& e = it->entity();
         if (e.domain() != domain)
@@ -271,7 +271,7 @@ GridSegment GridSegment::intersection(const GridSegment& other) const
 GridSegment gridSegmentWithPositiveX(const Grid& grid, int level)
 {
     boost::array<std::set<int>, 4> excludedEntities;
-    std::auto_ptr<GridView> view;
+    std::unique_ptr<GridView> view;
     if (level==-1)
         view = grid.leafView();
     else

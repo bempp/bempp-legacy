@@ -48,14 +48,14 @@ BOOST_AUTO_TEST_CASE(number_of_vertices_is_correct)
 BOOST_AUTO_TEST_CASE(second_face_is_a_triangle)
 {
     const int codim = 0;
-    std::auto_ptr<EntityPointer<codim> > ep = getPointerToSecondEntityOnLevel0<codim>();
+    std::unique_ptr<EntityPointer<codim> > ep = getPointerToSecondEntityOnLevel0<codim>();
     BOOST_CHECK(ep->entity().type().isTriangle());
 }
 
 BOOST_AUTO_TEST_CASE(elements_are_in_the_z_plane)
 {
-    std::auto_ptr<Bempp::GridView> bemppGridView = bemppGrid->levelView(0);
-    std::auto_ptr<Bempp::EntityIterator<2> > it = bemppGridView->entityIterator<2>();
+    std::unique_ptr<Bempp::GridView> bemppGridView = bemppGrid->levelView(0);
+    std::unique_ptr<Bempp::EntityIterator<2> > it = bemppGridView->entityIterator<2>();
 
     typedef double ctype;
     ctype max_abs_z = 0.;
@@ -71,8 +71,8 @@ BOOST_AUTO_TEST_CASE(elements_are_in_the_z_plane)
 
 BOOST_AUTO_TEST_CASE(elements_cover_the_unit_square)
 {
-    std::auto_ptr<Bempp::GridView> bemppGridView = bemppGrid->levelView(0);
-    std::auto_ptr<Bempp::EntityIterator<2> > it = bemppGridView->entityIterator<2>();
+    std::unique_ptr<Bempp::GridView> bemppGridView = bemppGrid->levelView(0);
+    std::unique_ptr<Bempp::EntityIterator<2> > it = bemppGridView->entityIterator<2>();
 
     typedef double ctype;
     ctype min_x =  1e100;
@@ -103,7 +103,7 @@ BOOST_AUTO_TEST_CASE(jacobian_is_constant_everywhere_on_the_second_face)
     const int dimLocal = DuneGrid::dimension - codim;
     const int nPoints = 5;
 
-    std::auto_ptr<EntityPointer<codim> > ep = getPointerToSecondEntityOnLevel0<codim>();
+    std::unique_ptr<EntityPointer<codim> > ep = getPointerToSecondEntityOnLevel0<codim>();
     const Geometry& geo = ep->entity().geometry();
 
     typedef double ctype;

@@ -99,7 +99,7 @@ void NumericalTestTrialIntegrator<BasisFunctionType, ResultType, GeometryFactory
     m_integral.addGeometricalDependencies(geomDeps);
 
     typedef typename GeometryFactory::Geometry Geometry;
-    std::auto_ptr<Geometry> geometry(m_geometryFactory.make());
+    std::unique_ptr<Geometry> geometry(m_geometryFactory.make());
 
     CollectionOf3dArrays<BasisFunctionType> testValues, trialValues;
 

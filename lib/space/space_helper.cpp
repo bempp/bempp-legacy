@@ -88,7 +88,7 @@ getGlobalDofBoundingBoxes_defaultImplementation(
     const int elementCount = view.entityCount(0);
 
     std::vector<arma::Mat<CoordinateType> > elementCorners(elementCount);
-    std::auto_ptr<EntityIterator<0> > it = view.entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > it = view.entityIterator<0>();
     while (!it->finished()) {
         const Entity<0>& e = it->entity();
         int index = indexSet.entityIndex(e);
@@ -145,7 +145,7 @@ getGlobalDofNormals_defaultImplementation(
     int elementCount = view.entityCount(0);
 
     arma::Mat<CoordinateType> elementNormals(worldDim, elementCount);
-    std::auto_ptr<EntityIterator<0> > it = view.entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > it = view.entityIterator<0>();
     arma::Col<CoordinateType> center(gridDim);
     // Note: we assume here that elements are flat and so the position at which
     // the normal is calculated does not matter.

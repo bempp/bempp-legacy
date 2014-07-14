@@ -116,21 +116,21 @@ public:
         return m_reverse_element_mapper;
     }
 
-    virtual std::auto_ptr<VtkWriter> vtkWriter(Dune::VTK::DataMode dm=Dune::VTK::conforming) const {
-        return std::auto_ptr<VtkWriter>(new ConcreteVtkWriter<DuneGridView>(m_dune_gv, dm));
+    virtual std::unique_ptr<VtkWriter> vtkWriter(Dune::VTK::DataMode dm=Dune::VTK::conforming) const {
+        return std::unique_ptr<VtkWriter>(new ConcreteVtkWriter<DuneGridView>(m_dune_gv, dm));
     }
 
 private:
-    virtual std::auto_ptr<EntityIterator<0> > entityCodim0Iterator() const {
+    virtual std::unique_ptr<EntityIterator<0> > entityCodim0Iterator() const {
         return entityCodimNIterator<0>();
     }
-    virtual std::auto_ptr<EntityIterator<1> > entityCodim1Iterator() const {
+    virtual std::unique_ptr<EntityIterator<1> > entityCodim1Iterator() const {
         return entityCodimNIterator<1>();
     }
-    virtual std::auto_ptr<EntityIterator<2> > entityCodim2Iterator() const {
+    virtual std::unique_ptr<EntityIterator<2> > entityCodim2Iterator() const {
         return entityCodimNIterator<2>();
     }
-    virtual std::auto_ptr<EntityIterator<3> > entityCodim3Iterator() const {
+    virtual std::unique_ptr<EntityIterator<3> > entityCodim3Iterator() const {
         return entityCodimNIterator<3>();
     }
 
@@ -150,20 +150,20 @@ private:
     }
 
     template <int codim>
-    typename boost::disable_if_c<codim <= DuneGridView::dimension, std::auto_ptr<EntityIterator<codim> > >::type
+    typename boost::disable_if_c<codim <= DuneGridView::dimension, std::unique_ptr<EntityIterator<codim> > >::type
     entityCodimNIterator() const {
         throw std::logic_error("GridView::entityIterator(): invalid entity codimension");
     }
 
     template <int codim>
-    typename boost::enable_if_c<codim <= DuneGridView::dimension, std::auto_ptr<EntityIterator<codim> > >::type
+    typename boost::enable_if_c<codim <= DuneGridView::dimension, std::unique_ptr<EntityIterator<codim> > >::type
     entityCodimNIterator() const {
         typedef typename DuneGridView::template Codim<codim>::Iterator DuneIterator;
         typedef typename DuneGridView::template Codim<codim>::EntityPointer DuneEntityPointer;
         typedef ConcreteRangeEntityIterator<DuneIterator, DuneEntityPointer> ConcIterator;
         typedef typename DuneGridView::Grid::LevelGridView DuneLevelGridView;
 
-        return std::auto_ptr<EntityIterator<codim> >(
+        return std::unique_ptr<EntityIterator<codim> >(
                    new ConcIterator(m_dune_gv.template begin<codim>(),
                                     m_dune_gv.template end<codim>(),
                                     m_domain_index));

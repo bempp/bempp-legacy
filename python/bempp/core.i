@@ -48,7 +48,7 @@ namespace std {
 
 // Define commonly used typemaps
 %include "armadillo.i"
-%include "auto_ptr.i"
+%include "unique_ptr.i"
 %include "exception.i"
 %include "bempp_shared_ptr.i"
 %include "std_string.i"
@@ -80,26 +80,26 @@ namespace std {
     }
 }
 
-// Declare all necessary auto_ptr typemaps
+// Declare all necessary unique_ptr typemaps
 
 // Grid
-AUTO_PTR_TYPEMAPS(Bempp::Grid)
-AUTO_PTR_TYPEMAPS(Bempp::GridView)
-AUTO_PTR_TYPEMAPS(Bempp::EntityPointer<0>)
-AUTO_PTR_TYPEMAPS(Bempp::EntityPointer<1>)
-AUTO_PTR_TYPEMAPS(Bempp::EntityPointer<2>)
-AUTO_PTR_TYPEMAPS(Bempp::EntityPointer<3>)
-AUTO_PTR_TYPEMAPS(Bempp::EntityIterator<0>)
-AUTO_PTR_TYPEMAPS(Bempp::EntityIterator<1>)
-AUTO_PTR_TYPEMAPS(Bempp::EntityIterator<2>)
-AUTO_PTR_TYPEMAPS(Bempp::EntityIterator<3>)
-AUTO_PTR_TYPEMAPS(Bempp::Geometry)
-AUTO_PTR_TYPEMAPS(Bempp::VtkWriter)
+UNIQUE_PTR_TYPEMAPS(Bempp::Grid)
+UNIQUE_PTR_TYPEMAPS(Bempp::GridView)
+UNIQUE_PTR_TYPEMAPS(Bempp::EntityPointer<0>)
+UNIQUE_PTR_TYPEMAPS(Bempp::EntityPointer<1>)
+UNIQUE_PTR_TYPEMAPS(Bempp::EntityPointer<2>)
+UNIQUE_PTR_TYPEMAPS(Bempp::EntityPointer<3>)
+UNIQUE_PTR_TYPEMAPS(Bempp::EntityIterator<0>)
+UNIQUE_PTR_TYPEMAPS(Bempp::EntityIterator<1>)
+UNIQUE_PTR_TYPEMAPS(Bempp::EntityIterator<2>)
+UNIQUE_PTR_TYPEMAPS(Bempp::EntityIterator<3>)
+UNIQUE_PTR_TYPEMAPS(Bempp::Geometry)
+UNIQUE_PTR_TYPEMAPS(Bempp::VtkWriter)
 
-AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::DiscreteBoundaryOperator)
-AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
+UNIQUE_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::DiscreteBoundaryOperator)
+UNIQUE_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
 
-// End of auto_ptr typemaps
+// End of unique_ptr typemaps
 
 %{
 #include "common/deprecated.hpp"

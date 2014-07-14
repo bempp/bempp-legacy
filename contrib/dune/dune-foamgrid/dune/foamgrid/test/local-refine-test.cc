@@ -22,7 +22,7 @@ int main (int argc, char *argv[]) try
     BasicUnitCube<2>::insertVertices(factory);
     BasicUnitCube<2>::insertSimplices(factory);
     
-    std::auto_ptr<FoamGrid<2> > grid2d(factory.createGrid());
+    std::unique_ptr<FoamGrid<2> > grid2d(factory.createGrid());
     {
         Dune::VTKWriter<typename FoamGrid<2>::LeafGridView > 
             writer(grid2d->leafView(), VTK::nonconforming);

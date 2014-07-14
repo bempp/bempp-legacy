@@ -10,7 +10,7 @@ namespace Bempp
 
 int DomainIndex::domain(const Entity<0>& entity) const
 {
-    std::auto_ptr<EntityPointer<0> > father;
+    std::unique_ptr<EntityPointer<0> > father;
     const Entity<0>* level0Entity = &entity;
     while (level0Entity->hasFather()) {
         father = level0Entity->father();

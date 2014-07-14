@@ -268,7 +268,7 @@ void PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::assignDofsImpl
     std::vector<GlobalDofIndex> bubbleStartingGlobalDofs(elementCount);
     std::vector<bool> noElementAdjacentToVertexIsOnSegment(vertexCount, true);
     std::vector<bool> noElementAdjacentToEdgeIsOnSegment(edgeCount, true);
-    std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
     while (!it->finished()) {
         const Entity<0>& element = it->entity();
         EntityIndex elementIndex = indexSet.entityIndex(element);

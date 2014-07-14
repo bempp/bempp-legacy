@@ -23,6 +23,7 @@
 
 #include <memory>
 #include <vector>
+#include <utility>
 
 #include "index_set.hpp"
 
@@ -32,9 +33,9 @@ namespace Bempp
 class DomainIndex
 {
 public:
-    DomainIndex(std::auto_ptr<IndexSet> level0IndexSet,
+    DomainIndex(std::unique_ptr<IndexSet> && level0IndexSet,
                 const std::vector<int>& elementIndexToPhysicalEntity) :
-        m_level0IndexSet(level0IndexSet),
+        m_level0IndexSet(std::move(level0IndexSet)),
         m_domainIndices(elementIndexToPhysicalEntity)
     {
     }
@@ -42,7 +43,7 @@ public:
     int domain(const Entity<0>& entity) const;
     std::vector<int> domainIndices() const;
 private:
-    std::auto_ptr<IndexSet> m_level0IndexSet;
+    std::unique_ptr<IndexSet> m_level0IndexSet;
     std::vector<int> m_domainIndices;
 };
 

@@ -600,7 +600,7 @@ private:
     shared_ptr<const Grid> m_grid;
     shared_ptr<GeometryFactory> m_elementGeometryFactory;
     unsigned int m_level;
-    std::auto_ptr<GridView> m_view;
+    std::unique_ptr<GridView> m_view;
     /** \endcond */
 };
 

@@ -74,10 +74,10 @@ public:
     @{ */
 
     /** \brief View of the entities on grid level \p level. */
-    virtual std::auto_ptr<GridView> levelView(size_t level) const = 0;
+    virtual std::unique_ptr<GridView> levelView(size_t level) const = 0;
 
     /** \brief View of the leaf entities. */
-    virtual std::auto_ptr<GridView> leafView() const = 0;
+    virtual std::unique_ptr<GridView> leafView() const = 0;
 
     /** \brief Return the topology of the grid */
 
@@ -89,7 +89,7 @@ public:
      \note For internal use.
 
      \todo Provide implementations for other codimensions. */
-    virtual std::auto_ptr<GeometryFactory> elementGeometryFactory() const = 0;
+    virtual std::unique_ptr<GeometryFactory> elementGeometryFactory() const = 0;
 
     /** @}
     @name Others

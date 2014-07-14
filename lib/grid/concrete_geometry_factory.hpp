@@ -37,8 +37,8 @@ namespace Bempp
 template <typename DuneGeometry>
 class ConcreteGeometryFactory : public GeometryFactory
 {
-    virtual std::auto_ptr<Geometry> make() const {
-        return std::auto_ptr<Geometry>(
+    virtual std::unique_ptr<Geometry> make() const {
+        return std::unique_ptr<Geometry>(
                     new ConcreteGeometry<DuneGeometry>());
     }
 };

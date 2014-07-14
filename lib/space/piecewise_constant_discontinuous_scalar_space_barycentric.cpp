@@ -153,7 +153,7 @@ void PiecewiseConstantDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::as
 
     const GridView& view = this->gridView();
 
-    std::auto_ptr<GridView> viewCoarseGridPtr = this->grid()->levelView(0);
+    std::unique_ptr<GridView> viewCoarseGridPtr = this->grid()->levelView(0);
     const GridView& viewCoarseGrid = *viewCoarseGridPtr;
 
     const Mapper& elementMapper = view.elementMapper();
@@ -178,14 +178,14 @@ void PiecewiseConstantDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::as
     m_global2localDofs.reserve(elementCount);
 
     // Iterate over elements
-    std::auto_ptr<EntityIterator<0> > itCoarseGrid = viewCoarseGrid.entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > itCoarseGrid = viewCoarseGrid.entityIterator<0>();
     int flatLocalDofCount_ = 0;
     while (!itCoarseGrid->finished()) {
         const Entity<0>& elementCoarseGrid = itCoarseGrid->entity();
         EntityIndex elementIndexCoarseGrid = elementMapperCoarseGrid.entityIndex(elementCoarseGrid);
 
         // Iterate through refined elements
-        std::auto_ptr<EntityIterator<0> > sonIt = elementCoarseGrid.sonIterator(this->grid()->maxLevel());
+        std::unique_ptr<EntityIterator<0> > sonIt = elementCoarseGrid.sonIterator(this->grid()->maxLevel());
         while (!sonIt->finished()){
             const Entity<0>& element = sonIt->entity();
             int elementIndex = elementMapper.entityIndex(element);
@@ -333,7 +333,7 @@ void PiecewiseConstantDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::ge
     int elementCount = this->gridView().entityCount(0);
 
     arma::Mat<CoordinateType> elementNormals(worldDim, elementCount);
-    std::auto_ptr<EntityIterator<0> > it = this->gridView().template entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > it = this->gridView().template entityIterator<0>();
     arma::Col<CoordinateType> center(gridDim);
     center.fill(0.5);
     arma::Col<CoordinateType> normal;
@@ -387,8 +387,8 @@ void PiecewiseConstantDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::du
                 "PiecewiseConstantDiscontinuousScalarSpaceBarycentric::dumpClusterIds(): "
                 "clusterIds has incorrect length");
 
-    std::auto_ptr<GridView> view = this->grid()->leafView();
-    std::auto_ptr<VtkWriter> vtkWriter = view->vtkWriter();
+    std::unique_ptr<GridView> view = this->grid()->leafView();
+    std::unique_ptr<VtkWriter> vtkWriter = view->vtkWriter();
     arma::Row<double> data(idCount);
     for (size_t i = 0; i < idCount; ++i)
         data(i) = clusterIdsOfGlobalDofs[i];

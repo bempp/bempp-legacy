@@ -141,7 +141,7 @@ private:
     /** \cond PRIVATE */
     GridSegment m_segment;
     bool m_strictlyOnSegment;
-    std::auto_ptr<GridView> m_view;
+    std::unique_ptr<GridView> m_view;
     Fiber::PiecewiseLinearContinuousScalarBasis<2, BasisFunctionType> m_lineShapeset;
     Fiber::PiecewiseLinearContinuousScalarBasis<3, BasisFunctionType> m_triangleShapeset;
     Fiber::PiecewiseLinearContinuousScalarBasis<4, BasisFunctionType> m_quadrilateralShapeset;

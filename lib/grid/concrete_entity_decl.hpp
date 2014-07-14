@@ -167,7 +167,7 @@ public:
         return m_dune_entity->type();
     }
 
-    virtual std::auto_ptr<EntityPointer<0> > father() const;
+    virtual std::unique_ptr<EntityPointer<0> > father() const;
 
     virtual bool hasFather() const {
         return m_dune_entity->hasFather();
@@ -181,7 +181,7 @@ public:
         return m_dune_entity->isRegular();
     }
 
-    virtual std::auto_ptr<EntityIterator<0> > sonIterator(int maxlevel) const;
+    virtual std::unique_ptr<EntityIterator<0> > sonIterator(int maxlevel) const;
 
     virtual bool isNew() const {
         return m_dune_entity->isNew();
@@ -196,13 +196,13 @@ public:
     }
 
 private:
-    virtual std::auto_ptr<EntityIterator<1> > subEntityCodim1Iterator() const {
+    virtual std::unique_ptr<EntityIterator<1> > subEntityCodim1Iterator() const {
         return subEntityCodimNIterator<1>();
     }
-    virtual std::auto_ptr<EntityIterator<2> > subEntityCodim2Iterator() const {
+    virtual std::unique_ptr<EntityIterator<2> > subEntityCodim2Iterator() const {
         return subEntityCodimNIterator<2>();
     }
-    virtual std::auto_ptr<EntityIterator<3> > subEntityCodim3Iterator() const {
+    virtual std::unique_ptr<EntityIterator<3> > subEntityCodim3Iterator() const {
         return subEntityCodimNIterator<3>();
     }
 
@@ -210,11 +210,11 @@ private:
     // ConcreteEntity) because they need to know the full declaration of
     // concrete iterator (which may not be available at this stage)
     template <int codimSub>
-    typename boost::disable_if_c<(codimSub <= DuneEntity::dimension), std::auto_ptr<EntityIterator<codimSub> > >::type
+    typename boost::disable_if_c<(codimSub <= DuneEntity::dimension), std::unique_ptr<EntityIterator<codimSub> > >::type
     subEntityCodimNIterator() const;
 
     template <int codimSub>
-    typename boost::enable_if_c<(codimSub <= DuneEntity::dimension), std::auto_ptr<EntityIterator<codimSub> > >::type
+    typename boost::enable_if_c<(codimSub <= DuneEntity::dimension), std::unique_ptr<EntityIterator<codimSub> > >::type
     subEntityCodimNIterator() const;
 
     virtual size_t subEntityCodim1Count() const {

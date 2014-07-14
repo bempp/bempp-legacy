@@ -145,7 +145,7 @@ private:
     void assignDofsImpl(const GridSegment& segment);
 
 private:
-    std::auto_ptr<GridView> m_view;
+    std::unique_ptr<GridView> m_view;
     GridSegment m_segment;
     Fiber::ConstantScalarShapeset<BasisFunctionType> m_shapeset;
     std::vector<std::vector<GlobalDofIndex> > m_local2globalDofs;

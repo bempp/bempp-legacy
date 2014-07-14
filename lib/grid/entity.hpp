@@ -129,16 +129,16 @@ public:
     // Default implementation, specialisations for potentially allowed codimensions follow
     // after class declaration.
     template<int codimSub>
-    std::auto_ptr<EntityIterator<codimSub> > subEntityIterator() const {
+    std::unique_ptr<EntityIterator<codimSub> > subEntityIterator() const {
         throw std::logic_error("Entity::subEntityIterator(): invalid entity codimension");
     }
 
     /** \brief Inter-level access to father entity on the next-coarser grid.
 
      The given entity resulted directly from a subdivision of its father
-     entity. For macro (level-0) elements a null auto_ptr is returned.
+     entity. For macro (level-0) elements a null unique_ptr is returned.
      */
-    virtual std::auto_ptr<EntityPointer<0> > father() const = 0;
+    virtual std::unique_ptr<EntityPointer<0> > father() const = 0;
 
     /** \brief True if entity has a father entity which can be accessed
      using the father() method.
@@ -160,7 +160,7 @@ public:
      \param[in] maxlevel Iterator does not stop at elements with level greater than \p maxlevel.
      \return Iterator to the first son (level is not greater than \p maxlevel)
      */
-    virtual std::auto_ptr<EntityIterator<0> > sonIterator(int maxlevel) const = 0;
+    virtual std::unique_ptr<EntityIterator<0> > sonIterator(int maxlevel) const = 0;
 
     /** \brief True if the entity has been created during the last call to adapt().
      */
@@ -187,11 +187,11 @@ private:
     @{ */
 
     /** \brief Iterator over subentities of codimension 1. */
-    virtual std::auto_ptr<EntityIterator<1> > subEntityCodim1Iterator() const = 0;
+    virtual std::unique_ptr<EntityIterator<1> > subEntityCodim1Iterator() const = 0;
     /** \brief Iterator over subentities of codimension 2. */
-    virtual std::auto_ptr<EntityIterator<2> > subEntityCodim2Iterator() const = 0;
+    virtual std::unique_ptr<EntityIterator<2> > subEntityCodim2Iterator() const = 0;
     /** \brief Iterator over subentities of codimension 3. */
-    virtual std::auto_ptr<EntityIterator<3> > subEntityCodim3Iterator() const = 0;
+    virtual std::unique_ptr<EntityIterator<3> > subEntityCodim3Iterator() const = 0;
 
     /** \brief Number of subentities of codimension 1. */
     virtual size_t subEntityCodim1Count() const = 0;
@@ -211,17 +211,17 @@ namespace Bempp
 {
 
 template<>
-inline std::auto_ptr<EntityIterator<1> > Entity<0>::subEntityIterator<1>() const
+inline std::unique_ptr<EntityIterator<1> > Entity<0>::subEntityIterator<1>() const
 {
     return subEntityCodim1Iterator();
 }
 template<>
-inline std::auto_ptr<EntityIterator<2> > Entity<0>::subEntityIterator<2>() const
+inline std::unique_ptr<EntityIterator<2> > Entity<0>::subEntityIterator<2>() const
 {
     return subEntityCodim2Iterator();
 }
 template<>
-inline std::auto_ptr<EntityIterator<3> > Entity<0>::subEntityIterator<3>() const
+inline std::unique_ptr<EntityIterator<3> > Entity<0>::subEntityIterator<3>() const
 {
     return subEntityCodim3Iterator();
 }
