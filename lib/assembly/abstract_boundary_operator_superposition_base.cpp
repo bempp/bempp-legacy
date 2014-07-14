@@ -412,8 +412,7 @@ assembleJointOperatorWeakFormInAcaMode(
                         options.parallelizationOptions(),
                         options.verbosityLevel(),
                         cacheSingularIntegrals);
-            std::auto_ptr<LocalAssembler> __assembler(assembler.release());
-            assemblersForNonlocalTerms.push_back(__assembler);
+            assemblersForNonlocalTerms.push_back(assembler.release());
             symmetry &= elemOp->symmetry();
         }
 
