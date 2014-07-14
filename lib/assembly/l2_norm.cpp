@@ -140,7 +140,7 @@ public:
 };
 
 template <typename BasisFunctionType, typename ResultType>
-std::auto_ptr<Fiber::EvaluatorForIntegralOperators<ResultType> >
+std::unique_ptr<Fiber::EvaluatorForIntegralOperators<ResultType> >
 makeEvaluator(
         const GridFunction<BasisFunctionType, ResultType>& gridFunction,
         const Fiber::Function<ResultType>& refFunction,
@@ -175,7 +175,7 @@ makeEvaluator(
     shared_ptr<CoefficientsVector> localCoefficients =
             boost::make_shared<CoefficientsVector>(elementCount);
 
-    std::auto_ptr<EntityIterator<0> > it = view.entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > it = view.entityIterator<0>();
     for (int i = 0; i < elementCount; ++i) {
         const Entity<0>& element = it->entity();
         gridFunction.getLocalCoefficients(element, (*localCoefficients)[i]);
@@ -224,7 +224,7 @@ typename ScalarTraits<BasisFunctionType>::RealType L2NormOfDifference(
 {
     // First, construct the evaluator.
     typedef Fiber::EvaluatorForIntegralOperators<ResultType> Evaluator;
-    std::auto_ptr<Evaluator> evaluator =
+    std::unique_ptr<Evaluator> evaluator =
         makeEvaluator(
             gridFunction, refFunction, quadStrategy, options);
 

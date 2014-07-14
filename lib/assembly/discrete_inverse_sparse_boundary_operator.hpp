@@ -92,10 +92,10 @@ private:
 private:
     /** \cond PRIVATE */
     shared_ptr<const Epetra_CrsMatrix> m_mat;
-    std::auto_ptr<Epetra_LinearProblem> m_problem;
+    std::unique_ptr<Epetra_LinearProblem> m_problem;
     Teuchos::RCP<const Thyra::SpmdVectorSpaceBase<ValueType> > m_space;
     int m_symmetry;
-    std::auto_ptr<Amesos_BaseSolver> m_solver;
+    std::unique_ptr<Amesos_BaseSolver> m_solver;
     /** \endcond */
 };
 

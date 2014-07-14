@@ -59,7 +59,7 @@ assembleWeakFormInternal(
 }
 
 template <typename BasisFunctionType, typename ResultType>
-std::auto_ptr<typename ElementaryIntegralOperatorBase<BasisFunctionType, ResultType>::LocalAssembler>
+std::unique_ptr<typename ElementaryIntegralOperatorBase<BasisFunctionType, ResultType>::LocalAssembler>
 ElementaryIntegralOperatorBase<BasisFunctionType, ResultType>::makeAssembler(
         const QuadratureStrategy& quadStrategy,
         const shared_ptr<const GeometryFactory>& testGeometryFactory,
@@ -83,7 +83,7 @@ ElementaryIntegralOperatorBase<BasisFunctionType, ResultType>::makeAssembler(
 }
 
 template <typename BasisFunctionType, typename ResultType>
-std::auto_ptr<typename ElementaryIntegralOperatorBase<BasisFunctionType, ResultType>::LocalAssembler>
+std::unique_ptr<typename ElementaryIntegralOperatorBase<BasisFunctionType, ResultType>::LocalAssembler>
 ElementaryIntegralOperatorBase<BasisFunctionType, ResultType>::makeAssembler(
         const QuadratureStrategy& quadStrategy,
         const AssemblyOptions& options) const

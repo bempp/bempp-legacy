@@ -246,11 +246,11 @@ private:
             LocalAssembler& standardAssembler, LocalAssembler& offDiagonalAssembler,
             const Context<BasisFunctionType, ResultType>& context) const;
 
-    std::auto_ptr<DiscreteBoundaryOperator<ResultType_> >
+    std::unique_ptr<DiscreteBoundaryOperator<ResultType_> >
     assembleWeakFormInDenseMode(
             LocalAssembler& assembler,
             const Context<BasisFunctionType, ResultType>& context) const;
-    std::auto_ptr<DiscreteBoundaryOperator<ResultType_> >
+    std::unique_ptr<DiscreteBoundaryOperator<ResultType_> >
     assembleWeakFormInAcaMode(
             LocalAssembler& standardAssembler, LocalAssembler& offDiagonalAssembler,
             const Context<BasisFunctionType, ResultType>& context) const;

@@ -264,7 +264,7 @@ DiscreteAcaBoundaryOperator(
         unsigned int rowCount, unsigned int columnCount,
         int maximumRank_,
         int symmetry_,
-        std::auto_ptr<const AhmedBemBlcluster> blockCluster_,
+        std::unique_ptr<const AhmedBemBlcluster> blockCluster_,
         AhmedMblockArray blocks_,
         const IndexPermutation& domainPermutation_,
         const IndexPermutation& rangePermutation_,

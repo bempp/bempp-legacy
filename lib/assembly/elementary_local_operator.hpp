@@ -124,17 +124,17 @@ private:
             LocalAssembler& assembler,
             const Context<BasisFunctionType, ResultType>& options) const;
 
-    std::auto_ptr<DiscreteBoundaryOperator<ResultType_> >
+    std::unique_ptr<DiscreteBoundaryOperator<ResultType_> >
     assembleWeakFormInDenseMode(
             LocalAssembler& assembler,
             const AssemblyOptions& options) const;
 
-    std::auto_ptr<DiscreteBoundaryOperator<ResultType_> >
+    std::unique_ptr<DiscreteBoundaryOperator<ResultType_> >
     assembleWeakFormInSparseMode(
             LocalAssembler& assembler,
             const AssemblyOptions& options) const;
 
-    std::auto_ptr<LocalAssembler> makeAssembler(
+    std::unique_ptr<LocalAssembler> makeAssembler(
             const QuadratureStrategy& quadStrategy,
             const AssemblyOptions& options) const;
 

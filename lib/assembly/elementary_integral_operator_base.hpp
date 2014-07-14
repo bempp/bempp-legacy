@@ -83,7 +83,7 @@ public:
      *
      *  (TODO: finish description of the other parameters.)
      */
-    std::auto_ptr<LocalAssembler> makeAssembler(
+    std::unique_ptr<LocalAssembler> makeAssembler(
             const QuadratureStrategy& quadStrategy,
             const shared_ptr<const GeometryFactory>& testGeometryFactory,
             const shared_ptr<const GeometryFactory>& trialGeometryFactory,
@@ -106,7 +106,7 @@ public:
      *  automatically constructs most of the arguments required by the other
      *  overload.
      */
-    std::auto_ptr<LocalAssembler> makeAssembler(
+    std::unique_ptr<LocalAssembler> makeAssembler(
             const QuadratureStrategy& quadStrategy,
             const AssemblyOptions& options) const;
 
@@ -125,7 +125,7 @@ private:
      *
      *  This function is invoked by both overloads of makeAssembler()
      *  to do the actual work. */
-    virtual std::auto_ptr<LocalAssembler> makeAssemblerImpl(
+    virtual std::unique_ptr<LocalAssembler> makeAssemblerImpl(
             const QuadratureStrategy& quadStrategy,
             const shared_ptr<const GeometryFactory>& testGeometryFactory,
             const shared_ptr<const GeometryFactory>& trialGeometryFactory,

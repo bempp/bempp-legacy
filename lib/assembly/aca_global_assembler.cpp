@@ -407,7 +407,7 @@ void reorderIdentically(AhmedLeafClusterArray& leafClusters,
 
 template <typename AcaAssemblyHelper,
           typename BasisFunctionType, typename ResultType>
-std::auto_ptr<DiscreteAcaBoundaryOperator<ResultType> >
+std::unique_ptr<DiscreteAcaBoundaryOperator<ResultType> >
 assembleAcaOperator(
         AcaAssemblyHelper* helper,
         AcaAssemblyHelper* admissibleHelper,
@@ -487,7 +487,7 @@ assembleAcaOperator(
     for (size_t i = 0; i < leafClusterCount; ++i)
         leafClusterIndexQueue.push(i);
 
-    std::auto_ptr<BlockCoalescer<ResultType> > coalescer;
+    std::unique_ptr<BlockCoalescer<ResultType> > coalescer;
     if (!indexWithGlobalDofs)
         coalescer.reset(new BlockCoalescer<ResultType>(
                             blclusterTree.get(),
@@ -614,7 +614,7 @@ assembleAcaOperator(
             outSymmetry |= HERMITIAN;
     }
     typedef DiscreteAcaBoundaryOperator<ResultType> DiscreteAcaLinOp;
-    std::auto_ptr<DiscreteAcaLinOp> acaOp(
+    std::unique_ptr<DiscreteAcaLinOp> acaOp(
                 new DiscreteAcaLinOp(testDofCount, trialDofCount,
                                      acaOptions.eps,
                                      acaOptions.maximumRank,
@@ -632,7 +632,7 @@ assembleAcaOperator(
 } // namespace
 
 template <typename BasisFunctionType, typename ResultType>
-std::auto_ptr<DiscreteBoundaryOperator<ResultType> >
+std::unique_ptr<DiscreteBoundaryOperator<ResultType> >
 AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
         const Space<BasisFunctionType>& testSpace,
         const Space<BasisFunctionType>& trialSpace,
@@ -857,7 +857,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
         }
     }
 
-    std::auto_ptr<DiscreteAcaBoundaryOperator<ResultType> > acaOp =
+    std::unique_ptr<DiscreteAcaBoundaryOperator<ResultType> > acaOp =
     assembleAcaOperator<AcaAssemblyHelper, BasisFunctionType, ResultType>(
                 helper.get(), admissibleHelper.get(),
                 blclusterTree, localBlclusterTree,
@@ -872,7 +872,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
 #endif // DUMP_DENSE_BLOCKS
                 );
 
-    std::auto_ptr<DiscreteBndOp> result;
+    std::unique_ptr<DiscreteBndOp> result;
         result = acaOp;
     return result;
 
@@ -884,7 +884,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
 }
 
 template <typename BasisFunctionType, typename ResultType>
-std::auto_ptr<DiscreteBoundaryOperator<ResultType> >
+std::unique_ptr<DiscreteBoundaryOperator<ResultType> >
 AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
         const Space<BasisFunctionType>& testSpace,
         const Space<BasisFunctionType>& trialSpace,
@@ -909,7 +909,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
 }
 
 template <typename BasisFunctionType, typename ResultType>
-std::auto_ptr<DiscreteBoundaryOperator<ResultType> >
+std::unique_ptr<DiscreteBoundaryOperator<ResultType> >
 AcaGlobalAssembler<BasisFunctionType, ResultType>::assemblePotentialOperator(
         const arma::Mat<CoordinateType>& points,
         const Space<BasisFunctionType>& trialSpace,
@@ -1002,7 +1002,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assemblePotentialOperator(
     // If necessary, construct maps between (permuted) flat local and global indices
     shared_ptr<const Epetra_CrsMatrix> testGlobalToLocal, trialGlobalToLocal;
 
-    std::auto_ptr<DiscreteAcaBoundaryOperator<ResultType> > acaOp =
+    std::unique_ptr<DiscreteAcaBoundaryOperator<ResultType> > acaOp =
     assembleAcaOperator<AcaAssemblyHelper, BasisFunctionType, ResultType>(
                 &helper, &helper, bemBlclusterTree, bemBlclusterTree,
                 options.parallelizationOptions(), options.acaOptions(),
@@ -1016,7 +1016,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assemblePotentialOperator(
 #endif // DUMP_DENSE_BLOCKS
                 );
 
-    std::auto_ptr<DiscreteBndOp> result;
+    std::unique_ptr<DiscreteBndOp> result;
     if (indexWithGlobalDofs)
         result = acaOp;
     else {
@@ -1041,7 +1041,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assemblePotentialOperator(
 }
 
 template <typename BasisFunctionType, typename ResultType>
-std::auto_ptr<DiscreteBoundaryOperator<ResultType> >
+std::unique_ptr<DiscreteBoundaryOperator<ResultType> >
 AcaGlobalAssembler<BasisFunctionType, ResultType>::assemblePotentialOperator(
         const arma::Mat<CoordinateType>& points,
         const Space<BasisFunctionType>& trialSpace,

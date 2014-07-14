@@ -82,7 +82,7 @@ shared_ptr<arma::Col<ResultType> > reallyCalculateProjections(
 
     // Gather global DOF lists
     const Mapper& mapper = view.elementMapper();
-    std::auto_ptr<EntityIterator<0> > it = view.entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > it = view.entityIterator<0>();
     while (!it->finished()) {
         const Entity<0>& element = it->entity();
         const int elementIndex = mapper.entityIndex(element);
@@ -153,7 +153,7 @@ shared_ptr<arma::Col<ResultType> > calculateProjections(
             testTransformations = dualSpace.basisFunctionValue();
 
     typedef Fiber::LocalAssemblerForGridFunctions<ResultType> LocalAssembler;
-    std::auto_ptr<LocalAssembler> assembler =
+    std::unique_ptr<LocalAssembler> assembler =
             context.quadStrategy()->makeAssemblerForGridFunctions(
                 geometryFactory, rawGeometry,
                 testShapesets,
@@ -789,9 +789,9 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
 
     // Make geometry factory
     shared_ptr<const Grid> grid = m_space->grid();
-    std::auto_ptr<GeometryFactory> geometryFactory =
+    std::unique_ptr<GeometryFactory> geometryFactory =
             grid->elementGeometryFactory();
-    std::auto_ptr<typename GeometryFactory::Geometry> geometry(
+    std::unique_ptr<typename GeometryFactory::Geometry> geometry(
                 geometryFactory->make());
     Fiber::GeometricalData<CoordinateType> geomData;
 
@@ -804,7 +804,7 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
     std::vector<std::vector<ResultType> > localCoefficients(elementCount);
     {
         const Mapper& mapper = view.elementMapper();
-        std::auto_ptr<EntityIterator<0> > it = view.entityIterator<0>();
+        std::unique_ptr<EntityIterator<0> > it = view.entityIterator<0>();
         for (size_t e = 0; e < elementCount; ++e) {
             const Entity<0>& element = it->entity();
             const int elementIndex = mapper.entityIndex(element);
@@ -1081,8 +1081,8 @@ void exportToVtk(
     arma::Mat<ResultType> data;
     gridFunction.evaluateAtSpecialPoints(dataType, data);
 
-    std::auto_ptr<GridView> view = space->grid()->leafView();
-    std::auto_ptr<VtkWriter> vtkWriter = view->vtkWriter();
+    std::unique_ptr<GridView> view = space->grid()->leafView();
+    std::unique_ptr<VtkWriter> vtkWriter = view->vtkWriter();
 
     exportSingleDataSetToVtk(*vtkWriter, data, dataType, dataLabel,
                              fileNamesBase, filesPath, outputType);
