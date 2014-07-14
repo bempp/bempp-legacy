@@ -1112,7 +1112,7 @@ The type can be used to access the Dune::GenericReferenceElement. ";
 Inter-level access to father entity on the next-coarser grid.
 
 The given entity resulted directly from a subdivision of its father
-entity. For macro (level-0) elements a null auto_ptr is returned.
+entity. For macro (level-0) elements a null unique_ptr is returned.
 
 If the partitionType of the Entity is GhostEntity, it is not
 guaranteed that this method is working or implemented in general. For
@@ -3097,7 +3097,7 @@ grid. ";
 Inter-level access to father entity on the next-coarser grid.
 
 The given entity resulted directly from a subdivision of its father
-entity. For macro (level-0) elements a null auto_ptr is returned.
+entity. For macro (level-0) elements a null unique_ptr is returned.
 
 If the partitionType of the Entity is GhostEntity, it is not
 guaranteed that this method is working or implemented in general. For
@@ -5003,7 +5003,7 @@ Bempp::Laplace3dSingleLayerPotentialOperatorImpl::Laplace3dSingleLayerPotentialO
 Thread-safe wrapper of a lazily inititialised object.
 
 T Type of the stored object.  Initializer Type of a copy-constructible
-functor providing the member function std::auto_ptr<T> operator()()
+functor providing the member function std::unique_ptr<T> operator()()
 that will be used to construct the object the first time it is
 requested.  Mutex Type of the mutex to be used to lock the object
 during initialisation.
@@ -6843,7 +6843,7 @@ dimensional spaces are supported. In this case the last (dimworld -
 dim) coordinates of all vertices, where dim is the grid dimension and
 dimworld the world dimension, are set to zero.
 
-Automatic pointers (std::auto_ptr) instead of shared pointers
+Automatic pointers (std::unique_ptr) instead of shared pointers
 (Dune::shared_ptr) are returned.
 
 C++ includes: structured_grid_factory.hpp ";
