@@ -13,7 +13,7 @@ import numpy as np
 # Load mesh
 
 grid = createGridFactory().importGmshGrid(
-    "triangular", "../../examples/meshes/sphere-domains.msh")
+    "triangular", "../../meshes/sphere-domains.msh")
 
 # Create quadrature strategy
 

@@ -266,8 +266,8 @@ setup(
         'egg_info': EggInfo
     },
 
-    author = "Tim Beckte",
-    author_email = "t.beckte@ucl.ac.uk",
+    author = "Tim Betcke",
+    author_email = "t.betcke@ucl.ac.uk",
     description = "BEMP does what it does well",
     license = "MIT",
     url = "https://github.com/bempp/bempp",

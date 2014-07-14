@@ -47,6 +47,7 @@ endif(WITH_TESTS)
 add_subdirectory(lib)
 add_subdirectory(python)
 add_subdirectory(examples)
+add_subdirectory(meshes)
 
 # Scratch
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/scratch/CMakeLists.txt")

@@ -63,7 +63,7 @@ def evalExactSolution(point):
 # Load mesh
 
 grid = createGridFactory().importGmshGrid(
-    "triangular", "../../examples/meshes/sphere-h-0.2.msh")
+    "triangular", "../../meshes/sphere-h-0.2.msh")
 
 # Create quadrature strategy
 

@@ -46,7 +46,7 @@ context = lib.createContext(quadStrategy, options)
 
 grid_factory = lib.createGridFactory()
 grid = grid_factory.importGmshGrid(
-    "triangular", "../../examples/meshes/sphere-h-0.1.msh")
+    "triangular", "../../meshes/sphere-h-0.1.msh")
 
 # Create a space of piecewise constant basis functions over the grid.
 
