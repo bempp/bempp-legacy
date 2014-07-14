@@ -1,0 +1,180 @@
+# This file controls the build settings for BEM++.
+# You need to at least do the following.
+
+# Specify the architecture and prefix in the [Main]
+# section.
+
+# Choose a BLAS and Lapack library. Enable either MKL (recommended)
+# or choose a BLAS and Lapack library manually. Please see the 
+# README for recommended options.
+
+# It is highly recommended to download and enable AHMED in the [AHMED]
+# section. This enables the H-Matrix algebra for the library and 
+# allows to solve significantly larger problems than with a standard
+# dense matrix BEM.
+
+[Main]
+
+# Specify your system architecture. Allowed values: intel64 (for
+# 64-bit systems), ia32 (for 32-bit systems), Example:
+
+architecture=intel64
+
+# By default BEM++ and its dependencies will be built in the
+# subdirectory "build" of the BEM++ source directory. You can override
+# this by setting the option below. Example:
+
+# build_dir=~/src/bempp-build
+
+# Specify the prefix of the installation directory.  BEM++ and its
+# dependencies will be installed in prefix/bempp. Example:
+
+prefix=~
+
+# It is highly recommended to adapt the number of threads used to 
+# build the library to the number of underlying CPU cores. A good rule 
+# of thumb is to choose build_jobs = 1.5*(number of cores), e.g. for 
+# a dual-core system choose build_jobs=3. This significantly speeds 
+# up the compilation process.
+
+build_jobs=2
+
+# The following options control the compilers and compiler flags.
+# You can override the options for specific libraries by setting
+# these options within the corresponding section.
+
+# C Compiler
+# cc = gcc
+
+# C++ Compiler
+# cxx = g++
+
+# C Compiler flags
+# cflags =
+
+# C++ Compiler flags
+cxxflags = -std=c++11
+
+# Optimization flags
+# optflags = -O3 -march=native (Default on Linux)
+# optflags = -O3 -march=core2 (Default on Mac)
+
+[Bempp]
+
+# Specify whether the installer should compile BEM++ straight after
+# installing its dependencies. Normally this should be set to 'yes';
+# set to 'no' only if you want to change some BEM++ compilation
+# options manually. Example:
+
+# build=yes
+
+[MKL]
+
+# If you want to use BLAS and LAPACK from Intel MKL, uncomment the
+# following line
+
+# enable_mkl=yes
+
+# and specify where the MKL libraries can be found.
+
+# If the NumPy package in your Python distribution is linked against
+# MKL (for example, you use Enthought Python), uncomment the following
+# line to have the BEM++ installer use the same MKL libraries as
+# NumPy.
+
+# source=like_numpy
+
+# Otherwise, you need to specify manually the location of MKL on your disk.
+# Uncomment the following line
+
+# source=installed
+
+# and specify the directories containing the MKL libraries (such
+# as libmkl_core and libiomp5) in the following variable. You may
+# specify several directories at once by separating them with
+# semicolons. Example:
+
+# dir=/opt/intel/mkl/lib/intel64;/opt/intel/lib/intel64
+
+# You can also customize the list of MKL libraries to link against
+# by editing the following variable. The default setting below
+# (-lmkl_rt) should work for MKL 10.3 or newer. In case of
+# problems use the Intel MKL Link Line Advisor
+# (http://software.intel.com/en-us/articles/intel-mkl-link-line-advisor)
+# to find the setting appropriate for your configuration. You may
+# specify several libraries at once by separating them with
+# semicolons.
+
+# lib=-lmkl_rt
+
+[BLAS]
+
+# If you want to use another BLAS library than Intel MKL, specify its
+# location in the following variable. You may specify several paths at
+# once by separating them with semicolons. Example:
+
+# lib=/usr/lib/libblas.so
+
+[LAPACK]
+
+# If you want to use another BLAS library than Intel MKL, specify its
+# location in the following variable. You may specify several paths at
+# once by separating them with semicolons. Example:
+
+# lib=/usr/lib/liblapack.so
+
+[AHMED]
+
+# Uncomment the following line if you have downloaded the AHMED
+# library by Mario Bebendorf from
+# http://bebendorf.ins.uni-bonn.de/AHMED.html and you want to compile
+# and install it along with BEM++. This library enables BEM++ to use
+# the adaptive cross approximation algorithm to speed up calculations.
+
+# enable_ahmed=yes
+
+# If you have set enable_ahmed to yes, specify the path to the archive
+# file with the sources of AHMED. Example:
+
+# file_name=~/Downloads/AHMED-1.0.tar.gz
+
+# Use this section to override compiler settings for AHMED
+
+[Boost]
+# Use this section to override compiler settings for Boost
+
+[Dune]
+# Use this section to override compiler settings for Dune
+
+[Swig]
+# Use this section to override compiler settings for Swig
+
+[Trilinos]
+# Use this section to override compiler settings for Trilinos
+
+
+[MPI]
+
+# Enable MPI support and specify the MPI include directory and MPI 
+# libraries here. If you use MPI compier wrappers (e.g. mpicxxx and mpicc)
+# you just have to uncomment enable_mpi = true to enable MPI support. If
+# compiler wrappers are not used then additionally the mpi include directory
+# and mpi libraries need to be specified. The given example configuration is
+# for OpenMPI. Please note that this is experimental and currently only used
+# to compile the PyTrilinos solvers with MPI support.
+
+# enable_mpi = true
+# mpi_cxx_libs = -L/usr/local/openmpi/lib -lmpi_cxx -lmpi
+# mpi_include_dir = /usr/local/openmpi/include
+
+
+
+[Python]
+
+# You do not normally need to edit this section. However, if the BEM++
+# installer cannot find your Python include directory (the directory
+# containing Python.h) or runtime library (libpython), you can specify
+# their locations explicitly here. Examples:
+
+# include_dir=/usr/include/python2.7
+# lib=/usr/lib/libpython2.7.so
