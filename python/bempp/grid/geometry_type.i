@@ -65,6 +65,6 @@ namespace Dune {
 
 #define DUNE_DEPRECATED
 #define DISABLE_GEOMETRYTYPE_DEPRECATION_WARNING
-%include <dune/common/geometrytype.hh>
+%include <dune/geometry/type.hh>
 #undef DISABLE_GEOMETRYTYPE_DEPRECATION_WARNING
 //%include <dune/geometry/type.hh>

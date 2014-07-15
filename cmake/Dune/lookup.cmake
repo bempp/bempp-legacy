@@ -3,17 +3,17 @@ if(TARGET Boost)
   set(depends_on Boost)
 endif()
 set(default_common_URL
-    http://www.dune-project.org/download/2.2.1/dune-common-2.2.1.tar.gz)
-set(default_common_SHA256 6b16b2390af79e2ca93367c95d06ed536b58422034cf34e4437fc6201bb1ab85)
-set(default_geometry_URL
-    http://www.dune-project.org/download/2.2.1/dune-geometry-2.2.1.tar.gz)
-set(default_geometry_SHA256 5ee2e8f514018f4e2f775c3c751764637895efd3851b33ab6eb91e2add5d9066)
+    http://www.dune-project.org/download/2.3.1/dune-common-2.3.1.tar.gz)
+set(default_common_SHA256 040cd3811d195631cfa99fab43443d69c1b83f82737b0cd98e4f330ec84051f5)
+set(default_geometry_URL 
+    http://www.dune-project.org/download/2.3.1/dune-geometry-2.3.1.tar.gz)
+set(default_geometry_SHA256 caf8f55b79e3217c3e845a9ada48b51a57f090cbbd4e6994e72067f3449b565c)
 set(default_grid_URL
-    http://www.dune-project.org/download/2.2.1/dune-grid-2.2.1.tar.gz)
-set(default_grid_SHA256 9f90e9a1f690a026f5dfee79c857f149cb219c10b6064fcb92a0e36c1d6364c0)
+    http://www.dune-project.org/download/2.3.1/dune-grid-2.3.1.tar.gz)
+set(default_grid_SHA256 f565d3c2562275cba317adef74f75b0a4f6f130abf4e9e1c34712bc9ab63ab03)
 set(default_localfunctions_URL
-    http://www.dune-project.org/download/2.2.1/dune-localfunctions-2.2.1.tar.gz)
-set(default_localfunctions_SHA256 cf0fd7c486a2d417d4e959cf9246e13b73ce66702c4dc4c0b2eec3e8c0a50db9)
+    http://www.dune-project.org/download/2.3.1/dune-localfunctions-2.3.1.tar.gz)
+set(default_localfunctions_SHA256 92c2380f58c7c5f6ff6eb0f4ac694626c3bc81686cbef4534bfb44e351f0b771)
 
 # Needed by dune
 #enable_language(Fortran)
@@ -114,8 +114,8 @@ function(write_configure_file path)
         "export PKG_CONFIG_PATH=\"$ENV{PKG_CONFIG_PATH}\"\n"
         "\n"
         "./configure"
-           " --enable-shared=no"
-           " --enable-static=yes"
+           " --enable-shared=yes"
+           " --enable-static=no"
            " --with-pic"
            " --disable-documentation"
            " --enable-fieldvector-size-is-method"

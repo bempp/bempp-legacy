@@ -132,8 +132,8 @@ int main()
     // Specify the assembly method. We want to use ACA
 
     AssemblyOptions assemblyOptions;
-    AcaOptions acaOptions; // Default parameters for ACA
-    assemblyOptions.switchToAcaMode(acaOptions);
+    // AcaOptions acaOptions; // Default parameters for ACA
+    // assemblyOptions.switchToAcaMode(acaOptions);
 
     // Create the assembly context
 

@@ -44,7 +44,7 @@ class FoamGridIntersection
         typedef typename GridImp::template Codim<1>::Geometry Geometry;
         typedef typename GridImp::template Codim<1>::LocalGeometry LocalGeometry;
         typedef typename GridImp::template Codim<0>::Entity Entity;
-        typedef Dune::Intersection<const GridImp, Dune::FoamGridLevelIntersectionIterator> Intersection;
+        typedef Dune::Intersection<const GridImp, Dune::FoamGridLevelIntersectionIterator<GridImp>> Intersection;
 
     /**
      * \brief Initalizes an intersection.
@@ -320,7 +320,7 @@ public:
     
     enum {dim=GridImp::dimension};
 
-    typedef Dune::Intersection<const GridImp, Dune::FoamGridLeafIntersection> Intersection;
+    typedef Dune::Intersection<const GridImp, Dune::FoamGridLeafIntersection<GridImp> > Intersection;
 
     typedef typename GridImp::ctype ctype;
     

@@ -283,7 +283,8 @@ public:
         JacobianTransposed) stores elements rowwise, while Armadillo does it
         columnwise. Hence element-by-element filling of jacobian_t seems
         unavoidable). */
-        typename DuneGeometry::JacobianTransposed j_t;
+        // typename DuneGeometry::JacobianTransposed j_t;
+        Dune::FieldMatrix<double,cdim,mdim> j_t;
         typename DuneGeometry::LocalCoordinate l;
         for (size_t k = 0; k < n; ++k) {
             /* However, this bit of data copying could be avoided. */
@@ -313,7 +314,8 @@ public:
         Jacobian) stores elements rowwise, while Armadillo does it
         columnwise. Hence element-by-element filling of jacobian_t seems
         unavoidable). */
-        typename DuneGeometry::Jacobian j_inv_t;
+        // typename DuneGeometry::Jacobian j_inv_t;
+        Dune::FieldMatrix<double,mdim,cdim> j_inv_t;
         typename DuneGeometry::LocalCoordinate l;
         for (size_t k = 0; k < n; ++k) {
             /** \fixme However, this bit of data copying could be avoided. */

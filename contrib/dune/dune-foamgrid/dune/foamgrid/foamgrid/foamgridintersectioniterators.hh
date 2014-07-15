@@ -83,7 +83,7 @@ public:
     {        
     }
 
-    typedef Dune::Intersection<const GridImp, Dune::FoamGridLeafIntersection> Intersection;
+    typedef Dune::Intersection<const GridImp, Dune::FoamGridLeafIntersection<GridImp>> Intersection;
 
     //! equality
     bool equals(const FoamGridLeafIntersectionIterator<GridImp>& other) const {
@@ -274,7 +274,7 @@ protected:
 
 public:
 
-    typedef Dune::Intersection<const GridImp, Dune::FoamGridLevelIntersection> Intersection;
+    typedef Dune::Intersection<const GridImp, Dune::FoamGridLevelIntersection<GridImp> > Intersection;
 
   //! equality
   bool equals(const FoamGridLevelIntersectionIterator<GridImp>& other) const {
