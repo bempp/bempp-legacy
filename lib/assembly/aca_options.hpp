@@ -31,8 +31,9 @@ namespace Bempp
 /** \ingroup weak_form_assembly
  *  \brief Adaptive cross approximation (ACA) parameters.
  */
-struct AcaOptions
+class AcaOptions
 {
+    public:
     /** \brief Initialize ACA parameters to default values. */
     AcaOptions();
 

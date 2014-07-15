@@ -43,8 +43,9 @@ class IndexPermutation;
 /** \endcond */
 
 template <typename BasisFunctionType>
-struct ClusterConstructionHelper
+class ClusterConstructionHelper
 {
+    private:
     typedef typename Fiber::ScalarTraits<BasisFunctionType>::RealType CoordinateType;
     typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
     typedef ExtendedBemCluster<AhmedDofType> AhmedBemCluster;

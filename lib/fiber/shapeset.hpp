@@ -32,7 +32,7 @@ namespace Fiber
 {
 
 /** \cond FORWARD_DECL */
-template <typename ValueType> struct BasisData;
+template <typename ValueType> class BasisData;
 /** \endcond */
 
 /** \ingroup fiber

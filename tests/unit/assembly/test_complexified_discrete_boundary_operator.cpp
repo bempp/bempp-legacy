@@ -76,8 +76,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2
 
     shared_ptr<const DiscreteBoundaryOperator<ComplexType> > dop = fixture.complexifiedOp;
 
-    ComplexType alpha = static_cast<ComplexType>(2., 3.);
-    ComplexType beta = static_cast<ComplexType>(0.);
+    ComplexType alpha(2., 3.);
+    ComplexType beta(0.);
 
     arma::Col<ComplexType> x = generateRandomVector<ComplexType>(dop->columnCount());
     arma::Col<ComplexType> y(dop->rowCount());
@@ -106,8 +106,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_no_transpose_and
 
     shared_ptr<const DiscreteBoundaryOperator<ComplexType> > dop = fixture.complexifiedOp;
 
-    ComplexType alpha = static_cast<ComplexType>(2., 3.);
-    ComplexType beta = static_cast<ComplexType>(4., -5.);
+    ComplexType alpha(2., 3.);
+    ComplexType beta(4., -5.);
 
     arma::Col<ComplexType> x = generateRandomVector<ComplexType>(dop->columnCount());
     arma::Col<ComplexType> y = generateRandomVector<ComplexType>(dop->rowCount());

@@ -51,8 +51,8 @@ PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::
 PiecewisePolynomialContinuousScalarSpace(const shared_ptr<const Grid>& grid,
                                          int polynomialOrder) :
     ScalarSpace<BasisFunctionType>(grid), m_polynomialOrder(polynomialOrder),
-    m_flatLocalDofCount(0), m_segment(GridSegment::wholeGrid(*grid)),
-    m_strictlyOnSegment(false)
+    m_segment(GridSegment::wholeGrid(*grid)), m_strictlyOnSegment(false),
+    m_flatLocalDofCount(0)
 {
     initialize();
 }
@@ -86,8 +86,8 @@ PiecewisePolynomialContinuousScalarSpace(const shared_ptr<const Grid>& grid,
                                          const GridSegment& segment,
                                          bool strictlyOnSegment) :
     ScalarSpace<BasisFunctionType>(grid), m_polynomialOrder(polynomialOrder),
-    m_flatLocalDofCount(0), m_segment(segment),
-    m_strictlyOnSegment(strictlyOnSegment)
+    m_segment(segment), m_strictlyOnSegment(strictlyOnSegment),
+    m_flatLocalDofCount(0)
 {
     initialize();
 }
@@ -328,8 +328,6 @@ void PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::assignDofsImpl
     // Initialise DOF maps
     const int localDofCountPerTriangle =
         (m_polynomialOrder + 1) * (m_polynomialOrder + 2) / 2;
-    const int localDofCountPerQuad =
-        (m_polynomialOrder + 1) * (m_polynomialOrder + 1);
     m_local2globalDofs.clear();
     std::vector<GlobalDofIndex> prototypeGlobalDofs;
     prototypeGlobalDofs.reserve(localDofCountPerTriangle);

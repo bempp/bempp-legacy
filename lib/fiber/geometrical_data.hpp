@@ -52,8 +52,9 @@ template <typename CoordinateType> class ConstGeometricalDataSlice;
  *  array ordering).
  */
 template <typename CoordinateType>
-struct GeometricalData
+class GeometricalData
 {
+    public:
     arma::Mat<CoordinateType> globals;
     arma::Row<CoordinateType> integrationElements;
     Fiber::_3dArray<CoordinateType> jacobiansTransposed;
