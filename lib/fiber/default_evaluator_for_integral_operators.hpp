@@ -36,7 +36,7 @@ namespace Fiber
 {
 
 /** \cond FORWARD_DECL */
-struct QuadratureOptions;
+class QuadratureOptions;
 template <typename ValueType> class Shapeset;
 template <typename CoordinateType> class CollectionOfShapesetTransformations;
 template <typename ValueType> class CollectionOfKernels;

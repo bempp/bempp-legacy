@@ -32,7 +32,7 @@ namespace Fiber
 {
 
 /** \cond FORWARD_DECL */
-template <typename CoordinateType> struct GeometricalData;
+template <typename CoordinateType> class GeometricalData;
 /** \endcond */
 
 } // namespace Fiber

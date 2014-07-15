@@ -47,9 +47,9 @@ PiecewiseLinearDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::
 PiecewiseLinearDiscontinuousScalarSpaceBarycentric(const shared_ptr<const Grid>& grid) :
     ScalarSpace<BasisFunctionType>(grid->barycentricGrid()),
     m_segment(GridSegment::wholeGrid(*(grid->barycentricGrid()))),
+    m_strictlyOnSegment(false),
     m_linearBasisType1(Shapeset::TYPE1),
-    m_linearBasisType2(Shapeset::TYPE2),
-    m_strictlyOnSegment(false)
+    m_linearBasisType2(Shapeset::TYPE2)
 {
     initialize();
 }
@@ -61,9 +61,9 @@ PiecewiseLinearDiscontinuousScalarSpaceBarycentric(const shared_ptr<const Grid>&
                                      bool strictlyOnSegment) :
     ScalarSpace<BasisFunctionType>(grid->barycentricGrid()),
     m_segment(segment),
+    m_strictlyOnSegment(strictlyOnSegment),
     m_linearBasisType1(Shapeset::TYPE1),
-    m_linearBasisType2(Shapeset::TYPE2),
-    m_strictlyOnSegment(strictlyOnSegment)
+    m_linearBasisType2(Shapeset::TYPE2)
 {
     initialize();
 }
@@ -202,7 +202,6 @@ void PiecewiseLinearDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::assi
     int vertexCountCoarseGrid = viewCoarseGrid.entityCount(gridDim);
     int elementCountCoarseGrid = viewCoarseGrid.entityCount(0);
 
-    const IndexSet& indexSet = view.indexSet();
     const IndexSet& indexSetCoarseGrid = viewCoarseGrid.indexSet();
 
 

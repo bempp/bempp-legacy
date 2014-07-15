@@ -39,6 +39,8 @@
 #include <tbb/parallel_for.h>
 #include <tbb/task_scheduler_init.h>
 
+#include <assert.h>
+
 namespace Fiber
 {
 
@@ -468,10 +470,8 @@ ResultType, GeometryFactory>::calcTrialData(
             trialGeomData.normals.cols(startCol, endCol) =
                     geomDataPerElement[e].normals;
         if (kernelTrialGeomDeps & JACOBIANS_TRANSPOSED) {
-            const size_t m =
-                trialGeomData.jacobiansTransposed.extent(0);
-            const size_t n =
-                trialGeomData.jacobiansTransposed.extent(1);
+            const size_t n = trialGeomData.jacobiansTransposed.extent(1);
+            assert(n == trialGeomData.jacobiansTransposed.extent(0));
             for (int col = startCol; col <= endCol; ++col)
                 for (int c = 0; c < n; ++c)
                     for (int r = 0; r < n; ++r)
@@ -480,10 +480,9 @@ ResultType, GeometryFactory>::calcTrialData(
                                 r, c, col - startCol);
         }
         if (kernelTrialGeomDeps & JACOBIAN_INVERSES_TRANSPOSED) {
-            const size_t m =
-                trialGeomData.jacobianInversesTransposed.extent(0);
             const size_t n =
                 trialGeomData.jacobianInversesTransposed.extent(1);
+            assert(n == trialGeomData.jacobianInversesTransposed.extent(0));
             for (int col = startCol; col <= endCol; ++col)
                 for (int c = 0; c < n; ++c)
                     for (int r = 0; r < n; ++r)

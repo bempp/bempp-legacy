@@ -66,7 +66,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(affine_is_true_for_codim,
 {
     const int codim = T::value;
     std::unique_ptr<EntityPointer<codim> > ep = getPointerToSecondEntityOnLevel0<codim>();
-    typename DuneGrid::LevelGridView::Codim<codim>::Iterator duneEp = getDunePointerToSecondEntityOnLevel0<codim>();
+    getDunePointerToSecondEntityOnLevel0<codim>();
 
     const Geometry& geo = ep->entity().geometry();
 

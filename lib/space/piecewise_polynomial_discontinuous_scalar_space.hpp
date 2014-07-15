@@ -38,7 +38,7 @@ namespace Bempp
 /** \cond FORWARD_DECL */
 class GridSegment;
 class GridView;
-template <typename CoordinateType> class BoundingBox;
+template <typename CoordinateType> struct BoundingBox;
 /** \endcond */
 
 /** \ingroup space
