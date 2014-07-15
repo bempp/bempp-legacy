@@ -84,7 +84,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_synthetic_single_layer_operator_agrees_with
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-h-0.4.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.4.msh", false /* verbose */);
 
     shared_ptr<Space<BFT> > pwiseConstants(
         new PiecewiseConstantScalarSpace<BFT>(grid));
@@ -134,7 +134,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_synthetic_single_layer_operator_agrees_with
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-h-0.4.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.4.msh", false /* verbose */);
 
     shared_ptr<Space<BFT> > pwiseConstants(
         new PiecewiseConstantScalarSpace<BFT>(grid));
@@ -184,7 +184,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_synthetic_double_layer_operator_agrees_with
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-h-0.4.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.4.msh", false /* verbose */);
 
     shared_ptr<Space<BFT> > pwiseConstants(
         new PiecewiseConstantScalarSpace<BFT>(grid));
@@ -234,7 +234,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_synthetic_adjoint_double_layer_operator_agr
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-h-0.4.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.4.msh", false /* verbose */);
 
     shared_ptr<Space<BFT> > pwiseConstants(
         new PiecewiseConstantScalarSpace<BFT>(grid));
@@ -284,7 +284,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_synthetic_hypersingular_operator_agrees_wit
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-h-0.4.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.4.msh", false /* verbose */);
 
     shared_ptr<Space<BFT> > pwiseConstants(
         new PiecewiseConstantScalarSpace<BFT>(grid));
@@ -334,7 +334,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_synthetic_hypersingular_operator_agrees_wit
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-h-0.4.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.4.msh", false /* verbose */);
 
     shared_ptr<Space<BFT> > pwiseConstants(
         new PiecewiseConstantScalarSpace<BFT>(grid));
@@ -387,7 +387,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_synthetic_modified_helmholtz_single_layer_o
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-h-0.4.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.4.msh", false /* verbose */);
 
     RT waveNumber = initWaveNumber<RT>();
 
@@ -440,7 +440,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_synthetic_modified_helmholtz_double_layer_o
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-h-0.4.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.4.msh", false /* verbose */);
 
     RT waveNumber = initWaveNumber<RT>();
 
@@ -494,7 +494,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_synthetic_modified_helmholtz_adjoint_double
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-h-0.4.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.4.msh", false /* verbose */);
 
     RT waveNumber = initWaveNumber<RT>();
 
@@ -548,7 +548,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_synthetic_helmholtz_hypersingular_operator_
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-h-0.4.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.4.msh", false /* verbose */);
 
     RT waveNumber = initWaveNumber<RT>();
 
@@ -601,7 +601,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_synthetic_helmholtz_hypersingular_operator_
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-h-0.4.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.4.msh", false /* verbose */);
 
     RT waveNumber = initWaveNumber<RT>();
 
@@ -658,7 +658,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_synthetic_modified_helmholtz_hypersingular_
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-h-0.4.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.4.msh", false /* verbose */);
 
     RT waveNumber = initWaveNumber<RT>();
 
@@ -712,7 +712,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_synthetic_modified_helmholtz_hypersingular_
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-h-0.4.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.4.msh", false /* verbose */);
 
     RT waveNumber = initWaveNumber<RT>();
 
@@ -770,7 +770,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_synthetic_maxwell_single_layer_operator_agr
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-h-0.4.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.4.msh", false /* verbose */);
 
     RT waveNumber = initWaveNumber<RT>();
 
@@ -825,7 +825,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(aca_of_synthetic_maxwell_single_layer_operator_agr
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-h-0.4.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.4.msh", false /* verbose */);
 
     RT waveNumber = initWaveNumber<RT>();
 

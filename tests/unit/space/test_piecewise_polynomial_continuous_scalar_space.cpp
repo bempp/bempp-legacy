@@ -121,7 +121,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(linear_function_can_be_expanded_in_linear_space, R
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-h-0.2.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.2.msh", false /* verbose */);
 
     shared_ptr<Space<BFT> > space(
         new PiecewisePolynomialContinuousScalarSpace<BFT>(grid, 1));
@@ -154,7 +154,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(quadratic_function_can_be_expanded_in_quadratic_sp
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-h-0.2.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.2.msh", false /* verbose */);
 
     shared_ptr<Space<BFT> > space(
         new PiecewisePolynomialContinuousScalarSpace<BFT>(grid, 2));
@@ -187,7 +187,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(quadratic_function_can_be_expanded_in_cubic_space,
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-h-0.2.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.2.msh", false /* verbose */);
 
     shared_ptr<Space<BFT> > space(
         new PiecewisePolynomialContinuousScalarSpace<BFT>(grid, 3));
@@ -220,7 +220,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(cubic_function_can_be_expanded_in_cubic_space, Res
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-h-0.2.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.2.msh", false /* verbose */);
 
     shared_ptr<Space<BFT> > space(
         new PiecewisePolynomialContinuousScalarSpace<BFT>(grid, 3));
@@ -253,7 +253,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(local2global_matches_global2local_for_quadratic_sp
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-h-0.2.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.2.msh", false /* verbose */);
 
     shared_ptr<Space<BFT> > space(
         (new PiecewisePolynomialContinuousScalarSpace<BFT>(grid, 2)));
@@ -270,7 +270,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(global2local_matches_local2global_for_quadratic_sp
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-h-0.2.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.2.msh", false /* verbose */);
 
     shared_ptr<Space<BFT> > space(
         (new PiecewisePolynomialContinuousScalarSpace<BFT>(grid, 2)));
@@ -287,7 +287,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(local2global_matches_global2local_for_cubic_space,
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-h-0.2.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.2.msh", false /* verbose */);
 
     shared_ptr<Space<BFT> > space(
         (new PiecewisePolynomialContinuousScalarSpace<BFT>(grid, 3)));
@@ -304,7 +304,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(global2local_matches_local2global_for_cubic_space,
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-h-0.2.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.2.msh", false /* verbose */);
 
     shared_ptr<Space<BFT> > space(
         (new PiecewisePolynomialContinuousScalarSpace<BFT>(grid, 3)));
@@ -321,7 +321,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(local2global_matches_global2local_for_quadratic_sp
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-h-0.2.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.2.msh", false /* verbose */);
 
     GridSegment segment = gridSegmentWithPositiveX(*grid);
     shared_ptr<Space<BFT> > space(
@@ -339,7 +339,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(global2local_matches_local2global_for_cubic_space_
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-h-0.2.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.2.msh", false /* verbose */);
 
     GridSegment segment = gridSegmentWithPositiveX(*grid);
     shared_ptr<Space<BFT> > space(
@@ -357,7 +357,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(local2global_matches_global2local_for_quadratic_sp
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-h-0.2.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.2.msh", false /* verbose */);
 
     GridSegment segment = gridSegmentWithPositiveX(*grid);
     shared_ptr<Space<BFT> > space(
@@ -376,7 +376,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(global2local_matches_local2global_for_cubic_space_
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-h-0.2.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.2.msh", false /* verbose */);
 
     GridSegment segment = gridSegmentWithPositiveX(*grid);
     shared_ptr<Space<BFT> > space(
@@ -395,7 +395,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(complement_is_really_a_complement_for_quadratic_sp
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-h-0.4.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.4.msh", false /* verbose */);
 
     shared_ptr<Space<BFT> > space(
         (new PiecewisePolynomialContinuousScalarSpace<BFT>(grid, 2)));
@@ -418,7 +418,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(complement_is_really_a_complement_for_cubic_space,
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-h-0.4.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.4.msh", false /* verbose */);
 
     shared_ptr<Space<BFT> > space(
         (new PiecewisePolynomialContinuousScalarSpace<BFT>(grid, 3)));

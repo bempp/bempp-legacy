@@ -82,7 +82,7 @@ BOOST_AUTO_TEST_CASE(complement_works)
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-h-0.4.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.4.msh", false /* verbose */);
 
     GridSegment segment = gridSegmentWithPositiveX(*grid);
     GridSegment complement = segment.complement();
@@ -102,7 +102,7 @@ BOOST_AUTO_TEST_CASE(union_works)
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-h-0.4.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.4.msh", false /* verbose */);
 
     GridSegment segmentA = gridSegmentWithPositiveX(*grid);
     GridSegment segmentB = gridSegmentWithPositiveY(*grid);
@@ -127,7 +127,7 @@ BOOST_AUTO_TEST_CASE(difference_works)
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-h-0.4.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.4.msh", false /* verbose */);
 
     GridSegment segmentA = gridSegmentWithPositiveX(*grid);
     GridSegment segmentB = gridSegmentWithPositiveY(*grid);
@@ -152,7 +152,7 @@ BOOST_AUTO_TEST_CASE(intersection_works)
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-h-0.4.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.4.msh", false /* verbose */);
 
     GridSegment segmentA = gridSegmentWithPositiveX(*grid);
     GridSegment segmentB = gridSegmentWithPositiveY(*grid);

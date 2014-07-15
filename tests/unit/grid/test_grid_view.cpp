@@ -168,7 +168,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityIterator_order_agrees_with_index_set_for
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-h-0.2.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.2.msh", false /* verbose */);
     std::auto_ptr<GridView> view = grid->levelView(0);
     const int codim = T::value;
     std::auto_ptr<EntityIterator<codim> > it = view->entityIterator<codim>();
@@ -354,7 +354,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityIterator_order_agrees_with_index_set_for
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-h-0.2.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.2.msh", false /* verbose */);
     std::auto_ptr<GridView> view = grid->leafView();
     const int codim = T::value;
     std::auto_ptr<EntityIterator<codim> > it = view->entityIterator<codim>();

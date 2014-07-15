@@ -102,7 +102,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(L2Norm_works_for_constant_function_and_piecewise_c
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-h-0.1.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.1.msh", false /* verbose */);
 
     shared_ptr<Space<BFT> > space(
         new PiecewiseConstantScalarSpace<BFT>(grid));
@@ -133,7 +133,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(L2Norm_works_for_sinusoidal_function_and_piecewise
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-h-0.1.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.1.msh", false /* verbose */);
 
     shared_ptr<Space<BFT> > space(
         new PiecewiseConstantScalarSpace<BFT>(grid));
@@ -165,7 +165,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(L2Norm_works_for_exponential_function_and_piecewis
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-h-0.1.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.1.msh", false /* verbose */);
 
     shared_ptr<Space<BFT> > space(
         new PiecewiseConstantScalarSpace<BFT>(grid));

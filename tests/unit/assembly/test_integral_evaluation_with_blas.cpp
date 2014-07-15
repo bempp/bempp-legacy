@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(blas_works_for_modified_helmholtz_3d_double_layer_
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-//        params, "../../examples/meshes/sphere-h-0.4.msh", false /* verbose */);
+//        params, "../../meshes/sphere-h-0.4.msh", false /* verbose */);
     params, "meshes/cube-12-reoriented.msh", false /* verbose */);
 
     shared_ptr<Space<BFT> > pwiseLinears(
@@ -140,7 +140,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(blas_works_for_modified_helmholtz_3d_double_layer_
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-//        params, "../../examples/meshes/sphere-h-0.4.msh", false /* verbose */);
+//        params, "../../meshes/sphere-h-0.4.msh", false /* verbose */);
     params, "meshes/cube-12-reoriented.msh", false /* verbose */);
 
     shared_ptr<Space<BFT> > pwiseLinears(
@@ -190,7 +190,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(blas_works_for_laplace_3d_hypersingular_operator_s
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-    //        params, "../../examples/meshes/sphere-h-0.4.msh", false /* verbose */);
+    //        params, "../../meshes/sphere-h-0.4.msh", false /* verbose */);
                 params, "meshes/cube-12-reoriented.msh", false /* verbose */);
 
     shared_ptr<Space<BFT> > pwiseLinears(
@@ -240,7 +240,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(blas_works_for_laplace_3d_hypersingular_operator_s
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-    //        params, "../../examples/meshes/sphere-h-0.4.msh", false /* verbose */);
+    //        params, "../../meshes/sphere-h-0.4.msh", false /* verbose */);
                 params, "meshes/cube-12-reoriented.msh", false /* verbose */);
 
     shared_ptr<Space<BFT> > pwiseLinears(
@@ -293,7 +293,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(blas_works_for_modified_helmholtz_3d_hypersingular
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-//        params, "../../examples/meshes/sphere-h-0.4.msh", false /* verbose */);
+//        params, "../../meshes/sphere-h-0.4.msh", false /* verbose */);
     params, "meshes/cube-12-reoriented.msh", false /* verbose */);
 
     shared_ptr<Space<BFT> > pwiseLinears(
@@ -346,7 +346,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(blas_works_for_modified_helmholtz_3d_hypersingular
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-//        params, "../../examples/meshes/sphere-h-0.4.msh", false /* verbose */);
+//        params, "../../meshes/sphere-h-0.4.msh", false /* verbose */);
     params, "meshes/cube-12-reoriented.msh", false /* verbose */);
 
     shared_ptr<Space<BFT> > pwiseLinears(

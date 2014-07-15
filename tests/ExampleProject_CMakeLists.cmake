@@ -14,5 +14,5 @@ endif()
 # Add an executable that links to BEM++
 include_directories("${BEMPP_INCLUDE_DIRS}")
 add_executable(tut_test
-    "@PROJECT_SOURCE_DIR@/examples/tutorial_dirichlet.cpp")
+    "@PROJECT_SOURCE_DIR@/examples/cpp/tutorial_dirichlet.cpp")
 target_link_libraries(tut_test bempp)

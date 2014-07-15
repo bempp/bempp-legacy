@@ -97,7 +97,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(local2global_matches_global2local_for_closed_surfa
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-h-0.1.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.1.msh", false /* verbose */);
 
     shared_ptr<Space<BFT> > space(
         new RaviartThomas0VectorSpace<BFT>(grid));
@@ -127,7 +127,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(local2global_matches_global2local_for_closed_surfa
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-h-0.1.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.1.msh", false /* verbose */);
 
     shared_ptr<Space<BFT> > space(
         new RaviartThomas0VectorSpace<BFT>(grid, true /* put dofs on boundary */));
@@ -144,7 +144,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(global2local_matches_local2global_for_closed_surfa
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-h-0.1.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.1.msh", false /* verbose */);
 
     shared_ptr<Space<BFT> > space(
         new RaviartThomas0VectorSpace<BFT>(grid));
@@ -187,7 +187,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(local2global_matches_global2local_for_closed_surfa
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-h-0.1.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.1.msh", false /* verbose */);
 
     GridSegment segment = gridSegmentWithPositiveX(*grid);
     shared_ptr<Space<BFT> > space(
@@ -207,7 +207,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(global2local_matches_local2global_for_closed_surfa
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-h-0.1.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.1.msh", false /* verbose */);
 
     GridSegment segment = gridSegmentWithPositiveX(*grid);
     shared_ptr<Space<BFT> > space(
@@ -227,7 +227,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(local2global_matches_global2local_for_closed_surfa
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-h-0.1.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.1.msh", false /* verbose */);
 
     GridSegment segment = gridSegmentWithPositiveX(*grid);
     shared_ptr<Space<BFT> > space(
@@ -247,7 +247,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(global2local_matches_local2global_for_closed_surfa
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-h-0.1.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.1.msh", false /* verbose */);
 
     GridSegment segment = gridSegmentWithPositiveX(*grid);
     shared_ptr<Space<BFT> > space(
@@ -267,7 +267,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(local2global_matches_global2local_for_closed_surfa
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-h-0.1.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.1.msh", false /* verbose */);
 
     GridSegment segment = gridSegmentWithPositiveX(*grid);
     shared_ptr<Space<BFT> > space(
@@ -287,7 +287,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(global2local_matches_local2global_for_closed_surfa
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-h-0.1.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.1.msh", false /* verbose */);
 
     GridSegment segment = gridSegmentWithPositiveX(*grid);
     shared_ptr<Space<BFT> > space(
@@ -307,7 +307,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(local2global_matches_global2local_for_closed_surfa
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-h-0.1.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.1.msh", false /* verbose */);
 
     GridSegment segment = gridSegmentWithPositiveX(*grid);
     shared_ptr<Space<BFT> > space(
@@ -325,7 +325,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(global2local_matches_local2global_for_closed_surfa
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../examples/meshes/sphere-h-0.1.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.1.msh", false /* verbose */);
 
     GridSegment segment = gridSegmentWithPositiveX(*grid);
     shared_ptr<Space<BFT> > space(
