@@ -16,7 +16,7 @@ test_lapack/build
 installer/files
 bempp_setup.err
 .*.swpbempp-egg.info/bempp-egg.info/
-.*.swp
+.*.sw[p, o]
 bempp.egg-info/
 pkg_install/
 py-*/
