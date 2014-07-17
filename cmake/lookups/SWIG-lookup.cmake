@@ -38,8 +38,9 @@ if(NOT PCRE_CONFIG_EXECUTABLE)
     )
 
 endif()
-# Rerun cmake to capture new armadillo install
+
 add_recursive_cmake_step(SWIG DEPENDEES install)
+
 # Makes sure those are not in the CACHE, otherwise, new version will not be found
 unset(SWIG_DIR CACHE)
 unset(SWIG_EXECUTABLE CACHE)

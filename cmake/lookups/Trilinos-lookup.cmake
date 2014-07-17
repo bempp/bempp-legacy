@@ -127,7 +127,7 @@ ExternalProject_Add(
     LOG_CONFIGURE ON
     LOG_BUILD ON
 )
-# Rerun cmake to capture new armadillo install
+
 add_recursive_cmake_step(Trilinos DEPENDEES install)
 # If installing in bizarre location (ie all under python package dir), then add
 # post-lookup script sot that the package can be found.
