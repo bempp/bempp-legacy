@@ -37,8 +37,8 @@ if(WITH_ALUGRID)
 endif()
 lookup_package(Boost 1.55 COMPONENTS unit_test_framework REQUIRED)
 lookup_package(Armadillo REQUIRED ARGUMENTS TIMEOUT 60)
-# test whether armadillo is compiled with LAPACK and BLAS. Otherwise issue warning.
-include(check_armadillo_linkage)
+# ARMA_DONT_USE_WRAPPER means we don't need to include armadillo library
+add_definitions(-DARMA_DONT_USE_WRAPPER)
 lookup_package(TBB REQUIRED)
 lookup_package(Dune REQUIRED DOWNLOAD_BY_DEFAULT
     COMPONENTS geometry grid localfunctions foamgrid
@@ -115,7 +115,6 @@ add_to_ld_path(
     ${TBB_LIBRARY_DEBUG}
     ${TBB_MALLOC_LIBRARY}
     ${TBB_MALLOC_LIBRARY_DEBUG}
-    ${ARMADILLO_LIBRARY}
 )
 
 if(WITH_TESTS)

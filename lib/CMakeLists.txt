@@ -48,7 +48,6 @@ target_link_libraries (bempp
     ${LAPACK_LIBRARIES}
     ${dune-common_STATIC_LDFLAGS}
     ${dune-grid_STATIC_LDFLAGS}
-    armadillo
 
     # Trilinos libraries, imported by cmake as targets
     amesos stratimikos stratimikosbelos
