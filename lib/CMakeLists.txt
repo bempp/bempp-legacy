@@ -43,19 +43,34 @@ else ()
 endif ()
 
 # Add includes and target links
-target_link_libraries (bempp
-    ${BLAS_LIBRARIES}
-    ${LAPACK_LIBRARIES}
-    ${dune-common_STATIC_LDFLAGS}
-    ${dune-grid_STATIC_LDFLAGS}
+target_link_libraries(bempp ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 
-    # Trilinos libraries, imported by cmake as targets
-    amesos stratimikos stratimikosbelos
-    belos epetra thyracore
-    teuchoscomm teuchoscore
-    teuchosnumerics teuchosparameterlist
-    teuchosremainder rtop
+unset(link_privately)
+if(CMAKE_VERSION VERSION_GREATER 2.8.6)
+    set(link_privatly LINK_PRIVATE)
+endif()
+target_link_libraries(bempp
+    ${link_privately}
+    # Dune targets
+    $<TARGET_FILE:dunecommon>
+    $<TARGET_FILE:dunegeometry>
+    $<TARGET_FILE:dunegrid>
+    # Trilinos targets
+    $<TARGET_FILE:amesos>
+    $<TARGET_FILE:stratimikos>
+    $<TARGET_FILE:stratimikosbelos>
+    $<TARGET_FILE:belos>
+    $<TARGET_FILE:epetra>
+    $<TARGET_FILE:epetraext>
+    $<TARGET_FILE:thyracore>
+    $<TARGET_FILE:teuchoscomm>
+    $<TARGET_FILE:teuchoscore>
+    $<TARGET_FILE:teuchosnumerics>
+    $<TARGET_FILE:teuchosparameterlist>
+    $<TARGET_FILE:teuchosremainder>
+    $<TARGET_FILE:rtop>
 )
+
 if(TBB_LIBRARY_DEBUG)
     target_link_libraries (bempp
         debug ${TBB_LIBRARY_DEBUG} ${TBB_MALLOC_LIBRARY_DEBUG}
@@ -63,9 +78,13 @@ if(TBB_LIBRARY_DEBUG)
     )
 endif()
 
-set_target_properties(bempp
-    PROPERTIES COMPILE_DEFINITIONS_DEBUG TBB_USE_DEBUG=1
-)
+if("${CMAKE_VERSION}" VERSION_LESS "2.8.11")
+    set_target_properties(bempp
+        PROPERTIES COMPILE_DEFINITIONS_DEBUG TBB_USE_DEBUG=1)
+else()
+    target_compile_definitions(bempp
+        PRIVATE $<$<CONFIG:Debug>:TBB_USE_DEBUG=1>)
+endif()
 change_tbb_install_name(bempp)
 if(ALUGrid_GITTER_INCLUDE_DIR)
     get_source_file_property(file_flags
