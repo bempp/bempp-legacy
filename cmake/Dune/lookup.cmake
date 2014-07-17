@@ -15,20 +15,37 @@ set(default_localfunctions_URL
     http://www.dune-project.org/download/2.3.1/dune-localfunctions-2.3.1.tar.gz)
 set(default_localfunctions_SHA256 92c2380f58c7c5f6ff6eb0f4ac694626c3bc81686cbef4534bfb44e351f0b771)
 
-# Needed by dune
-#enable_language(Fortran)
-macro(find_program_or_fail VARIABLE)
-    find_program(${VARIABLE} ${ARGN})
-    if(NOT ${VARIABLE})
-        message(FATAL_ERROR "Program needed for Dune was not found: ${VARIABLE}")
-    endif()
-endmacro()
-find_package(PkgConfig REQUIRED)
-find_program_or_fail(libtoolize_EXECUTABLE
-    NAMES libtoolize glibtoolize)
-find_program_or_fail(autoconf_EXECUTABLE autoconf)
-find_program_or_fail(aclocal_EXECUTABLE aclocal)
-find_program_or_fail(automake_EXECUTABLE automake)
+# Create list of library paths.
+# They will be added to CMAKE_LIBRARY_PATH
+set(library_dirs ${CMAKE_LIBRARY_PATH})
+foreach(library ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+   get_filename_component(directory "${library}" PATH)
+   list(FIND library_dirs "${directory}" index)
+   if(NOT index EQUAL -1)
+       list(APPEND library_dirs "${directory}")
+   endif()
+endforeach()
+string(REGEX REPLACE ";" " " library_dirs "${library_dirs}")
+string(REGEX REPLACE ";" " " rpath_dirs "${CMAKE_INSTALL_RPATH}")
+
+include(PassonVariables)
+passon_variables(Dune
+    FILENAME "${EXTERNAL_ROOT}/src/DuneVariables.cmake"
+    PATTERNS
+        "CMAKE_[^_]*_R?PATH" "CMAKE_C_.*" "CMAKE_CXX_.*"
+        "BLAS_.*" "LAPACK_.*"
+    ALSOADD
+        "\nset(CMAKE_INSTALL_PREFIX \"${EXTERNAL_ROOT}\" CACHE STRING \"\")\n"
+        "set(CMAKE_LIBRARY_PATH ${library_dirs} \"${EXTERNAL_ROOT}/lib\"\n"
+        "    CACHE PATH \"\" FORCE)\n"
+        "set(CMAKE_INSTALL_RPATH ${rpath_dirs} CACHE INTERNAL \"\")\n"
+        "set(CMAKE_PROGRAM_PATH \"${EXTERNAL_ROOT}/bin\" CACHE PATH \"\")\n"
+        #"set(DUNE_USE_ONLY_STATIC_LIBS TRUE CACHE BOOL \"\" FORCE)\n"
+        "set(CMAKE_BUILD_TYPE Release CACHE INTERNAL \"\" FORCE)\n"
+        "set(CMAKE_DISABLE_FIND_PACKAGE_HDF5 TRUE CACHE BOOL \"\" FORCE)\n"
+        "set(CMAKE_DISABLE_FIND_PACKAGE_MPI TRUE CACHE BOOL \"\" FORCE)\n"
+        "set(CMAKE_DISABLE_FIND_PACKAGE_Doxygen TRUE CACHE BOOL \"\" FORCE)\n"
+)
 
 macro(_get_arguments component)
     set(keyvalues  ${component}_URL;${component}_SHA256)
@@ -46,129 +63,22 @@ macro(_get_arguments component)
     )
 endmacro()
 
-set(build_args
-    BUILD_IN_SOURCE 1
-    BUILD_COMMAND ${CMAKE_MAKE_PROGRAM}
-    LOG_DOWNLOAD ON
-    LOG_CONFIGURE ON
-    LOG_BUILD ON
-)
-function(add_to_var VARIABLE PATH)
-    include(CMakeParseArguments)
-    cmake_parse_arguments(envvar "PREPEND" "" "" ${ARGN})
-    if("${${VARIABLE}}" STREQUAL "")
-        set(separator "")
-    else()
-        set(separator ":")
-    endif()
-    if(envvar_PREPEND)
-        set(${${VARIABLE}} "${PATH}${separator}${${VARIABLE}}")
-    else()
-        set(${${VARIABLE}} "${${VARIABLE}}${separator}${PATH}")
-    endif()
-endfunction()
-
-
-macro(_file_args OUTVAR withname)
-    unset(result_var)
-    foreach(filename ${ARGN})
-        add_to_var(result_var "${filename}")
-    endforeach()
-    if(result_var)
-        set(${OUTVAR} "--with-${withname}=\"${result_var}\"")
-    endif()
-endmacro()
-
-_file_args(blas_args blas ${BLAS_LIBRARIES})
-_file_args(lapack_args lapack ${LAPACK_LIBRARIES})
-
-find_program(bash_EXECUTABLE bash REQUIRED)
-
-# Create a script that cmake can call
-# This should remove some issues that arises when cmake tries to build
-# a complicated command line
-function(write_configure_file path)
-    get_filename_component(filename "${path}" NAME)
-    file(WRITE "${PROJECT_BINARY_DIR}/CMakeFiles/external/${filename}"
-        "#!${bash_EXECUTABLE}\n"
-        "# Calls configure script for Dune packages\n"
-        "export CC=${CMAKE_C_COMPILER}\n"
-        "export CFLAGS=\"${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_RELEASE} "
-    )
-    if(BLAS_INCLUDE_DIR)
-        file(APPEND "${PROJECT_BINARY_DIR}/CMakeFiles/external/${filename}"
-            "-I${BLAS_INCLUDE_DIR}")
-    endif()
-    if(LAPACK_INCLUDE_DIR)
-        file(APPEND "${PROJECT_BINARY_DIR}/CMakeFiles/external/${filename}"
-            "-I${LAPACK_INCLUDE_DIR}")
-    endif()
-    file(APPEND "${PROJECT_BINARY_DIR}/CMakeFiles/external/${filename}"
-        "\"\n"
-        "export CXX=${CMAKE_CXX_COMPILER}\n"
-        "export CXXFLAGS=\"${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELEASE}\"\n"
-        "export FC=${CMAKE_Fortran_COMPILER}\n"
-        "export F77=${CMAKE_Fortran_COMPILER}\n"
-        "export F90=${CMAKE_Fortran_COMPILER}\n"
-        "export FCFLAGS=\"${CMAKE_Fortran_FLAGS} ${CMAKE_Fortran_FLAGS_RELEASE}\"\n"
-        "export PKG_CONFIG_PATH=\"$ENV{PKG_CONFIG_PATH}\"\n"
-        "\n"
-        "./configure"
-           " --enable-shared=yes"
-           " --enable-static=no"
-           " --with-pic"
-           " --disable-documentation"
-           " --enable-fieldvector-size-is-method"
-           " --prefix=\"${EXTERNAL_ROOT}\""
-           " --with-blas=\"${BLAS_LIBRARIES}\""
-           " --with-blas=\"${LAPACK_LIBRARIES}\""
-        ${ARGN}
-    )
-    file(COPY "${PROJECT_BINARY_DIR}/CMakeFiles/external/${filename}"
-        DESTINATION "${EXTERNAL_ROOT}/src/"
-        FILE_PERMISSIONS OWNER_EXECUTE OWNER_WRITE OWNER_READ
-    )
-endfunction()
-
-set(configure_command "${EXTERNAL_ROOT}/src/dune_configure.sh")
-write_configure_file("${configure_command}")
-
-# Special stuff for dune-grid + ALUGrid
-set(grid_configure_command "${configure_command}")
-set(grid_depends "")
-if(ALUGrid_FOUND OR TARGET ALUGrid)
-    set(dune_grid_configure_command "${EXTERNAL_ROOT}/src/dune_grid_configure.sh")
-    get_filename_component(ALUGrid_DIRECTORY "${ALUGrid_LIBRARIES}" PATH)
-    get_filename_component(ALUGrid_DIRECTORY "${ALUGrid_DIRECTORY}" PATH)
-    write_configure_file("${grid_configure_command}"
-        "--with-alugrid=\"${ALUGrid_DIRECTORY}\""
-    )
-    if(TARGET ALUGrid)
-        set(grid_depends ALUGrid)
-    endif()
-endif()
-
-
 _get_arguments(common)
-ExternalProject_Add(
-    dune-common
+ExternalProject_Add(dune-common
     PREFIX ${EXTERNAL_ROOT}
     DEPENDS ${depends_on}
     ${common_ARGUMENTS}
-    CONFIGURE_COMMAND ${configure_command}
-    INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
-    ${build_args}
+    CMAKE_ARGS -C "${EXTERNAL_ROOT}/src/DuneVariables.cmake"
+    LOG_DOWNLOAD ON LOG_CONFIGURE ON LOG_BUILD ON
 )
 
 _get_arguments(geometry)
-ExternalProject_Add(
-    dune-geometry
-    DEPENDS dune-common
+ExternalProject_Add(dune-geometry
     PREFIX ${EXTERNAL_ROOT}
+    DEPENDS dune-common
     ${geometry_ARGUMENTS}
-    CONFIGURE_COMMAND ${configure_command}
-    INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
-    ${build_args}
+    CMAKE_ARGS -C "${EXTERNAL_ROOT}/src/DuneVariables.cmake"
+    LOG_DOWNLOAD ON LOG_CONFIGURE ON LOG_BUILD ON
 )
 
 include(PatchScript)
@@ -177,38 +87,31 @@ create_patch_script(Dune dune_patch_script
     CMDLINE "-p0"
     WORKING_DIRECTORY "${EXTERNAL_ROOT}/src"
     "${patchdir}/grid_yaspgrid.patch"
-    "${patchdir}/grid_dgfparser.patch"
-    "${patchdir}/grid_alugrid.patch"
 )
 
 _get_arguments(grid)
-ExternalProject_Add(
-    dune-grid
-    DEPENDS dune-geometry dune-common ${grid_depends}
+ExternalProject_Add(dune-grid
     PREFIX ${EXTERNAL_ROOT}
+    DEPENDS dune-geometry dune-common ${grid_depends}
     ${grid_ARGUMENTS}
     PATCH_COMMAND ${dune_patch_script}
-    CONFIGURE_COMMAND ${grid_configure_command}
-    INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
-    ${build_args}
+    CMAKE_ARGS -C "${EXTERNAL_ROOT}/src/DuneVariables.cmake"
+    LOG_DOWNLOAD ON LOG_CONFIGURE ON LOG_BUILD ON
 )
 
 _get_arguments(localfunctions)
-ExternalProject_Add(
-    dune-localfunctions
-    DEPENDS dune-geometry dune-common
+ExternalProject_Add(dune-localfunctions
     PREFIX ${EXTERNAL_ROOT}
+    DEPENDS dune-geometry dune-common
     ${localfunctions_ARGUMENTS}
-    CONFIGURE_COMMAND ${configure_command}
     PATCH_COMMAND
         ${CMAKE_COMMAND} -DROOT=${EXTERNAL_ROOT}/src/dune-localfunctions
             -P ${CURRENT_LOOKUP_DIRECTORY}/patch-localfunctions.cmake
-    INSTALL_COMMAND ${CMAKE_MAKE_PROGRAM} install
-    ${build_args}
+    CMAKE_ARGS -C "${EXTERNAL_ROOT}/src/DuneVariables.cmake"
+    LOG_DOWNLOAD ON LOG_CONFIGURE ON LOG_BUILD ON
 )
 
-ExternalProject_Add(
-    dune-foamgrid
+ExternalProject_Add(dune-foamgrid
     DEPENDS dune-grid dune-geometry dune-common
     PREFIX ${EXTERNAL_ROOT}
     URL ${PROJECT_SOURCE_DIR}/contrib/dune/dune-foamgrid
@@ -240,20 +143,34 @@ ExternalProject_Add(
     DEPENDS dune-foamgrid dune-grid dune-geometry dune-common dune-localfunctions
     PREFIX ${EXTERNAL_ROOT}
     DOWNLOAD_COMMAND ""
-    CONFIGURE_COMMAND ${configure_command}
+    CMAKE_ARGS -C "${EXTERNAL_ROOT}/src/DuneVariables.cmake"
+    LOG_DOWNLOAD OFF LOG_CONFIGURE ON LOG_BUILD ON
     INSTALL_COMMAND
         ${CMAKE_COMMAND} -E copy_if_different
-               ${EXTERNAL_ROOT}/src/dune-bempp/config.h
+               ${EXTERNAL_ROOT}/src/dune-bempp-build/config.h
                ${EXTERNAL_ROOT}/include/dune_config.h
     ${build_args}
 )
 ExternalProject_Add_Step(dune-bempp
     CREATE_PROJECT
     COMMAND dune-common/bin/duneproject < bempp.dune.input
-    COMMAND dune-common/bin/dunecontrol --module=dune-bempp autogen
     WORKING_DIRECTORY ${EXTERNAL_ROOT}/src
+    COMMENT Creating fake dune-bempp project
     DEPENDERS configure
 )
+
+# Creates a single target for Dune and remove subcomponents from ALL
+add_custom_target(Dune ALL
+    DEPENDS
+        dune-foamgrid dune-grid dune-geometry dune-common dune-localfunctions
+        dune-bempp
+)
+set_target_properties(
+    dune-foamgrid dune-grid dune-geometry dune-common dune-localfunctions
+    dune-bempp
+    PROPERTIES EXCLUDE_FROM_ALL TRUE
+)
+
 
 # Rerun cmake to capture new dune install
 add_recursive_cmake_step(dune-bempp

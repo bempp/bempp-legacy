@@ -1,6 +1,7 @@
 # Pulls together different dune components, some which are exported, some which are not.
 
 # Look for common library first
+unset(arguments)
 if(Dune_FIND_REQUIRED)
     list(APPEND arguments REQUIRED)
 endif()
@@ -9,17 +10,19 @@ if(Dune_FIND_QUIETLY)
     list(APPEND arguments QUIET)
     set(quietly QUIET)
 endif()
-pkg_check_modules(dune-common ${arguments} dune-common)
+find_package(dune-common ${arguments} ${quietly})
 if(NOT dune-common_FOUND)
     return()
 endif()
 
 
-get_filename_component(Dune_INCLUDE_COMPONENT_DIR
-    ${dune-common_INCLUDE_DIRS} PATH)
+# Remove foamgrid from components since provided within BEM
+set(components ${Dune_FIND_COMPONENTS})
+list(REMOVE_ITEM components foamgrid)
+
 unset(required_not_found)
-foreach(component ${Dune_FIND_COMPONENTS})
-    pkg_check_modules(dune-${component} ${quietly} dune-${component})
+foreach(component ${components})
+    find_package(dune-${component} ${quietly})
     if(Dune_FIND_REQUIRED_${component} AND NOT dune-${component}_FOUND)
         list(APPEND required_not_found ${component})
     endif()
