@@ -1,3 +1,4 @@
+include(TargetCopyFiles)
 include(BoostUnitTestFlags)
 if(Boost_UNIT_TEST_CXXFLAGS)
     add_definitions(${Boost_UNIT_TEST_CXXFLAGS})
@@ -91,12 +92,8 @@ foreach(source ${TEST_SOURCES})
 endforeach()
 
 # Meshes
-file(GLOB_RECURSE TEST_MESHES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-    *.msh)
-if (NOT (${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR}))
-    foreach (f ${TEST_MESHES})
-        configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${f}
-                       ${CMAKE_CURRENT_BINARY_DIR}/${f}
-                       COPYONLY)
-    endforeach ()
-endif ()
+add_custom_target(copy_meshes ALL)
+add_copy_directory(copy_meshes "${CMAKE_CURRENT_SOURCE_DIR}"
+    DESTINATION "${CMAKE_CURRENT_BINARY_DIR}"
+    GLOB *.msh
+)
