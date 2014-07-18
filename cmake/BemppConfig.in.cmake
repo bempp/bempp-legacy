@@ -16,4 +16,5 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${BEMPP_CXX_FLAGS}")
 if(NOT "@BEMPP_PREFIX_PATH@" STREQUAL "")
     # Adds other libraries, say Trilinos
     list(APPEND CMAKE_PREFIX_PATH @BEMPP_PREFIX_PATH@)
+    link_directories("@BEMPP_PREFIX_PATH@/lib")
 endif()
