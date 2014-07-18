@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_test_grid_hpp
-#define bempp_test_grid_hpp
+#ifndef bempp_simple_triangular_grid_manager_hpp
+#define bempp_simple_triangular_grid_manager_hpp
 
 #include "grid/dune.hpp"
 #include "grid/grid.hpp"
