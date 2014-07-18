@@ -44,38 +44,26 @@ endif ()
 
 # Add includes and target links
 target_link_libraries(bempp ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
-
-unset(link_privately)
-if(CMAKE_VERSION VERSION_GREATER 2.8.6)
-    set(link_privatly LINK_PRIVATE)
-endif()
-target_link_libraries(bempp
-    ${link_privately}
+# Add targets that may not yet exist, if they are being built as lookups
+set(imported_targets
+    # Trilinos target
+    amesos stratimikos stratimikosbelos belos epetra epetraext thyracore
+    teuchoscomm teuchoscore teuchosnumerics teuchosparameterlist
+    teuchosremainder rtop
     # Dune targets
-    $<TARGET_FILE:dunecommon>
-    $<TARGET_FILE:dunegeometry>
-    $<TARGET_FILE:dunegrid>
-    # Trilinos targets
-    $<TARGET_FILE:amesos>
-    $<TARGET_FILE:stratimikos>
-    $<TARGET_FILE:stratimikosbelos>
-    $<TARGET_FILE:belos>
-    $<TARGET_FILE:epetra>
-    $<TARGET_FILE:epetraext>
-    $<TARGET_FILE:thyracore>
-    $<TARGET_FILE:teuchoscomm>
-    $<TARGET_FILE:teuchoscore>
-    $<TARGET_FILE:teuchosnumerics>
-    $<TARGET_FILE:teuchosparameterlist>
-    $<TARGET_FILE:teuchosremainder>
-    $<TARGET_FILE:rtop>
+    dunecommon dunegeometry dunegrid
 )
+unset(library_files)
+foreach(library ${imported_targets})
+    if(TARGET ${library})
+        target_link_libraries(bempp ${library})
+    endif()
+endforeach()
 
+target_link_libraries(bempp optimized ${TBB_LIBRARY} ${TBB_MALLOC_LIBRARY})
 if(TBB_LIBRARY_DEBUG)
-    target_link_libraries (bempp
-        debug ${TBB_LIBRARY_DEBUG} ${TBB_MALLOC_LIBRARY_DEBUG}
-        optimized ${TBB_LIBRARY} ${TBB_MALLOC_LIBRARY}
-    )
+    target_link_libraries(bempp
+        debug ${TBB_LIBRARY_DEBUG} ${TBB_MALLOC_LIBRARY_DEBUG})
 endif()
 
 if("${CMAKE_VERSION}" VERSION_LESS "2.8.11")
