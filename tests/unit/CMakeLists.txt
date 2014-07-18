@@ -38,8 +38,13 @@ if(NOT WITH_AHMED)
     )
 endif()
 
-# tests that need extra sources should be declared below
-function(extra_sources SOURCE)
+# declare fixture libraries that will be used by tests
+add_library(grid_fixture STATIC "assembly/create_regular_grid.cpp")
+add_library(dirichlet_fixture STATIC "linalg/laplace_3d_dirichlet_fixture.cpp")
+add_library(manager_fixture STATIC "grid/simple_triangular_grid_manager.cpp")
+
+# tests that need extra dependencies should be declared below
+function(extra_dependencies SOURCE)
     unset(extras)
     get_filename_component(filename "${source}" NAME_WE)
     string(REGEX REPLACE "test_?" "" filename "${filename}")
@@ -52,11 +57,11 @@ function(extra_sources SOURCE)
         OR "${filename}" STREQUAL "sparse_cholesky"
         OR "${filename}" STREQUAL "raviart_thomas_0_vector_space"
     )
-        list(APPEND extras "assembly/create_regular_grid.cpp")
+        list(APPEND extras grid_fixture)
     endif()
     if("${filename}" STREQUAL "default_direct_solver"
             OR "${filename}" STREQUAL "default_iterative_solver")
-        list(APPEND extras "linalg/laplace_3d_dirichlet_fixture.cpp")
+        list(APPEND extras dirichlet_fixture)
     endif()
     if("${filename}" STREQUAL "entity"
         OR "${filename}" STREQUAL "grid"
@@ -66,7 +71,7 @@ function(extra_sources SOURCE)
         OR "${filename}" STREQUAL "grid_factory"
         OR "${filename}" STREQUAL "index_set"
     )
-        list(APPEND extras "grid/simple_triangular_grid_manager.cpp")
+        list(APPEND extras manager_fixture)
     endif()
     set(extras ${extras} PARENT_SCOPE)
 endfunction()
@@ -81,12 +86,12 @@ foreach(source ${TEST_SOURCES})
 
 
     set(testname ${basename}_${filename})
-    extra_sources("${source}")
-    add_executable(${testname} main.cpp "${source}" ${extras})
+    add_executable(${testname} main.cpp "${source}")
     depends_on_lookups(${testname})
-    target_link_libraries(${testname} bempp)
+    extra_dependencies("${source}")
+    target_link_libraries(${testname} bempp ${extras})
     target_link_libraries(${testname} ${btest_libs})
-    
+
     add_test(NAME ${testname} COMMAND ${test_sh} $<TARGET_FILE:${testname}>)
     set_tests_properties(${testname} PROPERTIES LABELS "cpp;unit;${basename}")
 endforeach()
