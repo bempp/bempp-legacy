@@ -21,7 +21,7 @@
 #ifndef bempp_test_entity_hpp
 #define bempp_test_entity_hpp
 
-#include "test_grid.hpp"
+#include "simple_triangular_grid_manager.hpp"
 #include "grid/entity.hpp"
 #include "grid/entity_pointer.hpp"
 #include "grid/entity_iterator.hpp"

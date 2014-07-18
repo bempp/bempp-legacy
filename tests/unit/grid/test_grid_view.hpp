@@ -21,7 +21,7 @@
 #ifndef bempp_test_grid_view_hpp
 #define bempp_test_grid_view_hpp
 
-#include "test_grid.hpp"
+#include "simple_triangular_grid_manager.hpp"
 #include "grid/grid_view.hpp"
 
 struct TriangularLevel0GridViewManager : public SimpleTriangularGridManager {
