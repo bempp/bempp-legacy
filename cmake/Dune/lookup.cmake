@@ -40,7 +40,7 @@ passon_variables(Dune
         "    CACHE PATH \"\" FORCE)\n"
         "set(CMAKE_INSTALL_RPATH ${rpath_dirs} CACHE INTERNAL \"\")\n"
         "set(CMAKE_PROGRAM_PATH \"${EXTERNAL_ROOT}/bin\" CACHE PATH \"\")\n"
-        #"set(DUNE_USE_ONLY_STATIC_LIBS TRUE CACHE BOOL \"\" FORCE)\n"
+        "set(BUILD_SHARED_LIBS TRUE CACHE BOOL \"\" FORCE)\n"
         "set(CMAKE_BUILD_TYPE Release CACHE INTERNAL \"\" FORCE)\n"
         "set(CMAKE_DISABLE_FIND_PACKAGE_HDF5 TRUE CACHE BOOL \"\" FORCE)\n"
         "set(CMAKE_DISABLE_FIND_PACKAGE_MPI TRUE CACHE BOOL \"\" FORCE)\n"
