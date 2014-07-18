@@ -33,7 +33,6 @@ if(NOT GreatCMakeCookOff_FOUND)
   execute_process(
     COMMAND ${GIT_EXECUTABLE} clone
          https://github.com/UCL/GreatCMakeCookOff.git
-         -b refactor
          "${COOKOFF_DOWNLOAD_DIR}"
     RESULT_VARIABLE CLONING_COOKOFF
     OUTPUT_QUIET
