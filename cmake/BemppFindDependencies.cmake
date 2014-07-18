@@ -40,10 +40,7 @@ lookup_package(Armadillo REQUIRED ARGUMENTS TIMEOUT 60)
 # ARMA_DONT_USE_WRAPPER means we don't need to include armadillo library
 add_definitions(-DARMA_DONT_USE_WRAPPER)
 lookup_package(TBB REQUIRED)
-lookup_package(Dune REQUIRED DOWNLOAD_BY_DEFAULT
-    COMPONENTS geometry grid localfunctions foamgrid
-    CHECK_EXTERNAL
-)
+lookup_package(Dune REQUIRED COMPONENTS geometry grid localfunctions foamgrid)
 lookup_package(SWIG 2.0.4 REQUIRED)
 if (SWIG_FOUND AND SWIG_VERSION VERSION_LESS 2.0.7)
     message(WARNING "Swig version 2.0.7 or higher is strongly "
