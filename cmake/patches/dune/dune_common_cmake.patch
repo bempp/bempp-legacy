@@ -1,0 +1,18 @@
+--- ./dune-common/cmake/modules/DuneMacros.cmake	2014-07-21 17:52:15.000000000 +0100
++++ ./dune-common/cmake/modules/DuneMacros.cmake.new	2014-07-21 17:51:33.000000000 +0100
+@@ -1040,12 +1040,12 @@ macro(replace_properties_for_one)
+ endmacro(replace_properties_for_one)
+ 
+ function(dune_target_link_libraries basename libraries)
+-  target_link_libraries(${basename} ${libraries})
++  target_link_libraries(${basename} ${ARGN})
+   if(DUNE_BUILD_BOTH_LIBS)
+     if(BUILD_SHARED_LIBS)
+-      target_link_libraries(${basename}-static ${libraries})
++      target_link_libraries(${basename}-static ${ARGN})
+     else(BUILD_SHARED_LIBS)
+-      target_link_libraries(${basename}-shared ${libraries})
++      target_link_libraries(${basename}-shared ${ARGN})
+     endif(BUILD_SHARED_LIBS)
+   endif(DUNE_BUILD_BOTH_LIBS)
+ endfunction(dune_target_link_libraries basename libraries)

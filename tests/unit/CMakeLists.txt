@@ -11,20 +11,6 @@ create_environment_script(
 )
 
 
-# builds the command to link to boost::unittest
-set(btest_libs)
-if(Boost_UNIT_TEST_FRAMEWORK_LIBRARY_DEBUG)
-    list(APPEND btest_libs debug ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY_DEBUG})
-endif()
-if(Boost_UNIT_TEST_FRAMEWORK_LIBRARY_RELEASE)
-    list(APPEND btest_libs optimized
-        ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY_RELEASE})
-elseif(Boost_UNIT_TEST_FRAMEWORK_LIBRARY_DEBUG)
-    list(REMOVE_AT btest_libs 0)
-endif()
-if("${btest_libs}" STREQUAL "")
-    message(FATAL_ERROR "No boost unit test library")
-endif()
 
 # Create a list of tests
 file(GLOB_RECURSE TEST_SOURCES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}"
@@ -90,7 +76,16 @@ foreach(source ${TEST_SOURCES})
     depends_on_lookups(${testname})
     extra_dependencies("${source}")
     target_link_libraries(${testname} bempp ${extras})
-    target_link_libraries(${testname} ${btest_libs})
+    if(Boost_UNIT_TEST_FRAMEWORK_LIBRARY_DEBUG)
+        target_link_libraries(${testname}
+        debug ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY_DEBUG}
+    )
+    endif()
+    if(Boost_UNIT_TEST_FRAMEWORK_LIBRARY_RELEASE)
+        target_link_libraries(${testname}
+        optimized ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY_RELEASE}
+    )
+    endif()
 
     add_test(NAME ${testname} COMMAND ${test_sh} $<TARGET_FILE:${testname}>)
     set_tests_properties(${testname} PROPERTIES LABELS "cpp;unit;${basename}")
