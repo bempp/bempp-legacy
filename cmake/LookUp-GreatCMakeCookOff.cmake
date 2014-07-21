@@ -1,11 +1,10 @@
-# This file is part of the GreatCMakeCookOff package and distributed under the MIT Licences.
-# Upon inclusion in a cmake file, it will download the GreatCMakeCookOff and make itself known to
-# CMake. It should be added explicitely to build systems that make use of recipes from the cook-off.
-# And it should be included prior to using cook-off recipes:
+# This file is part of the GreatCMakeCookOff package and distributed under the
+# MIT Licences.  Upon inclusion in a cmake file, it will download the
+# GreatCMakeCookOff and make itself known to CMake. It should be added
+# explicitely to build systems that make use of recipes from the cook-off.  And
+# it should be included prior to using cook-off recipes:
 #
-# ```{CMake}
-# include(LookUp-GreatCMakeCookOff)
-# ```
+# ```{CMake} include(LookUp-GreatCMakeCookOff) ```
 
 
 # First attempts to find the package
