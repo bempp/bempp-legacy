@@ -60,7 +60,10 @@ foreach(library ${imported_targets})
     endif()
 endforeach()
 
-target_link_libraries(bempp optimized ${TBB_LIBRARY} ${TBB_MALLOC_LIBRARY})
+if (TBB_LIBRARY)
+	target_link_libraries(bempp optimized ${TBB_LIBRARY} ${TBB_MALLOC_LIBRARY})
+endif()
+
 if(TBB_LIBRARY_DEBUG)
     target_link_libraries(bempp
         debug ${TBB_LIBRARY_DEBUG} ${TBB_MALLOC_LIBRARY_DEBUG})
