@@ -1,49 +1,104 @@
+include(TargetCopyFiles)
 include(BoostUnitTestFlags)
 if(Boost_UNIT_TEST_CXXFLAGS)
     add_definitions(${Boost_UNIT_TEST_CXXFLAGS})
 endif()
 
-file(GLOB_RECURSE TEST_SOURCES *.cpp)
-file(GLOB_RECURSE TEST_HEADERS *.hpp)
-add_executable(run_tests ${TEST_SOURCES} ${TEST_HEADERS})
-depends_on_lookups(run_tests)
+# Adds a bash script to run cpp unit tests
+create_environment_script(
+    WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/tests/unit"
+    PATH "${PROJECT_BINARY_DIR}/run_cpptests.sh"
+)
 
-target_link_libraries(run_tests bempp)
+
+# builds the command to link to boost::unittest
+set(btest_libs)
 if(Boost_UNIT_TEST_FRAMEWORK_LIBRARY_DEBUG)
-    target_link_libraries(run_tests
-        debug ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY_DEBUG}
-    )
+    list(APPEND btest_libs debug ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY_DEBUG})
 endif()
 if(Boost_UNIT_TEST_FRAMEWORK_LIBRARY_RELEASE)
-    target_link_libraries(run_tests
-        optimized ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY_RELEASE}
+    list(APPEND btest_libs optimized
+        ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY_RELEASE})
+elseif(Boost_UNIT_TEST_FRAMEWORK_LIBRARY_DEBUG)
+    list(REMOVE_AT btest_libs 0)
+endif()
+if("${btest_libs}" STREQUAL "")
+    message(FATAL_ERROR "No boost unit test library")
+endif()
+
+# Create a list of tests
+file(GLOB_RECURSE TEST_SOURCES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}"
+    test_*.cpp)
+if(NOT WITH_AHMED)
+    list(REMOVE_ITEM TEST_SOURCES
+       assembly/test_aca_mode_assembly.cpp
+	   assembly/test_discrete_aca_boundary_operator.cpp
+	   assembly/test_integral_evaluation_with_blas.cpp
+	   assembly/test_synthetic_boundary_operator.cpp
     )
 endif()
 
-add_test(NAME unittests
-    COMMAND ${PROJECT_BINARY_DIR}/run_cpptests.sh $<TARGET_FILE:run_tests>
-    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-)
-if(NOT "$ENV{LD_LIBRARY_PATH}" STREQUAL "")
-    list(APPEND ENVIRONMENT_VARIABLES
-        "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}")
-endif()
-if(NOT "$ENV{DYLD_LIBRARY_PATH}" STREQUAL "")
-    list(APPEND ENVIRONMENT_VARIABLES
-        "DYLD_LIBRARY_PATH=$ENV{DYLD_LIBRARY_PATH}")
-endif()
-set_tests_properties(unittests
-    PROPERTIES ENVIRONMENT "${ENVIRONMENT_VARIABLES}"
-    LABELS "cpp;unit"
-)
+# declare fixture libraries that will be used by tests
+add_library(grid_fixture STATIC "assembly/create_regular_grid.cpp")
+add_library(dirichlet_fixture STATIC "linalg/laplace_3d_dirichlet_fixture.cpp")
+add_library(manager_fixture STATIC "grid/simple_triangular_grid_manager.cpp")
+
+# tests that need extra dependencies should be declared below
+function(extra_dependencies SOURCE)
+    unset(extras)
+    get_filename_component(filename "${source}" NAME_WE)
+    string(REGEX REPLACE "test_?" "" filename "${filename}")
+    if("${filename}" STREQUAL "discrete_aca_boundary_operator"
+        OR "${filename}" STREQUAL "discrete_boundary_operator_sum"
+        OR "${filename}" STREQUAL "discrete_dense_boundary_operator"
+        OR "${filename}" STREQUAL "discrete_inverse_sparse_boundary_operator"
+        OR "${filename}" STREQUAL "discrete_null_boundary_operator"
+        OR "${filename}" STREQUAL "discrete_sparse_boundary_operator"
+        OR "${filename}" STREQUAL "sparse_cholesky"
+        OR "${filename}" STREQUAL "raviart_thomas_0_vector_space"
+    )
+        list(APPEND extras grid_fixture)
+    endif()
+    if("${filename}" STREQUAL "default_direct_solver"
+            OR "${filename}" STREQUAL "default_iterative_solver")
+        list(APPEND extras dirichlet_fixture)
+    endif()
+    if("${filename}" STREQUAL "entity"
+        OR "${filename}" STREQUAL "grid"
+        OR "${filename}" STREQUAL "grid_view"
+        OR "${filename}" STREQUAL "geometry"
+        OR "${filename}" STREQUAL "id_set"
+        OR "${filename}" STREQUAL "grid_factory"
+        OR "${filename}" STREQUAL "index_set"
+    )
+        list(APPEND extras manager_fixture)
+    endif()
+    set(extras ${extras} PARENT_SCOPE)
+endfunction()
+
+# Creates each test
+set(test_sh "${PROJECT_BINARY_DIR}/run_cpptests.sh")
+foreach(source ${TEST_SOURCES})
+    get_filename_component(filename "${source}" NAME_WE)
+    string(REGEX REPLACE "test_?" "" filename "${filename}")
+    get_filename_component(basename "${source}" PATH)
+    get_filename_component(basename "${basename}" NAME)
+
+
+    set(testname ${basename}_${filename})
+    add_executable(${testname} main.cpp "${source}")
+    depends_on_lookups(${testname})
+    extra_dependencies("${source}")
+    target_link_libraries(${testname} bempp ${extras})
+    target_link_libraries(${testname} ${btest_libs})
+
+    add_test(NAME ${testname} COMMAND ${test_sh} $<TARGET_FILE:${testname}>)
+    set_tests_properties(${testname} PROPERTIES LABELS "cpp;unit;${basename}")
+endforeach()
 
 # Meshes
-file(GLOB_RECURSE TEST_MESHES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
-    *.msh)
-if (NOT (${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR}))
-    foreach (f ${TEST_MESHES})
-        configure_file(${CMAKE_CURRENT_SOURCE_DIR}/${f}
-                       ${CMAKE_CURRENT_BINARY_DIR}/${f}
-                       COPYONLY)
-    endforeach ()
-endif ()
+add_custom_target(copy_meshes ALL)
+add_copy_directory(copy_meshes "${CMAKE_CURRENT_SOURCE_DIR}"
+    DESTINATION "${CMAKE_CURRENT_BINARY_DIR}"
+    GLOB *.msh
+)
