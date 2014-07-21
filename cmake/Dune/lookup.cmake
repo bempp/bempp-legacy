@@ -63,11 +63,31 @@ macro(_get_arguments component)
     )
 endmacro()
 
+include(PatchScript)
+set(patchdir "${PROJECT_SOURCE_DIR}/cmake/patches/dune")
+create_patch_script(Dune-Common dune_common_patch_script
+    CMDLINE "-p0"
+    WORKING_DIRECTORY "${EXTERNAL_ROOT}/src"
+    "${patchdir}/dune_common_cmake.patch"
+)
+
+create_patch_script(Dune-Geometry dune_geometry_patch_script
+    CMDLINE "-p0"
+    WORKING_DIRECTORY "${EXTERNAL_ROOT}/src"
+    "${patchdir}/dune_geometry_cmake.patch"
+)
+
+create_patch_script(Dune-Grid dune_grid_patch_script
+    CMDLINE "-p0"
+    WORKING_DIRECTORY "${EXTERNAL_ROOT}/src"
+    "${patchdir}/dune_grid_cmake.patch"
+)
 _get_arguments(common)
 ExternalProject_Add(dune-common
     PREFIX ${EXTERNAL_ROOT}
     DEPENDS ${depends_on}
     ${common_ARGUMENTS}
+    PATCH_COMMAND ${dune_common_patch_script}
     CMAKE_ARGS -C "${EXTERNAL_ROOT}/src/DuneVariables.cmake"
     LOG_DOWNLOAD ON LOG_CONFIGURE ON LOG_BUILD ON
 )
@@ -77,24 +97,18 @@ ExternalProject_Add(dune-geometry
     PREFIX ${EXTERNAL_ROOT}
     DEPENDS dune-common
     ${geometry_ARGUMENTS}
+    PATCH_COMMAND ${dune_geometry_patch_script}
     CMAKE_ARGS -C "${EXTERNAL_ROOT}/src/DuneVariables.cmake"
     LOG_DOWNLOAD ON LOG_CONFIGURE ON LOG_BUILD ON
 )
 
-include(PatchScript)
-set(patchdir "${PROJECT_SOURCE_DIR}/cmake/patches/dune")
-create_patch_script(Dune dune_patch_script
-    CMDLINE "-p0"
-    WORKING_DIRECTORY "${EXTERNAL_ROOT}/src"
-    "${patchdir}/grid_yaspgrid.patch"
-)
 
 _get_arguments(grid)
 ExternalProject_Add(dune-grid
     PREFIX ${EXTERNAL_ROOT}
     DEPENDS dune-geometry dune-common ${grid_depends}
     ${grid_ARGUMENTS}
-    PATCH_COMMAND ${dune_patch_script}
+    PATCH_COMMAND ${dune_grid_patch_script}
     CMAKE_ARGS -C "${EXTERNAL_ROOT}/src/DuneVariables.cmake"
     LOG_DOWNLOAD ON LOG_CONFIGURE ON LOG_BUILD ON
 )

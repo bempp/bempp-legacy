@@ -1,0 +1,63 @@
+diff -rupN dune-grid/dune/grid/albertagrid/CMakeLists.txt dune-grid/dune/grid.new/albertagrid/CMakeLists.txt
+--- dune-grid/dune/grid/albertagrid/CMakeLists.txt	2014-06-06 22:18:52.000000000 +0100
++++ dune-grid/dune/grid.new/albertagrid/CMakeLists.txt	2014-07-21 21:33:30.000000000 +0100
+@@ -10,7 +10,8 @@ if(ALBERTA_FOUND)
+   # create dimension dependant alberta libraries
+   foreach(_dim ${ALBERTA_WORLD_DIMS})
+     list(APPEND ALBERTAGRID_LIBS albertagrid_${_dim}d)
+-    dune_add_library(albertagrid_${_dim}d OBJECT ${ALBERTAGRID_SOURCES})
++    dune_add_library(albertagrid_${_dim}d OBJECT ${ALBERTAGRID_SOURCES}
++	    ADD_LIBS dunecommon dunegeometry)
+   endforeach(_dim RANGE 1 9)
+ endif(ALBERTA_FOUND)
+ 
+diff -rupN dune-grid/dune/grid/alugrid/2d/CMakeLists.txt dune-grid/dune/grid.new/alugrid/2d/CMakeLists.txt
+--- dune-grid/dune/grid/alugrid/2d/CMakeLists.txt	2014-06-06 22:18:52.000000000 +0100
++++ dune-grid/dune/grid.new/alugrid/2d/CMakeLists.txt	2014-07-21 21:36:33.000000000 +0100
+@@ -26,7 +26,9 @@ install(FILES ${HEADERS}
+ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/dune/grid/alugrid/2d)
+ 
+ if(ALUGRID_FOUND)
+-  dune_add_library(alu2d OBJECT intersection.cc  alu2dgridfactory.cc)
++  dune_add_library(alu2d OBJECT intersection.cc  alu2dgridfactory.cc
++	  ADD_LIBS dunecommon dunegeometry)
+ else(ALUGRID_FOUND)
+-  dune_add_library(alu2d OBJECT "")
++  dune_add_library(alu2d OBJECT ""
++	  ADD_LIBS dunecommon dunegeometry)
+ endif(ALUGRID_FOUND)
+diff -rupN dune-grid/dune/grid/alugrid/3d/CMakeLists.txt dune-grid/dune/grid.new/alugrid/3d/CMakeLists.txt
+--- dune-grid/dune/grid/alugrid/3d/CMakeLists.txt	2014-06-06 22:18:52.000000000 +0100
++++ dune-grid/dune/grid.new/alugrid/3d/CMakeLists.txt	2014-07-21 21:36:56.000000000 +0100
+@@ -4,7 +4,7 @@ else(ALUGRID_FOUND)
+   set(SOURCES "")
+ endif(ALUGRID_FOUND)
+ add_dune_alugrid_flags(SOURCE_ONLY ${SOURCES})
+-dune_add_library(alu3d OBJECT ${SOURCES})
++dune_add_library(alu3d OBJECT ${SOURCES} ADD_LIBS dunecommon dunegeometry)
+ 
+ set(HEADERS
+   alu3dinclude.hh
+diff -rupN dune-grid/dune/grid/io/file/dgfparser/CMakeLists.txt dune-grid/dune/grid.new/io/file/dgfparser/CMakeLists.txt
+--- dune-grid/dune/grid/io/file/dgfparser/CMakeLists.txt	2014-06-06 22:18:52.000000000 +0100
++++ dune-grid/dune/grid.new/io/file/dgfparser/CMakeLists.txt	2014-07-21 21:40:22.000000000 +0100
+@@ -2,7 +2,8 @@ add_subdirectory(blocks)
+ add_subdirectory(test EXCLUDE_FROM_ALL)
+ add_subdirectory(utils)
+ 
+-dune_add_library(dgfparser OBJECT dgfparser.cc dgfug.cc)
++dune_add_library(dgfparser OBJECT dgfparser.cc dgfug.cc
++	ADD_LIBS dunecommon dunegeometry)
+ 
+ 
+ set(HEADERS
+diff -rupN dune-grid/dune/grid/onedgrid/CMakeLists.txt dune-grid/dune/grid.new/onedgrid/CMakeLists.txt
+--- dune-grid/dune/grid/onedgrid/CMakeLists.txt	2014-06-06 22:16:33.000000000 +0100
++++ dune-grid/dune/grid.new/onedgrid/CMakeLists.txt	2014-07-21 21:44:48.000000000 +0100
+@@ -17,4 +17,5 @@ install(FILES ${HEADERS} DESTINATION ${C
+ dune_add_library(onedgrid OBJECT
+   onedgrid.cc
+   onedgridfactory.cc
+-  nulliteratorfactory.cc)
++  nulliteratorfactory.cc
++  ADD_LIBS dunecommon dunegeometry)
