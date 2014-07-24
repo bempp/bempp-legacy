@@ -284,13 +284,13 @@ public:
         columnwise. Hence element-by-element filling of jacobian_t seems
         unavoidable). */
         // typename DuneGeometry::JacobianTransposed j_t;
-        Dune::FieldMatrix<double,cdim,mdim> j_t;
+        //Dune::FieldMatrix<double,mdim,cdim> j_t;
         typename DuneGeometry::LocalCoordinate l;
         for (size_t k = 0; k < n; ++k) {
             /* However, this bit of data copying could be avoided. */
             for (int i = 0; i < mdim; ++i)
                 l[i] = local(i,k);
-            j_t = m_dune_geometry->jacobianTransposed(l);
+            Dune::FieldMatrix<double,mdim,cdim> j_t = m_dune_geometry->jacobianTransposed(l);
             for (int j = 0; j < cdim; ++j)
                 for (int i = 0; i < mdim; ++i)
                     jacobian_t(i,j,k) = j_t[i][j];
@@ -315,13 +315,13 @@ public:
         columnwise. Hence element-by-element filling of jacobian_t seems
         unavoidable). */
         // typename DuneGeometry::Jacobian j_inv_t;
-        Dune::FieldMatrix<double,mdim,cdim> j_inv_t;
+        //Dune::FieldMatrix<double,cdim,mdim> j_inv_t;
         typename DuneGeometry::LocalCoordinate l;
         for (size_t k = 0; k < n; ++k) {
             /** \fixme However, this bit of data copying could be avoided. */
             for (int i = 0; i < mdim; ++i)
                 l[i] = local(i,k);
-            j_inv_t = m_dune_geometry->jacobianInverseTransposed(l);
+            Dune::FieldMatrix<double,cdim,mdim> j_inv_t = m_dune_geometry->jacobianInverseTransposed(l);
             for (int j = 0; j < mdim; ++j)
                 for (int i = 0; i < cdim; ++i)
                     jacobian_inv_t(i,j,k) = j_inv_t[i][j];
