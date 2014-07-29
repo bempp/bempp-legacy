@@ -257,7 +257,9 @@ void UnitScalarSpace<BasisFunctionType>::getGlobalDofBoundingBoxes(
        std::vector<BoundingBox<CoordinateType> >& bboxes) const
 {
    const int gridDim = domainDimension();
+#  ifndef NDEBUG
    const int globalDofCount_ = 1;
+#  endif
    assert(globalDofCount() == globalDofCount_);
 
    bboxes.resize(1);

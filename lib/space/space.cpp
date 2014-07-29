@@ -120,7 +120,10 @@ constructGlobalToFlatLocalDofsMappingEpetraMatrix(
                 Copy, rowMap, columnMap, 1 /* entries per row */);
 
     for (size_t i = 0; i < entryCount; ++i) {
-        int errorCode = result->InsertGlobalValues(
+#       ifndef NDEBUG
+        int errorCode =
+#       endif
+            result->InsertGlobalValues(
                     rows[i], 1 /* number of inserted entries */,
                     &values[i], &cols[i]);
         assert(errorCode == 0);
