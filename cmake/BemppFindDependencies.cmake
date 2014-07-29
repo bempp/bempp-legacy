@@ -91,6 +91,7 @@ file(WRITE ${PROJECT_BINARY_DIR}/include/FC.h "// fake Fortran-C file")
 # Now include all dependency directories once and for all
 set(BEMPP_INCLUDE_DIRS
    "${PROJECT_BINARY_DIR}/include/"
+   "${PROJECT_BINARY_DIR}/include/bempp"
    ${dune-common_INCLUDE_DIRS}
    ${Trilinos_INCLUDE_DIRS}
    ${Trilinos_TPL_INCLUDE_DIRS}
@@ -144,6 +145,4 @@ if(WITH_OPENCL)
 endif()
 
 list(REMOVE_DUPLICATES BEMPP_INCLUDE_DIRS)
-include_directories(${BEMPP_INCLUDE_DIRS}
-    "${PROJECT_BINARY_DIR}/include/bempp"
-)
+include_directories(${BEMPP_INCLUDE_DIRS})
