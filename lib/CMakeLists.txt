@@ -113,12 +113,13 @@ depends_on_lookups(bempp)
 # Makes it possible to export the build directory,
 # and have other projects build directly from the build tree.
 include(TargetCopyFiles)
-add_copy_directory(bempp
+add_copy_directory(copy_headers
     "${CMAKE_CURRENT_SOURCE_DIR}"
     DESTINATION "${PROJECT_BINARY_DIR}/include/bempp"
     GLOB *.h *.hpp *.cl.str
     EXCLUDE *.in.h *.in.hpp
 )
+add_dependencies(bempp copy_headers)
 
 # Install headers
 set(incpath "${INCLUDE_INSTALL_PATH}/bempp")

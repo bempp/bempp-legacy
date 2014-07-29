@@ -28,9 +28,10 @@ endif()
 add_library(grid_fixture STATIC "assembly/create_regular_grid.cpp")
 add_library(dirichlet_fixture STATIC "linalg/laplace_3d_dirichlet_fixture.cpp")
 add_library(manager_fixture STATIC "grid/simple_triangular_grid_manager.cpp")
-depends_on_lookups(grid_fixture)
-depends_on_lookups(dirichlet_fixture)
-depends_on_lookups(manager_fixture)
+foreach(fixture grid dirichlet manager)
+    depends_on_lookups(${fixture}_fixture)
+    add_dependencies(${fixture}_fixture copy_headers)
+endforeach()
 
 # tests that need extra dependencies should be declared below
 function(extra_dependencies SOURCE)
