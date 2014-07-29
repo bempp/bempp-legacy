@@ -54,7 +54,7 @@ SimpleTriangularGridManager::createDuneGrid()
     duneNElements[0] = N_ELEMENTS_X;
     duneNElements[1] = N_ELEMENTS_Y;
 
-    std::auto_ptr<DuneGrid> grid =
+    std::unique_ptr<DuneGrid> grid =
             Dune::BemppStructuredGridFactory<DuneGrid>::
             createSimplexGrid(duneLowerLeft, duneUpperRight, duneNElements);
     return Bempp::shared_ptr<DuneGrid>(grid.release());
