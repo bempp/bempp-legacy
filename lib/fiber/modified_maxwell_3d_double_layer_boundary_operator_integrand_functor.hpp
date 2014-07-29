@@ -53,7 +53,9 @@ public:
             const CollectionOf1dSlicesOfConst3dArrays<BasisFunctionType>& testTransfValues,
             const CollectionOf1dSlicesOfConst3dArrays<BasisFunctionType>& trialTransfValues,
             const CollectionOf2dSlicesOfConstNdArrays<KernelType>& kernelValues) const {
+#       ifndef NDEBUG
         const int dimWorld = 3;
+#       endif
 
         // Assert that there are is at least one vector-valued kernel
         assert(kernelValues.size() >= 1);
