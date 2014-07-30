@@ -1,10 +1,12 @@
---- ./dune-common/cmake/modules/DuneMacros.cmake	2014-07-21 17:52:15.000000000 +0100
-+++ ./dune-common/cmake/modules/DuneMacros.cmake.new	2014-07-21 17:51:33.000000000 +0100
-@@ -1040,12 +1040,12 @@ macro(replace_properties_for_one)
+--- dune-common/cmake/modules/DuneMacros.cmake	2014-06-06 22:18:52.486990000 +0100
++++ dune-common/cmake/modules/DuneMacros.news.cmake	2014-07-30 15:32:49.727284659 +0100
+@@ -1039,16 +1039,16 @@
+   get_property(properties ${option_command} ${_target} PROPERTY ${REPLACE_PROPERTY})
  endmacro(replace_properties_for_one)
  
- function(dune_target_link_libraries basename libraries)
+-function(dune_target_link_libraries basename libraries)
 -  target_link_libraries(${basename} ${libraries})
++function(dune_target_link_libraries basename)
 +  target_link_libraries(${basename} ${ARGN})
    if(DUNE_BUILD_BOTH_LIBS)
      if(BUILD_SHARED_LIBS)
@@ -15,4 +17,8 @@
 +      target_link_libraries(${basename}-shared ${ARGN})
      endif(BUILD_SHARED_LIBS)
    endif(DUNE_BUILD_BOTH_LIBS)
- endfunction(dune_target_link_libraries basename libraries)
+-endfunction(dune_target_link_libraries basename libraries)
++endfunction(dune_target_link_libraries basename)
+ 
+ function(replace_properties)
+   include(CMakeParseArguments)
