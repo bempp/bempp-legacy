@@ -57,8 +57,9 @@ enum SpaceType {
 };
 
 template <typename BFT, typename RT>
-struct Laplace3dDirichletFixture
+class Laplace3dDirichletFixture
 {
+public:
     Laplace3dDirichletFixture(
         SpaceType dirichletDataDomain = PIECEWISE_LINEARS,
         SpaceType neumannDataDomain = PIECEWISE_CONSTANTS,

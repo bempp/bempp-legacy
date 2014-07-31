@@ -31,7 +31,7 @@ struct TriangularLevel0GridViewManager : public SimpleTriangularGridManager {
     }
 
     typedef Bempp::Default2dIn3dDuneGrid::LevelGridView DuneGridView;
-    std::auto_ptr<Bempp::GridView> bemppGridView;
+    std::unique_ptr<Bempp::GridView> bemppGridView;
     DuneGridView duneGridView;
 };
 
@@ -42,7 +42,7 @@ struct TriangularLeafGridViewManager : public SimpleTriangularGridManager {
     }
 
     typedef Bempp::Default2dIn3dDuneGrid::LeafGridView DuneGridView;
-    std::auto_ptr<Bempp::GridView> bemppGridView;
+    std::unique_ptr<Bempp::GridView> bemppGridView;
     DuneGridView duneGridView;
 };
 

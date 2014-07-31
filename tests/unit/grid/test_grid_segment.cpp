@@ -46,7 +46,7 @@ template <int codim>
 std::set<int> entitiesWithNonpositiveY(const GridView& view)
 {
     std::set<int> result;
-    std::auto_ptr<EntityIterator<codim> > it = view.entityIterator<codim>();
+    std::unique_ptr<EntityIterator<codim> > it = view.entityIterator<codim>();
     const IndexSet& indexSet = view.indexSet();
     arma::Col<double> center;
     while (!it->finished()) {
@@ -64,7 +64,7 @@ std::set<int> entitiesWithNonpositiveY(const GridView& view)
 GridSegment gridSegmentWithPositiveY(const Grid& grid)
 {
     boost::array<std::set<int>, 4> excludedEntities;
-    std::auto_ptr<GridView> view = grid.leafView();
+    std::unique_ptr<GridView> view = grid.leafView();
     excludedEntities[0] = entitiesWithNonpositiveY<0>(*view);
     excludedEntities[1] = entitiesWithNonpositiveY<1>(*view);
     excludedEntities[2] = entitiesWithNonpositiveY<2>(*view);
@@ -87,7 +87,7 @@ BOOST_AUTO_TEST_CASE(complement_works)
     GridSegment segment = gridSegmentWithPositiveX(*grid);
     GridSegment complement = segment.complement();
 
-    std::auto_ptr<GridView> view = grid->leafView();
+    std::unique_ptr<GridView> view = grid->leafView();
     for (int codim = 0; codim < 4; ++codim) {
         const int entityCount = view->entityCount(codim);
         for (int index = 0; index < entityCount; ++index) {
@@ -108,7 +108,7 @@ BOOST_AUTO_TEST_CASE(union_works)
     GridSegment segmentB = gridSegmentWithPositiveY(*grid);
     GridSegment union_ = segmentA.union_(segmentB);
 
-    std::auto_ptr<GridView> view = grid->leafView();
+    std::unique_ptr<GridView> view = grid->leafView();
     for (int codim = 0; codim < 4; ++codim) {
         const int entityCount = view->entityCount(codim);
         for (int index = 0; index < entityCount; ++index) {
@@ -133,7 +133,7 @@ BOOST_AUTO_TEST_CASE(difference_works)
     GridSegment segmentB = gridSegmentWithPositiveY(*grid);
     GridSegment difference = segmentA.difference(segmentB);
 
-    std::auto_ptr<GridView> view = grid->leafView();
+    std::unique_ptr<GridView> view = grid->leafView();
     for (int codim = 0; codim < 4; ++codim) {
         const int entityCount = view->entityCount(codim);
         for (int index = 0; index < entityCount; ++index) {
@@ -158,7 +158,7 @@ BOOST_AUTO_TEST_CASE(intersection_works)
     GridSegment segmentB = gridSegmentWithPositiveY(*grid);
     GridSegment intersection = segmentA.intersection(segmentB);
 
-    std::auto_ptr<GridView> view = grid->leafView();
+    std::unique_ptr<GridView> view = grid->leafView();
     for (int codim = 0; codim < 4; ++codim) {
         const int entityCount = view->entityCount(codim);
         for (int index = 0; index < entityCount; ++index) {
@@ -182,9 +182,9 @@ BOOST_AUTO_TEST_CASE(openDomain_works)
     GridSegment segment = GridSegment::openDomain(*grid, 1);
     GridSegment complement = segment.complement();
 
-    std::auto_ptr<GridView> view = grid->leafView();
+    std::unique_ptr<GridView> view = grid->leafView();
     const IndexSet& indexSet = view->indexSet();
-    std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > it = view->entityIterator<0>();
     while (!it->finished()) {
         const Entity<0>& e = it->entity();
         const int domain = e.domain();
@@ -219,9 +219,9 @@ BOOST_AUTO_TEST_CASE(closedDomain_works)
     GridSegment segment = GridSegment::closedDomain(*grid, 1);
     GridSegment complement = segment.complement();
 
-    std::auto_ptr<GridView> view = grid->leafView();
+    std::unique_ptr<GridView> view = grid->leafView();
     const IndexSet& indexSet = view->indexSet();
-    std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > it = view->entityIterator<0>();
     while (!it->finished()) {
         const Entity<0>& e = it->entity();
         const int domain = e.domain();

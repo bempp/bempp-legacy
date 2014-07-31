@@ -34,7 +34,7 @@ public:
     typedef Fiber::LocalAssemblerForIntegralOperators<ResultType>
     LocalAssemblerForIntegralOperators;
 
-    static std::auto_ptr<DiscreteBoundaryOperator<ResultType> >
+    static std::unique_ptr<DiscreteBoundaryOperator<ResultType> >
     assembleDetachedWeakForm(
             const Space<BasisFunctionType>& testSpace,
             const Space<BasisFunctionType>& trialSpace,

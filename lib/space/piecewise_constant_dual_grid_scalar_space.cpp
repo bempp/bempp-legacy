@@ -169,7 +169,7 @@ void PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::assignDofsImpl()
     const int gridDim = this->domainDimension();
 
     const Mapper& elementMapper = this->gridView().elementMapper();
-    std::auto_ptr<GridView> coarseView = this->grid()->levelView(0);
+    std::unique_ptr<GridView> coarseView = this->grid()->levelView(0);
 
     const IndexSet& indexSetCoarseGrid = coarseView->indexSet();
 
@@ -196,13 +196,13 @@ void PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::assignDofsImpl()
 
 
     // Iterate over elements of the coarse grid
-    std::auto_ptr<EntityIterator<0> > it = coarseView->entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > it = coarseView->entityIterator<0>();
     int flatLocalDofCount_ = 0;
     while (!it->finished()) {
         const Entity<0>& element = it->entity();
         // Get the iterator over son entities
 
-        std::auto_ptr<EntityIterator<0> > sonIt = element.sonIterator(this->grid()->maxLevel());
+        std::unique_ptr<EntityIterator<0> > sonIt = element.sonIterator(this->grid()->maxLevel());
 
         size_t sonCount = 5;
         while (!sonIt->finished()){
@@ -316,7 +316,7 @@ getFlatLocalDofBoundingBoxes(
     const int elementCount = this->gridView().entityCount(0);
 
     std::vector<arma::Mat<CoordinateType> > elementCorners(elementCount);
-    std::auto_ptr<EntityIterator<0> > it = this->gridView().template entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > it = this->gridView().template entityIterator<0>();
     while (!it->finished()) {
         const Entity<0>& e = it->entity();
         int index = indexSet.entityIndex(e);
@@ -376,7 +376,7 @@ void PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::getFlatLocalDofNor
     int elementCount = this->gridView().entityCount(0);
 
     arma::Mat<CoordinateType> elementNormals(worldDim, elementCount);
-    std::auto_ptr<EntityIterator<0> > it = this->gridView().template entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > it = this->gridView().template entityIterator<0>();
     arma::Col<CoordinateType> center(gridDim);
     center.fill(0.5);
     arma::Col<CoordinateType> normal;
@@ -432,7 +432,7 @@ void PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::dumpClusterIdsEx(
         throw std::invalid_argument("PiecewiseConstantDualGridScalarSpaceScalarSpace::"
                                     "dumpClusterIds(): incorrect dimension");
 
-    std::auto_ptr<VtkWriter> vtkWriter = this->gridView().vtkWriter();
+    std::unique_ptr<VtkWriter> vtkWriter = this->gridView().vtkWriter();
     if (dofType == GLOBAL_DOFS) {
         arma::Row<double> data(idCount);
         for (size_t i = 0; i < idCount; ++i)

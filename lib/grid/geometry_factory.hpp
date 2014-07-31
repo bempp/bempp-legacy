@@ -41,7 +41,7 @@ public:
 
     virtual ~GeometryFactory() {}
 
-    virtual std::auto_ptr<Geometry> make() const = 0;
+    virtual std::unique_ptr<Geometry> make() const = 0;
 };
 
 } // namespace Bempp

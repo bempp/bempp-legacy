@@ -173,7 +173,7 @@ private:
      *  trial function transformations occurring in the integrand. */
     virtual const TestKernelTrialIntegral& integral() const = 0;
 
-    virtual std::auto_ptr<LocalAssembler> makeAssemblerImpl(
+    virtual std::unique_ptr<LocalAssembler> makeAssemblerImpl(
             const QuadratureStrategy& quadStrategy,
             const shared_ptr<const GeometryFactory>& testGeometryFactory,
             const shared_ptr<const GeometryFactory>& trialGeometryFactory,
@@ -193,11 +193,11 @@ private:
 
     /** \cond PRIVATE */
 
-    std::auto_ptr<DiscreteBoundaryOperator<ResultType_> >
+    std::unique_ptr<DiscreteBoundaryOperator<ResultType_> >
     assembleWeakFormInDenseMode(
             LocalAssembler& assembler,
             const Context<BasisFunctionType, ResultType>& context) const;
-    std::auto_ptr<DiscreteBoundaryOperator<ResultType_> >
+    std::unique_ptr<DiscreteBoundaryOperator<ResultType_> >
     assembleWeakFormInAcaMode(
             LocalAssembler& assembler,
             const Context<BasisFunctionType, ResultType>& context) const;

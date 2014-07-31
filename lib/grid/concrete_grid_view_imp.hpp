@@ -109,7 +109,7 @@ void ConcreteGridView<DuneGridView>::getRawElementDataImpl(
         // Somewhat inelegant: we perform a second iteration over elements,
         // this time using the BEM++ interface to Dune.
         domainIndices->resize(elementCount);
-        std::auto_ptr<EntityIterator<0> > it = this->entityIterator<0>();
+        std::unique_ptr<EntityIterator<0> > it = this->entityIterator<0>();
         const IndexSet& indexSet = this->indexSet();
         while (!it->finished()) {
             const Entity<0>& entity = it->entity();

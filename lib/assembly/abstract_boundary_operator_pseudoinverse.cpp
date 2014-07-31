@@ -175,7 +175,6 @@ assembleWeakFormForSparseOperator(
     const int colCount = matrix->NumGlobalCols();
     if (rowCount == colCount) {
         // Square matrix; construct M^{-1}
-        bool sameSpace = this->domain() == this->dualToRange();
         return boost::make_shared<DiscreteInverseSparseOp>(
                     matrix, m_operator.abstractOperator()->symmetry());
     } else {

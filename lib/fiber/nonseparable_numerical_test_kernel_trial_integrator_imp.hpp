@@ -124,7 +124,7 @@ basisData(ElementType type, const Shapeset<BasisFunctionType>& shapeset) const
         // parallel loop; this should solve this problem.
 
         // Need to calculate basis data from scratch
-        std::auto_ptr<BasisData<BasisFunctionType> > basisData(
+        std::unique_ptr<BasisData<BasisFunctionType> > basisData(
                     new BasisData<BasisFunctionType>);
         size_t basisDeps = 0, geomDeps = 0;
         transformations.addDependencies(basisDeps, geomDeps);
@@ -185,7 +185,7 @@ integrate(
 
     typedef typename GeometryFactory::Geometry Geometry;
 
-    std::auto_ptr<Geometry> geometryA, geometryB;
+    std::unique_ptr<Geometry> geometryA, geometryB;
     const RawGridGeometry<CoordinateType> *rawGeometryA = 0, *rawGeometryB = 0;
     if (callVariant == TEST_TRIAL)
     {
@@ -301,8 +301,8 @@ integrate(
     m_integral.addGeometricalDependencies(testGeomDeps, trialGeomDeps);
 
     typedef typename GeometryFactory::Geometry Geometry;
-    std::auto_ptr<Geometry> testGeometry(m_testGeometryFactory.make());
-    std::auto_ptr<Geometry> trialGeometry(m_trialGeometryFactory.make());
+    std::unique_ptr<Geometry> testGeometry(m_testGeometryFactory.make());
+    std::unique_ptr<Geometry> trialGeometry(m_trialGeometryFactory.make());
 
     CollectionOf3dArrays<BasisFunctionType> testValues, trialValues;
     CollectionOf3dArrays<KernelType> kernelValues;

@@ -33,7 +33,7 @@ class ConcreteDomainIndex : public DomainIndex
 public:
     ConcreteDomainIndex(const DuneGrid& grid,
                         const std::vector<int>& elementIndexToPhysicalEntity) :
-        DomainIndex(std::auto_ptr<IndexSet>(
+        DomainIndex(std::unique_ptr<IndexSet>(
                         new ConcreteIndexSet<typename DuneGrid::LevelGridView>(
                             &grid.levelIndexSet(0))),
                     elementIndexToPhysicalEntity)

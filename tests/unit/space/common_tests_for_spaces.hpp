@@ -48,13 +48,13 @@ namespace Bempp
 template <typename BasisFunctionType>
 void local2global_matches_global2local(const Space<BasisFunctionType>& space)
 {
-    std::auto_ptr<GridView> view = space.grid()->leafView();
+    std::unique_ptr<GridView> view = space.grid()->leafView();
     const IndexSet& indexSet = view->indexSet();
     std::vector<int> gdofs;
     std::vector<BasisFunctionType> gdofWeights;
     std::vector<std::vector<LocalDof> > ldofs;
     std::vector<std::vector<BasisFunctionType> > ldofWeights;
-    std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > it = view->entityIterator<0>();
     while (!it->finished())
     {
         const Entity<0>& element = it->entity();
@@ -96,7 +96,7 @@ void local2global_matches_global2local(const Space<BasisFunctionType>& space)
 template <typename BasisFunctionType>
 void global2local_matches_local2global(const Space<BasisFunctionType>& space)
 {
-    std::auto_ptr<GridView> view = space.grid()->leafView();
+    std::unique_ptr<GridView> view = space.grid()->leafView();
     const IndexSet& indexSet = view->indexSet();
     std::vector<std::vector<int> > gdofs; // [elementIndex][ldof]
     std::vector<std::vector<BasisFunctionType> > gdofWeights;
@@ -104,7 +104,7 @@ void global2local_matches_local2global(const Space<BasisFunctionType>& space)
     std::vector<std::vector<BasisFunctionType> > ldofWeights;
 
     // Fill the arrays gdofs and gdofWeights
-    std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > it = view->entityIterator<0>();
     const int elementCount = view->entityCount(0);
     gdofs.resize(elementCount);
     gdofWeights.resize(elementCount);

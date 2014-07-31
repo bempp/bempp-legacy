@@ -79,7 +79,10 @@ shared_ptr<Epetra_CrsMatrix> sparseInverse(const Epetra_CrsMatrix& mat)
         for (int s = 0; s < localSize; ++s) {
             int row = colIndices[rowOffsets[r]+s];
             processed[row] = true;
-            int errorCode = result->InsertGlobalValues(
+#           ifndef NDEBUG
+            int errorCode =
+#           endif
+                result->InsertGlobalValues(
                         row, localSize /* number of values */,
                         localInverse.colptr(s),
                         colIndices + rowOffsets[r]);

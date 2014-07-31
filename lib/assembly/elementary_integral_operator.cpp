@@ -61,7 +61,7 @@ ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::isLocal()
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
-std::auto_ptr<typename ElementaryIntegralOperator<
+std::unique_ptr<typename ElementaryIntegralOperator<
 BasisFunctionType, KernelType, ResultType>::LocalAssembler>
 ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
 makeAssemblerImpl(
@@ -102,7 +102,7 @@ assembleWeakFormImpl(
                   << this->label() << "'..." << std::endl;
 
     tbb::tick_count start = tbb::tick_count::now();
-    std::auto_ptr<LocalAssembler> assembler =
+    std::unique_ptr<LocalAssembler> assembler =
         this->makeAssembler(*context.quadStrategy(), context.assemblyOptions());
     shared_ptr<DiscreteBoundaryOperator<ResultType> > result =
         assembleWeakFormInternalImpl2(*assembler, context);
@@ -140,7 +140,7 @@ assembleWeakFormInternalImpl2(
 /** \cond PRIVATE */
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
-std::auto_ptr<DiscreteBoundaryOperator<ResultType> >
+std::unique_ptr<DiscreteBoundaryOperator<ResultType> >
 ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
 assembleWeakFormInDenseMode(
         LocalAssembler& assembler,
@@ -154,7 +154,7 @@ assembleWeakFormInDenseMode(
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
-std::auto_ptr<DiscreteBoundaryOperator<ResultType> >
+std::unique_ptr<DiscreteBoundaryOperator<ResultType> >
 ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
 assembleWeakFormInAcaMode(
         LocalAssembler& assembler,

@@ -63,7 +63,7 @@ void constructGlobalToFlatLocalDofsMappingVectors(
 
     std::vector<std::vector<GlobalDofIndex> > gdofs(elementCount);
     std::vector<std::vector<BasisFunctionType> > ldofWeights(elementCount);
-    std::auto_ptr<EntityIterator<0> > it = view.entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > it = view.entityIterator<0>();
     while (!it->finished()) {
         const Entity<0>& e = it->entity();
         int index = indexSet.entityIndex(e);
@@ -120,7 +120,10 @@ constructGlobalToFlatLocalDofsMappingEpetraMatrix(
                 Copy, rowMap, columnMap, 1 /* entries per row */);
 
     for (size_t i = 0; i < entryCount; ++i) {
-        int errorCode = result->InsertGlobalValues(
+#       ifndef NDEBUG
+        int errorCode =
+#       endif
+            result->InsertGlobalValues(
                     rows[i], 1 /* number of inserted entries */,
                     &values[i], &cols[i]);
         assert(errorCode == 0);
@@ -136,8 +139,8 @@ constructGlobalToFlatLocalDofsMappingEpetraMatrix(
 template <typename BasisFunctionType>
 Space<BasisFunctionType>::Space(const shared_ptr<const Grid>& grid) :
     m_grid(grid),
-    m_view(grid->leafView()),
-    m_elementGeometryFactory(grid->elementGeometryFactory().release())
+    m_elementGeometryFactory(grid->elementGeometryFactory().release()),
+    m_view(grid->leafView())
 {
     if (!grid)
         throw std::invalid_argument("Space::Space(): grid must not be a null "
@@ -147,8 +150,8 @@ Space<BasisFunctionType>::Space(const shared_ptr<const Grid>& grid) :
 template <typename BasisFunctionType>
 Space<BasisFunctionType>::Space(const Space<BasisFunctionType> &other) :
     m_grid(other.m_grid),
-    m_view(other.m_grid->levelView(other.m_level)),
-    m_elementGeometryFactory(other.m_elementGeometryFactory)
+    m_elementGeometryFactory(other.m_elementGeometryFactory),
+    m_view(other.m_grid->levelView(other.m_level))
 {
 }
 template <typename BasisFunctionType>
@@ -261,13 +264,13 @@ template <typename BasisFunctionType>
 void getAllShapesets(const Space<BasisFunctionType>& space,
         std::vector<const Fiber::Shapeset<BasisFunctionType>*>& shapesets)
 {
-    std::auto_ptr<GridView> view = space.grid()->leafView();
+    std::unique_ptr<GridView> view = space.grid()->leafView();
     const Mapper& mapper = view->elementMapper();
     const int elementCount = view->entityCount(0);
 
     shapesets.resize(elementCount);
 
-    std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > it = view->entityIterator<0>();
     while (!it->finished()) {
         const Entity<0>& e = it->entity();
         shapesets[mapper.entityIndex(e)] = &space.shapeset(e);
@@ -296,11 +299,8 @@ template <typename BasisFunctionType>
 int maximumShapesetOrder(const Space<BasisFunctionType>& space)
 {
     const GridView& view = space.gridView();
-    const Mapper& mapper = view.elementMapper();
-    const int elementCount = view.entityCount(0);
-
     int maxOrder = 0;
-    std::auto_ptr<EntityIterator<0> > it = view.entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > it = view.entityIterator<0>();
 
     while (!it->finished()) {
         const Entity<0>& e = it->entity();

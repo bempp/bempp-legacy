@@ -39,7 +39,7 @@ InterpolatedFunction<ValueType>::InterpolatedFunction(
         InterpolationMethod method) :
     m_grid(grid), m_vertexValues(vertexValues), m_method(method)
 {
-    std::auto_ptr<GridView> view = grid.leafView();
+    std::unique_ptr<GridView> view = grid.leafView();
 
     if (view->entityCount(grid.dim()) != vertexValues.n_cols)
         throw std::invalid_argument("VolumeGridFunction::VolumeGridFunction(): "
@@ -96,8 +96,8 @@ void InterpolatedFunction<ValueType>::exportToVtk(
         const char* dataLabel, const char* fileNamesBase, const char* filesPath,
         VtkWriter::OutputType outputType) const
 {
-    std::auto_ptr<GridView> view = m_grid.leafView();
-    std::auto_ptr<VtkWriter> vtkWriter = view->vtkWriter();
+    std::unique_ptr<GridView> view = m_grid.leafView();
+    std::unique_ptr<VtkWriter> vtkWriter = view->vtkWriter();
 
     exportSingleDataSetToVtk(*vtkWriter, m_vertexValues, VtkWriter::VERTEX_DATA,
                              dataLabel, fileNamesBase, filesPath, outputType);

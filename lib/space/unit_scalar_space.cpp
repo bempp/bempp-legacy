@@ -117,7 +117,7 @@ template <typename BasisFunctionType>
 void UnitScalarSpace<BasisFunctionType>::assignDofsImpl()
 {
     const Mapper& mapper = m_view->elementMapper();
-    std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
 
     const int elementCount = m_view->entityCount(0);
 
@@ -197,18 +197,15 @@ void UnitScalarSpace<BasisFunctionType>::getGlobalDofPositions(
     positions[0].y = 0.;
     positions[0].z = 0.;
 
-    const Mapper& mapper = m_view->elementMapper();
-
     if (gridDim == 1)
         throw NotImplementedError(
                 "UnitScalarSpace::getGlobalDofPositions(): "
                 "not implemented for 2D yet.");
     else {
-        std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
+        std::unique_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
         while (!it->finished())
         {
             const Entity<0>& e = it->entity();
-            int index = mapper.entityIndex(e);
             arma::Col<CoordinateType> center;
             e.geometry().getCenter(center);
 
@@ -239,7 +236,7 @@ void UnitScalarSpace<BasisFunctionType>::getFlatLocalDofPositions(
                 "UnitScalarSpace::getFlatLocalDofPositions(): "
                 "not implemented for 2D yet.");
     else {
-        std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
+        std::unique_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
         while (!it->finished())
         {
             const Entity<0>& e = it->entity();
@@ -260,7 +257,9 @@ void UnitScalarSpace<BasisFunctionType>::getGlobalDofBoundingBoxes(
        std::vector<BoundingBox<CoordinateType> >& bboxes) const
 {
    const int gridDim = domainDimension();
+#  ifndef NDEBUG
    const int globalDofCount_ = 1;
+#  endif
    assert(globalDofCount() == globalDofCount_);
 
    bboxes.resize(1);
@@ -282,7 +281,7 @@ void UnitScalarSpace<BasisFunctionType>::getGlobalDofBoundingBoxes(
                "UnitScalarSpace::getGlobalDofBoundingBoxes(): "
                "not implemented for 2D yet.");
    else {
-       std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
+       std::unique_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
        while (!it->finished())
        {
            const Entity<0>& e = it->entity();
@@ -344,7 +343,7 @@ void UnitScalarSpace<BasisFunctionType>::getFlatLocalDofBoundingBoxes(
                 "UnitScalarSpace::getFlatLocalDofBoundingBoxes(): "
                 "not implemented for 2D yet.");
     else {
-        std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
+        std::unique_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
         while (!it->finished())
         {
             const Entity<0>& e = it->entity();
@@ -417,8 +416,8 @@ void UnitScalarSpace<BasisFunctionType>::dumpClusterIdsEx(
                 "UnitScalarSpace::dumpClusterIds(): "
                 "clusterIds has incorrect length");
 
-    std::auto_ptr<GridView> view = this->grid()->leafView();
-    std::auto_ptr<VtkWriter> vtkWriter = view->vtkWriter();
+    std::unique_ptr<GridView> view = this->grid()->leafView();
+    std::unique_ptr<VtkWriter> vtkWriter = view->vtkWriter();
     arma::Row<double> data(idCount);
     for (size_t i = 0; i < idCount; ++i)
         data(i) = clusterIdsOfGlobalDofs[i];

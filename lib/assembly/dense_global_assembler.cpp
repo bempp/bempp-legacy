@@ -155,7 +155,7 @@ void gatherGlobalDofs(
 
     // Gather global DOF lists
     const Mapper& mapper = view.elementMapper();
-    std::auto_ptr<EntityIterator<0> > it = view.entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > it = view.entityIterator<0>();
     while (!it->finished()) {
         const Entity<0>& element = it->entity();
         const int elementIndex = mapper.entityIndex(element);
@@ -168,7 +168,7 @@ void gatherGlobalDofs(
 } // namespace
 
 template <typename BasisFunctionType, typename ResultType>
-std::auto_ptr<DiscreteBoundaryOperator<ResultType> >
+std::unique_ptr<DiscreteBoundaryOperator<ResultType> >
 DenseGlobalAssembler<BasisFunctionType, ResultType>::
 assembleDetachedWeakForm(
         const Space<BasisFunctionType>& testSpace,
@@ -244,7 +244,7 @@ assembleDetachedWeakForm(
 
     // Create and return a discrete operator represented by the matrix that
     // has just been calculated
-    return std::auto_ptr<DiscreteBoundaryOperator<ResultType> >(
+    return std::unique_ptr<DiscreteBoundaryOperator<ResultType> >(
                 new DiscreteDenseBoundaryOperator<ResultType>(result));
 }
 

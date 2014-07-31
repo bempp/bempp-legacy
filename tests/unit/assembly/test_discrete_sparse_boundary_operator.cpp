@@ -100,8 +100,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2
     DiscreteSparseBoundaryOperatorFixture<BFT, RT> fixture;
     shared_ptr<const DiscreteBoundaryOperator<RT> > dop = fixture.op.weakForm();
 
-    RT alpha = static_cast<RT>(2.);
-    RT beta = static_cast<RT>(0.);
+    RT alpha(2.);
+    RT beta(0.);
 
     arma::Col<RT> x = generateRandomVector<RT>(dop->columnCount());
     arma::Col<RT> y(dop->rowCount());
@@ -127,8 +127,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2
     DiscreteSparseBoundaryOperatorFixture<BFT, RT> fixture;
     shared_ptr<const DiscreteBoundaryOperator<RT> > dop = fixture.op.weakForm();
 
-    RT alpha = static_cast<RT>(2., 3.);
-    RT beta = static_cast<RT>(0.);
+    RT alpha(2., 3.);
+    RT beta(0.);
 
     arma::Col<RT> x = generateRandomVector<RT>(dop->columnCount());
     arma::Col<RT> y(dop->rowCount());
@@ -154,8 +154,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2
     DiscreteSparseBoundaryOperatorFixture<BFT, RT> fixture;
     shared_ptr<const DiscreteBoundaryOperator<RT> > dop = fixture.op.weakForm();
 
-    RT alpha = static_cast<RT>(2.);
-    RT beta = static_cast<RT>(3.);
+    RT alpha(2.);
+    RT beta(3.);
 
     arma::Col<RT> x = generateRandomVector<RT>(dop->columnCount());
     arma::Col<RT> y = generateRandomVector<RT>(dop->rowCount());
@@ -179,8 +179,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2
     DiscreteSparseBoundaryOperatorFixture<BFT, RT> fixture;
     shared_ptr<const DiscreteBoundaryOperator<RT> > dop = fixture.op.weakForm();
 
-    RT alpha = static_cast<RT>(2., 3.);
-    RT beta = static_cast<RT>(4., -5.);
+    RT alpha(2., 3.);
+    RT beta(4., -5.);
 
     arma::Col<RT> x = generateRandomVector<RT>(dop->columnCount());
     arma::Col<RT> y = generateRandomVector<RT>(dop->rowCount());
@@ -204,8 +204,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2
     DiscreteSparseBoundaryOperatorFixture<BFT, RT> fixture;
     shared_ptr<const DiscreteBoundaryOperator<RT> > dop = fixture.op.weakForm();
 
-    RT alpha = static_cast<RT>(2.);
-    RT beta = static_cast<RT>(3.);
+    RT alpha(2.);
+    RT beta(3.);
 
     arma::Col<RT> x = generateRandomVector<RT>(dop->rowCount());
     arma::Col<RT> y = generateRandomVector<RT>(dop->columnCount());
@@ -229,8 +229,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2
     DiscreteSparseBoundaryOperatorFixture<BFT, RT> fixture;
     shared_ptr<const DiscreteBoundaryOperator<RT> > dop = fixture.op.weakForm();
 
-    RT alpha = static_cast<RT>(2., 3.);
-    RT beta = static_cast<RT>(4., -5.);
+    RT alpha(2., 3.);
+    RT beta(4., -5.);
 
     arma::Col<RT> x = generateRandomVector<RT>(dop->rowCount());
     arma::Col<RT> y = generateRandomVector<RT>(dop->columnCount());

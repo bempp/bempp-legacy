@@ -32,8 +32,8 @@ SolutionBase<BasisFunctionType, ResultType>::SolutionBase(
         const Thyra::SolveStatus<MagnitudeType> status) :
     m_achievedTolerance(status.achievedTol),
     m_message(status.message),
-    m_extraParameters(status.extraParameters),
-    m_iterationCount(-1)
+    m_iterationCount(-1),
+    m_extraParameters(status.extraParameters)
 {
     switch (status.solveStatus) {
     case Thyra::SOLVE_STATUS_CONVERGED:

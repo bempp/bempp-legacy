@@ -32,11 +32,11 @@ struct TriangularEntityManager : public SimpleTriangularGridManager {
     }
 
     template <int codim>
-    typename std::auto_ptr<Bempp::EntityPointer<codim> > getPointerToSecondEntityOnLevel0() {
-        std::auto_ptr<Bempp::GridView> bemppGridView = bemppGrid->levelView(0);
-        std::auto_ptr<Bempp::EntityIterator<codim> > it = bemppGridView->entityIterator<codim>();
+    typename std::unique_ptr<Bempp::EntityPointer<codim> > getPointerToSecondEntityOnLevel0() {
+        std::unique_ptr<Bempp::GridView> bemppGridView = bemppGrid->levelView(0);
+        std::unique_ptr<Bempp::EntityIterator<codim> > it = bemppGridView->entityIterator<codim>();
         it->next();
-        return std::auto_ptr<Bempp::EntityPointer<codim> >(it.release());
+        return std::unique_ptr<Bempp::EntityPointer<codim> >(it.release());
     }
 
     template <int codim>

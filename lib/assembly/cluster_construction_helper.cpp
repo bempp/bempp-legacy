@@ -170,7 +170,7 @@ void ClusterConstructionHelper<BasisFunctionType>::constructBemCluster(
 
 
 template <typename BasisFunctionType>
-std::auto_ptr<typename ClusterConstructionHelper<
+std::unique_ptr<typename ClusterConstructionHelper<
                   BasisFunctionType>::AhmedBemBlcluster>
 ClusterConstructionHelper<BasisFunctionType>::constructBemBlockCluster(
         const AcaOptions& acaOptions,
@@ -192,7 +192,7 @@ ClusterConstructionHelper<BasisFunctionType>::constructBemBlockCluster(
             trialCluster.useStrongAdmissibilityCondition(
                         useStrongAdmissibilityCondition);
 
-        std::auto_ptr<AhmedBemBlcluster> blockCluster(
+        std::unique_ptr<AhmedBemBlcluster> blockCluster(
                     new AhmedBemBlcluster(&testCluster, &trialCluster));
         blockCount = 0;
         if (symmetric)

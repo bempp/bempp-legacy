@@ -41,8 +41,9 @@ template <typename ValueType> class ConstBasisDataSlice;
 
 /** \brief Storage of values and/or derivatives of shape functions. */
 template <typename ValueType>
-struct BasisData
+class BasisData
 {
+    public:
     /** \brief Values of shape functions.
      *
      *  Data format:

@@ -119,7 +119,7 @@ public:
      * The current implementation does not yet take special measures to prevent
      * loss of accuracy *near* \f$\Gamma\f$, either. If in doubt, increase the
      * quadrature accuracy. */
-    virtual std::auto_ptr<InterpolatedFunction<ResultType> > evaluateOnGrid(
+    virtual std::unique_ptr<InterpolatedFunction<ResultType> > evaluateOnGrid(
             const GridFunction<BasisFunctionType, ResultType>& argument,
             const Grid& evaluationGrid,
             const QuadratureStrategy& quadStrategy,

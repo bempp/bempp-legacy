@@ -241,7 +241,7 @@ void PiecewisePolynomialDiscontinuousScalarSpace<BasisFunctionType>::assignDofsI
     m_global2localDofs.reserve(localDofCountPerQuad * elementCount);
 
     // Fill in global<->local dof maps
-    std::auto_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > it = m_view->entityIterator<0>();
     arma::Mat<CoordinateType> vertices;
     arma::Col<CoordinateType> dofPosition;
     GlobalDofIndex globalDofCount = 0;
@@ -341,7 +341,6 @@ void PiecewisePolynomialDiscontinuousScalarSpace<BasisFunctionType>::assignDofsI
 
                 // edge dofs
                 if (m_polynomialOrder >= 2) {
-                    int start, end, step;
 
                     subEntityIndex = indexSet.subEntityIndex(element, 0, edgeCodim);
                     if (elementContained &&

@@ -99,7 +99,7 @@ public:
         doubleQuadratureRuleFamily);
 
 public:
-    virtual std::auto_ptr<LocalAssemblerForLocalOperators<ResultType> >
+    virtual std::unique_ptr<LocalAssemblerForLocalOperators<ResultType> >
     makeAssemblerForIdentityOperators(
             const shared_ptr<const GeometryFactory>& geometryFactory,
             const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
@@ -109,7 +109,7 @@ public:
             const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& trialTransformations,
             const shared_ptr<const OpenClHandler>& openClHandler) const;
 
-    virtual std::auto_ptr<LocalAssemblerForLocalOperators<ResultType> >
+    virtual std::unique_ptr<LocalAssemblerForLocalOperators<ResultType> >
     makeAssemblerForLocalOperators(
             const shared_ptr<const GeometryFactory>& geometryFactory,
             const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
@@ -121,7 +121,7 @@ public:
             const shared_ptr<const OpenClHandler>& openClHandler) const;
 
 private:
-    virtual std::auto_ptr<LocalAssemblerForIntegralOperators<ResultType> >
+    virtual std::unique_ptr<LocalAssemblerForIntegralOperators<ResultType> >
     makeAssemblerForIntegralOperatorsImplRealKernel(
             const shared_ptr<const GeometryFactory>& testGeometryFactory,
             const shared_ptr<const GeometryFactory>& trialGeometryFactory,
@@ -138,7 +138,7 @@ private:
             VerbosityLevel::Level verbosityLevel,
             bool cacheSingularIntegrals) const;
 
-    virtual std::auto_ptr<LocalAssemblerForGridFunctions<ResultType> >
+    virtual std::unique_ptr<LocalAssemblerForGridFunctions<ResultType> >
     makeAssemblerForGridFunctionsImplRealUserFunction(
             const shared_ptr<const GeometryFactory>& geometryFactory,
             const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
@@ -147,7 +147,7 @@ private:
             const shared_ptr<const Function<CoordinateType> >& function,
             const shared_ptr<const OpenClHandler>& openClHandler) const;
 
-    virtual std::auto_ptr<EvaluatorForIntegralOperators<ResultType> >
+    virtual std::unique_ptr<EvaluatorForIntegralOperators<ResultType> >
     makeEvaluatorForIntegralOperatorsImplRealKernel(
             const shared_ptr<const GeometryFactory>& geometryFactory,
             const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
@@ -159,7 +159,7 @@ private:
             const shared_ptr<const OpenClHandler>& openClHandler,
             const ParallelizationOptions& parallelizationOptions) const;
 
-    virtual std::auto_ptr<LocalAssemblerForPotentialOperators<ResultType> >
+    virtual std::unique_ptr<LocalAssemblerForPotentialOperators<ResultType> >
     makeAssemblerForPotentialOperatorsImplRealKernel(
             const arma::Mat<CoordinateType>& evaluationPoints,
             const shared_ptr<const GeometryFactory>& geometryFactory,
@@ -295,7 +295,7 @@ public:
         doubleQuadratureRuleFamily);
 
 private:
-    virtual std::auto_ptr<LocalAssemblerForIntegralOperators<ResultType> >
+    virtual std::unique_ptr<LocalAssemblerForIntegralOperators<ResultType> >
     makeAssemblerForIntegralOperatorsImplComplexKernel(
             const shared_ptr<const GeometryFactory>& testGeometryFactory,
             const shared_ptr<const GeometryFactory>& trialGeometryFactory,
@@ -312,7 +312,7 @@ private:
             VerbosityLevel::Level verbosityLevel,
             bool cacheSingularIntegrals) const;
 
-    virtual std::auto_ptr<LocalAssemblerForGridFunctions<ResultType> >
+    virtual std::unique_ptr<LocalAssemblerForGridFunctions<ResultType> >
     makeAssemblerForGridFunctionsImplComplexUserFunction(
             const shared_ptr<const GeometryFactory>& geometryFactory,
             const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
@@ -321,7 +321,7 @@ private:
             const shared_ptr<const Function<ResultType> >& function,
             const shared_ptr<const OpenClHandler>& openClHandler) const;
 
-    virtual std::auto_ptr<EvaluatorForIntegralOperators<ResultType> >
+    virtual std::unique_ptr<EvaluatorForIntegralOperators<ResultType> >
     makeEvaluatorForIntegralOperatorsImplComplexKernel(
             const shared_ptr<const GeometryFactory>& geometryFactory,
             const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
@@ -333,7 +333,7 @@ private:
             const shared_ptr<const OpenClHandler>& openClHandler,
             const ParallelizationOptions& parallelizationOptions) const;
 
-    virtual std::auto_ptr<LocalAssemblerForPotentialOperators<ResultType> >
+    virtual std::unique_ptr<LocalAssemblerForPotentialOperators<ResultType> >
     makeAssemblerForPotentialOperatorsImplComplexKernel(
             const arma::Mat<CoordinateType>& evaluationPoints,
             const shared_ptr<const GeometryFactory>& geometryFactory,

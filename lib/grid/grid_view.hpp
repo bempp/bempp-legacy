@@ -96,7 +96,7 @@ public:
     // Default implementation; specialisations for potentially allowed codimensions follow
     // after class declaration.
     template<int codim>
-    std::auto_ptr<EntityIterator<codim> > entityIterator() const {
+    std::unique_ptr<EntityIterator<codim> > entityIterator() const {
         throw std::logic_error("GridView::entityIterator(): invalid entity codimension");
     }
 
@@ -160,7 +160,7 @@ public:
     /** \brief Create a VtkWriter for this grid view.
 
       \param dm Data mode (conforming or nonconforming; see the documentation of Dune::VTK::DataMode for details). */
-    virtual std::auto_ptr<VtkWriter> vtkWriter(Dune::VTK::DataMode dm=Dune::VTK::conforming) const = 0;
+    virtual std::unique_ptr<VtkWriter> vtkWriter(Dune::VTK::DataMode dm=Dune::VTK::conforming) const = 0;
 
     // Deferred for later implementation:
     // * Iteration over neighbours: Dune methods ibegin() and iend().
@@ -178,13 +178,13 @@ private:
             std::vector<int>* domainIndices) const = 0;
 
     /** \brief Iterator over entities of codimension 0 contained in this view. */
-    virtual std::auto_ptr<EntityIterator<0> > entityCodim0Iterator() const = 0;
+    virtual std::unique_ptr<EntityIterator<0> > entityCodim0Iterator() const = 0;
     /** \brief Iterator over entities of codimension 1 contained in this view. */
-    virtual std::auto_ptr<EntityIterator<1> > entityCodim1Iterator() const = 0;
+    virtual std::unique_ptr<EntityIterator<1> > entityCodim1Iterator() const = 0;
     /** \brief Iterator over entities of codimension 2 contained in this view. */
-    virtual std::auto_ptr<EntityIterator<2> > entityCodim2Iterator() const = 0;
+    virtual std::unique_ptr<EntityIterator<2> > entityCodim2Iterator() const = 0;
     /** \brief Iterator over entities of codimension 3 contained in this view. */
-    virtual std::auto_ptr<EntityIterator<3> > entityCodim3Iterator() const = 0;
+    virtual std::unique_ptr<EntityIterator<3> > entityCodim3Iterator() const = 0;
 };
 
 inline void GridView::getRawElementData(arma::Mat<double>& vertices,
@@ -221,22 +221,22 @@ inline void GridView::getRawElementData(arma::Mat<float>& vertices,
 
 
 template<>
-inline std::auto_ptr<EntityIterator<0> > GridView::entityIterator<0>() const
+inline std::unique_ptr<EntityIterator<0> > GridView::entityIterator<0>() const
 {
     return entityCodim0Iterator();
 }
 template<>
-inline std::auto_ptr<EntityIterator<1> > GridView::entityIterator<1>() const
+inline std::unique_ptr<EntityIterator<1> > GridView::entityIterator<1>() const
 {
     return entityCodim1Iterator();
 }
 template<>
-inline std::auto_ptr<EntityIterator<2> > GridView::entityIterator<2>() const
+inline std::unique_ptr<EntityIterator<2> > GridView::entityIterator<2>() const
 {
     return entityCodim2Iterator();
 }
 template<>
-inline std::auto_ptr<EntityIterator<3> > GridView::entityIterator<3>() const
+inline std::unique_ptr<EntityIterator<3> > GridView::entityIterator<3>() const
 {
     return entityCodim3Iterator() ;
 }

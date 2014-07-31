@@ -71,7 +71,7 @@ public:
     typedef Fiber::LocalAssemblerForPotentialOperators<ResultType>
     LocalAssemblerForPotentialOperators;
 
-    static std::auto_ptr<DiscreteBndOp> assembleDetachedWeakForm(
+    static std::unique_ptr<DiscreteBndOp> assembleDetachedWeakForm(
             const Space<BasisFunctionType>& testSpace,
             const Space<BasisFunctionType>& trialSpace,
             const std::vector<LocalAssemblerForIntegralOperators*>& localAssemblers,
@@ -83,7 +83,7 @@ public:
             const Context<BasisFunctionType, ResultType>& context,
             int symmetry);
 
-    static std::auto_ptr<DiscreteBndOp> assembleDetachedWeakForm(
+    static std::unique_ptr<DiscreteBndOp> assembleDetachedWeakForm(
             const Space<BasisFunctionType>& testSpace,
             const Space<BasisFunctionType>& trialSpace,
             LocalAssemblerForIntegralOperators& localAssembler,
@@ -92,14 +92,14 @@ public:
             int symmetry); // used to be "bool symmetric"; fortunately "true"
                            // is converted to 1 == SYMMETRIC
 
-    static std::auto_ptr<DiscreteBndOp> assemblePotentialOperator(
+    static std::unique_ptr<DiscreteBndOp> assemblePotentialOperator(
             const arma::Mat<CoordinateType>& points,
             const Space<BasisFunctionType>& trialSpace,
             const std::vector<LocalAssemblerForPotentialOperators*>& localAssemblers,
             const std::vector<ResultType>& termMultipliers,
             const EvaluationOptions& options);
 
-    static std::auto_ptr<DiscreteBndOp> assemblePotentialOperator(
+    static std::unique_ptr<DiscreteBndOp> assemblePotentialOperator(
             const arma::Mat<CoordinateType>& points,
             const Space<BasisFunctionType>& trialSpace,
             LocalAssemblerForPotentialOperators& localAssembler,

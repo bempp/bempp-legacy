@@ -403,7 +403,7 @@ assembleJointOperatorWeakFormInAcaMode(
                         openClHandler, cacheSingularIntegrals);
 
             // Create assembler for the current term
-            std::auto_ptr<LocalAssembler> assembler = elemOp->makeAssembler(
+            std::unique_ptr<LocalAssembler> assembler = elemOp->makeAssembler(
                         *nonlocalOps[i].context()->quadStrategy(),
                         testGeometryFactory, trialGeometryFactory,
                         testRawGeometry, trialRawGeometry,
@@ -412,7 +412,7 @@ assembleJointOperatorWeakFormInAcaMode(
                         options.parallelizationOptions(),
                         options.verbosityLevel(),
                         cacheSingularIntegrals);
-            assemblersForNonlocalTerms.push_back(assembler);
+            assemblersForNonlocalTerms.push_back(assembler.release());
             symmetry &= elemOp->symmetry();
         }
 

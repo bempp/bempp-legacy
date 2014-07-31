@@ -76,7 +76,7 @@ void Grid::getBoundingBox(arma::Col<double>& lowerBound,
         return;
     }
 
-    std::auto_ptr<GridView> view = leafView();
+    std::unique_ptr<GridView> view = leafView();
 
     arma::Mat<double> vertices;
     arma::Mat<int> elementCorners; // unused
@@ -93,8 +93,8 @@ std::vector<bool> areInside(const Grid& grid, const arma::Mat<double>& points)
         throw NotImplementedError("areInside(): currently implemented only for"
                                   "2D grids embedded in 3D spaces");
 
-    std::auto_ptr<GridView> view = grid.leafView();
-    std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
+    std::unique_ptr<GridView> view = grid.leafView();
+    std::unique_ptr<EntityIterator<0> > it = view->entityIterator<0>();
 
     std::vector<arma::Mat<double> > triangles;
     triangles.reserve(view->entityCount(0));

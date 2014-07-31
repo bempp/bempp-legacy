@@ -66,7 +66,7 @@ reUnsignedInt = re.compile(
 reConstRef = re.compile(
     r"-> (.*) const &\"\"\"")
 reAutoPtr = re.compile(
-    r"-> std::auto_ptr< (?:Bempp|Fiber)::(\w+) >")
+    r"-> std::unique_ptr< (?:Bempp|Fiber)::(\w+) >")
 # reQuadratureStrategy = re.compile(
 #     r"-> boost::shared_ptr< Bempp::(\w+)< "
 #     "(float|double|std::complex< float >|std::complex< double >)"
@@ -265,7 +265,7 @@ rePreconditionerDiscreteBoundaryOperatorPtr = re.compile(
     "(float|double|std::complex< float >|std::complex< double >)"
     " >::DiscreteBoundaryOperatorPtr")
 reAutoPtr = re.compile(
-    r"std::auto_ptr< (?:Bempp|Fiber)::(\w+) >")
+    r"std::unique_ptr< (?:Bempp|Fiber)::(\w+) >")
 reConstRef = re.compile(
     r" const &")
 reComplexDouble = re.compile(

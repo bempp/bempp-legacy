@@ -157,7 +157,7 @@ void copySonsAdjustingIndices(
                     const blcluster* sourceSon = source->getson(row, col);
                     if (!sourceSon)
                         continue;
-                    std::auto_ptr<blcluster> destSon;
+                    std::unique_ptr<blcluster> destSon;
                     if (const AhmedBemBlcluster* bemSourceSon =
                         dynamic_cast<const AhmedBemBlcluster*>(sourceSon))
                         destSon.reset(new AhmedBemBlcluster(
@@ -634,7 +634,7 @@ DiscreteBlockedBoundaryOperator<ValueType>::mergeHMatrices(
                     unsigned n2 = 0;
                     for (size_t cb = 0; cb < colBlockCount; ++cb)
                         n2 += clusters(0, cb)->getson(0, cs)->getn2();
-                    std::auto_ptr<AhmedBemBlcluster> branch(
+                    std::unique_ptr<AhmedBemBlcluster> branch(
                         new AhmedBemBlcluster(
                             b1, b2, n1, n2));
                     Fiber::_2dArray<const blcluster*> sons(
@@ -692,7 +692,7 @@ DiscreteBlockedBoundaryOperator<ValueType>::mergeHMatrices(
             for (size_t rb = 0, i = 0; rb < rowBlockCount; ++rb) {
                 unsigned b2 = result->getb2();
                 for (size_t cb = 0; cb < colBlockCount; ++cb, ++i) {
-                    std::auto_ptr<AhmedBemBlcluster> branch(
+                    std::unique_ptr<AhmedBemBlcluster> branch(
                         new AhmedBemBlcluster(
                                     b1, b2,
                                     blockRowCount[rb], blockColCount[cb]));

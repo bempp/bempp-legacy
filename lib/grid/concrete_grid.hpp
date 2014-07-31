@@ -76,8 +76,8 @@ public:
     explicit ConcreteGrid(DuneGrid* dune_grid,
                           GridParameters::Topology topology, bool own = false) :
         m_dune_grid(ensureNotNull(dune_grid)),
-        m_topology(topology),
         m_owns_dune_grid(own),
+        m_topology(topology),
         m_global_id_set(&dune_grid->globalIdSet()),
         m_domain_index(*dune_grid,
                        std::vector<int>(
@@ -97,8 +97,8 @@ public:
                           const std::vector<int>& domainIndices,
                           bool own = false) :
         m_dune_grid(ensureNotNull(dune_grid)),
-        m_topology(topology),
         m_owns_dune_grid(own),
+        m_topology(topology),
         m_global_id_set(&dune_grid->globalIdSet()),
         m_domain_index(*dune_grid, domainIndices)
     {
@@ -139,14 +139,14 @@ public:
     @name Views
     @{ */
 
-    virtual std::auto_ptr<GridView> levelView(size_t level) const {
-        return std::auto_ptr<GridView>(
+    virtual std::unique_ptr<GridView> levelView(size_t level) const {
+        return std::unique_ptr<GridView>(
                     new ConcreteGridView<typename DuneGrid::LevelGridView>(
                         m_dune_grid->levelView(level), m_domain_index));
     }
 
-    virtual std::auto_ptr<GridView> leafView() const {
-        return std::auto_ptr<GridView>(
+    virtual std::unique_ptr<GridView> leafView() const {
+        return std::unique_ptr<GridView>(
                     new ConcreteGridView<typename DuneGrid::LeafGridView>(
                         m_dune_grid->leafView(), m_domain_index));
     }
@@ -155,8 +155,8 @@ public:
     @name Geometry factory
     @{ */
 
-    virtual std::auto_ptr<GeometryFactory> elementGeometryFactory() const {
-        return std::auto_ptr<GeometryFactory>(
+    virtual std::unique_ptr<GeometryFactory> elementGeometryFactory() const {
+        return std::unique_ptr<GeometryFactory>(
                     new ConcreteGeometryFactory<
                     typename DuneGrid::template Codim<0>::Geometry>());
     }
@@ -193,7 +193,7 @@ public:
                 arma::Mat<char> auxData;
                 std::vector<int> domainIndices;
 
-                std::auto_ptr<GridView> view = this->leafView();
+                std::unique_ptr<GridView> view = this->leafView();
 
                 view->getRawElementData(vertices,
                                        elementCorners,

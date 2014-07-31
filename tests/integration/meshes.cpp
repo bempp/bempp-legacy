@@ -45,9 +45,9 @@ loadTriangularMeshFromFile(const char* fileName)
 void dumpElementList(const Grid* grid)
 {
     std::cout << "Elements:\n";
-    std::auto_ptr<GridView> view = grid->leafView();
+    std::unique_ptr<GridView> view = grid->leafView();
     const Mapper& elementMapper = view->elementMapper();
-    std::auto_ptr<EntityIterator<0> > it = view->entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > it = view->entityIterator<0>();
     while (!it->finished())
     {
         const Entity<0>& entity = it->entity();

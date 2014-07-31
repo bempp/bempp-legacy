@@ -1102,7 +1102,7 @@ GmshIo::GmshIo(const shared_ptr<const Grid>& grid) : m_grid(grid) {
     if (!m_grid) throw std::runtime_error(
                 "GmshIo(): Grid is not initialized.");
 
-    std::auto_ptr<GridView> viewPtr = m_grid->leafView();
+    std::unique_ptr<GridView> viewPtr = m_grid->leafView();
     const GridView& view = *viewPtr;
 
     m_nodePermutation.resize(view.entityCount(2));
@@ -1123,7 +1123,7 @@ GmshIo::GmshIo(const shared_ptr<const Grid>& grid) : m_grid(grid) {
 
     const IndexSet& indexSet = view.indexSet();
 
-    std::auto_ptr<EntityIterator<2> > nodeIterator = view.entityIterator<2>();
+    std::unique_ptr<EntityIterator<2> > nodeIterator = view.entityIterator<2>();
     while (!nodeIterator->finished()) {
         const Entity<2>& node = nodeIterator->entity();
         int index = m_nodePermutation[indexSet.entityIndex(node)];
@@ -1134,7 +1134,7 @@ GmshIo::GmshIo(const shared_ptr<const Grid>& grid) : m_grid(grid) {
         nodeIterator->next();
     }
 
-    std::auto_ptr<EntityIterator<0> > elementIterator = view.entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > elementIterator = view.entityIterator<0>();
 
     while (!elementIterator->finished()) {
 
@@ -1168,9 +1168,6 @@ shared_ptr<const Grid> GmshIo::grid() const {
     m_gmshData.getNodeIndices(nodeIndices);
     std::vector<int> elementIndices;
     m_gmshData.getElementIndices(elementIndices);
-
-    int numberOfGmshNodes = m_gmshData.numberOfNodes();
-    int numberOfGmshElements = m_gmshData.numberOfElements();
 
     int maxNodeIndex = *(std::max_element(nodeIndices.begin(),nodeIndices.end()));
     int maxElementIndex = *(std::max_element(elementIndices.begin(),elementIndices.end()));
@@ -1417,7 +1414,7 @@ void exportToGmsh(GridFunction<BasisFunctionType,ResultType> gridFunction,
         throw std::runtime_error("exportToGmsh() must not be "
                                  "called on an uninitialized GridFunction object");
     const size_t dimWorld = 3;
-    if (space->grid()->dimWorld() != 3 || space->grid()->dim() != 2)
+    if (space->grid()->dimWorld() != dimWorld || space->grid()->dim() != 2)
         throw std::runtime_error("exportToGmsh(): currently only "
                                  "2D grids in 3D spaces are supported");
 
@@ -1565,7 +1562,7 @@ void exportToGmsh(GridFunction<BasisFunctionType,ResultType> gridFunction,
     else if (gmshPostDataType == GmshPostData::ELEMENT_NODE) {
 
         const std::vector<int>& elementPermutation = gmshIo.elementPermutation();
-        std::auto_ptr<EntityIterator<0> > it = view.entityIterator<0>();
+        std::unique_ptr<EntityIterator<0> > it = view.entityIterator<0>();
 
         int dataSetIndex = gmshData.numberOfElementNodeDataSets();
         gmshData.addElementNodeDataSet(stringTags,realTags,gridFunction.componentCount(),numberOfElements);
@@ -1573,7 +1570,6 @@ void exportToGmsh(GridFunction<BasisFunctionType,ResultType> gridFunction,
 
             const Entity<0>& element = it->entity();
             int elementIndex = indexSet.entityIndex(element);
-            const Geometry& geo = element.geometry();
             arma::Mat<ResultType> values;
             arma::Mat<CoordinateType> modifiedValues;
             gridFunction.evaluate(element, localCoordsOnTriangles[0], values);
@@ -1694,7 +1690,7 @@ void exportToGmsh(GridFunction<BasisFunctionType,ResultType> gridFunction,
 //    arma::Mat<CoordinateType> globalCoords;
 //    const GridView& view = space->gridView();
 
-//    std::auto_ptr<EntityIterator<0> > it = view.entityIterator<0>();
+//    std::unique_ptr<EntityIterator<0> > it = view.entityIterator<0>();
 
 //    size_t nodeCount = 0;
 //    size_t elementCount = 0;

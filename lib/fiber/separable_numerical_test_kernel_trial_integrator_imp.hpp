@@ -157,7 +157,7 @@ precalculateGeometricalDataOnSingleGrid(
     geomData.resize(rawGeometry.elementCount());
 
     typedef typename GeometryFactory::Geometry Geometry;
-    std::auto_ptr<Geometry> geometry = geometryFactory.make();
+    std::unique_ptr<Geometry> geometry = geometryFactory.make();
     for (size_t e = 0; e < rawGeometry.elementCount(); ++e) {
         rawGeometry.setupGeometry(e, *geometry);
         geometry->getData(geomDeps, localQuadPoints, geomData[e]);
@@ -240,7 +240,7 @@ integrateCpu(
     m_integral.addGeometricalDependencies(testGeomDeps, trialGeomDeps);
 
     typedef typename GeometryFactory::Geometry Geometry;
-    std::auto_ptr<Geometry> geometryA, geometryB;
+    std::unique_ptr<Geometry> geometryA, geometryB;
     const RawGridGeometry<CoordinateType> *rawGeometryA = 0, *rawGeometryB = 0;
     if (!m_cacheGeometricalData) {
         if (callVariant == TEST_TRIAL)
@@ -729,8 +729,8 @@ integrateCpu(
     m_integral.addGeometricalDependencies(testGeomDeps, trialGeomDeps);
 
     typedef typename GeometryFactory::Geometry Geometry;
-    std::auto_ptr<Geometry> testGeometry;
-    std::auto_ptr<Geometry> trialGeometry;
+    std::unique_ptr<Geometry> testGeometry;
+    std::unique_ptr<Geometry> trialGeometry;
     if (!m_cacheGeometricalData) {
         testGeometry = m_testGeometryFactory.make();
         trialGeometry = m_trialGeometryFactory.make();

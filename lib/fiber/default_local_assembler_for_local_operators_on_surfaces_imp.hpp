@@ -152,14 +152,18 @@ getIntegrator(const SingleQuadratureDescriptor& desc)
 
     typedef NumericalTestTrialIntegrator<BasisFunctionType, ResultType,
             GeometryFactory> Integrator;
-    std::auto_ptr<TestTrialIntegrator<BasisFunctionType, ResultType> > integrator(
+    std::unique_ptr<TestTrialIntegrator<BasisFunctionType, ResultType> > integrator(
         new Integrator(points, weights,
                        *m_geometryFactory, *m_rawGeometry,
                        *m_testTransformations, *m_trialTransformations,
                        *m_integral,
                        *m_openClHandler));
 
-    return *m_testTrialIntegrators.insert(desc, integrator).first->second;
+    SingleQuadratureDescriptor key(desc);
+    return *m_testTrialIntegrators.insert(
+            key,
+            integrator.release()
+    ).first->second;
 }
 
 } // namespace Fiber

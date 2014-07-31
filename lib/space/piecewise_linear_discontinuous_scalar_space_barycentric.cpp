@@ -47,9 +47,9 @@ PiecewiseLinearDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::
 PiecewiseLinearDiscontinuousScalarSpaceBarycentric(const shared_ptr<const Grid>& grid) :
     ScalarSpace<BasisFunctionType>(grid->barycentricGrid()),
     m_segment(GridSegment::wholeGrid(*(grid->barycentricGrid()))),
+    m_strictlyOnSegment(false),
     m_linearBasisType1(Shapeset::TYPE1),
-    m_linearBasisType2(Shapeset::TYPE2),
-    m_strictlyOnSegment(false)
+    m_linearBasisType2(Shapeset::TYPE2)
 {
     initialize();
 }
@@ -61,9 +61,9 @@ PiecewiseLinearDiscontinuousScalarSpaceBarycentric(const shared_ptr<const Grid>&
                                      bool strictlyOnSegment) :
     ScalarSpace<BasisFunctionType>(grid->barycentricGrid()),
     m_segment(segment),
+    m_strictlyOnSegment(strictlyOnSegment),
     m_linearBasisType1(Shapeset::TYPE1),
-    m_linearBasisType2(Shapeset::TYPE2),
-    m_strictlyOnSegment(strictlyOnSegment)
+    m_linearBasisType2(Shapeset::TYPE2)
 {
     initialize();
 }
@@ -190,7 +190,7 @@ void PiecewiseLinearDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::assi
 
     const GridView& view = this->gridView();
 
-    std::auto_ptr<GridView> viewCoarseGridPtr = this->grid()->levelView(0);
+    std::unique_ptr<GridView> viewCoarseGridPtr = this->grid()->levelView(0);
     const GridView& viewCoarseGrid = *viewCoarseGridPtr;
 
     const Mapper& elementMapper = view.elementMapper();
@@ -202,7 +202,6 @@ void PiecewiseLinearDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::assi
     int vertexCountCoarseGrid = viewCoarseGrid.entityCount(gridDim);
     int elementCountCoarseGrid = viewCoarseGrid.entityCount(0);
 
-    const IndexSet& indexSet = view.indexSet();
     const IndexSet& indexSetCoarseGrid = viewCoarseGrid.indexSet();
 
 
@@ -214,7 +213,7 @@ void PiecewiseLinearDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::assi
     if (m_strictlyOnSegment) {
         std::vector<bool> noAdjacentElementsInsideSegment(vertexCountCoarseGrid, true);
         segmentContainsElement.resize(elementCountCoarseGrid);
-        std::auto_ptr<EntityIterator<0> > itCoarseGrid = viewCoarseGrid.entityIterator<0>();
+        std::unique_ptr<EntityIterator<0> > itCoarseGrid = viewCoarseGrid.entityIterator<0>();
         while (!itCoarseGrid->finished()) {
             const Entity<0>& elementCoarseGrid = itCoarseGrid->entity();
             EntityIndex elementIndexCoarseGrid = elementMapperCoarseGrid.entityIndex(elementCoarseGrid);
@@ -267,7 +266,7 @@ void PiecewiseLinearDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::assi
                                                // on element i.
 
     // Iterate over elements
-    std::auto_ptr<EntityIterator<0> > itCoarseGrid = viewCoarseGrid.entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > itCoarseGrid = viewCoarseGrid.entityIterator<0>();
     int flatLocalDofCount_ = 0;
     while (!itCoarseGrid->finished()) {
         const Entity<0>& elementCoarseGrid = itCoarseGrid->entity();
@@ -276,7 +275,7 @@ void PiecewiseLinearDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::assi
                     acc(segmentContainsElement, elementIndexCoarseGrid) : true;
 
         // Iterate through refined elements
-        std::auto_ptr<EntityIterator<0> > sonIt = elementCoarseGrid.sonIterator(this->grid()->maxLevel());
+        std::unique_ptr<EntityIterator<0> > sonIt = elementCoarseGrid.sonIterator(this->grid()->maxLevel());
         int sonCounter = 5;
         while (!sonIt->finished()){
             const Entity<0>& element = sonIt->entity();
@@ -412,7 +411,7 @@ getFlatLocalDofBoundingBoxes(
     const int elementCount = this->gridView().entityCount(0);
 
     std::vector<arma::Mat<CoordinateType> > elementCorners(elementCount);
-    std::auto_ptr<EntityIterator<0> > it = this->gridView().template entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > it = this->gridView().template entityIterator<0>();
     while (!it->finished()) {
         const Entity<0>& e = it->entity();
         int index = indexSet.entityIndex(e);
@@ -464,7 +463,7 @@ void PiecewiseLinearDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::getG
     int elementCount = this->gridView().entityCount(0);
 
     arma::Mat<CoordinateType> elementNormals(worldDim, elementCount);
-    std::auto_ptr<EntityIterator<0> > it = this->gridView().template entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > it = this->gridView().template entityIterator<0>();
     arma::Col<CoordinateType> center(gridDim);
     center.fill(0.5);
     arma::Col<CoordinateType> normal;
@@ -516,7 +515,7 @@ void PiecewiseLinearDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::getF
     int elementCount = this->gridView().entityCount(0);
 
     arma::Mat<CoordinateType> elementNormals(worldDim, elementCount);
-    std::auto_ptr<EntityIterator<0> > it = this->gridView().template entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > it = this->gridView().template entityIterator<0>();
     arma::Col<CoordinateType> center(gridDim);
     center.fill(0.5);
     arma::Col<CoordinateType> normal;
@@ -572,7 +571,7 @@ void PiecewiseLinearDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::dump
         throw std::invalid_argument("PiecewiseLinearDiscontinuousScalarSpaceBarycentricScalarSpace::"
                                     "dumpClusterIds(): incorrect dimension");
 
-    std::auto_ptr<VtkWriter> vtkWriter = this->gridView().vtkWriter();
+    std::unique_ptr<VtkWriter> vtkWriter = this->gridView().vtkWriter();
     if (dofType == GLOBAL_DOFS) {
         arma::Row<double> data(idCount);
         for (size_t i = 0; i < idCount; ++i)

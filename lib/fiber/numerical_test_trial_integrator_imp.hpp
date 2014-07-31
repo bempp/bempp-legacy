@@ -79,14 +79,8 @@ void NumericalTestTrialIntegrator<BasisFunctionType, ResultType, GeometryFactory
     // elementCount != 0, set elements of result to 0.
 
     // Evaluate constants
-    const int componentCount = m_testTransformations.resultDimension(0);
     const int testDofCount = testShapeset.size();
     const int trialDofCount = trialShapeset.size();
-
-//    if (m_trialTransformations.codomainDimension() != componentCount)
-//        throw std::runtime_error("NumericalTestTrialIntegrator::integrate(): "
-//                                 "test and trial functions "
-//                                 "must have the same number of components");
 
     BasisData<BasisFunctionType> testBasisData, trialBasisData;
     GeometricalData<CoordinateType> geomData;
@@ -99,7 +93,7 @@ void NumericalTestTrialIntegrator<BasisFunctionType, ResultType, GeometryFactory
     m_integral.addGeometricalDependencies(geomDeps);
 
     typedef typename GeometryFactory::Geometry Geometry;
-    std::auto_ptr<Geometry> geometry(m_geometryFactory.make());
+    std::unique_ptr<Geometry> geometry(m_geometryFactory.make());
 
     CollectionOf3dArrays<BasisFunctionType> testValues, trialValues;
 
@@ -121,19 +115,6 @@ void NumericalTestTrialIntegrator<BasisFunctionType, ResultType, GeometryFactory
 
         m_integral.evaluate(geomData, testValues, trialValues,
                 m_quadWeights, result.slice(e));
-
-        // for (int trialDof = 0; trialDof < trialDofCount; ++trialDof)
-        //     for (int testDof = 0; testDof < testDofCount; ++testDof)
-        //     {
-        //         ResultType sum = 0.;
-        //         for (size_t point = 0; point < pointCount; ++point)
-        //             for (int dim = 0; dim < componentCount; ++dim)
-        //                 sum +=  m_quadWeights[point] *
-        //                         geomData.integrationElements(point) *
-        //                         conjugate(testValues[0](dim, testDof, point)) *
-        //                         trialValues[0](dim, trialDof, point);
-        //         result(testDof, trialDof, e) = sum;
-        //     }
     }
 }
 

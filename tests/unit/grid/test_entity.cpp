@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(level_agrees_with_Dune_for_second_entity_on_le
                                   T, list_0_to_2)
 {
     const int codim = T::value;
-    std::auto_ptr<EntityPointer<codim> > ep = getPointerToSecondEntityOnLevel0<codim>();
+    std::unique_ptr<EntityPointer<codim> > ep = getPointerToSecondEntityOnLevel0<codim>();
     typename DuneGrid::LevelGridView::Codim<codim>::Iterator duneEp =
             getDunePointerToSecondEntityOnLevel0<codim>();
 
@@ -46,7 +46,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(level_is_0_for_second_entity_on_level_0_of_cod
                                   T, list_0_to_2)
 {
     const int codim = T::value;
-    std::auto_ptr<EntityPointer<codim> > ep = getPointerToSecondEntityOnLevel0<codim>();
+    std::unique_ptr<EntityPointer<codim> > ep = getPointerToSecondEntityOnLevel0<codim>();
 
     BOOST_CHECK_EQUAL((int)ep->entity().level(), 0);
 }
@@ -57,7 +57,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(type_agrees_with_Dune_for_second_entity_on_lev
                                   T, list_0_to_2)
 {
     const int codim = T::value;
-    std::auto_ptr<EntityPointer<codim> > ep = getPointerToSecondEntityOnLevel0<codim>();
+    std::unique_ptr<EntityPointer<codim> > ep = getPointerToSecondEntityOnLevel0<codim>();
     typename DuneGrid::LevelGridView::Codim<codim>::Iterator duneEp =
             getDunePointerToSecondEntityOnLevel0<codim>();
 
@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(subEntityCount_agrees_with_Dune_for_codimSub,
 {
     const int codimSub = T::value;
 
-    std::auto_ptr<EntityPointer<0> > ep = getPointerToSecondEntityOnLevel0<0>();
+    std::unique_ptr<EntityPointer<0> > ep = getPointerToSecondEntityOnLevel0<0>();
     int count = ep->entity().subEntityCount<codimSub>();
 
     typename DuneGrid::LevelGridView::Codim<0>::Iterator duneEp =
@@ -85,7 +85,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(subEntityCount_is_zero_for_codimSub,
                                   T, list_0_and_3)
 {
     const int codimSub = T::value;
-    std::auto_ptr<EntityPointer<0> > ep = getPointerToSecondEntityOnLevel0<0>();
+    std::unique_ptr<EntityPointer<0> > ep = getPointerToSecondEntityOnLevel0<0>();
     int count = ep->entity().subEntityCount<codimSub>();
 
     BOOST_CHECK_EQUAL(count, 0);
@@ -96,28 +96,28 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(subEntityCount_is_zero_for_codimSub,
 BOOST_AUTO_TEST_CASE(subEntityIterator_throws_for_codimSub_0)
 {
     const int codimSub = 0;
-    std::auto_ptr<EntityPointer<0> > ep = getPointerToSecondEntityOnLevel0<0>();
+    std::unique_ptr<EntityPointer<0> > ep = getPointerToSecondEntityOnLevel0<0>();
     BOOST_CHECK_THROW(ep->entity().subEntityIterator<codimSub>(), std::logic_error);
 }
 
 BOOST_AUTO_TEST_CASE(subEntityIterator_does_not_throw_for_codimSub_1)
 {
     const int codimSub = 1;
-    std::auto_ptr<EntityPointer<0> > ep = getPointerToSecondEntityOnLevel0<0>();
+    std::unique_ptr<EntityPointer<0> > ep = getPointerToSecondEntityOnLevel0<0>();
     BOOST_CHECK_NO_THROW(ep->entity().subEntityIterator<codimSub>());
 }
 
 BOOST_AUTO_TEST_CASE(subEntityIterator_does_not_throw_for_codimSub_2)
 {
     const int codimSub = 2;
-    std::auto_ptr<EntityPointer<0> > ep = getPointerToSecondEntityOnLevel0<0>();
+    std::unique_ptr<EntityPointer<0> > ep = getPointerToSecondEntityOnLevel0<0>();
     BOOST_CHECK_NO_THROW(ep->entity().subEntityIterator<codimSub>());
 }
 
 BOOST_AUTO_TEST_CASE(subEntityIterator_throws_for_codimSub_3)
 {
     const int codimSub = 3;
-    std::auto_ptr<EntityPointer<0> > ep = getPointerToSecondEntityOnLevel0<0>();
+    std::unique_ptr<EntityPointer<0> > ep = getPointerToSecondEntityOnLevel0<0>();
     BOOST_CHECK_THROW(ep->entity().subEntityIterator<codimSub>(), std::logic_error);
 }
 
@@ -126,8 +126,8 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(subEntityIterator_number_of_iterations_agrees_
 {
     const int codimSub = T::value;
 
-    std::auto_ptr<EntityPointer<0> > ep = getPointerToSecondEntityOnLevel0<0>();
-    std::auto_ptr<EntityIterator<codimSub> > it = ep->entity().subEntityIterator<codimSub>();
+    std::unique_ptr<EntityPointer<0> > ep = getPointerToSecondEntityOnLevel0<0>();
+    std::unique_ptr<EntityIterator<codimSub> > it = ep->entity().subEntityIterator<codimSub>();
     int numIterations = 0;
     while (!it->finished()) {
         it->next();
@@ -146,8 +146,8 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(subEntityIterator_number_of_iterations_is_3_fo
 {
     const int codimSub = T::value;
 
-    std::auto_ptr<EntityPointer<0> > ep = getPointerToSecondEntityOnLevel0<0>();
-    std::auto_ptr<EntityIterator<codimSub> > it = ep->entity().subEntityIterator<codimSub>();
+    std::unique_ptr<EntityPointer<0> > ep = getPointerToSecondEntityOnLevel0<0>();
+    std::unique_ptr<EntityIterator<codimSub> > it = ep->entity().subEntityIterator<codimSub>();
     int numIterations = 0;
     while (!it->finished()) {
         it->next();
@@ -165,8 +165,8 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(subEntityIterator_second_entity_agrees_with_Du
 
     arma::Col<double> elementCenter;
     {
-        std::auto_ptr<EntityPointer<0> > ep = getPointerToSecondEntityOnLevel0<0>();
-        std::auto_ptr<EntityIterator<codimSub> > it = ep->entity().subEntityIterator<codimSub>();
+        std::unique_ptr<EntityPointer<0> > ep = getPointerToSecondEntityOnLevel0<0>();
+        std::unique_ptr<EntityIterator<codimSub> > it = ep->entity().subEntityIterator<codimSub>();
         it->next();
         const Entity<codimSub>& e = it->entity();
         const Geometry& geo = e.geometry();

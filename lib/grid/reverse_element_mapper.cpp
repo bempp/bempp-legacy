@@ -39,7 +39,7 @@ void ReverseElementMapper::update() {
     const Mapper& mapper = m_view.elementMapper();
     const size_t elementCount = m_view.entityCount(0);
 
-    std::auto_ptr<EntityIterator<0> > it = m_view.entityIterator<0>();
+    std::unique_ptr<EntityIterator<0> > it = m_view.entityIterator<0>();
     m_cache.clear();
     m_cache.reserve(elementCount);
     for (size_t i = 0; i < elementCount; ++i)
@@ -49,7 +49,7 @@ void ReverseElementMapper::update() {
     {
         const Entity<0>& entity = it->entity();
         size_t index = mapper.entityIndex(entity);
-        m_cache.replace(index, it->frozen());
+        m_cache.replace(index, it->frozen().release());
         it->next();
     }
 }
