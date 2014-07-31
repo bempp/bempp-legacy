@@ -86,7 +86,9 @@ if (WITH_AHMED)
 endif ()
 
 # Adds fake FC.h file cos dune incorrectly includes it in dune_config.h
-file(WRITE ${PROJECT_BINARY_DIR}/include/FC.h "// fake Fortran-C file")
+if(NOT EXISTS "${PROJECT_BINARY_DIR}/include/FC.h")
+    file(WRITE "${PROJECT_BINARY_DIR}/include/FC.h" "// fake Fortran-C file")
+endif()
 
 # Now include all dependency directories once and for all
 set(BEMPP_INCLUDE_DIRS
