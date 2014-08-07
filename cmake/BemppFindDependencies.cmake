@@ -1,11 +1,11 @@
 include(FindPkgConfig)  # use pkg-config to find stuff
-include(PythonPackage)  # check for existence of python packages
 include(PackageLookup)  # check for existence, or install external projects
 include(EnvironmentScript) # scripts to run stuff from build directory
+include(PythonPackageLookup) # adds python packages if not found
 
 # Creates script for running python with the bempp package available
-# Also makes python packages and selected directories available to the build system
-add_to_python_path("${PROJECT_BINARY_DIR}/python")
+# Also makes python packages and selected directories available to the build
+# system
 add_to_python_path("${EXTERNAL_ROOT}/python")
 add_python_eggs("${PROJECT_SOURCE_DIR}"
     EXCLUDE
@@ -41,13 +41,6 @@ lookup_package(Armadillo REQUIRED ARGUMENTS TIMEOUT 60)
 add_definitions(-DARMA_DONT_USE_WRAPPER)
 lookup_package(TBB REQUIRED)
 lookup_package(Dune REQUIRED COMPONENTS geometry grid localfunctions foamgrid)
-lookup_package(SWIG 2.0.4 REQUIRED)
-if (SWIG_FOUND AND SWIG_VERSION VERSION_LESS 2.0.7)
-    message(WARNING "Swig version 2.0.7 or higher is strongly "
-        "recommended to compile BEM++ Python wrappers; "
-        "older versions may produce incorrect docstrings"
-    )
-endif()
 
 # Using cmake_policy does not seem to work here.
 set(CMAKE_POLICY_DEFAULT_CMP0012 NEW CACHE STRING "Avoids anoying messages")
@@ -117,9 +110,10 @@ add_to_ld_path(
     ${TBB_MALLOC_LIBRARY_DEBUG}
 )
 
+lookup_python_package(cython REQUIRED PATH "${EXTERNAL_ROOT}/python")
 if(WITH_TESTS)
-    include(PythonPackageLookup)
-    lookup_python_package(pytest REQUIRED PATH "${EXTERNAL_ROOT}/python")
+    include(AddPyTest)
+    setup_pytest("${EXTERNAL_ROOT}/python" "${PROJECT_BINARY_DIR}/py.test.sh")
 endif()
 
 # Now adds commands to install external packages
