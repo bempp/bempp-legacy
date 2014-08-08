@@ -1,7 +1,48 @@
-from py.test import fixture
+from py.test import fixture, mark
 
 
-class TestGridFromMesh:
+@mark.parametrize("kwargs", [
+    {},
+    {'topology': 'triangular'},
+    {   # File does not exist
+        'exception': IOError,
+        'topology': 'triangular',
+        'filename': "if this file exists, it's your problem"
+    },
+    {   # Cannot convert to armadillo vector of same length
+        'exception': ValueError,
+        'topology': 'triangular',
+        'lower_left': (0., 0., 0),
+        'upper_right': (1., 2.),
+        'subdivisions': (4, 5)
+    },
+    {   # Cannot convert to armadillo vector of same type
+        'exception': ValueError,
+        'topology': 'triangular',
+        'lower_left': ('a', 0),
+        'upper_right': (1., 2.),
+        'subdivisions': (4, 5)
+    },
+    {   # Passes both filename and structured grid arguments
+        'filename': "if this file exists, it's your problem",
+        'topology': 'triangular',
+        'lower_left': (0., 0.),
+        'upper_right': (1., 2.),
+        'subdivisions': (4, 5.5)
+    },
+])
+def test_fail_on_creation(kwargs):
+    """ Grid fails if arguments are incorrect """
+    from py.test import raises
+    from bempp.grid import Grid
+
+    args = kwargs.copy()
+    exception = args.pop('exception', TypeError)
+    with raises(exception):
+        return Grid(**args)
+
+
+class TestGridFromMesh(object):
     """ Load grid from file """
     @fixture
     def mesh_path(self):
@@ -25,3 +66,21 @@ class TestGridFromMesh:
         assert grid.topology == "triangular"
         assert grid.dim == 2
         assert grid.dim_world == 3
+        assert grid.max_level == 0
+
+
+class TestStructuredGrid(TestGridFromMesh):
+    """ Creates a cartesian grid """
+    @fixture
+    def grid(self):
+        # Fixture is also a test
+        return self.test_creation()
+
+    def test_creation(self):
+        from bempp.grid import Grid
+        return Grid(
+            topology="triangular",
+            lower_left=(0., 0.),
+            upper_right=(1., 2.),
+            subdivisions=(4, 5)
+        )

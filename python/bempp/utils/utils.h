@@ -7,10 +7,10 @@
 namespace Bempp {
     inline static void catch_exception() {
       try {
-        if (PyErr_Occurred())
-          ; // let the latest Python exn pass through and ignore the current one
-        else
-          throw;
+        // latest Python exn passes through, ignore the current one
+        if (not PyErr_Occurred()) throw;
+      } catch (const Dune::IOError& exn) {
+        PyErr_SetString(PyExc_IOError, exn.what().c_str());
       } catch (const Dune::Exception& exn) {
         PyErr_SetString(PyExc_RuntimeError, exn.what().c_str());
       } catch (const std::bad_alloc& exn) {
