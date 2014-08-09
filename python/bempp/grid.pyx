@@ -101,13 +101,16 @@ cdef class Grid:
     def __cinit__(self, topology='triangular', **kwargs):
         cdef GridParameters parameters
 
-        parameters.topology = {
-            'linear': LINEAR, 'l': LINEAR,
-            'triangular': TRIANGULAR, 'triangle': TRIANGULAR,
-            'quadrilateral': QUADRILATERAL, 'q': QUADRILATERAL,
-            'hybrid2d': HYBRID_2D, 'hybrid_2d': HYBRID_2D, 'h': HYBRID_2D,
-            'tetrahedral': TETRAHEDRAL, 'tetra': TETRAHEDRAL
-        }[topology]
+        try:
+            parameters.topology = {
+                'linear': LINEAR, 'l': LINEAR,
+                'triangular': TRIANGULAR, 'triangle': TRIANGULAR,
+                'quadrilateral': QUADRILATERAL, 'q': QUADRILATERAL,
+                'hybrid2d': HYBRID_2D, 'hybrid_2d': HYBRID_2D, 'h': HYBRID_2D,
+                'tetrahedral': TETRAHEDRAL, 'tetra': TETRAHEDRAL
+            }[topology]
+        except KeyError:
+            raise ValueError("Incorrect topology %s" % topology)
 
         # Check which set of input has been given
         check = lambda x: all([kwargs.get(u, None) for u in x])

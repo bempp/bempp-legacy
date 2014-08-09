@@ -4,6 +4,11 @@ from py.test import fixture, mark
 @mark.parametrize("kwargs", [
     {},
     {'topology': 'triangular'},
+    {   # Incorrect topology
+        'exception': ValueError,
+        'topology': 'incorrect',
+        'filename': "if this file exists, it's your problem"
+    },
     {   # File does not exist
         'exception': IOError,
         'topology': 'triangular',
@@ -23,13 +28,21 @@ from py.test import fixture, mark
         'upper_right': (1., 2.),
         'subdivisions': (4, 5)
     },
-    {   # Passes both filename and structured grid arguments
+    {   # Ambiguous construction arguments:
+        # Passes both filename and structured grid arguments
         'filename': "if this file exists, it's your problem",
         'topology': 'triangular',
         'lower_left': (0., 0.),
         'upper_right': (1., 2.),
         'subdivisions': (4, 5.5)
     },
+    {   # Incorrect grid size
+        'exception': ValueError,
+        'topology': 'triangular',
+        'lower_left': ('0', 0),
+        'upper_right': (1., 2.),
+        'subdivisions': (0, 5)
+    }
 ])
 def test_fail_on_creation(kwargs):
     """ Grid fails if arguments are incorrect """
