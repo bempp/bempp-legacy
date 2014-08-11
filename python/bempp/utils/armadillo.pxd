@@ -6,6 +6,10 @@ cdef extern from "<armadillo>" namespace "arma":
         Col(T*, uword, cbool copy_aux_mem, cbool strict) nogil
         Col() nogil
         T* memptr()
+        T& value "operator()"(int i) # bounds checking
+        T& at(int i) # No bounds checking
+        int n_rows
+        int n_cols
 
     cdef cppclass Mat[T]:
         Mat(T*, uword, uword, cbool copy_aux_mem, cbool strict) nogil

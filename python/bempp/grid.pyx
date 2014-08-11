@@ -192,3 +192,23 @@ cdef class Grid:
             elif value == HYBRID_2D: return 'hybrid2d'
             elif value == TETRAHEDRAL: return 'tetrahedral'
             raise RuntimeError("C++ to Python bug: Unknown topology")
+    property bounding_box:
+        """ Bounding box surrounding the grid """
+        def __get__(self):
+            from numpy import ones
+            cdef:
+                int n = deref(self.impl_).dimWorld()
+                Col[double] lower
+                Col[double] upper
+
+
+            deref(self.impl_).getBoundingBox(lower, upper)
+            if upper.n_rows != n or lower.n_rows != n:
+                raise RuntimeError("Error in getBoundingBox")
+
+            result = ones((2, n), dtype="double", order='C')
+            for i in range(n):
+                result[0, i] = lower.at(i)
+                result[1, i] = upper.at(i)
+            return result
+

@@ -1,4 +1,5 @@
 from bempp.utils cimport shared_ptr
+from bempp.utils.armadillo cimport Col
 
 cdef extern from "bempp/grid/grid.hpp" namespace "Bempp":
     cdef cppclass c_Grid "Bempp::Grid":
@@ -6,6 +7,7 @@ cdef extern from "bempp/grid/grid.hpp" namespace "Bempp":
         int dimWorld() const
         int maxLevel() const
         int topology() const
+        void getBoundingBox(const Col[double]&, const Col[double]&) const
 
     cdef enum Topology "Bempp::GridParameters::Topology":
         LINEAR "Bempp::GridParameters::LINEAR"

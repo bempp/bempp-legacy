@@ -69,6 +69,9 @@ def test_fail_on_creation(kwargs):
 
 class TestGridFromMesh(object):
     """ Load grid from file """
+    bb = [[-1]*3, [1]*3]
+    """ Bounding box """
+
     @fixture
     def mesh_path(self):
         from os.path import join, exists
@@ -93,9 +96,16 @@ class TestGridFromMesh(object):
         assert grid.dim_world == 3
         assert grid.max_level == 0
 
+    def test_bounding_box(self, grid):
+        from numpy.testing import assert_almost_equal
+        assert_almost_equal(grid.bounding_box, self.bb)
+
 
 class TestStructuredGrid(TestGridFromMesh):
     """ Creates a cartesian grid """
+    bb = [[0, 0, 0], [1, 2, 0]]
+    """ Bounding box """
+
     @fixture
     def grid(self):
         # Fixture is also a test
@@ -111,14 +121,15 @@ class TestStructuredGrid(TestGridFromMesh):
         )
 
 
+@mark.parametrize("indices", [[], [5, 7]])
 class TestConnectivityGrid(TestGridFromMesh):
     """ Creates grid from connectivity data """
 
     vertices = [[0, '0', 1, 1.2], [0, 1, 0, 1.1], [0, 0, 0, 0.5]]
     corners = [[0, 2], [1, 1], [2, 3], [-1, -1]]
-    indices = [5, 7]
+    bb = [[0, 0, 0], [1.2, 1.1, 0.5]]
+    """ Bounding box """
 
-    @mark.parametrize("indices", [[], indices])
     def test_creation(self, indices):
         from bempp.grid import Grid
         return Grid(
@@ -127,7 +138,10 @@ class TestConnectivityGrid(TestGridFromMesh):
             corners=self.corners
         )
 
-    @mark.parametrize("indices", [[], indices])
     def test_properties(self, indices):
         grid = self.test_creation(indices)
         super(TestConnectivityGrid, self).test_properties(grid)
+
+    def test_bounding_box(self, indices):
+        grid = self.test_creation(indices)
+        super(TestConnectivityGrid, self).test_bounding_box(grid)
