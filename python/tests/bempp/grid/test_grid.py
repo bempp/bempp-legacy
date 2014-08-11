@@ -29,7 +29,7 @@ from py.test import fixture, mark
         'subdivisions': (4, 5)
     },
     {   # Ambiguous construction arguments:
-        # Passes both filename and structured grid arguments
+        # Passes both filename and structured grid arguments
         'filename': "if this file exists, it's your problem",
         'topology': 'triangular',
         'lower_left': (0., 0.),
