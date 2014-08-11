@@ -1,8 +1,9 @@
 from cython.operator cimport dereference as deref
 from libcpp.string cimport string
 from libcpp cimport bool as cbool
+from libcpp.vector cimport vector
 from bempp.utils cimport catch_exception
-from bempp.utils.armadillo cimport Col
+from bempp.utils.armadillo cimport Col, Mat
 
 cdef extern from "bempp/grid/grid_factory.hpp" namespace "Bempp":
     shared_ptr[c_Grid] grid_from_file "Bempp::GridFactory::importGmshGrid"(
@@ -13,10 +14,18 @@ cdef extern from "bempp/grid/grid_factory.hpp" namespace "Bempp":
     ) except +catch_exception
 
     shared_ptr[c_Grid] cart_grid "Bempp::GridFactory::createStructuredGrid"(
-            GridParameters& params,
+            const GridParameters& params,
             Col[double]& lowerLeft,
             Col[double]& upperRight,
             Col[unsigned int]& nElements
+    ) except +catch_exception
+
+    shared_ptr[c_Grid] connect_grid \
+            "Bempp::GridFactory::createGridFromConnectivityArrays"(
+            const GridParameters& params,
+            Mat[double]& vertices,
+            Mat[int]& elementCorners,
+            vector[int]& domainIndices
     ) except +catch_exception
 
 
@@ -65,6 +74,33 @@ cdef class Grid:
                 kwargs.pop('verbose', False) == True,
                 kwargs.pop('insert_boundary_segments', False) == True
         )
+
+    cdef void __create_connected_grid(self, dict kwargs,
+            GridParameters& parameters) except *:
+        from numpy import require
+        vertices = require(kwargs['vertices'], "double", 'F')
+        corners = require(kwargs['corners'], "intc", 'F')
+        if vertices.ndim != 2:
+            raise ValueError("vertices input is not a matrix")
+        if corners.ndim != 2:
+            raise ValueError("corners input is not a matrix")
+        cdef:
+            double[::1, :] vert_ptr = vertices
+            int[::1, :] corners_ptr = corners
+            vector[int] domain_indices
+            Mat[double]* c_vertices = new Mat[double](&vert_ptr[0, 0],
+                vertices.shape[0], vertices.shape[1], False, True)
+            Mat[int]* c_corners = new Mat[int](&corners_ptr[0, 0],
+                corners.shape[0], corners.shape[1], False, True)
+        for index in kwargs.get('indice', []):
+            domain_indices.push_back(int(index))
+        try:
+            self.impl_ = connect_grid(parameters, deref(c_vertices),
+                    deref(c_corners), domain_indices)
+        except:
+            del c_vertices
+            del c_corners
+            raise
 
     cdef void __create_cartesian_grid(self, dict kwargs,
             GridParameters& parameters) except *:
@@ -116,9 +152,11 @@ cdef class Grid:
         check = lambda x: all([kwargs.get(u, None) for u in x])
         use_file = check(['filename'])
         use_structured = check(['lower_left', 'upper_right', 'subdivisions'])
+        use_connectivity = check(['corners', 'vertices'])
 
         # Makes sure at least one set of argument is provided
-        nargs = sum([1 if x else 0 for x in [use_file, use_structured]])
+        input_sets = [use_file, use_structured, use_connectivity]
+        nargs = sum([1 if x else 0 for x in input_sets])
         if nargs == 0:
             raise TypeError("Incorrect set of input arguments")
         elif nargs > 1:
@@ -130,6 +168,8 @@ cdef class Grid:
             self.__create_from_file(kwargs, parameters)
         elif use_structured:
             self.__create_cartesian_grid(kwargs, parameters)
+        elif use_connectivity:
+            self.__create_connected_grid(kwargs, parameters)
 
 
 

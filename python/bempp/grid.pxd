@@ -24,3 +24,5 @@ cdef class Grid:
             GridParameters &parameters) except *
     cdef void __create_cartesian_grid(self, dict kwargs,
             GridParameters &parameters) except *
+    cdef void __create_connected_grid(self, dict kwargs,
+            GridParameters& parameters) except *

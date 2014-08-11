@@ -6,3 +6,8 @@ cdef extern from "<armadillo>" namespace "arma":
         Col(T*, uword, cbool copy_aux_mem, cbool strict) nogil
         Col() nogil
         T* memptr()
+
+    cdef cppclass Mat[T]:
+        Mat(T*, uword, uword, cbool copy_aux_mem, cbool strict) nogil
+        Mat() nogil
+        T* memptr()
