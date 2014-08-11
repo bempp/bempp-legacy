@@ -106,7 +106,7 @@ class TestStructuredGrid(TestGridFromMesh):
         return Grid(
             topology="triangular",
             lower_left=(0., 0.),
-            upper_right=(1., 2.),
+            upper_right=('1.', '2.'),
             subdivisions=(4, 5)
         )
 
@@ -114,7 +114,7 @@ class TestStructuredGrid(TestGridFromMesh):
 class TestConnectivityGrid(TestGridFromMesh):
     """ Creates grid from connectivity data """
 
-    vertices = [[0, 0, 1, 1.2], [0, 1, 0, 1.1], [0, 0, 0, 0.5]]
+    vertices = [[0, '0', 1, 1.2], [0, 1, 0, 1.1], [0, 0, 0, 0.5]]
     corners = [[0, 2], [1, 1], [2, 3], [-1, -1]]
     indices = [5, 7]
 

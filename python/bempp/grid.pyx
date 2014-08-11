@@ -78,20 +78,15 @@ cdef class Grid:
     cdef void __create_connected_grid(self, dict kwargs,
             GridParameters& parameters) except *:
         from numpy import require
-        vertices = require(kwargs['vertices'], "double", 'F')
-        corners = require(kwargs['corners'], "intc", 'F')
-        if vertices.ndim != 2:
-            raise ValueError("vertices input is not a matrix")
-        if corners.ndim != 2:
-            raise ValueError("corners input is not a matrix")
         cdef:
-            double[::1, :] vert_ptr = vertices
-            int[::1, :] corners_ptr = corners
+            double[::1, :] vert_ptr \
+                    = require(kwargs['vertices'], "double", 'F')
+            int[::1, :] corners_ptr = require(kwargs['corners'], "intc", 'F')
             vector[int] domain_indices
             Mat[double]* c_vertices = new Mat[double](&vert_ptr[0, 0],
-                vertices.shape[0], vertices.shape[1], False, True)
+                vert_ptr.shape[0], vert_ptr.shape[1], False, True)
             Mat[int]* c_corners = new Mat[int](&corners_ptr[0, 0],
-                corners.shape[0], corners.shape[1], False, True)
+                corners_ptr.shape[0], corners_ptr.shape[1], False, True)
         for index in kwargs.get('indice', []):
             domain_indices.push_back(int(index))
         try:
@@ -105,19 +100,14 @@ cdef class Grid:
     cdef void __create_cartesian_grid(self, dict kwargs,
             GridParameters& parameters) except *:
         from numpy import require
-        lower_left = require(kwargs['lower_left'], "double", 'C')
-        upper_right = require(kwargs['upper_right'], "double", 'C')
-        subdivisions = require(kwargs['subdivisions'], "intc", 'C')
-        nelements = len(lower_left)
-        for o in [lower_left, upper_right, subdivisions]:
-            if not len(o) == nelements:
-                raise ValueError("Inputs have differing lengths")
-            if len(o.shape) != 1:
-                raise ValueError("Inputs are not vectors")
         cdef:
-            double[::1] ll_ptr = lower_left
-            double[::1] ur_ptr = upper_right
-            int[::1] n_ptr = subdivisions
+            double[::1] ll_ptr = require(kwargs['lower_left'], "double", 'C')
+            double[::1] ur_ptr = require(kwargs['upper_right'], "double", 'C')
+            int[::1] n_ptr = require(kwargs['subdivisions'], "intc", 'C')
+            int nelements = len(ll_ptr)
+        if len(ll_ptr) != len(ur_ptr) or len(ll_ptr) != len(n_ptr):
+            raise ValueError("Inputs have differing lengths")
+        cdef:
             Col[double]* c_lower_left = new Col[double](&ll_ptr[0],
                 nelements, False, True)
             Col[double]* c_upper_right = new Col[double](&ur_ptr[0],
