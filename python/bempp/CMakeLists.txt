@@ -3,13 +3,7 @@ include(PythonModule)
 get_filename_component(header_directory "${CMAKE_CURRENT_SOURCE_DIR}" PATH)
 include_directories("${header_directory}")
 
-add_python_module("bempp"
-    grid.pyx grid.pxd __init__.py
-    EXCLUDE config.in.py
-    CPP
-    LIBRARIES bempp
-    TARGETNAME python_bempp
-)
+add_python_module("bempp" __init__.py EXCLUDE config.in.py)
 
 # Sets path variables for in-build system
 set(BEMPP_MESHES "${PROJECT_SOURCE_DIR}/meshes")
@@ -33,3 +27,5 @@ make_absolute(BEMPP_MESHES "${SHARE_INSTALL_PATH}/bempp/meshes")
 make_absolute(BEMPP_CMAKE_PATH "${SHARE_INSTALL_PATH}/cmake/Bempp")
 configure_file(config.in.py "${CMAKE_CURRENT_BINARY_DIR}/config.py" @ONLY)
 install_python(FILES "${CMAKE_CURRENT_BINARY_DIR}/config.py" DESTINATION bempp)
+
+add_subdirectory(grid)
