@@ -149,14 +149,16 @@ cdef class Grid:
             raise ValueError("Incorrect topology %s" % topology)
 
         # Check which set of input has been given
+        input_sets = {
+            'file': ['filename'],
+            'cartesian': ['lower_left', 'upper_right', 'subdivisions'],
+            'connected': ['corners', 'vertices']
+        }
         check = lambda x: all([kwargs.get(u, None) for u in x])
-        use_file = check(['filename'])
-        use_structured = check(['lower_left', 'upper_right', 'subdivisions'])
-        use_connectivity = check(['corners', 'vertices'])
+        which_set = {k: check(v) for k, v in input_sets.iteritems()}
 
         # Makes sure at least one set of argument is provided
-        input_sets = [use_file, use_structured, use_connectivity]
-        nargs = sum([1 if x else 0 for x in input_sets])
+        nargs = sum([1 if x else 0 for x in which_set.itervalues()])
         if nargs == 0:
             raise TypeError("Incorrect set of input arguments")
         elif nargs > 1:
@@ -164,12 +166,14 @@ cdef class Grid:
             raise TypeError(msg % nargs)
 
         # At this point, we can choose how to initialize the grid
-        if use_file:
+        if which_set['file']:
             self.__create_from_file(kwargs, parameters)
-        elif use_structured:
+        elif which_set['cartesian']:
             self.__create_cartesian_grid(kwargs, parameters)
-        elif use_connectivity:
+        elif which_set['connected']:
             self.__create_connected_grid(kwargs, parameters)
+        else:
+            raise AssertionError("Missing implementation for input set")
 
 
 
