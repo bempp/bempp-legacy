@@ -29,3 +29,4 @@ configure_file(config.in.py "${CMAKE_CURRENT_BINARY_DIR}/config.py" @ONLY)
 install_python(FILES "${CMAKE_CURRENT_BINARY_DIR}/config.py" DESTINATION bempp)
 
 add_subdirectory(grid)
+add_subdirectory(fiber)
