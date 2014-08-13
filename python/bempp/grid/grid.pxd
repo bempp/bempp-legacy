@@ -14,7 +14,7 @@ cdef extern from "bempp/grid/grid.hpp" namespace "Bempp":
         TRIANGULAR "Bempp::GridParameters::TRIANGULAR"
         QUADRILATERAL "Bempp::GridParameters::QUADRILATERAL"
         HYBRID_2D "Bempp::GridParameters::HYBRID_2D"
-        TETRAHEDRAL "Bempp::GridParameters::TRIANGULAR"
+        TETRAHEDRAL "Bempp::GridParameters::TETRAHEDRAL"
 
     cdef cppclass GridParameters:
         Topology topology
