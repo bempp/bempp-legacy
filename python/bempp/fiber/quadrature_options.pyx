@@ -30,6 +30,8 @@ cdef class QuadratureOptions:
         def __get__(self):
             return self.impl.quadratureOrder(0)
         def __set__(self, value):
+            if self.__is_frozen:
+                raise AttributeError("Options are frozen")
             if self.__is_relative:
                 self.impl.setRelativeQuadratureOrder(value)
             else:
@@ -40,5 +42,7 @@ cdef class QuadratureOptions:
         def __get__(self):
             return self.__is_relative
         def __set__(self, is_relative):
+            if self.__is_frozen:
+                raise AttributeError("Options are frozen")
             self.__is_relative = is_relative
             self.value = self.value # Calls setter for the property value

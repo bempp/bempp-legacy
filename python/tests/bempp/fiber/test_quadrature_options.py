@@ -45,3 +45,23 @@ def test_absolute():
     assert ops.value == 55
     assert ops.is_relative
     assert ops.order(-1) == 54
+
+
+def test_frozen():
+    from py.test import raises
+    from bempp.fiber import QuadratureOptions
+    from bempp.fiber.tests.quadops import toggle_frozen
+    ops = QuadratureOptions(2, False)
+    assert ops.value == 2
+    assert not ops.is_relative
+
+    ops.value = 6
+    ops.is_relative = True
+    assert ops.value == 6
+    assert ops.is_relative
+
+    toggle_frozen(ops)
+    with raises(AttributeError):
+        ops.value = 5
+    with raises(AttributeError):
+        ops.is_relative = True
