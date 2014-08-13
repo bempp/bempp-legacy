@@ -186,11 +186,11 @@ cdef class Grid:
         """ Grid topology """
         def __get__(self):
             cdef int value = deref(self.impl_).topology()
-            if value == LINEAR: return 'linear'
-            elif value == TRIANGULAR: return 'triangular'
+            if value == LINEAR:          return 'linear'
+            elif value == TRIANGULAR:    return 'triangular'
             elif value == QUADRILATERAL: return 'quadrilateral'
-            elif value == HYBRID_2D: return 'hybrid2d'
-            elif value == TETRAHEDRAL: return 'tetrahedral'
+            elif value == HYBRID_2D:     return 'hybrid2d'
+            elif value == TETRAHEDRAL:   return 'tetrahedral'
             raise RuntimeError("C++ to Python bug: Unknown topology")
     property bounding_box:
         """ Bounding box surrounding the grid """
