@@ -13,3 +13,4 @@ cdef class QuadratureOptions:
         c_QuadratureOptions impl
         cbool __is_relative
         cbool __is_frozen
+    cdef void toggle_freeze(self, value=?)

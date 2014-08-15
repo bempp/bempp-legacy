@@ -1,3 +1,5 @@
+from collections import Sequence
+
 cdef class QuadratureOptions:
     """ Options controlling the order of numerical quadrature
 
@@ -22,8 +24,26 @@ cdef class QuadratureOptions:
         else:
             self.impl.setAbsoluteQuadratureOrder(value)
 
-    def order(self, value=0):
+    def __call__(self, int value=0):
         return self.impl.quadratureOrder(value)
+
+    def __getitem__(self, key):
+        return (self.value, self.is_relative)[key]
+    def __len__(self):
+        return 2
+    def __iter__(self):
+        return (self.value, self.is_relative).__iter__()
+
+    def __str__(self):
+        return str((self.value, self.is_relative))
+    def __repr__(self):
+        return str(self.__class__.__name__) + str(self)
+    def __richcmp__(self, other, int method):
+        if 2 > method or method > 3:
+            raise AttributeError("No ordering operators %i" % method)
+        if not hasattr(other, '__len__'):
+            other = QuadratureOptions(other)
+        return ((self.value, self.is_relative) == other) == (method == 2)
 
     property value:
         """ Relative or absolute order """
@@ -46,3 +66,9 @@ cdef class QuadratureOptions:
                 raise AttributeError("Options are frozen")
             self.__is_relative = is_relative
             self.value = self.value # Calls setter for the property value
+
+    cdef void toggle_freeze(self, value=None):
+        self.__is_frozen = value == True if value is not None \
+            else not self.__is_frozen
+
+Sequence.register(QuadratureOptions)
