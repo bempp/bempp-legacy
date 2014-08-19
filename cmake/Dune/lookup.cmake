@@ -33,7 +33,7 @@ passon_variables(Dune
     FILENAME "${EXTERNAL_ROOT}/src/DuneVariables.cmake"
     PATTERNS
         "CMAKE_[^_]*_R?PATH" "CMAKE_C_.*" "CMAKE_CXX_.*"
-        "BLAS_.*" "LAPACK_.*"
+        "BLAS_.*" "LAPACK_.*" "CMAKE_Fortran_.*"
     ALSOADD
         "\nset(CMAKE_INSTALL_PREFIX \"${EXTERNAL_ROOT}\" CACHE STRING \"\")\n"
         "set(CMAKE_LIBRARY_PATH ${library_dirs} \"${EXTERNAL_ROOT}/lib\"\n"
@@ -45,6 +45,24 @@ passon_variables(Dune
         "set(CMAKE_DISABLE_FIND_PACKAGE_HDF5 TRUE CACHE BOOL \"\" FORCE)\n"
         "set(CMAKE_DISABLE_FIND_PACKAGE_MPI TRUE CACHE BOOL \"\" FORCE)\n"
         "set(CMAKE_DISABLE_FIND_PACKAGE_Doxygen TRUE CACHE BOOL \"\" FORCE)\n"
+        "if(NOT \"$ENV{FC}\" STREQUAL \"\")\n"
+        "    set(ENV{FC} \"$ENV{FC}\")\n"
+        "endif()\n"
+        "if(NOT \"$ENV{FCFLAGS}\" STREQUAL \"\")\n"
+        "    set(ENV{FC}FLAGS \"$ENV{FCFLAGS}\")\n"
+        "endif()\n"
+        "if(NOT \"$ENV{F90}\" STREQUAL \"\")\n"
+        "    set(ENV{F90} \"$ENV{F90}\")\n"
+        "endif()\n"
+        "if(NOT \"$ENV{F90FLAGS}\" STREQUAL \"\")\n"
+        "    set(ENV{F90FLAGS} \"$ENV{F90FLAGS}\")\n"
+        "endif()\n"
+        "if(NOT \"$ENV{F77}\" STREQUAL \"\")\n"
+        "    set(ENV{F77} \"$ENV{F77}\")\n"
+        "endif()\n"
+        "if(NOT \"$ENV{F77FLAGS}\" STREQUAL \"\")\n"
+        "    set(ENV{F77FLAGS} \"$ENV{F77FLAGS}\")\n"
+        "endif()\n"
 )
 
 macro(_get_arguments component)
