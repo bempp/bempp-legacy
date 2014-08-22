@@ -33,7 +33,7 @@ passon_variables(Dune
     FILENAME "${EXTERNAL_ROOT}/src/DuneVariables.cmake"
     PATTERNS
         "CMAKE_[^_]*_R?PATH" "CMAKE_C_.*" "CMAKE_CXX_.*"
-        "BLAS_.*" "LAPACK_.*" "CMAKE_Fortran_.*"
+        "BLAS_.*" "LAPACK_.*" "CMAKE_Fortran_.*" "ENABLE_Fortran"
     ALSOADD
         "\nset(CMAKE_INSTALL_PREFIX \"${EXTERNAL_ROOT}\" CACHE STRING \"\")\n"
         "set(CMAKE_LIBRARY_PATH ${library_dirs} \"${EXTERNAL_ROOT}/lib\"\n"
@@ -87,6 +87,7 @@ create_patch_script(Dune-Common dune_common_patch_script
     CMDLINE "-p0"
     WORKING_DIRECTORY "${EXTERNAL_ROOT}/src"
     "${patchdir}/dune_common_cmake.patch"
+    "${patchdir}/dune_disable_fortran.patch"
 )
 
 create_patch_script(Dune-Geometry dune_geometry_patch_script
