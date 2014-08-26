@@ -19,6 +19,9 @@ public:
 
   void addDofIndexPair(std::size_t originalDofIndex, std::size_t hMatDofIndex);
 
+  const std::vector<std::size_t>& hMatDofToOriginalDofMap() const;
+  const std::vector<std::size_t>& originalDofToHMatDofMap() const;
+
 private:
   std::size_t m_numberOfDofs;
   std::vector<std::size_t> m_originalDofToHMatDofMap;

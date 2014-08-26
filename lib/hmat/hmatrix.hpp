@@ -11,9 +11,12 @@
 namespace hmat {
 
 template <typename ValueType> class HMatrixData;
+template <typename ValueType, int N> class HMatrix;
 
-template <typename ValueType, int N = 2> class HMatrix {
+template <ValueType>
+using DefaultHMatrixType = HMatrix<ValueType,2>;
 
+template <typename ValueType, int N> class HMatrix {
 public:
   HMatrix(const shared_ptr<BlockClusterTree<N>> &blockClusterTree);
 
@@ -22,6 +25,7 @@ private:
   std::unordered_map<shared_ptr<BlockClusterTreeNode<N>>,
                      shared_ptr<HMatrixData<ValueType>>> m_hMatrixData;
 };
+
 }
 
 #include "hmatrix_impl.hpp"

@@ -58,7 +58,7 @@ template <typename BasisFunctionType> struct LocalDofLists {
 template <typename BasisFunctionType> class LocalDofListsCache {
 public:
   LocalDofListsCache(const Space<BasisFunctionType> &space,
-                     const std::vector<unsigned int> &p2o,
+                     const std::vector<std::size_t> &p2o,
                      bool indexWithGlobalDofs);
   ~LocalDofListsCache();
 
@@ -90,7 +90,7 @@ private:
 private:
   /** \cond PRIVATE */
   const Space<BasisFunctionType> &m_space;
-  const std::vector<unsigned int> &m_p2o;
+  const std::vector<std::size_t> &m_p2o;
   bool m_indexWithGlobalDofs;
 
   typedef tbb::concurrent_unordered_map<

@@ -28,18 +28,13 @@
 #include "../common/types.hpp"
 #include "../fiber/scalar_traits.hpp"
 #include "../hmat/common.hpp"
+#include "../hmat/block_cluster_tree.hpp"
 
 #include <tbb/atomic.h>
 #include <tbb/concurrent_unordered_map.h>
 #include <vector>
 
-namespace hmat {
-/** \cond FORWARD_DECL */
-template <int N = 2> class BlockClusterTree;
-template <int N = 2> class BlockClusterTreeNode;
 
-/** \endcond */
-}
 
 namespace Fiber {
 
@@ -73,7 +68,7 @@ public:
   WeakFormHMatAssemblyHelper(
       const Space<BasisFunctionType> &testSpace,
       const Space<BasisFunctionType> &trialSpace,
-      const shared_ptr<hmat::BlockClusterTree<2>> blockClusterTree,
+      const shared_ptr<hmat::DefaultBlockClusterTreeType> blockClusterTree,
       const std::vector<LocalAssembler *> &assemblers,
       const std::vector<const DiscreteLinOp *> &sparseTermsToAdd,
       const std::vector<ResultType> &denseTermsMultipliers,
@@ -82,30 +77,30 @@ public:
 
   /** \brief Evaluate entries of a general block. */
 
-  //  void
-  //  computeMatrixBlock(const hmat::IndexRangeType &testIndexRange,
-  //                     const hmat::IndexRangeType &trialIndexRange,
-  //                     arma::Mat<ResultType> &data,
-  //                     const hmat::BlockClusterTreeNode &blockClusterTreeNode,
-  //                     bool countAccessedEntries = true) const;
-  //
-  //  /** \brief Return the number of entries in the matrix that have been
-  //   *  accessed so far. */
-  //  size_t accessedEntryCount() const;
-  //
-  //  /** \brief Reset the number of entries in the matrix that have been
-  //   *  accessed so far. */
-  //  void resetAccessedEntryCount();
+  void
+  computeMatrixBlock(const hmat::IndexRangeType &testIndexRange,
+                     const hmat::IndexRangeType &trialIndexRange,
+                     arma::Mat<ResultType> &data,
+                     const hmat::DefaultBlockClusterTreeNodeType &blockClusterTreeNode,
+                     bool countAccessedEntries = true) const;
+  
+  // /** \brief Return the number of entries in the matrix that have been
+  //  *  accessed so far. */
+  // size_t accessedEntryCount() const;
+ 
+  // /** \brief Reset the number of entries in the matrix that have been
+  //  *  accessed so far. */
+  // void resetAccessedEntryCount();
 
 private:
-  //  MagnitudeType estimateMinimumDistance(
-  //      const hmat::BlockClusterTreeNode &blockClusterTreeNode) const;
+    MagnitudeType estimateMinimumDistance(
+        const hmat::DefaultBlockClusterTreeNodeType &blockClusterTreeNode) const;
 
 private:
   /** \cond PRIVATE */
   const Space<BasisFunctionType> &m_testSpace;
   const Space<BasisFunctionType> &m_trialSpace;
-  const shared_ptr<const hmat::BlockClusterTree<>> m_blockClusterTree;
+  const shared_ptr<const hmat::DefaultBlockClusterTreeType> m_blockClusterTree;
   const std::vector<LocalAssembler *> &m_assemblers;
   const std::vector<const DiscreteLinOp *> &m_sparseTermsToAdd;
   const std::vector<ResultType> &m_denseTermsMultipliers;
@@ -120,8 +115,8 @@ private:
   mutable tbb::atomic<size_t> m_accessedEntryCount;
 
   typedef tbb::concurrent_unordered_map<
-      shared_ptr<const hmat::BlockClusterTreeNode<>>, CoordinateType,
-      std::hash<shared_ptr<const hmat::BlockClusterTreeNode<>>>> DistanceMap;
+      shared_ptr<const hmat::DefaultBlockClusterTreeNodeType>, CoordinateType,
+      std::hash<shared_ptr<const hmat::DefaultBlockClusterTreeNodeType>>> DistanceMap;
   mutable DistanceMap m_distancesCache;
 
   /** \endcond */

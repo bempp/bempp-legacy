@@ -54,6 +54,17 @@ ClusterTree<N>::initializeClusterTree(const Geometry &geometry) {
   return make_shared<ClusterTreeNode<N>>(ClusterTreeNodeData(indexRange, b));
 }
 
+template <int N>
+const std::vector<std::size_t>& ClusterTree<N>::hMatDofToOriginalDofMap() const {
+  return m_dofPermutation.hMatDofToOriginalDofMap();
+}
+
+template <int N>
+const std::vector<std::size_t>& ClusterTree<N>::originalDofToHMatDofMap() const {
+  return m_dofPermutation.originalDofToHMatDofMap();
+}
+
+
 template <>
 void ClusterTree<2>::splitClusterTreeByGeometry(const Geometry &geometry,
                                                 DofPermutation &dofPermutation,

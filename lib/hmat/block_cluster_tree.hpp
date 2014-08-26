@@ -27,10 +27,12 @@ template <int N> struct BlockClusterTreeNodeData {
   bool admissible;
 };
 
-template <int N = 2>
+template <int N >
 using BlockClusterTreeNode = SimpleTreeNode<BlockClusterTreeNodeData<N>, N *N>;
 
-template <int N = 2> class BlockClusterTree {
+typedef BlockClusterTreeNode<2> DefaultBlockClusterTreeNodeType;
+
+template <int N > class BlockClusterTree {
 
 public:
   BlockClusterTree(const shared_ptr<const ClusterTree<N>> &rowClusterTree,
@@ -76,6 +78,9 @@ class WeakAdmissibility {
 public:
   bool operator()(const BoundingBox &box1, const BoundingBox &box2) const;
 };
+
+typedef BlockClusterTree<2> DefaultBlockClusterTreeType;
+
 }
 #include "block_cluster_tree_impl.hpp"
 

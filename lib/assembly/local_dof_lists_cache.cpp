@@ -31,7 +31,7 @@ namespace Bempp {
 
 template <typename BasisFunctionType>
 LocalDofListsCache<BasisFunctionType>::LocalDofListsCache(
-    const Space<BasisFunctionType> &space, const std::vector<unsigned int> &p2o,
+    const Space<BasisFunctionType> &space, const std::vector<std::size_t> &p2o,
     bool indexWithGlobalDofs)
     : m_space(space), m_p2o(p2o), m_indexWithGlobalDofs(indexWithGlobalDofs) {}
 
