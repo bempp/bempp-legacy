@@ -37,10 +37,8 @@ void Solver<BasisFunctionType, ResultType>::checkConsistency(
     const BoundaryOperator<BasisFunctionType, ResultType> &boundaryOp,
     const GridFunction<BasisFunctionType, ResultType> &rhs,
     ConvergenceTestMode::Mode mode) {
-  if ((mode == ConvergenceTestMode::TEST_CONVERGENCE_IN_DUAL_TO_RANGE &&
-       !rhs.dualSpace()->spaceIsCompatible(*boundaryOp.dualToRange())) ||
-      (mode == ConvergenceTestMode::TEST_CONVERGENCE_IN_RANGE &&
-       !rhs.space()->spaceIsCompatible(*boundaryOp.range())))
+if (mode == ConvergenceTestMode::TEST_CONVERGENCE_IN_RANGE &&
+     !rhs.space()->spaceIsCompatible(*boundaryOp.range()))
     throw std::invalid_argument(
         "Solver::checkConsistency(): spaces do not match");
 }
