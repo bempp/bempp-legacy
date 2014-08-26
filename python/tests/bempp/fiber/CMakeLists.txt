@@ -8,6 +8,6 @@ if(WITH_TESTS)
         CPP
         PREFIX bempp.fiber
         FAKE_INIT
-        LIBRARIES bempp
+        LIBRARIES libbempp
     )
 endif()

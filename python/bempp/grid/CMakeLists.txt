@@ -1,7 +1,7 @@
-add_python_module("bempp.grid"
+add_python_module(bempp.grid
     grid.pyx grid.pxd __init__.py
     EXCLUDE config.in.py
     CPP
-    LIBRARIES bempp
+    LIBRARIES libbempp
     TARGETNAME python_bempp
 )

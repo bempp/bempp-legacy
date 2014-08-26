@@ -1,5 +1,5 @@
 # Exports BEMPP so other packages can access it
-export(TARGETS bempp tutorial_dirichlet
+export(TARGETS libbempp tutorial_dirichlet
     FILE "${PROJECT_BINARY_DIR}/BemppTargets.cmake")
 
 # Avoids creating an entry in the cmake registry.
