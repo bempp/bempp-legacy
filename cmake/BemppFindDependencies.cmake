@@ -6,6 +6,7 @@ include(PythonPackageLookup) # adds python packages if not found
 # Creates script for running python with the bempp package available
 # Also makes python packages and selected directories available to the build
 # system
+add_to_python_path("${PROJECT_BINARY_DIR}/python")
 add_to_python_path("${EXTERNAL_ROOT}/python")
 add_python_eggs("${PROJECT_SOURCE_DIR}"
     EXCLUDE
@@ -70,6 +71,12 @@ find_python_package(numpy REQUIRED
         "numpy is required by the BEM++ python bindings"
 )
 find_package(Numpy REQUIRED)
+
+# Mako is used to generate some of the python bindings
+lookup_python_package(mako REQUIRED)
+find_program(mako_SCRIPT mako-render HINTS "${EXTERNAL_ROOT}/python")
+# Logic for mako should go into this directory
+add_to_python_path("${PROJECT_SOURCE_DIR}/python/templates")
 
 
 # Ahmed (optional, used only if WITH_AHMED is set)
