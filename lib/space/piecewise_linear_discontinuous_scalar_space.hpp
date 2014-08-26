@@ -34,8 +34,7 @@
 #include <memory>
 #include <tbb/mutex.h>
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \cond FORWARD_DECL */
 class GridView;
@@ -45,112 +44,113 @@ class GridView;
  *  \brief Space of piecewise linear, not necessarily continuous, scalar
  *  functions. */
 template <typename BasisFunctionType>
-class PiecewiseLinearDiscontinuousScalarSpace : public PiecewiseLinearScalarSpace<BasisFunctionType>
-{
+class PiecewiseLinearDiscontinuousScalarSpace
+    : public PiecewiseLinearScalarSpace<BasisFunctionType> {
 public:
-    typedef typename Space<BasisFunctionType>::CoordinateType CoordinateType;
-    typedef typename Space<BasisFunctionType>::ComplexType ComplexType;
+  typedef typename Space<BasisFunctionType>::CoordinateType CoordinateType;
+  typedef typename Space<BasisFunctionType>::ComplexType ComplexType;
 
-    /** \brief Constructor.
-     *
-     *  Construct a space of piecewise linear, not necessarily continuous,
-     *  scalar functions defined on the grid \p grid.
-     *
-     *  An exception is thrown if \p grid is a null pointer.
-     */
-    explicit PiecewiseLinearDiscontinuousScalarSpace(
-            const shared_ptr<const Grid>& grid);
+  /** \brief Constructor.
+   *
+   *  Construct a space of piecewise linear, not necessarily continuous,
+   *  scalar functions defined on the grid \p grid.
+   *
+   *  An exception is thrown if \p grid is a null pointer.
+   */
+  explicit PiecewiseLinearDiscontinuousScalarSpace(
+      const shared_ptr<const Grid> &grid);
 
-    /** \brief Constructor.
-     *
-     *  Construct a space of piecewise linear, not necessarily continuous,
-     *  scalar functions defined on the segment \p segment of the grid \p grid.
-     *  If \p strictlyOnSegment is set to \c false (default), the space will
-     *  include all basis functions associated with vertices belonging to \p
-     *  segment, regardless of whether the elements on which these functions
-     *  are defined belong themselves to \p segment. In consequence, the
-     *  resulting space will be (in the mathematical sense) a superset of a
-     *  PiecewiseLinearContinuousScalarSpace defined on the same segment. If \p
-     *  strictlyOnSegment is set to \c true, the space will only include basis
-     *  functions defined on elements belonging to \p segment.
-     *
-     *  An exception is thrown if \p grid is a null pointer.
-     */
-    PiecewiseLinearDiscontinuousScalarSpace(
-            const shared_ptr<const Grid>& grid,
-            const GridSegment& segment,
-            bool strictlyOnSegment = false);
-    virtual ~PiecewiseLinearDiscontinuousScalarSpace();
+  /** \brief Constructor.
+   *
+   *  Construct a space of piecewise linear, not necessarily continuous,
+   *  scalar functions defined on the segment \p segment of the grid \p grid.
+   *  If \p strictlyOnSegment is set to \c false (default), the space will
+   *  include all basis functions associated with vertices belonging to \p
+   *  segment, regardless of whether the elements on which these functions
+   *  are defined belong themselves to \p segment. In consequence, the
+   *  resulting space will be (in the mathematical sense) a superset of a
+   *  PiecewiseLinearContinuousScalarSpace defined on the same segment. If \p
+   *  strictlyOnSegment is set to \c true, the space will only include basis
+   *  functions defined on elements belonging to \p segment.
+   *
+   *  An exception is thrown if \p grid is a null pointer.
+   */
+  PiecewiseLinearDiscontinuousScalarSpace(const shared_ptr<const Grid> &grid,
+                                          const GridSegment &segment,
+                                          bool strictlyOnSegment = false);
+  virtual ~PiecewiseLinearDiscontinuousScalarSpace();
 
-    virtual shared_ptr<const Space<BasisFunctionType> > discontinuousSpace(
-        const shared_ptr<const Space<BasisFunctionType> >& self) const;
-    virtual bool isDiscontinuous() const;
+  virtual shared_ptr<const Space<BasisFunctionType>> discontinuousSpace(
+      const shared_ptr<const Space<BasisFunctionType>> &self) const;
+  virtual bool isDiscontinuous() const;
 
-    virtual bool isBarycentric() const {
-        return false;
-    }
+  virtual bool isBarycentric() const { return false; }
 
+  virtual shared_ptr<const Space<BasisFunctionType>> barycentricSpace(
+      const shared_ptr<const Space<BasisFunctionType>> &self) const;
 
-    virtual shared_ptr<const Space<BasisFunctionType> > barycentricSpace(
-            const shared_ptr<const Space<BasisFunctionType> >& self) const;
+  virtual bool spaceIsCompatible(const Space<BasisFunctionType> &other) const;
 
+  virtual SpaceIdentifier spaceIdentifier() const {
+    return PIECEWISE_LINEAR_DISCONTINUOUS_SCALAR;
+  }
 
+  virtual size_t globalDofCount() const;
+  virtual size_t flatLocalDofCount() const;
+  virtual void getGlobalDofs(const Entity<0> &element,
+                             std::vector<GlobalDofIndex> &dofs) const;
+  virtual void
+  global2localDofs(const std::vector<GlobalDofIndex> &globalDofs,
+                   std::vector<std::vector<LocalDof>> &localDofs) const;
+  virtual void
+  flatLocal2localDofs(const std::vector<FlatLocalDofIndex> &flatLocalDofs,
+                      std::vector<LocalDof> &localDofs) const;
 
-    virtual bool spaceIsCompatible(const Space<BasisFunctionType>& other) const;
+  virtual void
+  getGlobalDofPositions(std::vector<Point3D<CoordinateType>> &positions) const;
+  virtual void getFlatLocalDofPositions(
+      std::vector<Point3D<CoordinateType>> &positions) const;
 
-    virtual SpaceIdentifier spaceIdentifier() const {
-        return PIECEWISE_LINEAR_DISCONTINUOUS_SCALAR;
-    }
+  virtual void getGlobalDofBoundingBoxes(
+      std::vector<BoundingBox<CoordinateType>> &bboxes) const;
+  virtual void getFlatLocalDofBoundingBoxes(
+      std::vector<BoundingBox<CoordinateType>> &bboxes) const;
 
-    virtual size_t globalDofCount() const;
-    virtual size_t flatLocalDofCount() const;
-    virtual void getGlobalDofs(const Entity<0>& element,
-                            std::vector<GlobalDofIndex>& dofs) const;
-    virtual void global2localDofs(
-            const std::vector<GlobalDofIndex>& globalDofs,
-            std::vector<std::vector<LocalDof> >& localDofs) const;
-    virtual void flatLocal2localDofs(
-            const std::vector<FlatLocalDofIndex>& flatLocalDofs,
-            std::vector<LocalDof>& localDofs) const;
+  virtual void
+  getGlobalDofNormals(std::vector<Point3D<CoordinateType>> &normals) const;
+  virtual void
+  getFlatLocalDofNormals(std::vector<Point3D<CoordinateType>> &normals) const;
 
-    virtual void getGlobalDofPositions(std::vector<Point3D<CoordinateType> >& positions) const;
-    virtual void getFlatLocalDofPositions(std::vector<Point3D<CoordinateType> >& positions) const;
-
-    virtual void getGlobalDofBoundingBoxes(
-            std::vector<BoundingBox<CoordinateType> >& bboxes) const;
-    virtual void getFlatLocalDofBoundingBoxes(
-            std::vector<BoundingBox<CoordinateType> >& bboxes) const;
-
-    virtual void getGlobalDofNormals(std::vector<Point3D<CoordinateType> >& normals) const;
-    virtual void getFlatLocalDofNormals(std::vector<Point3D<CoordinateType> >& normals) const;
-
-    virtual void dumpClusterIds(
-            const char* fileName,
-            const std::vector<unsigned int>& clusterIdsOfGlobalDofs) const;
-    virtual void dumpClusterIdsEx(
-            const char* fileName,
-            const std::vector<unsigned int>& clusterIdsOfGlobalDofs,
-            DofType dofType) const;
+  virtual void
+  dumpClusterIds(const char *fileName,
+                 const std::vector<unsigned int> &clusterIdsOfGlobalDofs) const;
+  virtual void
+  dumpClusterIdsEx(const char *fileName,
+                   const std::vector<unsigned int> &clusterIdsOfGlobalDofs,
+                   DofType dofType) const;
 
 private:
-    void initialize(const GridSegment& segment, bool strictlyOnSegment = false);
-    void assignDofsImpl(const GridSegment& segment,
-                        bool strictlyOnSegment = false);
+  void initialize(const GridSegment &segment, bool strictlyOnSegment = false);
+  void assignDofsImpl(const GridSegment &segment,
+                      bool strictlyOnSegment = false);
 
 private:
-    /** \cond PRIVATE */
-    GridSegment m_segment;
-    bool m_strictlyOnSegment;
-    std::unique_ptr<GridView> m_view;
-    Fiber::PiecewiseLinearContinuousScalarBasis<2, BasisFunctionType> m_lineShapeset;
-    Fiber::PiecewiseLinearContinuousScalarBasis<3, BasisFunctionType> m_triangleShapeset;
-    Fiber::PiecewiseLinearContinuousScalarBasis<4, BasisFunctionType> m_quadrilateralShapeset;
-    std::vector<std::vector<GlobalDofIndex> > m_local2globalDofs;
-    std::vector<std::vector<LocalDof> > m_global2localDofs;
-    std::vector<LocalDof> m_flatLocal2localDofs;
-    mutable shared_ptr<Space<BasisFunctionType> > m_barycentricSpace;
-    mutable tbb::mutex m_barycentricSpaceMutex;
-    /** \endcond */
+  /** \cond PRIVATE */
+  GridSegment m_segment;
+  bool m_strictlyOnSegment;
+  std::unique_ptr<GridView> m_view;
+  Fiber::PiecewiseLinearContinuousScalarBasis<2, BasisFunctionType>
+  m_lineShapeset;
+  Fiber::PiecewiseLinearContinuousScalarBasis<3, BasisFunctionType>
+  m_triangleShapeset;
+  Fiber::PiecewiseLinearContinuousScalarBasis<4, BasisFunctionType>
+  m_quadrilateralShapeset;
+  std::vector<std::vector<GlobalDofIndex>> m_local2globalDofs;
+  std::vector<std::vector<LocalDof>> m_global2localDofs;
+  std::vector<LocalDof> m_flatLocal2localDofs;
+  mutable shared_ptr<Space<BasisFunctionType>> m_barycentricSpace;
+  mutable tbb::mutex m_barycentricSpaceMutex;
+  /** \endcond */
 };
 
 } // namespace Bempp

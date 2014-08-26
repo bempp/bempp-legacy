@@ -31,59 +31,52 @@
 #include "../fiber/default_collection_of_basis_transformations.hpp"
 #include "../fiber/default_kernel_trial_integral.hpp"
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \cond PRIVATE */
 template <typename BasisFunctionType>
-struct Maxwell3dFarFieldDoubleLayerPotentialOperatorImpl
-{
-    typedef Maxwell3dFarFieldDoubleLayerPotentialOperatorImpl<BasisFunctionType>
-    This;
-    typedef Helmholtz3dPotentialOperatorBase<This, BasisFunctionType> PotentialOperatorBase;
-    typedef typename PotentialOperatorBase::KernelType KernelType;
-    typedef typename PotentialOperatorBase::ResultType ResultType;
-    typedef typename PotentialOperatorBase::CoordinateType CoordinateType;
+struct Maxwell3dFarFieldDoubleLayerPotentialOperatorImpl {
+  typedef Maxwell3dFarFieldDoubleLayerPotentialOperatorImpl<BasisFunctionType>
+  This;
+  typedef Helmholtz3dPotentialOperatorBase<This, BasisFunctionType>
+  PotentialOperatorBase;
+  typedef typename PotentialOperatorBase::KernelType KernelType;
+  typedef typename PotentialOperatorBase::ResultType ResultType;
+  typedef typename PotentialOperatorBase::CoordinateType CoordinateType;
 
-    typedef Fiber::ModifiedMaxwell3dFarFieldDoubleLayerPotentialOperatorKernelFunctor<KernelType>
-    KernelFunctor;
-    typedef Fiber::HdivFunctionValueFunctor<CoordinateType>
-    TransformationFunctor;
-    typedef Fiber::ModifiedMaxwell3dDoubleLayerPotentialOperatorIntegrandFunctor<
-    BasisFunctionType, KernelType, ResultType> IntegrandFunctor;
+  typedef Fiber::
+      ModifiedMaxwell3dFarFieldDoubleLayerPotentialOperatorKernelFunctor<
+          KernelType> KernelFunctor;
+  typedef Fiber::HdivFunctionValueFunctor<CoordinateType> TransformationFunctor;
+  typedef Fiber::ModifiedMaxwell3dDoubleLayerPotentialOperatorIntegrandFunctor<
+      BasisFunctionType, KernelType, ResultType> IntegrandFunctor;
 
-    Maxwell3dFarFieldDoubleLayerPotentialOperatorImpl(KernelType waveNumber) :
-        kernels(KernelFunctor(waveNumber / KernelType(0., 1.))),
-        transformations(TransformationFunctor()),
-        integral(IntegrandFunctor())
-    {}
+  Maxwell3dFarFieldDoubleLayerPotentialOperatorImpl(KernelType waveNumber)
+      : kernels(KernelFunctor(waveNumber / KernelType(0., 1.))),
+        transformations(TransformationFunctor()), integral(IntegrandFunctor()) {
+  }
 
-    Fiber::DefaultCollectionOfKernels<KernelFunctor> kernels;
-    Fiber::DefaultCollectionOfBasisTransformations<TransformationFunctor>
-    transformations;
-    Fiber::DefaultKernelTrialIntegral<IntegrandFunctor> integral;
+  Fiber::DefaultCollectionOfKernels<KernelFunctor> kernels;
+  Fiber::DefaultCollectionOfBasisTransformations<TransformationFunctor>
+  transformations;
+  Fiber::DefaultKernelTrialIntegral<IntegrandFunctor> integral;
 };
 /** \endcond */
 
 template <typename BasisFunctionType>
 Maxwell3dFarFieldDoubleLayerPotentialOperator<BasisFunctionType>::
-Maxwell3dFarFieldDoubleLayerPotentialOperator(KernelType waveNumber) :
-    Base(waveNumber)
-{
-}
+    Maxwell3dFarFieldDoubleLayerPotentialOperator(KernelType waveNumber)
+    : Base(waveNumber) {}
 
 template <typename BasisFunctionType>
-Maxwell3dFarFieldDoubleLayerPotentialOperator<BasisFunctionType>::
-~Maxwell3dFarFieldDoubleLayerPotentialOperator()
-{
-}
+Maxwell3dFarFieldDoubleLayerPotentialOperator<
+    BasisFunctionType>::~Maxwell3dFarFieldDoubleLayerPotentialOperator() {}
 
-
-#define INSTANTIATE_BASE_HELMHOLTZ_DOUBLE_POTENTIAL(BASIS) \
-    template class Helmholtz3dPotentialOperatorBase< \
-    Maxwell3dFarFieldDoubleLayerPotentialOperatorImpl<BASIS>, BASIS>
+#define INSTANTIATE_BASE_HELMHOLTZ_DOUBLE_POTENTIAL(BASIS)                     \
+  template class Helmholtz3dPotentialOperatorBase<                             \
+      Maxwell3dFarFieldDoubleLayerPotentialOperatorImpl<BASIS>, BASIS>
 FIBER_ITERATE_OVER_BASIS_TYPES(INSTANTIATE_BASE_HELMHOLTZ_DOUBLE_POTENTIAL);
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(Maxwell3dFarFieldDoubleLayerPotentialOperator);
-
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(
+    Maxwell3dFarFieldDoubleLayerPotentialOperator);
 
 } // namespace Bempp

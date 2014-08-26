@@ -26,8 +26,7 @@
 #include "function.hpp"
 #include "geometrical_data.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \brief %Function intended to be evaluated on a boundary-element grid,
   defined via a user-supplied functor depending on the global coordinates
@@ -63,54 +62,48 @@ namespace Fiber
   \endcode
 */
 template <typename Functor>
-class SurfaceNormalAndDomainIndexDependentFunction :
-        public Function<typename Functor::ValueType>
-{
+class SurfaceNormalAndDomainIndexDependentFunction
+    : public Function<typename Functor::ValueType> {
 public:
-    typedef Function<typename Functor::ValueType> Base;
-    typedef typename Base::ValueType ValueType;
-    typedef typename Base::CoordinateType CoordinateType;
+  typedef Function<typename Functor::ValueType> Base;
+  typedef typename Base::ValueType ValueType;
+  typedef typename Base::CoordinateType CoordinateType;
 
-    SurfaceNormalAndDomainIndexDependentFunction(const Functor& functor) :
-        m_functor(functor) {
-    }
+  SurfaceNormalAndDomainIndexDependentFunction(const Functor &functor)
+      : m_functor(functor) {}
 
-    virtual int worldDimension() const {
-        return m_functor.argumentDimension();
-    }
+  virtual int worldDimension() const { return m_functor.argumentDimension(); }
 
-    virtual int codomainDimension() const {
-        return m_functor.resultDimension();
-    }
+  virtual int codomainDimension() const { return m_functor.resultDimension(); }
 
-    virtual void addGeometricalDependencies(size_t& geomDeps) const {
-        geomDeps |= GLOBALS | NORMALS | DOMAIN_INDEX;
-    }
+  virtual void addGeometricalDependencies(size_t &geomDeps) const {
+    geomDeps |= GLOBALS | NORMALS | DOMAIN_INDEX;
+  }
 
-    virtual void evaluate(const GeometricalData<CoordinateType>& geomData,
-                          arma::Mat<ValueType>& result) const {
-        const arma::Mat<CoordinateType>& points  = geomData.globals;
-        const arma::Mat<CoordinateType>& normals = geomData.normals;
+  virtual void evaluate(const GeometricalData<CoordinateType> &geomData,
+                        arma::Mat<ValueType> &result) const {
+    const arma::Mat<CoordinateType> &points = geomData.globals;
+    const arma::Mat<CoordinateType> &normals = geomData.normals;
 
 #ifndef NDEBUG
-        if ((int)points.n_rows != worldDimension() ||
-                (int)points.n_rows != worldDimension())
-            throw std::invalid_argument(
-                    "SurfaceNormalAndDomainIndexDependentFunction::evaluate(): "
-                    "incompatible world dimension");
+    if ((int)points.n_rows != worldDimension() ||
+        (int)points.n_rows != worldDimension())
+      throw std::invalid_argument(
+          "SurfaceNormalAndDomainIndexDependentFunction::evaluate(): "
+          "incompatible world dimension");
 #endif
 
-        const size_t pointCount = points.n_cols;
-        result.set_size(codomainDimension(), pointCount);
-        for (size_t i = 0; i < pointCount; ++i) {
-            arma::Col<ValueType> activeResultColumn = result.unsafe_col(i);
-            m_functor.evaluate(points.unsafe_col(i), normals.unsafe_col(i),
-                               geomData.domainIndex, activeResultColumn);
-        }
+    const size_t pointCount = points.n_cols;
+    result.set_size(codomainDimension(), pointCount);
+    for (size_t i = 0; i < pointCount; ++i) {
+      arma::Col<ValueType> activeResultColumn = result.unsafe_col(i);
+      m_functor.evaluate(points.unsafe_col(i), normals.unsafe_col(i),
+                         geomData.domainIndex, activeResultColumn);
     }
+  }
 
 private:
-    const Functor& m_functor;
+  const Functor &m_functor;
 };
 
 } // namespace Fiber

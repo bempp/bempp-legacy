@@ -30,107 +30,100 @@
 #define FIBER_CHECK_ARRAY_BOUNDS
 #endif
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \brief Simple implementation of a 2D Fortran-ordered array.
 
 Bound checking can optionally be activated by defining the symbol
 FIBER_CHECK_ARRAY_BOUNDS. */
 template <typename T>
-class _2dArray : boost::additive<_2dArray<T>
-               , boost::multiplicative<_2dArray<T>,T > >
-{
+class _2dArray
+    : boost::additive<_2dArray<T>, boost::multiplicative<_2dArray<T>, T>> {
 public:
-    _2dArray();
-    _2dArray(size_t extent0, size_t extent1);
-    _2dArray(size_t extent0, size_t extent1, T* data);
-    _2dArray(const _2dArray& other);
-    _2dArray& operator=(const _2dArray& rhs);
+  _2dArray();
+  _2dArray(size_t extent0, size_t extent1);
+  _2dArray(size_t extent0, size_t extent1, T *data);
+  _2dArray(const _2dArray &other);
+  _2dArray &operator=(const _2dArray &rhs);
 
-    ~_2dArray();
+  ~_2dArray();
 
-    T& operator()(size_t index0, size_t index1);
-    const T& operator()(size_t index0, size_t index1) const;
+  T &operator()(size_t index0, size_t index1);
+  const T &operator()(size_t index0, size_t index1) const;
 
-    _2dArray<T>& operator+=(const _2dArray<T>& other);
-    _2dArray<T>& operator*=(const T& other);
+  _2dArray<T> &operator+=(const _2dArray<T> &other);
+  _2dArray<T> &operator*=(const T &other);
 
+  size_t extent(size_t dimension) const;
+  void set_size(size_t extent0, size_t extent1);
 
-    size_t extent(size_t dimension) const;
-    void set_size(size_t extent0, size_t extent1);
+  typedef T *iterator;
+  typedef const T *const_iterator;
 
-    typedef T* iterator;
-    typedef const T* const_iterator;
-
-    iterator begin();
-    const_iterator begin() const;
-    iterator end();
-    const_iterator end() const;
+  iterator begin();
+  const_iterator begin() const;
+  iterator end();
+  const_iterator end() const;
 
 private:
-    void init_memory(size_t extent0, size_t extent1);
-    void free_memory();
+  void init_memory(size_t extent0, size_t extent1);
+  void free_memory();
 
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
-    void check_dimension(size_t dimension) const;
-    void check_extents(size_t extent0, size_t extent1) const;
-    void check_indices(size_t index0, size_t index1) const;
+  void check_dimension(size_t dimension) const;
+  void check_extents(size_t extent0, size_t extent1) const;
+  void check_indices(size_t index0, size_t index1) const;
 #endif
 
 private:
-    size_t m_extents[2];
-    bool m_owns;
-    T* m_storage;
+  size_t m_extents[2];
+  bool m_owns;
+  T *m_storage;
 };
 
 /** \brief Lightweight encapsulation of a 1D slice of a 2D array. */
-template <typename T>
-class _1dSliceOf2dArray
-{
+template <typename T> class _1dSliceOf2dArray {
 public:
-    /** \brief Construct a slice consisting of the elements array(:,index1) */
-    _1dSliceOf2dArray(_2dArray<T>& array, size_t index1);
+  /** \brief Construct a slice consisting of the elements array(:,index1) */
+  _1dSliceOf2dArray(_2dArray<T> &array, size_t index1);
 
-    /** \brief Returns a reference to self.
+  /** \brief Returns a reference to self.
 
-      Useful to make a temporary _1dSliceOf2dArray<T> an rvalue and pass it to
-      a function accepting a reference to a non-const _2dSliceOf2dArray<T>.
+    Useful to make a temporary _1dSliceOf2dArray<T> an rvalue and pass it to
+    a function accepting a reference to a non-const _2dSliceOf2dArray<T>.
 
-      Once we switch to C++11, this function can be removed because of the new
-      support for rvalue references. */
-    _1dSliceOf2dArray& self();
+    Once we switch to C++11, this function can be removed because of the new
+    support for rvalue references. */
+  _1dSliceOf2dArray &self();
 
-    const T& operator()(size_t index0) const;
-    T& operator()(size_t index0);
+  const T &operator()(size_t index0) const;
+  T &operator()(size_t index0);
 
-    size_t extent(size_t dimension) const;
-
-private:
-    void check_dimension(size_t dimension) const;
+  size_t extent(size_t dimension) const;
 
 private:
-    _2dArray<T>& m_array;
-    size_t m_index1;
+  void check_dimension(size_t dimension) const;
+
+private:
+  _2dArray<T> &m_array;
+  size_t m_index1;
 };
 
 /** \brief Lightweight encapsulation of a 1D slice of a constant 2D array. */
-template <typename T>
-class _1dSliceOfConst2dArray
-{
+template <typename T> class _1dSliceOfConst2dArray {
 public:
-    _1dSliceOfConst2dArray(const _2dArray<T>& array, size_t index1);
+  _1dSliceOfConst2dArray(const _2dArray<T> &array, size_t index1);
 
-    const T& operator()(size_t index0) const;
+  const T &operator()(size_t index0) const;
 
-    size_t extent(size_t dimension) const;
-
-private:
-    void check_dimension(size_t dimension) const;
+  size_t extent(size_t dimension) const;
 
 private:
-    const _2dArray<T>& m_array;
-    size_t m_index1;
+  void check_dimension(size_t dimension) const;
+
+private:
+  const _2dArray<T> &m_array;
+  size_t m_index1;
 };
 
 } // namespace Fiber

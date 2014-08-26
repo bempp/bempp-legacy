@@ -26,8 +26,7 @@
 #include "function.hpp"
 #include "geometrical_data.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \brief %Function intended to be evaluated on a boundary-element grid,
   defined via a user-supplied functor depending on the global coordinates
@@ -60,51 +59,44 @@ namespace Fiber
   \endcode
 */
 template <typename Functor>
-class DomainIndexDependentFunction : public Function<typename Functor::ValueType>
-{
+class DomainIndexDependentFunction
+    : public Function<typename Functor::ValueType> {
 public:
-    typedef Function<typename Functor::ValueType> Base;
-    typedef typename Base::ValueType ValueType;
-    typedef typename Base::CoordinateType CoordinateType;
+  typedef Function<typename Functor::ValueType> Base;
+  typedef typename Base::ValueType ValueType;
+  typedef typename Base::CoordinateType CoordinateType;
 
-    DomainIndexDependentFunction(const Functor& functor) :
-        m_functor(functor) {
-    }
+  DomainIndexDependentFunction(const Functor &functor) : m_functor(functor) {}
 
-    virtual int worldDimension() const {
-        return m_functor.argumentDimension();
-    }
+  virtual int worldDimension() const { return m_functor.argumentDimension(); }
 
-    virtual int codomainDimension() const {
-        return m_functor.resultDimension();
-    }
+  virtual int codomainDimension() const { return m_functor.resultDimension(); }
 
-    virtual void addGeometricalDependencies(size_t& geomDeps) const {
-        geomDeps |= GLOBALS | DOMAIN_INDEX;
-    }
+  virtual void addGeometricalDependencies(size_t &geomDeps) const {
+    geomDeps |= GLOBALS | DOMAIN_INDEX;
+  }
 
-    virtual void evaluate(const GeometricalData<CoordinateType>& geomData,
-                          arma::Mat<ValueType>& result) const {
-        const arma::Mat<CoordinateType>& points  = geomData.globals;
+  virtual void evaluate(const GeometricalData<CoordinateType> &geomData,
+                        arma::Mat<ValueType> &result) const {
+    const arma::Mat<CoordinateType> &points = geomData.globals;
 
 #ifndef NDEBUG
-        if ((int)points.n_rows != worldDimension())
-            throw std::invalid_argument(
-                    "DomainIndexDependentFunction::evaluate(): "
-                    "incompatible world dimension");
+    if ((int)points.n_rows != worldDimension())
+      throw std::invalid_argument("DomainIndexDependentFunction::evaluate(): "
+                                  "incompatible world dimension");
 #endif
 
-        const size_t pointCount = points.n_cols;
-        result.set_size(codomainDimension(), pointCount);
-        for (size_t i = 0; i < pointCount; ++i) {
-            arma::Col<ValueType> activeResultColumn = result.unsafe_col(i);
-            m_functor.evaluate(points.unsafe_col(i), geomData.domainIndex,
-                               activeResultColumn);
-        }
+    const size_t pointCount = points.n_cols;
+    result.set_size(codomainDimension(), pointCount);
+    for (size_t i = 0; i < pointCount; ++i) {
+      arma::Col<ValueType> activeResultColumn = result.unsafe_col(i);
+      m_functor.evaluate(points.unsafe_col(i), geomData.domainIndex,
+                         activeResultColumn);
     }
+  }
 
 private:
-    const Functor& m_functor;
+  const Functor &m_functor;
 };
 
 } // namespace Fiber

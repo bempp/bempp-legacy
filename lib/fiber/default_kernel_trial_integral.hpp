@@ -23,51 +23,46 @@
 
 #include "kernel_trial_integral.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 template <typename IntegrandFunctor>
-class DefaultKernelTrialIntegral :
-        public KernelTrialIntegral<
-        typename IntegrandFunctor::BasisFunctionType,
-        typename IntegrandFunctor::KernelType,
-        typename IntegrandFunctor::ResultType>
-{
-    typedef KernelTrialIntegral<
-    typename IntegrandFunctor::BasisFunctionType,
-    typename IntegrandFunctor::KernelType,
-    typename IntegrandFunctor::ResultType>
-    Base;
+class DefaultKernelTrialIntegral
+    : public KernelTrialIntegral<typename IntegrandFunctor::BasisFunctionType,
+                                 typename IntegrandFunctor::KernelType,
+                                 typename IntegrandFunctor::ResultType> {
+  typedef KernelTrialIntegral<typename IntegrandFunctor::BasisFunctionType,
+                              typename IntegrandFunctor::KernelType,
+                              typename IntegrandFunctor::ResultType> Base;
+
 public:
-    typedef typename Base::CoordinateType CoordinateType;
-    typedef typename Base::BasisFunctionType BasisFunctionType;
-    typedef typename Base::KernelType KernelType;
-    typedef typename Base::ResultType ResultType;
+  typedef typename Base::CoordinateType CoordinateType;
+  typedef typename Base::BasisFunctionType BasisFunctionType;
+  typedef typename Base::KernelType KernelType;
+  typedef typename Base::ResultType ResultType;
 
-    explicit DefaultKernelTrialIntegral(const IntegrandFunctor& functor) :
-        m_functor(functor)
-    {}
+  explicit DefaultKernelTrialIntegral(const IntegrandFunctor &functor)
+      : m_functor(functor) {}
 
-    virtual int resultDimension() const;
+  virtual int resultDimension() const;
 
-    virtual void addGeometricalDependencies(size_t& trialGeomDeps) const;
+  virtual void addGeometricalDependencies(size_t &trialGeomDeps) const;
 
-    virtual void evaluate(
-            const GeometricalData<CoordinateType>& trialGeomData,
-            const CollectionOf4dArrays<KernelType>& kernels,
-            const CollectionOf2dArrays<ResultType>& weightedTrialTransformations,
-            const std::vector<CoordinateType>& weights,
-            _2dArray<ResultType>& result) const;
+  virtual void
+  evaluate(const GeometricalData<CoordinateType> &trialGeomData,
+           const CollectionOf4dArrays<KernelType> &kernels,
+           const CollectionOf2dArrays<ResultType> &weightedTrialTransformations,
+           const std::vector<CoordinateType> &weights,
+           _2dArray<ResultType> &result) const;
 
-    virtual void evaluateWithPureWeights(
-            const GeometricalData<CoordinateType>& trialGeomData,
-            const CollectionOf4dArrays<KernelType>& kernels,
-            const CollectionOf3dArrays<BasisFunctionType>& trialTransformations,
-            const std::vector<CoordinateType>& weights,
-            _3dArray<ResultType>& result) const;
+  virtual void evaluateWithPureWeights(
+      const GeometricalData<CoordinateType> &trialGeomData,
+      const CollectionOf4dArrays<KernelType> &kernels,
+      const CollectionOf3dArrays<BasisFunctionType> &trialTransformations,
+      const std::vector<CoordinateType> &weights,
+      _3dArray<ResultType> &result) const;
 
 private:
-    IntegrandFunctor m_functor;
+  IntegrandFunctor m_functor;
 };
 
 } // namespace Fiber

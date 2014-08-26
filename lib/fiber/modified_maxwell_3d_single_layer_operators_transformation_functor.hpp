@@ -27,8 +27,7 @@
 #include "hdiv_function_value_functor.hpp"
 #include "surface_div_3d_functor.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \brief Functor calculating shape-function transformations necessary for
  *  the implementation of the single-layer potential boundary operator for the
@@ -38,13 +37,12 @@ namespace Fiber
  *  * basis-function value
  *  * basis-function surface div. */
 template <typename CoordinateType_>
-class ModifiedMaxwell3dSingleLayerOperatorsTransformationFunctor :
-        public ElementaryShapeTransformationFunctorPairWrapper<
-        HdivFunctionValueElementaryFunctor<CoordinateType_>,
-        SurfaceDiv3dElementaryFunctor<CoordinateType_> >
-{
+class ModifiedMaxwell3dSingleLayerOperatorsTransformationFunctor
+    : public ElementaryShapeTransformationFunctorPairWrapper<
+          HdivFunctionValueElementaryFunctor<CoordinateType_>,
+          SurfaceDiv3dElementaryFunctor<CoordinateType_>> {
 public:
-    typedef CoordinateType_ CoordinateType;
+  typedef CoordinateType_ CoordinateType;
 };
 
 } // namespace Fiber

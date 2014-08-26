@@ -42,61 +42,58 @@ class Epetra_LinearProblem;
 class Epetra_CrsMatrix;
 /** \endcond */
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \ingroup discrete_boundary_operators
  *  \brief Discrete boundary operator representing the inverse of another
  *  operator and stored as a sparse LU decomposition.
  */
 template <typename ValueType>
-class DiscreteInverseSparseBoundaryOperator :
-        public DiscreteBoundaryOperator<ValueType>
-{
+class DiscreteInverseSparseBoundaryOperator
+    : public DiscreteBoundaryOperator<ValueType> {
 public:
-    /** Constructor.
-     *
-     *  \param[in] mat
-     *    Sparse matrix whose inverse will be represented by the newly
-     *    constructed operator. Must not be null.
-     *  \param[in] symmetry
-     *    Symmetry of the matrix. May be any combination of flags defined
-     *    in the Symmetry enumeration type. */
-    DiscreteInverseSparseBoundaryOperator(
-            const shared_ptr<const Epetra_CrsMatrix>& mat,
-            int symmetry = NO_SYMMETRY);
-    ~DiscreteInverseSparseBoundaryOperator();
+  /** Constructor.
+   *
+   *  \param[in] mat
+   *    Sparse matrix whose inverse will be represented by the newly
+   *    constructed operator. Must not be null.
+   *  \param[in] symmetry
+   *    Symmetry of the matrix. May be any combination of flags defined
+   *    in the Symmetry enumeration type. */
+  DiscreteInverseSparseBoundaryOperator(
+      const shared_ptr<const Epetra_CrsMatrix> &mat,
+      int symmetry = NO_SYMMETRY);
+  ~DiscreteInverseSparseBoundaryOperator();
 
-    virtual unsigned int rowCount() const;
-    virtual unsigned int columnCount() const;
+  virtual unsigned int rowCount() const;
+  virtual unsigned int columnCount() const;
 
-    virtual void addBlock(const std::vector<int>& rows,
-                          const std::vector<int>& cols,
-                          const ValueType alpha,
-                          arma::Mat<ValueType>& block) const;
+  virtual void addBlock(const std::vector<int> &rows,
+                        const std::vector<int> &cols, const ValueType alpha,
+                        arma::Mat<ValueType> &block) const;
 
 public:
-    virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > domain() const;
-    virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > range() const;
+  virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>> domain() const;
+  virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>> range() const;
 
 protected:
-    virtual bool opSupportedImpl(Thyra::EOpTransp M_trans) const;
+  virtual bool opSupportedImpl(Thyra::EOpTransp M_trans) const;
 
 private:
-    virtual void applyBuiltInImpl(const TranspositionMode trans,
-                                  const arma::Col<ValueType>& x_in,
-                                  arma::Col<ValueType>& y_inout,
-                                  const ValueType alpha,
-                                  const ValueType beta) const;
+  virtual void applyBuiltInImpl(const TranspositionMode trans,
+                                const arma::Col<ValueType> &x_in,
+                                arma::Col<ValueType> &y_inout,
+                                const ValueType alpha,
+                                const ValueType beta) const;
 
 private:
-    /** \cond PRIVATE */
-    shared_ptr<const Epetra_CrsMatrix> m_mat;
-    std::unique_ptr<Epetra_LinearProblem> m_problem;
-    Teuchos::RCP<const Thyra::SpmdVectorSpaceBase<ValueType> > m_space;
-    int m_symmetry;
-    std::unique_ptr<Amesos_BaseSolver> m_solver;
-    /** \endcond */
+  /** \cond PRIVATE */
+  shared_ptr<const Epetra_CrsMatrix> m_mat;
+  std::unique_ptr<Epetra_LinearProblem> m_problem;
+  Teuchos::RCP<const Thyra::SpmdVectorSpaceBase<ValueType>> m_space;
+  int m_symmetry;
+  std::unique_ptr<Amesos_BaseSolver> m_solver;
+  /** \endcond */
 };
 
 /** \relates DiscreteInverseSparseBoundaryOperator
@@ -109,8 +106,8 @@ private:
  *  a <tt>std::bad_cast</tt> exception is thrown.
  */
 template <typename ValueType>
-shared_ptr<const DiscreteBoundaryOperator<ValueType> >
-discreteSparseInverse(const shared_ptr<const DiscreteBoundaryOperator<ValueType> >& discreteOp);
+shared_ptr<const DiscreteBoundaryOperator<ValueType>> discreteSparseInverse(
+    const shared_ptr<const DiscreteBoundaryOperator<ValueType>> &discreteOp);
 
 } // namespace Bempp
 

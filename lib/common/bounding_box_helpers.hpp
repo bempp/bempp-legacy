@@ -28,8 +28,7 @@
 #include <cassert>
 #include <cmath>
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \relates BoundingBox
  *  \brief Extend the bounding box \p bbox to include all points contained in
@@ -38,24 +37,17 @@ namespace Bempp
  *  \note The array \p points needs to have three rows.
  */
 template <typename CoordinateType>
-void extendBoundingBox(BoundingBox<CoordinateType>& bbox,
-                       const arma::Mat<CoordinateType>& points)
-{
-    assert(points.n_rows == 3);
-    for (size_t j = 0; j < points.n_cols; ++j) {
-        bbox.lbound.x =
-            std::min(bbox.lbound.x, points(0, j));
-        bbox.lbound.y =
-            std::min(bbox.lbound.y, points(1, j));
-        bbox.lbound.z =
-            std::min(bbox.lbound.z, points(2, j));
-        bbox.ubound.x =
-            std::max(bbox.ubound.x, points(0, j));
-        bbox.ubound.y =
-            std::max(bbox.ubound.y, points(1, j));
-        bbox.ubound.z =
-            std::max(bbox.ubound.z, points(2, j));
-    }
+void extendBoundingBox(BoundingBox<CoordinateType> &bbox,
+                       const arma::Mat<CoordinateType> &points) {
+  assert(points.n_rows == 3);
+  for (size_t j = 0; j < points.n_cols; ++j) {
+    bbox.lbound.x = std::min(bbox.lbound.x, points(0, j));
+    bbox.lbound.y = std::min(bbox.lbound.y, points(1, j));
+    bbox.lbound.z = std::min(bbox.lbound.z, points(2, j));
+    bbox.ubound.x = std::max(bbox.ubound.x, points(0, j));
+    bbox.ubound.y = std::max(bbox.ubound.y, points(1, j));
+    bbox.ubound.z = std::max(bbox.ubound.z, points(2, j));
+  }
 }
 
 /** \relates BoundingBox
@@ -64,13 +56,12 @@ void extendBoundingBox(BoundingBox<CoordinateType>& bbox,
  *  \note \p point must be a three-component column vector.
  */
 template <typename CoordinateType>
-void setBoundingBoxReference(BoundingBox<CoordinateType>& bbox,
-                             const arma::Col<CoordinateType>& point)
-{
-    assert(point.n_rows == 3);
-    bbox.reference.x = point(0);
-    bbox.reference.y = point(1);
-    bbox.reference.z = point(2);
+void setBoundingBoxReference(BoundingBox<CoordinateType> &bbox,
+                             const arma::Col<CoordinateType> &point) {
+  assert(point.n_rows == 3);
+  bbox.reference.x = point(0);
+  bbox.reference.y = point(1);
+  bbox.reference.z = point(2);
 }
 
 } // namespace Bempp

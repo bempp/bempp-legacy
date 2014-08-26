@@ -27,12 +27,11 @@
 
 #include <stdexcept>
 
-namespace Bempp
-{
-
+namespace Bempp {
 
 /** \ingroup grid_internal
- *  \brief Wrapper of the index set specific to a Dune grid view class \p DuneGridView
+ *  \brief Wrapper of the index set specific to a Dune grid view class \p
+ DuneGridView
 
  \internal The grid view class, rather than an index set class, is used as a
  template parameter because the latter doesn't provide information about the
@@ -41,67 +40,66 @@ namespace Bempp
  For consistency with \p IdSet it would be possible to take as parameters
  \p DuneGrid and \p DuneIndexSet instead.
  */
-template<typename DuneGridView>
-class ConcreteIndexSet: public IndexSet
-{
+template <typename DuneGridView> class ConcreteIndexSet : public IndexSet {
 public:
-    /** \brief Type of the wrapped Dune index set. */
-    typedef typename DuneGridView::IndexSet DuneIndexSet;
+  /** \brief Type of the wrapped Dune index set. */
+  typedef typename DuneGridView::IndexSet DuneIndexSet;
 
 private:
-    const DuneIndexSet* m_dune_index_set;
+  const DuneIndexSet *m_dune_index_set;
 
 public:
-    /** \brief Constructor.
+  /** \brief Constructor.
 
-    This object does not assume ownership of \p *dune_index_set.*/
-    explicit ConcreteIndexSet(const DuneIndexSet* dune_index_set) :
-        m_dune_index_set(dune_index_set) {
-    }
+  This object does not assume ownership of \p *dune_index_set.*/
+  explicit ConcreteIndexSet(const DuneIndexSet *dune_index_set)
+      : m_dune_index_set(dune_index_set) {}
 
-    /** \brief Read-only access to the underlying Dune index set. */
-    const DuneIndexSet& duneIndexSet() const {
-        return *m_dune_index_set;
-    }
+  /** \brief Read-only access to the underlying Dune index set. */
+  const DuneIndexSet &duneIndexSet() const { return *m_dune_index_set; }
 
-    virtual IndexType entityIndex(const Entity<0>& e) const {
-        return entityCodimNIndex(e);
-    }
-    virtual IndexType entityIndex(const Entity<1>& e) const {
-        return entityCodimNIndex(e);
-    }
-    virtual IndexType entityIndex(const Entity<2>& e) const {
-        return entityCodimNIndex(e);
-    }
-    virtual IndexType entityIndex(const Entity<3>& e) const {
-        return entityCodimNIndex(e);
-    }
+  virtual IndexType entityIndex(const Entity<0> &e) const {
+    return entityCodimNIndex(e);
+  }
+  virtual IndexType entityIndex(const Entity<1> &e) const {
+    return entityCodimNIndex(e);
+  }
+  virtual IndexType entityIndex(const Entity<2> &e) const {
+    return entityCodimNIndex(e);
+  }
+  virtual IndexType entityIndex(const Entity<3> &e) const {
+    return entityCodimNIndex(e);
+  }
 
-    virtual IndexType subEntityIndex(const Entity<0>& e, size_t i, int codimSub) const {
-        // Prevent an assert in FoamGrid from crashing the Python interpreter
-        if (codimSub > DuneGridView::Grid::dimension)
-            throw std::invalid_argument("IndexSet::subEntityIndex(): codimSub exceeds grid dimension");
-        typedef typename DuneGridView::template Codim<0>::Entity DuneEntity;
-        typedef ConcreteEntity<0, DuneEntity> ConcEntity;
-        const ConcEntity& ce = dynamic_cast<const ConcEntity&>(e);
-        return m_dune_index_set->subIndex(ce.duneEntity(), i, codimSub);
-    }
+  virtual IndexType subEntityIndex(const Entity<0> &e, size_t i,
+                                   int codimSub) const {
+    // Prevent an assert in FoamGrid from crashing the Python interpreter
+    if (codimSub > DuneGridView::Grid::dimension)
+      throw std::invalid_argument(
+          "IndexSet::subEntityIndex(): codimSub exceeds grid dimension");
+    typedef typename DuneGridView::template Codim<0>::Entity DuneEntity;
+    typedef ConcreteEntity<0, DuneEntity> ConcEntity;
+    const ConcEntity &ce = dynamic_cast<const ConcEntity &>(e);
+    return m_dune_index_set->subIndex(ce.duneEntity(), i, codimSub);
+  }
 
 private:
-    template <int codim>
-    typename boost::disable_if_c<codim <= DuneGridView::dimension, IndexType>::type
-    entityCodimNIndex(const Entity<codim>& e) const {
-        throw std::logic_error("IndexSet::entityIndex(): invalid entity codimension");
-    }
+  template <int codim>
+  typename boost::disable_if_c<codim <= DuneGridView::dimension,
+                               IndexType>::type
+  entityCodimNIndex(const Entity<codim> &e) const {
+    throw std::logic_error(
+        "IndexSet::entityIndex(): invalid entity codimension");
+  }
 
-    template <int codim>
-    typename boost::enable_if_c<codim <= DuneGridView::dimension, IndexType>::type
-    entityCodimNIndex(const Entity<codim>& e) const {
-        typedef typename DuneGridView::template Codim<codim>::Entity DuneEntity;
-        typedef ConcreteEntity<codim, DuneEntity> ConcEntity;
-        const ConcEntity& ce = dynamic_cast<const ConcEntity&>(e);
-        return m_dune_index_set->index(ce.duneEntity());
-    }
+  template <int codim>
+  typename boost::enable_if_c<codim <= DuneGridView::dimension, IndexType>::type
+  entityCodimNIndex(const Entity<codim> &e) const {
+    typedef typename DuneGridView::template Codim<codim>::Entity DuneEntity;
+    typedef ConcreteEntity<codim, DuneEntity> ConcEntity;
+    const ConcEntity &ce = dynamic_cast<const ConcEntity &>(e);
+    return m_dune_index_set->index(ce.duneEntity());
+  }
 };
 
 } // namespace Bempp

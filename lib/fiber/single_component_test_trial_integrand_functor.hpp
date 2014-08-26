@@ -29,49 +29,47 @@
 #include "conjugate.hpp"
 #include "scalar_traits.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \ingroup functors
- *  \brief This functor evaluates the integrand having the form of the product of a
+ *  \brief This functor evaluates the integrand having the form of the product
+ * of a
  *  single component of a test function transformation and a single
  *  component of a trial function transformation.
  */
 template <typename BasisFunctionType_, typename ResultType_>
-class SingleComponentTestTrialIntegrandFunctor
-{
+class SingleComponentTestTrialIntegrandFunctor {
 public:
-    typedef BasisFunctionType_ BasisFunctionType;
-    typedef ResultType_ ResultType;
-    typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
+  typedef BasisFunctionType_ BasisFunctionType;
+  typedef ResultType_ ResultType;
+  typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
 
-    SingleComponentTestTrialIntegrandFunctor(size_t testComponent,
-                                             size_t trialComponent) :
-        m_testComponent(testComponent), m_trialComponent(trialComponent)
-    {
-    }
+  SingleComponentTestTrialIntegrandFunctor(size_t testComponent,
+                                           size_t trialComponent)
+      : m_testComponent(testComponent), m_trialComponent(trialComponent) {}
 
-    void addGeometricalDependencies(size_t& geomDeps) const {
-        // do nothing
-    }
+  void addGeometricalDependencies(size_t &geomDeps) const {
+    // do nothing
+  }
 
-    ResultType evaluate(
-            const ConstGeometricalDataSlice<CoordinateType>& /* geomData */,
-            const CollectionOf1dSlicesOfConst3dArrays<BasisFunctionType>& testValues,
-            const CollectionOf1dSlicesOfConst3dArrays<BasisFunctionType>& trialValues) const {
-        // Assert that there is at least one test and trial transformation
-        // with correct dimensions
-        assert(testValues.size() >= 1);
-        assert(trialValues.size() >= 1);
-        assert(testValues[0].extent(0) >= m_testComponent);
-        assert(trialValues[0].extent(0) >= m_trialComponent);
+  ResultType evaluate(
+      const ConstGeometricalDataSlice<CoordinateType> & /* geomData */,
+      const CollectionOf1dSlicesOfConst3dArrays<BasisFunctionType> &testValues,
+      const CollectionOf1dSlicesOfConst3dArrays<BasisFunctionType> &trialValues)
+      const {
+    // Assert that there is at least one test and trial transformation
+    // with correct dimensions
+    assert(testValues.size() >= 1);
+    assert(trialValues.size() >= 1);
+    assert(testValues[0].extent(0) >= m_testComponent);
+    assert(trialValues[0].extent(0) >= m_trialComponent);
 
-        return conjugate(testValues[0](m_testComponent)) *
-                trialValues[0](m_trialComponent);
-    }
+    return conjugate(testValues[0](m_testComponent)) *
+           trialValues[0](m_trialComponent);
+  }
 
 private:
-    size_t m_testComponent, m_trialComponent;
+  size_t m_testComponent, m_trialComponent;
 };
 
 } // namespace Fiber

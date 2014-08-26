@@ -30,67 +30,59 @@
 
 #include <dune/localfunctions/lagrange/pk2d/pk2dlocalbasis.hh>
 
-namespace Fiber
-{
+namespace Fiber {
 
 // So far, this shapeset is only implemented for triangular elements.
 // In future it may be extended to quadrilaterals and lines.
 
 template <int elementVertexCount, typename CoordinateType, typename ValueType,
           int polynomialOrder>
-struct LagrangeScalarBasisTraits
-{
-};
+struct LagrangeScalarBasisTraits {};
 
 // Triangle
 template <typename CoordinateType, typename ValueType, int polynomialOrder>
-struct LagrangeScalarBasisTraits<3, CoordinateType, ValueType, polynomialOrder>
-{
+struct LagrangeScalarBasisTraits<3, CoordinateType, ValueType,
+                                 polynomialOrder> {
 public:
-    typedef Dune::Pk2DLocalBasis<CoordinateType, ValueType, polynomialOrder>
-    DuneShapeset;
-    typedef DuneShapeset DuneBasis;
+  typedef Dune::Pk2DLocalBasis<CoordinateType, ValueType, polynomialOrder>
+  DuneShapeset;
+  typedef DuneShapeset DuneBasis;
 };
 
-/** \brief Shapeset composed of the Lagrange polynomials up to a specified order. */
+/** \brief Shapeset composed of the Lagrange polynomials up to a specified
+ * order. */
 template <int elementVertexCount, typename ValueType, int polynomialOrder>
-class LagrangeScalarShapeset : public Basis<ValueType>
-{
+class LagrangeScalarShapeset : public Basis<ValueType> {
 public:
-    typedef typename Basis<ValueType>::CoordinateType CoordinateType;
+  typedef typename Basis<ValueType>::CoordinateType CoordinateType;
 
 private:
-    typedef typename LagrangeScalarBasisTraits<
-    elementVertexCount, CoordinateType, ValueType, polynomialOrder>::DuneShapeset
-    DuneBasis;
-    DuneBasis m_duneBasis;
+  typedef typename LagrangeScalarBasisTraits<
+      elementVertexCount, CoordinateType, ValueType,
+      polynomialOrder>::DuneShapeset DuneBasis;
+  DuneBasis m_duneBasis;
 
 public:
-    virtual int size() const {
-        return m_duneBasis.size();
-    }
+  virtual int size() const { return m_duneBasis.size(); }
 
-    virtual int order() const {
-        return polynomialOrder;
-    }
+  virtual int order() const { return polynomialOrder; }
 
-    virtual void evaluate(size_t what,
-                          const arma::Mat<CoordinateType>& points,
-                          LocalDofIndex localDofIndex,
-                          BasisData<ValueType>& data) const {
-        if (localDofIndex != ALL_DOFS &&
-                (localDofIndex < 0 || size() <= localDofIndex))
-            throw std::invalid_argument("LagrangeScalarShapeset::"
-                                        "evaluate(): Invalid localDofIndex");
+  virtual void evaluate(size_t what, const arma::Mat<CoordinateType> &points,
+                        LocalDofIndex localDofIndex,
+                        BasisData<ValueType> &data) const {
+    if (localDofIndex != ALL_DOFS &&
+        (localDofIndex < 0 || size() <= localDofIndex))
+      throw std::invalid_argument("LagrangeScalarShapeset::"
+                                  "evaluate(): Invalid localDofIndex");
 
-        if (what & VALUES)
-            evaluateShapeFunctionsWithDune<CoordinateType, ValueType, DuneBasis>(
-                        points, localDofIndex, data.values, m_duneBasis);
-        if (what & DERIVATIVES)
-            evaluateShapeFunctionDerivativesWithDune<
-                    CoordinateType, ValueType, DuneBasis>(
-                        points, localDofIndex, data.derivatives, m_duneBasis);
-    }
+    if (what & VALUES)
+      evaluateShapeFunctionsWithDune<CoordinateType, ValueType, DuneBasis>(
+          points, localDofIndex, data.values, m_duneBasis);
+    if (what & DERIVATIVES)
+      evaluateShapeFunctionDerivativesWithDune<
+          CoordinateType, ValueType, DuneBasis>(points, localDofIndex,
+                                                data.derivatives, m_duneBasis);
+  }
 };
 
 } // namespace Fiber

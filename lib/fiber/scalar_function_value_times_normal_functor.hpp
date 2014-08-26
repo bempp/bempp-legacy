@@ -28,33 +28,30 @@
 #include "collection_of_3d_arrays.hpp"
 #include "shape_transformation_functor_wrappers.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 template <typename CoordinateType_>
-class ScalarFunctionValueTimesNormalElementaryFunctor
-{
+class ScalarFunctionValueTimesNormalElementaryFunctor {
 public:
-    typedef CoordinateType_ CoordinateType;
+  typedef CoordinateType_ CoordinateType;
 
-    int argumentDimension() const { return 1; }
-    int resultDimension() const { return 3; }
+  int argumentDimension() const { return 1; }
+  int resultDimension() const { return 3; }
 
-    void addDependencies(size_t& basisDeps, size_t& geomDeps) const {
-        basisDeps |= VALUES;
-        geomDeps |= NORMALS;
-    }
+  void addDependencies(size_t &basisDeps, size_t &geomDeps) const {
+    basisDeps |= VALUES;
+    geomDeps |= NORMALS;
+  }
 
-    template <typename ValueType>
-    void evaluate(
-            const ConstBasisDataSlice<ValueType>& basisData,
-            const ConstGeometricalDataSlice<CoordinateType>& geomData,
-            _1dSliceOf3dArray<ValueType>& result) const {
-        assert(basisData.componentCount() == 1);
-        const int dimWorld = geomData.dimWorld();
-        for (int dim = 0; dim < dimWorld; ++dim)
-            result(dim) = basisData.values(0) * geomData.normal(dim);
-    }
+  template <typename ValueType>
+  void evaluate(const ConstBasisDataSlice<ValueType> &basisData,
+                const ConstGeometricalDataSlice<CoordinateType> &geomData,
+                _1dSliceOf3dArray<ValueType> &result) const {
+    assert(basisData.componentCount() == 1);
+    const int dimWorld = geomData.dimWorld();
+    for (int dim = 0; dim < dimWorld; ++dim)
+      result(dim) = basisData.values(0) * geomData.normal(dim);
+  }
 };
 
 // Note: in C++11 we'll be able to make a "template typedef", or more precisely
@@ -63,12 +60,11 @@ public:
  *  \brief Functor calculating the value of a scalar basis function multiplied
  *  by the unit vector normal to the surface. */
 template <typename CoordinateType_>
-class ScalarFunctionValueTimesNormalFunctor :
-        public ElementaryShapeTransformationFunctorWrapper<
-        ScalarFunctionValueTimesNormalElementaryFunctor<CoordinateType_> >
-{
+class ScalarFunctionValueTimesNormalFunctor
+    : public ElementaryShapeTransformationFunctorWrapper<
+          ScalarFunctionValueTimesNormalElementaryFunctor<CoordinateType_>> {
 public:
-    typedef CoordinateType_ CoordinateType;
+  typedef CoordinateType_ CoordinateType;
 };
 
 } // namespace Fiber

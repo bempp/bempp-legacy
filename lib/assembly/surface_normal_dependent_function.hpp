@@ -25,8 +25,7 @@
 
 #include "../fiber/surface_normal_dependent_function.hpp"
 
-namespace Bempp
-{
+namespace Bempp {
 
 using Fiber::SurfaceNormalDependentFunction;
 
@@ -64,12 +63,10 @@ using Fiber::SurfaceNormalDependentFunction;
   The constructed Function object can subsequently be passed into a constructor
   of the GridFunction class. */
 template <typename Functor>
-inline SurfaceNormalDependentFunction<Functor> surfaceNormalDependentFunction(
-        const Functor& functor)
-{
-    return SurfaceNormalDependentFunction<Functor>(functor);
+inline SurfaceNormalDependentFunction<Functor>
+surfaceNormalDependentFunction(const Functor &functor) {
+  return SurfaceNormalDependentFunction<Functor>(functor);
 }
-
 
 } // namespace Bempp
 

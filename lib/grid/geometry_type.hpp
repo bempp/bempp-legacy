@@ -27,8 +27,7 @@
 #include <dune/common/deprecated.hh>
 #include <dune/geometry/type.hh>
 
-namespace Bempp
-{
+namespace Bempp {
 /** \ingroup grid
     \brief Identifier of geometry type. */
 typedef Dune::GeometryType GeometryType;

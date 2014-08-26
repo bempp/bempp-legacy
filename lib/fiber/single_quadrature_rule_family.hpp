@@ -27,27 +27,23 @@
 
 #include <vector>
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \brief Family of quadrature rules over single elements. */
-template <typename CoordinateType>
-class SingleQuadratureRuleFamily
-{
+template <typename CoordinateType> class SingleQuadratureRuleFamily {
 public:
-    /** \brief Destructor. */
-    virtual ~SingleQuadratureRuleFamily() {}
+  /** \brief Destructor. */
+  virtual ~SingleQuadratureRuleFamily() {}
 
-    /** \brief Fill arrays of quadrature points and weights.
-     *
-     *  \param[in]  desc    Quadrature descriptor.
-     *  \param[out] points  2D array whose (i, j)th element will
-     *    contain the ith (local) coordinate of the jth quadrature point.
-     *  \param[out] weights Vector of quadrature point weights. */
-    virtual void fillQuadraturePointsAndWeights(
-        const SingleQuadratureDescriptor& desc,
-        arma::Mat<CoordinateType>& points,
-        std::vector<CoordinateType>& weights) const = 0;
+  /** \brief Fill arrays of quadrature points and weights.
+   *
+   *  \param[in]  desc    Quadrature descriptor.
+   *  \param[out] points  2D array whose (i, j)th element will
+   *    contain the ith (local) coordinate of the jth quadrature point.
+   *  \param[out] weights Vector of quadrature point weights. */
+  virtual void fillQuadraturePointsAndWeights(
+      const SingleQuadratureDescriptor &desc, arma::Mat<CoordinateType> &points,
+      std::vector<CoordinateType> &weights) const = 0;
 };
 
 } // namespace Fiber

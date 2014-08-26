@@ -24,55 +24,55 @@
 #include "../common/common.hpp"
 #include "cstddef"
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \cond FORWARD_DECL */
-template<int codim> class Entity;
+template <int codim> class Entity;
 /** \endcond */
 
 /** \ingroup grid
     \brief Abstract wrapper of an index set. */
-class IndexSet
-{
+class IndexSet {
 public:
-    /** \brief Destructor. */
-    virtual ~IndexSet() {
-    }
+  /** \brief Destructor. */
+  virtual ~IndexSet() {}
 
-    /** \brief Index type.
+  /** \brief Index type.
 
-     \internal Sadly, it is necessary to specify this type uniformly for all grid classes.
-     */
-    typedef size_t IndexType;
+   \internal Sadly, it is necessary to specify this type uniformly for all grid
+   classes.
+   */
+  typedef size_t IndexType;
 
-    /** \brief Index of the entity \e of codimension 0.
+  /** \brief Index of the entity \e of codimension 0.
 
-     The result of calling this method with an entity that is not
-     in the index set is undefined.
+   The result of calling this method with an entity that is not
+   in the index set is undefined.
 
-     \return An index in the range 0 ... (max number of entities in set - 1).
-     */
-    virtual IndexType entityIndex(const Entity<0>& e) const = 0;
-    /** \brief Index of the entity \e of codimension 1.
+   \return An index in the range 0 ... (max number of entities in set - 1).
+   */
+  virtual IndexType entityIndex(const Entity<0> &e) const = 0;
+  /** \brief Index of the entity \e of codimension 1.
 
-     \overload
-     */
-    virtual IndexType entityIndex(const Entity<1>& e) const = 0;
-    /** \brief Index of the entity \e of codimension 2.
+   \overload
+   */
+  virtual IndexType entityIndex(const Entity<1> &e) const = 0;
+  /** \brief Index of the entity \e of codimension 2.
 
-     \overload
-     */
-    virtual IndexType entityIndex(const Entity<2>& e) const = 0;
-    /** \brief Index of the entity \e of codimension 3.
+   \overload
+   */
+  virtual IndexType entityIndex(const Entity<2> &e) const = 0;
+  /** \brief Index of the entity \e of codimension 3.
 
-     \overload
-     */
-    virtual IndexType entityIndex(const Entity<3>& e) const = 0;
+   \overload
+   */
+  virtual IndexType entityIndex(const Entity<3> &e) const = 0;
 
-    /** \brief Index of \p i'th subentity of codimension \p codimSub of entity \p e of codimension 0.
-     */
-    virtual IndexType subEntityIndex(const Entity<0>& e, size_t i, int codimSub) const = 0;
+  /** \brief Index of \p i'th subentity of codimension \p codimSub of entity \p
+   * e of codimension 0.
+   */
+  virtual IndexType subEntityIndex(const Entity<0> &e, size_t i,
+                                   int codimSub) const = 0;
 };
 
 } // namespace Bempp

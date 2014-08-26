@@ -25,8 +25,7 @@
 
 #include "test_function_integrator.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \cond FORWARD_DECL */
 class OpenClHandler;
@@ -38,37 +37,37 @@ template <typename CoordinateType> class RawGridGeometry;
 /** \brief Integration over pairs of elements on tensor-product point grids. */
 template <typename BasisFunctionType, typename UserFunctionType,
           typename ResultType, typename GeometryFactory>
-class NumericalTestFunctionIntegrator :
-        public TestFunctionIntegrator<BasisFunctionType, ResultType>
-{
+class NumericalTestFunctionIntegrator
+    : public TestFunctionIntegrator<BasisFunctionType, ResultType> {
 public:
-    typedef TestFunctionIntegrator<BasisFunctionType, ResultType> Base;
-    typedef typename Base::CoordinateType CoordinateType;
+  typedef TestFunctionIntegrator<BasisFunctionType, ResultType> Base;
+  typedef typename Base::CoordinateType CoordinateType;
 
-    NumericalTestFunctionIntegrator(
-            const arma::Mat<CoordinateType>& localQuadPoints,
-            const std::vector<CoordinateType> quadWeights,
-            const GeometryFactory& geometryFactory,
-            const RawGridGeometry<CoordinateType>& rawGeometry,
-            const CollectionOfShapesetTransformations<CoordinateType>& testTransformations,
-            const Function<UserFunctionType>& function,
-            const OpenClHandler& openClHandler);
+  NumericalTestFunctionIntegrator(
+      const arma::Mat<CoordinateType> &localQuadPoints,
+      const std::vector<CoordinateType> quadWeights,
+      const GeometryFactory &geometryFactory,
+      const RawGridGeometry<CoordinateType> &rawGeometry,
+      const CollectionOfShapesetTransformations<CoordinateType> &
+          testTransformations,
+      const Function<UserFunctionType> &function,
+      const OpenClHandler &openClHandler);
 
-    virtual void integrate(
-            const std::vector<int>& elementIndices,
-            const Shapeset<BasisFunctionType>& testShapeset,
-            arma::Mat<ResultType>& result) const;
+  virtual void integrate(const std::vector<int> &elementIndices,
+                         const Shapeset<BasisFunctionType> &testShapeset,
+                         arma::Mat<ResultType> &result) const;
 
 private:
-    arma::Mat<CoordinateType> m_localQuadPoints;
-    std::vector<CoordinateType> m_quadWeights;
+  arma::Mat<CoordinateType> m_localQuadPoints;
+  std::vector<CoordinateType> m_quadWeights;
 
-    const GeometryFactory& m_geometryFactory;
-    const RawGridGeometry<CoordinateType>& m_rawGeometry;
-    const CollectionOfShapesetTransformations<CoordinateType>& m_testTransformations;
-    const Function<UserFunctionType>& m_function;
+  const GeometryFactory &m_geometryFactory;
+  const RawGridGeometry<CoordinateType> &m_rawGeometry;
+  const CollectionOfShapesetTransformations<CoordinateType> &
+  m_testTransformations;
+  const Function<UserFunctionType> &m_function;
 
-    const OpenClHandler& m_openClHandler;
+  const OpenClHandler &m_openClHandler;
 };
 
 } // namespace Fiber

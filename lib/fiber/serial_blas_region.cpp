@@ -27,46 +27,43 @@
 // #include <mkl.h>
 extern "C" {
 void MKL_Set_Num_Threads(int nth);
-int  MKL_Get_Max_Threads(void);
-#define mkl_set_num_threads         MKL_Set_Num_Threads
-#define mkl_get_max_threads         MKL_Get_Max_Threads
+int MKL_Get_Max_Threads(void);
+#define mkl_set_num_threads MKL_Set_Num_Threads
+#define mkl_get_max_threads MKL_Get_Max_Threads
 } // extern "C"
 
-// Currently, dynamic changing of the number of threads used by GotoBLAS/OpenBLAS
+// Currently, dynamic changing of the number of threads used by
+// GotoBLAS/OpenBLAS
 // does not work; the user needs to set the environmental variable
 // GOTO_NUM_THREADS to 1 before running programs linked to BEM++
 //#elif defined(WITH_GOTOBLAS) || defined(WITH_OPENBLAS)
-//extern "C" {
+// extern "C" {
 //#include <common.h>
 //}
 #endif
 
 #include <iostream>
 
-namespace Fiber
-{
+namespace Fiber {
 
-SerialBlasRegion::SerialBlasRegion()
-{
+SerialBlasRegion::SerialBlasRegion() {
 #if defined(WITH_MKL)
-    m_originalThreadCount = mkl_get_max_threads();
-    mkl_set_num_threads(1);
+  m_originalThreadCount = mkl_get_max_threads();
+  mkl_set_num_threads(1);
 //#elif defined(WITH_GOTOBLAS) || defined(WITH_OPENBLAS)
 //    m_originalThreadCount = get_num_procs();
 //    goto_set_num_threads(1);
 #else
-    m_originalThreadCount = -1;
+  m_originalThreadCount = -1;
 #endif
 }
 
-SerialBlasRegion::~SerialBlasRegion()
-{
+SerialBlasRegion::~SerialBlasRegion() {
 #if defined(WITH_MKL)
-    mkl_set_num_threads(m_originalThreadCount);
+  mkl_set_num_threads(m_originalThreadCount);
 //#elif defined(WITH_GOTOBLAS) || defined(WITH_OPENBLAS)
 //    goto_set_num_threads(m_originalThreadCount);
 #endif
 }
 
 } // namespace Fiber
-

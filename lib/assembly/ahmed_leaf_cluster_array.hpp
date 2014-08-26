@@ -33,40 +33,32 @@
 class blcluster;
 /** \endcond */
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \ingroup weak_form_assembly_internal
  *  \brief Encapsulation of an array of pointers to AHMED's blcluster objects.
  */
-class AhmedLeafClusterArray
-{
+class AhmedLeafClusterArray {
 public:
-    // The parameter should actually be const, but Ahmed's gen_BlSequence lacks
-    // const-correctness
-    explicit AhmedLeafClusterArray(blcluster* clusterTree);
-    // explicit AhmedLeafClusterArray(size_t size);
+  // The parameter should actually be const, but Ahmed's gen_BlSequence lacks
+  // const-correctness
+  explicit AhmedLeafClusterArray(blcluster *clusterTree);
+  // explicit AhmedLeafClusterArray(size_t size);
 
-    size_t size() const {
-        return m_size;
-    }
+  size_t size() const { return m_size; }
 
-    blcluster*& operator[] (size_t n) {
-        return m_leafClusters[n];
-    }
+  blcluster *&operator[](size_t n) { return m_leafClusters[n]; }
 
-    const blcluster* operator[] (size_t n) const {
-        return m_leafClusters[n];
-    }
+  const blcluster *operator[](size_t n) const { return m_leafClusters[n]; }
 
-    /** \brief Sort cluster list, putting biggest clusters first. */
-    void sortAccordingToClusterSize();
+  /** \brief Sort cluster list, putting biggest clusters first. */
+  void sortAccordingToClusterSize();
 
-    void startWithClusterOfIndex(size_t index);
+  void startWithClusterOfIndex(size_t index);
 
 private:
-    boost::scoped_array<blcluster*> m_leafClusters;
-    size_t m_size;
+  boost::scoped_array<blcluster *> m_leafClusters;
+  size_t m_size;
 };
 
 } // namespace Bempp

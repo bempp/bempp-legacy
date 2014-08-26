@@ -29,26 +29,24 @@
 #include "../common/armadillo_fwd.hpp"
 #include <vector>
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \cond FORWARD_DECL */
 template <typename ValueType> class Shapeset;
 /** \endcond */
 
-/** \brief Integration of products of test functions and arbitrary functions over elements. */
+/** \brief Integration of products of test functions and arbitrary functions
+ * over elements. */
 template <typename BasisFunctionType, typename ResultType>
-class TestFunctionIntegrator
-{
+class TestFunctionIntegrator {
 public:
-    typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
+  typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
 
-    virtual ~TestFunctionIntegrator() {}
+  virtual ~TestFunctionIntegrator() {}
 
-    virtual void integrate(
-            const std::vector<int>& elementIndices,
-            const Shapeset<BasisFunctionType>& testShapeset,
-            arma::Mat<ResultType>& result) const = 0;
+  virtual void integrate(const std::vector<int> &elementIndices,
+                         const Shapeset<BasisFunctionType> &testShapeset,
+                         arma::Mat<ResultType> &result) const = 0;
 };
 
 } // namespace Fiber

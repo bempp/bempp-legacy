@@ -28,8 +28,7 @@
 
 #include "../common/armadillo_fwd.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \cond FORWARD_DECL */
 template <typename ValueType> class BasisData;
@@ -37,30 +36,27 @@ template <typename ValueType> class BasisData;
 
 /** \ingroup fiber
  *  \brief Collection of shape functions defined on a reference element. */
-template <typename ValueType>
-class Shapeset
-{
+template <typename ValueType> class Shapeset {
 public:
-    typedef typename ScalarTraits<ValueType>::RealType CoordinateType;
+  typedef typename ScalarTraits<ValueType>::RealType CoordinateType;
 
-    virtual ~Shapeset() {}
+  virtual ~Shapeset() {}
 
-    /** \brief Return the number of shape functions. */
-    virtual int size() const = 0;
-    /** \brief Return the maximum polynomial order of shape functions. */
-    virtual int order() const = 0;
-    virtual void evaluate(size_t what,
-                          const arma::Mat<CoordinateType>& points,
-                          LocalDofIndex localDofIndex,
-                          BasisData<ValueType>& data) const = 0;
+  /** \brief Return the number of shape functions. */
+  virtual int size() const = 0;
+  /** \brief Return the maximum polynomial order of shape functions. */
+  virtual int order() const = 0;
+  virtual void evaluate(size_t what, const arma::Mat<CoordinateType> &points,
+                        LocalDofIndex localDofIndex,
+                        BasisData<ValueType> &data) const = 0;
 
-    /**
-     * \brief Returns an OpenCL code snippet for shape function evaluation
-     * \note The code snippet must provide device function devBasisEval
-     */
-    virtual std::pair<const char*,int> clCodeString (bool isTestShapeset) const {
-        throw std::runtime_error("Basis: clCodeString not implemented yet");
-    }
+  /**
+   * \brief Returns an OpenCL code snippet for shape function evaluation
+   * \note The code snippet must provide device function devBasisEval
+   */
+  virtual std::pair<const char *, int> clCodeString(bool isTestShapeset) const {
+    throw std::runtime_error("Basis: clCodeString not implemented yet");
+  }
 };
 
 } // namespace Fiber

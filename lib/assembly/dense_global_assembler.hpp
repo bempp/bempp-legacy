@@ -5,8 +5,7 @@
 
 #include <memory>
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \cond FORWARD_DECL */
 template <typename ResultType> class LocalAssemblerForIntegralOperators;
@@ -14,8 +13,7 @@ template <typename ResultType> class LocalAssemblerForIntegralOperators;
 
 } // namespace Fiber
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \cond FORWARD_DECL */
 class AssemblyOptions;
@@ -28,18 +26,17 @@ template <typename BasisFunctionType, typename ResultType> class Context;
  *  \brief Dense-mode assembler.
  */
 template <typename BasisFunctionType, typename ResultType>
-class DenseGlobalAssembler
-{
+class DenseGlobalAssembler {
 public:
-    typedef Fiber::LocalAssemblerForIntegralOperators<ResultType>
-    LocalAssemblerForIntegralOperators;
+  typedef Fiber::LocalAssemblerForIntegralOperators<ResultType>
+  LocalAssemblerForIntegralOperators;
 
-    static std::unique_ptr<DiscreteBoundaryOperator<ResultType> >
-    assembleDetachedWeakForm(
-            const Space<BasisFunctionType>& testSpace,
-            const Space<BasisFunctionType>& trialSpace,
-            LocalAssemblerForIntegralOperators& assembler,
-            const Context<BasisFunctionType, ResultType>& context);
+  static std::unique_ptr<DiscreteBoundaryOperator<ResultType>>
+  assembleDetachedWeakForm(
+      const Space<BasisFunctionType> &testSpace,
+      const Space<BasisFunctionType> &trialSpace,
+      LocalAssemblerForIntegralOperators &assembler,
+      const Context<BasisFunctionType, ResultType> &context);
 };
 
 } // namespace Bempp

@@ -23,85 +23,73 @@
 
 #include "modified_helmholtz_3d_potential_operator_base.hpp"
 
-namespace Bempp
-{
+namespace Bempp {
 
-namespace
-{
+namespace {
 
 template <typename Impl>
-inline typename Impl::KernelType waveNumberImpl(const Impl& impl)
-{
-    return impl.kernels.functor().waveNumber();
+inline typename Impl::KernelType waveNumberImpl(const Impl &impl) {
+  return impl.kernels.functor().waveNumber();
 }
 
 } // namespace
 
 template <typename Impl, typename BasisFunctionType>
 ModifiedHelmholtz3dPotentialOperatorBase<Impl, BasisFunctionType>::
-ModifiedHelmholtz3dPotentialOperatorBase(KernelType waveNumber) :
-    m_impl(new Impl(waveNumber))
-{
-}
+    ModifiedHelmholtz3dPotentialOperatorBase(KernelType waveNumber)
+    : m_impl(new Impl(waveNumber)) {}
 
 template <typename Impl, typename BasisFunctionType>
 ModifiedHelmholtz3dPotentialOperatorBase<Impl, BasisFunctionType>::
-ModifiedHelmholtz3dPotentialOperatorBase(const ModifiedHelmholtz3dPotentialOperatorBase& other) :
-    m_impl(new Impl(*other.m_impl))
-{
+    ModifiedHelmholtz3dPotentialOperatorBase(
+        const ModifiedHelmholtz3dPotentialOperatorBase &other)
+    : m_impl(new Impl(*other.m_impl)) {}
+
+template <typename Impl, typename BasisFunctionType>
+ModifiedHelmholtz3dPotentialOperatorBase<
+    Impl, BasisFunctionType>::~ModifiedHelmholtz3dPotentialOperatorBase() {}
+
+template <typename Impl, typename BasisFunctionType>
+ModifiedHelmholtz3dPotentialOperatorBase<Impl, BasisFunctionType> &
+ModifiedHelmholtz3dPotentialOperatorBase<Impl, BasisFunctionType>::
+operator=(const ModifiedHelmholtz3dPotentialOperatorBase &rhs) {
+  if (this != &rhs) {
+    Base::operator=(rhs);
+    m_impl.reset(new Impl(*rhs.m_impl));
+  }
+  return *this;
 }
 
 template <typename Impl, typename BasisFunctionType>
-ModifiedHelmholtz3dPotentialOperatorBase<Impl, BasisFunctionType>::
-~ModifiedHelmholtz3dPotentialOperatorBase()
-{
+typename ModifiedHelmholtz3dPotentialOperatorBase<Impl,
+                                                  BasisFunctionType>::KernelType
+ModifiedHelmholtz3dPotentialOperatorBase<Impl, BasisFunctionType>::waveNumber()
+    const {
+  return waveNumberImpl(*m_impl);
 }
 
 template <typename Impl, typename BasisFunctionType>
-ModifiedHelmholtz3dPotentialOperatorBase<Impl, BasisFunctionType>&
-ModifiedHelmholtz3dPotentialOperatorBase<Impl, BasisFunctionType>::
-operator=(const ModifiedHelmholtz3dPotentialOperatorBase& rhs)
-{
-    if (this != &rhs) {
-        Base::operator=(rhs);
-        m_impl.reset(new Impl(*rhs.m_impl));
-    }
-    return *this;
+const typename ModifiedHelmholtz3dPotentialOperatorBase<
+    Impl, BasisFunctionType>::CollectionOfKernels &
+ModifiedHelmholtz3dPotentialOperatorBase<Impl, BasisFunctionType>::kernels()
+    const {
+  return m_impl->kernels;
 }
 
 template <typename Impl, typename BasisFunctionType>
-typename ModifiedHelmholtz3dPotentialOperatorBase<Impl, BasisFunctionType>::KernelType
-ModifiedHelmholtz3dPotentialOperatorBase<Impl, BasisFunctionType>::
-waveNumber() const
-{
-    return waveNumberImpl(*m_impl);
+const typename ModifiedHelmholtz3dPotentialOperatorBase<
+    Impl, BasisFunctionType>::CollectionOfShapesetTransformations &
+ModifiedHelmholtz3dPotentialOperatorBase<
+    Impl, BasisFunctionType>::trialTransformations() const {
+  return m_impl->transformations;
 }
 
 template <typename Impl, typename BasisFunctionType>
-const typename ModifiedHelmholtz3dPotentialOperatorBase<Impl, BasisFunctionType>::
-CollectionOfKernels&
-ModifiedHelmholtz3dPotentialOperatorBase<Impl, BasisFunctionType>::
-kernels() const
-{
-    return m_impl->kernels;
-}
-
-template <typename Impl, typename BasisFunctionType>
-const typename ModifiedHelmholtz3dPotentialOperatorBase<Impl, BasisFunctionType>::
-CollectionOfShapesetTransformations&
-ModifiedHelmholtz3dPotentialOperatorBase<Impl, BasisFunctionType>::
-trialTransformations() const
-{
-    return m_impl->transformations;
-}
-
-template <typename Impl, typename BasisFunctionType>
-const typename ModifiedHelmholtz3dPotentialOperatorBase<Impl, BasisFunctionType>::
-KernelTrialIntegral&
-ModifiedHelmholtz3dPotentialOperatorBase<Impl, BasisFunctionType>::
-integral() const
-{
-    return m_impl->integral;
+const typename ModifiedHelmholtz3dPotentialOperatorBase<
+    Impl, BasisFunctionType>::KernelTrialIntegral &
+ModifiedHelmholtz3dPotentialOperatorBase<Impl, BasisFunctionType>::integral()
+    const {
+  return m_impl->integral;
 }
 
 } // namespace Bempp

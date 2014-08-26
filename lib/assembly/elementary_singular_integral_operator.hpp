@@ -25,50 +25,49 @@
 
 #include "elementary_integral_operator.hpp"
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \ingroup abstract_boundary_operators
  *  \brief Elementary boundary integral operator with weak form whose integrand
  *  has a singularity at origin. */
-template <typename BasisFunctionType_, typename KernelType_, typename ResultType_>
-class ElementarySingularIntegralOperator :
-        public ElementaryIntegralOperator<BasisFunctionType_, KernelType_, ResultType_>
-{
-    typedef ElementaryIntegralOperator<BasisFunctionType_, KernelType_, ResultType_> Base;
+template <typename BasisFunctionType_, typename KernelType_,
+          typename ResultType_>
+class ElementarySingularIntegralOperator
+    : public ElementaryIntegralOperator<BasisFunctionType_, KernelType_,
+                                        ResultType_> {
+  typedef ElementaryIntegralOperator<BasisFunctionType_, KernelType_,
+                                     ResultType_> Base;
+
 public:
-    /** \copydoc ElementaryIntegralOperator::BasisFunctionType */
-    typedef typename Base::BasisFunctionType BasisFunctionType;
-    /** \copydoc ElementaryIntegralOperator::KernelType */
-    typedef typename Base::KernelType KernelType;
-    /** \copydoc ElementaryIntegralOperator::ResultType */
-    typedef typename Base::ResultType ResultType;
-    /** \copydoc ElementaryIntegralOperator::CoordinateType */
-    typedef typename Base::CoordinateType CoordinateType;
-    /** \copydoc ElementaryIntegralOperator::CollectionOfBasisTransformations */
-    typedef typename Base::CollectionOfBasisTransformations
-    CollectionOfBasisTransformations;
-    /** \copydoc ElementaryIntegralOperator::CollectionOfShapesetTransformations */
-    typedef typename Base::CollectionOfShapesetTransformations
-    CollectionOfShapesetTransformations;
-    /** \copydoc ElementaryIntegralOperator::CollectionOfKernels */
-    typedef typename Base::CollectionOfKernels CollectionOfKernels;
-    /** \copydoc ElementaryIntegralOperator::TestKernelTrialIntegral */
-    typedef typename Base::TestKernelTrialIntegral TestKernelTrialIntegral;
+  /** \copydoc ElementaryIntegralOperator::BasisFunctionType */
+  typedef typename Base::BasisFunctionType BasisFunctionType;
+  /** \copydoc ElementaryIntegralOperator::KernelType */
+  typedef typename Base::KernelType KernelType;
+  /** \copydoc ElementaryIntegralOperator::ResultType */
+  typedef typename Base::ResultType ResultType;
+  /** \copydoc ElementaryIntegralOperator::CoordinateType */
+  typedef typename Base::CoordinateType CoordinateType;
+  /** \copydoc ElementaryIntegralOperator::CollectionOfBasisTransformations */
+  typedef typename Base::CollectionOfBasisTransformations
+  CollectionOfBasisTransformations;
+  /** \copydoc ElementaryIntegralOperator::CollectionOfShapesetTransformations
+   */
+  typedef typename Base::CollectionOfShapesetTransformations
+  CollectionOfShapesetTransformations;
+  /** \copydoc ElementaryIntegralOperator::CollectionOfKernels */
+  typedef typename Base::CollectionOfKernels CollectionOfKernels;
+  /** \copydoc ElementaryIntegralOperator::TestKernelTrialIntegral */
+  typedef typename Base::TestKernelTrialIntegral TestKernelTrialIntegral;
 
-    /** \copydoc AbstractBoundaryOperator::AbstractBoundaryOperator */
-    ElementarySingularIntegralOperator(
-            const shared_ptr<const Space<BasisFunctionType> >& domain,
-            const shared_ptr<const Space<BasisFunctionType> >& range,
-            const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-            const std::string& label,
-            int symmetry) :
-        Base(domain, range, dualToRange, label, symmetry) {
-    }
+  /** \copydoc AbstractBoundaryOperator::AbstractBoundaryOperator */
+  ElementarySingularIntegralOperator(
+      const shared_ptr<const Space<BasisFunctionType>> &domain,
+      const shared_ptr<const Space<BasisFunctionType>> &range,
+      const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
+      const std::string &label, int symmetry)
+      : Base(domain, range, dualToRange, label, symmetry) {}
 
-    virtual bool isRegular() const {
-        return false;
-    }
+  virtual bool isRegular() const { return false; }
 };
 
 } // namespace Bempp

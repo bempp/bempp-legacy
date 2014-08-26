@@ -27,8 +27,7 @@
 #include "scalar_function_value_functor.hpp"
 #include "surface_curl_3d_functor.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \brief Functor calculating shape-function transformations necessary for
  *  the implementation of the hypersingular operator for the modified Helmholtz
@@ -38,13 +37,12 @@ namespace Fiber
  *  * basis-function value
  *  * basis-function surface curl. */
 template <typename CoordinateType_>
-class ModifiedHelmholtz3dHypersingularTransformationFunctor :
-        public ElementaryShapeTransformationFunctorPairWrapper<
-        ScalarFunctionValueElementaryFunctor<CoordinateType_>,
-        SurfaceCurl3dElementaryFunctor<CoordinateType_> >
-{
+class ModifiedHelmholtz3dHypersingularTransformationFunctor
+    : public ElementaryShapeTransformationFunctorPairWrapper<
+          ScalarFunctionValueElementaryFunctor<CoordinateType_>,
+          SurfaceCurl3dElementaryFunctor<CoordinateType_>> {
 public:
-    typedef CoordinateType_ CoordinateType;
+  typedef CoordinateType_ CoordinateType;
 };
 
 } // namespace Fiber

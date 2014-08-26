@@ -23,8 +23,7 @@
 
 #include "collection_of_shapeset_transformations.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \ingroup weak_form_elements
  *  \brief Collection of shape function transformations.
@@ -33,12 +32,9 @@ namespace Fiber
  *  reasons. Use CollectionOfShapesetTransformations instead.
  */
 template <typename CoordinateType_>
-class CollectionOfBasisTransformations :
-        public CollectionOfShapesetTransformations<CoordinateType_>
-{
-};
+class CollectionOfBasisTransformations
+    : public CollectionOfShapesetTransformations<CoordinateType_> {};
 
 } // namespace Fiber
 
 #endif
-

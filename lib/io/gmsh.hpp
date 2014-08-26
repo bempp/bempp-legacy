@@ -35,290 +35,298 @@ namespace Bempp {
 
 /** \cond FORWARD_DECL */
 class Grid;
-template  <typename BasisFunctionType, typename ResultType> class GridFunction;
+template <typename BasisFunctionType, typename ResultType> class GridFunction;
 /** \endcond */
-
 
 struct GmshPostData {
 
-        enum  Type {NODE,
-                    ELEMENT,
-                    ELEMENT_NODE
-                    };
+  enum Type {
+    NODE,
+    ELEMENT,
+    ELEMENT_NODE
+  };
 };
 
 class GmshData {
 
 public:
+  enum GmshPostDataType {
+    NODE,
+    ELEMENT,
+    ELEMENT_NODE
+  };
 
-    enum GmshPostDataType {
-        NODE,
-        ELEMENT,
-        ELEMENT_NODE
-    };
+  GmshData();
+  int numberOfNodes() const;
+  int numberOfElements() const;
+  int numberOfPeriodicEntities() const;
+  int numberOfPeriodicNodes() const;
+  int numberOfPhysicalNames() const;
+  int numberOfNodeDataSets() const;
+  int numberOfElementDataSets() const;
+  int numberOfElementNodeDataSets() const;
+  int numberOfInterpolationSchemeSets() const;
 
-    GmshData();
-    int numberOfNodes() const;
-    int numberOfElements() const;
-    int numberOfPeriodicEntities() const;
-    int numberOfPeriodicNodes() const;
-    int numberOfPhysicalNames() const;
-    int numberOfNodeDataSets() const;
-    int numberOfElementDataSets() const;
-    int numberOfElementNodeDataSets() const;
-    int numberOfInterpolationSchemeSets() const;
+  void addNode(int index, double x, double y, double z);
+  void addElement(int index, int elementType, const std::vector<int> &nodes,
+                  int physicalEntity, int elementaryEntity,
+                  const std::vector<int> &partitions = std::vector<int>());
 
-    void addNode(int index, double x, double y, double z);
-    void addElement(int index, int elementType, const std::vector<int>& nodes,
-                    int physicalEntity, int elementaryEntity,
-                    const std::vector<int>& partitions = std::vector<int>());
+  void addPeriodicEntity(int dimension, int slaveEntityTag,
+                         int masterEntityTag);
+  void addPeriodicNode(int slaveNode, int masterNode);
 
-    void addPeriodicEntity(int dimension, int slaveEntityTag, int masterEntityTag);
-    void addPeriodicNode(int slaveNode, int masterNode);
+  void addPhysicalName(int dimension, int number, std::string name);
 
-    void addPhysicalName(int dimension, int number, std::string name);
+  void addNodeDataSet(const std::vector<std::string> &stringTags,
+                      const std::vector<double> &realTags,
+                      int numberOfFieldComponents, int capacity = 0,
+                      int timeStep = 0, int partition = 0);
+  void addElementDataSet(const std::vector<std::string> &stringTags,
+                         const std::vector<double> &realTags,
+                         int numberOfFieldComponents, int capacity = 0,
+                         int timeStep = 0, int partition = 0);
+  void addElementNodeDataSet(const std::vector<std::string> &stringTags,
+                             const std::vector<double> &realTags,
+                             int numberOfFieldComponents, int capacity = 0,
+                             int timeStep = 0, int partition = 0);
 
-    void addNodeDataSet(const std::vector<std::string>& stringTags, const std::vector<double>& realTags,
-                       int numberOfFieldComponents, int capacity=0, int timeStep=0, int partition=0);
-    void addElementDataSet(const std::vector<std::string>& stringTags, const std::vector<double>& realTags,
-                        int numberOfFieldComponents, int capacity=0, int timeStep=0, int partition=0);
-    void addElementNodeDataSet(const std::vector<std::string>& stringTags, const std::vector<double>& realTags,
-                        int numberOfFieldComponents,
-                        int capacity=0, int timeStep=0, int partition=0);
+  void addNodeData(int dataSetIndex, int node,
+                   const std::vector<double> &values);
+  void addElementData(int dataSetIndex, int element,
+                      const std::vector<double> &values);
+  void addElementNodeData(int dataSetIndex, int element,
+                          const std::vector<std::vector<double>> &values);
 
-    void addNodeData(int dataSetIndex, int node, const std::vector<double>& values);
-    void addElementData(int dataSetIndex, int element, const std::vector<double>& values);
-    void addElementNodeData(int dataSetIndex, int element, const std::vector<std::vector<double> >& values);
+  void addInterpolationSchemeSet(std::string name, int topology);
+  void addInterpolationMatrix(int dataSetIndex, int nrows, int ncols,
+                              const std::vector<double> &values);
 
-    void addInterpolationSchemeSet(std::string name, int topology);
-    void addInterpolationMatrix(int dataSetIndex, int nrows, int ncols, const std::vector<double>& values);
+  void getNodeIndices(std::vector<int> &indices) const;
+  void getElementIndices(std::vector<int> &indices) const;
 
-    void getNodeIndices(std::vector<int>& indices) const;
-    void getElementIndices(std::vector<int>& indices) const;
+  void getNode(int index, double &x, double &y, double &z) const;
+  void getElement(int index, int &elementType, std::vector<int> &nodes,
+                  int &physicalEntity, int &elementaryEntity,
+                  std::vector<int> &partitions) const;
+  void getElement(int index, int &elementType, std::vector<int> &nodes,
+                  int &physicalEntity, int &elementaryEntity) const;
+  void getPeriodicEntity(int index, int &dimension, int &slaveEntityTag,
+                         int &masterEntityTag) const;
+  void getPeriodicNode(int index, int &slaveNode, int &masterNode) const;
+  void getPhysicalName(int index, int &dimension, int &number,
+                       std::string &name) const;
+  void getNodeDataSet(int index, std::vector<std::string> &stringTags,
+                      std::vector<double> &realTags,
+                      int &numberOfFieldComponents,
+                      std::vector<int> &nodeIndices,
+                      std::vector<std::vector<double>> &values, int &timeStep,
+                      int &partition) const;
+  void getNodeDataSet(int index, std::vector<std::string> &stringTags,
+                      std::vector<double> &realTags,
+                      int &numberOfFieldComponents,
+                      std::vector<int> &nodeIndices,
+                      std::vector<std::vector<double>> &values) const;
+  void getElementDataSet(int index, std::vector<std::string> &stringTags,
+                         std::vector<double> &realTags,
+                         int &numberOfFieldComponents,
+                         std::vector<int> &elementIndices,
+                         std::vector<std::vector<double>> &values,
+                         int &timeStep, int &partition) const;
+  void getElementDataSet(int index, std::vector<std::string> &stringTags,
+                         std::vector<double> &realTags,
+                         int &numberOfFieldComponents,
+                         std::vector<int> &elementIndices,
+                         std::vector<std::vector<double>> &values) const;
+  void
+  getElementNodeDataSet(int index, std::vector<std::string> &stringTags,
+                        std::vector<double> &realTags,
+                        int &numberOfFieldComponents,
+                        std::vector<int> &elementIndices,
+                        std::vector<std::vector<std::vector<double>>> &values,
+                        int &timeStep, int &partition) const;
+  void getElementNodeDataSet(
+      int index, std::vector<std::string> &stringTags,
+      std::vector<double> &realTags, int &numberOfFieldComponents,
+      std::vector<int> &elementIndices,
+      std::vector<std::vector<std::vector<double>>> &values) const;
+  void getInterpolationSchemeSet(int index, std::string &name, int &topology,
+                                 std::vector<int> &nrows,
+                                 std::vector<int> &ncols,
+                                 std::vector<std::vector<double>> &values);
 
-    void getNode(int index, double &x, double &y, double &z) const;
-    void getElement(int index, int& elementType, std::vector<int>& nodes,
-                    int& physicalEntity, int& elementaryEntity, std::vector<int>& partitions) const;
-    void getElement(int index, int& elementType, std::vector<int>& nodes,
-                    int& physicalEntity, int& elementaryEntity) const;
-    void getPeriodicEntity(int index, int& dimension, int& slaveEntityTag, int& masterEntityTag) const;
-    void getPeriodicNode(int index, int& slaveNode, int& masterNode) const;
-    void getPhysicalName(int index, int& dimension, int& number, std::string& name) const;
-    void getNodeDataSet(int index, std::vector<std::string>& stringTags, std::vector<double>& realTags,
-                        int& numberOfFieldComponents,
-                        std::vector<int>& nodeIndices, std::vector<std::vector<double> >& values,
-                        int& timeStep, int& partition) const;
-    void getNodeDataSet(int index, std::vector<std::string>& stringTags, std::vector<double>& realTags,
-                        int& numberOfFieldComponents,
-                        std::vector<int>& nodeIndices, std::vector<std::vector<double> >& values) const;
-    void getElementDataSet(int index, std::vector<std::string>& stringTags, std::vector<double>& realTags,
-                        int& numberOfFieldComponents,
-                        std::vector<int>& elementIndices, std::vector<std::vector<double> >& values,
-                        int& timeStep, int& partition) const;
-    void getElementDataSet(int index, std::vector<std::string>& stringTags, std::vector<double>& realTags,
-                        int& numberOfFieldComponents,
-                        std::vector<int>& elementIndices, std::vector<std::vector<double> >& values) const;
-    void getElementNodeDataSet(int index, std::vector<std::string>& stringTags, std::vector<double>& realTags,
-                        int& numberOfFieldComponents,
-                        std::vector<int>& elementIndices, std::vector<std::vector<std::vector<double> > >& values,
-                        int& timeStep, int& partition) const;
-    void getElementNodeDataSet(int index, std::vector<std::string>& stringTags, std::vector<double>& realTags,
-                        int& numberOfFieldComponents,
-                        std::vector<int>& elementIndices, std::vector<std::vector<std::vector<double> > >& values) const;
-    void getInterpolationSchemeSet(int index, std::string& name, int& topology, std::vector<int> &nrows,
-                                   std::vector<int> &ncols,
-                                   std::vector<std::vector<double> >& values);
+  void reserveNumberOfNodes(int n);
+  void reserveNumberOfElements(int n);
 
-    void reserveNumberOfNodes(int n);
-    void reserveNumberOfElements(int n);
+  void resetNodeDataSets();
+  void resetElementDataSets();
+  void resetElementNodeDataSets();
 
-    void resetNodeDataSets();
-    void resetElementDataSets();
-    void resetElementNodeDataSets();
+  void resetDataSets();
 
-    void resetDataSets();
-
-    void write(std::ostream& output) const;
-    void write(const std::string& fileName) const;
-    static GmshData read(std::istream& input, int elementType = 2, int physicalEntity = -1);
-    static GmshData read(const std::string& fileName, int elementType = 2, int physicalEntity = -1);
-
+  void write(std::ostream &output) const;
+  void write(const std::string &fileName) const;
+  static GmshData read(std::istream &input, int elementType = 2,
+                       int physicalEntity = -1);
+  static GmshData read(const std::string &fileName, int elementType = 2,
+                       int physicalEntity = -1);
 
 private:
+  struct NodeDataSet {
 
-    struct NodeDataSet {
+    std::vector<std::string> stringTags;
+    std::vector<double> realTags;
+    std::vector<int> integerTags;
+    int timeStep;
+    int numberOfFieldComponents;
+    int partition;
 
+    std::vector<int> nodeIndices;
+    std::vector<std::vector<double>> values;
+  };
 
-        std::vector<std::string> stringTags;
-        std::vector<double> realTags;
-        std::vector<int> integerTags;
-        int timeStep;
-        int numberOfFieldComponents;
-        int partition;
+  struct ElementDataSet {
 
-        std::vector<int> nodeIndices;
-        std::vector<std::vector<double> > values;
+    std::vector<std::string> stringTags;
+    std::vector<double> realTags;
+    std::vector<int> integerTags;
+    int timeStep;
+    int numberOfFieldComponents;
+    int partition;
 
-    };
+    std::vector<int> elementIndices;
+    std::vector<std::vector<double>> values;
+  };
 
-    struct ElementDataSet {
+  struct ElementNodeDataSet {
 
+    std::vector<std::string> stringTags;
+    std::vector<double> realTags;
+    std::vector<int> integerTags;
+    int timeStep;
+    int numberOfFieldComponents;
+    int partition;
 
-        std::vector<std::string> stringTags;
-        std::vector<double> realTags;
-        std::vector<int> integerTags;
-        int timeStep;
-        int numberOfFieldComponents;
-        int partition;
+    std::vector<int> elementIndices;
+    std::vector<std::vector<std::vector<double>>> values;
+  };
 
-        std::vector<int> elementIndices;
-        std::vector<std::vector<double> > values;
+  struct InterpolationSchemeSet {
 
-    };
+    std::vector<int> nrows;
+    std::vector<int> ncols;
+    std::vector<std::vector<double>> values; // Each outer array element stores
+                                             // one matrix in row-major order
 
-    struct ElementNodeDataSet {
+    std::string name;
+    int topology;
+  };
 
+  struct Node {
+    double x;
+    double y;
+    double z;
+  };
 
-        std::vector<std::string> stringTags;
-        std::vector<double> realTags;
-        std::vector<int> integerTags;
-        int timeStep;
-        int numberOfFieldComponents;
-        int partition;
+  struct Element {
+    int type;
+    int physicalEntity;
+    int elementaryEntity;
+    std::vector<int> nodes;
+    std::vector<int> partitions;
+  };
 
-        std::vector<int> elementIndices;
-        std::vector<std::vector<std::vector<double> > > values;
+  struct PeriodicEntity {
+    int dimension;
+    int slaveTag;
+    int masterTag;
+  };
 
-    };
+  struct PeriodicNode {
+    int slaveNode;
+    int masterNode;
+  };
 
+  struct PhysicalName {
+    int dimension;
+    int number;
+    std::string name;
+  };
 
-    struct InterpolationSchemeSet {
+  std::string m_versionNumber;
+  int m_fileType;
+  int m_dataSize;
+  int m_numberOfNodes;
+  int m_numberOfElements;
 
-        std::vector<int> nrows;
-        std::vector<int> ncols;
-        std::vector<std::vector<double> > values; // Each outer array element stores
-                                                  // one matrix in row-major order
+  std::vector<shared_ptr<Node>> m_nodes;
+  std::vector<shared_ptr<Element>> m_elements;
 
-        std::string name;
-        int topology;
+  std::set<int> m_elementIndices;
 
-    };
+  std::vector<PeriodicEntity> m_periodicEntities;
+  std::vector<PeriodicNode> m_periodicNodes;
 
-    struct Node {
-        double x;
-        double y;
-        double z;
-    };
+  std::vector<PhysicalName> m_physicalNames;
 
-    struct Element {
-        int type;
-        int physicalEntity;
-        int elementaryEntity;
-        std::vector<int> nodes;
-        std::vector<int> partitions;
-    };
+  std::vector<shared_ptr<NodeDataSet>> m_nodeDataSets;
+  std::vector<shared_ptr<ElementDataSet>> m_elementDataSets;
+  std::vector<shared_ptr<ElementNodeDataSet>> m_elementNodeDataSets;
 
-    struct PeriodicEntity {
-        int dimension;
-        int slaveTag;
-        int masterTag;
-    };
-
-    struct PeriodicNode {
-        int slaveNode;
-        int masterNode;
-    };
-
-    struct PhysicalName {
-        int dimension;
-        int number;
-        std::string name;
-    };
-
-    std::string m_versionNumber;
-    int m_fileType;
-    int m_dataSize;
-    int m_numberOfNodes;
-    int m_numberOfElements;
-
-    std::vector<shared_ptr<Node> > m_nodes;
-    std::vector<shared_ptr<Element> > m_elements;
-
-    std::set<int> m_elementIndices;
-
-    std::vector<PeriodicEntity> m_periodicEntities;
-    std::vector<PeriodicNode> m_periodicNodes;
-
-    std::vector<PhysicalName> m_physicalNames;
-
-    std::vector<shared_ptr<NodeDataSet> > m_nodeDataSets;
-    std::vector<shared_ptr<ElementDataSet> > m_elementDataSets;
-    std::vector<shared_ptr<ElementNodeDataSet> > m_elementNodeDataSets;
-
-    std::vector<shared_ptr<InterpolationSchemeSet> > m_interpolationSchemeSets;
-
+  std::vector<shared_ptr<InterpolationSchemeSet>> m_interpolationSchemeSets;
 };
 
 class GmshIo {
 
 public:
+  GmshIo(const shared_ptr<const Grid> &grid);
+  GmshIo(GmshData gmshData);
+  GmshIo(std::string fileName, int physicalEntity = -1);
 
-    GmshIo(const shared_ptr<const Grid>& grid);
-    GmshIo(GmshData gmshData);
-    GmshIo(std::string fileName, int physicalEntity = -1);
+  shared_ptr<const Grid> grid() const;
+  const std::vector<int> &nodePermutation() const;
+  const std::vector<int> &elementPermutation() const;
+  const std::vector<int> &inverseNodePermutation() const;
+  const std::vector<int> &inverseElementPermutation() const;
+  const GmshData &gmshData() const;
+  void write(std::string fileName) const;
+  GmshData &gmshData();
 
-    shared_ptr<const Grid> grid() const;
-    const std::vector<int>& nodePermutation() const;
-    const std::vector<int>& elementPermutation() const;
-    const std::vector<int>& inverseNodePermutation() const;
-    const std::vector<int>& inverseElementPermutation() const;
-    const GmshData& gmshData() const;
-    void write(std::string fileName) const;
-    GmshData& gmshData();
+  void resetNodeDataSets();
+  void resetElementDataSets();
+  void resetElementNodeDataSets();
 
-    void resetNodeDataSets();
-    void resetElementDataSets();
-    void resetElementNodeDataSets();
-
-    void resetDataSets();
-
-
+  void resetDataSets();
 
 private:
-
-    mutable std::vector<int> m_nodePermutation;
-    mutable std::vector<int> m_inverseNodePermutation;
-    mutable std::vector<int> m_elementPermutation;
-    mutable std::vector<int> m_inverseElementPermutation;
-    GmshData m_gmshData;
-    mutable shared_ptr<const Grid> m_grid;
+  mutable std::vector<int> m_nodePermutation;
+  mutable std::vector<int> m_inverseNodePermutation;
+  mutable std::vector<int> m_elementPermutation;
+  mutable std::vector<int> m_inverseElementPermutation;
+  GmshData m_gmshData;
+  mutable shared_ptr<const Grid> m_grid;
 };
 
 template <typename BasisFunctionType, typename ResultType>
-GridFunction<BasisFunctionType,ResultType> gridFunctionFromGmsh(
-        const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
-        const GmshIo& gmshIo, shared_ptr<const Grid> grid = shared_ptr<Grid>(),
-            GmshPostData::Type gmshPostDataType = GmshPostData::ELEMENT_NODE,
-            int index = 0);
-
+GridFunction<BasisFunctionType, ResultType> gridFunctionFromGmsh(
+    const shared_ptr<const Context<BasisFunctionType, ResultType>> &context,
+    const GmshIo &gmshIo, shared_ptr<const Grid> grid = shared_ptr<Grid>(),
+    GmshPostData::Type gmshPostDataType = GmshPostData::ELEMENT_NODE,
+    int index = 0);
 
 template <typename BasisFunctionType, typename ResultType>
-void exportToGmsh(GridFunction<BasisFunctionType,ResultType> gridFunction,
-                  const char* dataLabel,
-                  GmshIo& gmshIo,
-                  GmshPostData::Type gmshPostDataType = GmshPostData::ELEMENT_NODE,
+void exportToGmsh(GridFunction<BasisFunctionType, ResultType> gridFunction,
+                  const char *dataLabel, GmshIo &gmshIo,
+                  GmshPostData::Type gmshPostDataType =
+                      GmshPostData::ELEMENT_NODE,
                   std::string complexMode = "real");
 
 template <typename BasisFunctionType, typename ResultType>
-void exportToGmsh(GridFunction<BasisFunctionType,ResultType> gridFunction,
-                  const char* dataLabel,
-                  const char* fileName,
-                  GmshPostData::Type gmshPostDataType = GmshPostData::ELEMENT_NODE,
+void exportToGmsh(GridFunction<BasisFunctionType, ResultType> gridFunction,
+                  const char *dataLabel, const char *fileName,
+                  GmshPostData::Type gmshPostDataType =
+                      GmshPostData::ELEMENT_NODE,
                   std::string complexMode = "real");
-
-
-
-
 
 } // namespace
 #endif

@@ -25,38 +25,37 @@
 
 #include "common.hpp"
 
-namespace Bempp
-{
+namespace Bempp {
 
-/** \brief Returns \p i'th element of the container \p v, optionally checking 
+/** \brief Returns \p i'th element of the container \p v, optionally checking
     bounds.
 
     If \c NDEBUG is not defined, this function returns <tt>v.at(i)</tt>,
     otherwise <tt>v[i]</tt>.
 */
 template <typename Container>
-inline typename Container::reference acc(Container& v, typename Container::size_type i)
-{
+inline typename Container::reference acc(Container &v,
+                                         typename Container::size_type i) {
 #ifdef NDEBUG
-    return v[i];
+  return v[i];
 #else
-    return v.at(i);
+  return v.at(i);
 #endif
 }
 
-/** \brief Returns \p i'th element of the container \p v, optionally checking 
+/** \brief Returns \p i'th element of the container \p v, optionally checking
     bounds.
 
     If \c NDEBUG is not defined, this function returns <tt>v.at(i)</tt>,
     otherwise <tt>v[i]</tt>.
 */
 template <typename Container>
-inline typename Container::const_reference acc(const Container& v, typename Container::size_type i)
-{
+inline typename Container::const_reference
+acc(const Container &v, typename Container::size_type i) {
 #ifdef NDEBUG
-    return v[i];
+  return v[i];
 #else
-    return v.at(i);
+  return v.at(i);
 #endif
 }
 

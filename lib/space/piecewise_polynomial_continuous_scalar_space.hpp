@@ -31,8 +31,7 @@
 #include <memory>
 #include <tbb/mutex.h>
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \cond FORWARD_DECL */
 class GridView;
@@ -42,130 +41,124 @@ template <typename CoordinateType> struct BoundingBox;
 /** \ingroup space
  *  \brief Space of continuous, piecewise polynomial scalar functions. */
 template <typename BasisFunctionType>
-class PiecewisePolynomialContinuousScalarSpace :
-        public ScalarSpace<BasisFunctionType>
-{
+class PiecewisePolynomialContinuousScalarSpace
+    : public ScalarSpace<BasisFunctionType> {
 public:
-    typedef typename Space<BasisFunctionType>::CoordinateType CoordinateType;
-    typedef typename Space<BasisFunctionType>::ComplexType ComplexType;
+  typedef typename Space<BasisFunctionType>::CoordinateType CoordinateType;
+  typedef typename Space<BasisFunctionType>::ComplexType ComplexType;
 
-    /** \brief Constructor.
-     *
-     *  Construct a space of continuous functions whose restrictions to
-     *  elements of the grid \p grid will be polynomials of order at most \p
-     *  polynomialOrder. */
-    PiecewisePolynomialContinuousScalarSpace(
-            const shared_ptr<const Grid>& grid,
-            int polynomialOrder);
+  /** \brief Constructor.
+   *
+   *  Construct a space of continuous functions whose restrictions to
+   *  elements of the grid \p grid will be polynomials of order at most \p
+   *  polynomialOrder. */
+  PiecewisePolynomialContinuousScalarSpace(const shared_ptr<const Grid> &grid,
+                                           int polynomialOrder);
 
-    /** \brief Constructor.
-     *
-     *  Construct a space of continuous functions whose restrictions to
-     *  elements of the grid \p grid will be polynomials of order at most \p
-     *  polynomialOrder. The space will contain only the basis functions deemed
-     *  to belong to the segment \p segment; specifically, vertex functions
-     *  associated with vertices belonging to \p segment, edge functions
-     *  associated with edges belonging to \p segment and bubble function
-     *  associated with elements belonging to \p segment. If \p
-     *  strictlyOnSegment is \c true, the support of the basis functions is
-     *  truncated to the elements that belong to \p segment, too; in this case,
-     *  the space may in fact contain discontinuous basis functions when
-     *  considered on the whole \p grid, although the basis functions will be
-     *  continuous when considered on the chosen grid segment.
-     *
-     *  An exception is thrown if \p grid is a null pointer.
-     */
-    PiecewisePolynomialContinuousScalarSpace(
-            const shared_ptr<const Grid>& grid,
-            int polynomialOrder,
-            const GridSegment& segment,
-            bool strictlyOnSegment = false);
-    virtual ~PiecewisePolynomialContinuousScalarSpace();
+  /** \brief Constructor.
+   *
+   *  Construct a space of continuous functions whose restrictions to
+   *  elements of the grid \p grid will be polynomials of order at most \p
+   *  polynomialOrder. The space will contain only the basis functions deemed
+   *  to belong to the segment \p segment; specifically, vertex functions
+   *  associated with vertices belonging to \p segment, edge functions
+   *  associated with edges belonging to \p segment and bubble function
+   *  associated with elements belonging to \p segment. If \p
+   *  strictlyOnSegment is \c true, the support of the basis functions is
+   *  truncated to the elements that belong to \p segment, too; in this case,
+   *  the space may in fact contain discontinuous basis functions when
+   *  considered on the whole \p grid, although the basis functions will be
+   *  continuous when considered on the chosen grid segment.
+   *
+   *  An exception is thrown if \p grid is a null pointer.
+   */
+  PiecewisePolynomialContinuousScalarSpace(const shared_ptr<const Grid> &grid,
+                                           int polynomialOrder,
+                                           const GridSegment &segment,
+                                           bool strictlyOnSegment = false);
+  virtual ~PiecewisePolynomialContinuousScalarSpace();
 
-    virtual int domainDimension() const;
-    virtual int codomainDimension() const;
+  virtual int domainDimension() const;
+  virtual int codomainDimension() const;
 
-    virtual bool isBarycentric() const {
-        return false;
-    }
+  virtual bool isBarycentric() const { return false; }
 
-    virtual bool spaceIsCompatible(const Space<BasisFunctionType>& other) const;
+  virtual bool spaceIsCompatible(const Space<BasisFunctionType> &other) const;
 
-    virtual SpaceIdentifier spaceIdentifier() const {
-        return PIECEWISE_POLYNOMIAL_CONTINUOUS_SCALAR;
-    }
+  virtual SpaceIdentifier spaceIdentifier() const {
+    return PIECEWISE_POLYNOMIAL_CONTINUOUS_SCALAR;
+  }
 
+  /** \brief Return the variant of element \p element.
+   *
+   *  Possible return values:
+   *    - 2: one-dimensional segment,
+   *    - 3: triangular element,
+   *    - 4: quadrilateral element. */
+  virtual ElementVariant elementVariant(const Entity<0> &element) const;
+  virtual void setElementVariant(const Entity<0> &element,
+                                 ElementVariant variant);
 
-    /** \brief Return the variant of element \p element.
-     *
-     *  Possible return values:
-     *    - 2: one-dimensional segment,
-     *    - 3: triangular element,
-     *    - 4: quadrilateral element. */
-    virtual ElementVariant elementVariant(const Entity<0>& element) const;
-    virtual void setElementVariant(const Entity<0>& element,
-                                   ElementVariant variant);
+  virtual const Fiber::Shapeset<BasisFunctionType> &
+  shapeset(const Entity<0> &element) const;
 
-    virtual const Fiber::Shapeset<BasisFunctionType>& shapeset(
-            const Entity<0>& element) const;
+  virtual shared_ptr<const Space<BasisFunctionType>> discontinuousSpace(
+      const shared_ptr<const Space<BasisFunctionType>> &self) const;
+  virtual bool isDiscontinuous() const;
 
-    virtual shared_ptr<const Space<BasisFunctionType> > discontinuousSpace(
-        const shared_ptr<const Space<BasisFunctionType> >& self) const;
-    virtual bool isDiscontinuous() const;
+  virtual size_t globalDofCount() const;
+  virtual size_t flatLocalDofCount() const;
+  virtual void getGlobalDofs(const Entity<0> &element,
+                             std::vector<GlobalDofIndex> &dofs) const;
+  virtual void
+  global2localDofs(const std::vector<GlobalDofIndex> &globalDofs,
+                   std::vector<std::vector<LocalDof>> &localDofs) const;
+  virtual void
+  flatLocal2localDofs(const std::vector<FlatLocalDofIndex> &flatLocalDofs,
+                      std::vector<LocalDof> &localDofs) const;
 
-    virtual size_t globalDofCount() const;
-    virtual size_t flatLocalDofCount() const;
-    virtual void getGlobalDofs(const Entity<0>& element,
-                            std::vector<GlobalDofIndex>& dofs) const;
-    virtual void global2localDofs(
-            const std::vector<GlobalDofIndex>& globalDofs,
-            std::vector<std::vector<LocalDof> >& localDofs) const;
-    virtual void flatLocal2localDofs(
-            const std::vector<FlatLocalDofIndex>& flatLocalDofs,
-            std::vector<LocalDof>& localDofs) const;
+  virtual void
+  getGlobalDofPositions(std::vector<Point3D<CoordinateType>> &positions) const;
+  virtual void getFlatLocalDofPositions(
+      std::vector<Point3D<CoordinateType>> &positions) const;
 
-    virtual void getGlobalDofPositions(
-            std::vector<Point3D<CoordinateType> >& positions) const;
-    virtual void getFlatLocalDofPositions(
-            std::vector<Point3D<CoordinateType> >& positions) const;
+  virtual void getGlobalDofBoundingBoxes(
+      std::vector<BoundingBox<CoordinateType>> &bboxes) const;
+  virtual void getFlatLocalDofBoundingBoxes(
+      std::vector<BoundingBox<CoordinateType>> &bboxes) const;
 
-    virtual void getGlobalDofBoundingBoxes(
-            std::vector<BoundingBox<CoordinateType> >& bboxes) const;
-    virtual void getFlatLocalDofBoundingBoxes(
-            std::vector<BoundingBox<CoordinateType> >& bboxes) const;
+  virtual void
+  getGlobalDofNormals(std::vector<Point3D<CoordinateType>> &normals) const;
+  virtual void
+  getFlatLocalDofNormals(std::vector<Point3D<CoordinateType>> &normals) const;
 
-    virtual void getGlobalDofNormals(
-            std::vector<Point3D<CoordinateType> >& normals) const;
-    virtual void getFlatLocalDofNormals(
-            std::vector<Point3D<CoordinateType> >& normals) const;
-
-    virtual void dumpClusterIds(
-            const char* fileName,
-            const std::vector<unsigned int>& clusterIdsOfGlobalDofs) const;
-    virtual void dumpClusterIdsEx(
-            const char* fileName,
-            const std::vector<unsigned int>& clusterIdsOfGlobalDofs,
-            DofType dofType) const;
+  virtual void
+  dumpClusterIds(const char *fileName,
+                 const std::vector<unsigned int> &clusterIdsOfGlobalDofs) const;
+  virtual void
+  dumpClusterIdsEx(const char *fileName,
+                   const std::vector<unsigned int> &clusterIdsOfGlobalDofs,
+                   DofType dofType) const;
 
 private:
-    void initialize();
-    void assignDofsImpl();
+  void initialize();
+  void assignDofsImpl();
 
 private:
-    /** \cond PRIVATE */
-    int m_polynomialOrder;
-    GridSegment m_segment;
-    bool m_strictlyOnSegment;
-    boost::scoped_ptr<Fiber::Shapeset<BasisFunctionType> > m_triangleShapeset;
-    std::unique_ptr<GridView> m_view;
-    std::vector<std::vector<GlobalDofIndex> > m_local2globalDofs;
-    std::vector<std::vector<LocalDof> > m_global2localDofs;
-    std::vector<LocalDof> m_flatLocal2localDofs;
-    size_t m_flatLocalDofCount;
-    std::vector<BoundingBox<CoordinateType> > m_globalDofBoundingBoxes;
-    mutable shared_ptr<Space<BasisFunctionType> > m_discontinuousSpace;
-    mutable tbb::mutex m_discontinuousSpaceMutex;
-    /** \endcond */
+  /** \cond PRIVATE */
+  int m_polynomialOrder;
+  GridSegment m_segment;
+  bool m_strictlyOnSegment;
+  boost::scoped_ptr<Fiber::Shapeset<BasisFunctionType>> m_triangleShapeset;
+  std::unique_ptr<GridView> m_view;
+  std::vector<std::vector<GlobalDofIndex>> m_local2globalDofs;
+  std::vector<std::vector<LocalDof>> m_global2localDofs;
+  std::vector<LocalDof> m_flatLocal2localDofs;
+  size_t m_flatLocalDofCount;
+  std::vector<BoundingBox<CoordinateType>> m_globalDofBoundingBoxes;
+  mutable shared_ptr<Space<BasisFunctionType>> m_discontinuousSpace;
+  mutable tbb::mutex m_discontinuousSpaceMutex;
+  /** \endcond */
 };
 
 } // namespace Bempp

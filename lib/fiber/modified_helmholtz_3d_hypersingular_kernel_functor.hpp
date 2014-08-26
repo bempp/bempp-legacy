@@ -28,8 +28,7 @@
 
 #include "modified_helmholtz_3d_single_layer_potential_kernel_functor.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \ingroup modified_helmholtz_3d
  *  \ingroup functors
@@ -48,44 +47,41 @@ namespace Fiber
  */
 
 template <typename ValueType_>
-class ModifiedHelmholtz3dHypersingularKernelFunctor
-{
+class ModifiedHelmholtz3dHypersingularKernelFunctor {
 public:
-    typedef ValueType_ ValueType;
-    typedef typename ScalarTraits<ValueType>::RealType CoordinateType;
+  typedef ValueType_ ValueType;
+  typedef typename ScalarTraits<ValueType>::RealType CoordinateType;
 
-    explicit ModifiedHelmholtz3dHypersingularKernelFunctor(
-            ValueType waveNumber) :
-        m_slpKernel(waveNumber)
-    {}
+  explicit ModifiedHelmholtz3dHypersingularKernelFunctor(ValueType waveNumber)
+      : m_slpKernel(waveNumber) {}
 
-    int kernelCount() const { return 2; }
-    int kernelRowCount(int /* kernelIndex */) const { return 1; }
-    int kernelColCount(int /* kernelIndex */) const { return 1; }
+  int kernelCount() const { return 2; }
+  int kernelRowCount(int /* kernelIndex */) const { return 1; }
+  int kernelColCount(int /* kernelIndex */) const { return 1; }
 
-    void addGeometricalDependencies(size_t& testGeomDeps, size_t& trialGeomDeps) const {
-        m_slpKernel.addGeometricalDependencies(testGeomDeps, trialGeomDeps);
-    }
+  void addGeometricalDependencies(size_t &testGeomDeps,
+                                  size_t &trialGeomDeps) const {
+    m_slpKernel.addGeometricalDependencies(testGeomDeps, trialGeomDeps);
+  }
 
-    ValueType waveNumber() const { return m_slpKernel.waveNumber(); }
+  ValueType waveNumber() const { return m_slpKernel.waveNumber(); }
 
-    template <template <typename T> class CollectionOf2dSlicesOfNdArrays>
-    void evaluate(
-            const ConstGeometricalDataSlice<CoordinateType>& testGeomData,
-            const ConstGeometricalDataSlice<CoordinateType>& trialGeomData,
-            CollectionOf2dSlicesOfNdArrays<ValueType>& result) const {
-        // This will put the value of the SLP kernel in result[0](0, 0)
-        m_slpKernel.evaluate(testGeomData, trialGeomData, result);
-        result[1](0, 0) = result[0](0, 0) *
-            m_slpKernel.waveNumber() * m_slpKernel.waveNumber();
-    }
+  template <template <typename T> class CollectionOf2dSlicesOfNdArrays>
+  void evaluate(const ConstGeometricalDataSlice<CoordinateType> &testGeomData,
+                const ConstGeometricalDataSlice<CoordinateType> &trialGeomData,
+                CollectionOf2dSlicesOfNdArrays<ValueType> &result) const {
+    // This will put the value of the SLP kernel in result[0](0, 0)
+    m_slpKernel.evaluate(testGeomData, trialGeomData, result);
+    result[1](0, 0) =
+        result[0](0, 0) * m_slpKernel.waveNumber() * m_slpKernel.waveNumber();
+  }
 
-    CoordinateType estimateRelativeScale(CoordinateType distance) const {
-        return m_slpKernel.estimateRelativeScale(distance);
-    }
+  CoordinateType estimateRelativeScale(CoordinateType distance) const {
+    return m_slpKernel.estimateRelativeScale(distance);
+  }
 
 private:
-    ModifiedHelmholtz3dSingleLayerPotentialKernelFunctor<ValueType> m_slpKernel;
+  ModifiedHelmholtz3dSingleLayerPotentialKernelFunctor<ValueType> m_slpKernel;
 };
 
 } // namespace Fiber

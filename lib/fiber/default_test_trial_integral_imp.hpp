@@ -27,8 +27,7 @@
 
 #include <algorithm>
 
-namespace Fiber
-{
+namespace Fiber {
 
 /*
 template <typename BasisFunctionType_, typename KernelType_,
@@ -53,43 +52,39 @@ public:
 */
 
 template <typename IntegrandFunctor>
-void DefaultTestTrialIntegral<IntegrandFunctor>::
-addGeometricalDependencies(size_t& geomDeps) const
-{
-    geomDeps |= INTEGRATION_ELEMENTS;
-    m_functor.addGeometricalDependencies(geomDeps);
+void DefaultTestTrialIntegral<IntegrandFunctor>::addGeometricalDependencies(
+    size_t &geomDeps) const {
+  geomDeps |= INTEGRATION_ELEMENTS;
+  m_functor.addGeometricalDependencies(geomDeps);
 }
 
 template <typename IntegrandFunctor>
 void DefaultTestTrialIntegral<IntegrandFunctor>::evaluate(
-        const GeometricalData<CoordinateType>& geomData,
-        const CollectionOf3dArrays<BasisFunctionType>& testValues,
-        const CollectionOf3dArrays<BasisFunctionType>& trialValues,
-        const std::vector<CoordinateType>& weights,
-        arma::Mat<ResultType>& result) const
-{
-    const size_t pointCount = weights.size();
-    assert(testValues.size() == 1);
-    assert(trialValues.size() == 1);
+    const GeometricalData<CoordinateType> &geomData,
+    const CollectionOf3dArrays<BasisFunctionType> &testValues,
+    const CollectionOf3dArrays<BasisFunctionType> &trialValues,
+    const std::vector<CoordinateType> &weights,
+    arma::Mat<ResultType> &result) const {
+  const size_t pointCount = weights.size();
+  assert(testValues.size() == 1);
+  assert(trialValues.size() == 1);
 
-    // We don't care about the number of rows of testValues[0] and trialValues[0]
-    // -- it's up to the integrand functor
-    const size_t testDofCount = testValues[0].extent(1);
-    const size_t trialDofCount = trialValues[0].extent(1);
-    assert(testValues[0].extent(2) == pointCount);
-    assert(trialValues[0].extent(2) == pointCount);
-    for (size_t trialDof = 0; trialDof < trialDofCount; ++trialDof)
-        for (size_t testDof = 0; testDof < testDofCount; ++testDof) {
-            ResultType sum = 0.;
-            for (size_t point = 0; point < pointCount; ++point)
-                sum += m_functor.evaluate(
-                            geomData.const_slice(point),
-                            testValues.const_slice(testDof, point),
-                            trialValues.const_slice(trialDof, point)) *
-                        geomData.integrationElements(point) *
-                        weights[point];
-            result(testDof, trialDof) = sum;
-        }
+  // We don't care about the number of rows of testValues[0] and trialValues[0]
+  // -- it's up to the integrand functor
+  const size_t testDofCount = testValues[0].extent(1);
+  const size_t trialDofCount = trialValues[0].extent(1);
+  assert(testValues[0].extent(2) == pointCount);
+  assert(trialValues[0].extent(2) == pointCount);
+  for (size_t trialDof = 0; trialDof < trialDofCount; ++trialDof)
+    for (size_t testDof = 0; testDof < testDofCount; ++testDof) {
+      ResultType sum = 0.;
+      for (size_t point = 0; point < pointCount; ++point)
+        sum += m_functor.evaluate(geomData.const_slice(point),
+                                  testValues.const_slice(testDof, point),
+                                  trialValues.const_slice(trialDof, point)) *
+               geomData.integrationElements(point) * weights[point];
+      result(testDof, trialDof) = sum;
+    }
 }
 
 } // namespace Fiber

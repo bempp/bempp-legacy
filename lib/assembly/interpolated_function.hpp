@@ -18,7 +18,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-
 #ifndef bempp_interpolated_function_hpp
 #define bempp_interpolated_function_hpp
 
@@ -31,8 +30,7 @@
 
 #include "../common/armadillo_fwd.hpp"
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \cond FORWARD_DECL */
 class Grid;
@@ -48,102 +46,100 @@ template <typename ValueType> class InterpolatedFunction;
  *  (exportToVtk()) works.
  */
 template <typename ValueType>
-class InterpolatedFunction : public Function<ValueType>
-{
+class InterpolatedFunction : public Function<ValueType> {
 public:
-    typedef typename Fiber::ScalarTraits<ValueType>::RealType CoordinateType;
+  typedef typename Fiber::ScalarTraits<ValueType>::RealType CoordinateType;
 
-    enum InterpolationMethod {
-        LINEAR
-    };
+  enum InterpolationMethod {
+    LINEAR
+  };
 
-    /** \brief Construct function given its values at vertices of a grid. */
-    InterpolatedFunction(const Grid& grid,
-                         const arma::Mat<ValueType>& vertexValues,
-                         InterpolationMethod method = LINEAR);
+  /** \brief Construct function given its values at vertices of a grid. */
+  InterpolatedFunction(const Grid &grid,
+                       const arma::Mat<ValueType> &vertexValues,
+                       InterpolationMethod method = LINEAR);
 
-    /** \brief Interpolation grid. */
-    const Grid& grid() const;
+  /** \brief Interpolation grid. */
+  const Grid &grid() const;
 
-    virtual int worldDimension() const;
-    virtual int codomainDimension() const;
-    virtual void addGeometricalDependencies(size_t& geomDeps) const;
+  virtual int worldDimension() const;
+  virtual int codomainDimension() const;
+  virtual void addGeometricalDependencies(size_t &geomDeps) const;
 
-    virtual void evaluate(const Fiber::GeometricalData<CoordinateType>& geomData,
-                          arma::Mat<ValueType>& result) const;
+  virtual void evaluate(const Fiber::GeometricalData<CoordinateType> &geomData,
+                        arma::Mat<ValueType> &result) const;
 
-//    virtual void evaluate(const arma::Mat<ValueType>& global,
-//                          arma::Mat<ValueType>& values) const;
+  //    virtual void evaluate(const arma::Mat<ValueType>& global,
+  //                          arma::Mat<ValueType>& values) const;
 
-    /** Export the function to a VTK file.
+  /** Export the function to a VTK file.
 
-      \param[in] dataLabel
-        Label used to identify the function in the VTK file.
+    \param[in] dataLabel
+      Label used to identify the function in the VTK file.
 
-      \param[in] fileNamesBase
-        Base name of the output files. It should not contain any directory
-        part or filename extensions.
+    \param[in] fileNamesBase
+      Base name of the output files. It should not contain any directory
+      part or filename extensions.
 
-      \param[in] filesPath
-        Output directory. Can be set to NULL, in which case the files are
-        output in the current directory.
+    \param[in] filesPath
+      Output directory. Can be set to NULL, in which case the files are
+      output in the current directory.
 
-      \param[in] type
-        Output type (default: ASCII). See Dune reference manual for more
-        details. */
-    void exportToVtk(const char* dataLabel,
-                     const char* fileNamesBase, const char* filesPath = 0,
-                     VtkWriter::OutputType type = VtkWriter::ASCII) const;
+    \param[in] type
+      Output type (default: ASCII). See Dune reference manual for more
+      details. */
+  void exportToVtk(const char *dataLabel, const char *fileNamesBase,
+                   const char *filesPath = 0,
+                   VtkWriter::OutputType type = VtkWriter::ASCII) const;
 
-//    /** \brief Copy vertex values from a function defined on a subset of the
-//      surface of the interpolation grid. */
-//    void setSurfaceValues(const GridFunction<ValueType>& surfaceFunction);
+  //    /** \brief Copy vertex values from a function defined on a subset of the
+  //      surface of the interpolation grid. */
+  //    void setSurfaceValues(const GridFunction<ValueType>& surfaceFunction);
 
-//    /** \brief Copy vertex values from a function interpolated on a surface grid. */
-//    void setSurfaceValues(const InterpolatedFunction<ValueType>& surfaceFunction);
+  //    /** \brief Copy vertex values from a function interpolated on a surface
+  // grid. */
+  //    void setSurfaceValues(const InterpolatedFunction<ValueType>&
+  // surfaceFunction);
 
-    InterpolatedFunction<ValueType>& operator+=(
-            const InterpolatedFunction<ValueType> &rhs);
-    InterpolatedFunction<ValueType>& operator-=(
-            const InterpolatedFunction<ValueType> &rhs);
-    InterpolatedFunction<ValueType>& operator*=(ValueType rhs);
-    InterpolatedFunction<ValueType>& operator/=(ValueType rhs);
+  InterpolatedFunction<ValueType> &
+  operator+=(const InterpolatedFunction<ValueType> &rhs);
+  InterpolatedFunction<ValueType> &
+  operator-=(const InterpolatedFunction<ValueType> &rhs);
+  InterpolatedFunction<ValueType> &operator*=(ValueType rhs);
+  InterpolatedFunction<ValueType> &operator/=(ValueType rhs);
 
-    const InterpolatedFunction<ValueType> operator+(
-            const InterpolatedFunction<ValueType> &other) const;
-    const InterpolatedFunction<ValueType> operator-(
-            const InterpolatedFunction<ValueType> &other) const;
+  const InterpolatedFunction<ValueType>
+  operator+(const InterpolatedFunction<ValueType> &other) const;
+  const InterpolatedFunction<ValueType>
+  operator-(const InterpolatedFunction<ValueType> &other) const;
 
-    const InterpolatedFunction<ValueType> operator/(
-            ValueType other) const;
-
-private:
-    void checkCompatibility(const InterpolatedFunction<ValueType>& other) const;
+  const InterpolatedFunction<ValueType> operator/(ValueType other) const;
 
 private:
-    const Grid& m_grid;
-    arma::Mat<ValueType> m_vertexValues;
-    InterpolationMethod m_method;
+  void checkCompatibility(const InterpolatedFunction<ValueType> &other) const;
+
+private:
+  const Grid &m_grid;
+  arma::Mat<ValueType> m_vertexValues;
+  InterpolationMethod m_method;
 };
 
 /** \relates InterpolatedFunction
  *  \brief Return an InterpolatedFunction representing the function \p rhs
  *  multiplied by the scalar \p lhs. */
 template <typename ValueType>
-const InterpolatedFunction<ValueType> operator*(
-        ValueType lhs, const InterpolatedFunction<ValueType>& rhs)
-{
-    return InterpolatedFunction<ValueType>(rhs) *= lhs;
+const InterpolatedFunction<ValueType>
+operator*(ValueType lhs, const InterpolatedFunction<ValueType> &rhs) {
+  return InterpolatedFunction<ValueType>(rhs) *= lhs;
 }
 
 /** \relates InterpolatedFunction
  *  \brief Return an InterpolatedFunction representing the function \p lhs
  *  multiplied by the scalar \p rhs. */
 template <typename ValueType>
-const InterpolatedFunction<ValueType> operator*(
-        const InterpolatedFunction<ValueType>& lhs, ValueType rhs)
-{
-    return operator*(rhs, lhs);
+const InterpolatedFunction<ValueType>
+operator*(const InterpolatedFunction<ValueType> &lhs, ValueType rhs) {
+  return operator*(rhs, lhs);
 }
 
 } // namespace Bempp

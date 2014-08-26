@@ -27,38 +27,36 @@
 
 #include <boost/scoped_ptr.hpp>
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \ingroup space
  *  \brief Base class for spaces of scalar-valued functions. */
 template <typename BasisFunctionType>
-class ScalarSpace : public Space<BasisFunctionType>
-{
-    typedef Space<BasisFunctionType> Base;
+class ScalarSpace : public Space<BasisFunctionType> {
+  typedef Space<BasisFunctionType> Base;
+
 public:
-    typedef typename Base::CoordinateType CoordinateType;
-    typedef typename Base::CollectionOfShapesetTransformations
-    CollectionOfShapesetTransformations;
-    typedef typename Base::CollectionOfBasisTransformations
-    CollectionOfBasisTransformations;
+  typedef typename Base::CoordinateType CoordinateType;
+  typedef typename Base::CollectionOfShapesetTransformations
+  CollectionOfShapesetTransformations;
+  typedef typename Base::CollectionOfBasisTransformations
+  CollectionOfBasisTransformations;
 
-    explicit ScalarSpace(const shared_ptr<const Grid>& grid);
-    /** \brief Copy constructor. */
-    ScalarSpace(const ScalarSpace& other);
-    virtual ~ScalarSpace();
-    /** \brief Assignment operator. */
-    ScalarSpace& operator=(const ScalarSpace& other);
+  explicit ScalarSpace(const shared_ptr<const Grid> &grid);
+  /** \brief Copy constructor. */
+  ScalarSpace(const ScalarSpace &other);
+  virtual ~ScalarSpace();
+  /** \brief Assignment operator. */
+  ScalarSpace &operator=(const ScalarSpace &other);
 
-    virtual const CollectionOfShapesetTransformations&
-    basisFunctionValue() const;
+  virtual const CollectionOfShapesetTransformations &basisFunctionValue() const;
 
-    virtual void getGlobalDofInterpolationDirections(
-            arma::Mat<CoordinateType>& directions) const;
+  virtual void getGlobalDofInterpolationDirections(
+      arma::Mat<CoordinateType> &directions) const;
 
 private:
-    struct Impl;
-    boost::scoped_ptr<Impl> m_impl;
+  struct Impl;
+  boost::scoped_ptr<Impl> m_impl;
 };
 
 } // namespace Bempp

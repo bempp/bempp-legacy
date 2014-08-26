@@ -23,11 +23,11 @@
 
 #include "hypersingular_integral_operator.hpp"
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \ingroup abstract_boundary_operators
- *  \brief Standard implementation of a hypersingular singular integral operator.
+ *  \brief Standard implementation of a hypersingular singular integral
+ *operator.
  *
  *  This class provides an implementation of the interface defined by
  *  HypersingularIntegralOperator that is sufficient for most purposes. The
@@ -61,180 +61,194 @@ namespace Bempp
  *  <tt>std::complex<double></tt> is not allowed. If either \p
  *  BasisFunctionType_ or \p KernelType_ is a complex type, then \p ResultType_
  *  must be set to the same type. */
-template <typename BasisFunctionType_, typename KernelType_, typename ResultType_>
-class GeneralHypersingularIntegralOperator :
-        public HypersingularIntegralOperator<
-            BasisFunctionType_, KernelType_, ResultType_>
-{
-    typedef HypersingularIntegralOperator<
-    BasisFunctionType_, KernelType_, ResultType_> Base;
+template <typename BasisFunctionType_, typename KernelType_,
+          typename ResultType_>
+class GeneralHypersingularIntegralOperator
+    : public HypersingularIntegralOperator<BasisFunctionType_, KernelType_,
+                                           ResultType_> {
+  typedef HypersingularIntegralOperator<BasisFunctionType_, KernelType_,
+                                        ResultType_> Base;
+
 public:
-    /** \brief Type of the values of the basis functions into which functions
-     *  acted upon by the operator are expanded. */
-    typedef typename Base::BasisFunctionType BasisFunctionType;
-    /** \brief Type of the values of kernel functions. */
-    typedef typename Base::KernelType KernelType;
-    /** \copydoc ElementaryIntegralOperator::ResultType */
-    typedef typename Base::ResultType ResultType;
-    /** \copydoc ElementaryIntegralOperator::CoordinateType */
-    typedef typename Base::CoordinateType CoordinateType;
-    /** \copydoc ElementaryIntegralOperator::CollectionOfShapesetTransformations */
-    typedef typename Base::CollectionOfShapesetTransformations
-    CollectionOfShapesetTransformations;
-    /** \copydoc ElementaryIntegralOperator::CollectionOfBasisTransformations */
-    typedef typename Base::CollectionOfBasisTransformations
-    CollectionOfBasisTransformations;
-    /** \copydoc ElementaryIntegralOperator::CollectionOfKernels */
-    typedef typename Base::CollectionOfKernels CollectionOfKernels;
-    /** \copydoc ElementaryIntegralOperator::TestKernelTrialIntegral */
-    typedef typename Base::TestKernelTrialIntegral TestKernelTrialIntegral;
+  /** \brief Type of the values of the basis functions into which functions
+   *  acted upon by the operator are expanded. */
+  typedef typename Base::BasisFunctionType BasisFunctionType;
+  /** \brief Type of the values of kernel functions. */
+  typedef typename Base::KernelType KernelType;
+  /** \copydoc ElementaryIntegralOperator::ResultType */
+  typedef typename Base::ResultType ResultType;
+  /** \copydoc ElementaryIntegralOperator::CoordinateType */
+  typedef typename Base::CoordinateType CoordinateType;
+  /** \copydoc ElementaryIntegralOperator::CollectionOfShapesetTransformations
+   */
+  typedef typename Base::CollectionOfShapesetTransformations
+  CollectionOfShapesetTransformations;
+  /** \copydoc ElementaryIntegralOperator::CollectionOfBasisTransformations */
+  typedef typename Base::CollectionOfBasisTransformations
+  CollectionOfBasisTransformations;
+  /** \copydoc ElementaryIntegralOperator::CollectionOfKernels */
+  typedef typename Base::CollectionOfKernels CollectionOfKernels;
+  /** \copydoc ElementaryIntegralOperator::TestKernelTrialIntegral */
+  typedef typename Base::TestKernelTrialIntegral TestKernelTrialIntegral;
 
-    /** \brief Constructor
+  /** \brief Constructor
 
-     *  \param[in] domain
-     *    %Function space being the domain of the operator.
-     *  \param[in] range
-     *    %Function space being the range of the operator.
-     *  \param[in] dualToRange
-     *    %Function space dual to the the range of the operator.
-     *  \param[in] label
-     *    Textual label of the operator. If empty, a unique label is generated
-     *    automatically.
-     *  \param[in] symmetry
-     *    Symmetry of the weak form of the operator. Can be any combination of
-     *    the flags defined in the enumeration type Symmetry.
-     *  \param[in] kernelFunctor
-     *    A functor object to be used to evaluate the collection of kernels of
-     *    this operator at a single pair of points. The KernelFunctor class
-     *    must provide the interface defined in the documentation of
-     *    DefaultCollectionOfKernels.
-     *  \param[in] testTransformationsFunctor
-     *    A functor object to be used to evaluate the collection of test
-     *    function transformations at a single point. The
-     *    TestTransformationsFunctor class must provide the interface defined in
-     *    the documentation of DefaultCollectionOfShapesetTransformations.
-     *  \param[in] trialTransformationsFunctor
-     *    A functor object to be used to evaluate the collection of trial
-     *    function transformations at a single point. The
-     *    TrialTransformationsFunctor class must provide the interface defined
-     *    in the documentation of DefaultCollectionOfShapesetTransformations.
-     *  \param[in] integrandFunctor
-     *    A functor object to be used to evaluate the integrand of the weak form
-     *    at a single pair of points. The IntegrandFunctor class must provide
-     *    the interface defined in the documentation of
-     *    DefaultTestKernelTrialIntegral.
-     *  \param[in] offDiagonalKernelFunctor
-     *    A functor object that may be used to evaluate the collection of kernels of
-     *    this operator at a single pair of points lying in nonadjacent elements.
-     *    The KernelFunctor class must provide the interface defined in the
-     *    documentation of DefaultCollectionOfKernels.
-     *  \param[in] offDiagonalTestTransformationsFunctor
-     *    A functor object to be used to evaluate the collection of test
-     *    function transformations at a single point. The
-     *    TestTransformationsFunctor class must provide the interface defined in
-     *    the documentation of DefaultCollectionOfShapesetTransformations.
-     *  \param[in] offDiagonalTrialTransformationsFunctor
-     *    A functor object to be used to evaluate the collection of trial
-     *    function transformations at a single point. The
-     *    TrialTransformationsFunctor class must provide the interface defined
-     *    in the documentation of DefaultCollectionOfShapesetTransformations.
-     *  \param[in] offDiagonalIntegrandFunctor
-     *    A functor object to be used to evaluate the integrand of the weak form
-     *    at a single pair of points. The IntegrandFunctor class must provide
-     *    the interface defined in the documentation of
-     *    DefaultTestKernelTrialIntegral.
-     *
-     *  None of the shared pointers may be null and the spaces \p range and \p
-     *  dualToRange must be defined on the same grid, otherwise an exception is
-     *  thrown.
-     *
-     *  The implementation of this constructor is contained in
-     *  general_elementary_singular_integral_operator_imp.hpp. This
-     *  header must be included in any file creating a new
-     *  GeneralHypersingularIntegralOperator object.
-     */
-    template <typename KernelFunctor,
-              typename TestTransformationsFunctor,
-              typename TrialTransformationsFunctor,
-              typename IntegrandFunctor,
-              typename OffDiagonalKernelFunctor,
-              typename OffDiagonalTestTransformationsFunctor,
-              typename OffDiagonalTrialTransformationsFunctor,
-              typename OffDiagonalIntegrandFunctor>
-    GeneralHypersingularIntegralOperator(
-            const shared_ptr<const Space<BasisFunctionType_> >& domain,
-            const shared_ptr<const Space<BasisFunctionType_> >& range,
-            const shared_ptr<const Space<BasisFunctionType_> >& dualToRange,
-            const std::string& label,
-            int symmetry,
-            const KernelFunctor& kernelFunctor,
-            const TestTransformationsFunctor& testTransformationsFunctor,
-            const TrialTransformationsFunctor& trialTransformationsFunctor,
-            const IntegrandFunctor& integrandFunctor,
-            const OffDiagonalKernelFunctor& offDiagonalKernelFunctor,
-            const OffDiagonalTestTransformationsFunctor& offDiagonalTestTransformationsFunctor,
-            const OffDiagonalTrialTransformationsFunctor& offDiagonalTrialTransformationsFunctor,
-            const OffDiagonalIntegrandFunctor& offDiagonalIntegrandFunctor);
+   *  \param[in] domain
+   *    %Function space being the domain of the operator.
+   *  \param[in] range
+   *    %Function space being the range of the operator.
+   *  \param[in] dualToRange
+   *    %Function space dual to the the range of the operator.
+   *  \param[in] label
+   *    Textual label of the operator. If empty, a unique label is generated
+   *    automatically.
+   *  \param[in] symmetry
+   *    Symmetry of the weak form of the operator. Can be any combination of
+   *    the flags defined in the enumeration type Symmetry.
+   *  \param[in] kernelFunctor
+   *    A functor object to be used to evaluate the collection of kernels of
+   *    this operator at a single pair of points. The KernelFunctor class
+   *    must provide the interface defined in the documentation of
+   *    DefaultCollectionOfKernels.
+   *  \param[in] testTransformationsFunctor
+   *    A functor object to be used to evaluate the collection of test
+   *    function transformations at a single point. The
+   *    TestTransformationsFunctor class must provide the interface defined in
+   *    the documentation of DefaultCollectionOfShapesetTransformations.
+   *  \param[in] trialTransformationsFunctor
+   *    A functor object to be used to evaluate the collection of trial
+   *    function transformations at a single point. The
+   *    TrialTransformationsFunctor class must provide the interface defined
+   *    in the documentation of DefaultCollectionOfShapesetTransformations.
+   *  \param[in] integrandFunctor
+   *    A functor object to be used to evaluate the integrand of the weak form
+   *    at a single pair of points. The IntegrandFunctor class must provide
+   *    the interface defined in the documentation of
+   *    DefaultTestKernelTrialIntegral.
+   *  \param[in] offDiagonalKernelFunctor
+   *    A functor object that may be used to evaluate the collection of kernels
+   of
+   *    this operator at a single pair of points lying in nonadjacent elements.
+   *    The KernelFunctor class must provide the interface defined in the
+   *    documentation of DefaultCollectionOfKernels.
+   *  \param[in] offDiagonalTestTransformationsFunctor
+   *    A functor object to be used to evaluate the collection of test
+   *    function transformations at a single point. The
+   *    TestTransformationsFunctor class must provide the interface defined in
+   *    the documentation of DefaultCollectionOfShapesetTransformations.
+   *  \param[in] offDiagonalTrialTransformationsFunctor
+   *    A functor object to be used to evaluate the collection of trial
+   *    function transformations at a single point. The
+   *    TrialTransformationsFunctor class must provide the interface defined
+   *    in the documentation of DefaultCollectionOfShapesetTransformations.
+   *  \param[in] offDiagonalIntegrandFunctor
+   *    A functor object to be used to evaluate the integrand of the weak form
+   *    at a single pair of points. The IntegrandFunctor class must provide
+   *    the interface defined in the documentation of
+   *    DefaultTestKernelTrialIntegral.
+   *
+   *  None of the shared pointers may be null and the spaces \p range and \p
+   *  dualToRange must be defined on the same grid, otherwise an exception is
+   *  thrown.
+   *
+   *  The implementation of this constructor is contained in
+   *  general_elementary_singular_integral_operator_imp.hpp. This
+   *  header must be included in any file creating a new
+   *  GeneralHypersingularIntegralOperator object.
+   */
+  template <typename KernelFunctor, typename TestTransformationsFunctor,
+            typename TrialTransformationsFunctor, typename IntegrandFunctor,
+            typename OffDiagonalKernelFunctor,
+            typename OffDiagonalTestTransformationsFunctor,
+            typename OffDiagonalTrialTransformationsFunctor,
+            typename OffDiagonalIntegrandFunctor>
+  GeneralHypersingularIntegralOperator(
+      const shared_ptr<const Space<BasisFunctionType_>> &domain,
+      const shared_ptr<const Space<BasisFunctionType_>> &range,
+      const shared_ptr<const Space<BasisFunctionType_>> &dualToRange,
+      const std::string &label, int symmetry,
+      const KernelFunctor &kernelFunctor,
+      const TestTransformationsFunctor &testTransformationsFunctor,
+      const TrialTransformationsFunctor &trialTransformationsFunctor,
+      const IntegrandFunctor &integrandFunctor,
+      const OffDiagonalKernelFunctor &offDiagonalKernelFunctor,
+      const OffDiagonalTestTransformationsFunctor &
+          offDiagonalTestTransformationsFunctor,
+      const OffDiagonalTrialTransformationsFunctor &
+          offDiagonalTrialTransformationsFunctor,
+      const OffDiagonalIntegrandFunctor &offDiagonalIntegrandFunctor);
 
-    /** \overload
-     *
-     *  This constructor takes the same arguments as the preceding one except
-     *  for the \p integral and \p offDiagonalIntegral arguments, which should
-     *  be shared pointers to instances of (a subclass of)
-     *  Fiber::TestKernelTrialIntegral rather than functors.
-     */
-    template <typename KernelFunctor,
-              typename TestTransformationsFunctor,
-              typename TrialTransformationsFunctor,
-              typename OffDiagonalKernelFunctor,
-              typename OffDiagonalTestTransformationsFunctor,
-              typename OffDiagonalTrialTransformationsFunctor>
-    GeneralHypersingularIntegralOperator(
-            const shared_ptr<const Space<BasisFunctionType_> >& domain,
-            const shared_ptr<const Space<BasisFunctionType_> >& range,
-            const shared_ptr<const Space<BasisFunctionType_> >& dualToRange,
-            const std::string& label,
-            int symmetry,
-            const KernelFunctor& kernelFunctor,
-            const TestTransformationsFunctor& testTransformationsFunctor,
-            const TrialTransformationsFunctor& trialTransformationsFunctor,
-            const shared_ptr<Fiber::TestKernelTrialIntegral<
-            BasisFunctionType_, KernelType_, ResultType_> >& integral,
-            const OffDiagonalKernelFunctor& offDiagonalKernelFunctor,
-            const OffDiagonalTestTransformationsFunctor& offDiagonalTestTransformationsFunctor,
-            const OffDiagonalTrialTransformationsFunctor& offDiagonalTrialTransformationsFunctor,
-            const shared_ptr<Fiber::TestKernelTrialIntegral<
-            BasisFunctionType_, KernelType_, ResultType_> >& offDiagonalIntegral);
+  /** \overload
+   *
+   *  This constructor takes the same arguments as the preceding one except
+   *  for the \p integral and \p offDiagonalIntegral arguments, which should
+   *  be shared pointers to instances of (a subclass of)
+   *  Fiber::TestKernelTrialIntegral rather than functors.
+   */
+  template <typename KernelFunctor, typename TestTransformationsFunctor,
+            typename TrialTransformationsFunctor,
+            typename OffDiagonalKernelFunctor,
+            typename OffDiagonalTestTransformationsFunctor,
+            typename OffDiagonalTrialTransformationsFunctor>
+  GeneralHypersingularIntegralOperator(
+      const shared_ptr<const Space<BasisFunctionType_>> &domain,
+      const shared_ptr<const Space<BasisFunctionType_>> &range,
+      const shared_ptr<const Space<BasisFunctionType_>> &dualToRange,
+      const std::string &label, int symmetry,
+      const KernelFunctor &kernelFunctor,
+      const TestTransformationsFunctor &testTransformationsFunctor,
+      const TrialTransformationsFunctor &trialTransformationsFunctor,
+      const shared_ptr<Fiber::TestKernelTrialIntegral<
+          BasisFunctionType_, KernelType_, ResultType_>> &integral,
+      const OffDiagonalKernelFunctor &offDiagonalKernelFunctor,
+      const OffDiagonalTestTransformationsFunctor &
+          offDiagonalTestTransformationsFunctor,
+      const OffDiagonalTrialTransformationsFunctor &
+          offDiagonalTrialTransformationsFunctor,
+      const shared_ptr<Fiber::TestKernelTrialIntegral<
+          BasisFunctionType_, KernelType_, ResultType_>> &offDiagonalIntegral);
 
-    virtual const CollectionOfKernels& kernels() const
-    { return *m_kernels; }
-    virtual const CollectionOfShapesetTransformations& testTransformations() const
-    { return *m_testTransformations; }
-    virtual const CollectionOfShapesetTransformations& trialTransformations() const
-    { return *m_trialTransformations; }
-    virtual const TestKernelTrialIntegral& integral() const
-    { return *m_integral; }
+  virtual const CollectionOfKernels &kernels() const { return *m_kernels; }
+  virtual const CollectionOfShapesetTransformations &
+  testTransformations() const {
+    return *m_testTransformations;
+  }
+  virtual const CollectionOfShapesetTransformations &
+  trialTransformations() const {
+    return *m_trialTransformations;
+  }
+  virtual const TestKernelTrialIntegral &integral() const {
+    return *m_integral;
+  }
 
-    virtual const CollectionOfKernels& offDiagonalKernels() const
-    { return *m_offDiagonalKernels; }
-    virtual const CollectionOfShapesetTransformations& offDiagonalTestTransformations() const
-    { return *m_offDiagonalTestTransformations; }
-    virtual const CollectionOfShapesetTransformations& offDiagonalTrialTransformations() const
-    { return *m_offDiagonalTrialTransformations; }
-    virtual const TestKernelTrialIntegral& offDiagonalIntegral() const
-    { return *m_offDiagonalIntegral; }
+  virtual const CollectionOfKernels &offDiagonalKernels() const {
+    return *m_offDiagonalKernels;
+  }
+  virtual const CollectionOfShapesetTransformations &
+  offDiagonalTestTransformations() const {
+    return *m_offDiagonalTestTransformations;
+  }
+  virtual const CollectionOfShapesetTransformations &
+  offDiagonalTrialTransformations() const {
+    return *m_offDiagonalTrialTransformations;
+  }
+  virtual const TestKernelTrialIntegral &offDiagonalIntegral() const {
+    return *m_offDiagonalIntegral;
+  }
 
 private:
-    /** \cond PRIVATE */
-    shared_ptr<CollectionOfKernels> m_kernels;
-    shared_ptr<CollectionOfShapesetTransformations> m_testTransformations;
-    shared_ptr<CollectionOfShapesetTransformations> m_trialTransformations;
-    shared_ptr<TestKernelTrialIntegral> m_integral;
-    shared_ptr<CollectionOfKernels> m_offDiagonalKernels;
-    shared_ptr<CollectionOfShapesetTransformations> m_offDiagonalTestTransformations;
-    shared_ptr<CollectionOfShapesetTransformations> m_offDiagonalTrialTransformations;
-    shared_ptr<TestKernelTrialIntegral> m_offDiagonalIntegral;
-    /** \endcond */
+  /** \cond PRIVATE */
+  shared_ptr<CollectionOfKernels> m_kernels;
+  shared_ptr<CollectionOfShapesetTransformations> m_testTransformations;
+  shared_ptr<CollectionOfShapesetTransformations> m_trialTransformations;
+  shared_ptr<TestKernelTrialIntegral> m_integral;
+  shared_ptr<CollectionOfKernels> m_offDiagonalKernels;
+  shared_ptr<CollectionOfShapesetTransformations>
+  m_offDiagonalTestTransformations;
+  shared_ptr<CollectionOfShapesetTransformations>
+  m_offDiagonalTrialTransformations;
+  shared_ptr<TestKernelTrialIntegral> m_offDiagonalIntegral;
+  /** \endcond */
 };
 
 } // namespace Bempp

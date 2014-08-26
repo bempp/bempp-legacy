@@ -21,36 +21,32 @@
 #include "initialize_interpolator_for_modified_helmholtz_3d_kernels.hpp"
 #include "explicit_instantiation.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 template <typename ValueType>
 void initializeInterpolatorForModifiedHelmholtz3dKernels(
-        ValueType waveNumber,
-        typename ScalarTraits<ValueType>::RealType maxDist,
-        int interpPtsPerWavelength,
-        HermiteInterpolator<ValueType>& interpolator)
-{
-    typedef typename ScalarTraits<ValueType>::RealType CoordinateType;
-    const CoordinateType minDist = 0.;
-    const CoordinateType wavelength = 2. * M_PI / std::abs(waveNumber);
-    const int pointCount =
-            (maxDist - minDist) / wavelength * interpPtsPerWavelength + 1;
-    std::vector<ValueType> values(pointCount), derivatives(pointCount);
-    for (int i = 0; i < pointCount; ++i) {
-        CoordinateType dist =
-            minDist + (maxDist - minDist) * i / CoordinateType(pointCount - 1);
-        ValueType exponential = exp(-waveNumber * dist);
-        values[i] = exponential;
-        derivatives[i] = -waveNumber * exponential;
-    }
-    interpolator.initialize(minDist, maxDist, values, derivatives);
+    ValueType waveNumber, typename ScalarTraits<ValueType>::RealType maxDist,
+    int interpPtsPerWavelength, HermiteInterpolator<ValueType> &interpolator) {
+  typedef typename ScalarTraits<ValueType>::RealType CoordinateType;
+  const CoordinateType minDist = 0.;
+  const CoordinateType wavelength = 2. * M_PI / std::abs(waveNumber);
+  const int pointCount =
+      (maxDist - minDist) / wavelength * interpPtsPerWavelength + 1;
+  std::vector<ValueType> values(pointCount), derivatives(pointCount);
+  for (int i = 0; i < pointCount; ++i) {
+    CoordinateType dist =
+        minDist + (maxDist - minDist) * i / CoordinateType(pointCount - 1);
+    ValueType exponential = exp(-waveNumber * dist);
+    values[i] = exponential;
+    derivatives[i] = -waveNumber * exponential;
+  }
+  interpolator.initialize(minDist, maxDist, values, derivatives);
 }
 
-#define INSTANTIATE_FUNCTION(KERNEL) \
-   template void initializeInterpolatorForModifiedHelmholtz3dKernels( \
-       KERNEL, ScalarTraits<KERNEL>::RealType, int, \
-       HermiteInterpolator<KERNEL>&);
+#define INSTANTIATE_FUNCTION(KERNEL)                                           \
+  template void initializeInterpolatorForModifiedHelmholtz3dKernels(           \
+      KERNEL, ScalarTraits<KERNEL>::RealType, int,                             \
+      HermiteInterpolator<KERNEL> &);
 
 FIBER_ITERATE_OVER_KERNEL_TYPES(INSTANTIATE_FUNCTION);
 

@@ -28,8 +28,7 @@
 #include "../common/armadillo_fwd.hpp"
 #include <memory>
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \cond FORWARD_DECL */
 class Grid;
@@ -38,97 +37,102 @@ class Grid;
 /** \ingroup grid
     \brief %Grid factory.
 
-  This class provides static member functions to construct grids on the fly and to import grids from
+  This class provides static member functions to construct grids on the fly and
+  to import grids from
   existing files.
   */
-class GridFactory
-{
+class GridFactory {
 public:
-    /** \brief Construct a regular structured grid.
+  /** \brief Construct a regular structured grid.
 
-      \param[in] params     Parameters of the grid to be constructed.
-      \param[in] lowerLeft  Coordinates of the lower left corner of the grid.
-      \param[in] upperRight Coordinates of the upper right corner of the grid.
-      \param[in] nElements  Number of grid subdivisions in each direction.
+    \param[in] params     Parameters of the grid to be constructed.
+    \param[in] lowerLeft  Coordinates of the lower left corner of the grid.
+    \param[in] upperRight Coordinates of the upper right corner of the grid.
+    \param[in] nElements  Number of grid subdivisions in each direction.
 
-      This function constructs a regular structured grid. Its dimension, \p
-      dimGrid, and the dimension of the surrounding space, \p dimWorld, are
-      determined from the parameter \p params. The constructed grid covers the
-      \p dimGrid-dimensional cube
+    This function constructs a regular structured grid. Its dimension, \p
+    dimGrid, and the dimension of the surrounding space, \p dimWorld, are
+    determined from the parameter \p params. The constructed grid covers the
+    \p dimGrid-dimensional cube
 
-      [lowerLeft(0) upperRight(0)] x [lowerLeft(1) upperRight(1)] x ... x
-      [lowerLeft(dimGrid-1), upperRight(dimGrid-1)].
+    [lowerLeft(0) upperRight(0)] x [lowerLeft(1) upperRight(1)] x ... x
+    [lowerLeft(dimGrid-1), upperRight(dimGrid-1)].
 
-      The last \p dimWorld - \p dimGrid dimensions of all grid points are set
-      to zero.
+    The last \p dimWorld - \p dimGrid dimensions of all grid points are set
+    to zero.
 
-      Each side of the cube parallel to the <em>n</em>th coordinate axis is
-      subdivided into nElements(n) segments.
+    Each side of the cube parallel to the <em>n</em>th coordinate axis is
+    subdivided into nElements(n) segments.
 
-      \note Currently only grids with triangular topology are supported.
-    */
-    static shared_ptr<Grid> createStructuredGrid(
-            const GridParameters& params,
-            const arma::Col<double>& lowerLeft,
-            const arma::Col<double>& upperRight,
-            const arma::Col<unsigned int>& nElements);
+    \note Currently only grids with triangular topology are supported.
+  */
+  static shared_ptr<Grid>
+  createStructuredGrid(const GridParameters &params,
+                       const arma::Col<double> &lowerLeft,
+                       const arma::Col<double> &upperRight,
+                       const arma::Col<unsigned int> &nElements);
 
-    /** \brief Import grid from a file in Gmsh format.
+  /** \brief Import grid from a file in Gmsh format.
 
-      \param[in] params Parameters of the grid to be constructed.
-      \param[in] fileName Name of the Gmsh file.
-      \param[in] verbose  Output diagnostic information.
-      \param[in] insertBoundarySegments
+    \param[in] params Parameters of the grid to be constructed.
+    \param[in] fileName Name of the Gmsh file.
+    \param[in] verbose  Output diagnostic information.
+    \param[in] insertBoundarySegments
 
-      \bug Ask Dune developers about the significance of insertBoundarySegments.
-      \see <a href>http://geuz.org/gmsh/</a> for information about the Gmsh file format.
-      \see Dune::GmshReader documentation for information about the supported Gmsh features.
-    */
-    static shared_ptr<Grid> importGmshGrid(const GridParameters& params,
-            const std::string& fileName,
-            bool verbose=false, bool insertBoundarySegments=false);
+    \bug Ask Dune developers about the significance of insertBoundarySegments.
+    \see <a href>http://geuz.org/gmsh/</a> for information about the Gmsh file
+    format.
+    \see Dune::GmshReader documentation for information about the supported Gmsh
+    features.
+  */
+  static shared_ptr<Grid> importGmshGrid(const GridParameters &params,
+                                         const std::string &fileName,
+                                         bool verbose = false,
+                                         bool insertBoundarySegments = false);
 
-    /** \brief Import grid from a file in Gmsh format.
+  /** \brief Import grid from a file in Gmsh format.
 
-      \param[in] params Parameters of the grid to be constructed.
-      \param[in] fileName Name of the Gmsh file.
-      \param[in] boundaryId2PhysicalEntity
-      \param[in] elementIndex2PhysicalEntity
-      \param[in] verbose  Output diagnostic information.
-      \param[in] insertBoundarySegments
+    \param[in] params Parameters of the grid to be constructed.
+    \param[in] fileName Name of the Gmsh file.
+    \param[in] boundaryId2PhysicalEntity
+    \param[in] elementIndex2PhysicalEntity
+    \param[in] verbose  Output diagnostic information.
+    \param[in] insertBoundarySegments
 
-      \bug Ask Dune developers about the significance of the undocumented parameters.
-      \see <a href>http://geuz.org/gmsh/</a> for information about the Gmsh file format.
-      \see Dune::GmshReader documentation for information about the supported Gmsh features.
-    */
-    static shared_ptr<Grid> importGmshGrid(const GridParameters& params,
-            const std::string& fileName,
-            std::vector<int> &boundaryId2PhysicalEntity,
-            std::vector<int> &elementIndex2PhysicalEntity,
-            bool verbose=true, bool insertBoundarySegments=false);
+    \bug Ask Dune developers about the significance of the undocumented
+    parameters.
+    \see <a href>http://geuz.org/gmsh/</a> for information about the Gmsh file
+    format.
+    \see Dune::GmshReader documentation for information about the supported Gmsh
+    features.
+  */
+  static shared_ptr<Grid>
+  importGmshGrid(const GridParameters &params, const std::string &fileName,
+                 std::vector<int> &boundaryId2PhysicalEntity,
+                 std::vector<int> &elementIndex2PhysicalEntity,
+                 bool verbose = true, bool insertBoundarySegments = false);
 
-    /** \brief Create a grid from connectivity arrays.
-     *
-     *  \param[in] params
-     *    Parameters of the grid to be constructed.
-     *  \param[in] vertices
-     *    2D array whose (i, j)th element contains the ith
-     *    component of the jth vertex.
-     *  \param[in] elementCorners
-     *    2D array whose (i, j)th element contains the index of the ith vertex
-     *    of the jth element.
-     *  \param[in] domainIndices
-     *    (Optional) Vector whose ith element contains the domain index of
-     *    the ith element. By default, this argument is set to an empty vector,
-     *    in which case all elements are taken to belong to domain 0.
-     *
-     *  \note Currently only grids with triangular topology are supported.
-     */
-    static shared_ptr<Grid> createGridFromConnectivityArrays(
-            const GridParameters& params,
-            const arma::Mat<double>& vertices,
-            const arma::Mat<int>& elementCorners,
-            const std::vector<int>& domainIndices = std::vector<int>());
+  /** \brief Create a grid from connectivity arrays.
+   *
+   *  \param[in] params
+   *    Parameters of the grid to be constructed.
+   *  \param[in] vertices
+   *    2D array whose (i, j)th element contains the ith
+   *    component of the jth vertex.
+   *  \param[in] elementCorners
+   *    2D array whose (i, j)th element contains the index of the ith vertex
+   *    of the jth element.
+   *  \param[in] domainIndices
+   *    (Optional) Vector whose ith element contains the domain index of
+   *    the ith element. By default, this argument is set to an empty vector,
+   *    in which case all elements are taken to belong to domain 0.
+   *
+   *  \note Currently only grids with triangular topology are supported.
+   */
+  static shared_ptr<Grid> createGridFromConnectivityArrays(
+      const GridParameters &params, const arma::Mat<double> &vertices,
+      const arma::Mat<int> &elementCorners,
+      const std::vector<int> &domainIndices = std::vector<int>());
 };
 
 } // namespace Bempp

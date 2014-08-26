@@ -27,94 +27,81 @@
 #include "../fiber/default_collection_of_basis_transformations.hpp"
 #include "../fiber/default_test_kernel_trial_integral.hpp"
 
-namespace Bempp
-{
+namespace Bempp {
 
-template <typename BasisFunctionType_, typename KernelType_, typename ResultType_>
-template <typename KernelFunctor,
-          typename TestTransformationsFunctor,
-          typename TrialTransformationsFunctor,
-          typename IntegrandFunctor>
-GeneralElementarySingularIntegralOperator<
-BasisFunctionType_, KernelType_, ResultType_>::
-GeneralElementarySingularIntegralOperator(
-        const shared_ptr<const Space<BasisFunctionType_> >& domain,
-        const shared_ptr<const Space<BasisFunctionType_> >& range,
-        const shared_ptr<const Space<BasisFunctionType_> >& dualToRange,
-        const std::string& label,
-        int symmetry,
-        const KernelFunctor& kernelFunctor,
-        const TestTransformationsFunctor& testTransformationsFunctor,
-        const TrialTransformationsFunctor& trialTransformationsFunctor,
-        const IntegrandFunctor& integrandFunctor) :
-    Base(domain, range, dualToRange, label, symmetry),
-    m_kernels(
-        new Fiber::DefaultCollectionOfKernels<KernelFunctor>(kernelFunctor)),
-    m_testTransformations(
-        new Fiber::DefaultCollectionOfShapesetTransformations<TestTransformationsFunctor>(
-            testTransformationsFunctor)),
-    m_trialTransformations(
-        new Fiber::DefaultCollectionOfShapesetTransformations<TrialTransformationsFunctor>(
-            trialTransformationsFunctor)),
-    m_integral(
-        new Fiber::DefaultTestKernelTrialIntegral<IntegrandFunctor>(
-            integrandFunctor))
-{
-}
+template <typename BasisFunctionType_, typename KernelType_,
+          typename ResultType_>
+template <typename KernelFunctor, typename TestTransformationsFunctor,
+          typename TrialTransformationsFunctor, typename IntegrandFunctor>
+GeneralElementarySingularIntegralOperator<BasisFunctionType_, KernelType_,
+                                          ResultType_>::
+    GeneralElementarySingularIntegralOperator(
+        const shared_ptr<const Space<BasisFunctionType_>> &domain,
+        const shared_ptr<const Space<BasisFunctionType_>> &range,
+        const shared_ptr<const Space<BasisFunctionType_>> &dualToRange,
+        const std::string &label, int symmetry,
+        const KernelFunctor &kernelFunctor,
+        const TestTransformationsFunctor &testTransformationsFunctor,
+        const TrialTransformationsFunctor &trialTransformationsFunctor,
+        const IntegrandFunctor &integrandFunctor)
+    : Base(domain, range, dualToRange, label, symmetry),
+      m_kernels(
+          new Fiber::DefaultCollectionOfKernels<KernelFunctor>(kernelFunctor)),
+      m_testTransformations(
+          new Fiber::DefaultCollectionOfShapesetTransformations<
+              TestTransformationsFunctor>(testTransformationsFunctor)),
+      m_trialTransformations(
+          new Fiber::DefaultCollectionOfShapesetTransformations<
+              TrialTransformationsFunctor>(trialTransformationsFunctor)),
+      m_integral(new Fiber::DefaultTestKernelTrialIntegral<IntegrandFunctor>(
+          integrandFunctor)) {}
 
-template <typename BasisFunctionType_, typename KernelType_, typename ResultType_>
-template <typename KernelFunctor,
-          typename TestTransformationsFunctor,
+template <typename BasisFunctionType_, typename KernelType_,
+          typename ResultType_>
+template <typename KernelFunctor, typename TestTransformationsFunctor,
           typename TrialTransformationsFunctor>
-GeneralElementarySingularIntegralOperator<
-BasisFunctionType_, KernelType_, ResultType_>::
-GeneralElementarySingularIntegralOperator(
-        const shared_ptr<const Space<BasisFunctionType_> >& domain,
-        const shared_ptr<const Space<BasisFunctionType_> >& range,
-        const shared_ptr<const Space<BasisFunctionType_> >& dualToRange,
-        const std::string& label,
-        int symmetry,
-        const KernelFunctor& kernelFunctor,
-        const TestTransformationsFunctor& testTransformationsFunctor,
-        const TrialTransformationsFunctor& trialTransformationsFunctor,
+GeneralElementarySingularIntegralOperator<BasisFunctionType_, KernelType_,
+                                          ResultType_>::
+    GeneralElementarySingularIntegralOperator(
+        const shared_ptr<const Space<BasisFunctionType_>> &domain,
+        const shared_ptr<const Space<BasisFunctionType_>> &range,
+        const shared_ptr<const Space<BasisFunctionType_>> &dualToRange,
+        const std::string &label, int symmetry,
+        const KernelFunctor &kernelFunctor,
+        const TestTransformationsFunctor &testTransformationsFunctor,
+        const TrialTransformationsFunctor &trialTransformationsFunctor,
         const shared_ptr<Fiber::TestKernelTrialIntegral<
-        BasisFunctionType_, KernelType_, ResultType_> >& integral) :
-    Base(domain, range, dualToRange, label, symmetry),
-    m_kernels(
-        new Fiber::DefaultCollectionOfKernels<KernelFunctor>(kernelFunctor)),
-    m_testTransformations(
-        new Fiber::DefaultCollectionOfShapesetTransformations<TestTransformationsFunctor>(
-            testTransformationsFunctor)),
-    m_trialTransformations(
-        new Fiber::DefaultCollectionOfShapesetTransformations<TrialTransformationsFunctor>(
-            trialTransformationsFunctor)),
-    m_integral(integral)
-{
-}
+            BasisFunctionType_, KernelType_, ResultType_>> &integral)
+    : Base(domain, range, dualToRange, label, symmetry),
+      m_kernels(
+          new Fiber::DefaultCollectionOfKernels<KernelFunctor>(kernelFunctor)),
+      m_testTransformations(
+          new Fiber::DefaultCollectionOfShapesetTransformations<
+              TestTransformationsFunctor>(testTransformationsFunctor)),
+      m_trialTransformations(
+          new Fiber::DefaultCollectionOfShapesetTransformations<
+              TrialTransformationsFunctor>(trialTransformationsFunctor)),
+      m_integral(integral) {}
 
-template <typename BasisFunctionType_, typename KernelType_, typename ResultType_>
-GeneralElementarySingularIntegralOperator<
-BasisFunctionType_, KernelType_, ResultType_>::
-GeneralElementarySingularIntegralOperator(
-        const shared_ptr<const Space<BasisFunctionType_> >& domain,
-        const shared_ptr<const Space<BasisFunctionType_> >& range,
-        const shared_ptr<const Space<BasisFunctionType_> >& dualToRange,
-        const std::string& label,
-        int symmetry,
-        const shared_ptr<Fiber::CollectionOfKernels<KernelType_> >& kernels,
-        const shared_ptr<Fiber::CollectionOfShapesetTransformations<CoordinateType> >&
-        testTransformations,
-        const shared_ptr<Fiber::CollectionOfShapesetTransformations<CoordinateType> >&
-        trialTransformations,
+template <typename BasisFunctionType_, typename KernelType_,
+          typename ResultType_>
+GeneralElementarySingularIntegralOperator<BasisFunctionType_, KernelType_,
+                                          ResultType_>::
+    GeneralElementarySingularIntegralOperator(
+        const shared_ptr<const Space<BasisFunctionType_>> &domain,
+        const shared_ptr<const Space<BasisFunctionType_>> &range,
+        const shared_ptr<const Space<BasisFunctionType_>> &dualToRange,
+        const std::string &label, int symmetry,
+        const shared_ptr<Fiber::CollectionOfKernels<KernelType_>> &kernels,
+        const shared_ptr<Fiber::CollectionOfShapesetTransformations<
+            CoordinateType>> &testTransformations,
+        const shared_ptr<Fiber::CollectionOfShapesetTransformations<
+            CoordinateType>> &trialTransformations,
         const shared_ptr<Fiber::TestKernelTrialIntegral<
-        BasisFunctionType_, KernelType_, ResultType_> >& integral) :
-    Base(domain, range, dualToRange, label, symmetry),
-    m_kernels(kernels),
-    m_testTransformations(testTransformations),
-    m_trialTransformations(trialTransformations),
-    m_integral(integral)
-{
-}
+            BasisFunctionType_, KernelType_, ResultType_>> &integral)
+    : Base(domain, range, dualToRange, label, symmetry), m_kernels(kernels),
+      m_testTransformations(testTransformations),
+      m_trialTransformations(trialTransformations), m_integral(integral) {}
 
 } // namespace Bempp
 

@@ -30,33 +30,29 @@
 
 #include <boost/array.hpp>
 
-namespace Fiber
-{
+namespace Fiber {
 
-template <typename CoordinateType_>
-class SurfaceDiv3dElementaryFunctor
-{
+template <typename CoordinateType_> class SurfaceDiv3dElementaryFunctor {
 public:
-    typedef CoordinateType_ CoordinateType;
+  typedef CoordinateType_ CoordinateType;
 
-    int argumentDimension() const { return 2; }
-    int resultDimension() const { return 1; }
+  int argumentDimension() const { return 2; }
+  int resultDimension() const { return 1; }
 
-    void addDependencies(size_t& basisDeps, size_t& geomDeps) const {
-        basisDeps |= DERIVATIVES;
-        geomDeps |= INTEGRATION_ELEMENTS;
-    }
+  void addDependencies(size_t &basisDeps, size_t &geomDeps) const {
+    basisDeps |= DERIVATIVES;
+    geomDeps |= INTEGRATION_ELEMENTS;
+  }
 
-    template <typename ValueType>
-    void evaluate(
-            const ConstBasisDataSlice<ValueType>& basisData,
-            const ConstGeometricalDataSlice<CoordinateType>& geomData,
-            _1dSliceOf3dArray<ValueType>& result) const {
-        assert(basisData.componentCount() == 2);
+  template <typename ValueType>
+  void evaluate(const ConstBasisDataSlice<ValueType> &basisData,
+                const ConstGeometricalDataSlice<CoordinateType> &geomData,
+                _1dSliceOf3dArray<ValueType> &result) const {
+    assert(basisData.componentCount() == 2);
 
-        result(0) = (basisData.derivatives(0, 0) + basisData.derivatives(1, 1)) /
-            geomData.integrationElement();
-    }
+    result(0) = (basisData.derivatives(0, 0) + basisData.derivatives(1, 1)) /
+                geomData.integrationElement();
+  }
 };
 
 // Note: in C++11 we'll be able to make a "template typedef", or more precisely
@@ -64,12 +60,11 @@ public:
 /** \ingroup functors
  *  \brief Functor calculating the surface div of a scalar field in 3D. */
 template <typename CoordinateType_>
-class SurfaceDiv3dFunctor :
-        public ElementaryShapeTransformationFunctorWrapper<
-        SurfaceDiv3dElementaryFunctor<CoordinateType_> >
-{
+class SurfaceDiv3dFunctor
+    : public ElementaryShapeTransformationFunctorWrapper<
+          SurfaceDiv3dElementaryFunctor<CoordinateType_>> {
 public:
-    typedef CoordinateType_ CoordinateType;
+  typedef CoordinateType_ CoordinateType;
 };
 
 } // namespace Fiber

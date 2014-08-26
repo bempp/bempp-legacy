@@ -29,8 +29,7 @@
 #include <vector>
 #include <iostream>
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \cond FORWARD_DECL */
 template <typename BasisFunctionType> class Space;
@@ -40,51 +39,43 @@ template <typename BasisFunctionType> class Space;
  *
  *  \brief Data used by PotentialOperatorAcaAssemblyHelper to convert between
  *  H-matrix indices, point and component indices. */
-struct ComponentLists
-{
-    std::vector<int> pointIndices;
-    std::vector<std::vector<int> > componentIndices;
-    std::vector<std::vector<int> > arrayIndices;
+struct ComponentLists {
+  std::vector<int> pointIndices;
+  std::vector<std::vector<int>> componentIndices;
+  std::vector<std::vector<int>> arrayIndices;
 };
 
 /** \ingroup potential_assembly_internal
  *
  *  \brief Cache of ComponentLists objects. */
-class ComponentListsCache
-{
+class ComponentListsCache {
 public:
-    ComponentListsCache(const std::vector<unsigned int>& p2o,
-                        int componentCount);
-    ~ComponentListsCache();
+  ComponentListsCache(const std::vector<unsigned int> &p2o, int componentCount);
+  ~ComponentListsCache();
 
-    /** \brief Return the LocalDofLists object describing the DOFs corresponding to
-     *  AHMED matrix indices [start, start + indexCount). */
-    shared_ptr<const ComponentLists> get(
-        int start, int indexCount);
-
-private:
-    void findComponents(
-        int start,
-        int indexCount,
-        std::vector<int>& pointIndices,
-        std::vector<std::vector<int> >& componentIndices,
-        std::vector<std::vector<int> >& arrayIndices) const;
-
-    void findComponents(
-        int index,
-            std::vector<int>& pointIndices,
-            std::vector<std::vector<int> >& componentIndices,
-            std::vector<std::vector<int> >& arrayIndices) const;
+  /** \brief Return the LocalDofLists object describing the DOFs corresponding
+   * to
+   *  AHMED matrix indices [start, start + indexCount). */
+  shared_ptr<const ComponentLists> get(int start, int indexCount);
 
 private:
-    /** \cond PRIVATE */
-    const std::vector<unsigned int>& m_p2o;
-    int m_componentCount;
+  void findComponents(int start, int indexCount, std::vector<int> &pointIndices,
+                      std::vector<std::vector<int>> &componentIndices,
+                      std::vector<std::vector<int>> &arrayIndices) const;
 
-    typedef tbb::concurrent_unordered_map<std::pair<int, int>,
-        const ComponentLists*> ComponentListsMap;
-    ComponentListsMap m_map;
-    /** \endcond */
+  void findComponents(int index, std::vector<int> &pointIndices,
+                      std::vector<std::vector<int>> &componentIndices,
+                      std::vector<std::vector<int>> &arrayIndices) const;
+
+private:
+  /** \cond PRIVATE */
+  const std::vector<unsigned int> &m_p2o;
+  int m_componentCount;
+
+  typedef tbb::concurrent_unordered_map<
+      std::pair<int, int>, const ComponentLists *> ComponentListsMap;
+  ComponentListsMap m_map;
+  /** \endcond */
 };
 
 } // namespace Bempp

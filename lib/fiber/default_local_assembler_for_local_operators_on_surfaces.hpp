@@ -38,8 +38,7 @@
 #include <utility>
 #include <vector>
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \cond FORWARD_DECL */
 class OpenClHandler;
@@ -49,57 +48,70 @@ class QuadratureDescriptorSelectorForLocalOperators;
 template <typename CoordinateType> class SingleQuadratureRuleFamily;
 /** \endcond */
 
-template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
-class DefaultLocalAssemblerForLocalOperatorsOnSurfaces :
-    public LocalAssemblerForLocalOperators<ResultType>
-{
+template <typename BasisFunctionType, typename ResultType,
+          typename GeometryFactory>
+class DefaultLocalAssemblerForLocalOperatorsOnSurfaces
+    : public LocalAssemblerForLocalOperators<ResultType> {
 public:
-    typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
+  typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
 
-    DefaultLocalAssemblerForLocalOperatorsOnSurfaces(
-        const shared_ptr<const GeometryFactory>& geometryFactory,
-        const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
-        const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& testShapesets,
-        const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& trialShapesets,
-        const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& testTransformations,
-        const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& trialTransformations,
-        const shared_ptr<const TestTrialIntegral<BasisFunctionType, ResultType> >& integral,
-        const shared_ptr<const OpenClHandler>& openClHandler,
-        const shared_ptr<const QuadratureDescriptorSelectorForLocalOperators<CoordinateType> >& quadDescSelector,
-        const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType> >& quadRuleFamily);
+  DefaultLocalAssemblerForLocalOperatorsOnSurfaces(
+      const shared_ptr<const GeometryFactory> &geometryFactory,
+      const shared_ptr<const RawGridGeometry<CoordinateType>> &rawGeometry,
+      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
+          testShapesets,
+      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
+          trialShapesets,
+      const shared_ptr<const CollectionOfShapesetTransformations<
+          CoordinateType>> &testTransformations,
+      const shared_ptr<const CollectionOfShapesetTransformations<
+          CoordinateType>> &trialTransformations,
+      const shared_ptr<const TestTrialIntegral<BasisFunctionType, ResultType>> &
+          integral,
+      const shared_ptr<const OpenClHandler> &openClHandler,
+      const shared_ptr<const QuadratureDescriptorSelectorForLocalOperators<
+          CoordinateType>> &quadDescSelector,
+      const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType>> &
+          quadRuleFamily);
 
-    virtual void evaluateLocalWeakForms(
-        const std::vector<int>& elementIndices,
-        std::vector<arma::Mat<ResultType> >& result);
-
-private:
-    /** \cond PRIVATE */
-    const TestTrialIntegrator<BasisFunctionType, ResultType>&
-    selectIntegrator(int elementIndex);
-
-    const TestTrialIntegrator<BasisFunctionType, ResultType>& getIntegrator(
-        const SingleQuadratureDescriptor& desc);
-
-private:
-    typedef boost::ptr_map<SingleQuadratureDescriptor,
-            TestTrialIntegrator<BasisFunctionType, ResultType> > IntegratorMap;
-    typedef DefaultLocalAssemblerForOperatorsOnSurfacesUtilities<
-            BasisFunctionType> Utilities;
+  virtual void
+  evaluateLocalWeakForms(const std::vector<int> &elementIndices,
+                         std::vector<arma::Mat<ResultType>> &result);
 
 private:
-    shared_ptr<const GeometryFactory> m_geometryFactory;
-    shared_ptr<const RawGridGeometry<CoordinateType> > m_rawGeometry;
-    shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> > m_testShapesets;
-    shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> > m_trialShapesets;
-    shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> > m_testTransformations;
-    shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> > m_trialTransformations;
-    shared_ptr<const TestTrialIntegral<BasisFunctionType, ResultType> > m_integral;
-    shared_ptr<const OpenClHandler> m_openClHandler;
-    shared_ptr<const QuadratureDescriptorSelectorForLocalOperators<CoordinateType> > m_quadDescSelector;
-    shared_ptr<const SingleQuadratureRuleFamily<CoordinateType> > m_quadRuleFamily;
+  /** \cond PRIVATE */
+  const TestTrialIntegrator<BasisFunctionType, ResultType> &
+  selectIntegrator(int elementIndex);
 
-    IntegratorMap m_testTrialIntegrators;
-    /** \endcond */
+  const TestTrialIntegrator<BasisFunctionType, ResultType> &
+  getIntegrator(const SingleQuadratureDescriptor &desc);
+
+private:
+  typedef boost::ptr_map<SingleQuadratureDescriptor,
+                         TestTrialIntegrator<BasisFunctionType, ResultType>>
+  IntegratorMap;
+  typedef DefaultLocalAssemblerForOperatorsOnSurfacesUtilities<
+      BasisFunctionType> Utilities;
+
+private:
+  shared_ptr<const GeometryFactory> m_geometryFactory;
+  shared_ptr<const RawGridGeometry<CoordinateType>> m_rawGeometry;
+  shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
+  m_testShapesets;
+  shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
+  m_trialShapesets;
+  shared_ptr<const CollectionOfShapesetTransformations<CoordinateType>>
+  m_testTransformations;
+  shared_ptr<const CollectionOfShapesetTransformations<CoordinateType>>
+  m_trialTransformations;
+  shared_ptr<const TestTrialIntegral<BasisFunctionType, ResultType>> m_integral;
+  shared_ptr<const OpenClHandler> m_openClHandler;
+  shared_ptr<const QuadratureDescriptorSelectorForLocalOperators<
+      CoordinateType>> m_quadDescSelector;
+  shared_ptr<const SingleQuadratureRuleFamily<CoordinateType>> m_quadRuleFamily;
+
+  IntegratorMap m_testTrialIntegrators;
+  /** \endcond */
 };
 
 } // namespace Fiber

@@ -22,153 +22,120 @@
 
 #include <stdexcept>
 
-namespace Bempp
-{
+namespace Bempp {
 
-AssemblyOptions::AssemblyOptions() :
-    m_assemblyMode(DENSE),
-    m_verbosityLevel(VerbosityLevel::DEFAULT),
-    m_singularIntegralCaching(true),
-    m_sparseStorageOfLocalOperators(true),
-    m_jointAssembly(false),
-    m_uniformQuadrature(true),
-    m_blasInQuadrature(AUTO)
-{
+AssemblyOptions::AssemblyOptions()
+    : m_assemblyMode(DENSE), m_verbosityLevel(VerbosityLevel::DEFAULT),
+      m_singularIntegralCaching(true), m_sparseStorageOfLocalOperators(true),
+      m_jointAssembly(false), m_uniformQuadrature(true),
+      m_blasInQuadrature(AUTO) {}
+
+void AssemblyOptions::switchToDenseMode() { m_assemblyMode = DENSE; }
+
+void AssemblyOptions::switchToAcaMode(const AcaOptions &acaOptions) {
+  AcaOptions canonicalAcaOptions = acaOptions;
+  if (!canonicalAcaOptions.globalAssemblyBeforeCompression) {
+    canonicalAcaOptions.globalAssemblyBeforeCompression = true;
+    canonicalAcaOptions.mode = AcaOptions::HYBRID_ASSEMBLY;
+  }
+  if ((int)canonicalAcaOptions.mode < AcaOptions::MIN_ASSEMBLY_MODE ||
+      (int)canonicalAcaOptions.mode > AcaOptions::MAX_ASSEMBLY_MODE)
+    throw std::invalid_argument("AssemblyOptions::switchToAcaMode(): "
+                                "invalid ACA mode");
+  if ((int)canonicalAcaOptions.reactionToUnsupportedMode <
+          AcaOptions::MIN_REACTION ||
+      (int)canonicalAcaOptions.reactionToUnsupportedMode >
+          AcaOptions::MAX_REACTION)
+    throw std::invalid_argument("AssemblyOptions::switchToAcaMode(): "
+                                "invalid reaction to unsupported mode");
+  m_assemblyMode = ACA;
+  m_acaOptions = canonicalAcaOptions;
 }
 
-void AssemblyOptions::switchToDenseMode()
-{
-    m_assemblyMode = DENSE;
-}
+void AssemblyOptions::switchToDense() { switchToDenseMode(); }
 
-void AssemblyOptions::switchToAcaMode(const AcaOptions& acaOptions)
-{
-    AcaOptions canonicalAcaOptions = acaOptions;
-    if (!canonicalAcaOptions.globalAssemblyBeforeCompression) {
-        canonicalAcaOptions.globalAssemblyBeforeCompression = true;
-        canonicalAcaOptions.mode = AcaOptions::HYBRID_ASSEMBLY;
-    }
-    if ((int)canonicalAcaOptions.mode < AcaOptions::MIN_ASSEMBLY_MODE ||
-        (int)canonicalAcaOptions.mode > AcaOptions::MAX_ASSEMBLY_MODE)
-        throw std::invalid_argument("AssemblyOptions::switchToAcaMode(): "
-                                    "invalid ACA mode");
-    if ((int)canonicalAcaOptions.reactionToUnsupportedMode < AcaOptions::MIN_REACTION ||
-        (int)canonicalAcaOptions.reactionToUnsupportedMode > AcaOptions::MAX_REACTION)
-        throw std::invalid_argument("AssemblyOptions::switchToAcaMode(): "
-                                    "invalid reaction to unsupported mode");
-    m_assemblyMode = ACA;
-    m_acaOptions = canonicalAcaOptions;
-}
-
-void AssemblyOptions::switchToDense()
-{
-    switchToDenseMode();
-}
-
-void AssemblyOptions::switchToAca(const AcaOptions& acaOptions)
-{
-    switchToAcaMode(acaOptions);
+void AssemblyOptions::switchToAca(const AcaOptions &acaOptions) {
+  switchToAcaMode(acaOptions);
 }
 
 AssemblyOptions::Mode AssemblyOptions::assemblyMode() const {
-    return m_assemblyMode;
+  return m_assemblyMode;
 }
 
-const AcaOptions& AssemblyOptions::acaOptions() const {
-    return m_acaOptions;
-}
+const AcaOptions &AssemblyOptions::acaOptions() const { return m_acaOptions; }
 
-//void AssemblyOptions::switchToOpenCl(const OpenClOptions& openClOptions)
+// void AssemblyOptions::switchToOpenCl(const OpenClOptions& openClOptions)
 //{
 //    m_parallelizationOptions.switchToOpenCl(openClOptions);
 //}
 
-void AssemblyOptions::setMaxThreadCount(int maxThreadCount)
-{
-    m_parallelizationOptions.setMaxThreadCount(maxThreadCount);
+void AssemblyOptions::setMaxThreadCount(int maxThreadCount) {
+  m_parallelizationOptions.setMaxThreadCount(maxThreadCount);
 }
 
-void AssemblyOptions::switchToTbb(int maxThreadCount)
-{
-    setMaxThreadCount(maxThreadCount);
+void AssemblyOptions::switchToTbb(int maxThreadCount) {
+  setMaxThreadCount(maxThreadCount);
 }
 
-const ParallelizationOptions& AssemblyOptions::parallelizationOptions() const
-{
-       return m_parallelizationOptions;
+const ParallelizationOptions &AssemblyOptions::parallelizationOptions() const {
+  return m_parallelizationOptions;
 }
 
-void AssemblyOptions::setVerbosityLevel(VerbosityLevel::Level level)
-{
-    m_verbosityLevel = level;
+void AssemblyOptions::setVerbosityLevel(VerbosityLevel::Level level) {
+  m_verbosityLevel = level;
 }
 
-VerbosityLevel::Level AssemblyOptions::verbosityLevel() const
-{
-    return m_verbosityLevel;
+VerbosityLevel::Level AssemblyOptions::verbosityLevel() const {
+  return m_verbosityLevel;
 }
 
-void AssemblyOptions::enableSingularIntegralCaching(bool value)
-{
-    m_singularIntegralCaching = value;
+void AssemblyOptions::enableSingularIntegralCaching(bool value) {
+  m_singularIntegralCaching = value;
 }
 
-bool AssemblyOptions::isSingularIntegralCachingEnabled() const
-{
-    return m_singularIntegralCaching;
+bool AssemblyOptions::isSingularIntegralCachingEnabled() const {
+  return m_singularIntegralCaching;
 }
 
-void AssemblyOptions::enableSparseStorageOfLocalOperators(bool value)
-{
-    m_sparseStorageOfLocalOperators = value;
+void AssemblyOptions::enableSparseStorageOfLocalOperators(bool value) {
+  m_sparseStorageOfLocalOperators = value;
 }
 
-bool AssemblyOptions::isSparseStorageOfLocalOperatorsEnabled() const
-{
-    return m_sparseStorageOfLocalOperators;
+bool AssemblyOptions::isSparseStorageOfLocalOperatorsEnabled() const {
+  return m_sparseStorageOfLocalOperators;
 }
 
-void AssemblyOptions::enableSparseStorageOfMassMatrices(bool value)
-{
-    enableSparseStorageOfLocalOperators(value);
+void AssemblyOptions::enableSparseStorageOfMassMatrices(bool value) {
+  enableSparseStorageOfLocalOperators(value);
 }
 
-bool AssemblyOptions::isSparseStorageOfMassMatricesEnabled() const
-{
-    return isSparseStorageOfLocalOperatorsEnabled();
+bool AssemblyOptions::isSparseStorageOfMassMatricesEnabled() const {
+  return isSparseStorageOfLocalOperatorsEnabled();
 }
 
-void AssemblyOptions::enableJointAssembly(bool value)
-{
-    m_jointAssembly = value;
+void AssemblyOptions::enableJointAssembly(bool value) {
+  m_jointAssembly = value;
 }
 
-bool AssemblyOptions::isJointAssemblyEnabled() const
-{
-    return m_jointAssembly;
+bool AssemblyOptions::isJointAssemblyEnabled() const { return m_jointAssembly; }
+
+void AssemblyOptions::enableBlasInQuadrature(Value value) {
+  if (value != AUTO && value != YES && value != NO)
+    throw std::invalid_argument("AssemblyOptions::enableBlasInQuadrature(): "
+                                "allowed values: AUTO, YES and NO");
+  m_blasInQuadrature = value;
 }
 
-void AssemblyOptions::enableBlasInQuadrature(Value value)
-{
-    if (value != AUTO && value != YES && value != NO)
-        throw std::invalid_argument("AssemblyOptions::enableBlasInQuadrature(): "
-                                    "allowed values: AUTO, YES and NO");
-    m_blasInQuadrature = value;
+AssemblyOptions::Value AssemblyOptions::isBlasEnabledInQuadrature() const {
+  return m_blasInQuadrature;
 }
 
-AssemblyOptions::Value AssemblyOptions::isBlasEnabledInQuadrature() const
-{
-    return m_blasInQuadrature;
+void AssemblyOptions::makeQuadratureOrderUniformInEachCluster(bool value) {
+  m_uniformQuadrature = value;
 }
 
-void AssemblyOptions::makeQuadratureOrderUniformInEachCluster(bool value)
-{
-    m_uniformQuadrature = value;
-}
-
-bool AssemblyOptions::isQuadratureOrderUniformInEachCluster() const
-{
-    return m_uniformQuadrature;
+bool AssemblyOptions::isQuadratureOrderUniformInEachCluster() const {
+  return m_uniformQuadrature;
 }
 
 } // namespace Bempp

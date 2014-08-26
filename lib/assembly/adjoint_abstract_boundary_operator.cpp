@@ -30,77 +30,68 @@
 #include <boost/type_traits/is_complex.hpp>
 #include <stdexcept>
 
-namespace Bempp
-{
+namespace Bempp {
 
 template <typename BasisFunctionType, typename ResultType>
 AdjointAbstractBoundaryOperator<BasisFunctionType, ResultType>::
-AdjointAbstractBoundaryOperator(
-        const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
-        int symmetry) :
-    Base(boundaryOp.dualToRange(),
-         boundaryOp.domain() == boundaryOp.range() ?
-             boundaryOp.dualToRange() :
-             // assume that domain == dualToRange, we'll verify it
-             // in the body of the constructor
-             boundaryOp.range(),
-         boundaryOp.domain(),
-         "adj(" + boundaryOp.label() + ")",
-         symmetry & AUTO_SYMMETRY ?
-             boundaryOp.abstractOperator()->symmetry() :
-             symmetry),
-    m_operator(boundaryOp)
-{
-    if (boost::is_complex<BasisFunctionType>())
-        throw std::logic_error(
-            "AdjointAbstractBoundaryOperator(): Taking the adjoint of operators "
-            "acting on complex-valued basis functions is not supported");
-    if (boundaryOp.domain() != boundaryOp.range() &&
-            boundaryOp.domain() != boundaryOp.dualToRange())
-        throw std::runtime_error(
-                "AdjointAbstractBoundaryOperator::"
-                "AdjointAbstractBoundaryOperator(): "
-                "Dual to the domain of the operator to invert cannot be determined "
-                "since the domain is different from both "
-                "the range and the space dual to its range");
+    AdjointAbstractBoundaryOperator(
+        const BoundaryOperator<BasisFunctionType, ResultType> &boundaryOp,
+        int symmetry)
+    : Base(boundaryOp.dualToRange(),
+           boundaryOp.domain() == boundaryOp.range()
+               ? boundaryOp.dualToRange()
+               :
+               // assume that domain == dualToRange, we'll verify it
+               // in the body of the constructor
+               boundaryOp.range(),
+           boundaryOp.domain(), "adj(" + boundaryOp.label() + ")",
+           symmetry & AUTO_SYMMETRY ? boundaryOp.abstractOperator()->symmetry()
+                                    : symmetry),
+      m_operator(boundaryOp) {
+  if (boost::is_complex<BasisFunctionType>())
+    throw std::logic_error(
+        "AdjointAbstractBoundaryOperator(): Taking the adjoint of operators "
+        "acting on complex-valued basis functions is not supported");
+  if (boundaryOp.domain() != boundaryOp.range() &&
+      boundaryOp.domain() != boundaryOp.dualToRange())
+    throw std::runtime_error(
+        "AdjointAbstractBoundaryOperator::"
+        "AdjointAbstractBoundaryOperator(): "
+        "Dual to the domain of the operator to invert cannot be determined "
+        "since the domain is different from both "
+        "the range and the space dual to its range");
 }
 
 template <typename BasisFunctionType, typename ResultType>
 AdjointAbstractBoundaryOperator<BasisFunctionType, ResultType>::
-AdjointAbstractBoundaryOperator(
-        const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
-	const shared_ptr<const Space<BasisFunctionType> >& range,
-        int symmetry) :
-    Base(boundaryOp.dualToRange(),
-	 range,
-         boundaryOp.domain(),
-         "adj(" + boundaryOp.label() + ")",
-         symmetry & AUTO_SYMMETRY ?
-             boundaryOp.abstractOperator()->symmetry() :
-             symmetry),
-    m_operator(boundaryOp)
-{
-    if (boost::is_complex<BasisFunctionType>())
-        throw std::logic_error(
-            "AdjointAbstractBoundaryOperator(): Taking the adjoint of operators "
-            "acting on complex-valued basis functions is not supported");
-}
-
-
-template <typename BasisFunctionType, typename ResultType>
-bool AdjointAbstractBoundaryOperator<BasisFunctionType, ResultType>::isLocal() const
-{
-    return m_operator.abstractOperator()->isLocal();
+    AdjointAbstractBoundaryOperator(
+        const BoundaryOperator<BasisFunctionType, ResultType> &boundaryOp,
+        const shared_ptr<const Space<BasisFunctionType>> &range, int symmetry)
+    : Base(boundaryOp.dualToRange(), range, boundaryOp.domain(),
+           "adj(" + boundaryOp.label() + ")",
+           symmetry & AUTO_SYMMETRY ? boundaryOp.abstractOperator()->symmetry()
+                                    : symmetry),
+      m_operator(boundaryOp) {
+  if (boost::is_complex<BasisFunctionType>())
+    throw std::logic_error(
+        "AdjointAbstractBoundaryOperator(): Taking the adjoint of operators "
+        "acting on complex-valued basis functions is not supported");
 }
 
 template <typename BasisFunctionType, typename ResultType>
-shared_ptr<DiscreteBoundaryOperator<ResultType> >
+bool AdjointAbstractBoundaryOperator<BasisFunctionType, ResultType>::isLocal()
+    const {
+  return m_operator.abstractOperator()->isLocal();
+}
+
+template <typename BasisFunctionType, typename ResultType>
+shared_ptr<DiscreteBoundaryOperator<ResultType>>
 AdjointAbstractBoundaryOperator<BasisFunctionType, ResultType>::
-assembleWeakFormImpl(const Context<BasisFunctionType, ResultType>& context) const
-{
-    return shared_ptr<DiscreteBoundaryOperator<ResultType> >(
-                new TransposedDiscreteBoundaryOperator<ResultType>(
-                    TRANSPOSE, m_operator.weakForm()));
+    assembleWeakFormImpl(const Context<BasisFunctionType, ResultType> &context)
+    const {
+  return shared_ptr<DiscreteBoundaryOperator<ResultType>>(
+      new TransposedDiscreteBoundaryOperator<ResultType>(
+          TRANSPOSE, m_operator.weakForm()));
 }
 
 // #define FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT_REAL_BASIS_ONLY(CLASSNAME) \
@@ -109,6 +100,7 @@ assembleWeakFormImpl(const Context<BasisFunctionType, ResultType>& context) cons
 //     FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT_DP_REAL_REAL(CLASSNAME); \
 //     FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT_DP_REAL_COMPLEX(CLASSNAME)
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(AdjointAbstractBoundaryOperator);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(
+    AdjointAbstractBoundaryOperator);
 
 } // namespace Bempp

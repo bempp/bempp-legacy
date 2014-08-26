@@ -30,12 +30,12 @@
 
 #include "../common/complex_aux.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \ingroup modified_helmholtz_3d
  *  \ingroup functors
- *  \brief Adjoint double-layer-potential kernel functor for the modified Helmholtz
+ *  \brief Adjoint double-layer-potential kernel functor for the modified
+ *Helmholtz
  *  equation in 3D.
  *
  *  Uses interpolation to speed up kernel evaluation.
@@ -49,64 +49,61 @@ namespace Fiber
  */
 
 template <typename ValueType_>
-class ModifiedHelmholtz3dAdjointDoubleLayerPotentialKernelInterpolatedFunctor
-{
+class ModifiedHelmholtz3dAdjointDoubleLayerPotentialKernelInterpolatedFunctor {
 public:
-    typedef ValueType_ ValueType;
-    typedef typename ScalarTraits<ValueType>::RealType CoordinateType;
+  typedef ValueType_ ValueType;
+  typedef typename ScalarTraits<ValueType>::RealType CoordinateType;
 
-    ModifiedHelmholtz3dAdjointDoubleLayerPotentialKernelInterpolatedFunctor(
-            ValueType waveNumber,
-            CoordinateType maxDist, int interpPtsPerWavelength) :
-        m_waveNumber(waveNumber)
-    {
-        initializeInterpolatorForModifiedHelmholtz3dKernels(
-                    waveNumber, maxDist, interpPtsPerWavelength, m_interpolator);
+  ModifiedHelmholtz3dAdjointDoubleLayerPotentialKernelInterpolatedFunctor(
+      ValueType waveNumber, CoordinateType maxDist, int interpPtsPerWavelength)
+      : m_waveNumber(waveNumber) {
+    initializeInterpolatorForModifiedHelmholtz3dKernels(
+        waveNumber, maxDist, interpPtsPerWavelength, m_interpolator);
+  }
+
+  int kernelCount() const { return 1; }
+  int kernelRowCount(int /* kernelIndex */) const { return 1; }
+  int kernelColCount(int /* kernelIndex */) const { return 1; }
+
+  void addGeometricalDependencies(size_t &testGeomDeps,
+                                  size_t &trialGeomDeps) const {
+    testGeomDeps |= GLOBALS | NORMALS;
+    trialGeomDeps |= GLOBALS;
+  }
+
+  ValueType waveNumber() const { return m_waveNumber; }
+
+  template <template <typename T> class CollectionOf2dSlicesOfNdArrays>
+  void evaluate(const ConstGeometricalDataSlice<CoordinateType> &testGeomData,
+                const ConstGeometricalDataSlice<CoordinateType> &trialGeomData,
+                CollectionOf2dSlicesOfNdArrays<ValueType> &result) const {
+    const int coordCount = 3;
+
+    CoordinateType numeratorSum = 0., distSq = 0.;
+    for (int coordIndex = 0; coordIndex < coordCount; ++coordIndex) {
+      CoordinateType diff =
+          testGeomData.global(coordIndex) - trialGeomData.global(coordIndex);
+      distSq += diff * diff;
+      numeratorSum += diff * testGeomData.normal(coordIndex);
     }
+    CoordinateType dist = sqrt(distSq);
+    ValueType v = m_interpolator.evaluate(dist);
+    result[0](0, 0) =
+        numeratorSum /
+        (static_cast<CoordinateType>(-4.0 * M_PI) * distSq * dist) *
+        (m_waveNumber * dist + static_cast<CoordinateType>(1.0)) * v;
+  }
 
-    int kernelCount() const { return 1; }
-    int kernelRowCount(int /* kernelIndex */) const { return 1; }
-    int kernelColCount(int /* kernelIndex */) const { return 1; }
-
-    void addGeometricalDependencies(size_t& testGeomDeps, size_t& trialGeomDeps) const {
-        testGeomDeps |= GLOBALS | NORMALS;
-        trialGeomDeps |= GLOBALS;
-    }
-
-    ValueType waveNumber() const { return m_waveNumber; }
-
-    template <template <typename T> class CollectionOf2dSlicesOfNdArrays>
-    void evaluate(
-            const ConstGeometricalDataSlice<CoordinateType>& testGeomData,
-            const ConstGeometricalDataSlice<CoordinateType>& trialGeomData,
-            CollectionOf2dSlicesOfNdArrays<ValueType>& result) const {
-        const int coordCount = 3;
-
-        CoordinateType numeratorSum = 0., distSq = 0.;
-        for (int coordIndex = 0; coordIndex < coordCount; ++coordIndex)
-        {
-            CoordinateType diff = testGeomData.global(coordIndex) -
-                    trialGeomData.global(coordIndex);
-            distSq += diff * diff;
-            numeratorSum += diff * testGeomData.normal(coordIndex);
-        }
-        CoordinateType dist = sqrt(distSq);
-        ValueType v = m_interpolator.evaluate(dist);
-        result[0](0, 0) = numeratorSum /
-                (static_cast<CoordinateType>(-4.0 * M_PI) * distSq * dist) *
-                (m_waveNumber * dist + static_cast<CoordinateType>(1.0)) * v;
-    }
-
-    CoordinateType estimateRelativeScale(CoordinateType distance) const {
-        // This function is called rarely, invoking exp() here does little harm.
-        return exp(-realPart(m_waveNumber) * distance);
-    }
+  CoordinateType estimateRelativeScale(CoordinateType distance) const {
+    // This function is called rarely, invoking exp() here does little harm.
+    return exp(-realPart(m_waveNumber) * distance);
+  }
 
 private:
-    /** \cond PRIVATE */
-    ValueType m_waveNumber;
-    HermiteInterpolator<ValueType> m_interpolator;
-    /** \endcond */
+  /** \cond PRIVATE */
+  ValueType m_waveNumber;
+  HermiteInterpolator<ValueType> m_interpolator;
+  /** \endcond */
 };
 
 } // namespace Fiber

@@ -23,8 +23,7 @@
 
 #include "shapeset.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \ingroup fiber
  *  \brief Collection of shape functions defined on a reference element.
@@ -32,10 +31,7 @@ namespace Fiber
  *  \deprecated This class is deprecated and provided only for compatibility
  *  reasons. Use Shapeset instead.
  */
-template <typename ValueType>
-class Basis : public Shapeset<ValueType>
-{
-};
+template <typename ValueType> class Basis : public Shapeset<ValueType> {};
 
 } // namespace Fiber
 

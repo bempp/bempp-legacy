@@ -28,75 +28,69 @@
 #include <iostream>
 #include <stdexcept>
 
-namespace Bempp
-{
+namespace Bempp {
 
 template <typename BasisFunctionType, typename ResultType>
-shared_ptr<const Context<BasisFunctionType, ResultType> >
-sanitizedContext(
-    shared_ptr<const Context<BasisFunctionType, ResultType> > context,
-    bool localModeSupported,
-    bool hybridModeSupported,
-    const std::string& label)
-{
-    if (!context)
-        throw std::invalid_argument("sanitizedContext(): "
-                                    "context must not be null");
+shared_ptr<const Context<BasisFunctionType, ResultType>> sanitizedContext(
+    shared_ptr<const Context<BasisFunctionType, ResultType>> context,
+    bool localModeSupported, bool hybridModeSupported,
+    const std::string &label) {
+  if (!context)
+    throw std::invalid_argument("sanitizedContext(): "
+                                "context must not be null");
 
-    const AssemblyOptions& assemblyOptions = context->assemblyOptions();
-    const AcaOptions& acaOptions = assemblyOptions.acaOptions();
-    if (assemblyOptions.assemblyMode() != AssemblyOptions::ACA)
-        return context;
-    bool switchToGlobalMode = false;
-    if (acaOptions.mode == AcaOptions::LOCAL_ASSEMBLY &&
-        !localModeSupported) {
-        if (acaOptions.reactionToUnsupportedMode == AcaOptions::ERROR)
-            throw std::runtime_error(
-                "sanitizedContext(): "
-                "operator constructed by the function " + label + 
-                " does not support assembly "
-                "in the local ACA mode");
-        else if (acaOptions.reactionToUnsupportedMode == AcaOptions::WARNING)
-            std::cout << "sanitizedContext(): "
-                "operator constructed by the function " + label + 
-                " does not support assembly "
-                "in the local ACA mode; switching to the global ACA mode"
-                      << std::endl;
-        switchToGlobalMode = true;
-    }
-    else if (acaOptions.mode == AcaOptions::HYBRID_ASSEMBLY &&
-        !hybridModeSupported) {
-        if (acaOptions.reactionToUnsupportedMode == AcaOptions::ERROR)
-            throw std::runtime_error(
-                "sanitizedContext(): "
-                "operator constructed by the function " + label + 
-                " does not support assembly "
-                "in the hybrid ACA mode");
-        else if (acaOptions.reactionToUnsupportedMode == AcaOptions::WARNING)
-            std::cout << "sanitizedContext(): "
-                "operator constructed by the function " + label + 
-                " does not support assembly "
-                "in the hybrid ACA mode; switching to the global ACA mode"
-                      << std::endl;
-        switchToGlobalMode = true;
-    }
-    if (switchToGlobalMode) {
-        // reset ACA mode to GLOBAL_ASSEMBLY
-        AcaOptions newAcaOptions = acaOptions;
-        newAcaOptions.mode = AcaOptions::GLOBAL_ASSEMBLY;
-        AssemblyOptions newAssemblyOptions = assemblyOptions;
-        newAssemblyOptions.switchToAcaMode(newAcaOptions);
-        context.reset(new Context<BasisFunctionType, ResultType>(
-                          context->quadStrategy(), newAssemblyOptions));
-    }
+  const AssemblyOptions &assemblyOptions = context->assemblyOptions();
+  const AcaOptions &acaOptions = assemblyOptions.acaOptions();
+  if (assemblyOptions.assemblyMode() != AssemblyOptions::ACA)
     return context;
+  bool switchToGlobalMode = false;
+  if (acaOptions.mode == AcaOptions::LOCAL_ASSEMBLY && !localModeSupported) {
+    if (acaOptions.reactionToUnsupportedMode == AcaOptions::ERROR)
+      throw std::runtime_error("sanitizedContext(): "
+                               "operator constructed by the function " +
+                               label + " does not support assembly "
+                                       "in the local ACA mode");
+    else if (acaOptions.reactionToUnsupportedMode == AcaOptions::WARNING)
+      std::cout << "sanitizedContext(): "
+                   "operator constructed by the function " +
+                       label +
+                       " does not support assembly "
+                       "in the local ACA mode; switching to the global ACA mode"
+                << std::endl;
+    switchToGlobalMode = true;
+  } else if (acaOptions.mode == AcaOptions::HYBRID_ASSEMBLY &&
+             !hybridModeSupported) {
+    if (acaOptions.reactionToUnsupportedMode == AcaOptions::ERROR)
+      throw std::runtime_error("sanitizedContext(): "
+                               "operator constructed by the function " +
+                               label + " does not support assembly "
+                                       "in the hybrid ACA mode");
+    else if (acaOptions.reactionToUnsupportedMode == AcaOptions::WARNING)
+      std::cout
+          << "sanitizedContext(): "
+             "operator constructed by the function " +
+                 label +
+                 " does not support assembly "
+                 "in the hybrid ACA mode; switching to the global ACA mode"
+          << std::endl;
+    switchToGlobalMode = true;
+  }
+  if (switchToGlobalMode) {
+    // reset ACA mode to GLOBAL_ASSEMBLY
+    AcaOptions newAcaOptions = acaOptions;
+    newAcaOptions.mode = AcaOptions::GLOBAL_ASSEMBLY;
+    AssemblyOptions newAssemblyOptions = assemblyOptions;
+    newAssemblyOptions.switchToAcaMode(newAcaOptions);
+    context.reset(new Context<BasisFunctionType, ResultType>(
+        context->quadStrategy(), newAssemblyOptions));
+  }
+  return context;
 }
 
-#define INSTANTIATE_FUNCTION(BASIS, RESULT)             \
-    template shared_ptr<const Context<BASIS, RESULT> >  \
-    sanitizedContext(                                   \
-        shared_ptr<const Context<BASIS, RESULT> >,      \
-        bool, bool, const std::string&)
+#define INSTANTIATE_FUNCTION(BASIS, RESULT)                                    \
+  template shared_ptr<const Context<BASIS, RESULT>> sanitizedContext(          \
+      shared_ptr<const Context<BASIS, RESULT>>, bool, bool,                    \
+      const std::string &)
 FIBER_ITERATE_OVER_BASIS_AND_RESULT_TYPES(INSTANTIATE_FUNCTION);
 
 } // namespace Bempp

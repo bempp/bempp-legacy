@@ -25,91 +25,83 @@
 
 #include <boost/scoped_array.hpp>
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \cond FORWARD_DECL */
 template <typename T> class CollectionOf1dSlicesOf2dArrays;
 template <typename T> class CollectionOf1dSlicesOfConst2dArrays;
 /** \endcond */
 
-template <typename T>
-class CollectionOf2dArrays
-{
+template <typename T> class CollectionOf2dArrays {
 public:
-    CollectionOf2dArrays();
-    explicit CollectionOf2dArrays(size_t arrayCount);
-    CollectionOf2dArrays(const CollectionOf2dArrays& rhs);
-    CollectionOf2dArrays& operator=(const CollectionOf2dArrays& rhs);
+  CollectionOf2dArrays();
+  explicit CollectionOf2dArrays(size_t arrayCount);
+  CollectionOf2dArrays(const CollectionOf2dArrays &rhs);
+  CollectionOf2dArrays &operator=(const CollectionOf2dArrays &rhs);
 
-    void set_size(size_t new_size);
-    size_t size() const;
+  void set_size(size_t new_size);
+  size_t size() const;
 
-    _2dArray<T>& operator[](size_t index);
-    const _2dArray<T>& operator[](size_t index) const;
+  _2dArray<T> &operator[](size_t index);
+  const _2dArray<T> &operator[](size_t index) const;
 
-    void fill(const T& value);
+  void fill(const T &value);
 
-    CollectionOf1dSlicesOf2dArrays<T> slice(size_t index1);
-    CollectionOf1dSlicesOfConst2dArrays<T> const_slice(size_t index1) const;
-
-private:
-    _2dArray<T>& array(size_t index);
-    const _2dArray<T>& array(size_t index) const;
-    void check_array_index(size_t array_index) const;
+  CollectionOf1dSlicesOf2dArrays<T> slice(size_t index1);
+  CollectionOf1dSlicesOfConst2dArrays<T> const_slice(size_t index1) const;
 
 private:
-    size_t m_size;
-    boost::scoped_array<_2dArray<T> > m_arrays;
+  _2dArray<T> &array(size_t index);
+  const _2dArray<T> &array(size_t index) const;
+  void check_array_index(size_t array_index) const;
+
+private:
+  size_t m_size;
+  boost::scoped_array<_2dArray<T>> m_arrays;
 };
 
-
-template <typename T>
-class CollectionOf1dSlicesOf2dArrays
-{
+template <typename T> class CollectionOf1dSlicesOf2dArrays {
 public:
-    CollectionOf1dSlicesOf2dArrays(CollectionOf2dArrays<T>& collection,
-                                   size_t index1);
+  CollectionOf1dSlicesOf2dArrays(CollectionOf2dArrays<T> &collection,
+                                 size_t index1);
 
-    typedef _1dSliceOfConst2dArray<T> ConstSlice;
-    typedef _1dSliceOf2dArray<T> Slice;
+  typedef _1dSliceOfConst2dArray<T> ConstSlice;
+  typedef _1dSliceOf2dArray<T> Slice;
 
-    /** \brief Returns a reference to self.
+  /** \brief Returns a reference to self.
 
-      Useful to make a temporary CollectionOf1dSlicesOf2dArrays<T> an rvalue
-      and pass it to a function accepting a reference to a non-const
-      CollectionOf1dSlicesOf2dArrays<T>.
+    Useful to make a temporary CollectionOf1dSlicesOf2dArrays<T> an rvalue
+    and pass it to a function accepting a reference to a non-const
+    CollectionOf1dSlicesOf2dArrays<T>.
 
-      Once we switch to C++11, this function can be removed because of the new
-      support for rvalue references. */
-    CollectionOf1dSlicesOf2dArrays& self();
+    Once we switch to C++11, this function can be removed because of the new
+    support for rvalue references. */
+  CollectionOf1dSlicesOf2dArrays &self();
 
-    _1dSliceOfConst2dArray<T> operator[](size_t index) const;
-    _1dSliceOf2dArray<T> operator[](size_t index);
+  _1dSliceOfConst2dArray<T> operator[](size_t index) const;
+  _1dSliceOf2dArray<T> operator[](size_t index);
 
-    size_t size() const;
+  size_t size() const;
 
 private:
-    CollectionOf2dArrays<T>& m_collection;
-    size_t m_index1;
+  CollectionOf2dArrays<T> &m_collection;
+  size_t m_index1;
 };
 
-template <typename T>
-class CollectionOf1dSlicesOfConst2dArrays
-{
+template <typename T> class CollectionOf1dSlicesOfConst2dArrays {
 public:
-    CollectionOf1dSlicesOfConst2dArrays(
-            const CollectionOf2dArrays<T>& collection, size_t index1);
+  CollectionOf1dSlicesOfConst2dArrays(const CollectionOf2dArrays<T> &collection,
+                                      size_t index1);
 
-    typedef _1dSliceOfConst2dArray<T> ConstSlice;
+  typedef _1dSliceOfConst2dArray<T> ConstSlice;
 
-    _1dSliceOfConst2dArray<T> operator[](size_t index) const;
+  _1dSliceOfConst2dArray<T> operator[](size_t index) const;
 
-    size_t size() const;
+  size_t size() const;
 
 private:
-    const CollectionOf2dArrays<T>& m_collection;
-    size_t m_index1;
+  const CollectionOf2dArrays<T> &m_collection;
+  size_t m_index1;
 };
 
 } // namespace Fiber

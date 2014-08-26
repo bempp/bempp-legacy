@@ -28,8 +28,7 @@
 #include "../assembly/grid_function.hpp"
 #include <vector>
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \ingroup linalg
   * \brief This class holds the solution of a block operator system
@@ -38,31 +37,33 @@ namespace Bempp
   */
 
 template <typename BasisFunctionType, typename ResultType>
-class BlockedSolution : public SolutionBase<BasisFunctionType, ResultType>
-{
+class BlockedSolution : public SolutionBase<BasisFunctionType, ResultType> {
 public:
-    typedef SolutionBase<BasisFunctionType, ResultType> Base;
-    typedef typename Base::MagnitudeType MagnitudeType;
+  typedef SolutionBase<BasisFunctionType, ResultType> Base;
+  typedef typename Base::MagnitudeType MagnitudeType;
 
 #ifdef WITH_TRILINOS
-    /** \brief Constructor */
-    BlockedSolution(
-            const std::vector<GridFunction<BasisFunctionType, ResultType> >& gridFunctions,
-            const Thyra::SolveStatus<MagnitudeType> status);
+  /** \brief Constructor */
+  BlockedSolution(
+      const std::vector<GridFunction<BasisFunctionType, ResultType>> &
+          gridFunctions,
+      const Thyra::SolveStatus<MagnitudeType> status);
 #endif // WITH_TRILINOS
-    /** \brief Constructor */
-    BlockedSolution(
-            const std::vector<GridFunction<BasisFunctionType, ResultType> >& gridFunctions,
-            SolutionStatus::Status status,
-            MagnitudeType achievedTolerance = Base::unknownTolerance(),
-            std::string message = "");
+  /** \brief Constructor */
+  BlockedSolution(
+      const std::vector<GridFunction<BasisFunctionType, ResultType>> &
+          gridFunctions,
+      SolutionStatus::Status status,
+      MagnitudeType achievedTolerance = Base::unknownTolerance(),
+      std::string message = "");
 
-    size_t gridFunctionCount() const;
-    GridFunction<BasisFunctionType, ResultType>& gridFunction(size_t i);
-    const GridFunction<BasisFunctionType, ResultType>& gridFunction(size_t i) const;
+  size_t gridFunctionCount() const;
+  GridFunction<BasisFunctionType, ResultType> &gridFunction(size_t i);
+  const GridFunction<BasisFunctionType, ResultType> &
+  gridFunction(size_t i) const;
 
 private:
-    std::vector<GridFunction<BasisFunctionType, ResultType> > m_gridFunctions;
+  std::vector<GridFunction<BasisFunctionType, ResultType>> m_gridFunctions;
 };
 
 } // namespace Bempp

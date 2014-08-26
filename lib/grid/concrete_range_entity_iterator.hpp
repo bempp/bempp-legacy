@@ -26,8 +26,7 @@
 #include "entity_iterator.hpp"
 #include "concrete_entity_decl.hpp"
 
-namespace Bempp
-{
+namespace Bempp {
 
 class DomainIndex;
 
@@ -39,52 +38,52 @@ type \p DuneEntityIt.
 read from the DuneEntityIt::Base typedef, but, alas, this typedef is
 private...).
 */
-template<typename DuneEntityIt, typename DuneEntityPointer>
-class ConcreteRangeEntityIterator: public EntityIterator<
-    DuneEntityIt::codimension>
-{
+template <typename DuneEntityIt, typename DuneEntityPointer>
+class ConcreteRangeEntityIterator
+    : public EntityIterator<DuneEntityIt::codimension> {
 private:
-    DuneEntityIt m_begin, m_end, m_cur;
-    ConcreteEntity<ConcreteRangeEntityIterator::codimension,
-                   typename DuneEntityIt::Entity> m_entity;
-    const DomainIndex& m_domain_index;
+  DuneEntityIt m_begin, m_end, m_cur;
+  ConcreteEntity<ConcreteRangeEntityIterator::codimension,
+                 typename DuneEntityIt::Entity> m_entity;
+  const DomainIndex &m_domain_index;
 
-    void updateEntity() {
-        if (!this->finished())
-            m_entity.setDuneEntity(&*m_cur);
-    }
+  void updateEntity() {
+    if (!this->finished())
+      m_entity.setDuneEntity(&*m_cur);
+  }
 
-    void updateFinished() {
-        this->m_finished = (m_cur == m_end);
-    }
+  void updateFinished() { this->m_finished = (m_cur == m_end); }
 
 public:
-    /** \brief Constructor. The iterator will go over the range [\p begin, \p end). */
-    ConcreteRangeEntityIterator(const DuneEntityIt& begin,
-                                const DuneEntityIt& end,
-                                const DomainIndex& domain_index) :
-        m_begin(begin), m_end(end), m_cur(begin), m_entity(domain_index),
+  /** \brief Constructor. The iterator will go over the range [\p begin, \p
+   * end). */
+  ConcreteRangeEntityIterator(const DuneEntityIt &begin,
+                              const DuneEntityIt &end,
+                              const DomainIndex &domain_index)
+      : m_begin(begin), m_end(end), m_cur(begin), m_entity(domain_index),
         m_domain_index(domain_index) {
-        updateFinished();
-        updateEntity();
-    }
+    updateFinished();
+    updateEntity();
+  }
 
-    virtual void next() {
-        ++m_cur;
-        updateFinished();
-        updateEntity();
-    }
+  virtual void next() {
+    ++m_cur;
+    updateFinished();
+    updateEntity();
+  }
 
-    virtual const Entity<ConcreteRangeEntityIterator::codimension>& entity() const {
-        return m_entity;
-    }
+  virtual const Entity<ConcreteRangeEntityIterator::codimension> &
+  entity() const {
+    return m_entity;
+  }
 
-    virtual std::unique_ptr<EntityPointer<ConcreteRangeEntityIterator::codimension> > frozen() const {
-        const int codim = ConcreteRangeEntityIterator::codimension;
-        return std::unique_ptr<EntityPointer<codim> >(
-                    new ConcreteEntityPointer<DuneEntityPointer>(
-                        *m_cur, m_domain_index));
-    }
+  virtual std::unique_ptr<
+      EntityPointer<ConcreteRangeEntityIterator::codimension>>
+  frozen() const {
+    const int codim = ConcreteRangeEntityIterator::codimension;
+    return std::unique_ptr<EntityPointer<codim>>(
+        new ConcreteEntityPointer<DuneEntityPointer>(*m_cur, m_domain_index));
+  }
 };
 
 } // namespace Bempp

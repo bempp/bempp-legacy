@@ -23,8 +23,7 @@
 
 #include "../fiber/shared_ptr.hpp"
 
-namespace Bempp
-{
+namespace Bempp {
 
 using Fiber::shared_ptr;
 using Fiber::make_shared_from_ref;

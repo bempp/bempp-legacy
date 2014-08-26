@@ -26,18 +26,15 @@
 
 #include <string>
 
-namespace Bempp
-{
+namespace Bempp {
 
 template <typename BasisFunctionType, typename ResultType> class Context;
 
 template <typename BasisFunctionType, typename ResultType>
-shared_ptr<const Context<BasisFunctionType, ResultType> >
-sanitizedContext(
-    shared_ptr<const Context<BasisFunctionType, ResultType> > context,
-    bool localModeSupported,
-    bool hybridModeSupported,
-    const std::string& label);
+shared_ptr<const Context<BasisFunctionType, ResultType>> sanitizedContext(
+    shared_ptr<const Context<BasisFunctionType, ResultType>> context,
+    bool localModeSupported, bool hybridModeSupported,
+    const std::string &label);
 
 } // namespace Bempp
 

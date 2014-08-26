@@ -23,8 +23,7 @@
 
 #include "../fiber/scalar_traits.hpp"
 
-namespace Bempp
-{
+namespace Bempp {
 
 using Fiber::ScalarTraits;
 using Fiber::Coercion;

@@ -32,26 +32,21 @@
 
 #include <vector>
 
-namespace Bempp
-{
+namespace Bempp {
 
 // This structure is intended for internal BEM++ use only.
-template <typename ValueType>
-struct SparseToHMatrixConverter
-{
-    typedef typename Fiber::ScalarTraits<ValueType>::RealType CoordinateType;
-    typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
-    typedef bbxbemblcluster<AhmedDofType, AhmedDofType> AhmedBemBlcluster;
-    typedef mblock<typename AhmedTypeTraits<ValueType>::Type> AhmedMblock;
+template <typename ValueType> struct SparseToHMatrixConverter {
+  typedef typename Fiber::ScalarTraits<ValueType>::RealType CoordinateType;
+  typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
+  typedef bbxbemblcluster<AhmedDofType, AhmedDofType> AhmedBemBlcluster;
+  typedef mblock<typename AhmedTypeTraits<ValueType>::Type> AhmedMblock;
 
-    static void constructHMatrix(
-            int* rowOffsets, int* colIndices, double* values,
-            std::vector<unsigned int>& domain_o2p,
-            std::vector<unsigned int>& range_p2o,
-            double eps,
-            AhmedBemBlcluster* blockCluster,
-            boost::shared_array<AhmedMblock*>& mblocks,
-            int& maximumRank);
+  static void constructHMatrix(int *rowOffsets, int *colIndices, double *values,
+                               std::vector<unsigned int> &domain_o2p,
+                               std::vector<unsigned int> &range_p2o, double eps,
+                               AhmedBemBlcluster *blockCluster,
+                               boost::shared_array<AhmedMblock *> &mblocks,
+                               int &maximumRank);
 };
 
 } // namespace Bempp

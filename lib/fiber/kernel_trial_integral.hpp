@@ -25,8 +25,7 @@
 
 #include "scalar_traits.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \cond FORWARD_DECL */
 template <typename T> class _2dArray;
@@ -39,36 +38,34 @@ template <typename CoordinateType> class GeometricalData;
 
 template <typename BasisFunctionType_, typename KernelType_,
           typename ResultType_>
-class KernelTrialIntegral
-{
+class KernelTrialIntegral {
 public:
-    typedef BasisFunctionType_ BasisFunctionType;
-    typedef KernelType_ KernelType;
-    typedef ResultType_ ResultType;
-    typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
+  typedef BasisFunctionType_ BasisFunctionType;
+  typedef KernelType_ KernelType;
+  typedef ResultType_ ResultType;
+  typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
 
-    virtual ~KernelTrialIntegral()
-    {}
+  virtual ~KernelTrialIntegral() {}
 
-    virtual int resultDimension() const = 0;
+  virtual int resultDimension() const = 0;
 
-    virtual void addGeometricalDependencies(size_t& trialGeomDeps) const = 0;
+  virtual void addGeometricalDependencies(size_t &trialGeomDeps) const = 0;
 
-    // Note: 'weights' are assumed to be the products of "raw" quadrature
-    // weights and integration elements.
-    virtual void evaluate(
-            const GeometricalData<CoordinateType>& trialGeomData,
-            const CollectionOf4dArrays<KernelType>& kernels,
-            const CollectionOf2dArrays<ResultType>& trialTransformations,
-            const std::vector<CoordinateType>& weights,
-            _2dArray<ResultType>& result) const = 0;
+  // Note: 'weights' are assumed to be the products of "raw" quadrature
+  // weights and integration elements.
+  virtual void
+  evaluate(const GeometricalData<CoordinateType> &trialGeomData,
+           const CollectionOf4dArrays<KernelType> &kernels,
+           const CollectionOf2dArrays<ResultType> &trialTransformations,
+           const std::vector<CoordinateType> &weights,
+           _2dArray<ResultType> &result) const = 0;
 
-    virtual void evaluateWithPureWeights(
-            const GeometricalData<CoordinateType>& trialGeomData,
-            const CollectionOf4dArrays<KernelType>& kernels,
-            const CollectionOf3dArrays<BasisFunctionType>& trialTransformations,
-            const std::vector<CoordinateType>& weights,
-            _3dArray<ResultType>& result) const = 0;
+  virtual void evaluateWithPureWeights(
+      const GeometricalData<CoordinateType> &trialGeomData,
+      const CollectionOf4dArrays<KernelType> &kernels,
+      const CollectionOf3dArrays<BasisFunctionType> &trialTransformations,
+      const std::vector<CoordinateType> &weights,
+      _3dArray<ResultType> &result) const = 0;
 };
 
 } // namespace Fiber

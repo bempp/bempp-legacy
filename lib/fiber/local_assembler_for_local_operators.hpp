@@ -29,8 +29,7 @@
 
 #include <vector>
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \brief Abstract interface of a local assembler for local operators.
 
@@ -42,26 +41,25 @@ namespace Fiber
   \f$(v_{ej})_{j=1}^n\f$ are the element-level trial functions defined on that
   element.
 
-  The local assembler is responsible for choosing an appropriate way of evaluating
+  The local assembler is responsible for choosing an appropriate way of
+  evaluating
   the necessary integrals. */
-template <typename ResultType>
-class LocalAssemblerForLocalOperators
-{
+template <typename ResultType> class LocalAssemblerForLocalOperators {
 public:
-    typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
+  typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
 
-    virtual ~LocalAssemblerForLocalOperators() {}
+  virtual ~LocalAssemblerForLocalOperators() {}
 
-    /** \brief Assemble local weak forms.
+  /** \brief Assemble local weak forms.
 
-      \param[in]  elementIndices Vector of element indices.
-      \param[out] result         Vector of weak forms of the operator on
-                                 element pairs
-                                 (\p element(\p i), \p element(\p i))
-                                 for \p i in \p elementIndices. */
-    virtual void evaluateLocalWeakForms(
-            const std::vector<int>& elementIndices,
-            std::vector<arma::Mat<ResultType> >& result) = 0;
+    \param[in]  elementIndices Vector of element indices.
+    \param[out] result         Vector of weak forms of the operator on
+                               element pairs
+                               (\p element(\p i), \p element(\p i))
+                               for \p i in \p elementIndices. */
+  virtual void
+  evaluateLocalWeakForms(const std::vector<int> &elementIndices,
+                         std::vector<arma::Mat<ResultType>> &result) = 0;
 };
 
 } // namespace Fiber

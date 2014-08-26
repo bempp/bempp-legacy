@@ -24,17 +24,14 @@
 #include "linear_scalar_shapeset.hpp"
 #include "../common/deprecated.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \brief Shapeset composed of the linear nodal functions.
  *
  *  \deprecated This class is deprecated, use LinearScalarShapeset instead. */
 template <int elementVertexCount, typename ValueType>
-class BEMPP_DEPRECATED PiecewiseLinearContinuousScalarBasis :
-        public LinearScalarShapeset<elementVertexCount, ValueType>
-{
-};
+class BEMPP_DEPRECATED PiecewiseLinearContinuousScalarBasis
+    : public LinearScalarShapeset<elementVertexCount, ValueType> {};
 
 } // namespace Fiber
 

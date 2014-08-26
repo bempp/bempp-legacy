@@ -25,9 +25,8 @@
 
 #include "../fiber/surface_normal_and_domain_index_dependent_function.hpp"
 
-namespace Bempp
-{
-    using Fiber::SurfaceNormalAndDomainIndexDependentFunction;
+namespace Bempp {
+using Fiber::SurfaceNormalAndDomainIndexDependentFunction;
 
 /** \ingroup assembly_functions
 
@@ -67,12 +66,9 @@ namespace Bempp
   of the GridFunction class. */
 template <typename Functor>
 inline SurfaceNormalAndDomainIndexDependentFunction<Functor>
-surfaceNormalAndDomainIndexDependentFunction(
-        const Functor& functor)
-{
-    return SurfaceNormalAndDomainIndexDependentFunction<Functor>(functor);
+surfaceNormalAndDomainIndexDependentFunction(const Functor &functor) {
+  return SurfaceNormalAndDomainIndexDependentFunction<Functor>(functor);
 }
-
 
 } // namespace Bempp
 

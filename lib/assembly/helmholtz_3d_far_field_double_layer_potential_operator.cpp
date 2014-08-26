@@ -31,57 +31,52 @@
 #include "../fiber/default_collection_of_basis_transformations.hpp"
 #include "../fiber/default_kernel_trial_integral.hpp"
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \cond PRIVATE */
 template <typename BasisFunctionType>
-struct Helmholtz3dFarFieldDoubleLayerPotentialOperatorImpl
-{
-    typedef Helmholtz3dFarFieldDoubleLayerPotentialOperatorImpl<BasisFunctionType>
-    This;
-    typedef Helmholtz3dPotentialOperatorBase<This, BasisFunctionType> PotentialOperatorBase;
-    typedef typename PotentialOperatorBase::KernelType KernelType;
-    typedef typename PotentialOperatorBase::ResultType ResultType;
-    typedef typename PotentialOperatorBase::CoordinateType CoordinateType;
+struct Helmholtz3dFarFieldDoubleLayerPotentialOperatorImpl {
+  typedef Helmholtz3dFarFieldDoubleLayerPotentialOperatorImpl<BasisFunctionType>
+  This;
+  typedef Helmholtz3dPotentialOperatorBase<This, BasisFunctionType>
+  PotentialOperatorBase;
+  typedef typename PotentialOperatorBase::KernelType KernelType;
+  typedef typename PotentialOperatorBase::ResultType ResultType;
+  typedef typename PotentialOperatorBase::CoordinateType CoordinateType;
 
-    typedef Fiber::ModifiedHelmholtz3dFarFieldDoubleLayerPotentialKernelFunctor<KernelType>
-    KernelFunctor;
-    typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
-    TransformationFunctor;
-    typedef Fiber::SimpleScalarKernelTrialIntegrandFunctor<
-    BasisFunctionType, KernelType, ResultType> IntegrandFunctor;
+  typedef Fiber::ModifiedHelmholtz3dFarFieldDoubleLayerPotentialKernelFunctor<
+      KernelType> KernelFunctor;
+  typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
+  TransformationFunctor;
+  typedef Fiber::SimpleScalarKernelTrialIntegrandFunctor<
+      BasisFunctionType, KernelType, ResultType> IntegrandFunctor;
 
-    Helmholtz3dFarFieldDoubleLayerPotentialOperatorImpl(KernelType waveNumber) :
-        kernels(KernelFunctor(waveNumber / KernelType(0., 1.))),
-        transformations(TransformationFunctor()),
-        integral(IntegrandFunctor())
-    {}
+  Helmholtz3dFarFieldDoubleLayerPotentialOperatorImpl(KernelType waveNumber)
+      : kernels(KernelFunctor(waveNumber / KernelType(0., 1.))),
+        transformations(TransformationFunctor()), integral(IntegrandFunctor()) {
+  }
 
-    Fiber::DefaultCollectionOfKernels<KernelFunctor> kernels;
-    Fiber::DefaultCollectionOfBasisTransformations<TransformationFunctor>
-    transformations;
-    Fiber::DefaultKernelTrialIntegral<IntegrandFunctor> integral;
+  Fiber::DefaultCollectionOfKernels<KernelFunctor> kernels;
+  Fiber::DefaultCollectionOfBasisTransformations<TransformationFunctor>
+  transformations;
+  Fiber::DefaultKernelTrialIntegral<IntegrandFunctor> integral;
 };
 /** \endcond */
 
 template <typename BasisFunctionType>
 Helmholtz3dFarFieldDoubleLayerPotentialOperator<BasisFunctionType>::
-Helmholtz3dFarFieldDoubleLayerPotentialOperator(KernelType waveNumber) :
-    Base(waveNumber)
-{
-}
+    Helmholtz3dFarFieldDoubleLayerPotentialOperator(KernelType waveNumber)
+    : Base(waveNumber) {}
 
 template <typename BasisFunctionType>
-Helmholtz3dFarFieldDoubleLayerPotentialOperator<BasisFunctionType>::
-~Helmholtz3dFarFieldDoubleLayerPotentialOperator()
-{
-}
+Helmholtz3dFarFieldDoubleLayerPotentialOperator<
+    BasisFunctionType>::~Helmholtz3dFarFieldDoubleLayerPotentialOperator() {}
 
-#define INSTANTIATE_BASE_HELMHOLTZ_DOUBLE_POTENTIAL(BASIS) \
-    template class Helmholtz3dPotentialOperatorBase< \
-    Helmholtz3dFarFieldDoubleLayerPotentialOperatorImpl<BASIS>, BASIS>
+#define INSTANTIATE_BASE_HELMHOLTZ_DOUBLE_POTENTIAL(BASIS)                     \
+  template class Helmholtz3dPotentialOperatorBase<                             \
+      Helmholtz3dFarFieldDoubleLayerPotentialOperatorImpl<BASIS>, BASIS>
 FIBER_ITERATE_OVER_BASIS_TYPES(INSTANTIATE_BASE_HELMHOLTZ_DOUBLE_POTENTIAL);
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(Helmholtz3dFarFieldDoubleLayerPotentialOperator);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(
+    Helmholtz3dFarFieldDoubleLayerPotentialOperator);
 
 } // namespace Bempp

@@ -24,7 +24,8 @@
 #include "../common/common.hpp"
 
 /** \file
-    \brief A class to construct structured cube and simplex grids using the grid factory
+    \brief A class to construct structured cube and simplex grids using the grid
+   factory
 */
 
 #include <algorithm>
@@ -41,261 +42,251 @@
 #include <dune/grid/common/gridfactory.hh>
 #include <dune/grid/yaspgrid.hh>
 
-namespace Dune
-{
+namespace Dune {
 
-/** \brief Construct structured cube and simplex grids in unstructured grid managers
+/** \brief Construct structured cube and simplex grids in unstructured grid
+managers
 
 \note Copied from Dune and slightly modified:
-\li Grids embedded in higher-dimensional spaces are supported. In this case the last (dimworld - dim)
-  coordinates of all vertices, where dim is the grid dimension and dimworld the world dimension,
+\li Grids embedded in higher-dimensional spaces are supported. In this case the
+last (dimworld - dim)
+  coordinates of all vertices, where dim is the grid dimension and dimworld the
+world dimension,
   are set to zero.
-\li Automatic pointers (std::unique_ptr) instead of shared pointers (Dune::shared_ptr) are returned.
+\li Automatic pointers (std::unique_ptr) instead of shared pointers
+(Dune::shared_ptr) are returned.
 */
-template <class GridType>
-class BemppStructuredGridFactory
-{
-    typedef typename GridType::ctype ctype;
+template <class GridType> class BemppStructuredGridFactory {
+  typedef typename GridType::ctype ctype;
 
-    static const int dim = GridType::dimension;
+  static const int dim = GridType::dimension;
 
-    static const int dimworld = GridType::dimensionworld;
+  static const int dimworld = GridType::dimensionworld;
 
-    /** \brief dim-dimensional multi-index.  The range for each component can be set individually
-    */
-    class MultiIndex
-        : public array<int,dim>
-    {
+  /** \brief dim-dimensional multi-index.  The range for each component can be
+   * set individually
+  */
+  class MultiIndex : public array<int, dim> {
 
-        // The range of each component
-        array<int,dim> limits_;
+    // The range of each component
+    array<int, dim> limits_;
 
-    public:
-        /** \brief Constructor with a given range for each digit */
-        MultiIndex(const array<int,dim>& limits)
-            : limits_(limits) {
-            std::fill(this->begin(), this->end(), 0);
-        }
-
-        /** \brief Increment the MultiIndex */
-        MultiIndex& operator++() {
-
-            for (int i=0; i<dim; i++) {
-
-                // Augment digit
-                (*this)[i]++;
-
-                // If there is no carry-over we can stop here
-                if ((*this)[i]<limits_[i])
-                    break;
-
-                (*this)[i] = 0;
-
-            }
-            return *this;
-        }
-
-        /** \brief Compute how many times you can call operator++ before getting to (0,...,0) again */
-        int cycle() const {
-            int result = 1;
-            for (int i=0; i<dim; i++)
-                result *= limits_[i];
-            return result;
-        }
-
-    };
-
-    /** \brief Insert a structured set of vertices into the factory */
-    static void insertVertices(GridFactory<GridType>& factory,
-                               const FieldVector<ctype,dim>& lowerLeft,
-                               const FieldVector<ctype,dim>& upperRight,
-                               const array<int,dim>& vertices) {
-
-        // Pad lowerLeft and upperRight with zeros to dimworld dimensions
-        FieldVector<ctype,dimworld> fullLowerLeft(0.);
-        for (int i = 0; i < dim; ++i)
-            fullLowerLeft[i] = lowerLeft[i];
-        FieldVector<ctype,dimworld> fullUpperRight(0.);
-        for (int i = 0; i < dim; ++i)
-            fullUpperRight[i] = upperRight[i];
-
-        MultiIndex index(vertices);
-
-        // Compute the total number of vertices to be created
-        int numVertices = index.cycle();
-
-        // Create vertices
-        for (int i=0; i<numVertices; i++, ++index) {
-
-            // scale the multiindex to obtain a world position
-            FieldVector<double,dimworld> pos(0);
-            for (int j=0; j<dim; j++)
-                pos[j] = fullLowerLeft[j] + index[j] * (fullUpperRight[j]-fullLowerLeft[j])/(vertices[j]-1);
-
-            factory.insertVertex(pos);
-
-        }
-
+  public:
+    /** \brief Constructor with a given range for each digit */
+    MultiIndex(const array<int, dim> &limits) : limits_(limits) {
+      std::fill(this->begin(), this->end(), 0);
     }
 
-    // Compute the index offsets needed to move to the adjacent vertices
-    // in the different coordinate directions
-    static array<int, dim> computeUnitOffsets(const array<int,dim>& vertices) {
-        array<int, dim> unitOffsets;
-        if (dim>0)  // paranoia
-            unitOffsets[0] = 1;
+    /** \brief Increment the MultiIndex */
+    MultiIndex &operator++() {
 
-        for (int i=1; i<dim; i++)
-            unitOffsets[i] = unitOffsets[i-1] * vertices[i-1];
+      for (int i = 0; i < dim; i++) {
 
-        return unitOffsets;
+        // Augment digit
+        (*this)[i]++;
+
+        // If there is no carry-over we can stop here
+        if ((*this)[i] < limits_[i])
+          break;
+
+        (*this)[i] = 0;
+      }
+      return *this;
     }
+
+    /** \brief Compute how many times you can call operator++ before getting to
+     * (0,...,0) again */
+    int cycle() const {
+      int result = 1;
+      for (int i = 0; i < dim; i++)
+        result *= limits_[i];
+      return result;
+    }
+  };
+
+  /** \brief Insert a structured set of vertices into the factory */
+  static void insertVertices(GridFactory<GridType> &factory,
+                             const FieldVector<ctype, dim> &lowerLeft,
+                             const FieldVector<ctype, dim> &upperRight,
+                             const array<int, dim> &vertices) {
+
+    // Pad lowerLeft and upperRight with zeros to dimworld dimensions
+    FieldVector<ctype, dimworld> fullLowerLeft(0.);
+    for (int i = 0; i < dim; ++i)
+      fullLowerLeft[i] = lowerLeft[i];
+    FieldVector<ctype, dimworld> fullUpperRight(0.);
+    for (int i = 0; i < dim; ++i)
+      fullUpperRight[i] = upperRight[i];
+
+    MultiIndex index(vertices);
+
+    // Compute the total number of vertices to be created
+    int numVertices = index.cycle();
+
+    // Create vertices
+    for (int i = 0; i < numVertices; i++, ++index) {
+
+      // scale the multiindex to obtain a world position
+      FieldVector<double, dimworld> pos(0);
+      for (int j = 0; j < dim; j++)
+        pos[j] = fullLowerLeft[j] + index[j] *
+                                        (fullUpperRight[j] - fullLowerLeft[j]) /
+                                        (vertices[j] - 1);
+
+      factory.insertVertex(pos);
+    }
+  }
+
+  // Compute the index offsets needed to move to the adjacent vertices
+  // in the different coordinate directions
+  static array<int, dim> computeUnitOffsets(const array<int, dim> &vertices) {
+    array<int, dim> unitOffsets;
+    if (dim > 0) // paranoia
+      unitOffsets[0] = 1;
+
+    for (int i = 1; i < dim; i++)
+      unitOffsets[i] = unitOffsets[i - 1] * vertices[i - 1];
+
+    return unitOffsets;
+  }
 
 public:
+  /** \brief Create a structured cube grid
+      \param lowerLeft Lower left corner of the grid
+      \param upperRight Upper right corner of the grid
+      \param elements Number of elements in each coordinate direction
+  */
+  static std::unique_ptr<GridType>
+  createCubeGrid(const FieldVector<ctype, dim> &lowerLeft,
+                 const FieldVector<ctype, dim> &upperRight,
+                 const array<int, dim> &elements) {
+    // The grid factory
+    GridFactory<GridType> factory;
 
-    /** \brief Create a structured cube grid
-        \param lowerLeft Lower left corner of the grid
-        \param upperRight Upper right corner of the grid
-        \param elements Number of elements in each coordinate direction
-    */
-    static std::unique_ptr<GridType> createCubeGrid(const FieldVector<ctype,dim>& lowerLeft,
-            const FieldVector<ctype,dim>& upperRight,
-            const array<int,dim>& elements) {
-        // The grid factory
-        GridFactory<GridType> factory;
+    if (MPIHelper::getCollectiveCommunication().rank() == 0) {
+      // Insert uniformly spaced vertices
+      array<int, dim> vertices = elements;
+      for (int i = 0; i < vertices.size(); ++i)
+        vertices[i]++;
 
-        if (MPIHelper::getCollectiveCommunication().rank() == 0) {
-            // Insert uniformly spaced vertices
-            array<int,dim> vertices = elements;
-            for( int i = 0; i < vertices.size(); ++i )
-                vertices[i]++;
+      // Insert vertices for structured grid into the factory
+      insertVertices(factory, lowerLeft, upperRight, vertices);
 
-            // Insert vertices for structured grid into the factory
-            insertVertices(factory, lowerLeft, upperRight, vertices);
+      // Compute the index offsets needed to move to the adjacent
+      // vertices in the different coordinate directions
+      array<int, dim> unitOffsets = computeUnitOffsets(vertices);
 
-            // Compute the index offsets needed to move to the adjacent
-            // vertices in the different coordinate directions
-            array<int, dim> unitOffsets =
-                computeUnitOffsets(vertices);
+      // Compute an element template (the cube at (0,...,0).  All
+      // other cubes are constructed by moving this template around
+      int nCorners = 1 << dim;
 
-            // Compute an element template (the cube at (0,...,0).  All
-            // other cubes are constructed by moving this template around
-            int nCorners = 1<<dim;
+      std::vector<int> cornersTemplate(nCorners, 0);
 
-            std::vector<int> cornersTemplate(nCorners,0);
+      for (int i = 0; i < nCorners; i++)
+        for (int j = 0; j < dim; j++)
+          if (i & (1 << j))
+            cornersTemplate[i] += unitOffsets[j];
 
-            for (int i=0; i<nCorners; i++)
-                for (int j=0; j<dim; j++)
-                    if ( i & (1<<j) )
-                        cornersTemplate[i] += unitOffsets[j];
+      // Insert elements
+      MultiIndex index(elements);
 
-            // Insert elements
-            MultiIndex index(elements);
+      // Compute the total number of elementss to be created
+      int numElements = index.cycle();
 
-            // Compute the total number of elementss to be created
-            int numElements = index.cycle();
+      for (int i = 0; i < numElements; i++, ++index) {
 
-            for (int i=0; i<numElements; i++, ++index) {
+        // 'base' is the index of the lower left element corner
+        int base = 0;
+        for (int j = 0; j < dim; j++)
+          base += index[j] * unitOffsets[j];
 
-                // 'base' is the index of the lower left element corner
-                int base = 0;
-                for (int j=0; j<dim; j++)
-                    base += index[j] * unitOffsets[j];
+        // insert new element
+        std::vector<int> corners = cornersTemplate;
+        for (size_t j = 0; j < corners.size(); j++)
+          corners[j] += base;
 
-                // insert new element
-                std::vector<int> corners = cornersTemplate;
-                for (size_t j=0; j<corners.size(); j++)
-                    corners[j] += base;
+        factory.insertElement(GeometryType(GeometryType::cube, dim), corners);
+      }
 
-                factory.insertElement
-                (GeometryType(GeometryType::cube, dim), corners);
+    } // if(rank == 0)
 
-            }
+    // Create the grid and hand it to the calling method
+    return std::unique_ptr<GridType>(factory.createGrid());
+  }
 
-        } // if(rank == 0)
+  /** \brief Create a structured simplex grid
 
-        // Create the grid and hand it to the calling method
-        return std::unique_ptr<GridType>(factory.createGrid());
+      This works in all dimensions.  The Coxeter-Freudenthal-Kuhn triangulation
+     is
+      used, which splits each cube into dim! simplices.  See Allgower and Georg,
+      'Numerical Path Following' for a description.
+  */
+  static std::unique_ptr<GridType>
+  createSimplexGrid(const FieldVector<ctype, dim> &lowerLeft,
+                    const FieldVector<ctype, dim> &upperRight,
+                    const array<int, dim> &elements) {
+    // The grid factory
+    GridFactory<GridType> factory;
 
-    }
+    if (MPIHelper::getCollectiveCommunication().rank() == 0) {
+      // Insert uniformly spaced vertices
+      array<int, dim> vertices = elements;
+      for (std::size_t i = 0; i < vertices.size(); i++)
+        vertices[i]++;
 
-    /** \brief Create a structured simplex grid
+      insertVertices(factory, lowerLeft, upperRight, vertices);
 
-        This works in all dimensions.  The Coxeter-Freudenthal-Kuhn triangulation is
-        used, which splits each cube into dim! simplices.  See Allgower and Georg,
-        'Numerical Path Following' for a description.
-    */
-    static std::unique_ptr<GridType> createSimplexGrid(const FieldVector<ctype,dim>& lowerLeft,
-            const FieldVector<ctype,dim>& upperRight,
-            const array<int,dim>& elements) {
-        // The grid factory
-        GridFactory<GridType> factory;
+      // Compute the index offsets needed to move to the adjacent
+      // vertices in the different coordinate directions
+      array<int, dim> unitOffsets = computeUnitOffsets(vertices);
 
-        if(MPIHelper::getCollectiveCommunication().rank() == 0) {
-            // Insert uniformly spaced vertices
-            array<int,dim> vertices = elements;
-            for (std::size_t i=0; i<vertices.size(); i++)
-                vertices[i]++;
+      // Insert the elements
+      std::vector<int> corners(dim + 1);
 
-            insertVertices(factory, lowerLeft, upperRight, vertices);
+      // Loop over all "cubes", and split up each cube into dim!
+      // (factorial) simplices
+      MultiIndex elementsIndex(elements);
+      int cycle = elementsIndex.cycle();
 
-            // Compute the index offsets needed to move to the adjacent
-            // vertices in the different coordinate directions
-            array<int, dim> unitOffsets =
-                computeUnitOffsets(vertices);
+      for (int i = 0; i < cycle; ++elementsIndex, i++) {
 
-            // Insert the elements
-            std::vector<int> corners(dim+1);
+        // 'base' is the index of the lower left element corner
+        int base = 0;
+        for (int j = 0; j < dim; j++)
+          base += elementsIndex[j] * unitOffsets[j];
 
-            // Loop over all "cubes", and split up each cube into dim!
-            // (factorial) simplices
-            MultiIndex elementsIndex(elements);
-            int cycle = elementsIndex.cycle();
+        // each permutation of the unit vectors gives a simplex.
+        std::vector<unsigned int> permutation(dim);
+        for (int j = 0; j < dim; j++)
+          permutation[j] = j;
 
-            for (int i=0; i<cycle; ++elementsIndex, i++) {
+        // A hack for triangular lattices: swap the two last
+        // vertices of every second triangle to uniformize orientation
+        // of their normals
+        int triangle = 0;
+        do {
 
-                // 'base' is the index of the lower left element corner
-                int base = 0;
-                for (int j=0; j<dim; j++)
-                    base += elementsIndex[j] * unitOffsets[j];
+          // Make a simplex
+          std::vector<unsigned int> corners(dim + 1);
+          corners[0] = base;
 
-                // each permutation of the unit vectors gives a simplex.
-                std::vector<unsigned int> permutation(dim);
-                for (int j=0; j<dim; j++)
-                    permutation[j] = j;
+          for (int j = 0; j < dim; j++)
+            corners[j + 1] = corners[j] + unitOffsets[permutation[j]];
+          if (dim == 2 && triangle == 1)
+            std::swap(corners[1], corners[2]);
+          ++triangle;
 
-                // A hack for triangular lattices: swap the two last
-                // vertices of every second triangle to uniformize orientation
-                // of their normals
-                int triangle = 0;
-                do {
+          factory.insertElement(GeometryType(GeometryType::simplex, dim),
+                                corners);
 
-                    // Make a simplex
-                    std::vector<unsigned int> corners(dim+1);
-                    corners[0] = base;
+        } while (std::next_permutation(permutation.begin(), permutation.end()));
+      }
 
-                    for (int j=0; j<dim; j++)
-                        corners[j+1] =
-                            corners[j] + unitOffsets[permutation[j]];
-                    if (dim == 2 && triangle == 1)
-                        std::swap(corners[1], corners[2]);
-                    ++triangle;
+    } // if(rank == 0)
 
-                    factory.insertElement
-                    (GeometryType(GeometryType::simplex, dim),
-                     corners);
-
-                } while (std::next_permutation(permutation.begin(),
-                                               permutation.end()));
-
-            }
-
-        } // if(rank == 0)
-
-        // Create the grid and hand it to the calling method
-        return std::unique_ptr<GridType>(factory.createGrid());
-    }
-
+    // Create the grid and hand it to the calling method
+    return std::unique_ptr<GridType>(factory.createGrid());
+  }
 };
 
 /** \brief Specialization of the StructuredGridFactory for YaspGrid
@@ -307,57 +298,55 @@ public:
     \li YaspGrid only support grids which have their lower left corder at
         the origin.
 */
-template<int dim>
-class BemppStructuredGridFactory<YaspGrid<dim> >
-{
-    typedef YaspGrid<dim> GridType;
-    typedef typename GridType::ctype ctype;
-    static const int dimworld = GridType::dimensionworld;
+template <int dim> class BemppStructuredGridFactory<YaspGrid<dim>> {
+  typedef YaspGrid<dim> GridType;
+  typedef typename GridType::ctype ctype;
+  static const int dimworld = GridType::dimensionworld;
 
 public:
-    /** \brief Create a structured cube grid
+  /** \brief Create a structured cube grid
 
-        \param lowerLeft  Lower left corner of the grid
-        \param upperRight Upper right corner of the grid
-        \param elements   Number of elements in each coordinate direction
+      \param lowerLeft  Lower left corner of the grid
+      \param upperRight Upper right corner of the grid
+      \param elements   Number of elements in each coordinate direction
 
-        \note YaspGrid only supports lowerLeft at the origin.  This
-              function throws a GridError if this requirement is not met.
-    */
-    static std::unique_ptr<GridType>
-    createCubeGrid(const FieldVector<ctype,dimworld>& lowerLeft,
-                   const FieldVector<ctype,dimworld>& upperRight,
-                   const array<int,dim>& elements) {
-        for(int d = 0; d < dimworld; ++d)
-            if(std::abs(lowerLeft[d]) > std::abs(upperRight[d])*1e-10)
-                DUNE_THROW(GridError, className<BemppStructuredGridFactory>()
-                           << "::createCubeGrid(): The lower coordinates "
-                           "must be at the origin for YaspGrid.");
+      \note YaspGrid only supports lowerLeft at the origin.  This
+            function throws a GridError if this requirement is not met.
+  */
+  static std::unique_ptr<GridType>
+  createCubeGrid(const FieldVector<ctype, dimworld> &lowerLeft,
+                 const FieldVector<ctype, dimworld> &upperRight,
+                 const array<int, dim> &elements) {
+    for (int d = 0; d < dimworld; ++d)
+      if (std::abs(lowerLeft[d]) > std::abs(upperRight[d]) * 1e-10)
+        DUNE_THROW(GridError,
+                   className<BemppStructuredGridFactory>()
+                       << "::createCubeGrid(): The lower coordinates "
+                          "must be at the origin for YaspGrid.");
 
-        FieldVector<int, dim> elements_;
-        std::copy(elements.begin(), elements.end(), elements_.begin());
+    FieldVector<int, dim> elements_;
+    std::copy(elements.begin(), elements.end(), elements_.begin());
 
-        return std::unique_ptr<GridType>
-               (new GridType(upperRight, elements_,
-                             FieldVector<bool,dim>(false), 0));
-    }
+    return std::unique_ptr<GridType>(
+        new GridType(upperRight, elements_, FieldVector<bool, dim>(false), 0));
+  }
 
-    /** \brief Create a structured simplex grid
+  /** \brief Create a structured simplex grid
 
-        \note Simplices are not supported in YaspGrid, so this functions
-              unconditionally throws a GridError.
-    */
-    static std::unique_ptr<GridType>
-    createSimplexGrid(const FieldVector<ctype,dimworld>& lowerLeft,
-                      const FieldVector<ctype,dimworld>& upperRight,
-                      const array<int,dim>& elements) {
-        DUNE_THROW(GridError, className<BemppStructuredGridFactory>()
+      \note Simplices are not supported in YaspGrid, so this functions
+            unconditionally throws a GridError.
+  */
+  static std::unique_ptr<GridType>
+  createSimplexGrid(const FieldVector<ctype, dimworld> &lowerLeft,
+                    const FieldVector<ctype, dimworld> &upperRight,
+                    const array<int, dim> &elements) {
+    DUNE_THROW(GridError,
+               className<BemppStructuredGridFactory>()
                    << "::createSimplexGrid(): Simplices are not supported "
-                   "by YaspGrid.");
-    }
-
+                      "by YaspGrid.");
+  }
 };
 
-}  // namespace Dune
+} // namespace Dune
 
 #endif

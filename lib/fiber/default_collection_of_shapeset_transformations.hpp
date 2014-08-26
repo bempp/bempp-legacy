@@ -23,11 +23,11 @@
 
 #include "collection_of_basis_transformations.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \ingroup weak_form_elements
- *  \brief Default implementation of a collection of shape function transformations.
+ *  \brief Default implementation of a collection of shape function
+ transformations.
 
     This class implements the interface defined by
     CollectionOfShapesetTransformations using a functor object to evaluate the
@@ -54,7 +54,8 @@ namespace Fiber
         int resultDimension(int i) const;
 
         // Specify types of data required by the transformations (see the
-        // documentation of CollectionOfShapesetTransformations::addDependencies()
+        // documentation of
+ CollectionOfShapesetTransformations::addDependencies()
         // for details)
         void addDependencies(size_t& basisDeps, size_t& geomDeps) const;
 
@@ -74,42 +75,42 @@ namespace Fiber
    \endcode
  */
 template <typename Functor>
-class DefaultCollectionOfShapesetTransformations :
-        public CollectionOfBasisTransformations<typename Functor::CoordinateType>
-{
-    typedef CollectionOfBasisTransformations<typename Functor::CoordinateType> Base;
+class DefaultCollectionOfShapesetTransformations
+    : public CollectionOfBasisTransformations<
+          typename Functor::CoordinateType> {
+  typedef CollectionOfBasisTransformations<typename Functor::CoordinateType>
+  Base;
+
 public:
-    typedef typename Base::CoordinateType CoordinateType;
-    typedef typename Base::ComplexType ComplexType;
+  typedef typename Base::CoordinateType CoordinateType;
+  typedef typename Base::ComplexType ComplexType;
 
-    explicit DefaultCollectionOfShapesetTransformations(const Functor& functor) :
-        m_functor(functor)
-    {}
+  explicit DefaultCollectionOfShapesetTransformations(const Functor &functor)
+      : m_functor(functor) {}
 
-    virtual int transformationCount() const;
-    virtual int argumentDimension() const;
-    virtual int resultDimension(int transformationIndex) const;
-    virtual void addDependencies(size_t& basisDeps, size_t& geomDeps) const;
-
-private:
-    template <typename ValueType>
-    void evaluateImpl(
-            const BasisData<ValueType>& basisData,
-            const GeometricalData<CoordinateType>& geomData,
-            CollectionOf3dArrays<ValueType>& result) const;
-
-    virtual void evaluateImplReal(
-            const BasisData<CoordinateType>& basisData,
-            const GeometricalData<CoordinateType>& geomData,
-            CollectionOf3dArrays<CoordinateType>& result) const;
-
-    virtual void evaluateImplComplex(
-            const BasisData<ComplexType>& basisData,
-            const GeometricalData<CoordinateType>& geomData,
-            CollectionOf3dArrays<ComplexType>& result) const;
+  virtual int transformationCount() const;
+  virtual int argumentDimension() const;
+  virtual int resultDimension(int transformationIndex) const;
+  virtual void addDependencies(size_t &basisDeps, size_t &geomDeps) const;
 
 private:
-    Functor m_functor;
+  template <typename ValueType>
+  void evaluateImpl(const BasisData<ValueType> &basisData,
+                    const GeometricalData<CoordinateType> &geomData,
+                    CollectionOf3dArrays<ValueType> &result) const;
+
+  virtual void
+  evaluateImplReal(const BasisData<CoordinateType> &basisData,
+                   const GeometricalData<CoordinateType> &geomData,
+                   CollectionOf3dArrays<CoordinateType> &result) const;
+
+  virtual void
+  evaluateImplComplex(const BasisData<ComplexType> &basisData,
+                      const GeometricalData<CoordinateType> &geomData,
+                      CollectionOf3dArrays<ComplexType> &result) const;
+
+private:
+  Functor m_functor;
 };
 
 } // namespace Fiber

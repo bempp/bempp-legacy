@@ -26,24 +26,21 @@
 
 #include "../common/common.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
-template <typename ResultType>
-class EvaluatorForIntegralOperators
-{
+template <typename ResultType> class EvaluatorForIntegralOperators {
 public:
-    typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
+  typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
 
-    enum Region {
-        NEAR_FIELD, FAR_FIELD
-    };
+  enum Region {
+    NEAR_FIELD,
+    FAR_FIELD
+  };
 
-    virtual ~EvaluatorForIntegralOperators() {}
+  virtual ~EvaluatorForIntegralOperators() {}
 
-    virtual void evaluate(Region region,
-                          const arma::Mat<CoordinateType>& points,
-                          arma::Mat<ResultType>& result) const = 0;
+  virtual void evaluate(Region region, const arma::Mat<CoordinateType> &points,
+                        arma::Mat<ResultType> &result) const = 0;
 };
 
 } // namespace Fiber

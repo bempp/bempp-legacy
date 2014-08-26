@@ -25,8 +25,7 @@
 #include "helmholtz_3d_operators_common.hpp"
 #include "symmetry.hpp"
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \ingroup modified_helmholtz_3d
  *  \brief Construct a BoundaryOperator object representing the
@@ -109,15 +108,13 @@ namespace Bempp
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType>
 modifiedHelmholtz3dSingleLayerBoundaryOperator(
-        const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
-        const shared_ptr<const Space<BasisFunctionType> >& domain,
-        const shared_ptr<const Space<BasisFunctionType> >& range,
-        const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-        KernelType waveNumber,
-        const std::string& label = "",
-        int symmetry = NO_SYMMETRY,
-        bool useInterpolation = false,
-        int interpPtsPerWavelength = DEFAULT_HELMHOLTZ_INTERPOLATION_DENSITY);
+    const shared_ptr<const Context<BasisFunctionType, ResultType>> &context,
+    const shared_ptr<const Space<BasisFunctionType>> &domain,
+    const shared_ptr<const Space<BasisFunctionType>> &range,
+    const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
+    KernelType waveNumber, const std::string &label = "",
+    int symmetry = NO_SYMMETRY, bool useInterpolation = false,
+    int interpPtsPerWavelength = DEFAULT_HELMHOLTZ_INTERPOLATION_DENSITY);
 
 } // namespace Bempp
 

@@ -30,8 +30,7 @@
 
 #include <memory>
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \cond FORWARD_DECL */
 template <typename BasisFunctionType> class Space;
@@ -42,54 +41,44 @@ class AcaOptions;
 class IndexPermutation;
 /** \endcond */
 
-template <typename BasisFunctionType>
-class ClusterConstructionHelper
-{
-    private:
-    typedef typename Fiber::ScalarTraits<BasisFunctionType>::RealType CoordinateType;
-    typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
-    typedef ExtendedBemCluster<AhmedDofType> AhmedBemCluster;
-    typedef bbxbemblcluster<AhmedDofType, AhmedDofType> AhmedBemBlcluster;
+template <typename BasisFunctionType> class ClusterConstructionHelper {
+private:
+  typedef typename Fiber::ScalarTraits<BasisFunctionType>::RealType
+  CoordinateType;
+  typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
+  typedef ExtendedBemCluster<AhmedDofType> AhmedBemCluster;
+  typedef bbxbemblcluster<AhmedDofType, AhmedDofType> AhmedBemBlcluster;
 
-    static void constructBemCluster(
-        const Space<BasisFunctionType>& space,
-        bool indexWithGlobalDofs,
-        const AcaOptions& acaOptions,
-        shared_ptr<AhmedBemCluster>& cluster,
-        shared_ptr<IndexPermutation>& o2p,
-        shared_ptr<IndexPermutation>& p2o);
+  static void constructBemCluster(const Space<BasisFunctionType> &space,
+                                  bool indexWithGlobalDofs,
+                                  const AcaOptions &acaOptions,
+                                  shared_ptr<AhmedBemCluster> &cluster,
+                                  shared_ptr<IndexPermutation> &o2p,
+                                  shared_ptr<IndexPermutation> &p2o);
 
-    static void constructBemCluster(
-        const arma::Mat<CoordinateType>& points,
-        int componentCount,
-        const AcaOptions& acaOptions,
-        shared_ptr<AhmedBemCluster>& cluster,
-        shared_ptr<IndexPermutation>& o2p,
-        shared_ptr<IndexPermutation>& p2o);
+  static void constructBemCluster(const arma::Mat<CoordinateType> &points,
+                                  int componentCount,
+                                  const AcaOptions &acaOptions,
+                                  shared_ptr<AhmedBemCluster> &cluster,
+                                  shared_ptr<IndexPermutation> &o2p,
+                                  shared_ptr<IndexPermutation> &p2o);
 
-    static std::unique_ptr<AhmedBemBlcluster>
-    constructBemBlockCluster(
-        const AcaOptions& acaOptions,
-        bool symmetric,
-        AhmedBemCluster& testCluster,
-        AhmedBemCluster& trialCluster,
-            bool useStrongAdmissibilityCondition,
-        unsigned int& blockCount);
+  static std::unique_ptr<AhmedBemBlcluster> constructBemBlockCluster(
+      const AcaOptions &acaOptions, bool symmetric,
+      AhmedBemCluster &testCluster, AhmedBemCluster &trialCluster,
+      bool useStrongAdmissibilityCondition, unsigned int &blockCount);
 
-    static void truncateBemBlockCluster(blcluster *cluster,
-                                        const blcluster *refCluster);
+  static void truncateBemBlockCluster(blcluster *cluster,
+                                      const blcluster *refCluster);
 
-    static void
-    getComponentDofPositions(
-            const arma::Mat<CoordinateType>& points,
-            int componentCount,
-            std::vector<Point3D<CoordinateType> >& positions);
+  static void
+  getComponentDofPositions(const arma::Mat<CoordinateType> &points,
+                           int componentCount,
+                           std::vector<Point3D<CoordinateType>> &positions);
 
-    static void
-    getComponentBoundingBoxes(
-            const arma::Mat<CoordinateType>& points,
-            int componentCount,
-            std::vector<BoundingBox<CoordinateType> >& boundingBoxes);
+  static void getComponentBoundingBoxes(
+      const arma::Mat<CoordinateType> &points, int componentCount,
+      std::vector<BoundingBox<CoordinateType>> &boundingBoxes);
 };
 
 } // namespace Bempp

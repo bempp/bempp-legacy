@@ -27,8 +27,7 @@
 #include <tbb/mutex.h>
 #include <memory>
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \ingroup common
  *  \brief Thread-safe wrapper of a lazily inititialised object.
@@ -42,41 +41,32 @@ namespace Bempp
   \tparam Mutex       Type of the mutex to be used to lock the object during
                       initialisation.
 */
-template<typename T, typename Initializer, typename Mutex=tbb::mutex>
-class Lazy
-{
+template <typename T, typename Initializer, typename Mutex = tbb::mutex>
+class Lazy {
 public:
-    Lazy(const Initializer& init) :
-        m_init(init), m_value() {
-    }
+  Lazy(const Initializer &init) : m_init(init), m_value() {}
 
-    ~Lazy() {
-        delete m_value;
-    }
+  ~Lazy() { delete m_value; }
 
-    T& get() {
-        if (!m_value) {
-            typename Mutex::scoped_lock lock(m_mutex);
-            if (!m_value) {
-                std::unique_ptr<T> t = m_init();
-                m_value = t.release();
-            }
-        }
-        return *m_value;
+  T &get() {
+    if (!m_value) {
+      typename Mutex::scoped_lock lock(m_mutex);
+      if (!m_value) {
+        std::unique_ptr<T> t = m_init();
+        m_value = t.release();
+      }
     }
+    return *m_value;
+  }
 
-    T& operator*() {
-        return get();
-    }
+  T &operator*() { return get(); }
 
-    T* operator->() {
-        return &get();
-    }
+  T *operator->() { return &get(); }
 
 private:
-    Initializer m_init;
-    tbb::atomic<T*> m_value;
-    Mutex m_mutex;
+  Initializer m_init;
+  tbb::atomic<T *> m_value;
+  Mutex m_mutex;
 };
 
 } // namespace Bempp

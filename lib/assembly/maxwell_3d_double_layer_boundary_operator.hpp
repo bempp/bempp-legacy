@@ -27,11 +27,11 @@
 
 #include "../common/scalar_traits.hpp"
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \ingroup maxwell_3d
- *  \brief Construct a double-layer boundary operator for Maxwell equations in 3D.
+ *  \brief Construct a double-layer boundary operator for Maxwell equations in
+ *3D.
  *
  *  This function constructs a BoundaryOperator object representing
  *  the double-layer boundary operator \f$\boldsymbol C\f$ for the
@@ -77,18 +77,18 @@ namespace Bempp
  */
 template <typename BasisFunctionType>
 BoundaryOperator<BasisFunctionType,
-    typename ScalarTraits<BasisFunctionType>::ComplexType>
+                 typename ScalarTraits<BasisFunctionType>::ComplexType>
 maxwell3dDoubleLayerBoundaryOperator(
-        const shared_ptr<const Context<BasisFunctionType,
-        typename ScalarTraits<BasisFunctionType>::ComplexType> >& context,
-        const shared_ptr<const Space<BasisFunctionType> >& domain,
-        const shared_ptr<const Space<BasisFunctionType> >& range,
-        const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-        typename ScalarTraits<BasisFunctionType>::ComplexType waveNumber,
-        const std::string& label = "",
-        int symmetry = NO_SYMMETRY,
-        bool useInterpolation = false,
-        int interpPtsPerWavelength = DEFAULT_HELMHOLTZ_INTERPOLATION_DENSITY);
+    const shared_ptr<const Context<
+        BasisFunctionType,
+        typename ScalarTraits<BasisFunctionType>::ComplexType>> &context,
+    const shared_ptr<const Space<BasisFunctionType>> &domain,
+    const shared_ptr<const Space<BasisFunctionType>> &range,
+    const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
+    typename ScalarTraits<BasisFunctionType>::ComplexType waveNumber,
+    const std::string &label = "", int symmetry = NO_SYMMETRY,
+    bool useInterpolation = false,
+    int interpPtsPerWavelength = DEFAULT_HELMHOLTZ_INTERPOLATION_DENSITY);
 
 } // namespace Bempp
 

@@ -35,11 +35,11 @@
 
 class blcluster;
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \ingroup discrete_boundary_operators
- *  \brief Discrete boundary operator composed of multiple blocks stored separately.
+ *  \brief Discrete boundary operator composed of multiple blocks stored
+ *separately.
  *
  *  This class represents a linear operator whose matrix
  *  \f[ L =
@@ -52,104 +52,105 @@ namespace Bempp
  *  \f]
  *  is composed of \f$m \times n\f$ discrete boundary operators \f$L_{ij}\f$. */
 template <typename ValueType>
-class DiscreteBlockedBoundaryOperator : public DiscreteBoundaryOperator<ValueType>
-{
+class DiscreteBlockedBoundaryOperator
+    : public DiscreteBoundaryOperator<ValueType> {
 public:
-    typedef DiscreteBoundaryOperator<ValueType> Base;
+  typedef DiscreteBoundaryOperator<ValueType> Base;
 
-    /** \brief Constructor.
-     *
-     *  \param[in] blocks
-     *    2D array of shared pointers to the discrete boundary operators
-     *    \f$L_{ij}\f$ making up the newly constructed blocked operator. A null
-     *    shared pointer is equivalent to a discrete boundary operator with
-     *    zero matrix.
-     *  \param[in] rowCounts
-     *    Vector whose <em>i</em>th element is the number of rows of the matrix
-     *    of each operator in <em>i</em>th row of the array \p blocks.
-     *  \param[in] columnCounts
-     *    Vector whose <em>i</em>th element is the number of columns of the
-     *    matrix of each operator in <em>i</em>th column of the array \p blocks.
-     */
-    DiscreteBlockedBoundaryOperator(
-            const Fiber::_2dArray<shared_ptr<const Base> >& blocks,
-            const std::vector<size_t>& rowCounts,
-            const std::vector<size_t>& columnCounts);
+  /** \brief Constructor.
+   *
+   *  \param[in] blocks
+   *    2D array of shared pointers to the discrete boundary operators
+   *    \f$L_{ij}\f$ making up the newly constructed blocked operator. A null
+   *    shared pointer is equivalent to a discrete boundary operator with
+   *    zero matrix.
+   *  \param[in] rowCounts
+   *    Vector whose <em>i</em>th element is the number of rows of the matrix
+   *    of each operator in <em>i</em>th row of the array \p blocks.
+   *  \param[in] columnCounts
+   *    Vector whose <em>i</em>th element is the number of columns of the
+   *    matrix of each operator in <em>i</em>th column of the array \p blocks.
+   */
+  DiscreteBlockedBoundaryOperator(
+      const Fiber::_2dArray<shared_ptr<const Base>> &blocks,
+      const std::vector<size_t> &rowCounts,
+      const std::vector<size_t> &columnCounts);
 
-    virtual unsigned int rowCount() const;
-    virtual unsigned int columnCount() const;
+  virtual unsigned int rowCount() const;
+  virtual unsigned int columnCount() const;
 
-    /** \brief return the block component at position (i,j) in the block operator matrix. */
-    virtual shared_ptr<const DiscreteBoundaryOperator<ValueType> > getComponent(int row, int col) const;
+  /** \brief return the block component at position (i,j) in the block operator
+   * matrix. */
+  virtual shared_ptr<const DiscreteBoundaryOperator<ValueType>>
+  getComponent(int row, int col) const;
 
-    virtual void addBlock(const std::vector<int>& rows,
-                          const std::vector<int>& cols,
-                          const ValueType alpha,
-                          arma::Mat<ValueType>& block) const;
+  virtual void addBlock(const std::vector<int> &rows,
+                        const std::vector<int> &cols, const ValueType alpha,
+                        arma::Mat<ValueType> &block) const;
 
-    /** \brief Return a new DiscreteBlockedBoundaryOperator, in which every
-      * component is castable to a DiscreteAcaBoundaryOperator.
-      *
-      * This routine calls the
-      * DiscreteBoundaryOperator::asDiscreteAcaBoundaryOperator() function for
-      * each block component, which may throw a std::bad_cast exception if
-      * conversion of a block fails.
-      *
-      * \param[in] eps
-      *   Accuracy tolerance for H-Matrix addition.
-      * \param[in] maximumRank
-      *   Maximum rank of blocks to be considered low rank in the case of
-      *   H-Matrix addition.
-      *
-      * \returns A pointer to a DiscreteBlockedBoundaryOperator object, where
-      *   every component is castable to DiscreteAcaBoundaryOperator.
-      *
-      * \note This function throws an exception if BEM++ has been compiled
-      *  without AHMED.
-      */
-    shared_ptr<const DiscreteBlockedBoundaryOperator<ValueType> >
-    asDiscreteAcaBlockedBoundaryOperator(double eps=-1, int maximumRank=-1) const;
+  /** \brief Return a new DiscreteBlockedBoundaryOperator, in which every
+    * component is castable to a DiscreteAcaBoundaryOperator.
+    *
+    * This routine calls the
+    * DiscreteBoundaryOperator::asDiscreteAcaBoundaryOperator() function for
+    * each block component, which may throw a std::bad_cast exception if
+    * conversion of a block fails.
+    *
+    * \param[in] eps
+    *   Accuracy tolerance for H-Matrix addition.
+    * \param[in] maximumRank
+    *   Maximum rank of blocks to be considered low rank in the case of
+    *   H-Matrix addition.
+    *
+    * \returns A pointer to a DiscreteBlockedBoundaryOperator object, where
+    *   every component is castable to DiscreteAcaBoundaryOperator.
+    *
+    * \note This function throws an exception if BEM++ has been compiled
+    *  without AHMED.
+    */
+  shared_ptr<const DiscreteBlockedBoundaryOperator<ValueType>>
+  asDiscreteAcaBlockedBoundaryOperator(double eps = -1,
+                                       int maximumRank = -1) const;
 
-    virtual shared_ptr<const DiscreteBoundaryOperator<ValueType> >
-    asDiscreteAcaBoundaryOperator(double eps=-1, int maximumRank=-1,
-                                  bool interleave=false) const;
+  virtual shared_ptr<const DiscreteBoundaryOperator<ValueType>>
+  asDiscreteAcaBoundaryOperator(double eps = -1, int maximumRank = -1,
+                                bool interleave = false) const;
 
 #ifdef WITH_TRILINOS
 public:
-    virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > domain() const;
-    virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > range() const;
+  virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>> domain() const;
+  virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>> range() const;
 
 protected:
-    virtual bool opSupportedImpl(Thyra::EOpTransp M_trans) const;
+  virtual bool opSupportedImpl(Thyra::EOpTransp M_trans) const;
 #endif
 
 private:
-    virtual void applyBuiltInImpl(const TranspositionMode trans,
-                                  const arma::Col<ValueType>& x_in,
-                                  arma::Col<ValueType>& y_inout,
-                                  const ValueType alpha,
-                                  const ValueType beta) const;
+  virtual void applyBuiltInImpl(const TranspositionMode trans,
+                                const arma::Col<ValueType> &x_in,
+                                arma::Col<ValueType> &y_inout,
+                                const ValueType alpha,
+                                const ValueType beta) const;
 
 #ifdef WITH_AHMED
-    void mergeHMatrices(
-        unsigned currentLevel,
-        const std::vector<Fiber::_2dArray<unsigned> >& rowSonSizes,
-        const std::vector<Fiber::_2dArray<unsigned> >& colSonSizes,
-        const Fiber::_2dArray<const blcluster*> clusters,
-        const Fiber::_2dArray<size_t> indexOffsets,
-        blcluster* result) const;
+  void mergeHMatrices(unsigned currentLevel,
+                      const std::vector<Fiber::_2dArray<unsigned>> &rowSonSizes,
+                      const std::vector<Fiber::_2dArray<unsigned>> &colSonSizes,
+                      const Fiber::_2dArray<const blcluster *> clusters,
+                      const Fiber::_2dArray<size_t> indexOffsets,
+                      blcluster *result) const;
 #endif // WITH_AHMED
 
 private:
-    /** \cond PRIVATE */
-    Fiber::_2dArray<shared_ptr<const Base> > m_blocks;
-    std::vector<size_t> m_rowCounts;
-    std::vector<size_t> m_columnCounts;
+  /** \cond PRIVATE */
+  Fiber::_2dArray<shared_ptr<const Base>> m_blocks;
+  std::vector<size_t> m_rowCounts;
+  std::vector<size_t> m_columnCounts;
 #ifdef WITH_TRILINOS
-    Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > m_domainSpace;
-    Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > m_rangeSpace;
+  Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>> m_domainSpace;
+  Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>> m_rangeSpace;
 #endif
-    /** \endcond */
+  /** \endcond */
 };
 
 } // namespace Bempp

@@ -21,15 +21,12 @@
 #ifndef bempp_ensure_not_null_hpp
 #define bempp_ensure_not_null_hpp
 
-namespace Bempp
-{
+namespace Bempp {
 
-template <typename PointerType>
-PointerType ensureNotNull(PointerType p)
-{
-    if (!p)
-        throw std::runtime_error("ensureNotNull(): pointer must not be null");
-    return p;
+template <typename PointerType> PointerType ensureNotNull(PointerType p) {
+  if (!p)
+    throw std::runtime_error("ensureNotNull(): pointer must not be null");
+  return p;
 }
 
 } // namespace

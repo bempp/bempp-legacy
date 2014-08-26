@@ -29,64 +29,69 @@
 
 #include <cassert>
 
-namespace Fiber
-{
+namespace Fiber {
 
 template <typename BasisFunctionType_, typename KernelType_,
           typename ResultType_>
-class ModifiedMaxwell3dSingleLayerBoundaryOperatorIntegrandFunctor
-{
+class ModifiedMaxwell3dSingleLayerBoundaryOperatorIntegrandFunctor {
 public:
-    typedef BasisFunctionType_ BasisFunctionType;
-    typedef KernelType_ KernelType;
-    typedef ResultType_ ResultType;
-    typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
+  typedef BasisFunctionType_ BasisFunctionType;
+  typedef KernelType_ KernelType;
+  typedef ResultType_ ResultType;
+  typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
 
-    void addGeometricalDependencies(size_t& testGeomDeps, size_t& trialGeomDeps) const {
-        // Do nothing
-    }
+  void addGeometricalDependencies(size_t &testGeomDeps,
+                                  size_t &trialGeomDeps) const {
+    // Do nothing
+  }
 
-    template <template <typename T> class CollectionOf2dSlicesOfConstNdArrays>
-    ResultType evaluate(
-            const ConstGeometricalDataSlice<CoordinateType>& testGeomData,
-            const ConstGeometricalDataSlice<CoordinateType>& trialGeomData,
-            const CollectionOf1dSlicesOfConst3dArrays<BasisFunctionType>& testTransfValues,
-            const CollectionOf1dSlicesOfConst3dArrays<BasisFunctionType>& trialTransfValues,
-            const CollectionOf2dSlicesOfConstNdArrays<KernelType>& kernelValues) const {
-        const int dimWorld = 3;
+  template <template <typename T> class CollectionOf2dSlicesOfConstNdArrays>
+  ResultType
+  evaluate(const ConstGeometricalDataSlice<CoordinateType> &testGeomData,
+           const ConstGeometricalDataSlice<CoordinateType> &trialGeomData,
+           const CollectionOf1dSlicesOfConst3dArrays<BasisFunctionType> &
+               testTransfValues,
+           const CollectionOf1dSlicesOfConst3dArrays<BasisFunctionType> &
+               trialTransfValues,
+           const CollectionOf2dSlicesOfConstNdArrays<KernelType> &kernelValues)
+      const {
+    const int dimWorld = 3;
 
-        // Assert that there are at least two scalar-valued kernels
-        assert(kernelValues.size() >= 2);
-        assert(kernelValues[0].extent(0) == 1);
-        assert(kernelValues[0].extent(1) == 1);
-        assert(kernelValues[1].extent(0) == 1);
-        assert(kernelValues[1].extent(1) == 1);
+    // Assert that there are at least two scalar-valued kernels
+    assert(kernelValues.size() >= 2);
+    assert(kernelValues[0].extent(0) == 1);
+    assert(kernelValues[0].extent(1) == 1);
+    assert(kernelValues[1].extent(0) == 1);
+    assert(kernelValues[1].extent(1) == 1);
 
-        // Assert that there are at least two test and trial transformations
-        // (function value and surface div) of correct dimensions
-        assert(testTransfValues.size() >= 2);
-        assert(trialTransfValues.size() >= 2);
-        _1dSliceOfConst3dArray<BasisFunctionType> testValues = testTransfValues[0];
-        _1dSliceOfConst3dArray<BasisFunctionType> trialValues = trialTransfValues[0];
-        _1dSliceOfConst3dArray<BasisFunctionType> testSurfaceDivs = testTransfValues[1];
-        _1dSliceOfConst3dArray<BasisFunctionType> trialSurfaceDivs = trialTransfValues[1];
-        assert(testValues.extent(0) == 3);
-        assert(trialValues.extent(0) == 3);
-        assert(testSurfaceDivs.extent(0) == 1);
-        assert(trialSurfaceDivs.extent(0) == 1);
+    // Assert that there are at least two test and trial transformations
+    // (function value and surface div) of correct dimensions
+    assert(testTransfValues.size() >= 2);
+    assert(trialTransfValues.size() >= 2);
+    _1dSliceOfConst3dArray<BasisFunctionType> testValues = testTransfValues[0];
+    _1dSliceOfConst3dArray<BasisFunctionType> trialValues =
+        trialTransfValues[0];
+    _1dSliceOfConst3dArray<BasisFunctionType> testSurfaceDivs =
+        testTransfValues[1];
+    _1dSliceOfConst3dArray<BasisFunctionType> trialSurfaceDivs =
+        trialTransfValues[1];
+    assert(testValues.extent(0) == 3);
+    assert(trialValues.extent(0) == 3);
+    assert(testSurfaceDivs.extent(0) == 1);
+    assert(trialSurfaceDivs.extent(0) == 1);
 
-        // Let K_0(x, y) = kappa * K(x, y) and K_1(x, y) = K(x, y) / kappa.
-        // Return
-        // K_0(x, y) u*(x) . v(y) + K_1(x, y) div u*(x) div v(y)
+    // Let K_0(x, y) = kappa * K(x, y) and K_1(x, y) = K(x, y) / kappa.
+    // Return
+    // K_0(x, y) u*(x) . v(y) + K_1(x, y) div u*(x) div v(y)
 
-        BasisFunctionType sum = 0.;
-        for (int dim = 0; dim < dimWorld; ++dim)
-            sum += conjugate(testValues(dim)) * trialValues(dim);
-        ResultType term_0 = sum * kernelValues[0](0, 0);
-        ResultType term_1 = (conjugate(testSurfaceDivs(0)) * trialSurfaceDivs(0)) *
-            kernelValues[1](0, 0);
-        return term_0 + term_1;
-    }
+    BasisFunctionType sum = 0.;
+    for (int dim = 0; dim < dimWorld; ++dim)
+      sum += conjugate(testValues(dim)) * trialValues(dim);
+    ResultType term_0 = sum * kernelValues[0](0, 0);
+    ResultType term_1 = (conjugate(testSurfaceDivs(0)) * trialSurfaceDivs(0)) *
+                        kernelValues[1](0, 0);
+    return term_0 + term_1;
+  }
 };
 
 } // namespace Fiber

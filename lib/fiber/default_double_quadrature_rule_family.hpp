@@ -23,8 +23,7 @@
 
 #include "double_quadrature_rule_family.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \brief Default family of quadrature rules over pairs of elements.
  *
@@ -32,19 +31,18 @@ namespace Fiber
  *  rules, singular integrals with non-tensor-product rules taken from
  *  Sauter and Schwab, "Boundary Element Methods", Springer 2011. */
 template <typename CoordinateType>
-class DefaultDoubleQuadratureRuleFamily :
-        public DoubleQuadratureRuleFamily<CoordinateType>
-{
+class DefaultDoubleQuadratureRuleFamily
+    : public DoubleQuadratureRuleFamily<CoordinateType> {
 public:
-    virtual ~DefaultDoubleQuadratureRuleFamily() {}
+  virtual ~DefaultDoubleQuadratureRuleFamily() {}
 
-    virtual void fillQuadraturePointsAndWeights(
-        const DoubleQuadratureDescriptor& desc,
-        arma::Mat<CoordinateType>& testPoints,
-        arma::Mat<CoordinateType>& trialPoints,
-        std::vector<CoordinateType>& testWeights,
-        std::vector<CoordinateType>& trialWeights,
-        bool& isTensor) const;
+  virtual void
+  fillQuadraturePointsAndWeights(const DoubleQuadratureDescriptor &desc,
+                                 arma::Mat<CoordinateType> &testPoints,
+                                 arma::Mat<CoordinateType> &trialPoints,
+                                 std::vector<CoordinateType> &testWeights,
+                                 std::vector<CoordinateType> &trialWeights,
+                                 bool &isTensor) const;
 };
 
 } // namespace Fiber

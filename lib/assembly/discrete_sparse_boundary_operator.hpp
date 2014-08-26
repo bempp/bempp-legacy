@@ -43,8 +43,7 @@ class Epetra_CrsMatrix;
 /** \endcond */
 #endif
 
-namespace Bempp
-{
+namespace Bempp {
 /** \cond FORWARD_DECL */
 class IndexPermutation;
 /** \endcond */
@@ -53,134 +52,130 @@ class IndexPermutation;
  *  \brief Discrete boundary operator stored as a sparse matrix.
  */
 template <typename ValueType>
-class DiscreteSparseBoundaryOperator :
-        public DiscreteBoundaryOperator<ValueType>
-{
-    typedef typename Fiber::ScalarTraits<ValueType>::RealType CoordinateType;
-    typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
-    typedef bbxbemblcluster<AhmedDofType, AhmedDofType> AhmedBemBlcluster;
-    typedef mblock<typename AhmedTypeTraits<ValueType>::Type> AhmedMblock;
+class DiscreteSparseBoundaryOperator
+    : public DiscreteBoundaryOperator<ValueType> {
+  typedef typename Fiber::ScalarTraits<ValueType>::RealType CoordinateType;
+  typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
+  typedef bbxbemblcluster<AhmedDofType, AhmedDofType> AhmedBemBlcluster;
+  typedef mblock<typename AhmedTypeTraits<ValueType>::Type> AhmedMblock;
 
 #ifdef WITH_TRILINOS
 public:
-    /** \brief Constructor.
-     *
-     *  \param[in] mat
-     *    Sparse matrix that will be represented by the newly
-     *    constructed operator. Must not be null.
-     *  \param[in] symmetry
-     *    Symmetry of the matrix. May be any combination of flags defined
-     *    in the Symmetry enumeration type.
-     *  \param[in] trans
-     *    If different from NO_TRANSPOSE, the discrete operator will represent
-     *    a transposed and/or complex-conjugated matrix \p mat. */
-    DiscreteSparseBoundaryOperator(
-            const shared_ptr<const Epetra_CrsMatrix>& mat,
-            int symmetry = NO_SYMMETRY,
-            TranspositionMode trans = NO_TRANSPOSE,
-            const shared_ptr<AhmedBemBlcluster>& blockCluster =
-            shared_ptr<AhmedBemBlcluster>(),
-            const shared_ptr<IndexPermutation>& domainPermutation =
-            shared_ptr<IndexPermutation>(),
-            const shared_ptr<IndexPermutation>& rangePermutation =
-            shared_ptr<IndexPermutation>());
+  /** \brief Constructor.
+   *
+   *  \param[in] mat
+   *    Sparse matrix that will be represented by the newly
+   *    constructed operator. Must not be null.
+   *  \param[in] symmetry
+   *    Symmetry of the matrix. May be any combination of flags defined
+   *    in the Symmetry enumeration type.
+   *  \param[in] trans
+   *    If different from NO_TRANSPOSE, the discrete operator will represent
+   *    a transposed and/or complex-conjugated matrix \p mat. */
+  DiscreteSparseBoundaryOperator(
+      const shared_ptr<const Epetra_CrsMatrix> &mat, int symmetry = NO_SYMMETRY,
+      TranspositionMode trans = NO_TRANSPOSE,
+      const shared_ptr<AhmedBemBlcluster> &blockCluster =
+          shared_ptr<AhmedBemBlcluster>(),
+      const shared_ptr<IndexPermutation> &domainPermutation =
+          shared_ptr<IndexPermutation>(),
+      const shared_ptr<IndexPermutation> &rangePermutation =
+          shared_ptr<IndexPermutation>());
 #else
-    // This class cannot be used without Trilinos
+  // This class cannot be used without Trilinos
 private:
-    DiscreteSparseBoundaryOperator();
+  DiscreteSparseBoundaryOperator();
+
 public:
 #endif
 
-    virtual void dump() const;
+  virtual void dump() const;
 
-    virtual arma::Mat<ValueType> asMatrix() const;
+  virtual arma::Mat<ValueType> asMatrix() const;
 
-    virtual unsigned int rowCount() const;
-    virtual unsigned int columnCount() const;
+  virtual unsigned int rowCount() const;
+  virtual unsigned int columnCount() const;
 
-    virtual void addBlock(const std::vector<int>& rows,
-                          const std::vector<int>& cols,
-                          const ValueType alpha,
-                          arma::Mat<ValueType>& block) const;
+  virtual void addBlock(const std::vector<int> &rows,
+                        const std::vector<int> &cols, const ValueType alpha,
+                        arma::Mat<ValueType> &block) const;
 
 #ifdef WITH_AHMED
-    virtual shared_ptr<const DiscreteBoundaryOperator<ValueType> >
-    asDiscreteAcaBoundaryOperator(double eps=-1, int maximumRank=-1, 
-        bool interleave=false) const;
+  virtual shared_ptr<const DiscreteBoundaryOperator<ValueType>>
+  asDiscreteAcaBoundaryOperator(double eps = -1, int maximumRank = -1,
+                                bool interleave = false) const;
 #endif
 
-    /** \brief Downcast a shared pointer to a DiscreteBoundaryOperator object to
-     *  a shared pointer to a DiscreteSparseBoundaryOperator.
-     *
-     *  If the object referenced by \p discreteOperator is not in fact a
-     *  DiscreteSparseBoundaryOperator, a std::bad_cast exception is thrown. */
-    static shared_ptr<const DiscreteSparseBoundaryOperator<ValueType> > castToSparse(
-            const shared_ptr<const DiscreteBoundaryOperator<ValueType> >&
-            discreteOperator);
+  /** \brief Downcast a shared pointer to a DiscreteBoundaryOperator object to
+   *  a shared pointer to a DiscreteSparseBoundaryOperator.
+   *
+   *  If the object referenced by \p discreteOperator is not in fact a
+   *  DiscreteSparseBoundaryOperator, a std::bad_cast exception is thrown. */
+  static shared_ptr<const DiscreteSparseBoundaryOperator<ValueType>>
+  castToSparse(const shared_ptr<const DiscreteBoundaryOperator<ValueType>> &
+                   discreteOperator);
 
 #ifdef WITH_TRILINOS
-    /** \brief Return a shared pointer to the sparse matrix stored within
-     *  this operator.
-     *
-     *  \note The discrete operator represents the matrix returned by this
-     *  function *and possibly transposed and/or complex-conjugated*, depending on
-     *  the value returned by transpositionMode(). */
-    shared_ptr<const Epetra_CrsMatrix> epetraMatrix() const;
+  /** \brief Return a shared pointer to the sparse matrix stored within
+   *  this operator.
+   *
+   *  \note The discrete operator represents the matrix returned by this
+   *  function *and possibly transposed and/or complex-conjugated*, depending on
+   *  the value returned by transpositionMode(). */
+  shared_ptr<const Epetra_CrsMatrix> epetraMatrix() const;
 #endif
 
-    /** \brief Return the active sparse matrix transformation.
-     *
-     *  Indicates whether this operator represents the unmodified sparse matrix
-     *  passed in the constructor or its transformation (transposition and/or
-     *  conjugation). */
-    TranspositionMode transpositionMode() const;
+  /** \brief Return the active sparse matrix transformation.
+   *
+   *  Indicates whether this operator represents the unmodified sparse matrix
+   *  passed in the constructor or its transformation (transposition and/or
+   *  conjugation). */
+  TranspositionMode transpositionMode() const;
 
-    /** \brief Return the symmetry type of the sparse matrix */
-    inline int symmetryMode() const{
-        return m_symmetry;
-    }
+  /** \brief Return the symmetry type of the sparse matrix */
+  inline int symmetryMode() const { return m_symmetry; }
 
 #ifdef WITH_TRILINOS
 public:
-    virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > domain() const;
-    virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > range() const;
+  virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>> domain() const;
+  virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>> range() const;
 
 protected:
-    virtual bool opSupportedImpl(Thyra::EOpTransp M_trans) const;
+  virtual bool opSupportedImpl(Thyra::EOpTransp M_trans) const;
 #endif
 
 private:
-    /** \cond PRIVATE */
-    virtual void applyBuiltInImpl(const TranspositionMode trans,
-                                  const arma::Col<ValueType>& x_in,
-                                  arma::Col<ValueType>& y_inout,
-                                  const ValueType alpha,
-                                  const ValueType beta) const;
-    bool isTransposed() const;
+  /** \cond PRIVATE */
+  virtual void applyBuiltInImpl(const TranspositionMode trans,
+                                const arma::Col<ValueType> &x_in,
+                                arma::Col<ValueType> &y_inout,
+                                const ValueType alpha,
+                                const ValueType beta) const;
+  bool isTransposed() const;
 
-    // void constructAhmedMatrix(
-    //         int* rowOffsets, int* colIndices, double* values,
-    //         std::vector<unsigned int>& domain_o2p,
-    //         std::vector<unsigned int>& range_p2o,
-    //         double eps,
-    //         AhmedBemBlcluster* blockCluster,
-    //         boost::shared_array<AhmedMblock*>& mblocks,
-    //         int& maximumRank) const;
-    /** \endcond */
+  // void constructAhmedMatrix(
+  //         int* rowOffsets, int* colIndices, double* values,
+  //         std::vector<unsigned int>& domain_o2p,
+  //         std::vector<unsigned int>& range_p2o,
+  //         double eps,
+  //         AhmedBemBlcluster* blockCluster,
+  //         boost::shared_array<AhmedMblock*>& mblocks,
+  //         int& maximumRank) const;
+  /** \endcond */
 
 private:
-    /** \cond PRIVATE */
+/** \cond PRIVATE */
 #ifdef WITH_TRILINOS
-    shared_ptr<const Epetra_CrsMatrix> m_mat;
-    int m_symmetry;
-    TranspositionMode m_trans;
-    shared_ptr<AhmedBemBlcluster> m_blockCluster;
-    // o2p
-    shared_ptr<IndexPermutation> m_domainPermutation, m_rangePermutation;
-    Teuchos::RCP<const Thyra::SpmdVectorSpaceBase<ValueType> > m_domainSpace;
-    Teuchos::RCP<const Thyra::SpmdVectorSpaceBase<ValueType> > m_rangeSpace;
+  shared_ptr<const Epetra_CrsMatrix> m_mat;
+  int m_symmetry;
+  TranspositionMode m_trans;
+  shared_ptr<AhmedBemBlcluster> m_blockCluster;
+  // o2p
+  shared_ptr<IndexPermutation> m_domainPermutation, m_rangePermutation;
+  Teuchos::RCP<const Thyra::SpmdVectorSpaceBase<ValueType>> m_domainSpace;
+  Teuchos::RCP<const Thyra::SpmdVectorSpaceBase<ValueType>> m_rangeSpace;
 #endif
-    /** \endcond */
+  /** \endcond */
 };
 
 } // namespace Bempp

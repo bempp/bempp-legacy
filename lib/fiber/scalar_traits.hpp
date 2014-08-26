@@ -26,8 +26,7 @@
 
 #include <complex>
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \ingroup Fiber
  *  \brief Traits of scalar types.
@@ -37,100 +36,75 @@ namespace Fiber
  *  specialization <tt>ScalarTraits<T></tt> provides the typedefs \c RealType
  *  (denoting the real type of the same precision as \c T) and \c ComplexType
  *  (denoting the complex type of the same precision as \c T). */
-template <typename T> 
-struct ScalarTraits {
+template <typename T> struct ScalarTraits {
 
-    typedef T RealType;	
-    typedef T ComplexType;
+  typedef T RealType;
+  typedef T ComplexType;
 
-    ScalarTraits() {
-        static_assert(sizeof(T)==0,"ScalarTraits only implemented for real/complex float/double types.");
-    }
-};    
-
-template <>
-struct ScalarTraits<float>
-{
-    typedef float RealType;
-    typedef std::complex<float> ComplexType;
+  ScalarTraits() {
+    static_assert(
+        sizeof(T) == 0,
+        "ScalarTraits only implemented for real/complex float/double types.");
+  }
 };
 
-template <>
-struct ScalarTraits<double>
-{
-    typedef double RealType;
-    typedef std::complex<double> ComplexType;
+template <> struct ScalarTraits<float> {
+  typedef float RealType;
+  typedef std::complex<float> ComplexType;
 };
 
-template <>
-struct ScalarTraits<std::complex<float> >
-{
-    typedef float RealType;
-    typedef std::complex<float> ComplexType;
+template <> struct ScalarTraits<double> {
+  typedef double RealType;
+  typedef std::complex<double> ComplexType;
 };
 
-template <>
-struct ScalarTraits<std::complex<double> >
-{
-    typedef double RealType;
-    typedef std::complex<double> ComplexType;
+template <> struct ScalarTraits<std::complex<float>> {
+  typedef float RealType;
+  typedef std::complex<float> ComplexType;
+};
+
+template <> struct ScalarTraits<std::complex<double>> {
+  typedef double RealType;
+  typedef std::complex<double> ComplexType;
 };
 
 /** \brief "Larger" of the types U and V. */
-template <typename U, typename V>
-struct Coercion
-{
-    // If you get a compilation error here, chances are that you are trying to
-    // mix floating-point numbers with different precisions (e.g. float and
-    // double or std::complex<float> and double). BEM++ does not support this.
+template <typename U, typename V> struct Coercion {
+  // If you get a compilation error here, chances are that you are trying to
+  // mix floating-point numbers with different precisions (e.g. float and
+  // double or std::complex<float> and double). BEM++ does not support this.
 };
 
-template <>
-struct Coercion<float, float>
-{
-    typedef float Type;
+template <> struct Coercion<float, float> {
+  typedef float Type;
 };
 
-template <>
-struct Coercion<double, double>
-{
-    typedef double Type;
+template <> struct Coercion<double, double> {
+  typedef double Type;
 };
 
-template <>
-struct Coercion<std::complex<float>, std::complex<float> >
-{
-    typedef std::complex<float> Type;
+template <> struct Coercion<std::complex<float>, std::complex<float>> {
+  typedef std::complex<float> Type;
 };
 
-template <>
-struct Coercion<std::complex<double>, std::complex<double> >
-{
-    typedef std::complex<double> Type;
+template <> struct Coercion<std::complex<double>, std::complex<double>> {
+  typedef std::complex<double> Type;
 };
 
-template <>
-struct Coercion<float, std::complex<float> >
-{
-    typedef std::complex<float> Type;
+template <> struct Coercion<float, std::complex<float>> {
+  typedef std::complex<float> Type;
 };
 
-template <>
-struct Coercion<std::complex<float>, float>
-{
-    typedef std::complex<float> Type;
+template <> struct Coercion<std::complex<float>, float> {
+  typedef std::complex<float> Type;
 };
 
-template <>
-struct Coercion<double, std::complex<double> >
-{
-    typedef std::complex<double> Type;
+template <> struct Coercion<double, std::complex<double>> {
+  typedef std::complex<double> Type;
 };
 
-template <>
-struct Coercion<std::complex<double>, double>
-{
-    typedef std::complex<double> Type;
+template <> struct Coercion<std::complex<double>, double> {
+  typedef std::complex<double> Type;
 };
 
 } // namespace Fiber

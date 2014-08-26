@@ -34,88 +34,88 @@
 #include <cassert>
 #include <memory>
 
-namespace Fiber
-{
+namespace Fiber {
 
-template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
+template <typename BasisFunctionType, typename ResultType,
+          typename GeometryFactory>
 NumericalTestTrialIntegrator<BasisFunctionType, ResultType, GeometryFactory>::
-NumericalTestTrialIntegrator(
-        const arma::Mat<CoordinateType>& localQuadPoints,
+    NumericalTestTrialIntegrator(
+        const arma::Mat<CoordinateType> &localQuadPoints,
         const std::vector<CoordinateType> quadWeights,
-        const GeometryFactory& geometryFactory,
-        const RawGridGeometry<CoordinateType>& rawGeometry,
-        const CollectionOfShapesetTransformations<CoordinateType>& testTransformations,
-        const CollectionOfShapesetTransformations<CoordinateType>& trialTransformations,
-        const TestTrialIntegral<BasisFunctionType, ResultType>& integral,
-        const OpenClHandler& openClHandler) :
-    m_localQuadPoints(localQuadPoints),
-    m_quadWeights(quadWeights),
-    m_geometryFactory(geometryFactory),
-    m_rawGeometry(rawGeometry),
-    m_testTransformations(testTransformations),
-    m_trialTransformations(trialTransformations),
-    m_integral(integral),
-    m_openClHandler(openClHandler)
-{
-    if (localQuadPoints.n_cols != quadWeights.size())
-        throw std::invalid_argument("NumericalTestTrialIntegrator::"
-                                    "NumericalTestTrialIntegrator(): "
-                                    "numbers of points and weights do not match");
+        const GeometryFactory &geometryFactory,
+        const RawGridGeometry<CoordinateType> &rawGeometry,
+        const CollectionOfShapesetTransformations<CoordinateType> &
+            testTransformations,
+        const CollectionOfShapesetTransformations<CoordinateType> &
+            trialTransformations,
+        const TestTrialIntegral<BasisFunctionType, ResultType> &integral,
+        const OpenClHandler &openClHandler)
+    : m_localQuadPoints(localQuadPoints), m_quadWeights(quadWeights),
+      m_geometryFactory(geometryFactory), m_rawGeometry(rawGeometry),
+      m_testTransformations(testTransformations),
+      m_trialTransformations(trialTransformations), m_integral(integral),
+      m_openClHandler(openClHandler) {
+  if (localQuadPoints.n_cols != quadWeights.size())
+    throw std::invalid_argument("NumericalTestTrialIntegrator::"
+                                "NumericalTestTrialIntegrator(): "
+                                "numbers of points and weights do not match");
 }
 
-template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
-void NumericalTestTrialIntegrator<BasisFunctionType, ResultType, GeometryFactory>::integrate(
-        const std::vector<int>& elementIndices,
-        const Shapeset<BasisFunctionType>& testShapeset,
-        const Shapeset<BasisFunctionType>& trialShapeset,
-        arma::Cube<ResultType>& result) const
-{
-    const size_t pointCount = m_localQuadPoints.n_cols;
-    const size_t elementCount = elementIndices.size();
+template <typename BasisFunctionType, typename ResultType,
+          typename GeometryFactory>
+void
+NumericalTestTrialIntegrator<BasisFunctionType, ResultType, GeometryFactory>::
+    integrate(const std::vector<int> &elementIndices,
+              const Shapeset<BasisFunctionType> &testShapeset,
+              const Shapeset<BasisFunctionType> &trialShapeset,
+              arma::Cube<ResultType> &result) const {
+  const size_t pointCount = m_localQuadPoints.n_cols;
+  const size_t elementCount = elementIndices.size();
 
-    if (pointCount == 0 || elementCount == 0)
-        return;
-    // TODO: in the (pathological) case that pointCount == 0 but
-    // elementCount != 0, set elements of result to 0.
+  if (pointCount == 0 || elementCount == 0)
+    return;
+  // TODO: in the (pathological) case that pointCount == 0 but
+  // elementCount != 0, set elements of result to 0.
 
-    // Evaluate constants
-    const int testDofCount = testShapeset.size();
-    const int trialDofCount = trialShapeset.size();
+  // Evaluate constants
+  const int testDofCount = testShapeset.size();
+  const int trialDofCount = trialShapeset.size();
 
-    BasisData<BasisFunctionType> testBasisData, trialBasisData;
-    GeometricalData<CoordinateType> geomData;
+  BasisData<BasisFunctionType> testBasisData, trialBasisData;
+  GeometricalData<CoordinateType> geomData;
 
-    size_t testBasisDeps = 0, trialBasisDeps = 0;
-    size_t geomDeps = 0; // INTEGRATION_ELEMENTS;
+  size_t testBasisDeps = 0, trialBasisDeps = 0;
+  size_t geomDeps = 0; // INTEGRATION_ELEMENTS;
 
-    m_testTransformations.addDependencies(testBasisDeps, geomDeps);
-    m_trialTransformations.addDependencies(trialBasisDeps, geomDeps);
-    m_integral.addGeometricalDependencies(geomDeps);
+  m_testTransformations.addDependencies(testBasisDeps, geomDeps);
+  m_trialTransformations.addDependencies(trialBasisDeps, geomDeps);
+  m_integral.addGeometricalDependencies(geomDeps);
 
-    typedef typename GeometryFactory::Geometry Geometry;
-    std::unique_ptr<Geometry> geometry(m_geometryFactory.make());
+  typedef typename GeometryFactory::Geometry Geometry;
+  std::unique_ptr<Geometry> geometry(m_geometryFactory.make());
 
-    CollectionOf3dArrays<BasisFunctionType> testValues, trialValues;
+  CollectionOf3dArrays<BasisFunctionType> testValues, trialValues;
 
-    result.set_size(testDofCount, trialDofCount, elementCount);
+  result.set_size(testDofCount, trialDofCount, elementCount);
 
-    testShapeset.evaluate(testBasisDeps, m_localQuadPoints, ALL_DOFS, testBasisData);
-    trialShapeset.evaluate(trialBasisDeps, m_localQuadPoints, ALL_DOFS, trialBasisData);
+  testShapeset.evaluate(testBasisDeps, m_localQuadPoints, ALL_DOFS,
+                        testBasisData);
+  trialShapeset.evaluate(trialBasisDeps, m_localQuadPoints, ALL_DOFS,
+                         trialBasisData);
 
-    // Iterate over the elements
-    for (size_t e = 0; e < elementCount; ++e)
-    {
-        const int elementIndex = elementIndices[e];
-        m_rawGeometry.setupGeometry(elementIndex, *geometry);
-        geometry->getData(geomDeps, m_localQuadPoints, geomData);
-        if (geomDeps & DOMAIN_INDEX)
-            geomData.domainIndex = m_rawGeometry.domainIndex(elementIndex);
-        m_testTransformations.evaluate(testBasisData, geomData, testValues);
-        m_trialTransformations.evaluate(trialBasisData, geomData, trialValues);
+  // Iterate over the elements
+  for (size_t e = 0; e < elementCount; ++e) {
+    const int elementIndex = elementIndices[e];
+    m_rawGeometry.setupGeometry(elementIndex, *geometry);
+    geometry->getData(geomDeps, m_localQuadPoints, geomData);
+    if (geomDeps & DOMAIN_INDEX)
+      geomData.domainIndex = m_rawGeometry.domainIndex(elementIndex);
+    m_testTransformations.evaluate(testBasisData, geomData, testValues);
+    m_trialTransformations.evaluate(trialBasisData, geomData, trialValues);
 
-        m_integral.evaluate(geomData, testValues, trialValues,
-                m_quadWeights, result.slice(e));
-    }
+    m_integral.evaluate(geomData, testValues, trialValues, m_quadWeights,
+                        result.slice(e));
+  }
 }
 
 } // namespace Fiber

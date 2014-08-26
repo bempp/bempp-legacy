@@ -27,8 +27,7 @@
 #include "../common/scalar_traits.hpp"
 #include "../common/shared_ptr.hpp"
 
-namespace Bempp
-{
+namespace Bempp {
 
 template <typename ValueType> class DiscreteBoundaryOperator;
 template <typename BasisFunctionType, typename ResultType> class GridFunction;
@@ -47,75 +46,75 @@ template <typename BasisFunctionType> class Space;
  *  GridFunction expanded in that function space.
  */
 template <typename BasisFunctionType, typename ResultType>
-class AssembledPotentialOperator
-{
+class AssembledPotentialOperator {
 public:
-    /** \brief Type used to represent point coordinates. */
-    typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
+  /** \brief Type used to represent point coordinates. */
+  typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
 
-    // name abuse: the discrete operator plays the part of a discrete *potential*
-    // operator, not a discrete boundary operator...
-    /** \brief Constructor.
-     *
-     *  \param[in] space_
-     *     A function space.
-     *  \param[in] evaluationPoints_
-     *     A 2D array whose (i, j)th element contains the ith coordinate of jth
-     *     evaluation point. The number of rows (i.e. the number of coordinates)
-     *     must be equal to <tt>space_->grid()->dimWorld()</tt>.
-     *  \param[in] op_
-     *     A DiscreteBoundaryOperator object representing the matrix whose (i *
-     *     c, j)th element contains the value of the cth component of the
-     *     potential generated at the ith point by the charge distribution equal
-     *     to the jth basis function of space \p space_.
-     *  \param[in] componentCount_
-     *     The number of components of the potential (e.g. 1 if the potential is
-     *     scalar-valued, 3 if it is vector-valued).
-     */
-    AssembledPotentialOperator(
-        const shared_ptr<const Space<BasisFunctionType> >& space_,
-        const shared_ptr<const arma::Mat<CoordinateType> >& evaluationPoints_,
-        const shared_ptr<const DiscreteBoundaryOperator<ResultType> >& op_,
-        int componentCount_);
+  // name abuse: the discrete operator plays the part of a discrete *potential*
+  // operator, not a discrete boundary operator...
+  /** \brief Constructor.
+   *
+   *  \param[in] space_
+   *     A function space.
+   *  \param[in] evaluationPoints_
+   *     A 2D array whose (i, j)th element contains the ith coordinate of jth
+   *     evaluation point. The number of rows (i.e. the number of coordinates)
+   *     must be equal to <tt>space_->grid()->dimWorld()</tt>.
+   *  \param[in] op_
+   *     A DiscreteBoundaryOperator object representing the matrix whose (i *
+   *     c, j)th element contains the value of the cth component of the
+   *     potential generated at the ith point by the charge distribution equal
+   *     to the jth basis function of space \p space_.
+   *  \param[in] componentCount_
+   *     The number of components of the potential (e.g. 1 if the potential is
+   *     scalar-valued, 3 if it is vector-valued).
+   */
+  AssembledPotentialOperator(
+      const shared_ptr<const Space<BasisFunctionType>> &space_,
+      const shared_ptr<const arma::Mat<CoordinateType>> &evaluationPoints_,
+      const shared_ptr<const DiscreteBoundaryOperator<ResultType>> &op_,
+      int componentCount_);
 
-    /** brief Return the space used in the construction of this operator.
-     *
-     *  See the documentation of the constructor for a full desciption. */
-    shared_ptr<const Space<BasisFunctionType> > space() const;
+  /** brief Return the space used in the construction of this operator.
+   *
+   *  See the documentation of the constructor for a full desciption. */
+  shared_ptr<const Space<BasisFunctionType>> space() const;
 
-    /** brief Return the list of points at which the potential is evaluated.
-     *
-     *  The (i, j)th element of the returned array contains the ith coordinate
-     *  of jth evaluation point.  */
-    shared_ptr<const arma::Mat<CoordinateType> > evaluationPoints() const;
+  /** brief Return the list of points at which the potential is evaluated.
+   *
+   *  The (i, j)th element of the returned array contains the ith coordinate
+   *  of jth evaluation point.  */
+  shared_ptr<const arma::Mat<CoordinateType>> evaluationPoints() const;
 
-    /** brief Return the discrete operator object defining the assembled operator.
-     *
-     *  See the documentation of the constructor for a full desciption. */
-    shared_ptr<const DiscreteBoundaryOperator<ResultType> >
-        discreteOperator() const;
+  /** brief Return the discrete operator object defining the assembled operator.
+   *
+   *  See the documentation of the constructor for a full desciption. */
+  shared_ptr<const DiscreteBoundaryOperator<ResultType>>
+  discreteOperator() const;
 
-    /** \brief Return the number of components of the potential. */
-    int componentCount() const;
+  /** \brief Return the number of components of the potential. */
+  int componentCount() const;
 
-    /** \brief Apply the operator to a grid function.
-     *
-     *  \param[in] argument A grid function expanded in the space returned by space().
-     *
-     *  \returns A matrix whose (\e i, \e j)th element contains the value of the
-     *  <em>i</em>th component of the potential generated by the charge
-     *  distribution \p argument at the <em>j</em>th point from the array
-     *  returned by the function evaluationPoints(). */
-    arma::Mat<ResultType> apply(
-                const GridFunction<BasisFunctionType, ResultType>& argument) const;
+  /** \brief Apply the operator to a grid function.
+   *
+   *  \param[in] argument A grid function expanded in the space returned by
+   *space().
+   *
+   *  \returns A matrix whose (\e i, \e j)th element contains the value of the
+   *  <em>i</em>th component of the potential generated by the charge
+   *  distribution \p argument at the <em>j</em>th point from the array
+   *  returned by the function evaluationPoints(). */
+  arma::Mat<ResultType>
+  apply(const GridFunction<BasisFunctionType, ResultType> &argument) const;
 
 private:
-    /** \cond PRIVATE */
-    shared_ptr<const Space<BasisFunctionType> > m_space;
-    shared_ptr<const arma::Mat<CoordinateType> > m_evaluationPoints;
-    shared_ptr<const DiscreteBoundaryOperator<ResultType> > m_op;
-    int m_componentCount;
-    /** \endcond */
+  /** \cond PRIVATE */
+  shared_ptr<const Space<BasisFunctionType>> m_space;
+  shared_ptr<const arma::Mat<CoordinateType>> m_evaluationPoints;
+  shared_ptr<const DiscreteBoundaryOperator<ResultType>> m_op;
+  int m_componentCount;
+  /** \endcond */
 };
 
 } // namespace Bempp

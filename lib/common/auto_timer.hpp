@@ -26,36 +26,32 @@
 
 #include <tbb/tick_count.h>
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \ingroup common
- *  \brief Timer that on destruction outputs the time elapsed since construction. */
-class AutoTimer
-{
+ *  \brief Timer that on destruction outputs the time elapsed since
+ * construction. */
+class AutoTimer {
 public:
-    /** \brief Constructor.
+  /** \brief Constructor.
 
-      \param[in] text Message to be printed on destruction. */
-    explicit AutoTimer(const char* text = 0) :
-        m_text(text), m_start(tbb::tick_count::now())
-    {}
+    \param[in] text Message to be printed on destruction. */
+  explicit AutoTimer(const char *text = 0)
+      : m_text(text), m_start(tbb::tick_count::now()) {}
 
-    /** \overload */
-    explicit AutoTimer(const std::string& text = std::string()) :
-        m_text(text), m_start(tbb::tick_count::now())
-    {}
+  /** \overload */
+  explicit AutoTimer(const std::string &text = std::string())
+      : m_text(text), m_start(tbb::tick_count::now()) {}
 
-    /** \brief Destructor. Print the previously specified message. */
-    ~AutoTimer()
-    {
-        tbb::tick_count end = tbb::tick_count::now();
-        std::cout << m_text << (end - m_start).seconds() << " s" << std::endl;
-    }
+  /** \brief Destructor. Print the previously specified message. */
+  ~AutoTimer() {
+    tbb::tick_count end = tbb::tick_count::now();
+    std::cout << m_text << (end - m_start).seconds() << " s" << std::endl;
+  }
 
 private:
-    std::string m_text;
-    tbb::tick_count m_start;
+  std::string m_text;
+  tbb::tick_count m_start;
 };
 
 } // namespace Bempp

@@ -32,8 +32,7 @@
 #include <memory>
 #include <tbb/mutex.h>
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \cond FORWARD_DECL */
 class GridView;
@@ -42,42 +41,41 @@ class GridView;
 /** \ingroup space
  *  \brief Space of continuous, piecewise linear scalar functions. */
 template <typename BasisFunctionType>
-class PiecewiseLinearScalarSpace : public ScalarSpace<BasisFunctionType>
-{
+class PiecewiseLinearScalarSpace : public ScalarSpace<BasisFunctionType> {
 public:
-    typedef typename Space<BasisFunctionType>::CoordinateType CoordinateType;
-    typedef typename Space<BasisFunctionType>::ComplexType ComplexType;
+  typedef typename Space<BasisFunctionType>::CoordinateType CoordinateType;
+  typedef typename Space<BasisFunctionType>::ComplexType ComplexType;
 
-    explicit PiecewiseLinearScalarSpace(const shared_ptr<const Grid>& grid);
-    virtual ~PiecewiseLinearScalarSpace();
+  explicit PiecewiseLinearScalarSpace(const shared_ptr<const Grid> &grid);
+  virtual ~PiecewiseLinearScalarSpace();
 
-    virtual int domainDimension() const;
-    virtual int codomainDimension() const;
+  virtual int domainDimension() const;
+  virtual int codomainDimension() const;
 
-    /** \brief Return the variant of element \p element.
-     *
-     *  Possible return values:
-     *    - 2: one-dimensional segment,
-     *    - 3: triangular element,
-     *    - 4: quadrilateral element. */
-    virtual ElementVariant elementVariant(const Entity<0>& element) const;
-    virtual void setElementVariant(const Entity<0>& element,
-                                   ElementVariant variant);
+  /** \brief Return the variant of element \p element.
+   *
+   *  Possible return values:
+   *    - 2: one-dimensional segment,
+   *    - 3: triangular element,
+   *    - 4: quadrilateral element. */
+  virtual ElementVariant elementVariant(const Entity<0> &element) const;
+  virtual void setElementVariant(const Entity<0> &element,
+                                 ElementVariant variant);
 
-    virtual const Fiber::Shapeset<BasisFunctionType>& shapeset(
-            const Entity<0>& element) const;
+  virtual const Fiber::Shapeset<BasisFunctionType> &
+  shapeset(const Entity<0> &element) const;
 
-    virtual void getGlobalDofInterpolationPoints(
-            arma::Mat<CoordinateType>& points) const;
-    virtual void getNormalsAtGlobalDofInterpolationPoints(
-            arma::Mat<CoordinateType>& normals) const;
+  virtual void
+  getGlobalDofInterpolationPoints(arma::Mat<CoordinateType> &points) const;
+  virtual void getNormalsAtGlobalDofInterpolationPoints(
+      arma::Mat<CoordinateType> &normals) const;
 
 private:
-    /** \cond PRIVATE */
-    Fiber::LinearScalarShapeset<2, BasisFunctionType> m_lineShapeset;
-    Fiber::LinearScalarShapeset<3, BasisFunctionType> m_triangleShapeset;
-    Fiber::LinearScalarShapeset<4, BasisFunctionType> m_quadrilateralShapeset;
-    /** \endcond */
+  /** \cond PRIVATE */
+  Fiber::LinearScalarShapeset<2, BasisFunctionType> m_lineShapeset;
+  Fiber::LinearScalarShapeset<3, BasisFunctionType> m_triangleShapeset;
+  Fiber::LinearScalarShapeset<4, BasisFunctionType> m_quadrilateralShapeset;
+  /** \endcond */
 };
 
 } // namespace Bempp

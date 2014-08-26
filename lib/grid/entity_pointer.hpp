@@ -22,11 +22,10 @@
 
 #include "../common/common.hpp"
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \cond FORWARD_DECL */
-template<int codim> class Entity;
+template <int codim> class Entity;
 /** \endcond */
 
 /**
@@ -38,21 +37,18 @@ template<int codim> class Entity;
  entity() method must know the codimension of the entity to which it returns
  a reference.
  */
-template<int codim>
-class EntityPointer
-{
+template <int codim> class EntityPointer {
 public:
-    /** \brief Destructor */
-    virtual ~EntityPointer() {
-    }
+  /** \brief Destructor */
+  virtual ~EntityPointer() {}
 
-    /** \brief Entity codimension */
-    enum {
-        codimension = codim
-    };
+  /** \brief Entity codimension */
+  enum {
+    codimension = codim
+  };
 
-    /** \brief Read-only access to the underlying entity */
-    virtual const Entity<codim>& entity() const = 0;
+  /** \brief Read-only access to the underlying entity */
+  virtual const Entity<codim> &entity() const = 0;
 };
 
 } // namespace Bempp

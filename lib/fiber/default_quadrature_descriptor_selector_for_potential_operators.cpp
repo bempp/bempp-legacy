@@ -26,106 +26,96 @@
 #include "raw_grid_geometry.hpp"
 #include "shapeset.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 template <typename BasisFunctionType>
 DefaultQuadratureDescriptorSelectorForPotentialOperators<BasisFunctionType>::
-DefaultQuadratureDescriptorSelectorForPotentialOperators(
-        const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
+    DefaultQuadratureDescriptorSelectorForPotentialOperators(
+        const shared_ptr<const RawGridGeometry<CoordinateType>> &rawGeometry,
         const shared_ptr<const std::vector<
-            const Shapeset<BasisFunctionType>*> >& trialShapesets,
-        const AccuracyOptionsEx& accuracyOptions) :
-    m_rawGeometry(rawGeometry),
-    m_trialShapesets(trialShapesets),
-    m_accuracyOptions(accuracyOptions)
-{
-    Utilities::checkConsistencyOfGeometryAndShapesets(
-        *rawGeometry, *trialShapesets);
-    precalculateElementSizesAndCenters();
+            const Shapeset<BasisFunctionType> *>> &trialShapesets,
+        const AccuracyOptionsEx &accuracyOptions)
+    : m_rawGeometry(rawGeometry), m_trialShapesets(trialShapesets),
+      m_accuracyOptions(accuracyOptions) {
+  Utilities::checkConsistencyOfGeometryAndShapesets(*rawGeometry,
+                                                    *trialShapesets);
+  precalculateElementSizesAndCenters();
 }
 
 template <typename BasisFunctionType>
-void
-DefaultQuadratureDescriptorSelectorForPotentialOperators<BasisFunctionType>::
-precalculateElementSizesAndCenters()
-{
-    Utilities::precalculateElementSizesAndCentersForSingleGrid(
-                *m_rawGeometry,
-                m_elementSizesSquared, m_elementCenters,
-                m_averageElementSize);
+void DefaultQuadratureDescriptorSelectorForPotentialOperators<
+    BasisFunctionType>::precalculateElementSizesAndCenters() {
+  Utilities::precalculateElementSizesAndCentersForSingleGrid(
+      *m_rawGeometry, m_elementSizesSquared, m_elementCenters,
+      m_averageElementSize);
 }
 
 template <typename BasisFunctionType>
 SingleQuadratureDescriptor
 DefaultQuadratureDescriptorSelectorForPotentialOperators<BasisFunctionType>::
-quadratureDescriptor(
-        const arma::Col<CoordinateType>& point, int trialElementIndex,
-        CoordinateType nominalDistance) const
-{
-    SingleQuadratureDescriptor desc;
-    desc.vertexCount = m_rawGeometry->elementCornerCount(trialElementIndex);
-    desc.order = order(point, trialElementIndex, nominalDistance);
-    return desc;
+    quadratureDescriptor(const arma::Col<CoordinateType> &point,
+                         int trialElementIndex,
+                         CoordinateType nominalDistance) const {
+  SingleQuadratureDescriptor desc;
+  desc.vertexCount = m_rawGeometry->elementCornerCount(trialElementIndex);
+  desc.order = order(point, trialElementIndex, nominalDistance);
+  return desc;
 }
 
 template <typename BasisFunctionType>
-int
-DefaultQuadratureDescriptorSelectorForPotentialOperators<BasisFunctionType>::
-order(const arma::Col<CoordinateType>& point, int trialElementIndex,
-      CoordinateType nominalDistance) const
-{
-    // Order required for exact quadrature on affine elements with a constant kernel
-    int trialBasisOrder = (*m_trialShapesets)[trialElementIndex]->order();
-    int defaultQuadOrder = 2 * trialBasisOrder;
+int DefaultQuadratureDescriptorSelectorForPotentialOperators<
+    BasisFunctionType>::order(const arma::Col<CoordinateType> &point,
+                              int trialElementIndex,
+                              CoordinateType nominalDistance) const {
+  // Order required for exact quadrature on affine elements with a constant
+  // kernel
+  int trialBasisOrder = (*m_trialShapesets)[trialElementIndex]->order();
+  int defaultQuadOrder = 2 * trialBasisOrder;
 
-    CoordinateType normalisedDistance;
-    if (nominalDistance < 0.) {
-        CoordinateType elementSizeSquared =
-                m_elementSizesSquared[trialElementIndex];
-        CoordinateType distanceSquared =
-                pointElementDistanceSquared(point, trialElementIndex);
-        CoordinateType normalisedDistanceSquared =
-                distanceSquared / elementSizeSquared;
-        normalisedDistance = sqrt(normalisedDistanceSquared);
-    } else
-        normalisedDistance = nominalDistance / m_averageElementSize;
+  CoordinateType normalisedDistance;
+  if (nominalDistance < 0.) {
+    CoordinateType elementSizeSquared =
+        m_elementSizesSquared[trialElementIndex];
+    CoordinateType distanceSquared =
+        pointElementDistanceSquared(point, trialElementIndex);
+    CoordinateType normalisedDistanceSquared =
+        distanceSquared / elementSizeSquared;
+    normalisedDistance = sqrt(normalisedDistanceSquared);
+  } else
+    normalisedDistance = nominalDistance / m_averageElementSize;
 
-    const QuadratureOptions& options =
-            m_accuracyOptions.singleRegular(normalisedDistance);
-    return options.quadratureOrder(defaultQuadOrder);
+  const QuadratureOptions &options =
+      m_accuracyOptions.singleRegular(normalisedDistance);
+  return options.quadratureOrder(defaultQuadOrder);
 }
 
 template <typename BasisFunctionType>
-inline
-typename DefaultQuadratureDescriptorSelectorForPotentialOperators<
-BasisFunctionType>::CoordinateType
+inline typename DefaultQuadratureDescriptorSelectorForPotentialOperators<
+    BasisFunctionType>::CoordinateType
 DefaultQuadratureDescriptorSelectorForPotentialOperators<BasisFunctionType>::
-pointElementDistanceSquared(
-    const arma::Col<CoordinateType>& point, int trialElementIndex) const
-{
-    // TODO: optimize
-    arma::Col<CoordinateType> diff =
-            point - m_elementCenters.col(trialElementIndex);
-    return arma::dot(diff, diff);
+    pointElementDistanceSquared(const arma::Col<CoordinateType> &point,
+                                int trialElementIndex) const {
+  // TODO: optimize
+  arma::Col<CoordinateType> diff =
+      point - m_elementCenters.col(trialElementIndex);
+  return arma::dot(diff, diff);
 }
 
 template <typename BasisFunctionType>
 SingleQuadratureDescriptor
 DefaultQuadratureDescriptorSelectorForPotentialOperators<BasisFunctionType>::
-farFieldQuadratureDescriptor(
-        const Shapeset<BasisFunctionType>& trialShapeset,
-        int trialElementCornerCount) const
-{
-    SingleQuadratureDescriptor desc;
-    desc.vertexCount = trialElementCornerCount;
-    int elementOrder = trialShapeset.order();
-    // Order required for exact quadrature on affine elements with kernel
-    // approximated by a polynomial of order identical with that of the shapeset
-    int defaultQuadratureOrder = 2 * elementOrder;
-    desc.order = m_accuracyOptions.singleRegular().
-        quadratureOrder(defaultQuadratureOrder);
-    return desc;
+    farFieldQuadratureDescriptor(
+        const Shapeset<BasisFunctionType> &trialShapeset,
+        int trialElementCornerCount) const {
+  SingleQuadratureDescriptor desc;
+  desc.vertexCount = trialElementCornerCount;
+  int elementOrder = trialShapeset.order();
+  // Order required for exact quadrature on affine elements with kernel
+  // approximated by a polynomial of order identical with that of the shapeset
+  int defaultQuadratureOrder = 2 * elementOrder;
+  desc.order =
+      m_accuracyOptions.singleRegular().quadratureOrder(defaultQuadratureOrder);
+  return desc;
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(

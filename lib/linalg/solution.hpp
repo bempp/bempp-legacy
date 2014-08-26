@@ -27,39 +27,37 @@
 
 #include "../assembly/grid_function.hpp"
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \ingroup linalg
  *  \brief This class holds the solution of a BEM computation together with
  *  various associated information.
  */
 template <typename BasisFunctionType, typename ResultType>
-class Solution : public SolutionBase<BasisFunctionType, ResultType>
-{
+class Solution : public SolutionBase<BasisFunctionType, ResultType> {
 public:
-    typedef SolutionBase<BasisFunctionType, ResultType> Base;
-    typedef typename Base::MagnitudeType MagnitudeType;
+  typedef SolutionBase<BasisFunctionType, ResultType> Base;
+  typedef typename Base::MagnitudeType MagnitudeType;
 
-    /** \brief Construct an uninitialized solution. */
-    Solution();
+  /** \brief Construct an uninitialized solution. */
+  Solution();
 
 #ifdef WITH_TRILINOS
-    /** \brief Constructor */
-    Solution(const GridFunction<BasisFunctionType, ResultType>& gridFunction,
-             const Thyra::SolveStatus<MagnitudeType> status);
+  /** \brief Constructor */
+  Solution(const GridFunction<BasisFunctionType, ResultType> &gridFunction,
+           const Thyra::SolveStatus<MagnitudeType> status);
 #endif // WITH_TRILINOS
-    /** \brief Constructor */
-    Solution(const GridFunction<BasisFunctionType, ResultType>& gridFunction,
-             SolutionStatus::Status status,
-             MagnitudeType achievedTolerance = Base::unknownTolerance(),
-             std::string message = "");
+  /** \brief Constructor */
+  Solution(const GridFunction<BasisFunctionType, ResultType> &gridFunction,
+           SolutionStatus::Status status,
+           MagnitudeType achievedTolerance = Base::unknownTolerance(),
+           std::string message = "");
 
-    GridFunction<BasisFunctionType, ResultType>& gridFunction();
-    const GridFunction<BasisFunctionType, ResultType>& gridFunction() const;
+  GridFunction<BasisFunctionType, ResultType> &gridFunction();
+  const GridFunction<BasisFunctionType, ResultType> &gridFunction() const;
 
 private:
-    GridFunction<BasisFunctionType, ResultType> m_gridFunction;
+  GridFunction<BasisFunctionType, ResultType> m_gridFunction;
 };
 
 } // namespace Bempp

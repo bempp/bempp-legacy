@@ -28,50 +28,41 @@
 
 #include <algorithm>
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \brief A shapeset containing only one function: the constant function. */
 template <typename ValueType>
-class ConstantScalarShapeset : public Basis<ValueType>
-{
+class ConstantScalarShapeset : public Basis<ValueType> {
 public:
-    typedef typename Basis<ValueType>::CoordinateType CoordinateType;
+  typedef typename Basis<ValueType>::CoordinateType CoordinateType;
 
-    virtual int size() const {
-        return 1;
+  virtual int size() const { return 1; }
+
+  virtual int order() const { return 0; }
+
+  virtual void evaluate(size_t what, const arma::Mat<CoordinateType> &points,
+                        LocalDofIndex localDofIndex,
+                        BasisData<ValueType> &data) const {
+    if (localDofIndex != ALL_DOFS && localDofIndex != 0)
+      throw std::invalid_argument("ConstantScalarShapeset::evaluate(): "
+                                  "Invalid localDofIndex");
+    // Since there is only one shape function, there is no difference
+    // between calculating all shape functions and just one.
+
+    const int componentCount = 1;
+    const int functionCount = 1;
+    const int pointCount = points.n_cols;
+    if (what & VALUES) {
+      data.values.set_size(componentCount, functionCount, pointCount);
+      std::fill(data.values.begin(), data.values.end(), 1.);
     }
-
-    virtual int order() const {
-        return 0;
+    if (what & DERIVATIVES) {
+      const int coordCount = points.n_rows;
+      data.derivatives.set_size(componentCount, coordCount, functionCount,
+                                pointCount);
+      std::fill(data.derivatives.begin(), data.derivatives.end(), 0.);
     }
-
-    virtual void evaluate(size_t what,
-                          const arma::Mat<CoordinateType>& points,
-                          LocalDofIndex localDofIndex,
-                          BasisData<ValueType>& data) const {
-        if (localDofIndex != ALL_DOFS && localDofIndex != 0)
-            throw std::invalid_argument("ConstantScalarShapeset::evaluate(): "
-                                        "Invalid localDofIndex");
-        // Since there is only one shape function, there is no difference
-        // between calculating all shape functions and just one.
-
-        const int componentCount = 1;
-        const int functionCount = 1;
-        const int pointCount = points.n_cols;
-        if (what & VALUES)
-        {
-            data.values.set_size(componentCount, functionCount, pointCount);
-            std::fill(data.values.begin(), data.values.end(), 1.);
-        }
-        if (what & DERIVATIVES)
-        {
-            const int coordCount = points.n_rows;
-            data.derivatives.set_size(componentCount, coordCount,
-                                 functionCount, pointCount);
-            std::fill(data.derivatives.begin(), data.derivatives.end(), 0.);
-        }
-    }
+  }
 };
 
 } // namespace Fiber

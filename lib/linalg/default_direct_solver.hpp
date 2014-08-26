@@ -25,8 +25,7 @@
 
 #include <boost/scoped_ptr.hpp>
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \ingroup linalg
   * \brief Default direct dense solver for boundary integral equations.
@@ -35,29 +34,28 @@ namespace Bempp
   * dense LU decomposition.
   */
 template <typename BasisFunctionType, typename ResultType>
-class DefaultDirectSolver : public Solver<BasisFunctionType, ResultType>
-{
+class DefaultDirectSolver : public Solver<BasisFunctionType, ResultType> {
 public:
-    typedef Solver<BasisFunctionType, ResultType> Base;
+  typedef Solver<BasisFunctionType, ResultType> Base;
 
-    /** \brief Construct a solver for a non-blocked boundary operator. */
-    DefaultDirectSolver(
-            const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOp);
-    /** \brief Construct a solver for a blocked boundary operator. */
-    DefaultDirectSolver(
-            const BlockedBoundaryOperator<BasisFunctionType, ResultType>& boundaryOp);
-    ~DefaultDirectSolver();
-
-private:
-    virtual Solution<BasisFunctionType, ResultType> solveImplNonblocked(
-            const GridFunction<BasisFunctionType, ResultType>& rhs) const;
-    virtual BlockedSolution<BasisFunctionType, ResultType> solveImplBlocked(
-            const std::vector<GridFunction<BasisFunctionType, ResultType> >&
-            rhs) const;
+  /** \brief Construct a solver for a non-blocked boundary operator. */
+  DefaultDirectSolver(
+      const BoundaryOperator<BasisFunctionType, ResultType> &boundaryOp);
+  /** \brief Construct a solver for a blocked boundary operator. */
+  DefaultDirectSolver(
+      const BlockedBoundaryOperator<BasisFunctionType, ResultType> &boundaryOp);
+  ~DefaultDirectSolver();
 
 private:
-    struct Impl;
-    boost::scoped_ptr<Impl> m_impl;
+  virtual Solution<BasisFunctionType, ResultType> solveImplNonblocked(
+      const GridFunction<BasisFunctionType, ResultType> &rhs) const;
+  virtual BlockedSolution<BasisFunctionType, ResultType> solveImplBlocked(
+      const std::vector<GridFunction<BasisFunctionType, ResultType>> &rhs)
+      const;
+
+private:
+  struct Impl;
+  boost::scoped_ptr<Impl> m_impl;
 };
 
 } // namespace Bempp

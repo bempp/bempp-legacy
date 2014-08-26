@@ -23,18 +23,15 @@
 
 #include "../common/common.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
-enum CallVariant
-{
-    TEST_TRIAL = 0,
-    TRIAL_TEST = 1
+enum CallVariant {
+  TEST_TRIAL = 0,
+  TRIAL_TEST = 1
 };
 
 typedef int LocalDofIndex;
 const LocalDofIndex ALL_DOFS = -1;
-
 }
 
 #endif

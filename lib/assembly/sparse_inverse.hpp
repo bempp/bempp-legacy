@@ -26,8 +26,7 @@
 
 class Epetra_CrsMatrix;
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \relates DiscreteSparseBoundaryOperator
  *  \brief Return the inverse of a *block-diagonal* sparse matrix \p mat.
@@ -38,7 +37,7 @@ namespace Bempp
  *  Be aware that explicit inversion of \f$A\f$ is usually not the most
  *  accurate way to solve the equation \f$A^{-1} X = B\f$.
  */
-shared_ptr<Epetra_CrsMatrix> sparseInverse(const Epetra_CrsMatrix& mat);
+shared_ptr<Epetra_CrsMatrix> sparseInverse(const Epetra_CrsMatrix &mat);
 
 } // namespace Bempp
 

@@ -27,118 +27,105 @@
 #include "ahmed_aux.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
-namespace
-{
+namespace {
 
 // Adapted from AHMED
-void copyH(unsigned n, mblock<double>** A, mblock<dcomp>** B)
-{
-    for (unsigned i = 0; i < n; ++i) {
-        assert(A[i]);
-        delete B[i];
-        B[i] = new mblock<dcomp>(A[i]->getn1(), A[i]->getn2());
-        assert(B[i]);
+void copyH(unsigned n, mblock<double> **A, mblock<dcomp> **B) {
+  for (unsigned i = 0; i < n; ++i) {
+    assert(A[i]);
+    delete B[i];
+    B[i] = new mblock<dcomp>(A[i]->getn1(), A[i]->getn2());
+    assert(B[i]);
 
-        if (A[i]->isLrM()) {
-            const unsigned k = A[i]->rank();
-            B[i]->setrank(k);
-        } else { // mbl is dense
-            assert(A[i]->isGeM());
-            if (A[i]->isHeM())
-                B[i]->setHeM();
-            else if (A[i]->isLtM())
-                B[i]->setLtM();
-            else if (A[i]->isUtM())
-                B[i]->setUtM();
-            else
-                B[i]->setGeM();
-        }
-        for (unsigned int j = 0; j < A[i]->nvals(); ++j)
-            B[i]->getdata()[j] = A[i]->getdata()[j];
+    if (A[i]->isLrM()) {
+      const unsigned k = A[i]->rank();
+      B[i]->setrank(k);
+    } else { // mbl is dense
+      assert(A[i]->isGeM());
+      if (A[i]->isHeM())
+        B[i]->setHeM();
+      else if (A[i]->isLtM())
+        B[i]->setLtM();
+      else if (A[i]->isUtM())
+        B[i]->setUtM();
+      else
+        B[i]->setGeM();
     }
+    for (unsigned int j = 0; j < A[i]->nvals(); ++j)
+      B[i]->getdata()[j] = A[i]->getdata()[j];
+  }
 }
 
 // Adapted from AHMED
-void copyH(unsigned n, mblock<double>** A, mblock<scomp>** B)
-{
-    for (unsigned i = 0; i < n; ++i) {
-        assert(A[i]);
-        delete B[i];
-        B[i] = new mblock<scomp>(A[i]->getn1(), A[i]->getn2());
-        assert(B[i]);
+void copyH(unsigned n, mblock<double> **A, mblock<scomp> **B) {
+  for (unsigned i = 0; i < n; ++i) {
+    assert(A[i]);
+    delete B[i];
+    B[i] = new mblock<scomp>(A[i]->getn1(), A[i]->getn2());
+    assert(B[i]);
 
-        if (A[i]->isLrM()) {
-            const unsigned k = A[i]->rank();
-            B[i]->setrank(k);
-        } else { // mbl is dense
-            assert(A[i]->isGeM());
-            if (A[i]->isHeM())
-                B[i]->setHeM();
-            else if (A[i]->isLtM())
-                B[i]->setLtM();
-            else if (A[i]->isUtM())
-                B[i]->setUtM();
-            else
-                B[i]->setGeM();
-        }
-        for (unsigned int j = 0; j < A[i]->nvals(); ++j)
-            B[i]->getdata()[j] = A[i]->getdata()[j];
+    if (A[i]->isLrM()) {
+      const unsigned k = A[i]->rank();
+      B[i]->setrank(k);
+    } else { // mbl is dense
+      assert(A[i]->isGeM());
+      if (A[i]->isHeM())
+        B[i]->setHeM();
+      else if (A[i]->isLtM())
+        B[i]->setLtM();
+      else if (A[i]->isUtM())
+        B[i]->setUtM();
+      else
+        B[i]->setGeM();
     }
+    for (unsigned int j = 0; j < A[i]->nvals(); ++j)
+      B[i]->getdata()[j] = A[i]->getdata()[j];
+  }
 }
 
 } // namespace
 
-namespace Bempp
-{
+namespace Bempp {
 
 // Convert an array of mblock<FromType> objects (in) to an array of
 // mblock<ToType> objects (out).
-template <typename FromType, typename ToType>
-struct MblockArrayConverter
-{
-    static void convert(
-        unsigned int n,
-        const boost::shared_array<mblock<FromType> *>& in,
-        boost::shared_array<mblock<ToType> *>& out) {
-        out = allocateAhmedMblockArray<ToType>(n);
-        copyH(n, in.get(), out.get());
-    }
+template <typename FromType, typename ToType> struct MblockArrayConverter {
+  static void convert(unsigned int n,
+                      const boost::shared_array<mblock<FromType> *> &in,
+                      boost::shared_array<mblock<ToType> *> &out) {
+    out = allocateAhmedMblockArray<ToType>(n);
+    copyH(n, in.get(), out.get());
+  }
 };
 
-template <typename Type>
-struct MblockArrayConverter<Type, Type>
-{
-    static void convert(
-        unsigned int n,
-        const boost::shared_array<mblock<Type> *>& in,
-        boost::shared_array<mblock<Type> *>& out) {
-        out = in;
-    }
+template <typename Type> struct MblockArrayConverter<Type, Type> {
+  static void convert(unsigned int n,
+                      const boost::shared_array<mblock<Type> *> &in,
+                      boost::shared_array<mblock<Type> *> &out) {
+    out = in;
+  }
 };
 
 template <typename ValueType>
 void SparseToHMatrixConverter<ValueType>::constructHMatrix(
-        int* rowOffsets, int* colIndices, double* values,
-        std::vector<unsigned int>& domain_o2p,
-        std::vector<unsigned int>& range_p2o,
-        double eps,
-        bbxbemblcluster<AhmedDofType, AhmedDofType>* blockCluster,
-        boost::shared_array<AhmedMblock*>& mblocks,
-        int& maximumRank)
-{
-    typedef mblock<AhmedTypeTraits<double>::Type> AhmedDoubleMblock;
-    AhmedDoubleMblock** rawDoubleMblocks = 0;
-    const unsigned int blockCount = blockCluster->nleaves();
-    convCRS_toGeH(values,
-                  reinterpret_cast<unsigned int*>(colIndices), // int* -> uint*
-                  reinterpret_cast<unsigned int*>(rowOffsets), // int* -> uint*
-                  &domain_o2p[0], &range_p2o[0],
-                  eps, blockCluster, rawDoubleMblocks);
-    boost::shared_array<AhmedDoubleMblock*> doubleMblocks(
-                (rawDoubleMblocks), (AhmedMblockArrayDeleter(blockCount)));
-    MblockArrayConverter<double, typename AhmedTypeTraits<ValueType>::Type>::convert(
-                blockCount, doubleMblocks, mblocks);
-    maximumRank = Hmax_rank(blockCluster, mblocks.get());
+    int *rowOffsets, int *colIndices, double *values,
+    std::vector<unsigned int> &domain_o2p, std::vector<unsigned int> &range_p2o,
+    double eps, bbxbemblcluster<AhmedDofType, AhmedDofType> *blockCluster,
+    boost::shared_array<AhmedMblock *> &mblocks, int &maximumRank) {
+  typedef mblock<AhmedTypeTraits<double>::Type> AhmedDoubleMblock;
+  AhmedDoubleMblock **rawDoubleMblocks = 0;
+  const unsigned int blockCount = blockCluster->nleaves();
+  convCRS_toGeH(
+      values, reinterpret_cast<unsigned int *>(colIndices), // int* -> uint*
+      reinterpret_cast<unsigned int *>(rowOffsets),         // int* -> uint*
+      &domain_o2p[0], &range_p2o[0], eps, blockCluster, rawDoubleMblocks);
+  boost::shared_array<AhmedDoubleMblock *> doubleMblocks(
+      (rawDoubleMblocks), (AhmedMblockArrayDeleter(blockCount)));
+  MblockArrayConverter<
+      double, typename AhmedTypeTraits<ValueType>::Type>::convert(blockCount,
+                                                                  doubleMblocks,
+                                                                  mblocks);
+  maximumRank = Hmax_rank(blockCluster, mblocks.get());
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(SparseToHMatrixConverter);

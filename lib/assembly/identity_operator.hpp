@@ -28,8 +28,7 @@
 #include "abstract_boundary_operator_id.hpp"
 #include <boost/scoped_ptr.hpp>
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \cond FORWARD_DECL */
 template <typename ResultType> class LocalAssemblerForOperators;
@@ -37,26 +36,26 @@ template <typename ResultType> class LocalAssemblerForOperators;
 
 } // namespace Fiber
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \cond FORWARD_DECL */
-template <typename BasisFunctionType, typename ResultType> class BoundaryOperator;
-template <typename BasisFunctionType, typename ResultType> class IdentityOperator;
+template <typename BasisFunctionType, typename ResultType>
+class BoundaryOperator;
+template <typename BasisFunctionType, typename ResultType>
+class IdentityOperator;
 /** \endcond */
 
 template <typename BasisFunctionType, typename ResultType>
-class BEMPP_DEPRECATED IdentityOperatorId : public AbstractBoundaryOperatorId
-{
+class BEMPP_DEPRECATED IdentityOperatorId : public AbstractBoundaryOperatorId {
 public:
-    IdentityOperatorId(const IdentityOperator<BasisFunctionType, ResultType>& op);
-    virtual size_t hash() const;
-    virtual bool isEqual(const AbstractBoundaryOperatorId &other) const;
+  IdentityOperatorId(const IdentityOperator<BasisFunctionType, ResultType> &op);
+  virtual size_t hash() const;
+  virtual bool isEqual(const AbstractBoundaryOperatorId &other) const;
 
 private:
-    const Space<BasisFunctionType>* m_domain;
-    const Space<BasisFunctionType>* m_range;
-    const Space<BasisFunctionType>* m_dualToRange;
+  const Space<BasisFunctionType> *m_domain;
+  const Space<BasisFunctionType> *m_range;
+  const Space<BasisFunctionType> *m_dualToRange;
 };
 
 /** \ingroup local_operators
@@ -77,77 +76,78 @@ private:
  *  an identity operator.
  */
 template <typename BasisFunctionType_, typename ResultType_>
-class IdentityOperator :
-        public ElementaryLocalOperator<BasisFunctionType_, ResultType_>
-{
-    typedef ElementaryLocalOperator<BasisFunctionType_, ResultType_> Base;
+class IdentityOperator
+    : public ElementaryLocalOperator<BasisFunctionType_, ResultType_> {
+  typedef ElementaryLocalOperator<BasisFunctionType_, ResultType_> Base;
+
 public:
-    /** \copydoc ElementaryLocalOperator::BasisFunctionType */
-    typedef typename Base::BasisFunctionType BasisFunctionType;
-    /** \copydoc ElementaryLocalOperator::ResultType */
-    typedef typename Base::ResultType ResultType;
-    /** \copydoc ElementaryLocalOperator::CoordinateType */
-    typedef typename Base::CoordinateType CoordinateType;
-    /** \copydoc ElementaryLocalOperator::QuadratureStrategy */
-    typedef typename Base::QuadratureStrategy QuadratureStrategy;
-    /** \copydoc ElementaryLocalOperator::CollectionOfShapesetTransformations */
-    typedef typename Base::CollectionOfShapesetTransformations
-    CollectionOfShapesetTransformations;
-    /** \copydoc ElementaryLocalOperator::CollectionOfBasisTransformations */
-    typedef typename Base::CollectionOfBasisTransformations
-    CollectionOfBasisTransformations;
-    /** \copydoc ElementaryLocalOperator::TestTrialIntegral */
-    typedef typename Base::TestTrialIntegral TestTrialIntegral;
+  /** \copydoc ElementaryLocalOperator::BasisFunctionType */
+  typedef typename Base::BasisFunctionType BasisFunctionType;
+  /** \copydoc ElementaryLocalOperator::ResultType */
+  typedef typename Base::ResultType ResultType;
+  /** \copydoc ElementaryLocalOperator::CoordinateType */
+  typedef typename Base::CoordinateType CoordinateType;
+  /** \copydoc ElementaryLocalOperator::QuadratureStrategy */
+  typedef typename Base::QuadratureStrategy QuadratureStrategy;
+  /** \copydoc ElementaryLocalOperator::CollectionOfShapesetTransformations */
+  typedef typename Base::CollectionOfShapesetTransformations
+  CollectionOfShapesetTransformations;
+  /** \copydoc ElementaryLocalOperator::CollectionOfBasisTransformations */
+  typedef typename Base::CollectionOfBasisTransformations
+  CollectionOfBasisTransformations;
+  /** \copydoc ElementaryLocalOperator::TestTrialIntegral */
+  typedef typename Base::TestTrialIntegral TestTrialIntegral;
 
-    /** \brief Constructor.
-     *
-     *  \param[in] domain
-     *    Function space being the domain of the operator.
-     *  \param[in] range
-     *    Function space being the range of the operator.
-     *  \param[in] dualToRange
-     *    Function space dual to the the range of the operator.
-     *  \param[in] label
-     *    Textual label of the operator. If empty, a unique label is generated
-     *    automatically.
-     *  \param[in] symmetry
-     *    Symmetry of the weak form of the operator. Can be any combination of
-     *    the flags defined in the enumeration type Symmetry.
-     *    If set to AUTO_SYMMETRY (default), the symmetry is determined
-     *    automatically by checking whether its domain and space dual to its
-     *    range are equal. If so, the operator is marked as Hermitian,
-     *    and if the basis functions are real-valued, also as symmetric.
-     *
-     *  All the three spaces must be defined on the same grid. */
-    IdentityOperator(const shared_ptr<const Space<BasisFunctionType> >& domain,
-                     const shared_ptr<const Space<BasisFunctionType> >& range,
-                     const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-                     const std::string& label = "",
-                     int symmetry = AUTO_SYMMETRY);
-    virtual ~IdentityOperator();
+  /** \brief Constructor.
+   *
+   *  \param[in] domain
+   *    Function space being the domain of the operator.
+   *  \param[in] range
+   *    Function space being the range of the operator.
+   *  \param[in] dualToRange
+   *    Function space dual to the the range of the operator.
+   *  \param[in] label
+   *    Textual label of the operator. If empty, a unique label is generated
+   *    automatically.
+   *  \param[in] symmetry
+   *    Symmetry of the weak form of the operator. Can be any combination of
+   *    the flags defined in the enumeration type Symmetry.
+   *    If set to AUTO_SYMMETRY (default), the symmetry is determined
+   *    automatically by checking whether its domain and space dual to its
+   *    range are equal. If so, the operator is marked as Hermitian,
+   *    and if the basis functions are real-valued, also as symmetric.
+   *
+   *  All the three spaces must be defined on the same grid. */
+  IdentityOperator(
+      const shared_ptr<const Space<BasisFunctionType>> &domain,
+      const shared_ptr<const Space<BasisFunctionType>> &range,
+      const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
+      const std::string &label = "", int symmetry = AUTO_SYMMETRY);
+  virtual ~IdentityOperator();
 
-    /** \brief Return the identifier of this operator.
-     *
-     *  Identity operators are treated as equivalent if they have the same domain,
-     *  range and dual to range.
-     *
-     *  \deprecated This function is deprecated and will be removed in a future
-     *  version of BEM++.
-     */
-    BEMPP_DEPRECATED virtual shared_ptr<const AbstractBoundaryOperatorId> id() const;
-
-private:
-    virtual const CollectionOfShapesetTransformations&
-    testTransformations() const;
-
-    virtual const CollectionOfShapesetTransformations&
-    trialTransformations() const;
-
-    virtual const TestTrialIntegral& integral() const;
+  /** \brief Return the identifier of this operator.
+   *
+   *  Identity operators are treated as equivalent if they have the same domain,
+   *  range and dual to range.
+   *
+   *  \deprecated This function is deprecated and will be removed in a future
+   *  version of BEM++.
+   */
+  BEMPP_DEPRECATED virtual shared_ptr<const AbstractBoundaryOperatorId>
+  id() const;
 
 private:
-    shared_ptr<TestTrialIntegral> m_integral;
-    shared_ptr<const AbstractBoundaryOperatorId> m_id;
+  virtual const CollectionOfShapesetTransformations &
+  testTransformations() const;
+
+  virtual const CollectionOfShapesetTransformations &
+  trialTransformations() const;
+
+  virtual const TestTrialIntegral &integral() const;
+
+private:
+  shared_ptr<TestTrialIntegral> m_integral;
+  shared_ptr<const AbstractBoundaryOperatorId> m_id;
 };
 
 /** \relates IdentityOperator
@@ -177,13 +177,12 @@ private:
  *
  *  All the three spaces must be defined on the same grid. */
 template <typename BasisFunctionType, typename ResultType>
-BoundaryOperator<BasisFunctionType, ResultType>
-identityOperator(const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
-                 const shared_ptr<const Space<BasisFunctionType> >& domain,
-                 const shared_ptr<const Space<BasisFunctionType> >& range,
-                 const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-                 const std::string& label = "",
-                 int symmetry = AUTO_SYMMETRY);
+BoundaryOperator<BasisFunctionType, ResultType> identityOperator(
+    const shared_ptr<const Context<BasisFunctionType, ResultType>> &context,
+    const shared_ptr<const Space<BasisFunctionType>> &domain,
+    const shared_ptr<const Space<BasisFunctionType>> &range,
+    const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
+    const std::string &label = "", int symmetry = AUTO_SYMMETRY);
 
 } // namespace Bempp
 

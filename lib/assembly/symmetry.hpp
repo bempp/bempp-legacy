@@ -23,18 +23,16 @@
 
 #include "../common/common.hpp"
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \ingroup weak_form_assembly
  *  \brief Set of constants describing the symmetry of an operator.
  */
-enum Symmetry
-{
-    NO_SYMMETRY = 0x0000,
-    SYMMETRIC = 0x0001,
-    HERMITIAN = 0x0002,
-    AUTO_SYMMETRY = 0x8000
+enum Symmetry {
+  NO_SYMMETRY = 0x0000,
+  SYMMETRIC = 0x0001,
+  HERMITIAN = 0x0002,
+  AUTO_SYMMETRY = 0x8000
 };
 
 } // namespace Bempp

@@ -28,57 +28,51 @@
 #include <boost/tuple/tuple_comparison.hpp>
 #include <ostream>
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \brief Parameters of a quadrature rule used in the evaluation of
  *  integrals over pairs of elements. */
-struct DoubleQuadratureDescriptor
-{
-    /** \brief Element pair configuration. */
-    ElementPairTopology topology;
-    /** \brief Degree of accuracy of the quadrature rule used on the test
-     *  element. */
-    int testOrder;
-    /** \brief Degree of accuracy of the quadrature rule used on the trial
-     *  element. */
-    int trialOrder;
+struct DoubleQuadratureDescriptor {
+  /** \brief Element pair configuration. */
+  ElementPairTopology topology;
+  /** \brief Degree of accuracy of the quadrature rule used on the test
+   *  element. */
+  int testOrder;
+  /** \brief Degree of accuracy of the quadrature rule used on the trial
+   *  element. */
+  int trialOrder;
 
-    bool operator<(const DoubleQuadratureDescriptor& other) const {
-        using boost::tuples::make_tuple;
-        return make_tuple(topology, testOrder, trialOrder) <
-                make_tuple(other.topology, other.testOrder, other.trialOrder);
-    }
+  bool operator<(const DoubleQuadratureDescriptor &other) const {
+    using boost::tuples::make_tuple;
+    return make_tuple(topology, testOrder, trialOrder) <
+           make_tuple(other.topology, other.testOrder, other.trialOrder);
+  }
 
-    bool operator==(const DoubleQuadratureDescriptor& other) const {
-        return topology == other.topology &&
-                testOrder == other.testOrder &&
-                trialOrder == other.trialOrder;
-    }
+  bool operator==(const DoubleQuadratureDescriptor &other) const {
+    return topology == other.topology && testOrder == other.testOrder &&
+           trialOrder == other.trialOrder;
+  }
 
-    bool operator!=(const DoubleQuadratureDescriptor& other) const {
-        return !operator==(other);
-    }
+  bool operator!=(const DoubleQuadratureDescriptor &other) const {
+    return !operator==(other);
+  }
 
-    friend std::ostream&
-    operator<< (std::ostream& dest, const DoubleQuadratureDescriptor& obj)
-    {
-        dest << obj.topology << " " << obj.testOrder << " " << obj.trialOrder;
-        return dest;
-    }
+  friend std::ostream &operator<<(std::ostream &dest,
+                                  const DoubleQuadratureDescriptor &obj) {
+    dest << obj.topology << " " << obj.testOrder << " " << obj.trialOrder;
+    return dest;
+  }
 };
 
-inline size_t tbb_hasher(const DoubleQuadratureDescriptor& d)
-{
-    const ElementPairTopology& t = d.topology;
-    return (t.testVertexCount - 3) + 2 *
-            ((t.trialVertexCount - 3) + 2 *
-             (t.testSharedVertex0 + 4 *
-              (t.trialSharedVertex0 + 4 *
-               (t.testSharedVertex1 + 4 *
-                (t.trialSharedVertex1 + 4 *
-                 (d.testOrder + 256 *
-                  d.trialOrder))))));
+inline size_t tbb_hasher(const DoubleQuadratureDescriptor &d) {
+  const ElementPairTopology &t = d.topology;
+  return (t.testVertexCount - 3) +
+         2 * ((t.trialVertexCount - 3) +
+              2 * (t.testSharedVertex0 +
+                   4 * (t.trialSharedVertex0 +
+                        4 * (t.testSharedVertex1 +
+                             4 * (t.trialSharedVertex1 +
+                                  4 * (d.testOrder + 256 * d.trialOrder))))));
 }
 
 } // namespace Fiber

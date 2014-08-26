@@ -18,7 +18,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-
 #ifndef bempp_ahmed_aux_fwd_hpp
 #define bempp_ahmed_aux_fwd_hpp
 
@@ -42,8 +41,7 @@ typedef comp<float> scomp;
 typedef comp<double> dcomp;
 #endif
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \cond FORWARD_DECL */
 template <typename CoordinateType> struct AhmedDofWrapper;
@@ -57,31 +55,25 @@ template <typename T> class ExtendedBemCluster;
 // representation is the same as that of the complex type provided by
 // STL.
 
-template <typename T>
-struct AhmedTypeTraits
-{
-    typedef T Type;
+template <typename T> struct AhmedTypeTraits {
+  typedef T Type;
 };
 
-template <>
-struct AhmedTypeTraits<std::complex<float> >
-{
-    typedef scomp Type;
+template <> struct AhmedTypeTraits<std::complex<float>> {
+  typedef scomp Type;
 };
 
-template <>
-struct AhmedTypeTraits<std::complex<double> >
-{
-    typedef dcomp Type;
+template <> struct AhmedTypeTraits<std::complex<double>> {
+  typedef dcomp Type;
 };
 
 template <typename T>
-inline typename AhmedTypeTraits<T>::Type* ahmedCast(T* x) {
+inline typename AhmedTypeTraits<T>::Type *ahmedCast(T *x) {
 #ifdef AHMED_USES_STD_COMPLEX
-    return x;
+  return x;
 #else
-    return reinterpret_cast<typename AhmedTypeTraits<T>::Type*>(x);
-#endif 
+  return reinterpret_cast<typename AhmedTypeTraits<T>::Type *>(x);
+#endif
 }
 
 float ahmedCast(float x);

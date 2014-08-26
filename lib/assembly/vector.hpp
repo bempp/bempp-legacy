@@ -43,29 +43,29 @@ namespace Bempp {
 template <typename ValueType>
 class Vector
 #ifdef WITH_TRILINOS
-        : public Thyra::DefaultSpmdVector<ValueType>
+    : public Thyra::DefaultSpmdVector<ValueType>
 #endif
-{
+      {
 public:
-    /** \brief Construct a Vector from an Armadillo vector. */
-    explicit Vector(const arma::Col<ValueType>& vec);
+  /** \brief Construct a Vector from an Armadillo vector. */
+  explicit Vector(const arma::Col<ValueType> &vec);
 
-    /** \brief Construct an uninitialized vector of length \p n. */
-    explicit Vector(size_t n);
+  /** \brief Construct an uninitialized vector of length \p n. */
+  explicit Vector(size_t n);
 
-    /** \brief Vector length. */
-    size_t size() const;
+  /** \brief Vector length. */
+  size_t size() const;
 
-    /** \brief Write a textual representation of the vector to standard output. */
-    void dump() const;
+  /** \brief Write a textual representation of the vector to standard output. */
+  void dump() const;
 
-    /** \brief Convert the Vector object into an Armadillo vector. */
-    arma::Col<ValueType> asArmadilloVector() const;
+  /** \brief Convert the Vector object into an Armadillo vector. */
+  arma::Col<ValueType> asArmadilloVector() const;
 
 private:
 #ifndef WITH_TRILINOS
-    // fallback implementation
-    arma::Col<ValueType> m_vec;
+  // fallback implementation
+  arma::Col<ValueType> m_vec;
 #endif
 };
 

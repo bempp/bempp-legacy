@@ -28,8 +28,7 @@
 
 #include "../common/complex_aux.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \ingroup modified_helmholtz_3d
  *  \ingroup functors
@@ -45,56 +44,54 @@ namespace Fiber
  */
 
 template <typename ValueType_>
-class ModifiedHelmholtz3dDoubleLayerPotentialKernelFunctor
-{
+class ModifiedHelmholtz3dDoubleLayerPotentialKernelFunctor {
 public:
-    typedef ValueType_ ValueType;
-    typedef typename ScalarTraits<ValueType>::RealType CoordinateType;
+  typedef ValueType_ ValueType;
+  typedef typename ScalarTraits<ValueType>::RealType CoordinateType;
 
-    explicit ModifiedHelmholtz3dDoubleLayerPotentialKernelFunctor(
-            ValueType waveNumber) :
-        m_waveNumber(waveNumber)
-    {}
+  explicit ModifiedHelmholtz3dDoubleLayerPotentialKernelFunctor(
+      ValueType waveNumber)
+      : m_waveNumber(waveNumber) {}
 
-    int kernelCount() const { return 1; }
-    int kernelRowCount(int /* kernelIndex */) const { return 1; }
-    int kernelColCount(int /* kernelIndex */) const { return 1; }
+  int kernelCount() const { return 1; }
+  int kernelRowCount(int /* kernelIndex */) const { return 1; }
+  int kernelColCount(int /* kernelIndex */) const { return 1; }
 
-    void addGeometricalDependencies(size_t& testGeomDeps, size_t& trialGeomDeps) const {
-        testGeomDeps |= GLOBALS;
-        trialGeomDeps |= GLOBALS | NORMALS;
+  void addGeometricalDependencies(size_t &testGeomDeps,
+                                  size_t &trialGeomDeps) const {
+    testGeomDeps |= GLOBALS;
+    trialGeomDeps |= GLOBALS | NORMALS;
+  }
+
+  ValueType waveNumber() const { return m_waveNumber; }
+
+  template <template <typename T> class CollectionOf2dSlicesOfNdArrays>
+  void evaluate(const ConstGeometricalDataSlice<CoordinateType> &testGeomData,
+                const ConstGeometricalDataSlice<CoordinateType> &trialGeomData,
+                CollectionOf2dSlicesOfNdArrays<ValueType> &result) const {
+    const int coordCount = 3;
+
+    CoordinateType numeratorSum = 0., denominatorSum = 0.;
+    for (int coordIndex = 0; coordIndex < coordCount; ++coordIndex) {
+      CoordinateType diff =
+          trialGeomData.global(coordIndex) - testGeomData.global(coordIndex);
+      denominatorSum += diff * diff;
+      numeratorSum += diff * trialGeomData.normal(coordIndex);
     }
+    CoordinateType distance = sqrt(denominatorSum);
+    result[0](0, 0) =
+        -numeratorSum /
+        (static_cast<CoordinateType>(4.0 * M_PI) * denominatorSum) *
+        (m_waveNumber + static_cast<CoordinateType>(1.0) / distance) *
+        exp(-m_waveNumber * distance);
+  }
 
-    ValueType waveNumber() const { return m_waveNumber; }
-
-    template <template <typename T> class CollectionOf2dSlicesOfNdArrays>
-    void evaluate(
-            const ConstGeometricalDataSlice<CoordinateType>& testGeomData,
-            const ConstGeometricalDataSlice<CoordinateType>& trialGeomData,
-            CollectionOf2dSlicesOfNdArrays<ValueType>& result) const {
-        const int coordCount = 3;
-
-        CoordinateType numeratorSum = 0., denominatorSum = 0.;
-        for (int coordIndex = 0; coordIndex < coordCount; ++coordIndex)
-        {
-            CoordinateType diff = trialGeomData.global(coordIndex) -
-                    testGeomData.global(coordIndex);
-            denominatorSum += diff * diff;
-            numeratorSum += diff * trialGeomData.normal(coordIndex);
-        }
-        CoordinateType distance = sqrt(denominatorSum);
-        result[0](0, 0) = -numeratorSum /
-                (static_cast<CoordinateType>(4.0 * M_PI) * denominatorSum) *
-                (m_waveNumber + static_cast<CoordinateType>(1.0) / distance) *
-                exp(-m_waveNumber * distance);
-    }
-
-    CoordinateType estimateRelativeScale(CoordinateType distance) const {
-        return exp(-realPart(m_waveNumber) * distance);
-    }
+  CoordinateType estimateRelativeScale(CoordinateType distance) const {
+    return exp(-realPart(m_waveNumber) * distance);
+  }
 
 private:
-    ValueType m_waveNumber;
+  ValueType m_waveNumber;
 };
 
 } // namespace Fiber

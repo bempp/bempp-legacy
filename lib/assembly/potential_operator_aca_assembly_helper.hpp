@@ -36,8 +36,7 @@
 class cluster;
 /** \endcond */
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \cond FORWARD_DECL */
 template <typename ResultType> class LocalAssemblerForPotentialOperators;
@@ -45,8 +44,7 @@ template <typename ResultType> class LocalAssemblerForPotentialOperators;
 
 } // namespace Fiber
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \cond FORWARD_DECL */
 class EvaluationOptions;
@@ -57,84 +55,84 @@ template <typename BasisFunctionType> class Space;
 /** \endcond */
 
 /** \ingroup weak_form_assembly_internal
- *  \brief Class whose methods are called by Ahmed during assembly in the ACA mode.
+ *  \brief Class whose methods are called by Ahmed during assembly in the ACA
+ * mode.
  */
 template <typename BasisFunctionType, typename ResultType>
-class PotentialOperatorAcaAssemblyHelper
-{
+class PotentialOperatorAcaAssemblyHelper {
 public:
-    typedef DiscreteBoundaryOperator<ResultType> DiscreteLinOp;
-    typedef Fiber::LocalAssemblerForPotentialOperators<ResultType> LocalAssembler;
-    typedef typename Fiber::ScalarTraits<ResultType>::RealType CoordinateType;
-    typedef CoordinateType MagnitudeType;
-    typedef typename AhmedTypeTraits<ResultType>::Type AhmedResultType;
+  typedef DiscreteBoundaryOperator<ResultType> DiscreteLinOp;
+  typedef Fiber::LocalAssemblerForPotentialOperators<ResultType> LocalAssembler;
+  typedef typename Fiber::ScalarTraits<ResultType>::RealType CoordinateType;
+  typedef CoordinateType MagnitudeType;
+  typedef typename AhmedTypeTraits<ResultType>::Type AhmedResultType;
 
-    PotentialOperatorAcaAssemblyHelper(
-            const arma::Mat<CoordinateType>& points,
-            const Space<BasisFunctionType>& trialSpace,
-            const std::vector<unsigned int>& p2oPoints,
-            const std::vector<unsigned int>& p2oTrialDofs,
-            const std::vector<LocalAssembler*>& assemblers,
-            const std::vector<ResultType>& termMultipliers,
-            const EvaluationOptions& options);
+  PotentialOperatorAcaAssemblyHelper(
+      const arma::Mat<CoordinateType> &points,
+      const Space<BasisFunctionType> &trialSpace,
+      const std::vector<unsigned int> &p2oPoints,
+      const std::vector<unsigned int> &p2oTrialDofs,
+      const std::vector<LocalAssembler *> &assemblers,
+      const std::vector<ResultType> &termMultipliers,
+      const EvaluationOptions &options);
 
-    /** \brief Evaluate entries of a general block.
-     *
-     *  Store the entries of the block defined
-     *  by \p b1, \p n1, \p b2, \p n2 (in permuted ordering) in data. */
-    void cmpbl(unsigned b1, unsigned n1, unsigned b2, unsigned n2,
-               AhmedResultType* data,
-               const cluster* c1 = 0, const cluster* c2 = 0,
-               bool countAccessedEntries = true) const;
+  /** \brief Evaluate entries of a general block.
+   *
+   *  Store the entries of the block defined
+   *  by \p b1, \p n1, \p b2, \p n2 (in permuted ordering) in data. */
+  void cmpbl(unsigned b1, unsigned n1, unsigned b2, unsigned n2,
+             AhmedResultType *data, const cluster *c1 = 0,
+             const cluster *c2 = 0, bool countAccessedEntries = true) const;
 
-    /** \brief Evaluate entries of a symmetric block.
-     *
-     * Store the upper part of the (symmetric) block defined
-     * by \p b1, \p n1, \p b1, \p n1 (in permuted ordering) columnwise in \p data. */
-    void cmpblsym(unsigned b1, unsigned n1, AhmedResultType* data,
-                  const cluster* c1 = 0,
-                  bool countAccessedEntries = true) const;
+  /** \brief Evaluate entries of a symmetric block.
+   *
+   * Store the upper part of the (symmetric) block defined
+   * by \p b1, \p n1, \p b1, \p n1 (in permuted ordering) columnwise in \p data.
+   */
+  void cmpblsym(unsigned b1, unsigned n1, AhmedResultType *data,
+                const cluster *c1 = 0, bool countAccessedEntries = true) const;
 
-    /** \brief Expected size of the entries in this block. */
-    MagnitudeType scale(unsigned b1, unsigned n1, unsigned b2, unsigned n2,
-                        const cluster* c1 = 0, const cluster* c2 = 0) const;
+  /** \brief Expected size of the entries in this block. */
+  MagnitudeType scale(unsigned b1, unsigned n1, unsigned b2, unsigned n2,
+                      const cluster *c1 = 0, const cluster *c2 = 0) const;
 
-    /** \brief Expected magnitude of the largest entry in this block relative to that
-     *  of the largest entry in the whole matrix. */
-    MagnitudeType relativeScale(unsigned b1, unsigned n1, unsigned b2, unsigned n2,
-                                const cluster* c1 = 0, const cluster* c2 = 0) const;
+  /** \brief Expected magnitude of the largest entry in this block relative to
+   * that
+   *  of the largest entry in the whole matrix. */
+  MagnitudeType relativeScale(unsigned b1, unsigned n1, unsigned b2,
+                              unsigned n2, const cluster *c1 = 0,
+                              const cluster *c2 = 0) const;
 
-    /** \brief Return the number of entries in the matrix that have been
-     *  accessed so far. */
-    size_t accessedEntryCount() const;
+  /** \brief Return the number of entries in the matrix that have been
+   *  accessed so far. */
+  size_t accessedEntryCount() const;
 
-    /** \brief Reset the number of entries in the matrix that have been
-     *  accessed so far. */
-    void resetAccessedEntryCount();
-
-private:
-    MagnitudeType estimateMinimumDistance(
-            const cluster* c1, const cluster* c2) const;
+  /** \brief Reset the number of entries in the matrix that have been
+   *  accessed so far. */
+  void resetAccessedEntryCount();
 
 private:
-    /** \cond PRIVATE */
-    const arma::Mat<CoordinateType>& m_points;
-    const Space<BasisFunctionType>& m_trialSpace;
-    const std::vector<unsigned int>& m_p2oPoints;
-    const std::vector<unsigned int>& m_p2oTrialDofs;
-    const std::vector<LocalAssembler*>& m_assemblers;
-    const std::vector<ResultType>& m_termMultipliers;
-    const EvaluationOptions& m_options;
-    bool m_indexWithGlobalDofs; // redundant (stored also in m_options),
-                                // but often needed
-    unsigned int m_componentCount;
+  MagnitudeType estimateMinimumDistance(const cluster *c1,
+                                        const cluster *c2) const;
 
-    shared_ptr<ComponentListsCache> m_componentListsCache;
-    shared_ptr<LocalDofListsCache<BasisFunctionType> >
-    m_trialDofListsCache;
+private:
+  /** \cond PRIVATE */
+  const arma::Mat<CoordinateType> &m_points;
+  const Space<BasisFunctionType> &m_trialSpace;
+  const std::vector<unsigned int> &m_p2oPoints;
+  const std::vector<unsigned int> &m_p2oTrialDofs;
+  const std::vector<LocalAssembler *> &m_assemblers;
+  const std::vector<ResultType> &m_termMultipliers;
+  const EvaluationOptions &m_options;
+  bool m_indexWithGlobalDofs; // redundant (stored also in m_options),
+                              // but often needed
+  unsigned int m_componentCount;
 
-    mutable tbb::atomic<size_t> m_accessedEntryCount;
-    /** \endcond */
+  shared_ptr<ComponentListsCache> m_componentListsCache;
+  shared_ptr<LocalDofListsCache<BasisFunctionType>> m_trialDofListsCache;
+
+  mutable tbb::atomic<size_t> m_accessedEntryCount;
+  /** \endcond */
 };
 
 } // namespace Bempp

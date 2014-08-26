@@ -23,20 +23,14 @@
 
 #include "../common/common.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
-struct OpenClOptions
-{
-    OpenClOptions ()
-    {
-        useOpenCl = true;
-    }
+struct OpenClOptions {
+  OpenClOptions() { useOpenCl = true; }
 
-    bool useOpenCl;
-    // add more as required
+  bool useOpenCl;
+  // add more as required
 };
-
 }
 
 #endif

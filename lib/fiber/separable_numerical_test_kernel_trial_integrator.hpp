@@ -29,8 +29,7 @@
 
 #include <tbb/enumerable_thread_specific.h>
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \cond FORWARD_DECL */
 class OpenClHandler;
@@ -42,123 +41,119 @@ class TestKernelTrialIntegral;
 /** \endcond */
 
 /** \brief Integration over pairs of elements on tensor-product point grids. */
-template <typename BasisFunctionType, typename KernelType,
-          typename ResultType, typename GeometryFactory>
-class SeparableNumericalTestKernelTrialIntegrator :
-        public TestKernelTrialIntegrator<BasisFunctionType, KernelType, ResultType>
-{
+template <typename BasisFunctionType, typename KernelType, typename ResultType,
+          typename GeometryFactory>
+class SeparableNumericalTestKernelTrialIntegrator
+    : public TestKernelTrialIntegrator<BasisFunctionType, KernelType,
+                                       ResultType> {
 public:
-    typedef TestKernelTrialIntegrator<BasisFunctionType, KernelType, ResultType> Base;
-    typedef typename Base::CoordinateType CoordinateType;
-    typedef typename Base::ElementIndexPair ElementIndexPair;
+  typedef TestKernelTrialIntegrator<BasisFunctionType, KernelType, ResultType>
+  Base;
+  typedef typename Base::CoordinateType CoordinateType;
+  typedef typename Base::ElementIndexPair ElementIndexPair;
 
-    SeparableNumericalTestKernelTrialIntegrator(
-            const arma::Mat<CoordinateType>& localTestQuadPoints,
-            const arma::Mat<CoordinateType>& localTrialQuadPoints,
-            const std::vector<CoordinateType>& testQuadWeights,
-            const std::vector<CoordinateType>& trialQuadWeights,
-            const GeometryFactory& testGeometryFactory,
-            const GeometryFactory& trialGeometryFactory,
-            const RawGridGeometry<CoordinateType>& testRawGeometry,
-            const RawGridGeometry<CoordinateType>& trialRawGeometry,
-            const CollectionOfShapesetTransformations<CoordinateType>& testTransformations,
-            const CollectionOfKernels<KernelType>& kernels,
-            const CollectionOfShapesetTransformations<CoordinateType>& trialTransformations,
-            const TestKernelTrialIntegral<BasisFunctionType, KernelType, ResultType>& integral,
-            const OpenClHandler& openClHandler,
-            bool cacheGeometricalData = true);
+  SeparableNumericalTestKernelTrialIntegrator(
+      const arma::Mat<CoordinateType> &localTestQuadPoints,
+      const arma::Mat<CoordinateType> &localTrialQuadPoints,
+      const std::vector<CoordinateType> &testQuadWeights,
+      const std::vector<CoordinateType> &trialQuadWeights,
+      const GeometryFactory &testGeometryFactory,
+      const GeometryFactory &trialGeometryFactory,
+      const RawGridGeometry<CoordinateType> &testRawGeometry,
+      const RawGridGeometry<CoordinateType> &trialRawGeometry,
+      const CollectionOfShapesetTransformations<CoordinateType> &
+          testTransformations,
+      const CollectionOfKernels<KernelType> &kernels,
+      const CollectionOfShapesetTransformations<CoordinateType> &
+          trialTransformations,
+      const TestKernelTrialIntegral<BasisFunctionType, KernelType, ResultType> &
+          integral,
+      const OpenClHandler &openClHandler, bool cacheGeometricalData = true);
 
-    virtual ~SeparableNumericalTestKernelTrialIntegrator ();
+  virtual ~SeparableNumericalTestKernelTrialIntegrator();
 
-    virtual void integrate(
-            CallVariant callVariant,
-            const std::vector<int>& elementIndicesA,
-            int elementIndexB,
-            const Shapeset<BasisFunctionType>& basisA,
-            const Shapeset<BasisFunctionType>& basisB,
+  virtual void
+  integrate(CallVariant callVariant, const std::vector<int> &elementIndicesA,
+            int elementIndexB, const Shapeset<BasisFunctionType> &basisA,
+            const Shapeset<BasisFunctionType> &basisB,
             LocalDofIndex localDofIndexB,
-            const std::vector<arma::Mat<ResultType>*>& result) const;
+            const std::vector<arma::Mat<ResultType> *> &result) const;
 
-    virtual void integrate(
-            const std::vector<ElementIndexPair>& elementIndexPairs,
-            const Shapeset<BasisFunctionType>& testShapeset,
-            const Shapeset<BasisFunctionType>& trialShapeset,
-            const std::vector<arma::Mat<ResultType>*>& result) const;
+  virtual void
+  integrate(const std::vector<ElementIndexPair> &elementIndexPairs,
+            const Shapeset<BasisFunctionType> &testShapeset,
+            const Shapeset<BasisFunctionType> &trialShapeset,
+            const std::vector<arma::Mat<ResultType> *> &result) const;
 
 private:
-    void integrateCpu(
-            CallVariant callVariant,
-            const std::vector<int>& elementIndicesA,
-            int elementIndexB,
-            const Shapeset<BasisFunctionType>& basisA,
-            const Shapeset<BasisFunctionType>& basisB,
-            LocalDofIndex localDofIndexB,
-            const std::vector<arma::Mat<ResultType>*>& result) const;
+  void integrateCpu(CallVariant callVariant,
+                    const std::vector<int> &elementIndicesA, int elementIndexB,
+                    const Shapeset<BasisFunctionType> &basisA,
+                    const Shapeset<BasisFunctionType> &basisB,
+                    LocalDofIndex localDofIndexB,
+                    const std::vector<arma::Mat<ResultType> *> &result) const;
 
-    void integrateCl(
-	    CallVariant callVariant,
-	    const std::vector<int>& elementIndicesA,
-	    int elementIndexB,
-        const Shapeset<BasisFunctionType>& basisA,
-        const Shapeset<BasisFunctionType>& basisB,
-	    LocalDofIndex localDofIndexB,
-        const std::vector<arma::Mat<ResultType>*>& result) const;
+  void integrateCl(CallVariant callVariant,
+                   const std::vector<int> &elementIndicesA, int elementIndexB,
+                   const Shapeset<BasisFunctionType> &basisA,
+                   const Shapeset<BasisFunctionType> &basisB,
+                   LocalDofIndex localDofIndexB,
+                   const std::vector<arma::Mat<ResultType> *> &result) const;
 
-    void integrateCpu(
-            const std::vector<ElementIndexPair>& elementIndexPairs,
-            const Shapeset<BasisFunctionType>& testShapeset,
-            const Shapeset<BasisFunctionType>& trialShapeset,
-            const std::vector<arma::Mat<ResultType>*>& result) const;
+  void integrateCpu(const std::vector<ElementIndexPair> &elementIndexPairs,
+                    const Shapeset<BasisFunctionType> &testShapeset,
+                    const Shapeset<BasisFunctionType> &trialShapeset,
+                    const std::vector<arma::Mat<ResultType> *> &result) const;
 
-    void integrateCl(
-            const std::vector<ElementIndexPair>& elementIndexPairs,
-            const Shapeset<BasisFunctionType>& testShapeset,
-            const Shapeset<BasisFunctionType>& trialShapeset,
-            const std::vector<arma::Mat<ResultType>*>& result) const;
+  void integrateCl(const std::vector<ElementIndexPair> &elementIndexPairs,
+                   const Shapeset<BasisFunctionType> &testShapeset,
+                   const Shapeset<BasisFunctionType> &trialShapeset,
+                   const std::vector<arma::Mat<ResultType> *> &result) const;
 
-    void precalculateGeometricalData();
-    void precalculateGeometricalDataOnSingleGrid(
-            const arma::Mat<CoordinateType>& localQuadPoints,
-            const GeometryFactory& geometryFactory,
-            const RawGridGeometry<CoordinateType>& rawGeometry,
-            size_t geomDeps,
-            std::vector<GeometricalData<CoordinateType> >& geomData);
+  void precalculateGeometricalData();
+  void precalculateGeometricalDataOnSingleGrid(
+      const arma::Mat<CoordinateType> &localQuadPoints,
+      const GeometryFactory &geometryFactory,
+      const RawGridGeometry<CoordinateType> &rawGeometry, size_t geomDeps,
+      std::vector<GeometricalData<CoordinateType>> &geomData);
 
-    /**
-     * \brief Returns an OpenCL code snippet containing the clIntegrate
-     *   kernel function for integrating a single row or column
-     */
-    const std::pair<const char*, int> clStrIntegrateRowOrCol () const;
+  /**
+   * \brief Returns an OpenCL code snippet containing the clIntegrate
+   *   kernel function for integrating a single row or column
+   */
+  const std::pair<const char *, int> clStrIntegrateRowOrCol() const;
 
-    arma::Mat<CoordinateType> m_localTestQuadPoints;
-    arma::Mat<CoordinateType> m_localTrialQuadPoints;
-    std::vector<CoordinateType> m_testQuadWeights;
-    std::vector<CoordinateType> m_trialQuadWeights;
+  arma::Mat<CoordinateType> m_localTestQuadPoints;
+  arma::Mat<CoordinateType> m_localTrialQuadPoints;
+  std::vector<CoordinateType> m_testQuadWeights;
+  std::vector<CoordinateType> m_trialQuadWeights;
 
-    const GeometryFactory& m_testGeometryFactory;
-    const GeometryFactory& m_trialGeometryFactory;
-    const RawGridGeometry<CoordinateType>& m_testRawGeometry;
-    const RawGridGeometry<CoordinateType>& m_trialRawGeometry;
+  const GeometryFactory &m_testGeometryFactory;
+  const GeometryFactory &m_trialGeometryFactory;
+  const RawGridGeometry<CoordinateType> &m_testRawGeometry;
+  const RawGridGeometry<CoordinateType> &m_trialRawGeometry;
 
-    const CollectionOfShapesetTransformations<CoordinateType>& m_testTransformations;
-    const CollectionOfKernels<KernelType>& m_kernels;
-    const CollectionOfShapesetTransformations<CoordinateType>& m_trialTransformations;
-    const TestKernelTrialIntegral<BasisFunctionType, KernelType, ResultType>& m_integral;
+  const CollectionOfShapesetTransformations<CoordinateType> &
+  m_testTransformations;
+  const CollectionOfKernels<KernelType> &m_kernels;
+  const CollectionOfShapesetTransformations<CoordinateType> &
+  m_trialTransformations;
+  const TestKernelTrialIntegral<BasisFunctionType, KernelType, ResultType> &
+  m_integral;
 
-    const OpenClHandler& m_openClHandler;
-    bool m_cacheGeometricalData;
+  const OpenClHandler &m_openClHandler;
+  bool m_cacheGeometricalData;
 
-    std::vector<GeometricalData<CoordinateType> > m_cachedTestGeomData;
-    std::vector<GeometricalData<CoordinateType> > m_cachedTrialGeomData;
-    mutable tbb::enumerable_thread_specific<GeometricalData<CoordinateType> >
-    m_testGeomData, m_trialGeomData;
-
+  std::vector<GeometricalData<CoordinateType>> m_cachedTestGeomData;
+  std::vector<GeometricalData<CoordinateType>> m_cachedTrialGeomData;
+  mutable tbb::enumerable_thread_specific<GeometricalData<CoordinateType>>
+  m_testGeomData, m_trialGeomData;
 
 #ifdef WITH_OPENCL
-    cl::Buffer *clTestQuadPoints;
-    cl::Buffer *clTrialQuadPoints;
-    cl::Buffer *clTestQuadWeights;
-    cl::Buffer *clTrialQuadWeights;
+  cl::Buffer *clTestQuadPoints;
+  cl::Buffer *clTrialQuadPoints;
+  cl::Buffer *clTestQuadWeights;
+  cl::Buffer *clTrialQuadWeights;
 #endif
 };
 

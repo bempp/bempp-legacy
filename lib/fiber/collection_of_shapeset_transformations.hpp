@@ -25,8 +25,7 @@
 
 #include "scalar_traits.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \cond FORWARD_DECL */
 template <typename T> class CollectionOf3dArrays;
@@ -60,149 +59,144 @@ template <typename CoordinateType> class GeometricalData;
  *  \tparam CoordinateType_
  *    Type used to represent coordinates (either <tt>float</tt> or
  *    <tt>double</tt>). */
-template <typename CoordinateType_>
-class CollectionOfShapesetTransformations
-{
+template <typename CoordinateType_> class CollectionOfShapesetTransformations {
 public:
-    typedef CoordinateType_ CoordinateType;
-    typedef typename ScalarTraits<CoordinateType>::ComplexType ComplexType;
+  typedef CoordinateType_ CoordinateType;
+  typedef typename ScalarTraits<CoordinateType>::ComplexType ComplexType;
 
-    /** \brief Destructor. */
-    virtual ~CollectionOfShapesetTransformations()
-    {}
+  /** \brief Destructor. */
+  virtual ~CollectionOfShapesetTransformations() {}
 
-    /** \brief Return the number of transformations belonging to the collection. */
-    virtual int transformationCount() const = 0;
+  /** \brief Return the number of transformations belonging to the collection.
+   */
+  virtual int transformationCount() const = 0;
 
-    /** \brief Return the number of components of shape functions acted upon.
-     *
-     *  For instance, the implementation of this function for a collection of
-     *  transformations operating on scalar shape functions should return 1; for
-     *  a collection operating on vector-valued shape functions with three
-     *  components, this function should return 3. */
-    virtual int argumentDimension() const = 0;
+  /** \brief Return the number of components of shape functions acted upon.
+   *
+   *  For instance, the implementation of this function for a collection of
+   *  transformations operating on scalar shape functions should return 1; for
+   *  a collection operating on vector-valued shape functions with three
+   *  components, this function should return 3. */
+  virtual int argumentDimension() const = 0;
 
-    /** \brief Return the number of components of the result of i'th
-     *  transformation.
-     *
-     *  Transformation indices start from 0.
-     *
-     *  For example, if the first transformation produces a scalar function,
-     *  the implementation of this function should return 1 if \p i == 0.
-     *
-     *  The behaviour of this function for \p i < 0 or \p >= transformationCount()
-     *  is not specified. */
-    virtual int resultDimension(int i) const = 0;
+  /** \brief Return the number of components of the result of i'th
+   *  transformation.
+   *
+   *  Transformation indices start from 0.
+   *
+   *  For example, if the first transformation produces a scalar function,
+   *  the implementation of this function should return 1 if \p i == 0.
+   *
+   *  The behaviour of this function for \p i < 0 or \p >= transformationCount()
+   *  is not specified. */
+  virtual int resultDimension(int i) const = 0;
 
-    /** \brief Retrieve the types of data on which the transformations depend.
-     *
-     *  An implementation of this function should modify the \p basisDeps and
-     *  \p geomDeps bitfields by adding to them, using the bitwise OR
-     *  operation, an appropriate combination of the flags defined in the enums
-     *  BasisDataType and GeometricalDataType.
-     *
-     *  For example, a collection of transformations depending on the values
-     *  and first derivatives of shape functions and the global coordinates of
-     *  points at which the transformed functions are evaluated should modify
-     *  the arguments as follows:
-     *
-        \code
-        basisDeps |= VALUES | DERIVATIVES;
-        geomDeps |= GLOBALS;
-        \endcode */
-    virtual void addDependencies(size_t& basisDeps, size_t& geomDeps) const = 0;
+  /** \brief Retrieve the types of data on which the transformations depend.
+   *
+   *  An implementation of this function should modify the \p basisDeps and
+   *  \p geomDeps bitfields by adding to them, using the bitwise OR
+   *  operation, an appropriate combination of the flags defined in the enums
+   *  BasisDataType and GeometricalDataType.
+   *
+   *  For example, a collection of transformations depending on the values
+   *  and first derivatives of shape functions and the global coordinates of
+   *  points at which the transformed functions are evaluated should modify
+   *  the arguments as follows:
+   *
+      \code
+      basisDeps |= VALUES | DERIVATIVES;
+      geomDeps |= GLOBALS;
+      \endcode */
+  virtual void addDependencies(size_t &basisDeps, size_t &geomDeps) const = 0;
 
-    /** \brief Evaluate transformations of real-valued shape functions.
-     *
-     *  \param[in] basisData
-     *    Values and/or derivatives of \f$m \geq 0 \f$ shape functions at \f$n
-     *    \geq 0\f$ points on an element. The number of points, \f$n\f$, can be
-     *    obtained by calling <tt>basisData.pointCount()</tt>; the number of
-     *    shape functions, \f$m\f$, can be obtained by calling
-     *    <tt>basisData.functionCount()</tt>.
-     *  \param[in] geomData
-     *    Geometrical data related to the \f$n\f$ points at which the
-     *    shape functions have been evaluated.
-     *  \param[out] result
-     *    A collection of 3-dimensional arrays intended to store the
-     *    transformed shape function values. On output, <tt>result[i][(j, k,
-     *    p)</tt> should contain the <em>j</em> element of the vector being the
-     *    value of <em>i</em>th transformation of <em>k</em>th shape function
-     *    at <em>p</em>th point.
-     *
-     *  An implementation of this function may assume that \p basisData and \p
-     *  geomData contain all the types of data specified in the implementation
-     *  of addDependencies(). Before filling the arrays from \p result, this
-     *  function must ensure that size of the array collection and the
-     *  dimensions of the individual arrays are correct, calling
-     *  <tt>CollectionOf3dArrays::set_size()</tt> and
-     *  <tt>_3dArray::set_size()</tt> if necessary.
-     */
-    void evaluate(
-            const BasisData<CoordinateType>& basisData,
-            const GeometricalData<CoordinateType>& geomData,
-            CollectionOf3dArrays<CoordinateType>& result) const {
-        evaluateImplReal(basisData, geomData, result);
-    }
+  /** \brief Evaluate transformations of real-valued shape functions.
+   *
+   *  \param[in] basisData
+   *    Values and/or derivatives of \f$m \geq 0 \f$ shape functions at \f$n
+   *    \geq 0\f$ points on an element. The number of points, \f$n\f$, can be
+   *    obtained by calling <tt>basisData.pointCount()</tt>; the number of
+   *    shape functions, \f$m\f$, can be obtained by calling
+   *    <tt>basisData.functionCount()</tt>.
+   *  \param[in] geomData
+   *    Geometrical data related to the \f$n\f$ points at which the
+   *    shape functions have been evaluated.
+   *  \param[out] result
+   *    A collection of 3-dimensional arrays intended to store the
+   *    transformed shape function values. On output, <tt>result[i][(j, k,
+   *    p)</tt> should contain the <em>j</em> element of the vector being the
+   *    value of <em>i</em>th transformation of <em>k</em>th shape function
+   *    at <em>p</em>th point.
+   *
+   *  An implementation of this function may assume that \p basisData and \p
+   *  geomData contain all the types of data specified in the implementation
+   *  of addDependencies(). Before filling the arrays from \p result, this
+   *  function must ensure that size of the array collection and the
+   *  dimensions of the individual arrays are correct, calling
+   *  <tt>CollectionOf3dArrays::set_size()</tt> and
+   *  <tt>_3dArray::set_size()</tt> if necessary.
+   */
+  void evaluate(const BasisData<CoordinateType> &basisData,
+                const GeometricalData<CoordinateType> &geomData,
+                CollectionOf3dArrays<CoordinateType> &result) const {
+    evaluateImplReal(basisData, geomData, result);
+  }
 
-    /** \brief Evaluate transformations of complex-valued shape functions.
-     *
-     *  See the documentation of the other overload for the description of
-     *  function parameters.
-     */
-    void evaluate(
-            const BasisData<ComplexType>& basisData,
-            const GeometricalData<CoordinateType>& geomData,
-            CollectionOf3dArrays<ComplexType>& result) const {
-        evaluateImplComplex(basisData, geomData, result);
-    }
+  /** \brief Evaluate transformations of complex-valued shape functions.
+   *
+   *  See the documentation of the other overload for the description of
+   *  function parameters.
+   */
+  void evaluate(const BasisData<ComplexType> &basisData,
+                const GeometricalData<CoordinateType> &geomData,
+                CollectionOf3dArrays<ComplexType> &result) const {
+    evaluateImplComplex(basisData, geomData, result);
+  }
 
 private:
-    /** \brief Evaluate transformations of real-valued shape functions.
-     *
-     *  \param[in] basisData
-     *    Values and/or derivatives of \f$m \geq 0 \f$ shape functions at \f$n
-     *    \geq 0\f$ points on an element. The number of points, \f$n\f$, can be
-     *    obtained by calling <tt>basisData.pointCount()</tt>; the number of
-     *    shape functions, \f$m\f$, can be obtained by calling
-     *    <tt>basisData.functionCount()</tt>.
-     *  \param[in] geomData
-     *    Geometrical data related to the \f$n\f$ points at which the
-     *    shape functions have been evaluated.
-     *  \param[out] result
-     *    A collection of 3-dimensional arrays intended to store the
-     *    transformed shape function values. On output, <tt>result[i][(j, k,
-     *    p)</tt> should contain the <em>j</em> element of the vector being the
-     *    value of <em>i</em>th transformation of <em>k</em>th shape function
-     *    at <em>p</em>th point.
-     *
-     *  This is a pure virtual function that must be overridden in subclasses
-     *  of CollectionOfBasisTransformations.
-     *
-     *  An implementation of this function may assume that \p basisData and \p
-     *  geomData contain all the types of data specified in the implementation
-     *  of addDependencies(). Before filling the arrays from \p result, this
-     *  function must ensure that size of the array collection and the
-     *  dimensions of the individual arrays are correct, calling
-     *  <tt>CollectionOf3dArrays::set_size()</tt> and
-     *  <tt>_3dArray::set_size()</tt> if necessary.
-     */
-    virtual void evaluateImplReal(
-            const BasisData<CoordinateType>& basisData,
-            const GeometricalData<CoordinateType>& geomData,
-            CollectionOf3dArrays<CoordinateType>& result) const = 0;
+  /** \brief Evaluate transformations of real-valued shape functions.
+   *
+   *  \param[in] basisData
+   *    Values and/or derivatives of \f$m \geq 0 \f$ shape functions at \f$n
+   *    \geq 0\f$ points on an element. The number of points, \f$n\f$, can be
+   *    obtained by calling <tt>basisData.pointCount()</tt>; the number of
+   *    shape functions, \f$m\f$, can be obtained by calling
+   *    <tt>basisData.functionCount()</tt>.
+   *  \param[in] geomData
+   *    Geometrical data related to the \f$n\f$ points at which the
+   *    shape functions have been evaluated.
+   *  \param[out] result
+   *    A collection of 3-dimensional arrays intended to store the
+   *    transformed shape function values. On output, <tt>result[i][(j, k,
+   *    p)</tt> should contain the <em>j</em> element of the vector being the
+   *    value of <em>i</em>th transformation of <em>k</em>th shape function
+   *    at <em>p</em>th point.
+   *
+   *  This is a pure virtual function that must be overridden in subclasses
+   *  of CollectionOfBasisTransformations.
+   *
+   *  An implementation of this function may assume that \p basisData and \p
+   *  geomData contain all the types of data specified in the implementation
+   *  of addDependencies(). Before filling the arrays from \p result, this
+   *  function must ensure that size of the array collection and the
+   *  dimensions of the individual arrays are correct, calling
+   *  <tt>CollectionOf3dArrays::set_size()</tt> and
+   *  <tt>_3dArray::set_size()</tt> if necessary.
+   */
+  virtual void
+  evaluateImplReal(const BasisData<CoordinateType> &basisData,
+                   const GeometricalData<CoordinateType> &geomData,
+                   CollectionOf3dArrays<CoordinateType> &result) const = 0;
 
-    /** \brief Evaluate transformations of complex-valued shape functions.
-     *
-     *  See the documentation of evaluateImplReal() for the description of
-     *  function parameters. */
-    virtual void evaluateImplComplex(
-            const BasisData<ComplexType>& basisData,
-            const GeometricalData<CoordinateType>& geomData,
-            CollectionOf3dArrays<ComplexType>& result) const = 0;
+  /** \brief Evaluate transformations of complex-valued shape functions.
+   *
+   *  See the documentation of evaluateImplReal() for the description of
+   *  function parameters. */
+  virtual void
+  evaluateImplComplex(const BasisData<ComplexType> &basisData,
+                      const GeometricalData<CoordinateType> &geomData,
+                      CollectionOf3dArrays<ComplexType> &result) const = 0;
 };
 
 } // namespace Fiber
 
 #endif
-

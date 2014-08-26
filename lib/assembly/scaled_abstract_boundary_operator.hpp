@@ -24,55 +24,57 @@
 #include "abstract_boundary_operator_superposition_base.hpp"
 #include "boundary_operator.hpp"
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \ingroup composite_boundary_operators
  *  \brief Scaled abstract boundary operator.
  *
- *  This class represents an abstract boundary operator multiplied by a scalar. */
+ *  This class represents an abstract boundary operator multiplied by a scalar.
+ */
 template <typename BasisFunctionType_, typename ResultType_>
-class ScaledAbstractBoundaryOperator :
-        public AbstractBoundaryOperatorSuperpositionBase<BasisFunctionType_, ResultType_>
-{
-    typedef AbstractBoundaryOperatorSuperpositionBase<BasisFunctionType_, ResultType_> Base;
+class ScaledAbstractBoundaryOperator
+    : public AbstractBoundaryOperatorSuperpositionBase<BasisFunctionType_,
+                                                       ResultType_> {
+  typedef AbstractBoundaryOperatorSuperpositionBase<BasisFunctionType_,
+                                                    ResultType_> Base;
+
 public:
-    /** \copydoc AbstractBoundaryOperator::BasisFunctionType */
-    typedef typename Base::BasisFunctionType BasisFunctionType;
-    /** \copydoc AbstractBoundaryOperator::ResultType */
-    typedef typename Base::ResultType ResultType;
-    /** \copydoc AbstractBoundaryOperator::CoordinateType */
-    typedef typename Base::CoordinateType CoordinateType;
-    /** \copydoc AbstractBoundaryOperator::QuadratureStrategy */
-    typedef typename Base::QuadratureStrategy QuadratureStrategy;
-    /** \copydoc AbstractBoundaryOperatorSuperpositionBase::LocalAssembler */
-    typedef typename Base::LocalAssembler LocalAssembler;
+  /** \copydoc AbstractBoundaryOperator::BasisFunctionType */
+  typedef typename Base::BasisFunctionType BasisFunctionType;
+  /** \copydoc AbstractBoundaryOperator::ResultType */
+  typedef typename Base::ResultType ResultType;
+  /** \copydoc AbstractBoundaryOperator::CoordinateType */
+  typedef typename Base::CoordinateType CoordinateType;
+  /** \copydoc AbstractBoundaryOperator::QuadratureStrategy */
+  typedef typename Base::QuadratureStrategy QuadratureStrategy;
+  /** \copydoc AbstractBoundaryOperatorSuperpositionBase::LocalAssembler */
+  typedef typename Base::LocalAssembler LocalAssembler;
 
-    /** \brief Constructor.
-     *
-     *  Construct the boundary operator \f$\alpha L\f$, where
-     *  \f$\alpha\f$ is the scalar \p multiplier_ and \f$L\f$ is the operator
-     *  represented by \p multiplicand_.
-     *
-     *  By default the symmetry of the weak form of the resulting operator is
-     *  determined automatically. It can be set manually via the parameter \p
-     *  symmetry, which can be any combination of the flags defined in the
-     *  enumeration type Symmetry. */
-    ScaledAbstractBoundaryOperator(
-            ResultType multiplier_,
-            const BoundaryOperator<BasisFunctionType, ResultType>& multiplicand_,
-            int symmetry = AUTO_SYMMETRY);
+  /** \brief Constructor.
+   *
+   *  Construct the boundary operator \f$\alpha L\f$, where
+   *  \f$\alpha\f$ is the scalar \p multiplier_ and \f$L\f$ is the operator
+   *  represented by \p multiplicand_.
+   *
+   *  By default the symmetry of the weak form of the resulting operator is
+   *  determined automatically. It can be set manually via the parameter \p
+   *  symmetry, which can be any combination of the flags defined in the
+   *  enumeration type Symmetry. */
+  ScaledAbstractBoundaryOperator(
+      ResultType multiplier_,
+      const BoundaryOperator<BasisFunctionType, ResultType> &multiplicand_,
+      int symmetry = AUTO_SYMMETRY);
 
-    virtual bool isLocal() const;
+  virtual bool isLocal() const;
 
-    ResultType_ multiplier() const;
-    BoundaryOperator<BasisFunctionType_, ResultType_> multiplicand() const;
+  ResultType_ multiplier() const;
+  BoundaryOperator<BasisFunctionType_, ResultType_> multiplicand() const;
 
 private:
-    /** \cond PRIVATE */
-    ResultType m_multiplier;
-    BoundaryOperator<BasisFunctionType, ResultType> m_multiplicand;
-    /** \endcond */
+  /** \cond PRIVATE */
+  ResultType m_multiplier;
+  BoundaryOperator<BasisFunctionType, ResultType> m_multiplicand;
+  /** \endcond */
 };
 
 } // namespace Bempp

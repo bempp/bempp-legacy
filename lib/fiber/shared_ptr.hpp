@@ -22,43 +22,50 @@
 #define fiber_shared_ptr_hpp
 
 #include "../common/common.hpp"
+#include <functional>
 
 #ifdef __INTEL_COMPILER
-#pragma warning(disable:279 858)
+#pragma warning(disable : 279 858)
 #endif
 
 #include <boost/shared_ptr.hpp>
 #include <boost/pointer_cast.hpp>
 
 #ifdef __INTEL_COMPILER
-#pragma warning(default:858)
+#pragma warning(default : 858)
 #endif
 
-namespace Fiber
-{
+// Extend std::hash and std::equal to deal with boost shared pointers
+
+namespace std {
+
+template <typename T> struct std::hash<boost::shared_ptr<T>> {
+  std::size_t operator()(const boost::shared_ptr<T> &x) const {
+    return std::hash<T *>()(x.get());
+  }
+};
+}
+
+namespace Fiber {
 
 using boost::shared_ptr;
 using boost::dynamic_pointer_cast;
 
-struct null_deleter
-{
-    void operator() (const void*) const {
-    }
+struct null_deleter {
+  void operator()(const void *) const {}
 };
 
-/** \brief Create a shared pointer from a reference to an object allocated on stack.
+/** \brief Create a shared pointer from a reference to an object allocated on
+stack.
 
 The object will not be deleted when the shared pointer goes out of scope. */
-template <typename T>
-inline shared_ptr<T> make_shared_from_ref(T& t)
-{
-    return shared_ptr<T>(&t, null_deleter());
+template <typename T> inline shared_ptr<T> make_shared_from_ref(T &t) {
+  return shared_ptr<T>(&t, null_deleter());
 }
 
 template <typename T>
-inline shared_ptr<const T> make_shared_from_const_ref(const T& t)
-{
-    return shared_ptr<const T>(&t, null_deleter());
+inline shared_ptr<const T> make_shared_from_const_ref(const T &t) {
+  return shared_ptr<const T>(&t, null_deleter());
 }
 
 } // namespace Fiber

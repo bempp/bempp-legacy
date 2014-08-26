@@ -26,8 +26,7 @@
 #include "geometry_factory.hpp"
 #include "concrete_geometry.hpp"
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \ingroup grid_internal
  *  \brief Factory able to construct an "empty" geometry wrapping a Dune
@@ -35,12 +34,10 @@ namespace Bempp
  *
  *  \note For internal use (in integrators from the Fiber module). */
 template <typename DuneGeometry>
-class ConcreteGeometryFactory : public GeometryFactory
-{
-    virtual std::unique_ptr<Geometry> make() const {
-        return std::unique_ptr<Geometry>(
-                    new ConcreteGeometry<DuneGeometry>());
-    }
+class ConcreteGeometryFactory : public GeometryFactory {
+  virtual std::unique_ptr<Geometry> make() const {
+    return std::unique_ptr<Geometry>(new ConcreteGeometry<DuneGeometry>());
+  }
 };
 
 } // namespace Bempp

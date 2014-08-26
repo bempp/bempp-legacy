@@ -23,39 +23,34 @@
 
 #include "test_trial_integral.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 template <typename IntegrandFunctor>
-class DefaultTestTrialIntegral :
-        public TestTrialIntegral<
-        typename IntegrandFunctor::BasisFunctionType,
-        typename IntegrandFunctor::ResultType>
-{
-    typedef TestTrialIntegral<
-    typename IntegrandFunctor::BasisFunctionType,
-    typename IntegrandFunctor::ResultType>
-    Base;
+class DefaultTestTrialIntegral
+    : public TestTrialIntegral<typename IntegrandFunctor::BasisFunctionType,
+                               typename IntegrandFunctor::ResultType> {
+  typedef TestTrialIntegral<typename IntegrandFunctor::BasisFunctionType,
+                            typename IntegrandFunctor::ResultType> Base;
+
 public:
-    typedef typename Base::CoordinateType CoordinateType;
-    typedef typename Base::BasisFunctionType BasisFunctionType;
-    typedef typename Base::ResultType ResultType;
+  typedef typename Base::CoordinateType CoordinateType;
+  typedef typename Base::BasisFunctionType BasisFunctionType;
+  typedef typename Base::ResultType ResultType;
 
-    explicit DefaultTestTrialIntegral(const IntegrandFunctor& functor) :
-        m_functor(functor)
-    {}
+  explicit DefaultTestTrialIntegral(const IntegrandFunctor &functor)
+      : m_functor(functor) {}
 
-    virtual void addGeometricalDependencies(size_t& geomDeps) const;
+  virtual void addGeometricalDependencies(size_t &geomDeps) const;
 
-    virtual void evaluate(
-            const GeometricalData<CoordinateType>& geomData,
-            const CollectionOf3dArrays<BasisFunctionType>& testValues,
-            const CollectionOf3dArrays<BasisFunctionType>& trialValues,
-            const std::vector<CoordinateType>& weights,
-            arma::Mat<ResultType>& result) const;
+  virtual void
+  evaluate(const GeometricalData<CoordinateType> &geomData,
+           const CollectionOf3dArrays<BasisFunctionType> &testValues,
+           const CollectionOf3dArrays<BasisFunctionType> &trialValues,
+           const std::vector<CoordinateType> &weights,
+           arma::Mat<ResultType> &result) const;
 
 private:
-    IntegrandFunctor m_functor;
+  IntegrandFunctor m_functor;
 };
 
 } // namespace Fiber

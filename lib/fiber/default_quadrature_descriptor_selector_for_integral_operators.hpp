@@ -27,8 +27,7 @@
 #include "accuracy_options.hpp"
 #include "scalar_traits.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 template <typename BasisFunctionType> class Shapeset;
 template <typename CoordinateType> class RawGridGeometry;
@@ -41,58 +40,58 @@ class DefaultLocalAssemblerForOperatorsOnSurfacesUtilities;
  *  The choice of quadrature rule accuracy can be influenced by the
  *  \p accuracyOptions parameter taken by the constructor. */
 template <typename BasisFunctionType>
-class DefaultQuadratureDescriptorSelectorForIntegralOperators :
-        public QuadratureDescriptorSelectorForIntegralOperators<
-    typename ScalarTraits<BasisFunctionType>::RealType>
-{
+class DefaultQuadratureDescriptorSelectorForIntegralOperators
+    : public QuadratureDescriptorSelectorForIntegralOperators<
+          typename ScalarTraits<BasisFunctionType>::RealType> {
 public:
-    typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
+  typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
 
-    DefaultQuadratureDescriptorSelectorForIntegralOperators(
-        const shared_ptr<const RawGridGeometry<CoordinateType> >& testRawGeometry,
-        const shared_ptr<const RawGridGeometry<CoordinateType> >& trialRawGeometry,
-        const shared_ptr<const std::vector<
-            const Shapeset<BasisFunctionType>*> >& testShapesets,
-        const shared_ptr<const std::vector<
-            const Shapeset<BasisFunctionType>*> >& trialShapesets,
-        const AccuracyOptionsEx& accuracyOptions);
+  DefaultQuadratureDescriptorSelectorForIntegralOperators(
+      const shared_ptr<const RawGridGeometry<CoordinateType>> &testRawGeometry,
+      const shared_ptr<const RawGridGeometry<CoordinateType>> &trialRawGeometry,
+      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
+          testShapesets,
+      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
+          trialShapesets,
+      const AccuracyOptionsEx &accuracyOptions);
 
-    virtual DoubleQuadratureDescriptor quadratureDescriptor(
-        int testElementIndex, int trialElementIndex,
-        CoordinateType nominalDistance) const;
+  virtual DoubleQuadratureDescriptor
+  quadratureDescriptor(int testElementIndex, int trialElementIndex,
+                       CoordinateType nominalDistance) const;
 
 private:
-    /** \cond PRIVATE */
-    typedef DefaultLocalAssemblerForOperatorsOnSurfacesUtilities<
-    BasisFunctionType> Utilities;
+  /** \cond PRIVATE */
+  typedef DefaultLocalAssemblerForOperatorsOnSurfacesUtilities<
+      BasisFunctionType> Utilities;
 
-    enum ElementType {
-        TEST, TRIAL
-    };
+  enum ElementType {
+    TEST,
+    TRIAL
+  };
 
-    bool testAndTrialGridsAreIdentical() const;
-    void precalculateElementSizesAndCenters();
-    void getRegularOrders(int testElementIndex, int trialElementIndex,
-                          int& testQuadOrder, int& trialQuadOrder,
-                          CoordinateType nominalDistance) const;
-    int singularOrder(int elementIndex, ElementType elementType) const;
-    CoordinateType elementDistanceSquared(
-            int testElementIndex, int trialElementIndex) const;
+  bool testAndTrialGridsAreIdentical() const;
+  void precalculateElementSizesAndCenters();
+  void getRegularOrders(int testElementIndex, int trialElementIndex,
+                        int &testQuadOrder, int &trialQuadOrder,
+                        CoordinateType nominalDistance) const;
+  int singularOrder(int elementIndex, ElementType elementType) const;
+  CoordinateType elementDistanceSquared(int testElementIndex,
+                                        int trialElementIndex) const;
 
-    shared_ptr<const RawGridGeometry<CoordinateType> > m_testRawGeometry;
-    shared_ptr<const RawGridGeometry<CoordinateType> > m_trialRawGeometry;
-    shared_ptr<const std::vector<
-                   const Shapeset<BasisFunctionType>*> > m_testShapesets;
-    shared_ptr<const std::vector<
-                   const Shapeset<BasisFunctionType>*> > m_trialShapesets;
-    AccuracyOptionsEx m_accuracyOptions;
+  shared_ptr<const RawGridGeometry<CoordinateType>> m_testRawGeometry;
+  shared_ptr<const RawGridGeometry<CoordinateType>> m_trialRawGeometry;
+  shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
+  m_testShapesets;
+  shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
+  m_trialShapesets;
+  AccuracyOptionsEx m_accuracyOptions;
 
-    std::vector<CoordinateType> m_testElementSizesSquared;
-    std::vector<CoordinateType> m_trialElementSizesSquared;
-    arma::Mat<CoordinateType> m_testElementCenters;
-    arma::Mat<CoordinateType> m_trialElementCenters;
-    CoordinateType m_averageElementSize;
-    /** \endcond */
+  std::vector<CoordinateType> m_testElementSizesSquared;
+  std::vector<CoordinateType> m_trialElementSizesSquared;
+  arma::Mat<CoordinateType> m_testElementCenters;
+  arma::Mat<CoordinateType> m_trialElementCenters;
+  CoordinateType m_averageElementSize;
+  /** \endcond */
 };
 
 } // namespace Fiber

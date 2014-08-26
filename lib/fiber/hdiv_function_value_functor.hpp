@@ -28,36 +28,32 @@
 #include "collection_of_3d_arrays.hpp"
 #include "shape_transformation_functor_wrappers.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
-template <typename CoordinateType_>
-class HdivFunctionValueElementaryFunctor
-{
+template <typename CoordinateType_> class HdivFunctionValueElementaryFunctor {
 public:
-    typedef CoordinateType_ CoordinateType;
+  typedef CoordinateType_ CoordinateType;
 
-    int argumentDimension() const { return 2; }
-    int resultDimension() const { return 3; }
+  int argumentDimension() const { return 2; }
+  int resultDimension() const { return 3; }
 
-    void addDependencies(size_t& basisDeps, size_t& geomDeps) const {
-        basisDeps |= VALUES;
-        geomDeps |= INTEGRATION_ELEMENTS | JACOBIANS_TRANSPOSED;
-    }
+  void addDependencies(size_t &basisDeps, size_t &geomDeps) const {
+    basisDeps |= VALUES;
+    geomDeps |= INTEGRATION_ELEMENTS | JACOBIANS_TRANSPOSED;
+  }
 
-    template <typename ValueType>
-    void evaluate(
-            const ConstBasisDataSlice<ValueType>& basisData,
-            const ConstGeometricalDataSlice<CoordinateType>& geomData,
-            _1dSliceOf3dArray<ValueType>& result) const {
-        assert(basisData.componentCount() == argumentDimension());
-        assert(result.extent(0) == resultDimension());
-        for (int rdim = 0; rdim < resultDimension(); ++rdim)
-            result(rdim) =
-                (geomData.jacobianTransposed(0, rdim) * basisData.values(0) +
-                 geomData.jacobianTransposed(1, rdim) * basisData.values(1)) /
-                geomData.integrationElement();
-    }
+  template <typename ValueType>
+  void evaluate(const ConstBasisDataSlice<ValueType> &basisData,
+                const ConstGeometricalDataSlice<CoordinateType> &geomData,
+                _1dSliceOf3dArray<ValueType> &result) const {
+    assert(basisData.componentCount() == argumentDimension());
+    assert(result.extent(0) == resultDimension());
+    for (int rdim = 0; rdim < resultDimension(); ++rdim)
+      result(rdim) =
+          (geomData.jacobianTransposed(0, rdim) * basisData.values(0) +
+           geomData.jacobianTransposed(1, rdim) * basisData.values(1)) /
+          geomData.integrationElement();
+  }
 };
 
 // Note: in C++11 we'll be able to make a "template typedef", or more precisely
@@ -65,12 +61,11 @@ public:
 /** \ingroup functors
  *  \brief Functor calculating the value of a basis function from H(div). */
 template <typename CoordinateType_>
-class HdivFunctionValueFunctor :
-        public ElementaryShapeTransformationFunctorWrapper<
-        HdivFunctionValueElementaryFunctor<CoordinateType_> >
-{
+class HdivFunctionValueFunctor
+    : public ElementaryShapeTransformationFunctorWrapper<
+          HdivFunctionValueElementaryFunctor<CoordinateType_>> {
 public:
-    typedef CoordinateType_ CoordinateType;
+  typedef CoordinateType_ CoordinateType;
 };
 
 } // namespace Fiber

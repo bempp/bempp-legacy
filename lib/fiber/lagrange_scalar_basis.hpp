@@ -24,19 +24,16 @@
 #include "lagrange_scalar_shapeset.hpp"
 #include "../common/deprecated.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
-
-/** \brief Shapeset composed of the Lagrange polynomials up to a specified order.
+/** \brief Shapeset composed of the Lagrange polynomials up to a specified
+ *order.
  *
  *  \deprecated This class is deprecated, use LagrangeScalarShapeset instead. */
 template <int elementVertexCount, typename ValueType, int polynomialOrder>
-class BEMPP_DEPRECATED LagrangeScalarBasis :
-        public LagrangeScalarShapeset<elementVertexCount, ValueType,
-                                      polynomialOrder>
-{
-};
+class BEMPP_DEPRECATED LagrangeScalarBasis
+    : public LagrangeScalarShapeset<elementVertexCount, ValueType,
+                                    polynomialOrder> {};
 
 } // namespace Fiber
 

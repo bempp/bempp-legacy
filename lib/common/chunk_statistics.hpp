@@ -23,19 +23,17 @@
 
 #include <tbb/tick_count.h>
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \ingroup weak_form_assembly_internal
  *  \brief Storage of parallel-loop profiling data. */
-struct ChunkStatistics
-{
-    ChunkStatistics() : valid(false) {}
-    bool valid;
-    size_t chunkStart;
-    size_t chunkSize;
-    tbb::tick_count startTime;
-    tbb::tick_count endTime;
+struct ChunkStatistics {
+  ChunkStatistics() : valid(false) {}
+  bool valid;
+  size_t chunkStart;
+  size_t chunkSize;
+  tbb::tick_count startTime;
+  tbb::tick_count endTime;
 };
 
 } // namespace Bempp

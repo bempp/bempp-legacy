@@ -28,8 +28,7 @@
 
 #include <vector>
 
-namespace Fiber
-{
+namespace Fiber {
 
 template <typename BasisFunctionType> class Shapeset;
 template <typename CoordinateType> class RawGridGeometry;
@@ -39,28 +38,27 @@ template <typename CoordinateType> class RawGridGeometry;
 // the public interface of BEM++ and may change at any time.
 
 template <typename BasisFunctionType>
-class DefaultLocalAssemblerForOperatorsOnSurfacesUtilities
-{
+class DefaultLocalAssemblerForOperatorsOnSurfacesUtilities {
 public:
-    typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
+  typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
 
-    static void checkConsistencyOfGeometryAndShapesets(
-            const RawGridGeometry<CoordinateType>& rawGeometry,
-            const std::vector<const Shapeset<BasisFunctionType>*>& shapesets);
+  static void checkConsistencyOfGeometryAndShapesets(
+      const RawGridGeometry<CoordinateType> &rawGeometry,
+      const std::vector<const Shapeset<BasisFunctionType> *> &shapesets);
 
-    static void precalculateElementSizesAndCentersForSingleGrid(
-            const RawGridGeometry<CoordinateType>& rawGeometry,
-            std::vector<CoordinateType>& elementSizesSquared,
-            arma::Mat<CoordinateType>& elementCenters,
-            CoordinateType& averageElementSize);
+  static void precalculateElementSizesAndCentersForSingleGrid(
+      const RawGridGeometry<CoordinateType> &rawGeometry,
+      std::vector<CoordinateType> &elementSizesSquared,
+      arma::Mat<CoordinateType> &elementCenters,
+      CoordinateType &averageElementSize);
 
 private:
-    static CoordinateType elementSizeSquared(
-            int elementIndex,
-            const RawGridGeometry<CoordinateType>& rawGeometry);
-    static arma::Col<CoordinateType> elementCenter(
-            int elementIndex,
-            const RawGridGeometry<CoordinateType>& rawGeometry);
+  static CoordinateType
+  elementSizeSquared(int elementIndex,
+                     const RawGridGeometry<CoordinateType> &rawGeometry);
+  static arma::Col<CoordinateType>
+  elementCenter(int elementIndex,
+                const RawGridGeometry<CoordinateType> &rawGeometry);
 };
 
 } // namespace Fiber

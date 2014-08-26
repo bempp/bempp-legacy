@@ -21,55 +21,48 @@
 #include "blocked_solution.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
-namespace Bempp
-{
+namespace Bempp {
 
 #ifdef WITH_TRILINOS
 template <typename BasisFunctionType, typename ResultType>
 BlockedSolution<BasisFunctionType, ResultType>::BlockedSolution(
-    const std::vector<GridFunction<BasisFunctionType, ResultType> >& gridFunctions,
-    const Thyra::SolveStatus<MagnitudeType> status) :
-    Base(status), m_gridFunctions(gridFunctions)
-{
-}
+    const std::vector<GridFunction<BasisFunctionType, ResultType>> &
+        gridFunctions,
+    const Thyra::SolveStatus<MagnitudeType> status)
+    : Base(status), m_gridFunctions(gridFunctions) {}
 #endif // WITH_TRILINOS
 
 template <typename BasisFunctionType, typename ResultType>
 BlockedSolution<BasisFunctionType, ResultType>::BlockedSolution(
-        const std::vector<GridFunction<BasisFunctionType, ResultType> >& gridFunctions,
-        SolutionStatus::Status status,
-        MagnitudeType achievedTolerance,
-        std::string message) :
-    Base(status, achievedTolerance, message),
-    m_gridFunctions(gridFunctions)
-{
+    const std::vector<GridFunction<BasisFunctionType, ResultType>> &
+        gridFunctions,
+    SolutionStatus::Status status, MagnitudeType achievedTolerance,
+    std::string message)
+    : Base(status, achievedTolerance, message), m_gridFunctions(gridFunctions) {
 }
 
 template <typename BasisFunctionType, typename ResultType>
-GridFunction<BasisFunctionType, ResultType>& 
-BlockedSolution<BasisFunctionType, ResultType>::gridFunction(size_t i)
-{
-    if (i >= m_gridFunctions.size())
-        throw std::out_of_range("BlockedSolution::gridFunction(): "
-                                "invalid index");
-    return m_gridFunctions[i];
+GridFunction<BasisFunctionType, ResultType> &
+BlockedSolution<BasisFunctionType, ResultType>::gridFunction(size_t i) {
+  if (i >= m_gridFunctions.size())
+    throw std::out_of_range("BlockedSolution::gridFunction(): "
+                            "invalid index");
+  return m_gridFunctions[i];
 }
 
 template <typename BasisFunctionType, typename ResultType>
-const GridFunction<BasisFunctionType, ResultType>& 
-BlockedSolution<BasisFunctionType, ResultType>::gridFunction(size_t i) const
-{
-    if (i >= m_gridFunctions.size())
-        throw std::out_of_range("BlockedSolution::gridFunction(): "
-                                "invalid index");
-    return m_gridFunctions[i];
+const GridFunction<BasisFunctionType, ResultType> &
+BlockedSolution<BasisFunctionType, ResultType>::gridFunction(size_t i) const {
+  if (i >= m_gridFunctions.size())
+    throw std::out_of_range("BlockedSolution::gridFunction(): "
+                            "invalid index");
+  return m_gridFunctions[i];
 }
 
 template <typename BasisFunctionType, typename ResultType>
 size_t
-BlockedSolution<BasisFunctionType, ResultType>::gridFunctionCount() const
-{
-    return m_gridFunctions.size();
+BlockedSolution<BasisFunctionType, ResultType>::gridFunctionCount() const {
+  return m_gridFunctions.size();
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(BlockedSolution);

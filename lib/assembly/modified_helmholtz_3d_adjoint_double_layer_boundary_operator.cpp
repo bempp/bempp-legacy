@@ -37,90 +37,80 @@
 
 #include "../grid/max_distance.hpp"
 
-namespace Bempp
-{
+namespace Bempp {
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType>
 modifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator(
-        const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
-        const shared_ptr<const Space<BasisFunctionType> >& domain,
-        const shared_ptr<const Space<BasisFunctionType> >& range,
-        const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-        KernelType waveNumber,
-        const std::string& label,
-        int symmetry,
-        bool useInterpolation,
-        int interpPtsPerWavelength)
-{
-    const AssemblyOptions& assemblyOptions = context->assemblyOptions();
-    if (assemblyOptions.assemblyMode() == AssemblyOptions::ACA &&
-         assemblyOptions.acaOptions().mode == AcaOptions::LOCAL_ASSEMBLY)
-        return modifiedHelmholtz3dSyntheticBoundaryOperator(
-            &modifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator<
-                BasisFunctionType, KernelType, ResultType>,
-            context, domain, range, dualToRange, waveNumber, label, symmetry,
-            useInterpolation, interpPtsPerWavelength,
-            NO_SYMMETRY);
+    const shared_ptr<const Context<BasisFunctionType, ResultType>> &context,
+    const shared_ptr<const Space<BasisFunctionType>> &domain,
+    const shared_ptr<const Space<BasisFunctionType>> &range,
+    const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
+    KernelType waveNumber, const std::string &label, int symmetry,
+    bool useInterpolation, int interpPtsPerWavelength) {
+  const AssemblyOptions &assemblyOptions = context->assemblyOptions();
+  if (assemblyOptions.assemblyMode() == AssemblyOptions::ACA &&
+      assemblyOptions.acaOptions().mode == AcaOptions::LOCAL_ASSEMBLY)
+    return modifiedHelmholtz3dSyntheticBoundaryOperator(
+        &modifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator<
+             BasisFunctionType, KernelType, ResultType>,
+        context, domain, range, dualToRange, waveNumber, label, symmetry,
+        useInterpolation, interpPtsPerWavelength, NO_SYMMETRY);
 
-    typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
+  typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
 
-    typedef Fiber::ModifiedHelmholtz3dAdjointDoubleLayerPotentialKernelFunctor<KernelType>
-    NoninterpolatedKernelFunctor;
-    typedef Fiber::ModifiedHelmholtz3dAdjointDoubleLayerPotentialKernelInterpolatedFunctor<KernelType>
-    InterpolatedKernelFunctor;
-    typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
-    TransformationFunctor;
-    typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctorExt<
-    BasisFunctionType, KernelType, ResultType, 1> IntegrandFunctor;
+  typedef Fiber::ModifiedHelmholtz3dAdjointDoubleLayerPotentialKernelFunctor<
+      KernelType> NoninterpolatedKernelFunctor;
+  typedef Fiber::
+      ModifiedHelmholtz3dAdjointDoubleLayerPotentialKernelInterpolatedFunctor<
+          KernelType> InterpolatedKernelFunctor;
+  typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
+  TransformationFunctor;
+  typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctorExt<
+      BasisFunctionType, KernelType, ResultType, 1> IntegrandFunctor;
 
-    if (!domain || !range || !dualToRange)
-        throw std::invalid_argument(
-                "modifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator(): "
-                "domain, range and dualToRange must not be null");
+  if (!domain || !range || !dualToRange)
+    throw std::invalid_argument(
+        "modifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator(): "
+        "domain, range and dualToRange must not be null");
 
-    shared_ptr<Fiber::TestKernelTrialIntegral<
-            BasisFunctionType, KernelType, ResultType> > integral;
-    if (shouldUseBlasInQuadrature(assemblyOptions, *domain, *dualToRange))
-        integral.reset(new Fiber::TypicalTestScalarKernelTrialIntegral<
-                       BasisFunctionType, KernelType, ResultType>());
-    else
-        integral.reset(new Fiber::DefaultTestKernelTrialIntegral<IntegrandFunctor>(
-                           IntegrandFunctor()));
+  shared_ptr<Fiber::TestKernelTrialIntegral<BasisFunctionType, KernelType,
+                                            ResultType>> integral;
+  if (shouldUseBlasInQuadrature(assemblyOptions, *domain, *dualToRange))
+    integral.reset(new Fiber::TypicalTestScalarKernelTrialIntegral<
+        BasisFunctionType, KernelType, ResultType>());
+  else
+    integral.reset(new Fiber::DefaultTestKernelTrialIntegral<IntegrandFunctor>(
+        IntegrandFunctor()));
 
-    typedef GeneralElementarySingularIntegralOperator<
-            BasisFunctionType, KernelType, ResultType> Op;
-    shared_ptr<Op> newOp;
-    if (useInterpolation)
-        newOp.reset(new Op(
-                        domain, range, dualToRange, label, symmetry,
-                        InterpolatedKernelFunctor(
-                            waveNumber,
-                            1.1 * maxDistance(*domain->grid(), *dualToRange->grid()),
-                            interpPtsPerWavelength),
-                        TransformationFunctor(),
-                        TransformationFunctor(),
-                        integral));
-    else
-        newOp.reset(new Op(
-                        domain, range, dualToRange, label, symmetry,
-                        NoninterpolatedKernelFunctor(
-                            waveNumber),
-                        TransformationFunctor(),
-                        TransformationFunctor(),
-                        integral));
-    return BoundaryOperator<BasisFunctionType, ResultType>(context, newOp);
+  typedef GeneralElementarySingularIntegralOperator<BasisFunctionType,
+                                                    KernelType, ResultType> Op;
+  shared_ptr<Op> newOp;
+  if (useInterpolation)
+    newOp.reset(
+        new Op(domain, range, dualToRange, label, symmetry,
+               InterpolatedKernelFunctor(
+                   waveNumber,
+                   1.1 * maxDistance(*domain->grid(), *dualToRange->grid()),
+                   interpPtsPerWavelength),
+               TransformationFunctor(), TransformationFunctor(), integral));
+  else
+    newOp.reset(new Op(domain, range, dualToRange, label, symmetry,
+                       NoninterpolatedKernelFunctor(waveNumber),
+                       TransformationFunctor(), TransformationFunctor(),
+                       integral));
+  return BoundaryOperator<BasisFunctionType, ResultType>(context, newOp);
 }
 
-#define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS, KERNEL, RESULT) \
-    template BoundaryOperator<BASIS, RESULT> \
-    modifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator( \
-        const shared_ptr<const Context<BASIS, RESULT> >&, \
-        const shared_ptr<const Space<BASIS> >&, \
-        const shared_ptr<const Space<BASIS> >&, \
-        const shared_ptr<const Space<BASIS> >&, \
-        KERNEL, \
-        const std::string&, int, bool, int)
-FIBER_ITERATE_OVER_BASIS_KERNEL_AND_RESULT_TYPES(INSTANTIATE_NONMEMBER_CONSTRUCTOR);
+#define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS, KERNEL, RESULT)               \
+  template BoundaryOperator<BASIS, RESULT>                                     \
+  modifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator(                       \
+      const shared_ptr<const Context<BASIS, RESULT>> &,                        \
+      const shared_ptr<const Space<BASIS>> &,                                  \
+      const shared_ptr<const Space<BASIS>> &,                                  \
+      const shared_ptr<const Space<BASIS>> &, KERNEL, const std::string &,     \
+      int, bool, int)
+FIBER_ITERATE_OVER_BASIS_KERNEL_AND_RESULT_TYPES(
+    INSTANTIATE_NONMEMBER_CONSTRUCTOR);
 
 } // namespace Bempp

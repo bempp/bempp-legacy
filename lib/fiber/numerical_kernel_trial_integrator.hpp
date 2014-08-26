@@ -25,8 +25,7 @@
 
 #include "kernel_trial_integrator.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \cond FORWARD_DECL */
 template <typename CoordinateType> class CollectionOfShapesetTransformations;
@@ -37,59 +36,60 @@ class KernelTrialIntegral;
 /** \endcond */
 
 /** \brief Integration over pairs of elements on tensor-product point grids. */
-template <typename BasisFunctionType, typename KernelType,
-          typename ResultType, typename GeometryFactory>
-class NumericalKernelTrialIntegrator :
-        public KernelTrialIntegrator<BasisFunctionType, KernelType, ResultType>
-{
+template <typename BasisFunctionType, typename KernelType, typename ResultType,
+          typename GeometryFactory>
+class NumericalKernelTrialIntegrator
+    : public KernelTrialIntegrator<BasisFunctionType, KernelType, ResultType> {
 public:
-    typedef KernelTrialIntegrator<BasisFunctionType, KernelType, ResultType> Base;
-    typedef typename Base::CoordinateType CoordinateType;
-    typedef typename Base::PointElementIndexPair PointElementIndexPair;
+  typedef KernelTrialIntegrator<BasisFunctionType, KernelType, ResultType> Base;
+  typedef typename Base::CoordinateType CoordinateType;
+  typedef typename Base::PointElementIndexPair PointElementIndexPair;
 
-    NumericalKernelTrialIntegrator(
-            const arma::Mat<CoordinateType>& localQuadPoints,
-            const std::vector<CoordinateType> quadWeights,
-            const arma::Mat<CoordinateType>& points,
-            const GeometryFactory& geometryFactory,
-            const RawGridGeometry<CoordinateType>& rawGeometry,
-            const CollectionOfKernels<KernelType>& kernels,
-            const CollectionOfShapesetTransformations<CoordinateType>& trialTransformations,
-            const KernelTrialIntegral<BasisFunctionType, KernelType, ResultType>& integral);
+  NumericalKernelTrialIntegrator(
+      const arma::Mat<CoordinateType> &localQuadPoints,
+      const std::vector<CoordinateType> quadWeights,
+      const arma::Mat<CoordinateType> &points,
+      const GeometryFactory &geometryFactory,
+      const RawGridGeometry<CoordinateType> &rawGeometry,
+      const CollectionOfKernels<KernelType> &kernels,
+      const CollectionOfShapesetTransformations<CoordinateType> &
+          trialTransformations,
+      const KernelTrialIntegral<BasisFunctionType, KernelType, ResultType> &
+          integral);
 
-    virtual void integrate(
-            const std::vector<int>& pointIndices,
-            int trialElementIndex,
-            const Shapeset<BasisFunctionType>& trialShapeset,
+  virtual void
+  integrate(const std::vector<int> &pointIndices, int trialElementIndex,
+            const Shapeset<BasisFunctionType> &trialShapeset,
             LocalDofIndex localTrialDofIndex,
-            const std::vector<arma::Mat<ResultType>*>& result) const;
+            const std::vector<arma::Mat<ResultType> *> &result) const;
 
-    virtual void integrate(
-            int pointIndex,
-            int componentIndex,
-            const std::vector<int>& trialElementIndices,
-            const Shapeset<BasisFunctionType>& trialShapeset,
-            const std::vector<arma::Mat<ResultType>*>& result) const;
+  virtual void
+  integrate(int pointIndex, int componentIndex,
+            const std::vector<int> &trialElementIndices,
+            const Shapeset<BasisFunctionType> &trialShapeset,
+            const std::vector<arma::Mat<ResultType> *> &result) const;
 
-    virtual void integrate(
-            const std::vector<PointElementIndexPair>& pointElementIndexPairs,
-            const Shapeset<BasisFunctionType>& trialShapeset,
-            const std::vector<arma::Mat<ResultType>*>& result) const;
+  virtual void
+  integrate(const std::vector<PointElementIndexPair> &pointElementIndexPairs,
+            const Shapeset<BasisFunctionType> &trialShapeset,
+            const std::vector<arma::Mat<ResultType> *> &result) const;
 
 private:
-    /** \cond PRIVATE */
-    arma::Mat<CoordinateType> m_localQuadPoints;
-    std::vector<CoordinateType> m_quadWeights;
+  /** \cond PRIVATE */
+  arma::Mat<CoordinateType> m_localQuadPoints;
+  std::vector<CoordinateType> m_quadWeights;
 
-    const arma::Mat<CoordinateType>& m_points;
+  const arma::Mat<CoordinateType> &m_points;
 
-    const GeometryFactory& m_geometryFactory;
-    const RawGridGeometry<CoordinateType>& m_rawGeometry;
+  const GeometryFactory &m_geometryFactory;
+  const RawGridGeometry<CoordinateType> &m_rawGeometry;
 
-    const CollectionOfKernels<KernelType>& m_kernels;
-    const CollectionOfShapesetTransformations<CoordinateType>& m_trialTransformations;
-    const KernelTrialIntegral<BasisFunctionType, KernelType, ResultType>& m_integral;
-    /** \endcond */
+  const CollectionOfKernels<KernelType> &m_kernels;
+  const CollectionOfShapesetTransformations<CoordinateType> &
+  m_trialTransformations;
+  const KernelTrialIntegral<BasisFunctionType, KernelType, ResultType> &
+  m_integral;
+  /** \endcond */
 };
 
 } // namespace Fiber

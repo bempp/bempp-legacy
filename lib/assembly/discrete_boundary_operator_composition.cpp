@@ -23,95 +23,81 @@
 #include "discrete_boundary_operator_composition.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
-namespace Bempp
-{
+namespace Bempp {
 
 template <typename ValueType>
 DiscreteBoundaryOperatorComposition<ValueType>::
-DiscreteBoundaryOperatorComposition(const shared_ptr<const Base> &outer,
-                                  const shared_ptr<const Base> &inner) :
-    m_outer(outer), m_inner(inner)
-{
-    if (!m_outer || !m_inner)
-        throw std::invalid_argument(
-                "DiscreteBoundaryOperatorComposition::DiscreteBoundaryOperatorComposition(): "
-                "arguments must not be NULL");
-    if (m_outer->columnCount() != m_inner->rowCount())
-        throw std::invalid_argument(
-                "DiscreteBoundaryOperatorComposition::DiscreteBoundaryOperatorComposition(): "
-                "term dimensions do not match");
-    // TODO: perhaps test for compatibility of Thyra spaces
+    DiscreteBoundaryOperatorComposition(const shared_ptr<const Base> &outer,
+                                        const shared_ptr<const Base> &inner)
+    : m_outer(outer), m_inner(inner) {
+  if (!m_outer || !m_inner)
+    throw std::invalid_argument("DiscreteBoundaryOperatorComposition::"
+                                "DiscreteBoundaryOperatorComposition(): "
+                                "arguments must not be NULL");
+  if (m_outer->columnCount() != m_inner->rowCount())
+    throw std::invalid_argument("DiscreteBoundaryOperatorComposition::"
+                                "DiscreteBoundaryOperatorComposition(): "
+                                "term dimensions do not match");
+  // TODO: perhaps test for compatibility of Thyra spaces
+}
+
+template <typename ValueType>
+unsigned int DiscreteBoundaryOperatorComposition<ValueType>::rowCount() const {
+  return m_outer->rowCount();
 }
 
 template <typename ValueType>
 unsigned int
-DiscreteBoundaryOperatorComposition<ValueType>::rowCount() const
-{
-    return m_outer->rowCount();
-}
-
-template <typename ValueType>
-unsigned int
-DiscreteBoundaryOperatorComposition<ValueType>::columnCount() const
-{
-    return m_inner->columnCount();
+DiscreteBoundaryOperatorComposition<ValueType>::columnCount() const {
+  return m_inner->columnCount();
 }
 
 template <typename ValueType>
 void DiscreteBoundaryOperatorComposition<ValueType>::addBlock(
-        const std::vector<int>& rows,
-        const std::vector<int>& cols,
-        const ValueType alpha,
-        arma::Mat<ValueType>& block) const
-{
-    throw std::runtime_error(
-                "DiscreteBoundaryOperatorComposition::DiscreteBoundaryOperatorComposition(): "
-                "addBlock: not implemented yet");
+    const std::vector<int> &rows, const std::vector<int> &cols,
+    const ValueType alpha, arma::Mat<ValueType> &block) const {
+  throw std::runtime_error("DiscreteBoundaryOperatorComposition::"
+                           "DiscreteBoundaryOperatorComposition(): "
+                           "addBlock: not implemented yet");
 }
 
 #ifdef WITH_TRILINOS
 template <typename ValueType>
-Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> >
-DiscreteBoundaryOperatorComposition<ValueType>::domain() const
-{
-    return m_inner->domain();
+Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>>
+DiscreteBoundaryOperatorComposition<ValueType>::domain() const {
+  return m_inner->domain();
 }
 
 template <typename ValueType>
-Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> >
-DiscreteBoundaryOperatorComposition<ValueType>::range() const
-{
-    return m_outer->range();
+Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>>
+DiscreteBoundaryOperatorComposition<ValueType>::range() const {
+  return m_outer->range();
 }
 
 template <typename ValueType>
 bool DiscreteBoundaryOperatorComposition<ValueType>::opSupportedImpl(
-        Thyra::EOpTransp M_trans) const
-{
-    return (m_outer->opSupported(M_trans) &&
-            m_inner->opSupported(M_trans));
+    Thyra::EOpTransp M_trans) const {
+  return (m_outer->opSupported(M_trans) && m_inner->opSupported(M_trans));
 }
 #endif // WITH_TRILINOS
 
 template <typename ValueType>
-void DiscreteBoundaryOperatorComposition<ValueType>::
-applyBuiltInImpl(const TranspositionMode trans,
-                 const arma::Col<ValueType>& x_in,
-                 arma::Col<ValueType>& y_inout,
-                 const ValueType alpha,
-                 const ValueType beta) const
-{
-    if (trans == TRANSPOSE || trans == CONJUGATE_TRANSPOSE) {
-        arma::Col<ValueType> tmp(m_outer->columnCount());
-        m_outer->apply(trans, x_in, tmp, alpha, 0.);
-        m_inner->apply(trans, tmp, y_inout, 1., beta);
-    } else {
-        arma::Col<ValueType> tmp(m_inner->rowCount());
-        m_inner->apply(trans, x_in, tmp, alpha, 0.);
-        m_outer->apply(trans, tmp, y_inout, 1., beta);
-    }
+void DiscreteBoundaryOperatorComposition<ValueType>::applyBuiltInImpl(
+    const TranspositionMode trans, const arma::Col<ValueType> &x_in,
+    arma::Col<ValueType> &y_inout, const ValueType alpha,
+    const ValueType beta) const {
+  if (trans == TRANSPOSE || trans == CONJUGATE_TRANSPOSE) {
+    arma::Col<ValueType> tmp(m_outer->columnCount());
+    m_outer->apply(trans, x_in, tmp, alpha, 0.);
+    m_inner->apply(trans, tmp, y_inout, 1., beta);
+  } else {
+    arma::Col<ValueType> tmp(m_inner->rowCount());
+    m_inner->apply(trans, x_in, tmp, alpha, 0.);
+    m_outer->apply(trans, tmp, y_inout, 1., beta);
+  }
 }
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(DiscreteBoundaryOperatorComposition);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(
+    DiscreteBoundaryOperatorComposition);
 
 } // namespace Bempp

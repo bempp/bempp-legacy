@@ -25,36 +25,34 @@
 
 #include "double_quadrature_descriptor.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \ingroup quadrature
  *  \brief Quadrature descriptor selector used during the
  *  discretization of boundary integral operators. */
 template <typename CoordinateType>
-class QuadratureDescriptorSelectorForIntegralOperators
-{
+class QuadratureDescriptorSelectorForIntegralOperators {
 public:
-    /** \brief Destructor */
-    virtual ~QuadratureDescriptorSelectorForIntegralOperators() {}
+  /** \brief Destructor */
+  virtual ~QuadratureDescriptorSelectorForIntegralOperators() {}
 
-    /** \brief Return the descriptor of the quadrature rule to be used
-     *  for a particular pair of elements.
-     *
-     *  \param[in] testElementIndex Index of the test element.
-     *  \param[in] trialElementIndex Index of the trial element.
-     *  \param[in] nominalDistance
-     *    This parameter is only relevant for quadrature selectors
-     *    that vary the degree of accuracy of regular quadrature rules
-     *    with interelement distance. If \p nominalDistance is
-     *    non-negative, the quadrature rule should be chosen as if the
-     *    distance between the centers of the test and trial element
-     *    were equal to \p nominalDistance. Otherwise the selector
-     *    should try to estimate the distance between the elements on
-     *    its own and adjust the quadrature order accordingly. */
-    virtual DoubleQuadratureDescriptor quadratureDescriptor(
-        int testElementIndex, int trialElementIndex,
-        CoordinateType nominalDistance) const = 0;
+  /** \brief Return the descriptor of the quadrature rule to be used
+   *  for a particular pair of elements.
+   *
+   *  \param[in] testElementIndex Index of the test element.
+   *  \param[in] trialElementIndex Index of the trial element.
+   *  \param[in] nominalDistance
+   *    This parameter is only relevant for quadrature selectors
+   *    that vary the degree of accuracy of regular quadrature rules
+   *    with interelement distance. If \p nominalDistance is
+   *    non-negative, the quadrature rule should be chosen as if the
+   *    distance between the centers of the test and trial element
+   *    were equal to \p nominalDistance. Otherwise the selector
+   *    should try to estimate the distance between the elements on
+   *    its own and adjust the quadrature order accordingly. */
+  virtual DoubleQuadratureDescriptor
+  quadratureDescriptor(int testElementIndex, int trialElementIndex,
+                       CoordinateType nominalDistance) const = 0;
 };
 
 } // namespace Fiber

@@ -25,41 +25,37 @@
 
 #include "../common/common.hpp"
 
-
 #ifdef WITH_TRILINOS
 #include <Thyra_LinearOpDefaultBase_decl.hpp>
 
-namespace Bempp
-{
+namespace Bempp {
 
 template <typename ValueType>
 class RealWrapperOfComplexThyraLinearOperator
-        : public Thyra::LinearOpDefaultBase<ValueType>
-{
+    : public Thyra::LinearOpDefaultBase<ValueType> {
 public:
-    typedef std::complex<ValueType> ComplexValueType;
-    typedef Thyra::LinearOpBase<std::complex<ValueType> > ComplexLinearOp;
+  typedef std::complex<ValueType> ComplexValueType;
+  typedef Thyra::LinearOpBase<std::complex<ValueType>> ComplexLinearOp;
 
-    RealWrapperOfComplexThyraLinearOperator(
-            const Teuchos::RCP<const ComplexLinearOp>& complexOperator);
+  RealWrapperOfComplexThyraLinearOperator(
+      const Teuchos::RCP<const ComplexLinearOp> &complexOperator);
 
-    virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > domain() const;
-    virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > range() const;
+  virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>> domain() const;
+  virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>> range() const;
 
 protected:
-    virtual bool opSupportedImpl(Thyra::EOpTransp M_trans) const;
+  virtual bool opSupportedImpl(Thyra::EOpTransp M_trans) const;
 
-    virtual void applyImpl(
-            const Thyra::EOpTransp M_trans,
+  virtual void
+  applyImpl(const Thyra::EOpTransp M_trans,
             const Thyra::MultiVectorBase<ValueType> &X_in,
-            const Teuchos::Ptr<Thyra::MultiVectorBase<ValueType> > &Y_inout,
-            const ValueType alpha,
-            const ValueType beta) const;
+            const Teuchos::Ptr<Thyra::MultiVectorBase<ValueType>> &Y_inout,
+            const ValueType alpha, const ValueType beta) const;
 
 private:
-    Teuchos::RCP<const ComplexLinearOp> m_complexOperator;
-    Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > m_domainSpace;
-    Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > m_rangeSpace;
+  Teuchos::RCP<const ComplexLinearOp> m_complexOperator;
+  Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>> m_domainSpace;
+  Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>> m_rangeSpace;
 };
 
 } // namespace Bempp

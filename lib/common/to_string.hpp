@@ -24,14 +24,11 @@
 #include <boost/lexical_cast.hpp>
 #include <string>
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \brief Convert \p arg to <tt>std::string</tt>. */
-template <typename Source>
-inline std::string toString(const Source& arg)
-{
-    return boost::lexical_cast<std::string>(arg);
+template <typename Source> inline std::string toString(const Source &arg) {
+  return boost::lexical_cast<std::string>(arg);
 }
 
 } // namespace Bempp

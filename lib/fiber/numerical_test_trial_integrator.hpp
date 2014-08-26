@@ -25,52 +25,55 @@
 
 #include "test_trial_integrator.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \cond FORWARD_DECL */
 class OpenClHandler;
 template <typename CoordinateType> class CollectionOfShapesetTransformations;
 template <typename CoordinateType> class RawGridGeometry;
-template <typename BasisFunctionType, typename ResultType> class TestTrialIntegral;
+template <typename BasisFunctionType, typename ResultType>
+class TestTrialIntegral;
 /** \endcond */
 
 /** \brief Integration over pairs of elements on tensor-product point grids. */
-template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
-class NumericalTestTrialIntegrator :
-        public TestTrialIntegrator<BasisFunctionType, ResultType>
-{
+template <typename BasisFunctionType, typename ResultType,
+          typename GeometryFactory>
+class NumericalTestTrialIntegrator
+    : public TestTrialIntegrator<BasisFunctionType, ResultType> {
 public:
-    typedef typename
-    TestTrialIntegrator<BasisFunctionType, ResultType>::CoordinateType CoordinateType;
+  typedef typename TestTrialIntegrator<
+      BasisFunctionType, ResultType>::CoordinateType CoordinateType;
 
-    NumericalTestTrialIntegrator(
-            const arma::Mat<CoordinateType>& localQuadPoints,
-            const std::vector<CoordinateType> quadWeights,
-            const GeometryFactory& geometryFactory,
-            const RawGridGeometry<CoordinateType>& rawGeometry,
-            const CollectionOfShapesetTransformations<CoordinateType>& testTransformations,
-            const CollectionOfShapesetTransformations<CoordinateType>& trialTransformations,
-            const TestTrialIntegral<BasisFunctionType, ResultType>& integral,
-            const OpenClHandler& openClHandler);
+  NumericalTestTrialIntegrator(
+      const arma::Mat<CoordinateType> &localQuadPoints,
+      const std::vector<CoordinateType> quadWeights,
+      const GeometryFactory &geometryFactory,
+      const RawGridGeometry<CoordinateType> &rawGeometry,
+      const CollectionOfShapesetTransformations<CoordinateType> &
+          testTransformations,
+      const CollectionOfShapesetTransformations<CoordinateType> &
+          trialTransformations,
+      const TestTrialIntegral<BasisFunctionType, ResultType> &integral,
+      const OpenClHandler &openClHandler);
 
-    virtual void integrate(
-            const std::vector<int>& elementIndices,
-            const Shapeset<BasisFunctionType>& testShapeset,
-            const Shapeset<BasisFunctionType>& trialShapeset,
-            arma::Cube<ResultType>& result) const;
+  virtual void integrate(const std::vector<int> &elementIndices,
+                         const Shapeset<BasisFunctionType> &testShapeset,
+                         const Shapeset<BasisFunctionType> &trialShapeset,
+                         arma::Cube<ResultType> &result) const;
 
 private:
-    arma::Mat<CoordinateType> m_localQuadPoints;
-    std::vector<CoordinateType> m_quadWeights;
+  arma::Mat<CoordinateType> m_localQuadPoints;
+  std::vector<CoordinateType> m_quadWeights;
 
-    const GeometryFactory& m_geometryFactory;
-    const RawGridGeometry<CoordinateType>& m_rawGeometry;
-    const CollectionOfShapesetTransformations<CoordinateType>& m_testTransformations;
-    const CollectionOfShapesetTransformations<CoordinateType>& m_trialTransformations;
-    const TestTrialIntegral<BasisFunctionType, ResultType>& m_integral;
+  const GeometryFactory &m_geometryFactory;
+  const RawGridGeometry<CoordinateType> &m_rawGeometry;
+  const CollectionOfShapesetTransformations<CoordinateType> &
+  m_testTransformations;
+  const CollectionOfShapesetTransformations<CoordinateType> &
+  m_trialTransformations;
+  const TestTrialIntegral<BasisFunctionType, ResultType> &m_integral;
 
-    const OpenClHandler& m_openClHandler;
+  const OpenClHandler &m_openClHandler;
 };
 
 } // namespace Fiber

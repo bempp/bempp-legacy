@@ -26,43 +26,39 @@
 #include "belos_solver_wrapper_fwd.hpp"
 #include "../common/scalar_traits.hpp"
 
-namespace Thyra
-{
+namespace Thyra {
 /** \cond FORWARD_DECL */
 template <typename ValueType> class PreconditionerBase;
 template <typename ValueType> class LinearOpWithSolveBase;
 /** \endcond */
 }
 
-namespace Bempp
-{
+namespace Bempp {
 
-template <typename ValueType>
-class BelosSolverWrapper
-{
+template <typename ValueType> class BelosSolverWrapper {
 public:
-    typedef typename ScalarTraits<ValueType>::RealType MagnitudeType;
+  typedef typename ScalarTraits<ValueType>::RealType MagnitudeType;
 
-    BelosSolverWrapper(
-            const Teuchos::RCP<const Thyra::LinearOpBase<ValueType> >& linOp);
+  BelosSolverWrapper(
+      const Teuchos::RCP<const Thyra::LinearOpBase<ValueType>> &linOp);
 
-    ~BelosSolverWrapper();
+  ~BelosSolverWrapper();
 
-    void setPreconditioner(
-            const Teuchos::RCP<const Thyra::PreconditionerBase<ValueType> >& preconditioner);
+  void setPreconditioner(const Teuchos::RCP<
+      const Thyra::PreconditionerBase<ValueType>> &preconditioner);
 
-    void initializeSolver(
-            const Teuchos::RCP<Teuchos::ParameterList>& paramList);
+  void initializeSolver(const Teuchos::RCP<Teuchos::ParameterList> &paramList);
 
-    Thyra::SolveStatus<MagnitudeType> solve(
-            const Thyra::EOpTransp trans,
-            const Thyra::MultiVectorBase<ValueType>& rhs,
-            const Teuchos::Ptr<Thyra::MultiVectorBase<ValueType> >& sol) const;
+  Thyra::SolveStatus<MagnitudeType>
+  solve(const Thyra::EOpTransp trans,
+        const Thyra::MultiVectorBase<ValueType> &rhs,
+        const Teuchos::Ptr<Thyra::MultiVectorBase<ValueType>> &sol) const;
 
 private:
-    Teuchos::RCP<const Thyra::LinearOpBase<ValueType> > m_linOp;
-    Teuchos::RCP<const Thyra::PreconditionerBase<ValueType> > m_preconditioner;
-    Teuchos::RCP<const Thyra::LinearOpWithSolveBase<MagnitudeType> > m_linOpWithSolve;
+  Teuchos::RCP<const Thyra::LinearOpBase<ValueType>> m_linOp;
+  Teuchos::RCP<const Thyra::PreconditionerBase<ValueType>> m_preconditioner;
+  Teuchos::RCP<const Thyra::LinearOpWithSolveBase<MagnitudeType>>
+  m_linOpWithSolve;
 };
 
 } // namespace Bempp

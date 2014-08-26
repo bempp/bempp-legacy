@@ -25,8 +25,7 @@
 
 #include "elementary_local_operator.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \cond FORWARD_DECL */
 template <typename ResultType> class LocalAssemblerForOperators;
@@ -34,18 +33,19 @@ template <typename ResultType> class LocalAssemblerForOperators;
 
 } // namespace Fiber
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \cond FORWARD_DECL */
-template <typename BasisFunctionType, typename ResultType> class BoundaryOperator;
+template <typename BasisFunctionType, typename ResultType>
+class BoundaryOperator;
 /** \endcond */
 
 /** \ingroup maxwell_3d
     \ingroup local_operators
     \brief "Identity operator" for Maxwell equations in 3D.
 
-    This class represents an operator \f$I_{\mathrm{M}}\f$ whose weak form (under
+    This class represents an operator \f$I_{\mathrm{M}}\f$ whose weak form
+   (under
     the standard inner product) is
 
     \f[
@@ -69,65 +69,64 @@ template <typename BasisFunctionType, typename ResultType> class BoundaryOperato
     object wrapping a Maxwell3dIdentityOperator object.
  */
 template <typename BasisFunctionType_, typename ResultType_>
-class Maxwell3dIdentityOperator :
-        public ElementaryLocalOperator<BasisFunctionType_, ResultType_>
-{
-    typedef ElementaryLocalOperator<BasisFunctionType_, ResultType_> Base;
+class Maxwell3dIdentityOperator
+    : public ElementaryLocalOperator<BasisFunctionType_, ResultType_> {
+  typedef ElementaryLocalOperator<BasisFunctionType_, ResultType_> Base;
+
 public:
-    /** \copydoc ElementaryLocalOperator::BasisFunctionType */
-    typedef typename Base::BasisFunctionType BasisFunctionType;
-    /** \copydoc ElementaryLocalOperator::ResultType */
-    typedef typename Base::ResultType ResultType;
-    /** \copydoc ElementaryLocalOperator::CoordinateType */
-    typedef typename Base::CoordinateType CoordinateType;
-    /** \copydoc ElementaryLocalOperator::QuadratureStrategy */
-    typedef typename Base::QuadratureStrategy QuadratureStrategy;
-    /** \copydoc ElementaryLocalOperator::CollectionOfBasisTransformations */
-    typedef typename Base::CollectionOfBasisTransformations
-    CollectionOfBasisTransformations;
-    /** \copydoc ElementaryLocalOperator::TestTrialIntegral */
-    typedef typename Base::TestTrialIntegral TestTrialIntegral;
+  /** \copydoc ElementaryLocalOperator::BasisFunctionType */
+  typedef typename Base::BasisFunctionType BasisFunctionType;
+  /** \copydoc ElementaryLocalOperator::ResultType */
+  typedef typename Base::ResultType ResultType;
+  /** \copydoc ElementaryLocalOperator::CoordinateType */
+  typedef typename Base::CoordinateType CoordinateType;
+  /** \copydoc ElementaryLocalOperator::QuadratureStrategy */
+  typedef typename Base::QuadratureStrategy QuadratureStrategy;
+  /** \copydoc ElementaryLocalOperator::CollectionOfBasisTransformations */
+  typedef typename Base::CollectionOfBasisTransformations
+  CollectionOfBasisTransformations;
+  /** \copydoc ElementaryLocalOperator::TestTrialIntegral */
+  typedef typename Base::TestTrialIntegral TestTrialIntegral;
 
-    /** \brief Constructor.
-     *
-     *  \param[in] domain
-     *    Function space being the domain of the operator.
-     *  \param[in] range
-     *    Function space being the range of the operator.
-     *  \param[in] dualToRange
-     *    Function space dual to the the range of the operator.
-     *  \param[in] label
-     *    Textual label of the operator. If empty, a unique label is generated
-     *    automatically.
-     *  \param[in] symmetry
-     *    Symmetry of the weak form of the operator. Can be any combination of
-     *    the flags defined in the enumeration type Symmetry.
-     *
-     *  All the three spaces must be defined on the same grid. */
-    Maxwell3dIdentityOperator(const shared_ptr<const Space<BasisFunctionType> >& domain,
-                     const shared_ptr<const Space<BasisFunctionType> >& range,
-                     const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-                     const std::string& label = "",
-                     int symmetry = NO_SYMMETRY);
-    virtual ~Maxwell3dIdentityOperator();
-
-private:
-    virtual const CollectionOfBasisTransformations&
-    testTransformations() const;
-
-    virtual const CollectionOfBasisTransformations&
-    trialTransformations() const;
-
-    virtual const TestTrialIntegral& integral() const;
+  /** \brief Constructor.
+   *
+   *  \param[in] domain
+   *    Function space being the domain of the operator.
+   *  \param[in] range
+   *    Function space being the range of the operator.
+   *  \param[in] dualToRange
+   *    Function space dual to the the range of the operator.
+   *  \param[in] label
+   *    Textual label of the operator. If empty, a unique label is generated
+   *    automatically.
+   *  \param[in] symmetry
+   *    Symmetry of the weak form of the operator. Can be any combination of
+   *    the flags defined in the enumeration type Symmetry.
+   *
+   *  All the three spaces must be defined on the same grid. */
+  Maxwell3dIdentityOperator(
+      const shared_ptr<const Space<BasisFunctionType>> &domain,
+      const shared_ptr<const Space<BasisFunctionType>> &range,
+      const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
+      const std::string &label = "", int symmetry = NO_SYMMETRY);
+  virtual ~Maxwell3dIdentityOperator();
 
 private:
-    /** \cond PRIVATE */
-    shared_ptr<TestTrialIntegral> m_integral;
-    /** \endcond */
+  virtual const CollectionOfBasisTransformations &testTransformations() const;
+
+  virtual const CollectionOfBasisTransformations &trialTransformations() const;
+
+  virtual const TestTrialIntegral &integral() const;
+
+private:
+  /** \cond PRIVATE */
+  shared_ptr<TestTrialIntegral> m_integral;
+  /** \endcond */
 };
 
 /** \relates Maxwell3dIdentityOperator
- *  \brief Construct a BoundaryOperator object wrapping a Maxwell3dIdentityOperator.
+ *  \brief Construct a BoundaryOperator object wrapping a
+ *Maxwell3dIdentityOperator.
  *
  *  This convenience function constructs an abstract Maxwell identity operator
  *  and wraps it in a BoundaryOperator object.
@@ -149,14 +148,12 @@ private:
  *
  *  All the three spaces must be defined on the same grid. */
 template <typename BasisFunctionType, typename ResultType>
-BoundaryOperator<BasisFunctionType, ResultType>
-maxwell3dIdentityOperator(
-        const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
-        const shared_ptr<const Space<BasisFunctionType> >& domain,
-        const shared_ptr<const Space<BasisFunctionType> >& range,
-        const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-        const std::string& label = "",
-        int symmetry = NO_SYMMETRY);
+BoundaryOperator<BasisFunctionType, ResultType> maxwell3dIdentityOperator(
+    const shared_ptr<const Context<BasisFunctionType, ResultType>> &context,
+    const shared_ptr<const Space<BasisFunctionType>> &domain,
+    const shared_ptr<const Space<BasisFunctionType>> &range,
+    const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
+    const std::string &label = "", int symmetry = NO_SYMMETRY);
 
 } // namespace Bempp
 

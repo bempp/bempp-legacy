@@ -21,48 +21,37 @@
 #include "solution.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
-namespace Bempp
-{
+namespace Bempp {
 
 template <typename BasisFunctionType, typename ResultType>
-Solution<BasisFunctionType, ResultType>::Solution() :
-    Base(SolutionStatus::UNKNOWN)
-{
-}
+Solution<BasisFunctionType, ResultType>::Solution()
+    : Base(SolutionStatus::UNKNOWN) {}
 
 #ifdef WITH_TRILINOS
 template <typename BasisFunctionType, typename ResultType>
 Solution<BasisFunctionType, ResultType>::Solution(
-        const GridFunction<BasisFunctionType, ResultType>& gridFunction,
-        const Thyra::SolveStatus<MagnitudeType> status) :
-    Base(status), m_gridFunction(gridFunction)
-{
-}
+    const GridFunction<BasisFunctionType, ResultType> &gridFunction,
+    const Thyra::SolveStatus<MagnitudeType> status)
+    : Base(status), m_gridFunction(gridFunction) {}
 #endif // WITH_TRILINOS
 
 template <typename BasisFunctionType, typename ResultType>
 Solution<BasisFunctionType, ResultType>::Solution(
-        const GridFunction<BasisFunctionType, ResultType>& gridFunction,
-        SolutionStatus::Status status,
-        MagnitudeType achievedTolerance,
-        std::string message) :
-    Base(status, achievedTolerance, message),
-    m_gridFunction(gridFunction)
-{
+    const GridFunction<BasisFunctionType, ResultType> &gridFunction,
+    SolutionStatus::Status status, MagnitudeType achievedTolerance,
+    std::string message)
+    : Base(status, achievedTolerance, message), m_gridFunction(gridFunction) {}
+
+template <typename BasisFunctionType, typename ResultType>
+GridFunction<BasisFunctionType, ResultType> &
+Solution<BasisFunctionType, ResultType>::gridFunction() {
+  return m_gridFunction;
 }
 
 template <typename BasisFunctionType, typename ResultType>
-GridFunction<BasisFunctionType, ResultType>& 
-Solution<BasisFunctionType, ResultType>::gridFunction()
-{
-    return m_gridFunction;
-}
-
-template <typename BasisFunctionType, typename ResultType>
-const GridFunction<BasisFunctionType, ResultType>& 
-Solution<BasisFunctionType, ResultType>::gridFunction() const
-{
-    return m_gridFunction;
+const GridFunction<BasisFunctionType, ResultType> &
+Solution<BasisFunctionType, ResultType>::gridFunction() const {
+  return m_gridFunction;
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(Solution);

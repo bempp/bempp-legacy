@@ -26,43 +26,39 @@
 #include <boost/tuple/tuple_comparison.hpp>
 #include <ostream>
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \brief Parameters of a quadrature rule used in the evaluation of
  *  integrals over single elements. */
-struct SingleQuadratureDescriptor
-{
-    /** \brief Number of vertices of the element constituing the integration domain. */
-    int vertexCount;
-    /** \brief Degree of accuracy of the quadrature rule. */
-    int order;
+struct SingleQuadratureDescriptor {
+  /** \brief Number of vertices of the element constituing the integration
+   * domain. */
+  int vertexCount;
+  /** \brief Degree of accuracy of the quadrature rule. */
+  int order;
 
-    bool operator<(const SingleQuadratureDescriptor& other) const {
-        return std::make_pair(vertexCount, order) <
-                std::make_pair(other.vertexCount, other.order);
-    }
+  bool operator<(const SingleQuadratureDescriptor &other) const {
+    return std::make_pair(vertexCount, order) <
+           std::make_pair(other.vertexCount, other.order);
+  }
 
-    bool operator==(const SingleQuadratureDescriptor& other) const {
-        return vertexCount == other.vertexCount &&
-                order == other.order;
-    }
+  bool operator==(const SingleQuadratureDescriptor &other) const {
+    return vertexCount == other.vertexCount && order == other.order;
+  }
 
-    bool operator!=(const SingleQuadratureDescriptor& other) const {
-        return !operator==(other);
-    }
+  bool operator!=(const SingleQuadratureDescriptor &other) const {
+    return !operator==(other);
+  }
 
-    friend std::ostream&
-    operator<< (std::ostream& dest, const SingleQuadratureDescriptor& obj)
-    {
-        dest << obj.vertexCount << " " << obj.order;
-        return dest;
-    }
+  friend std::ostream &operator<<(std::ostream &dest,
+                                  const SingleQuadratureDescriptor &obj) {
+    dest << obj.vertexCount << " " << obj.order;
+    return dest;
+  }
 };
 
-inline size_t tbb_hasher(const SingleQuadratureDescriptor& d)
-{
-    return (d.vertexCount - 3) + 2 * d.order;
+inline size_t tbb_hasher(const SingleQuadratureDescriptor &d) {
+  return (d.vertexCount - 3) + 2 * d.order;
 }
 
 } // namespace Fiber

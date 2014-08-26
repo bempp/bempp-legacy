@@ -23,20 +23,18 @@
 
 #include "../common/common.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \brief Management of the number of threads used by BLAS and LAPACK. */
-class SerialBlasRegion
-{
+class SerialBlasRegion {
 public:
-    /** \brief Make BLAS and LAPACK use only 1 thread. */
-    SerialBlasRegion();
-    /** \brief Restore the original number of threads used by BLAS and LAPACK. */
-    ~SerialBlasRegion();
+  /** \brief Make BLAS and LAPACK use only 1 thread. */
+  SerialBlasRegion();
+  /** \brief Restore the original number of threads used by BLAS and LAPACK. */
+  ~SerialBlasRegion();
 
 private:
-    int m_originalThreadCount;
+  int m_originalThreadCount;
 };
 
 } // namespace Fiber

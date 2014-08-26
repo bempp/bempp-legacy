@@ -37,8 +37,7 @@
 #include <memory>
 #include <tbb/mutex.h>
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \cond FORWARD_DECL */
 class GridView;
@@ -47,115 +46,111 @@ class GridView;
 /** \ingroup space
  *  \brief Space of continuous, piecewise linear scalar functions. */
 template <typename BasisFunctionType>
-class RaviartThomas0VectorSpace : public Space<BasisFunctionType>
-{
-    typedef Space<BasisFunctionType> Base;
+class RaviartThomas0VectorSpace : public Space<BasisFunctionType> {
+  typedef Space<BasisFunctionType> Base;
+
 public:
-    typedef typename Space<BasisFunctionType>::CoordinateType CoordinateType;
-    typedef typename Space<BasisFunctionType>::ComplexType ComplexType;
-    typedef typename Base::CollectionOfShapesetTransformations
-    CollectionOfShapesetTransformations;
-    typedef typename Base::CollectionOfBasisTransformations
-    CollectionOfBasisTransformations;
+  typedef typename Space<BasisFunctionType>::CoordinateType CoordinateType;
+  typedef typename Space<BasisFunctionType>::ComplexType ComplexType;
+  typedef typename Base::CollectionOfShapesetTransformations
+  CollectionOfShapesetTransformations;
+  typedef typename Base::CollectionOfBasisTransformations
+  CollectionOfBasisTransformations;
 
-    explicit RaviartThomas0VectorSpace(
-            const shared_ptr<const Grid>& grid,
-            bool putDofsOnBoundaries = false);
-    RaviartThomas0VectorSpace(
-            const shared_ptr<const Grid>& grid,
-            const GridSegment& segment,
-            bool putDofsOnBoundaries = false,
-            int dofMode = EDGE_ON_SEGMENT);
-    virtual ~RaviartThomas0VectorSpace();
+  explicit RaviartThomas0VectorSpace(const shared_ptr<const Grid> &grid,
+                                     bool putDofsOnBoundaries = false);
+  RaviartThomas0VectorSpace(const shared_ptr<const Grid> &grid,
+                            const GridSegment &segment,
+                            bool putDofsOnBoundaries = false,
+                            int dofMode = EDGE_ON_SEGMENT);
+  virtual ~RaviartThomas0VectorSpace();
 
-    virtual shared_ptr<const Space<BasisFunctionType> > discontinuousSpace(
-        const shared_ptr<const Space<BasisFunctionType> >& self) const;
-    virtual bool isDiscontinuous() const;
+  virtual shared_ptr<const Space<BasisFunctionType>> discontinuousSpace(
+      const shared_ptr<const Space<BasisFunctionType>> &self) const;
+  virtual bool isDiscontinuous() const;
 
-    virtual const CollectionOfShapesetTransformations& basisFunctionValue() const;
+  virtual const CollectionOfShapesetTransformations &basisFunctionValue() const;
 
-    virtual int domainDimension() const;
-    virtual int codomainDimension() const;
+  virtual int domainDimension() const;
+  virtual int codomainDimension() const;
 
-    virtual bool isBarycentric() const {
-        return false;
-    }
+  virtual bool isBarycentric() const { return false; }
 
-    virtual bool spaceIsCompatible(const Space<BasisFunctionType>& other) const;
+  virtual bool spaceIsCompatible(const Space<BasisFunctionType> &other) const;
 
-    virtual SpaceIdentifier spaceIdentifier() const {
-        return RAVIART_THOMAS_0_VECTOR;
-    }
+  virtual SpaceIdentifier spaceIdentifier() const {
+    return RAVIART_THOMAS_0_VECTOR;
+  }
 
-    /** \brief Return the variant of element \p element.
-     *
-     *  Possible return values:
-     *    - 3: triangular element,
-     *    - 4: quadrilateral element. */
-    virtual ElementVariant elementVariant(const Entity<0>& element) const;
-    virtual void setElementVariant(const Entity<0>& element,
-                                   ElementVariant variant);
+  /** \brief Return the variant of element \p element.
+   *
+   *  Possible return values:
+   *    - 3: triangular element,
+   *    - 4: quadrilateral element. */
+  virtual ElementVariant elementVariant(const Entity<0> &element) const;
+  virtual void setElementVariant(const Entity<0> &element,
+                                 ElementVariant variant);
 
-    virtual const Fiber::Shapeset<BasisFunctionType>& shapeset(
-            const Entity<0>& element) const;
+  virtual const Fiber::Shapeset<BasisFunctionType> &
+  shapeset(const Entity<0> &element) const;
 
-    virtual size_t globalDofCount() const;
-    virtual size_t flatLocalDofCount() const;
-    virtual void getGlobalDofs(const Entity<0>& element,
-                               std::vector<GlobalDofIndex>& dofs,
-                               std::vector<BasisFunctionType>& dofWeights) const;
-    virtual void global2localDofs(
-            const std::vector<GlobalDofIndex>& globalDofs,
-            std::vector<std::vector<LocalDof> >& localDofs,
-            std::vector<std::vector<BasisFunctionType> >& localDofWeights) const;
-    virtual void flatLocal2localDofs(
-            const std::vector<FlatLocalDofIndex>& flatLocalDofs,
-            std::vector<LocalDof>& localDofs) const;
+  virtual size_t globalDofCount() const;
+  virtual size_t flatLocalDofCount() const;
+  virtual void getGlobalDofs(const Entity<0> &element,
+                             std::vector<GlobalDofIndex> &dofs,
+                             std::vector<BasisFunctionType> &dofWeights) const;
+  virtual void global2localDofs(
+      const std::vector<GlobalDofIndex> &globalDofs,
+      std::vector<std::vector<LocalDof>> &localDofs,
+      std::vector<std::vector<BasisFunctionType>> &localDofWeights) const;
+  virtual void
+  flatLocal2localDofs(const std::vector<FlatLocalDofIndex> &flatLocalDofs,
+                      std::vector<LocalDof> &localDofs) const;
 
-    virtual void getGlobalDofPositions(
-            std::vector<Point3D<CoordinateType> >& positions) const;
-    virtual void getFlatLocalDofPositions(
-            std::vector<Point3D<CoordinateType> >& positions) const;
+  virtual void
+  getGlobalDofPositions(std::vector<Point3D<CoordinateType>> &positions) const;
+  virtual void getFlatLocalDofPositions(
+      std::vector<Point3D<CoordinateType>> &positions) const;
 
-    virtual void getGlobalDofBoundingBoxes(
-            std::vector<BoundingBox<CoordinateType> >& bboxes) const;
-    virtual void getFlatLocalDofBoundingBoxes(
-            std::vector<BoundingBox<CoordinateType> >& bboxes) const;
+  virtual void getGlobalDofBoundingBoxes(
+      std::vector<BoundingBox<CoordinateType>> &bboxes) const;
+  virtual void getFlatLocalDofBoundingBoxes(
+      std::vector<BoundingBox<CoordinateType>> &bboxes) const;
 
-    virtual void getGlobalDofNormals(
-            std::vector<Point3D<CoordinateType> >& normals) const;
-    virtual void getFlatLocalDofNormals(
-            std::vector<Point3D<CoordinateType> >& normals) const;
+  virtual void
+  getGlobalDofNormals(std::vector<Point3D<CoordinateType>> &normals) const;
+  virtual void
+  getFlatLocalDofNormals(std::vector<Point3D<CoordinateType>> &normals) const;
 
-    virtual void dumpClusterIds(
-            const char* fileName,
-            const std::vector<unsigned int>& clusterIdsOfGlobalDofs) const;
-    virtual void dumpClusterIdsEx(
-            const char* fileName,
-            const std::vector<unsigned int>& clusterIdsOfGlobalDofs,
-            DofType dofType) const;
+  virtual void
+  dumpClusterIds(const char *fileName,
+                 const std::vector<unsigned int> &clusterIdsOfGlobalDofs) const;
+  virtual void
+  dumpClusterIdsEx(const char *fileName,
+                   const std::vector<unsigned int> &clusterIdsOfGlobalDofs,
+                   DofType dofType) const;
 
 private:
-    void initialize();
-    void assignDofsImpl();
+  void initialize();
+  void assignDofsImpl();
 
 private:
-    /** \cond PRIVATE */
-    struct Impl;
-    boost::scoped_ptr<Impl> m_impl;
-    GridSegment m_segment;
-    bool m_putDofsOnBoundaries;
-    int m_dofMode;
-    std::unique_ptr<GridView> m_view;
-    Fiber::RaviartThomas0Shapeset<3, BasisFunctionType> m_triangleShapeset;
-    std::vector<std::vector<GlobalDofIndex> > m_local2globalDofs;
-    std::vector<std::vector<BasisFunctionType> > m_local2globalDofWeights;
-    std::vector<std::vector<LocalDof> > m_global2localDofs;
-    std::vector<LocalDof> m_flatLocal2localDofs;
-    std::vector<BoundingBox<CoordinateType> > m_globalDofBoundingBoxes;
-    mutable shared_ptr<Space<BasisFunctionType> > m_discontinuousSpace;
-    mutable tbb::mutex m_discontinuousSpaceMutex;
-    /** \endcond */
+  /** \cond PRIVATE */
+  struct Impl;
+  boost::scoped_ptr<Impl> m_impl;
+  GridSegment m_segment;
+  bool m_putDofsOnBoundaries;
+  int m_dofMode;
+  std::unique_ptr<GridView> m_view;
+  Fiber::RaviartThomas0Shapeset<3, BasisFunctionType> m_triangleShapeset;
+  std::vector<std::vector<GlobalDofIndex>> m_local2globalDofs;
+  std::vector<std::vector<BasisFunctionType>> m_local2globalDofWeights;
+  std::vector<std::vector<LocalDof>> m_global2localDofs;
+  std::vector<LocalDof> m_flatLocal2localDofs;
+  std::vector<BoundingBox<CoordinateType>> m_globalDofBoundingBoxes;
+  mutable shared_ptr<Space<BasisFunctionType>> m_discontinuousSpace;
+  mutable tbb::mutex m_discontinuousSpaceMutex;
+  /** \endcond */
 };
 
 } // namespace Bempp

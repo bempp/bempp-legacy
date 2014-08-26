@@ -27,24 +27,21 @@
 
 #include "index_set.hpp"
 
-namespace Bempp
-{
+namespace Bempp {
 
-class DomainIndex
-{
+class DomainIndex {
 public:
-    DomainIndex(std::unique_ptr<IndexSet> && level0IndexSet,
-                const std::vector<int>& elementIndexToPhysicalEntity) :
-        m_level0IndexSet(std::move(level0IndexSet)),
-        m_domainIndices(elementIndexToPhysicalEntity)
-    {
-    }
+  DomainIndex(std::unique_ptr<IndexSet> &&level0IndexSet,
+              const std::vector<int> &elementIndexToPhysicalEntity)
+      : m_level0IndexSet(std::move(level0IndexSet)),
+        m_domainIndices(elementIndexToPhysicalEntity) {}
 
-    int domain(const Entity<0>& entity) const;
-    std::vector<int> domainIndices() const;
+  int domain(const Entity<0> &entity) const;
+  std::vector<int> domainIndices() const;
+
 private:
-    std::unique_ptr<IndexSet> m_level0IndexSet;
-    std::vector<int> m_domainIndices;
+  std::unique_ptr<IndexSet> m_level0IndexSet;
+  std::vector<int> m_domainIndices;
 };
 
 } // namespace

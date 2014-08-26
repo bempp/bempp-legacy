@@ -23,23 +23,21 @@
 
 #include "default_collection_of_shapeset_transformations.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \ingroup weak_form_elements
- *  \brief Default implementation of a collection of shape function transformations.
+ *  \brief Default implementation of a collection of shape function
+ *transformations.
  *
  *  \deprecated This class is deprecated and provided only for compatibility
  *  reasons. Use DefaultCollectionOfShapesetTransformations instead.
  */
 template <typename Functor>
-class DefaultCollectionOfBasisTransformations :
-        public DefaultCollectionOfShapesetTransformations<Functor>
-{
+class DefaultCollectionOfBasisTransformations
+    : public DefaultCollectionOfShapesetTransformations<Functor> {
 public:
-    explicit DefaultCollectionOfBasisTransformations(const Functor& functor) :
-        DefaultCollectionOfShapesetTransformations<Functor>(functor)
-    {}
+  explicit DefaultCollectionOfBasisTransformations(const Functor &functor)
+      : DefaultCollectionOfShapesetTransformations<Functor>(functor) {}
 };
 
 } // namespace Fiber

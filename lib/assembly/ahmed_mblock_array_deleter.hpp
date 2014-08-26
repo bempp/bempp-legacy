@@ -29,21 +29,17 @@
 
 #include <cstddef>
 
-namespace Bempp
-{
+namespace Bempp {
 
-class AhmedMblockArrayDeleter
-{
+class AhmedMblockArrayDeleter {
 public:
-    explicit AhmedMblockArrayDeleter(size_t arraySize) :
-        m_arraySize(arraySize) {
-    }
+  explicit AhmedMblockArrayDeleter(size_t arraySize) : m_arraySize(arraySize) {}
 
-    template <typename ValueType>
-    void operator() (mblock<ValueType>** blocks) const;
+  template <typename ValueType>
+  void operator()(mblock<ValueType> **blocks) const;
 
 private:
-    size_t m_arraySize;
+  size_t m_arraySize;
 };
 
 } // namespace Bempp

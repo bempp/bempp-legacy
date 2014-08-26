@@ -31,129 +31,118 @@
 #include <memory>
 #include <string>
 
-namespace Bempp
-{
+namespace Bempp {
 
 // Forward declarations
-template<typename DuneGridView> class ConcreteGridView;
+template <typename DuneGridView> class ConcreteGridView;
 
 /** \ingroup grid_internal
- *  \brief Wrapper of a Dune VTK writer for a grid view of type \p DuneGridView. */
-template <typename DuneGridView>
-class ConcreteVtkWriter : public VtkWriter
-{
-    Dune::VTKWriter<DuneGridView> m_dune_vtk_writer;
-    const DuneGridView* m_dune_gv;
+ *  \brief Wrapper of a Dune VTK writer for a grid view of type \p DuneGridView.
+ */
+template <typename DuneGridView> class ConcreteVtkWriter : public VtkWriter {
+  Dune::VTKWriter<DuneGridView> m_dune_vtk_writer;
+  const DuneGridView *m_dune_gv;
 
-    friend std::unique_ptr<VtkWriter> ConcreteGridView<DuneGridView>::vtkWriter(
-            Dune::VTK::DataMode dm) const;
+  friend std::unique_ptr<VtkWriter>
+  ConcreteGridView<DuneGridView>::vtkWriter(Dune::VTK::DataMode dm) const;
 
-    /** \brief Construct a VtkWriter working on a specific \p DuneGridView.
-     *
-     *  \param dune_gv The grid view the grid functions live on.
-     *    (E.g. a \p LevelGridView.)
-     *  \param dm The data mode.
-     *
-     *  \internal This constructor can only be called by the factory method
-     *  ConcreteGridView::vtkWriter().
-     */
-    explicit ConcreteVtkWriter(const DuneGridView &dune_gv,
-                               Dune::VTK::DataMode dm=Dune::VTK::conforming) :
-        m_dune_vtk_writer(dune_gv, dm), m_dune_gv(&dune_gv) {
-    }
+  /** \brief Construct a VtkWriter working on a specific \p DuneGridView.
+   *
+   *  \param dune_gv The grid view the grid functions live on.
+   *    (E.g. a \p LevelGridView.)
+   *  \param dm The data mode.
+   *
+   *  \internal This constructor can only be called by the factory method
+   *  ConcreteGridView::vtkWriter().
+   */
+  explicit ConcreteVtkWriter(const DuneGridView &dune_gv,
+                             Dune::VTK::DataMode dm = Dune::VTK::conforming)
+      : m_dune_vtk_writer(dune_gv, dm), m_dune_gv(&dune_gv) {}
 
 public:
-    virtual void clear() {
-        m_dune_vtk_writer.clear();
-    }
+  virtual void clear() { m_dune_vtk_writer.clear(); }
 
-    virtual std::string write(const std::string &name,
-                              OutputType type = ASCII) {
-        return m_dune_vtk_writer.write(name, duneVtkOutputType(type));
-    }
+  virtual std::string write(const std::string &name, OutputType type = ASCII) {
+    return m_dune_vtk_writer.write(name, duneVtkOutputType(type));
+  }
 
-    virtual std::string pwrite(const std::string& name,
-                               const std::string& path,
-                               const std::string& extendpath,
-                               OutputType type = ASCII) {
-        return m_dune_vtk_writer.pwrite(name, path, extendpath,
-                                        duneVtkOutputType(type));
-    }
+  virtual std::string pwrite(const std::string &name, const std::string &path,
+                             const std::string &extendpath,
+                             OutputType type = ASCII) {
+    return m_dune_vtk_writer.pwrite(name, path, extendpath,
+                                    duneVtkOutputType(type));
+  }
 
 private:
-    virtual void addCellDataDoubleImpl(const arma::Mat<double>& data,
+  virtual void addCellDataDoubleImpl(const arma::Mat<double> &data,
+                                     const std::string &name) {
+    addCellDataImpl(data, name);
+  }
+
+  virtual void addCellDataFloatImpl(const arma::Mat<float> &data,
+                                    const std::string &name) {
+    addCellDataImpl(data, name);
+  }
+
+  template <typename ValueType>
+  void addCellDataImpl(const arma::Mat<ValueType> &data,
+                       const std::string &name) {
+    const size_t ncomp = data.n_rows;
+    if (ncomp < 1)
+      return; // empty matrix
+    if ((int)data.n_cols != m_dune_gv->size(0 /* cell codim */))
+      throw std::logic_error("VtkWriter::addCellData(): number of columns "
+                             "of 'data' different from the number of cells");
+
+    typedef P0VectorVTKFunction<DuneGridView, arma::Mat<ValueType>> Function;
+    typedef Dune::shared_ptr<Dune::VTKFunction<DuneGridView>> VTKFunctionPtr;
+    VTKFunctionPtr p(new Function(*m_dune_gv, data, name, ncomp));
+    m_dune_vtk_writer.addCellData(p);
+  }
+
+  virtual void addVertexDataDoubleImpl(const arma::Mat<double> &data,
                                        const std::string &name) {
-        addCellDataImpl(data, name);
-    }
+    addVertexDataImpl(data, name);
+  }
 
-    virtual void addCellDataFloatImpl(const arma::Mat<float>& data,
+  virtual void addVertexDataFloatImpl(const arma::Mat<float> &data,
                                       const std::string &name) {
-        addCellDataImpl(data, name);
+    addVertexDataImpl(data, name);
+  }
+
+  template <typename ValueType>
+  void addVertexDataImpl(const arma::Mat<ValueType> &data,
+                         const std::string &name) {
+    const size_t ncomp = data.n_rows;
+    if (ncomp < 1)
+      return; // empty matrix
+    if ((int)data.n_cols !=
+        m_dune_gv->size(DuneGridView::dimension /* vertex codim */))
+      throw std::logic_error("VtkWriter::addVertexData(): number of columns "
+                             "of 'data' different from the number of vertices");
+
+    typedef P1VectorVTKFunction<DuneGridView, arma::Mat<ValueType>> Function;
+    typedef Dune::shared_ptr<Dune::VTKFunction<DuneGridView>> VTKFunctionPtr;
+    VTKFunctionPtr p(new Function(*m_dune_gv, data, name, ncomp));
+    m_dune_vtk_writer.addVertexData(p);
+
+    // m_dune_vtk_writer.addVertexData(data, name, ncomp);
+  }
+
+  Dune::VTK::OutputType duneVtkOutputType(OutputType type) const {
+    switch (type) {
+    case ASCII:
+      return Dune::VTK::ascii;
+    case BASE_64:
+      return Dune::VTK::base64;
+    case APPENDED_RAW:
+      return Dune::VTK::appendedraw;
+    case APPENDED_BASE_64:
+      return Dune::VTK::appendedbase64;
+    default:
+      return static_cast<Dune::VTK::OutputType>(type);
     }
-
-    template <typename ValueType>
-    void addCellDataImpl(const arma::Mat<ValueType>& data,
-                              const std::string &name) {
-        const size_t ncomp = data.n_rows;
-        if (ncomp < 1)
-            return; // empty matrix
-        if ((int)data.n_cols != m_dune_gv->size(0 /* cell codim */))
-            throw std::logic_error("VtkWriter::addCellData(): number of columns "
-                                   "of 'data' different from the number of cells");
-
-        typedef P0VectorVTKFunction<DuneGridView, arma::Mat<ValueType> > Function;
-        typedef Dune::shared_ptr<Dune::VTKFunction<DuneGridView> >
-                VTKFunctionPtr;
-        VTKFunctionPtr p(new Function(*m_dune_gv, data, name, ncomp));
-        m_dune_vtk_writer.addCellData(p);
-    }
-
-    virtual void addVertexDataDoubleImpl(const arma::Mat<double>& data,
-                                       const std::string &name) {
-        addVertexDataImpl(data, name);
-    }
-
-    virtual void addVertexDataFloatImpl(const arma::Mat<float>& data,
-                                      const std::string &name) {
-        addVertexDataImpl(data, name);
-    }
-
-    template <typename ValueType>
-    void addVertexDataImpl(const arma::Mat<ValueType>& data,
-                           const std::string &name) {
-        const size_t ncomp = data.n_rows;
-        if (ncomp < 1)
-            return; // empty matrix
-        if ((int)data.n_cols !=
-                m_dune_gv->size(DuneGridView::dimension /* vertex codim */))
-            throw std::logic_error("VtkWriter::addVertexData(): number of columns "
-                                   "of 'data' different from the number of vertices");
-
-        typedef P1VectorVTKFunction<DuneGridView, arma::Mat<ValueType> > Function;
-        typedef Dune::shared_ptr<Dune::VTKFunction<DuneGridView> >
-                VTKFunctionPtr;
-        VTKFunctionPtr p(new Function(*m_dune_gv, data, name, ncomp));
-        m_dune_vtk_writer.addVertexData(p);
-
-        // m_dune_vtk_writer.addVertexData(data, name, ncomp);
-    }
-
-    Dune::VTK::OutputType duneVtkOutputType(OutputType type) const
-    {
-        switch (type)
-        {
-        case ASCII:
-            return Dune::VTK::ascii;
-        case BASE_64:
-            return Dune::VTK::base64;
-        case APPENDED_RAW:
-            return Dune::VTK::appendedraw;
-        case APPENDED_BASE_64:
-            return Dune::VTK::appendedbase64;
-        default:
-            return static_cast<Dune::VTK::OutputType>(type);
-        }
-    }
+  }
 };
 
 } // namespace Bempp

@@ -23,8 +23,7 @@
 
 #include "helmholtz_3d_potential_operator_base.hpp"
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \cond PRIVATE */
 template <typename BasisFunctionType>
@@ -42,36 +41,38 @@ struct Helmholtz3dDoubleLayerPotentialOperatorImpl;
  *
  *  \see helmholtz_3d */
 template <typename BasisFunctionType_>
-class Helmholtz3dDoubleLayerPotentialOperator :
-        public Helmholtz3dPotentialOperatorBase<
-        Helmholtz3dDoubleLayerPotentialOperatorImpl<BasisFunctionType_>,
-        BasisFunctionType_>
-{
-    typedef Helmholtz3dPotentialOperatorBase<
-    Helmholtz3dDoubleLayerPotentialOperatorImpl<BasisFunctionType_>,
-    BasisFunctionType_>
-    Base;
-public:
-    /** \copydoc Helmholtz3dPotentialOperatorBase::BasisFunctionType */
-    typedef typename Base::BasisFunctionType BasisFunctionType;
-    /** \copydoc Helmholtz3dPotentialOperatorBase::KernelType */
-    typedef typename Base::KernelType KernelType;
-    /** \copydoc Helmholtz3dPotentialOperatorBase::ResultType */
-    typedef typename Base::ResultType ResultType;
-    /** \copydoc Helmholtz3dPotentialOperatorBase::CoordinateType */
-    typedef typename Base::CoordinateType CoordinateType;
-    /** \copydoc Helmholtz3dPotentialOperatorBase::CollectionOfBasisTransformations */
-    typedef typename Base::CollectionOfBasisTransformations
-    CollectionOfBasisTransformations;
-    /** \copydoc Helmholtz3dPotentialOperatorBase::CollectionOfKernels */
-    typedef typename Base::CollectionOfKernels CollectionOfKernels;
-    /** \copydoc Helmholtz3dPotentialOperatorBase::KernelTrialIntegral */
-    typedef typename Base::KernelTrialIntegral KernelTrialIntegral;
+class Helmholtz3dDoubleLayerPotentialOperator
+    : public Helmholtz3dPotentialOperatorBase<
+          Helmholtz3dDoubleLayerPotentialOperatorImpl<BasisFunctionType_>,
+          BasisFunctionType_> {
+  typedef Helmholtz3dPotentialOperatorBase<
+      Helmholtz3dDoubleLayerPotentialOperatorImpl<BasisFunctionType_>,
+      BasisFunctionType_> Base;
 
-    /** \copydoc Helmholtz3dPotentialOperatorBase::Helmholtz3dPotentialOperatorBase */
-    Helmholtz3dDoubleLayerPotentialOperator(KernelType waveNumber);
-    /** \copydoc Helmholtz3dPotentialOperatorBase::~Helmholtz3dPotentialOperatorBase */
-    virtual ~Helmholtz3dDoubleLayerPotentialOperator();
+public:
+  /** \copydoc Helmholtz3dPotentialOperatorBase::BasisFunctionType */
+  typedef typename Base::BasisFunctionType BasisFunctionType;
+  /** \copydoc Helmholtz3dPotentialOperatorBase::KernelType */
+  typedef typename Base::KernelType KernelType;
+  /** \copydoc Helmholtz3dPotentialOperatorBase::ResultType */
+  typedef typename Base::ResultType ResultType;
+  /** \copydoc Helmholtz3dPotentialOperatorBase::CoordinateType */
+  typedef typename Base::CoordinateType CoordinateType;
+  /** \copydoc
+   * Helmholtz3dPotentialOperatorBase::CollectionOfBasisTransformations */
+  typedef typename Base::CollectionOfBasisTransformations
+  CollectionOfBasisTransformations;
+  /** \copydoc Helmholtz3dPotentialOperatorBase::CollectionOfKernels */
+  typedef typename Base::CollectionOfKernels CollectionOfKernels;
+  /** \copydoc Helmholtz3dPotentialOperatorBase::KernelTrialIntegral */
+  typedef typename Base::KernelTrialIntegral KernelTrialIntegral;
+
+  /** \copydoc
+   * Helmholtz3dPotentialOperatorBase::Helmholtz3dPotentialOperatorBase */
+  Helmholtz3dDoubleLayerPotentialOperator(KernelType waveNumber);
+  /** \copydoc
+   * Helmholtz3dPotentialOperatorBase::~Helmholtz3dPotentialOperatorBase */
+  virtual ~Helmholtz3dDoubleLayerPotentialOperator();
 };
 
 } // namespace Bempp

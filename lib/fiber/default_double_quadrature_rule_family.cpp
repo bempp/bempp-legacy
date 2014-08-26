@@ -23,37 +23,31 @@
 #include "explicit_instantiation.hpp"
 #include "numerical_quadrature.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 template <typename CoordinateType>
-void
-DefaultDoubleQuadratureRuleFamily<CoordinateType>::
-fillQuadraturePointsAndWeights(
-        const DoubleQuadratureDescriptor& desc,
-        arma::Mat<CoordinateType>& testPoints,
-        arma::Mat<CoordinateType>& trialPoints,
-        std::vector<CoordinateType>& testWeights,
-        std::vector<CoordinateType>& trialWeights,
-        bool& isTensor) const
-{
-    const ElementPairTopology& topology = desc.topology;
-    if (topology.type == ElementPairTopology::Disjoint) {
-        // Create a tensor rule
-        fillSingleQuadraturePointsAndWeights(topology.testVertexCount,
-                                             desc.testOrder,
-                                             testPoints, testWeights);
-        fillSingleQuadraturePointsAndWeights(topology.trialVertexCount,
-                                             desc.trialOrder,
-                                             trialPoints, trialWeights);
-        isTensor = true;
-    } else {
-        // Create a non-tensor rule, leaving trialWeights empty
-        fillDoubleSingularQuadraturePointsAndWeights(
-            desc, testPoints, trialPoints, testWeights);
-        trialWeights.clear();
-        isTensor = false;
-    }
+void DefaultDoubleQuadratureRuleFamily<CoordinateType>::
+    fillQuadraturePointsAndWeights(const DoubleQuadratureDescriptor &desc,
+                                   arma::Mat<CoordinateType> &testPoints,
+                                   arma::Mat<CoordinateType> &trialPoints,
+                                   std::vector<CoordinateType> &testWeights,
+                                   std::vector<CoordinateType> &trialWeights,
+                                   bool &isTensor) const {
+  const ElementPairTopology &topology = desc.topology;
+  if (topology.type == ElementPairTopology::Disjoint) {
+    // Create a tensor rule
+    fillSingleQuadraturePointsAndWeights(
+        topology.testVertexCount, desc.testOrder, testPoints, testWeights);
+    fillSingleQuadraturePointsAndWeights(
+        topology.trialVertexCount, desc.trialOrder, trialPoints, trialWeights);
+    isTensor = true;
+  } else {
+    // Create a non-tensor rule, leaving trialWeights empty
+    fillDoubleSingularQuadraturePointsAndWeights(desc, testPoints, trialPoints,
+                                                 testWeights);
+    trialWeights.clear();
+    isTensor = false;
+  }
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT_REAL_ONLY(

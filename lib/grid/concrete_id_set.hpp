@@ -28,86 +28,83 @@
 
 #include <stdexcept>
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \ingroup grid_internal
  *  \brief Wrapper of a Dune id set of type \p DuneIdSet providing access to the
  entities of a Dune grid of type \p DuneGrid.
 
- \internal Both these typenames are needed because <tt>Dune::IdSet</tt> does not export
+ \internal Both these typenames are needed because <tt>Dune::IdSet</tt> does not
+ export
  entity type.
  */
-template<typename DuneGrid, typename DuneIdSet>
-class ConcreteIdSet: public IdSet
-{
+template <typename DuneGrid, typename DuneIdSet>
+class ConcreteIdSet : public IdSet {
 private:
-    const DuneIdSet* m_dune_id_set;
+  const DuneIdSet *m_dune_id_set;
 
 public:
-    /** \brief Constructor.
+  /** \brief Constructor.
 
-      This object does not assume ownership of \p *dune_id_set.
-    */
-    explicit ConcreteIdSet(const DuneIdSet* dune_id_set) :
-        m_dune_id_set(dune_id_set) {
-    }
+    This object does not assume ownership of \p *dune_id_set.
+  */
+  explicit ConcreteIdSet(const DuneIdSet *dune_id_set)
+      : m_dune_id_set(dune_id_set) {}
 
-    /** \brief Read-only access to the underlying Dune id set. */
-    const DuneIdSet& duneIdSet() const {
-        return *m_dune_id_set;
-    }
+  /** \brief Read-only access to the underlying Dune id set. */
+  const DuneIdSet &duneIdSet() const { return *m_dune_id_set; }
 
-    virtual IdType entityId(const Entity<0>& e) const {
-        return entityCodimNId(e);
-    }
-    virtual IdType entityId(const Entity<1>& e) const {
-        return entityCodimNId(e);
-    }
-    virtual IdType entityId(const Entity<2>& e) const {
-        return entityCodimNId(e);
-    }
-    virtual IdType entityId(const Entity<3>& e) const {
-        return entityCodimNId(e);
-    }
+  virtual IdType entityId(const Entity<0> &e) const {
+    return entityCodimNId(e);
+  }
+  virtual IdType entityId(const Entity<1> &e) const {
+    return entityCodimNId(e);
+  }
+  virtual IdType entityId(const Entity<2> &e) const {
+    return entityCodimNId(e);
+  }
+  virtual IdType entityId(const Entity<3> &e) const {
+    return entityCodimNId(e);
+  }
 
-    virtual IdType subEntityId(const Entity<0>& e, size_t i, int codimSub) const {
+  virtual IdType subEntityId(const Entity<0> &e, size_t i, int codimSub) const {
 #ifndef NDEBUG
-        // Prevent an assert in FoamGrid from crashing the Python interpreter
-        if (codimSub > DuneGrid::dimension)
-            throw std::invalid_argument("IndexSet::subEntityIndex(): codimSub exceeds grid dimension");
+    // Prevent an assert in FoamGrid from crashing the Python interpreter
+    if (codimSub > DuneGrid::dimension)
+      throw std::invalid_argument(
+          "IndexSet::subEntityIndex(): codimSub exceeds grid dimension");
 #endif
-        typedef typename DuneGrid::template Codim<0>::Entity DuneEntity;
-        typedef ConcreteEntity<0, DuneEntity> ConcEntity;
-        const ConcEntity& ce = dynamic_cast<const ConcEntity&>(e);
-        return m_dune_id_set->subId(ce.duneEntity(), i, codimSub);
-    }
+    typedef typename DuneGrid::template Codim<0>::Entity DuneEntity;
+    typedef ConcreteEntity<0, DuneEntity> ConcEntity;
+    const ConcEntity &ce = dynamic_cast<const ConcEntity &>(e);
+    return m_dune_id_set->subId(ce.duneEntity(), i, codimSub);
+  }
 
 private:
-    // Below there are essentially two overloads of
-    // template <int codim>
-    // IdType entityCodimNId(const Entity<codim>& e) const;
-    // valid for codim > DuneGrid::dimension (throws exception)
-    // and for the opposite case (does real work).
-    //
-    // This is not a very pretty code, ideas how to improve it are welcome!
-    // The problem is that we cannot allow the compiler to instantiate
-    // Dune::Entity objects with codim > DuneGrid::dimension
-    // because that throws a static assert in Dune code.
-    template <int codim>
-    typename boost::disable_if_c<codim <= DuneGrid::dimension, IdType>::type
-    entityCodimNId(const Entity<codim>& e) const {
-        throw std::logic_error("IdSet::entityId(): invalid entity codimension");
-    }
+  // Below there are essentially two overloads of
+  // template <int codim>
+  // IdType entityCodimNId(const Entity<codim>& e) const;
+  // valid for codim > DuneGrid::dimension (throws exception)
+  // and for the opposite case (does real work).
+  //
+  // This is not a very pretty code, ideas how to improve it are welcome!
+  // The problem is that we cannot allow the compiler to instantiate
+  // Dune::Entity objects with codim > DuneGrid::dimension
+  // because that throws a static assert in Dune code.
+  template <int codim>
+  typename boost::disable_if_c<codim <= DuneGrid::dimension, IdType>::type
+  entityCodimNId(const Entity<codim> &e) const {
+    throw std::logic_error("IdSet::entityId(): invalid entity codimension");
+  }
 
-    template <int codim>
-    typename boost::enable_if_c<codim <= DuneGrid::dimension, IdType>::type
-    entityCodimNId(const Entity<codim>& e) const {
-        typedef typename DuneGrid::template Codim<codim>::Entity DuneEntity;
-        typedef ConcreteEntity<codim, DuneEntity> ConcEntity;
-        const ConcEntity& ce = dynamic_cast<const ConcEntity&>(e);
-        return m_dune_id_set->id(ce.duneEntity());
-    }
+  template <int codim>
+  typename boost::enable_if_c<codim <= DuneGrid::dimension, IdType>::type
+  entityCodimNId(const Entity<codim> &e) const {
+    typedef typename DuneGrid::template Codim<codim>::Entity DuneEntity;
+    typedef ConcreteEntity<codim, DuneEntity> ConcEntity;
+    const ConcEntity &ce = dynamic_cast<const ConcEntity &>(e);
+    return m_dune_id_set->id(ce.duneEntity());
+  }
 };
 
 } // namespace Bempp

@@ -29,8 +29,7 @@
 
 #include <vector>
 
-namespace Fiber
-{
+namespace Fiber {
 
 const int ALL_COMPONENTS = -1;
 
@@ -43,62 +42,61 @@ const int ALL_COMPONENTS = -1;
   P_{ij} = \int_{E_j} K(x_i, y) f_j(y) \, \mathrm{d}E_j,
   \f]
 
-  where \f$\{x_i\}\f$ is a set of points, \f$E_j\f$ a set of elements and \f$f_j\f$
+  where \f$\{x_i\}\f$ is a set of points, \f$E_j\f$ a set of elements and
+  \f$f_j\f$
   a set of functions living on the corresponding elements.
 
   Concrete subclasses of this interface class automatically select integrators
   well-adapted for evaluation of specific integrals occurring in matrix
   representations of different classes of operators.
  */
-template <typename ResultType>
-class LocalAssemblerForPotentialOperators
-{
+template <typename ResultType> class LocalAssemblerForPotentialOperators {
 public:
-    typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
+  typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
 
-    virtual ~LocalAssemblerForPotentialOperators() {}
+  virtual ~LocalAssemblerForPotentialOperators() {}
 
-    /** \brief Assemble local contributions.
+  /** \brief Assemble local contributions.
 
-    If \p nominalDistance is nonnegative, it is taken as the distance between
-    all point-element pairs for the purposes of selecting the quadrature method.
-    Otherwise the interelement distance is calculated separately for each
-    point-element pair. */
-    virtual void evaluateLocalContributions(
-            const std::vector<int>& pointIndices,
-            int trialElementIndex,
-            LocalDofIndex localTrialDofIndex,
-            std::vector<arma::Mat<ResultType> >& result,
-            CoordinateType nominalDistance = -1.) = 0;
+  If \p nominalDistance is nonnegative, it is taken as the distance between
+  all point-element pairs for the purposes of selecting the quadrature method.
+  Otherwise the interelement distance is calculated separately for each
+  point-element pair. */
+  virtual void
+  evaluateLocalContributions(const std::vector<int> &pointIndices,
+                             int trialElementIndex,
+                             LocalDofIndex localTrialDofIndex,
+                             std::vector<arma::Mat<ResultType>> &result,
+                             CoordinateType nominalDistance = -1.) = 0;
 
-    /** \brief Assemble local contributions.
+  /** \brief Assemble local contributions.
 
-    If \p nominalDistance is nonnegative, it is taken as the distance between
-    all point-element pairs for the purposes of selecting the quadrature method.
-    Otherwise the interelement distance is calculated separately for each
-    point-element pair. */
-    virtual void evaluateLocalContributions(
-            int pointIndex,
-            int componentIndex,
-            const std::vector<int>& trialElementIndices,
-            std::vector<arma::Mat<ResultType> >& result,
-            CoordinateType nominalDistance = -1.) = 0;
+  If \p nominalDistance is nonnegative, it is taken as the distance between
+  all point-element pairs for the purposes of selecting the quadrature method.
+  Otherwise the interelement distance is calculated separately for each
+  point-element pair. */
+  virtual void
+  evaluateLocalContributions(int pointIndex, int componentIndex,
+                             const std::vector<int> &trialElementIndices,
+                             std::vector<arma::Mat<ResultType>> &result,
+                             CoordinateType nominalDistance = -1.) = 0;
 
-    /** \brief Assemble local contributions.
+  /** \brief Assemble local contributions.
 
-    If \p nominalDistance is nonnegative, it is taken as the distance between
-    all point-element pairs for the purposes of selecting the quadrature method.
-    Otherwise the interelement distance is calculated separately for each
-    point-element pair. */
-    virtual void evaluateLocalContributions(
-            const std::vector<int>& pointIndices,
-            const std::vector<int>& trialElementIndices,
-            Fiber::_2dArray<arma::Mat<ResultType> >& result,
-            CoordinateType nominalDistance = -1.) = 0;
+  If \p nominalDistance is nonnegative, it is taken as the distance between
+  all point-element pairs for the purposes of selecting the quadrature method.
+  Otherwise the interelement distance is calculated separately for each
+  point-element pair. */
+  virtual void
+  evaluateLocalContributions(const std::vector<int> &pointIndices,
+                             const std::vector<int> &trialElementIndices,
+                             Fiber::_2dArray<arma::Mat<ResultType>> &result,
+                             CoordinateType nominalDistance = -1.) = 0;
 
-    virtual int resultDimension() const = 0;
+  virtual int resultDimension() const = 0;
 
-    virtual CoordinateType estimateRelativeScale(CoordinateType minDist) const = 0;
+  virtual CoordinateType
+  estimateRelativeScale(CoordinateType minDist) const = 0;
 };
 
 } // namespace Fiber

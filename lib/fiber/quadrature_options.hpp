@@ -23,8 +23,7 @@
 
 #include "../common/common.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \ingroup quadrature
  *  \brief Options controlling the order of numerical quadrature.
@@ -33,44 +32,41 @@ namespace Fiber
  *  numerical quadrature rule used to approximate a certain class of integrals.
  *  The order can be set either as absolute or as relative with respect to some
  *  default value determined by the code doing the integration. */
-class QuadratureOptions
-{
+class QuadratureOptions {
 public:
-    /** \brief Construct a QuadratureOptions object corresponding
-     *  to a default accuracy order. */
-    QuadratureOptions() : m_relative(true), m_value(0) {
-    }
+  /** \brief Construct a QuadratureOptions object corresponding
+   *  to a default accuracy order. */
+  QuadratureOptions() : m_relative(true), m_value(0) {}
 
-    /** \brief Construct a QuadratureOptions object corresponding
-     *  to a specific accuracy order. */
-    QuadratureOptions(int order, bool relative) :
-        m_relative(relative), m_value(order) {
-    }
+  /** \brief Construct a QuadratureOptions object corresponding
+   *  to a specific accuracy order. */
+  QuadratureOptions(int order, bool relative)
+      : m_relative(relative), m_value(order) {}
 
-    /** \brief Set quadrature accuracy order to \p order. */
-    void setAbsoluteQuadratureOrder(int order) {
-        m_relative = false;
-        m_value = order;
-    }
+  /** \brief Set quadrature accuracy order to \p order. */
+  void setAbsoluteQuadratureOrder(int order) {
+    m_relative = false;
+    m_value = order;
+  }
 
-    /** \brief Set quadrature accuracy order to a default value plus \p offset. */
-    void setRelativeQuadratureOrder(int offset) {
-        m_relative = true;
-        m_value = offset;
-    }
+  /** \brief Set quadrature accuracy order to a default value plus \p offset. */
+  void setRelativeQuadratureOrder(int offset) {
+    m_relative = true;
+    m_value = offset;
+  }
 
-    /** \brief Get quadrature accuracy order assuming that its default value is
-     *  \p defaultOrder. */
-    int quadratureOrder(int defaultOrder) const {
-        if (m_relative)
-            return defaultOrder + m_value;
-        else
-            return m_value;
-    }
+  /** \brief Get quadrature accuracy order assuming that its default value is
+   *  \p defaultOrder. */
+  int quadratureOrder(int defaultOrder) const {
+    if (m_relative)
+      return defaultOrder + m_value;
+    else
+      return m_value;
+  }
 
 private:
-    bool m_relative;
-    int m_value;
+  bool m_relative;
+  int m_value;
 };
 
 } // namespace Fiber

@@ -27,80 +27,64 @@
 #include <cmath>
 #include <cassert>
 
-namespace Bempp
-{
+namespace Bempp {
 
-class ScatteredRange
-{
+class ScatteredRange {
 public:
-    class const_iterator {
-    public:
-        const_iterator(size_t value, size_t end, size_t step) :
-            m_value(value), m_end(end), m_step(step) {
-            assert(step > 0);
-        }
-
-        const_iterator operator++() {
-            m_value = std::min(m_value + m_step, m_end);
-            return *this;
-        }
-
-        size_t value() const {
-            return m_value;
-        }
-
-        size_t step() const {
-            return m_step;
-        }
-
-        // Implicit conversion to size_t
-        operator size_t() const {
-            return m_value;
-        }
-
-    private:
-        size_t m_value, m_end, m_step;
-    };
-
-    ScatteredRange(size_t begin, size_t end, size_t step = 1) :
-        m_begin(begin), m_end(end), m_step(step) {}
-
-    ScatteredRange(ScatteredRange& range, tbb::split) {
-        m_begin = range.m_begin + range.m_step;
-        m_end = range.m_end;
-        m_step = range.m_step * 2;
-        range.m_step *= 2;
+  class const_iterator {
+  public:
+    const_iterator(size_t value, size_t end, size_t step)
+        : m_value(value), m_end(end), m_step(step) {
+      assert(step > 0);
     }
 
-    bool empty() const {
-        return m_begin >= m_end;
+    const_iterator operator++() {
+      m_value = std::min(m_value + m_step, m_end);
+      return *this;
     }
 
-    bool is_divisible() const {
-        return m_begin + m_step < m_end;
-    }
+    size_t value() const { return m_value; }
 
-    const_iterator begin() const {
-        return const_iterator(m_begin, m_end, m_step);
-    }
+    size_t step() const { return m_step; }
 
-    const_iterator end() const {
-        return const_iterator(m_end, m_end, m_step);
-    }
+    // Implicit conversion to size_t
+    operator size_t() const { return m_value; }
 
-    size_t step() const {
-        return m_step;
-    }
+  private:
+    size_t m_value, m_end, m_step;
+  };
 
-    size_t size() const {
-        if (empty())
-            return 0;
-        else
-            return (m_end - 1 - m_begin) / m_step + 1;
-    }
+  ScatteredRange(size_t begin, size_t end, size_t step = 1)
+      : m_begin(begin), m_end(end), m_step(step) {}
+
+  ScatteredRange(ScatteredRange &range, tbb::split) {
+    m_begin = range.m_begin + range.m_step;
+    m_end = range.m_end;
+    m_step = range.m_step * 2;
+    range.m_step *= 2;
+  }
+
+  bool empty() const { return m_begin >= m_end; }
+
+  bool is_divisible() const { return m_begin + m_step < m_end; }
+
+  const_iterator begin() const {
+    return const_iterator(m_begin, m_end, m_step);
+  }
+
+  const_iterator end() const { return const_iterator(m_end, m_end, m_step); }
+
+  size_t step() const { return m_step; }
+
+  size_t size() const {
+    if (empty())
+      return 0;
+    else
+      return (m_end - 1 - m_begin) / m_step + 1;
+  }
 
 private:
-    size_t m_begin, m_end, m_step;
+  size_t m_begin, m_end, m_step;
 };
 
 } // namespace Bempp

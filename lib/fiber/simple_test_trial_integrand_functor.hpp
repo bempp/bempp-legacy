@@ -29,8 +29,7 @@
 #include "conjugate.hpp"
 #include "scalar_traits.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \ingroup functors
  *  \brief Functor evaluating the integrand of the standard identity operator.
@@ -40,35 +39,34 @@ namespace Fiber
  *  transformation.
  */
 template <typename BasisFunctionType_, typename ResultType_>
-class SimpleTestTrialIntegrandFunctor
-{
+class SimpleTestTrialIntegrandFunctor {
 public:
-    typedef BasisFunctionType_ BasisFunctionType;
-    typedef ResultType_ ResultType;
-    typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
+  typedef BasisFunctionType_ BasisFunctionType;
+  typedef ResultType_ ResultType;
+  typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
 
-    void addGeometricalDependencies(size_t& geomDeps) const {
-        // do nothing
-    }
+  void addGeometricalDependencies(size_t &geomDeps) const {
+    // do nothing
+  }
 
-    ResultType evaluate(
-            const ConstGeometricalDataSlice<CoordinateType>& /* geomData */,
-            const CollectionOf1dSlicesOfConst3dArrays<BasisFunctionType>& testValues,
-            const CollectionOf1dSlicesOfConst3dArrays<BasisFunctionType>& trialValues) const {
-        // Assert that there is at least one test and trial transformation
-        // and that the dimensions of the first pair agree
-        assert(testValues.size() >= 1);
-        assert(trialValues.size() >= 1);
-        assert(testValues[0].extent(0) == trialValues[0].extent(0));
+  ResultType evaluate(
+      const ConstGeometricalDataSlice<CoordinateType> & /* geomData */,
+      const CollectionOf1dSlicesOfConst3dArrays<BasisFunctionType> &testValues,
+      const CollectionOf1dSlicesOfConst3dArrays<BasisFunctionType> &trialValues)
+      const {
+    // Assert that there is at least one test and trial transformation
+    // and that the dimensions of the first pair agree
+    assert(testValues.size() >= 1);
+    assert(trialValues.size() >= 1);
+    assert(testValues[0].extent(0) == trialValues[0].extent(0));
 
-        const int transformationDim = testValues[0].extent(0);
+    const int transformationDim = testValues[0].extent(0);
 
-        BasisFunctionType result = 0.;
-        for (int dim = 0; dim < transformationDim; ++dim)
-            result += conjugate(testValues[0](dim)) *
-                    trialValues[0](dim);
-        return result;
-    }
+    BasisFunctionType result = 0.;
+    for (int dim = 0; dim < transformationDim; ++dim)
+      result += conjugate(testValues[0](dim)) * trialValues[0](dim);
+    return result;
+  }
 };
 
 } // namespace Fiber

@@ -25,70 +25,60 @@
 
 #include "../fiber/explicit_instantiation.hpp"
 
-namespace Bempp
-{
+namespace Bempp {
 
 template <typename BasisFunctionType_, typename ResultType_>
 AbstractBoundaryOperatorSum<BasisFunctionType_, ResultType_>::
-AbstractBoundaryOperatorSum(
-        const BoundaryOperator<BasisFunctionType, ResultType>& term1,
-        const BoundaryOperator<BasisFunctionType, ResultType>& term2,
-        int symmetry) :
-    Base(term1.domain(), term1.range(), term1.dualToRange(),
-         "(" + term1.label() + ") + (" + term2.label() + ")",
-         symmetry & AUTO_SYMMETRY ?
-             (term1.abstractOperator()->symmetry() &
-              term2.abstractOperator()->symmetry()) :
-             symmetry),
-    m_term1(term1), m_term2(term2)
-{
-    assert(m_term1.abstractOperator());
-    assert(m_term2.abstractOperator());
+    AbstractBoundaryOperatorSum(
+        const BoundaryOperator<BasisFunctionType, ResultType> &term1,
+        const BoundaryOperator<BasisFunctionType, ResultType> &term2,
+        int symmetry)
+    : Base(term1.domain(), term1.range(), term1.dualToRange(),
+           "(" + term1.label() + ") + (" + term2.label() + ")",
+           symmetry & AUTO_SYMMETRY ? (term1.abstractOperator()->symmetry() &
+                                       term2.abstractOperator()->symmetry())
+                                    : symmetry),
+      m_term1(term1), m_term2(term2) {
+  assert(m_term1.abstractOperator());
+  assert(m_term2.abstractOperator());
 
-    if (m_term1.domain() != m_term2.domain())
-        throw std::invalid_argument(
-                "AbstractBoundaryOperatorSum::AbstractBoundaryOperatorSum(" +
-                m_term1.label() +
-                ", " +
-                m_term2.label() +
-                "): Domains of the two terms must be equal");
-    if (m_term1.range() != m_term2.range())
-        throw std::invalid_argument(
-                "AbstractBoundaryOperatorSum::AbstractBoundaryOperatorSum(" +
-                m_term1.label() +
-                ", " +
-                m_term2.label() +
-                "): Ranges of the two terms must be equal");
-    if (m_term1.dualToRange() != m_term2.dualToRange())
-        throw std::invalid_argument(
-                "AbstractBoundaryOperatorSum::AbstractBoundaryOperatorSum(" +
-                m_term1.label() +
-                ", " +
-                m_term2.label() +
-                "): Spaces dual to the ranges of the two terms must be equal");
+  if (m_term1.domain() != m_term2.domain())
+    throw std::invalid_argument(
+        "AbstractBoundaryOperatorSum::AbstractBoundaryOperatorSum(" +
+        m_term1.label() + ", " + m_term2.label() +
+        "): Domains of the two terms must be equal");
+  if (m_term1.range() != m_term2.range())
+    throw std::invalid_argument(
+        "AbstractBoundaryOperatorSum::AbstractBoundaryOperatorSum(" +
+        m_term1.label() + ", " + m_term2.label() +
+        "): Ranges of the two terms must be equal");
+  if (m_term1.dualToRange() != m_term2.dualToRange())
+    throw std::invalid_argument(
+        "AbstractBoundaryOperatorSum::AbstractBoundaryOperatorSum(" +
+        m_term1.label() + ", " + m_term2.label() +
+        "): Spaces dual to the ranges of the two terms must be equal");
 }
 
 template <typename BasisFunctionType, typename ResultType>
-bool AbstractBoundaryOperatorSum<BasisFunctionType, ResultType>::isLocal() const
-{
-    return (m_term1.abstractOperator()->isLocal() &&
-            m_term2.abstractOperator()->isLocal());
+bool
+AbstractBoundaryOperatorSum<BasisFunctionType, ResultType>::isLocal() const {
+  return (m_term1.abstractOperator()->isLocal() &&
+          m_term2.abstractOperator()->isLocal());
 }
 
 template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType>
-AbstractBoundaryOperatorSum<BasisFunctionType, ResultType>::term1() const
-{
-    return m_term1;
+AbstractBoundaryOperatorSum<BasisFunctionType, ResultType>::term1() const {
+  return m_term1;
 }
 
 template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType>
-AbstractBoundaryOperatorSum<BasisFunctionType, ResultType>::term2() const
-{
-    return m_term2;
+AbstractBoundaryOperatorSum<BasisFunctionType, ResultType>::term2() const {
+  return m_term2;
 }
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(AbstractBoundaryOperatorSum);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(
+    AbstractBoundaryOperatorSum);
 
 } // namespace Bempp

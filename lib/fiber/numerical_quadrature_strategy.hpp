@@ -27,8 +27,7 @@
 
 #include "accuracy_options.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 template <typename BasisFunctionType> class QuadratureDescriptorSelectorFactory;
 template <typename CoordinateType> class DoubleQuadratureRuleFamily;
@@ -80,113 +79,134 @@ template <typename CoordinateType> class SingleQuadratureRuleFamily;
  * pass their instances to a NumericalQuadratureStrategy contructor.
  */
 template <typename BasisFunctionType, typename ResultType,
-typename GeometryFactory, typename Enable>
-class NumericalQuadratureStrategyBase :
-        public QuadratureStrategy<BasisFunctionType, ResultType,
-        GeometryFactory, Enable>
-{
+          typename GeometryFactory, typename Enable>
+class NumericalQuadratureStrategyBase
+    : public QuadratureStrategy<BasisFunctionType, ResultType, GeometryFactory,
+                                Enable> {
 public:
-    typedef QuadratureStrategy<BasisFunctionType, ResultType,
-    GeometryFactory, Enable> Base;
-    typedef typename Base::CoordinateType CoordinateType;
+  typedef QuadratureStrategy<BasisFunctionType, ResultType, GeometryFactory,
+                             Enable> Base;
+  typedef typename Base::CoordinateType CoordinateType;
 
-    NumericalQuadratureStrategyBase(
-        const shared_ptr<const QuadratureDescriptorSelectorFactory<BasisFunctionType> >&
-        quadratureDescriptorSelectorFactory,
-        const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType> >&
-        singleQuadratureRuleFamily,
-        const shared_ptr<const DoubleQuadratureRuleFamily<CoordinateType> >&
-        doubleQuadratureRuleFamily);
+  NumericalQuadratureStrategyBase(
+      const shared_ptr<const QuadratureDescriptorSelectorFactory<
+          BasisFunctionType>> &quadratureDescriptorSelectorFactory,
+      const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType>> &
+          singleQuadratureRuleFamily,
+      const shared_ptr<const DoubleQuadratureRuleFamily<CoordinateType>> &
+          doubleQuadratureRuleFamily);
 
 public:
-    virtual std::unique_ptr<LocalAssemblerForLocalOperators<ResultType> >
-    makeAssemblerForIdentityOperators(
-            const shared_ptr<const GeometryFactory>& geometryFactory,
-            const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
-            const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& testShapesets,
-            const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& trialShapesets,
-            const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& testTransformations,
-            const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& trialTransformations,
-            const shared_ptr<const OpenClHandler>& openClHandler) const;
+  virtual std::unique_ptr<LocalAssemblerForLocalOperators<ResultType>>
+  makeAssemblerForIdentityOperators(
+      const shared_ptr<const GeometryFactory> &geometryFactory,
+      const shared_ptr<const RawGridGeometry<CoordinateType>> &rawGeometry,
+      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
+          testShapesets,
+      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
+          trialShapesets,
+      const shared_ptr<const CollectionOfShapesetTransformations<
+          CoordinateType>> &testTransformations,
+      const shared_ptr<const CollectionOfShapesetTransformations<
+          CoordinateType>> &trialTransformations,
+      const shared_ptr<const OpenClHandler> &openClHandler) const;
 
-    virtual std::unique_ptr<LocalAssemblerForLocalOperators<ResultType> >
-    makeAssemblerForLocalOperators(
-            const shared_ptr<const GeometryFactory>& geometryFactory,
-            const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
-            const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& testShapesets,
-            const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& trialShapesets,
-            const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& testTransformations,
-            const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& trialTransformations,
-            const shared_ptr<const TestTrialIntegral<BasisFunctionType, ResultType> >& integral,
-            const shared_ptr<const OpenClHandler>& openClHandler) const;
+  virtual std::unique_ptr<LocalAssemblerForLocalOperators<ResultType>>
+  makeAssemblerForLocalOperators(
+      const shared_ptr<const GeometryFactory> &geometryFactory,
+      const shared_ptr<const RawGridGeometry<CoordinateType>> &rawGeometry,
+      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
+          testShapesets,
+      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
+          trialShapesets,
+      const shared_ptr<const CollectionOfShapesetTransformations<
+          CoordinateType>> &testTransformations,
+      const shared_ptr<const CollectionOfShapesetTransformations<
+          CoordinateType>> &trialTransformations,
+      const shared_ptr<const TestTrialIntegral<BasisFunctionType, ResultType>> &
+          integral,
+      const shared_ptr<const OpenClHandler> &openClHandler) const;
 
 private:
-    virtual std::unique_ptr<LocalAssemblerForIntegralOperators<ResultType> >
-    makeAssemblerForIntegralOperatorsImplRealKernel(
-            const shared_ptr<const GeometryFactory>& testGeometryFactory,
-            const shared_ptr<const GeometryFactory>& trialGeometryFactory,
-            const shared_ptr<const RawGridGeometry<CoordinateType> >& testRawGeometry,
-            const shared_ptr<const RawGridGeometry<CoordinateType> >& trialRawGeometry,
-            const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& testShapesets,
-            const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& trialShapesets,
-            const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& testTransformations,
-            const shared_ptr<const CollectionOfKernels<CoordinateType> >& kernels,
-            const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& trialTransformations,
-            const shared_ptr<const TestKernelTrialIntegral<BasisFunctionType, CoordinateType, ResultType> >& integral,
-            const shared_ptr<const OpenClHandler>& openClHandler,
-            const ParallelizationOptions& parallelizationOptions,
-            VerbosityLevel::Level verbosityLevel,
-            bool cacheSingularIntegrals) const;
+  virtual std::unique_ptr<LocalAssemblerForIntegralOperators<ResultType>>
+  makeAssemblerForIntegralOperatorsImplRealKernel(
+      const shared_ptr<const GeometryFactory> &testGeometryFactory,
+      const shared_ptr<const GeometryFactory> &trialGeometryFactory,
+      const shared_ptr<const RawGridGeometry<CoordinateType>> &testRawGeometry,
+      const shared_ptr<const RawGridGeometry<CoordinateType>> &trialRawGeometry,
+      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
+          testShapesets,
+      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
+          trialShapesets,
+      const shared_ptr<const CollectionOfShapesetTransformations<
+          CoordinateType>> &testTransformations,
+      const shared_ptr<const CollectionOfKernels<CoordinateType>> &kernels,
+      const shared_ptr<const CollectionOfShapesetTransformations<
+          CoordinateType>> &trialTransformations,
+      const shared_ptr<const TestKernelTrialIntegral<
+          BasisFunctionType, CoordinateType, ResultType>> &integral,
+      const shared_ptr<const OpenClHandler> &openClHandler,
+      const ParallelizationOptions &parallelizationOptions,
+      VerbosityLevel::Level verbosityLevel, bool cacheSingularIntegrals) const;
 
-    virtual std::unique_ptr<LocalAssemblerForGridFunctions<ResultType> >
-    makeAssemblerForGridFunctionsImplRealUserFunction(
-            const shared_ptr<const GeometryFactory>& geometryFactory,
-            const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
-            const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& testShapesets,
-            const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& testTransformations,
-            const shared_ptr<const Function<CoordinateType> >& function,
-            const shared_ptr<const OpenClHandler>& openClHandler) const;
+  virtual std::unique_ptr<LocalAssemblerForGridFunctions<ResultType>>
+  makeAssemblerForGridFunctionsImplRealUserFunction(
+      const shared_ptr<const GeometryFactory> &geometryFactory,
+      const shared_ptr<const RawGridGeometry<CoordinateType>> &rawGeometry,
+      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
+          testShapesets,
+      const shared_ptr<const CollectionOfShapesetTransformations<
+          CoordinateType>> &testTransformations,
+      const shared_ptr<const Function<CoordinateType>> &function,
+      const shared_ptr<const OpenClHandler> &openClHandler) const;
 
-    virtual std::unique_ptr<EvaluatorForIntegralOperators<ResultType> >
-    makeEvaluatorForIntegralOperatorsImplRealKernel(
-            const shared_ptr<const GeometryFactory>& geometryFactory,
-            const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
-            const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& trialShapesets,
-            const shared_ptr<const CollectionOfKernels<CoordinateType> >& kernels,
-            const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& trialTransformations,
-            const shared_ptr<const KernelTrialIntegral<BasisFunctionType, CoordinateType, ResultType> >& integral,
-            const shared_ptr<const std::vector<std::vector<ResultType> > >& argumentLocalCoefficients,
-            const shared_ptr<const OpenClHandler>& openClHandler,
-            const ParallelizationOptions& parallelizationOptions) const;
+  virtual std::unique_ptr<EvaluatorForIntegralOperators<ResultType>>
+  makeEvaluatorForIntegralOperatorsImplRealKernel(
+      const shared_ptr<const GeometryFactory> &geometryFactory,
+      const shared_ptr<const RawGridGeometry<CoordinateType>> &rawGeometry,
+      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
+          trialShapesets,
+      const shared_ptr<const CollectionOfKernels<CoordinateType>> &kernels,
+      const shared_ptr<const CollectionOfShapesetTransformations<
+          CoordinateType>> &trialTransformations,
+      const shared_ptr<const KernelTrialIntegral<
+          BasisFunctionType, CoordinateType, ResultType>> &integral,
+      const shared_ptr<const std::vector<std::vector<ResultType>>> &
+          argumentLocalCoefficients,
+      const shared_ptr<const OpenClHandler> &openClHandler,
+      const ParallelizationOptions &parallelizationOptions) const;
 
-    virtual std::unique_ptr<LocalAssemblerForPotentialOperators<ResultType> >
-    makeAssemblerForPotentialOperatorsImplRealKernel(
-            const arma::Mat<CoordinateType>& evaluationPoints,
-            const shared_ptr<const GeometryFactory>& geometryFactory,
-            const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
-            const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& trialShapesets,
-            const shared_ptr<const CollectionOfKernels<CoordinateType> >& kernels,
-            const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& trialTransformations,
-            const shared_ptr<const KernelTrialIntegral<BasisFunctionType, CoordinateType, ResultType> >& integral,
-            const shared_ptr<const OpenClHandler>& openClHandler,
-            const ParallelizationOptions& parallelizationOptions,
-            VerbosityLevel::Level verbosityLevel) const;
+  virtual std::unique_ptr<LocalAssemblerForPotentialOperators<ResultType>>
+  makeAssemblerForPotentialOperatorsImplRealKernel(
+      const arma::Mat<CoordinateType> &evaluationPoints,
+      const shared_ptr<const GeometryFactory> &geometryFactory,
+      const shared_ptr<const RawGridGeometry<CoordinateType>> &rawGeometry,
+      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
+          trialShapesets,
+      const shared_ptr<const CollectionOfKernels<CoordinateType>> &kernels,
+      const shared_ptr<const CollectionOfShapesetTransformations<
+          CoordinateType>> &trialTransformations,
+      const shared_ptr<const KernelTrialIntegral<
+          BasisFunctionType, CoordinateType, ResultType>> &integral,
+      const shared_ptr<const OpenClHandler> &openClHandler,
+      const ParallelizationOptions &parallelizationOptions,
+      VerbosityLevel::Level verbosityLevel) const;
 
 protected:
-    shared_ptr<const QuadratureDescriptorSelectorFactory<BasisFunctionType> >
-    quadratureDescriptorSelectorFactory() const;
-    shared_ptr<const SingleQuadratureRuleFamily<CoordinateType> >
-    singleQuadratureRuleFamily() const;
-    shared_ptr<const DoubleQuadratureRuleFamily<CoordinateType> >
-    doubleQuadratureRuleFamily() const;
+  shared_ptr<const QuadratureDescriptorSelectorFactory<BasisFunctionType>>
+  quadratureDescriptorSelectorFactory() const;
+  shared_ptr<const SingleQuadratureRuleFamily<CoordinateType>>
+  singleQuadratureRuleFamily() const;
+  shared_ptr<const DoubleQuadratureRuleFamily<CoordinateType>>
+  doubleQuadratureRuleFamily() const;
 
 private:
-    shared_ptr<const QuadratureDescriptorSelectorFactory<BasisFunctionType> >
-    m_quadratureDescriptorSelectorFactory;
-    shared_ptr<const SingleQuadratureRuleFamily<CoordinateType> >
-    m_singleQuadratureRuleFamily;
-    shared_ptr<const DoubleQuadratureRuleFamily<CoordinateType> >
-    m_doubleQuadratureRuleFamily;
+  shared_ptr<const QuadratureDescriptorSelectorFactory<BasisFunctionType>>
+  m_quadratureDescriptorSelectorFactory;
+  shared_ptr<const SingleQuadratureRuleFamily<CoordinateType>>
+  m_singleQuadratureRuleFamily;
+  shared_ptr<const DoubleQuadratureRuleFamily<CoordinateType>>
+  m_doubleQuadratureRuleFamily;
 };
 
 // Complex ResultType
@@ -244,164 +264,187 @@ private:
  * (*) S. Sauter, Ch. Schwab, "Boundary Element Methods" (2010).
  */
 template <typename BasisFunctionType, typename ResultType,
-typename GeometryFactory, typename Enable = void>
-class NumericalQuadratureStrategy :
-        public NumericalQuadratureStrategyBase<
-        BasisFunctionType, ResultType, GeometryFactory, Enable>
-{
-    typedef NumericalQuadratureStrategyBase<
-    BasisFunctionType, ResultType, GeometryFactory, Enable> Base;
+          typename GeometryFactory, typename Enable = void>
+class NumericalQuadratureStrategy
+    : public NumericalQuadratureStrategyBase<BasisFunctionType, ResultType,
+                                             GeometryFactory, Enable> {
+  typedef NumericalQuadratureStrategyBase<BasisFunctionType, ResultType,
+                                          GeometryFactory, Enable> Base;
+
 public:
-    typedef typename Base::CoordinateType CoordinateType;
+  typedef typename Base::CoordinateType CoordinateType;
 
-    /** \brief Construct a numerical quadrature strategy.
-     *
-     * This constructor makes the newly created object use the default
-     * quadrature descriptor selector factory and the default accuracy
-     * options. */
-    NumericalQuadratureStrategy();
+  /** \brief Construct a numerical quadrature strategy.
+   *
+   * This constructor makes the newly created object use the default
+   * quadrature descriptor selector factory and the default accuracy
+   * options. */
+  NumericalQuadratureStrategy();
 
-    /** \brief Construct a numerical quadrature strategy.
-     *
-     * This constructor makes the newly created object use the default
-     * quadrature descriptor selector factory with custom accuracy
-     * options and the default quadrature rule families. */
-    explicit NumericalQuadratureStrategy(
-            const AccuracyOptionsEx& accuracyOptions);
+  /** \brief Construct a numerical quadrature strategy.
+   *
+   * This constructor makes the newly created object use the default
+   * quadrature descriptor selector factory with custom accuracy
+   * options and the default quadrature rule families. */
+  explicit NumericalQuadratureStrategy(
+      const AccuracyOptionsEx &accuracyOptions);
 
-    /** \brief Construct a numerical quadrature strategy.
-     *
-     * This constructor makes the newly created object use the default
-     * quadrature descriptor selector factory with custom accuracy
-     * options and custom quadrature rule families. */
-    NumericalQuadratureStrategy(
-        const AccuracyOptionsEx& accuracyOptions,
-        const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType> >&
-        singleQuadratureRuleFamily,
-        const shared_ptr<const DoubleQuadratureRuleFamily<CoordinateType> >&
-        doubleQuadratureRuleFamily);
+  /** \brief Construct a numerical quadrature strategy.
+   *
+   * This constructor makes the newly created object use the default
+   * quadrature descriptor selector factory with custom accuracy
+   * options and custom quadrature rule families. */
+  NumericalQuadratureStrategy(
+      const AccuracyOptionsEx &accuracyOptions,
+      const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType>> &
+          singleQuadratureRuleFamily,
+      const shared_ptr<const DoubleQuadratureRuleFamily<CoordinateType>> &
+          doubleQuadratureRuleFamily);
 
-    /** \brief Construct a numerical quadrature strategy.
-     *
-     * This constructor makes the newly created object use a custom
-     * quadrature descriptor selector factory and quadrature rule families.
-     */
-    NumericalQuadratureStrategy(
-        const shared_ptr<const QuadratureDescriptorSelectorFactory<BasisFunctionType> >&
-        quadratureDescriptorSelectorFactory,
-        const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType> >&
-        singleQuadratureRuleFamily,
-        const shared_ptr<const DoubleQuadratureRuleFamily<CoordinateType> >&
-        doubleQuadratureRuleFamily);
+  /** \brief Construct a numerical quadrature strategy.
+   *
+   * This constructor makes the newly created object use a custom
+   * quadrature descriptor selector factory and quadrature rule families.
+   */
+  NumericalQuadratureStrategy(
+      const shared_ptr<const QuadratureDescriptorSelectorFactory<
+          BasisFunctionType>> &quadratureDescriptorSelectorFactory,
+      const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType>> &
+          singleQuadratureRuleFamily,
+      const shared_ptr<const DoubleQuadratureRuleFamily<CoordinateType>> &
+          doubleQuadratureRuleFamily);
 
 private:
-    virtual std::unique_ptr<LocalAssemblerForIntegralOperators<ResultType> >
-    makeAssemblerForIntegralOperatorsImplComplexKernel(
-            const shared_ptr<const GeometryFactory>& testGeometryFactory,
-            const shared_ptr<const GeometryFactory>& trialGeometryFactory,
-            const shared_ptr<const RawGridGeometry<CoordinateType> >& testRawGeometry,
-            const shared_ptr<const RawGridGeometry<CoordinateType> >& trialRawGeometry,
-            const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& testShapesets,
-            const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& trialShapesets,
-            const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& testTransformations,
-            const shared_ptr<const CollectionOfKernels<ResultType> >& kernels,
-            const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& trialTransformations,
-            const shared_ptr<const TestKernelTrialIntegral<BasisFunctionType, ResultType, ResultType> >& integral,
-            const shared_ptr<const OpenClHandler>& openClHandler,
-            const ParallelizationOptions& parallelizationOptions,
-            VerbosityLevel::Level verbosityLevel,
-            bool cacheSingularIntegrals) const;
+  virtual std::unique_ptr<LocalAssemblerForIntegralOperators<ResultType>>
+  makeAssemblerForIntegralOperatorsImplComplexKernel(
+      const shared_ptr<const GeometryFactory> &testGeometryFactory,
+      const shared_ptr<const GeometryFactory> &trialGeometryFactory,
+      const shared_ptr<const RawGridGeometry<CoordinateType>> &testRawGeometry,
+      const shared_ptr<const RawGridGeometry<CoordinateType>> &trialRawGeometry,
+      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
+          testShapesets,
+      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
+          trialShapesets,
+      const shared_ptr<const CollectionOfShapesetTransformations<
+          CoordinateType>> &testTransformations,
+      const shared_ptr<const CollectionOfKernels<ResultType>> &kernels,
+      const shared_ptr<const CollectionOfShapesetTransformations<
+          CoordinateType>> &trialTransformations,
+      const shared_ptr<const TestKernelTrialIntegral<
+          BasisFunctionType, ResultType, ResultType>> &integral,
+      const shared_ptr<const OpenClHandler> &openClHandler,
+      const ParallelizationOptions &parallelizationOptions,
+      VerbosityLevel::Level verbosityLevel, bool cacheSingularIntegrals) const;
 
-    virtual std::unique_ptr<LocalAssemblerForGridFunctions<ResultType> >
-    makeAssemblerForGridFunctionsImplComplexUserFunction(
-            const shared_ptr<const GeometryFactory>& geometryFactory,
-            const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
-            const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& testShapesets,
-            const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& testTransformations,
-            const shared_ptr<const Function<ResultType> >& function,
-            const shared_ptr<const OpenClHandler>& openClHandler) const;
+  virtual std::unique_ptr<LocalAssemblerForGridFunctions<ResultType>>
+  makeAssemblerForGridFunctionsImplComplexUserFunction(
+      const shared_ptr<const GeometryFactory> &geometryFactory,
+      const shared_ptr<const RawGridGeometry<CoordinateType>> &rawGeometry,
+      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
+          testShapesets,
+      const shared_ptr<const CollectionOfShapesetTransformations<
+          CoordinateType>> &testTransformations,
+      const shared_ptr<const Function<ResultType>> &function,
+      const shared_ptr<const OpenClHandler> &openClHandler) const;
 
-    virtual std::unique_ptr<EvaluatorForIntegralOperators<ResultType> >
-    makeEvaluatorForIntegralOperatorsImplComplexKernel(
-            const shared_ptr<const GeometryFactory>& geometryFactory,
-            const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
-            const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& trialShapesets,
-            const shared_ptr<const CollectionOfKernels<ResultType> >& kernels,
-            const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& trialTransformations,
-            const shared_ptr<const KernelTrialIntegral<BasisFunctionType, ResultType, ResultType> >& integral,
-            const shared_ptr<const std::vector<std::vector<ResultType> > >& argumentLocalCoefficients,
-            const shared_ptr<const OpenClHandler>& openClHandler,
-            const ParallelizationOptions& parallelizationOptions) const;
+  virtual std::unique_ptr<EvaluatorForIntegralOperators<ResultType>>
+  makeEvaluatorForIntegralOperatorsImplComplexKernel(
+      const shared_ptr<const GeometryFactory> &geometryFactory,
+      const shared_ptr<const RawGridGeometry<CoordinateType>> &rawGeometry,
+      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
+          trialShapesets,
+      const shared_ptr<const CollectionOfKernels<ResultType>> &kernels,
+      const shared_ptr<const CollectionOfShapesetTransformations<
+          CoordinateType>> &trialTransformations,
+      const shared_ptr<const KernelTrialIntegral<BasisFunctionType, ResultType,
+                                                 ResultType>> &integral,
+      const shared_ptr<const std::vector<std::vector<ResultType>>> &
+          argumentLocalCoefficients,
+      const shared_ptr<const OpenClHandler> &openClHandler,
+      const ParallelizationOptions &parallelizationOptions) const;
 
-    virtual std::unique_ptr<LocalAssemblerForPotentialOperators<ResultType> >
-    makeAssemblerForPotentialOperatorsImplComplexKernel(
-            const arma::Mat<CoordinateType>& evaluationPoints,
-            const shared_ptr<const GeometryFactory>& geometryFactory,
-            const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
-            const shared_ptr<const std::vector<const Shapeset<BasisFunctionType>*> >& trialShapesets,
-            const shared_ptr<const CollectionOfKernels<ResultType> >& kernels,
-            const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType> >& trialTransformations,
-            const shared_ptr<const KernelTrialIntegral<BasisFunctionType, ResultType, ResultType> >& integral,
-            const shared_ptr<const OpenClHandler>& openClHandler,
-            const ParallelizationOptions& parallelizationOptions,
-            VerbosityLevel::Level verbosityLevel) const;
+  virtual std::unique_ptr<LocalAssemblerForPotentialOperators<ResultType>>
+  makeAssemblerForPotentialOperatorsImplComplexKernel(
+      const arma::Mat<CoordinateType> &evaluationPoints,
+      const shared_ptr<const GeometryFactory> &geometryFactory,
+      const shared_ptr<const RawGridGeometry<CoordinateType>> &rawGeometry,
+      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
+          trialShapesets,
+      const shared_ptr<const CollectionOfKernels<ResultType>> &kernels,
+      const shared_ptr<const CollectionOfShapesetTransformations<
+          CoordinateType>> &trialTransformations,
+      const shared_ptr<const KernelTrialIntegral<BasisFunctionType, ResultType,
+                                                 ResultType>> &integral,
+      const shared_ptr<const OpenClHandler> &openClHandler,
+      const ParallelizationOptions &parallelizationOptions,
+      VerbosityLevel::Level verbosityLevel) const;
 };
 
 /** \cond ENABLE_IFS */
 // RealResultType
-template <typename BasisFunctionType, typename ResultType, typename GeometryFactory>
+template <typename BasisFunctionType, typename ResultType,
+          typename GeometryFactory>
 class NumericalQuadratureStrategy<
     BasisFunctionType, ResultType, GeometryFactory,
-    typename boost::enable_if<boost::is_same<ResultType, typename ScalarTraits<ResultType>::RealType> >::type> :
-        public NumericalQuadratureStrategyBase<
-            BasisFunctionType, ResultType, GeometryFactory,
-            typename boost::enable_if<boost::is_same<ResultType, typename ScalarTraits<ResultType>::RealType> >::type>
-{
-    typedef typename boost::enable_if<boost::is_same<ResultType, typename ScalarTraits<ResultType>::RealType> >::type Enable;
-    typedef NumericalQuadratureStrategyBase<
-    BasisFunctionType, ResultType, GeometryFactory, Enable> Base;
+    typename boost::enable_if<boost::is_same<
+        ResultType, typename ScalarTraits<ResultType>::RealType>>::
+        type> : public NumericalQuadratureStrategyBase<BasisFunctionType,
+                                                       ResultType,
+                                                       GeometryFactory,
+                                                       typename boost::enable_if<
+                                                           boost::is_same<
+                                                               ResultType,
+                                                               typename ScalarTraits<
+                                                                   ResultType>::
+                                                                   RealType>>::
+                                                           type> {
+  typedef typename boost::enable_if<boost::is_same<
+      ResultType, typename ScalarTraits<ResultType>::RealType>>::type Enable;
+  typedef NumericalQuadratureStrategyBase<BasisFunctionType, ResultType,
+                                          GeometryFactory, Enable> Base;
+
 public:
-    typedef typename Base::CoordinateType CoordinateType;
+  typedef typename Base::CoordinateType CoordinateType;
 
-    /** \brief Construct a numerical quadrature strategy.
-     *
-     * This constructor makes the newly created object use the default
-     * quadrature descriptor selector factory and the default accuracy
-     * options. */
-    NumericalQuadratureStrategy();
+  /** \brief Construct a numerical quadrature strategy.
+   *
+   * This constructor makes the newly created object use the default
+   * quadrature descriptor selector factory and the default accuracy
+   * options. */
+  NumericalQuadratureStrategy();
 
-    /** \brief Construct a numerical quadrature strategy.
-     *
-     * This constructor makes the newly created object use the default
-     * quadrature descriptor selector factory with custom accuracy
-     * options and the default quadrature rule families. */
-    explicit NumericalQuadratureStrategy(
-            const AccuracyOptionsEx& accuracyOptions);
+  /** \brief Construct a numerical quadrature strategy.
+   *
+   * This constructor makes the newly created object use the default
+   * quadrature descriptor selector factory with custom accuracy
+   * options and the default quadrature rule families. */
+  explicit NumericalQuadratureStrategy(
+      const AccuracyOptionsEx &accuracyOptions);
 
-    /** \brief Construct a numerical quadrature strategy.
-     *
-     * This constructor makes the newly created object use a custom
-     * quadrature descriptor selector factory and quadrature rule families.
-     */
-    explicit NumericalQuadratureStrategy(
-        const shared_ptr<const QuadratureDescriptorSelectorFactory<BasisFunctionType> >&
-        quadratureDescriptorSelectorFactory,
-        const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType> >&
-        singleQuadratureRuleFamily,
-        const shared_ptr<const DoubleQuadratureRuleFamily<CoordinateType> >&
-        doubleQuadratureRuleFamily);
+  /** \brief Construct a numerical quadrature strategy.
+   *
+   * This constructor makes the newly created object use a custom
+   * quadrature descriptor selector factory and quadrature rule families.
+   */
+  explicit NumericalQuadratureStrategy(
+      const shared_ptr<const QuadratureDescriptorSelectorFactory<
+          BasisFunctionType>> &quadratureDescriptorSelectorFactory,
+      const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType>> &
+          singleQuadratureRuleFamily,
+      const shared_ptr<const DoubleQuadratureRuleFamily<CoordinateType>> &
+          doubleQuadratureRuleFamily);
 
-    /** \brief Construct a numerical quadrature strategy.
-     *
-     * This constructor makes the newly created object use the default
-     * quadrature descriptor selector factory with custom accuracy
-     * options and custom quadrature rule families. */
-    explicit NumericalQuadratureStrategy(
-        const AccuracyOptionsEx& accuracyOptions,
-        const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType> >&
-        singleQuadratureRuleFamily,
-        const shared_ptr<const DoubleQuadratureRuleFamily<CoordinateType> >&
-        doubleQuadratureRuleFamily);
+  /** \brief Construct a numerical quadrature strategy.
+   *
+   * This constructor makes the newly created object use the default
+   * quadrature descriptor selector factory with custom accuracy
+   * options and custom quadrature rule families. */
+  explicit NumericalQuadratureStrategy(
+      const AccuracyOptionsEx &accuracyOptions,
+      const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType>> &
+          singleQuadratureRuleFamily,
+      const shared_ptr<const DoubleQuadratureRuleFamily<CoordinateType>> &
+          doubleQuadratureRuleFamily);
 };
 /** \endcond */
 

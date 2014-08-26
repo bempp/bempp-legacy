@@ -23,8 +23,7 @@
 
 #include "elementary_local_operator.hpp"
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \ingroup abstract_boundary_operators
  *  \ingroup local_operators
@@ -32,7 +31,8 @@ namespace Bempp
  *
  *  This class provides an implementation of the interface defined by
  *  ElementaryLocalOperator that is sufficient for most purposes. The
- *  constructor takes three functor objects representing the three elements of the
+ *  constructor takes three functor objects representing the three elements of
+ *the
  *  operator's weak form: collections of test and trial
  *  basis function transformations and the weak form integrand. These functors
  *  are used to construct instances of appropriate instantiations of
@@ -54,91 +54,93 @@ namespace Bempp
  *  BasisFunctionType_ or \p KernelType_ is a complex type, then \p ResultType_
  *  must be set to the same type. */
 template <typename BasisFunctionType_, typename ResultType_>
-class GeneralElementaryLocalOperator :
-        public ElementaryLocalOperator<BasisFunctionType_, ResultType_>
-{
-    typedef ElementaryLocalOperator<BasisFunctionType_, ResultType_> Base;
+class GeneralElementaryLocalOperator
+    : public ElementaryLocalOperator<BasisFunctionType_, ResultType_> {
+  typedef ElementaryLocalOperator<BasisFunctionType_, ResultType_> Base;
+
 public:
-    /** \brief Type of the values of the basis functions into which functions
-     *  acted upon by the operator are expanded. */
-    typedef typename Base::BasisFunctionType BasisFunctionType;
-    /** \copydoc ElementaryIntegralOperator::ResultType */
-    typedef typename Base::ResultType ResultType;
-    /** \copydoc ElementaryIntegralOperator::CoordinateType */
-    typedef typename Base::CoordinateType CoordinateType;
-    /** \copydoc ElementaryIntegralOperator::CollectionOfShapesetTransformations */
-    typedef typename Base::CollectionOfShapesetTransformations
-    CollectionOfShapesetTransformations;
-    /** \copydoc ElementaryIntegralOperator::CollectionOfBasisTransformations */
-    typedef typename Base::CollectionOfBasisTransformations
-    CollectionOfBasisTransformations;
-    /** \copydoc ElementaryIntegralOperator::TestTrialIntegral */
-    typedef typename Base::TestTrialIntegral TestTrialIntegral;
+  /** \brief Type of the values of the basis functions into which functions
+   *  acted upon by the operator are expanded. */
+  typedef typename Base::BasisFunctionType BasisFunctionType;
+  /** \copydoc ElementaryIntegralOperator::ResultType */
+  typedef typename Base::ResultType ResultType;
+  /** \copydoc ElementaryIntegralOperator::CoordinateType */
+  typedef typename Base::CoordinateType CoordinateType;
+  /** \copydoc ElementaryIntegralOperator::CollectionOfShapesetTransformations
+   */
+  typedef typename Base::CollectionOfShapesetTransformations
+  CollectionOfShapesetTransformations;
+  /** \copydoc ElementaryIntegralOperator::CollectionOfBasisTransformations */
+  typedef typename Base::CollectionOfBasisTransformations
+  CollectionOfBasisTransformations;
+  /** \copydoc ElementaryIntegralOperator::TestTrialIntegral */
+  typedef typename Base::TestTrialIntegral TestTrialIntegral;
 
-    /** \brief Constructor
+  /** \brief Constructor
 
-     *  \param[in] domain
-     *    %Function space being the domain of the operator.
-     *  \param[in] range
-     *    %Function space being the range of the operator.
-     *  \param[in] dualToRange
-     *    %Function space dual to the the range of the operator.
-     *  \param[in] label
-     *    Textual label of the operator. If empty, a unique label is generated
-     *    automatically.
-     *  \param[in] symmetry
-     *    Symmetry of the weak form of the operator. Can be any combination of
-     *    the flags defined in the enumeration type Symmetry.
-     *  \param[in] testTransformationsFunctor
-     *    A functor object to be used to evaluate the collection of test
-     *    function transformations at a single point. The
-     *    TestTransformationsFunctor class must provide the interface defined in
-     *    the documentation of DefaultCollectionOfShapesetTransformations.
-     *  \param[in] trialTransformationsFunctor
-     *    A functor object to be used to evaluate the collection of trial
-     *    function transformations at a single point. The
-     *    TrialTransformationsFunctor class must provide the interface defined
-     *    in the documentation of DefaultCollectionOfShapesetTransformations.
-     *  \param[in] integrandFunctor
-     *    A functor object to be used to evaluate the integrand of the weak form
-     *    at a single point. The IntegrandFunctor class must provide
-     *    the interface defined in the documentation of
-     *    DefaultTestTrialIntegral.
-     *
-     *  None of the shared pointers may be null and all the spaces must be
-     *  defined on the same grid, otherwise an exception is thrown.
-     *
-     *  The implementation of this constructor is contained in
-     *  general_elementary_local_operator_imp.hpp. This
-     *  header must be included in any file creating a new
-     *  GeneralElementaryLocalOperator object.
-     */
-    template <typename TestTransformationsFunctor,
-              typename TrialTransformationsFunctor,
-              typename IntegrandFunctor>
-    GeneralElementaryLocalOperator(
-            const shared_ptr<const Space<BasisFunctionType_> >& domain,
-            const shared_ptr<const Space<BasisFunctionType_> >& range,
-            const shared_ptr<const Space<BasisFunctionType_> >& dualToRange,
-            const std::string& label,
-            int symmetry,
-            const TestTransformationsFunctor& testTransformationsFunctor,
-            const TrialTransformationsFunctor& trialTransformationsFunctor,
-            const IntegrandFunctor& integrandFunctor);
+   *  \param[in] domain
+   *    %Function space being the domain of the operator.
+   *  \param[in] range
+   *    %Function space being the range of the operator.
+   *  \param[in] dualToRange
+   *    %Function space dual to the the range of the operator.
+   *  \param[in] label
+   *    Textual label of the operator. If empty, a unique label is generated
+   *    automatically.
+   *  \param[in] symmetry
+   *    Symmetry of the weak form of the operator. Can be any combination of
+   *    the flags defined in the enumeration type Symmetry.
+   *  \param[in] testTransformationsFunctor
+   *    A functor object to be used to evaluate the collection of test
+   *    function transformations at a single point. The
+   *    TestTransformationsFunctor class must provide the interface defined in
+   *    the documentation of DefaultCollectionOfShapesetTransformations.
+   *  \param[in] trialTransformationsFunctor
+   *    A functor object to be used to evaluate the collection of trial
+   *    function transformations at a single point. The
+   *    TrialTransformationsFunctor class must provide the interface defined
+   *    in the documentation of DefaultCollectionOfShapesetTransformations.
+   *  \param[in] integrandFunctor
+   *    A functor object to be used to evaluate the integrand of the weak form
+   *    at a single point. The IntegrandFunctor class must provide
+   *    the interface defined in the documentation of
+   *    DefaultTestTrialIntegral.
+   *
+   *  None of the shared pointers may be null and all the spaces must be
+   *  defined on the same grid, otherwise an exception is thrown.
+   *
+   *  The implementation of this constructor is contained in
+   *  general_elementary_local_operator_imp.hpp. This
+   *  header must be included in any file creating a new
+   *  GeneralElementaryLocalOperator object.
+   */
+  template <typename TestTransformationsFunctor,
+            typename TrialTransformationsFunctor, typename IntegrandFunctor>
+  GeneralElementaryLocalOperator(
+      const shared_ptr<const Space<BasisFunctionType_>> &domain,
+      const shared_ptr<const Space<BasisFunctionType_>> &range,
+      const shared_ptr<const Space<BasisFunctionType_>> &dualToRange,
+      const std::string &label, int symmetry,
+      const TestTransformationsFunctor &testTransformationsFunctor,
+      const TrialTransformationsFunctor &trialTransformationsFunctor,
+      const IntegrandFunctor &integrandFunctor);
 
-    virtual const CollectionOfShapesetTransformations& testTransformations() const
-    { return *m_testTransformations; }
-    virtual const CollectionOfShapesetTransformations& trialTransformations() const
-    { return *m_trialTransformations; }
-    virtual const TestTrialIntegral& integral() const
-    { return *m_integral; }
+  virtual const CollectionOfShapesetTransformations &
+  testTransformations() const {
+    return *m_testTransformations;
+  }
+  virtual const CollectionOfShapesetTransformations &
+  trialTransformations() const {
+    return *m_trialTransformations;
+  }
+  virtual const TestTrialIntegral &integral() const { return *m_integral; }
 
 private:
-    /** \cond PRIVATE */
-    shared_ptr<CollectionOfShapesetTransformations> m_testTransformations;
-    shared_ptr<CollectionOfShapesetTransformations> m_trialTransformations;
-    shared_ptr<TestTrialIntegral> m_integral;
-    /** \endcond */
+  /** \cond PRIVATE */
+  shared_ptr<CollectionOfShapesetTransformations> m_testTransformations;
+  shared_ptr<CollectionOfShapesetTransformations> m_trialTransformations;
+  shared_ptr<TestTrialIntegral> m_integral;
+  /** \endcond */
 };
 
 } // namespace Bempp

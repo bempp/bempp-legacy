@@ -26,8 +26,7 @@
 #include "geometrical_data.hpp"
 #include "scalar_traits.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \ingroup laplace_3d
  *  \ingroup functors
@@ -41,41 +40,40 @@ namespace Fiber
  */
 
 template <typename ValueType_>
-class Laplace3dDoubleLayerPotentialKernelFunctor
-{
+class Laplace3dDoubleLayerPotentialKernelFunctor {
 public:
-    typedef ValueType_ ValueType;
-    typedef typename ScalarTraits<ValueType>::RealType CoordinateType;
+  typedef ValueType_ ValueType;
+  typedef typename ScalarTraits<ValueType>::RealType CoordinateType;
 
-    int kernelCount() const { return 1; }
-    int kernelRowCount(int /* kernelIndex */) const { return 1; }
-    int kernelColCount(int /* kernelIndex */) const { return 1; }
+  int kernelCount() const { return 1; }
+  int kernelRowCount(int /* kernelIndex */) const { return 1; }
+  int kernelColCount(int /* kernelIndex */) const { return 1; }
 
-    void addGeometricalDependencies(size_t& testGeomDeps, size_t& trialGeomDeps) const {
-        testGeomDeps |= GLOBALS;
-        trialGeomDeps |= GLOBALS | NORMALS;
+  void addGeometricalDependencies(size_t &testGeomDeps,
+                                  size_t &trialGeomDeps) const {
+    testGeomDeps |= GLOBALS;
+    trialGeomDeps |= GLOBALS | NORMALS;
+  }
+
+  template <template <typename T> class CollectionOf2dSlicesOfNdArrays>
+  void evaluate(const ConstGeometricalDataSlice<CoordinateType> &testGeomData,
+                const ConstGeometricalDataSlice<CoordinateType> &trialGeomData,
+                CollectionOf2dSlicesOfNdArrays<ValueType> &result) const {
+    const int coordCount = 3;
+    assert(testGeomData.dimWorld() == coordCount);
+    assert(result.size() == 1);
+
+    CoordinateType numeratorSum = 0., distanceSq = 0.;
+    for (int coordIndex = 0; coordIndex < coordCount; ++coordIndex) {
+      CoordinateType diff =
+          trialGeomData.global(coordIndex) - testGeomData.global(coordIndex);
+      distanceSq += diff * diff;
+      numeratorSum += diff * trialGeomData.normal(coordIndex);
     }
-
-    template <template <typename T> class CollectionOf2dSlicesOfNdArrays>
-    void evaluate(
-            const ConstGeometricalDataSlice<CoordinateType>& testGeomData,
-            const ConstGeometricalDataSlice<CoordinateType>& trialGeomData,
-            CollectionOf2dSlicesOfNdArrays<ValueType>& result) const {
-        const int coordCount = 3;
-        assert(testGeomData.dimWorld() == coordCount);
-        assert(result.size() == 1);
-
-        CoordinateType numeratorSum = 0., distanceSq = 0.;
-        for (int coordIndex = 0; coordIndex < coordCount; ++coordIndex) {
-            CoordinateType diff = trialGeomData.global(coordIndex) -
-                    testGeomData.global(coordIndex);
-            distanceSq += diff * diff;
-            numeratorSum += diff * trialGeomData.normal(coordIndex);
-        }
-        CoordinateType distance = sqrt(distanceSq);
-        result[0](0, 0) = -numeratorSum /
-                (static_cast<CoordinateType>(4. * M_PI) * distance * distanceSq);
-    }
+    CoordinateType distance = sqrt(distanceSq);
+    result[0](0, 0) = -numeratorSum / (static_cast<CoordinateType>(4. * M_PI) *
+                                       distance * distanceSq);
+  }
 };
 
 } // namespace Fiber

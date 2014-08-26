@@ -23,65 +23,53 @@
 
 #include "laplace_3d_potential_operator_base.hpp"
 
-namespace Bempp
-{
+namespace Bempp {
+
+template <typename Impl, typename BasisFunctionType, typename ResultType>
+Laplace3dPotentialOperatorBase<Impl, BasisFunctionType,
+                               ResultType>::Laplace3dPotentialOperatorBase()
+    : m_impl(new Impl) {}
 
 template <typename Impl, typename BasisFunctionType, typename ResultType>
 Laplace3dPotentialOperatorBase<Impl, BasisFunctionType, ResultType>::
-Laplace3dPotentialOperatorBase() :
-    m_impl(new Impl)
-{
+    Laplace3dPotentialOperatorBase(const Laplace3dPotentialOperatorBase &other)
+    : m_impl(new Impl(*other.m_impl)) {}
+
+template <typename Impl, typename BasisFunctionType, typename ResultType>
+Laplace3dPotentialOperatorBase<Impl, BasisFunctionType,
+                               ResultType>::~Laplace3dPotentialOperatorBase() {}
+
+template <typename Impl, typename BasisFunctionType, typename ResultType>
+Laplace3dPotentialOperatorBase<Impl, BasisFunctionType, ResultType> &
+Laplace3dPotentialOperatorBase<Impl, BasisFunctionType, ResultType>::
+operator=(const Laplace3dPotentialOperatorBase &rhs) {
+  if (this != &rhs)
+    m_impl.reset(new Impl(*rhs.m_impl));
+  return *this;
 }
 
 template <typename Impl, typename BasisFunctionType, typename ResultType>
-Laplace3dPotentialOperatorBase<Impl, BasisFunctionType, ResultType>::
-Laplace3dPotentialOperatorBase(
-        const Laplace3dPotentialOperatorBase& other) :
-    m_impl(new Impl(*other.m_impl))
-{
+const typename Laplace3dPotentialOperatorBase<Impl, BasisFunctionType,
+                                              ResultType>::CollectionOfKernels &
+Laplace3dPotentialOperatorBase<Impl, BasisFunctionType, ResultType>::kernels()
+    const {
+  return m_impl->kernels;
 }
 
 template <typename Impl, typename BasisFunctionType, typename ResultType>
-Laplace3dPotentialOperatorBase<Impl, BasisFunctionType, ResultType>::
-~Laplace3dPotentialOperatorBase()
-{
+const typename Laplace3dPotentialOperatorBase<
+    Impl, BasisFunctionType, ResultType>::CollectionOfBasisTransformations &
+Laplace3dPotentialOperatorBase<Impl, BasisFunctionType,
+                               ResultType>::trialTransformations() const {
+  return m_impl->transformations;
 }
 
 template <typename Impl, typename BasisFunctionType, typename ResultType>
-Laplace3dPotentialOperatorBase<Impl, BasisFunctionType, ResultType>&
-Laplace3dPotentialOperatorBase<Impl, BasisFunctionType, ResultType>::
-operator=(const Laplace3dPotentialOperatorBase& rhs)
-{
-    if (this != &rhs)
-        m_impl.reset(new Impl(*rhs.m_impl));
-    return *this;
-}
-
-template <typename Impl, typename BasisFunctionType, typename ResultType>
-const typename Laplace3dPotentialOperatorBase<Impl, BasisFunctionType, ResultType>::
-CollectionOfKernels&
-Laplace3dPotentialOperatorBase<Impl, BasisFunctionType, ResultType>::
-kernels() const
-{
-    return m_impl->kernels;
-}
-
-template <typename Impl, typename BasisFunctionType, typename ResultType>
-const typename Laplace3dPotentialOperatorBase<Impl, BasisFunctionType, ResultType>::
-CollectionOfBasisTransformations&
-Laplace3dPotentialOperatorBase<Impl, BasisFunctionType, ResultType>::
-trialTransformations() const
-{
-    return m_impl->transformations;
-}
-
-template <typename Impl, typename BasisFunctionType, typename ResultType>
-const typename Laplace3dPotentialOperatorBase<Impl, BasisFunctionType, ResultType>::
-KernelTrialIntegral&
-Laplace3dPotentialOperatorBase<Impl, BasisFunctionType, ResultType>::
-integral() const
-{
-    return m_impl->integral;
+const typename Laplace3dPotentialOperatorBase<Impl, BasisFunctionType,
+                                              ResultType>::KernelTrialIntegral &
+Laplace3dPotentialOperatorBase<Impl, BasisFunctionType, ResultType>::integral()
+    const {
+  return m_impl->integral;
 }
 
 } // namespace Bempp

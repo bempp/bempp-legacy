@@ -31,91 +31,86 @@
 #include <map>
 #include <memory>
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \cond FORWARD_DECL */
 class GridView;
 /** \endcond */
 
 /** \ingroup space
- *  \brief Space consisting of a single scalar function equal to 1 everywhere. */
+ *  \brief Space consisting of a single scalar function equal to 1 everywhere.
+ */
 template <typename BasisFunctionType>
-class UnitScalarSpace : public ScalarSpace<BasisFunctionType>
-{
+class UnitScalarSpace : public ScalarSpace<BasisFunctionType> {
 public:
-    typedef typename ScalarSpace<BasisFunctionType>::CoordinateType CoordinateType;
+  typedef typename ScalarSpace<BasisFunctionType>::CoordinateType
+  CoordinateType;
 
-    explicit UnitScalarSpace(const shared_ptr<const Grid>& grid);
+  explicit UnitScalarSpace(const shared_ptr<const Grid> &grid);
 
-    virtual int domainDimension() const;
-    virtual int codomainDimension() const;
+  virtual int domainDimension() const;
+  virtual int codomainDimension() const;
 
-    virtual shared_ptr<const Space<BasisFunctionType> > discontinuousSpace(
-        const shared_ptr<const Space<BasisFunctionType> >& self) const;
-    virtual bool isDiscontinuous() const;
+  virtual shared_ptr<const Space<BasisFunctionType>> discontinuousSpace(
+      const shared_ptr<const Space<BasisFunctionType>> &self) const;
+  virtual bool isDiscontinuous() const;
 
-    virtual SpaceIdentifier spaceIdentifier() const {
-        return UNIT_SCALAR;
-    }
+  virtual SpaceIdentifier spaceIdentifier() const { return UNIT_SCALAR; }
 
-    /** \brief Return the variant of element \p element.
-     *
-     *  Possible return values:
-     *    - 2: one-dimensional segment,
-     *    - 3: triangular element,
-     *    - 4: quadrilateral element. */
-    virtual ElementVariant elementVariant(const Entity<0>& element) const;
-    virtual void setElementVariant(const Entity<0>& element,
-                                   ElementVariant variant);
+  /** \brief Return the variant of element \p element.
+   *
+   *  Possible return values:
+   *    - 2: one-dimensional segment,
+   *    - 3: triangular element,
+   *    - 4: quadrilateral element. */
+  virtual ElementVariant elementVariant(const Entity<0> &element) const;
+  virtual void setElementVariant(const Entity<0> &element,
+                                 ElementVariant variant);
 
+  virtual const Fiber::Shapeset<BasisFunctionType> &
+  shapeset(const Entity<0> &element) const;
 
-    virtual const Fiber::Shapeset<BasisFunctionType>& shapeset(
-            const Entity<0>& element) const;
+  virtual bool isBarycentric() const { return false; }
 
-    virtual bool isBarycentric() const {
-        return false;
-    }
+  virtual bool spaceIsCompatible(const Space<BasisFunctionType> &other) const;
 
-    virtual bool spaceIsCompatible(const Space<BasisFunctionType>& other) const;
+  virtual size_t globalDofCount() const;
+  virtual size_t flatLocalDofCount() const;
+  virtual void getGlobalDofs(const Entity<0> &element,
+                             std::vector<GlobalDofIndex> &dofs) const;
+  virtual void
+  global2localDofs(const std::vector<GlobalDofIndex> &globalDofs,
+                   std::vector<std::vector<LocalDof>> &localDofs) const;
+  virtual void
+  flatLocal2localDofs(const std::vector<FlatLocalDofIndex> &globalDofs,
+                      std::vector<LocalDof> &localDofs) const;
 
-    virtual size_t globalDofCount() const;
-    virtual size_t flatLocalDofCount() const;
-    virtual void getGlobalDofs(const Entity<0>& element,
-                            std::vector<GlobalDofIndex>& dofs) const;
-    virtual void global2localDofs(
-            const std::vector<GlobalDofIndex>& globalDofs,
-            std::vector<std::vector<LocalDof> >& localDofs) const;
-    virtual void flatLocal2localDofs(
-            const std::vector<FlatLocalDofIndex>& globalDofs,
-            std::vector<LocalDof>& localDofs) const;
+  virtual void
+  getGlobalDofPositions(std::vector<Point3D<CoordinateType>> &positions) const;
+  virtual void getFlatLocalDofPositions(
+      std::vector<Point3D<CoordinateType>> &positions) const;
 
-    virtual void getGlobalDofPositions(
-            std::vector<Point3D<CoordinateType> >& positions) const;
-    virtual void getFlatLocalDofPositions(
-            std::vector<Point3D<CoordinateType> >& positions) const;
+  virtual void getGlobalDofBoundingBoxes(
+      std::vector<BoundingBox<CoordinateType>> &bboxes) const;
+  virtual void getFlatLocalDofBoundingBoxes(
+      std::vector<BoundingBox<CoordinateType>> &bboxes) const;
 
-    virtual void getGlobalDofBoundingBoxes(
-            std::vector<BoundingBox<CoordinateType> >& bboxes) const;
-    virtual void getFlatLocalDofBoundingBoxes(
-            std::vector<BoundingBox<CoordinateType> >& bboxes) const;
-
-    virtual void dumpClusterIds(
-            const char* fileName,
-            const std::vector<unsigned int>& clusterIdsOfGlobalDofs) const;
-    virtual void dumpClusterIdsEx(
-            const char* fileName,
-            const std::vector<unsigned int>& clusterIdsOfGlobalDofs,
-            DofType dofType) const;
+  virtual void
+  dumpClusterIds(const char *fileName,
+                 const std::vector<unsigned int> &clusterIdsOfGlobalDofs) const;
+  virtual void
+  dumpClusterIdsEx(const char *fileName,
+                   const std::vector<unsigned int> &clusterIdsOfGlobalDofs,
+                   DofType dofType) const;
 
 private:
-    void assignDofsImpl();
+  void assignDofsImpl();
 
 private:
-    std::unique_ptr<GridView> m_view;
-    Fiber::ConstantScalarShapeset<BasisFunctionType> m_shapeset;
-    std::vector<std::vector<GlobalDofIndex> > m_local2globalDofs;
-    std::vector<std::vector<LocalDof> > m_global2localDofs;
+  std::unique_ptr<GridView> m_view;
+  Fiber::ConstantScalarShapeset<BasisFunctionType> m_shapeset;
+  std::vector<std::vector<GlobalDofIndex>> m_local2globalDofs;
+  std::vector<std::vector<LocalDof>> m_global2localDofs;
 };
 
 } // namespace Bempp

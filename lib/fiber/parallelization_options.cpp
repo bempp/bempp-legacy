@@ -22,47 +22,38 @@
 
 #include <stdexcept>
 
-namespace Fiber
-{
+namespace Fiber {
 
-ParallelizationOptions::ParallelizationOptions() :
-    m_openClEnabled(false), m_maxThreadCount(AUTO)
-{
-    m_openClOptions.useOpenCl = false;
+ParallelizationOptions::ParallelizationOptions()
+    : m_openClEnabled(false), m_maxThreadCount(AUTO) {
+  m_openClOptions.useOpenCl = false;
 }
 
-void ParallelizationOptions::enableOpenCl(const OpenClOptions& openClOptions)
-{
-    m_openClEnabled = true;
-    m_openClOptions = openClOptions;
-    m_openClOptions.useOpenCl = true;
+void ParallelizationOptions::enableOpenCl(const OpenClOptions &openClOptions) {
+  m_openClEnabled = true;
+  m_openClOptions = openClOptions;
+  m_openClOptions.useOpenCl = true;
 }
 
-void ParallelizationOptions::disableOpenCl()
-{
-    m_openClEnabled = false;
-    m_openClOptions.useOpenCl = false;
+void ParallelizationOptions::disableOpenCl() {
+  m_openClEnabled = false;
+  m_openClOptions.useOpenCl = false;
 }
 
-bool ParallelizationOptions::isOpenClEnabled() const
-{
-    return m_openClEnabled;
+bool ParallelizationOptions::isOpenClEnabled() const { return m_openClEnabled; }
+
+const OpenClOptions &ParallelizationOptions::openClOptions() const {
+  return m_openClOptions;
 }
 
-const OpenClOptions& ParallelizationOptions::openClOptions() const {
-    return m_openClOptions;
+void ParallelizationOptions::setMaxThreadCount(int maxThreadCount) {
+  if (maxThreadCount <= 0 && maxThreadCount != AUTO)
+    throw std::runtime_error(
+        "ParallelizationOptions::switchToTbb(): "
+        "maxThreadCount must be positive or equal to AUTO");
+  m_maxThreadCount = maxThreadCount;
 }
 
-void ParallelizationOptions::setMaxThreadCount(int maxThreadCount)
-{
-    if (maxThreadCount <= 0 && maxThreadCount != AUTO)
-        throw std::runtime_error("ParallelizationOptions::switchToTbb(): "
-                                 "maxThreadCount must be positive or equal to AUTO");
-    m_maxThreadCount = maxThreadCount;
-}
-
-int ParallelizationOptions::maxThreadCount() const {
-    return m_maxThreadCount;
-}
+int ParallelizationOptions::maxThreadCount() const { return m_maxThreadCount; }
 
 } // namespace Fiber

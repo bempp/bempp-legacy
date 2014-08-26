@@ -30,8 +30,7 @@
 #include "../common/armadillo_fwd.hpp"
 #include <memory>
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \cond FORWARD_DECL */
 class EvaluationOptions;
@@ -57,7 +56,8 @@ class AssembledPotentialOperator;
  *
  *  The functions evaluateOnGrid() and evaluateAtPoints() can be used to
  *  evaluate the potential produced by a given charge distribution, represented
- *  with a GridFunction object, at specified points in \f$\Omega \setminus \Gamma\f$.
+ *  with a GridFunction object, at specified points in \f$\Omega \setminus
+ *\Gamma\f$.
  *
  *  \tparam BasisFunctionType_
  *    Type of the values of the (components of the) basis functions into
@@ -72,131 +72,129 @@ class AssembledPotentialOperator;
  *  set to a complex type, then \p ResultType_ must be set to the same type.
  */
 template <typename BasisFunctionType_, typename ResultType_>
-class PotentialOperator
-{
+class PotentialOperator {
 public:
-    /** \brief Type of the values of the (components of the) basis functions
-     * into which functions acted upon by the operator are expanded. */
-    typedef BasisFunctionType_ BasisFunctionType;
-    /** \brief Type of the values of the (components of the) potential. */
-    typedef ResultType_ ResultType;
-    /** \brief Type used to represent coordinates. */
-    typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
-    /** \brief Type of the appropriate instantiation of
-     *  Fiber::QuadratureStrategy. */
-    typedef Fiber::QuadratureStrategy<BasisFunctionType, ResultType, GeometryFactory>
-    QuadratureStrategy;
+  /** \brief Type of the values of the (components of the) basis functions
+   * into which functions acted upon by the operator are expanded. */
+  typedef BasisFunctionType_ BasisFunctionType;
+  /** \brief Type of the values of the (components of the) potential. */
+  typedef ResultType_ ResultType;
+  /** \brief Type used to represent coordinates. */
+  typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
+  /** \brief Type of the appropriate instantiation of
+   *  Fiber::QuadratureStrategy. */
+  typedef Fiber::QuadratureStrategy<BasisFunctionType, ResultType,
+                                    GeometryFactory> QuadratureStrategy;
 
-    /** \brief Destructor */
-    virtual ~PotentialOperator() {}
+  /** \brief Destructor */
+  virtual ~PotentialOperator() {}
 
-    /** \brief Evaluate the potential of a given charge distribution on a
-     *  prescribed grid.
-     *
-     * \param[in] argument
-     *   Argument of the potential operator (\f$\psi(y)\f$ in the notation
-     *   above), represented by a grid function.
-     * \param[in] evaluationGrid
-     *   Grid at whose vertices the potential will be evaluated. The grid may
-     *   have arbitrary dimension, but must be embedded in a world of the same
-     *   dimension as <tt>argument.grid()</tt>.
-     * \param[in] quadStrategy
-     *   A #QuadratureStrategy object controlling how the integrals will be
-     *   evaluated.
-     * \param[in] options
-     *   Evaluation options.
-     *
-     * \returns The potential represented by a function interpolated on the
-     * vertices of \p evaluationGrid.
-     *
-     * \note This function is not designed to yield accurate values of the
-     * potential on the surface \f$\Gamma\f$ containing the charge
-     * distribution, i.e. <tt>argument.grid()</tt>, even if the potential has a
-     * unique extension from \f$\Omega \setminus \Gamma\f$ to \f$\Gamma\f$.
-     * Hence values of the potential at any vertices of \p evaluationGrid that
-     * coincide with \f$\Gamma\f$ can be badly wrong.
-     *
-     * The current implementation does not yet take special measures to prevent
-     * loss of accuracy *near* \f$\Gamma\f$, either. If in doubt, increase the
-     * quadrature accuracy. */
-    virtual std::unique_ptr<InterpolatedFunction<ResultType> > evaluateOnGrid(
-            const GridFunction<BasisFunctionType, ResultType>& argument,
-            const Grid& evaluationGrid,
-            const QuadratureStrategy& quadStrategy,
-            const EvaluationOptions& options) const = 0;
+  /** \brief Evaluate the potential of a given charge distribution on a
+   *  prescribed grid.
+   *
+   * \param[in] argument
+   *   Argument of the potential operator (\f$\psi(y)\f$ in the notation
+   *   above), represented by a grid function.
+   * \param[in] evaluationGrid
+   *   Grid at whose vertices the potential will be evaluated. The grid may
+   *   have arbitrary dimension, but must be embedded in a world of the same
+   *   dimension as <tt>argument.grid()</tt>.
+   * \param[in] quadStrategy
+   *   A #QuadratureStrategy object controlling how the integrals will be
+   *   evaluated.
+   * \param[in] options
+   *   Evaluation options.
+   *
+   * \returns The potential represented by a function interpolated on the
+   * vertices of \p evaluationGrid.
+   *
+   * \note This function is not designed to yield accurate values of the
+   * potential on the surface \f$\Gamma\f$ containing the charge
+   * distribution, i.e. <tt>argument.grid()</tt>, even if the potential has a
+   * unique extension from \f$\Omega \setminus \Gamma\f$ to \f$\Gamma\f$.
+   * Hence values of the potential at any vertices of \p evaluationGrid that
+   * coincide with \f$\Gamma\f$ can be badly wrong.
+   *
+   * The current implementation does not yet take special measures to prevent
+   * loss of accuracy *near* \f$\Gamma\f$, either. If in doubt, increase the
+   * quadrature accuracy. */
+  virtual std::unique_ptr<InterpolatedFunction<ResultType>>
+  evaluateOnGrid(const GridFunction<BasisFunctionType, ResultType> &argument,
+                 const Grid &evaluationGrid,
+                 const QuadratureStrategy &quadStrategy,
+                 const EvaluationOptions &options) const = 0;
 
-    /** \brief Evaluate the potential of a given charge distribution at
-     *  prescribed points.
-     *
-     * \param[in] argument
-     *   Argument of the potential operator (\f$\psi(y)\f$ in the notation above),
-     *   represented by a grid function.
-     * \param[in] evaluationPoints
-     *   2D array whose (i, j)th element is the ith coordinate of the jth point
-     *   at which the potential should be evaluated. The first dimension of this
-     *   array should be equal to <tt>argument.grid().dimWorld()</tt>.
-     * \param[in] quadStrategy
-     *   A #QuadratureStrategy object controlling how the integrals will be
-     *   evaluated.
-     * \param[in] options
-     *   Evaluation options.
-     *
-     * \returns A 2D array whose (i, j)th element is the ith component of the
-     * potential at the jth point.
-     *
-     * \note This function is not designed to yield accurate values of the
-     * potential on the surface \f$\Gamma\f$ containing the charge
-     * distribution, i.e. <tt>argument.grid()</tt>, even if the potential has a
-     * unique extension from \f$\Omega \setminus \Gamma\f$ to \f$\Gamma\f$.
-     * Hence values of the potential at any points belonging to \f$\Gamma\f$
-     * can be badly wrong.
-     *
-     * The current implementation does not yet take special measures to prevent
-     * loss of accuracy *near* \f$\Gamma\f$, either. Users are advised to
-     * increase the quadrature accuracy for points lying in the vicinity of
-     * \f$\Gamma\f$. */
-    virtual arma::Mat<ResultType> evaluateAtPoints(
-            const GridFunction<BasisFunctionType, ResultType>& argument,
-            const arma::Mat<CoordinateType>& evaluationPoints,
-            const QuadratureStrategy& quadStrategy,
-            const EvaluationOptions& options) const = 0;
+  /** \brief Evaluate the potential of a given charge distribution at
+   *  prescribed points.
+   *
+   * \param[in] argument
+   *   Argument of the potential operator (\f$\psi(y)\f$ in the notation above),
+   *   represented by a grid function.
+   * \param[in] evaluationPoints
+   *   2D array whose (i, j)th element is the ith coordinate of the jth point
+   *   at which the potential should be evaluated. The first dimension of this
+   *   array should be equal to <tt>argument.grid().dimWorld()</tt>.
+   * \param[in] quadStrategy
+   *   A #QuadratureStrategy object controlling how the integrals will be
+   *   evaluated.
+   * \param[in] options
+   *   Evaluation options.
+   *
+   * \returns A 2D array whose (i, j)th element is the ith component of the
+   * potential at the jth point.
+   *
+   * \note This function is not designed to yield accurate values of the
+   * potential on the surface \f$\Gamma\f$ containing the charge
+   * distribution, i.e. <tt>argument.grid()</tt>, even if the potential has a
+   * unique extension from \f$\Omega \setminus \Gamma\f$ to \f$\Gamma\f$.
+   * Hence values of the potential at any points belonging to \f$\Gamma\f$
+   * can be badly wrong.
+   *
+   * The current implementation does not yet take special measures to prevent
+   * loss of accuracy *near* \f$\Gamma\f$, either. Users are advised to
+   * increase the quadrature accuracy for points lying in the vicinity of
+   * \f$\Gamma\f$. */
+  virtual arma::Mat<ResultType>
+  evaluateAtPoints(const GridFunction<BasisFunctionType, ResultType> &argument,
+                   const arma::Mat<CoordinateType> &evaluationPoints,
+                   const QuadratureStrategy &quadStrategy,
+                   const EvaluationOptions &options) const = 0;
 
-    /** \brief Create and return an AssembledPotentialOperator object.
-     *
-     *  The returned AssembledPotentialOperator object stores the values of the
-     *  potentials generated at the points listed in the array \p
-     *  evaluationPoints by the charge distributions equal to the individual
-     *  basis functions of the space \p space. The object can afterwards be used
-     *  to evaluate efficiently the potentials generated by multiple
-     *  GridFunctions expanded in the space \p space.
-     *
-     * \param[in] space
-     *   The space whose basis functions will be taken as the charge distributions
-     *   inducing the potentials to be evaluated.
-     * \param[in] evaluationPoints
-     *   2D array whose (i, j)th element is the ith coordinate of the jth point
-     *   at which the potential should be evaluated. The first dimension of this
-     *   array should be equal to <tt>space.grid().dimWorld()</tt>.
-     * \param[in] quadStrategy
-     *   A #QuadratureStrategy object controlling how the integrals will be
-     *   evaluated.
-     * \param[in] options
-     *   Evaluation options. This parameter controls, notably, the format
-     *   used to store the matrix of precalculated potential values: a dense
-     *   matrix or an H-matrix.
-     */
-    virtual AssembledPotentialOperator<BasisFunctionType, ResultType>
-    assemble(
-            const shared_ptr<const Space<BasisFunctionType> >& space,
-            const shared_ptr<const arma::Mat<CoordinateType> >& evaluationPoints,
-            const QuadratureStrategy& quadStrategy,
-            const EvaluationOptions& options) const = 0;
+  /** \brief Create and return an AssembledPotentialOperator object.
+   *
+   *  The returned AssembledPotentialOperator object stores the values of the
+   *  potentials generated at the points listed in the array \p
+   *  evaluationPoints by the charge distributions equal to the individual
+   *  basis functions of the space \p space. The object can afterwards be used
+   *  to evaluate efficiently the potentials generated by multiple
+   *  GridFunctions expanded in the space \p space.
+   *
+   * \param[in] space
+   *   The space whose basis functions will be taken as the charge distributions
+   *   inducing the potentials to be evaluated.
+   * \param[in] evaluationPoints
+   *   2D array whose (i, j)th element is the ith coordinate of the jth point
+   *   at which the potential should be evaluated. The first dimension of this
+   *   array should be equal to <tt>space.grid().dimWorld()</tt>.
+   * \param[in] quadStrategy
+   *   A #QuadratureStrategy object controlling how the integrals will be
+   *   evaluated.
+   * \param[in] options
+   *   Evaluation options. This parameter controls, notably, the format
+   *   used to store the matrix of precalculated potential values: a dense
+   *   matrix or an H-matrix.
+   */
+  virtual AssembledPotentialOperator<BasisFunctionType, ResultType>
+  assemble(const shared_ptr<const Space<BasisFunctionType>> &space,
+           const shared_ptr<const arma::Mat<CoordinateType>> &evaluationPoints,
+           const QuadratureStrategy &quadStrategy,
+           const EvaluationOptions &options) const = 0;
 
-    /** \brief Number of components of the values of the potential.
-     *
-     *  E.g. 1 for a scalar-valued potential, 3 for a vector-valued potential.
-     */
-    virtual int componentCount() const = 0;
+  /** \brief Number of components of the values of the potential.
+   *
+   *  E.g. 1 for a scalar-valued potential, 3 for a vector-valued potential.
+   */
+  virtual int componentCount() const = 0;
 };
 
 } // namespace Bempp

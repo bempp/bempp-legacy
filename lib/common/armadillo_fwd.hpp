@@ -18,7 +18,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-
 #ifndef bempp_armadillo_fwd_hpp
 #define bempp_armadillo_fwd_hpp
 
@@ -29,23 +28,22 @@
 // parameter types of entity-kind "entity"
 
 #ifdef __INTEL_COMPILER
-#pragma warning(disable:2089 488)
+#pragma warning(disable : 2089 488)
 #endif
 
 #ifdef BEMPP_ADD_STEADY_CLOCK_FROM_MONOTONIC_CLOCK
-# include <chrono>
-  namespace std {
-    namespace chrono {
-      typedef monotonic_clock steady_clock;
-    }
-  }
+#include <chrono>
+namespace std {
+namespace chrono {
+typedef monotonic_clock steady_clock;
+}
+}
 #endif
 
 #include <armadillo>
 
 #ifdef __INTEL_COMPILER
-#pragma warning(default:2089 488)
+#pragma warning(default : 2089 488)
 #endif
-
 
 #endif

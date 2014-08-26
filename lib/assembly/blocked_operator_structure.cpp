@@ -21,79 +21,72 @@
 #include "blocked_operator_structure.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
-namespace Bempp
-{
+namespace Bempp {
 
 template <typename BasisFunctionType, typename ResultType>
 void BlockedOperatorStructure<BasisFunctionType, ResultType>::setBlock(
-        size_t row, size_t column,
-        const BoundaryOperator<BasisFunctionType, ResultType>& op)
-{
-    if (!op.isInitialized())
-        resetBlock(row, column);
-    else
-        m_blocks[Key(row, column)] = op;
+    size_t row, size_t column,
+    const BoundaryOperator<BasisFunctionType, ResultType> &op) {
+  if (!op.isInitialized())
+    resetBlock(row, column);
+  else
+    m_blocks[Key(row, column)] = op;
 }
 
 template <typename BasisFunctionType, typename ResultType>
 void BlockedOperatorStructure<BasisFunctionType, ResultType>::resetBlock(
-        size_t row, size_t column)
-{
-    m_blocks.erase(Key(row, column));
+    size_t row, size_t column) {
+  m_blocks.erase(Key(row, column));
 }
 
 template <typename BasisFunctionType, typename ResultType>
-void BlockedOperatorStructure<BasisFunctionType, ResultType>::reset()
-{
-    m_blocks.clear();
+void BlockedOperatorStructure<BasisFunctionType, ResultType>::reset() {
+  m_blocks.clear();
 }
 
 template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType>
 BlockedOperatorStructure<BasisFunctionType, ResultType>::block(
-        size_t row, size_t column) const
-{
-    typedef typename std::map<Key, BoundaryOp>::const_iterator Iterator;
-    Iterator it = m_blocks.find(Key(row, column));
-    if (it == m_blocks.end())
-        return BoundaryOperator<BasisFunctionType, ResultType>();
-    else
-        // it->second is the boundary operator
-        return it->second;
+    size_t row, size_t column) const {
+  typedef typename std::map<Key, BoundaryOp>::const_iterator Iterator;
+  Iterator it = m_blocks.find(Key(row, column));
+  if (it == m_blocks.end())
+    return BoundaryOperator<BasisFunctionType, ResultType>();
+  else
+    // it->second is the boundary operator
+    return it->second;
 }
 
 template <typename BasisFunctionType, typename ResultType>
 bool BlockedOperatorStructure<BasisFunctionType, ResultType>::isEmpty(
-        size_t row, size_t column) const
-{
-    return (m_blocks.find(Key(row, column)) == m_blocks.end());
+    size_t row, size_t column) const {
+  return (m_blocks.find(Key(row, column)) == m_blocks.end());
 }
 
 template <typename BasisFunctionType, typename ResultType>
-size_t BlockedOperatorStructure<BasisFunctionType, ResultType>::rowCount() const
-{
-    typedef typename std::map<Key, BoundaryOp>::const_iterator Iterator;
-    size_t count = 0;
-    for (Iterator it = m_blocks.begin(); it != m_blocks.end(); ++it)
-        // it->first is the key, it->second is the boundary operator
-        if (it->second.isInitialized())
-            count = std::max(count, 
-                             it->first.first 
-                             + 1 /* count is one more than max index */);
-    return count;
+size_t
+BlockedOperatorStructure<BasisFunctionType, ResultType>::rowCount() const {
+  typedef typename std::map<Key, BoundaryOp>::const_iterator Iterator;
+  size_t count = 0;
+  for (Iterator it = m_blocks.begin(); it != m_blocks.end(); ++it)
+    // it->first is the key, it->second is the boundary operator
+    if (it->second.isInitialized())
+      count = std::max(count, it->first.first +
+                                  1 /* count is one more than max index */);
+  return count;
 }
 
 template <typename BasisFunctionType, typename ResultType>
-size_t BlockedOperatorStructure<BasisFunctionType, ResultType>::columnCount() const
-{
-    typedef typename std::map<Key, BoundaryOp>::const_iterator Iterator;
-    size_t count = 0;
-    for (Iterator it = m_blocks.begin(); it != m_blocks.end(); ++it)
-        // it->first is the key, it->second is the boundary operator
-        if (it->second.isInitialized())
-            count = std::max(count, it->first.second
-                             + 1 /* count is one more than max index */);
-    return count;
+size_t
+BlockedOperatorStructure<BasisFunctionType, ResultType>::columnCount() const {
+  typedef typename std::map<Key, BoundaryOp>::const_iterator Iterator;
+  size_t count = 0;
+  for (Iterator it = m_blocks.begin(); it != m_blocks.end(); ++it)
+    // it->first is the key, it->second is the boundary operator
+    if (it->second.isInitialized())
+      count = std::max(count, it->first.second +
+                                  1 /* count is one more than max index */);
+  return count;
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(BlockedOperatorStructure);

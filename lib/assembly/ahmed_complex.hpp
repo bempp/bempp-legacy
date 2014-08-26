@@ -30,39 +30,31 @@
 #include <cmplx.h>
 
 #ifndef AHMED_USES_STD_COMPLEX
-inline scomp operator*=(scomp& a, double b)
-{
-    return operator*=(a, static_cast<float>(b));
+inline scomp operator*=(scomp &a, double b) {
+  return operator*=(a, static_cast<float>(b));
 }
 
-inline scomp operator/(scomp& a, double b)
-{
-    return operator/(a, static_cast<float>(b));
+inline scomp operator/(scomp &a, double b) {
+  return operator/(a, static_cast<float>(b));
 }
 
-inline scomp operator/(double a, scomp& b)
-{
-    return operator/(static_cast<float>(a), b);
+inline scomp operator/(double a, scomp &b) {
+  return operator/(static_cast<float>(a), b);
 }
 #endif
 
-namespace Bempp
-{
+namespace Bempp {
 
-inline float ahmedCast(float x) {
-    return x;
-}
+inline float ahmedCast(float x) { return x; }
 
-inline double ahmedCast(double x) {
-    return x;
-}
+inline double ahmedCast(double x) { return x; }
 
 inline scomp ahmedCast(std::complex<float> x) {
-    return scomp(x.real(), x.imag());
+  return scomp(x.real(), x.imag());
 }
 
 inline dcomp ahmedCast(std::complex<double> x) {
-    return dcomp(x.real(), x.imag());
+  return dcomp(x.real(), x.imag());
 }
 
 } // namespace Bempp

@@ -28,78 +28,78 @@
 
 #include <dune/common/static_assert.hh>
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \ingroup grid_internal
  *  \brief Iterator over the subentities of codimension \p codimSub
  *  of a given Dune entity of type \p DuneEntity. */
-template<typename DuneEntity, int codimSub>
-class ConcreteSubentityIterator: public EntityIterator<codimSub>
-{
-    dune_static_assert(DuneEntity::codimension == 0,
-                       "ConcreteSubentityIterator: only codim-0 entities "
-                       "support iteration over subentities");
-    dune_static_assert((int)DuneEntity::codimension < (int)ConcreteSubentityIterator::codimension,
-                       "ConcreteSubentityIterator: subentity codimension "
-                       "must exceed entity codimension");
+template <typename DuneEntity, int codimSub>
+class ConcreteSubentityIterator : public EntityIterator<codimSub> {
+  dune_static_assert(DuneEntity::codimension == 0,
+                     "ConcreteSubentityIterator: only codim-0 entities "
+                     "support iteration over subentities");
+  dune_static_assert((int)DuneEntity::codimension <
+                         (int)ConcreteSubentityIterator::codimension,
+                     "ConcreteSubentityIterator: subentity codimension "
+                     "must exceed entity codimension");
+
 public:
-    /** \brief Type of the Dune entity pointer corresponding to \p DuneEntity. */
-    typedef typename DuneEntity::template Codim<codimSub>::EntityPointer DuneSubentityPointer;
-    /** \brief Type of the appropriate subentity of \p DuneEntity. */
-    typedef typename DuneSubentityPointer::Entity DuneSubentity;
+  /** \brief Type of the Dune entity pointer corresponding to \p DuneEntity. */
+  typedef typename DuneEntity::template Codim<codimSub>::EntityPointer
+  DuneSubentityPointer;
+  /** \brief Type of the appropriate subentity of \p DuneEntity. */
+  typedef typename DuneSubentityPointer::Entity DuneSubentity;
 
 private:
-    const DuneEntity* m_dune_entity;
-    DuneSubentityPointer m_dune_subentity_ptr;
-    ConcreteEntity<ConcreteSubentityIterator::codimension, DuneSubentity>
-    m_subentity;
-    const DomainIndex& m_domain_index;
-    int m_cur_n;
+  const DuneEntity *m_dune_entity;
+  DuneSubentityPointer m_dune_subentity_ptr;
+  ConcreteEntity<ConcreteSubentityIterator::codimension, DuneSubentity>
+  m_subentity;
+  const DomainIndex &m_domain_index;
+  int m_cur_n;
 
-    void updateFinished() {
-        this->m_finished =
-            (m_cur_n == m_dune_entity->template count<codimSub>());
-    }
+  void updateFinished() {
+    this->m_finished = (m_cur_n == m_dune_entity->template count<codimSub>());
+  }
 
-    void updateSubentity() {
-        if (!this->finished()) {
-            m_dune_subentity_ptr = m_dune_entity->template subEntity<codimSub>(
-                m_cur_n);
-            m_subentity.setDuneEntity(&*m_dune_subentity_ptr);
-        }
+  void updateSubentity() {
+    if (!this->finished()) {
+      m_dune_subentity_ptr =
+          m_dune_entity->template subEntity<codimSub>(m_cur_n);
+      m_subentity.setDuneEntity(&*m_dune_subentity_ptr);
     }
+  }
 
 public:
-    /** \brief Constructor.
+  /** \brief Constructor.
 
-        \param dune_entity Entity whose subentities will be iterated over */
-    explicit ConcreteSubentityIterator(const DuneEntity* dune_entity,
-                                       const DomainIndex& domain_index) :
-        m_dune_entity(dune_entity), m_dune_subentity_ptr(
-            m_dune_entity->template subEntity<codimSub>(0)),
+      \param dune_entity Entity whose subentities will be iterated over */
+  explicit ConcreteSubentityIterator(const DuneEntity *dune_entity,
+                                     const DomainIndex &domain_index)
+      : m_dune_entity(dune_entity),
+        m_dune_subentity_ptr(m_dune_entity->template subEntity<codimSub>(0)),
         m_subentity(&*m_dune_subentity_ptr, domain_index),
         m_domain_index(domain_index), m_cur_n(0) {
-        updateFinished();
-    }
+    updateFinished();
+  }
 
-    virtual void next() {
-        ++m_cur_n;
-        updateFinished();
-        updateSubentity();
-    }
+  virtual void next() {
+    ++m_cur_n;
+    updateFinished();
+    updateSubentity();
+  }
 
-    virtual const Entity<ConcreteSubentityIterator::codimension>& entity() const {
-        return m_subentity;
-    }
+  virtual const Entity<ConcreteSubentityIterator::codimension> &entity() const {
+    return m_subentity;
+  }
 
-    virtual std::unique_ptr<EntityPointer<ConcreteSubentityIterator::codimension> >
-    frozen() const {
-        const int codim = ConcreteSubentityIterator::codimension;
-        return std::unique_ptr<EntityPointer<codim> >(
-                    new ConcreteEntityPointer<DuneSubentityPointer>(
-                        m_subentity.duneEntity(), m_domain_index));
-    }
+  virtual std::unique_ptr<EntityPointer<ConcreteSubentityIterator::codimension>>
+  frozen() const {
+    const int codim = ConcreteSubentityIterator::codimension;
+    return std::unique_ptr<EntityPointer<codim>>(
+        new ConcreteEntityPointer<DuneSubentityPointer>(
+            m_subentity.duneEntity(), m_domain_index));
+  }
 };
 
 } // namespace Bempp

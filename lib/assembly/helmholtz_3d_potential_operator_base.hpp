@@ -25,8 +25,7 @@
 
 #include <boost/scoped_ptr.hpp>
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \ingroup helmholtz_3d
  *  \brief Base class for potential operators for the Helmholtz equation in 3D.
@@ -41,61 +40,60 @@ namespace Bempp
  *
  *  \see helmholtz_3d */
 template <typename Impl, typename BasisFunctionType_>
-class Helmholtz3dPotentialOperatorBase :
-        public ElementaryPotentialOperator<
-        BasisFunctionType_,
-        typename ScalarTraits<BasisFunctionType_>::ComplexType,
-        typename ScalarTraits<BasisFunctionType_>::ComplexType>
-{
-    typedef ElementaryPotentialOperator<
-    BasisFunctionType_,
-    typename ScalarTraits<BasisFunctionType_>::ComplexType,
-    typename ScalarTraits<BasisFunctionType_>::ComplexType>
-    Base;
+class Helmholtz3dPotentialOperatorBase
+    : public ElementaryPotentialOperator<
+          BasisFunctionType_,
+          typename ScalarTraits<BasisFunctionType_>::ComplexType,
+          typename ScalarTraits<BasisFunctionType_>::ComplexType> {
+  typedef ElementaryPotentialOperator<
+      BasisFunctionType_,
+      typename ScalarTraits<BasisFunctionType_>::ComplexType,
+      typename ScalarTraits<BasisFunctionType_>::ComplexType> Base;
+
 public:
-    /** \brief Type of the values of the basis functions into which functions
-     *  acted upon by the operator are expanded. */
-    typedef typename Base::BasisFunctionType BasisFunctionType;
-    /** \brief Type of the values of kernel functions. */
-    typedef typename Base::KernelType KernelType;
-    /** \brief Type of the values of the potential. */
-    typedef typename Base::ResultType ResultType;
-    /** \copydoc ElementaryPotentialOperator::CoordinateType */
-    typedef typename Base::CoordinateType CoordinateType;
-    /** \copydoc ElementaryPotentialOperator::CollectionOfBasisTransformations */
-    typedef typename Base::CollectionOfBasisTransformations
-    CollectionOfBasisTransformations;
-    /** \copydoc ElementaryPotentialOperator::CollectionOfKernels */
-    typedef typename Base::CollectionOfKernels CollectionOfKernels;
-    /** \copydoc ElementaryPotentialOperator::KernelTrialIntegral */
-    typedef typename Base::KernelTrialIntegral KernelTrialIntegral;
+  /** \brief Type of the values of the basis functions into which functions
+   *  acted upon by the operator are expanded. */
+  typedef typename Base::BasisFunctionType BasisFunctionType;
+  /** \brief Type of the values of kernel functions. */
+  typedef typename Base::KernelType KernelType;
+  /** \brief Type of the values of the potential. */
+  typedef typename Base::ResultType ResultType;
+  /** \copydoc ElementaryPotentialOperator::CoordinateType */
+  typedef typename Base::CoordinateType CoordinateType;
+  /** \copydoc ElementaryPotentialOperator::CollectionOfBasisTransformations */
+  typedef typename Base::CollectionOfBasisTransformations
+  CollectionOfBasisTransformations;
+  /** \copydoc ElementaryPotentialOperator::CollectionOfKernels */
+  typedef typename Base::CollectionOfKernels CollectionOfKernels;
+  /** \copydoc ElementaryPotentialOperator::KernelTrialIntegral */
+  typedef typename Base::KernelTrialIntegral KernelTrialIntegral;
 
-    /** \brief Constructor.
-     *
-     *  \param[in] waveNumber
-     *    Wave number. See \ref helmholtz_3d for its definition. */
-    Helmholtz3dPotentialOperatorBase(KernelType waveNumber);
-    /** \brief Copy constructor. */
-    Helmholtz3dPotentialOperatorBase(const Helmholtz3dPotentialOperatorBase& other);
-    /** \brief Destructor. */
-    virtual ~Helmholtz3dPotentialOperatorBase();
-    /** \brief Assignment operator. */
-    Helmholtz3dPotentialOperatorBase& operator=(
-            const Helmholtz3dPotentialOperatorBase& rhs);
+  /** \brief Constructor.
+   *
+   *  \param[in] waveNumber
+   *    Wave number. See \ref helmholtz_3d for its definition. */
+  Helmholtz3dPotentialOperatorBase(KernelType waveNumber);
+  /** \brief Copy constructor. */
+  Helmholtz3dPotentialOperatorBase(
+      const Helmholtz3dPotentialOperatorBase &other);
+  /** \brief Destructor. */
+  virtual ~Helmholtz3dPotentialOperatorBase();
+  /** \brief Assignment operator. */
+  Helmholtz3dPotentialOperatorBase &
+  operator=(const Helmholtz3dPotentialOperatorBase &rhs);
 
-    /** \brief Return the wave number set previously in the constructor. */
-    KernelType waveNumber() const;
-
-private:
-    virtual const CollectionOfKernels& kernels() const;
-    virtual const CollectionOfBasisTransformations&
-    trialTransformations() const;
-    virtual const KernelTrialIntegral& integral() const;
+  /** \brief Return the wave number set previously in the constructor. */
+  KernelType waveNumber() const;
 
 private:
-    /** \cond PRIVATE */
-    boost::scoped_ptr<Impl> m_impl;
-    /** \endcond */
+  virtual const CollectionOfKernels &kernels() const;
+  virtual const CollectionOfBasisTransformations &trialTransformations() const;
+  virtual const KernelTrialIntegral &integral() const;
+
+private:
+  /** \cond PRIVATE */
+  boost::scoped_ptr<Impl> m_impl;
+  /** \endcond */
 };
 
 } // namespace Bempp

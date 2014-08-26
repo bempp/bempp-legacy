@@ -34,63 +34,61 @@
 #include <Teuchos_RCP.hpp>
 #endif
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \ingroup composite_discrete_boundary_operators
  *  \brief Scaled discrete boundary operator.
  *
- *  This class represents a discrete boundary operator multiplied by a scalar. */
+ *  This class represents a discrete boundary operator multiplied by a scalar.
+ */
 template <typename ValueType>
-class ScaledDiscreteBoundaryOperator :
-        public DiscreteBoundaryOperator<ValueType>
-{
+class ScaledDiscreteBoundaryOperator
+    : public DiscreteBoundaryOperator<ValueType> {
 public:
-    typedef DiscreteBoundaryOperator<ValueType> Base;
+  typedef DiscreteBoundaryOperator<ValueType> Base;
 
-    /** \brief Constructor.
-     *
-     *  Construct the discrete boundary operator \f$\alpha L\f$, where
-     *  \f$\alpha\f$ is the scalar \p multiplier and \f$L\f$ is the operator
-     *  represented by \p op. */
-    ScaledDiscreteBoundaryOperator(ValueType multiplier,
-                                   const shared_ptr<const Base>& op);
+  /** \brief Constructor.
+   *
+   *  Construct the discrete boundary operator \f$\alpha L\f$, where
+   *  \f$\alpha\f$ is the scalar \p multiplier and \f$L\f$ is the operator
+   *  represented by \p op. */
+  ScaledDiscreteBoundaryOperator(ValueType multiplier,
+                                 const shared_ptr<const Base> &op);
 
-    virtual arma::Mat<ValueType> asMatrix() const;
+  virtual arma::Mat<ValueType> asMatrix() const;
 
-    virtual unsigned int rowCount() const;
-    virtual unsigned int columnCount() const;
+  virtual unsigned int rowCount() const;
+  virtual unsigned int columnCount() const;
 
-    virtual void addBlock(const std::vector<int>& rows,
-                          const std::vector<int>& cols,
-                          const ValueType alpha,
-                          arma::Mat<ValueType>& block) const;
+  virtual void addBlock(const std::vector<int> &rows,
+                        const std::vector<int> &cols, const ValueType alpha,
+                        arma::Mat<ValueType> &block) const;
 
 #ifdef WITH_AHMED
-    shared_ptr<const DiscreteBoundaryOperator<ValueType> >
-    asDiscreteAcaBoundaryOperator(double eps=-1, int maximumRank=-1,
-                                  bool interleave=false) const;
+  shared_ptr<const DiscreteBoundaryOperator<ValueType>>
+  asDiscreteAcaBoundaryOperator(double eps = -1, int maximumRank = -1,
+                                bool interleave = false) const;
 #endif
 
 #ifdef WITH_TRILINOS
 public:
-    virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > domain() const;
-    virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > range() const;
+  virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>> domain() const;
+  virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>> range() const;
 
 protected:
-    virtual bool opSupportedImpl(Thyra::EOpTransp M_trans) const;
+  virtual bool opSupportedImpl(Thyra::EOpTransp M_trans) const;
 #endif
 
 private:
-    virtual void applyBuiltInImpl(const TranspositionMode trans,
-                                  const arma::Col<ValueType>& x_in,
-                                  arma::Col<ValueType>& y_inout,
-                                  const ValueType alpha,
-                                  const ValueType beta) const;
+  virtual void applyBuiltInImpl(const TranspositionMode trans,
+                                const arma::Col<ValueType> &x_in,
+                                arma::Col<ValueType> &y_inout,
+                                const ValueType alpha,
+                                const ValueType beta) const;
 
 private:
-    ValueType m_multiplier;
-    shared_ptr<const Base> m_operator;
+  ValueType m_multiplier;
+  shared_ptr<const Base> m_operator;
 };
 
 } // namespace Bempp

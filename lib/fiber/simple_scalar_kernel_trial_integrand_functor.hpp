@@ -29,54 +29,50 @@
 #include "geometrical_data.hpp"
 #include "conjugate.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 template <typename BasisFunctionType_, typename KernelType_,
           typename ResultType_>
-class SimpleScalarKernelTrialIntegrandFunctor
-{
+class SimpleScalarKernelTrialIntegrandFunctor {
 public:
-    typedef BasisFunctionType_ BasisFunctionType;
-    typedef KernelType_ KernelType;
-    typedef ResultType_ ResultType;
-    typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
+  typedef BasisFunctionType_ BasisFunctionType;
+  typedef KernelType_ KernelType;
+  typedef ResultType_ ResultType;
+  typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
 
-    void addGeometricalDependencies(size_t& trialGeomDeps) const {
-        // do nothing
-    }
+  void addGeometricalDependencies(size_t &trialGeomDeps) const {
+    // do nothing
+  }
 
-    int resultDimension() const {
-        return 1;
-    }
+  int resultDimension() const { return 1; }
 
-    // It is possible that this function could be generalised to
-    // multiple shapeset transformations or kernels and that the additional
-    // loops could be optimised away by the compiler.
-    template <template<typename T> class CollectionOf1dSlicesOfConstNdArrays,
-              typename TrialValueType>
-    void evaluate(
-            const ConstGeometricalDataSlice<CoordinateType>& /* trialGeomData */,
-            const CollectionOf2dSlicesOfConst4dArrays<KernelType>& kernelValues,
-            const CollectionOf1dSlicesOfConstNdArrays<TrialValueType>&
-            weightedTransformedTrialValues,
-            std::vector<ResultType>& value) const {
-        // Assert that there is at least one scalar-valued kernel
-        assert(kernelValues.size() >= 1);
-        assert(kernelValues[0].extent(0) == 1);
-        assert(kernelValues[0].extent(1) == 1);
+  // It is possible that this function could be generalised to
+  // multiple shapeset transformations or kernels and that the additional
+  // loops could be optimised away by the compiler.
+  template <template <typename T> class CollectionOf1dSlicesOfConstNdArrays,
+            typename TrialValueType>
+  void evaluate(
+      const ConstGeometricalDataSlice<CoordinateType> & /* trialGeomData */,
+      const CollectionOf2dSlicesOfConst4dArrays<KernelType> &kernelValues,
+      const CollectionOf1dSlicesOfConstNdArrays<TrialValueType> &
+          weightedTransformedTrialValues,
+      std::vector<ResultType> &value) const {
+    // Assert that there is at least one scalar-valued kernel
+    assert(kernelValues.size() >= 1);
+    assert(kernelValues[0].extent(0) == 1);
+    assert(kernelValues[0].extent(1) == 1);
 
-        // Assert that there is at least one scalar weighted trial
-        // transformation
-        assert(weightedTransformedTrialValues.size() >= 1);
+    // Assert that there is at least one scalar weighted trial
+    // transformation
+    assert(weightedTransformedTrialValues.size() >= 1);
 #ifndef NDEBUG
-        const int transformationDim = weightedTransformedTrialValues[0].extent(0);
-        assert(transformationDim == 1);
+    const int transformationDim = weightedTransformedTrialValues[0].extent(0);
+    assert(transformationDim == 1);
 #endif
-        assert(value.size() == 1);
+    assert(value.size() == 1);
 
-        value[0] = weightedTransformedTrialValues[0](0) * kernelValues[0](0, 0);
-    }
+    value[0] = weightedTransformedTrialValues[0](0) * kernelValues[0](0, 0);
+  }
 };
 
 } // namespace Fiber

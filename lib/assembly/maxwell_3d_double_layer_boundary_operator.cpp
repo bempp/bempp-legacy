@@ -38,76 +38,69 @@
 
 #include "../grid/max_distance.hpp"
 
-namespace Bempp
-{
+namespace Bempp {
 
 template <typename BasisFunctionType>
 BoundaryOperator<BasisFunctionType,
-    typename ScalarTraits<BasisFunctionType>::ComplexType>
+                 typename ScalarTraits<BasisFunctionType>::ComplexType>
 maxwell3dDoubleLayerBoundaryOperator(
-        const shared_ptr<const Context<BasisFunctionType,
-        typename ScalarTraits<BasisFunctionType>::ComplexType> >& context,
-        const shared_ptr<const Space<BasisFunctionType> >& domain,
-        const shared_ptr<const Space<BasisFunctionType> >& range,
-        const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-        typename ScalarTraits<BasisFunctionType>::ComplexType waveNumber,
-        const std::string& label,
-        int symmetry,
-        bool useInterpolation,
-        int interpPtsPerWavelength)
-{
-    typedef typename ScalarTraits<BasisFunctionType>::ComplexType KernelType;
-    typedef typename ScalarTraits<BasisFunctionType>::ComplexType ResultType;
-    typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
+    const shared_ptr<const Context<
+        BasisFunctionType,
+        typename ScalarTraits<BasisFunctionType>::ComplexType>> &context,
+    const shared_ptr<const Space<BasisFunctionType>> &domain,
+    const shared_ptr<const Space<BasisFunctionType>> &range,
+    const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
+    typename ScalarTraits<BasisFunctionType>::ComplexType waveNumber,
+    const std::string &label, int symmetry, bool useInterpolation,
+    int interpPtsPerWavelength) {
+  typedef typename ScalarTraits<BasisFunctionType>::ComplexType KernelType;
+  typedef typename ScalarTraits<BasisFunctionType>::ComplexType ResultType;
+  typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
 
-    shared_ptr<const Context<BasisFunctionType, ResultType> > usedContext = 
-        sanitizedContext(context,
-                         false, // LOCAL_ASSEMBLY is not supported
-                         false, // nor is HYBRID_ASSEMBLY
-                         "maxwell3dDoubleLayerBoundaryOperator()");
+  shared_ptr<const Context<BasisFunctionType, ResultType>> usedContext =
+      sanitizedContext(context, false, // LOCAL_ASSEMBLY is not supported
+                       false,          // nor is HYBRID_ASSEMBLY
+                       "maxwell3dDoubleLayerBoundaryOperator()");
 
-    typedef Fiber::ModifiedMaxwell3dDoubleLayerOperatorsKernelFunctor<KernelType>
-        KernelFunctor;
-    typedef Fiber::ModifiedMaxwell3dDoubleLayerOperatorsKernelInterpolatedFunctor<KernelType>
-        KernelInterpolatedFunctor;
-    typedef Fiber::HdivFunctionValueFunctor<CoordinateType>
-        TransformationFunctor;
-    typedef Fiber::ModifiedMaxwell3dDoubleLayerBoundaryOperatorIntegrandFunctor<
-        BasisFunctionType, KernelType, ResultType> IntegrandFunctor;
+  typedef Fiber::ModifiedMaxwell3dDoubleLayerOperatorsKernelFunctor<KernelType>
+  KernelFunctor;
+  typedef Fiber::ModifiedMaxwell3dDoubleLayerOperatorsKernelInterpolatedFunctor<
+      KernelType> KernelInterpolatedFunctor;
+  typedef Fiber::HdivFunctionValueFunctor<CoordinateType> TransformationFunctor;
+  typedef Fiber::ModifiedMaxwell3dDoubleLayerBoundaryOperatorIntegrandFunctor<
+      BasisFunctionType, KernelType, ResultType> IntegrandFunctor;
 
-    typedef GeneralElementarySingularIntegralOperator<
-            BasisFunctionType, KernelType, ResultType> Op;
-    if (useInterpolation)
-        return BoundaryOperator<BasisFunctionType, ResultType>(
-                usedContext, boost::make_shared<Op>(
-                    domain, range, dualToRange, label, symmetry,
-                    KernelInterpolatedFunctor(waveNumber / KernelType(0., 1.),
-                                              1.1 * maxDistance(
-                                                  *domain->grid(),
-                                                  *dualToRange->grid()),
-                                              interpPtsPerWavelength),
-                    TransformationFunctor(),
-                    TransformationFunctor(),
-                    IntegrandFunctor()));
-    else
-        return BoundaryOperator<BasisFunctionType, ResultType>(
-                usedContext, boost::make_shared<Op>(
-                    domain, range, dualToRange, label, symmetry,
-                    KernelFunctor(waveNumber / KernelType(0., 1.)),
-                    TransformationFunctor(),
-                    TransformationFunctor(),
-                    IntegrandFunctor()));
+  typedef GeneralElementarySingularIntegralOperator<BasisFunctionType,
+                                                    KernelType, ResultType> Op;
+  if (useInterpolation)
+    return BoundaryOperator<BasisFunctionType, ResultType>(
+        usedContext,
+        boost::make_shared<Op>(
+            domain, range, dualToRange, label, symmetry,
+            KernelInterpolatedFunctor(
+                waveNumber / KernelType(0., 1.),
+                1.1 * maxDistance(*domain->grid(), *dualToRange->grid()),
+                interpPtsPerWavelength),
+            TransformationFunctor(), TransformationFunctor(),
+            IntegrandFunctor()));
+  else
+    return BoundaryOperator<BasisFunctionType, ResultType>(
+        usedContext,
+        boost::make_shared<Op>(domain, range, dualToRange, label, symmetry,
+                               KernelFunctor(waveNumber / KernelType(0., 1.)),
+                               TransformationFunctor(), TransformationFunctor(),
+                               IntegrandFunctor()));
 }
 
-#define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS) \
-   template BoundaryOperator<BASIS, ScalarTraits<BASIS>::ComplexType> \
-   maxwell3dDoubleLayerBoundaryOperator( \
-       const shared_ptr<const Context<BASIS, ScalarTraits<BASIS>::ComplexType> >&, \
-       const shared_ptr<const Space<BASIS> >&, \
-       const shared_ptr<const Space<BASIS> >&, \
-       const shared_ptr<const Space<BASIS> >&, \
-       ScalarTraits<BASIS>::ComplexType, \
-       const std::string&, int, bool, int)
+#define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS)                               \
+  template BoundaryOperator<BASIS, ScalarTraits<BASIS>::ComplexType>           \
+  maxwell3dDoubleLayerBoundaryOperator(                                        \
+      const shared_ptr<                                                        \
+          const Context<BASIS, ScalarTraits<BASIS>::ComplexType>> &,           \
+      const shared_ptr<const Space<BASIS>> &,                                  \
+      const shared_ptr<const Space<BASIS>> &,                                  \
+      const shared_ptr<const Space<BASIS>> &,                                  \
+      ScalarTraits<BASIS>::ComplexType, const std::string &, int, bool, int)
 FIBER_ITERATE_OVER_BASIS_TYPES(INSTANTIATE_NONMEMBER_CONSTRUCTOR);
 
 } // namespace Bempp

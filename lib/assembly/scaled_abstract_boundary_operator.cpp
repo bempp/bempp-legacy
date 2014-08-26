@@ -27,67 +27,63 @@
 #include "../common/to_string.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
-namespace Bempp
-{
+namespace Bempp {
 
 namespace {
 
 template <typename ResultType>
-int autoSymmetry(int origSymmetry, ResultType weight)
-{
-    if (origSymmetry & HERMITIAN)
-        if (imagPart(weight) != 0.)
-            return origSymmetry & ~HERMITIAN;
-    return origSymmetry;
+int autoSymmetry(int origSymmetry, ResultType weight) {
+  if (origSymmetry & HERMITIAN)
+    if (imagPart(weight) != 0.)
+      return origSymmetry & ~HERMITIAN;
+  return origSymmetry;
 }
 
 } // namespace
 
 template <typename BasisFunctionType, typename ResultType>
 ScaledAbstractBoundaryOperator<BasisFunctionType, ResultType>::
-ScaledAbstractBoundaryOperator(
+    ScaledAbstractBoundaryOperator(
         ResultType multiplier_,
-        const BoundaryOperator<BasisFunctionType, ResultType>& multiplicand_,
-        int symmetry) :
-    Base(multiplicand_.domain(),
-         multiplicand_.range(), multiplicand_.dualToRange(),
-         "" + toString(multiplier_) + " * (" + multiplicand_.label() + ")",
-         symmetry & AUTO_SYMMETRY ?
-             autoSymmetry(
-                 throwIfUninitialized(multiplicand_,
-                                      "ScaledAbstractBoundaryOperator::"
-                                      "ScaledAbstractBoundaryOperator(): "
-                                      "the boundary operator to be scaled must "
-                                      "be initialized"
-                                      ).abstractOperator()->symmetry(), multiplier_) :
-             symmetry),
-    m_multiplier(multiplier_), m_multiplicand(multiplicand_)
-{
-}
+        const BoundaryOperator<BasisFunctionType, ResultType> &multiplicand_,
+        int symmetry)
+    : Base(multiplicand_.domain(), multiplicand_.range(),
+           multiplicand_.dualToRange(),
+           "" + toString(multiplier_) + " * (" + multiplicand_.label() + ")",
+           symmetry & AUTO_SYMMETRY
+               ? autoSymmetry(throwIfUninitialized(
+                                  multiplicand_,
+                                  "ScaledAbstractBoundaryOperator::"
+                                  "ScaledAbstractBoundaryOperator(): "
+                                  "the boundary operator to be scaled must "
+                                  "be initialized")
+                                  .abstractOperator()
+                                  ->symmetry(),
+                              multiplier_)
+               : symmetry),
+      m_multiplier(multiplier_), m_multiplicand(multiplicand_) {}
 
 template <typename BasisFunctionType, typename ResultType>
-bool ScaledAbstractBoundaryOperator<BasisFunctionType, ResultType>::isLocal() const
-{
-    return m_multiplicand.abstractOperator()->isLocal();
+bool
+ScaledAbstractBoundaryOperator<BasisFunctionType, ResultType>::isLocal() const {
+  return m_multiplicand.abstractOperator()->isLocal();
 }
-
 
 template <typename BasisFunctionType_, typename ResultType_>
 ResultType_
-ScaledAbstractBoundaryOperator<BasisFunctionType_, ResultType_>::
-multiplier() const
-{
-    return m_multiplier;
+ScaledAbstractBoundaryOperator<BasisFunctionType_, ResultType_>::multiplier()
+    const {
+  return m_multiplier;
 }
 
 template <typename BasisFunctionType_, typename ResultType_>
 BoundaryOperator<BasisFunctionType_, ResultType_>
-ScaledAbstractBoundaryOperator<BasisFunctionType_, ResultType_>::
-multiplicand() const
-{
-    return m_multiplicand;
+ScaledAbstractBoundaryOperator<BasisFunctionType_, ResultType_>::multiplicand()
+    const {
+  return m_multiplicand;
 }
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(ScaledAbstractBoundaryOperator);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(
+    ScaledAbstractBoundaryOperator);
 
 } // namespace Bempp

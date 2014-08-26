@@ -30,8 +30,7 @@
 #include <utility>
 #include <vector>
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \cond FORWARD_DECL */
 template <typename ValueType> class Shapeset;
@@ -39,28 +38,25 @@ template <typename ValueType> class Shapeset;
 
 /** \brief Integration over pairs of elements. */
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
-class TestKernelTrialIntegrator
-{
+class TestKernelTrialIntegrator {
 public:
-    typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
-    typedef std::pair<int, int> ElementIndexPair;
+  typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
+  typedef std::pair<int, int> ElementIndexPair;
 
-    virtual ~TestKernelTrialIntegrator() {}
+  virtual ~TestKernelTrialIntegrator() {}
 
-    virtual void integrate(
-            CallVariant callVariant,
-            const std::vector<int>& elementIndicesA,
-            int elementIndexB,
-            const Shapeset<BasisFunctionType>& basisA,
-            const Shapeset<BasisFunctionType>& basisB,
+  virtual void
+  integrate(CallVariant callVariant, const std::vector<int> &elementIndicesA,
+            int elementIndexB, const Shapeset<BasisFunctionType> &basisA,
+            const Shapeset<BasisFunctionType> &basisB,
             LocalDofIndex localDofIndexB,
-            const std::vector<arma::Mat<ResultType>*>& result) const = 0;
+            const std::vector<arma::Mat<ResultType> *> &result) const = 0;
 
-    virtual void integrate(
-            const std::vector<ElementIndexPair>& elementIndexPairs,
-            const Shapeset<BasisFunctionType>& testShapeset,
-            const Shapeset<BasisFunctionType>& trialShapeset,
-            const std::vector<arma::Mat<ResultType>*>& result) const = 0;
+  virtual void
+  integrate(const std::vector<ElementIndexPair> &elementIndexPairs,
+            const Shapeset<BasisFunctionType> &testShapeset,
+            const Shapeset<BasisFunctionType> &trialShapeset,
+            const std::vector<arma::Mat<ResultType> *> &result) const = 0;
 };
 
 } // namespace Fiber

@@ -35,70 +35,71 @@
 
 #include "../common/boost_make_shared_fwd.hpp"
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \ingroup weak_form_assembly_internal
  *  \brief Utility functions used during weak-form assembly.
  */
-struct LocalAssemblerConstructionHelper
-{
-    template <typename CoordinateType, typename BasisFunctionType>
-    static void collectGridData(
-            const Space<BasisFunctionType>& space,
-            shared_ptr<Fiber::RawGridGeometry<CoordinateType> >& rawGeometry,
-            shared_ptr<GeometryFactory>& geometryFactory) {
-        typedef Fiber::RawGridGeometry<CoordinateType> RawGridGeometry;
+struct LocalAssemblerConstructionHelper {
+  template <typename CoordinateType, typename BasisFunctionType>
+  static void collectGridData(
+      const Space<BasisFunctionType> &space,
+      shared_ptr<Fiber::RawGridGeometry<CoordinateType>> &rawGeometry,
+      shared_ptr<GeometryFactory> &geometryFactory) {
+    typedef Fiber::RawGridGeometry<CoordinateType> RawGridGeometry;
 
-        rawGeometry = boost::make_shared<RawGridGeometry>(space.gridDimension(),
-                                                          space.worldDimension());
-        const GridView& view = space.gridView();
-        view.getRawElementData(
-                    rawGeometry->vertices(), rawGeometry->elementCornerIndices(),
-                    rawGeometry->auxData(), rawGeometry->domainIndices());
-        geometryFactory = space.elementGeometryFactory();
+    rawGeometry = boost::make_shared<RawGridGeometry>(space.gridDimension(),
+                                                      space.worldDimension());
+    const GridView &view = space.gridView();
+    view.getRawElementData(
+        rawGeometry->vertices(), rawGeometry->elementCornerIndices(),
+        rawGeometry->auxData(), rawGeometry->domainIndices());
+    geometryFactory = space.elementGeometryFactory();
+  }
+
+  template <typename BasisFunctionType>
+  static void collectShapesets(
+      const Space<BasisFunctionType> &space,
+      shared_ptr<std::vector<const Fiber::Shapeset<BasisFunctionType> *>> &
+          shapesets) {
+    typedef std::vector<const Fiber::Shapeset<BasisFunctionType> *>
+    ShapesetPtrVector;
+    shapesets = boost::make_shared<ShapesetPtrVector>();
+    getAllShapesets(space, *shapesets);
+  }
+
+  // Probably in future will be generalised to arbitrary number of grids
+
+  template <typename CoordinateType>
+  static void makeOpenClHandler(
+      const OpenClOptions &openClOptions,
+      const shared_ptr<Fiber::RawGridGeometry<CoordinateType>> &rawGeometry,
+      shared_ptr<Fiber::OpenClHandler> &openClHandler) {
+    openClHandler = boost::make_shared<Fiber::OpenClHandler>(openClOptions);
+    if (openClHandler->UseOpenCl())
+      openClHandler->pushGeometry(rawGeometry->vertices(),
+                                  rawGeometry->elementCornerIndices());
+  }
+
+  template <typename CoordinateType>
+  static void makeOpenClHandler(
+      const OpenClOptions &openClOptions,
+      const shared_ptr<Fiber::RawGridGeometry<CoordinateType>> &testRawGeometry,
+      const shared_ptr<Fiber::RawGridGeometry<CoordinateType>> &
+          trialRawGeometry,
+      shared_ptr<Fiber::OpenClHandler> &openClHandler) {
+    openClHandler = boost::make_shared<Fiber::OpenClHandler>(openClOptions);
+    if (openClHandler->UseOpenCl()) {
+      if (testRawGeometry.get() == trialRawGeometry.get())
+        openClHandler->pushGeometry(testRawGeometry->vertices(),
+                                    testRawGeometry->elementCornerIndices());
+      else
+        throw NotImplementedError(
+            "LocalAssemblerConstructionHelper::makeOpenClHandler(): "
+            "OpenCL-based assembly of operators with test and trial "
+            "spaces defined on different grids is not currently supported");
     }
-
-    template <typename BasisFunctionType>
-    static void collectShapesets(
-            const Space<BasisFunctionType>& space,
-            shared_ptr<std::vector<const Fiber::Shapeset<BasisFunctionType>*> >& shapesets) {
-        typedef std::vector<const Fiber::Shapeset<BasisFunctionType>*> ShapesetPtrVector;
-        shapesets = boost::make_shared<ShapesetPtrVector>();
-        getAllShapesets(space, *shapesets);
-    }
-
-    // Probably in future will be generalised to arbitrary number of grids
-
-    template <typename CoordinateType>
-    static void makeOpenClHandler(
-            const OpenClOptions& openClOptions,
-            const shared_ptr<Fiber::RawGridGeometry<CoordinateType> >& rawGeometry,
-            shared_ptr<Fiber::OpenClHandler>& openClHandler) {
-        openClHandler = boost::make_shared<Fiber::OpenClHandler>(openClOptions);
-        if (openClHandler->UseOpenCl())
-            openClHandler->pushGeometry(rawGeometry->vertices(),
-                                        rawGeometry->elementCornerIndices());
-    }
-
-    template <typename CoordinateType>
-    static void makeOpenClHandler(
-            const OpenClOptions& openClOptions,
-            const shared_ptr<Fiber::RawGridGeometry<CoordinateType> >& testRawGeometry,
-            const shared_ptr<Fiber::RawGridGeometry<CoordinateType> >& trialRawGeometry,
-            shared_ptr<Fiber::OpenClHandler>& openClHandler) {
-        openClHandler = boost::make_shared<Fiber::OpenClHandler>(openClOptions);
-        if (openClHandler->UseOpenCl()) {
-            if (testRawGeometry.get() == trialRawGeometry.get())
-                openClHandler->pushGeometry(testRawGeometry->vertices(),
-                                            testRawGeometry->elementCornerIndices());
-            else
-                throw NotImplementedError(
-                        "LocalAssemblerConstructionHelper::makeOpenClHandler(): "
-                        "OpenCL-based assembly of operators with test and trial "
-                        "spaces defined on different grids is not currently supported");
-        }
-    }
+  }
 };
 
 } // namespace Bempp

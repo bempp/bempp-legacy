@@ -27,8 +27,7 @@
 
 #include <vector>
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \brief Family of quadrature rules over pairs of elements.
  *
@@ -48,41 +47,39 @@ namespace Fiber
  *  Above, each of \f$S\f$ and \f$T\f$ denotes either the unit
  *  triangle or the unit square.
  */
-template <typename CoordinateType>
-class DoubleQuadratureRuleFamily
-{
+template <typename CoordinateType> class DoubleQuadratureRuleFamily {
 public:
-    /** \brief Destructor. */
-    virtual ~DoubleQuadratureRuleFamily() {}
+  /** \brief Destructor. */
+  virtual ~DoubleQuadratureRuleFamily() {}
 
-    /** \brief Fill arrays of quadrature points and weights.
-     *
-     *  \param[in]  desc    Quadrature descriptor.
-     *  \param[out] testPoints
-     *    2D array whose (i, j)th element will contain the ith (local)
-     *    coordinate of the jth quadrature point on the test element.
-     *  \param[out] trialPoints
-     *    2D array whose (i, j)th element will contain the ith (local)
-     *    coordinate of the jth quadrature point on the trial element.
-     *  \param[out] testWeights
-     *    If \p isTensor is set to \c true, this parameter will be a
-     *    vector of test point weights of a separable quadrature rule;
-     *    otherwise it will be a vector of point weights of a
-     *    nonseparable quadarture rule.
-     *  \param[out] trialWeights
-     *    If \p isTensor is set to \c true, this parameter will be a
-     *    vector of trial point weights of a separable quadrature rule;
-     *    otherwise it will be empty.
-     *  \param[out] isTensor
-     *    If set to \c true, the returned quadrature rule is a
-     *    tensor-product rule, otherwise it is not. */
-    virtual void fillQuadraturePointsAndWeights(
-        const DoubleQuadratureDescriptor& desc,
-        arma::Mat<CoordinateType>& testPoints,
-        arma::Mat<CoordinateType>& trialPoints,
-        std::vector<CoordinateType>& testWeights,
-        std::vector<CoordinateType>& trialWeights,
-        bool& isTensor) const = 0;
+  /** \brief Fill arrays of quadrature points and weights.
+   *
+   *  \param[in]  desc    Quadrature descriptor.
+   *  \param[out] testPoints
+   *    2D array whose (i, j)th element will contain the ith (local)
+   *    coordinate of the jth quadrature point on the test element.
+   *  \param[out] trialPoints
+   *    2D array whose (i, j)th element will contain the ith (local)
+   *    coordinate of the jth quadrature point on the trial element.
+   *  \param[out] testWeights
+   *    If \p isTensor is set to \c true, this parameter will be a
+   *    vector of test point weights of a separable quadrature rule;
+   *    otherwise it will be a vector of point weights of a
+   *    nonseparable quadarture rule.
+   *  \param[out] trialWeights
+   *    If \p isTensor is set to \c true, this parameter will be a
+   *    vector of trial point weights of a separable quadrature rule;
+   *    otherwise it will be empty.
+   *  \param[out] isTensor
+   *    If set to \c true, the returned quadrature rule is a
+   *    tensor-product rule, otherwise it is not. */
+  virtual void
+  fillQuadraturePointsAndWeights(const DoubleQuadratureDescriptor &desc,
+                                 arma::Mat<CoordinateType> &testPoints,
+                                 arma::Mat<CoordinateType> &trialPoints,
+                                 std::vector<CoordinateType> &testWeights,
+                                 std::vector<CoordinateType> &trialWeights,
+                                 bool &isTensor) const = 0;
 };
 
 } // namespace Fiber

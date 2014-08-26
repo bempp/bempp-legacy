@@ -27,8 +27,7 @@
 #include "scalar_traits.hpp"
 #include "single_quadrature_descriptor.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 template <typename BasisFunctionType> class Shapeset;
 
@@ -36,46 +35,46 @@ template <typename BasisFunctionType> class Shapeset;
  *  \brief Quadrature descriptor selector used during the
  *  evaluation on potentials. */
 template <typename BasisFunctionType>
-class QuadratureDescriptorSelectorForPotentialOperators
-{
+class QuadratureDescriptorSelectorForPotentialOperators {
 public:
-    /** \brief Type used to represent coordinates. */
-    typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
-    /** \brief Destructor. */
-    virtual ~QuadratureDescriptorSelectorForPotentialOperators() {}
+  /** \brief Type used to represent coordinates. */
+  typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
+  /** \brief Destructor. */
+  virtual ~QuadratureDescriptorSelectorForPotentialOperators() {}
 
-    /** \brief Return the descriptor of the quadrature rule to be used
-     *  in the evaluation of the contribution of element
-     *  \p trialElementIndex at point \p point.
-     *
-     *  \param[in] point
-     *    Coordinates of the point where the potential is evaluated.
-     *  \param[in] trialElementIndex
-     *    Index of the element whose contribution to the potential is evaluated.
-     *  \param[in] nominalDistance
-     *    This parameter is only relevant for quadrature selectors
-     *    that vary the degree of accuracy of regular quadrature rules
-     *    with point-element distance. If \p nominalDistance is
-     *    non-negative, the quadrature rule should be chosen as if the
-     *    distance between the evaluation point and the center of the
-     *    element were equal to \p nominalDistance. Otherwise the
-     *    selector should try to estimate the distance on its own and
-     *    adjust the quadrature order accordingly. */
-    virtual SingleQuadratureDescriptor quadratureDescriptor(
-        const arma::Col<CoordinateType>& point, int trialElementIndex,
-        CoordinateType nominalDistance) const = 0;
+  /** \brief Return the descriptor of the quadrature rule to be used
+   *  in the evaluation of the contribution of element
+   *  \p trialElementIndex at point \p point.
+   *
+   *  \param[in] point
+   *    Coordinates of the point where the potential is evaluated.
+   *  \param[in] trialElementIndex
+   *    Index of the element whose contribution to the potential is evaluated.
+   *  \param[in] nominalDistance
+   *    This parameter is only relevant for quadrature selectors
+   *    that vary the degree of accuracy of regular quadrature rules
+   *    with point-element distance. If \p nominalDistance is
+   *    non-negative, the quadrature rule should be chosen as if the
+   *    distance between the evaluation point and the center of the
+   *    element were equal to \p nominalDistance. Otherwise the
+   *    selector should try to estimate the distance on its own and
+   *    adjust the quadrature order accordingly. */
+  virtual SingleQuadratureDescriptor
+  quadratureDescriptor(const arma::Col<CoordinateType> &point,
+                       int trialElementIndex,
+                       CoordinateType nominalDistance) const = 0;
 
-    /** \brief Return the descriptor of the quadrature rule used in
-     *  the evaluation of a potential "far away" from the surface.
-     *
-     *  This function should return the quadrature description to be
-     *  used in the evaluation of the contribution of an element with
-     *  \p trialElementCornerCount vertices, endowed with the \p
-     *  trialShapeset set of shape functions, at points lying "far
-     *  away" from the element. */
-    virtual SingleQuadratureDescriptor farFieldQuadratureDescriptor(
-        const Shapeset<BasisFunctionType>& trialShapeset,
-        int trialElementCornerCount) const = 0;
+  /** \brief Return the descriptor of the quadrature rule used in
+   *  the evaluation of a potential "far away" from the surface.
+   *
+   *  This function should return the quadrature description to be
+   *  used in the evaluation of the contribution of an element with
+   *  \p trialElementCornerCount vertices, endowed with the \p
+   *  trialShapeset set of shape functions, at points lying "far
+   *  away" from the element. */
+  virtual SingleQuadratureDescriptor
+  farFieldQuadratureDescriptor(const Shapeset<BasisFunctionType> &trialShapeset,
+                               int trialElementCornerCount) const = 0;
 };
 
 } // namespace Fiber

@@ -23,8 +23,7 @@
 
 #include "laplace_3d_potential_operator_base.hpp"
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \cond PRIVATE */
 template <typename BasisFunctionType, typename ResultType>
@@ -49,39 +48,41 @@ struct Laplace3dSingleLayerPotentialOperatorImpl;
  *  potential to be stored as complex numbers.
  *
  *  \see laplace_3d */
-template <typename BasisFunctionType_, typename ResultType_ = BasisFunctionType_>
-class Laplace3dSingleLayerPotentialOperator :
-        public Laplace3dPotentialOperatorBase<
-        Laplace3dSingleLayerPotentialOperatorImpl<BasisFunctionType_, ResultType_>,
-        BasisFunctionType_,
-        ResultType_>
-{
-    typedef Laplace3dPotentialOperatorBase<
-    Laplace3dSingleLayerPotentialOperatorImpl<BasisFunctionType_, ResultType_>,
-    BasisFunctionType_,
-    ResultType_>
-    Base;
-public:
-    /** \copydoc Laplace3dPotentialOperatorBase::BasisFunctionType */
-    typedef typename Base::BasisFunctionType BasisFunctionType;
-    /** \copydoc Laplace3dPotentialOperatorBase::KernelType */
-    typedef typename Base::KernelType KernelType;
-    /** \copydoc Laplace3dPotentialOperatorBase::ResultType */
-    typedef typename Base::ResultType ResultType;
-    /** \copydoc Laplace3dPotentialOperatorBase::CoordinateType */
-    typedef typename Base::CoordinateType CoordinateType;
-    /** \copydoc Laplace3dPotentialOperatorBase::CollectionOfBasisTransformations */
-    typedef typename Base::CollectionOfBasisTransformations
-    CollectionOfBasisTransformations;
-    /** \copydoc Laplace3dPotentialOperatorBase::CollectionOfKernels */
-    typedef typename Base::CollectionOfKernels CollectionOfKernels;
-    /** \copydoc Laplace3dPotentialOperatorBase::KernelTrialIntegral */
-    typedef typename Base::KernelTrialIntegral KernelTrialIntegral;
+template <typename BasisFunctionType_,
+          typename ResultType_ = BasisFunctionType_>
+class Laplace3dSingleLayerPotentialOperator
+    : public Laplace3dPotentialOperatorBase<
+          Laplace3dSingleLayerPotentialOperatorImpl<BasisFunctionType_,
+                                                    ResultType_>,
+          BasisFunctionType_, ResultType_> {
+  typedef Laplace3dPotentialOperatorBase<
+      Laplace3dSingleLayerPotentialOperatorImpl<BasisFunctionType_,
+                                                ResultType_>,
+      BasisFunctionType_, ResultType_> Base;
 
-    /** \copydoc Laplace3dPotentialOperatorBase::Laplace3dPotentialOperatorBase */
-    Laplace3dSingleLayerPotentialOperator();
-    /** \copydoc Laplace3dPotentialOperatorBase::~Laplace3dPotentialOperatorBase */
-    virtual ~Laplace3dSingleLayerPotentialOperator();
+public:
+  /** \copydoc Laplace3dPotentialOperatorBase::BasisFunctionType */
+  typedef typename Base::BasisFunctionType BasisFunctionType;
+  /** \copydoc Laplace3dPotentialOperatorBase::KernelType */
+  typedef typename Base::KernelType KernelType;
+  /** \copydoc Laplace3dPotentialOperatorBase::ResultType */
+  typedef typename Base::ResultType ResultType;
+  /** \copydoc Laplace3dPotentialOperatorBase::CoordinateType */
+  typedef typename Base::CoordinateType CoordinateType;
+  /** \copydoc Laplace3dPotentialOperatorBase::CollectionOfBasisTransformations
+   */
+  typedef typename Base::CollectionOfBasisTransformations
+  CollectionOfBasisTransformations;
+  /** \copydoc Laplace3dPotentialOperatorBase::CollectionOfKernels */
+  typedef typename Base::CollectionOfKernels CollectionOfKernels;
+  /** \copydoc Laplace3dPotentialOperatorBase::KernelTrialIntegral */
+  typedef typename Base::KernelTrialIntegral KernelTrialIntegral;
+
+  /** \copydoc Laplace3dPotentialOperatorBase::Laplace3dPotentialOperatorBase */
+  Laplace3dSingleLayerPotentialOperator();
+  /** \copydoc Laplace3dPotentialOperatorBase::~Laplace3dPotentialOperatorBase
+   */
+  virtual ~Laplace3dSingleLayerPotentialOperator();
 };
 
 } // namespace Bempp

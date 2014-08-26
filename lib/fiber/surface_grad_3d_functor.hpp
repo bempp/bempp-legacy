@@ -30,40 +30,39 @@
 
 #include <boost/array.hpp>
 
-namespace Fiber
-{
+namespace Fiber {
 
-template <typename CoordinateType_>
-class SurfaceGrad3dElementaryFunctor
-{
+template <typename CoordinateType_> class SurfaceGrad3dElementaryFunctor {
 public:
-    typedef CoordinateType_ CoordinateType;
+  typedef CoordinateType_ CoordinateType;
 
-    int argumentDimension() const { return 1; }
-    int resultDimension() const { return 3; }
+  int argumentDimension() const { return 1; }
+  int resultDimension() const { return 3; }
 
-    void addDependencies(size_t& basisDeps, size_t& geomDeps) const {
-        basisDeps |= DERIVATIVES;
-        geomDeps |= JACOBIAN_INVERSES_TRANSPOSED;
-    }
+  void addDependencies(size_t &basisDeps, size_t &geomDeps) const {
+    basisDeps |= DERIVATIVES;
+    geomDeps |= JACOBIAN_INVERSES_TRANSPOSED;
+  }
 
-    template <typename ValueType>
-    void evaluate(
-            const ConstBasisDataSlice<ValueType>& basisData,
-            const ConstGeometricalDataSlice<CoordinateType>& geomData,
-            _1dSliceOf3dArray<ValueType>& result) const {
-        assert(basisData.componentCount() == 1);
-        assert(geomData.dimWorld() == 3);
+  template <typename ValueType>
+  void evaluate(const ConstBasisDataSlice<ValueType> &basisData,
+                const ConstGeometricalDataSlice<CoordinateType> &geomData,
+                _1dSliceOf3dArray<ValueType> &result) const {
+    assert(basisData.componentCount() == 1);
+    assert(geomData.dimWorld() == 3);
 
-        // result := gradient of the shape function extended outside
-        // the surface so that its normal derivative on the surf. is zero
-        result(0) = basisData.derivatives(0, 0) * geomData.jacobianInverseTransposed(0, 0) +
-                basisData.derivatives(0, 1) * geomData.jacobianInverseTransposed(0, 1);
-        result(1) = basisData.derivatives(0, 0) * geomData.jacobianInverseTransposed(1, 0) +
-                basisData.derivatives(0, 1) * geomData.jacobianInverseTransposed(1, 1);
-        result(2) = basisData.derivatives(0, 0) * geomData.jacobianInverseTransposed(2, 0) +
-                basisData.derivatives(0, 1) * geomData.jacobianInverseTransposed(2, 1);
-    }
+    // result := gradient of the shape function extended outside
+    // the surface so that its normal derivative on the surf. is zero
+    result(0) =
+        basisData.derivatives(0, 0) * geomData.jacobianInverseTransposed(0, 0) +
+        basisData.derivatives(0, 1) * geomData.jacobianInverseTransposed(0, 1);
+    result(1) =
+        basisData.derivatives(0, 0) * geomData.jacobianInverseTransposed(1, 0) +
+        basisData.derivatives(0, 1) * geomData.jacobianInverseTransposed(1, 1);
+    result(2) =
+        basisData.derivatives(0, 0) * geomData.jacobianInverseTransposed(2, 0) +
+        basisData.derivatives(0, 1) * geomData.jacobianInverseTransposed(2, 1);
+  }
 };
 
 // Note: in C++11 we'll be able to make a "template typedef", or more precisely
@@ -71,12 +70,11 @@ public:
 /** \ingroup functors
  *  \brief Functor calculating the surface gradient of a scalar field in 3D. */
 template <typename CoordinateType_>
-class SurfaceGrad3dFunctor :
-        public ElementaryShapeTransformationFunctorWrapper<
-        SurfaceGrad3dElementaryFunctor<CoordinateType_> >
-{
+class SurfaceGrad3dFunctor
+    : public ElementaryShapeTransformationFunctorWrapper<
+          SurfaceGrad3dElementaryFunctor<CoordinateType_>> {
 public:
-    typedef CoordinateType_ CoordinateType;
+  typedef CoordinateType_ CoordinateType;
 };
 
 } // namespace Fiber

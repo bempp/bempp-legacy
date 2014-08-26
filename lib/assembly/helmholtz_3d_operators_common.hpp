@@ -21,8 +21,7 @@
 #ifndef bempp_helmholtz_3d_operators_common_hpp
 #define bempp_helmholtz_3d_operators_common_hpp
 
-namespace Bempp
-{
+namespace Bempp {
 
 const int DEFAULT_HELMHOLTZ_INTERPOLATION_DENSITY = 5000;
 

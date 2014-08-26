@@ -18,7 +18,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-
 #include "elementary_integral_operator.hpp"
 
 #include "aca_global_assembler.hpp"
@@ -39,100 +38,99 @@
 
 #include <tbb/tick_count.h>
 
-namespace Bempp
-{
+namespace Bempp {
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
-ElementaryIntegralOperator(const shared_ptr<const Space<BasisFunctionType> >& domain,
-                           const shared_ptr<const Space<BasisFunctionType> >& range,
-                           const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-                           const std::string& label,
-                           int symmetry) :
-    Base(domain, range, dualToRange, label, symmetry)
-{
-}
+    ElementaryIntegralOperator(
+        const shared_ptr<const Space<BasisFunctionType>> &domain,
+        const shared_ptr<const Space<BasisFunctionType>> &range,
+        const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
+        const std::string &label, int symmetry)
+    : Base(domain, range, dualToRange, label, symmetry) {}
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 bool
-ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::isLocal() const
-{
-    return false;
+ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::isLocal()
+    const {
+  return false;
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 std::unique_ptr<typename ElementaryIntegralOperator<
-BasisFunctionType, KernelType, ResultType>::LocalAssembler>
+    BasisFunctionType, KernelType, ResultType>::LocalAssembler>
 ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
-makeAssemblerImpl(
-        const QuadratureStrategy& quadStrategy,
-        const shared_ptr<const GeometryFactory>& testGeometryFactory,
-        const shared_ptr<const GeometryFactory>& trialGeometryFactory,
-        const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& testRawGeometry,
-        const shared_ptr<const Fiber::RawGridGeometry<CoordinateType> >& trialRawGeometry,
-        const shared_ptr<const std::vector<const Fiber::Shapeset<BasisFunctionType>*> >& testShapesets,
-        const shared_ptr<const std::vector<const Fiber::Shapeset<BasisFunctionType>*> >& trialShapesets,
-        const shared_ptr<const Fiber::OpenClHandler>& openClHandler,
-        const ParallelizationOptions& parallelizationOptions,
+    makeAssemblerImpl(
+        const QuadratureStrategy &quadStrategy,
+        const shared_ptr<const GeometryFactory> &testGeometryFactory,
+        const shared_ptr<const GeometryFactory> &trialGeometryFactory,
+        const shared_ptr<const Fiber::RawGridGeometry<CoordinateType>> &
+            testRawGeometry,
+        const shared_ptr<const Fiber::RawGridGeometry<CoordinateType>> &
+            trialRawGeometry,
+        const shared_ptr<const std::vector<
+            const Fiber::Shapeset<BasisFunctionType> *>> &testShapesets,
+        const shared_ptr<const std::vector<
+            const Fiber::Shapeset<BasisFunctionType> *>> &trialShapesets,
+        const shared_ptr<const Fiber::OpenClHandler> &openClHandler,
+        const ParallelizationOptions &parallelizationOptions,
         VerbosityLevel::Level verbosityLevel,
-        bool cacheSingularIntegrals) const
-{
-    return quadStrategy.makeAssemblerForIntegralOperators(
-                testGeometryFactory, trialGeometryFactory,
-                testRawGeometry, trialRawGeometry,
-                testShapesets, trialShapesets,
-                make_shared_from_ref(testTransformations()),
-                make_shared_from_ref(kernels()),
-                make_shared_from_ref(trialTransformations()),
-                make_shared_from_ref(integral()),
-                openClHandler, parallelizationOptions, verbosityLevel,
-                cacheSingularIntegrals);
+        bool cacheSingularIntegrals) const {
+  return quadStrategy.makeAssemblerForIntegralOperators(
+      testGeometryFactory, trialGeometryFactory, testRawGeometry,
+      trialRawGeometry, testShapesets, trialShapesets,
+      make_shared_from_ref(testTransformations()),
+      make_shared_from_ref(kernels()),
+      make_shared_from_ref(trialTransformations()),
+      make_shared_from_ref(integral()), openClHandler, parallelizationOptions,
+      verbosityLevel, cacheSingularIntegrals);
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
-shared_ptr<DiscreteBoundaryOperator<ResultType> >
+shared_ptr<DiscreteBoundaryOperator<ResultType>>
 ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
-assembleWeakFormImpl(
-    const Context<BasisFunctionType, ResultType>& context) const
-{
-    bool verbose = (context.assemblyOptions().verbosityLevel() >=
-                    VerbosityLevel::DEFAULT);
-    if (verbose)
-        std::cout << "Assembling the weak form of operator '"
-                  << this->label() << "'..." << std::endl;
+    assembleWeakFormImpl(const Context<BasisFunctionType, ResultType> &context)
+    const {
+  bool verbose =
+      (context.assemblyOptions().verbosityLevel() >= VerbosityLevel::DEFAULT);
+  if (verbose)
+    std::cout << "Assembling the weak form of operator '" << this->label()
+              << "'..." << std::endl;
 
-    tbb::tick_count start = tbb::tick_count::now();
-    std::unique_ptr<LocalAssembler> assembler =
-        this->makeAssembler(*context.quadStrategy(), context.assemblyOptions());
-    shared_ptr<DiscreteBoundaryOperator<ResultType> > result =
-        assembleWeakFormInternalImpl2(*assembler, context);
-    tbb::tick_count end = tbb::tick_count::now();
+  tbb::tick_count start = tbb::tick_count::now();
+  std::unique_ptr<LocalAssembler> assembler =
+      this->makeAssembler(*context.quadStrategy(), context.assemblyOptions());
+  shared_ptr<DiscreteBoundaryOperator<ResultType>> result =
+      assembleWeakFormInternalImpl2(*assembler, context);
+  tbb::tick_count end = tbb::tick_count::now();
 
-    if (verbose)
-        std::cout << "Assembly of the weak form of operator '" << this->label()
-                  << "' took " << (end - start).seconds() << " s" << std::endl;
-    return result;
+  if (verbose)
+    std::cout << "Assembly of the weak form of operator '" << this->label()
+              << "' took " << (end - start).seconds() << " s" << std::endl;
+  return result;
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
-shared_ptr<DiscreteBoundaryOperator<ResultType> >
+shared_ptr<DiscreteBoundaryOperator<ResultType>>
 ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
-assembleWeakFormInternalImpl2(
-        LocalAssembler& assembler,
-        const Context<BasisFunctionType, ResultType>& context) const
-{
-    switch (context.assemblyOptions().assemblyMode()) {
-    case AssemblyOptions::DENSE:
-        return shared_ptr<DiscreteBoundaryOperator<ResultType> >(
-                    assembleWeakFormInDenseMode(assembler, context).release());
-    case AssemblyOptions::ACA:
-        return shared_ptr<DiscreteBoundaryOperator<ResultType> >(
-                    assembleWeakFormInAcaMode(assembler, context).release());
-    default:
-        throw std::runtime_error(
-                    "ElementaryIntegralOperator::assembleWeakFormInternalImpl2(): "
-                    "invalid assembly mode");
-    }
+    assembleWeakFormInternalImpl2(
+        LocalAssembler &assembler,
+        const Context<BasisFunctionType, ResultType> &context) const {
+  switch (context.assemblyOptions().assemblyMode()) {
+  case AssemblyOptions::DENSE:
+    return shared_ptr<DiscreteBoundaryOperator<ResultType>>(
+        assembleWeakFormInDenseMode(assembler, context).release());
+  case AssemblyOptions::ACA:
+    return shared_ptr<DiscreteBoundaryOperator<ResultType>>(
+        assembleWeakFormInAcaMode(assembler, context).release());
+  case AssemblyOptions::HMAT:
+    return shared_ptr<DiscreteBoundaryOperator<ResultType>>(
+        assembleWeakFormInHMatMode(assembler, context).release());
+  default:
+    throw std::runtime_error(
+        "ElementaryIntegralOperator::assembleWeakFormInternalImpl2(): "
+        "invalid assembly mode");
+  }
 }
 
 // UNDOCUMENTED PRIVATE METHODS
@@ -140,36 +138,53 @@ assembleWeakFormInternalImpl2(
 /** \cond PRIVATE */
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
-std::unique_ptr<DiscreteBoundaryOperator<ResultType> >
+std::unique_ptr<DiscreteBoundaryOperator<ResultType>>
 ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
-assembleWeakFormInDenseMode(
-        LocalAssembler& assembler,
-        const Context<BasisFunctionType, ResultType>& context) const
-{
-    const Space<BasisFunctionType>& testSpace = *this->dualToRange();
-    const Space<BasisFunctionType>& trialSpace = *this->domain();
+    assembleWeakFormInDenseMode(
+        LocalAssembler &assembler,
+        const Context<BasisFunctionType, ResultType> &context) const {
+  const Space<BasisFunctionType> &testSpace = *this->dualToRange();
+  const Space<BasisFunctionType> &trialSpace = *this->domain();
 
-    return DenseGlobalAssembler<BasisFunctionType, ResultType>::
-            assembleDetachedWeakForm(testSpace, trialSpace, assembler, context);
+  return DenseGlobalAssembler<BasisFunctionType,
+                              ResultType>::assembleDetachedWeakForm(testSpace,
+                                                                    trialSpace,
+                                                                    assembler,
+                                                                    context);
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
-std::unique_ptr<DiscreteBoundaryOperator<ResultType> >
+std::unique_ptr<DiscreteBoundaryOperator<ResultType>>
 ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
-assembleWeakFormInAcaMode(
-        LocalAssembler& assembler,
-        const Context<BasisFunctionType, ResultType>& context) const
-{
-    const Space<BasisFunctionType>& testSpace = *this->dualToRange();
-    const Space<BasisFunctionType>& trialSpace = *this->domain();
+    assembleWeakFormInAcaMode(
+        LocalAssembler &assembler,
+        const Context<BasisFunctionType, ResultType> &context) const {
+  const Space<BasisFunctionType> &testSpace = *this->dualToRange();
+  const Space<BasisFunctionType> &trialSpace = *this->domain();
 
-    // TODO: replace second assembler with assembler for admissible blocks
-    return AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
-                testSpace, trialSpace, assembler, assembler,
-                context, this->symmetry() & SYMMETRIC);
+  // TODO: replace second assembler with assembler for admissible blocks
+  return AcaGlobalAssembler<
+      BasisFunctionType,
+      ResultType>::assembleDetachedWeakForm(testSpace, trialSpace, assembler,
+                                            assembler, context,
+                                            this->symmetry() & SYMMETRIC);
 }
+
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+std::unique_ptr<DiscreteBoundaryOperator<ResultType>>
+ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
+    assembleWeakFormInHMatMode(
+        LocalAssembler &assembler,
+        const Context<BasisFunctionType, ResultType> &context) const {
+  const Space<BasisFunctionType> &testSpace = *this->dualToRange();
+  const Space<BasisFunctionType> &trialSpace = *this->domain();
+
+  throw std::runtime_error("Not yet implemented.");
+}
+
 /** \endcond */
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(ElementaryIntegralOperator);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(
+    ElementaryIntegralOperator);
 
 } // namespace Bempp

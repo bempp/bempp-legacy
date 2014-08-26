@@ -38,28 +38,30 @@
 #include <complex>
 #include "../common/armadillo_fwd.hpp"
 
-//namespace arma
+// namespace arma
 //{
 
 ///** \cond FORWARD_DECL */
-//template <typename eT> class Mat;
+// template <typename eT> class Mat;
 ///** \endcond */
 //
 //}
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \cond FORWARD_DECL */
 class AbstractBoundaryOperatorId;
 class Grid;
 class GeometryFactory;
 template <typename ValueType> class DiscreteBoundaryOperator;
-template <typename BasisFunctionType, typename ResultType> class AbstractBoundaryOperatorSum;
+template <typename BasisFunctionType, typename ResultType>
+class AbstractBoundaryOperatorSum;
 template <typename BasisFunctionType, typename ResultType> class Context;
-template <typename BasisFunctionType, typename ResultType> class ElementaryAbstractBoundaryOperator;
+template <typename BasisFunctionType, typename ResultType>
+class ElementaryAbstractBoundaryOperator;
 template <typename BasisFunctionType, typename ResultType> class GridFunction;
-template <typename BasisFunctionType, typename ResultType> class ScaledAbstractBoundaryOperator;
+template <typename BasisFunctionType, typename ResultType>
+class ScaledAbstractBoundaryOperator;
 /** \endcond */
 
 /** \ingroup abstract_boundary_operators
@@ -89,194 +91,197 @@ template <typename BasisFunctionType, typename ResultType> class ScaledAbstractB
  *  set to a complex type, then \p ResultType_ must be set to the same type.
  */
 template <typename BasisFunctionType_, typename ResultType_>
-class AbstractBoundaryOperator
-{
+class AbstractBoundaryOperator {
 public:
-    /** \brief Type of the values of the (components of the) basis functions into
-     *  which functions acted upon by the operator are expanded. */
-    typedef BasisFunctionType_ BasisFunctionType;
-    /** \brief Type used to represent elements of the weak form of the operator. */
-    typedef ResultType_ ResultType;
-    /** \brief Type used to represent coordinates. */
-    typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
-    /** \brief Type of the appropriate instantiation of Fiber::QuadratureStrategy. */
-    typedef Fiber::QuadratureStrategy<BasisFunctionType, ResultType, GeometryFactory>
-    QuadratureStrategy;
+  /** \brief Type of the values of the (components of the) basis functions into
+   *  which functions acted upon by the operator are expanded. */
+  typedef BasisFunctionType_ BasisFunctionType;
+  /** \brief Type used to represent elements of the weak form of the operator.
+   */
+  typedef ResultType_ ResultType;
+  /** \brief Type used to represent coordinates. */
+  typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
+  /** \brief Type of the appropriate instantiation of Fiber::QuadratureStrategy.
+   */
+  typedef Fiber::QuadratureStrategy<BasisFunctionType, ResultType,
+                                    GeometryFactory> QuadratureStrategy;
 
-    /** @name Construction and destruction
-     *  @{ */
+  /** @name Construction and destruction
+   *  @{ */
 
-    /** \brief Constructor.
-     *
-     *  \param[in] domain
-     *    %Function space being the domain of the operator.
-     *  \param[in] range
-     *    %Function space being the range of the operator.
-     *  \param[in] dualToRange
-     *    %Function space dual to the the range of the operator.
-     *  \param[in] label
-     *    Textual label of the operator. If empty, a unique label is generated
-     *    automatically.
-     *  \param[in] symmetry
-     *    Symmetry of the weak form of the operator. Can be any combination of
-     *    the flags defined in the enumeration type Symmetry.
-     *
-     *  None of the shared pointers may be null and the spaces \p range and \p
-     *  dualToRange must be defined on the same grid, otherwise an exception is
-     *  thrown. */
-    AbstractBoundaryOperator(
-            const shared_ptr<const Space<BasisFunctionType> >& domain,
-            const shared_ptr<const Space<BasisFunctionType> >& range,
-            const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-            const std::string& label,
-            int symmetry);
+  /** \brief Constructor.
+   *
+   *  \param[in] domain
+   *    %Function space being the domain of the operator.
+   *  \param[in] range
+   *    %Function space being the range of the operator.
+   *  \param[in] dualToRange
+   *    %Function space dual to the the range of the operator.
+   *  \param[in] label
+   *    Textual label of the operator. If empty, a unique label is generated
+   *    automatically.
+   *  \param[in] symmetry
+   *    Symmetry of the weak form of the operator. Can be any combination of
+   *    the flags defined in the enumeration type Symmetry.
+   *
+   *  None of the shared pointers may be null and the spaces \p range and \p
+   *  dualToRange must be defined on the same grid, otherwise an exception is
+   *  thrown. */
+  AbstractBoundaryOperator(
+      const shared_ptr<const Space<BasisFunctionType>> &domain,
+      const shared_ptr<const Space<BasisFunctionType>> &range,
+      const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
+      const std::string &label, int symmetry);
 
-    /** \brief Destructor. */
-    virtual ~AbstractBoundaryOperator();
+  /** \brief Destructor. */
+  virtual ~AbstractBoundaryOperator();
 
-    /** \brief Return the identifier of this operator.
-     *
-     *  If the weak form of this operator is cacheable, return a shared pointer
-     *  to a valid instance of a subclass of AbstractBoundaryOperatorId that
-     *  is guaranteed to be different for all *logically different* abstract
-     *  boundary operators.
-     *
-     *  If the weak form of this operator is not cacheable, return a null shared
-     *  pointer. This is the default implementation.
-     *
-     *  \deprecated This method is deprecated and will be removed in a future
-     *  version of BEM++. Boundary operator identifiers are no longer used
-     *  by the discrete weak-form caching mechanism.
-     */
-    virtual BEMPP_DEPRECATED shared_ptr<const AbstractBoundaryOperatorId> id() const;
+  /** \brief Return the identifier of this operator.
+   *
+   *  If the weak form of this operator is cacheable, return a shared pointer
+   *  to a valid instance of a subclass of AbstractBoundaryOperatorId that
+   *  is guaranteed to be different for all *logically different* abstract
+   *  boundary operators.
+   *
+   *  If the weak form of this operator is not cacheable, return a null shared
+   *  pointer. This is the default implementation.
+   *
+   *  \deprecated This method is deprecated and will be removed in a future
+   *  version of BEM++. Boundary operator identifiers are no longer used
+   *  by the discrete weak-form caching mechanism.
+   */
+  virtual BEMPP_DEPRECATED shared_ptr<const AbstractBoundaryOperatorId>
+  id() const;
 
-    /** @}
-     *  @name Spaces
-     *  @{ */
+  /** @}
+   *  @name Spaces
+   *  @{ */
 
-    /** \brief Domain.
-     *
-     *  Return a shared pointer to the function space being the domain of
-     *  this operator. */
-    shared_ptr<const Space<BasisFunctionType> > domain() const;
+  /** \brief Domain.
+   *
+   *  Return a shared pointer to the function space being the domain of
+   *  this operator. */
+  shared_ptr<const Space<BasisFunctionType>> domain() const;
 
-    /** \brief Range.
-     *
-     *  Return a shared pointer to the function space being the range of
-     *  this operator. */
-    shared_ptr<const Space<BasisFunctionType> > range() const;
+  /** \brief Range.
+   *
+   *  Return a shared pointer to the function space being the range of
+   *  this operator. */
+  shared_ptr<const Space<BasisFunctionType>> range() const;
 
-    /** \brief Dual to range.
-     *
-     *  Return a shared pointer to the function space dual to the range of
-     *  this operator. */
-    shared_ptr<const Space<BasisFunctionType> > dualToRange() const;
+  /** \brief Dual to range.
+   *
+   *  Return a shared pointer to the function space dual to the range of
+   *  this operator. */
+  shared_ptr<const Space<BasisFunctionType>> dualToRange() const;
 
-    /** @}
-     *  @name Other attributes
-     *  @{ */
+  /** @}
+   *  @name Other attributes
+   *  @{ */
 
-    /** \brief Return the label of the operator. */
-    std::string label() const;
+  /** \brief Return the label of the operator. */
+  std::string label() const;
 
-    /** \brief Generate and return a new unique label "OpN", where N is a number. */
-    static std::string uniqueLabel();
+  /** \brief Generate and return a new unique label "OpN", where N is a number.
+   */
+  static std::string uniqueLabel();
 
-    /** \brief Return the symmetry properties of the operator.
-     *
-     *  The returned value should be treated as a bitwise combination
-     *  of the flags defined in the Symmetry enumeration type. */
-    int symmetry() const;
+  /** \brief Return the symmetry properties of the operator.
+   *
+   *  The returned value should be treated as a bitwise combination
+   *  of the flags defined in the Symmetry enumeration type. */
+  int symmetry() const;
 
-    /** \brief Return whether this operator is local.
-     *
-     *  Suppose that an operator \f$A\f$ acting on a function \f$f(x)\f$
-     *  produces another function \f$g(x)\f$. We say that \f$A\f$ is local if
-     *  the value of \f$g\f$ at any point \f$x\f$ depends only on the values of
-     *  \f$f\f$ in an infinitesimal neighbourhood of \f$x\f$.
-     *
-     *  Multiplicative and differential operators are local and discretization
-     *  of their weak forms with finite elements leads to sparse matrices.
-     *  Conversely, integral operators are in general non-local and
-     *  discretization of their weak forms leads to dense matrices. */
-    virtual bool isLocal() const = 0;
+  /** \brief Return whether this operator is local.
+   *
+   *  Suppose that an operator \f$A\f$ acting on a function \f$f(x)\f$
+   *  produces another function \f$g(x)\f$. We say that \f$A\f$ is local if
+   *  the value of \f$g\f$ at any point \f$x\f$ depends only on the values of
+   *  \f$f\f$ in an infinitesimal neighbourhood of \f$x\f$.
+   *
+   *  Multiplicative and differential operators are local and discretization
+   *  of their weak forms with finite elements leads to sparse matrices.
+   *  Conversely, integral operators are in general non-local and
+   *  discretization of their weak forms leads to dense matrices. */
+  virtual bool isLocal() const = 0;
 
-    /** @}
-     *  @name Assembly
-     *  @{ */
+  /** @}
+   *  @name Assembly
+   *  @{ */
 
-    /** \brief Assemble and return the operator's weak form.
-     *
-     *  This function constructs a discrete linear operator representing the
-     *  matrix \f$L_{jk}\f$ with entries of the form
-     *
-     *  \f[L_{jk} = \int_S \phi_j L \psi_k \, dS,\f]
-     *
-     *  where \f$L\f$ is the linear operator represented by this object,
-     *  \f$S\f$ denotes the surface on which the domain function space \f$X\f$
-     *  is defined and which is represented by the grid returned by
-     *  <tt>domain.grid()</tt>, \f$\phi_j\f$ is a _test function_ from the
-     *  space \f$Y'\f$ dual to the range of the operator, \f$Y\f$, and
-     *  \f$\psi_k\f$ is a _trial function_ from the domain space \f$X\f$.
-     */
-    shared_ptr<DiscreteBoundaryOperator<ResultType_> > assembleWeakForm(
-            const Context<BasisFunctionType_, ResultType_>& context) const;
+  /** \brief Assemble and return the operator's weak form.
+   *
+   *  This function constructs a discrete linear operator representing the
+   *  matrix \f$L_{jk}\f$ with entries of the form
+   *
+   *  \f[L_{jk} = \int_S \phi_j L \psi_k \, dS,\f]
+   *
+   *  where \f$L\f$ is the linear operator represented by this object,
+   *  \f$S\f$ denotes the surface on which the domain function space \f$X\f$
+   *  is defined and which is represented by the grid returned by
+   *  <tt>domain.grid()</tt>, \f$\phi_j\f$ is a _test function_ from the
+   *  space \f$Y'\f$ dual to the range of the operator, \f$Y\f$, and
+   *  \f$\psi_k\f$ is a _trial function_ from the domain space \f$X\f$.
+   */
+  shared_ptr<DiscreteBoundaryOperator<ResultType_>> assembleWeakForm(
+      const Context<BasisFunctionType_, ResultType_> &context) const;
 
 protected:
+  /** \brief Given an AssemblyOptions object, construct objects necessary for
+   *  subsequent local assembler construction. */
+  void collectDataForAssemblerConstruction(
+      const AssemblyOptions &options,
+      shared_ptr<Fiber::RawGridGeometry<CoordinateType>> &testRawGeometry,
+      shared_ptr<Fiber::RawGridGeometry<CoordinateType>> &trialRawGeometry,
+      shared_ptr<GeometryFactory> &testGeometryFactory,
+      shared_ptr<GeometryFactory> &trialGeometryFactory,
+      shared_ptr<std::vector<const Fiber::Shapeset<BasisFunctionType_> *>> &
+          testShapesets,
+      shared_ptr<std::vector<const Fiber::Shapeset<BasisFunctionType_> *>> &
+          trialShapesets,
+      shared_ptr<Fiber::OpenClHandler> &openClHandler,
+      bool &cacheSingularIntegrals) const;
 
-    /** \brief Given an AssemblyOptions object, construct objects necessary for
-     *  subsequent local assembler construction. */
-    void collectDataForAssemblerConstruction(
-            const AssemblyOptions& options,
-            shared_ptr<Fiber::RawGridGeometry<CoordinateType> >& testRawGeometry,
-            shared_ptr<Fiber::RawGridGeometry<CoordinateType> >& trialRawGeometry,
-            shared_ptr<GeometryFactory>& testGeometryFactory,
-            shared_ptr<GeometryFactory>& trialGeometryFactory,
-            shared_ptr<std::vector<const Fiber::Shapeset<BasisFunctionType_>*> >&
-                testShapesets,
-            shared_ptr<std::vector<const Fiber::Shapeset<BasisFunctionType_>*> >&
-                trialShapesets,
-            shared_ptr<Fiber::OpenClHandler>& openClHandler,
-            bool& cacheSingularIntegrals) const;
+  /** \brief Construct those objects necessary for subsequent local
+   *  assembler construction that are independent from assembly options. */
+  void collectOptionsIndependentDataForAssemblerConstruction(
+      shared_ptr<Fiber::RawGridGeometry<CoordinateType>> &testRawGeometry,
+      shared_ptr<Fiber::RawGridGeometry<CoordinateType>> &trialRawGeometry,
+      shared_ptr<GeometryFactory> &testGeometryFactory,
+      shared_ptr<GeometryFactory> &trialGeometryFactory,
+      shared_ptr<std::vector<const Fiber::Shapeset<BasisFunctionType_> *>> &
+          testShapesets,
+      shared_ptr<std::vector<const Fiber::Shapeset<BasisFunctionType_> *>> &
+          trialShapesets) const;
 
-    /** \brief Construct those objects necessary for subsequent local
-     *  assembler construction that are independent from assembly options. */
-    void collectOptionsIndependentDataForAssemblerConstruction(
-            shared_ptr<Fiber::RawGridGeometry<CoordinateType> >& testRawGeometry,
-            shared_ptr<Fiber::RawGridGeometry<CoordinateType> >& trialRawGeometry,
-            shared_ptr<GeometryFactory>& testGeometryFactory,
-            shared_ptr<GeometryFactory>& trialGeometryFactory,
-            shared_ptr<std::vector<const Fiber::Shapeset<BasisFunctionType_>*> >&
-                testShapesets,
-            shared_ptr<std::vector<const Fiber::Shapeset<BasisFunctionType_>*> >&
-                trialShapesets) const;
+  /** \brief Construct those objects necessary for
+   *  subsequent local assembler construction that depend on assembly options.
+   */
+  void collectOptionsDependentDataForAssemblerConstruction(
+      const AssemblyOptions &options,
+      const shared_ptr<Fiber::RawGridGeometry<CoordinateType>> &testRawGeometry,
+      const shared_ptr<Fiber::RawGridGeometry<CoordinateType>> &
+          trialRawGeometry,
+      shared_ptr<Fiber::OpenClHandler> &openClHandler,
+      bool &cacheSingularIntegrals) const;
 
-    /** \brief Construct those objects necessary for
-     *  subsequent local assembler construction that depend on assembly options. */
-    void collectOptionsDependentDataForAssemblerConstruction(
-            const AssemblyOptions& options,
-            const shared_ptr<Fiber::RawGridGeometry<CoordinateType> >& testRawGeometry,
-            const shared_ptr<Fiber::RawGridGeometry<CoordinateType> >& trialRawGeometry,
-            shared_ptr<Fiber::OpenClHandler>& openClHandler,
-            bool& cacheSingularIntegrals) const;
+  /** \brief Assemble and return the operator's weak form.
+   *
+   *  This virtual function is invoked by assembleWeakForm() to do the actual
+   *  work. */
+  virtual shared_ptr<DiscreteBoundaryOperator<ResultType>> assembleWeakFormImpl(
+      const Context<BasisFunctionType, ResultType> &context) const = 0;
 
-    /** \brief Assemble and return the operator's weak form.
-     *
-     *  This virtual function is invoked by assembleWeakForm() to do the actual
-     *  work. */
-    virtual shared_ptr<DiscreteBoundaryOperator<ResultType> >
-    assembleWeakFormImpl(const Context<BasisFunctionType, ResultType>& context) const = 0;
-
-    /** @} */
+  /** @} */
 
 private:
-    /** \cond PRIVATE */
-    shared_ptr<const Space<BasisFunctionType> > m_domain;
-    shared_ptr<const Space<BasisFunctionType> > m_range;
-    shared_ptr<const Space<BasisFunctionType> > m_dualToRange;
-    std::string m_label;
-    int m_symmetry;
-    /** \endcond */
+  /** \cond PRIVATE */
+  shared_ptr<const Space<BasisFunctionType>> m_domain;
+  shared_ptr<const Space<BasisFunctionType>> m_range;
+  shared_ptr<const Space<BasisFunctionType>> m_dualToRange;
+  std::string m_label;
+  int m_symmetry;
+  /** \endcond */
 };
 
 } // namespace Bempp

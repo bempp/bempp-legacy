@@ -28,15 +28,18 @@
 
 #include <vector>
 
-namespace Fiber
-{
+namespace Fiber {
 
 template <typename BasisFunctionType> class Shapeset;
 template <typename CoordinateType> class RawGridGeometry;
-template <typename CoordinateType> class QuadratureDescriptorSelectorForGridFunctions;
-template <typename CoordinateType> class QuadratureDescriptorSelectorForIntegralOperators;
-template <typename CoordinateType> class QuadratureDescriptorSelectorForLocalOperators;
-template <typename CoordinateType> class QuadratureDescriptorSelectorForPotentialOperators;
+template <typename CoordinateType>
+class QuadratureDescriptorSelectorForGridFunctions;
+template <typename CoordinateType>
+class QuadratureDescriptorSelectorForIntegralOperators;
+template <typename CoordinateType>
+class QuadratureDescriptorSelectorForLocalOperators;
+template <typename CoordinateType>
+class QuadratureDescriptorSelectorForPotentialOperators;
 
 /** \ingroup quadrature
  *  \brief Builder of quadrature descriptor selectors.
@@ -53,73 +56,76 @@ template <typename CoordinateType> class QuadratureDescriptorSelectorForPotentia
  *  and subsequently used to determine the parameters of quadrature
  *  rules. */
 template <typename BasisFunctionType>
-class QuadratureDescriptorSelectorFactory
-{
+class QuadratureDescriptorSelectorFactory {
 public:
-    /** \brief Type used to represent coordinates. */
-    typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
+  /** \brief Type used to represent coordinates. */
+  typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
 
-    /** \brief Destructor. */
-    virtual ~QuadratureDescriptorSelectorFactory() {}
+  /** \brief Destructor. */
+  virtual ~QuadratureDescriptorSelectorFactory() {}
 
-    /** \brief Create a quadrature descriptor selector used during the
-     *  discretization of functions.
-     *
-     *  The test functions used during the discretization live on the
-     *  grid described by the \p rawGeometry object. The \p
-     *  testShapesets vector contains pointers to the sets of shape
-     *  functions defined on all the elements of this grid. */
-    virtual shared_ptr<QuadratureDescriptorSelectorForGridFunctions<CoordinateType> >
-    makeQuadratureDescriptorSelectorForGridFunctions(
-        const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
-        const shared_ptr<const std::vector<
-            const Shapeset<BasisFunctionType>*> >& testShapesets) const = 0;
+  /** \brief Create a quadrature descriptor selector used during the
+   *  discretization of functions.
+   *
+   *  The test functions used during the discretization live on the
+   *  grid described by the \p rawGeometry object. The \p
+   *  testShapesets vector contains pointers to the sets of shape
+   *  functions defined on all the elements of this grid. */
+  virtual shared_ptr<
+      QuadratureDescriptorSelectorForGridFunctions<CoordinateType>>
+  makeQuadratureDescriptorSelectorForGridFunctions(
+      const shared_ptr<const RawGridGeometry<CoordinateType>> &rawGeometry,
+      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
+          testShapesets) const = 0;
 
-    /** \brief Create a quadrature descriptor selector used during
-     *  the discretization of the weak form of boundary integral operators.
-     *
-     *  The test and trial functions used during the discretization
-     *  live on the grids described by the \p testRawGeometry and \p
-     *  trialRawGeometry objects, respectively. The \p testShapesets
-     *  and \p trialShapesets vectors contain pointers to the sets of
-     *  shape functions defined on all the elements of these grids. */
-    virtual shared_ptr<QuadratureDescriptorSelectorForIntegralOperators<CoordinateType> >
-    makeQuadratureDescriptorSelectorForIntegralOperators(
-        const shared_ptr<const RawGridGeometry<CoordinateType> >& testRawGeometry,
-        const shared_ptr<const RawGridGeometry<CoordinateType> >& trialRawGeometry,
-        const shared_ptr<const std::vector<
-            const Shapeset<BasisFunctionType>*> >& testShapesets,
-        const shared_ptr<const std::vector<
-            const Shapeset<BasisFunctionType>*> >& trialShapesets) const = 0;
+  /** \brief Create a quadrature descriptor selector used during
+   *  the discretization of the weak form of boundary integral operators.
+   *
+   *  The test and trial functions used during the discretization
+   *  live on the grids described by the \p testRawGeometry and \p
+   *  trialRawGeometry objects, respectively. The \p testShapesets
+   *  and \p trialShapesets vectors contain pointers to the sets of
+   *  shape functions defined on all the elements of these grids. */
+  virtual shared_ptr<
+      QuadratureDescriptorSelectorForIntegralOperators<CoordinateType>>
+  makeQuadratureDescriptorSelectorForIntegralOperators(
+      const shared_ptr<const RawGridGeometry<CoordinateType>> &testRawGeometry,
+      const shared_ptr<const RawGridGeometry<CoordinateType>> &trialRawGeometry,
+      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
+          testShapesets,
+      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
+          trialShapesets) const = 0;
 
-    /** \brief Create a quadrature descriptor selector used during
-     *  the discretization of the weak form of local boundary operators.
-     *
-     *  The test and trial functions used during the discretization
-     *  live on the grid described by the \p rawGeometry object. The
-     *  \p testShapesets and \p trialShapesets vectors contain
-     *  pointers to the sets of test and trial shape functions defined
-     *  on all the elements of this grid. */
-    virtual shared_ptr<QuadratureDescriptorSelectorForLocalOperators<CoordinateType> >
-    makeQuadratureDescriptorSelectorForLocalOperators(
-        const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
-        const shared_ptr<const std::vector<
-            const Shapeset<BasisFunctionType>*> >& testShapesets,
-        const shared_ptr<const std::vector<
-            const Shapeset<BasisFunctionType>*> >& trialShapesets) const = 0;
+  /** \brief Create a quadrature descriptor selector used during
+   *  the discretization of the weak form of local boundary operators.
+   *
+   *  The test and trial functions used during the discretization
+   *  live on the grid described by the \p rawGeometry object. The
+   *  \p testShapesets and \p trialShapesets vectors contain
+   *  pointers to the sets of test and trial shape functions defined
+   *  on all the elements of this grid. */
+  virtual shared_ptr<
+      QuadratureDescriptorSelectorForLocalOperators<CoordinateType>>
+  makeQuadratureDescriptorSelectorForLocalOperators(
+      const shared_ptr<const RawGridGeometry<CoordinateType>> &rawGeometry,
+      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
+          testShapesets,
+      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
+          trialShapesets) const = 0;
 
-    /** \brief Create a quadrature descriptor selector used during
-     *  the evaluation of potentials.
-     *
-     *  The trial functions used during the evaluation live on the
-     *  grid described by the \p rawGeometry object. The \p
-     *  trialShapesets vector contains pointers to the sets of shape
-     *  functions defined on all the elements of this grid. */
-    virtual shared_ptr<QuadratureDescriptorSelectorForPotentialOperators<BasisFunctionType> >
-    makeQuadratureDescriptorSelectorForPotentialOperators(
-        const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
-        const shared_ptr<const std::vector<
-            const Shapeset<BasisFunctionType>*> >& trialShapesets) const = 0;
+  /** \brief Create a quadrature descriptor selector used during
+   *  the evaluation of potentials.
+   *
+   *  The trial functions used during the evaluation live on the
+   *  grid described by the \p rawGeometry object. The \p
+   *  trialShapesets vector contains pointers to the sets of shape
+   *  functions defined on all the elements of this grid. */
+  virtual shared_ptr<
+      QuadratureDescriptorSelectorForPotentialOperators<BasisFunctionType>>
+  makeQuadratureDescriptorSelectorForPotentialOperators(
+      const shared_ptr<const RawGridGeometry<CoordinateType>> &rawGeometry,
+      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
+          trialShapesets) const = 0;
 };
 
 } // namespace Fiber

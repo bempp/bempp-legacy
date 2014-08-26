@@ -23,8 +23,7 @@
 
 #include "test_kernel_trial_integral.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \ingroup weak_form_elements
  *  \brief Default implementation of the TestKernelTrialIntegral interface.
@@ -51,15 +50,19 @@ public:
     typedef ... ResultType;
     typedef ... CoordinateType;
 
-    void addGeometricalDependencies(size_t& testGeomDeps, size_t& trialGeomDeps) const;
+    void addGeometricalDependencies(size_t& testGeomDeps, size_t& trialGeomDeps)
+const;
 
     template <template <typename T> class CollectionOf2dSlicesOfConstNdArrays>
     ResultType evaluate(
             const ConstGeometricalDataSlice<CoordinateType>& testGeomData,
             const ConstGeometricalDataSlice<CoordinateType>& trialGeomData,
-            const CollectionOf1dSlicesOfConst3dArrays<BasisFunctionType>& testValues,
-            const CollectionOf1dSlicesOfConst3dArrays<BasisFunctionType>& trialValues,
-            const CollectionOf2dSlicesOfConstNdArrays<KernelType>& kernelValues) const;
+            const CollectionOf1dSlicesOfConst3dArrays<BasisFunctionType>&
+testValues,
+            const CollectionOf1dSlicesOfConst3dArrays<BasisFunctionType>&
+trialValues,
+            const CollectionOf2dSlicesOfConstNdArrays<KernelType>& kernelValues)
+const;
 };
   \endcode
 
@@ -70,7 +73,8 @@ public:
   have the form
 
   \code{.cpp}
-void addGeometricalDependencies(size_t& testGeomDeps, size_t& trialGeomDeps) const
+void addGeometricalDependencies(size_t& testGeomDeps, size_t& trialGeomDeps)
+const
 {
     testGeomDeps |= NORMALS;
     trialGeomDeps |= NORMALS;
@@ -78,7 +82,8 @@ void addGeometricalDependencies(size_t& testGeomDeps, size_t& trialGeomDeps) con
   \endcode
 
   The evaluate() method should compute the integrand -- excluding the quadrature
-  weights! -- at a single (test point, trial point) pair. It is supplied with the
+  weights! -- at a single (test point, trial point) pair. It is supplied with
+the
   following parameters:
 
   \param[in] testGeomData
@@ -87,59 +92,58 @@ void addGeometricalDependencies(size_t& testGeomDeps, size_t& trialGeomDeps) con
     Geometric data of a point located on the trial element.
   \param[in] testValues
     Values of a collection of transformations of a test shape function at the
-    test point. The number <tt>testValues[i](j)</tt> is the <em>j</em> component value of the <em>i</em>th
+    test point. The number <tt>testValues[i](j)</tt> is the <em>j</em> component
+value of the <em>i</em>th
     transformation of the TO BE CONTINUED
   \param[in] trialValues
-    Values of a collection of transformations of a single trial function at the trial point.
+    Values of a collection of transformations of a single trial function at the
+trial point.
   \param[in] kernels
     Values of a collection of kernels at the (test point, trial point) pair.
  */
 template <typename IntegrandFunctor>
-class DefaultTestKernelTrialIntegral :
-        public TestKernelTrialIntegral<
-        typename IntegrandFunctor::BasisFunctionType,
-        typename IntegrandFunctor::KernelType,
-        typename IntegrandFunctor::ResultType>
-{
-    typedef TestKernelTrialIntegral<
-    typename IntegrandFunctor::BasisFunctionType,
-    typename IntegrandFunctor::KernelType,
-    typename IntegrandFunctor::ResultType>
-    Base;
+class DefaultTestKernelTrialIntegral
+    : public TestKernelTrialIntegral<
+          typename IntegrandFunctor::BasisFunctionType,
+          typename IntegrandFunctor::KernelType,
+          typename IntegrandFunctor::ResultType> {
+  typedef TestKernelTrialIntegral<typename IntegrandFunctor::BasisFunctionType,
+                                  typename IntegrandFunctor::KernelType,
+                                  typename IntegrandFunctor::ResultType> Base;
+
 public:
-    typedef typename Base::CoordinateType CoordinateType;
-    typedef typename Base::BasisFunctionType BasisFunctionType;
-    typedef typename Base::KernelType KernelType;
-    typedef typename Base::ResultType ResultType;
+  typedef typename Base::CoordinateType CoordinateType;
+  typedef typename Base::BasisFunctionType BasisFunctionType;
+  typedef typename Base::KernelType KernelType;
+  typedef typename Base::ResultType ResultType;
 
-    explicit DefaultTestKernelTrialIntegral(const IntegrandFunctor& functor) :
-        m_functor(functor)
-    {}
+  explicit DefaultTestKernelTrialIntegral(const IntegrandFunctor &functor)
+      : m_functor(functor) {}
 
-    virtual void addGeometricalDependencies(
-            size_t& testGeomDeps, size_t& trialGeomDeps) const;
+  virtual void addGeometricalDependencies(size_t &testGeomDeps,
+                                          size_t &trialGeomDeps) const;
 
-    virtual void evaluateWithTensorQuadratureRule(
-            const GeometricalData<CoordinateType>& testGeomData,
-            const GeometricalData<CoordinateType>& trialGeomData,
-            const CollectionOf3dArrays<BasisFunctionType>& testValues,
-            const CollectionOf3dArrays<BasisFunctionType>& trialValues,
-            const CollectionOf4dArrays<KernelType>& kernelValues,
-            const std::vector<CoordinateType>& testQuadWeights,
-            const std::vector<CoordinateType>& trialQuadWeights,
-            arma::Mat<ResultType>& result) const;
+  virtual void evaluateWithTensorQuadratureRule(
+      const GeometricalData<CoordinateType> &testGeomData,
+      const GeometricalData<CoordinateType> &trialGeomData,
+      const CollectionOf3dArrays<BasisFunctionType> &testValues,
+      const CollectionOf3dArrays<BasisFunctionType> &trialValues,
+      const CollectionOf4dArrays<KernelType> &kernelValues,
+      const std::vector<CoordinateType> &testQuadWeights,
+      const std::vector<CoordinateType> &trialQuadWeights,
+      arma::Mat<ResultType> &result) const;
 
-    virtual void evaluateWithNontensorQuadratureRule(
-            const GeometricalData<CoordinateType>& testGeomData,
-            const GeometricalData<CoordinateType>& trialGeomData,
-            const CollectionOf3dArrays<BasisFunctionType>& testValues,
-            const CollectionOf3dArrays<BasisFunctionType>& trialValues,
-            const CollectionOf3dArrays<KernelType>& kernelValues,
-            const std::vector<CoordinateType>& quadWeights,
-            arma::Mat<ResultType>& result) const;
+  virtual void evaluateWithNontensorQuadratureRule(
+      const GeometricalData<CoordinateType> &testGeomData,
+      const GeometricalData<CoordinateType> &trialGeomData,
+      const CollectionOf3dArrays<BasisFunctionType> &testValues,
+      const CollectionOf3dArrays<BasisFunctionType> &trialValues,
+      const CollectionOf3dArrays<KernelType> &kernelValues,
+      const std::vector<CoordinateType> &quadWeights,
+      arma::Mat<ResultType> &result) const;
 
 private:
-    IntegrandFunctor m_functor;
+  IntegrandFunctor m_functor;
 };
 
 } // namespace Fiber

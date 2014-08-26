@@ -19,7 +19,7 @@
 // THE SOFTWARE.
 
 #ifndef bempp_preconditioner_factory_hpp
-#define	bempp_preconditioner_factory_hpp
+#define bempp_preconditioner_factory_hpp
 
 #include "../common/common.hpp"
 
@@ -37,47 +37,40 @@
 
 #include <vector>
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \ingroup linalg
  *  \brief A simple container class to hold pointers to preconditioners.
  *
  */
-template<typename ValueType>
-class Preconditioner
-{
+template <typename ValueType> class Preconditioner {
 public:
-    typedef Teuchos::RCP<const Thyra::PreconditionerBase<ValueType> >
-        TeuchosPreconditionerPtr;
-    typedef shared_ptr<const DiscreteBoundaryOperator<ValueType> >
-        DiscreteBoundaryOperatorPtr;
-    typedef typename Fiber::ScalarTraits<ValueType>::RealType MagnitudeType;
+  typedef Teuchos::RCP<const Thyra::PreconditionerBase<ValueType>>
+  TeuchosPreconditionerPtr;
+  typedef shared_ptr<const DiscreteBoundaryOperator<ValueType>>
+  DiscreteBoundaryOperatorPtr;
+  typedef typename Fiber::ScalarTraits<ValueType>::RealType MagnitudeType;
 
-    explicit Preconditioner(TeuchosPreconditionerPtr precPtr);
+  explicit Preconditioner(TeuchosPreconditionerPtr precPtr);
 
-    virtual ~Preconditioner();
+  virtual ~Preconditioner();
 
-    /* \brief Return pointer to the actual preconditoner */
-    inline const TeuchosPreconditionerPtr& get() const { return m_precPtr;}
+  /* \brief Return pointer to the actual preconditoner */
+  inline const TeuchosPreconditionerPtr &get() const { return m_precPtr; }
 
 private:
-    TeuchosPreconditionerPtr m_precPtr;
+  TeuchosPreconditionerPtr m_precPtr;
 };
 
 /** \brief Create a preconditioner from a discrete operator.
   */
-template<typename ValueType>
-Preconditioner<ValueType>
-discreteOperatorToPreconditioner(
-        const shared_ptr<const DiscreteBoundaryOperator<ValueType> >&
-            discreteOperator);
+template <typename ValueType>
+Preconditioner<ValueType> discreteOperatorToPreconditioner(const shared_ptr<
+    const DiscreteBoundaryOperator<ValueType>> &discreteOperator);
 
-template<typename ValueType>
-Preconditioner<ValueType>
-discreteBlockDiagonalPreconditioner(
-        const std::vector<shared_ptr<
-            const DiscreteBoundaryOperator<ValueType> > >& opVector);
+template <typename ValueType>
+Preconditioner<ValueType> discreteBlockDiagonalPreconditioner(const std::vector<
+    shared_ptr<const DiscreteBoundaryOperator<ValueType>>> &opVector);
 
 } // namespace Bempp
 

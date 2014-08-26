@@ -32,57 +32,48 @@
 
 #include <boost/type_traits/is_complex.hpp>
 
-namespace Bempp
-{
+namespace Bempp {
 
 template <typename BasisFunctionType, typename ResultType>
-BoundaryOperator<BasisFunctionType, ResultType>
-laplaceBeltrami3dOperator(
-        const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
-        const shared_ptr<const Space<BasisFunctionType> >& domain,
-        const shared_ptr<const Space<BasisFunctionType> >& range,
-        const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-        const std::string& label,
-        int symmetry)
-{
-    if (domain->codomainDimension() != 1)
-        throw std::invalid_argument(
-                "laplaceBeltrami3dOperator2(): "
-                "domain must consist of scalar-valued functions");
-    if (range->codomainDimension() != 1)
-        throw std::invalid_argument(
-                "laplaceBeltrami3dOperator2(): "
-                "range must consist of scalar-valued functions");
-    if (dualToRange->codomainDimension() != 1)
-        throw std::invalid_argument(
-                "laplaceBeltrami3dOperator2(): "
-                "space dual to range must consist of scalar-valued functions");
+BoundaryOperator<BasisFunctionType, ResultType> laplaceBeltrami3dOperator(
+    const shared_ptr<const Context<BasisFunctionType, ResultType>> &context,
+    const shared_ptr<const Space<BasisFunctionType>> &domain,
+    const shared_ptr<const Space<BasisFunctionType>> &range,
+    const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
+    const std::string &label, int symmetry) {
+  if (domain->codomainDimension() != 1)
+    throw std::invalid_argument(
+        "laplaceBeltrami3dOperator2(): "
+        "domain must consist of scalar-valued functions");
+  if (range->codomainDimension() != 1)
+    throw std::invalid_argument(
+        "laplaceBeltrami3dOperator2(): "
+        "range must consist of scalar-valued functions");
+  if (dualToRange->codomainDimension() != 1)
+    throw std::invalid_argument(
+        "laplaceBeltrami3dOperator2(): "
+        "space dual to range must consist of scalar-valued functions");
 
-    typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
+  typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
 
-    typedef Fiber::SurfaceGrad3dFunctor<CoordinateType>
-            TransformationFunctor;
-    typedef Fiber::SimpleTestTrialIntegrandFunctor<
-            BasisFunctionType, ResultType> IntegrandFunctor;
+  typedef Fiber::SurfaceGrad3dFunctor<CoordinateType> TransformationFunctor;
+  typedef Fiber::SimpleTestTrialIntegrandFunctor<BasisFunctionType, ResultType>
+  IntegrandFunctor;
 
-    typedef GeneralElementaryLocalOperator<BasisFunctionType, ResultType> Op;
-    return BoundaryOperator<BasisFunctionType, ResultType>(
-                context, boost::make_shared<Op>(
-                    domain, range, dualToRange, label, symmetry,
-                    TransformationFunctor(),
-                    TransformationFunctor(),
-                    IntegrandFunctor()));
+  typedef GeneralElementaryLocalOperator<BasisFunctionType, ResultType> Op;
+  return BoundaryOperator<BasisFunctionType, ResultType>(
+      context,
+      boost::make_shared<Op>(domain, range, dualToRange, label, symmetry,
+                             TransformationFunctor(), TransformationFunctor(),
+                             IntegrandFunctor()));
 }
 
-#define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS, RESULT) \
-    template BoundaryOperator<BASIS, RESULT> \
-    laplaceBeltrami3dOperator( \
-        const shared_ptr<const Context<BASIS, RESULT> >&, \
-        const shared_ptr<const Space<BASIS> >&, \
-        const shared_ptr<const Space<BASIS> >&, \
-        const shared_ptr<const Space<BASIS> >&, \
-        const std::string&, \
-        int)
+#define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS, RESULT)                       \
+  template BoundaryOperator<BASIS, RESULT> laplaceBeltrami3dOperator(          \
+      const shared_ptr<const Context<BASIS, RESULT>> &,                        \
+      const shared_ptr<const Space<BASIS>> &,                                  \
+      const shared_ptr<const Space<BASIS>> &,                                  \
+      const shared_ptr<const Space<BASIS>> &, const std::string &, int)
 FIBER_ITERATE_OVER_BASIS_AND_RESULT_TYPES(INSTANTIATE_NONMEMBER_CONSTRUCTOR);
 
 } // namespace Bempp

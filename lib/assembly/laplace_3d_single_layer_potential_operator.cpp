@@ -31,56 +31,51 @@
 #include "../fiber/default_collection_of_basis_transformations.hpp"
 #include "../fiber/default_kernel_trial_integral.hpp"
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \cond PRIVATE */
 template <typename BasisFunctionType, typename ResultType>
-struct Laplace3dSingleLayerPotentialOperatorImpl
-{
-    typedef Laplace3dSingleLayerPotentialOperatorImpl<BasisFunctionType, ResultType>
-    This;
-    typedef Laplace3dPotentialOperatorBase<This, BasisFunctionType, ResultType> PotentialOperatorBase;
-    typedef typename PotentialOperatorBase::KernelType KernelType;
-    typedef typename PotentialOperatorBase::CoordinateType CoordinateType;
+struct Laplace3dSingleLayerPotentialOperatorImpl {
+  typedef Laplace3dSingleLayerPotentialOperatorImpl<BasisFunctionType,
+                                                    ResultType> This;
+  typedef Laplace3dPotentialOperatorBase<This, BasisFunctionType, ResultType>
+  PotentialOperatorBase;
+  typedef typename PotentialOperatorBase::KernelType KernelType;
+  typedef typename PotentialOperatorBase::CoordinateType CoordinateType;
 
-    typedef Fiber::Laplace3dSingleLayerPotentialKernelFunctor<KernelType>
-    KernelFunctor;
-    typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
-    TransformationFunctor;
-    typedef Fiber::SimpleScalarKernelTrialIntegrandFunctor<
-    BasisFunctionType, KernelType, ResultType> IntegrandFunctor;
+  typedef Fiber::Laplace3dSingleLayerPotentialKernelFunctor<KernelType>
+  KernelFunctor;
+  typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
+  TransformationFunctor;
+  typedef Fiber::SimpleScalarKernelTrialIntegrandFunctor<
+      BasisFunctionType, KernelType, ResultType> IntegrandFunctor;
 
-    Laplace3dSingleLayerPotentialOperatorImpl() :
-        kernels(KernelFunctor()),
-        transformations(TransformationFunctor()),
-        integral(IntegrandFunctor())
-    {}
+  Laplace3dSingleLayerPotentialOperatorImpl()
+      : kernels(KernelFunctor()), transformations(TransformationFunctor()),
+        integral(IntegrandFunctor()) {}
 
-    Fiber::DefaultCollectionOfKernels<KernelFunctor> kernels;
-    Fiber::DefaultCollectionOfBasisTransformations<TransformationFunctor>
-    transformations;
-    Fiber::DefaultKernelTrialIntegral<IntegrandFunctor> integral;
+  Fiber::DefaultCollectionOfKernels<KernelFunctor> kernels;
+  Fiber::DefaultCollectionOfBasisTransformations<TransformationFunctor>
+  transformations;
+  Fiber::DefaultKernelTrialIntegral<IntegrandFunctor> integral;
 };
 /** \endcond */
 
 template <typename BasisFunctionType, typename ResultType>
-Laplace3dSingleLayerPotentialOperator<BasisFunctionType, ResultType>::
-Laplace3dSingleLayerPotentialOperator()
-{
-}
+Laplace3dSingleLayerPotentialOperator<
+    BasisFunctionType, ResultType>::Laplace3dSingleLayerPotentialOperator() {}
 
 template <typename BasisFunctionType, typename ResultType>
-Laplace3dSingleLayerPotentialOperator<BasisFunctionType, ResultType>::
-~Laplace3dSingleLayerPotentialOperator()
-{
-}
+Laplace3dSingleLayerPotentialOperator<
+    BasisFunctionType, ResultType>::~Laplace3dSingleLayerPotentialOperator() {}
 
-#define INSTANTIATE_BASE_LAPLACE_SINGLE_POTENTIAL(BASIS,RESULT)		     \
-    template class Laplace3dPotentialOperatorBase< \
-Laplace3dSingleLayerPotentialOperatorImpl< BASIS , RESULT >, BASIS , RESULT >
-FIBER_ITERATE_OVER_BASIS_AND_RESULT_TYPES(INSTANTIATE_BASE_LAPLACE_SINGLE_POTENTIAL);
+#define INSTANTIATE_BASE_LAPLACE_SINGLE_POTENTIAL(BASIS, RESULT)               \
+  template class Laplace3dPotentialOperatorBase<                               \
+      Laplace3dSingleLayerPotentialOperatorImpl<BASIS, RESULT>, BASIS, RESULT>
+FIBER_ITERATE_OVER_BASIS_AND_RESULT_TYPES(
+    INSTANTIATE_BASE_LAPLACE_SINGLE_POTENTIAL);
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(Laplace3dSingleLayerPotentialOperator);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(
+    Laplace3dSingleLayerPotentialOperator);
 
 } // namespace Bempp

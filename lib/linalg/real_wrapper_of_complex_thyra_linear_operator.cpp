@@ -27,123 +27,109 @@
 #include <Thyra_DefaultSpmdVectorSpace.hpp>
 #include <Thyra_VectorSpaceBase.hpp>
 
-namespace Bempp
-{
+namespace Bempp {
 
 template <typename ValueType>
 RealWrapperOfComplexThyraLinearOperator<ValueType>::
-RealWrapperOfComplexThyraLinearOperator(
-        const Teuchos::RCP<const ComplexLinearOp>& complexOperator) :
-    m_complexOperator(complexOperator)
-{
-    if (m_complexOperator.is_null())
-        throw std::invalid_argument(
-                "RealWrapperOfComplexThyraLinearOperator::"
-                "RealWrapperOfComplexThyraLinearOperator(): "
-                "argument must not be null");
-    m_domainSpace = Thyra::defaultSpmdVectorSpace<ValueType>(
-                      2 * complexOperator->domain()->dim());
-    m_rangeSpace = Thyra::defaultSpmdVectorSpace<ValueType>(
-                     2 * complexOperator->range()->dim());
+    RealWrapperOfComplexThyraLinearOperator(
+        const Teuchos::RCP<const ComplexLinearOp> &complexOperator)
+    : m_complexOperator(complexOperator) {
+  if (m_complexOperator.is_null())
+    throw std::invalid_argument("RealWrapperOfComplexThyraLinearOperator::"
+                                "RealWrapperOfComplexThyraLinearOperator(): "
+                                "argument must not be null");
+  m_domainSpace = Thyra::defaultSpmdVectorSpace<ValueType>(
+      2 * complexOperator->domain()->dim());
+  m_rangeSpace = Thyra::defaultSpmdVectorSpace<ValueType>(
+      2 * complexOperator->range()->dim());
 }
 
 template <typename ValueType>
-Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> >
-RealWrapperOfComplexThyraLinearOperator<ValueType>::domain() const
-{
-    return m_domainSpace;
+Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>>
+RealWrapperOfComplexThyraLinearOperator<ValueType>::domain() const {
+  return m_domainSpace;
 }
 
 template <typename ValueType>
-Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> >
-RealWrapperOfComplexThyraLinearOperator<ValueType>::range() const
-{
-    return m_rangeSpace;
+Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>>
+RealWrapperOfComplexThyraLinearOperator<ValueType>::range() const {
+  return m_rangeSpace;
 }
 
 template <typename ValueType>
 bool RealWrapperOfComplexThyraLinearOperator<ValueType>::opSupportedImpl(
-        Thyra::EOpTransp M_trans) const
-{
-    return m_complexOperator->opSupported(M_trans);
+    Thyra::EOpTransp M_trans) const {
+  return m_complexOperator->opSupported(M_trans);
 }
 
 template <typename ValueType>
 void RealWrapperOfComplexThyraLinearOperator<ValueType>::applyImpl(
-        const Thyra::EOpTransp M_trans,
-        const Thyra::MultiVectorBase<ValueType> &X_in,
-        const Teuchos::Ptr<Thyra::MultiVectorBase<ValueType> > &Y_inout,
-        const ValueType alpha,
-        const ValueType beta) const
-{
-    const Teuchos::Ordinal rowCount_X_in = X_in.range()->dim();
-    assert(rowCount_X_in % 2 == 0); // each complex number has two parts
-    const Teuchos::Ordinal colCount_X_in = X_in.domain()->dim();
+    const Thyra::EOpTransp M_trans,
+    const Thyra::MultiVectorBase<ValueType> &X_in,
+    const Teuchos::Ptr<Thyra::MultiVectorBase<ValueType>> &Y_inout,
+    const ValueType alpha, const ValueType beta) const {
+  const Teuchos::Ordinal rowCount_X_in = X_in.range()->dim();
+  assert(rowCount_X_in % 2 == 0); // each complex number has two parts
+  const Teuchos::Ordinal colCount_X_in = X_in.domain()->dim();
 
-    Teuchos::ArrayRCP<const ComplexValueType> complexArray_X_in;
-    RTOpPack::ConstSubMultiVectorView<ComplexValueType> complexView_X_in;
-    Teuchos::RCP<const Thyra::MultiVectorBase<ComplexValueType> > complex_X_in;
+  Teuchos::ArrayRCP<const ComplexValueType> complexArray_X_in;
+  RTOpPack::ConstSubMultiVectorView<ComplexValueType> complexView_X_in;
+  Teuchos::RCP<const Thyra::MultiVectorBase<ComplexValueType>> complex_X_in;
 
-    Thyra::ConstDetachedMultiVectorView<ValueType> view_X_in(
-                Teuchos::rcpFromRef(X_in));
-    if (view_X_in.leadingDim() == rowCount_X_in) {
-        // contiguous vector
-        const ComplexValueType* complexData_X_in =
-                reinterpret_cast<const ComplexValueType*>(view_X_in.values());
-        complexArray_X_in = Teuchos::arcp(complexData_X_in,
-                                          0, // lowerOffset
-                                          (rowCount_X_in / 2)* colCount_X_in,
-                                          false); // doesn't own
-        complexView_X_in.initialize(0, // globalOffset
-                                    rowCount_X_in / 2,
-                                    0, // colOffset
-                                    colCount_X_in,
-                                    complexArray_X_in,
-                                    rowCount_X_in / 2); // leadingDim
-        complex_X_in = Thyra::createMembersView(m_complexOperator->domain(),
-                                                complexView_X_in);
-    } else
-        throw std::runtime_error("RealWrapperOfComplexThyraLinearOperator::"
-                                 "applyImpl(): discontiguous multivectors are not "
-                                 "supported yet");
+  Thyra::ConstDetachedMultiVectorView<ValueType> view_X_in(
+      Teuchos::rcpFromRef(X_in));
+  if (view_X_in.leadingDim() == rowCount_X_in) {
+    // contiguous vector
+    const ComplexValueType *complexData_X_in =
+        reinterpret_cast<const ComplexValueType *>(view_X_in.values());
+    complexArray_X_in = Teuchos::arcp(complexData_X_in, 0, // lowerOffset
+                                      (rowCount_X_in / 2) * colCount_X_in,
+                                      false);         // doesn't own
+    complexView_X_in.initialize(0,                    // globalOffset
+                                rowCount_X_in / 2, 0, // colOffset
+                                colCount_X_in, complexArray_X_in,
+                                rowCount_X_in / 2); // leadingDim
+    complex_X_in =
+        Thyra::createMembersView(m_complexOperator->domain(), complexView_X_in);
+  } else
+    throw std::runtime_error("RealWrapperOfComplexThyraLinearOperator::"
+                             "applyImpl(): discontiguous multivectors are not "
+                             "supported yet");
 
-    const Teuchos::Ordinal rowCount_Y_inout = Y_inout->range()->dim();
-    assert(rowCount_Y_inout % 2 == 0);
-    const Teuchos::Ordinal colCount_Y_inout = Y_inout->domain()->dim();
+  const Teuchos::Ordinal rowCount_Y_inout = Y_inout->range()->dim();
+  assert(rowCount_Y_inout % 2 == 0);
+  const Teuchos::Ordinal colCount_Y_inout = Y_inout->domain()->dim();
 
-    Teuchos::ArrayRCP<ComplexValueType> complexArray_Y_inout;
-    RTOpPack::SubMultiVectorView<ComplexValueType> complexView_Y_inout;
-    Teuchos::RCP<Thyra::MultiVectorBase<ComplexValueType> > complex_Y_inout;
+  Teuchos::ArrayRCP<ComplexValueType> complexArray_Y_inout;
+  RTOpPack::SubMultiVectorView<ComplexValueType> complexView_Y_inout;
+  Teuchos::RCP<Thyra::MultiVectorBase<ComplexValueType>> complex_Y_inout;
 
-    Thyra::DetachedMultiVectorView<ValueType> view_Y_inout(
-                Teuchos::rcpFromRef(*Y_inout));
-    if (view_Y_inout.leadingDim() == rowCount_Y_inout) {
-        // contiguous vector
-        ComplexValueType* complexData_Y_inout =
-                reinterpret_cast<ComplexValueType*>(view_Y_inout.values());
-        complexArray_Y_inout = Teuchos::arcp(complexData_Y_inout,
-                                             0, // lowerOffset
-                                             (rowCount_Y_inout / 2) * colCount_Y_inout,
-                                             false); // doesn't own
-        complexView_Y_inout.initialize(0, // globalOffset
-                                       rowCount_Y_inout / 2,
-                                       0, // colOffset
-                                       colCount_Y_inout,
-                                       complexArray_Y_inout,
-                                       rowCount_Y_inout / 2); // leadingDim
-        complex_Y_inout = Thyra::createMembersView(m_complexOperator->range(),
-                                                   complexView_Y_inout);
-    } else
-        throw std::runtime_error("RealWrapperOfComplexThyraLinearOperator::"
-                                 "applyImpl(): discontiguous multivectors are not "
-                                 "supported yet");
+  Thyra::DetachedMultiVectorView<ValueType> view_Y_inout(
+      Teuchos::rcpFromRef(*Y_inout));
+  if (view_Y_inout.leadingDim() == rowCount_Y_inout) {
+    // contiguous vector
+    ComplexValueType *complexData_Y_inout =
+        reinterpret_cast<ComplexValueType *>(view_Y_inout.values());
+    complexArray_Y_inout = Teuchos::arcp(
+        complexData_Y_inout, 0,                             // lowerOffset
+        (rowCount_Y_inout / 2) * colCount_Y_inout, false);  // doesn't own
+    complexView_Y_inout.initialize(0,                       // globalOffset
+                                   rowCount_Y_inout / 2, 0, // colOffset
+                                   colCount_Y_inout, complexArray_Y_inout,
+                                   rowCount_Y_inout / 2); // leadingDim
+    complex_Y_inout = Thyra::createMembersView(m_complexOperator->range(),
+                                               complexView_Y_inout);
+  } else
+    throw std::runtime_error("RealWrapperOfComplexThyraLinearOperator::"
+                             "applyImpl(): discontiguous multivectors are not "
+                             "supported yet");
 
-    return m_complexOperator->apply(M_trans, *complex_X_in, complex_Y_inout.ptr(),
-                                    alpha, beta);
+  return m_complexOperator->apply(M_trans, *complex_X_in, complex_Y_inout.ptr(),
+                                  alpha, beta);
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT_REAL_ONLY(
-        RealWrapperOfComplexThyraLinearOperator);
+    RealWrapperOfComplexThyraLinearOperator);
 
 } // namespace Bempp
 

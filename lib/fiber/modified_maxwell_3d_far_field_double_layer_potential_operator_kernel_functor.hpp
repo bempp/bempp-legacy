@@ -26,8 +26,7 @@
 #include "geometrical_data.hpp"
 #include "scalar_traits.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \ingroup functors
  *  \brief Kernel functor used to calculate part of the far-field pattern of a
@@ -42,49 +41,44 @@ namespace Fiber
  */
 
 template <typename ValueType_>
-class ModifiedMaxwell3dFarFieldDoubleLayerPotentialOperatorKernelFunctor
-{
+class ModifiedMaxwell3dFarFieldDoubleLayerPotentialOperatorKernelFunctor {
 public:
-    typedef ValueType_ ValueType;
-    typedef typename ScalarTraits<ValueType>::RealType CoordinateType;
+  typedef ValueType_ ValueType;
+  typedef typename ScalarTraits<ValueType>::RealType CoordinateType;
 
-    ModifiedMaxwell3dFarFieldDoubleLayerPotentialOperatorKernelFunctor(
-            ValueType waveNumber) :
-        m_waveNumber(waveNumber)
-    {}
+  ModifiedMaxwell3dFarFieldDoubleLayerPotentialOperatorKernelFunctor(
+      ValueType waveNumber)
+      : m_waveNumber(waveNumber) {}
 
-    int kernelCount() const { return 1; }
-    int kernelRowCount(int /* kernelIndex */) const { return 3; }
-    int kernelColCount(int /* kernelIndex */) const { return 1; }
+  int kernelCount() const { return 1; }
+  int kernelRowCount(int /* kernelIndex */) const { return 3; }
+  int kernelColCount(int /* kernelIndex */) const { return 1; }
 
-    void addGeometricalDependencies(size_t& testGeomDeps, size_t& trialGeomDeps) const {
-        testGeomDeps |= GLOBALS;
-        trialGeomDeps |= GLOBALS;
-    }
+  void addGeometricalDependencies(size_t &testGeomDeps,
+                                  size_t &trialGeomDeps) const {
+    testGeomDeps |= GLOBALS;
+    trialGeomDeps |= GLOBALS;
+  }
 
-    ValueType waveNumber() const { return m_waveNumber; }
+  ValueType waveNumber() const { return m_waveNumber; }
 
-    template <template <typename T> class CollectionOf2dSlicesOfNdArrays>
-    void evaluate(
-            const ConstGeometricalDataSlice<CoordinateType>& testGeomData,
-            const ConstGeometricalDataSlice<CoordinateType>& trialGeomData,
-            CollectionOf2dSlicesOfNdArrays<ValueType>& result) const {
-        const int coordCount = 3;
+  template <template <typename T> class CollectionOf2dSlicesOfNdArrays>
+  void evaluate(const ConstGeometricalDataSlice<CoordinateType> &testGeomData,
+                const ConstGeometricalDataSlice<CoordinateType> &trialGeomData,
+                CollectionOf2dSlicesOfNdArrays<ValueType> &result) const {
+    const int coordCount = 3;
 
-        CoordinateType x_y = 0.;
-        for (int coordIndex = 0; coordIndex < coordCount; ++coordIndex)
-            x_y += testGeomData.global(coordIndex) *
-                    trialGeomData.global(coordIndex);
-        const ValueType commonFactor =
-                static_cast<ValueType>(-1.0 / (4.0 * M_PI)) *
-                m_waveNumber * exp(m_waveNumber * x_y);
-        for (int coordIndex = 0; coordIndex < coordCount; ++coordIndex)
-            result[0](coordIndex, 0) = testGeomData.global(coordIndex) *
-                    commonFactor;
-    }
+    CoordinateType x_y = 0.;
+    for (int coordIndex = 0; coordIndex < coordCount; ++coordIndex)
+      x_y += testGeomData.global(coordIndex) * trialGeomData.global(coordIndex);
+    const ValueType commonFactor = static_cast<ValueType>(-1.0 / (4.0 * M_PI)) *
+                                   m_waveNumber * exp(m_waveNumber * x_y);
+    for (int coordIndex = 0; coordIndex < coordCount; ++coordIndex)
+      result[0](coordIndex, 0) = testGeomData.global(coordIndex) * commonFactor;
+  }
 
 private:
-    ValueType m_waveNumber;
+  ValueType m_waveNumber;
 };
 
 } // namespace Fiber

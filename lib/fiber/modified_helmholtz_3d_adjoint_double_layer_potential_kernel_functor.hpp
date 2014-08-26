@@ -28,12 +28,12 @@
 
 #include "../common/complex_aux.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \ingroup modified_helmholtz_3d
  *  \ingroup functors
- *  \brief Adjoint double-layer-potential kernel functor for the modified Helmholtz
+ *  \brief Adjoint double-layer-potential kernel functor for the modified
+ *Helmholtz
  *  equation in 3D.
  *
  *  \tparam ValueType Type used to represent the values of the kernel. It can
@@ -45,56 +45,54 @@ namespace Fiber
  */
 
 template <typename ValueType_>
-class ModifiedHelmholtz3dAdjointDoubleLayerPotentialKernelFunctor
-{
+class ModifiedHelmholtz3dAdjointDoubleLayerPotentialKernelFunctor {
 public:
-    typedef ValueType_ ValueType;
-    typedef typename ScalarTraits<ValueType>::RealType CoordinateType;
+  typedef ValueType_ ValueType;
+  typedef typename ScalarTraits<ValueType>::RealType CoordinateType;
 
-    explicit ModifiedHelmholtz3dAdjointDoubleLayerPotentialKernelFunctor(
-            ValueType waveNumber) :
-        m_waveNumber(waveNumber)
-    {}
+  explicit ModifiedHelmholtz3dAdjointDoubleLayerPotentialKernelFunctor(
+      ValueType waveNumber)
+      : m_waveNumber(waveNumber) {}
 
-    int kernelCount() const { return 1; }
-    int kernelRowCount(int /* kernelIndex */) const { return 1; }
-    int kernelColCount(int /* kernelIndex */) const { return 1; }
+  int kernelCount() const { return 1; }
+  int kernelRowCount(int /* kernelIndex */) const { return 1; }
+  int kernelColCount(int /* kernelIndex */) const { return 1; }
 
-    void addGeometricalDependencies(size_t& testGeomDeps, size_t& trialGeomDeps) const {
-        testGeomDeps |= GLOBALS | NORMALS;
-        trialGeomDeps |= GLOBALS;
+  void addGeometricalDependencies(size_t &testGeomDeps,
+                                  size_t &trialGeomDeps) const {
+    testGeomDeps |= GLOBALS | NORMALS;
+    trialGeomDeps |= GLOBALS;
+  }
+
+  ValueType waveNumber() const { return m_waveNumber; }
+
+  template <template <typename T> class CollectionOf2dSlicesOfNdArrays>
+  void evaluate(const ConstGeometricalDataSlice<CoordinateType> &testGeomData,
+                const ConstGeometricalDataSlice<CoordinateType> &trialGeomData,
+                CollectionOf2dSlicesOfNdArrays<ValueType> &result) const {
+    const int coordCount = 3;
+
+    CoordinateType numeratorSum = 0., denominatorSum = 0.;
+    for (int coordIndex = 0; coordIndex < coordCount; ++coordIndex) {
+      CoordinateType diff =
+          testGeomData.global(coordIndex) - trialGeomData.global(coordIndex);
+      denominatorSum += diff * diff;
+      numeratorSum += diff * testGeomData.normal(coordIndex);
     }
+    CoordinateType distance = sqrt(denominatorSum);
+    result[0](0, 0) =
+        -numeratorSum /
+        (static_cast<CoordinateType>(4.0 * M_PI) * denominatorSum) *
+        (m_waveNumber + static_cast<CoordinateType>(1.0) / distance) *
+        exp(-m_waveNumber * distance);
+  }
 
-    ValueType waveNumber() const { return m_waveNumber; }
-
-    template <template <typename T> class CollectionOf2dSlicesOfNdArrays>
-    void evaluate(
-            const ConstGeometricalDataSlice<CoordinateType>& testGeomData,
-            const ConstGeometricalDataSlice<CoordinateType>& trialGeomData,
-            CollectionOf2dSlicesOfNdArrays<ValueType>& result) const {
-        const int coordCount = 3;
-
-        CoordinateType numeratorSum = 0., denominatorSum = 0.;
-        for (int coordIndex = 0; coordIndex < coordCount; ++coordIndex)
-        {
-            CoordinateType diff = testGeomData.global(coordIndex) -
-                    trialGeomData.global(coordIndex);
-            denominatorSum += diff * diff;
-            numeratorSum += diff * testGeomData.normal(coordIndex);
-        }
-        CoordinateType distance = sqrt(denominatorSum);
-        result[0](0, 0) = -numeratorSum /
-                (static_cast<CoordinateType>(4.0 * M_PI) * denominatorSum) *
-                (m_waveNumber + static_cast<CoordinateType>(1.0) / distance) *
-                exp(-m_waveNumber * distance);
-    }
-
-    CoordinateType estimateRelativeScale(CoordinateType distance) const {
-        return exp(-realPart(m_waveNumber) * distance);
-    }
+  CoordinateType estimateRelativeScale(CoordinateType distance) const {
+    return exp(-realPart(m_waveNumber) * distance);
+  }
 
 private:
-    ValueType m_waveNumber;
+  ValueType m_waveNumber;
 };
 
 } // namespace Fiber

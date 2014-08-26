@@ -47,192 +47,177 @@
 
 #include <boost/type_traits/is_complex.hpp>
 
-namespace Bempp
-{
+namespace Bempp {
 
 template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType>
 laplace3dSyntheticHypersingularBoundaryOperator(
-        const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
-        const shared_ptr<const Space<BasisFunctionType> >& domain,
-        const shared_ptr<const Space<BasisFunctionType> >& range,
-        const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-        std::string label,
-        int internalSymmetry,
-        const BoundaryOperator<BasisFunctionType,ResultType>& externalSlp)
-{
-    typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
+    const shared_ptr<const Context<BasisFunctionType, ResultType>> &context,
+    const shared_ptr<const Space<BasisFunctionType>> &domain,
+    const shared_ptr<const Space<BasisFunctionType>> &range,
+    const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
+    std::string label, int internalSymmetry,
+    const BoundaryOperator<BasisFunctionType, ResultType> &externalSlp) {
+  typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
 
-    typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
-            ValueFunctor;
-    typedef Fiber::SurfaceCurl3dFunctor<CoordinateType>
-            CurlFunctor;
-    typedef Fiber::SingleComponentTestTrialIntegrandFunctor<
-            BasisFunctionType, ResultType> IntegrandFunctor;
+  typedef Fiber::ScalarFunctionValueFunctor<CoordinateType> ValueFunctor;
+  typedef Fiber::SurfaceCurl3dFunctor<CoordinateType> CurlFunctor;
+  typedef Fiber::SingleComponentTestTrialIntegrandFunctor<
+      BasisFunctionType, ResultType> IntegrandFunctor;
 
-    typedef GeneralElementaryLocalOperator<BasisFunctionType, ResultType> LocalOp;
-    typedef SyntheticIntegralOperator<BasisFunctionType, ResultType> SyntheticOp;
+  typedef GeneralElementaryLocalOperator<BasisFunctionType, ResultType> LocalOp;
+  typedef SyntheticIntegralOperator<BasisFunctionType, ResultType> SyntheticOp;
 
-    if (!domain || !range || !dualToRange)
-        throw std::invalid_argument(
-            "laplace3dSyntheticHypersingularBoundaryOperator(): "
-            "domain, range and dualToRange must not be null");
+  if (!domain || !range || !dualToRange)
+    throw std::invalid_argument(
+        "laplace3dSyntheticHypersingularBoundaryOperator(): "
+        "domain, range and dualToRange must not be null");
 
-    shared_ptr<const Space<BasisFunctionType> > newDomain = domain;
-    shared_ptr<const Space<BasisFunctionType> > newDualToRange = dualToRange;
+  shared_ptr<const Space<BasisFunctionType>> newDomain = domain;
+  shared_ptr<const Space<BasisFunctionType>> newDualToRange = dualToRange;
 
-    bool isBarycentric = (domain->isBarycentric() || dualToRange->isBarycentric());
+  bool isBarycentric =
+      (domain->isBarycentric() || dualToRange->isBarycentric());
 
-    if (isBarycentric) {
-        newDomain = domain->barycentricSpace(domain);
-        newDualToRange = dualToRange->barycentricSpace(dualToRange);
-    }
+  if (isBarycentric) {
+    newDomain = domain->barycentricSpace(domain);
+    newDualToRange = dualToRange->barycentricSpace(dualToRange);
+  }
 
-    shared_ptr<const Context<BasisFunctionType, ResultType> >
-        internalContext, auxContext;
-    SyntheticOp::getContextsForInternalAndAuxiliaryOperators(
-        context, internalContext, auxContext);
-    shared_ptr<const Space<BasisFunctionType> > internalTrialSpace =
-        newDomain->discontinuousSpace(newDomain);
-    shared_ptr<const Space<BasisFunctionType> > internalTestSpace =
-        newDualToRange->discontinuousSpace(newDualToRange);
+  shared_ptr<const Context<BasisFunctionType, ResultType>> internalContext,
+      auxContext;
+  SyntheticOp::getContextsForInternalAndAuxiliaryOperators(
+      context, internalContext, auxContext);
+  shared_ptr<const Space<BasisFunctionType>> internalTrialSpace =
+      newDomain->discontinuousSpace(newDomain);
+  shared_ptr<const Space<BasisFunctionType>> internalTestSpace =
+      newDualToRange->discontinuousSpace(newDualToRange);
 
-    // Note: we don't really need to care about ranges and duals to domains of
-    // the internal operator. The only range space that matters is that of the
-    // leftmost operator in the product.
+  // Note: we don't really need to care about ranges and duals to domains of
+  // the internal operator. The only range space that matters is that of the
+  // leftmost operator in the product.
 
-    const char xyz[] = "xyz";
-    const size_t dimWorld = 3;
+  const char xyz[] = "xyz";
+  const size_t dimWorld = 3;
 
-    if (label.empty())
-        label = AbstractBoundaryOperator<BasisFunctionType, ResultType>::
-            uniqueLabel();
+  if (label.empty())
+    label =
+        AbstractBoundaryOperator<BasisFunctionType, ResultType>::uniqueLabel();
 
-    BoundaryOperator<BasisFunctionType,ResultType> slp;
+  BoundaryOperator<BasisFunctionType, ResultType> slp;
 
-    if (!externalSlp.isInitialized()) {
+  if (!externalSlp.isInitialized()) {
 
-        slp =
-            laplace3dSingleLayerBoundaryOperator<BasisFunctionType, ResultType>(
-                internalContext, internalTrialSpace, internalTestSpace /* or whatever */,
-                internalTestSpace,
-                "(" + label + ")_internal_SLP", internalSymmetry);
+    slp = laplace3dSingleLayerBoundaryOperator<BasisFunctionType, ResultType>(
+        internalContext, internalTrialSpace,
+        internalTestSpace /* or whatever */, internalTestSpace,
+        "(" + label + ")_internal_SLP", internalSymmetry);
 
-    }
-    else {
+  } else {
 
-        slp = externalSlp;
-    }
+    slp = externalSlp;
+  }
 
-    std::vector<BoundaryOperator<BasisFunctionType, ResultType> > trialCurlComponents;
-    std::vector<BoundaryOperator<BasisFunctionType, ResultType> > testCurlComponents;
-    testCurlComponents.resize(3);
-    for (size_t i = 0; i < dimWorld; ++i)
-        testCurlComponents[i] = BoundaryOperator<BasisFunctionType, ResultType>(
-                    auxContext, boost::make_shared<LocalOp>(
+  std::vector<BoundaryOperator<BasisFunctionType, ResultType>>
+  trialCurlComponents;
+  std::vector<BoundaryOperator<BasisFunctionType, ResultType>>
+  testCurlComponents;
+  testCurlComponents.resize(3);
+  for (size_t i = 0; i < dimWorld; ++i)
+    testCurlComponents[i] = BoundaryOperator<BasisFunctionType, ResultType>(
+        auxContext, boost::make_shared<LocalOp>(
                         internalTestSpace, range, newDualToRange,
                         ("(" + label + ")_test_curl_") + xyz[i], NO_SYMMETRY,
-                        CurlFunctor(),
-                        ValueFunctor(),
-                        IntegrandFunctor(i, 0)));
-    int syntheseSymmetry = 0; // symmetry of the decomposition
-    if (newDomain == newDualToRange && internalTrialSpace == internalTestSpace)
-        syntheseSymmetry = HERMITIAN |
-                (boost::is_complex<BasisFunctionType>() ? 0 : SYMMETRIC);
-    else {
-        trialCurlComponents.resize(3);
-        for (size_t i = 0; i < dimWorld; ++i)
-            trialCurlComponents[i] = BoundaryOperator<BasisFunctionType, ResultType>(
-                        auxContext, boost::make_shared<LocalOp>(
-                            newDomain, internalTrialSpace /* or whatever */, internalTrialSpace,
-                            ("(" + label + ")_trial_curl_") + xyz[i], NO_SYMMETRY,
-                            ValueFunctor(),
-                            CurlFunctor(),
-                            IntegrandFunctor(0, i)));
-    }
+                        CurlFunctor(), ValueFunctor(), IntegrandFunctor(i, 0)));
+  int syntheseSymmetry = 0; // symmetry of the decomposition
+  if (newDomain == newDualToRange && internalTrialSpace == internalTestSpace)
+    syntheseSymmetry =
+        HERMITIAN | (boost::is_complex<BasisFunctionType>() ? 0 : SYMMETRIC);
+  else {
+    trialCurlComponents.resize(3);
+    for (size_t i = 0; i < dimWorld; ++i)
+      trialCurlComponents[i] = BoundaryOperator<BasisFunctionType, ResultType>(
+          auxContext,
+          boost::make_shared<LocalOp>(
+              newDomain, internalTrialSpace /* or whatever */,
+              internalTrialSpace, ("(" + label + ")_trial_curl_") + xyz[i],
+              NO_SYMMETRY, ValueFunctor(), CurlFunctor(),
+              IntegrandFunctor(0, i)));
+  }
 
-    return BoundaryOperator<BasisFunctionType, ResultType>(
-                context, boost::make_shared<SyntheticOp>(
-                    testCurlComponents, slp, trialCurlComponents, label,
-                    syntheseSymmetry));
+  return BoundaryOperator<BasisFunctionType, ResultType>(
+      context, boost::make_shared<SyntheticOp>(testCurlComponents, slp,
+                                               trialCurlComponents, label,
+                                               syntheseSymmetry));
 }
 
 template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType>
-laplace3dHypersingularBoundaryOperator(const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
-        const shared_ptr<const Space<BasisFunctionType> >& domain,
-        const shared_ptr<const Space<BasisFunctionType> >& range,
-        const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-        const std::string& label,
-        int symmetry,
-        const BoundaryOperator<BasisFunctionType, ResultType> &externalSlp)
-{
-    const AssemblyOptions& assemblyOptions = context->assemblyOptions();
-    if ((assemblyOptions.assemblyMode() == AssemblyOptions::ACA &&
-         assemblyOptions.acaOptions().mode == AcaOptions::LOCAL_ASSEMBLY) ||
-            (externalSlp.isInitialized()))
-        return laplace3dSyntheticHypersingularBoundaryOperator(
-            context, domain, range, dualToRange, label, symmetry,externalSlp);
+laplace3dHypersingularBoundaryOperator(
+    const shared_ptr<const Context<BasisFunctionType, ResultType>> &context,
+    const shared_ptr<const Space<BasisFunctionType>> &domain,
+    const shared_ptr<const Space<BasisFunctionType>> &range,
+    const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
+    const std::string &label, int symmetry,
+    const BoundaryOperator<BasisFunctionType, ResultType> &externalSlp) {
+  const AssemblyOptions &assemblyOptions = context->assemblyOptions();
+  if ((assemblyOptions.assemblyMode() == AssemblyOptions::ACA &&
+       assemblyOptions.acaOptions().mode == AcaOptions::LOCAL_ASSEMBLY) ||
+      (externalSlp.isInitialized()))
+    return laplace3dSyntheticHypersingularBoundaryOperator(
+        context, domain, range, dualToRange, label, symmetry, externalSlp);
 
-    typedef typename ScalarTraits<BasisFunctionType>::RealType KernelType;
-    typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
+  typedef typename ScalarTraits<BasisFunctionType>::RealType KernelType;
+  typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
 
-    typedef Fiber::Laplace3dSingleLayerPotentialKernelFunctor<KernelType>
-    KernelFunctor;
-    typedef Fiber::SurfaceCurl3dFunctor<CoordinateType>
-    TransformationFunctor;
-    typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctorExt<
-    BasisFunctionType, KernelType, ResultType, 3> IntegrandFunctor;
+  typedef Fiber::Laplace3dSingleLayerPotentialKernelFunctor<KernelType>
+  KernelFunctor;
+  typedef Fiber::SurfaceCurl3dFunctor<CoordinateType> TransformationFunctor;
+  typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctorExt<
+      BasisFunctionType, KernelType, ResultType, 3> IntegrandFunctor;
 
-    typedef Fiber::Laplace3dHypersingularOffDiagonalKernelFunctor<KernelType>
-    OffDiagonalKernelFunctor;
-    typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
-    OffDiagonalTransformationFunctor;
-    typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctorExt<
-    BasisFunctionType, KernelType, ResultType, 1> OffDiagonalIntegrandFunctor;
+  typedef Fiber::Laplace3dHypersingularOffDiagonalKernelFunctor<KernelType>
+  OffDiagonalKernelFunctor;
+  typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
+  OffDiagonalTransformationFunctor;
+  typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctorExt<
+      BasisFunctionType, KernelType, ResultType, 1> OffDiagonalIntegrandFunctor;
 
-    typedef GeneralHypersingularIntegralOperator<
-            BasisFunctionType, KernelType, ResultType> Op;
+  typedef GeneralHypersingularIntegralOperator<BasisFunctionType, KernelType,
+                                               ResultType> Op;
 
-    shared_ptr<Fiber::TestKernelTrialIntegral<
-            BasisFunctionType, KernelType, ResultType> >
-            integral, offDiagonalIntegral;
-    if (shouldUseBlasInQuadrature(assemblyOptions, *domain, *dualToRange)) {
-        integral.reset(new Fiber::TypicalTestScalarKernelTrialIntegral<
-                       BasisFunctionType, KernelType, ResultType>());
-        offDiagonalIntegral = integral;
-    }
-    else {
-        integral.reset(new Fiber::DefaultTestKernelTrialIntegral<IntegrandFunctor>(
-                           IntegrandFunctor()));
-        offDiagonalIntegral.reset(new Fiber::DefaultTestKernelTrialIntegral<
-                                  OffDiagonalIntegrandFunctor>(
-                           OffDiagonalIntegrandFunctor()));
-    }
+  shared_ptr<Fiber::TestKernelTrialIntegral<BasisFunctionType, KernelType,
+                                            ResultType>> integral,
+      offDiagonalIntegral;
+  if (shouldUseBlasInQuadrature(assemblyOptions, *domain, *dualToRange)) {
+    integral.reset(new Fiber::TypicalTestScalarKernelTrialIntegral<
+        BasisFunctionType, KernelType, ResultType>());
+    offDiagonalIntegral = integral;
+  } else {
+    integral.reset(new Fiber::DefaultTestKernelTrialIntegral<IntegrandFunctor>(
+        IntegrandFunctor()));
+    offDiagonalIntegral.reset(
+        new Fiber::DefaultTestKernelTrialIntegral<OffDiagonalIntegrandFunctor>(
+            OffDiagonalIntegrandFunctor()));
+  }
 
-    shared_ptr<Op> newOp(new Op(
-                             domain, range, dualToRange, label, symmetry,
-                             KernelFunctor(),
-                             TransformationFunctor(),
-                             TransformationFunctor(),
-                             integral,
-                             OffDiagonalKernelFunctor(),
-                             OffDiagonalTransformationFunctor(),
-                             OffDiagonalTransformationFunctor(),
-                             offDiagonalIntegral));
+  shared_ptr<Op> newOp(
+      new Op(domain, range, dualToRange, label, symmetry, KernelFunctor(),
+             TransformationFunctor(), TransformationFunctor(), integral,
+             OffDiagonalKernelFunctor(), OffDiagonalTransformationFunctor(),
+             OffDiagonalTransformationFunctor(), offDiagonalIntegral));
 
-    return BoundaryOperator<BasisFunctionType, ResultType>(context, newOp);
+  return BoundaryOperator<BasisFunctionType, ResultType>(context, newOp);
 }
 
-#define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS, RESULT) \
-    template BoundaryOperator<BASIS, RESULT> \
-    laplace3dHypersingularBoundaryOperator( \
-    const shared_ptr<const Context<BASIS, RESULT> >&, \
-    const shared_ptr<const Space<BASIS> >&, \
-    const shared_ptr<const Space<BASIS> >&, \
-    const shared_ptr<const Space<BASIS> >&, \
-    const std::string&, int, \
-    const BoundaryOperator<BASIS, RESULT > &)
+#define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS, RESULT)                       \
+  template BoundaryOperator<BASIS, RESULT>                                     \
+  laplace3dHypersingularBoundaryOperator(                                      \
+      const shared_ptr<const Context<BASIS, RESULT>> &,                        \
+      const shared_ptr<const Space<BASIS>> &,                                  \
+      const shared_ptr<const Space<BASIS>> &,                                  \
+      const shared_ptr<const Space<BASIS>> &, const std::string &, int,        \
+      const BoundaryOperator<BASIS, RESULT> &)
 FIBER_ITERATE_OVER_BASIS_AND_RESULT_TYPES(INSTANTIATE_NONMEMBER_CONSTRUCTOR);
 
 } // namespace Bempp

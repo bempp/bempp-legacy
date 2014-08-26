@@ -25,23 +25,21 @@
 
 #include "single_quadrature_descriptor.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \ingroup quadrature
  *  \brief Quadrature descriptor selector used during the
  *  discretization of local boundary operators. */
 template <typename CoordinateType>
-class QuadratureDescriptorSelectorForLocalOperators
-{
+class QuadratureDescriptorSelectorForLocalOperators {
 public:
-    /** Destructor. */
-    virtual ~QuadratureDescriptorSelectorForLocalOperators() {}
+  /** Destructor. */
+  virtual ~QuadratureDescriptorSelectorForLocalOperators() {}
 
-    /** \brief Return the descriptor of the quadrature rule to be used
-     *  on a particular element. */
-    virtual SingleQuadratureDescriptor quadratureDescriptor(
-        int elementIndex) const = 0;
+  /** \brief Return the descriptor of the quadrature rule to be used
+   *  on a particular element. */
+  virtual SingleQuadratureDescriptor
+  quadratureDescriptor(int elementIndex) const = 0;
 };
 
 } // namespace Fiber

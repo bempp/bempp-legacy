@@ -33,12 +33,10 @@
 #include <vector>
 #include <tbb/mutex.h>
 
-
-namespace Bempp
-{
+namespace Bempp {
 
 /** \cond FORWARD_DECL */
-template<int codim> class Entity;
+template <int codim> class Entity;
 class GeometryFactory;
 class GridView;
 class IdSet;
@@ -47,81 +45,78 @@ class IdSet;
 /** \ingroup grid
     \brief Abstract wrapper of a grid.
  */
-class Grid
-{
+class Grid {
 public:
-    /** \brief Destructor */
-    virtual ~Grid() {
-    }
+  /** \brief Destructor */
+  virtual ~Grid() {}
 
-    /** @name Grid parameters
-    @{ */
+  /** @name Grid parameters
+  @{ */
 
-    /** \brief Dimension of the grid. */
-    virtual int dim() const = 0;
+  /** \brief Dimension of the grid. */
+  virtual int dim() const = 0;
 
-    /** \brief Dimension of the space containing the grid. */
-    virtual int dimWorld() const = 0;
+  /** \brief Dimension of the space containing the grid. */
+  virtual int dimWorld() const = 0;
 
-    /** \brief Maximum level defined in this grid.
+  /** \brief Maximum level defined in this grid.
 
-     Levels are numbered 0 ... maxLevel() with 0 the coarsest level.
-     */
-    virtual int maxLevel() const = 0;
+   Levels are numbered 0 ... maxLevel() with 0 the coarsest level.
+   */
+  virtual int maxLevel() const = 0;
 
-    /** @}
-    @name Views
-    @{ */
+  /** @}
+  @name Views
+  @{ */
 
-    /** \brief View of the entities on grid level \p level. */
-    virtual std::unique_ptr<GridView> levelView(size_t level) const = 0;
+  /** \brief View of the entities on grid level \p level. */
+  virtual std::unique_ptr<GridView> levelView(size_t level) const = 0;
 
-    /** \brief View of the leaf entities. */
-    virtual std::unique_ptr<GridView> leafView() const = 0;
+  /** \brief View of the leaf entities. */
+  virtual std::unique_ptr<GridView> leafView() const = 0;
 
-    /** \brief Return the topology of the grid */
+  /** \brief Return the topology of the grid */
 
-    virtual GridParameters::Topology topology() const = 0;
+  virtual GridParameters::Topology topology() const = 0;
 
-    /** \brief Factory able to construct empty geometries of codimension 0
-     compatible with this grid.
+  /** \brief Factory able to construct empty geometries of codimension 0
+   compatible with this grid.
 
-     \note For internal use.
+   \note For internal use.
 
-     \todo Provide implementations for other codimensions. */
-    virtual std::unique_ptr<GeometryFactory> elementGeometryFactory() const = 0;
+   \todo Provide implementations for other codimensions. */
+  virtual std::unique_ptr<GeometryFactory> elementGeometryFactory() const = 0;
 
-    /** @}
-    @name Others
-    @{ */
+  /** @}
+  @name Others
+  @{ */
 
-    /** \brief Return a barycentrically refined grid based on the LeafView */
-    virtual shared_ptr<Grid> barycentricGrid() const = 0;
+  /** \brief Return a barycentrically refined grid based on the LeafView */
+  virtual shared_ptr<Grid> barycentricGrid() const = 0;
 
-    /** \brief Return \p true if a barycentric refinement of this grid has
-     *  been created. */
-    virtual bool hasBarycentricGrid() const = 0;
+  /** \brief Return \p true if a barycentric refinement of this grid has
+   *  been created. */
+  virtual bool hasBarycentricGrid() const = 0;
 
-    /** \brief Return \p true if this grid is a barycentric representation of
-     *  \p other, i.e. if this grid was created by \p other.barycentricGrid(). */
-    virtual bool isBarycentricRepresentationOf(const Grid& other) const;
+  /** \brief Return \p true if this grid is a barycentric representation of
+   *  \p other, i.e. if this grid was created by \p other.barycentricGrid(). */
+  virtual bool isBarycentricRepresentationOf(const Grid &other) const;
 
-    /** \brief Reference to the grid's global id set. */
-    virtual const IdSet& globalIdSet() const = 0;
+  /** \brief Reference to the grid's global id set. */
+  virtual const IdSet &globalIdSet() const = 0;
 
-    /** \brief Get bounding box.
-     *
-     *  The grid lies in the box defined by the inequalities
-     *  <tt>lowerBound(i) <= x_i <= upperBound(i)</tt>, where x_i is the ith
-     *  coordinate. */
-    void getBoundingBox(arma::Col<double>& lowerBound,
-                        arma::Col<double>& upperBound) const;
-
+  /** \brief Get bounding box.
+   *
+   *  The grid lies in the box defined by the inequalities
+   *  <tt>lowerBound(i) <= x_i <= upperBound(i)</tt>, where x_i is the ith
+   *  coordinate. */
+  void getBoundingBox(arma::Col<double> &lowerBound,
+                      arma::Col<double> &upperBound) const;
 
 private:
-    /** \cond PRIVATE */
-    mutable arma::Col<double> m_lowerBound, m_upperBound;
-    /** \endcond */
+  /** \cond PRIVATE */
+  mutable arma::Col<double> m_lowerBound, m_upperBound;
+  /** \endcond */
 };
 
 /** \relates Grid
@@ -143,8 +138,8 @@ private:
  *  \note The implementation assumes that no grid vertices are separated by less
  *    than 1e-9.
  */
-std::vector<bool> areInside(const Grid& grid, const arma::Mat<double>& points);
-std::vector<bool> areInside(const Grid& grid, const arma::Mat<float>& points);
+std::vector<bool> areInside(const Grid &grid, const arma::Mat<double> &points);
+std::vector<bool> areInside(const Grid &grid, const arma::Mat<float> &points);
 
 } // namespace Bempp
 

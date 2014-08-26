@@ -25,26 +25,24 @@
 #include "helmholtz_3d_operators_common.hpp"
 #include "symmetry.hpp"
 
-
 namespace Bempp {
 
 template <typename BasisFunctionType, typename ResultType>
 BlockedBoundaryOperator<BasisFunctionType, ResultType>
 laplace3dExteriorCalderonProjector(
-        const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
-        const shared_ptr<const Space<BasisFunctionType> >& hminusSpace,
-        const shared_ptr<const Space<BasisFunctionType> >& hplusSpace,
-        const std::string& label = "");
+    const shared_ptr<const Context<BasisFunctionType, ResultType>> &context,
+    const shared_ptr<const Space<BasisFunctionType>> &hminusSpace,
+    const shared_ptr<const Space<BasisFunctionType>> &hplusSpace,
+    const std::string &label = "");
 
 template <typename BasisFunctionType, typename ResultType>
 BlockedBoundaryOperator<BasisFunctionType, ResultType>
 laplace3dInteriorCalderonProjector(
-        const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
-        const shared_ptr<const Space<BasisFunctionType> >& hminusSpace,
-        const shared_ptr<const Space<BasisFunctionType> >& hplusSpace,
-        const std::string& label = "");
+    const shared_ptr<const Context<BasisFunctionType, ResultType>> &context,
+    const shared_ptr<const Space<BasisFunctionType>> &hminusSpace,
+    const shared_ptr<const Space<BasisFunctionType>> &hplusSpace,
+    const std::string &label = "");
 
 } // namespace Bempp
-
 
 #endif // laplace_3d_calderon_projector_hpp

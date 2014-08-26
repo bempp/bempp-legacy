@@ -27,8 +27,7 @@
 #include "accuracy_options.hpp"
 #include "scalar_traits.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 template <typename BasisFunctionType> class Shapeset;
 template <typename CoordinateType> class RawGridGeometry;
@@ -38,37 +37,36 @@ class DefaultLocalAssemblerForOperatorsOnSurfacesUtilities;
 /** \brief Default implementation of a quadrature descriptor selector
  *  used during the discretization of local boundary operators. */
 template <typename BasisFunctionType>
-class DefaultQuadratureDescriptorSelectorForLocalOperators :
-        public QuadratureDescriptorSelectorForLocalOperators<
-    typename ScalarTraits<BasisFunctionType>::RealType>
-{
+class DefaultQuadratureDescriptorSelectorForLocalOperators
+    : public QuadratureDescriptorSelectorForLocalOperators<
+          typename ScalarTraits<BasisFunctionType>::RealType> {
 public:
-    typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
+  typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
 
-    /** \note: \p accuracyOptions is currently unused. */
-    DefaultQuadratureDescriptorSelectorForLocalOperators(
-        const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
-        const shared_ptr<const std::vector<
-            const Shapeset<BasisFunctionType>*> >& testShapesets,
-        const shared_ptr<const std::vector<
-            const Shapeset<BasisFunctionType>*> >& trialShapesets,
-        const AccuracyOptionsEx& accuracyOptions);
+  /** \note: \p accuracyOptions is currently unused. */
+  DefaultQuadratureDescriptorSelectorForLocalOperators(
+      const shared_ptr<const RawGridGeometry<CoordinateType>> &rawGeometry,
+      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
+          testShapesets,
+      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
+          trialShapesets,
+      const AccuracyOptionsEx &accuracyOptions);
 
-    virtual SingleQuadratureDescriptor quadratureDescriptor(
-        int elementIndex) const;
+  virtual SingleQuadratureDescriptor
+  quadratureDescriptor(int elementIndex) const;
 
 private:
-    /** \cond PRIVATE */
-    typedef DefaultLocalAssemblerForOperatorsOnSurfacesUtilities<
-    BasisFunctionType> Utilities;
+  /** \cond PRIVATE */
+  typedef DefaultLocalAssemblerForOperatorsOnSurfacesUtilities<
+      BasisFunctionType> Utilities;
 
-    shared_ptr<const RawGridGeometry<CoordinateType> > m_rawGeometry;
-    shared_ptr<const std::vector<
-                   const Shapeset<BasisFunctionType>*> > m_testShapesets;
-    shared_ptr<const std::vector<
-                   const Shapeset<BasisFunctionType>*> > m_trialShapesets;
-    AccuracyOptionsEx m_accuracyOptions;
-    /** \endcond */
+  shared_ptr<const RawGridGeometry<CoordinateType>> m_rawGeometry;
+  shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
+  m_testShapesets;
+  shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
+  m_trialShapesets;
+  AccuracyOptionsEx m_accuracyOptions;
+  /** \endcond */
 };
 
 } // namespace Fiber

@@ -29,8 +29,7 @@
 
 #include "modified_helmholtz_3d_single_layer_potential_kernel_functor.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \ingroup modified_maxwell_3d
  *  \ingroup functors
@@ -50,63 +49,62 @@ namespace Fiber
  *  \see modified_maxwell_3d
  */
 template <typename ValueType_>
-class ModifiedMaxwell3dSingleLayerPotentialOperatorKernelFunctor
-{
+class ModifiedMaxwell3dSingleLayerPotentialOperatorKernelFunctor {
 public:
-    typedef ValueType_ ValueType;
-    typedef typename ScalarTraits<ValueType>::RealType CoordinateType;
+  typedef ValueType_ ValueType;
+  typedef typename ScalarTraits<ValueType>::RealType CoordinateType;
 
-    explicit ModifiedMaxwell3dSingleLayerPotentialOperatorKernelFunctor(
-            ValueType waveNumber) :
-        m_waveNumber(waveNumber)
-    {}
+  explicit ModifiedMaxwell3dSingleLayerPotentialOperatorKernelFunctor(
+      ValueType waveNumber)
+      : m_waveNumber(waveNumber) {}
 
-    int kernelCount() const { return 2; }
-    int kernelRowCount(int kernelIndex) const { return kernelIndex == 0 ? 1 : 3; }
-    int kernelColCount(int kernelIndex) const { return 1; }
+  int kernelCount() const { return 2; }
+  int kernelRowCount(int kernelIndex) const { return kernelIndex == 0 ? 1 : 3; }
+  int kernelColCount(int kernelIndex) const { return 1; }
 
-    void addGeometricalDependencies(size_t& testGeomDeps, size_t& trialGeomDeps) const {
-        testGeomDeps |= GLOBALS;
-        trialGeomDeps |= GLOBALS;
+  void addGeometricalDependencies(size_t &testGeomDeps,
+                                  size_t &trialGeomDeps) const {
+    testGeomDeps |= GLOBALS;
+    trialGeomDeps |= GLOBALS;
+  }
+
+  ValueType waveNumber() const { return m_waveNumber; }
+
+  template <template <typename T> class CollectionOf2dSlicesOfNdArrays>
+  void evaluate(const ConstGeometricalDataSlice<CoordinateType> &testGeomData,
+                const ConstGeometricalDataSlice<CoordinateType> &trialGeomData,
+                CollectionOf2dSlicesOfNdArrays<ValueType> &result) const {
+    const int coordCount = 3;
+
+    CoordinateType distanceSq = 0;
+    for (int coordIndex = 0; coordIndex < coordCount; ++coordIndex) {
+      CoordinateType diff =
+          testGeomData.global(coordIndex) - trialGeomData.global(coordIndex);
+      distanceSq += diff * diff;
     }
+    const CoordinateType distance = sqrt(distanceSq);
+    const ValueType scaledExponential =
+        exp(-m_waveNumber * distance) /
+        (static_cast<CoordinateType>(4. * M_PI) * distance);
+    result[0](0, 0) = m_waveNumber * scaledExponential;
 
-    ValueType waveNumber() const { return m_waveNumber; }
+    const ValueType commonFactor =
+        -scaledExponential / (m_waveNumber * distanceSq) *
+        (static_cast<CoordinateType>(1.) + m_waveNumber * distance);
+    for (int coordIndex = 0; coordIndex < coordCount; ++coordIndex)
+      result[1](coordIndex, 0) =
+          commonFactor *
+          (testGeomData.global(coordIndex) - trialGeomData.global(coordIndex));
+  }
 
-    template <template <typename T> class CollectionOf2dSlicesOfNdArrays>
-    void evaluate(
-            const ConstGeometricalDataSlice<CoordinateType>& testGeomData,
-            const ConstGeometricalDataSlice<CoordinateType>& trialGeomData,
-            CollectionOf2dSlicesOfNdArrays<ValueType>& result) const {
-        const int coordCount = 3;
-
-        CoordinateType distanceSq = 0;
-        for (int coordIndex = 0; coordIndex < coordCount; ++coordIndex) {
-            CoordinateType diff = testGeomData.global(coordIndex) -
-                    trialGeomData.global(coordIndex);
-            distanceSq += diff * diff;
-        }
-        const CoordinateType distance = sqrt(distanceSq);
-        const ValueType scaledExponential = exp(-m_waveNumber * distance) /
-            (static_cast<CoordinateType>(4. * M_PI) * distance);
-        result[0](0, 0) = m_waveNumber * scaledExponential;
-
-        const ValueType commonFactor =
-            -scaledExponential / (m_waveNumber * distanceSq) *
-            (static_cast<CoordinateType>(1.) + m_waveNumber * distance);
-        for (int coordIndex = 0; coordIndex < coordCount; ++coordIndex)
-            result[1](coordIndex, 0) = commonFactor *
-                (testGeomData.global(coordIndex) -
-                 trialGeomData.global(coordIndex));
-    }
-
-    CoordinateType estimateRelativeScale(CoordinateType distance) const {
-        return exp(-realPart(m_waveNumber) * distance);
-    }
+  CoordinateType estimateRelativeScale(CoordinateType distance) const {
+    return exp(-realPart(m_waveNumber) * distance);
+  }
 
 private:
-    /** \cond PRIVATE */
-    ValueType m_waveNumber;
-    /** \endcond */
+  /** \cond PRIVATE */
+  ValueType m_waveNumber;
+  /** \endcond */
 };
 
 } // namespace Fiber

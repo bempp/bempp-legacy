@@ -18,7 +18,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-
 #ifndef bempp_boost_ptr_vector_fwd_hpp
 #define bempp_boost_ptr_vector_fwd_hpp
 
@@ -26,14 +25,13 @@
 // Disable diagnostic 858: type qualifier on return type is meaningless
 
 #ifdef __INTEL_COMPILER
-#pragma warning(disable:279 858)
+#pragma warning(disable : 279 858)
 #endif
 
 #include <boost/ptr_container/ptr_vector.hpp>
 
 #ifdef __INTEL_COMPILER
-#pragma warning(default:858)
+#pragma warning(default : 858)
 #endif
-
 
 #endif

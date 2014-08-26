@@ -37,64 +37,56 @@
 
 #include <iostream>
 
-namespace Bempp
-{
+namespace Bempp {
 
 template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType>
 laplace3dDoubleLayerBoundaryOperator(
-        const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
-        const shared_ptr<const Space<BasisFunctionType> >& domain,
-        const shared_ptr<const Space<BasisFunctionType> >& range,
-        const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-        const std::string& label,
-        int symmetry)
-{
-    const AssemblyOptions& assemblyOptions = context->assemblyOptions();
-    if (assemblyOptions.assemblyMode() == AssemblyOptions::ACA &&
-         assemblyOptions.acaOptions().mode == AcaOptions::LOCAL_ASSEMBLY)
-        return laplace3dSyntheticBoundaryOperator(
-            &laplace3dDoubleLayerBoundaryOperator<BasisFunctionType, ResultType>,
-            context, domain, range, dualToRange, label, symmetry,
-            NO_SYMMETRY);
+    const shared_ptr<const Context<BasisFunctionType, ResultType>> &context,
+    const shared_ptr<const Space<BasisFunctionType>> &domain,
+    const shared_ptr<const Space<BasisFunctionType>> &range,
+    const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
+    const std::string &label, int symmetry) {
+  const AssemblyOptions &assemblyOptions = context->assemblyOptions();
+  if (assemblyOptions.assemblyMode() == AssemblyOptions::ACA &&
+      assemblyOptions.acaOptions().mode == AcaOptions::LOCAL_ASSEMBLY)
+    return laplace3dSyntheticBoundaryOperator(
+        &laplace3dDoubleLayerBoundaryOperator<BasisFunctionType, ResultType>,
+        context, domain, range, dualToRange, label, symmetry, NO_SYMMETRY);
 
-    typedef typename ScalarTraits<BasisFunctionType>::RealType KernelType;
-    typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
+  typedef typename ScalarTraits<BasisFunctionType>::RealType KernelType;
+  typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
 
-    typedef Fiber::Laplace3dDoubleLayerPotentialKernelFunctor<KernelType>
-    KernelFunctor;
-    typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
-    TransformationFunctor;
-    typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctorExt<
-    BasisFunctionType, KernelType, ResultType, 1> IntegrandFunctor;
+  typedef Fiber::Laplace3dDoubleLayerPotentialKernelFunctor<KernelType>
+  KernelFunctor;
+  typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
+  TransformationFunctor;
+  typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctorExt<
+      BasisFunctionType, KernelType, ResultType, 1> IntegrandFunctor;
 
-    typedef GeneralElementarySingularIntegralOperator<
-            BasisFunctionType, KernelType, ResultType> Op;
-    shared_ptr<Fiber::TestKernelTrialIntegral<
-            BasisFunctionType, KernelType, ResultType> > integral;
-    if (shouldUseBlasInQuadrature(assemblyOptions, *domain, *dualToRange))
-        integral.reset(new Fiber::TypicalTestScalarKernelTrialIntegral<
-                       BasisFunctionType, KernelType, ResultType>());
-    else
-        integral.reset(new Fiber::DefaultTestKernelTrialIntegral<IntegrandFunctor>(
-                           IntegrandFunctor()));
+  typedef GeneralElementarySingularIntegralOperator<BasisFunctionType,
+                                                    KernelType, ResultType> Op;
+  shared_ptr<Fiber::TestKernelTrialIntegral<BasisFunctionType, KernelType,
+                                            ResultType>> integral;
+  if (shouldUseBlasInQuadrature(assemblyOptions, *domain, *dualToRange))
+    integral.reset(new Fiber::TypicalTestScalarKernelTrialIntegral<
+        BasisFunctionType, KernelType, ResultType>());
+  else
+    integral.reset(new Fiber::DefaultTestKernelTrialIntegral<IntegrandFunctor>(
+        IntegrandFunctor()));
 
-    shared_ptr<Op> newOp(new Op(
-                             domain, range, dualToRange, label, symmetry,
-                             KernelFunctor(),
-                             TransformationFunctor(),
-                             TransformationFunctor(),
-                             integral));
-    return BoundaryOperator<BasisFunctionType, ResultType>(context, newOp);
+  shared_ptr<Op> newOp(new Op(domain, range, dualToRange, label, symmetry,
+                              KernelFunctor(), TransformationFunctor(),
+                              TransformationFunctor(), integral));
+  return BoundaryOperator<BasisFunctionType, ResultType>(context, newOp);
 }
-#define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS, RESULT) \
-    template BoundaryOperator<BASIS, RESULT> \
-    laplace3dDoubleLayerBoundaryOperator( \
-        const shared_ptr<const Context<BASIS, RESULT> >&, \
-        const shared_ptr<const Space<BASIS> >&, \
-        const shared_ptr<const Space<BASIS> >&, \
-        const shared_ptr<const Space<BASIS> >&, \
-        const std::string&, int);
+#define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS, RESULT)                       \
+  template BoundaryOperator<BASIS, RESULT>                                     \
+  laplace3dDoubleLayerBoundaryOperator(                                        \
+      const shared_ptr<const Context<BASIS, RESULT>> &,                        \
+      const shared_ptr<const Space<BASIS>> &,                                  \
+      const shared_ptr<const Space<BASIS>> &,                                  \
+      const shared_ptr<const Space<BASIS>> &, const std::string &, int);
 FIBER_ITERATE_OVER_BASIS_AND_RESULT_TYPES(INSTANTIATE_NONMEMBER_CONSTRUCTOR);
 
 } // namespace Bempp

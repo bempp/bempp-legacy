@@ -26,37 +26,33 @@
 #include "entity_pointer.hpp"
 #include "concrete_entity_decl.hpp"
 
-namespace Bempp
-{
+namespace Bempp {
 
 /**
  \ingroup grid_internal
  \brief Wrapper of a Dune entity pointer of type \p DuneEntityPointer.
  */
-template<typename DuneEntityPointer>
-class ConcreteEntityPointer: public EntityPointer<DuneEntityPointer::codimension>
-{
+template <typename DuneEntityPointer>
+class ConcreteEntityPointer
+    : public EntityPointer<DuneEntityPointer::codimension> {
 private:
-    typedef typename DuneEntityPointer::Entity DuneEntity;
-    DuneEntityPointer m_dune_entity_ptr;
-    ConcreteEntity<ConcreteEntityPointer::codimension, DuneEntity> m_entity;
+  typedef typename DuneEntityPointer::Entity DuneEntity;
+  DuneEntityPointer m_dune_entity_ptr;
+  ConcreteEntity<ConcreteEntityPointer::codimension, DuneEntity> m_entity;
 
-    void updateEntity() {
-        m_entity.setDuneEntity(&*m_dune_entity_ptr);
-    }
+  void updateEntity() { m_entity.setDuneEntity(&*m_dune_entity_ptr); }
 
 public:
-    /** \brief Constructor */
-    ConcreteEntityPointer(const DuneEntityPointer& dune_entity_pointer,
-                          const DomainIndex& domain_index) :
-        m_dune_entity_ptr(dune_entity_pointer),
-        m_entity(domain_index) {
-        updateEntity();
-    }
+  /** \brief Constructor */
+  ConcreteEntityPointer(const DuneEntityPointer &dune_entity_pointer,
+                        const DomainIndex &domain_index)
+      : m_dune_entity_ptr(dune_entity_pointer), m_entity(domain_index) {
+    updateEntity();
+  }
 
-    virtual const Entity<DuneEntityPointer::codimension>& entity() const {
-        return m_entity;
-    }
+  virtual const Entity<DuneEntityPointer::codimension> &entity() const {
+    return m_entity;
+  }
 };
 
 } // namespace Bempp

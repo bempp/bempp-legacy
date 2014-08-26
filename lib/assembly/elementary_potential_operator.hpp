@@ -25,8 +25,7 @@
 
 #include "../common/shared_ptr.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \cond FORWARD_DECL */
 template <typename CoordinateType> class CollectionOfBasisTransformations;
@@ -40,8 +39,7 @@ template <typename ResultType> class LocalAssemblerForPotentialOperators;
 
 } // namespace Bempp
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \cond FORWARD_DECL */
 template <typename ValueType> class DiscreteBoundaryOperator;
@@ -87,116 +85,117 @@ template <typename ValueType> class DiscreteBoundaryOperator;
  *  <tt>std::complex<double></tt> is not allowed. If either \p
  *  BasisFunctionType_ or \p KernelType_ is a complex type, then \p ResultType_
  *  must be set to the same type. */
-template <typename BasisFunctionType_, typename KernelType_, typename ResultType_>
-class ElementaryPotentialOperator :
-        public PotentialOperator<BasisFunctionType_, ResultType_>
-{
-    typedef PotentialOperator<BasisFunctionType_, ResultType_> Base;
+template <typename BasisFunctionType_, typename KernelType_,
+          typename ResultType_>
+class ElementaryPotentialOperator
+    : public PotentialOperator<BasisFunctionType_, ResultType_> {
+  typedef PotentialOperator<BasisFunctionType_, ResultType_> Base;
+
 public:
-    /** \copydoc PotentialOperator::BasisFunctionType */
-    typedef typename Base::BasisFunctionType BasisFunctionType;
-    /** \brief Type of the values of the (components of the) kernel functions. */
-    typedef KernelType_ KernelType;
-    /** \copydoc PotentialOperator::ResultType */
-    typedef typename Base::ResultType ResultType;
-    /** \copydoc PotentialOperator::CoordinateType */
-    typedef typename Base::CoordinateType CoordinateType;
-    /** \copydoc PotentialOperator::QuadratureStrategy */
-    typedef typename Base::QuadratureStrategy QuadratureStrategy;
-    /** \brief Type of the appropriate instantiation of
-     *  Fiber::EvaluatorForIntegralOperators. */
-    typedef Fiber::EvaluatorForIntegralOperators<ResultType> Evaluator;
-    /** \brief Type of the appropriate instantiation of
-     *  Fiber::LocalAssemblerForPotentialOperators. */
-    typedef Fiber::LocalAssemblerForPotentialOperators<ResultType> LocalAssembler;
-    /** \brief Type of the appropriate instantiation of Fiber::CollectionOfShapesetTransformations. */
-    typedef Fiber::CollectionOfShapesetTransformations<CoordinateType>
-    CollectionOfShapesetTransformations;
-    /** \brief Type of the appropriate instantiation of Fiber::CollectionOfBasisTransformations.
-     *
-     *  \deprecated This type is deprecated; use CollectionOfShapesetTransformations
-     *  instead. */
-    typedef Fiber::CollectionOfShapesetTransformations<CoordinateType>
-    CollectionOfBasisTransformations;
-    /** \brief Type of the appropriate instantiation of
-     *  Fiber::CollectionOfKernels. */
-    typedef Fiber::CollectionOfKernels<KernelType> CollectionOfKernels;
-    /** \brief Type of the appropriate instantiation of
-     *  Fiber::KernelTrialIntegral. */
-    typedef Fiber::KernelTrialIntegral<BasisFunctionType, KernelType, ResultType>
-    KernelTrialIntegral;
+  /** \copydoc PotentialOperator::BasisFunctionType */
+  typedef typename Base::BasisFunctionType BasisFunctionType;
+  /** \brief Type of the values of the (components of the) kernel functions. */
+  typedef KernelType_ KernelType;
+  /** \copydoc PotentialOperator::ResultType */
+  typedef typename Base::ResultType ResultType;
+  /** \copydoc PotentialOperator::CoordinateType */
+  typedef typename Base::CoordinateType CoordinateType;
+  /** \copydoc PotentialOperator::QuadratureStrategy */
+  typedef typename Base::QuadratureStrategy QuadratureStrategy;
+  /** \brief Type of the appropriate instantiation of
+   *  Fiber::EvaluatorForIntegralOperators. */
+  typedef Fiber::EvaluatorForIntegralOperators<ResultType> Evaluator;
+  /** \brief Type of the appropriate instantiation of
+   *  Fiber::LocalAssemblerForPotentialOperators. */
+  typedef Fiber::LocalAssemblerForPotentialOperators<ResultType> LocalAssembler;
+  /** \brief Type of the appropriate instantiation of
+   * Fiber::CollectionOfShapesetTransformations. */
+  typedef Fiber::CollectionOfShapesetTransformations<CoordinateType>
+  CollectionOfShapesetTransformations;
+  /** \brief Type of the appropriate instantiation of
+   *Fiber::CollectionOfBasisTransformations.
+   *
+   *  \deprecated This type is deprecated; use
+   *CollectionOfShapesetTransformations
+   *  instead. */
+  typedef Fiber::CollectionOfShapesetTransformations<CoordinateType>
+  CollectionOfBasisTransformations;
+  /** \brief Type of the appropriate instantiation of
+   *  Fiber::CollectionOfKernels. */
+  typedef Fiber::CollectionOfKernels<KernelType> CollectionOfKernels;
+  /** \brief Type of the appropriate instantiation of
+   *  Fiber::KernelTrialIntegral. */
+  typedef Fiber::KernelTrialIntegral<BasisFunctionType, KernelType, ResultType>
+  KernelTrialIntegral;
 
-    virtual std::unique_ptr<InterpolatedFunction<ResultType_> > evaluateOnGrid(
-            const GridFunction<BasisFunctionType, ResultType>& argument,
-            const Grid& evaluationGrid,
-            const QuadratureStrategy& quadStrategy,
-            const EvaluationOptions& options) const;
+  virtual std::unique_ptr<InterpolatedFunction<ResultType_>>
+  evaluateOnGrid(const GridFunction<BasisFunctionType, ResultType> &argument,
+                 const Grid &evaluationGrid,
+                 const QuadratureStrategy &quadStrategy,
+                 const EvaluationOptions &options) const;
 
-    virtual arma::Mat<ResultType_> evaluateAtPoints(
-            const GridFunction<BasisFunctionType, ResultType>& argument,
-            const arma::Mat<CoordinateType>& evaluationPoints,
-            const QuadratureStrategy& quadStrategy,
-            const EvaluationOptions& options) const;
+  virtual arma::Mat<ResultType_>
+  evaluateAtPoints(const GridFunction<BasisFunctionType, ResultType> &argument,
+                   const arma::Mat<CoordinateType> &evaluationPoints,
+                   const QuadratureStrategy &quadStrategy,
+                   const EvaluationOptions &options) const;
 
-    virtual AssembledPotentialOperator<BasisFunctionType_, ResultType_>
-    assemble(
-            const shared_ptr<const Space<BasisFunctionType> >& space,
-            const shared_ptr<const arma::Mat<CoordinateType> >& evaluationPoints,
-            const QuadratureStrategy& quadStrategy,
-            const EvaluationOptions& options) const;
+  virtual AssembledPotentialOperator<BasisFunctionType_, ResultType_>
+  assemble(const shared_ptr<const Space<BasisFunctionType>> &space,
+           const shared_ptr<const arma::Mat<CoordinateType>> &evaluationPoints,
+           const QuadratureStrategy &quadStrategy,
+           const EvaluationOptions &options) const;
 
-    virtual int componentCount() const;
+  virtual int componentCount() const;
 
 private:
-    /** \brief Return the collection of kernel functions occurring in the
-     *  integrand of this operator. */
-    virtual const CollectionOfKernels& kernels() const = 0;
-    /** \brief Return the collection of transformations of the charge
-     *  distribution that occur in the weak form of this operator. */
-    virtual const CollectionOfBasisTransformations&
-    trialTransformations() const = 0;
-    /** \brief Return an object representing the integral used to evaluate the
-     *  potential of a charge distribution.
-     *
-     *  Subclasses of #KernelTrialIntegral implement functions that evaluate
-     *  the integral using the data provided by a #CollectionOfKernels
-     *  representing the kernel functions occurring in the integrand and a
-     *  #CollectionOfBasisTransformations representing the charge-distribution
-     *  transformations occurring in the integrand. */
-    virtual const KernelTrialIntegral& integral() const = 0;
+  /** \brief Return the collection of kernel functions occurring in the
+   *  integrand of this operator. */
+  virtual const CollectionOfKernels &kernels() const = 0;
+  /** \brief Return the collection of transformations of the charge
+   *  distribution that occur in the weak form of this operator. */
+  virtual const CollectionOfBasisTransformations &
+  trialTransformations() const = 0;
+  /** \brief Return an object representing the integral used to evaluate the
+   *  potential of a charge distribution.
+   *
+   *  Subclasses of #KernelTrialIntegral implement functions that evaluate
+   *  the integral using the data provided by a #CollectionOfKernels
+   *  representing the kernel functions occurring in the integrand and a
+   *  #CollectionOfBasisTransformations representing the charge-distribution
+   *  transformations occurring in the integrand. */
+  virtual const KernelTrialIntegral &integral() const = 0;
 
-    /** \cond PRIVATE */
-    std::unique_ptr<Evaluator> makeEvaluator(
-            const GridFunction<BasisFunctionType, ResultType>& argument,
-            const QuadratureStrategy& quadStrategy,
-            const EvaluationOptions& options) const;
+  /** \cond PRIVATE */
+  std::unique_ptr<Evaluator>
+  makeEvaluator(const GridFunction<BasisFunctionType, ResultType> &argument,
+                const QuadratureStrategy &quadStrategy,
+                const EvaluationOptions &options) const;
 
-    std::unique_ptr<LocalAssembler> makeAssembler(
-            const Space<BasisFunctionType>& space,
-            const arma::Mat<CoordinateType>& evaluationPoints,
-            const QuadratureStrategy& quadStrategy,
-            const EvaluationOptions& options) const;
+  std::unique_ptr<LocalAssembler>
+  makeAssembler(const Space<BasisFunctionType> &space,
+                const arma::Mat<CoordinateType> &evaluationPoints,
+                const QuadratureStrategy &quadStrategy,
+                const EvaluationOptions &options) const;
 
-    shared_ptr<DiscreteBoundaryOperator<ResultType_> > assembleOperator(
-            const Space<BasisFunctionType>& space,
-            const arma::Mat<CoordinateType>& evaluationPoints,
-            LocalAssembler& assembler,
-            const EvaluationOptions& options) const;
+  shared_ptr<DiscreteBoundaryOperator<ResultType_>>
+  assembleOperator(const Space<BasisFunctionType> &space,
+                   const arma::Mat<CoordinateType> &evaluationPoints,
+                   LocalAssembler &assembler,
+                   const EvaluationOptions &options) const;
 
-    std::unique_ptr<DiscreteBoundaryOperator<ResultType_> >
-    assembleOperatorInDenseMode(
-            const Space<BasisFunctionType>& space,
-            const arma::Mat<CoordinateType>& evaluationPoints,
-            LocalAssembler& assembler,
-            const EvaluationOptions& options) const;
+  std::unique_ptr<DiscreteBoundaryOperator<ResultType_>>
+  assembleOperatorInDenseMode(const Space<BasisFunctionType> &space,
+                              const arma::Mat<CoordinateType> &evaluationPoints,
+                              LocalAssembler &assembler,
+                              const EvaluationOptions &options) const;
 
-    std::unique_ptr<DiscreteBoundaryOperator<ResultType_> >
-    assembleOperatorInAcaMode(
-            const Space<BasisFunctionType>& space,
-            const arma::Mat<CoordinateType>& evaluationPoints,
-            LocalAssembler& assembler,
-            const EvaluationOptions& options) const;
-    /** \endcond */
+  std::unique_ptr<DiscreteBoundaryOperator<ResultType_>>
+  assembleOperatorInAcaMode(const Space<BasisFunctionType> &space,
+                            const arma::Mat<CoordinateType> &evaluationPoints,
+                            LocalAssembler &assembler,
+                            const EvaluationOptions &options) const;
+  /** \endcond */
 };
 
 } // namespace Bempp

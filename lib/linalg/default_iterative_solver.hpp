@@ -35,16 +35,13 @@
 
 #include <boost/scoped_ptr.hpp>
 
-namespace Thyra
-{
+namespace Thyra {
 /** \cond FORWARD_DECL */
 template <typename ValueType> class PreconditionerBase;
 /** \endcond */
 } // namespace Thyra
 
-namespace Bempp
-{
-
+namespace Bempp {
 
 /** \ingroup linalg
   * \brief Default iterative solver for boundary integral equations.
@@ -61,84 +58,86 @@ namespace Bempp
   *
   */
 template <typename BasisFunctionType, typename ResultType>
-class DefaultIterativeSolver : public Solver<BasisFunctionType, ResultType>
-{
+class DefaultIterativeSolver : public Solver<BasisFunctionType, ResultType> {
 public:
-    typedef Solver<BasisFunctionType, ResultType> Base;
+  typedef Solver<BasisFunctionType, ResultType> Base;
 
-    /** \brief Constructor of the <tt>DefaultIterativeSolver</tt> class.
-      *
-      * \param[in] boundaryOp
-      *   Non-blocked boundary operator.
-      * \param[in] mode
-      *   Convergence test mode. Default: <tt>TEST_CONVERGENCE_IN_DUAL_TO_RANGE</tt>.
-      *
-      */
-    DefaultIterativeSolver(
-            const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
-            ConvergenceTestMode::Mode mode =
-            ConvergenceTestMode::TEST_CONVERGENCE_IN_DUAL_TO_RANGE);
+  /** \brief Constructor of the <tt>DefaultIterativeSolver</tt> class.
+    *
+    * \param[in] boundaryOp
+    *   Non-blocked boundary operator.
+    * \param[in] mode
+    *   Convergence test mode. Default:
+    *<tt>TEST_CONVERGENCE_IN_DUAL_TO_RANGE</tt>.
+    *
+    */
+  DefaultIterativeSolver(
+      const BoundaryOperator<BasisFunctionType, ResultType> &boundaryOp,
+      ConvergenceTestMode::Mode mode =
+          ConvergenceTestMode::TEST_CONVERGENCE_IN_DUAL_TO_RANGE);
 
-    /** \brief Constructor of the <tt>DefaultIterativeSolver</tt> class.
-      *
-      * \param[in] boundaryOp
-      *   Blocked boundary operator.
-      * \param[in] mode
-      *   Convergence test mode. Default: <tt>TEST_CONVERGENCE_IN_DUAL_TO_RANGE</tt>.
-      *
-      */
-    DefaultIterativeSolver(
-            const BlockedBoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
-            ConvergenceTestMode::Mode mode =
-            ConvergenceTestMode::TEST_CONVERGENCE_IN_DUAL_TO_RANGE);
+  /** \brief Constructor of the <tt>DefaultIterativeSolver</tt> class.
+    *
+    * \param[in] boundaryOp
+    *   Blocked boundary operator.
+    * \param[in] mode
+    *   Convergence test mode. Default:
+    *<tt>TEST_CONVERGENCE_IN_DUAL_TO_RANGE</tt>.
+    *
+    */
+  DefaultIterativeSolver(
+      const BlockedBoundaryOperator<BasisFunctionType, ResultType> &boundaryOp,
+      ConvergenceTestMode::Mode mode =
+          ConvergenceTestMode::TEST_CONVERGENCE_IN_DUAL_TO_RANGE);
 
-    virtual ~DefaultIterativeSolver();
+  virtual ~DefaultIterativeSolver();
 
-    /** \brief Define a preconditioner.
-      *
-      * The preconditioner is passed on to the Belos solver.
-      *
-      * \param[in] preconditioner
-      *
-      * \note This function has no effect if it is called after initializeSolver().
-      *
-      * \deprecated Do not use this function in new code. Instead, pass the
-      *   preconditioner to initializeSolver().
-      */
-    BEMPP_DEPRECATED void setPreconditioner(
-            const Preconditioner<ResultType>& preconditioner);
+  /** \brief Define a preconditioner.
+    *
+    * The preconditioner is passed on to the Belos solver.
+    *
+    * \param[in] preconditioner
+    *
+    * \note This function has no effect if it is called after
+    *initializeSolver().
+    *
+    * \deprecated Do not use this function in new code. Instead, pass the
+    *   preconditioner to initializeSolver().
+    */
+  BEMPP_DEPRECATED void
+  setPreconditioner(const Preconditioner<ResultType> &preconditioner);
 
-    /** \brief Initialize a Belos iterative solver.
-      *
-      * \param[in] paramList
-      *   Parameter lists can be read in from XML files or defined in code. Use
-      *   defaultGmresParameterList() and defaultCgParameterList() to construct
-      *   default parameter lists for the GMRES and CG solvers.
-      */
-    void initializeSolver(const Teuchos::RCP<Teuchos::ParameterList>& paramList);
+  /** \brief Initialize a Belos iterative solver.
+    *
+    * \param[in] paramList
+    *   Parameter lists can be read in from XML files or defined in code. Use
+    *   defaultGmresParameterList() and defaultCgParameterList() to construct
+    *   default parameter lists for the GMRES and CG solvers.
+    */
+  void initializeSolver(const Teuchos::RCP<Teuchos::ParameterList> &paramList);
 
-    /** \brief Initialize a preconditioned Belos iterative solver.
-      *
-      * \param[in] paramList
-      *   Parameter lists can be read in from XML files or defined in code. Use
-      *   defaultGmresParameterList() and defaultCgParameterList() to construct
-      *   default parameter lists for the GMRES and CG solvers.
-      * \param[in] preconditioner
-      *   Preconditioner to be used by the solver.
-      */
-    void initializeSolver(const Teuchos::RCP<Teuchos::ParameterList>& paramList,
-                          const Preconditioner<ResultType>& preconditioner);
-
-private:
-    virtual Solution<BasisFunctionType, ResultType> solveImplNonblocked(
-            const GridFunction<BasisFunctionType, ResultType>& rhs) const;
-    virtual BlockedSolution<BasisFunctionType, ResultType> solveImplBlocked(
-            const std::vector<GridFunction<BasisFunctionType, ResultType> >&
-            rhs) const;
+  /** \brief Initialize a preconditioned Belos iterative solver.
+    *
+    * \param[in] paramList
+    *   Parameter lists can be read in from XML files or defined in code. Use
+    *   defaultGmresParameterList() and defaultCgParameterList() to construct
+    *   default parameter lists for the GMRES and CG solvers.
+    * \param[in] preconditioner
+    *   Preconditioner to be used by the solver.
+    */
+  void initializeSolver(const Teuchos::RCP<Teuchos::ParameterList> &paramList,
+                        const Preconditioner<ResultType> &preconditioner);
 
 private:
-    struct Impl;
-    boost::scoped_ptr<Impl> m_impl;
+  virtual Solution<BasisFunctionType, ResultType> solveImplNonblocked(
+      const GridFunction<BasisFunctionType, ResultType> &rhs) const;
+  virtual BlockedSolution<BasisFunctionType, ResultType> solveImplBlocked(
+      const std::vector<GridFunction<BasisFunctionType, ResultType>> &rhs)
+      const;
+
+private:
+  struct Impl;
+  boost::scoped_ptr<Impl> m_impl;
 };
 
 } // namespace Bempp

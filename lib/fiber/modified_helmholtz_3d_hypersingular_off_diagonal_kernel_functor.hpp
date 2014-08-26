@@ -26,8 +26,7 @@
 #include "geometrical_data.hpp"
 #include "scalar_traits.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \ingroup modified_helmholtz_3d
  *  \ingroup functors
@@ -44,67 +43,64 @@ namespace Fiber
  */
 
 template <typename ValueType_>
-class ModifiedHelmholtz3dHypersingularOffDiagonalKernelFunctor
-{
+class ModifiedHelmholtz3dHypersingularOffDiagonalKernelFunctor {
 public:
-    typedef ValueType_ ValueType;
-    typedef typename ScalarTraits<ValueType>::RealType CoordinateType;
+  typedef ValueType_ ValueType;
+  typedef typename ScalarTraits<ValueType>::RealType CoordinateType;
 
-    explicit ModifiedHelmholtz3dHypersingularOffDiagonalKernelFunctor(
-            ValueType waveNumber) :
-        m_waveNumber(waveNumber)
-    {}
+  explicit ModifiedHelmholtz3dHypersingularOffDiagonalKernelFunctor(
+      ValueType waveNumber)
+      : m_waveNumber(waveNumber) {}
 
-    int kernelCount() const { return 1; }
-    int kernelRowCount(int /* kernelIndex */) const { return 1; }
-    int kernelColCount(int /* kernelIndex */) const { return 1; }
+  int kernelCount() const { return 1; }
+  int kernelRowCount(int /* kernelIndex */) const { return 1; }
+  int kernelColCount(int /* kernelIndex */) const { return 1; }
 
-    void addGeometricalDependencies(size_t& testGeomDeps, size_t& trialGeomDeps) const {
-        testGeomDeps |= GLOBALS | NORMALS;
-        trialGeomDeps |= GLOBALS | NORMALS;
+  void addGeometricalDependencies(size_t &testGeomDeps,
+                                  size_t &trialGeomDeps) const {
+    testGeomDeps |= GLOBALS | NORMALS;
+    trialGeomDeps |= GLOBALS | NORMALS;
+  }
+
+  ValueType waveNumber() const { return m_waveNumber; }
+
+  template <template <typename T> class CollectionOf2dSlicesOfNdArrays>
+  void evaluate(const ConstGeometricalDataSlice<CoordinateType> &testGeomData,
+                const ConstGeometricalDataSlice<CoordinateType> &trialGeomData,
+                CollectionOf2dSlicesOfNdArrays<ValueType> &result) const {
+    const int coordCount = 3;
+    const ValueType waveNumber = m_waveNumber;
+
+    CoordinateType distanceSq = 0.;
+    CoordinateType nTest_diff = 0;
+    CoordinateType nTrial_diff = 0;
+    CoordinateType nTest_nTrial = 0.;
+    for (int coordIndex = 0; coordIndex < coordCount; ++coordIndex) {
+      CoordinateType diff =
+          trialGeomData.global(coordIndex) - testGeomData.global(coordIndex);
+      distanceSq += diff * diff;
+      nTest_diff += diff * testGeomData.normal(coordIndex);
+      nTrial_diff += diff * trialGeomData.normal(coordIndex);
+      nTest_nTrial +=
+          testGeomData.normal(coordIndex) * trialGeomData.normal(coordIndex);
     }
+    CoordinateType distance = sqrt(distanceSq);
+    ValueType kr = waveNumber * distance;
+    const CoordinateType ONE = 1., THREE = 3.;
+    result[0](0, 0) =
+        static_cast<CoordinateType>(1.0 / (4.0 * M_PI)) /
+        (distance * distanceSq * distanceSq) *
+        (-distanceSq * nTest_nTrial * (ONE + kr) +
+         nTest_diff * nTrial_diff * (THREE + THREE * kr + kr * kr)) *
+        exp(-kr);
+  }
 
-    ValueType waveNumber() const { return m_waveNumber; }
-
-    template <template <typename T> class CollectionOf2dSlicesOfNdArrays>
-    void evaluate(
-            const ConstGeometricalDataSlice<CoordinateType>& testGeomData,
-            const ConstGeometricalDataSlice<CoordinateType>& trialGeomData,
-            CollectionOf2dSlicesOfNdArrays<ValueType>& result) const {
-        const int coordCount = 3;
-        const ValueType waveNumber = m_waveNumber;
-
-        CoordinateType distanceSq = 0.;
-        CoordinateType nTest_diff = 0;
-        CoordinateType nTrial_diff = 0;
-        CoordinateType nTest_nTrial = 0.;
-        for (int coordIndex = 0; coordIndex < coordCount; ++coordIndex) {
-            CoordinateType diff = trialGeomData.global(coordIndex) -
-                    testGeomData.global(coordIndex);
-            distanceSq += diff * diff;
-            nTest_diff += diff * testGeomData.normal(coordIndex);
-            nTrial_diff += diff * trialGeomData.normal(coordIndex);
-            nTest_nTrial += testGeomData.normal(coordIndex) *
-                    trialGeomData.normal(coordIndex);
-        }
-        CoordinateType distance = sqrt(distanceSq);
-        ValueType kr = waveNumber * distance;
-        const CoordinateType ONE = 1., THREE = 3.;
-        result[0](0, 0) =
-                static_cast<CoordinateType>(1.0 / (4.0 * M_PI)) /
-                (distance * distanceSq * distanceSq) *
-                (-distanceSq * nTest_nTrial * (ONE + kr) +
-                 nTest_diff * nTrial_diff *
-                 (THREE + THREE * kr + kr * kr)) *
-                exp(-kr);
-    }
-
-    CoordinateType estimateRelativeScale(CoordinateType distance) const {
-        return exp(-realPart(m_waveNumber) * distance);
-    }
+  CoordinateType estimateRelativeScale(CoordinateType distance) const {
+    return exp(-realPart(m_waveNumber) * distance);
+  }
 
 private:
-    ValueType m_waveNumber;
+  ValueType m_waveNumber;
 };
 
 } // namespace Fiber

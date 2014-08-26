@@ -31,20 +31,16 @@
 //#include <dune/localfunctions/raviartthomas.hh> ///raviartthomas0q2d.hh>
 #include <dune/localfunctions/raviartthomas/raviartthomas02d/raviartthomas02dlocalbasis.hh>
 
-namespace Fiber
-{
+namespace Fiber {
 
 template <int elementVertexCount, typename CoordinateType, typename ValueType>
-struct RaviartThomas0BasisTraits
-{
-};
+struct RaviartThomas0BasisTraits {};
 
 // Triangle
 template <typename CoordinateType, typename ValueType>
-struct RaviartThomas0BasisTraits<3, CoordinateType, ValueType>
-{
+struct RaviartThomas0BasisTraits<3, CoordinateType, ValueType> {
 public:
-    typedef Dune::RT02DLocalBasis<CoordinateType, ValueType> DuneBasis;
+  typedef Dune::RT02DLocalBasis<CoordinateType, ValueType> DuneBasis;
 };
 
 // // Quadrilateral
@@ -57,42 +53,38 @@ public:
 
 /** \brief Shapeset composed of the lowest-order Raviart-Thomas functions. */
 template <int elementVertexCount, typename ValueType>
-class RaviartThomas0Shapeset : public Basis<ValueType>
-{
+class RaviartThomas0Shapeset : public Basis<ValueType> {
 public:
-    typedef typename Basis<ValueType>::CoordinateType CoordinateType;
+  typedef typename Basis<ValueType>::CoordinateType CoordinateType;
 
 private:
-    typedef typename RaviartThomas0BasisTraits
-    <elementVertexCount, CoordinateType, ValueType>::DuneBasis DuneBasis;
+  typedef typename RaviartThomas0BasisTraits<elementVertexCount, CoordinateType,
+                                             ValueType>::DuneBasis DuneBasis;
 
 public:
-    virtual int size() const {
-        DuneBasis basis;
-        return basis.size();
-    }
+  virtual int size() const {
+    DuneBasis basis;
+    return basis.size();
+  }
 
-    virtual int order() const {
-        return 1;
-    }
+  virtual int order() const { return 1; }
 
-    virtual void evaluate(size_t what,
-                          const arma::Mat<CoordinateType>& points,
-                          LocalDofIndex localDofIndex,
-                          BasisData<ValueType>& data) const {
-        if (localDofIndex != ALL_DOFS &&
-                (localDofIndex < 0 || size() <= localDofIndex))
-            throw std::invalid_argument("RaviartThomas0Basis::"
-                                        "evaluate(): Invalid localDofIndex");
+  virtual void evaluate(size_t what, const arma::Mat<CoordinateType> &points,
+                        LocalDofIndex localDofIndex,
+                        BasisData<ValueType> &data) const {
+    if (localDofIndex != ALL_DOFS &&
+        (localDofIndex < 0 || size() <= localDofIndex))
+      throw std::invalid_argument("RaviartThomas0Basis::"
+                                  "evaluate(): Invalid localDofIndex");
 
-        if (what & VALUES)
-            evaluateShapeFunctionsWithDune<CoordinateType, ValueType, DuneBasis>(
-                        points, localDofIndex, data.values);
-        if (what & DERIVATIVES)
-            evaluateShapeFunctionDerivativesWithDune<
-                    CoordinateType, ValueType, DuneBasis>(
-                        points, localDofIndex, data.derivatives);
-    }
+    if (what & VALUES)
+      evaluateShapeFunctionsWithDune<CoordinateType, ValueType, DuneBasis>(
+          points, localDofIndex, data.values);
+    if (what & DERIVATIVES)
+      evaluateShapeFunctionDerivativesWithDune<CoordinateType, ValueType,
+                                               DuneBasis>(points, localDofIndex,
+                                                          data.derivatives);
+  }
 };
 
 } // namespace Fiber

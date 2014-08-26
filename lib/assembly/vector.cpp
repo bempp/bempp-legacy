@@ -27,71 +27,61 @@
 #include <Teuchos_ArrayRCP.hpp>
 #endif
 
-namespace Bempp
-{
+namespace Bempp {
 
 template <typename ValueType>
-Vector<ValueType>::Vector(const arma::Col<ValueType>& vec)
-{
+Vector<ValueType>::Vector(const arma::Col<ValueType> &vec) {
 #ifdef WITH_TRILINOS
-    const size_t size = vec.n_rows;
-    Teuchos::ArrayRCP<ValueType> data(size);
-    for (size_t i = 0; i < size; ++i)
-        data[i] = vec(i);
-    this->initialize(Thyra::defaultSpmdVectorSpace<ValueType>(size),
-                     data, 1 /* stride */);
+  const size_t size = vec.n_rows;
+  Teuchos::ArrayRCP<ValueType> data(size);
+  for (size_t i = 0; i < size; ++i)
+    data[i] = vec(i);
+  this->initialize(Thyra::defaultSpmdVectorSpace<ValueType>(size), data,
+                   1 /* stride */);
 #else
-    m_vec = vec;
+  m_vec = vec;
+#endif
+}
+
+template <typename ValueType> Vector<ValueType>::Vector(size_t n) {
+#ifdef WITH_TRILINOS
+  Teuchos::ArrayRCP<ValueType> data(n);
+  this->initialize(Thyra::defaultSpmdVectorSpace<ValueType>(n), data,
+                   1 /* stride */);
+#else
+  m_vec.set_size(n);
+#endif
+}
+
+template <typename ValueType> size_t Vector<ValueType>::size() const {
+#ifdef WITH_TRILINOS
+  return this->range()->dim();
+#else
+  return m_vec.n_rows;
+#endif
+}
+
+template <typename ValueType> void Vector<ValueType>::dump() const {
+#ifdef WITH_TRILINOS
+  std::cout << asArmadilloVector() << std::endl; // inefficient
+#else
+  std::cout << m_vec << std::endl;
 #endif
 }
 
 template <typename ValueType>
-Vector<ValueType>::Vector(size_t n)
-{
+arma::Col<ValueType> Vector<ValueType>::asArmadilloVector() const {
 #ifdef WITH_TRILINOS
-    Teuchos::ArrayRCP<ValueType> data(n);
-    this->initialize(Thyra::defaultSpmdVectorSpace<ValueType>(n),
-                     data, 1 /* stride */);
+  const size_t size = this->range()->dim();
+  arma::Col<ValueType> col(size);
+  for (size_t i = 0; i < size; ++i)
+    col(i) = this->getPtr()[i];
+  return col;
 #else
-    m_vec.set_size(n);
-#endif
-}
-
-template <typename ValueType>
-size_t Vector<ValueType>::size() const
-{
-#ifdef WITH_TRILINOS
-    return this->range()->dim();
-#else
-    return m_vec.n_rows;
-#endif
-}
-
-template <typename ValueType>
-void Vector<ValueType>::dump() const
-{
-#ifdef WITH_TRILINOS
-    std::cout << asArmadilloVector() << std::endl; // inefficient
-#else
-    std::cout << m_vec << std::endl;
-#endif
-}
-
-template <typename ValueType>
-arma::Col<ValueType> Vector<ValueType>::asArmadilloVector() const
-{
-#ifdef WITH_TRILINOS
-    const size_t size = this->range()->dim();
-    arma::Col<ValueType> col(size);
-    for (size_t i = 0; i < size; ++i)
-        col(i) = this->getPtr()[i];
-    return col;
-#else
-    return m_vec;
+  return m_vec;
 #endif
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(Vector);
 
 } // namespace Bempp
-

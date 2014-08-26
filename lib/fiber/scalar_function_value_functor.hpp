@@ -28,30 +28,26 @@
 #include "collection_of_3d_arrays.hpp"
 #include "shape_transformation_functor_wrappers.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
-template <typename CoordinateType_>
-class ScalarFunctionValueElementaryFunctor
-{
+template <typename CoordinateType_> class ScalarFunctionValueElementaryFunctor {
 public:
-    typedef CoordinateType_ CoordinateType;
+  typedef CoordinateType_ CoordinateType;
 
-    int argumentDimension() const { return 1; }
-    int resultDimension() const { return 1; }
+  int argumentDimension() const { return 1; }
+  int resultDimension() const { return 1; }
 
-    void addDependencies(size_t& basisDeps, size_t& geomDeps) const {
-        basisDeps |= VALUES;
-    }
+  void addDependencies(size_t &basisDeps, size_t &geomDeps) const {
+    basisDeps |= VALUES;
+  }
 
-    template <typename ValueType>
-    void evaluate(
-            const ConstBasisDataSlice<ValueType>& basisData,
-            const ConstGeometricalDataSlice<CoordinateType>& geomData,
-            _1dSliceOf3dArray<ValueType>& result) const {
-        assert(basisData.componentCount() == 1);
-        result(0) = basisData.values(0);
-    }
+  template <typename ValueType>
+  void evaluate(const ConstBasisDataSlice<ValueType> &basisData,
+                const ConstGeometricalDataSlice<CoordinateType> &geomData,
+                _1dSliceOf3dArray<ValueType> &result) const {
+    assert(basisData.componentCount() == 1);
+    result(0) = basisData.values(0);
+  }
 };
 
 // Note: in C++11 we'll be able to make a "template typedef", or more precisely
@@ -59,12 +55,11 @@ public:
 /** \ingroup functors
  *  \brief Functor calculating the value of a scalar basis function. */
 template <typename CoordinateType_>
-class ScalarFunctionValueFunctor :
-        public ElementaryShapeTransformationFunctorWrapper<
-        ScalarFunctionValueElementaryFunctor<CoordinateType_> >
-{
+class ScalarFunctionValueFunctor
+    : public ElementaryShapeTransformationFunctorWrapper<
+          ScalarFunctionValueElementaryFunctor<CoordinateType_>> {
 public:
-    typedef CoordinateType_ CoordinateType;
+  typedef CoordinateType_ CoordinateType;
 };
 
 } // namespace Fiber

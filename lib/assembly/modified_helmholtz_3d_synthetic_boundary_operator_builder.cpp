@@ -29,97 +29,86 @@
 
 #include "../space/space.hpp"
 
-namespace Bempp
-{
+namespace Bempp {
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType>
 modifiedHelmholtz3dSyntheticBoundaryOperator(
-    BoundaryOperator<BasisFunctionType, ResultType>
-    (*constructor)(
-        const shared_ptr<const Context<BasisFunctionType, ResultType> >& /*context*/,
-        const shared_ptr<const Space<BasisFunctionType> >& /*domain*/,
-        const shared_ptr<const Space<BasisFunctionType> >& /*range*/,
-        const shared_ptr<const Space<BasisFunctionType> >& /*dualToRange*/,
-        KernelType /*waveNumber*/,
-        const std::string& /*label*/,
-        int /*symmetry*/,
-        bool /*useInterpolation*/,
+    BoundaryOperator<BasisFunctionType, ResultType>(*constructor)(
+        const shared_ptr<
+            const Context<BasisFunctionType, ResultType>> & /*context*/,
+        const shared_ptr<const Space<BasisFunctionType>> & /*domain*/,
+        const shared_ptr<const Space<BasisFunctionType>> & /*range*/,
+        const shared_ptr<const Space<BasisFunctionType>> & /*dualToRange*/,
+        KernelType /*waveNumber*/, const std::string & /*label*/,
+        int /*symmetry*/, bool /*useInterpolation*/,
         int /*interpPtsPerWavelength*/),
-    const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
-    const shared_ptr<const Space<BasisFunctionType> >& domain,
-    const shared_ptr<const Space<BasisFunctionType> >& range,
-    const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-    KernelType waveNumber,
-    std::string label,
-    int internalSymmetry,
-    bool useInterpolation,
-    int interpPtsPerWavelength,
-    int maximumSyntheseSymmetry)
-{
-    if (!domain || !range || !dualToRange)
-        throw std::invalid_argument(
-            "modifiedHelmholtz3dSyntheticBoundaryOperator(): "
-            "domain, range and dualToRange must not be null");
+    const shared_ptr<const Context<BasisFunctionType, ResultType>> &context,
+    const shared_ptr<const Space<BasisFunctionType>> &domain,
+    const shared_ptr<const Space<BasisFunctionType>> &range,
+    const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
+    KernelType waveNumber, std::string label, int internalSymmetry,
+    bool useInterpolation, int interpPtsPerWavelength,
+    int maximumSyntheseSymmetry) {
+  if (!domain || !range || !dualToRange)
+    throw std::invalid_argument(
+        "modifiedHelmholtz3dSyntheticBoundaryOperator(): "
+        "domain, range and dualToRange must not be null");
 
-    shared_ptr<const Space<BasisFunctionType> > newDomain = domain;
-    shared_ptr<const Space<BasisFunctionType> > newDualToRange = dualToRange;
+  shared_ptr<const Space<BasisFunctionType>> newDomain = domain;
+  shared_ptr<const Space<BasisFunctionType>> newDualToRange = dualToRange;
 
-    bool isBarycentric = (domain->isBarycentric() || dualToRange->isBarycentric());
+  bool isBarycentric =
+      (domain->isBarycentric() || dualToRange->isBarycentric());
 
-    if (isBarycentric) {
-        newDomain = domain->barycentricSpace(domain);
-        newDualToRange = dualToRange->barycentricSpace(dualToRange);
-    }
+  if (isBarycentric) {
+    newDomain = domain->barycentricSpace(domain);
+    newDualToRange = dualToRange->barycentricSpace(dualToRange);
+  }
 
-    AssemblyOptions internalAssemblyOptions = context->assemblyOptions();
-    AcaOptions internalAcaOptions = internalAssemblyOptions.acaOptions();
-    internalAcaOptions.mode = AcaOptions::GLOBAL_ASSEMBLY;
-    internalAssemblyOptions.switchToAcaMode(internalAcaOptions);
-    typedef Context<BasisFunctionType, ResultType> Ctx;
-    shared_ptr<Ctx> internalContext(new Ctx(
-            context->quadStrategy(), internalAssemblyOptions));
-    shared_ptr<const Space<BasisFunctionType> > internalTrialSpace =
-        newDomain->discontinuousSpace(domain);
-    shared_ptr<const Space<BasisFunctionType> > internalTestSpace =
-        newDualToRange->discontinuousSpace(dualToRange);
-    if (label.empty())
-        label = AbstractBoundaryOperator<BasisFunctionType, ResultType>::
-            uniqueLabel();
-    int syntheseSymmetry =
-        (newDomain == newDualToRange && internalTrialSpace == internalTestSpace) ?
-        maximumSyntheseSymmetry : 0;
-    BoundaryOperator<BasisFunctionType, ResultType> internalOp =
-        constructor(
-            internalContext, internalTrialSpace, range /* or whatever */,
-            internalTestSpace,
-            waveNumber, "(" + label + ")_internal", internalSymmetry,
-            useInterpolation, interpPtsPerWavelength);
-    return syntheticNonhypersingularIntegralOperator(
-            internalOp, newDomain, range, newDualToRange,
-            internalTrialSpace, internalTestSpace,
-            label, syntheseSymmetry);
+  AssemblyOptions internalAssemblyOptions = context->assemblyOptions();
+  AcaOptions internalAcaOptions = internalAssemblyOptions.acaOptions();
+  internalAcaOptions.mode = AcaOptions::GLOBAL_ASSEMBLY;
+  internalAssemblyOptions.switchToAcaMode(internalAcaOptions);
+  typedef Context<BasisFunctionType, ResultType> Ctx;
+  shared_ptr<Ctx> internalContext(
+      new Ctx(context->quadStrategy(), internalAssemblyOptions));
+  shared_ptr<const Space<BasisFunctionType>> internalTrialSpace =
+      newDomain->discontinuousSpace(domain);
+  shared_ptr<const Space<BasisFunctionType>> internalTestSpace =
+      newDualToRange->discontinuousSpace(dualToRange);
+  if (label.empty())
+    label =
+        AbstractBoundaryOperator<BasisFunctionType, ResultType>::uniqueLabel();
+  int syntheseSymmetry =
+      (newDomain == newDualToRange && internalTrialSpace == internalTestSpace)
+          ? maximumSyntheseSymmetry
+          : 0;
+  BoundaryOperator<BasisFunctionType, ResultType> internalOp =
+      constructor(internalContext, internalTrialSpace, range /* or whatever */,
+                  internalTestSpace, waveNumber, "(" + label + ")_internal",
+                  internalSymmetry, useInterpolation, interpPtsPerWavelength);
+  return syntheticNonhypersingularIntegralOperator(
+      internalOp, newDomain, range, newDualToRange, internalTrialSpace,
+      internalTestSpace, label, syntheseSymmetry);
 }
 
-#define INSTANTIATE_FUNCTION(BASIS, KERNEL, RESULT)                     \
-    template BoundaryOperator<BASIS, RESULT>                            \
-    modifiedHelmholtz3dSyntheticBoundaryOperator(                       \
-        BoundaryOperator<BASIS, RESULT>                                 \
-        (*)(                                                            \
-            const shared_ptr<const Context<BASIS, RESULT> >& /*context*/, \
-            const shared_ptr<const Space<BASIS> >& /*domain*/,          \
-            const shared_ptr<const Space<BASIS> >& /*range*/,           \
-            const shared_ptr<const Space<BASIS> >& /*dualToRange*/,     \
-            KERNEL /*waveNumber*/,                                      \
-            const std::string& /*label*/,                               \
-            int /*symmetry*/,                                           \
-            bool /*useInterpolation*/,                                  \
-            int /*interpPtsPerWavelength*/),                            \
-        const shared_ptr<const Context<BASIS, RESULT> >&,               \
-        const shared_ptr<const Space<BASIS> >&,                         \
-        const shared_ptr<const Space<BASIS> >&,                         \
-        const shared_ptr<const Space<BASIS> >&,                         \
-        KERNEL, std::string, int, bool, int, int)
+#define INSTANTIATE_FUNCTION(BASIS, KERNEL, RESULT)                            \
+  template BoundaryOperator<BASIS, RESULT>                                     \
+  modifiedHelmholtz3dSyntheticBoundaryOperator(                                \
+      BoundaryOperator<BASIS, RESULT>(*)(                                      \
+          const shared_ptr<const Context<BASIS, RESULT>> & /*context*/,        \
+          const shared_ptr<const Space<BASIS>> & /*domain*/,                   \
+          const shared_ptr<const Space<BASIS>> & /*range*/,                    \
+          const shared_ptr<const Space<BASIS>> & /*dualToRange*/,              \
+          KERNEL /*waveNumber*/, const std::string & /*label*/,                \
+          int /*symmetry*/, bool /*useInterpolation*/,                         \
+          int /*interpPtsPerWavelength*/),                                     \
+      const shared_ptr<const Context<BASIS, RESULT>> &,                        \
+      const shared_ptr<const Space<BASIS>> &,                                  \
+      const shared_ptr<const Space<BASIS>> &,                                  \
+      const shared_ptr<const Space<BASIS>> &, KERNEL, std::string, int, bool,  \
+      int, int)
 FIBER_ITERATE_OVER_BASIS_KERNEL_AND_RESULT_TYPES(INSTANTIATE_FUNCTION);
 
 } // namespace Bempp

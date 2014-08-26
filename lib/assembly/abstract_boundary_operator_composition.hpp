@@ -28,8 +28,7 @@
 
 #include "../common/shared_ptr.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \cond FORWARD_DECL */
 template <typename ResultType> class LocalAssemblerForOperators;
@@ -37,70 +36,68 @@ template <typename ResultType> class LocalAssemblerForOperators;
 
 } // namespace Fiber
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \ingroup composite_boundary_operators
  *  \brief Composition of two abstract boundary operators.
  *
  *  This class represents a composition (product) of two boundary operators. */
 template <typename BasisFunctionType_, typename ResultType_>
-class AbstractBoundaryOperatorComposition :
-        public AbstractBoundaryOperator<BasisFunctionType_, ResultType_>
-{
-    typedef AbstractBoundaryOperator<BasisFunctionType_, ResultType_> Base;
+class AbstractBoundaryOperatorComposition
+    : public AbstractBoundaryOperator<BasisFunctionType_, ResultType_> {
+  typedef AbstractBoundaryOperator<BasisFunctionType_, ResultType_> Base;
+
 public:
-    /** \copydoc AbstractBoundaryOperator::BasisFunctionType */
-    typedef typename Base::BasisFunctionType BasisFunctionType;
-    /** \copydoc AbstractBoundaryOperator::ResultType */
-    typedef typename Base::ResultType ResultType;
-    /** \copydoc AbstractBoundaryOperator::CoordinateType */
-    typedef typename Base::CoordinateType CoordinateType;
-    /** \copydoc AbstractBoundaryOperator::QuadratureStrategy */
-    typedef typename Base::QuadratureStrategy QuadratureStrategy;
-    typedef typename Fiber::LocalAssemblerForOperators<ResultType>
-    LocalAssembler;
+  /** \copydoc AbstractBoundaryOperator::BasisFunctionType */
+  typedef typename Base::BasisFunctionType BasisFunctionType;
+  /** \copydoc AbstractBoundaryOperator::ResultType */
+  typedef typename Base::ResultType ResultType;
+  /** \copydoc AbstractBoundaryOperator::CoordinateType */
+  typedef typename Base::CoordinateType CoordinateType;
+  /** \copydoc AbstractBoundaryOperator::QuadratureStrategy */
+  typedef typename Base::QuadratureStrategy QuadratureStrategy;
+  typedef typename Fiber::LocalAssemblerForOperators<ResultType> LocalAssembler;
 
-    /** \brief Constructor.
-     *
-     *  Construct an operator representing the product \f$M \equiv L_1 L_2 : X
-     *  \to Z\f$ of two boundary operators \f$L_1 : Y \to Z\f$ and \f$L_2 : X
-     *  \to Y\f$.
-     *
-     *  \param[in] outer Operator \f$L_1\f$.
-     *  \param[in] inner Operator \f$L_2\f$.
-     *  \param[in] symmetry
-     *    (Optional) Symmetry of the weak form of the composite operator.
-     *    Can be any combination of the flags defined in the enumeration type
-     *    Symmetry.
-     *
-     *  \note Both operators must be initialized and the range space of the
-     *  operator \p inner must be identical with the domain space of the
-     *  operator \p outer, otherwise an exception is thrown.
-     *
-     *  \todo Add a parameter setting the symmetry of the composite operator.
-     */
-    AbstractBoundaryOperatorComposition(
-            const BoundaryOperator<BasisFunctionType, ResultType>& outer,
-            const BoundaryOperator<BasisFunctionType, ResultType>& inner,
-            int symmetry = NO_SYMMETRY);
+  /** \brief Constructor.
+   *
+   *  Construct an operator representing the product \f$M \equiv L_1 L_2 : X
+   *  \to Z\f$ of two boundary operators \f$L_1 : Y \to Z\f$ and \f$L_2 : X
+   *  \to Y\f$.
+   *
+   *  \param[in] outer Operator \f$L_1\f$.
+   *  \param[in] inner Operator \f$L_2\f$.
+   *  \param[in] symmetry
+   *    (Optional) Symmetry of the weak form of the composite operator.
+   *    Can be any combination of the flags defined in the enumeration type
+   *    Symmetry.
+   *
+   *  \note Both operators must be initialized and the range space of the
+   *  operator \p inner must be identical with the domain space of the
+   *  operator \p outer, otherwise an exception is thrown.
+   *
+   *  \todo Add a parameter setting the symmetry of the composite operator.
+   */
+  AbstractBoundaryOperatorComposition(
+      const BoundaryOperator<BasisFunctionType, ResultType> &outer,
+      const BoundaryOperator<BasisFunctionType, ResultType> &inner,
+      int symmetry = NO_SYMMETRY);
 
-    virtual bool isLocal() const;
+  virtual bool isLocal() const;
 
 protected:
-    virtual shared_ptr<DiscreteBoundaryOperator<ResultType_> >
-    assembleWeakFormImpl(
-            const Context<BasisFunctionType, ResultType>& context) const;
+  virtual shared_ptr<DiscreteBoundaryOperator<ResultType_>>
+  assembleWeakFormImpl(const Context<BasisFunctionType, ResultType> &context)
+      const;
 
 private:
-    shared_ptr<DiscreteBoundaryOperator<ResultType_> >
-    assembleConversionOperator(const QuadratureStrategy& quadStrategy,
-                               const AssemblyOptions& options);
+  shared_ptr<DiscreteBoundaryOperator<ResultType_>>
+  assembleConversionOperator(const QuadratureStrategy &quadStrategy,
+                             const AssemblyOptions &options);
 
 private:
-    BoundaryOperator<BasisFunctionType, ResultType> m_outer, m_inner;
+  BoundaryOperator<BasisFunctionType, ResultType> m_outer, m_inner;
 };
 
-} //namespace Bempp
+} // namespace Bempp
 
 #endif

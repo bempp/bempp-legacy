@@ -23,22 +23,17 @@
 
 #include "shape_transformation_functor_wrappers.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 template <typename ElementaryFunctor>
-class ElementaryBasisTransformationFunctorWrapper :
-        public ElementaryShapeTransformationFunctorWrapper<ElementaryFunctor>
-{
-};
+class ElementaryBasisTransformationFunctorWrapper
+    : public ElementaryShapeTransformationFunctorWrapper<ElementaryFunctor> {};
 
 // ElementaryFunctors must be default-constructible
 template <typename ElementaryFunctor0, typename ElementaryFunctor1>
-class ElementaryBasisTransformationFunctorPairWrapper:
-        public ElementaryShapeTransformationFunctorPairWrapper<
-        ElementaryFunctor0, ElementaryFunctor1>
-{
-};
+class ElementaryBasisTransformationFunctorPairWrapper
+    : public ElementaryShapeTransformationFunctorPairWrapper<
+          ElementaryFunctor0, ElementaryFunctor1> {};
 
 } // namespace Fiber
 

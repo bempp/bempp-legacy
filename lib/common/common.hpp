@@ -18,12 +18,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-
 #ifndef bempp_common_hpp
 #define bempp_common_hpp
 
 #ifdef __INTEL_COMPILER
-#pragma warning(disable:279 186 858 262 1011 654 597)
+#pragma warning(disable : 279 186 858 262 1011 654 597)
 #endif
 
 // Yes, use the new syntax from Dune 2.2

@@ -23,30 +23,20 @@
 
 #include "../common/common.hpp"
 
-
 #include <complex>
 
-namespace Fiber
-{
+namespace Fiber {
 
-inline float conjugate(float x)
-{
-    return x;
+inline float conjugate(float x) { return x; }
+
+inline double conjugate(double x) { return x; }
+
+inline std::complex<float> conjugate(std::complex<float> x) {
+  return std::conj(x);
 }
 
-inline double conjugate(double x)
-{
-    return x;
-}
-
-inline std::complex<float> conjugate(std::complex<float> x)
-{
-    return std::conj(x);
-}
-
-inline std::complex<double> conjugate(std::complex<double> x)
-{
-    return std::conj(x);
+inline std::complex<double> conjugate(std::complex<double> x) {
+  return std::conj(x);
 }
 
 } // namespace Fiber

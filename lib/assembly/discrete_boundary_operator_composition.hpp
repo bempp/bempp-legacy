@@ -33,56 +33,55 @@
 #include <Teuchos_RCP.hpp>
 #endif
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \ingroup composite_discrete_boundary_operators
  *  \brief Composition (product) of discrete linear operators stored separately.
  */
 template <typename ValueType>
-class DiscreteBoundaryOperatorComposition : public DiscreteBoundaryOperator<ValueType>
-{
+class DiscreteBoundaryOperatorComposition
+    : public DiscreteBoundaryOperator<ValueType> {
 public:
-    typedef DiscreteBoundaryOperator<ValueType> Base;
+  typedef DiscreteBoundaryOperator<ValueType> Base;
 
-    /** \brief Constructor.
-     *
-     *  Construct a discrete operator representing the product of the operators
-     *  \p outer and \p inner (in this order).
-     *
-     *  \note The operators must be non-null and have compatible dimensions
-     *  (<tt>outer->columnCount() == inner->rowCount()</tt>), otherwise
-     *  a <tt>std::invalid_argument</tt> exception is thrown. */
-    DiscreteBoundaryOperatorComposition(const shared_ptr<const Base>& outer,
-                                        const shared_ptr<const Base>& inner);
+  /** \brief Constructor.
+   *
+   *  Construct a discrete operator representing the product of the operators
+   *  \p outer and \p inner (in this order).
+   *
+   *  \note The operators must be non-null and have compatible dimensions
+   *  (<tt>outer->columnCount() == inner->rowCount()</tt>), otherwise
+   *  a <tt>std::invalid_argument</tt> exception is thrown. */
+  DiscreteBoundaryOperatorComposition(const shared_ptr<const Base> &outer,
+                                      const shared_ptr<const Base> &inner);
 
-    virtual unsigned int rowCount() const;
-    virtual unsigned int columnCount() const;
+  virtual unsigned int rowCount() const;
+  virtual unsigned int columnCount() const;
 
-    virtual void addBlock(const std::vector<int>& rows,
-                          const std::vector<int>& cols,
-                          const ValueType alpha,
-                          arma::Mat<ValueType>& block) const;
+  virtual void addBlock(const std::vector<int> &rows,
+                        const std::vector<int> &cols, const ValueType alpha,
+                        arma::Mat<ValueType> &block) const;
 
 #ifdef WITH_TRILINOS
 public:
-    virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > domain() const;
-    virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > range() const;
+  virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>> domain() const;
+  virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>> range() const;
 
 protected:
-    virtual bool opSupportedImpl(Thyra::EOpTransp M_trans) const;
+  virtual bool opSupportedImpl(Thyra::EOpTransp M_trans) const;
 #endif
 
 private:
-    virtual void applyBuiltInImpl(const TranspositionMode trans,
-                                  const arma::Col<ValueType>& x_in,
-                                  arma::Col<ValueType>& y_inout,
-                                  const ValueType alpha,
-                                  const ValueType beta) const;
+  virtual void applyBuiltInImpl(const TranspositionMode trans,
+                                const arma::Col<ValueType> &x_in,
+                                arma::Col<ValueType> &y_inout,
+                                const ValueType alpha,
+                                const ValueType beta) const;
+
 private:
-    /** \cond PRIVATE */
-    shared_ptr<const Base> m_outer, m_inner;
-    /** \endcond */
+  /** \cond PRIVATE */
+  shared_ptr<const Base> m_outer, m_inner;
+  /** \endcond */
 };
 
 } // namespace Bempp

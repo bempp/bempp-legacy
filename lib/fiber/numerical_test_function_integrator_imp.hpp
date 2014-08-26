@@ -35,110 +35,101 @@
 #include <stdexcept>
 #include <memory>
 
-namespace Fiber
-{
+namespace Fiber {
 
 template <typename BasisFunctionType, typename UserFunctionType,
           typename ResultType, typename GeometryFactory>
-NumericalTestFunctionIntegrator<
-BasisFunctionType, UserFunctionType, ResultType, GeometryFactory>::
-NumericalTestFunctionIntegrator(
-        const arma::Mat<CoordinateType>& localQuadPoints,
+NumericalTestFunctionIntegrator<BasisFunctionType, UserFunctionType, ResultType,
+                                GeometryFactory>::
+    NumericalTestFunctionIntegrator(
+        const arma::Mat<CoordinateType> &localQuadPoints,
         const std::vector<CoordinateType> quadWeights,
-        const GeometryFactory& geometryFactory,
-        const RawGridGeometry<CoordinateType>& rawGeometry,
-        const CollectionOfShapesetTransformations<CoordinateType>& testTransformations,
-        const Function<UserFunctionType>& function,
-        const OpenClHandler& openClHandler) :
-    m_localQuadPoints(localQuadPoints),
-    m_quadWeights(quadWeights),
-    m_geometryFactory(geometryFactory),
-    m_rawGeometry(rawGeometry),
-    m_testTransformations(testTransformations),
-    m_function(function),
-    m_openClHandler(openClHandler)
-{
-    if (localQuadPoints.n_cols != quadWeights.size())
-        throw std::invalid_argument("NumericalTestTrialIntegrator::"
-                                    "NumericalTestTrialIntegrator(): "
-                                    "numbers of points and weights do not match");
+        const GeometryFactory &geometryFactory,
+        const RawGridGeometry<CoordinateType> &rawGeometry,
+        const CollectionOfShapesetTransformations<CoordinateType> &
+            testTransformations,
+        const Function<UserFunctionType> &function,
+        const OpenClHandler &openClHandler)
+    : m_localQuadPoints(localQuadPoints), m_quadWeights(quadWeights),
+      m_geometryFactory(geometryFactory), m_rawGeometry(rawGeometry),
+      m_testTransformations(testTransformations), m_function(function),
+      m_openClHandler(openClHandler) {
+  if (localQuadPoints.n_cols != quadWeights.size())
+    throw std::invalid_argument("NumericalTestTrialIntegrator::"
+                                "NumericalTestTrialIntegrator(): "
+                                "numbers of points and weights do not match");
 
-    if (testTransformations.transformationCount() != 1)
-        throw std::invalid_argument("NumericalTestTrialIntegrator::"
-                                    "NumericalTestTrialIntegrator(): "
-                                    "test transformation collection "
-                                    "must contain exactly one element");
-
+  if (testTransformations.transformationCount() != 1)
+    throw std::invalid_argument("NumericalTestTrialIntegrator::"
+                                "NumericalTestTrialIntegrator(): "
+                                "test transformation collection "
+                                "must contain exactly one element");
 }
 
 template <typename BasisFunctionType, typename UserFunctionType,
           typename ResultType, typename GeometryFactory>
 void NumericalTestFunctionIntegrator<
-BasisFunctionType, UserFunctionType, ResultType, GeometryFactory>::
-integrate(
-        const std::vector<int>& elementIndices,
-        const Shapeset<BasisFunctionType>& testShapeset,
-        arma::Mat<ResultType>& result) const
-{
-    const size_t pointCount = m_localQuadPoints.n_cols;
-    const size_t elementCount = elementIndices.size();
+    BasisFunctionType, UserFunctionType, ResultType,
+    GeometryFactory>::integrate(const std::vector<int> &elementIndices,
+                                const Shapeset<BasisFunctionType> &testShapeset,
+                                arma::Mat<ResultType> &result) const {
+  const size_t pointCount = m_localQuadPoints.n_cols;
+  const size_t elementCount = elementIndices.size();
 
-    if (pointCount == 0 || elementCount == 0)
-        return;
-    // TODO: in the (pathological) case that pointCount == 0 but
-    // elementCount != 0, set elements of result to 0.
+  if (pointCount == 0 || elementCount == 0)
+    return;
+  // TODO: in the (pathological) case that pointCount == 0 but
+  // elementCount != 0, set elements of result to 0.
 
-    // Evaluate constants
-    const int componentCount = m_testTransformations.resultDimension(0);
-    const int testDofCount = testShapeset.size();
+  // Evaluate constants
+  const int componentCount = m_testTransformations.resultDimension(0);
+  const int testDofCount = testShapeset.size();
 
-    if (m_function.codomainDimension() != componentCount)
-        throw std::runtime_error("NumericalTestFunctionIntegrator::integrate(): "
-                                 "test functions and the \"arbitrary\" function "
-                                 "must have the same number of components");
+  if (m_function.codomainDimension() != componentCount)
+    throw std::runtime_error("NumericalTestFunctionIntegrator::integrate(): "
+                             "test functions and the \"arbitrary\" function "
+                             "must have the same number of components");
 
-    BasisData<BasisFunctionType> testBasisData;
-    GeometricalData<CoordinateType> geomData;
+  BasisData<BasisFunctionType> testBasisData;
+  GeometricalData<CoordinateType> geomData;
 
-    size_t testBasisDeps = 0;
-    size_t geomDeps = INTEGRATION_ELEMENTS;
+  size_t testBasisDeps = 0;
+  size_t geomDeps = INTEGRATION_ELEMENTS;
 
-    m_testTransformations.addDependencies(testBasisDeps, geomDeps);
-    m_function.addGeometricalDependencies(geomDeps);
+  m_testTransformations.addDependencies(testBasisDeps, geomDeps);
+  m_function.addGeometricalDependencies(geomDeps);
 
-    typedef typename GeometryFactory::Geometry Geometry;
-    std::unique_ptr<Geometry> geometry(m_geometryFactory.make());
+  typedef typename GeometryFactory::Geometry Geometry;
+  std::unique_ptr<Geometry> geometry(m_geometryFactory.make());
 
-    Fiber::CollectionOf3dArrays<BasisFunctionType> testValues;
-    arma::Mat<UserFunctionType> functionValues;
+  Fiber::CollectionOf3dArrays<BasisFunctionType> testValues;
+  arma::Mat<UserFunctionType> functionValues;
 
-    result.set_size(testDofCount, elementCount);
+  result.set_size(testDofCount, elementCount);
 
-    testShapeset.evaluate(testBasisDeps, m_localQuadPoints, ALL_DOFS, testBasisData);
+  testShapeset.evaluate(testBasisDeps, m_localQuadPoints, ALL_DOFS,
+                        testBasisData);
 
-    // Iterate over the elements
-    for (size_t e = 0; e < elementCount; ++e)
-    {
-        const int elementIndex = elementIndices[e];
-        m_rawGeometry.setupGeometry(elementIndex, *geometry);
-        geometry->getData(geomDeps, m_localQuadPoints, geomData);
-        if (geomDeps & DOMAIN_INDEX)
-            geomData.domainIndex = m_rawGeometry.domainIndex(elementIndex);
-        m_testTransformations.evaluate(testBasisData, geomData, testValues);
-        m_function.evaluate(geomData, functionValues);
+  // Iterate over the elements
+  for (size_t e = 0; e < elementCount; ++e) {
+    const int elementIndex = elementIndices[e];
+    m_rawGeometry.setupGeometry(elementIndex, *geometry);
+    geometry->getData(geomDeps, m_localQuadPoints, geomData);
+    if (geomDeps & DOMAIN_INDEX)
+      geomData.domainIndex = m_rawGeometry.domainIndex(elementIndex);
+    m_testTransformations.evaluate(testBasisData, geomData, testValues);
+    m_function.evaluate(geomData, functionValues);
 
-        for (int testDof = 0; testDof < testDofCount; ++testDof)
-        {
-            ResultType sum = 0.;
-            for (size_t point = 0; point < pointCount; ++point)
-                for (int dim = 0; dim < componentCount; ++dim)
-                    sum +=  m_quadWeights[point] *
-                            geomData.integrationElements(point) *
-                            conjugate(testValues[0](dim, testDof, point)) *
-                            functionValues(dim, point);
-            result(testDof, e) = sum;
-        }
+    for (int testDof = 0; testDof < testDofCount; ++testDof) {
+      ResultType sum = 0.;
+      for (size_t point = 0; point < pointCount; ++point)
+        for (int dim = 0; dim < componentCount; ++dim)
+          sum += m_quadWeights[point] * geomData.integrationElements(point) *
+                 conjugate(testValues[0](dim, testDof, point)) *
+                 functionValues(dim, point);
+      result(testDof, e) = sum;
     }
+  }
 }
 
 } // namespace Fiber

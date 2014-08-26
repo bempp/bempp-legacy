@@ -25,92 +25,87 @@
 #include "../fiber/explicit_instantiation.hpp"
 #include "../space/space.hpp"
 
-namespace Bempp
-{
+namespace Bempp {
 
 template <typename BasisFunctionType, typename ResultType>
 AssembledPotentialOperator<BasisFunctionType, ResultType>::
-AssembledPotentialOperator(
-        const shared_ptr<const Space<BasisFunctionType> >& space_,
-        const shared_ptr<const arma::Mat<CoordinateType> >& evaluationPoints_,
-        const shared_ptr<const DiscreteBoundaryOperator<ResultType> >& op_,
-        int componentCount_) :
-    m_space(space_), m_evaluationPoints(evaluationPoints_), m_op(op_),
-    m_componentCount(componentCount_)
-{
-    if (!m_op)
-        throw std::invalid_argument("AssembledPotentialOperator::"
-                                    "AssembledPotentialOperator(): "
-                                    "op_ must not be null");
-    if (m_componentCount < 1)
-        throw std::invalid_argument("AssembledPotentialOperator::"
-                                    "AssembledPotentialOperator(): "
-                                    "componentCount must be positive");
-    if (m_op->rowCount() % m_componentCount != 0)
-        throw std::invalid_argument("AssembledPotentialOperator::"
-                                    "AssembledPotentialOperator(): "
-                                    "incorrect number of rows in op_");
-    if (m_evaluationPoints &&
-        m_op->rowCount() != m_componentCount * m_evaluationPoints->n_cols)
-        throw std::invalid_argument("AssembledPotentialOperator::"
-                                    "AssembledPotentialOperator(): "
-                                    "incorrect number of rows in op_");
-    if (m_space && m_op->columnCount() != m_space->globalDofCount())
-        throw std::invalid_argument(
-            "AssembledPotentialOperator::AssembledPotentialOperator(): "
-            "number of columns of op_ must match the number of global DOFs "
-            "of space_");
-}
-
-
-template <typename BasisFunctionType, typename ResultType>
-shared_ptr<const Space<BasisFunctionType> >
-AssembledPotentialOperator<BasisFunctionType, ResultType>::space() const
-{
-    return m_space;
+    AssembledPotentialOperator(
+        const shared_ptr<const Space<BasisFunctionType>> &space_,
+        const shared_ptr<const arma::Mat<CoordinateType>> &evaluationPoints_,
+        const shared_ptr<const DiscreteBoundaryOperator<ResultType>> &op_,
+        int componentCount_)
+    : m_space(space_), m_evaluationPoints(evaluationPoints_), m_op(op_),
+      m_componentCount(componentCount_) {
+  if (!m_op)
+    throw std::invalid_argument("AssembledPotentialOperator::"
+                                "AssembledPotentialOperator(): "
+                                "op_ must not be null");
+  if (m_componentCount < 1)
+    throw std::invalid_argument("AssembledPotentialOperator::"
+                                "AssembledPotentialOperator(): "
+                                "componentCount must be positive");
+  if (m_op->rowCount() % m_componentCount != 0)
+    throw std::invalid_argument("AssembledPotentialOperator::"
+                                "AssembledPotentialOperator(): "
+                                "incorrect number of rows in op_");
+  if (m_evaluationPoints &&
+      m_op->rowCount() != m_componentCount * m_evaluationPoints->n_cols)
+    throw std::invalid_argument("AssembledPotentialOperator::"
+                                "AssembledPotentialOperator(): "
+                                "incorrect number of rows in op_");
+  if (m_space && m_op->columnCount() != m_space->globalDofCount())
+    throw std::invalid_argument(
+        "AssembledPotentialOperator::AssembledPotentialOperator(): "
+        "number of columns of op_ must match the number of global DOFs "
+        "of space_");
 }
 
 template <typename BasisFunctionType, typename ResultType>
-shared_ptr<const arma::Mat<typename
-AssembledPotentialOperator<BasisFunctionType, ResultType>::CoordinateType> >
-AssembledPotentialOperator<BasisFunctionType, ResultType>::evaluationPoints() const
-{
-    return m_evaluationPoints;
+shared_ptr<const Space<BasisFunctionType>>
+AssembledPotentialOperator<BasisFunctionType, ResultType>::space() const {
+  return m_space;
 }
 
 template <typename BasisFunctionType, typename ResultType>
-shared_ptr<const DiscreteBoundaryOperator<ResultType> >
-AssembledPotentialOperator<BasisFunctionType, ResultType>::discreteOperator() const
-{
-    return m_op;
+shared_ptr<const arma::Mat<typename AssembledPotentialOperator<
+    BasisFunctionType, ResultType>::CoordinateType>>
+AssembledPotentialOperator<BasisFunctionType, ResultType>::evaluationPoints()
+    const {
+  return m_evaluationPoints;
 }
 
 template <typename BasisFunctionType, typename ResultType>
-int
-AssembledPotentialOperator<BasisFunctionType, ResultType>::componentCount() const
-{
-    return m_componentCount;
+shared_ptr<const DiscreteBoundaryOperator<ResultType>>
+AssembledPotentialOperator<BasisFunctionType, ResultType>::discreteOperator()
+    const {
+  return m_op;
+}
+
+template <typename BasisFunctionType, typename ResultType>
+int AssembledPotentialOperator<BasisFunctionType, ResultType>::componentCount()
+    const {
+  return m_componentCount;
 }
 
 template <typename BasisFunctionType, typename ResultType>
 arma::Mat<ResultType>
 AssembledPotentialOperator<BasisFunctionType, ResultType>::apply(
-            const GridFunction<BasisFunctionType, ResultType>& argument) const
-{
-    if (m_space && argument.space() != m_space)
-        throw std::invalid_argument(
-            "AssembledPotentialOperator::apply(): "
-            "space used to expand 'argument' does not "
-            "match the one used during operator construction");
-    arma::Mat<ResultType> result(m_op->rowCount(), 1);
-    arma::Col<ResultType> colResult = result.unsafe_col(0);
-    const arma::Col<ResultType>& coeffs = argument.coefficients();
-    m_op->apply(NO_TRANSPOSE, coeffs, colResult, 1., 0.);
-    assert(result.n_rows % m_componentCount == 0);
-    result.reshape(m_componentCount, result.n_rows / m_componentCount);
-    return result;
+    const GridFunction<BasisFunctionType, ResultType> &argument) const {
+  if (m_space && argument.space() != m_space)
+    throw std::invalid_argument(
+        "AssembledPotentialOperator::apply(): "
+        "space used to expand 'argument' does not "
+        "match the one used during operator construction");
+  arma::Mat<ResultType> result(m_op->rowCount(), 1);
+  arma::Col<ResultType> colResult = result.unsafe_col(0);
+  const arma::Col<ResultType> &coeffs = argument.coefficients();
+  m_op->apply(NO_TRANSPOSE, coeffs, colResult, 1., 0.);
+  assert(result.n_rows % m_componentCount == 0);
+  result.reshape(m_componentCount, result.n_rows / m_componentCount);
+  return result;
 }
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(AssembledPotentialOperator);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(
+    AssembledPotentialOperator);
 
 } // namespace Bempp

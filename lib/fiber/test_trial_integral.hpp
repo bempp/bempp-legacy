@@ -26,8 +26,7 @@
 
 #include "scalar_traits.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \cond FORWARD_DECL */
 template <typename T> class CollectionOf3dArrays;
@@ -35,24 +34,22 @@ template <typename CoordinateType> class GeometricalData;
 /** \endcond */
 
 template <typename BasisFunctionType_, typename ResultType_>
-class TestTrialIntegral
-{
+class TestTrialIntegral {
 public:
-    typedef BasisFunctionType_ BasisFunctionType;
-    typedef ResultType_ ResultType;
-    typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
+  typedef BasisFunctionType_ BasisFunctionType;
+  typedef ResultType_ ResultType;
+  typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
 
-    virtual ~TestTrialIntegral()
-    {}
+  virtual ~TestTrialIntegral() {}
 
-    virtual void addGeometricalDependencies(size_t& geomDeps) const = 0;
+  virtual void addGeometricalDependencies(size_t &geomDeps) const = 0;
 
-    virtual void evaluate(
-            const GeometricalData<CoordinateType>& geomData,
-            const CollectionOf3dArrays<BasisFunctionType>& testValues,
-            const CollectionOf3dArrays<BasisFunctionType>& trialValues,
-            const std::vector<CoordinateType>& weights,
-            arma::Mat<ResultType>& result) const = 0;
+  virtual void
+  evaluate(const GeometricalData<CoordinateType> &geomData,
+           const CollectionOf3dArrays<BasisFunctionType> &testValues,
+           const CollectionOf3dArrays<BasisFunctionType> &trialValues,
+           const std::vector<CoordinateType> &weights,
+           arma::Mat<ResultType> &result) const = 0;
 };
 
 } // namespace Fiber

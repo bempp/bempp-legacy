@@ -31,13 +31,13 @@
 #include <boost/weak_ptr.hpp>
 #include <string>
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \cond FORWARD_DECL */
 template <typename BasisFunctionType> class Space;
 template <typename ResultType> class DiscreteBoundaryOperator;
-template <typename BasisFunctionType, typename ResultType> class AbstractBoundaryOperator;
+template <typename BasisFunctionType, typename ResultType>
+class AbstractBoundaryOperator;
 template <typename BasisFunctionType, typename ResultType> class Context;
 template <typename BasisFunctionType, typename ResultType> class GridFunction;
 /** \endcond */
@@ -60,183 +60,183 @@ template <typename BasisFunctionType, typename ResultType> class GridFunction;
  *  See the documentation of AbstractBoundaryOperator for the decription of the
  *  template parameters \p BasisFunctionType and \p ResultType. */
 template <typename BasisFunctionType, typename ResultType>
-class BoundaryOperator
-{
+class BoundaryOperator {
 public:
-    /** \brief Construct an uninitialized BoundaryOperator. */
-    BoundaryOperator();
+  /** \brief Construct an uninitialized BoundaryOperator. */
+  BoundaryOperator();
 
-    /** \brief Construct and initialize a BoundaryOperator.
-     *
-     *  Equivalent to calling the initialize() function on a BoundaryOperator
-     *  object created with the default constructor. See the documentation of
-     *  initialize() for a description of the constructor's parameters.
-     *
-     *  \note User code should not need to invoke this constructor directly; it
-     *  is more convenient to use non-member constructors supplied with
-     *  particular AbstractBoundaryOperator subclasses
-     *  (e.g. laplace3dSingleLayerBoundaryOperator(), identityOperator(),
-     *  pseudoinverse() etc.), which construct an AbstractBoundaryOperator and
-     *  wrap it in a BoundaryOperator in a single step.
-     */
-    BoundaryOperator(const shared_ptr<const Context<
-                     BasisFunctionType, ResultType> >& context,
-                     const shared_ptr<const AbstractBoundaryOperator<
-                     BasisFunctionType, ResultType> >& abstractOp);
+  /** \brief Construct and initialize a BoundaryOperator.
+   *
+   *  Equivalent to calling the initialize() function on a BoundaryOperator
+   *  object created with the default constructor. See the documentation of
+   *  initialize() for a description of the constructor's parameters.
+   *
+   *  \note User code should not need to invoke this constructor directly; it
+   *  is more convenient to use non-member constructors supplied with
+   *  particular AbstractBoundaryOperator subclasses
+   *  (e.g. laplace3dSingleLayerBoundaryOperator(), identityOperator(),
+   *  pseudoinverse() etc.), which construct an AbstractBoundaryOperator and
+   *  wrap it in a BoundaryOperator in a single step.
+   */
+  BoundaryOperator(
+      const shared_ptr<const Context<BasisFunctionType, ResultType>> &context,
+      const shared_ptr<const AbstractBoundaryOperator<BasisFunctionType,
+                                                      ResultType>> &abstractOp);
 
-    /** \brief Initialize or reinitialize a BoundaryOperator.
-     *
-     *  \param[in] context
-     *    Shared pointer to a Context object that will be used
-     *    to build the weak form of \p abstractOp when necessary.
-     *  \param[in] abstractOp
-     *    Shared pointer to an AbstractBoundaryOperator that will be
-     *    encapsulated in this BoundaryOperator.
-     *
-     *  An exception is thrown if either of these pointers is NULL.
-     *
-     *  The provided shared pointers are stored in internal variables. In
-     *  addition, any stored pointer to the weak form of the abstract boundary
-     *  operator is invalidated. */
-    void initialize(const shared_ptr<const Context<
-                    BasisFunctionType, ResultType> >& context,
-                    const shared_ptr<const AbstractBoundaryOperator<
-                    BasisFunctionType, ResultType> >& abstractOp);
+  /** \brief Initialize or reinitialize a BoundaryOperator.
+   *
+   *  \param[in] context
+   *    Shared pointer to a Context object that will be used
+   *    to build the weak form of \p abstractOp when necessary.
+   *  \param[in] abstractOp
+   *    Shared pointer to an AbstractBoundaryOperator that will be
+   *    encapsulated in this BoundaryOperator.
+   *
+   *  An exception is thrown if either of these pointers is NULL.
+   *
+   *  The provided shared pointers are stored in internal variables. In
+   *  addition, any stored pointer to the weak form of the abstract boundary
+   *  operator is invalidated. */
+  void initialize(
+      const shared_ptr<const Context<BasisFunctionType, ResultType>> &context,
+      const shared_ptr<const AbstractBoundaryOperator<BasisFunctionType,
+                                                      ResultType>> &abstractOp);
 
-    /** \brief Uninitialize the BoundaryOperator.
-     *
-     *  This function resets the internal shared pointers to the abstract
-     *  boundary operator and its weak form to NULL. */
-    void uninitialize();
+  /** \brief Uninitialize the BoundaryOperator.
+   *
+   *  This function resets the internal shared pointers to the abstract
+   *  boundary operator and its weak form to NULL. */
+  void uninitialize();
 
-    /** \brief Return true if the BoundaryOperator has been initialized, false
-     *  otherwise. */
-    bool isInitialized() const;
+  /** \brief Return true if the BoundaryOperator has been initialized, false
+   *  otherwise. */
+  bool isInitialized() const;
 
-    /** \brief Return a shared pointer to the encapsulated abstract boundary
-     *  operator. */
-    shared_ptr<const AbstractBoundaryOperator<BasisFunctionType, ResultType> >
-    abstractOperator() const;
+  /** \brief Return a shared pointer to the encapsulated abstract boundary
+   *  operator. */
+  shared_ptr<const AbstractBoundaryOperator<BasisFunctionType, ResultType>>
+  abstractOperator() const;
 
-    /** \brief Return a shared pointer to the stored Context object. */
-    shared_ptr<const Context<BasisFunctionType, ResultType> > context() const;
+  /** \brief Return a shared pointer to the stored Context object. */
+  shared_ptr<const Context<BasisFunctionType, ResultType>> context() const;
 
-    /** \brief Return a shared pointer to the weak form of the encapsulated
-     *  abstract boundary operator.
-     *
-     *  An exception is thrown if this function is called on an uninitialized
-     *  BoundaryOperator. */
-    shared_ptr<const DiscreteBoundaryOperator<ResultType> > weakForm() const;
+  /** \brief Return a shared pointer to the weak form of the encapsulated
+   *  abstract boundary operator.
+   *
+   *  An exception is thrown if this function is called on an uninitialized
+   *  BoundaryOperator. */
+  shared_ptr<const DiscreteBoundaryOperator<ResultType>> weakForm() const;
 
-    /** \brief Return a shared pointer to the domain of the encapsulated
-     *  abstract boundary operator.
-     *
-     *  A null pointer is returned if this function is called on an
-     *  uninitialized BoundaryOperator. */
-    shared_ptr<const Space<BasisFunctionType> > domain() const;
+  /** \brief Return a shared pointer to the domain of the encapsulated
+   *  abstract boundary operator.
+   *
+   *  A null pointer is returned if this function is called on an
+   *  uninitialized BoundaryOperator. */
+  shared_ptr<const Space<BasisFunctionType>> domain() const;
 
-    /** \brief Return a shared pointer to the range of the encapsulated abstract
-     *  boundary operator.
-     *
-     *  A null pointer is returned if this function is called on an
-     *  uninitialized BoundaryOperator. */
-    shared_ptr<const Space<BasisFunctionType> > range() const;
+  /** \brief Return a shared pointer to the range of the encapsulated abstract
+   *  boundary operator.
+   *
+   *  A null pointer is returned if this function is called on an
+   *  uninitialized BoundaryOperator. */
+  shared_ptr<const Space<BasisFunctionType>> range() const;
 
-    /** \brief Return a shared pointer to the space dual to the range of the
-     *  encapsulated abstract boundary operator.
-     *
-     *  A null pointer is returned if this function is called on an
-     *  uninitialized BoundaryOperator. */
-    shared_ptr<const Space<BasisFunctionType> > dualToRange() const;
+  /** \brief Return a shared pointer to the space dual to the range of the
+   *  encapsulated abstract boundary operator.
+   *
+   *  A null pointer is returned if this function is called on an
+   *  uninitialized BoundaryOperator. */
+  shared_ptr<const Space<BasisFunctionType>> dualToRange() const;
 
-    /** \brief Return the label of this BoundaryOperator. */
-    std::string label() const;
+  /** \brief Return the label of this BoundaryOperator. */
+  std::string label() const;
 
-    /** \brief Return true if the BoundaryOperator should prevent its weak form
-     *  from being destroyed.
-     *
-     *  If isWeakFormHeld() returns true, the BoundaryOperator stores a
-     *  "strong" shared pointer to its discrete weak form once it is assembled
-     *  for the first time, so that the weak form is held in memory at least as
-     *  long as the BoundaryOperator object is in scope and its uninitialize()
-     *  member function is not called.
-     *
-     *  Otherwise only a weak pointer to the weak form is stored; thus, the
-     *  weak form remains in memory only as long as a shared pointer to it is
-     *  held somewhere else in the program.
-     *
-     *  By default, isWeakFormHeld() returns true; call holdWeakForm(false) to
-     *  change it. */
-    bool isWeakFormHeld() const;
+  /** \brief Return true if the BoundaryOperator should prevent its weak form
+   *  from being destroyed.
+   *
+   *  If isWeakFormHeld() returns true, the BoundaryOperator stores a
+   *  "strong" shared pointer to its discrete weak form once it is assembled
+   *  for the first time, so that the weak form is held in memory at least as
+   *  long as the BoundaryOperator object is in scope and its uninitialize()
+   *  member function is not called.
+   *
+   *  Otherwise only a weak pointer to the weak form is stored; thus, the
+   *  weak form remains in memory only as long as a shared pointer to it is
+   *  held somewhere else in the program.
+   *
+   *  By default, isWeakFormHeld() returns true; call holdWeakForm(false) to
+   *  change it. */
+  bool isWeakFormHeld() const;
 
-    /** \brief Specify whether the BoundaryOperator should prevent its weak form
-     *  from being destroyed.
-     *
-     *  See isWeakFormHeld() for more information. */
-    void holdWeakForm(bool value);
+  /** \brief Specify whether the BoundaryOperator should prevent its weak form
+   *  from being destroyed.
+   *
+   *  See isWeakFormHeld() for more information. */
+  void holdWeakForm(bool value);
 
-    /** \brief Act on a GridFunction.
-     *
-     *  This function sets \p y_inout to <tt>alpha * A * x_in + beta *
-     *  y_inout</tt>, where \c A is the operator represented by this object.
-     *
-     *  The space of \p x_in must be identical with the domain of the
-     *  encapsulated abstract boundary operator, whereas the space of \p y_inout
-     *  and its dual must be identical with the range of the encapsulated
-     *  abstract boundary operator and its dual; otherwise an exception is
-     *  thrown. An exception is also thrown if the BoundaryOperator is
-     *  uninitialized. */
-    void apply(const TranspositionMode trans,
-               const GridFunction<BasisFunctionType, ResultType>& x_in,
-               GridFunction<BasisFunctionType, ResultType>& y_inout,
-               ResultType alpha, ResultType beta) const;
+  /** \brief Act on a GridFunction.
+   *
+   *  This function sets \p y_inout to <tt>alpha * A * x_in + beta *
+   *  y_inout</tt>, where \c A is the operator represented by this object.
+   *
+   *  The space of \p x_in must be identical with the domain of the
+   *  encapsulated abstract boundary operator, whereas the space of \p y_inout
+   *  and its dual must be identical with the range of the encapsulated
+   *  abstract boundary operator and its dual; otherwise an exception is
+   *  thrown. An exception is also thrown if the BoundaryOperator is
+   *  uninitialized. */
+  void apply(const TranspositionMode trans,
+             const GridFunction<BasisFunctionType, ResultType> &x_in,
+             GridFunction<BasisFunctionType, ResultType> &y_inout,
+             ResultType alpha, ResultType beta) const;
 
 private:
-    /** \cond PRIVATE */
-    shared_ptr<const Context<BasisFunctionType, ResultType> > m_context;
-    shared_ptr<const AbstractBoundaryOperator<BasisFunctionType, ResultType> >
-    m_abstractOp;
-    bool m_holdWeakForm;
-    typedef shared_ptr<const DiscreteBoundaryOperator<ResultType> >
-        ConstWeakFormContainer;
-    mutable shared_ptr<ConstWeakFormContainer> m_weakFormContainer;
-    typedef boost::weak_ptr<const DiscreteBoundaryOperator<ResultType> >
-        WeakConstWeakFormContainer;
-    mutable shared_ptr<WeakConstWeakFormContainer> m_weakWeakFormContainer;
-    /** \endcond */
+  /** \cond PRIVATE */
+  shared_ptr<const Context<BasisFunctionType, ResultType>> m_context;
+  shared_ptr<const AbstractBoundaryOperator<BasisFunctionType, ResultType>>
+  m_abstractOp;
+  bool m_holdWeakForm;
+  typedef shared_ptr<const DiscreteBoundaryOperator<ResultType>>
+  ConstWeakFormContainer;
+  mutable shared_ptr<ConstWeakFormContainer> m_weakFormContainer;
+  typedef boost::weak_ptr<const DiscreteBoundaryOperator<ResultType>>
+  WeakConstWeakFormContainer;
+  mutable shared_ptr<WeakConstWeakFormContainer> m_weakWeakFormContainer;
+  /** \endcond */
 };
 
 /** \relates BoundaryOperator
  *  \brief Return a BoundaryOperator identical to the operand. */
 template <typename BasisFunctionType, typename ResultType>
-BoundaryOperator<BasisFunctionType, ResultType> operator+(
-        const BoundaryOperator<BasisFunctionType, ResultType>& op);
+BoundaryOperator<BasisFunctionType, ResultType>
+operator+(const BoundaryOperator<BasisFunctionType, ResultType> &op);
 
 /** \relates BoundaryOperator
  *  \brief Return a BoundaryOperator equal to the operand multiplied by -1.
  *
  * An exception is thrown if either of the operands is uninitialized. */
 template <typename BasisFunctionType, typename ResultType>
-BoundaryOperator<BasisFunctionType, ResultType> operator-(
-        const BoundaryOperator<BasisFunctionType, ResultType>& op);
+BoundaryOperator<BasisFunctionType, ResultType>
+operator-(const BoundaryOperator<BasisFunctionType, ResultType> &op);
 
 /** \relates BoundaryOperator
  *  \brief Return a BoundaryOperator representing the sum of the operands.
  *
  * An exception is thrown if either of the operands is uninitialized. */
 template <typename BasisFunctionType, typename ResultType>
-BoundaryOperator<BasisFunctionType, ResultType> operator+(
-        const BoundaryOperator<BasisFunctionType, ResultType>& op1,
-        const BoundaryOperator<BasisFunctionType, ResultType>& op2);
+BoundaryOperator<BasisFunctionType, ResultType>
+operator+(const BoundaryOperator<BasisFunctionType, ResultType> &op1,
+          const BoundaryOperator<BasisFunctionType, ResultType> &op2);
 
 /** \relates BoundaryOperator
- *  \brief Return a BoundaryOperator representing the difference of the operands.
+ *  \brief Return a BoundaryOperator representing the difference of the
+ *operands.
  *
  *  if either of the operands is uninitialized. */
 template <typename BasisFunctionType, typename ResultType>
-BoundaryOperator<BasisFunctionType, ResultType> operator-(
-        const BoundaryOperator<BasisFunctionType, ResultType>& op1,
-        const BoundaryOperator<BasisFunctionType, ResultType>& op2);
+BoundaryOperator<BasisFunctionType, ResultType>
+operator-(const BoundaryOperator<BasisFunctionType, ResultType> &op1,
+          const BoundaryOperator<BasisFunctionType, ResultType> &op2);
 
 // This type machinery is needed to disambiguate between this operator and
 // the one taking a BoundaryOperator and a GridFunction
@@ -248,12 +248,12 @@ BoundaryOperator<BasisFunctionType, ResultType> operator-(
 template <typename BasisFunctionType, typename ResultType, typename ScalarType>
 typename boost::enable_if<
     typename boost::mpl::has_key<
-        boost::mpl::set<float, double, std::complex<float>, std::complex<double> >,
+        boost::mpl::set<float, double, std::complex<float>,
+                        std::complex<double>>,
         ScalarType>,
-    BoundaryOperator<BasisFunctionType, ResultType> >::type
-operator*(
-        const BoundaryOperator<BasisFunctionType, ResultType>& op,
-        const ScalarType& scalar);
+    BoundaryOperator<BasisFunctionType, ResultType>>::type
+operator*(const BoundaryOperator<BasisFunctionType, ResultType> &op,
+          const ScalarType &scalar);
 
 /** \relates BoundaryOperator
  *  \brief Return a BoundaryOperator representing the operator \p op multiplied
@@ -261,9 +261,9 @@ operator*(
  *
  * An exception is thrown if \p op is uninitialized. */
 template <typename BasisFunctionType, typename ResultType, typename ScalarType>
-BoundaryOperator<BasisFunctionType, ResultType> operator*(
-        const ScalarType& scalar,
-        const BoundaryOperator<BasisFunctionType, ResultType>& op);
+BoundaryOperator<BasisFunctionType, ResultType>
+operator*(const ScalarType &scalar,
+          const BoundaryOperator<BasisFunctionType, ResultType> &op);
 
 /** \relates BoundaryOperator
  *  \brief Return a BoundaryOperator representing the operator \p op divided
@@ -271,9 +271,9 @@ BoundaryOperator<BasisFunctionType, ResultType> operator*(
  *
  * \note \p scalar must not be zero. */
 template <typename BasisFunctionType, typename ResultType, typename ScalarType>
-BoundaryOperator<BasisFunctionType, ResultType> operator/(
-        const BoundaryOperator<BasisFunctionType, ResultType>& op,
-        const ScalarType& scalar);
+BoundaryOperator<BasisFunctionType, ResultType>
+operator/(const BoundaryOperator<BasisFunctionType, ResultType> &op,
+          const ScalarType &scalar);
 
 /** \relates BoundaryOperator
  *  \brief Act with a BoundaryOperator on a GridFunction.
@@ -287,9 +287,9 @@ BoundaryOperator<BasisFunctionType, ResultType> operator/(
  *  on GridFunction \p result with space and dual space compatible with
  *  the range and dual to range of \p op. */
 template <typename BasisFunctionType, typename ResultType>
-GridFunction<BasisFunctionType, ResultType> operator*(
-        const BoundaryOperator<BasisFunctionType, ResultType>& op,
-        const GridFunction<BasisFunctionType, ResultType>& fun);
+GridFunction<BasisFunctionType, ResultType>
+operator*(const BoundaryOperator<BasisFunctionType, ResultType> &op,
+          const GridFunction<BasisFunctionType, ResultType> &fun);
 
 /** \relates BoundaryOperator
  *  \brief Return a BoundaryOperator representing the product of the operands
@@ -297,9 +297,9 @@ GridFunction<BasisFunctionType, ResultType> operator*(
  *
  *  An exception is thrown if any of the operands is uninitialized. */
 template <typename BasisFunctionType, typename ResultType>
-BoundaryOperator<BasisFunctionType, ResultType> operator*(
-        const BoundaryOperator<BasisFunctionType, ResultType>& op1,
-        const BoundaryOperator<BasisFunctionType, ResultType>& op2);
+BoundaryOperator<BasisFunctionType, ResultType>
+operator*(const BoundaryOperator<BasisFunctionType, ResultType> &op1,
+          const BoundaryOperator<BasisFunctionType, ResultType> &op2);
 
 /** \relates BoundaryOperator
  *  \brief Return the adjoint of a BoundaryOperator.
@@ -313,8 +313,8 @@ BoundaryOperator<BasisFunctionType, ResultType> operator*(
  *  for real BasisFunctionType.
  */
 template <typename BasisFunctionType, typename ResultType>
-BoundaryOperator<BasisFunctionType, ResultType> adjoint(
-        const BoundaryOperator<BasisFunctionType, ResultType>& op);
+BoundaryOperator<BasisFunctionType, ResultType>
+adjoint(const BoundaryOperator<BasisFunctionType, ResultType> &op);
 
 /** \relates BoundaryOperator
  *  \brief Return the adjoint of a BoundaryOperator.
@@ -327,9 +327,9 @@ BoundaryOperator<BasisFunctionType, ResultType> adjoint(
  *  for real BasisFunctionType.
  */
 template <typename BasisFunctionType, typename ResultType>
-BoundaryOperator<BasisFunctionType, ResultType> adjoint(
-    const BoundaryOperator<BasisFunctionType, ResultType>& op,
-        const shared_ptr<const Space<BasisFunctionType> >& range);
+BoundaryOperator<BasisFunctionType, ResultType>
+adjoint(const BoundaryOperator<BasisFunctionType, ResultType> &op,
+        const shared_ptr<const Space<BasisFunctionType>> &range);
 
 /** \relates BoundaryOperator
  *  \brief Check whether a BoundaryOperator object is initialized.
@@ -339,17 +339,17 @@ BoundaryOperator<BasisFunctionType, ResultType> adjoint(
  *  <tt>std::invalid_argument</tt> exception with message \p message (or a
  *  default message if \p message is left empty). */
 template <typename BasisFunctionType, typename ResultType>
-BoundaryOperator<BasisFunctionType, ResultType>& throwIfUninitialized(
-        BoundaryOperator<BasisFunctionType, ResultType>& op,
-        std::string message = "");
+BoundaryOperator<BasisFunctionType, ResultType> &
+throwIfUninitialized(BoundaryOperator<BasisFunctionType, ResultType> &op,
+                     std::string message = "");
 
 /** \relates BoundaryOperator
  *
  *  \overload */
 template <typename BasisFunctionType, typename ResultType>
-const BoundaryOperator<BasisFunctionType, ResultType>& throwIfUninitialized(
-        const BoundaryOperator<BasisFunctionType, ResultType>& op,
-        std::string message = "");
+const BoundaryOperator<BasisFunctionType, ResultType> &
+throwIfUninitialized(const BoundaryOperator<BasisFunctionType, ResultType> &op,
+                     std::string message = "");
 
 } // namespace Bempp
 

@@ -29,55 +29,58 @@
 
 #include <cassert>
 
-namespace Fiber
-{
+namespace Fiber {
 
 template <typename BasisFunctionType_, typename KernelType_,
           typename ResultType_>
-class ModifiedMaxwell3dDoubleLayerBoundaryOperatorIntegrandFunctor
-{
+class ModifiedMaxwell3dDoubleLayerBoundaryOperatorIntegrandFunctor {
 public:
-    typedef BasisFunctionType_ BasisFunctionType;
-    typedef KernelType_ KernelType;
-    typedef ResultType_ ResultType;
-    typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
+  typedef BasisFunctionType_ BasisFunctionType;
+  typedef KernelType_ KernelType;
+  typedef ResultType_ ResultType;
+  typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
 
-    void addGeometricalDependencies(size_t& testGeomDeps, size_t& trialGeomDeps) const {
-        // Do nothing
-    }
+  void addGeometricalDependencies(size_t &testGeomDeps,
+                                  size_t &trialGeomDeps) const {
+    // Do nothing
+  }
 
-    template <template <typename T> class CollectionOf2dSlicesOfConstNdArrays>
-    ResultType evaluate(
-            const ConstGeometricalDataSlice<CoordinateType>& testGeomData,
-            const ConstGeometricalDataSlice<CoordinateType>& trialGeomData,
-            const CollectionOf1dSlicesOfConst3dArrays<BasisFunctionType>& testTransfValues,
-            const CollectionOf1dSlicesOfConst3dArrays<BasisFunctionType>& trialTransfValues,
-            const CollectionOf2dSlicesOfConstNdArrays<KernelType>& kernelValues) const {
-#       ifndef NDEBUG
-        const int dimWorld = 3;
-#       endif
+  template <template <typename T> class CollectionOf2dSlicesOfConstNdArrays>
+  ResultType
+  evaluate(const ConstGeometricalDataSlice<CoordinateType> &testGeomData,
+           const ConstGeometricalDataSlice<CoordinateType> &trialGeomData,
+           const CollectionOf1dSlicesOfConst3dArrays<BasisFunctionType> &
+               testTransfValues,
+           const CollectionOf1dSlicesOfConst3dArrays<BasisFunctionType> &
+               trialTransfValues,
+           const CollectionOf2dSlicesOfConstNdArrays<KernelType> &kernelValues)
+      const {
+#ifndef NDEBUG
+    const int dimWorld = 3;
+#endif
 
-        // Assert that there are is at least one vector-valued kernel
-        assert(kernelValues.size() >= 1);
-        assert(kernelValues[0].extent(0) == 3);
-        assert(kernelValues[0].extent(1) == 1);
+    // Assert that there are is at least one vector-valued kernel
+    assert(kernelValues.size() >= 1);
+    assert(kernelValues[0].extent(0) == 3);
+    assert(kernelValues[0].extent(1) == 1);
 
-        // Assert that there is at least one test and trial transformation
-        // of correct dimensions
-        assert(testTransfValues.size() >= 1);
-        assert(trialTransfValues.size() >= 1);
-        _1dSliceOfConst3dArray<BasisFunctionType> testValues = testTransfValues[0];
-        _1dSliceOfConst3dArray<BasisFunctionType> trialValues = trialTransfValues[0];
-        assert(testValues.extent(0) == dimWorld);
-        assert(trialValues.extent(0) == dimWorld);
+    // Assert that there is at least one test and trial transformation
+    // of correct dimensions
+    assert(testTransfValues.size() >= 1);
+    assert(trialTransfValues.size() >= 1);
+    _1dSliceOfConst3dArray<BasisFunctionType> testValues = testTransfValues[0];
+    _1dSliceOfConst3dArray<BasisFunctionType> trialValues =
+        trialTransfValues[0];
+    assert(testValues.extent(0) == dimWorld);
+    assert(trialValues.extent(0) == dimWorld);
 
-        return kernelValues[0](0, 0) * (conjugate(testValues(1)) * trialValues(2) -
-                                        conjugate(testValues(2)) * trialValues(1)) +
-            kernelValues[0](1, 0) * (conjugate(testValues(2)) * trialValues(0) -
-                                     conjugate(testValues(0)) * trialValues(2)) +
-            kernelValues[0](2, 0) * (conjugate(testValues(0)) * trialValues(1) -
-                                     conjugate(testValues(1)) * trialValues(0));
-    }
+    return kernelValues[0](0, 0) * (conjugate(testValues(1)) * trialValues(2) -
+                                    conjugate(testValues(2)) * trialValues(1)) +
+           kernelValues[0](1, 0) * (conjugate(testValues(2)) * trialValues(0) -
+                                    conjugate(testValues(0)) * trialValues(2)) +
+           kernelValues[0](2, 0) * (conjugate(testValues(0)) * trialValues(1) -
+                                    conjugate(testValues(1)) * trialValues(0));
+  }
 };
 
 } // namespace Fiber

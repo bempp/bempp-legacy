@@ -29,24 +29,22 @@
 #include <vector>
 #include <stdexcept>
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \brief Local assembler for grid functions.
 
   This assembler provides methods that evaluate local (element-by-element) weak
   forms of integrals occurring in boundary-element matrices of grid functions.
  */
-template <typename ResultType>
-class LocalAssemblerForGridFunctions
-{
+template <typename ResultType> class LocalAssemblerForGridFunctions {
 public:
-    virtual ~LocalAssemblerForGridFunctions() {}
+  virtual ~LocalAssemblerForGridFunctions() {}
 
-    /** \brief Assemble local weak forms of a source term on specified elements. */
-    virtual void evaluateLocalWeakForms(
-            const std::vector<int>& elementIndices,
-            std::vector<arma::Col<ResultType> >& result) = 0;
+  /** \brief Assemble local weak forms of a source term on specified elements.
+   */
+  virtual void
+  evaluateLocalWeakForms(const std::vector<int> &elementIndices,
+                         std::vector<arma::Col<ResultType>> &result) = 0;
 };
 
 } // namespace Fiber

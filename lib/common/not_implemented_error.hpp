@@ -24,27 +24,20 @@
 #include <string>
 #include <exception>
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \ingroup common
  *  \brief Exception thrown on attempt to access an unimplemented feature. */
-class NotImplementedError : public std::exception
-{
+class NotImplementedError : public std::exception {
 public:
-    NotImplementedError(const std::string& msg) :
-        m_msg(msg) {
-    }
+  NotImplementedError(const std::string &msg) : m_msg(msg) {}
 
-    virtual ~NotImplementedError() throw() {
-    }
+  virtual ~NotImplementedError() throw() {}
 
-    virtual const char* what() const throw() {
-        return m_msg.c_str();
-    }
+  virtual const char *what() const throw() { return m_msg.c_str(); }
 
 private:
-    std::string m_msg;
+  std::string m_msg;
 };
 
 } // namespace Bempp

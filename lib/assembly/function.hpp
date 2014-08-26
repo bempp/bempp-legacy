@@ -25,8 +25,7 @@
 
 #include "../fiber/function.hpp"
 
-namespace Bempp
-{
+namespace Bempp {
 
 using Fiber::Function;
 

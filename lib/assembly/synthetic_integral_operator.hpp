@@ -28,8 +28,7 @@
 
 #include "../common/shared_ptr.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \cond FORWARD_DECL */
 template <typename ResultType> class LocalAssemblerForOperators;
@@ -37,8 +36,7 @@ template <typename ResultType> class LocalAssemblerForOperators;
 
 } // namespace Fiber
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \ingroup abstract_boundary_operators
  *  \brief Integral operator with weak form assembled from several pieces.
@@ -68,19 +66,24 @@ namespace Bempp
  *  V\f$ for all \f$\alpha\f$, the matrix \f$A\f$ can be rewritten as
  *
  *  \f[
- *      A = \sum_\alpha U_\alpha I_{\mathcal U}^{-1} K_\alpha I_{\mathcal V}^{-1}
+ *      A = \sum_\alpha U_\alpha I_{\mathcal U}^{-1} K_\alpha I_{\mathcal
+ *V}^{-1}
  *          V_\alpha,
  *  \f]
  *
  *  with the entries of the individual matrices given by
  *
  *  \f{align*}{
- *      (U_{\alpha})_{mn} &= \int_\Gamma f_{\alpha m}^*(x)\,u_n(x) \,\mathrm{d}\Gamma(x),\\
- *      (I_{\mathcal U})_{mn} &= \int_\Gamma u_m^*(x)\,u_n(x) \,\mathrm{d}\Gamma(x),\\
+ *      (U_{\alpha})_{mn} &= \int_\Gamma f_{\alpha m}^*(x)\,u_n(x)
+ *\,\mathrm{d}\Gamma(x),\\
+ *      (I_{\mathcal U})_{mn} &= \int_\Gamma u_m^*(x)\,u_n(x)
+ *\,\mathrm{d}\Gamma(x),\\
  *      K_{\alpha mn} &= \int_\Gamma \int_\Sigma u_m^*(x)\,K(x,y)\,v_n(y)
  *          \,\mathrm{d}\Gamma(x)\,\mathrm{d}\Sigma(y),\\
- *      (I_{\mathcal V})_{mn} &= \int_\Sigma v_m^*(y)\,v_n(y) \,\mathrm{d}\Sigma(y),\\
- *      V_{\alpha mn} &= \int_\Sigma v_m^*(y)\,g_{\alpha n}(x) \,\mathrm{d}\Sigma(y).
+ *      (I_{\mathcal V})_{mn} &= \int_\Sigma v_m^*(y)\,v_n(y)
+ *\,\mathrm{d}\Sigma(y),\\
+ *      V_{\alpha mn} &= \int_\Sigma v_m^*(y)\,g_{\alpha n}(x)
+ *\,\mathrm{d}\Sigma(y).
  *  \f}
  *
  *  All these matrices except \f$K_\alpha\f$ are sparse, and ACA-based assembly
@@ -90,7 +93,8 @@ namespace Bempp
  *  element pairs.
  *
  *  In the current implementation we only handle the case of equal
- *  \f$K_\alpha\f$, i.e. \f$K_\alpha = K\f$ for all \f$\alpha\f$. In addition, we
+ *  \f$K_\alpha\f$, i.e. \f$K_\alpha = K\f$ for all \f$\alpha\f$. In addition,
+ *we
  *  coalesce \f$U_{\alpha} I_{\mathcal U}^{-1}\f$ and \f$I_{\mathcal V}^{-1}
  *  V_{\alpha}\f$ into single sparse matrices.
  *
@@ -99,78 +103,82 @@ namespace Bempp
  *  Workshop on Fast Boundary Element Methods in Industrial Applications,
  *  Soellerhaus 27-30 September 2012. */
 template <typename BasisFunctionType_, typename ResultType_>
-class SyntheticIntegralOperator :
-        public AbstractBoundaryOperator<BasisFunctionType_, ResultType_>
-{
-    typedef AbstractBoundaryOperator<BasisFunctionType_, ResultType_> Base;
+class SyntheticIntegralOperator
+    : public AbstractBoundaryOperator<BasisFunctionType_, ResultType_> {
+  typedef AbstractBoundaryOperator<BasisFunctionType_, ResultType_> Base;
+
 public:
-    /** \copydoc AbstractBoundaryOperator::BasisFunctionType */
-    typedef typename Base::BasisFunctionType BasisFunctionType;
-    /** \copydoc AbstractBoundaryOperator::ResultType */
-    typedef typename Base::ResultType ResultType;
-    /** \copydoc AbstractBoundaryOperator::CoordinateType */
-    typedef typename Base::CoordinateType CoordinateType;
-    /** \copydoc AbstractBoundaryOperator::QuadratureStrategy */
-    typedef typename Base::QuadratureStrategy QuadratureStrategy;
-    typedef typename Fiber::LocalAssemblerForOperators<ResultType>
-    LocalAssembler;
+  /** \copydoc AbstractBoundaryOperator::BasisFunctionType */
+  typedef typename Base::BasisFunctionType BasisFunctionType;
+  /** \copydoc AbstractBoundaryOperator::ResultType */
+  typedef typename Base::ResultType ResultType;
+  /** \copydoc AbstractBoundaryOperator::CoordinateType */
+  typedef typename Base::CoordinateType CoordinateType;
+  /** \copydoc AbstractBoundaryOperator::QuadratureStrategy */
+  typedef typename Base::QuadratureStrategy QuadratureStrategy;
+  typedef typename Fiber::LocalAssemblerForOperators<ResultType> LocalAssembler;
 
-    /** \brief Constructor.
-     *
-     *  \param[in] testLocalOps Vector of the operators \f$U_\alpha\f$, as described above.
-     *  \param[in] integralOp The operator \f$K\f$, as described above.
-     *  \param[in] trialLocalOps Vector of the operators \f$V_\alpha\f$, as described above.
-     *  \param[in] label (Optional) operator label.
-     *  \param[in] syntheseSymmetry Symmetry flag (see below).
-     *
-     *  All operators passed as elements of \p testLocalOps and \p trialLocalOps
-     *  must be local.
-     *
-     *  If \p syntheseSymmetry is equal to \p NO_SYMMETRY, either \p testLocalOps or \p
-     *  trialLocalOps may be empty. In the former case, \f$A\f$ is assembled as
-     *  \f$\sum_\alpha K I_{\mathcal V}^{-1} V_\alpha\f$; in the latter, as
-     *  \f$\sum_\alpha U_\alpha I_{\mathcal V}^{-1} K\f$. \p testLocalOps and \p
-     *  trialLocalOps must not be empty at the same time.
-     *
-     *  If \p syntheseSymmetry contains the flag \p SYMMETRIC and/or \p HERMITIAN, \p
-     *  trialLocalOps should be left empty and \f$V_\alpha\f$ are taken as the
-     *  transposes or Hermitian transposes of \f$U_\alpha\f$.
-     */
-    SyntheticIntegralOperator(
-            const std::vector<BoundaryOperator<BasisFunctionType, ResultType> >& testLocalOps,
-            const BoundaryOperator<BasisFunctionType, ResultType>& integralOp,
-            const std::vector<BoundaryOperator<BasisFunctionType, ResultType> >& trialLocalOps,
-            const std::string& label = "",
-            int syntheseSymmetry = NO_SYMMETRY);
+  /** \brief Constructor.
+   *
+   *  \param[in] testLocalOps Vector of the operators \f$U_\alpha\f$, as
+   *described above.
+   *  \param[in] integralOp The operator \f$K\f$, as described above.
+   *  \param[in] trialLocalOps Vector of the operators \f$V_\alpha\f$, as
+   *described above.
+   *  \param[in] label (Optional) operator label.
+   *  \param[in] syntheseSymmetry Symmetry flag (see below).
+   *
+   *  All operators passed as elements of \p testLocalOps and \p trialLocalOps
+   *  must be local.
+   *
+   *  If \p syntheseSymmetry is equal to \p NO_SYMMETRY, either \p testLocalOps
+   *or \p
+   *  trialLocalOps may be empty. In the former case, \f$A\f$ is assembled as
+   *  \f$\sum_\alpha K I_{\mathcal V}^{-1} V_\alpha\f$; in the latter, as
+   *  \f$\sum_\alpha U_\alpha I_{\mathcal V}^{-1} K\f$. \p testLocalOps and \p
+   *  trialLocalOps must not be empty at the same time.
+   *
+   *  If \p syntheseSymmetry contains the flag \p SYMMETRIC and/or \p HERMITIAN,
+   *\p
+   *  trialLocalOps should be left empty and \f$V_\alpha\f$ are taken as the
+   *  transposes or Hermitian transposes of \f$U_\alpha\f$.
+   */
+  SyntheticIntegralOperator(
+      const std::vector<BoundaryOperator<BasisFunctionType, ResultType>> &
+          testLocalOps,
+      const BoundaryOperator<BasisFunctionType, ResultType> &integralOp,
+      const std::vector<BoundaryOperator<BasisFunctionType, ResultType>> &
+          trialLocalOps,
+      const std::string &label = "", int syntheseSymmetry = NO_SYMMETRY);
 
-    virtual bool isLocal() const;
+  virtual bool isLocal() const;
 
-    /** \brief Get contexts appropriate for construction of internal integral
-        operators and auxiliary local operators. */
-    static void getContextsForInternalAndAuxiliaryOperators(
-            const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
-            shared_ptr<const Context<BasisFunctionType, ResultType> >& internalContext,
-            shared_ptr<const Context<BasisFunctionType, ResultType> >& auxContext);
+  /** \brief Get contexts appropriate for construction of internal integral
+      operators and auxiliary local operators. */
+  static void getContextsForInternalAndAuxiliaryOperators(
+      const shared_ptr<const Context<BasisFunctionType, ResultType>> &context,
+      shared_ptr<const Context<BasisFunctionType, ResultType>> &internalContext,
+      shared_ptr<const Context<BasisFunctionType, ResultType>> &auxContext);
 
 protected:
-    virtual shared_ptr<DiscreteBoundaryOperator<ResultType_> >
-    assembleWeakFormImpl(
-            const Context<BasisFunctionType, ResultType>& context) const;
+  virtual shared_ptr<DiscreteBoundaryOperator<ResultType_>>
+  assembleWeakFormImpl(const Context<BasisFunctionType, ResultType> &context)
+      const;
 
 private:
-    /** \cond PRIVATE */
-    void checkIntegralOperator() const;
-    void checkTestLocalOperators() const;
-    void checkTrialLocalOperators() const;
+  /** \cond PRIVATE */
+  void checkIntegralOperator() const;
+  void checkTestLocalOperators() const;
+  void checkTrialLocalOperators() const;
 
 private:
-    BoundaryOperator<BasisFunctionType, ResultType> m_integralOp;
-    std::vector<BoundaryOperator<BasisFunctionType, ResultType> > m_testLocalOps;
-    std::vector<BoundaryOperator<BasisFunctionType, ResultType> > m_trialLocalOps;
-    int m_syntheseSymmetry;
-    /** \endcond */
+  BoundaryOperator<BasisFunctionType, ResultType> m_integralOp;
+  std::vector<BoundaryOperator<BasisFunctionType, ResultType>> m_testLocalOps;
+  std::vector<BoundaryOperator<BasisFunctionType, ResultType>> m_trialLocalOps;
+  int m_syntheseSymmetry;
+  /** \endcond */
 };
 
-} //namespace Bempp
+} // namespace Bempp
 
 #endif

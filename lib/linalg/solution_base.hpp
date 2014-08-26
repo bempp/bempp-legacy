@@ -33,21 +33,24 @@
 
 #include <string>
 
-namespace Bempp
-{
+namespace Bempp {
 
 struct SolutionStatus {
-    enum Status {
-        CONVERGED,
-        UNCONVERGED,
-        UNKNOWN};
+  enum Status {
+    CONVERGED,
+    UNCONVERGED,
+    UNKNOWN
+  };
 };
 
 /** \ingroup linalg
-  * \brief The base class for the Solution and BlockedSolution container classes.
+  * \brief The base class for the Solution and BlockedSolution container
+  *classes.
   *
-  * This class holds various information about the solution of a BEM computation. It derives from
-  * <a href="http://trilinos.sandia.gov/packages/docs/r10.10/packages/thyra/doc/html/structThyra_1_1SolveStatus.html">Thyra::SolveStatus</a>
+  * This class holds various information about the solution of a BEM
+  *computation. It derives from
+  * <a
+  *href="http://trilinos.sandia.gov/packages/docs/r10.10/packages/thyra/doc/html/structThyra_1_1SolveStatus.html">Thyra::SolveStatus</a>
   * if Trilinos is enabled.
   *
   * <tt>MagnitudeType</tt> is identical to <tt>float</tt> if
@@ -55,55 +58,53 @@ struct SolutionStatus {
   * double if <tt>ResultType</tt> is <tt>double</tt> or
   * <tt>complex<double></tt>
   */
-template <typename BasisFunctionType, typename ResultType>
-class SolutionBase
-{
+template <typename BasisFunctionType, typename ResultType> class SolutionBase {
 public:
-    typedef typename ScalarTraits<ResultType>::RealType MagnitudeType;
+  typedef typename ScalarTraits<ResultType>::RealType MagnitudeType;
 
 #ifdef WITH_TRILINOS
-    /** \brief Constructor */
-    explicit SolutionBase(const Thyra::SolveStatus<MagnitudeType> status);
+  /** \brief Constructor */
+  explicit SolutionBase(const Thyra::SolveStatus<MagnitudeType> status);
 #endif // WITH_TRILINOS
-    /** \brief Constructor */
-    explicit SolutionBase(SolutionStatus::Status status,
-                          MagnitudeType achievedTolerance = unknownTolerance(),
-                          std::string message = "");
+  /** \brief Constructor */
+  explicit SolutionBase(SolutionStatus::Status status,
+                        MagnitudeType achievedTolerance = unknownTolerance(),
+                        std::string message = "");
 
-    static MagnitudeType unknownTolerance() { return MagnitudeType(-1.); }
+  static MagnitudeType unknownTolerance() { return MagnitudeType(-1.); }
 
-    /** \brief Return status of the linear solve. */
-    SolutionStatus::Status status() const;
+  /** \brief Return status of the linear solve. */
+  SolutionStatus::Status status() const;
 
-    /** \brief Maximum final tolerance achieved by the linear solve. 
-     *
-     *  A value of unknownTolerance() means that even an estimate of
-     *  the the final value of the tolerance is unknown.  This is the
-     *  typical value returned by direct solvers. */
-    MagnitudeType achievedTolerance() const;
+  /** \brief Maximum final tolerance achieved by the linear solve.
+   *
+   *  A value of unknownTolerance() means that even an estimate of
+   *  the the final value of the tolerance is unknown.  This is the
+   *  typical value returned by direct solvers. */
+  MagnitudeType achievedTolerance() const;
 
-    /** \brief Iteration count if iterative solver is used.
-     *  If a direct solver is used, this defaults to -1.
-     */
-    int iterationCount() const;
+  /** \brief Iteration count if iterative solver is used.
+   *  If a direct solver is used, this defaults to -1.
+   */
+  int iterationCount() const;
 
-    /** \brief Message returned by the solver. */
-    std::string solverMessage() const;
+  /** \brief Message returned by the solver. */
+  std::string solverMessage() const;
 
 #ifdef WITH_TRILINOS
-    /** \brief Extra status parameter returned by the solver.
-     *
-     *  \note Contents of this list are solver-dependent. */
-    Teuchos::RCP<Teuchos::ParameterList> extraParameters() const;
+  /** \brief Extra status parameter returned by the solver.
+   *
+   *  \note Contents of this list are solver-dependent. */
+  Teuchos::RCP<Teuchos::ParameterList> extraParameters() const;
 #endif // WITH_TRILINOS
 
 private:
-    SolutionStatus::Status m_status;
-    MagnitudeType m_achievedTolerance;
-    std::string m_message;
-    int m_iterationCount;
+  SolutionStatus::Status m_status;
+  MagnitudeType m_achievedTolerance;
+  std::string m_message;
+  int m_iterationCount;
 #ifdef WITH_TRILINOS
-    Teuchos::RCP<Teuchos::ParameterList> m_extraParameters;
+  Teuchos::RCP<Teuchos::ParameterList> m_extraParameters;
 #endif // WITH_TRILINOS
 };
 

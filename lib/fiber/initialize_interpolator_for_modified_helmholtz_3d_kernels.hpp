@@ -4,15 +4,12 @@
 #include "../common/common.hpp"
 #include "hermite_interpolator.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 template <typename ValueType>
 void initializeInterpolatorForModifiedHelmholtz3dKernels(
-        ValueType waveNumber,
-        typename ScalarTraits<ValueType>::RealType maxDist,
-        int interpPtsPerWavelength,
-        HermiteInterpolator<ValueType>& interpolator);
+    ValueType waveNumber, typename ScalarTraits<ValueType>::RealType maxDist,
+    int interpPtsPerWavelength, HermiteInterpolator<ValueType> &interpolator);
 
 } // namespace Fiber
 

@@ -25,8 +25,7 @@
 
 #include "elementary_local_operator.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \cond FORWARD_DECL */
 template <typename ResultType> class LocalAssemblerForOperators;
@@ -34,8 +33,7 @@ template <typename ResultType> class LocalAssemblerForOperators;
 
 } // namespace Fiber
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \ingroup local_operators
  *  \brief Construct a BoundaryOperator object representing a Laplace-Beltrami
@@ -71,14 +69,12 @@ namespace Bempp
  *  AbstractBoundaryOperator for the documentation of the template parameters.
  */
 template <typename BasisFunctionType, typename ResultType>
-BoundaryOperator<BasisFunctionType, ResultType>
-laplaceBeltrami3dOperator(
-        const shared_ptr<const Context<BasisFunctionType, ResultType> >& context,
-        const shared_ptr<const Space<BasisFunctionType> >& domain,
-        const shared_ptr<const Space<BasisFunctionType> >& range,
-        const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-        const std::string& label = "",
-        int symmetry = NO_SYMMETRY);
+BoundaryOperator<BasisFunctionType, ResultType> laplaceBeltrami3dOperator(
+    const shared_ptr<const Context<BasisFunctionType, ResultType>> &context,
+    const shared_ptr<const Space<BasisFunctionType>> &domain,
+    const shared_ptr<const Space<BasisFunctionType>> &range,
+    const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
+    const std::string &label = "", int symmetry = NO_SYMMETRY);
 
 } // namespace Bempp
 

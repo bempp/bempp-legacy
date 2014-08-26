@@ -23,8 +23,7 @@
 
 #include "collection_of_kernels.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \ingroup weak_form_elements
  *  \brief Default implementation of a collection of kernels.
@@ -48,9 +47,11 @@ namespace Fiber
 
         // Return the number of kernels in the collection
         int kernelCount() const;
-        // Return the number of rows in the tensor being the value of i'th kernel
+        // Return the number of rows in the tensor being the value of i'th
+ kernel
         int kernelRowCount(int i) const;
-        // Return the number of columns in the tensor being the value of i'th kernel
+        // Return the number of columns in the tensor being the value of i'th
+ kernel
         int kernelColCount(int i) const;
 
         // Specify types of geometrical data required by the kernels (see
@@ -84,45 +85,40 @@ namespace Fiber
     implementation of a (simple) kernel collection functor.
  */
 template <typename Functor>
-class DefaultCollectionOfKernels :
-        public CollectionOfKernels<typename Functor::ValueType>
-{
-    typedef CollectionOfKernels<typename Functor::ValueType> Base;
+class DefaultCollectionOfKernels
+    : public CollectionOfKernels<typename Functor::ValueType> {
+  typedef CollectionOfKernels<typename Functor::ValueType> Base;
+
 public:
-    typedef typename Base::ValueType ValueType;
-    typedef typename Base::CoordinateType CoordinateType;
+  typedef typename Base::ValueType ValueType;
+  typedef typename Base::CoordinateType CoordinateType;
 
-    explicit DefaultCollectionOfKernels(const Functor& functor) :
-        m_functor(functor)
-    {}
+  explicit DefaultCollectionOfKernels(const Functor &functor)
+      : m_functor(functor) {}
 
-    const Functor& functor() const {
-        return m_functor;
-    }
+  const Functor &functor() const { return m_functor; }
 
-    Functor& functor() {
-        return m_functor;
-    }
+  Functor &functor() { return m_functor; }
 
-    virtual void addGeometricalDependencies(
-            size_t& testGeomDeps, size_t& trialGeomDeps) const;
+  virtual void addGeometricalDependencies(size_t &testGeomDeps,
+                                          size_t &trialGeomDeps) const;
 
-    virtual void evaluateAtPointPairs(
-            const GeometricalData<CoordinateType>& testGeomData,
-            const GeometricalData<CoordinateType>& trialGeomData,
-            CollectionOf3dArrays<ValueType>& result) const;
+  virtual void
+  evaluateAtPointPairs(const GeometricalData<CoordinateType> &testGeomData,
+                       const GeometricalData<CoordinateType> &trialGeomData,
+                       CollectionOf3dArrays<ValueType> &result) const;
 
-    virtual void evaluateOnGrid(
-            const GeometricalData<CoordinateType>& testGeomData,
-            const GeometricalData<CoordinateType>& trialGeomData,
-            CollectionOf4dArrays<ValueType>& result) const;
+  virtual void
+  evaluateOnGrid(const GeometricalData<CoordinateType> &testGeomData,
+                 const GeometricalData<CoordinateType> &trialGeomData,
+                 CollectionOf4dArrays<ValueType> &result) const;
 
-    virtual std::pair<const char*, int> evaluateClCode() const;
+  virtual std::pair<const char *, int> evaluateClCode() const;
 
-    virtual CoordinateType estimateRelativeScale(CoordinateType distance) const;
+  virtual CoordinateType estimateRelativeScale(CoordinateType distance) const;
 
 private:
-    Functor m_functor;
+  Functor m_functor;
 };
 
 } // namespace Fiber

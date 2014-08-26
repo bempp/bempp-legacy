@@ -29,65 +29,66 @@
 #include "conjugate.hpp"
 #include "scalar_traits.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \ingroup functors
- *  \brief Functor evaluating the integrand of most standard boundary integral operators.
+ *  \brief Functor evaluating the integrand of most standard boundary integral
+ *operators.
  *
  *  ....... TODO .......
  */
 
 template <typename BasisFunctionType_, typename KernelType_,
           typename ResultType_>
-class TestScalarKernelTrialIntegrandFunctor
-{
+class TestScalarKernelTrialIntegrandFunctor {
 public:
-    typedef BasisFunctionType_ BasisFunctionType;
-    typedef KernelType_ KernelType;
-    typedef ResultType_ ResultType;
-    typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
+  typedef BasisFunctionType_ BasisFunctionType;
+  typedef KernelType_ KernelType;
+  typedef ResultType_ ResultType;
+  typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
 
-    void addGeometricalDependencies(size_t& testGeomDeps, size_t& trialGeomDeps) const {
-        // do nothing
+  void addGeometricalDependencies(size_t &testGeomDeps,
+                                  size_t &trialGeomDeps) const {
+    // do nothing
+  }
+
+  template <template <typename T> class CollectionOf2dSlicesOfConstNdArrays>
+  ResultType evaluate(
+      const ConstGeometricalDataSlice<CoordinateType> & /* testGeomData */,
+      const ConstGeometricalDataSlice<CoordinateType> & /* trialGeomData */,
+      const CollectionOf1dSlicesOfConst3dArrays<BasisFunctionType> &testValues,
+      const CollectionOf1dSlicesOfConst3dArrays<BasisFunctionType> &trialValues,
+      const CollectionOf2dSlicesOfConstNdArrays<KernelType> &kernelValues)
+      const {
+    // Assert that there is at least one scalar-valued kernel
+    assert(kernelValues.size() >= 1);
+    assert(kernelValues[0].extent(0) == 1);
+    assert(kernelValues[0].extent(1) == 1);
+
+    // Assert that there is at least one test and trial transformation
+    // and that their dimensions agree
+    assert(testValues.size() >= 1);
+    assert(trialValues.size() >= 1);
+    const size_t transCount = testValues.size();
+    assert(trialValues.size() == transCount);
+    if (kernelValues.size() > 1)
+      assert(kernelValues.size() == transCount);
+
+    ResultType result = 0.;
+    for (size_t transIndex = 0; transIndex < transCount; ++transIndex) {
+      const size_t transDim = testValues[transIndex].extent(0);
+      assert(trialValues[transIndex].extent(0) == transDim);
+      BasisFunctionType dotProduct = 0.;
+      for (size_t dim = 0; dim < transDim; ++dim)
+        dotProduct += conjugate(testValues[transIndex](dim)) *
+                      trialValues[transIndex](dim);
+      if (transCount == 1)
+        result += dotProduct * kernelValues[0](0, 0);
+      else
+        result += dotProduct * kernelValues[transIndex](0, 0);
     }
-
-    template <template <typename T> class CollectionOf2dSlicesOfConstNdArrays>
-    ResultType evaluate(
-            const ConstGeometricalDataSlice<CoordinateType>& /* testGeomData */,
-            const ConstGeometricalDataSlice<CoordinateType>& /* trialGeomData */,
-            const CollectionOf1dSlicesOfConst3dArrays<BasisFunctionType>& testValues,
-            const CollectionOf1dSlicesOfConst3dArrays<BasisFunctionType>& trialValues,
-            const CollectionOf2dSlicesOfConstNdArrays<KernelType>& kernelValues) const {
-        // Assert that there is at least one scalar-valued kernel
-        assert(kernelValues.size() >= 1);
-        assert(kernelValues[0].extent(0) == 1);
-        assert(kernelValues[0].extent(1) == 1);
-
-        // Assert that there is at least one test and trial transformation
-        // and that their dimensions agree
-        assert(testValues.size() >= 1);
-        assert(trialValues.size() >= 1);
-        const size_t transCount = testValues.size();
-        assert(trialValues.size() == transCount);
-        if (kernelValues.size() > 1)
-            assert(kernelValues.size() == transCount);
-
-        ResultType result = 0.;
-        for (size_t transIndex = 0; transIndex < transCount; ++transIndex) {
-            const size_t transDim = testValues[transIndex].extent(0);
-            assert(trialValues[transIndex].extent(0) == transDim);
-            BasisFunctionType dotProduct = 0.;
-            for (size_t dim = 0; dim < transDim; ++dim)
-                dotProduct += conjugate(testValues[transIndex](dim)) *
-                        trialValues[transIndex](dim);
-            if (transCount == 1)
-                result += dotProduct * kernelValues[0](0, 0);
-            else
-                result += dotProduct * kernelValues[transIndex](0, 0);
-        }
-        return result;
-    }
+    return result;
+  }
 };
 
 } // namespace Fiber

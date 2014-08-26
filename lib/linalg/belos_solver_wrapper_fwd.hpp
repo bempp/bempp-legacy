@@ -8,21 +8,20 @@
 #ifdef WITH_TRILINOS
 #include <Thyra_SolveSupportTypes.hpp>
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \cond FORWARD_DECL */
 template <typename ValueType> class BelosSolverWrapper;
 /** \endcond */
 
-Teuchos::RCP<Teuchos::ParameterList> defaultGmresParameterList(
-        double tol, int maxIterationCount = 1000);
-Teuchos::RCP<Teuchos::ParameterList> defaultCgParameterList(
-        double tol, int maxIterationCount = 1000);
-Teuchos::RCP<Teuchos::ParameterList> defaultGmresParameterList(
-        float tol, int maxIterationCount = 1000);
-Teuchos::RCP<Teuchos::ParameterList> defaultCgParameterList(
-        float tol, int maxIterationCount = 1000);
+Teuchos::RCP<Teuchos::ParameterList>
+defaultGmresParameterList(double tol, int maxIterationCount = 1000);
+Teuchos::RCP<Teuchos::ParameterList>
+defaultCgParameterList(double tol, int maxIterationCount = 1000);
+Teuchos::RCP<Teuchos::ParameterList>
+defaultGmresParameterList(float tol, int maxIterationCount = 1000);
+Teuchos::RCP<Teuchos::ParameterList>
+defaultCgParameterList(float tol, int maxIterationCount = 1000);
 
 } // namespace Bempp
 

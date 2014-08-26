@@ -25,8 +25,7 @@
 
 /** \file . */
 
-namespace Bempp
-{
+namespace Bempp {
 
 class Grid;
 
@@ -36,7 +35,7 @@ class Grid;
  *
  *  \note The returned number is an *upper bound* rather than an exact value
  *  (it is calculated from the bounding boxes of the two grids) */
-double maxDistance(const Grid& grid1, const Grid& grid2);
+double maxDistance(const Grid &grid1, const Grid &grid2);
 
 } // namespace Bempp
 

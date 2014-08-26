@@ -26,35 +26,29 @@
 #include "../fiber/default_collection_of_basis_transformations.hpp"
 #include "../fiber/default_test_trial_integral.hpp"
 
-namespace Bempp
-{
+namespace Bempp {
 
 template <typename BasisFunctionType_, typename ResultType_>
 template <typename TestTransformationsFunctor,
-          typename TrialTransformationsFunctor,
-          typename IntegrandFunctor>
+          typename TrialTransformationsFunctor, typename IntegrandFunctor>
 GeneralElementaryLocalOperator<BasisFunctionType_, ResultType_>::
-GeneralElementaryLocalOperator(
-        const shared_ptr<const Space<BasisFunctionType_> >& domain,
-        const shared_ptr<const Space<BasisFunctionType_> >& range,
-        const shared_ptr<const Space<BasisFunctionType_> >& dualToRange,
-        const std::string& label,
-        int symmetry,
-        const TestTransformationsFunctor& testTransformationsFunctor,
-        const TrialTransformationsFunctor& trialTransformationsFunctor,
-        const IntegrandFunctor& integrandFunctor) :
-    Base(domain, range, dualToRange, label, symmetry),
-    m_testTransformations(
-        new Fiber::DefaultCollectionOfShapesetTransformations<TestTransformationsFunctor>(
-            testTransformationsFunctor)),
-    m_trialTransformations(
-        new Fiber::DefaultCollectionOfShapesetTransformations<TrialTransformationsFunctor>(
-            trialTransformationsFunctor)),
-    m_integral(
-        new Fiber::DefaultTestTrialIntegral<IntegrandFunctor>(
-            integrandFunctor))
-{
-}
+    GeneralElementaryLocalOperator(
+        const shared_ptr<const Space<BasisFunctionType_>> &domain,
+        const shared_ptr<const Space<BasisFunctionType_>> &range,
+        const shared_ptr<const Space<BasisFunctionType_>> &dualToRange,
+        const std::string &label, int symmetry,
+        const TestTransformationsFunctor &testTransformationsFunctor,
+        const TrialTransformationsFunctor &trialTransformationsFunctor,
+        const IntegrandFunctor &integrandFunctor)
+    : Base(domain, range, dualToRange, label, symmetry),
+      m_testTransformations(
+          new Fiber::DefaultCollectionOfShapesetTransformations<
+              TestTransformationsFunctor>(testTransformationsFunctor)),
+      m_trialTransformations(
+          new Fiber::DefaultCollectionOfShapesetTransformations<
+              TrialTransformationsFunctor>(trialTransformationsFunctor)),
+      m_integral(new Fiber::DefaultTestTrialIntegral<IntegrandFunctor>(
+          integrandFunctor)) {}
 
 } // namespace Bempp
 

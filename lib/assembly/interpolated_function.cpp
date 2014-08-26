@@ -18,7 +18,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-
 #include "interpolated_function.hpp"
 
 #include "../fiber/geometrical_data.hpp"
@@ -30,89 +29,82 @@
 
 #include "../space/piecewise_linear_continuous_scalar_space.hpp"
 
-namespace Bempp
-{
+namespace Bempp {
 
 template <typename ValueType>
 InterpolatedFunction<ValueType>::InterpolatedFunction(
-        const Grid& grid, const arma::Mat<ValueType>& vertexValues,
-        InterpolationMethod method) :
-    m_grid(grid), m_vertexValues(vertexValues), m_method(method)
-{
-    std::unique_ptr<GridView> view = grid.leafView();
+    const Grid &grid, const arma::Mat<ValueType> &vertexValues,
+    InterpolationMethod method)
+    : m_grid(grid), m_vertexValues(vertexValues), m_method(method) {
+  std::unique_ptr<GridView> view = grid.leafView();
 
-    if (view->entityCount(grid.dim()) != vertexValues.n_cols)
-        throw std::invalid_argument("VolumeGridFunction::VolumeGridFunction(): "
-                                    "dimension of expansionCoefficients "
-                                    "does not match the number of grid vertices");
-    if (method != LINEAR)
-        throw std::invalid_argument("VolumeGridFunction::VolumeGridFunction(): "
-                                    "invalid interpolation method");
+  if (view->entityCount(grid.dim()) != vertexValues.n_cols)
+    throw std::invalid_argument("VolumeGridFunction::VolumeGridFunction(): "
+                                "dimension of expansionCoefficients "
+                                "does not match the number of grid vertices");
+  if (method != LINEAR)
+    throw std::invalid_argument("VolumeGridFunction::VolumeGridFunction(): "
+                                "invalid interpolation method");
 }
 
 template <typename ValueType>
-const Grid& InterpolatedFunction<ValueType>::grid() const
-{
-    return m_grid;
+const Grid &InterpolatedFunction<ValueType>::grid() const {
+  return m_grid;
 }
 
 template <typename ValueType>
-int InterpolatedFunction<ValueType>::worldDimension() const
-{
-    return m_grid.dimWorld();
+int InterpolatedFunction<ValueType>::worldDimension() const {
+  return m_grid.dimWorld();
 }
 
 template <typename ValueType>
-int InterpolatedFunction<ValueType>::codomainDimension() const
-{
-    return m_vertexValues.n_rows;
+int InterpolatedFunction<ValueType>::codomainDimension() const {
+  return m_vertexValues.n_rows;
 }
 
 template <typename ValueType>
-void InterpolatedFunction<ValueType>::addGeometricalDependencies(size_t& geomDeps) const
-{
-    geomDeps |= Fiber::GLOBALS;
+void InterpolatedFunction<ValueType>::addGeometricalDependencies(
+    size_t &geomDeps) const {
+  geomDeps |= Fiber::GLOBALS;
 }
 
 template <typename ValueType>
 void InterpolatedFunction<ValueType>::evaluate(
-        const Fiber::GeometricalData<CoordinateType>& geomData,
-        arma::Mat<ValueType>& result) const
-{
+    const Fiber::GeometricalData<CoordinateType> &geomData,
+    arma::Mat<ValueType> &result) const {
 
 #ifndef NDEBUG
-    const arma::Mat<CoordinateType>& points = geomData.globals;
-    if ((int)points.n_rows != worldDimension())
-        throw std::invalid_argument("InterpolatedFunction::evaluate(): "
-                                    "incompatible world dimension");
+  const arma::Mat<CoordinateType> &points = geomData.globals;
+  if ((int)points.n_rows != worldDimension())
+    throw std::invalid_argument("InterpolatedFunction::evaluate(): "
+                                "incompatible world dimension");
 #endif
 
-    throw std::runtime_error("InterpolatedFunction::evaluate(): "
-                             "not implemented yet");
+  throw std::runtime_error("InterpolatedFunction::evaluate(): "
+                           "not implemented yet");
 }
 
 template <typename ValueType>
 void InterpolatedFunction<ValueType>::exportToVtk(
-        const char* dataLabel, const char* fileNamesBase, const char* filesPath,
-        VtkWriter::OutputType outputType) const
-{
-    std::unique_ptr<GridView> view = m_grid.leafView();
-    std::unique_ptr<VtkWriter> vtkWriter = view->vtkWriter();
+    const char *dataLabel, const char *fileNamesBase, const char *filesPath,
+    VtkWriter::OutputType outputType) const {
+  std::unique_ptr<GridView> view = m_grid.leafView();
+  std::unique_ptr<VtkWriter> vtkWriter = view->vtkWriter();
 
-    exportSingleDataSetToVtk(*vtkWriter, m_vertexValues, VtkWriter::VERTEX_DATA,
-                             dataLabel, fileNamesBase, filesPath, outputType);
+  exportSingleDataSetToVtk(*vtkWriter, m_vertexValues, VtkWriter::VERTEX_DATA,
+                           dataLabel, fileNamesBase, filesPath, outputType);
 }
 
-//template <typename ValueType>
-//void InterpolatedFunction<ValueType>::setSurfaceValues(
+// template <typename ValueType>
+// void InterpolatedFunction<ValueType>::setSurfaceValues(
 //        const GridFunction<ValueType>& surfaceFunction)
 //{
 //    throw std::runtime_error("InterpolatedFunction::setSurfaceValues(): "
 //                             "not implemented yet");
 //}
 
-//template <typename ValueType>
-//void InterpolatedFunction<ValueType>::setSurfaceValues(
+// template <typename ValueType>
+// void InterpolatedFunction<ValueType>::setSurfaceValues(
 //        const InterpolatedFunction<ValueType>& surfaceFunction)
 //{
 //    throw std::runtime_error("InterpolatedFunction::setSurfaceValues(): "
@@ -121,73 +113,61 @@ void InterpolatedFunction<ValueType>::exportToVtk(
 
 template <typename ValueType>
 void InterpolatedFunction<ValueType>::checkCompatibility(
-        const InterpolatedFunction<ValueType> &other) const
-{
-    if (&m_grid != &other.m_grid ||
-            m_vertexValues.n_rows != other.m_vertexValues.n_rows ||
-            m_vertexValues.n_cols != other.m_vertexValues.n_cols ||
-            m_method != other.m_method)
-        throw std::runtime_error("InterpolatedFunction::checkCompatibility(): "
-                                 "incompatible operands");
+    const InterpolatedFunction<ValueType> &other) const {
+  if (&m_grid != &other.m_grid ||
+      m_vertexValues.n_rows != other.m_vertexValues.n_rows ||
+      m_vertexValues.n_cols != other.m_vertexValues.n_cols ||
+      m_method != other.m_method)
+    throw std::runtime_error("InterpolatedFunction::checkCompatibility(): "
+                             "incompatible operands");
 }
 
 template <typename ValueType>
-InterpolatedFunction<ValueType>&
-InterpolatedFunction<ValueType>::operator+=(
-        const InterpolatedFunction<ValueType> &rhs)
-{
-    checkCompatibility(rhs);
-    m_vertexValues += rhs.m_vertexValues;
-    return *this;
+InterpolatedFunction<ValueType> &InterpolatedFunction<ValueType>::
+operator+=(const InterpolatedFunction<ValueType> &rhs) {
+  checkCompatibility(rhs);
+  m_vertexValues += rhs.m_vertexValues;
+  return *this;
 }
 
 template <typename ValueType>
-InterpolatedFunction<ValueType>&
-InterpolatedFunction<ValueType>::operator-=(
-        const InterpolatedFunction<ValueType> &rhs)
-{
-    checkCompatibility(rhs);
-    m_vertexValues -= rhs.m_vertexValues;
-    return *this;
+InterpolatedFunction<ValueType> &InterpolatedFunction<ValueType>::
+operator-=(const InterpolatedFunction<ValueType> &rhs) {
+  checkCompatibility(rhs);
+  m_vertexValues -= rhs.m_vertexValues;
+  return *this;
 }
 
 template <typename ValueType>
-InterpolatedFunction<ValueType>&
-InterpolatedFunction<ValueType>::operator*=(ValueType rhs)
-{
-    m_vertexValues *= rhs;
-    return *this;
+InterpolatedFunction<ValueType> &InterpolatedFunction<ValueType>::
+operator*=(ValueType rhs) {
+  m_vertexValues *= rhs;
+  return *this;
 }
 
 template <typename ValueType>
-InterpolatedFunction<ValueType>&
-InterpolatedFunction<ValueType>::operator/=(ValueType rhs)
-{
-    m_vertexValues *= static_cast<ValueType>(1.) / rhs;
-    return *this;
+InterpolatedFunction<ValueType> &InterpolatedFunction<ValueType>::
+operator/=(ValueType rhs) {
+  m_vertexValues *= static_cast<ValueType>(1.) / rhs;
+  return *this;
 }
 
 template <typename ValueType>
-const InterpolatedFunction<ValueType>
-InterpolatedFunction<ValueType>::operator+(
-        const InterpolatedFunction<ValueType> &other) const
-{
-    return InterpolatedFunction<ValueType>(*this) += other;
+const InterpolatedFunction<ValueType> InterpolatedFunction<ValueType>::
+operator+(const InterpolatedFunction<ValueType> &other) const {
+  return InterpolatedFunction<ValueType>(*this) += other;
 }
 
 template <typename ValueType>
-const InterpolatedFunction<ValueType>
-InterpolatedFunction<ValueType>::operator-(
-        const InterpolatedFunction<ValueType> &other) const
-{
-    return InterpolatedFunction<ValueType>(*this) -= other;
+const InterpolatedFunction<ValueType> InterpolatedFunction<ValueType>::
+operator-(const InterpolatedFunction<ValueType> &other) const {
+  return InterpolatedFunction<ValueType>(*this) -= other;
 }
 
 template <typename ValueType>
-const InterpolatedFunction<ValueType>
-InterpolatedFunction<ValueType>::operator/(ValueType other) const
-{
-    return InterpolatedFunction<ValueType>(*this) /= other;
+const InterpolatedFunction<ValueType> InterpolatedFunction<ValueType>::
+operator/(ValueType other) const {
+  return InterpolatedFunction<ValueType>(*this) /= other;
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(InterpolatedFunction);

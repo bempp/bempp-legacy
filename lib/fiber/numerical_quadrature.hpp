@@ -32,8 +32,7 @@
 
 #include "../common/armadillo_fwd.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \brief Retrieve points and weights for a quadrature over a single element.
  *
@@ -48,15 +47,13 @@ namespace Fiber
 template <typename ValueType>
 void fillSingleQuadraturePointsAndWeights(int elementCornerCount,
                                           int accuracyOrder,
-                                          arma::Mat<ValueType>& points,
-                                          std::vector<ValueType>& weights);
+                                          arma::Mat<ValueType> &points,
+                                          std::vector<ValueType> &weights);
 
 template <typename ValueType>
 void fillDoubleSingularQuadraturePointsAndWeights(
-        const DoubleQuadratureDescriptor& desc,
-        arma::Mat<ValueType>& testPoints,
-        arma::Mat<ValueType>& trialPoints,
-        std::vector<ValueType>& weights);
+    const DoubleQuadratureDescriptor &desc, arma::Mat<ValueType> &testPoints,
+    arma::Mat<ValueType> &trialPoints, std::vector<ValueType> &weights);
 
 } // namespace Fiber
 

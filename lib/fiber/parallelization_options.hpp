@@ -25,45 +25,45 @@
 
 #include "opencl_options.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \brief Parallel operation settings. */
-class ParallelizationOptions
-{
+class ParallelizationOptions {
 public:
-    enum { AUTO = -1 };    
+  enum {
+    AUTO = -1
+  };
 
-    /** \brief Constructor. */
-    ParallelizationOptions();
+  /** \brief Constructor. */
+  ParallelizationOptions();
 
-    /** \brief Enable GPU-based calculations (currently broken). */
-    void enableOpenCl(const OpenClOptions& openClOptions);
-    /** \brief Disable GPU-based calculations. */
-    void disableOpenCl();
-    /** \brief Return whether GPU-based calculations are enabled. */
-    bool isOpenClEnabled() const;
-    /** \brief Return current settings controlling operation of the GPU. */
-    const OpenClOptions& openClOptions() const;
+  /** \brief Enable GPU-based calculations (currently broken). */
+  void enableOpenCl(const OpenClOptions &openClOptions);
+  /** \brief Disable GPU-based calculations. */
+  void disableOpenCl();
+  /** \brief Return whether GPU-based calculations are enabled. */
+  bool isOpenClEnabled() const;
+  /** \brief Return current settings controlling operation of the GPU. */
+  const OpenClOptions &openClOptions() const;
 
-    /** \brief Set the maximum number of threads used during the assembly.
-     *
-     *  \p maxThreadCount must be a positive number or \p AUTO. In the latter
-     *  case the number of threads is determined automatically by Intel
-     *  Threading Building Blocks.*/
-    void setMaxThreadCount(int maxThreadCount = AUTO);
+  /** \brief Set the maximum number of threads used during the assembly.
+   *
+   *  \p maxThreadCount must be a positive number or \p AUTO. In the latter
+   *  case the number of threads is determined automatically by Intel
+   *  Threading Building Blocks.*/
+  void setMaxThreadCount(int maxThreadCount = AUTO);
 
-    /** \brief Return the maximum number of thread used during the assembly.
-     *
-     *  The returned value can be a positive number or \p AUTO. In the latter
-     *  case the number of threads is determined automatically by
-     *  Intel Threading Building Blocks. */
-    int maxThreadCount() const;
+  /** \brief Return the maximum number of thread used during the assembly.
+   *
+   *  The returned value can be a positive number or \p AUTO. In the latter
+   *  case the number of threads is determined automatically by
+   *  Intel Threading Building Blocks. */
+  int maxThreadCount() const;
 
 private:
-    bool m_openClEnabled;
-    OpenClOptions m_openClOptions;
-    int m_maxThreadCount;
+  bool m_openClEnabled;
+  OpenClOptions m_openClOptions;
+  int m_maxThreadCount;
 };
 
 } // namespace Fiber

@@ -27,8 +27,7 @@
 #include "accuracy_options.hpp"
 #include "scalar_traits.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 template <typename BasisFunctionType> class Shapeset;
 template <typename CoordinateType> class RawGridGeometry;
@@ -41,49 +40,52 @@ class DefaultLocalAssemblerForOperatorsOnSurfacesUtilities;
  *  The choice of quadrature rule accuracy can be influenced by the
  *  \p accuracyOptions parameter taken by the constructor. */
 template <typename BasisFunctionType>
-class DefaultQuadratureDescriptorSelectorForPotentialOperators :
-        public QuadratureDescriptorSelectorForPotentialOperators<BasisFunctionType>
-{
-    typedef QuadratureDescriptorSelectorForPotentialOperators<BasisFunctionType>
-    Base;
+class DefaultQuadratureDescriptorSelectorForPotentialOperators
+    : public QuadratureDescriptorSelectorForPotentialOperators<
+          BasisFunctionType> {
+  typedef QuadratureDescriptorSelectorForPotentialOperators<BasisFunctionType>
+  Base;
+
 public:
-    typedef typename Base::CoordinateType CoordinateType;
+  typedef typename Base::CoordinateType CoordinateType;
 
-    DefaultQuadratureDescriptorSelectorForPotentialOperators(
-        const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
-        const shared_ptr<const std::vector<
-            const Shapeset<BasisFunctionType>*> >& trialShapesets,
-        const AccuracyOptionsEx& accuracyOptions);
+  DefaultQuadratureDescriptorSelectorForPotentialOperators(
+      const shared_ptr<const RawGridGeometry<CoordinateType>> &rawGeometry,
+      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
+          trialShapesets,
+      const AccuracyOptionsEx &accuracyOptions);
 
-    virtual SingleQuadratureDescriptor quadratureDescriptor(
-        const arma::Col<CoordinateType>& point, int trialElementIndex,
-        CoordinateType nominalDistance) const;
+  virtual SingleQuadratureDescriptor
+  quadratureDescriptor(const arma::Col<CoordinateType> &point,
+                       int trialElementIndex,
+                       CoordinateType nominalDistance) const;
 
-    virtual SingleQuadratureDescriptor farFieldQuadratureDescriptor(
-        const Shapeset<BasisFunctionType>& trialShapeset,
-        int trialElementCornerCount) const;
+  virtual SingleQuadratureDescriptor
+  farFieldQuadratureDescriptor(const Shapeset<BasisFunctionType> &trialShapeset,
+                               int trialElementCornerCount) const;
 
 private:
-    /** \cond PRIVATE */
-    void precalculateElementSizesAndCenters();
+  /** \cond PRIVATE */
+  void precalculateElementSizesAndCenters();
 
-    int order(const arma::Col<CoordinateType>& point, int trialElementIndex,
-              CoordinateType nominalDistance) const;
-    CoordinateType pointElementDistanceSquared(
-            const arma::Col<CoordinateType>& point, int trialElementIndex) const;
+  int order(const arma::Col<CoordinateType> &point, int trialElementIndex,
+            CoordinateType nominalDistance) const;
+  CoordinateType
+  pointElementDistanceSquared(const arma::Col<CoordinateType> &point,
+                              int trialElementIndex) const;
 
-    typedef DefaultLocalAssemblerForOperatorsOnSurfacesUtilities<
-    BasisFunctionType> Utilities;
+  typedef DefaultLocalAssemblerForOperatorsOnSurfacesUtilities<
+      BasisFunctionType> Utilities;
 
-    shared_ptr<const RawGridGeometry<CoordinateType> > m_rawGeometry;
-    shared_ptr<const std::vector<
-                   const Shapeset<BasisFunctionType>*> > m_trialShapesets;
-    AccuracyOptionsEx m_accuracyOptions;
+  shared_ptr<const RawGridGeometry<CoordinateType>> m_rawGeometry;
+  shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
+  m_trialShapesets;
+  AccuracyOptionsEx m_accuracyOptions;
 
-    std::vector<CoordinateType> m_elementSizesSquared;
-    arma::Mat<CoordinateType> m_elementCenters;
-    CoordinateType m_averageElementSize;
-    /** \endcond */
+  std::vector<CoordinateType> m_elementSizesSquared;
+  arma::Mat<CoordinateType> m_elementCenters;
+  CoordinateType m_averageElementSize;
+  /** \endcond */
 };
 
 } // namespace Fiber

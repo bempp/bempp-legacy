@@ -18,7 +18,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-
 #ifndef bempp_aca_approximate_lu_inverse_hpp
 #define bempp_aca_approximate_lu_inverse_hpp
 
@@ -38,8 +37,7 @@
 
 using Fiber::VerbosityLevel;
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \cond FORWARD_DECL */
 template <typename ValueType> class DiscreteAcaBoundaryOperator;
@@ -49,70 +47,66 @@ template <typename ValueType> class DiscreteAcaBoundaryOperator;
  *  \brief Approximate LU decomposition of a H-matrix
  */
 template <typename ValueType>
-class AcaApproximateLuInverse : public DiscreteBoundaryOperator<ValueType>
-{
+class AcaApproximateLuInverse : public DiscreteBoundaryOperator<ValueType> {
 public:
-    typedef typename Fiber::ScalarTraits<ValueType>::RealType MagnitudeType;
+  typedef typename Fiber::ScalarTraits<ValueType>::RealType MagnitudeType;
 
-    /** \brief Construct an approximate LU decomposition of a H-matrix.
+  /** \brief Construct an approximate LU decomposition of a H-matrix.
 
-    \param[in] fwdOp  Operator represented internally as a H-matrix.
-    \param[in] delta  Requested approximation accuracy (M. Bebendorf recommends
-                      delta = 0.1). */
-    AcaApproximateLuInverse(
-            const DiscreteAcaBoundaryOperator<ValueType>& fwdOp,
-            MagnitudeType delta,
-            VerbosityLevel::Level verbosityLevel = VerbosityLevel::DEFAULT);
+  \param[in] fwdOp  Operator represented internally as a H-matrix.
+  \param[in] delta  Requested approximation accuracy (M. Bebendorf recommends
+                    delta = 0.1). */
+  AcaApproximateLuInverse(const DiscreteAcaBoundaryOperator<ValueType> &fwdOp,
+                          MagnitudeType delta,
+                          VerbosityLevel::Level verbosityLevel =
+                              VerbosityLevel::DEFAULT);
 
-    virtual ~AcaApproximateLuInverse();
+  virtual ~AcaApproximateLuInverse();
 
-    virtual unsigned int rowCount() const;
-    virtual unsigned int columnCount() const;
+  virtual unsigned int rowCount() const;
+  virtual unsigned int columnCount() const;
 
-    virtual void addBlock(const std::vector<int>& rows,
-                          const std::vector<int>& cols,
-                          const ValueType alpha,
-                          arma::Mat<ValueType>& block) const;
+  virtual void addBlock(const std::vector<int> &rows,
+                        const std::vector<int> &cols, const ValueType alpha,
+                        arma::Mat<ValueType> &block) const;
 
 #ifdef WITH_TRILINOS
 public:
-    virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > domain() const;
-    virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType> > range() const;
+  virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>> domain() const;
+  virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>> range() const;
 
 protected:
-    virtual bool opSupportedImpl(Thyra::EOpTransp M_trans) const;
+  virtual bool opSupportedImpl(Thyra::EOpTransp M_trans) const;
 #endif
 
 private:
-    virtual void applyBuiltInImpl(const TranspositionMode trans,
-                                  const arma::Col<ValueType>& x_in,
-                                  arma::Col<ValueType>& y_inout,
-                                  const ValueType alpha,
-                                  const ValueType beta) const;
-
-
+  virtual void applyBuiltInImpl(const TranspositionMode trans,
+                                const arma::Col<ValueType> &x_in,
+                                arma::Col<ValueType> &y_inout,
+                                const ValueType alpha,
+                                const ValueType beta) const;
 
 private:
-    /** \cond PRIVATE */
-    typedef typename Fiber::ScalarTraits<ValueType>::RealType CoordinateType;
-    typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
-    typedef mblock<typename AhmedTypeTraits<ValueType>::Type> AhmedMblock;
+  /** \cond PRIVATE */
+  typedef typename Fiber::ScalarTraits<ValueType>::RealType CoordinateType;
+  typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
+  typedef mblock<typename AhmedTypeTraits<ValueType>::Type> AhmedMblock;
 
 #ifdef WITH_TRILINOS
-    Teuchos::RCP<const Thyra::SpmdVectorSpaceBase<ValueType> > m_domainSpace;
-    Teuchos::RCP<const Thyra::SpmdVectorSpaceBase<ValueType> > m_rangeSpace;
+  Teuchos::RCP<const Thyra::SpmdVectorSpaceBase<ValueType>> m_domainSpace;
+  Teuchos::RCP<const Thyra::SpmdVectorSpaceBase<ValueType>> m_rangeSpace;
 #else
-    unsigned int m_rowCount;
-    unsigned int m_columnCount;
+  unsigned int m_rowCount;
+  unsigned int m_columnCount;
 #endif
 
-    blcluster* m_blockCluster;
-    AhmedMblock** m_blocksL;
-    AhmedMblock** m_blocksU;
+  blcluster *m_blockCluster;
+  AhmedMblock **m_blocksL;
+  AhmedMblock **m_blocksU;
 
-    IndexPermutation m_domainPermutation;
-    IndexPermutation m_rangePermutation;
-    /** \endcond */
+  IndexPermutation m_domainPermutation;
+  IndexPermutation m_rangePermutation;
+  /** \endcond */
 };
 
 } // namespace Bempp

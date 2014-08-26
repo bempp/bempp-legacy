@@ -18,7 +18,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-
 #ifndef bempp_stl_io_hpp
 #define bempp_stl_io_hpp
 
@@ -31,12 +30,11 @@
  *  Each element is printed in a separate line.
  */
 template <typename T>
-std::ostream& operator<< (std::ostream& dest, const std::vector<T>& v)
-{
-    for (int i = 0; i < v.size(); ++i)
-        dest << v[i] << '\n';
-    dest.flush();
-    return dest;
+std::ostream &operator<<(std::ostream &dest, const std::vector<T> &v) {
+  for (int i = 0; i < v.size(); ++i)
+    dest << v[i] << '\n';
+  dest.flush();
+  return dest;
 }
 
 #endif

@@ -29,19 +29,17 @@
 
 #include <memory>
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \ingroup grid
     \brief Abstract geometry factory. */
-class GeometryFactory
-{
+class GeometryFactory {
 public:
-    typedef Bempp::Geometry Geometry;
+  typedef Bempp::Geometry Geometry;
 
-    virtual ~GeometryFactory() {}
+  virtual ~GeometryFactory() {}
 
-    virtual std::unique_ptr<Geometry> make() const = 0;
+  virtual std::unique_ptr<Geometry> make() const = 0;
 };
 
 } // namespace Bempp

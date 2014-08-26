@@ -23,86 +23,71 @@
 
 #include "helmholtz_3d_potential_operator_base.hpp"
 
-namespace Bempp
-{
+namespace Bempp {
 
-namespace
-{
+namespace {
 
 template <typename Impl>
-inline typename Impl::KernelType waveNumberImpl(const Impl& impl)
-{
-    return impl.kernels.functor().waveNumber() *
-            typename Impl::KernelType(0., 1.);
+inline typename Impl::KernelType waveNumberImpl(const Impl &impl) {
+  return impl.kernels.functor().waveNumber() *
+         typename Impl::KernelType(0., 1.);
 }
 
 } // namespace
 
 template <typename Impl, typename BasisFunctionType>
-Helmholtz3dPotentialOperatorBase<Impl, BasisFunctionType>::
-Helmholtz3dPotentialOperatorBase(KernelType waveNumber) :
-    m_impl(new Impl(waveNumber))
-{
-}
+Helmholtz3dPotentialOperatorBase<
+    Impl,
+    BasisFunctionType>::Helmholtz3dPotentialOperatorBase(KernelType waveNumber)
+    : m_impl(new Impl(waveNumber)) {}
 
 template <typename Impl, typename BasisFunctionType>
 Helmholtz3dPotentialOperatorBase<Impl, BasisFunctionType>::
-Helmholtz3dPotentialOperatorBase(const Helmholtz3dPotentialOperatorBase& other) :
-    m_impl(new Impl(*other.m_impl))
-{
-}
+    Helmholtz3dPotentialOperatorBase(
+        const Helmholtz3dPotentialOperatorBase &other)
+    : m_impl(new Impl(*other.m_impl)) {}
 
 template <typename Impl, typename BasisFunctionType>
-Helmholtz3dPotentialOperatorBase<Impl, BasisFunctionType>::
-~Helmholtz3dPotentialOperatorBase()
-{
-}
+Helmholtz3dPotentialOperatorBase<
+    Impl, BasisFunctionType>::~Helmholtz3dPotentialOperatorBase() {}
 
 template <typename Impl, typename BasisFunctionType>
-Helmholtz3dPotentialOperatorBase<Impl, BasisFunctionType>&
+Helmholtz3dPotentialOperatorBase<Impl, BasisFunctionType> &
 Helmholtz3dPotentialOperatorBase<Impl, BasisFunctionType>::
-operator=(const Helmholtz3dPotentialOperatorBase& rhs)
-{
-    if (this != &rhs) {
-        Base::operator=(rhs);
-        m_impl.reset(new Impl(*rhs.m_impl));
-    }
-    return *this;
+operator=(const Helmholtz3dPotentialOperatorBase &rhs) {
+  if (this != &rhs) {
+    Base::operator=(rhs);
+    m_impl.reset(new Impl(*rhs.m_impl));
+  }
+  return *this;
 }
 
 template <typename Impl, typename BasisFunctionType>
 typename Helmholtz3dPotentialOperatorBase<Impl, BasisFunctionType>::KernelType
-Helmholtz3dPotentialOperatorBase<Impl, BasisFunctionType>::
-waveNumber() const
-{
-    return waveNumberImpl(*m_impl);
+Helmholtz3dPotentialOperatorBase<Impl, BasisFunctionType>::waveNumber() const {
+  return waveNumberImpl(*m_impl);
 }
 
 template <typename Impl, typename BasisFunctionType>
-const typename Helmholtz3dPotentialOperatorBase<Impl, BasisFunctionType>::
-CollectionOfKernels&
-Helmholtz3dPotentialOperatorBase<Impl, BasisFunctionType>::
-kernels() const
-{
-    return m_impl->kernels;
+const typename Helmholtz3dPotentialOperatorBase<
+    Impl, BasisFunctionType>::CollectionOfKernels &
+Helmholtz3dPotentialOperatorBase<Impl, BasisFunctionType>::kernels() const {
+  return m_impl->kernels;
 }
 
 template <typename Impl, typename BasisFunctionType>
-const typename Helmholtz3dPotentialOperatorBase<Impl, BasisFunctionType>::
-CollectionOfBasisTransformations&
-Helmholtz3dPotentialOperatorBase<Impl, BasisFunctionType>::
-trialTransformations() const
-{
-    return m_impl->transformations;
+const typename Helmholtz3dPotentialOperatorBase<
+    Impl, BasisFunctionType>::CollectionOfBasisTransformations &
+Helmholtz3dPotentialOperatorBase<
+    Impl, BasisFunctionType>::trialTransformations() const {
+  return m_impl->transformations;
 }
 
 template <typename Impl, typename BasisFunctionType>
-const typename Helmholtz3dPotentialOperatorBase<Impl, BasisFunctionType>::
-KernelTrialIntegral&
-Helmholtz3dPotentialOperatorBase<Impl, BasisFunctionType>::
-integral() const
-{
-    return m_impl->integral;
+const typename Helmholtz3dPotentialOperatorBase<
+    Impl, BasisFunctionType>::KernelTrialIntegral &
+Helmholtz3dPotentialOperatorBase<Impl, BasisFunctionType>::integral() const {
+  return m_impl->integral;
 }
 
 } // namespace Bempp

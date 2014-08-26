@@ -30,8 +30,7 @@
 #include <utility>
 #include <vector>
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \cond FORWARD_DECL */
 template <typename ValueType> class Shapeset;
@@ -39,32 +38,29 @@ template <typename ValueType> class Shapeset;
 
 /** \brief Integration over pairs of elements. */
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
-class KernelTrialIntegrator
-{
+class KernelTrialIntegrator {
 public:
-    typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
-    typedef std::pair<int, int> PointElementIndexPair;
+  typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
+  typedef std::pair<int, int> PointElementIndexPair;
 
-    virtual ~KernelTrialIntegrator() {}
+  virtual ~KernelTrialIntegrator() {}
 
-    virtual void integrate(
-            const std::vector<int>& pointIndices,
-            int trialElementIndex,
-            const Shapeset<BasisFunctionType>& trialShapeset,
+  virtual void
+  integrate(const std::vector<int> &pointIndices, int trialElementIndex,
+            const Shapeset<BasisFunctionType> &trialShapeset,
             LocalDofIndex localTrialDofIndex,
-            const std::vector<arma::Mat<ResultType>*>& result) const = 0;
+            const std::vector<arma::Mat<ResultType> *> &result) const = 0;
 
-    virtual void integrate(
-            int pointIndex,
-            int componentIndex,
-            const std::vector<int>& trialElementIndices,
-            const Shapeset<BasisFunctionType>& trialShapeset,
-            const std::vector<arma::Mat<ResultType>*>& result) const = 0;
+  virtual void
+  integrate(int pointIndex, int componentIndex,
+            const std::vector<int> &trialElementIndices,
+            const Shapeset<BasisFunctionType> &trialShapeset,
+            const std::vector<arma::Mat<ResultType> *> &result) const = 0;
 
-    virtual void integrate(
-            const std::vector<PointElementIndexPair>& pointElementIndexPairs,
-            const Shapeset<BasisFunctionType>& trialShapeset,
-            const std::vector<arma::Mat<ResultType>*>& result) const = 0;
+  virtual void
+  integrate(const std::vector<PointElementIndexPair> &pointElementIndexPairs,
+            const Shapeset<BasisFunctionType> &trialShapeset,
+            const std::vector<arma::Mat<ResultType> *> &result) const = 0;
 };
 
 } // namespace Fiber

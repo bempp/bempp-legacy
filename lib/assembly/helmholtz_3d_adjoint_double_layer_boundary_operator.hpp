@@ -27,8 +27,7 @@
 
 #include "../common/scalar_traits.hpp"
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \ingroup helmholtz_3d
  *  \brief Construct a BoundaryOperator object representing the adjoint
@@ -94,18 +93,18 @@ namespace Bempp
  */
 template <typename BasisFunctionType>
 BoundaryOperator<BasisFunctionType,
-typename ScalarTraits<BasisFunctionType>::ComplexType>
+                 typename ScalarTraits<BasisFunctionType>::ComplexType>
 helmholtz3dAdjointDoubleLayerBoundaryOperator(
-        const shared_ptr<const Context<BasisFunctionType,
-        typename ScalarTraits<BasisFunctionType>::ComplexType> >& context,
-        const shared_ptr<const Space<BasisFunctionType> >& domain,
-        const shared_ptr<const Space<BasisFunctionType> >& range,
-        const shared_ptr<const Space<BasisFunctionType> >& dualToRange,
-        typename ScalarTraits<BasisFunctionType>::ComplexType waveNumber,
-        const std::string& label = "",
-        int symmetry = NO_SYMMETRY,
-        bool useInterpolation = false,
-        int interpPtsPerWavelength = DEFAULT_HELMHOLTZ_INTERPOLATION_DENSITY);
+    const shared_ptr<const Context<
+        BasisFunctionType,
+        typename ScalarTraits<BasisFunctionType>::ComplexType>> &context,
+    const shared_ptr<const Space<BasisFunctionType>> &domain,
+    const shared_ptr<const Space<BasisFunctionType>> &range,
+    const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
+    typename ScalarTraits<BasisFunctionType>::ComplexType waveNumber,
+    const std::string &label = "", int symmetry = NO_SYMMETRY,
+    bool useInterpolation = false,
+    int interpPtsPerWavelength = DEFAULT_HELMHOLTZ_INTERPOLATION_DENSITY);
 
 } // namespace Bempp
 

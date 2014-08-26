@@ -25,8 +25,7 @@
 
 #include "../fiber/domain_index_dependent_function.hpp"
 
-namespace Bempp
-{
+namespace Bempp {
 
 using Fiber::DomainIndexDependentFunction;
 
@@ -65,9 +64,8 @@ using Fiber::DomainIndexDependentFunction;
   of the GridFunction class. */
 template <typename Functor>
 inline DomainIndexDependentFunction<Functor>
-domainIndexDependentFunction(const Functor& functor)
-{
-    return DomainIndexDependentFunction<Functor>(functor);
+domainIndexDependentFunction(const Functor &functor) {
+  return DomainIndexDependentFunction<Functor>(functor);
 }
 
 } // namespace Bempp

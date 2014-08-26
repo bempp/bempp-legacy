@@ -23,14 +23,12 @@
 
 #include "../common/common.hpp"
 
-namespace Bempp
-{
+namespace Bempp {
 
-enum DofAssignmentMode
-{
-    EDGE_ON_SEGMENT = 1,
-    ELEMENT_ON_SEGMENT = 2,
-    REFERENCE_POINT_ON_SEGMENT = 4
+enum DofAssignmentMode {
+  EDGE_ON_SEGMENT = 1,
+  ELEMENT_ON_SEGMENT = 2,
+  REFERENCE_POINT_ON_SEGMENT = 4
 };
 
 } // namespace Bempp

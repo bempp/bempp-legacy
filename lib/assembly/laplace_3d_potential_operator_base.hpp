@@ -25,8 +25,7 @@
 
 #include <boost/scoped_ptr.hpp>
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \ingroup laplace_3d
  *  \brief Base class for potential operators related to the Laplace equation in
@@ -49,57 +48,53 @@ namespace Bempp
  *  values to be stored as complex numbers.
  *
  *  \see laplace_3d */
-template <typename Impl,
-          typename BasisFunctionType_, typename ResultType_ = BasisFunctionType_>
-class Laplace3dPotentialOperatorBase :
-        public ElementaryPotentialOperator<
-        BasisFunctionType_,
-        typename ScalarTraits<ResultType_>::RealType,
-        ResultType_>
-{
-    typedef ElementaryPotentialOperator<
-    BasisFunctionType_,
-    typename ScalarTraits<ResultType_>::RealType,
-    ResultType_>
-    Base;
+template <typename Impl, typename BasisFunctionType_,
+          typename ResultType_ = BasisFunctionType_>
+class Laplace3dPotentialOperatorBase
+    : public ElementaryPotentialOperator<
+          BasisFunctionType_, typename ScalarTraits<ResultType_>::RealType,
+          ResultType_> {
+  typedef ElementaryPotentialOperator<
+      BasisFunctionType_, typename ScalarTraits<ResultType_>::RealType,
+      ResultType_> Base;
+
 public:
-    /** \brief Type of the values of the basis functions into
-     *  which functions acted upon by the operator are expanded. */
-    typedef typename Base::BasisFunctionType BasisFunctionType;
-    /** \brief Type of the values of kernel functions. */
-    typedef typename Base::KernelType KernelType;
-    /** \brief Type of the values of the potential. */
-    typedef typename Base::ResultType ResultType;
-    /** \copydoc ElementaryPotentialOperator::CoordinateType */
-    typedef typename Base::CoordinateType CoordinateType;
-    /** \copydoc ElementaryPotentialOperator::CollectionOfBasisTransformations */
-    typedef typename Base::CollectionOfBasisTransformations
-    CollectionOfBasisTransformations;
-    /** \copydoc ElementaryPotentialOperator::CollectionOfKernels */
-    typedef typename Base::CollectionOfKernels CollectionOfKernels;
-    /** \copydoc ElementaryPotentialOperator::KernelTrialIntegral */
-    typedef typename Base::KernelTrialIntegral KernelTrialIntegral;
+  /** \brief Type of the values of the basis functions into
+   *  which functions acted upon by the operator are expanded. */
+  typedef typename Base::BasisFunctionType BasisFunctionType;
+  /** \brief Type of the values of kernel functions. */
+  typedef typename Base::KernelType KernelType;
+  /** \brief Type of the values of the potential. */
+  typedef typename Base::ResultType ResultType;
+  /** \copydoc ElementaryPotentialOperator::CoordinateType */
+  typedef typename Base::CoordinateType CoordinateType;
+  /** \copydoc ElementaryPotentialOperator::CollectionOfBasisTransformations */
+  typedef typename Base::CollectionOfBasisTransformations
+  CollectionOfBasisTransformations;
+  /** \copydoc ElementaryPotentialOperator::CollectionOfKernels */
+  typedef typename Base::CollectionOfKernels CollectionOfKernels;
+  /** \copydoc ElementaryPotentialOperator::KernelTrialIntegral */
+  typedef typename Base::KernelTrialIntegral KernelTrialIntegral;
 
-    /** \brief Constructor. */
-    Laplace3dPotentialOperatorBase();
-    /** \brief Copy constructor. */
-    Laplace3dPotentialOperatorBase(const Laplace3dPotentialOperatorBase& other);
-    /** \brief Destructor. */
-    virtual ~Laplace3dPotentialOperatorBase();
-    /** \brief Assignment operator. */
-    Laplace3dPotentialOperatorBase& operator=(
-            const Laplace3dPotentialOperatorBase& rhs);
-
-private:
-    virtual const CollectionOfKernels& kernels() const;
-    virtual const CollectionOfBasisTransformations&
-    trialTransformations() const;
-    virtual const KernelTrialIntegral& integral() const;
+  /** \brief Constructor. */
+  Laplace3dPotentialOperatorBase();
+  /** \brief Copy constructor. */
+  Laplace3dPotentialOperatorBase(const Laplace3dPotentialOperatorBase &other);
+  /** \brief Destructor. */
+  virtual ~Laplace3dPotentialOperatorBase();
+  /** \brief Assignment operator. */
+  Laplace3dPotentialOperatorBase &
+  operator=(const Laplace3dPotentialOperatorBase &rhs);
 
 private:
-    /** \cond PRIVATE */
-    boost::scoped_ptr<Impl> m_impl;
-    /** \endcond */
+  virtual const CollectionOfKernels &kernels() const;
+  virtual const CollectionOfBasisTransformations &trialTransformations() const;
+  virtual const KernelTrialIntegral &integral() const;
+
+private:
+  /** \cond PRIVATE */
+  boost::scoped_ptr<Impl> m_impl;
+  /** \endcond */
 };
 
 } // namespace Bempp

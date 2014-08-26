@@ -24,51 +24,54 @@
 #include "quadrature_descriptor_selector_factory.hpp"
 #include "accuracy_options.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 template <typename BasisFunctionType>
-class DefaultQuadratureDescriptorSelectorFactory :
-        public QuadratureDescriptorSelectorFactory<BasisFunctionType>
-{
-    typedef QuadratureDescriptorSelectorFactory<BasisFunctionType> Base;
+class DefaultQuadratureDescriptorSelectorFactory
+    : public QuadratureDescriptorSelectorFactory<BasisFunctionType> {
+  typedef QuadratureDescriptorSelectorFactory<BasisFunctionType> Base;
+
 public:
-    typedef typename Base::CoordinateType CoordinateType;
+  typedef typename Base::CoordinateType CoordinateType;
 
-    explicit DefaultQuadratureDescriptorSelectorFactory(
-        const AccuracyOptionsEx& accuracyOptions = AccuracyOptionsEx());
+  explicit DefaultQuadratureDescriptorSelectorFactory(
+      const AccuracyOptionsEx &accuracyOptions = AccuracyOptionsEx());
 
-    virtual shared_ptr<QuadratureDescriptorSelectorForGridFunctions<CoordinateType> >
-    makeQuadratureDescriptorSelectorForGridFunctions(
-        const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
-        const shared_ptr<const std::vector<
-            const Shapeset<BasisFunctionType>*> >& testShapesets) const;
+  virtual shared_ptr<
+      QuadratureDescriptorSelectorForGridFunctions<CoordinateType>>
+  makeQuadratureDescriptorSelectorForGridFunctions(
+      const shared_ptr<const RawGridGeometry<CoordinateType>> &rawGeometry,
+      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
+          testShapesets) const;
 
-    virtual shared_ptr<QuadratureDescriptorSelectorForIntegralOperators<CoordinateType> >
-    makeQuadratureDescriptorSelectorForIntegralOperators(
-        const shared_ptr<const RawGridGeometry<CoordinateType> >& testRawGeometry,
-        const shared_ptr<const RawGridGeometry<CoordinateType> >& trialRawGeometry,
-        const shared_ptr<const std::vector<
-            const Shapeset<BasisFunctionType>*> >& testShapesets,
-        const shared_ptr<const std::vector<
-            const Shapeset<BasisFunctionType>*> >& trialShapesets) const;
+  virtual shared_ptr<
+      QuadratureDescriptorSelectorForIntegralOperators<CoordinateType>>
+  makeQuadratureDescriptorSelectorForIntegralOperators(
+      const shared_ptr<const RawGridGeometry<CoordinateType>> &testRawGeometry,
+      const shared_ptr<const RawGridGeometry<CoordinateType>> &trialRawGeometry,
+      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
+          testShapesets,
+      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
+          trialShapesets) const;
 
-    virtual shared_ptr<QuadratureDescriptorSelectorForLocalOperators<CoordinateType> >
-    makeQuadratureDescriptorSelectorForLocalOperators(
-        const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
-        const shared_ptr<const std::vector<
-            const Shapeset<BasisFunctionType>*> >& testShapesets,
-        const shared_ptr<const std::vector<
-            const Shapeset<BasisFunctionType>*> >& trialShapesets) const;
+  virtual shared_ptr<
+      QuadratureDescriptorSelectorForLocalOperators<CoordinateType>>
+  makeQuadratureDescriptorSelectorForLocalOperators(
+      const shared_ptr<const RawGridGeometry<CoordinateType>> &rawGeometry,
+      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
+          testShapesets,
+      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
+          trialShapesets) const;
 
-    virtual shared_ptr<QuadratureDescriptorSelectorForPotentialOperators<BasisFunctionType> >
-    makeQuadratureDescriptorSelectorForPotentialOperators(
-        const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
-        const shared_ptr<const std::vector<
-            const Shapeset<BasisFunctionType>*> >& trialShapesets) const;
+  virtual shared_ptr<
+      QuadratureDescriptorSelectorForPotentialOperators<BasisFunctionType>>
+  makeQuadratureDescriptorSelectorForPotentialOperators(
+      const shared_ptr<const RawGridGeometry<CoordinateType>> &rawGeometry,
+      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
+          trialShapesets) const;
 
 private:
-    AccuracyOptionsEx m_accuracyOptions;
+  AccuracyOptionsEx m_accuracyOptions;
 };
 
 } // namespace Fiber

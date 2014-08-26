@@ -41,7 +41,7 @@
 // Ahmed's include files
 
 #ifdef __INTEL_COMPILER
-#pragma warning(disable:381)
+#pragma warning(disable : 381)
 #endif
 
 #include "ahmed_complex.hpp"
@@ -54,8 +54,8 @@
 // #include <matgen_omp.h>
 // #undef _OPENMP
 
-bool multaHvec_omp(double d, blcluster* bl, mblock<double>** A, double* x,
-           double* y);
+bool multaHvec_omp(double d, blcluster *bl, mblock<double> **A, double *x,
+                   double *y);
 
 #include <matrix.h>
 #undef SIGN
@@ -63,68 +63,64 @@ bool multaHvec_omp(double d, blcluster* bl, mblock<double>** A, double* x,
 #undef MIN
 #undef MAX
 
-template <typename T>
-T MIN(T x, T y)
-{
-    return std::min(x, y);
-}
+template <typename T> T MIN(T x, T y) { return std::min(x, y); }
 
-template <typename T>
-T MAX(T x, T y)
-{
-    return std::max(x, y);
-}
+template <typename T> T MAX(T x, T y) { return std::max(x, y); }
 
 #ifdef __INTEL_COMPILER
-#pragma warning(default:381)
+#pragma warning(default : 381)
 #endif
 
-
-namespace Bempp
-{
+namespace Bempp {
 
 /** \brief An Ahmed-compatible degree-of-freedom type. */
 template <typename CoordinateType>
 // struct AhmedDofWrapper : public Point3D<CoordinateType>
-struct AhmedDofWrapper : public BoundingBox<CoordinateType>
-{
-    // Methods required by the AHMED clustering code
+struct AhmedDofWrapper : public BoundingBox<CoordinateType> {
+  // Methods required by the AHMED clustering code
 
-    CoordinateType getcenter(int i) const {
-        if (i == 0) return this->reference.x;
-        else if (i == 1) return this->reference.y;
-        else return this->reference.z;
-    }
+  CoordinateType getcenter(int i) const {
+    if (i == 0)
+      return this->reference.x;
+    else if (i == 1)
+      return this->reference.y;
+    else
+      return this->reference.z;
+  }
 
-    CoordinateType getlbound(int i) const {
-        if (i == 0) return this->lbound.x;
-        else if (i == 1) return this->lbound.y;
-        else return this->lbound.z;
-    }
+  CoordinateType getlbound(int i) const {
+    if (i == 0)
+      return this->lbound.x;
+    else if (i == 1)
+      return this->lbound.y;
+    else
+      return this->lbound.z;
+  }
 
-    CoordinateType getubound(int i) const {
-        if (i == 0) return this->ubound.x;
-        else if (i == 1) return this->ubound.y;
-        else return this->ubound.z;
-    }
+  CoordinateType getubound(int i) const {
+    if (i == 0)
+      return this->ubound.x;
+    else if (i == 1)
+      return this->ubound.y;
+    else
+      return this->ubound.z;
+  }
 };
 
 template <typename ValueType>
-boost::shared_array<mblock<typename AhmedTypeTraits<ValueType>::Type>*>
-allocateAhmedMblockArray(size_t blockCount)
-{
-    typedef mblock<typename AhmedTypeTraits<ValueType>::Type> AhmedMblock;
-    AhmedMblock** blocks = 0;
-    allocmbls(blockCount, blocks);
-    return boost::shared_array<AhmedMblock*>(
-                blocks, AhmedMblockArrayDeleter(blockCount));
+boost::shared_array<mblock<typename AhmedTypeTraits<ValueType>::Type> *>
+allocateAhmedMblockArray(size_t blockCount) {
+  typedef mblock<typename AhmedTypeTraits<ValueType>::Type> AhmedMblock;
+  AhmedMblock **blocks = 0;
+  allocmbls(blockCount, blocks);
+  return boost::shared_array<AhmedMblock *>(
+      blocks, AhmedMblockArrayDeleter(blockCount));
 }
 
 template <typename ValueType>
-boost::shared_array<mblock<typename AhmedTypeTraits<ValueType>::Type>*>
-allocateAhmedMblockArray(const blcluster* cluster)
-{
-    return allocateAhmedMblockArray<ValueType>(cluster->nleaves());
+boost::shared_array<mblock<typename AhmedTypeTraits<ValueType>::Type> *>
+allocateAhmedMblockArray(const blcluster *cluster) {
+  return allocateAhmedMblockArray<ValueType>(cluster->nleaves());
 }
 
 } // namespace Bempp

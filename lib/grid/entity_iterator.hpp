@@ -26,11 +26,10 @@
 #include "entity_pointer.hpp"
 #include <memory>
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \cond FORWARD_DECL */
-template<int codim> class Entity;
+template <int codim> class Entity;
 /** \endcond */
 
 /** \ingroup grid
@@ -38,7 +37,8 @@ template<int codim> class Entity;
 
     \param codim Codimension of the entities iterated over.
 
-    Typical usage (here \p ConcreteEntityIterator is some subclass of <tt>EntityIterator<codim></tt>):
+    Typical usage (here \p ConcreteEntityIterator is some subclass of
+   <tt>EntityIterator<codim></tt>):
 
     \code
     ConcreteEntityIterator* it = ...();
@@ -55,32 +55,31 @@ template<int codim> class Entity;
     entity() method must know the codimension of the entity to which it returns
     a reference.
 */
-template<int codim>
-class EntityIterator: public EntityPointer<codim>
-{
+template <int codim> class EntityIterator : public EntityPointer<codim> {
 protected: /* Can't be changed to private, derived classes use it */
-    bool m_finished;
+  bool m_finished;
+
 public:
-    /** \brief Increment iterator. */
-    virtual void next() = 0;
+  /** \brief Increment iterator. */
+  virtual void next() = 0;
 
-    /** \brief True if iterator points past the end of the iteration range */
-    bool finished() const {
-        return m_finished;
-    }
+  /** \brief True if iterator points past the end of the iteration range */
+  bool finished() const { return m_finished; }
 
-    // virtual void reset() = 0; // Would such a method be useful?
+  // virtual void reset() = 0; // Would such a method be useful?
 
-    // This redeclaration appears so that the docstring can be changed wrt. to the base class.
-    /** \brief Read-only access to the entity referenced by the iterator. */
-    virtual const Entity<codim>& entity() const = 0;
+  // This redeclaration appears so that the docstring can be changed wrt. to the
+  // base class.
+  /** \brief Read-only access to the entity referenced by the iterator. */
+  virtual const Entity<codim> &entity() const = 0;
 
-    /** \brief A stable pointer to the entity currently referenced by the iterator.
+  /** \brief A stable pointer to the entity currently referenced by the
+  iterator.
 
-    The returned pointer is guaranteed to keep referring to the same entity
-    even if the iterator is incremented or destroyed, as long as the grid is
-    not adapted and the grid object itself stays alive. */
-    virtual std::unique_ptr<EntityPointer<codim> > frozen() const = 0;
+  The returned pointer is guaranteed to keep referring to the same entity
+  even if the iterator is incremented or destroyed, as long as the grid is
+  not adapted and the grid object itself stays alive. */
+  virtual std::unique_ptr<EntityPointer<codim>> frozen() const = 0;
 };
 
 } // namespace Bempp

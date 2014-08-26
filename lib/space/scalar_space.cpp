@@ -23,66 +23,54 @@
 #include "../fiber/scalar_function_value_functor.hpp"
 #include "../fiber/default_collection_of_shapeset_transformations.hpp"
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \cond PRIVATE */
 template <typename BasisFunctionType>
-struct ScalarSpace<BasisFunctionType>::Impl
-{
-    typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
-    TransformationFunctor;
+struct ScalarSpace<BasisFunctionType>::Impl {
+  typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
+  TransformationFunctor;
 
-    Impl() : transformations(TransformationFunctor())
-    {}
+  Impl() : transformations(TransformationFunctor()) {}
 
-    Fiber::DefaultCollectionOfShapesetTransformations<TransformationFunctor>
-    transformations;
+  Fiber::DefaultCollectionOfShapesetTransformations<TransformationFunctor>
+  transformations;
 };
 /** \endcond */
 
 template <typename BasisFunctionType>
-ScalarSpace<BasisFunctionType>::ScalarSpace(const shared_ptr<const Grid>& grid) :
-    Base(grid), m_impl(new Impl)
-{
+ScalarSpace<BasisFunctionType>::ScalarSpace(const shared_ptr<const Grid> &grid)
+    : Base(grid), m_impl(new Impl) {}
+
+template <typename BasisFunctionType>
+ScalarSpace<BasisFunctionType>::ScalarSpace(const ScalarSpace &other)
+    : Base(other), m_impl(new Impl(*other.m_impl)) {}
+
+template <typename BasisFunctionType>
+ScalarSpace<BasisFunctionType>::~ScalarSpace() {}
+
+template <typename BasisFunctionType>
+ScalarSpace<BasisFunctionType> &ScalarSpace<BasisFunctionType>::
+operator=(const ScalarSpace &rhs) {
+  if (this != &rhs) {
+    Base::operator=(rhs);
+    m_impl.reset(new Impl(*rhs.m_impl));
+  }
+  return *this;
 }
 
 template <typename BasisFunctionType>
-ScalarSpace<BasisFunctionType>::ScalarSpace(
-        const ScalarSpace& other) :
-    Base(other), m_impl(new Impl(*other.m_impl))
-{
-}
-
-template <typename BasisFunctionType>
-ScalarSpace<BasisFunctionType>::~ScalarSpace()
-{
-}
-
-template <typename BasisFunctionType>
-ScalarSpace<BasisFunctionType>&
-ScalarSpace<BasisFunctionType>::
-operator=(const ScalarSpace& rhs)
-{
-    if (this != &rhs) {
-        Base::operator=(rhs);
-        m_impl.reset(new Impl(*rhs.m_impl));
-    }
-    return *this;
-}
-
-template <typename BasisFunctionType>
-const typename ScalarSpace<BasisFunctionType>::CollectionOfShapesetTransformations&
-ScalarSpace<BasisFunctionType>::basisFunctionValue() const
-{
-    return m_impl->transformations;
+const typename ScalarSpace<
+    BasisFunctionType>::CollectionOfShapesetTransformations &
+ScalarSpace<BasisFunctionType>::basisFunctionValue() const {
+  return m_impl->transformations;
 }
 
 template <typename BasisFunctionType>
 void ScalarSpace<BasisFunctionType>::getGlobalDofInterpolationDirections(
-        arma::Mat<CoordinateType>& directions) const {
-    directions.set_size(1 /* scalar space */, this->globalDofCount());
-    directions.fill(1);
+    arma::Mat<CoordinateType> &directions) const {
+  directions.set_size(1 /* scalar space */, this->globalDofCount());
+  directions.fill(1);
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(ScalarSpace);

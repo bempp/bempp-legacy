@@ -23,52 +23,42 @@
 #include "../fiber/explicit_instantiation.hpp"
 #include "../fiber/numerical_quadrature_strategy_imp.hpp"
 
-namespace Bempp
-{
+namespace Bempp {
+
+template <typename BasisFunctionType, typename ResultType>
+NumericalQuadratureStrategy<BasisFunctionType,
+                            ResultType>::NumericalQuadratureStrategy()
+    : Base() {}
 
 template <typename BasisFunctionType, typename ResultType>
 NumericalQuadratureStrategy<BasisFunctionType, ResultType>::
-NumericalQuadratureStrategy() :
-    Base()
-{
-}
+    NumericalQuadratureStrategy(const AccuracyOptionsEx &accuracyOptions)
+    : Base(accuracyOptions) {}
 
 template <typename BasisFunctionType, typename ResultType>
 NumericalQuadratureStrategy<BasisFunctionType, ResultType>::
-NumericalQuadratureStrategy(
-        const AccuracyOptionsEx& accuracyOptions) :
-    Base(accuracyOptions)
-{
-}
+    NumericalQuadratureStrategy(
+        const AccuracyOptionsEx &accuracyOptions,
+        const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType>> &
+            singleQuadratureRuleFamily,
+        const shared_ptr<const DoubleQuadratureRuleFamily<CoordinateType>> &
+            doubleQuadratureRuleFamily)
+    : Base(accuracyOptions, singleQuadratureRuleFamily,
+           doubleQuadratureRuleFamily) {}
 
 template <typename BasisFunctionType, typename ResultType>
 NumericalQuadratureStrategy<BasisFunctionType, ResultType>::
-NumericalQuadratureStrategy(
-        const AccuracyOptionsEx& accuracyOptions,
-        const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType> >&
-        singleQuadratureRuleFamily,
-        const shared_ptr<const DoubleQuadratureRuleFamily<CoordinateType> >&
-        doubleQuadratureRuleFamily) :
-    Base(accuracyOptions,
-         singleQuadratureRuleFamily, doubleQuadratureRuleFamily)
-{
-}
-
-template <typename BasisFunctionType, typename ResultType>
-NumericalQuadratureStrategy<BasisFunctionType, ResultType>::
-NumericalQuadratureStrategy(
-        const shared_ptr<const QuadratureDescriptorSelectorFactory<BasisFunctionType> >&
-        quadratureDescriptorSelectorFactory,
-        const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType> >&
-        singleQuadratureRuleFamily,
-        const shared_ptr<const DoubleQuadratureRuleFamily<CoordinateType> >&
-        doubleQuadratureRuleFamily) :
-    Base(quadratureDescriptorSelectorFactory,
-         singleQuadratureRuleFamily, doubleQuadratureRuleFamily)
-{
-}
+    NumericalQuadratureStrategy(
+        const shared_ptr<const QuadratureDescriptorSelectorFactory<
+            BasisFunctionType>> &quadratureDescriptorSelectorFactory,
+        const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType>> &
+            singleQuadratureRuleFamily,
+        const shared_ptr<const DoubleQuadratureRuleFamily<CoordinateType>> &
+            doubleQuadratureRuleFamily)
+    : Base(quadratureDescriptorSelectorFactory, singleQuadratureRuleFamily,
+           doubleQuadratureRuleFamily) {}
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(
-        NumericalQuadratureStrategy);
+    NumericalQuadratureStrategy);
 
 } // namespace Bempp

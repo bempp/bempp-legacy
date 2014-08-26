@@ -18,7 +18,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-
 #ifndef bempp_aca_global_assembler_hpp
 #define bempp_aca_global_assembler_hpp
 
@@ -33,8 +32,7 @@
 
 class Epetra_CrsMatrix;
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \cond FORWARD_DECL */
 template <typename ResultType> class LocalAssemblerForIntegralOperators;
@@ -43,8 +41,7 @@ template <typename ResultType> class LocalAssemblerForPotentialOperators;
 
 } // namespace Fiber
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \cond FORWARD_DECL */
 class AssemblyOptions;
@@ -58,52 +55,51 @@ template <typename BasisFunctionType, typename ResultType> class Context;
  *  \brief ACA-mode assembler.
  */
 template <typename BasisFunctionType, typename ResultType>
-class AcaGlobalAssembler
-{
-    typedef typename Fiber::ScalarTraits<ResultType>::RealType CoordinateType;
+class AcaGlobalAssembler {
+  typedef typename Fiber::ScalarTraits<ResultType>::RealType CoordinateType;
 
 public:
-    typedef DiscreteBoundaryOperator<ResultType> DiscreteBndOp;
-    typedef Fiber::LocalAssemblerForIntegralOperators<ResultType>
-    LocalAssemblerForIntegralOperators;
-    typedef LocalAssemblerForIntegralOperators LocalAssemblerForBoundaryOperators; // deprecated
-    typedef LocalAssemblerForBoundaryOperators LocalAssembler; // deprecated
-    typedef Fiber::LocalAssemblerForPotentialOperators<ResultType>
-    LocalAssemblerForPotentialOperators;
+  typedef DiscreteBoundaryOperator<ResultType> DiscreteBndOp;
+  typedef Fiber::LocalAssemblerForIntegralOperators<ResultType>
+  LocalAssemblerForIntegralOperators;
+  typedef LocalAssemblerForIntegralOperators
+  LocalAssemblerForBoundaryOperators;                        // deprecated
+  typedef LocalAssemblerForBoundaryOperators LocalAssembler; // deprecated
+  typedef Fiber::LocalAssemblerForPotentialOperators<ResultType>
+  LocalAssemblerForPotentialOperators;
 
-    static std::unique_ptr<DiscreteBndOp> assembleDetachedWeakForm(
-            const Space<BasisFunctionType>& testSpace,
-            const Space<BasisFunctionType>& trialSpace,
-            const std::vector<LocalAssemblerForIntegralOperators*>& localAssemblers,
-            const std::vector<LocalAssemblerForIntegralOperators*>&
-            localAssemblersForAdmissibleBlocks,
-            const std::vector<const DiscreteBndOp*>& sparseTermsToAdd,
-            const std::vector<ResultType>& denseTermMultipliers,
-            const std::vector<ResultType>& sparseTermMultipliers,
-            const Context<BasisFunctionType, ResultType>& context,
-            int symmetry);
+  static std::unique_ptr<DiscreteBndOp> assembleDetachedWeakForm(
+      const Space<BasisFunctionType> &testSpace,
+      const Space<BasisFunctionType> &trialSpace,
+      const std::vector<LocalAssemblerForIntegralOperators *> &localAssemblers,
+      const std::vector<LocalAssemblerForIntegralOperators *> &
+          localAssemblersForAdmissibleBlocks,
+      const std::vector<const DiscreteBndOp *> &sparseTermsToAdd,
+      const std::vector<ResultType> &denseTermMultipliers,
+      const std::vector<ResultType> &sparseTermMultipliers,
+      const Context<BasisFunctionType, ResultType> &context, int symmetry);
 
-    static std::unique_ptr<DiscreteBndOp> assembleDetachedWeakForm(
-            const Space<BasisFunctionType>& testSpace,
-            const Space<BasisFunctionType>& trialSpace,
-            LocalAssemblerForIntegralOperators& localAssembler,
-            LocalAssemblerForIntegralOperators& localAssemblerForAdmissibleBlocks,
-            const Context<BasisFunctionType, ResultType>& context,
-            int symmetry); // used to be "bool symmetric"; fortunately "true"
-                           // is converted to 1 == SYMMETRIC
+  static std::unique_ptr<DiscreteBndOp> assembleDetachedWeakForm(
+      const Space<BasisFunctionType> &testSpace,
+      const Space<BasisFunctionType> &trialSpace,
+      LocalAssemblerForIntegralOperators &localAssembler,
+      LocalAssemblerForIntegralOperators &localAssemblerForAdmissibleBlocks,
+      const Context<BasisFunctionType, ResultType> &context,
+      int symmetry); // used to be "bool symmetric"; fortunately "true"
+                     // is converted to 1 == SYMMETRIC
 
-    static std::unique_ptr<DiscreteBndOp> assemblePotentialOperator(
-            const arma::Mat<CoordinateType>& points,
-            const Space<BasisFunctionType>& trialSpace,
-            const std::vector<LocalAssemblerForPotentialOperators*>& localAssemblers,
-            const std::vector<ResultType>& termMultipliers,
-            const EvaluationOptions& options);
+  static std::unique_ptr<DiscreteBndOp> assemblePotentialOperator(
+      const arma::Mat<CoordinateType> &points,
+      const Space<BasisFunctionType> &trialSpace,
+      const std::vector<LocalAssemblerForPotentialOperators *> &localAssemblers,
+      const std::vector<ResultType> &termMultipliers,
+      const EvaluationOptions &options);
 
-    static std::unique_ptr<DiscreteBndOp> assemblePotentialOperator(
-            const arma::Mat<CoordinateType>& points,
-            const Space<BasisFunctionType>& trialSpace,
-            LocalAssemblerForPotentialOperators& localAssembler,
-            const EvaluationOptions& options);
+  static std::unique_ptr<DiscreteBndOp>
+  assemblePotentialOperator(const arma::Mat<CoordinateType> &points,
+                            const Space<BasisFunctionType> &trialSpace,
+                            LocalAssemblerForPotentialOperators &localAssembler,
+                            const EvaluationOptions &options);
 };
 
 } // namespace Bempp

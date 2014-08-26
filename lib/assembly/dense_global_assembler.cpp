@@ -49,203 +49,203 @@
 #include <tbb/task_scheduler_init.h>
 //#include <tbb/tick_count.h>
 
-namespace Bempp
-{
+namespace Bempp {
 
 // Helper functions and classes
 
-namespace
-{
+namespace {
 
 // Body of parallel loop
 
 template <typename BasisFunctionType, typename ResultType>
-class DenseWeakFormAssemblerLoopBody
-{
+class DenseWeakFormAssemblerLoopBody {
 public:
-    typedef tbb::spin_mutex MutexType;
+  typedef tbb::spin_mutex MutexType;
 
-    DenseWeakFormAssemblerLoopBody(
-            const std::vector<int>& testIndices,
-            const std::vector<std::vector<GlobalDofIndex> >& testGlobalDofs,
-            const std::vector<std::vector<GlobalDofIndex> >& trialGlobalDofs,
-            const std::vector<std::vector<BasisFunctionType> >& testLocalDofWeights,
-            const std::vector<std::vector<BasisFunctionType> >& trialLocalDofWeights,
-            Fiber::LocalAssemblerForIntegralOperators<ResultType>& assembler,
-            arma::Mat<ResultType>& result, MutexType& mutex) :
-        m_testIndices(testIndices),
-        m_testGlobalDofs(testGlobalDofs), m_trialGlobalDofs(trialGlobalDofs),
+  DenseWeakFormAssemblerLoopBody(
+      const std::vector<int> &testIndices,
+      const std::vector<std::vector<GlobalDofIndex>> &testGlobalDofs,
+      const std::vector<std::vector<GlobalDofIndex>> &trialGlobalDofs,
+      const std::vector<std::vector<BasisFunctionType>> &testLocalDofWeights,
+      const std::vector<std::vector<BasisFunctionType>> &trialLocalDofWeights,
+      Fiber::LocalAssemblerForIntegralOperators<ResultType> &assembler,
+      arma::Mat<ResultType> &result, MutexType &mutex)
+      : m_testIndices(testIndices), m_testGlobalDofs(testGlobalDofs),
+        m_trialGlobalDofs(trialGlobalDofs),
         m_testLocalDofWeights(testLocalDofWeights),
-        m_trialLocalDofWeights(trialLocalDofWeights),
-        m_assembler(assembler), m_result(result), m_mutex(mutex) {
-    }
+        m_trialLocalDofWeights(trialLocalDofWeights), m_assembler(assembler),
+        m_result(result), m_mutex(mutex) {}
 
-    void operator() (const tbb::blocked_range<size_t>& r) const {
-        const int elementCount = m_testIndices.size();
-        std::vector<arma::Mat<ResultType> > localResult;
-        for (size_t trialIndex = r.begin(); trialIndex != r.end(); ++trialIndex) {
-            // Evaluate integrals over pairs of the current trial element and
-            // all the test elements
-            m_assembler.evaluateLocalWeakForms(TEST_TRIAL, m_testIndices, trialIndex,
-                                               ALL_DOFS, localResult);
+  void operator()(const tbb::blocked_range<size_t> &r) const {
+    const int elementCount = m_testIndices.size();
+    std::vector<arma::Mat<ResultType>> localResult;
+    for (size_t trialIndex = r.begin(); trialIndex != r.end(); ++trialIndex) {
+      // Evaluate integrals over pairs of the current trial element and
+      // all the test elements
+      m_assembler.evaluateLocalWeakForms(TEST_TRIAL, m_testIndices, trialIndex,
+                                         ALL_DOFS, localResult);
 
-            const int trialDofCount = m_trialGlobalDofs[trialIndex].size();
-            // Global assembly
-            {
-                MutexType::scoped_lock lock(m_mutex);
-                // Loop over test indices
-                for (int testIndex = 0; testIndex < elementCount; ++testIndex) {
-                    const int testDofCount = m_testGlobalDofs[testIndex].size();
-                    // Add the integrals to appropriate entries in the operator's matrix
-                    for (int trialDof = 0; trialDof < trialDofCount; ++trialDof) {
-                        int trialGlobalDof = m_trialGlobalDofs[trialIndex][trialDof];
-                        if (trialGlobalDof < 0)
-                            continue;
-                        for (int testDof = 0; testDof < testDofCount; ++testDof) {
-                            int testGlobalDof = m_testGlobalDofs[testIndex][testDof];
-                            if (testGlobalDof < 0)
-                                continue;
-                            assert(std::abs(m_testLocalDofWeights[testIndex][testDof]) > 0.);
-                            assert(std::abs(m_trialLocalDofWeights[trialIndex][trialDof]) > 0.);
-                            m_result(testGlobalDof, trialGlobalDof) +=
-                                    conj(m_testLocalDofWeights[testIndex][testDof]) *
-                                    m_trialLocalDofWeights[trialIndex][trialDof] *
-                                    localResult[testIndex](testDof, trialDof);
-                        }
-                    }
-                }
+      const int trialDofCount = m_trialGlobalDofs[trialIndex].size();
+      // Global assembly
+      {
+        MutexType::scoped_lock lock(m_mutex);
+        // Loop over test indices
+        for (int testIndex = 0; testIndex < elementCount; ++testIndex) {
+          const int testDofCount = m_testGlobalDofs[testIndex].size();
+          // Add the integrals to appropriate entries in the operator's matrix
+          for (int trialDof = 0; trialDof < trialDofCount; ++trialDof) {
+            int trialGlobalDof = m_trialGlobalDofs[trialIndex][trialDof];
+            if (trialGlobalDof < 0)
+              continue;
+            for (int testDof = 0; testDof < testDofCount; ++testDof) {
+              int testGlobalDof = m_testGlobalDofs[testIndex][testDof];
+              if (testGlobalDof < 0)
+                continue;
+              assert(std::abs(m_testLocalDofWeights[testIndex][testDof]) > 0.);
+              assert(std::abs(m_trialLocalDofWeights[trialIndex][trialDof]) >
+                     0.);
+              m_result(testGlobalDof, trialGlobalDof) +=
+                  conj(m_testLocalDofWeights[testIndex][testDof]) *
+                  m_trialLocalDofWeights[trialIndex][trialDof] *
+                  localResult[testIndex](testDof, trialDof);
             }
+          }
         }
+      }
     }
+  }
 
 private:
-    const std::vector<int>& m_testIndices;
-    const std::vector<std::vector<GlobalDofIndex> >& m_testGlobalDofs;
-    const std::vector<std::vector<GlobalDofIndex> >& m_trialGlobalDofs;
-    const std::vector<std::vector<BasisFunctionType> >& m_testLocalDofWeights;
-    const std::vector<std::vector<BasisFunctionType> >& m_trialLocalDofWeights;
-    // mutable OK because Assembler is thread-safe. (Alternative to "mutable" here:
-    // make assembler's internal integrator map mutable)
-    typename Fiber::LocalAssemblerForIntegralOperators<ResultType>& m_assembler;
-    // mutable OK because write access to this matrix is protected by a mutex
-    arma::Mat<ResultType>& m_result;
+  const std::vector<int> &m_testIndices;
+  const std::vector<std::vector<GlobalDofIndex>> &m_testGlobalDofs;
+  const std::vector<std::vector<GlobalDofIndex>> &m_trialGlobalDofs;
+  const std::vector<std::vector<BasisFunctionType>> &m_testLocalDofWeights;
+  const std::vector<std::vector<BasisFunctionType>> &m_trialLocalDofWeights;
+  // mutable OK because Assembler is thread-safe. (Alternative to "mutable"
+  // here:
+  // make assembler's internal integrator map mutable)
+  typename Fiber::LocalAssemblerForIntegralOperators<ResultType> &m_assembler;
+  // mutable OK because write access to this matrix is protected by a mutex
+  arma::Mat<ResultType> &m_result;
 
-    // mutex must be mutable because we need to lock and unlock it
-    MutexType& m_mutex;
+  // mutex must be mutable because we need to lock and unlock it
+  MutexType &m_mutex;
 };
 
 /** Build a list of lists of global DOF indices corresponding to the local DOFs
  *  on each element of space.grid(). */
 template <typename BasisFunctionType>
-void gatherGlobalDofs(
-    const Space<BasisFunctionType>& space,
-    std::vector<std::vector<GlobalDofIndex> >& globalDofs,
-    std::vector<std::vector<BasisFunctionType> >& localDofWeights)
-{
-    // Get the grid's view so that we can iterate over elements
-    const GridView& view = space.gridView();
-    const int elementCount = view.entityCount(0);
+void
+gatherGlobalDofs(const Space<BasisFunctionType> &space,
+                 std::vector<std::vector<GlobalDofIndex>> &globalDofs,
+                 std::vector<std::vector<BasisFunctionType>> &localDofWeights) {
+  // Get the grid's view so that we can iterate over elements
+  const GridView &view = space.gridView();
+  const int elementCount = view.entityCount(0);
 
-    // Global DOF indices corresponding to local DOFs on elements
-    globalDofs.clear();
-    globalDofs.resize(elementCount);
-    // Weights of the local DOFs on elements
-    localDofWeights.clear();
-    localDofWeights.resize(elementCount);
+  // Global DOF indices corresponding to local DOFs on elements
+  globalDofs.clear();
+  globalDofs.resize(elementCount);
+  // Weights of the local DOFs on elements
+  localDofWeights.clear();
+  localDofWeights.resize(elementCount);
 
-    // Gather global DOF lists
-    const Mapper& mapper = view.elementMapper();
-    std::unique_ptr<EntityIterator<0> > it = view.entityIterator<0>();
-    while (!it->finished()) {
-        const Entity<0>& element = it->entity();
-        const int elementIndex = mapper.entityIndex(element);
-        space.getGlobalDofs(element, globalDofs[elementIndex],
-                            localDofWeights[elementIndex]);
-        it->next();
-    }
+  // Gather global DOF lists
+  const Mapper &mapper = view.elementMapper();
+  std::unique_ptr<EntityIterator<0>> it = view.entityIterator<0>();
+  while (!it->finished()) {
+    const Entity<0> &element = it->entity();
+    const int elementIndex = mapper.entityIndex(element);
+    space.getGlobalDofs(element, globalDofs[elementIndex],
+                        localDofWeights[elementIndex]);
+    it->next();
+  }
 }
 
 } // namespace
 
 template <typename BasisFunctionType, typename ResultType>
-std::unique_ptr<DiscreteBoundaryOperator<ResultType> >
-DenseGlobalAssembler<BasisFunctionType, ResultType>::
-assembleDetachedWeakForm(
-        const Space<BasisFunctionType>& testSpace,
-        const Space<BasisFunctionType>& trialSpace,
-        LocalAssemblerForIntegralOperators& assembler,
-        const Context<BasisFunctionType, ResultType>& context)
-{
-    const AssemblyOptions& options = context.assemblyOptions();
+std::unique_ptr<DiscreteBoundaryOperator<ResultType>>
+DenseGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
+    const Space<BasisFunctionType> &testSpace,
+    const Space<BasisFunctionType> &trialSpace,
+    LocalAssemblerForIntegralOperators &assembler,
+    const Context<BasisFunctionType, ResultType> &context) {
+  const AssemblyOptions &options = context.assemblyOptions();
 
-    // Global DOF indices corresponding to local DOFs on elements
-    std::vector<std::vector<GlobalDofIndex> > testGlobalDofs, trialGlobalDofs;
-    std::vector<std::vector<BasisFunctionType> > testLocalDofWeights,
-        trialLocalDofWeights;
-    gatherGlobalDofs(testSpace, testGlobalDofs, testLocalDofWeights);
-    if (&testSpace == &trialSpace) {
-        trialGlobalDofs = testGlobalDofs;
-        trialLocalDofWeights = testLocalDofWeights;
-    } else
-        gatherGlobalDofs(trialSpace, trialGlobalDofs, trialLocalDofWeights);
-    const size_t testElementCount = testGlobalDofs.size();
-    const size_t trialElementCount = trialGlobalDofs.size();
+  // Global DOF indices corresponding to local DOFs on elements
+  std::vector<std::vector<GlobalDofIndex>> testGlobalDofs, trialGlobalDofs;
+  std::vector<std::vector<BasisFunctionType>> testLocalDofWeights,
+      trialLocalDofWeights;
+  gatherGlobalDofs(testSpace, testGlobalDofs, testLocalDofWeights);
+  if (&testSpace == &trialSpace) {
+    trialGlobalDofs = testGlobalDofs;
+    trialLocalDofWeights = testLocalDofWeights;
+  } else
+    gatherGlobalDofs(trialSpace, trialGlobalDofs, trialLocalDofWeights);
+  const size_t testElementCount = testGlobalDofs.size();
+  const size_t trialElementCount = trialGlobalDofs.size();
 
-    // Make a vector of all element indices
-    std::vector<int> testIndices(testElementCount);
-    for (int i = 0; i < testElementCount; ++i)
-        testIndices[i] = i;
+  // Make a vector of all element indices
+  std::vector<int> testIndices(testElementCount);
+  for (int i = 0; i < testElementCount; ++i)
+    testIndices[i] = i;
 
-    // Create the operator's matrix
-    arma::Mat<ResultType> result(testSpace.globalDofCount(),
-                                 trialSpace.globalDofCount());
-    result.fill(0.);
+  // Create the operator's matrix
+  arma::Mat<ResultType> result(testSpace.globalDofCount(),
+                               trialSpace.globalDofCount());
+  result.fill(0.);
 
-    typedef DenseWeakFormAssemblerLoopBody<BasisFunctionType, ResultType> Body;
-    typename Body::MutexType mutex;
+  typedef DenseWeakFormAssemblerLoopBody<BasisFunctionType, ResultType> Body;
+  typename Body::MutexType mutex;
 
-    const ParallelizationOptions& parallelOptions =
-            options.parallelizationOptions();
-    int maxThreadCount = 1;
-    if (!parallelOptions.isOpenClEnabled()) {
-        if (parallelOptions.maxThreadCount() == ParallelizationOptions::AUTO)
-            maxThreadCount = tbb::task_scheduler_init::automatic;
-        else
-            maxThreadCount = parallelOptions.maxThreadCount();
-    }
-    tbb::task_scheduler_init scheduler(maxThreadCount);
-    {
-        Fiber::SerialBlasRegion region;
-        tbb::parallel_for(tbb::blocked_range<size_t>(0, trialElementCount),
-                          Body(testIndices, testGlobalDofs, trialGlobalDofs,
-                               testLocalDofWeights, trialLocalDofWeights,
-                               assembler, result, mutex));
-    }
+  const ParallelizationOptions &parallelOptions =
+      options.parallelizationOptions();
+  int maxThreadCount = 1;
+  if (!parallelOptions.isOpenClEnabled()) {
+    if (parallelOptions.maxThreadCount() == ParallelizationOptions::AUTO)
+      maxThreadCount = tbb::task_scheduler_init::automatic;
+    else
+      maxThreadCount = parallelOptions.maxThreadCount();
+  }
+  tbb::task_scheduler_init scheduler(maxThreadCount);
+  {
+    Fiber::SerialBlasRegion region;
+    tbb::parallel_for(tbb::blocked_range<size_t>(0, trialElementCount),
+                      Body(testIndices, testGlobalDofs, trialGlobalDofs,
+                           testLocalDofWeights, trialLocalDofWeights, assembler,
+                           result, mutex));
+  }
 
-    //// Old serial code (TODO: decide whether to keep it behind e.g. #ifndef PARALLEL)
-    //    std::vector<arma::Mat<ValueType> > localResult;
-    //    // Loop over trial elements
-    //    for (int trialIndex = 0; trialIndex < trialElementCount; ++trialIndex)
-    //    {
-    //        // Evaluate integrals over pairs of the current trial element and
-    //        // all the test elements
-    //        assembler.evaluateLocalWeakForms(TEST_TRIAL, testIndices, trialIndex,
-    //                                         ALL_DOFS, localResult);
+  //// Old serial code (TODO: decide whether to keep it behind e.g. #ifndef
+  ///PARALLEL)
+  //    std::vector<arma::Mat<ValueType> > localResult;
+  //    // Loop over trial elements
+  //    for (int trialIndex = 0; trialIndex < trialElementCount; ++trialIndex)
+  //    {
+  //        // Evaluate integrals over pairs of the current trial element and
+  //        // all the test elements
+  //        assembler.evaluateLocalWeakForms(TEST_TRIAL, testIndices,
+  // trialIndex,
+  //                                         ALL_DOFS, localResult);
 
-    //        // Loop over test indices
-    //        for (int testIndex = 0; testIndex < testElementCount; ++testIndex)
-    //            // Add the integrals to appropriate entries in the operator's matrix
-    //            for (int trialDof = 0; trialDof < trialGlobalDofs[trialIndex].size(); ++trialDof)
-    //                for (int testDof = 0; testDof < testGlobalDofs[testIndex].size(); ++testDof)
-    //                result(testGlobalDofs[testIndex][testDof],
-    //                       trialGlobalDofs[trialIndex][trialDof]) +=
-    //                        localResult[testIndex](testDof, trialDof);
-    //    }
+  //        // Loop over test indices
+  //        for (int testIndex = 0; testIndex < testElementCount; ++testIndex)
+  //            // Add the integrals to appropriate entries in the operator's
+  // matrix
+  //            for (int trialDof = 0; trialDof <
+  // trialGlobalDofs[trialIndex].size(); ++trialDof)
+  //                for (int testDof = 0; testDof <
+  // testGlobalDofs[testIndex].size(); ++testDof)
+  //                result(testGlobalDofs[testIndex][testDof],
+  //                       trialGlobalDofs[trialIndex][trialDof]) +=
+  //                        localResult[testIndex](testDof, trialDof);
+  //    }
 
-    // Create and return a discrete operator represented by the matrix that
-    // has just been calculated
-    return std::unique_ptr<DiscreteBoundaryOperator<ResultType> >(
-                new DiscreteDenseBoundaryOperator<ResultType>(result));
+  // Create and return a discrete operator represented by the matrix that
+  // has just been calculated
+  return std::unique_ptr<DiscreteBoundaryOperator<ResultType>>(
+      new DiscreteDenseBoundaryOperator<ResultType>(result));
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(DenseGlobalAssembler);

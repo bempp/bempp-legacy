@@ -28,22 +28,24 @@
 
 #include <tbb/enumerable_thread_specific.h>
 
-namespace Fiber
-{
+namespace Fiber {
 
-template <typename BasisFunctionType_, typename KernelType_, typename ResultType_>
-class TypicalTestScalarKernelTrialIntegralBase :
-        public TestKernelTrialIntegral<BasisFunctionType_, KernelType_, ResultType_>
-{
-    typedef TestKernelTrialIntegral<BasisFunctionType_, KernelType_, ResultType_> Base;
+template <typename BasisFunctionType_, typename KernelType_,
+          typename ResultType_>
+class TypicalTestScalarKernelTrialIntegralBase
+    : public TestKernelTrialIntegral<BasisFunctionType_, KernelType_,
+                                     ResultType_> {
+  typedef TestKernelTrialIntegral<BasisFunctionType_, KernelType_, ResultType_>
+  Base;
+
 public:
-    typedef typename Base::CoordinateType CoordinateType;
-    typedef typename Base::BasisFunctionType BasisFunctionType;
-    typedef typename Base::KernelType KernelType;
-    typedef typename Base::ResultType ResultType;
+  typedef typename Base::CoordinateType CoordinateType;
+  typedef typename Base::BasisFunctionType BasisFunctionType;
+  typedef typename Base::KernelType KernelType;
+  typedef typename Base::ResultType ResultType;
 
-    virtual void addGeometricalDependencies(
-            size_t& testGeomDeps, size_t& trialGeomDeps) const;
+  virtual void addGeometricalDependencies(size_t &testGeomDeps,
+                                          size_t &trialGeomDeps) const;
 };
 
 /** \ingroup weak_form_elements
@@ -67,129 +69,139 @@ public:
   The integrals are evaluated numerically; BLAS matrix-matrix multiplication
   routines are used to speed up the process.
  */
-template <typename BasisFunctionType_, typename KernelType_, typename ResultType_>
-class TypicalTestScalarKernelTrialIntegral :
-        public TypicalTestScalarKernelTrialIntegralBase<
-        BasisFunctionType_, KernelType_, ResultType_>
-{
-    // should never be instantiated -- only the specializations (below) should
+template <typename BasisFunctionType_, typename KernelType_,
+          typename ResultType_>
+class TypicalTestScalarKernelTrialIntegral
+    : public TypicalTestScalarKernelTrialIntegralBase<
+          BasisFunctionType_, KernelType_, ResultType_> {
+  // should never be instantiated -- only the specializations (below) should
 private:
-    TypicalTestScalarKernelTrialIntegral();
+  TypicalTestScalarKernelTrialIntegral();
 };
 
 template <typename BasisFunctionType_, typename ResultType_>
 class TypicalTestScalarKernelTrialIntegral<
-        BasisFunctionType_, BasisFunctionType_, ResultType_> :
-        public TypicalTestScalarKernelTrialIntegralBase<
-        BasisFunctionType_, BasisFunctionType_, ResultType_>
-{
-    typedef TypicalTestScalarKernelTrialIntegralBase<
-    BasisFunctionType_, BasisFunctionType_, ResultType_> Base;
+    BasisFunctionType_, BasisFunctionType_,
+    ResultType_> : public TypicalTestScalarKernelTrialIntegralBase<BasisFunctionType_,
+                                                                   BasisFunctionType_,
+                                                                   ResultType_> {
+  typedef TypicalTestScalarKernelTrialIntegralBase<
+      BasisFunctionType_, BasisFunctionType_, ResultType_> Base;
+
 public:
-    typedef typename Base::CoordinateType CoordinateType;
-    typedef typename Base::BasisFunctionType BasisFunctionType;
-    typedef typename Base::KernelType KernelType;
-    typedef typename Base::ResultType ResultType;
+  typedef typename Base::CoordinateType CoordinateType;
+  typedef typename Base::BasisFunctionType BasisFunctionType;
+  typedef typename Base::KernelType KernelType;
+  typedef typename Base::ResultType ResultType;
 
-    TypicalTestScalarKernelTrialIntegral() {}
+  TypicalTestScalarKernelTrialIntegral() {}
 
-    virtual void evaluateWithTensorQuadratureRule(
-            const GeometricalData<CoordinateType>& testGeomData,
-            const GeometricalData<CoordinateType>& trialGeomData,
-            const CollectionOf3dArrays<BasisFunctionType>& testValues,
-            const CollectionOf3dArrays<BasisFunctionType>& trialValues,
-            const CollectionOf4dArrays<KernelType>& kernelValues,
-            const std::vector<CoordinateType>& testQuadWeights,
-            const std::vector<CoordinateType>& trialQuadWeights,
-            arma::Mat<ResultType>& result) const;
+  virtual void evaluateWithTensorQuadratureRule(
+      const GeometricalData<CoordinateType> &testGeomData,
+      const GeometricalData<CoordinateType> &trialGeomData,
+      const CollectionOf3dArrays<BasisFunctionType> &testValues,
+      const CollectionOf3dArrays<BasisFunctionType> &trialValues,
+      const CollectionOf4dArrays<KernelType> &kernelValues,
+      const std::vector<CoordinateType> &testQuadWeights,
+      const std::vector<CoordinateType> &trialQuadWeights,
+      arma::Mat<ResultType> &result) const;
 
-    virtual void evaluateWithNontensorQuadratureRule(
-            const GeometricalData<CoordinateType>& testGeomData,
-            const GeometricalData<CoordinateType>& trialGeomData,
-            const CollectionOf3dArrays<BasisFunctionType>& testValues,
-            const CollectionOf3dArrays<BasisFunctionType>& trialValues,
-            const CollectionOf3dArrays<KernelType>& kernelValues,
-            const std::vector<CoordinateType>& quadWeights,
-            arma::Mat<ResultType>& result) const;
+  virtual void evaluateWithNontensorQuadratureRule(
+      const GeometricalData<CoordinateType> &testGeomData,
+      const GeometricalData<CoordinateType> &trialGeomData,
+      const CollectionOf3dArrays<BasisFunctionType> &testValues,
+      const CollectionOf3dArrays<BasisFunctionType> &trialValues,
+      const CollectionOf3dArrays<KernelType> &kernelValues,
+      const std::vector<CoordinateType> &quadWeights,
+      arma::Mat<ResultType> &result) const;
 };
 
 template <typename CoordinateType_>
-class TypicalTestScalarKernelTrialIntegral<CoordinateType_,
-        std::complex<CoordinateType_>, std::complex<CoordinateType_> > :
-        public TypicalTestScalarKernelTrialIntegralBase<CoordinateType_,
-        std::complex<CoordinateType_>, std::complex<CoordinateType_> >
-{
-    typedef TypicalTestScalarKernelTrialIntegralBase<CoordinateType_,
-    std::complex<CoordinateType_>, std::complex<CoordinateType_> > Base;
+class TypicalTestScalarKernelTrialIntegral<
+    CoordinateType_, std::complex<CoordinateType_>,
+    std::complex<
+        CoordinateType_>> : public TypicalTestScalarKernelTrialIntegralBase<CoordinateType_,
+                                                                            std::complex<
+                                                                                CoordinateType_>,
+                                                                            std::complex<
+                                                                                CoordinateType_>> {
+  typedef TypicalTestScalarKernelTrialIntegralBase<
+      CoordinateType_, std::complex<CoordinateType_>,
+      std::complex<CoordinateType_>> Base;
+
 public:
-    typedef typename Base::CoordinateType CoordinateType;
-    typedef typename Base::BasisFunctionType BasisFunctionType;
-    typedef typename Base::KernelType KernelType;
-    typedef typename Base::ResultType ResultType;
+  typedef typename Base::CoordinateType CoordinateType;
+  typedef typename Base::BasisFunctionType BasisFunctionType;
+  typedef typename Base::KernelType KernelType;
+  typedef typename Base::ResultType ResultType;
 
-    TypicalTestScalarKernelTrialIntegral() {}
+  TypicalTestScalarKernelTrialIntegral() {}
 
-    virtual void evaluateWithTensorQuadratureRule(
-            const GeometricalData<CoordinateType>& testGeomData,
-            const GeometricalData<CoordinateType>& trialGeomData,
-            const CollectionOf3dArrays<BasisFunctionType>& testValues,
-            const CollectionOf3dArrays<BasisFunctionType>& trialValues,
-            const CollectionOf4dArrays<KernelType>& kernelValues,
-            const std::vector<CoordinateType>& testQuadWeights,
-            const std::vector<CoordinateType>& trialQuadWeights,
-            arma::Mat<ResultType>& result) const;
+  virtual void evaluateWithTensorQuadratureRule(
+      const GeometricalData<CoordinateType> &testGeomData,
+      const GeometricalData<CoordinateType> &trialGeomData,
+      const CollectionOf3dArrays<BasisFunctionType> &testValues,
+      const CollectionOf3dArrays<BasisFunctionType> &trialValues,
+      const CollectionOf4dArrays<KernelType> &kernelValues,
+      const std::vector<CoordinateType> &testQuadWeights,
+      const std::vector<CoordinateType> &trialQuadWeights,
+      arma::Mat<ResultType> &result) const;
 
-    virtual void evaluateWithNontensorQuadratureRule(
-            const GeometricalData<CoordinateType>& testGeomData,
-            const GeometricalData<CoordinateType>& trialGeomData,
-            const CollectionOf3dArrays<BasisFunctionType>& testValues,
-            const CollectionOf3dArrays<BasisFunctionType>& trialValues,
-            const CollectionOf3dArrays<KernelType>& kernelValues,
-            const std::vector<CoordinateType>& quadWeights,
-            arma::Mat<ResultType>& result) const;
+  virtual void evaluateWithNontensorQuadratureRule(
+      const GeometricalData<CoordinateType> &testGeomData,
+      const GeometricalData<CoordinateType> &trialGeomData,
+      const CollectionOf3dArrays<BasisFunctionType> &testValues,
+      const CollectionOf3dArrays<BasisFunctionType> &trialValues,
+      const CollectionOf3dArrays<KernelType> &kernelValues,
+      const std::vector<CoordinateType> &quadWeights,
+      arma::Mat<ResultType> &result) const;
 };
 
 template <typename CoordinateType_>
-class TypicalTestScalarKernelTrialIntegral<std::complex<CoordinateType_>,
-        CoordinateType_, std::complex<CoordinateType_> > :
-        public TypicalTestScalarKernelTrialIntegralBase<
-        std::complex<CoordinateType_>, CoordinateType_, std::complex<CoordinateType_> >
-{
-    typedef TypicalTestScalarKernelTrialIntegralBase<
-    std::complex<CoordinateType_>, CoordinateType_, std::complex<CoordinateType_> >
-    Base;
+class TypicalTestScalarKernelTrialIntegral<
+    std::complex<CoordinateType_>, CoordinateType_,
+    std::complex<
+        CoordinateType_>> : public TypicalTestScalarKernelTrialIntegralBase<std::
+                                                                                complex<
+                                                                                    CoordinateType_>,
+                                                                            CoordinateType_,
+                                                                            std::complex<
+                                                                                CoordinateType_>> {
+  typedef TypicalTestScalarKernelTrialIntegralBase<
+      std::complex<CoordinateType_>, CoordinateType_,
+      std::complex<CoordinateType_>> Base;
+
 public:
-    typedef typename Base::CoordinateType CoordinateType;
-    typedef typename Base::BasisFunctionType BasisFunctionType;
-    typedef typename Base::KernelType KernelType;
-    typedef typename Base::ResultType ResultType;
+  typedef typename Base::CoordinateType CoordinateType;
+  typedef typename Base::BasisFunctionType BasisFunctionType;
+  typedef typename Base::KernelType KernelType;
+  typedef typename Base::ResultType ResultType;
 
-    TypicalTestScalarKernelTrialIntegral();
+  TypicalTestScalarKernelTrialIntegral();
 
-    // This is the "standard" (non-BLAS-based) implementation
-    virtual void evaluateWithTensorQuadratureRule(
-            const GeometricalData<CoordinateType>& testGeomData,
-            const GeometricalData<CoordinateType>& trialGeomData,
-            const CollectionOf3dArrays<BasisFunctionType>& testValues,
-            const CollectionOf3dArrays<BasisFunctionType>& trialValues,
-            const CollectionOf4dArrays<KernelType>& kernelValues,
-            const std::vector<CoordinateType>& testQuadWeights,
-            const std::vector<CoordinateType>& trialQuadWeights,
-            arma::Mat<ResultType>& result) const;
+  // This is the "standard" (non-BLAS-based) implementation
+  virtual void evaluateWithTensorQuadratureRule(
+      const GeometricalData<CoordinateType> &testGeomData,
+      const GeometricalData<CoordinateType> &trialGeomData,
+      const CollectionOf3dArrays<BasisFunctionType> &testValues,
+      const CollectionOf3dArrays<BasisFunctionType> &trialValues,
+      const CollectionOf4dArrays<KernelType> &kernelValues,
+      const std::vector<CoordinateType> &testQuadWeights,
+      const std::vector<CoordinateType> &trialQuadWeights,
+      arma::Mat<ResultType> &result) const;
 
-    virtual void evaluateWithNontensorQuadratureRule(
-            const GeometricalData<CoordinateType>& testGeomData,
-            const GeometricalData<CoordinateType>& trialGeomData,
-            const CollectionOf3dArrays<BasisFunctionType>& testValues,
-            const CollectionOf3dArrays<BasisFunctionType>& trialValues,
-            const CollectionOf3dArrays<KernelType>& kernelValues,
-            const std::vector<CoordinateType>& quadWeights,
-            arma::Mat<ResultType>& result) const;
+  virtual void evaluateWithNontensorQuadratureRule(
+      const GeometricalData<CoordinateType> &testGeomData,
+      const GeometricalData<CoordinateType> &trialGeomData,
+      const CollectionOf3dArrays<BasisFunctionType> &testValues,
+      const CollectionOf3dArrays<BasisFunctionType> &trialValues,
+      const CollectionOf3dArrays<KernelType> &kernelValues,
+      const std::vector<CoordinateType> &quadWeights,
+      arma::Mat<ResultType> &result) const;
 
 private:
-    DefaultTestKernelTrialIntegral<
-            TestScalarKernelTrialIntegrandFunctor<
-            BasisFunctionType, KernelType, ResultType> > m_standardIntegral;
+  DefaultTestKernelTrialIntegral<TestScalarKernelTrialIntegrandFunctor<
+      BasisFunctionType, KernelType, ResultType>> m_standardIntegral;
 };
 
 } // namespace Fiber

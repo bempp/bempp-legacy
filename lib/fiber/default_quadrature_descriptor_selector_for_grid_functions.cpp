@@ -26,40 +26,34 @@
 #include "raw_grid_geometry.hpp"
 #include "shapeset.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 template <typename BasisFunctionType>
 DefaultQuadratureDescriptorSelectorForGridFunctions<BasisFunctionType>::
-DefaultQuadratureDescriptorSelectorForGridFunctions(
-        const shared_ptr<const RawGridGeometry<CoordinateType> >& rawGeometry,
+    DefaultQuadratureDescriptorSelectorForGridFunctions(
+        const shared_ptr<const RawGridGeometry<CoordinateType>> &rawGeometry,
         const shared_ptr<const std::vector<
-            const Shapeset<BasisFunctionType>*> >& testShapesets,
-        const AccuracyOptionsEx& accuracyOptions) :
-    m_rawGeometry(rawGeometry),
-    m_testShapesets(testShapesets),
-    m_quadratureOptions(accuracyOptions.singleRegular())
-{
-    Utilities::checkConsistencyOfGeometryAndShapesets(
-        *rawGeometry, *testShapesets);
+            const Shapeset<BasisFunctionType> *>> &testShapesets,
+        const AccuracyOptionsEx &accuracyOptions)
+    : m_rawGeometry(rawGeometry), m_testShapesets(testShapesets),
+      m_quadratureOptions(accuracyOptions.singleRegular()) {
+  Utilities::checkConsistencyOfGeometryAndShapesets(*rawGeometry,
+                                                    *testShapesets);
 }
 
 template <typename BasisFunctionType>
-SingleQuadratureDescriptor
-DefaultQuadratureDescriptorSelectorForGridFunctions<BasisFunctionType>::
-quadratureDescriptor(
-        int elementIndex) const
-{
-    SingleQuadratureDescriptor desc;
+SingleQuadratureDescriptor DefaultQuadratureDescriptorSelectorForGridFunctions<
+    BasisFunctionType>::quadratureDescriptor(int elementIndex) const {
+  SingleQuadratureDescriptor desc;
 
-    // Get number of corners of the specified element
-    desc.vertexCount = m_rawGeometry->elementCornerCount(elementIndex);
+  // Get number of corners of the specified element
+  desc.vertexCount = m_rawGeometry->elementCornerCount(elementIndex);
 
-    // Determine integrand's order and required quadrature order
-    const int defaultOrder = 2 * (*m_testShapesets)[elementIndex]->order() + 1;
-    desc.order = m_quadratureOptions.quadratureOrder(defaultOrder);
+  // Determine integrand's order and required quadrature order
+  const int defaultOrder = 2 * (*m_testShapesets)[elementIndex]->order() + 1;
+  desc.order = m_quadratureOptions.quadratureOrder(defaultOrder);
 
-    return desc;
+  return desc;
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(

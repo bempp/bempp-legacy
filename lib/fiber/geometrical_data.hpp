@@ -28,18 +28,16 @@
 
 #include <cassert>
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \brief Types of geometrical data. */
-enum GeometricalDataType
-{
-    GLOBALS = 0x0001,
-    INTEGRATION_ELEMENTS = 0x0002,
-    NORMALS = 0x0004,
-    JACOBIANS_TRANSPOSED = 0x0008,
-    JACOBIAN_INVERSES_TRANSPOSED = 0x0010,
-    DOMAIN_INDEX = 0x0020
+enum GeometricalDataType {
+  GLOBALS = 0x0001,
+  INTEGRATION_ELEMENTS = 0x0002,
+  NORMALS = 0x0004,
+  JACOBIANS_TRANSPOSED = 0x0008,
+  JACOBIAN_INVERSES_TRANSPOSED = 0x0010,
+  DOMAIN_INDEX = 0x0020
 };
 
 /** \cond FORWARD_DECL */
@@ -51,35 +49,33 @@ template <typename CoordinateType> class ConstGeometricalDataSlice;
  *  \see Bempp::Geometry for a description of the data format (in particular,
  *  array ordering).
  */
-template <typename CoordinateType>
-class GeometricalData
-{
-    public:
-    arma::Mat<CoordinateType> globals;
-    arma::Row<CoordinateType> integrationElements;
-    Fiber::_3dArray<CoordinateType> jacobiansTransposed;
-    Fiber::_3dArray<CoordinateType> jacobianInversesTransposed;
-    arma::Mat<CoordinateType> normals;
-    int domainIndex;
+template <typename CoordinateType> class GeometricalData {
+public:
+  arma::Mat<CoordinateType> globals;
+  arma::Row<CoordinateType> integrationElements;
+  Fiber::_3dArray<CoordinateType> jacobiansTransposed;
+  Fiber::_3dArray<CoordinateType> jacobianInversesTransposed;
+  arma::Mat<CoordinateType> normals;
+  int domainIndex;
 
-    // For the time being, I (somewhat dangerously) assume that
-    // integrationElements or globals or normals are always used
-    int pointCount() const {
-        int result = std::max(std::max(globals.n_cols, normals.n_cols),
-                                       integrationElements.n_cols);
-        assert(result > 0);
-        return result;
-    }
+  // For the time being, I (somewhat dangerously) assume that
+  // integrationElements or globals or normals are always used
+  int pointCount() const {
+    int result = std::max(std::max(globals.n_cols, normals.n_cols),
+                          integrationElements.n_cols);
+    assert(result > 0);
+    return result;
+  }
 
-    int dimWorld() const {
-        int result = std::max(globals.n_rows, normals.n_rows);
-        assert(result > 0);
-        return result;
-    }
+  int dimWorld() const {
+    int result = std::max(globals.n_rows, normals.n_rows);
+    assert(result > 0);
+    return result;
+  }
 
-    ConstGeometricalDataSlice<CoordinateType> const_slice(int point) const {
-        return ConstGeometricalDataSlice<CoordinateType>(*this, point);
-    }
+  ConstGeometricalDataSlice<CoordinateType> const_slice(int point) const {
+    return ConstGeometricalDataSlice<CoordinateType>(*this, point);
+  }
 };
 
 /** \brief Access to slices of geometrical data.
@@ -87,67 +83,60 @@ class GeometricalData
  *  This class gives access to a "slice" of geometrical data stored in a
  *  GeometricalData object, corresponding to a single point.
  */
-template <typename CoordinateType>
-class ConstGeometricalDataSlice
-{
+template <typename CoordinateType> class ConstGeometricalDataSlice {
 public:
-    ConstGeometricalDataSlice(const GeometricalData<CoordinateType>& geomData,
-                              int point) :
-        m_geomData(geomData), m_point(point) {}
+  ConstGeometricalDataSlice(const GeometricalData<CoordinateType> &geomData,
+                            int point)
+      : m_geomData(geomData), m_point(point) {}
 
-    CoordinateType global(int dim) const {
-        return m_geomData.globals(dim, m_point);
-    }
-    CoordinateType integrationElement() const {
-        return m_geomData.integrationElements(m_point);
-    }
-    CoordinateType jacobianTransposed(int row, int col) const {
-        return m_geomData.jacobiansTransposed(row, col, m_point);
-    }
-    CoordinateType jacobianInverseTransposed(int row, int col) const {
-        return m_geomData.jacobianInversesTransposed(row, col, m_point);
-    }
-    CoordinateType normal(int dim) const {
-        return m_geomData.normals(dim, m_point);
-    }
-    int domainIndex() const {
-        return m_geomData.domainIndex;
-    }
-    int dimWorld() const {
-        return m_geomData.dimWorld();
-    }
+  CoordinateType global(int dim) const {
+    return m_geomData.globals(dim, m_point);
+  }
+  CoordinateType integrationElement() const {
+    return m_geomData.integrationElements(m_point);
+  }
+  CoordinateType jacobianTransposed(int row, int col) const {
+    return m_geomData.jacobiansTransposed(row, col, m_point);
+  }
+  CoordinateType jacobianInverseTransposed(int row, int col) const {
+    return m_geomData.jacobianInversesTransposed(row, col, m_point);
+  }
+  CoordinateType normal(int dim) const {
+    return m_geomData.normals(dim, m_point);
+  }
+  int domainIndex() const { return m_geomData.domainIndex; }
+  int dimWorld() const { return m_geomData.dimWorld(); }
 
-    // Inefficient, but safe
-    GeometricalData<CoordinateType> asGeometricalData() const {
-        GeometricalData<CoordinateType> result;
-        if (!m_geomData.globals.is_empty())
-            result.globals = m_geomData.globals.col(m_point);
-        if (!m_geomData.integrationElements.is_empty())
-            result.integrationElements =
-                    m_geomData.integrationElements(m_point);
-        if (!m_geomData.jacobiansTransposed.is_empty()) {
-            result.jacobiansTransposed.set_size(
-                1, 1, m_geomData.jacobiansTransposed.extent(2));
-            for (size_t i = 0; i < result.jacobiansTransposed.extent(2); ++i)
-                result.jacobiansTransposed(0, 0, i) =
-                    m_geomData.jacobiansTransposed(m_point, m_point, i);
-        }
-        if (!m_geomData.jacobianInversesTransposed.is_empty()) {
-            result.jacobianInversesTransposed.set_size(
-                1, 1, m_geomData.jacobianInversesTransposed.extent(2));
-            for (size_t i = 0; i < result.jacobianInversesTransposed.extent(2); ++i)
-                result.jacobianInversesTransposed(0, 0, i) =
-                    m_geomData.jacobianInversesTransposed(m_point, m_point, i);
-        }
-        if (!m_geomData.normals.is_empty())
-            result.normals = m_geomData.normals.col(m_point);
-        result.domainIndex = m_geomData.domainIndex;
-        return result;
+  // Inefficient, but safe
+  GeometricalData<CoordinateType> asGeometricalData() const {
+    GeometricalData<CoordinateType> result;
+    if (!m_geomData.globals.is_empty())
+      result.globals = m_geomData.globals.col(m_point);
+    if (!m_geomData.integrationElements.is_empty())
+      result.integrationElements = m_geomData.integrationElements(m_point);
+    if (!m_geomData.jacobiansTransposed.is_empty()) {
+      result.jacobiansTransposed.set_size(
+          1, 1, m_geomData.jacobiansTransposed.extent(2));
+      for (size_t i = 0; i < result.jacobiansTransposed.extent(2); ++i)
+        result.jacobiansTransposed(0, 0, i) =
+            m_geomData.jacobiansTransposed(m_point, m_point, i);
     }
+    if (!m_geomData.jacobianInversesTransposed.is_empty()) {
+      result.jacobianInversesTransposed.set_size(
+          1, 1, m_geomData.jacobianInversesTransposed.extent(2));
+      for (size_t i = 0; i < result.jacobianInversesTransposed.extent(2); ++i)
+        result.jacobianInversesTransposed(0, 0, i) =
+            m_geomData.jacobianInversesTransposed(m_point, m_point, i);
+    }
+    if (!m_geomData.normals.is_empty())
+      result.normals = m_geomData.normals.col(m_point);
+    result.domainIndex = m_geomData.domainIndex;
+    return result;
+  }
 
 private:
-    const GeometricalData<CoordinateType>& m_geomData;
-    int m_point;
+  const GeometricalData<CoordinateType> &m_geomData;
+  int m_point;
 };
 
 } // namespace Fiber

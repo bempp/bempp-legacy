@@ -18,7 +18,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-
 #ifndef bempp_index_permutation_hpp
 #define bempp_index_permutation_hpp
 
@@ -29,80 +28,73 @@
 
 class Epetra_CrsMatrix;
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \ingroup weak_form_assembly_internal
  *  \brief Permutation of indices.
  *
  *  This class is used in ACA-mode assembly. */
-class IndexPermutation
-{
+class IndexPermutation {
 public:
-    IndexPermutation(const std::vector<unsigned int>& permutedIndices) :
-        m_permutedIndices(permutedIndices) {
-    }
+  IndexPermutation(const std::vector<unsigned int> &permutedIndices)
+      : m_permutedIndices(permutedIndices) {}
 
-    bool operator==(const IndexPermutation& other) const {
-        if (m_permutedIndices.size() != other.m_permutedIndices.size())
-            return false;
-        for (size_t i = 0; i < m_permutedIndices.size(); ++i)
-            if (m_permutedIndices[i] != other.m_permutedIndices[i])
-                return false;
-        return true;
-    }
+  bool operator==(const IndexPermutation &other) const {
+    if (m_permutedIndices.size() != other.m_permutedIndices.size())
+      return false;
+    for (size_t i = 0; i < m_permutedIndices.size(); ++i)
+      if (m_permutedIndices[i] != other.m_permutedIndices[i])
+        return false;
+    return true;
+  }
 
-    bool operator!=(const IndexPermutation& other) const {
-        return !operator==(other);
-    }
+  bool operator!=(const IndexPermutation &other) const {
+    return !operator==(other);
+  }
 
-    const std::vector<unsigned int>& permutedIndices() const {
-        return m_permutedIndices;
-    }
+  const std::vector<unsigned int> &permutedIndices() const {
+    return m_permutedIndices;
+  }
 
-    std::vector<unsigned int> unpermutedIndices() const {
-        std::vector<unsigned int> result(m_permutedIndices.size());
-        for (unsigned int o = 0; o < m_permutedIndices.size(); ++o)
-            result[m_permutedIndices[o]] = o;
-        return result;
-    }
+  std::vector<unsigned int> unpermutedIndices() const {
+    std::vector<unsigned int> result(m_permutedIndices.size());
+    for (unsigned int o = 0; o < m_permutedIndices.size(); ++o)
+      result[m_permutedIndices[o]] = o;
+    return result;
+  }
 
-    /** \brief Convert a vector from original to permuted ordering. */
-    template <typename ValueType>
-    void permuteVector(const arma::Col<ValueType>& original,
-                       arma::Col<ValueType>& permuted) const
-    {
-        const int dim = original.n_elem;
-        permuted.set_size(dim);
-        for (int i = 0; i < dim; ++i)
-            permuted(m_permutedIndices[i]) = original(i);
-    }
+  /** \brief Convert a vector from original to permuted ordering. */
+  template <typename ValueType>
+  void permuteVector(const arma::Col<ValueType> &original,
+                     arma::Col<ValueType> &permuted) const {
+    const int dim = original.n_elem;
+    permuted.set_size(dim);
+    for (int i = 0; i < dim; ++i)
+      permuted(m_permutedIndices[i]) = original(i);
+  }
 
-    /** \brief Convert a vector from permuted to original ordering. */
-    template <typename ValueType>
-    void unpermuteVector(const arma::Col<ValueType>& permuted,
-                         arma::Col<ValueType>& original) const
-    {
-        const int dim = permuted.n_elem;
-        original.set_size(dim);
-        for (int i = 0; i < dim; ++i)
-            original(i) = permuted(m_permutedIndices[i]);
-    }
+  /** \brief Convert a vector from permuted to original ordering. */
+  template <typename ValueType>
+  void unpermuteVector(const arma::Col<ValueType> &permuted,
+                       arma::Col<ValueType> &original) const {
+    const int dim = permuted.n_elem;
+    original.set_size(dim);
+    for (int i = 0; i < dim; ++i)
+      original(i) = permuted(m_permutedIndices[i]);
+  }
 
-    /** \brief Permute index. */
-    unsigned int permuted(unsigned int index) const {
-        return m_permutedIndices[index];
-    }
+  /** \brief Permute index. */
+  unsigned int permuted(unsigned int index) const {
+    return m_permutedIndices[index];
+  }
 
-    /** \brief Return length of the vector of indices. */
-    size_t size() const {
-        return m_permutedIndices.size();
-    }
+  /** \brief Return length of the vector of indices. */
+  size_t size() const { return m_permutedIndices.size(); }
 
-    shared_ptr<const Epetra_CrsMatrix> permutationMatrix() const;
+  shared_ptr<const Epetra_CrsMatrix> permutationMatrix() const;
 
 private:
-    const std::vector<unsigned int> m_permutedIndices;
+  const std::vector<unsigned int> m_permutedIndices;
 };
 
 } // namespace Bempp

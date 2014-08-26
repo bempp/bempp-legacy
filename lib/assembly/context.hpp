@@ -7,13 +7,13 @@
 #include "assembly_options.hpp"
 #include "discrete_boundary_operator_cache.hpp"
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \cond FORWARD_DECL */
 class GeometryFactory;
 template <typename ValueType> class DiscreteBoundaryOperator;
-template <typename BasisFunctionType, typename ResultType> class AbstractBoundaryOperator;
+template <typename BasisFunctionType, typename ResultType>
+class AbstractBoundaryOperator;
 /** \endcond */
 
 /** \ingroup weak_form_assembly
@@ -26,58 +26,54 @@ template <typename BasisFunctionType, typename ResultType> class AbstractBoundar
  *  higher-level aspects of weak-form assembly, e.g. the use or not of
  *  acceleration algorithms such as ACA and the level of parallelism.
  */
-template <typename BasisFunctionType, typename ResultType>
-class Context
-{
+template <typename BasisFunctionType, typename ResultType> class Context {
 public:
-    /** \brief Type of the appropriate instantiation of Fiber::QuadratureStrategy. */
-    typedef Fiber::QuadratureStrategy<BasisFunctionType, ResultType, GeometryFactory>
-    QuadratureStrategy;
+  /** \brief Type of the appropriate instantiation of Fiber::QuadratureStrategy.
+   */
+  typedef Fiber::QuadratureStrategy<BasisFunctionType, ResultType,
+                                    GeometryFactory> QuadratureStrategy;
 
-    /** \brief Constructor.
-     *
-     *  \param[in] quadStrategy
-     *    Quadrature strategy to be used for calculation of integrals occurring
-     *    e.g. in the weak forms of boundary operators or in the definition of
-     *    potential operators.
-     *
-     *  \param[in] assemblyOptions
-     *    Further options influencing the weak-form assembly process. */
-    Context(const shared_ptr<const QuadratureStrategy>& quadStrategy,
-            const AssemblyOptions& assemblyOptions);
+  /** \brief Constructor.
+   *
+   *  \param[in] quadStrategy
+   *    Quadrature strategy to be used for calculation of integrals occurring
+   *    e.g. in the weak forms of boundary operators or in the definition of
+   *    potential operators.
+   *
+   *  \param[in] assemblyOptions
+   *    Further options influencing the weak-form assembly process. */
+  Context(const shared_ptr<const QuadratureStrategy> &quadStrategy,
+          const AssemblyOptions &assemblyOptions);
 
-    /** \brief Return the discrete weak form of the specified abstract operator.
-     *
-     *  This function returns returns the weak form of the specified abstract
-     *  boundary operator, calculated in accordance with the settings
-     *  specified during the construction of the Context.
-     *
-     *  \deprecated This function is deprecated and will be removed in a future
-     *  version of BEM++. To get the discrete weak form of an
-     *  AbstractBoundaryOperator, use its <tt>assembleWeakForm()</tt> method.
-     *  Alternatively, call the <tt>weakForm()</tt> method of a
-     *  BoundaryOperator object wrapping the AbstractBoundaryOperator in
-     *  question. */
-    BEMPP_DEPRECATED
-    shared_ptr<const DiscreteBoundaryOperator<ResultType> >
-    getWeakForm(const AbstractBoundaryOperator<
-                BasisFunctionType, ResultType>& op) const;
+  /** \brief Return the discrete weak form of the specified abstract operator.
+   *
+   *  This function returns returns the weak form of the specified abstract
+   *  boundary operator, calculated in accordance with the settings
+   *  specified during the construction of the Context.
+   *
+   *  \deprecated This function is deprecated and will be removed in a future
+   *  version of BEM++. To get the discrete weak form of an
+   *  AbstractBoundaryOperator, use its <tt>assembleWeakForm()</tt> method.
+   *  Alternatively, call the <tt>weakForm()</tt> method of a
+   *  BoundaryOperator object wrapping the AbstractBoundaryOperator in
+   *  question. */
+  BEMPP_DEPRECATED
+  shared_ptr<const DiscreteBoundaryOperator<ResultType>> getWeakForm(
+      const AbstractBoundaryOperator<BasisFunctionType, ResultType> &op) const;
 
-    /** \brief Return a reference to a copy of the AssemblyOptions object
-     *  passed when constructing the Context. */
-    const AssemblyOptions& assemblyOptions() const {
-        return m_assemblyOptions;
-    }
+  /** \brief Return a reference to a copy of the AssemblyOptions object
+   *  passed when constructing the Context. */
+  const AssemblyOptions &assemblyOptions() const { return m_assemblyOptions; }
 
-    /** \brief Return a reference to the QuadratureStrategy object
-     *  passed when constructing the Context. */
-    shared_ptr<const QuadratureStrategy> quadStrategy() const {
-        return m_quadStrategy;
-    }
+  /** \brief Return a reference to the QuadratureStrategy object
+   *  passed when constructing the Context. */
+  shared_ptr<const QuadratureStrategy> quadStrategy() const {
+    return m_quadStrategy;
+  }
 
 private:
-    shared_ptr<const QuadratureStrategy> m_quadStrategy;
-    AssemblyOptions m_assemblyOptions;
+  shared_ptr<const QuadratureStrategy> m_quadStrategy;
+  AssemblyOptions m_assemblyOptions;
 };
 
 } // namespace Bempp

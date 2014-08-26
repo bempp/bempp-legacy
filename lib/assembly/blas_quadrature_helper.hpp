@@ -27,18 +27,18 @@
 
 #include "../space/space.hpp"
 
-namespace Bempp
-{
+namespace Bempp {
 
 template <typename BasisFunctionType>
-inline bool shouldUseBlasInQuadrature(const AssemblyOptions& assemblyOptions,
-                                      const Space<BasisFunctionType>& domain,
-                                      const Space<BasisFunctionType>& dualToRange)
-{
-    return assemblyOptions.isBlasEnabledInQuadrature() == AssemblyOptions::YES ||
-        (assemblyOptions.isBlasEnabledInQuadrature() == AssemblyOptions::AUTO &&
-         (maximumShapesetOrder(domain) >= 2 || 
-	  maximumShapesetOrder(dualToRange) >= 2));
+inline bool
+shouldUseBlasInQuadrature(const AssemblyOptions &assemblyOptions,
+                          const Space<BasisFunctionType> &domain,
+                          const Space<BasisFunctionType> &dualToRange) {
+  return assemblyOptions.isBlasEnabledInQuadrature() == AssemblyOptions::YES ||
+         (assemblyOptions.isBlasEnabledInQuadrature() ==
+              AssemblyOptions::AUTO &&
+          (maximumShapesetOrder(domain) >= 2 ||
+           maximumShapesetOrder(dualToRange) >= 2));
 }
 
 } // namespace

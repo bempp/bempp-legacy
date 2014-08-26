@@ -28,8 +28,7 @@
 #include "../common/armadillo_fwd.hpp"
 #include <vector>
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \cond FORWARD_DECL */
 template <typename ValueType> class Shapeset;
@@ -37,18 +36,16 @@ template <typename ValueType> class Shapeset;
 
 /** \brief Integration of products of test and trial functions over elements. */
 template <typename BasisFunctionType, typename ResultType>
-class TestTrialIntegrator
-{
+class TestTrialIntegrator {
 public:
-    typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
+  typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
 
-    virtual ~TestTrialIntegrator() {}
+  virtual ~TestTrialIntegrator() {}
 
-    virtual void integrate(
-            const std::vector<int>& elementIndices,
-            const Shapeset<BasisFunctionType>& testShapeset,
-            const Shapeset<BasisFunctionType>& trialShapeset,
-            arma::Cube<ResultType>& result) const = 0;
+  virtual void integrate(const std::vector<int> &elementIndices,
+                         const Shapeset<BasisFunctionType> &testShapeset,
+                         const Shapeset<BasisFunctionType> &trialShapeset,
+                         arma::Cube<ResultType> &result) const = 0;
 };
 
 } // namespace Fiber

@@ -24,8 +24,7 @@
 #include "abstract_boundary_operator.hpp"
 #include "boundary_operator.hpp"
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \ingroup composite_boundary_operators
  *  \brief Adjoint abstract boundary operator.
@@ -58,55 +57,54 @@ namespace Bempp
  *  \see adjoint().
  */
 template <typename BasisFunctionType_, typename ResultType_>
-class AdjointAbstractBoundaryOperator :
-        public AbstractBoundaryOperator<BasisFunctionType_, ResultType_>
-{
-    typedef AbstractBoundaryOperator<BasisFunctionType_, ResultType_> Base;
+class AdjointAbstractBoundaryOperator
+    : public AbstractBoundaryOperator<BasisFunctionType_, ResultType_> {
+  typedef AbstractBoundaryOperator<BasisFunctionType_, ResultType_> Base;
+
 public:
-    /** \copydoc AbstractBoundaryOperator::BasisFunctionType */
-    typedef typename Base::BasisFunctionType BasisFunctionType;
-    /** \copydoc AbstractBoundaryOperator::ResultType */
-    typedef typename Base::ResultType ResultType;
-    /** \copydoc AbstractBoundaryOperator::CoordinateType */
-    typedef typename Base::CoordinateType CoordinateType;
-    /** \copydoc AbstractBoundaryOperator::QuadratureStrategy */
-    typedef typename Base::QuadratureStrategy QuadratureStrategy;
+  /** \copydoc AbstractBoundaryOperator::BasisFunctionType */
+  typedef typename Base::BasisFunctionType BasisFunctionType;
+  /** \copydoc AbstractBoundaryOperator::ResultType */
+  typedef typename Base::ResultType ResultType;
+  /** \copydoc AbstractBoundaryOperator::CoordinateType */
+  typedef typename Base::CoordinateType CoordinateType;
+  /** \copydoc AbstractBoundaryOperator::QuadratureStrategy */
+  typedef typename Base::QuadratureStrategy QuadratureStrategy;
 
-    /** \brief Constructor.
-     *
-     *  Construct the boundary operator \f$\alpha L\f$, where
-     *  \f$\alpha\f$ is the scalar \p weight and \f$L\f$ is the operator
-     *  represented by \p boundaryOp.
-     *
-     *  By default the symmetry of the weak form of the resulting operator is
-     *  determined automatically. It can be set manually via the parameter \p
-     *  symmetry, which can be any combination of the flags defined in the
-     *  enumeration type Symmetry. */
-    AdjointAbstractBoundaryOperator(
-            const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
-            int symmetry = AUTO_SYMMETRY);
+  /** \brief Constructor.
+   *
+   *  Construct the boundary operator \f$\alpha L\f$, where
+   *  \f$\alpha\f$ is the scalar \p weight and \f$L\f$ is the operator
+   *  represented by \p boundaryOp.
+   *
+   *  By default the symmetry of the weak form of the resulting operator is
+   *  determined automatically. It can be set manually via the parameter \p
+   *  symmetry, which can be any combination of the flags defined in the
+   *  enumeration type Symmetry. */
+  AdjointAbstractBoundaryOperator(
+      const BoundaryOperator<BasisFunctionType, ResultType> &boundaryOp,
+      int symmetry = AUTO_SYMMETRY);
 
-    /** \brief Constructor.
-     *
-     * This constructor allows to explicitly specify the range space.
-     * This is useful if the standard heuristic to detect this space fails.
-     * An example is a boundary operator, where the domain and range live on
-     * different grids. */
-    AdjointAbstractBoundaryOperator(
-            const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
-	    const shared_ptr<const Space<BasisFunctionType> >& range,
-            int symmetry = AUTO_SYMMETRY);
+  /** \brief Constructor.
+   *
+   * This constructor allows to explicitly specify the range space.
+   * This is useful if the standard heuristic to detect this space fails.
+   * An example is a boundary operator, where the domain and range live on
+   * different grids. */
+  AdjointAbstractBoundaryOperator(
+      const BoundaryOperator<BasisFunctionType, ResultType> &boundaryOp,
+      const shared_ptr<const Space<BasisFunctionType>> &range,
+      int symmetry = AUTO_SYMMETRY);
 
-
-    virtual bool isLocal() const;
+  virtual bool isLocal() const;
 
 protected:
-    virtual shared_ptr<DiscreteBoundaryOperator<ResultType_> >
-    assembleWeakFormImpl(
-            const Context<BasisFunctionType, ResultType>& context) const;
+  virtual shared_ptr<DiscreteBoundaryOperator<ResultType_>>
+  assembleWeakFormImpl(const Context<BasisFunctionType, ResultType> &context)
+      const;
 
 private:
-    BoundaryOperator<BasisFunctionType, ResultType> m_operator;
+  BoundaryOperator<BasisFunctionType, ResultType> m_operator;
 };
 
 } // namespace Bempp

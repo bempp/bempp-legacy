@@ -25,8 +25,7 @@
 #include "abstract_boundary_operator_id.hpp"
 #include "boundary_operator.hpp"
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \cond FORWARD_DECL */
 template <typename ResultType> class DiscreteDenseBoundaryOperator;
@@ -35,69 +34,69 @@ template <typename BasisFunctionType> class Space;
 /** \endcond */
 
 template <typename BasisFunctionType, typename ResultType>
-class BEMPP_DEPRECATED AbstractBoundaryOperatorPseudoinverseId :
-        public AbstractBoundaryOperatorId
-{
+class BEMPP_DEPRECATED AbstractBoundaryOperatorPseudoinverseId
+    : public AbstractBoundaryOperatorId {
 public:
-    explicit AbstractBoundaryOperatorPseudoinverseId(
-            const BoundaryOperator<BasisFunctionType, ResultType>& op);
-    virtual size_t hash() const;
-    virtual void dump() const;
-    virtual bool isEqual(const AbstractBoundaryOperatorId &other) const;
+  explicit AbstractBoundaryOperatorPseudoinverseId(
+      const BoundaryOperator<BasisFunctionType, ResultType> &op);
+  virtual size_t hash() const;
+  virtual void dump() const;
+  virtual bool isEqual(const AbstractBoundaryOperatorId &other) const;
 
 private:
-    shared_ptr<const AbstractBoundaryOperatorId> m_operatorToInvertId;
+  shared_ptr<const AbstractBoundaryOperatorId> m_operatorToInvertId;
 };
 
 /** \ingroup composite_boundary_operators
  *  \brief Inverse or pseudoinverse of an abstract boundary operator.
  */
 template <typename BasisFunctionType_, typename ResultType_>
-class AbstractBoundaryOperatorPseudoinverse :
-        public AbstractBoundaryOperator<BasisFunctionType_, ResultType_>
-{
-    typedef AbstractBoundaryOperator<BasisFunctionType_, ResultType_> Base;
+class AbstractBoundaryOperatorPseudoinverse
+    : public AbstractBoundaryOperator<BasisFunctionType_, ResultType_> {
+  typedef AbstractBoundaryOperator<BasisFunctionType_, ResultType_> Base;
+
 public:
-    /** \copydoc AbstractBoundaryOperator::BasisFunctionType */
-    typedef typename Base::BasisFunctionType BasisFunctionType;
-    /** \copydoc AbstractBoundaryOperator::ResultType */
-    typedef typename Base::ResultType ResultType;
-    /** \copydoc AbstractBoundaryOperator::CoordinateType */
-    typedef typename Base::CoordinateType CoordinateType;
-    /** \copydoc AbstractBoundaryOperator::QuadratureStrategy */
-    typedef typename Base::QuadratureStrategy QuadratureStrategy;
+  /** \copydoc AbstractBoundaryOperator::BasisFunctionType */
+  typedef typename Base::BasisFunctionType BasisFunctionType;
+  /** \copydoc AbstractBoundaryOperator::ResultType */
+  typedef typename Base::ResultType ResultType;
+  /** \copydoc AbstractBoundaryOperator::CoordinateType */
+  typedef typename Base::CoordinateType CoordinateType;
+  /** \copydoc AbstractBoundaryOperator::QuadratureStrategy */
+  typedef typename Base::QuadratureStrategy QuadratureStrategy;
 
-    /** \brief Construct a (pseudo)inverse of \p boundaryOp. */
-    explicit AbstractBoundaryOperatorPseudoinverse(
-            const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOp);
-    explicit AbstractBoundaryOperatorPseudoinverse(
-            const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
-            const shared_ptr<const Space<BasisFunctionType> >& dualToRange);
+  /** \brief Construct a (pseudo)inverse of \p boundaryOp. */
+  explicit AbstractBoundaryOperatorPseudoinverse(
+      const BoundaryOperator<BasisFunctionType, ResultType> &boundaryOp);
+  explicit AbstractBoundaryOperatorPseudoinverse(
+      const BoundaryOperator<BasisFunctionType, ResultType> &boundaryOp,
+      const shared_ptr<const Space<BasisFunctionType>> &dualToRange);
 
-    virtual bool isLocal() const;
+  virtual bool isLocal() const;
 
-    BEMPP_DEPRECATED virtual shared_ptr<const AbstractBoundaryOperatorId> id() const;
+  BEMPP_DEPRECATED virtual shared_ptr<const AbstractBoundaryOperatorId>
+  id() const;
 
 protected:
-    virtual shared_ptr<DiscreteBoundaryOperator<ResultType_> >
-    assembleWeakFormImpl(
-            const Context<BasisFunctionType, ResultType>& context) const;
+  virtual shared_ptr<DiscreteBoundaryOperator<ResultType_>>
+  assembleWeakFormImpl(const Context<BasisFunctionType, ResultType> &context)
+      const;
 
 private:
-    shared_ptr<DiscreteBoundaryOperator<ResultType_> >
-    assembleWeakFormForSparseOperator(
-            const Context<BasisFunctionType, ResultType>& context,
-            const shared_ptr<const DiscreteSparseBoundaryOperator<ResultType> >&
-            wrappedDiscreteOp) const;
-    shared_ptr<DiscreteBoundaryOperator<ResultType_> >
-    assembleWeakFormForDenseOperator(
-            const Context<BasisFunctionType, ResultType>& context,
-            const shared_ptr<const DiscreteDenseBoundaryOperator<ResultType> >&
-            wrappedDiscreteOp) const;
+  shared_ptr<DiscreteBoundaryOperator<ResultType_>>
+  assembleWeakFormForSparseOperator(
+      const Context<BasisFunctionType, ResultType> &context,
+      const shared_ptr<const DiscreteSparseBoundaryOperator<ResultType>> &
+          wrappedDiscreteOp) const;
+  shared_ptr<DiscreteBoundaryOperator<ResultType_>>
+  assembleWeakFormForDenseOperator(
+      const Context<BasisFunctionType, ResultType> &context,
+      const shared_ptr<const DiscreteDenseBoundaryOperator<ResultType>> &
+          wrappedDiscreteOp) const;
 
 private:
-    BoundaryOperator<BasisFunctionType, ResultType> m_operator;
-    shared_ptr<const AbstractBoundaryOperatorId> m_id;
+  BoundaryOperator<BasisFunctionType, ResultType> m_operator;
+  shared_ptr<const AbstractBoundaryOperatorId> m_id;
 };
 
 /** \relates AbstractBoundaryOperatorPseudoinverse
@@ -109,8 +108,8 @@ private:
  *  abstract operator in a BoundaryOperator and returns the latter.
  */
 template <typename BasisFunctionType, typename ResultType>
-BoundaryOperator<BasisFunctionType, ResultType>
-pseudoinverse(const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOp);
+BoundaryOperator<BasisFunctionType, ResultType> pseudoinverse(
+    const BoundaryOperator<BasisFunctionType, ResultType> &boundaryOp);
 
 /** \relates AbstractBoundaryOperatorPseudoinverse
  *  \brief Construct a (pseudo)inverse of a boundary operator. This overload
@@ -118,9 +117,8 @@ pseudoinverse(const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOp)
  *  automatically. */
 template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType>
-pseudoinverse(const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
-              const shared_ptr<const Space<BasisFunctionType> >& dualToRange);
-
+pseudoinverse(const BoundaryOperator<BasisFunctionType, ResultType> &boundaryOp,
+              const shared_ptr<const Space<BasisFunctionType>> &dualToRange);
 
 } // namespace Bempp
 

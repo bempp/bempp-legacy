@@ -32,100 +32,88 @@
 #include <cassert>
 #include <vector>
 
-namespace Fiber
-{
+namespace Fiber {
 
 template <typename CoordinateType, typename ValueType, typename DuneBasis>
-void evaluateShapeFunctionsWithDune(
-        const arma::Mat<CoordinateType>& local,
-        LocalDofIndex localDofIndex,
-        _3dArray<ValueType>& result,
-        const DuneBasis& basis = DuneBasis())
-{
-    typedef typename DuneBasis::Traits Traits;
-    assert(local.n_rows == Traits::dimDomain);
-    assert(localDofIndex == ALL_DOFS ||
-           (localDofIndex >= 0 && localDofIndex < basis.size()));
+void evaluateShapeFunctionsWithDune(const arma::Mat<CoordinateType> &local,
+                                    LocalDofIndex localDofIndex,
+                                    _3dArray<ValueType> &result,
+                                    const DuneBasis &basis = DuneBasis()) {
+  typedef typename DuneBasis::Traits Traits;
+  assert(local.n_rows == Traits::dimDomain);
+  assert(localDofIndex == ALL_DOFS ||
+         (localDofIndex >= 0 && localDofIndex < basis.size()));
 
-    const int functionCount = localDofIndex == ALL_DOFS ? basis.size() : 1;
-    const int pointCount = local.n_cols;
+  const int functionCount = localDofIndex == ALL_DOFS ? basis.size() : 1;
+  const int pointCount = local.n_cols;
 
-    typename Traits::DomainType point;
-    std::vector<typename Traits::RangeType> values;
-    result.set_size(Traits::dimRange, functionCount, pointCount);
+  typename Traits::DomainType point;
+  std::vector<typename Traits::RangeType> values;
+  result.set_size(Traits::dimRange, functionCount, pointCount);
 
-    for (int pointIndex = 0; pointIndex < pointCount; ++pointIndex)
-    {
-        for (int dim = 0; dim < Traits::dimDomain; ++dim)
-            point[dim] = local(dim, pointIndex);
-        basis.evaluateFunction(point, values);
-        if (localDofIndex == ALL_DOFS)
-            for (int functionIndex = 0; functionIndex < functionCount; ++functionIndex)
-                for (int dim = 0; dim < Traits::dimRange; ++dim)
-                    result(dim, functionIndex, pointIndex) = values[functionIndex][dim];
-        else
-            for (int dim = 0; dim < Traits::dimRange; ++dim)
-                result(dim, 0, pointIndex) = values[localDofIndex][dim];
-    }
+  for (int pointIndex = 0; pointIndex < pointCount; ++pointIndex) {
+    for (int dim = 0; dim < Traits::dimDomain; ++dim)
+      point[dim] = local(dim, pointIndex);
+    basis.evaluateFunction(point, values);
+    if (localDofIndex == ALL_DOFS)
+      for (int functionIndex = 0; functionIndex < functionCount;
+           ++functionIndex)
+        for (int dim = 0; dim < Traits::dimRange; ++dim)
+          result(dim, functionIndex, pointIndex) = values[functionIndex][dim];
+    else
+      for (int dim = 0; dim < Traits::dimRange; ++dim)
+        result(dim, 0, pointIndex) = values[localDofIndex][dim];
+  }
 }
 
 template <typename CoordinateType, typename ValueType, typename DuneBasis>
 BEMPP_DEPRECATED void evaluateBasisFunctionsWithDune(
-        const arma::Mat<CoordinateType>& local,
-        LocalDofIndex localDofIndex,
-        _3dArray<ValueType>& result,
-        const DuneBasis& basis = DuneBasis())
-{
-    evaluateShapeFunctionsWithDune(local, localDofIndex, result, basis);
+    const arma::Mat<CoordinateType> &local, LocalDofIndex localDofIndex,
+    _3dArray<ValueType> &result, const DuneBasis &basis = DuneBasis()) {
+  evaluateShapeFunctionsWithDune(local, localDofIndex, result, basis);
 }
 
 template <typename CoordinateType, typename ValueType, typename DuneBasis>
 void evaluateShapeFunctionDerivativesWithDune(
-        const arma::Mat<CoordinateType>& local,
-        LocalDofIndex localDofIndex,
-        _4dArray<ValueType>& result,
-        const DuneBasis& basis = DuneBasis())
-{
-    typedef typename DuneBasis::Traits Traits;
-    assert(local.n_rows == Traits::dimDomain);
-    assert(localDofIndex == ALL_DOFS ||
-           (localDofIndex >= 0 && localDofIndex < basis.size()));
+    const arma::Mat<CoordinateType> &local, LocalDofIndex localDofIndex,
+    _4dArray<ValueType> &result, const DuneBasis &basis = DuneBasis()) {
+  typedef typename DuneBasis::Traits Traits;
+  assert(local.n_rows == Traits::dimDomain);
+  assert(localDofIndex == ALL_DOFS ||
+         (localDofIndex >= 0 && localDofIndex < basis.size()));
 
-    const int functionCount = localDofIndex == ALL_DOFS ? basis.size() : 1;
-    const int pointCount = local.n_cols;
+  const int functionCount = localDofIndex == ALL_DOFS ? basis.size() : 1;
+  const int pointCount = local.n_cols;
 
-    typename Traits::DomainType point;
-    std::vector<typename Traits::JacobianType> jacobians;
-    result.set_size(Traits::dimRange, Traits::dimDomain, functionCount, pointCount);
+  typename Traits::DomainType point;
+  std::vector<typename Traits::JacobianType> jacobians;
+  result.set_size(Traits::dimRange, Traits::dimDomain, functionCount,
+                  pointCount);
 
-    for (int pointIndex = 0; pointIndex < pointCount; ++pointIndex)
-    {
-        for (int dim = 0; dim < Traits::dimDomain; ++dim)
-            point[dim] = local(dim, pointIndex);
-        basis.evaluateJacobian(point, jacobians);
-        if (localDofIndex == ALL_DOFS)
-            for (int functionIndex = 0; functionIndex < functionCount; ++functionIndex)
-                for (int dimD = 0; dimD < Traits::dimDomain; ++dimD)
-                    for (int dimR = 0; dimR < Traits::dimRange; ++dimR)
-                        result(dimR, dimD, functionIndex, pointIndex) =
-                                jacobians[functionIndex][dimR][dimD];
-        else
-            for (int dimD = 0; dimD < Traits::dimDomain; ++dimD)
-                for (int dimR = 0; dimR < Traits::dimRange; ++dimR)
-                    result(dimR, dimD, 0, pointIndex) =
-                            jacobians[localDofIndex][dimR][dimD];
-    }
+  for (int pointIndex = 0; pointIndex < pointCount; ++pointIndex) {
+    for (int dim = 0; dim < Traits::dimDomain; ++dim)
+      point[dim] = local(dim, pointIndex);
+    basis.evaluateJacobian(point, jacobians);
+    if (localDofIndex == ALL_DOFS)
+      for (int functionIndex = 0; functionIndex < functionCount;
+           ++functionIndex)
+        for (int dimD = 0; dimD < Traits::dimDomain; ++dimD)
+          for (int dimR = 0; dimR < Traits::dimRange; ++dimR)
+            result(dimR, dimD, functionIndex, pointIndex) =
+                jacobians[functionIndex][dimR][dimD];
+    else
+      for (int dimD = 0; dimD < Traits::dimDomain; ++dimD)
+        for (int dimR = 0; dimR < Traits::dimRange; ++dimR)
+          result(dimR, dimD, 0, pointIndex) =
+              jacobians[localDofIndex][dimR][dimD];
+  }
 }
 
 template <typename CoordinateType, typename ValueType, typename DuneBasis>
 BEMPP_DEPRECATED void evaluateBasisFunctionDerivativesWithDune(
-        const arma::Mat<CoordinateType>& local,
-        LocalDofIndex localDofIndex,
-        _4dArray<ValueType>& result,
-        const DuneBasis& basis = DuneBasis())
-{
-    evaluateShapeFunctionDerivativesWithDune(local, localDofIndex,
-                                             result, basis);
+    const arma::Mat<CoordinateType> &local, LocalDofIndex localDofIndex,
+    _4dArray<ValueType> &result, const DuneBasis &basis = DuneBasis()) {
+  evaluateShapeFunctionDerivativesWithDune(local, localDofIndex, result, basis);
 }
 
 } // namespace Fiber

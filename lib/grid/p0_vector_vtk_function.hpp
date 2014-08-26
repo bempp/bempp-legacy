@@ -25,8 +25,7 @@
 
 #include <dune/grid/io/file/vtk/function.hh>
 
-namespace Bempp
-{
+namespace Bempp {
 
 /**
  * \ingroup grid_internal
@@ -44,70 +43,61 @@ namespace Bempp
  * \tparam GV Type of GridView the vector applies to.
  * \tparam V  Type of vector.
  */
-template<typename GV, typename V>
-class P0VectorVTKFunction
-        : public Dune::VTKFunction<GV>
-{
-    //! Base class
-    typedef Dune::VTKFunction<GV> Base;
-    //! Mapper for elements
-    typedef Dune::MultipleCodimMultipleGeomTypeMapper<GV, Dune::MCMGElementLayout> Mapper;
+template <typename GV, typename V>
+class P0VectorVTKFunction : public Dune::VTKFunction<GV> {
+  //! Base class
+  typedef Dune::VTKFunction<GV> Base;
+  //! Mapper for elements
+  typedef Dune::MultipleCodimMultipleGeomTypeMapper<GV, Dune::MCMGElementLayout>
+  Mapper;
 
-    //! store a reference to the vector
-    const V& v;
-    //! name of this function
-    std::string s;
-    //! number of components of the field stored in the vector
-    int ncomps_;
-    //! mapper used to map elements to indices
-    Mapper mapper;
+  //! store a reference to the vector
+  const V &v;
+  //! name of this function
+  std::string s;
+  //! number of components of the field stored in the vector
+  int ncomps_;
+  //! mapper used to map elements to indices
+  Mapper mapper;
 
 public:
-    typedef typename Base::Entity Entity;
-    typedef typename Base::ctype ctype;
-    using Base::dim;
+  typedef typename Base::Entity Entity;
+  typedef typename Base::ctype ctype;
+  using Base::dim;
 
-    //! return number of components
-    virtual int ncomps() const
-    {
-        return ncomps_;
-    }
+  //! return number of components
+  virtual int ncomps() const { return ncomps_; }
 
-    //! evaluate
-    virtual double evaluate(int comp, const Entity& e,
-                            const Dune::FieldVector<ctype,dim>& xi) const
-    {
-        return v[mapper.map(e)*ncomps_+comp];
-    }
+  //! evaluate
+  virtual double evaluate(int comp, const Entity &e,
+                          const Dune::FieldVector<ctype, dim> &xi) const {
+    return v[mapper.map(e) * ncomps_ + comp];
+  }
 
-    //! get name
-    virtual std::string name() const
-    {
-        return s;
-    }
+  //! get name
+  virtual std::string name() const { return s; }
 
-    /**
-     * \brief Construct from a vector and a name.
-     *
-     * \param gv     GridView to operate on (used to instantiate a
-     *               MultipleCodimMultipleGeomeTypeMapper, otherwise no
-     *               reference or copy is stored).  Note that this must be the
-     *               GridView the vector applies to as well as the GridView
-     *               later used by the VTKWriter -- i.e. we do not implicitly
-     *               restrict or prolongate the data.
-     * \param v_     Reference to the vector holding the data.  The reference
-     *               is stored internally and must be valid for as long as
-     *               this functions evaluate method is used.
-     * \param s_     Name of this function in the VTK file.
-     * \param ncomps Number of components of the field represented by the
-     *               vector. */
-    P0VectorVTKFunction(const GV &gv, const V &v_, const std::string &s_,
-                        int ncomps = 1)
-        : v(v_), s(s_), ncomps_(ncomps), mapper(gv)
-    {
-        if (v.size() != (unsigned int)(mapper.size() * ncomps_))
-            DUNE_THROW(Dune::IOError, "VectorP0VTKFunction: size mismatch");
-    }
+  /**
+   * \brief Construct from a vector and a name.
+   *
+   * \param gv     GridView to operate on (used to instantiate a
+   *               MultipleCodimMultipleGeomeTypeMapper, otherwise no
+   *               reference or copy is stored).  Note that this must be the
+   *               GridView the vector applies to as well as the GridView
+   *               later used by the VTKWriter -- i.e. we do not implicitly
+   *               restrict or prolongate the data.
+   * \param v_     Reference to the vector holding the data.  The reference
+   *               is stored internally and must be valid for as long as
+   *               this functions evaluate method is used.
+   * \param s_     Name of this function in the VTK file.
+   * \param ncomps Number of components of the field represented by the
+   *               vector. */
+  P0VectorVTKFunction(const GV &gv, const V &v_, const std::string &s_,
+                      int ncomps = 1)
+      : v(v_), s(s_), ncomps_(ncomps), mapper(gv) {
+    if (v.size() != (unsigned int)(mapper.size() * ncomps_))
+      DUNE_THROW(Dune::IOError, "VectorP0VTKFunction: size mismatch");
+  }
 };
 
 } // namespace Bempp

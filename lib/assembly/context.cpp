@@ -26,27 +26,23 @@
 #include <boost/make_shared.hpp>
 #include <iostream>
 
-namespace Bempp
-{
+namespace Bempp {
 
 template <typename BasisFunctionType, typename ResultType>
 Context<BasisFunctionType, ResultType>::Context(
-        const shared_ptr<const QuadratureStrategy>& quadStrategy,
-        const AssemblyOptions& assemblyOptions) :
-    m_quadStrategy(quadStrategy),
-    m_assemblyOptions(assemblyOptions)
-{
-    if (quadStrategy.get() == 0)
-        throw std::invalid_argument("Context::Context(): "
-                                    "quadStrategy must not be null");
+    const shared_ptr<const QuadratureStrategy> &quadStrategy,
+    const AssemblyOptions &assemblyOptions)
+    : m_quadStrategy(quadStrategy), m_assemblyOptions(assemblyOptions) {
+  if (quadStrategy.get() == 0)
+    throw std::invalid_argument("Context::Context(): "
+                                "quadStrategy must not be null");
 }
 
 template <typename BasisFunctionType, typename ResultType>
-shared_ptr<const DiscreteBoundaryOperator<ResultType> >
+shared_ptr<const DiscreteBoundaryOperator<ResultType>>
 Context<BasisFunctionType, ResultType>::getWeakForm(
-        const AbstractBoundaryOperator<BasisFunctionType, ResultType>& op) const
-{
-    return op.assembleWeakForm(*this);
+    const AbstractBoundaryOperator<BasisFunctionType, ResultType> &op) const {
+  return op.assembleWeakForm(*this);
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(Context);

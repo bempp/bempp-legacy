@@ -23,12 +23,11 @@
 
 #include "../common/common.hpp"
 
-namespace Bempp
-{
+namespace Bempp {
 
-double zRayIntersectsTriangle(
-        const double *p, const double *v0, const double *v1, const double *v2,
-        double* intersection);
+double zRayIntersectsTriangle(const double *p, const double *v0,
+                              const double *v1, const double *v2,
+                              double *intersection);
 
 } // namespace Bempp
 

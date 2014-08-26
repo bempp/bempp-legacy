@@ -28,42 +28,38 @@
 
 #include <vector>
 
-namespace Bempp
-{
+namespace Bempp {
 
 class GridView;
 struct LocalDof;
 template <typename CoordinateType> struct BoundingBox;
 template <typename BasisFunctionType> class Space;
 
-template <typename BasisFunctionType>
-class SpaceHelper
-{
+template <typename BasisFunctionType> class SpaceHelper {
 public:
-    typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
+  typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
 
-    static void getGlobalDofInterpolationPoints_defaultImplementation(
-            const Space<BasisFunctionType>& space,
-            arma::Mat<CoordinateType>& points);
+  static void getGlobalDofInterpolationPoints_defaultImplementation(
+      const Space<BasisFunctionType> &space, arma::Mat<CoordinateType> &points);
 
-    static void getNormalsAtGlobalDofInterpolationPoints_defaultImplementation(
-            const Space<BasisFunctionType>& space,
-            arma::Mat<CoordinateType>& normals);
+  static void getNormalsAtGlobalDofInterpolationPoints_defaultImplementation(
+      const Space<BasisFunctionType> &space,
+      arma::Mat<CoordinateType> &normals);
 
-    static void getGlobalDofBoundingBoxes_defaultImplementation(
-            const GridView& view,
-            const std::vector<std::vector<LocalDof> >& global2localDofs,
-            std::vector<BoundingBox<CoordinateType> >& bboxes);
+  static void getGlobalDofBoundingBoxes_defaultImplementation(
+      const GridView &view,
+      const std::vector<std::vector<LocalDof>> &global2localDofs,
+      std::vector<BoundingBox<CoordinateType>> &bboxes);
 
-    static void getGlobalDofNormals_defaultImplementation(
-            const GridView& view,
-            const std::vector<std::vector<LocalDof> >& global2localDofs,
-            std::vector<Point3D<CoordinateType> >& normals);
+  static void getGlobalDofNormals_defaultImplementation(
+      const GridView &view,
+      const std::vector<std::vector<LocalDof>> &global2localDofs,
+      std::vector<Point3D<CoordinateType>> &normals);
 
-    static void initializeLocal2FlatLocalDofMap(
-            size_t flatLocalDofCount,
-            const std::vector<std::vector<GlobalDofIndex> >& local2globalDofs,
-            std::vector<LocalDof>& flatLocal2localDofs);
+  static void initializeLocal2FlatLocalDofMap(
+      size_t flatLocalDofCount,
+      const std::vector<std::vector<GlobalDofIndex>> &local2globalDofs,
+      std::vector<LocalDof> &flatLocal2localDofs);
 };
 
 } // namespace Bempp

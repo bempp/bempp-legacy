@@ -31,58 +31,54 @@
 #include <cassert>
 #include <vector>
 
-namespace Fiber
-{
+namespace Fiber {
 
 template <typename BasisFunctionType_, typename KernelType_,
           typename ResultType_>
-class ModifiedMaxwell3dDoubleLayerPotentialOperatorIntegrandFunctor
-{
+class ModifiedMaxwell3dDoubleLayerPotentialOperatorIntegrandFunctor {
 public:
-    typedef BasisFunctionType_ BasisFunctionType;
-    typedef KernelType_ KernelType;
-    typedef ResultType_ ResultType;
-    typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
+  typedef BasisFunctionType_ BasisFunctionType;
+  typedef KernelType_ KernelType;
+  typedef ResultType_ ResultType;
+  typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
 
-    void addGeometricalDependencies(size_t& trialGeomDeps) const {
-        // Do nothing
-    }
+  void addGeometricalDependencies(size_t &trialGeomDeps) const {
+    // Do nothing
+  }
 
-    int resultDimension() const {
-        return 3;
-    }
+  int resultDimension() const { return 3; }
 
-    template <template<typename T> class CollectionOf1dSlicesOfConstNdArrays,
-              typename TrialValueType>
-    void evaluate(
-            const ConstGeometricalDataSlice<CoordinateType>& /* trialGeomData */,
-            const CollectionOf2dSlicesOfConst4dArrays<KernelType>& kernelValues,
-            const CollectionOf1dSlicesOfConstNdArrays<TrialValueType>& trialValues,
-            std::vector<ResultType>& result) const {
-#       ifndef NDEBUG
-        const int dimWorld = 3;
-#       endif
+  template <template <typename T> class CollectionOf1dSlicesOfConstNdArrays,
+            typename TrialValueType>
+  void evaluate(
+      const ConstGeometricalDataSlice<CoordinateType> & /* trialGeomData */,
+      const CollectionOf2dSlicesOfConst4dArrays<KernelType> &kernelValues,
+      const CollectionOf1dSlicesOfConstNdArrays<TrialValueType> &trialValues,
+      std::vector<ResultType> &result) const {
+#ifndef NDEBUG
+    const int dimWorld = 3;
+#endif
 
-        // Assert that there is at least one vector-valued kernel
-        assert(kernelValues.size() >= 1);
-        assert(kernelValues[0].extent(0) == 3);
-        assert(kernelValues[0].extent(1) == 1);
+    // Assert that there is at least one vector-valued kernel
+    assert(kernelValues.size() >= 1);
+    assert(kernelValues[0].extent(0) == 3);
+    assert(kernelValues[0].extent(1) == 1);
 
-        // Assert that there are is at least one trial transformations
-        // (function value)
-        assert(trialValues.size() >= 1);
-        assert(trialValues[0].extent(0) == 3);
+    // Assert that there are is at least one trial transformations
+    // (function value)
+    assert(trialValues.size() >= 1);
+    assert(trialValues[0].extent(0) == 3);
 
-        // Assert that the result vector is three-dimensional
-        assert(result.size() == dimWorld);
+    // Assert that the result vector is three-dimensional
+    assert(result.size() == dimWorld);
 
-        result[0] = kernelValues[0](1, 0) * trialValues[0](2) -
-                    kernelValues[0](2, 0) * trialValues[0](1);
-        result[1] = kernelValues[0](2, 0) * trialValues[0](0) -
-                    kernelValues[0](0, 0) * trialValues[0](2);
-        result[2] = kernelValues[0](0, 0) * trialValues[0](1) -
-                    kernelValues[0](1, 0) * trialValues[0](0);
-    }
+    result[0] = kernelValues[0](1, 0) * trialValues[0](2) -
+                kernelValues[0](2, 0) * trialValues[0](1);
+    result[1] = kernelValues[0](2, 0) * trialValues[0](0) -
+                kernelValues[0](0, 0) * trialValues[0](2);
+    result[2] = kernelValues[0](0, 0) * trialValues[0](1) -
+                kernelValues[0](1, 0) * trialValues[0](0);
+  }
 };
 
 } // namespace Fiber

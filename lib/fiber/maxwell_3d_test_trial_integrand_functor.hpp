@@ -29,46 +29,46 @@
 #include "conjugate.hpp"
 #include "scalar_traits.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
-/** \brief Functor evaluating the integrand of the identity operator under the pseudo-inner product relevant to Maxwell equations in 3d.
+/** \brief Functor evaluating the integrand of the identity operator under the
+ *pseudo-inner product relevant to Maxwell equations in 3d.
  *
  *  \see maxwell_3d
  */
 template <typename BasisFunctionType_, typename ResultType_>
-class Maxwell3dTestTrialIntegrandFunctor
-{
+class Maxwell3dTestTrialIntegrandFunctor {
 public:
-    typedef BasisFunctionType_ BasisFunctionType;
-    typedef ResultType_ ResultType;
-    typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
+  typedef BasisFunctionType_ BasisFunctionType;
+  typedef ResultType_ ResultType;
+  typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
 
-    void addGeometricalDependencies(size_t& geomDeps) const {
-        geomDeps |= NORMALS;
-    }
+  void addGeometricalDependencies(size_t &geomDeps) const {
+    geomDeps |= NORMALS;
+  }
 
-    ResultType evaluate(
-            const ConstGeometricalDataSlice<CoordinateType>& geomData,
-            const CollectionOf1dSlicesOfConst3dArrays<BasisFunctionType>& testValues,
-            const CollectionOf1dSlicesOfConst3dArrays<BasisFunctionType>& trialValues) const {
-        // Assert that there is at least one test and trial transformation
-        // and that the dimensions of the first pair agree
-        assert(testValues.size() >= 1);
-        assert(trialValues.size() >= 1);
-        assert(testValues[0].extent(0) == 3);
-        assert(trialValues[0].extent(0) == 3);
+  ResultType evaluate(
+      const ConstGeometricalDataSlice<CoordinateType> &geomData,
+      const CollectionOf1dSlicesOfConst3dArrays<BasisFunctionType> &testValues,
+      const CollectionOf1dSlicesOfConst3dArrays<BasisFunctionType> &trialValues)
+      const {
+    // Assert that there is at least one test and trial transformation
+    // and that the dimensions of the first pair agree
+    assert(testValues.size() >= 1);
+    assert(trialValues.size() >= 1);
+    assert(testValues[0].extent(0) == 3);
+    assert(trialValues[0].extent(0) == 3);
 
-        return -((conjugate(testValues[0](1)) * geomData.normal(2) -
-                  conjugate(testValues[0](2)) * geomData.normal(1)) *
+    return -((conjugate(testValues[0](1)) * geomData.normal(2) -
+              conjugate(testValues[0](2)) * geomData.normal(1)) *
                  trialValues[0](0) +
-                 (conjugate(testValues[0](2)) * geomData.normal(0) -
-                  conjugate(testValues[0](0)) * geomData.normal(2)) *
+             (conjugate(testValues[0](2)) * geomData.normal(0) -
+              conjugate(testValues[0](0)) * geomData.normal(2)) *
                  trialValues[0](1) +
-                 (conjugate(testValues[0](0)) * geomData.normal(1) -
-                  conjugate(testValues[0](1)) * geomData.normal(0)) *
+             (conjugate(testValues[0](0)) * geomData.normal(1) -
+              conjugate(testValues[0](1)) * geomData.normal(0)) *
                  trialValues[0](2));
-    }
+  }
 };
 
 } // namespace Fiber

@@ -23,19 +23,17 @@
 
 #include "single_quadrature_rule_family.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \brief Default family of quadrature rules over single elements. */
 template <typename CoordinateType>
-class DefaultSingleQuadratureRuleFamily :
-        public SingleQuadratureRuleFamily<CoordinateType>
-{
+class DefaultSingleQuadratureRuleFamily
+    : public SingleQuadratureRuleFamily<CoordinateType> {
 public:
-    virtual void fillQuadraturePointsAndWeights(
-        const SingleQuadratureDescriptor& desc,
-        arma::Mat<CoordinateType>& points,
-        std::vector<CoordinateType>& weights) const;
+  virtual void
+  fillQuadraturePointsAndWeights(const SingleQuadratureDescriptor &desc,
+                                 arma::Mat<CoordinateType> &points,
+                                 std::vector<CoordinateType> &weights) const;
 };
 
 } // namespace Fiber

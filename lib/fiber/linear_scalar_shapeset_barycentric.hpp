@@ -18,7 +18,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-
 #ifndef linear_scalar_shapeset_barycentric_hpp
 #define linear_scalar_shapeset_barycentric_hpp
 
@@ -26,126 +25,106 @@
 #include "basis_data.hpp"
 #include "piecewise_linear_continuous_scalar_basis.hpp"
 
-namespace Fiber
-{
+namespace Fiber {
 
 template <typename ValueType>
-class LinearScalarShapesetBarycentric : public Basis<ValueType>
-{
+class LinearScalarShapesetBarycentric : public Basis<ValueType> {
 public:
-    typedef typename Basis<ValueType>::CoordinateType CoordinateType;
-    enum BasisType {TYPE1,TYPE2};
+  typedef typename Basis<ValueType>::CoordinateType CoordinateType;
+  enum BasisType {
+    TYPE1,
+    TYPE2
+  };
 
 public:
+  LinearScalarShapesetBarycentric(BasisType type) : m_type(type) {}
 
-    LinearScalarShapesetBarycentric(BasisType type) :
-        m_type(type)
-    {
-    }
+  virtual int size() const { return 3; }
 
-    virtual int size() const {
-        return 3;
-    }
+  virtual int order() const { return 1; }
 
-    virtual int order() const {
-        return 1;
-    }
+  virtual void evaluate(size_t what, const arma::Mat<CoordinateType> &points,
+                        LocalDofIndex localDofIndex,
+                        BasisData<ValueType> &data) const {
 
-    virtual void evaluate(size_t what,
-                          const arma::Mat<CoordinateType>& points,
-                          LocalDofIndex localDofIndex,
-                          BasisData<ValueType>& data) const {
+    BasisData<ValueType> temp;
 
-        BasisData<ValueType> temp;
+    linearBasis.evaluate(what, points, ALL_DOFS, temp);
 
-        linearBasis.evaluate(what,points,ALL_DOFS,temp);
+    ValueType coeffs[2][3][3] = {
+        {{1, 1. / 3, 1. / 2}, {0, 1. / 3, 0}, {0, 1. / 3, 1. / 2}},
+        {{1, 1. / 2, 1. / 3}, {0, 1. / 2, 1. / 3}, {0, 0, 1. / 3}}};
 
-        ValueType coeffs[2][3][3] =
-            {
-            {{1,1./3,1./2},{0,1./3,0},{0,1./3,1./2}},
-             {{1,1./2,1./3},{0,1./2,1./3},{0,0,1./3}}
-            };
+    int type_index;
+    if (m_type == TYPE1)
+      type_index = 0;
+    else
+      type_index = 1;
 
-        int type_index;
-        if (m_type == TYPE1)
-            type_index = 0;
-        else
-            type_index = 1;
+    if (localDofIndex != ALL_DOFS) {
 
-        if (localDofIndex != ALL_DOFS){
-
-            if (what & VALUES){
-                data.values.set_size(1,1,temp.values.extent(2));
-                for (int i=0;i<data.values.extent(2);++i){
-                    data.values(0,0,i) = 0;
-                    for (int j=0;j<3;++j)
-                        data.values(0,0,i) +=coeffs[type_index][localDofIndex][j]*
-                                temp.values(0,j,i);
-                }
-            }
-            if (what & DERIVATIVES){
-                data.derivatives.set_size(1,temp.derivatives.extent(1),1,temp.derivatives.extent(3));
-                for (int i=0;i<data.derivatives.extent(1);++i)
-                    for (int j=0;j<data.derivatives.extent(3);++j){
-                        data.derivatives(0,i,0,j) = 0;
-                        for (int k=0;k<3;++k)
-                            data.derivatives(0,i,0,j)+=
-                                    coeffs[type_index][localDofIndex][k]*
-                                    temp.derivatives(0,i,k,j);
-                    }
-            }
-
+      if (what & VALUES) {
+        data.values.set_size(1, 1, temp.values.extent(2));
+        for (int i = 0; i < data.values.extent(2); ++i) {
+          data.values(0, 0, i) = 0;
+          for (int j = 0; j < 3; ++j)
+            data.values(0, 0, i) +=
+                coeffs[type_index][localDofIndex][j] * temp.values(0, j, i);
         }
-        else {
-            if (what & VALUES){
-                data.values.set_size(1,3,temp.values.extent(2));
-                for (int dofIndex=0;dofIndex<3;++dofIndex){
-                    for (int i=0;i<data.values.extent(2);++i){
-                        data.values(0,dofIndex,i) = 0;
-                        for (int j=0;j<3;++j)
-                            data.values(0,dofIndex,i) +=coeffs[type_index][dofIndex][j]*
-                                    temp.values(0,j,i);
+      }
+      if (what & DERIVATIVES) {
+        data.derivatives.set_size(1, temp.derivatives.extent(1), 1,
+                                  temp.derivatives.extent(3));
+        for (int i = 0; i < data.derivatives.extent(1); ++i)
+          for (int j = 0; j < data.derivatives.extent(3); ++j) {
+            data.derivatives(0, i, 0, j) = 0;
+            for (int k = 0; k < 3; ++k)
+              data.derivatives(0, i, 0, j) +=
+                  coeffs[type_index][localDofIndex][k] *
+                  temp.derivatives(0, i, k, j);
+          }
+      }
 
-                    }
-                }
+    } else {
+      if (what & VALUES) {
+        data.values.set_size(1, 3, temp.values.extent(2));
+        for (int dofIndex = 0; dofIndex < 3; ++dofIndex) {
+          for (int i = 0; i < data.values.extent(2); ++i) {
+            data.values(0, dofIndex, i) = 0;
+            for (int j = 0; j < 3; ++j)
+              data.values(0, dofIndex, i) +=
+                  coeffs[type_index][dofIndex][j] * temp.values(0, j, i);
+          }
+        }
+      }
+
+      if (what & DERIVATIVES) {
+        data.derivatives.set_size(1, temp.derivatives.extent(1), 3,
+                                  temp.derivatives.extent(3));
+        for (int dofIndex = 0; dofIndex < 3; ++dofIndex)
+          for (int i = 0; i < data.derivatives.extent(1); ++i)
+            for (int j = 0; j < data.derivatives.extent(3); ++j) {
+              data.derivatives(0, i, dofIndex, j) = 0;
+              for (int k = 0; k < 3; ++k)
+                data.derivatives(0, i, dofIndex, j) +=
+                    coeffs[type_index][dofIndex][k] *
+                    temp.derivatives(0, i, k, j);
             }
-
-            if (what & DERIVATIVES){
-                data.derivatives.set_size(1,temp.derivatives.extent(1),3,temp.derivatives.extent(3));
-                for (int dofIndex=0;dofIndex<3;++dofIndex)
-                    for (int i=0;i<data.derivatives.extent(1);++i)
-                        for (int j=0;j<data.derivatives.extent(3);++j){
-                            data.derivatives(0,i,dofIndex,j) = 0;
-                            for (int k=0;k<3;++k)
-                                data.derivatives(0,i,dofIndex,j)+=
-                                        coeffs[type_index][dofIndex][k]*
-                                        temp.derivatives(0,i,k,j);
-                        }
-
-
-                }
-            }
-
+      }
     }
+  }
 
-
-
-    virtual std::pair<const char*,int> clCodeString (bool isTestBasis) const {
-        throw std::runtime_error("PiecewiseLinearContinuousScalarBasisBarycentric::clCodeString():"
-                                 "OpenCL not supported for this basis type.");
-
-    }
+  virtual std::pair<const char *, int> clCodeString(bool isTestBasis) const {
+    throw std::runtime_error(
+        "PiecewiseLinearContinuousScalarBasisBarycentric::clCodeString():"
+        "OpenCL not supported for this basis type.");
+  }
 
 private:
-    Fiber::PiecewiseLinearContinuousScalarBasis<3,ValueType> linearBasis;
-    BasisType m_type;
-
-
+  Fiber::PiecewiseLinearContinuousScalarBasis<3, ValueType> linearBasis;
+  BasisType m_type;
 };
 
 } // namespace Fiber
 
-
-
 #endif
-

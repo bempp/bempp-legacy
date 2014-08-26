@@ -24,21 +24,16 @@
 #include "domain_index.hpp"
 #include "concrete_index_set.hpp"
 
-namespace Bempp
-{
+namespace Bempp {
 
-template <typename DuneGrid>
-class ConcreteDomainIndex : public DomainIndex
-{
+template <typename DuneGrid> class ConcreteDomainIndex : public DomainIndex {
 public:
-    ConcreteDomainIndex(const DuneGrid& grid,
-                        const std::vector<int>& elementIndexToPhysicalEntity) :
-        DomainIndex(std::unique_ptr<IndexSet>(
+  ConcreteDomainIndex(const DuneGrid &grid,
+                      const std::vector<int> &elementIndexToPhysicalEntity)
+      : DomainIndex(std::unique_ptr<IndexSet>(
                         new ConcreteIndexSet<typename DuneGrid::LevelGridView>(
                             &grid.levelIndexSet(0))),
-                    elementIndexToPhysicalEntity)
-    {
-    }
+                    elementIndexToPhysicalEntity) {}
 };
 
 } // namespace

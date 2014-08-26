@@ -33,8 +33,7 @@
 #include <dune/grid/alugrid.hh>
 #endif
 
-namespace Bempp
-{
+namespace Bempp {
 /** \ingroup grid_internal
  *  \brief Default Dune grid implementation used to represent 2D grids
  *  embedded in 3D space. */
@@ -46,7 +45,8 @@ typedef Dune::FoamGrid<3 /* dimWorld */> Default2dIn3dDuneGrid;
  *
  *  \note BEM++ compiled with ALUGrid is covered by the GPL licence.
  */
-typedef Dune::ALUSimplexGrid<3 /*dimGrid */, 3 /* dimWorld */> Default3dIn3dDuneGrid;
+typedef Dune::ALUSimplexGrid<3 /*dimGrid */, 3 /* dimWorld */>
+Default3dIn3dDuneGrid;
 #endif
 } // namespace Bempp
 

@@ -37,8 +37,7 @@
 class cluster;
 /** \endcond */
 
-namespace Fiber
-{
+namespace Fiber {
 
 /** \cond FORWARD_DECL */
 template <typename ResultType> class LocalAssemblerForIntegralOperators;
@@ -46,8 +45,7 @@ template <typename ResultType> class LocalAssemblerForIntegralOperators;
 
 } // namespace Fiber
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \cond FORWARD_DECL */
 class AssemblyOptions;
@@ -57,90 +55,92 @@ template <typename BasisFunctionType> class Space;
 /** \endcond */
 
 /** \ingroup weak_form_assembly_internal
- *  \brief Class whose methods are called by Ahmed during assembly in the ACA mode.
+ *  \brief Class whose methods are called by Ahmed during assembly in the ACA
+ * mode.
  */
 template <typename BasisFunctionType, typename ResultType>
-class WeakFormAcaAssemblyHelper
-{
+class WeakFormAcaAssemblyHelper {
 public:
-    typedef DiscreteBoundaryOperator<ResultType> DiscreteLinOp;
-    typedef Fiber::LocalAssemblerForIntegralOperators<ResultType> LocalAssembler;
-    typedef typename Fiber::ScalarTraits<ResultType>::RealType CoordinateType;
-    typedef typename Fiber::ScalarTraits<ResultType>::RealType MagnitudeType;
-    typedef typename AhmedTypeTraits<ResultType>::Type AhmedResultType;
+  typedef DiscreteBoundaryOperator<ResultType> DiscreteLinOp;
+  typedef Fiber::LocalAssemblerForIntegralOperators<ResultType> LocalAssembler;
+  typedef typename Fiber::ScalarTraits<ResultType>::RealType CoordinateType;
+  typedef typename Fiber::ScalarTraits<ResultType>::RealType MagnitudeType;
+  typedef typename AhmedTypeTraits<ResultType>::Type AhmedResultType;
 
-    WeakFormAcaAssemblyHelper(const Space<BasisFunctionType>& testSpace,
-                              const Space<BasisFunctionType>& trialSpace,
-                              const std::vector<unsigned int>& p2oTestDofs,
-                              const std::vector<unsigned int>& p2oTrialDofs,
-                              const std::vector<LocalAssembler*>& assemblers,
-                              const std::vector<const DiscreteLinOp*>& sparseTermsToAdd,
-                              const std::vector<ResultType>& denseTermsMultipliers,
-                              const std::vector<ResultType>& sparseTermsMultipliers,
-                              const AssemblyOptions& options);
+  WeakFormAcaAssemblyHelper(
+      const Space<BasisFunctionType> &testSpace,
+      const Space<BasisFunctionType> &trialSpace,
+      const std::vector<unsigned int> &p2oTestDofs,
+      const std::vector<unsigned int> &p2oTrialDofs,
+      const std::vector<LocalAssembler *> &assemblers,
+      const std::vector<const DiscreteLinOp *> &sparseTermsToAdd,
+      const std::vector<ResultType> &denseTermsMultipliers,
+      const std::vector<ResultType> &sparseTermsMultipliers,
+      const AssemblyOptions &options);
 
-    /** \brief Evaluate entries of a general block.
-     *
-     *  Store the entries of the block defined
-     *  by \p b1, \p n1, \p b2, \p n2 (in permuted ordering) in data. */
-    void cmpbl(unsigned b1, unsigned n1, unsigned b2, unsigned n2,
-               AhmedResultType* data,
-               const cluster* c1 = 0, const cluster* c2 = 0,
-               bool countAccessedEntries = true) const;
+  /** \brief Evaluate entries of a general block.
+   *
+   *  Store the entries of the block defined
+   *  by \p b1, \p n1, \p b2, \p n2 (in permuted ordering) in data. */
+  void cmpbl(unsigned b1, unsigned n1, unsigned b2, unsigned n2,
+             AhmedResultType *data, const cluster *c1 = 0,
+             const cluster *c2 = 0, bool countAccessedEntries = true) const;
 
-    /** \brief Evaluate entries of a symmetric block.
-     *
-     * Store the upper part of the (symmetric) block defined
-     * by \p b1, \p n1, \p b1, \p n1 (in permuted ordering) columnwise in \p data. */
-    void cmpblsym(unsigned b1, unsigned n1, AhmedResultType* data,
-                  const cluster* c1 = 0,
-                  bool countAccessedEntries = true) const;
+  /** \brief Evaluate entries of a symmetric block.
+   *
+   * Store the upper part of the (symmetric) block defined
+   * by \p b1, \p n1, \p b1, \p n1 (in permuted ordering) columnwise in \p data.
+   */
+  void cmpblsym(unsigned b1, unsigned n1, AhmedResultType *data,
+                const cluster *c1 = 0, bool countAccessedEntries = true) const;
 
-    /** \brief Expected magnitude of the entries in this block. */
-    MagnitudeType scale(unsigned b1, unsigned n1, unsigned b2, unsigned n2,
-                        const cluster* c1 = 0, const cluster* c2 = 0) const;
+  /** \brief Expected magnitude of the entries in this block. */
+  MagnitudeType scale(unsigned b1, unsigned n1, unsigned b2, unsigned n2,
+                      const cluster *c1 = 0, const cluster *c2 = 0) const;
 
-    /** \brief Expected magnitude of the largest entry in this block relative to that
-     *  of the largest entry in the whole matrix. */
-    MagnitudeType relativeScale(unsigned b1, unsigned n1, unsigned b2, unsigned n2,
-                                const cluster* c1 = 0, const cluster* c2 = 0) const;
+  /** \brief Expected magnitude of the largest entry in this block relative to
+   * that
+   *  of the largest entry in the whole matrix. */
+  MagnitudeType relativeScale(unsigned b1, unsigned n1, unsigned b2,
+                              unsigned n2, const cluster *c1 = 0,
+                              const cluster *c2 = 0) const;
 
-    /** \brief Return the number of entries in the matrix that have been
-     *  accessed so far. */
-    size_t accessedEntryCount() const;
+  /** \brief Return the number of entries in the matrix that have been
+   *  accessed so far. */
+  size_t accessedEntryCount() const;
 
-    /** \brief Reset the number of entries in the matrix that have been
-     *  accessed so far. */
-    void resetAccessedEntryCount();
-
-private:
-    MagnitudeType estimateMinimumDistance(
-            const cluster* c1, const cluster* c2) const;
+  /** \brief Reset the number of entries in the matrix that have been
+   *  accessed so far. */
+  void resetAccessedEntryCount();
 
 private:
-    /** \cond PRIVATE */
-    const Space<BasisFunctionType>& m_testSpace;
-    const Space<BasisFunctionType>& m_trialSpace;
-    const std::vector<unsigned int>& m_p2oTestDofs;
-    const std::vector<unsigned int>& m_p2oTrialDofs;
-    const std::vector<LocalAssembler*>& m_assemblers;
-    const std::vector<const DiscreteLinOp*>& m_sparseTermsToAdd;
-    const std::vector<ResultType>& m_denseTermsMultipliers;
-    const std::vector<ResultType>& m_sparseTermsMultipliers;
-    const AssemblyOptions& m_options;
-    bool m_indexWithGlobalDofs;
-    bool m_uniformQuadratureOrder;
+  MagnitudeType estimateMinimumDistance(const cluster *c1,
+                                        const cluster *c2) const;
 
-    shared_ptr<LocalDofListsCache<BasisFunctionType> >
-    m_testDofListsCache, m_trialDofListsCache;
+private:
+  /** \cond PRIVATE */
+  const Space<BasisFunctionType> &m_testSpace;
+  const Space<BasisFunctionType> &m_trialSpace;
+  const std::vector<unsigned int> &m_p2oTestDofs;
+  const std::vector<unsigned int> &m_p2oTrialDofs;
+  const std::vector<LocalAssembler *> &m_assemblers;
+  const std::vector<const DiscreteLinOp *> &m_sparseTermsToAdd;
+  const std::vector<ResultType> &m_denseTermsMultipliers;
+  const std::vector<ResultType> &m_sparseTermsMultipliers;
+  const AssemblyOptions &m_options;
+  bool m_indexWithGlobalDofs;
+  bool m_uniformQuadratureOrder;
 
-    mutable tbb::atomic<size_t> m_accessedEntryCount;
+  shared_ptr<LocalDofListsCache<BasisFunctionType>> m_testDofListsCache,
+      m_trialDofListsCache;
 
-    typedef tbb::concurrent_unordered_map<
-    std::pair<const cluster*, const cluster*>, CoordinateType> DistanceMap;
-    mutable DistanceMap m_distancesCache;
+  mutable tbb::atomic<size_t> m_accessedEntryCount;
 
-    /** \endcond */
+  typedef tbb::concurrent_unordered_map<
+      std::pair<const cluster *, const cluster *>, CoordinateType> DistanceMap;
+  mutable DistanceMap m_distancesCache;
+
+  /** \endcond */
 };
 
 } // namespace Bempp

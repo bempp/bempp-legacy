@@ -25,40 +25,40 @@
 
 #include <boost/utility/enable_if.hpp>
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \cond FORWARD_DECL */
-template<int codim> class Entity;
+template <int codim> class Entity;
 /** \endcond */
 
 /** \ingroup grid
     \brief Abstract wrapper of an id set. */
-class IdSet
-{
+class IdSet {
 public:
-    /** \brief Destructor. */
-    virtual ~IdSet() {
-    }
+  /** \brief Destructor. */
+  virtual ~IdSet() {}
 
-    /** \brief Id type.
+  /** \brief Id type.
 
-     \internal Sadly, it is necessary to specify this type uniformly for all grid classes.
-     */
-    typedef size_t IdType;
+   \internal Sadly, it is necessary to specify this type uniformly for all grid
+   classes.
+   */
+  typedef size_t IdType;
 
-    /** \brief Id of the entity \p e of codimension 0. */
-    virtual IdType entityId(const Entity<0>& e) const = 0;
-    /** \brief Id of the entity \p e of codimension 1. */
-    virtual IdType entityId(const Entity<1>& e) const = 0;
-    /** \brief Id of the entity \p e of codimension 2. */
-    virtual IdType entityId(const Entity<2>& e) const = 0;
-    /** \brief Id of the entity \p e of codimension 3. */
-    virtual IdType entityId(const Entity<3>& e) const = 0;
+  /** \brief Id of the entity \p e of codimension 0. */
+  virtual IdType entityId(const Entity<0> &e) const = 0;
+  /** \brief Id of the entity \p e of codimension 1. */
+  virtual IdType entityId(const Entity<1> &e) const = 0;
+  /** \brief Id of the entity \p e of codimension 2. */
+  virtual IdType entityId(const Entity<2> &e) const = 0;
+  /** \brief Id of the entity \p e of codimension 3. */
+  virtual IdType entityId(const Entity<3> &e) const = 0;
 
-    /** \brief Id of \p i'th subentity of codimension \p codimSub of entity \p e of codimension 0.
-     */
-    virtual IdType subEntityId(const Entity<0>& e, size_t i, int codimSub) const = 0;
+  /** \brief Id of \p i'th subentity of codimension \p codimSub of entity \p e
+   * of codimension 0.
+   */
+  virtual IdType subEntityId(const Entity<0> &e, size_t i,
+                             int codimSub) const = 0;
 };
 
 } // namespace Bempp

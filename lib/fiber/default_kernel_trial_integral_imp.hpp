@@ -27,8 +27,7 @@
 
 #include <algorithm>
 
-namespace Fiber
-{
+namespace Fiber {
 
 /*
 template <typename BasisFunctionType_, typename KernelType_,
@@ -53,98 +52,91 @@ public:
 */
 
 template <typename IntegrandFunctor>
-void DefaultKernelTrialIntegral<IntegrandFunctor>::
-addGeometricalDependencies(size_t& trialGeomDeps) const
-{
-    trialGeomDeps |= INTEGRATION_ELEMENTS;
-    m_functor.addGeometricalDependencies(trialGeomDeps);
+void DefaultKernelTrialIntegral<IntegrandFunctor>::addGeometricalDependencies(
+    size_t &trialGeomDeps) const {
+  trialGeomDeps |= INTEGRATION_ELEMENTS;
+  m_functor.addGeometricalDependencies(trialGeomDeps);
 }
 
 template <typename IntegrandFunctor>
-int DefaultKernelTrialIntegral<IntegrandFunctor>::resultDimension() const
-{
-    return m_functor.resultDimension();
+int DefaultKernelTrialIntegral<IntegrandFunctor>::resultDimension() const {
+  return m_functor.resultDimension();
 }
 
 template <typename IntegrandFunctor>
 void DefaultKernelTrialIntegral<IntegrandFunctor>::evaluate(
-        const GeometricalData<CoordinateType>& trialGeomData,
-        const CollectionOf4dArrays<KernelType>& kernels,
-        const CollectionOf2dArrays<ResultType>& trialTransformations,
-        const std::vector<CoordinateType>& weights,
-        _2dArray<ResultType>& result) const
-{
-    const size_t evalPointCount = kernels[0].extent(2);
-    const size_t quadPointCount = kernels[0].extent(3);
-    const int resultComponentCount = m_functor.resultDimension();
+    const GeometricalData<CoordinateType> &trialGeomData,
+    const CollectionOf4dArrays<KernelType> &kernels,
+    const CollectionOf2dArrays<ResultType> &trialTransformations,
+    const std::vector<CoordinateType> &weights,
+    _2dArray<ResultType> &result) const {
+  const size_t evalPointCount = kernels[0].extent(2);
+  const size_t quadPointCount = kernels[0].extent(3);
+  const int resultComponentCount = m_functor.resultDimension();
 
-    for (size_t i = 0; i < kernels.size(); ++i) {
-        assert(kernels[i].extent(2) == evalPointCount);
-        assert(kernels[i].extent(3) == quadPointCount);
+  for (size_t i = 0; i < kernels.size(); ++i) {
+    assert(kernels[i].extent(2) == evalPointCount);
+    assert(kernels[i].extent(3) == quadPointCount);
+  }
+  for (size_t i = 0; i < trialTransformations.size(); ++i) {
+    assert(trialTransformations[i].extent(1) == quadPointCount);
+  }
+  assert(weights.size() == quadPointCount);
+
+  result.set_size(resultComponentCount, evalPointCount);
+  std::fill(result.begin(), result.end(), 0.);
+
+  std::vector<ResultType> value(resultComponentCount);
+
+  for (size_t evalPoint = 0; evalPoint < evalPointCount; ++evalPoint)
+    for (size_t quadPoint = 0; quadPoint < quadPointCount; ++quadPoint) {
+      m_functor.evaluate(trialGeomData.const_slice(quadPoint),
+                         kernels.const_slice(evalPoint, quadPoint),
+                         trialTransformations.const_slice(quadPoint), value);
+      for (int dim = 0; dim < resultComponentCount; ++dim)
+        result(dim, evalPoint) += value[dim] * weights[quadPoint];
     }
-    for (size_t i = 0; i < trialTransformations.size(); ++i) {
-        assert(trialTransformations[i].extent(1) == quadPointCount);
-    }
-    assert(weights.size() == quadPointCount);
-
-    result.set_size(resultComponentCount, evalPointCount);
-    std::fill(result.begin(), result.end(), 0.);
-
-    std::vector<ResultType> value(resultComponentCount);
-
-    for (size_t evalPoint = 0; evalPoint < evalPointCount; ++evalPoint)
-        for (size_t quadPoint = 0; quadPoint < quadPointCount; ++quadPoint) {
-            m_functor.evaluate(
-                        trialGeomData.const_slice(quadPoint),
-                        kernels.const_slice(evalPoint, quadPoint),
-                        trialTransformations.const_slice(quadPoint),
-                        value);
-            for (int dim = 0; dim < resultComponentCount; ++dim)
-                result(dim, evalPoint) += value[dim] * weights[quadPoint];
-        }
 }
 
 template <typename IntegrandFunctor>
 void DefaultKernelTrialIntegral<IntegrandFunctor>::evaluateWithPureWeights(
-        const GeometricalData<CoordinateType>& trialGeomData,
-        const CollectionOf4dArrays<KernelType>& kernels,
-        const CollectionOf3dArrays<BasisFunctionType>& trialTransformations,
-        const std::vector<CoordinateType>& weights,
-        _3dArray<ResultType>& result) const
-{
-    const size_t trialDofCount = trialTransformations[0].extent(1);
-    const size_t evalPointCount = kernels[0].extent(2);
-    const size_t quadPointCount = kernels[0].extent(3);
-    const int resultComponentCount = m_functor.resultDimension();
+    const GeometricalData<CoordinateType> &trialGeomData,
+    const CollectionOf4dArrays<KernelType> &kernels,
+    const CollectionOf3dArrays<BasisFunctionType> &trialTransformations,
+    const std::vector<CoordinateType> &weights,
+    _3dArray<ResultType> &result) const {
+  const size_t trialDofCount = trialTransformations[0].extent(1);
+  const size_t evalPointCount = kernels[0].extent(2);
+  const size_t quadPointCount = kernels[0].extent(3);
+  const int resultComponentCount = m_functor.resultDimension();
 
-    for (size_t i = 0; i < kernels.size(); ++i) {
-        assert(kernels[i].extent(2) == evalPointCount);
-        assert(kernels[i].extent(3) == quadPointCount);
-    }
-    for (size_t i = 0; i < trialTransformations.size(); ++i) {
-        assert(trialTransformations[i].extent(1) == trialDofCount);
-        assert(trialTransformations[i].extent(2) == quadPointCount);
-    }
-    assert(weights.size() == quadPointCount);
+  for (size_t i = 0; i < kernels.size(); ++i) {
+    assert(kernels[i].extent(2) == evalPointCount);
+    assert(kernels[i].extent(3) == quadPointCount);
+  }
+  for (size_t i = 0; i < trialTransformations.size(); ++i) {
+    assert(trialTransformations[i].extent(1) == trialDofCount);
+    assert(trialTransformations[i].extent(2) == quadPointCount);
+  }
+  assert(weights.size() == quadPointCount);
 
-    result.set_size(resultComponentCount, trialDofCount, evalPointCount);
-    std::fill(result.begin(), result.end(), 0.);
+  result.set_size(resultComponentCount, trialDofCount, evalPointCount);
+  std::fill(result.begin(), result.end(), 0.);
 
-    std::vector<ResultType> value(resultComponentCount);
+  std::vector<ResultType> value(resultComponentCount);
 
-    for (size_t trialDof = 0; trialDof < trialDofCount; ++trialDof)
-        for (size_t evalPoint = 0; evalPoint < evalPointCount; ++evalPoint)
-            for (size_t quadPoint = 0; quadPoint < quadPointCount; ++quadPoint) {
-                m_functor.evaluate(
-                            trialGeomData.const_slice(quadPoint),
-                            kernels.const_slice(evalPoint, quadPoint),
-                            trialTransformations.const_slice(trialDof, quadPoint),
-                            value);
-                for (int dim = 0; dim < resultComponentCount; ++dim)
-                    result(dim, trialDof, evalPoint) += value[dim] *
-                            trialGeomData.integrationElements(quadPoint) *
-                            weights[quadPoint];
-            }
+  for (size_t trialDof = 0; trialDof < trialDofCount; ++trialDof)
+    for (size_t evalPoint = 0; evalPoint < evalPointCount; ++evalPoint)
+      for (size_t quadPoint = 0; quadPoint < quadPointCount; ++quadPoint) {
+        m_functor.evaluate(
+            trialGeomData.const_slice(quadPoint),
+            kernels.const_slice(evalPoint, quadPoint),
+            trialTransformations.const_slice(trialDof, quadPoint), value);
+        for (int dim = 0; dim < resultComponentCount; ++dim)
+          result(dim, trialDof, evalPoint) +=
+              value[dim] * trialGeomData.integrationElements(quadPoint) *
+              weights[quadPoint];
+      }
 }
 
 } // namespace Fiber

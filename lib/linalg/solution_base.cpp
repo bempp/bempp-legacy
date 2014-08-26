@@ -23,76 +23,63 @@
 #include "solution_base.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
-namespace Bempp
-{
+namespace Bempp {
 
 #ifdef WITH_TRILINOS
 template <typename BasisFunctionType, typename ResultType>
 SolutionBase<BasisFunctionType, ResultType>::SolutionBase(
-        const Thyra::SolveStatus<MagnitudeType> status) :
-    m_achievedTolerance(status.achievedTol),
-    m_message(status.message),
-    m_iterationCount(-1),
-    m_extraParameters(status.extraParameters)
-{
-    switch (status.solveStatus) {
-    case Thyra::SOLVE_STATUS_CONVERGED:
-        m_status = SolutionStatus::CONVERGED; break;
-    case Thyra::SOLVE_STATUS_UNCONVERGED:
-        m_status = SolutionStatus::UNCONVERGED; break;
-    default:
-        m_status = SolutionStatus::UNKNOWN;
-
-    }
-    Teuchos::ParameterList params = *status.extraParameters;
-    m_iterationCount = params.get<int>(std::string("Iteration Count"));
-
+    const Thyra::SolveStatus<MagnitudeType> status)
+    : m_achievedTolerance(status.achievedTol), m_message(status.message),
+      m_iterationCount(-1), m_extraParameters(status.extraParameters) {
+  switch (status.solveStatus) {
+  case Thyra::SOLVE_STATUS_CONVERGED:
+    m_status = SolutionStatus::CONVERGED;
+    break;
+  case Thyra::SOLVE_STATUS_UNCONVERGED:
+    m_status = SolutionStatus::UNCONVERGED;
+    break;
+  default:
+    m_status = SolutionStatus::UNKNOWN;
+  }
+  Teuchos::ParameterList params = *status.extraParameters;
+  m_iterationCount = params.get<int>(std::string("Iteration Count"));
 }
 #endif // WITH_TRILINOS
 
 template <typename BasisFunctionType, typename ResultType>
 SolutionBase<BasisFunctionType, ResultType>::SolutionBase(
-        SolutionStatus::Status status, MagnitudeType achievedTolerance, std::string message) :
-    m_status(status), 
-    m_achievedTolerance(achievedTolerance),
-    m_message(message),
-    m_iterationCount(-1)
-{
-}
+    SolutionStatus::Status status, MagnitudeType achievedTolerance,
+    std::string message)
+    : m_status(status), m_achievedTolerance(achievedTolerance),
+      m_message(message), m_iterationCount(-1) {}
 
 template <typename BasisFunctionType, typename ResultType>
 SolutionStatus::Status
-SolutionBase<BasisFunctionType, ResultType>::status() const
-{
-    return m_status;
+SolutionBase<BasisFunctionType, ResultType>::status() const {
+  return m_status;
 }
 
 template <typename BasisFunctionType, typename ResultType>
-int SolutionBase<BasisFunctionType, ResultType>::iterationCount() const
-{
-    return m_iterationCount;
+int SolutionBase<BasisFunctionType, ResultType>::iterationCount() const {
+  return m_iterationCount;
 }
 
 template <typename BasisFunctionType, typename ResultType>
 typename SolutionBase<BasisFunctionType, ResultType>::MagnitudeType
-SolutionBase<BasisFunctionType, ResultType>::achievedTolerance() const
-{
-    return m_achievedTolerance;
+SolutionBase<BasisFunctionType, ResultType>::achievedTolerance() const {
+  return m_achievedTolerance;
 }
 
 template <typename BasisFunctionType, typename ResultType>
-std::string 
-SolutionBase<BasisFunctionType, ResultType>::solverMessage() const
-{
-    return m_message;
+std::string SolutionBase<BasisFunctionType, ResultType>::solverMessage() const {
+  return m_message;
 }
 
 #ifdef WITH_TRILINOS
 template <typename BasisFunctionType, typename ResultType>
-Thyra::RCP<Teuchos::ParameterList> 
-SolutionBase<BasisFunctionType, ResultType>::extraParameters() const
-{
-    return m_extraParameters;
+Thyra::RCP<Teuchos::ParameterList>
+SolutionBase<BasisFunctionType, ResultType>::extraParameters() const {
+  return m_extraParameters;
 }
 #endif // WITH_TRILINOS
 

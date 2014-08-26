@@ -31,59 +31,53 @@
 #include "../fiber/default_collection_of_basis_transformations.hpp"
 #include "../fiber/default_kernel_trial_integral.hpp"
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \cond PRIVATE */
 template <typename BasisFunctionType>
-struct ModifiedHelmholtz3dSingleLayerPotentialOperatorImpl
-{
-    typedef ModifiedHelmholtz3dSingleLayerPotentialOperatorImpl<BasisFunctionType>
-    This;
-    typedef ModifiedHelmholtz3dPotentialOperatorBase<This, BasisFunctionType> PotentialOperatorBase;
-    typedef typename PotentialOperatorBase::KernelType KernelType;
-    typedef typename PotentialOperatorBase::ResultType ResultType;
-    typedef typename PotentialOperatorBase::CoordinateType CoordinateType;
+struct ModifiedHelmholtz3dSingleLayerPotentialOperatorImpl {
+  typedef ModifiedHelmholtz3dSingleLayerPotentialOperatorImpl<BasisFunctionType>
+  This;
+  typedef ModifiedHelmholtz3dPotentialOperatorBase<This, BasisFunctionType>
+  PotentialOperatorBase;
+  typedef typename PotentialOperatorBase::KernelType KernelType;
+  typedef typename PotentialOperatorBase::ResultType ResultType;
+  typedef typename PotentialOperatorBase::CoordinateType CoordinateType;
 
-    typedef Fiber::ModifiedHelmholtz3dSingleLayerPotentialKernelFunctor<KernelType>
-    KernelFunctor;
-    typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
-    TransformationFunctor;
-    typedef Fiber::SimpleScalarKernelTrialIntegrandFunctor<
-    BasisFunctionType, KernelType, ResultType> IntegrandFunctor;
+  typedef Fiber::ModifiedHelmholtz3dSingleLayerPotentialKernelFunctor<
+      KernelType> KernelFunctor;
+  typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
+  TransformationFunctor;
+  typedef Fiber::SimpleScalarKernelTrialIntegrandFunctor<
+      BasisFunctionType, KernelType, ResultType> IntegrandFunctor;
 
-    ModifiedHelmholtz3dSingleLayerPotentialOperatorImpl(KernelType waveNumber) :
-        kernels(KernelFunctor(waveNumber)),
-        transformations(TransformationFunctor()),
-        integral(IntegrandFunctor())
-    {}
+  ModifiedHelmholtz3dSingleLayerPotentialOperatorImpl(KernelType waveNumber)
+      : kernels(KernelFunctor(waveNumber)),
+        transformations(TransformationFunctor()), integral(IntegrandFunctor()) {
+  }
 
-    Fiber::DefaultCollectionOfKernels<KernelFunctor> kernels;
-    Fiber::DefaultCollectionOfBasisTransformations<TransformationFunctor>
-    transformations;
-    Fiber::DefaultKernelTrialIntegral<IntegrandFunctor> integral;
+  Fiber::DefaultCollectionOfKernels<KernelFunctor> kernels;
+  Fiber::DefaultCollectionOfBasisTransformations<TransformationFunctor>
+  transformations;
+  Fiber::DefaultKernelTrialIntegral<IntegrandFunctor> integral;
 };
 /** \endcond */
 
 template <typename BasisFunctionType>
 ModifiedHelmholtz3dSingleLayerPotentialOperator<BasisFunctionType>::
-ModifiedHelmholtz3dSingleLayerPotentialOperator(KernelType waveNumber) :
-    Base(waveNumber)
-{
-}
+    ModifiedHelmholtz3dSingleLayerPotentialOperator(KernelType waveNumber)
+    : Base(waveNumber) {}
 
 template <typename BasisFunctionType>
-ModifiedHelmholtz3dSingleLayerPotentialOperator<BasisFunctionType>::
-~ModifiedHelmholtz3dSingleLayerPotentialOperator()
-{
-}
+ModifiedHelmholtz3dSingleLayerPotentialOperator<
+    BasisFunctionType>::~ModifiedHelmholtz3dSingleLayerPotentialOperator() {}
 
-
-#define INSTANTIATE_BASE_MODIFIED_HELMHOLTZ_SINGLE_POTENTIAL(BASIS) \
-    template class ModifiedHelmholtz3dPotentialOperatorBase< \
-    ModifiedHelmholtz3dSingleLayerPotentialOperatorImpl<BASIS>, BASIS>
-FIBER_ITERATE_OVER_BASIS_TYPES(INSTANTIATE_BASE_MODIFIED_HELMHOLTZ_SINGLE_POTENTIAL);
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(ModifiedHelmholtz3dSingleLayerPotentialOperator);
-
+#define INSTANTIATE_BASE_MODIFIED_HELMHOLTZ_SINGLE_POTENTIAL(BASIS)            \
+  template class ModifiedHelmholtz3dPotentialOperatorBase<                     \
+      ModifiedHelmholtz3dSingleLayerPotentialOperatorImpl<BASIS>, BASIS>
+FIBER_ITERATE_OVER_BASIS_TYPES(
+    INSTANTIATE_BASE_MODIFIED_HELMHOLTZ_SINGLE_POTENTIAL);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(
+    ModifiedHelmholtz3dSingleLayerPotentialOperator);
 
 } // namespace Bempp

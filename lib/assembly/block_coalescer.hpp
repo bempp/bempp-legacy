@@ -35,42 +35,40 @@
 
 class Epetra_CrsMatrix;
 
-namespace Bempp
-{
+namespace Bempp {
 
-template <typename ValueType>
-class BlockCoalescer
-{
-    typedef typename Fiber::ScalarTraits<ValueType>::RealType CoordinateType;
-    typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
-    typedef bbxbemblcluster<AhmedDofType, AhmedDofType> AhmedBemBlcluster;
-    typedef mblock<typename AhmedTypeTraits<ValueType>::Type> AhmedMblock;
+template <typename ValueType> class BlockCoalescer {
+  typedef typename Fiber::ScalarTraits<ValueType>::RealType CoordinateType;
+  typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
+  typedef bbxbemblcluster<AhmedDofType, AhmedDofType> AhmedBemBlcluster;
+  typedef mblock<typename AhmedTypeTraits<ValueType>::Type> AhmedMblock;
 
 public:
-    BlockCoalescer(blcluster* blclustersRoot,
-                   blcluster* decomposedBlclustersRoot,
-                   const shared_ptr<const Epetra_CrsMatrix>& permutedTestGlobalToFlatLocalMap,
-                   const shared_ptr<const Epetra_CrsMatrix>& permutedTrialGlobalToFlatLocalMap,
-                   const boost::shared_array<AhmedMblock*>& blocks,
-                   const boost::shared_array<AhmedMblock*>& decomposedBlocks,
-                   const AcaOptions& acaOptions);
+  BlockCoalescer(blcluster *blclustersRoot, blcluster *decomposedBlclustersRoot,
+                 const shared_ptr<const Epetra_CrsMatrix> &
+                     permutedTestGlobalToFlatLocalMap,
+                 const shared_ptr<const Epetra_CrsMatrix> &
+                     permutedTrialGlobalToFlatLocalMap,
+                 const boost::shared_array<AhmedMblock *> &blocks,
+                 const boost::shared_array<AhmedMblock *> &decomposedBlocks,
+                 const AcaOptions &acaOptions);
 
-    void coalesceBlock(unsigned index);
-
-private:
-    /** \cond PRIVATE */
-    void coalesceDenseBlock(unsigned index);
-    void coalesceLowRankBlock(unsigned index);
+  void coalesceBlock(unsigned index);
 
 private:
-    boost::scoped_array<blcluster*> m_blclusters;
-    boost::scoped_array<blcluster*> m_decomposedBlclusters;
-    shared_ptr<const Epetra_CrsMatrix> m_permutedTestGlobalToFlatLocalMap;
-    shared_ptr<const Epetra_CrsMatrix> m_permutedTrialGlobalToFlatLocalMap;
-    boost::shared_array<AhmedMblock*> m_blocks;
-    boost::shared_array<AhmedMblock*> m_decomposedBlocks;
-    AcaOptions m_acaOptions;
-    /** \endcond PRIVATE */
+  /** \cond PRIVATE */
+  void coalesceDenseBlock(unsigned index);
+  void coalesceLowRankBlock(unsigned index);
+
+private:
+  boost::scoped_array<blcluster *> m_blclusters;
+  boost::scoped_array<blcluster *> m_decomposedBlclusters;
+  shared_ptr<const Epetra_CrsMatrix> m_permutedTestGlobalToFlatLocalMap;
+  shared_ptr<const Epetra_CrsMatrix> m_permutedTrialGlobalToFlatLocalMap;
+  boost::shared_array<AhmedMblock *> m_blocks;
+  boost::shared_array<AhmedMblock *> m_decomposedBlocks;
+  AcaOptions m_acaOptions;
+  /** \endcond PRIVATE */
 };
 
 } // namespace Bempp

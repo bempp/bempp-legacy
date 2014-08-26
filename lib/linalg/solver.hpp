@@ -28,96 +28,97 @@
 
 #include <vector>
 
-namespace Bempp
-{
+namespace Bempp {
 
 /** \cond FORWARD_DECL */
-template <typename BasisFunctionType, typename ResultType> class BoundaryOperator;
-template <typename BasisFunctionType, typename ResultType> class BlockedBoundaryOperator;
+template <typename BasisFunctionType, typename ResultType>
+class BoundaryOperator;
+template <typename BasisFunctionType, typename ResultType>
+class BlockedBoundaryOperator;
 template <typename BasisFunctionType, typename ResultType> class GridFunction;
 /** \endcond */
 
 struct ConvergenceTestMode {
-    enum Mode {
-        TEST_CONVERGENCE_IN_DUAL_TO_RANGE,
-        TEST_CONVERGENCE_IN_RANGE
-    };
+  enum Mode {
+    TEST_CONVERGENCE_IN_DUAL_TO_RANGE,
+    TEST_CONVERGENCE_IN_RANGE
+  };
 };
 
 /** \ingroup linalg
   * \brief The abstract interface of solvers of boundary integral equations. */
-template <typename BasisFunctionType, typename ResultType>
-class Solver
-{
+template <typename BasisFunctionType, typename ResultType> class Solver {
 public:
+  virtual ~Solver();
 
-    virtual ~Solver();
+  /** \brief Solve a standard (non-blocked) boundary integral equation.
+    *
+    * This function solves a boundary integral equation with given right-hand
+    * side <tt>rhs</tt> of type GridFunction and returns a new Solution
+    * object.
+    *
+    * \param[in] rhs
+    *   GridFunction representing the right-hand side function of the boundary
+    * integral equation.
+    *
+    * \return A new Solution object, containing the solution of the boundary
+    * integral equation.
+    *
+    */
 
-    /** \brief Solve a standard (non-blocked) boundary integral equation.
-      *
-      * This function solves a boundary integral equation with given right-hand
-      * side <tt>rhs</tt> of type GridFunction and returns a new Solution
-      * object.
-      *
-      * \param[in] rhs
-      *   GridFunction representing the right-hand side function of the boundary
-      * integral equation.
-      *
-      * \return A new Solution object, containing the solution of the boundary
-      * integral equation.
-      *
-      */
+  Solution<BasisFunctionType, ResultType>
+  solve(const GridFunction<BasisFunctionType, ResultType> &rhs) const {
+    return solveImplNonblocked(rhs);
+  }
 
-    Solution<BasisFunctionType, ResultType> solve(
-            const GridFunction<BasisFunctionType, ResultType>& rhs) const {
-        return solveImplNonblocked(rhs); 
-    }
+  /** \brief Solve a block-operator system of boundary integral equations.
+    *
+    * This function solves a block system of boundary integral equations. It
+    *takes a
+    * <tt>vector</tt> of variables of type GridFunction as its input.
+    *
+    * \param[in] rhs
+    * <tt>vector</tt> of variables of type GridFunction
+    *
+    * \return A new BlockedSolution object, containing the solution of the
+    *system of
+    * boundary integral equation.
+    *
+    */
 
-    /** \brief Solve a block-operator system of boundary integral equations.
-      *
-      * This function solves a block system of boundary integral equations. It takes a
-      * <tt>vector</tt> of variables of type GridFunction as its input.
-      *
-      * \param[in] rhs
-      * <tt>vector</tt> of variables of type GridFunction
-      *
-      * \return A new BlockedSolution object, containing the solution of the system of
-      * boundary integral equation.
-      *
-      */
-
-    BlockedSolution<BasisFunctionType, ResultType> solve(
-            const std::vector<GridFunction<BasisFunctionType, ResultType> >&
-            rhs) const {
-        return solveImplBlocked(rhs); 
-    }
+  BlockedSolution<BasisFunctionType, ResultType>
+  solve(const std::vector<GridFunction<BasisFunctionType, ResultType>> &rhs)
+      const {
+    return solveImplBlocked(rhs);
+  }
 
 protected:
-    static void checkConsistency(
-        const BoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
-        const GridFunction<BasisFunctionType, ResultType>& rhs,
-        ConvergenceTestMode::Mode mode);
-    static void checkConsistency(
-        const BlockedBoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
-        const std::vector<GridFunction<BasisFunctionType, ResultType> >& rhs,
-        ConvergenceTestMode::Mode mode);
-    static std::vector<GridFunction<BasisFunctionType, ResultType> >
-        canonicalizeBlockedRhs(
-            const BlockedBoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
-            const std::vector<GridFunction<BasisFunctionType, ResultType> >& rhs,
-            ConvergenceTestMode::Mode mode);
+  static void checkConsistency(
+      const BoundaryOperator<BasisFunctionType, ResultType> &boundaryOp,
+      const GridFunction<BasisFunctionType, ResultType> &rhs,
+      ConvergenceTestMode::Mode mode);
+  static void checkConsistency(
+      const BlockedBoundaryOperator<BasisFunctionType, ResultType> &boundaryOp,
+      const std::vector<GridFunction<BasisFunctionType, ResultType>> &rhs,
+      ConvergenceTestMode::Mode mode);
+  static std::vector<GridFunction<BasisFunctionType, ResultType>>
+  canonicalizeBlockedRhs(
+      const BlockedBoundaryOperator<BasisFunctionType, ResultType> &boundaryOp,
+      const std::vector<GridFunction<BasisFunctionType, ResultType>> &rhs,
+      ConvergenceTestMode::Mode mode);
 
-    static void constructBlockedGridFunction(
-        const arma::Col<ResultType>& solution,
-        const BlockedBoundaryOperator<BasisFunctionType, ResultType>& boundaryOp,
-        std::vector<GridFunction<BasisFunctionType, ResultType> >& solutionFunctions);
+  static void constructBlockedGridFunction(
+      const arma::Col<ResultType> &solution,
+      const BlockedBoundaryOperator<BasisFunctionType, ResultType> &boundaryOp,
+      std::vector<GridFunction<BasisFunctionType, ResultType>> &
+          solutionFunctions);
 
 private:
-    virtual Solution<BasisFunctionType, ResultType> solveImplNonblocked(
-        const GridFunction<BasisFunctionType, ResultType>& rhs) const = 0;        
-    virtual BlockedSolution<BasisFunctionType, ResultType> solveImplBlocked(
-            const std::vector<GridFunction<BasisFunctionType, ResultType> >&
-            rhs) const = 0;    
+  virtual Solution<BasisFunctionType, ResultType> solveImplNonblocked(
+      const GridFunction<BasisFunctionType, ResultType> &rhs) const = 0;
+  virtual BlockedSolution<BasisFunctionType, ResultType> solveImplBlocked(
+      const std::vector<GridFunction<BasisFunctionType, ResultType>> &rhs)
+      const = 0;
 };
 
 } // namespace Bempp

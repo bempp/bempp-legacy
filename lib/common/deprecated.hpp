@@ -31,15 +31,15 @@
  *  in future versions of the library. */
 #if defined(SWIGPYTHON) // we want to wrap deprecated features
                         // without generating warnings
-#    define BEMPP_DEPRECATED
+#define BEMPP_DEPRECATED
 #else
-#    if defined(__GNUC__)
-#        define BEMPP_DEPRECATED __attribute__ ((deprecated))
-#    elif defined(_MSC_VER)
-#        define BEMPP_DEPRECATED __declspec(deprecated)
-#    else
-#        define BEMPP_DEPRECATED
-#    endif
+#if defined(__GNUC__)
+#define BEMPP_DEPRECATED __attribute__((deprecated))
+#elif defined(_MSC_VER)
+#define BEMPP_DEPRECATED __declspec(deprecated)
+#else
+#define BEMPP_DEPRECATED
+#endif
 #endif
 
 // Macros for temporarily disabling deprecation warnings, by Jonathan Wakely
@@ -49,23 +49,26 @@
 // BEMPP_GCC_DIAG_ON(deprecated)
 #if ((__GNUC__ * 100) + __GNUC_MINOR__) >= 402
 #define BEMPP_GCC_DIAG_STR(s) #s
-#define BEMPP_GCC_DIAG_JOINSTR(x,y) BEMPP_GCC_DIAG_STR(x ## y)
-# define BEMPP_GCC_DIAG_DO_PRAGMA(x) _Pragma (#x)
-# define BEMPP_GCC_DIAG_PRAGMA(x) BEMPP_GCC_DIAG_DO_PRAGMA(GCC diagnostic x)
-# if ((__GNUC__ * 100) + __GNUC_MINOR__) >= 406
-#  define BEMPP_GCC_DIAG_OFF(x) BEMPP_GCC_DIAG_PRAGMA(push) \
-          BEMPP_GCC_DIAG_PRAGMA(ignored BEMPP_GCC_DIAG_JOINSTR(-W,x))
-#  define BEMPP_GCC_DIAG_ON(x) BEMPP_GCC_DIAG_PRAGMA(pop)
-# else
-#  define BEMPP_GCC_DIAG_OFF(x) BEMPP_GCC_DIAG_PRAGMA(ignored BEMPP_GCC_DIAG_JOINSTR(-W,x))
+#define BEMPP_GCC_DIAG_JOINSTR(x, y) BEMPP_GCC_DIAG_STR(x##y)
+#define BEMPP_GCC_DIAG_DO_PRAGMA(x) _Pragma(#x)
+#define BEMPP_GCC_DIAG_PRAGMA(x) BEMPP_GCC_DIAG_DO_PRAGMA(GCC diagnostic x)
+#if ((__GNUC__ * 100) + __GNUC_MINOR__) >= 406
+#define BEMPP_GCC_DIAG_OFF(x)                                                  \
+  BEMPP_GCC_DIAG_PRAGMA(push)                                                  \
+      BEMPP_GCC_DIAG_PRAGMA(ignored BEMPP_GCC_DIAG_JOINSTR(-W, x))
+#define BEMPP_GCC_DIAG_ON(x) BEMPP_GCC_DIAG_PRAGMA(pop)
+#else
+#define BEMPP_GCC_DIAG_OFF(x)                                                  \
+  BEMPP_GCC_DIAG_PRAGMA(ignored BEMPP_GCC_DIAG_JOINSTR(-W, x))
 // This doesn't seem to work for GCC 4.4, so we just give up and don't restore
 // the warning level.
-// #  define BEMPP_GCC_DIAG_ON(x)  BEMPP_GCC_DIAG_PRAGMA(warning BEMPP_GCC_DIAG_JOINSTR(-W,x))
-#  define BEMPP_GCC_DIAG_ON(x)
-# endif
+// #  define BEMPP_GCC_DIAG_ON(x)  BEMPP_GCC_DIAG_PRAGMA(warning
+// BEMPP_GCC_DIAG_JOINSTR(-W,x))
+#define BEMPP_GCC_DIAG_ON(x)
+#endif
 #else
-# define BEMPP_GCC_DIAG_OFF(x)
-# define BEMPP_GCC_DIAG_ON(x)
+#define BEMPP_GCC_DIAG_OFF(x)
+#define BEMPP_GCC_DIAG_ON(x)
 #endif
 
 #endif // bempp_deprecated_hpp
