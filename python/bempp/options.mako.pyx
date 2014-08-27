@@ -1,5 +1,5 @@
 <%
-from aca_options import properties, enums
+from aca_options import properties, enums, enum_properties
 
 def pythonic(name):
     name = str(name)
@@ -9,7 +9,6 @@ def pythonic(name):
 
 cdef extern from "<limits.h>":
     int UINT_MAX
-
 
 cdef class Options:
     """ Handles all options for BEM++
@@ -22,10 +21,19 @@ cdef class Options:
             ${doc.rstrip().lstrip()}${'.' if doc.rstrip()[-1] != '.' else ''}
             Defaults to ${default}.
 % endfor
+% for name, (default, doc) in enum_properties.iteritems():
+
+        ${pythonic(name)}: ${'|'.join(enums[name])}
+            ${doc.rstrip().lstrip()}${'.' if doc.rstrip()[-1] != '.' else ''}
+            Defaults to ${default}.
+% endfor
     """
     def __init__(self, **kwargs):
 % for name, (vartype, default, docstring) in properties.iteritems():
         self.${name} = kwargs.get("${pythonic(name)}", ${default})
+% endfor
+% for name, (default, docstring) in enum_properties.iteritems():
+        self.${pythonic(name)} = kwargs.get("${pythonic(name)}", "${default}")
 % endfor
 
 % for name, (vartype, default, docstring) in properties.iteritems():
@@ -59,6 +67,14 @@ def enum_names(name):
     % for value in values:
                 "${enum_names(value)}": ${value},
     % endfor
-                None: GLOBAL_ASSEMBLY
+                None: ${values[0]}
             }[value]
 % endfor
+
+    cdef to_aca_options(self, AcaOptions *c_options):
+% for name, (ptype, default, doc) in properties.iteritems():
+        c_options.${name} = self.${name}
+% endfor
+        c_options.mode = self._aca_assembly_mode
+        c_options.reactionToUnsupportedMode = \
+                self._reaction_to_unsupported_mode

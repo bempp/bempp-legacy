@@ -20,6 +20,17 @@ cdef extern from "bempp/assembly/aca_options.hpp":
     % endfor
 % endfor
 
+# Declare c structure used in conversions
+cdef extern from "bempp/assembly/aca_options.hpp" namespace "Bempp":
+    cdef cppclass AcaOptions:
+        AcaOptions()
+% for name, (ptype, default, doc) in properties.iteritems():
+        ${transform(ptype)} ${name}
+% endfor
+        ReactionToUnsupportedMode reactionToUnsupportedMode
+        AcaAssemblyMode mode
+
+
 cdef class Options:
     cdef:
 % for name, (vartype, default, docstring) in properties.iteritems():
@@ -28,3 +39,4 @@ cdef class Options:
 % for name in enums.iterkeys():
         ${name} ${'_' + pythonic(name)}
 % endfor
+    cdef to_aca_options(self, AcaOptions *c_options)
