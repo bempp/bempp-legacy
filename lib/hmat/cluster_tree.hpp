@@ -20,15 +20,14 @@ struct ClusterTreeNodeData {
   BoundingBox boundingBox;
 };
 
-template <int N >
-using ClusterTreeNode = SimpleTreeNode<ClusterTreeNodeData, N>;
+template <int N> using ClusterTreeNode = SimpleTreeNode<ClusterTreeNodeData, N>;
 
 typedef ClusterTreeNode<2> DefaultClusterTreeNodeType;
 
-template <int N > class ClusterTree {
+template <int N> class ClusterTree {
 
 public:
-  ClusterTree(const Geometry &geometry, int maxSize);
+  ClusterTree(const Geometry &geometry, int minBlockSize);
 
   const shared_ptr<const ClusterTreeNode<N>> root() const;
   const shared_ptr<ClusterTreeNode<N>> root();
@@ -36,8 +35,8 @@ public:
   std::size_t mapOriginalDofToHMatDof(std::size_t originalDofIndex) const;
   std::size_t mapHMatDofToOriginalDof(std::size_t hMatDofIndex) const;
 
-  const std::vector<std::size_t>& hMatDofToOriginalDofMap() const;
-  const std::vector<std::size_t>& originalDofToHMatDofMap() const;
+  const std::vector<std::size_t> &hMatDofToOriginalDofMap() const;
+  const std::vector<std::size_t> &originalDofToHMatDofMap() const;
 
   std::vector<shared_ptr<const ClusterTreeNode<N>>> leafNodes() const;
   std::vector<shared_ptr<ClusterTreeNode<N>>> leafNodes();
@@ -48,14 +47,14 @@ private:
   shared_ptr<ClusterTreeNode<N>>
   initializeClusterTree(const Geometry &geometry);
   void splitClusterTreeByGeometry(const Geometry &geometry,
-                                  DofPermutation &dofPermutation, int maxSize);
+                                  DofPermutation &dofPermutation,
+                                  int minBlockSize);
 
   shared_ptr<ClusterTreeNode<N>> m_root;
   DofPermutation m_dofPermutation;
 };
 
 typedef ClusterTree<2> DefaultClusterTreeType;
-
 }
 #include "cluster_tree_impl.hpp"
 

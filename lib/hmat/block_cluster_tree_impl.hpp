@@ -20,11 +20,11 @@ BlockClusterTreeNodeData<N>::BlockClusterTreeNodeData(
 template <int N>
 BlockClusterTree<N>::BlockClusterTree(
     const shared_ptr<const ClusterTree<N>> &rowClusterTree,
-    const shared_ptr<const ClusterTree<N>> &columnClusterTree,
+    const shared_ptr<const ClusterTree<N>> &columnClusterTree, int maxBlockSize,
     const AdmissibilityFunction &admissibilityFunction)
     : m_rowClusterTree(rowClusterTree), m_columnClusterTree(columnClusterTree) {
 
-  initializeBlockClusterTree(admissibilityFunction);
+  initializeBlockClusterTree(admissibilityFunction, maxBlockSize);
 }
 
 template <int N>
@@ -123,15 +123,31 @@ BlockClusterTree<N>::leafNodes() {
 
 template <int N>
 void BlockClusterTree<N>::initializeBlockClusterTree(
-    const AdmissibilityFunction &admissibilityFunction) {
+    const AdmissibilityFunction &admissibilityFunction, int maxBlockSize) {
 
   std::function<void(const shared_ptr<BlockClusterTreeNode<N>> &)>
   splittingFunction;
 
-  splittingFunction = [this, &admissibilityFunction, &splittingFunction](
-      const shared_ptr<BlockClusterTreeNode<N>> &node) {
+  splittingFunction =
+      [this, &admissibilityFunction, &splittingFunction, &maxBlockSize](
+          const shared_ptr<BlockClusterTreeNode<N>> &node) {
 
     auto nodeData = node->data();
+
+    // Adjust admissibility condition to only accept blocks smaller than
+    // maxBlockSize
+
+    auto rowClusterTreeNodeIndexRange =
+        nodeData.rowClusterTreeNode->data().indexRange;
+    auto columnClusterTreeNodeIndexRange =
+        nodeData.columnClusterTreeNode->data().indexRange;
+    auto rowBlockSize =
+        rowClusterTreeNodeIndexRange[1] - rowClusterTreeNodeIndexRange[0];
+    auto columnBlockSize =
+        columnClusterTreeNodeIndexRange[1] - columnClusterTreeNodeIndexRange[0];
+
+    if (columnBlockSize > maxBlockSize || rowBlockSize > maxBlockSize)
+      nodeData.admissible = false;
 
     // If admissible do not refine further
 
@@ -174,10 +190,10 @@ void BlockClusterTree<N>::initializeBlockClusterTree(
   splittingFunction(m_root);
 }
 
-StandardAdmissibility::StandardAdmissibility(double eta) : m_eta(eta) {}
+inline StandardAdmissibility::StandardAdmissibility(double eta) : m_eta(eta) {}
 
-bool StandardAdmissibility::operator()(const BoundingBox &box1,
-                                       const BoundingBox &box2) const {
+inline bool StandardAdmissibility::operator()(const BoundingBox &box1,
+                                              const BoundingBox &box2) const {
   double diam1 = box1.diameter();
   double diam2 = box2.diameter();
 
@@ -186,8 +202,8 @@ bool StandardAdmissibility::operator()(const BoundingBox &box1,
   return std::min(diam1, diam2) < m_eta * dist;
 }
 
-bool WeakAdmissibility::operator()(const BoundingBox &box1,
-                                   const BoundingBox &box2) const {
+inline bool WeakAdmissibility::operator()(const BoundingBox &box1,
+                                          const BoundingBox &box2) const {
 
   return box1.distance(box2) > 0;
 }

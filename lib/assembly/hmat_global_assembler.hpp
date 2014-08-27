@@ -100,6 +100,7 @@ public:
                             const Space<BasisFunctionType> &trialSpace,
                             LocalAssemblerForPotentialOperators &localAssembler,
                             const EvaluationOptions &options);
+
 };
 
 } // namespace Bempp

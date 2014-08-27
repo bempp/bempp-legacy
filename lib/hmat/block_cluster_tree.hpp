@@ -37,6 +37,7 @@ template <int N > class BlockClusterTree {
 public:
   BlockClusterTree(const shared_ptr<const ClusterTree<N>> &rowClusterTree,
                    const shared_ptr<const ClusterTree<N>> &columnClusterTree,
+                   int maxBlockSize,
                    const AdmissibilityFunction &admissibilityFunction);
 
   void writeToPdfFile(const std::string &fname, double widthInPoints,
@@ -56,7 +57,7 @@ public:
 
 private:
   void initializeBlockClusterTree(
-      const AdmissibilityFunction &admissibilityFunction);
+      const AdmissibilityFunction &admissibilityFunction, int maxBlockSize);
 
   shared_ptr<const ClusterTree<N>> m_rowClusterTree;
   shared_ptr<const ClusterTree<N>> m_columnClusterTree;
