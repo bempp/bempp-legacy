@@ -29,4 +29,3 @@ cdef extern from "bempp/assembly/aca_options.hpp" namespace "Bempp":
 cdef class Options:
     cdef:
         AcaOptions aca_options
-    cdef to_aca_options(self, AcaOptions *c_options)

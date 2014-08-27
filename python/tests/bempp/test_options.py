@@ -37,8 +37,3 @@ def test_options(instantiater):
     assert options.maximum_rank in [2**32-2, 2**64-2]
     assert options.reaction_to_unsupported_mode == "warning"
     assert options.aca_assembly_mode == "local"
-
-
-def test_cconvertion(from_kwargs):
-    from bempp.tests._options import test_cconversion
-    test_cconversion(from_kwargs)

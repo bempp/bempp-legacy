@@ -83,11 +83,3 @@ cdef class Options:
             else:
                 raise ValueError("Incorrect input %s" % value)
 % endfor
-
-    cdef to_aca_options(self, AcaOptions *c_options):
-% for name in properties.keys():
-        c_options.${name} = self.aca_options.${name}
-% endfor
-        c_options.mode = self.aca_options.mode
-        c_options.reactionToUnsupportedMode = ${'\\'}
-                self.aca_options.reactionToUnsupportedMode
