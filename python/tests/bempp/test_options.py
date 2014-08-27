@@ -10,7 +10,7 @@ from py.test import mark, fixture
 def from_kwargs():
     return Options(
         eps=1e-8, maximum_block_size=100, recompress=False,
-        aca_assembly_mode="local"
+        aca_assembly_mode="local", max_threads=5, do_opencl=True
     )
 
 
@@ -22,6 +22,8 @@ def from_set():
     options.maximum_block_size = 100
     options.recompress = False,
     options.aca_assembly_mode = "local"
+    options.max_threads = 5
+    options.do_opencl = 5  # checks 5 is true
 
     return options
 
@@ -37,3 +39,15 @@ def test_options(instantiater):
     assert options.maximum_rank in [2**32-2, 2**64-2]
     assert options.reaction_to_unsupported_mode == "warning"
     assert options.aca_assembly_mode == "local"
+    assert options.max_threads == 5
+    assert options.do_opencl
+
+
+def test_max_thread_auto():
+    options = Options()
+    for value in ['auto', -1, -5, None]:
+        options.max_threads = 5
+        assert options.max_threads == 5
+
+        options.max_threads = value
+        assert options.max_threads == 'auto'

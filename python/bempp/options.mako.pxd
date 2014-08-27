@@ -25,7 +25,21 @@ cdef extern from "bempp/assembly/aca_options.hpp" namespace "Bempp":
         ReactionToUnsupportedMode reactionToUnsupportedMode
         AcaAssemblyMode mode
 
+cdef extern from "bempp/fiber/opencl_options.hpp" namespace "Fiber":
+    cdef cppclass OpenClOptions:
+        OpenClOptions()
+
+cdef extern from "bempp/fiber/parallelization_options.hpp" namespace "Fiber":
+    cdef cppclass ParallelizationOptions:
+        ParallelizationOptions()
+        void enableOpenCl(const OpenClOptions&)
+        void disableOpenCl()
+        cbool isOpenClEnabled() const
+        void setMaxThreadCount(int)
+        int maxThreadCount() const
+
 
 cdef class Options:
     cdef:
         AcaOptions aca_options
+        ParallelizationOptions parallelization

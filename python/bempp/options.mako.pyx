@@ -40,9 +40,20 @@ cdef class Options:
             ${doc.rstrip().lstrip()}${'.' if doc.rstrip()[-1] != '.' else ''}
             Defaults to ${default}.
 % endfor
+
+        do_opencl: bool
+            Whether to use opencl. Defaults to False.
+
+        max_threads: int or 'auto'
+            Maximum number of threads used during assembly. Defaults to 'auto'.
     """
     def __init__(self, **kwargs):
-% for name in properties.keys() + enum_properties.keys():
+<%
+iterator = properties.keys() \
+    + enum_properties.keys() \
+    + ['do_opencl', 'max_threads']
+%>
+% for name in iterator:
         self.${pythonic(name)} = kwargs.get("${pythonic(name)}", None)
 % endfor
 
@@ -54,6 +65,25 @@ cdef class Options:
         def __set__(self, value):
             self.aca_options.${name} = ${default} if value is None else value
 % endfor
+
+    property do_opencl:
+        def __get__(self):
+            return self.parallelization.isOpenClEnabled()
+        def __set__(self, value):
+            cdef OpenClOptions opencl_ops
+            if value is not None or value == True:
+                self.parallelization.enableOpenCl(opencl_ops)
+            else:
+                self.parallelization.disableOpenCl()
+    property max_threads:
+        def __get__(self):
+            if self.parallelization.maxThreadCount() < 0:
+                return 'auto'
+            return self.parallelization.maxThreadCount()
+        def __set__(self, value):
+            if value is None or value == 'auto' or value < 0:
+                value = -1
+            self.parallelization.setMaxThreadCount(value)
 
 
 % for name, values in enums.iteritems():
