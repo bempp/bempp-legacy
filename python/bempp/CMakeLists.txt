@@ -7,7 +7,8 @@ include_directories("${PYTHON_BINARY_DIR}/bempp/include")
 add_to_python_path("${PROJECT_SOURCE_DIR}/python/mako")
 mako_files(options.mako.pyx options.mako.pxd
     OUTPUT_FILES makoed
-    DEPENDS "${PROJECT_SOURCE_DIR}/python/mako/aca_options.py"
+    DEPENDS
+        "${PROJECT_SOURCE_DIR}/python/mako/bempp_options.py"
 )
 
 # headers are setup in python package first so that they can be accessed by

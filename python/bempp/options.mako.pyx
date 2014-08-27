@@ -1,24 +1,54 @@
 <%
-from aca_options import properties, enums, enum_properties
-
-def pythonic(name):
-    name = str(name)
-    to_lower = lambda x: x if x == x.lower() else "_" + x.lower() 
-    return name[0].lower() + ''.join([to_lower(u) for u in name[1:]])
-
-def enum_names(name):
-    return name.lower()         \
-        .replace("_", " ")      \
-        .replace("mode", "")    \
-        .replace("reaction", "")\
-        .replace("assembly", "").rstrip().lstrip()
+from bempp_options import options
 
 def ifloop(loop):
     return 'if' if loop.index == 0 else 'elif'
 
-def allowables(name):
-    return '|'.join([repr(enum_names(u)) for u in enums[name]])
+def getter_func(origin):
+    condition = origin == 'AcaOptions'
+    return 'aca_options.%s' if condition else 'assembly.%s()'
+def setter_func(origin):
+    condition = origin == 'AcaOptions'
+    return 'aca_options.%s = %s' if condition else 'assembly.%s(%s)'
+
 %>
+
+<%def name="getsetter_impl(getter, default, setter, **kwargs)">
+<%
+    getter_string = getter_func(kwargs['c origin'])
+    setter_string = setter_func(kwargs['c origin'])
+%>
+        def __get__(self):
+            return self.${getter_string % getter}
+        def __set__(self, value):
+            if value is None:
+                value = ${default}
+            self.${setter_string % (setter, 'value')}
+</%def>
+
+<%def name="enums_impl(type, getter, setter, default, enums, **kwargs)">
+<%
+    getter_string = getter_func(kwargs['c origin'])
+    setter_string = setter_func(kwargs['c origin'])
+%>
+        def __get__(self):
+            cdef ${type} c_value = self.${getter_string % getter}
+%   for python, cython in enums.iteritems():
+            ${ifloop(loop)} c_value == ${cython}:
+                return ${repr(python)}
+%   endfor
+            else:
+                raise RuntimeError("C value is invalid")
+        def __set__(self, value):
+            if value is None:
+                self.${setter_string % (setter, default)}
+%   for python, cython in enums.iteritems():
+            elif ${repr(python)} == value:
+                self.${setter_string % (setter, cython)}
+%   endfor
+            else:
+                raise ValueError("Incorrect input %s" % value)
+</%def>
 
 cdef extern from "<limits.h>":
     int UINT_MAX
@@ -28,17 +58,13 @@ cdef class Options:
 
         Parameters
         ----------
-% for name, (vartype, default, doc) in properties.iteritems():
-
-        ${pythonic(name)}: ${vartype}
-            ${doc.rstrip().lstrip()}${'.' if doc.rstrip()[-1] != '.' else ''}
-            Defaults to ${default}.
-% endfor
-% for name, (default, doc) in enum_properties.iteritems():
-
-        ${pythonic(name)}: ${allowables(name)}
-            ${doc.rstrip().lstrip()}${'.' if doc.rstrip()[-1] != '.' else ''}
-            Defaults to ${default}.
+% for option, description in options.iteritems():
+<%
+    docstring = description['doc'].rstrip().lstrip()
+    if docstring[-1] == '.': docstring = docstring[:-1]
+%>
+        ${description['pyname']}: ${description['doc_type']}
+            ${docstring}. Defaults to ${description['doc_default']}.
 % endfor
 
         do_opencl: bool
@@ -48,23 +74,29 @@ cdef class Options:
             Maximum number of threads used during assembly. Defaults to 'auto'.
     """
     def __init__(self, **kwargs):
+% for name, description in options.iteritems():
 <%
-iterator = properties.keys() \
-    + enum_properties.keys() \
-    + ['do_opencl', 'max_threads']
+    pyname = description['pyname']
 %>
-% for name in iterator:
-        self.${pythonic(name)} = kwargs.get("${pythonic(name)}", None)
+        self.${pyname} = kwargs.get("${pyname}", None)
+% endfor
+        self.do_opencl = kwargs.get("do_opencl", None)
+        self.max_threads = kwargs.get("max_threads", None)
+
+% for option, description in options.iteritems():
+    property ${description['pyname']}:
+        """ ${description['doc']}
+
+            Allowed input:
+                ${description['doc_type']} or None (reverts to default)
+        """
+%  if description['implementation'] == 'getsetters':
+${getsetter_impl(**description)}
+%   elif description['implementation'] == 'enums':
+${enums_impl(**description)}
+%   endif
 % endfor
 
-% for name, (vartype, default, docstring) in properties.iteritems():
-    property ${pythonic(name)}:
-        """ ${docstring} """
-        def __get__(self):
-            return self.aca_options.${name}
-        def __set__(self, value):
-            self.aca_options.${name} = ${default} if value is None else value
-% endfor
 
     property do_opencl:
         def __get__(self):
@@ -84,32 +116,3 @@ iterator = properties.keys() \
             if value is None or value == 'auto' or value < 0:
                 value = -1
             self.parallelization.setMaxThreadCount(value)
-
-
-% for name, values in enums.iteritems():
-    <%
-    cname = 'mode' if name == 'AcaAssemblyMode' \
-            else 'reactionToUnsupportedMode'
-    %>
-    property ${pythonic(name)}:
-        """ ${enum_properties[name][1]}
-
-            Can take the following values: ${allowables(name)}
-        """
-        def __get__(self):
-    % for value in values:
-            ${ifloop(loop)} self.aca_options.${cname} == ${value}:
-                return "${enum_names(value)}"
-    % endfor
-            else:
-                raise RuntimeError("C value is invalid")
-        def __set__(self, value):
-            if value is None:
-                self.${pythonic(name)} = "${enum_properties[name][0]}"
-    % for value in values:
-            elif value == "${enum_names(value)}":
-                self.aca_options.${cname} = ${value}
-    % endfor
-            else:
-                raise ValueError("Incorrect input %s" % value)
-% endfor
