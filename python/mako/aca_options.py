@@ -7,11 +7,11 @@ properties['eps'] = 'double', 1e-4,\
 properties['eta'] = 'double', 1e-4,\
     """ Cluster-pair admissibility parameter """
 properties['minimumBlockSize'] = 'unsigned int', 16, \
-    """" Minimum size of blocks approximated with ACA """
+    """ Minimum size of blocks approximated with ACA """
 properties['maximumBlockSize'] = 'unsigned int', 'UINT_MAX-1', \
-    """" Minimum size of blocks approximated with ACA """
+    """ Minimum size of blocks approximated with ACA """
 properties['maximumRank'] = 'unsigned int', 'UINT_MAX-1', \
-    """" Maximum rank of blocks stored in the low-rank format """
+    """ Maximum rank of blocks stored in the low-rank format """
 properties['recompress'] = 'bool', False, \
     """ Whether to recompress ACA matrix after construction """
 properties['scaling'] = 'double', 1, \

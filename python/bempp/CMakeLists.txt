@@ -21,7 +21,7 @@ file(WRITE "${PYTHON_BINARY_DIR}/bempp/include/bempp/__init__.pxd")
 add_custom_target(cython-headers)
 add_dependencies(cython-headers bempp-headers)
 
-add_python_module(bempp __init__.py ${pyx_sources} CPP)
+add_python_module(bempp __init__.py ${pyx_sources} CPP LIBRARIES libbempp)
 add_dependencies(bempp cython-headers)
 # CMake does not always pick up dependencies from one add_custom_command to
 # another. So we add the dependency explicitly
