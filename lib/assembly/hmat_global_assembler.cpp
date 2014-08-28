@@ -103,8 +103,10 @@ generateBlockClusterTree(const Space<BasisFunctionType> &testSpace,
   hmat::Geometry testGeometry;
   hmat::Geometry trialGeometry;
 
-  hmat::fillGeometry(testGeometry, SpaceHMatGeometryInterface<BasisFunctionType>(testSpace));
-  hmat::fillGeometry(trialGeometry, SpaceHMatGeometryInterface<BasisFunctionType>(trialSpace));
+  hmat::fillGeometry(testGeometry,
+                     SpaceHMatGeometryInterface<BasisFunctionType>(testSpace));
+  hmat::fillGeometry(trialGeometry,
+                     SpaceHMatGeometryInterface<BasisFunctionType>(trialSpace));
 
   auto testClusterTree = shared_ptr<hmat::DefaultClusterTreeType>(
       new hmat::DefaultClusterTreeType(testGeometry, minBlockSize));
@@ -114,8 +116,8 @@ generateBlockClusterTree(const Space<BasisFunctionType> &testSpace,
 
   return shared_ptr<hmat::DefaultBlockClusterTreeType>(
       new hmat::DefaultBlockClusterTreeType(testClusterTree, trialClusterTree,
-                                      maxBlockSize,
-                                      hmat::StandardAdmissibility(eta)));
+                                            maxBlockSize,
+                                            hmat::StandardAdmissibility(eta)));
 }
 } // end anonymous namespace
 template <typename BasisFunctionType, typename ResultType>
@@ -131,15 +133,12 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
     const std::vector<ResultType> &sparseTermMultipliers,
     const Context<BasisFunctionType, ResultType> &context, int symmetry) {
 
-	
   bool symmetric = symmetry & SYMMETRIC;
   if (symmetry & HERMITIAN && !(symmetry & SYMMETRIC) &&
       verbosityAtLeastDefault)
     std::cout << "Warning: assembly of non-symmetric Hermitian H-matrices "
                  "is not supported yet. A general H-matrix will be assembled"
               << std::endl;
-
-
 
   return std::unique_ptr<DiscreteBoundaryOperator<ResultType>>();
 }
