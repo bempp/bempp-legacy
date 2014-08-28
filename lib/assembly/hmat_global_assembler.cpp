@@ -108,13 +108,13 @@ generateBlockClusterTree(const Space<BasisFunctionType> &testSpace,
   hmat::Geometry trialGeometry;
 
   auto testSpaceGeometryInterface = shared_ptr<hmat::GeometryInterface>(
-		  new SpaceHMatGeometryInterface<BasisFunctionType>(testSpace));
+      new SpaceHMatGeometryInterface<BasisFunctionType>(testSpace));
 
   auto trialSpaceGeometryInterface = shared_ptr<hmat::GeometryInterface>(
-		  new SpaceHMatGeometryInterface<BasisFunctionType>(trialSpace));
+      new SpaceHMatGeometryInterface<BasisFunctionType>(trialSpace));
 
-  hmat::fillGeometry(testGeometry,*testSpaceGeometryInterface);
-  hmat::fillGeometry(trialGeometry,*testSpaceGeometryInterface);
+  hmat::fillGeometry(testGeometry, *testSpaceGeometryInterface);
+  hmat::fillGeometry(trialGeometry, *testSpaceGeometryInterface);
 
   auto testClusterTree = shared_ptr<hmat::DefaultClusterTreeType>(
       new hmat::DefaultClusterTreeType(testGeometry, minBlockSize));
@@ -145,7 +145,8 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
   const auto hMatParameterList =
       context.globalParameterList().sublist("HMatParameters");
   const bool indexWithGlobalDofs =
-      (hMatParameterList.template get<std::string>("HMatAssemblyMode") == "GlobalAssembly");
+      (hMatParameterList.template get<std::string>("HMatAssemblyMode") ==
+       "GlobalAssembly");
   const bool verbosityAtLeastDefault =
       (options.verbosityLevel() >= VerbosityLevel::DEFAULT);
   const bool verbosityAtLeastHigh =
@@ -164,12 +165,14 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
     actualTrialSpace = trialSpacePointer;
   }
 
-  auto minBlockSize = hMatParameterList.template get<unsigned int>("minBlockSize");
-  auto maxBlockSize = hMatParameterList.template get<unsigned int>("maxBlockSize");
+  auto minBlockSize =
+      hMatParameterList.template get<unsigned int>("minBlockSize");
+  auto maxBlockSize =
+      hMatParameterList.template get<unsigned int>("maxBlockSize");
   auto eta = hMatParameterList.template get<double>("eta");
 
-  auto blockClusterTree = generateBlockClusterTree(*actualTestSpace,
-		  *actualTrialSpace,minBlockSize,maxBlockSize,eta);
+  auto blockClusterTree = generateBlockClusterTree(
+      *actualTestSpace, *actualTrialSpace, minBlockSize, maxBlockSize, eta);
 
   return std::unique_ptr<DiscreteBoundaryOperator<ResultType>>();
 }

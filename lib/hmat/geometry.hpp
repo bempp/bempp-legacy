@@ -15,8 +15,7 @@ struct GeometryDataType;
 
 typedef std::vector<shared_ptr<const GeometryDataType>> Geometry;
 
-void fillGeometry(Geometry &geometry,
-                  GeometryInterface &geometryInterface);
+void fillGeometry(Geometry &geometry, GeometryInterface &geometryInterface);
 
 IndexSetType sortIndexSet(const IndexSetType &IndexSet,
                           const Geometry &geometry, int dim);
