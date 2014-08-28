@@ -12,8 +12,8 @@ struct GeometryDataType;
 
 class GeometryInterface {
 public:
-  virtual shared_ptr<const GeometryDataType> next() const = 0;
-  virtual int numberOfEntities() const = 0;
+  virtual shared_ptr<const GeometryDataType> next() = 0;
+  virtual std::size_t numberOfEntities() const = 0;
   virtual void reset() = 0;
 };
 }

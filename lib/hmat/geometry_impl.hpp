@@ -11,7 +11,7 @@
 namespace hmat {
 
 inline void fillGeometry(Geometry &geometry,
-                         const GeometryInterface &geometryInterface) {
+                         GeometryInterface &geometryInterface) {
 
   geometry.reserve(geometryInterface.numberOfEntities());
   shared_ptr<const GeometryDataType> it;

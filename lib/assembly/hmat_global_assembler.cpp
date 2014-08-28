@@ -56,6 +56,7 @@
 #include <tbb/task_scheduler_init.h>
 #include <tbb/concurrent_queue.h>
 
+#include <Teuchos_ParameterList.hpp>
 
 namespace Bempp {
 
@@ -72,7 +73,7 @@ public:
       : m_counter(0) {
     space.getGlobalDofBoundingBoxes(m_bemppBoundingBoxes);
   }
-  shared_ptr<const hmat::GeometryDataType> next() const override {
+  shared_ptr<const hmat::GeometryDataType> next() override {
 
     if (m_counter == m_bemppBoundingBoxes.size())
       return shared_ptr<hmat::GeometryDataType>();
@@ -82,16 +83,19 @@ public:
     auto center = m_bemppBoundingBoxes[m_counter].reference;
     m_counter++;
     return shared_ptr<hmat::GeometryDataType>(new hmat::GeometryDataType(
-        hmat::BoundingBox(lbound[0], ubound[0], lbound[1], ubound[1], lbound[2],
-                          ubound[2]),
+        hmat::BoundingBox(lbound.x, ubound.x, lbound.y, ubound.y, lbound.z,
+                          ubound.z),
         std::array<double, 3>({{center.x, center.y, center.z}})));
   }
 
+  std::size_t numberOfEntities() const override {
+    return m_bemppBoundingBoxes.size();
+  }
   void reset() override { m_counter = 0; }
 
 private:
   std::size_t m_counter;
-  std::vector<const BoundingBox<CoordinateType>> m_bemppBoundingBoxes;
+  std::vector<BoundingBox<CoordinateType>> m_bemppBoundingBoxes;
 };
 
 template <typename BasisFunctionType>
@@ -103,10 +107,14 @@ generateBlockClusterTree(const Space<BasisFunctionType> &testSpace,
   hmat::Geometry testGeometry;
   hmat::Geometry trialGeometry;
 
-  hmat::fillGeometry(testGeometry,
-                     SpaceHMatGeometryInterface<BasisFunctionType>(testSpace));
-  hmat::fillGeometry(trialGeometry,
-                     SpaceHMatGeometryInterface<BasisFunctionType>(trialSpace));
+  auto testSpaceGeometryInterface = shared_ptr<hmat::GeometryInterface>(
+		  new SpaceHMatGeometryInterface<BasisFunctionType>(testSpace));
+
+  auto trialSpaceGeometryInterface = shared_ptr<hmat::GeometryInterface>(
+		  new SpaceHMatGeometryInterface<BasisFunctionType>(trialSpace));
+
+  hmat::fillGeometry(testGeometry,*testSpaceGeometryInterface);
+  hmat::fillGeometry(trialGeometry,*testSpaceGeometryInterface);
 
   auto testClusterTree = shared_ptr<hmat::DefaultClusterTreeType>(
       new hmat::DefaultClusterTreeType(testGeometry, minBlockSize));
@@ -133,12 +141,35 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
     const std::vector<ResultType> &sparseTermMultipliers,
     const Context<BasisFunctionType, ResultType> &context, int symmetry) {
 
-  bool symmetric = symmetry & SYMMETRIC;
-  if (symmetry & HERMITIAN && !(symmetry & SYMMETRIC) &&
-      verbosityAtLeastDefault)
-    std::cout << "Warning: assembly of non-symmetric Hermitian H-matrices "
-                 "is not supported yet. A general H-matrix will be assembled"
-              << std::endl;
+  const AssemblyOptions &options = context.assemblyOptions();
+  const auto hMatParameterList =
+      context.globalParameterList().sublist("HMatParameters");
+  const bool indexWithGlobalDofs =
+      (hMatParameterList.template get<std::string>("HMatAssemblyMode") == "GlobalAssembly");
+  const bool verbosityAtLeastDefault =
+      (options.verbosityLevel() >= VerbosityLevel::DEFAULT);
+  const bool verbosityAtLeastHigh =
+      (options.verbosityLevel() >= VerbosityLevel::HIGH);
+
+  auto testSpacePointer = Fiber::make_shared_from_const_ref(testSpace);
+  auto trialSpacePointer = Fiber::make_shared_from_const_ref(trialSpace);
+
+  shared_ptr<const Space<BasisFunctionType>> actualTestSpace;
+  shared_ptr<const Space<BasisFunctionType>> actualTrialSpace;
+  if (indexWithGlobalDofs) {
+    actualTestSpace = testSpacePointer->discontinuousSpace(testSpacePointer);
+    actualTrialSpace = trialSpacePointer->discontinuousSpace(trialSpacePointer);
+  } else {
+    actualTestSpace = testSpacePointer;
+    actualTrialSpace = trialSpacePointer;
+  }
+
+  auto minBlockSize = hMatParameterList.template get<unsigned int>("minBlockSize");
+  auto maxBlockSize = hMatParameterList.template get<unsigned int>("maxBlockSize");
+  auto eta = hMatParameterList.template get<double>("eta");
+
+  auto blockClusterTree = generateBlockClusterTree(*actualTestSpace,
+		  *actualTrialSpace,minBlockSize,maxBlockSize,eta);
 
   return std::unique_ptr<DiscreteBoundaryOperator<ResultType>>();
 }

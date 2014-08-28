@@ -22,6 +22,7 @@
 
 #include "abstract_boundary_operator.hpp"
 #include "../fiber/explicit_instantiation.hpp"
+#include <Teuchos_ParameterList.hpp>
 
 #include <boost/make_shared.hpp>
 #include <iostream>
@@ -31,8 +32,10 @@ namespace Bempp {
 template <typename BasisFunctionType, typename ResultType>
 Context<BasisFunctionType, ResultType>::Context(
     const shared_ptr<const QuadratureStrategy> &quadStrategy,
-    const AssemblyOptions &assemblyOptions)
-    : m_quadStrategy(quadStrategy), m_assemblyOptions(assemblyOptions) {
+    const AssemblyOptions &assemblyOptions,
+    const shared_ptr<Teuchos::ParameterList> &globalParameterList)
+    : m_quadStrategy(quadStrategy), m_assemblyOptions(assemblyOptions),
+      m_globalParameterList(globalParameterList) {
   if (quadStrategy.get() == 0)
     throw std::invalid_argument("Context::Context(): "
                                 "quadStrategy must not be null");
