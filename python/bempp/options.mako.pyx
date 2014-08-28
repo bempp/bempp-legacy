@@ -139,3 +139,32 @@ cdef class Options:
                 self.assembly.switchToDenseMode()
             elif value == "aca":
                 self.assembly.switchToAcaMode(self.aca_options)
+
+    ${property_and_doc(**options['accuracy'])}
+        def __get__(self):
+            return self._accuracy
+        def __set__(self, value):
+            self._accuracy = AccuracyOptions(value) if value is not None \
+                else AccuracyOptions()
+
+    def __str__(self):
+        return str({
+%   for name, description in options.iteritems():
+            '${description['pyname']}': self.${description['pyname']},
+%   endfor
+        })
+
+    def __repr__(self):
+        # Figures out defaults so we print the minimum amount of necessary
+        # information
+        defaults = {
+%   for name, description in options.iteritems():
+            '${description['pyname']}': ${description['doc_default']},
+%   endfor
+        }
+        kwargs = {
+            k: getattr(self, k) for k, default in defaults.iteritems()
+                if default != getattr(self, k)
+        }
+        return "bempp.Options(**%s)" % kwargs if len(kwargs) \
+                else "bempp.Options()"

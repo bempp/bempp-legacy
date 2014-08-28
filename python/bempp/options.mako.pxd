@@ -1,4 +1,5 @@
 from libcpp cimport bool as cbool
+from bempp.fiber.accuracy_options cimport AccuracyOptions
 <%
 from bempp_options import options
 
@@ -66,3 +67,4 @@ cdef class Options:
         int _max_threads
         AcaOptions aca_options
         AssemblyOptions assembly
+        AccuracyOptions _accuracy

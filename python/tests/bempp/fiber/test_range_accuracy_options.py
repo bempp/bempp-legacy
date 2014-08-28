@@ -21,26 +21,17 @@ def test_infinity_index():
     # Create empty options
     options = RangeAccuracyOptions()
 
-    is_not_in_options = [0.5, '1', 1.5 * options.__tolerance__]
-    equiv_for_infinity = [
-        'inf', None, 0, float('inf'), float('-inf'),
-        0.5 * options.__tolerance__
-    ]
-
-    # Nothing should be in options yet
-    for value in is_not_in_options + equiv_for_infinity:
-        assert value not in options
-
-    # Now equivalents for infinity should be in options
+    # Should have only on option, 'inf'. Tested more fully elsewhere.
+    assert len(options) == 1 and 'inf' in options
     options[None] = (1, True)
-    for value in is_not_in_options:
-        assert value not in options
-    for value in equiv_for_infinity:
-        assert value in options
+    assert len(options) == 1 and 'inf' in options
+    options['inf'] = (1, True)
+    assert len(options) == 1 and 'inf' in options
+    options[-1] = (1, True)
+    assert len(options) == 1 and 'inf' in options
 
 
 @mark.parametrize("kwargs", [
-    {},
     {0.5: (2, True), 0.1: (1, False)},
     [(0.5, (2, True)), (0.1, (1, False))],
     {0.5: QuadratureOptions(2, True)},
@@ -178,3 +169,11 @@ def test_order():
     for distance, orders in inputs.iteritems():
         for order, expected in orders.iteritems():
             assert acc(distance, order) == expected
+
+
+def test_default_instantiation():
+    acc = RangeAccuracyOptions()
+    assert len(acc) == 1
+    assert 'inf' in acc
+    assert acc(0) == 0
+    assert acc(1) == 0

@@ -12,9 +12,10 @@ cdef class AccuracyOptions:
             Accuracy of the integration of singular functions on pair of
             elements
     """
-    def __cinit__(self, single_regular, double_regular, double_singular):
-        self.single_regular = RangeAccuracyOptions(single_regular)
-        self.double_regular = RangeAccuracyOptions(double_regular)
+    def __init__(self, single_regular=None, double_regular=None,
+            double_singular=None):
+        self.single_regular = single_regular
+        self.double_regular = double_regular
         self.double_singular = double_singular
     cdef toggle_freeze(self, value=None):
         self.single_regular.toggle_freeze(value)
@@ -26,14 +27,20 @@ cdef class AccuracyOptions:
         def __get__(self):
             return self.__single_regular
         def __set__(self, value):
-            self.__single_regular = RangeAccuracyOptions(value)
+            if value is None:
+                self.__single_regular = RangeAccuracyOptions()
+            else:
+                self.__single_regular = RangeAccuracyOptions(value)
 
     property double_regular:
         """ Integration accuracy of regular functions on pair of elements """
         def __get__(self):
             return self.__double_regular
         def __set__(self, value):
-            self.__double_regular = RangeAccuracyOptions(value)
+            if value is None:
+                self.__double_regular = RangeAccuracyOptions()
+            else:
+                self.__double_regular = RangeAccuracyOptions(value)
 
     property double_singular:
         """ Integration accuracy of singular functions on pair of elements """
@@ -43,6 +50,8 @@ cdef class AccuracyOptions:
             from collections import Sequence
             if isinstance(value, Sequence):
                 self.__double_singular = QuadratureOptions(*value)
+            elif value is None:
+                self.__double_singular = QuadratureOptions()
             else:
                 self.__double_singular = QuadratureOptions(value)
 

@@ -135,6 +135,13 @@ options['max_threads'] = {
     'implementation': 'manual',
     'c origin': 'manual'
 }
+options['accuracy'] = {
+    'doc_type': ":py:class:`AccuracyOptions`",
+    'doc': 'Quadrature accuracy options',
+    'default': "AccuracyOptions()",
+    'implementation': 'manual',
+    'c origin': 'manual'
+}
 
 # Add missing default values
 assembly_options = [

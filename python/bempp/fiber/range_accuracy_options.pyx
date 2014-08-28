@@ -42,6 +42,9 @@ cdef class RangeAccuracyOptions(dict):
                 pass
 
         self.update(dict(*args, **kwargs))
+        # Default instantiation
+        if len(self) == 0:
+            self['inf'] = QuadratureOptions()
 
     def update(self, mapping):
         if self.__is_frozen:
