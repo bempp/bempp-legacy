@@ -36,7 +36,7 @@
 #include "../fiber/explicit_instantiation.hpp"
 #include "../fiber/local_assembler_for_integral_operators.hpp"
 #include "../fiber/scalar_traits.hpp"
-#include "./fiber/shared_ptr.hpp"
+#include "../fiber/shared_ptr.hpp"
 #include "../space/space.hpp"
 #include "../common/bounding_box.hpp"
 
@@ -74,28 +74,28 @@ public:
   }
   shared_ptr<const hmat::GeometryDataType> next() const override {
 
-    if (m_counter == m_boundingBoxes.size())
+    if (m_counter == m_bemppBoundingBoxes.size())
       return shared_ptr<hmat::GeometryDataType>();
 
-    auto lbound = m_boundingBoxes[m_counter].lbound;
-    auto ubound = m_boundingBoxes[m_counter].ubound;
-    auto center = m_boundingBoxes[m_counter].reference;
+    auto lbound = m_bemppBoundingBoxes[m_counter].lbound;
+    auto ubound = m_bemppBoundingBoxes[m_counter].ubound;
+    auto center = m_bemppBoundingBoxes[m_counter].reference;
     m_counter++;
-    return make_shared<hmat::GeometryDataType>(
+    return shared_ptr<hmat::GeometryDataType>(new hmat::GeometryDataType(
         hmat::BoundingBox(lbound[0], ubound[0], lbound[1], ubound[1], lbound[2],
                           ubound[2]),
-        std::array<double, 3>({{center.x, center.y, center.z}}));
+        std::array<double, 3>({{center.x, center.y, center.z}})));
   }
 
   void reset() override { m_counter = 0; }
 
 private:
   std::size_t m_counter;
-  std::vector<const BoundingBox<CoordinateType>> m_boundingBoxes;
+  std::vector<const BoundingBox<CoordinateType>> m_bemppBoundingBoxes;
 };
 
 template <typename BasisFunctionType>
-std::shared_ptr<hmat::DefaultBlockClusterTreeType>
+shared_ptr<hmat::DefaultBlockClusterTreeType>
 generateBlockClusterTree(const Space<BasisFunctionType> &testSpace,
                          const Space<BasisFunctionType> &trialSpace,
                          int minBlockSize, int maxBlockSize, double eta) {
@@ -103,21 +103,21 @@ generateBlockClusterTree(const Space<BasisFunctionType> &testSpace,
   hmat::Geometry testGeometry;
   hmat::Geometry trialGeometry;
 
-  hmat::fillGeometry(testGeometry, SpaceHMatGeometryInterface(testSpace));
-  hmat::fillGeometry(trialGeometry, SpaceHMatGeometryInterface(trialSpace));
+  hmat::fillGeometry(testGeometry, SpaceHMatGeometryInterface<BasisFunctionType>(testSpace));
+  hmat::fillGeometry(trialGeometry, SpaceHMatGeometryInterface<BasisFunctionType>(trialSpace));
 
-  auto testClusterTree = shared_ptr<DefaultClusterTreeType>(
-      new DefaultClusterTreeType(testGeometry, minBlockSize));
+  auto testClusterTree = shared_ptr<hmat::DefaultClusterTreeType>(
+      new hmat::DefaultClusterTreeType(testGeometry, minBlockSize));
 
-  auto trialClusterTree = shared_ptr<DefaultClusterTreeType>(
-      new DefaultClusterTreeType(trialGeometry, minBlockSize));
+  auto trialClusterTree = shared_ptr<hmat::DefaultClusterTreeType>(
+      new hmat::DefaultClusterTreeType(trialGeometry, minBlockSize));
 
   return shared_ptr<hmat::DefaultBlockClusterTreeType>(
-      new DefaultBlockClusterTreeType(testClusterTree, trialClusterTree,
+      new hmat::DefaultBlockClusterTreeType(testClusterTree, trialClusterTree,
                                       maxBlockSize,
-                                      StandardAdmissibility(eta)));
+                                      hmat::StandardAdmissibility(eta)));
 }
-
+} // end anonymous namespace
 template <typename BasisFunctionType, typename ResultType>
 std::unique_ptr<DiscreteBoundaryOperator<ResultType>>
 HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
@@ -130,6 +130,16 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
     const std::vector<ResultType> &denseTermMultipliers,
     const std::vector<ResultType> &sparseTermMultipliers,
     const Context<BasisFunctionType, ResultType> &context, int symmetry) {
+
+	
+  bool symmetric = symmetry & SYMMETRIC;
+  if (symmetry & HERMITIAN && !(symmetry & SYMMETRIC) &&
+      verbosityAtLeastDefault)
+    std::cout << "Warning: assembly of non-symmetric Hermitian H-matrices "
+                 "is not supported yet. A general H-matrix will be assembled"
+              << std::endl;
+
+
 
   return std::unique_ptr<DiscreteBoundaryOperator<ResultType>>();
 }

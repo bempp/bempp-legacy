@@ -35,7 +35,7 @@
 #pragma warning(default : 858)
 #endif
 
-// Extend std::hash and std::equal to deal with boost shared pointers
+// Extend std::hash to deal with boost shared pointers
 
 namespace std {
 

@@ -20,7 +20,7 @@ inline ClusterTreeNodeData::ClusterTreeNodeData(
     : indexRange(indexRange), boundingBox(boundingBox) {}
 
 template <int N>
-ClusterTree<N>::ClusterTree(const Geometry &geometry, int minBlockSize);
+ClusterTree<N>::ClusterTree(const Geometry &geometry, int minBlockSize)
     : m_root(initializeClusterTree(geometry)),
       m_dofPermutation(geometry.size()) {
 
