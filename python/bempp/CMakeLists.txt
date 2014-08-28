@@ -1,46 +1,31 @@
-# include swig functionality
-include(${SWIG_USE_FILE})
-# Remove "-modern" if you need compatibility with Python 2.1.x and older
-set(CMAKE_SWIG_FLAGS "-modern")
-# Include target for copy files
-include(TargetCopyFiles)
+include(PythonModule)
 
-include_directories(${PYTHON_INCLUDE_DIR} ${NUMPY_INCLUDE_DIRS})
+get_filename_component(header_directory "${CMAKE_CURRENT_SOURCE_DIR}" PATH)
+include_directories("${header_directory}")
 
-set_source_files_properties(core.i PROPERTIES CPLUSPLUS ON)
-# Use the following to debug swig
-# set_source_files_properties(core.i PROPERTIES SWIG_FLAGS "-debug-classes")
-file(GLOB_RECURSE SWIG_SOURCES *.i)
-set(SWIG_MODULE_core_EXTRA_DEPS ${SWIG_SOURCES})
-swig_add_module(core python core.i)
-swig_link_libraries(core ${PYTHON_LIBRARY} bempp teuchoscore teuchosparameterlist)
-change_tbb_install_name(_core)
+add_python_module("bempp" __init__.py EXCLUDE config.in.py)
 
-# Postprocess docstrings
-add_custom_command(
-    TARGET ${SWIG_MODULE_core_REAL_NAME}
-    POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy
-        ${CMAKE_CURRENT_BINARY_DIR}/core.py
-        ${CMAKE_CURRENT_BINARY_DIR}/core.py.orig
-    COMMAND ${PYTHON_EXECUTABLE}
-        ${CMAKE_CURRENT_SOURCE_DIR}/postprocess_docstrings.py
-        ${CMAKE_CURRENT_BINARY_DIR}/core.py
-)
-configure_file(
-	${CMAKE_SOURCE_DIR}/python/bempp/pyfragments.swg
-    ${CMAKE_BINARY_DIR}/python/bempp/pyfragments.swg)
+# Sets path variables for in-build system
+set(BEMPP_MESHES "${PROJECT_SOURCE_DIR}/meshes")
+set(BEMPP_CMAKE_PATH "${PROJECT_BINARY_DIR}")
+configure_file(config.in.py "${PYTHON_BINARY_DIR}/bempp/config.py" @ONLY)
 
-### Move __init__.py to the build directory ###################################
-add_copy_files(${SWIG_MODULE_core_REAL_NAME} GLOB *.py VERBOSE)
+# Set paths for install-tree
+function(make_absolute OUTPUT input)
+    if("${input}" MATCHES "^/")
+        set(output ${input})
+    elseif(NOT DEFINED CMAKE_INSTALL_PREFIX)
+        set(output "/usr/local/${input}")
+    elseif("${CMAKE_INSTALL_PREFIX}" MATCHES "^/" )
+        set(output "${CMAKE_INSTALL_PREFIX}/${input}")
+    else()
+        set(output "${PROJECT_BINARY_DIR}/${CMAKE_INSTALL_PREFIX}/${input}")
+    endif()
+    set(${OUTPUT} "${output}" PARENT_SCOPE)
+endfunction()
+make_absolute(BEMPP_MESHES "${SHARE_INSTALL_PATH}/bempp/meshes")
+make_absolute(BEMPP_CMAKE_PATH "${SHARE_INSTALL_PATH}/cmake/Bempp")
+configure_file(config.in.py "${CMAKE_CURRENT_BINARY_DIR}/config.py" @ONLY)
+install_python(FILES "${CMAKE_CURRENT_BINARY_DIR}/config.py" DESTINATION bempp)
 
-###############################################################################
-
-file(GLOB SWIG_SWG_FILES *.swg)
-file(GLOB PYTHON_FILES RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" *.py)
-list(REMOVE_ITEM PYTHON_FILES "determineNumpyPath.py" "postprocess_docstrings.py")
-install_python(TARGETS _core DESTINATION bempp)
-install_python(FILES ${PYTHON_FILES}
-    "${CMAKE_CURRENT_BINARY_DIR}/core.py" DESTINATION bempp)
-install_python(FILES ${SWIG_SWG_FILES} ${SWIG_SOURCES} core.i
-    DESTINATION bempp/include/bempp)
+add_subdirectory(grid)

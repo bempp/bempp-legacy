@@ -9,7 +9,7 @@ endif()
 
 # First in binary dir
 set(ALL_INCLUDE_DIRS "${BEMPP_INCLUDE_DIRS}")
-set(BEMPP_PREFIX_PATH "${EXTERNAL_ROOT}")
+get_filename_component(BEMPP_PREFIX_PATH "${EXTERNAL_ROOT}" ABSOLUTE)
 configure_File(cmake/BemppConfig.in.cmake
     "${PROJECT_BINARY_DIR}/BemppConfig.cmake" @ONLY
 )
