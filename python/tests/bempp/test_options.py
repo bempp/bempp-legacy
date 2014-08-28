@@ -35,7 +35,7 @@ def test_options(instantiater):
     options = instantiater()
 
     assert abs(options.eta - 1e-4) < 1e-8
-    assert abs(options.eps - 1e-8) < 1e-8
+    assert abs(options.eps - 1e-8) < 1e-10
     assert options.maximum_block_size == 100
     assert options.minimum_block_size == 16
     assert options.maximum_rank in [2**32-2, 2**64-2]
@@ -67,3 +67,50 @@ def test_incorrect_enum_value_raises():
     options = Options()
     with raises(ValueError):
         options.aca_assembly_mode = "dummy"
+
+
+def test_basis_type():
+    from py.test import raises
+    options = Options()
+
+    # Order matters in the following: kind should only change where necessary
+    # items: (new basis type, expected result type)
+    modifications = [
+        ('float32', 'float32'),
+        ('float64', 'float64'),
+        ('complex64', 'complex64'),
+        ('float32', 'complex64'),
+        ('float64', 'complex128'),
+        ('float32', 'complex64')
+    ]
+    for i, (basis, result) in enumerate(modifications):
+        options.basis_type = basis
+        assert options.basis_type == basis, i
+        assert options.result_type == result, i
+
+    with raises(ValueError):
+        options.basis_type = 'int'
+
+
+def test_result_type():
+    from py.test import raises
+    options = Options()
+
+    # Order matters in the following: kind should only change where necessary
+    # items: (expected basis type, new result type)
+    modifications = [
+        ('float32', 'float32'),
+        ('float64', 'float64'),
+        ('float32', 'complex64'),
+        ('float64', 'complex128'),
+        ('float32', 'complex64'),
+        ('float32', 'float32'),
+        ('float32', 'complex64')
+    ]
+    for i, (basis, result) in enumerate(modifications):
+        options.result_type = result
+        assert options.basis_type == basis, i
+        assert options.result_type == result, i
+
+    with raises(ValueError):
+        options.basis_type = 'int'

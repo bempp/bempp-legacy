@@ -68,3 +68,5 @@ cdef class Options:
         AcaOptions aca_options
         AssemblyOptions assembly
         AccuracyOptions _accuracy
+        object _basis_type
+        object _result_type
