@@ -2,8 +2,8 @@ from libcpp cimport bool as cbool
 <%
 from bempp_options import options
 
-def transform(type):
-    return {'bool': 'cbool'}.get(type, type)
+def bool_type(text):
+    return {'bool': 'cbool'}.get(text, text)
 %>
 
 # Declare enums from various files
@@ -23,25 +23,14 @@ cdef extern from "bempp/assembly/aca_options.hpp" namespace "Bempp":
     cdef cppclass AcaOptions:
         AcaOptions()
 % for name, description in options.iteritems():
-<%
-    if description['c origin'] != 'AcaOptions':
-        continue
-%>
-        ${transform(description['type'])} ${name}
+%   if description['c origin'] == 'AcaOptions':
+        ${description['type'] | bool_type} ${name}
+%   endif
 % endfor
 
 cdef extern from "bempp/fiber/opencl_options.hpp" namespace "Fiber":
     cdef cppclass OpenClOptions:
         OpenClOptions()
-
-cdef extern from "bempp/fiber/parallelization_options.hpp" namespace "Fiber":
-    cdef cppclass ParallelizationOptions:
-        ParallelizationOptions()
-        void enableOpenCl(const OpenClOptions&)
-        void disableOpenCl()
-        cbool isOpenClEnabled() const
-        void setMaxThreadCount(int)
-        int maxThreadCount() const
 
 cdef extern from "bempp/fiber/verbosity_level.hpp" namespace "Fiber":
     cdef enum VerbosityLevel "Bempp::VerbosityLevel::Level":
@@ -62,6 +51,7 @@ cdef extern from "bempp/assembly/assembly_options.hpp" namespace "Bempp":
         void switchToDenseMode()
         void switchToAcaMode(const AcaOptions& acaOptions)
         AssemblyMode assemblyMode() const
+        void setMaxThreadCount(int)
 % for option, description in options.iteritems():
 <%
     if description['c origin'] != 'AssemblyOptions':
@@ -73,6 +63,6 @@ cdef extern from "bempp/assembly/assembly_options.hpp" namespace "Bempp":
 
 cdef class Options:
     cdef:
+        int _max_threads
         AcaOptions aca_options
-        ParallelizationOptions parallelization
         AssemblyOptions assembly

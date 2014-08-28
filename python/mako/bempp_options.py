@@ -121,7 +121,20 @@ options['firstClusterIndex'] = {
     'default': -1,
     'doc': 'Index of the first block cluster to approximate',
 }
-
+options['assembly_mode'] = {
+    'doc_type': "'dense'|'aca'",
+    'doc': "Switches between dense and aca assembly modes",
+    'default': "'dense'",
+    'implementation': 'manual',
+    'c origin': 'manual'
+}
+options['max_threads'] = {
+    'doc_type': "int|'auto'",
+    'doc': 'Max number of threads during assembly',
+    'default': "'auto'",
+    'implementation': 'manual',
+    'c origin': 'manual'
+}
 
 # Add missing default values
 assembly_options = [
@@ -129,10 +142,6 @@ assembly_options = [
     'SingularIntegralCaching', 'SparseStorageOfLocalOperators',
     'JointAssembly'
 ]
-for option, description in options.iteritems():
-    description['c origin'] = 'AssemblyOptions' if option in assembly_options \
-        else 'AcaOptions'
-
 aca_ops = [
     'eps', 'eta', 'scaling', 'minimumBlockSize', 'maximumBlockSize',
     'maximumRank', 'recompress', 'scaling', 'firstClusterIndex'
@@ -148,6 +157,10 @@ for option, desc in options.iteritems():
         desc['doc_type'] = doc_type
     if 'doc_default' not in desc:
         desc['doc_default'] = desc['default']
+
+    if 'c origin' not in desc:
+        is_assembly = option in assembly_options
+        desc['c origin'] = 'AssemblyOptions' if is_assembly else 'AcaOptions'
 
     if 'setter' not in desc:
         if desc['c origin'] == 'AcaOptions':
