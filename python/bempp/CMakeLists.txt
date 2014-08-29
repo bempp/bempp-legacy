@@ -5,7 +5,8 @@ include(FilterList)
 include_directories("${PYTHON_BINARY_DIR}/bempp/include")
 
 add_to_python_path("${PROJECT_SOURCE_DIR}/python/mako")
-mako_files(options.mako.pyx options.mako.pxd
+set(makoes options.mako.pyx options.mako.pxd)
+mako_files(${makoes}
     OUTPUT_FILES makoed
     DEPENDS
         "${PROJECT_SOURCE_DIR}/python/mako/bempp_options.py"
@@ -13,10 +14,11 @@ mako_files(options.mako.pyx options.mako.pxd
 
 # headers are setup in python package first so that they can be accessed by
 # cython. The main issue is for mako-generated headers.
-split_list(pxd_headers pyx_sources makoed ".*.pxd")
-add_custom_target(bempp-headers DEPENDS options.mako.pxd)
+split_list(pxd_headers pyx_sources makoed ".*\\.pxd")
+add_custom_target(bempp-headers DEPENDS ${makoes})
+file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/__init__.pxd")
+list(APPEND pxd_headers "${CMAKE_CURRENT_BINARY_DIR}/__init__.pxd")
 add_python_module(bempp ${pxd_headers} TARGETNAME bempp-headers)
-file(WRITE "${PYTHON_BINARY_DIR}/bempp/include/bempp/__init__.pxd")
 
 # An umbrella target for cython headeres
 add_custom_target(cython-headers)
@@ -27,7 +29,6 @@ add_dependencies(bempp cython-headers)
 # CMake does not always pick up dependencies from one add_custom_command to
 # another. So we add the dependency explicitly
 add_custom_target(bempp-mako DEPENDS ${makoed})
-add_dependencies(bempp bempp-mako)
 add_dependencies(bempp-headers bempp-mako)
 
 # Sets path variables for in-build system
@@ -57,3 +58,4 @@ install_python(FILES "${CMAKE_CURRENT_BINARY_DIR}/config.py" DESTINATION bempp)
 add_subdirectory(utils)
 add_subdirectory(grid)
 add_subdirectory(fiber)
+add_subdirectory(space)
