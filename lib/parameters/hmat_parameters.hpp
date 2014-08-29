@@ -38,6 +38,10 @@ using Teuchos::ParameterEntry;
 
 struct HMatParameters {
 
+  /** \brief Specifies whether to assemble using global or
+   *  local dofs. */
+  static ParameterEntry defaultHMatAssemblyMode();
+
   /** \brief Specifies the minimum block size below which
    *  blocks are assumed to be dense.
    *  \note Default Value: (unsigned int) 16 */

@@ -22,30 +22,44 @@
 
 namespace Bempp {
 
+ParameterEntry HMatParameters::defaultHMatAssemblyMode() {
+
+  const std::string value("GlobalAssembly");
+  return ParameterEntry(value, true, false,
+                        "Specifies whether to assemble using global "
+                        "or local dofs.");
+}
+
 ParameterEntry HMatParameters::defaultMinBlockSize() {
 
-  return ParameterEntry(16, true, false,
+  const unsigned int value = 16;
+  return ParameterEntry(value, true, false,
                         "Specifies the minimum block size below which "
                         "blocks are assumed to be dense.");
 }
 
 ParameterEntry HMatParameters::defaultMaxBlockSize() {
 
-  return ParameterEntry(2048, true, false,
+  const unsigned int value = 2048;
+  return ParameterEntry(value, true, false,
                         "Specifies the maximum size of an admissible block.");
 }
 
 ParameterEntry HMatParameters::defaultEta() {
 
-  return ParameterEntry(1.2, true, false,
+  constexpr double value = 1.2;
+  return ParameterEntry(value, true, false,
                         "Specifies the block separation parameter eta.");
 }
+
+
 
 shared_ptr<ParameterList> HMatParameters::parameterList() {
 
   auto parameters = shared_ptr<ParameterList>(new ParameterList());
 
   parameters->setName("HMatParameters");
+  parameters->setEntry("HMatAssemblyMode",defaultHMatAssemblyMode());
   parameters->setEntry("minBlockSize", defaultMinBlockSize());
   parameters->setEntry("maxBlockSize", defaultMaxBlockSize());
   parameters->setEntry("eta", defaultEta());

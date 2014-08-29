@@ -77,6 +77,9 @@ public:
    *  \param[in] acaOptions Parameters influencing the ACA algorithm. */
   void switchToAcaMode(const AcaOptions &acaOptions);
 
+  /** \brief Assemble using the HMat hierarchical matrix library. */
+  void switchToHMatMode();
+
   /** \brief Use dense-matrix representations of weak forms of boundary integral
    *operators.
    *

@@ -4,9 +4,11 @@
 #include "../common/common.hpp"
 #include "../common/shared_ptr.hpp"
 #include "../fiber/quadrature_strategy.hpp"
+#include "../parameters/global_parameters.hpp"
 #include "assembly_options.hpp"
 #include "discrete_boundary_operator_cache.hpp"
 #include <Teuchos_ParameterList.hpp>
+
 
 namespace Bempp {
 
@@ -49,7 +51,7 @@ public:
   Context(const shared_ptr<const QuadratureStrategy> &quadStrategy,
           const AssemblyOptions &assemblyOptions,
           const shared_ptr<Teuchos::ParameterList> &globalParameterList =
-              shared_ptr<Teuchos::ParameterList>(new Teuchos::ParameterList()));
+              GlobalParameters::parameterList());
 
   /** \brief Return the discrete weak form of the specified abstract operator.
    *

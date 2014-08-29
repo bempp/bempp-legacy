@@ -107,6 +107,8 @@ generateBlockClusterTree(const Space<BasisFunctionType> &testSpace,
   hmat::Geometry testGeometry;
   hmat::Geometry trialGeometry;
 
+  std::cout << "Start of block cluster tree generation." << std::endl;
+
   auto testSpaceGeometryInterface = shared_ptr<hmat::GeometryInterface>(
       new SpaceHMatGeometryInterface<BasisFunctionType>(testSpace));
 
@@ -114,7 +116,7 @@ generateBlockClusterTree(const Space<BasisFunctionType> &testSpace,
       new SpaceHMatGeometryInterface<BasisFunctionType>(trialSpace));
 
   hmat::fillGeometry(testGeometry, *testSpaceGeometryInterface);
-  hmat::fillGeometry(trialGeometry, *testSpaceGeometryInterface);
+  hmat::fillGeometry(trialGeometry, *trialSpaceGeometryInterface);
 
   auto testClusterTree = shared_ptr<hmat::DefaultClusterTreeType>(
       new hmat::DefaultClusterTreeType(testGeometry, minBlockSize));
@@ -122,10 +124,15 @@ generateBlockClusterTree(const Space<BasisFunctionType> &testSpace,
   auto trialClusterTree = shared_ptr<hmat::DefaultClusterTreeType>(
       new hmat::DefaultClusterTreeType(trialGeometry, minBlockSize));
 
-  return shared_ptr<hmat::DefaultBlockClusterTreeType>(
+  shared_ptr<hmat::DefaultBlockClusterTreeType> blockClusterTree(
       new hmat::DefaultBlockClusterTreeType(testClusterTree, trialClusterTree,
                                             maxBlockSize,
                                             hmat::StandardAdmissibility(eta)));
+
+
+  std::cout << "Generated block cluster tree. " << std::endl;
+
+  return blockClusterTree;
 }
 } // end anonymous namespace
 template <typename BasisFunctionType, typename ResultType>
@@ -175,6 +182,7 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
       *actualTestSpace, *actualTrialSpace, minBlockSize, maxBlockSize, eta);
 
   blockClusterTree->writeToPdfFile("tree_test.pdf", 1024, 1024);
+  std::cout << blockClusterTree->rows() << " " << blockClusterTree->columns() << std::endl;
 
   return std::unique_ptr<DiscreteBoundaryOperator<ResultType>>();
 }

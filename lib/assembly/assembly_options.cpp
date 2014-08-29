@@ -32,6 +32,8 @@ AssemblyOptions::AssemblyOptions()
 
 void AssemblyOptions::switchToDenseMode() { m_assemblyMode = DENSE; }
 
+void AssemblyOptions::switchToHMatMode() { m_assemblyMode = HMAT; }
+
 void AssemblyOptions::switchToAcaMode(const AcaOptions &acaOptions) {
   AcaOptions canonicalAcaOptions = acaOptions;
   if (!canonicalAcaOptions.globalAssemblyBeforeCompression) {
