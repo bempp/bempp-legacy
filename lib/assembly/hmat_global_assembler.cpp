@@ -174,7 +174,32 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
   auto blockClusterTree = generateBlockClusterTree(
       *actualTestSpace, *actualTrialSpace, minBlockSize, maxBlockSize, eta);
 
+  blockClusterTree->writeToPdfFile("tree_test.pdf",1024,1024);
+
   return std::unique_ptr<DiscreteBoundaryOperator<ResultType>>();
+}
+
+
+template <typename BasisFunctionType, typename ResultType>
+std::unique_ptr<DiscreteBoundaryOperator<ResultType>>
+HMatGlobalAssembler<BasisFunctionType,ResultType>::assembleDetachedWeakForm(
+    const Space<BasisFunctionType> &testSpace,
+    const Space<BasisFunctionType> &trialSpace,
+    LocalAssemblerForIntegralOperators &localAssembler,
+    LocalAssemblerForIntegralOperators &localAssemblerForAdmissibleBlocks,
+    const Context<BasisFunctionType, ResultType> &context, int symmetry) {
+  typedef LocalAssemblerForIntegralOperators Assembler;
+  std::vector<Assembler *> localAssemblers(1, &localAssembler);
+  std::vector<Assembler *> localAssemblersForAdmissibleBlocks(
+      1, &localAssemblerForAdmissibleBlocks);
+  std::vector<const DiscreteBndOp *> sparseTermsToAdd;
+  std::vector<ResultType> denseTermsMultipliers(1, 1.0);
+  std::vector<ResultType> sparseTermsMultipliers;
+
+  return assembleDetachedWeakForm(testSpace, trialSpace, localAssemblers,
+                                  localAssemblersForAdmissibleBlocks,
+                                  sparseTermsToAdd, denseTermsMultipliers,
+                                  sparseTermsMultipliers, context, symmetry);
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(HMatGlobalAssembler);

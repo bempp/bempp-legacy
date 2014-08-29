@@ -26,6 +26,7 @@
 #include "discrete_boundary_operator.hpp"
 #include "context.hpp"
 #include "local_assembler_construction_helper.hpp"
+#include "hmat_global_assembler.hpp"
 
 #include "../fiber/explicit_instantiation.hpp"
 #include "../fiber/local_assembler_for_integral_operators.hpp"
@@ -178,8 +179,11 @@ ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
         const Context<BasisFunctionType, ResultType> &context) const {
   const Space<BasisFunctionType> &testSpace = *this->dualToRange();
   const Space<BasisFunctionType> &trialSpace = *this->domain();
-
-  throw std::runtime_error("Not yet implemented.");
+  return HMatGlobalAssembler<
+      BasisFunctionType,
+      ResultType>::assembleDetachedWeakForm(testSpace, trialSpace, assembler,
+                                            assembler, context,
+                                            this->symmetry() & SYMMETRIC);
 }
 
 /** \endcond */

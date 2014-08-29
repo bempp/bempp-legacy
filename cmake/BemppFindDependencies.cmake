@@ -35,6 +35,7 @@ list(INSERT CMAKE_LOOKUP_PATH 0 ${PROJECT_SOURCE_DIR}/cmake/lookups)
 if(WITH_ALUGRID)
     lookup_package(ALUGrid)
 endif()
+lookup_package(CAIRO REQUIRED)
 lookup_package(Boost 1.55 COMPONENTS unit_test_framework REQUIRED)
 lookup_package(Armadillo REQUIRED ARGUMENTS TIMEOUT 60)
 # ARMA_DONT_USE_WRAPPER means we don't need to include armadillo library
@@ -97,6 +98,7 @@ set(BEMPP_INCLUDE_DIRS
    ${dune-common_INCLUDE_DIRS}
    ${Trilinos_INCLUDE_DIRS}
    ${Trilinos_TPL_INCLUDE_DIRS}
+   ${CAIRO_INCLUDE_DIRS}
 )
 foreach(component Boost BLAS LAPACK ARMADILLO TBB ALUGrid)
     if(${component}_INCLUDE_DIR)
@@ -115,6 +117,7 @@ add_to_ld_path(
     ${TBB_LIBRARY_DEBUG}
     ${TBB_MALLOC_LIBRARY}
     ${TBB_MALLOC_LIBRARY_DEBUG}
+    ${CAIRO_LIBRARIES}
 )
 
 if(WITH_TESTS)
