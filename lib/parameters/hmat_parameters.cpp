@@ -24,21 +24,21 @@ namespace Bempp {
 
 ParameterEntry HMatParameters::defaultMinBlockSize() {
 
-  return ParameterEntry(
-      16, true, false, "Specifies the minimum block size below which "
-                       "blocks are assumed to be dense.");
+  return ParameterEntry(16, true, false,
+                        "Specifies the minimum block size below which "
+                        "blocks are assumed to be dense.");
 }
 
 ParameterEntry HMatParameters::defaultMaxBlockSize() {
 
-  return ParameterEntry(
-      2048, true, false, "Specifies the maximum size of an admissible block.");
+  return ParameterEntry(2048, true, false,
+                        "Specifies the maximum size of an admissible block.");
 }
 
 ParameterEntry HMatParameters::defaultEta() {
 
-  return ParameterEntry(
-      1.2, true, false, "Specifies the block separation parameter eta.");
+  return ParameterEntry(1.2, true, false,
+                        "Specifies the block separation parameter eta.");
 }
 
 shared_ptr<ParameterList> HMatParameters::parameterList() {
@@ -53,4 +53,3 @@ shared_ptr<ParameterList> HMatParameters::parameterList() {
   return parameters;
 }
 }
-

@@ -18,26 +18,17 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-
 #include "global_parameters.hpp"
 #include "hmat_parameters.hpp"
 
-
 namespace Bempp {
-
 
 shared_ptr<ParameterList> GlobalParameters::parameterList() {
 
-	shared_ptr<ParameterList> parameters(
-			new ParameterList());
+  shared_ptr<ParameterList> parameters(new ParameterList());
 
-	parameters->sublist("HMatParameters").setParameters(*HMatParameters::parameterList());
-	return parameters;
+  parameters->sublist("HMatParameters")
+      .setParameters(*HMatParameters::parameterList());
+  return parameters;
 }
-
-
-
-
-
-
 }

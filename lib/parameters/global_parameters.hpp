@@ -27,7 +27,6 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_ParameterEntry.hpp>
 
-
 namespace Bempp {
 
 using Teuchos::ParameterList;
@@ -39,9 +38,8 @@ using Teuchos::ParameterEntry;
 
 struct GlobalParameters {
 
-	/** \brief Return a global parameter list. */
-	static shared_ptr<ParameterList> parameterList();
-
+  /** \brief Return a global parameter list. */
+  static shared_ptr<ParameterList> parameterList();
 };
 }
 

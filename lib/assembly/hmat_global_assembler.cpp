@@ -174,15 +174,14 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
   auto blockClusterTree = generateBlockClusterTree(
       *actualTestSpace, *actualTrialSpace, minBlockSize, maxBlockSize, eta);
 
-  blockClusterTree->writeToPdfFile("tree_test.pdf",1024,1024);
+  blockClusterTree->writeToPdfFile("tree_test.pdf", 1024, 1024);
 
   return std::unique_ptr<DiscreteBoundaryOperator<ResultType>>();
 }
 
-
 template <typename BasisFunctionType, typename ResultType>
 std::unique_ptr<DiscreteBoundaryOperator<ResultType>>
-HMatGlobalAssembler<BasisFunctionType,ResultType>::assembleDetachedWeakForm(
+HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
     const Space<BasisFunctionType> &testSpace,
     const Space<BasisFunctionType> &trialSpace,
     LocalAssemblerForIntegralOperators &localAssembler,
