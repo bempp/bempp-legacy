@@ -241,7 +241,8 @@ public:
    *  elements the quadrature-rule selector is passed the distance between
    *  the clusters to which these elements belong.
    *
-   *  By default, this option is set to \c true. */
+   *  By default, this option is set to \c true.
+   *  \note In HMat always true. */
   void makeQuadratureOrderUniformInEachCluster(bool value = true);
 
   /** \brief Return whether the same quadrature order is used for all regular

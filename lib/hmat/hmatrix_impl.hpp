@@ -12,6 +12,15 @@ template <typename ValueType, int N>
 HMatrix<ValueType, N>::HMatrix(
     const shared_ptr<BlockClusterTree<N>> &blockClusterTree)
     : m_blockClusterTree(blockClusterTree) {}
+
+
+}
+
+
+
+
+
+
 }
 
 #endif

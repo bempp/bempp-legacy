@@ -9,7 +9,6 @@
 #include "discrete_boundary_operator_cache.hpp"
 #include <Teuchos_ParameterList.hpp>
 
-
 namespace Bempp {
 
 /** \cond FORWARD_DECL */

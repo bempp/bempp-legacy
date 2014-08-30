@@ -29,6 +29,7 @@
 #include "../fiber/scalar_traits.hpp"
 #include "../hmat/common.hpp"
 #include "../hmat/block_cluster_tree.hpp"
+#include "../hmat/data_accessor.hpp"
 
 #include <tbb/atomic.h>
 #include <tbb/concurrent_unordered_map.h>
@@ -58,7 +59,7 @@ template <typename BasisFunctionType> class Space;
  * mode.
  */
 template <typename BasisFunctionType, typename ResultType>
-class WeakFormHMatAssemblyHelper {
+class WeakFormHMatAssemblyHelper : hmat::DataAccessor<ResultType,2>{
 public:
   typedef DiscreteBoundaryOperator<ResultType> DiscreteLinOp;
   typedef Fiber::LocalAssemblerForIntegralOperators<ResultType> LocalAssembler;
@@ -72,18 +73,16 @@ public:
       const std::vector<LocalAssembler *> &assemblers,
       const std::vector<const DiscreteLinOp *> &sparseTermsToAdd,
       const std::vector<ResultType> &denseTermsMultipliers,
-      const std::vector<ResultType> &sparseTermsMultipliers,
-      const AssemblyOptions &options);
+      const std::vector<ResultType> &sparseTermsMultipliers);
 
   /** \brief Evaluate entries of a general block. */
 
-  void
-  computeMatrixBlock(const hmat::IndexRangeType &testIndexRange,
-                     const hmat::IndexRangeType &trialIndexRange,
-                     arma::Mat<ResultType> &data,
-                     const hmat::DefaultBlockClusterTreeNodeType &blockClusterTreeNode,
-                     bool countAccessedEntries = true) const;
-  
+  void computeMatrixBlock(
+      const hmat::IndexRangeType& testIndexRange,
+      const hmat::IndexRangeType& trialIndexRange,
+      const hmat::DefaultBlockClusterTreeNodeType &blockClusterTreeNode,
+      arma::Mat<ResultType> &data) const override;
+
   // /** \brief Return the number of entries in the matrix that have been
   //  *  accessed so far. */
   // size_t accessedEntryCount() const;
@@ -105,9 +104,6 @@ private:
   const std::vector<const DiscreteLinOp *> &m_sparseTermsToAdd;
   const std::vector<ResultType> &m_denseTermsMultipliers;
   const std::vector<ResultType> &m_sparseTermsMultipliers;
-  const AssemblyOptions &m_options;
-  bool m_indexWithGlobalDofs;
-  bool m_uniformQuadratureOrder;
 
   shared_ptr<LocalDofListsCache<BasisFunctionType>> m_testDofListsCache,
       m_trialDofListsCache;

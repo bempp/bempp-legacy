@@ -28,6 +28,7 @@
 #include "evaluation_options.hpp"
 #include "discrete_boundary_operator_composition.hpp"
 #include "discrete_sparse_boundary_operator.hpp"
+#include "weak_form_hmat_assembly_helper.hpp"
 
 #include "../common/armadillo_fwd.hpp"
 #include "../common/auto_timer.hpp"
@@ -44,6 +45,7 @@
 #include "../hmat/geometry_interface.hpp"
 #include "../hmat/geometry_data_type.hpp"
 #include "../hmat/geometry.hpp"
+#include "../hmat/data_accessor.hpp"
 
 #include <stdexcept>
 #include <fstream>
@@ -62,6 +64,7 @@ namespace Bempp {
 
 
 namespace {
+
 
 template <typename BasisFunctionType>
 class SpaceHMatGeometryInterface : public hmat::GeometryInterface {
@@ -107,8 +110,6 @@ generateBlockClusterTree(const Space<BasisFunctionType> &testSpace,
   hmat::Geometry testGeometry;
   hmat::Geometry trialGeometry;
 
-  std::cout << "Start of block cluster tree generation." << std::endl;
-
   auto testSpaceGeometryInterface = shared_ptr<hmat::GeometryInterface>(
       new SpaceHMatGeometryInterface<BasisFunctionType>(testSpace));
 
@@ -128,9 +129,6 @@ generateBlockClusterTree(const Space<BasisFunctionType> &testSpace,
       new hmat::DefaultBlockClusterTreeType(testClusterTree, trialClusterTree,
                                             maxBlockSize,
                                             hmat::StandardAdmissibility(eta)));
-
-
-  std::cout << "Generated block cluster tree. " << std::endl;
 
   return blockClusterTree;
 }
@@ -181,8 +179,13 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
   auto blockClusterTree = generateBlockClusterTree(
       *actualTestSpace, *actualTrialSpace, minBlockSize, maxBlockSize, eta);
 
-  blockClusterTree->writeToPdfFile("tree_test.pdf", 1024, 1024);
-  std::cout << blockClusterTree->rows() << " " << blockClusterTree->columns() << std::endl;
+  WeakFormHMatAssemblyHelper<BasisFunctionType,ResultType>
+	  helper(*actualTestSpace,*actualTrialSpace,
+			  blockClusterTree,
+			  localAssemblers,
+			  sparseTermsToAdd,
+			  denseTermMultipliers,
+			  sparseTermMultipliers);
 
   return std::unique_ptr<DiscreteBoundaryOperator<ResultType>>();
 }

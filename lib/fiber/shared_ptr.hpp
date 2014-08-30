@@ -39,7 +39,7 @@
 
 namespace std {
 
-template <typename T> struct std::hash<boost::shared_ptr<T>> {
+template <typename T> struct hash<boost::shared_ptr<T>> {
   std::size_t operator()(const boost::shared_ptr<T> &x) const {
     return std::hash<T *>()(x.get());
   }

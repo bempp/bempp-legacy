@@ -52,14 +52,12 @@ ParameterEntry HMatParameters::defaultEta() {
                         "Specifies the block separation parameter eta.");
 }
 
-
-
 shared_ptr<ParameterList> HMatParameters::parameterList() {
 
   auto parameters = shared_ptr<ParameterList>(new ParameterList());
 
   parameters->setName("HMatParameters");
-  parameters->setEntry("HMatAssemblyMode",defaultHMatAssemblyMode());
+  parameters->setEntry("HMatAssemblyMode", defaultHMatAssemblyMode());
   parameters->setEntry("minBlockSize", defaultMinBlockSize());
   parameters->setEntry("maxBlockSize", defaultMaxBlockSize());
   parameters->setEntry("eta", defaultEta());

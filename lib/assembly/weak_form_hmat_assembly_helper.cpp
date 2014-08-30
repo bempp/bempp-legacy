@@ -31,8 +31,6 @@
 namespace Bempp {
 
 using Fiber::conjugate;
-
-
 }
 
 namespace Bempp {
@@ -46,31 +44,20 @@ WeakFormHMatAssemblyHelper<BasisFunctionType, ResultType>::
         const std::vector<LocalAssembler *> &assemblers,
         const std::vector<const DiscreteLinOp *> &sparseTermsToAdd,
         const std::vector<ResultType> &denseTermsMultipliers,
-        const std::vector<ResultType> &sparseTermsMultipliers,
-        const AssemblyOptions &options)
+        const std::vector<ResultType> &sparseTermsMultipliers)
     : m_testSpace(testSpace), m_trialSpace(trialSpace),
       m_blockClusterTree(blockClusterTree), m_assemblers(assemblers),
       m_sparseTermsToAdd(sparseTermsToAdd),
       m_denseTermsMultipliers(denseTermsMultipliers),
-      m_sparseTermsMultipliers(sparseTermsMultipliers), m_options(options),
-      m_indexWithGlobalDofs(m_options.acaOptions().mode !=
-                            AcaOptions::HYBRID_ASSEMBLY),
-      m_uniformQuadratureOrder(
-          m_options.isQuadratureOrderUniformInEachCluster()),
+      m_sparseTermsMultipliers(sparseTermsMultipliers),
       m_testDofListsCache(new LocalDofListsCache<BasisFunctionType>(
           m_testSpace,
-          blockClusterTree->rowClusterTree()->hMatDofToOriginalDofMap(),
-          m_indexWithGlobalDofs)),
+          blockClusterTree->rowClusterTree()->hMatDofToOriginalDofMap(), true)),
       m_trialDofListsCache(new LocalDofListsCache<BasisFunctionType>(
           m_trialSpace,
           blockClusterTree->columnClusterTree()->hMatDofToOriginalDofMap(),
-          m_indexWithGlobalDofs)) {
+          true)) {
 
-  if (!m_indexWithGlobalDofs && !m_sparseTermsToAdd.empty())
-    throw std::invalid_argument(
-        "WeakFormAcaAssemblyHelper::WeakFormAcaAssemblyHelper(): "
-        "combining sparse and dense terms in hybrid ACA mode "
-        "is not supported at present");
   for (size_t i = 0; i < assemblers.size(); ++i)
     if (!assemblers[i])
       throw std::invalid_argument(
@@ -103,28 +90,21 @@ template <typename BasisFunctionType, typename ResultType>
 void
 WeakFormHMatAssemblyHelper<BasisFunctionType, ResultType>::computeMatrixBlock(
     const hmat::IndexRangeType &testIndexRange,
-    const hmat::IndexRangeType &trialIndexRange, arma::Mat<ResultType> &data,
+    const hmat::IndexRangeType &trialIndexRange,
     const hmat::DefaultBlockClusterTreeNodeType &blockClusterTreeNode,
-    bool countAccessedEntries) const {
+    arma::Mat<ResultType> &data) const {
 
+  auto numberOfTestIndices = testIndexRange[1] - testIndexRange[0];
+  auto numberOfTrialIndices = trialIndexRange[1] - trialIndexRange[0];
 
-  auto numberOfTestIndices = testIndexRange[1]-testIndexRange[0];
-  auto numberOfTrialIndices = trialIndexRange[1]-trialIndexRange[0];
+  m_accessedEntryCount += numberOfTestIndices * numberOfTrialIndices;
 
-  if (countAccessedEntries)
-    m_accessedEntryCount += numberOfTestIndices*numberOfTrialIndices;
+  const CoordinateType minDist = estimateMinimumDistance(blockClusterTreeNode);
 
-	
-   const CoordinateType minDist = 
-	m_uniformQuadratureOrder ? estimateMinimumDistance(blockClusterTreeNode) : -1;
-
-   shared_ptr<const LocalDofLists<BasisFunctionType>> testDofLists =
-       m_testDofListsCache->get(testIndexRange[0],
-                                numberOfTestIndices); 
-   shared_ptr<const LocalDofLists<BasisFunctionType>> trialDofLists =
-       m_trialDofListsCache->get(trialIndexRange[0],
-		                 numberOfTrialIndices);
-
+  shared_ptr<const LocalDofLists<BasisFunctionType>> testDofLists =
+      m_testDofListsCache->get(testIndexRange[0], numberOfTestIndices);
+  shared_ptr<const LocalDofLists<BasisFunctionType>> trialDofLists =
+      m_trialDofListsCache->get(trialIndexRange[0], numberOfTrialIndices);
 
   // Requested original matrix indices
   typedef typename LocalDofLists<BasisFunctionType>::DofIndex DofIndex;
@@ -156,7 +136,7 @@ WeakFormHMatAssemblyHelper<BasisFunctionType, ResultType>::computeMatrixBlock(
   const std::vector<std::vector<int>> &blockRows = testDofLists->arrayIndices;
   const std::vector<std::vector<int>> &blockCols = trialDofLists->arrayIndices;
 
-  data.resize(numberOfTestIndices,numberOfTrialIndices);
+  data.resize(numberOfTestIndices, numberOfTrialIndices);
   data.fill(0.);
 
   // First, evaluate the contributions of the dense terms
@@ -228,7 +208,8 @@ WeakFormHMatAssemblyHelper<BasisFunctionType, ResultType>::computeMatrixBlock(
         }
       }
     }
-  } else if (numberOfTestIndices <= 32 && numberOfTrialIndices <= 32) // a "fat" block
+  } else if (numberOfTestIndices <= 32 &&
+             numberOfTrialIndices <= 32) // a "fat" block
   {
     // The whole block or its submatrix needed. This means that we are
     // likely to need all or almost all local DOFs from most elements.
@@ -248,7 +229,7 @@ WeakFormHMatAssemblyHelper<BasisFunctionType, ResultType>::computeMatrixBlock(
             for (size_t nTestDof = 0;
                  nTestDof < testLocalDofs[nTestElem].size(); ++nTestDof)
               data(blockRows[nTestElem][nTestDof],
-                     blockCols[nTrialElem][nTrialDof]) +=
+                   blockCols[nTrialElem][nTrialDof]) +=
                   m_denseTermsMultipliers[nTerm] *
                   conjugate(testLocalDofWeights[nTestElem][nTestDof]) *
                   trialLocalDofWeights[nTrialElem][nTrialDof] *
@@ -277,7 +258,7 @@ WeakFormHMatAssemblyHelper<BasisFunctionType, ResultType>::computeMatrixBlock(
             for (size_t nTrialDof = 0;
                  nTrialDof < trialLocalDofs[nTrialElem].size(); ++nTrialDof)
               data(blockRows[nTestElem][nTestDof],
-                     blockCols[nTrialElem][nTrialDof]) +=
+                   blockCols[nTrialElem][nTrialDof]) +=
                   m_denseTermsMultipliers[nTerm] *
                   conjugate(activeTestLocalDofWeight) *
                   trialLocalDofWeights[nTrialElem][nTrialDof] *
@@ -288,22 +269,15 @@ WeakFormHMatAssemblyHelper<BasisFunctionType, ResultType>::computeMatrixBlock(
     }
   }
 
-  // Probably can be removed
-  if (m_indexWithGlobalDofs)
-    // Now, add the contributions of the sparse terms
-    for (size_t nTerm = 0; nTerm < m_sparseTermsToAdd.size(); ++nTerm)
-      m_sparseTermsToAdd[nTerm]->addBlock(
-          // since m_indexWithGlobalDofs is set, these refer
-          // to global DOFs
-          testOriginalIndices, trialOriginalIndices,
-          m_sparseTermsMultipliers[nTerm], data);
-  // else m_sparseTermsToAdd is empty (as we have verified in the constructor)
+  // Now, add the contributions of the sparse terms
+  for (size_t nTerm = 0; nTerm < m_sparseTermsToAdd.size(); ++nTerm)
+    m_sparseTermsToAdd[nTerm]->addBlock(
+        // since m_indexWithGlobalDofs is set, these refer
+        // to global DOFs
+        testOriginalIndices, trialOriginalIndices,
+        m_sparseTermsMultipliers[nTerm], data);
 }
 
-
-
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(
-	WeakFormHMatAssemblyHelper);
-
-
+    WeakFormHMatAssemblyHelper);
 }
