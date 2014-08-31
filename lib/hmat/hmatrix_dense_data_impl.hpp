@@ -11,10 +11,6 @@
 namespace hmat {
 
 template <typename ValueType>
-HMatrixDenseData<ValueType>::HMatrixDenseData(int rows, int cols)
-    : m_A(rows, cols) {}
-
-template <typename ValueType>
 void HMatrixDenseData<ValueType>::apply(const arma::Mat<ValueType> &X,
                                         arma::Mat<ValueType> &Y,
                                         TransposeMode trans, ValueType alpha,

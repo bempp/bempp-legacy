@@ -102,11 +102,11 @@ ClusterTree<2>::splitClusterTreeByGeometry(const Geometry &geometry,
       auto firstBoundingBox = boxes.first;
       auto secondBoundingBox = boxes.second;
 
-      auto ubound = firstBoundingBox.bounds()[2*dim+1];
+      auto ubound = firstBoundingBox.bounds()[2 * dim + 1];
 
-      for (auto index : indexSet){
+      for (auto index : indexSet) {
         auto centerValue = geometry[index]->center[dim];
-        if (centerValue<ubound)
+        if (centerValue < ubound)
           firstIndexSet.push_back(index);
         else
           secondIndexSet.push_back(index);

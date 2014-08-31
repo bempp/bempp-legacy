@@ -10,11 +10,11 @@ namespace hmat {
 
 template <typename ValueType, int N> class DataAccessor {
 
-  virtual void computeMatrixBlock(
-      const IndexRangeType& rowIndexRange,
-      const IndexRangeType& columnIndexRange,
-      const BlockClusterTreeNode<N>& blockClusterTreeNode, 
-      arma::Mat<ValueType> &data) const = 0;
+  virtual void
+  computeMatrixBlock(const IndexRangeType &rowIndexRange,
+                     const IndexRangeType &columnIndexRange,
+                     const BlockClusterTreeNode<N> &blockClusterTreeNode,
+                     arma::Mat<ValueType> &data) const = 0;
 };
 }
 

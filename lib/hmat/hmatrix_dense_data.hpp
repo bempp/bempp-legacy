@@ -11,8 +11,6 @@ namespace hmat {
 
 template <typename ValueType> class HMatrixDenseData : HMatrixData<ValueType> {
 public:
-  HMatrixDenseData(int rows, int cols);
-
   void apply(const arma::Mat<ValueType> &X, arma::Mat<ValueType> &Y,
              TransposeMode trans, ValueType alpha, ValueType beta) const
       override;

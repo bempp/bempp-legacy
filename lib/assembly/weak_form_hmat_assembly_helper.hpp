@@ -59,7 +59,7 @@ template <typename BasisFunctionType> class Space;
  * mode.
  */
 template <typename BasisFunctionType, typename ResultType>
-class WeakFormHMatAssemblyHelper : hmat::DataAccessor<ResultType,2>{
+class WeakFormHMatAssemblyHelper : hmat::DataAccessor<ResultType, 2> {
 public:
   typedef DiscreteBoundaryOperator<ResultType> DiscreteLinOp;
   typedef Fiber::LocalAssemblerForIntegralOperators<ResultType> LocalAssembler;
@@ -78,8 +78,8 @@ public:
   /** \brief Evaluate entries of a general block. */
 
   void computeMatrixBlock(
-      const hmat::IndexRangeType& testIndexRange,
-      const hmat::IndexRangeType& trialIndexRange,
+      const hmat::IndexRangeType &testIndexRange,
+      const hmat::IndexRangeType &trialIndexRange,
       const hmat::DefaultBlockClusterTreeNodeType &blockClusterTreeNode,
       arma::Mat<ResultType> &data) const override;
 

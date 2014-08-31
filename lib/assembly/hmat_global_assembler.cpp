@@ -65,7 +65,6 @@ namespace Bempp {
 
 namespace {
 
-
 template <typename BasisFunctionType>
 class SpaceHMatGeometryInterface : public hmat::GeometryInterface {
 
@@ -179,13 +178,11 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
   auto blockClusterTree = generateBlockClusterTree(
       *actualTestSpace, *actualTrialSpace, minBlockSize, maxBlockSize, eta);
 
-  WeakFormHMatAssemblyHelper<BasisFunctionType,ResultType>
-	  helper(*actualTestSpace,*actualTrialSpace,
-			  blockClusterTree,
-			  localAssemblers,
-			  sparseTermsToAdd,
-			  denseTermMultipliers,
-			  sparseTermMultipliers);
+  WeakFormHMatAssemblyHelper<BasisFunctionType, ResultType> helper(
+      *actualTestSpace, *actualTrialSpace, blockClusterTree, localAssemblers,
+      sparseTermsToAdd, denseTermMultipliers, sparseTermMultipliers);
+
+
 
   return std::unique_ptr<DiscreteBoundaryOperator<ResultType>>();
 }
