@@ -59,7 +59,7 @@ template <typename BasisFunctionType> class Space;
  * mode.
  */
 template <typename BasisFunctionType, typename ResultType>
-class WeakFormHMatAssemblyHelper : hmat::DataAccessor<ResultType, 2> {
+class WeakFormHMatAssemblyHelper : public hmat::DataAccessor<ResultType, 2> {
 public:
   typedef DiscreteBoundaryOperator<ResultType> DiscreteLinOp;
   typedef Fiber::LocalAssemblerForIntegralOperators<ResultType> LocalAssembler;

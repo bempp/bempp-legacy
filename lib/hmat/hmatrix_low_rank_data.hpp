@@ -19,6 +19,10 @@ public:
              TransposeMode trans, ValueType alpha, ValueType beta) const
       override;
 
+  void apply(const arma::subview<ValueType> &X, arma::subview<ValueType> &Y,
+             TransposeMode trans, ValueType alpha, ValueType beta) const
+      override;
+  
   const arma::Mat<ValueType> &A() const;
   arma::Mat<ValueType> &A();
 

@@ -15,6 +15,18 @@ void HMatrixDenseData<ValueType>::apply(const arma::Mat<ValueType> &X,
                                         arma::Mat<ValueType> &Y,
                                         TransposeMode trans, ValueType alpha,
                                         ValueType beta) const {
+
+  arma::subview<ValueType> xsub = X.submat(arma::span::all, arma::span::all);
+  arma::subview<ValueType> ysub = Y.submat(arma::span::all, arma::span::all);
+
+  this->apply(xsub,ysub,trans,alpha,beta);
+}
+
+template <typename ValueType>
+void HMatrixDenseData<ValueType>::apply(const arma::subview<ValueType> &X,
+                                        arma::subview<ValueType> &Y,
+                                        TransposeMode trans, ValueType alpha,
+                                        ValueType beta) const {
   if (beta == ValueType(0))
     Y.zeros();
   if (alpha == ValueType(0)) {
@@ -26,6 +38,8 @@ void HMatrixDenseData<ValueType>::apply(const arma::Mat<ValueType> &X,
     Y = alpha * m_A * X + beta * Y;
   else if (trans == TransposeMode::TRANS)
     Y = alpha * m_A.st() * X + beta * Y;
+  else if (trans == TransposeMode::CONJ)
+    Y = alpha * arma::conj(m_A) * X + beta * Y;
   else
     Y = alpha * m_A.t() * X + beta * Y;
 }

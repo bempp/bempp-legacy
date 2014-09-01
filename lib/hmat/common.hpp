@@ -14,9 +14,15 @@ typedef std::array<std::size_t, 4> BlockIndexRangeType;
 typedef std::array<std::size_t, 2> IndexRangeType;
 typedef std::vector<std::size_t> IndexSetType;
 
-enum class TransposeMode {
+enum RowColSelector {
+  ROW,
+  COL
+};
+
+enum TransposeMode {
   NOTRANS,
   TRANS,
+  CONJ,
   CONJTRANS
 };
 

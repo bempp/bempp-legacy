@@ -9,7 +9,7 @@
 namespace hmat {
 
 template <typename ValueType, int N> class DataAccessor {
-
+public:
   virtual void
   computeMatrixBlock(const IndexRangeType &rowIndexRange,
                      const IndexRangeType &columnIndexRange,

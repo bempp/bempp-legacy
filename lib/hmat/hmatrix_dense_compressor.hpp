@@ -14,9 +14,9 @@ class HMatrixDenseCompressor : public HMatrixCompressor<ValueType, N> {
 public:
   HMatrixDenseCompressor(const DataAccessor<ValueType, N> &dataAccessor);
 
-  void compressBlock(
-      const BlockClusterTreeNode<N> &blockClusterTreeNode,
-      shared_ptr<HMatrixData<ValueType>> &hMatrixData) const override;
+  void compressBlock(const BlockClusterTreeNode<N> &blockClusterTreeNode,
+                     shared_ptr<HMatrixData<ValueType>> &hMatrixData) const
+      override;
 
 private:
   const DataAccessor<ValueType, N> &m_dataAccessor;

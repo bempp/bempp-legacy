@@ -29,6 +29,7 @@
 #include "discrete_boundary_operator_composition.hpp"
 #include "discrete_sparse_boundary_operator.hpp"
 #include "weak_form_hmat_assembly_helper.hpp"
+#include "discrete_hmat_boundary_operator.hpp"
 
 #include "../common/armadillo_fwd.hpp"
 #include "../common/auto_timer.hpp"
@@ -45,7 +46,9 @@
 #include "../hmat/geometry_interface.hpp"
 #include "../hmat/geometry_data_type.hpp"
 #include "../hmat/geometry.hpp"
+#include "../hmat/hmatrix.hpp"
 #include "../hmat/data_accessor.hpp"
+#include "../hmat/hmatrix_dense_compressor.hpp"
 
 #include <stdexcept>
 #include <fstream>
@@ -61,7 +64,6 @@
 #include <Teuchos_ParameterList.hpp>
 
 namespace Bempp {
-
 
 namespace {
 
@@ -182,9 +184,12 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
       *actualTestSpace, *actualTrialSpace, blockClusterTree, localAssemblers,
       sparseTermsToAdd, denseTermMultipliers, sparseTermMultipliers);
 
+  hmat::HMatrixDenseCompressor<ResultType, 2> compressor(helper);
+  shared_ptr<hmat::CompressedMatrix<ResultType>> hMatrix(
+      new hmat::DefaultHMatrixType<ResultType>(blockClusterTree, compressor));
 
-
-  return std::unique_ptr<DiscreteBoundaryOperator<ResultType>>();
+  return std::unique_ptr<DiscreteBoundaryOperator<ResultType>>(
+      new DiscreteHMatBoundaryOperator<ResultType>(hMatrix));
 }
 
 template <typename BasisFunctionType, typename ResultType>

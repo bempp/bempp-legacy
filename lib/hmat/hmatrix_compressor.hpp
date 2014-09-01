@@ -13,9 +13,9 @@ template <typename ValueType> class HMatrixData;
 
 template <typename ValueType, int N> class HMatrixCompressor {
 public:
-  virtual void compressBlock(
-      const BlockClusterTreeNode<N> &blockClusterTreeNode,
-      shared_ptr<HMatrixData<ValueType>> &hMatrixData) const = 0;
+  virtual void
+  compressBlock(const BlockClusterTreeNode<N> &blockClusterTreeNode,
+                shared_ptr<HMatrixData<ValueType>> &hMatrixData) const = 0;
 };
 }
 

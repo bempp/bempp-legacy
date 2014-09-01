@@ -9,12 +9,17 @@
 
 namespace hmat {
 
-template <typename ValueType> class HMatrixDenseData : HMatrixData<ValueType> {
+template <typename ValueType>
+class HMatrixDenseData : public HMatrixData<ValueType> {
 public:
   void apply(const arma::Mat<ValueType> &X, arma::Mat<ValueType> &Y,
              TransposeMode trans, ValueType alpha, ValueType beta) const
       override;
 
+  void apply(const arma::subview<ValueType> &X, arma::subview<ValueType> &Y,
+             TransposeMode trans, ValueType alpha, ValueType beta) const
+      override;
+  
   const arma::Mat<ValueType> &A() const;
   arma::Mat<ValueType> &A();
 
