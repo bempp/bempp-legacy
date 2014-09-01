@@ -32,7 +32,7 @@
 namespace Bempp {
 
 template <typename ValueType>
-    class DiscreteHMatBoundaryOperator
+class DiscreteHMatBoundaryOperator
     : public DiscreteBoundaryOperator<ValueType> {
 public:
   DiscreteHMatBoundaryOperator(
@@ -42,30 +42,26 @@ public:
 
   unsigned int columnCount() const override;
 
-  void addBlock(const std::vector<int> &rows,
-                        const std::vector<int> &cols, const ValueType alpha,
-                        arma::Mat<ValueType> &block) const override;
-
+  void addBlock(const std::vector<int> &rows, const std::vector<int> &cols,
+                const ValueType alpha, arma::Mat<ValueType> &block) const
+      override;
 
   Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>> domain() const;
   Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>> range() const;
 
 protected:
   bool opSupportedImpl(Thyra::EOpTransp M_trans) const;
- 
-private:
 
+private:
   void applyBuiltInImpl(const TranspositionMode trans,
-                                const arma::Col<ValueType> &x_in,
-                                arma::Col<ValueType> &y_inout,
-                                const ValueType alpha,
-                                const ValueType beta) const override;
-  
+                        const arma::Col<ValueType> &x_in,
+                        arma::Col<ValueType> &y_inout, const ValueType alpha,
+                        const ValueType beta) const override;
+
   shared_ptr<hmat::CompressedMatrix<ValueType>> m_compressedMatrix;
 
   Teuchos::RCP<const Thyra::SpmdVectorSpaceBase<ValueType>> m_domainSpace;
   Teuchos::RCP<const Thyra::SpmdVectorSpaceBase<ValueType>> m_rangeSpace;
-
 };
 }
 

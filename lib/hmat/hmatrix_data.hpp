@@ -11,9 +11,9 @@ public:
                      TransposeMode trans, ValueType alpha,
                      ValueType beta) const = 0;
 
-  virtual void apply(const arma::subview<ValueType> &X, arma::subview<ValueType> &Y,
-                     TransposeMode trans, ValueType alpha,
-                     ValueType beta) const = 0;
+  virtual void apply(const arma::subview<ValueType> &X,
+                     arma::subview<ValueType> &Y, TransposeMode trans,
+                     ValueType alpha, ValueType beta) const = 0;
 
   virtual int rows() const = 0;
   virtual int cols() const = 0;

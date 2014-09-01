@@ -15,16 +15,16 @@ public:
 
   virtual arma::Mat<ValueType>
   permuteMatToHMatDofs(const arma::Mat<ValueType> &mat,
-                   RowColSelector rowOrColumn) const = 0;
+                       RowColSelector rowOrColumn) const = 0;
 
   virtual arma::Mat<ValueType>
   permuteMatToOriginalDofs(const arma::Mat<ValueType> &mat,
-                       RowColSelector rowOrColumn) const = 0;
+                           RowColSelector rowOrColumn) const = 0;
 
   virtual void apply(const arma::Mat<ValueType> &X, arma::Mat<ValueType> &Y,
-             TransposeMode trans, ValueType alpha, ValueType beta) const;
+                     TransposeMode trans, ValueType alpha,
+                     ValueType beta) const;
 };
 }
 
 #endif
-

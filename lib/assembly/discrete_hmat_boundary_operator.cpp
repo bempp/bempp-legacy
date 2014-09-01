@@ -28,8 +28,8 @@ template <typename ValueType>
 DiscreteHMatBoundaryOperator<ValueType>::DiscreteHMatBoundaryOperator(
     const shared_ptr<hmat::CompressedMatrix<ValueType>> &compressedMatrix)
     : m_compressedMatrix(compressedMatrix),
-      m_domainSpace(
-          Thyra::defaultSpmdVectorSpace<ValueType>(compressedMatrix->columns())),
+      m_domainSpace(Thyra::defaultSpmdVectorSpace<ValueType>(
+          compressedMatrix->columns())),
       m_rangeSpace(
           Thyra::defaultSpmdVectorSpace<ValueType>(compressedMatrix->rows())) {}
 
@@ -58,16 +58,16 @@ void DiscreteHMatBoundaryOperator<ValueType>::applyBuiltInImpl(
     arma::Col<ValueType> &y_inout, const ValueType alpha,
     const ValueType beta) const {
 
-	hmat::TransposeMode hmatTrans;
-	if (trans==TranspositionMode::NO_TRANSPOSE)
-		hmatTrans = hmat::NOTRANS;
-	else if (trans==TranspositionMode::TRANSPOSE)
-		hmatTrans = hmat::TRANS;
-	else if (trans==TranspositionMode::CONJUGATE)
-		hmatTrans = hmat::CONJ;
-	else
-		hmatTrans = hmat::CONJTRANS;
-	m_compressedMatrix->apply(x_in,y_inout,hmatTrans,alpha,beta);
+  hmat::TransposeMode hmatTrans;
+  if (trans == TranspositionMode::NO_TRANSPOSE)
+    hmatTrans = hmat::NOTRANS;
+  else if (trans == TranspositionMode::TRANSPOSE)
+    hmatTrans = hmat::TRANS;
+  else if (trans == TranspositionMode::CONJUGATE)
+    hmatTrans = hmat::CONJ;
+  else
+    hmatTrans = hmat::CONJTRANS;
+  m_compressedMatrix->apply(x_in, y_inout, hmatTrans, alpha, beta);
 }
 
 template <typename ValueType>
@@ -89,7 +89,5 @@ bool DiscreteHMatBoundaryOperator<ValueType>::opSupportedImpl(
           M_trans == Thyra::CONJTRANS);
 }
 
-
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(DiscreteHMatBoundaryOperator);
 }
-

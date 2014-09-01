@@ -61,7 +61,7 @@ void HMatrixLowRankData<ValueType>::apply(const arma::Mat<ValueType> &X,
   arma::subview<ValueType> xsub = X.submat(arma::span::all, arma::span::all);
   arma::subview<ValueType> ysub = Y.submat(arma::span::all, arma::span::all);
 
-  this->apply(xsub,ysub,trans,alpha,beta);
+  this->apply(xsub, ysub, trans, alpha, beta);
 }
 template <typename ValueType>
 void HMatrixLowRankData<ValueType>::apply(const arma::subview<ValueType> &X,

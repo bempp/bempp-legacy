@@ -33,14 +33,15 @@ public:
   void reset();
 
   void apply(const arma::Mat<ValueType> &X, arma::Mat<ValueType> &Y,
-             TransposeMode trans, ValueType alpha, ValueType beta) const override;
+             TransposeMode trans, ValueType alpha, ValueType beta) const
+      override;
 
   arma::Mat<ValueType> permuteMatToHMatDofs(const arma::Mat<ValueType> &mat,
-                                        RowColSelector rowOrColumn) const
-      override;
-  arma::Mat<ValueType> permuteMatToOriginalDofs(const arma::Mat<ValueType> &mat,
                                             RowColSelector rowOrColumn) const
       override;
+  arma::Mat<ValueType>
+  permuteMatToOriginalDofs(const arma::Mat<ValueType> &mat,
+                           RowColSelector rowOrColumn) const override;
 
 private:
   shared_ptr<BlockClusterTree<N>> m_blockClusterTree;

@@ -113,28 +113,25 @@ void HMatrix<ValueType, N>::apply(const arma::Mat<ValueType> &X,
                                   arma::Mat<ValueType> &Y, TransposeMode trans,
                                   ValueType alpha, ValueType beta) const {
 
-
-  if (beta==ValueType(0))
+  if (beta == ValueType(0))
     Y.zeros();
   else
-    Y*=beta;
+    Y *= beta;
 
   arma::Mat<ValueType> xPermuted;
   arma::Mat<ValueType> yPermuted;
 
-  if (trans == TransposeMode::NOTRANS){
+  if (trans == TransposeMode::NOTRANS) {
 
-    xPermuted = permuteMatToHMatDofs(X,COL);
-    yPermuted = permuteMatToHMatDofs(Y,ROW);
+    xPermuted = permuteMatToHMatDofs(X, COL);
+    yPermuted = permuteMatToHMatDofs(Y, ROW);
+  } else {
+    xPermuted = permuteMatToHMatDofs(X, ROW);
+    yPermuted = permuteMatToHMatDofs(Y, COL);
   }
-  else {
-    xPermuted = permuteMatToHMatDofs(X,ROW);
-    yPermuted = permuteMatToHMatDofs(Y,COL);
-  }
-
 
   std::for_each(begin(m_hMatrixData), end(m_hMatrixData),
-                [trans, alpha, beta, &xPermuted, &yPermuted,this](
+                [trans, alpha, beta, &xPermuted, &yPermuted, this](
                     const std::pair<shared_ptr<BlockClusterTreeNode<N>>,
                                     shared_ptr<HMatrixData<ValueType>>>
                         elem) {
@@ -151,11 +148,12 @@ void HMatrix<ValueType, N>::apply(const arma::Mat<ValueType> &X,
 
     arma::subview<ValueType> xData =
         xPermuted.rows(inputRange[0], inputRange[1] - 1);
-    arma::subview<ValueType> yData = yPermuted.rows(outputRange[0],outputRange[1]-1);
+    arma::subview<ValueType> yData =
+        yPermuted.rows(outputRange[0], outputRange[1] - 1);
     elem.second->apply(xData, yData, trans, alpha, 1);
-                });    
+  });
 
-  Y = this->permuteMatToOriginalDofs(yPermuted,ROW);
+  Y = this->permuteMatToOriginalDofs(yPermuted, ROW);
 }
 }
 
