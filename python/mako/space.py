@@ -1,90 +1,77 @@
 dtypes = {
-        'float32': 'float',
-        'float64': 'double',
-        'complex64': 'complex_float',
-        'complex128': 'complex_double'
+    'float32': 'float',
+    'float64': 'double',
+    'complex64': 'complex_float',
+    'complex128': 'complex_double'
 }
 """ Possible dptypes for spaces and c equivalents """
 
-class Class(object):
-    def __init__(self, class_name):
-        super(Class, self).__init__()
-        self.class_name = class_name
-    @property
-    def type_name(self):
-        return "%s[BASIS]" % self.class_name
-    @property
-    def header(self):
+
+# Describes available spaces and their wrapper implementation.
+# Most of the characteristics (barycentric, dual...) are guessed later on.
+# However, these characteristics can be specified here. The characteristics
+# will be used in the actual space factories by the users.
+# The default implementation is 'grid_only', eg a single constructor that takes
+# a grid as its only argument.
+spaces = {
+    'PiecewiseConstantScalarSpace': {
+        'doc': 'Space of piecewise constant scalar functions',
+    },
+    'PiecewiseConstantScalarSpaceBarycentric': {
+        'doc': 'Space of piecewise constant scalar functions',
+    },
+    'PiecewiseConstantDualGridScalarSpace': {
+        'doc': 'Space of piecewise constant scalar functions on the dual grid',
+    },
+    'PiecewiseLinearContinuousScalarSpace': {
+        'doc': 'Space of continuous, piecewise linear scalar functions',
+    },
+    'PiecewiseLinearDiscontinuousScalarSpace': {
+        'doc':
+        'Space of piecewise linear, possibly discontinuous, scalar functions',
+    },
+    'PiecewiseLinearDiscontinuousScalarSpaceBarycentric': {
+        'doc':
+        'Space of piecewise constant functions define on the dual grid',
+        'dual': True  # According top the doxygen tag...
+    },
+    'PiecewisePolynomialContinuousScalarSpace': {
+        'doc':
+        'Space of continuous, piecewise polynomial scalar functions',
+        'implementation': 'polynomial'
+    }
+}
+
+
+# Guess implementation from class name
+# Mostly means guessing wether space operates on the direct or dual grid,
+# whether functions are continuous, whether they are constant, linear, or
+# polynomial, etc. These facts are used later on in the actual space factory.
+for key, description in spaces.iteritems():
+    if 'implementation' not in description:
+        description['implementation'] = 'grid_only'
+
+    if 'header' not in description:
         f = lambda x: x if x.islower() else '_' + x.lower()
-        name = ''.join([f(u) for u in self.class_name[1:]])
-        return self.class_name[0].lower() + name
+        description['header'] = 'bempp/space/%s.hpp' \
+            % (key[0].lower() + ''.join([f(u) for u in key[1:]]))
 
-    scalar = property(lambda x: 'scalar' in x.class_name.lower())
-    continuous = property(lambda x: 'discontinous' not in x.class_name.lower())
-    constant = property(lambda x: 'constant' in x.class_name.lower())
-    linear = property(lambda x: 'linear' not in x.class_name.lower())
-    polynomial = property(lambda x: 'linear' not in x.class_name.lower())
+    if 'scalar' not in description:
+        description['scalar'] = 'scalar' in key.lower()
 
-# Contains all spaces
-spaces = {}
-def add(names, *args, **kwargs):
-    """ Helper function for adding spaces """
-    dictionary = spaces
-    for name in names:
-        if name not in dictionary:
-            dictionary[name] = {}
-        dictionary = dictionary[name]
-    def adder(implementation='grid_only', **_kwargs):
-        _kwargs['implementation'] = implementation
-        dictionary[Class(*args, **kwargs)] = _kwargs
-    return adder
-
-# Now define individual implementations
-add(
-    ('scalar', 'constant', 'continuous'),
-    'PiecewiseConstantScalarSpace'
-)(
-    doc='Space of piecewise constant scalar functions',
-    tags=True
-)
-
-add(
-    ('scalar', 'constant', 'continuous'),
-    'PiecewiseConstantScalarSpaceBarycentric'
-)(
-    doc='Space of piecewise constant scalar functions',
-    tags=True
-)
-
-add(
-    ('scalar', 'constant', 'continuous'),
-    'PiecewiseConstantDualGridScalarSpace'
-)(
-    doc='Space of piecewise constant scalar functions on the dual grid',
-    tags=True,
-)
-
-add(
-    ('scalar', 'linear', 'continuous'),
-    'PiecewiseLinearContinuousScalarSpace'
-)(
-    doc='Space of continuous, piecewise linear scalar functions',
-    tags=True
-)
-
-
-def flatten(spaces):
-    from collections import Sequence
-    for key, value in spaces.iteritems():
-        if isinstance(key, Class):
-            yield key, value
+    if description['scalar'] and 'order' not in description:
+        if 'constant' in key.lower():
+            description['order'] = 'constant'
+        elif 'linear' in key.lower():
+            description['order'] = 'linear'
         else:
-            for inners in flatten(value):
-                yield inners
+            description['order'] = 'polynomial'
 
-# Some sanity checks
-# Class names are unique
-class_names = [u[0].class_name for u in flatten(spaces)]
-assert len(class_names) == len(set(class_names))
-del class_names
+    if 'continuous' not in description:
+        description['continuous'] = 'discontinuous' not in key.lower()
 
+    if 'dual' not in description:
+        description['dual'] = 'dual' in key.lower()
+
+    if 'barycentric' not in description:
+        description['barycentric'] = 'barycentric' in key.lower()

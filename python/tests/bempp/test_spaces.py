@@ -1,6 +1,8 @@
 from py.test import mark, fixture
 from bempp.space.space import PiecewiseConstantScalarSpace, \
-    PiecewiseLinearContinuousScalarSpace
+    PiecewiseLinearContinuousScalarSpace,                   \
+    PiecewiseLinearDiscontinuousScalarSpace,                \
+    PiecewisePolynomialContinuousScalarSpace
 
 
 @fixture
@@ -24,3 +26,32 @@ def grid():
 def test_instantiation(grid, TestClass, dtype):
     space = TestClass(grid, dtype)
     assert space.dtype == dtype
+
+
+@mark.parametrize("TestClass, kwargs", [
+    (PiecewiseConstantScalarSpace, {'constant': True}),
+    (PiecewiseConstantScalarSpace, {'order': 0}),
+    (PiecewiseConstantScalarSpace, {'order': 'constant'}),
+    (PiecewiseLinearDiscontinuousScalarSpace,
+        {'linear': True, 'continuous': False}),
+    (PiecewiseLinearDiscontinuousScalarSpace,
+        {'order': 1, 'continuous': False}),
+    (PiecewiseLinearDiscontinuousScalarSpace,
+        {'order': 'linear', 'continuous': False}),
+    (PiecewisePolynomialContinuousScalarSpace, {'order': 2}),
+    (PiecewisePolynomialContinuousScalarSpace, {'order': 3})
+])
+def test_space_selection(TestClass, kwargs):
+    from bempp.space import scalar_class
+
+    actual = scalar_class(**kwargs)
+    assert actual is TestClass
+
+
+def test_polynomial_order(grid):
+    from bempp.space import scalar
+
+    for order in [2, 3]:
+        actual = scalar(grid, 'float32', order=order)
+        assert isinstance(actual, PiecewisePolynomialContinuousScalarSpace)
+        assert actual.order == order

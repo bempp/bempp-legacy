@@ -1,13 +1,6 @@
+""" Wrappers for all types of C++ spaces """
 <%
-from space import dtypes, spaces, flatten
-
-
-def long_names(spaces, current_name="space"):
-    for key, values in spaces.iteritems():
-        long_name = current_name + "." + key
-        iterator = values if key is None else long_names(values, long_name)
-        for value in iterator:
-            yield long_name, value
+from space import dtypes, spaces
 %>
 
 
@@ -29,8 +22,8 @@ cdef class Space:
 % endfor
             return None
 
-% for space, description in flatten(spaces):
-cdef class ${space.class_name}(Space):
+% for class_name, description in spaces.iteritems():
+cdef class ${class_name}(Space):
     """ ${description['doc']}
 
         Parameters:
@@ -41,8 +34,17 @@ cdef class ${space.class_name}(Space):
 
         dtype : numpy.dtype
             Type of the functions acting on the space
+
+% if description['implementation'] == 'polynomial':
+        order : int
+            Order of the polynomial. Defaults to 2.
+% endif
     """
-    def __init__(self, Grid grid not None, dtype, *args, **kwargs):
+    def __init__(self, Grid grid not None, dtype,
+% if description['implementation'] == 'polynomial':
+                 order=2,
+% endif
+                 **kwargs):
         from numpy import dtype as np_dtype
         super(Space, self).__init__(grid)
 
@@ -54,7 +56,14 @@ cdef class ${space.class_name}(Space):
 %       if description['implementation'] == 'grid_only':
             self.impl_${pytype}.reset(
                 <c_Space[${cytype}]*>
-                new ${'c_' + space.class_name}[${cytype}](grid.impl_)
+                new ${'c_' + class_name}[${cytype}](grid.impl_)
+            )
+%       elif description['implementation'] == 'polynomial':
+            self.order = order
+            self.impl_${pytype}.reset(
+                <c_Space[${cytype}]*> new ${'c_' + class_name}[${cytype}](
+                    grid.impl_, <int> self.order
+                )
             )
 %       endif
 %    endfor

@@ -1,45 +1,127 @@
 <%!
-from space import spaces, Class
-
-def module_names(spaces, name=''):
-    for key, value in spaces.iteritems():
-        if not isinstance(key, Class):
-            new_name = key if name == '' else name + "." + key
-            yield new_name
-            for name_ in module_names(value, new_name):
-                yield name_
+from space import spaces, dtypes
+def get_key(description):
+    return (
+        description['order'],
+        description['continuous'],
+        description['barycentric'],
+        description['dual'],
+        description.get('extra', None),
+    )
 %>
 __all__ = ['Space', 'scalar']
 from .space import Space
+from . import space as _cwrappers
 
-def scalar(grid, dtype, barycentric=False, continuous=True, order=None,
-        constant=False, linear=False, polynomial=False, **kwargs):
-    """ Creates scalar space """
+
+_scalar_spaces = {
+    # (order, continuous, barycentric, dual, extra): implementation
+% for class_name, description in spaces.iteritems():
+%   if description['scalar']:
+    ${get_key(description)}: _cwrappers.${class_name},
+%   endif
+% endfor
+}
+""" All scalar spaces with definitions """
+
+
+def scalar_class(barycentric=False, continuous=True, order=None,
+           constant=None, linear=None, dual=False, extra=None):
+<%def name="tags_params()" filter="trim">
+        barycentric : bool
+            Whether the space is barycentric. Defaults to False.
+
+        order: 0|1|>=2
+            Order of the functions. Order 0 (1) is equivalent to the constant
+            (linear) keyword.
+
+        constant: bool
+            Constant piecewise functions.
+        linear: bool
+            Linear piecewise functions.
+
+        dual: bool
+            If True, then the functions are applied on the dual grid.
+
+        continuous: bool
+            If True, the space consists of continous functions.
+</%def>\
+<%def name="all_spaces()" filter="trim">
+<%
+    from operator import itemgetter
+    def row(order, continuous, dual, barycentric, **kwargs):
+        return "{order: <10}  {continuous: ^10}  "\
+                "{dual: ^9}  {barycentric: ^11}".format(
+            order=order,
+            continuous='yes' if continuous else 'no',
+            dual='yes' if dual else 'no',
+            barycentric='yes' if barycentric else 'no',
+        )
+%>\
+        The default space is the space of constant piecewise continuous
+        functions on the direct grid. The following set of spaces are
+        available:
+
+        ==========  ==========  =========  ===========
+        order       continuous  dual grid  barycentric
+        ==========  ==========  =========  ===========
+%   for description in sorted(spaces.itervalues(), key=itemgetter('order')):
+        ${row(**description)}
+%   endfor
+        ==========  ==========  =========  ===========
+</%def>\
+    """ Discriminates between spaces according to input
+
+        Parameters
+        ----------
+
+        ${tags_params()}
+
+        ${all_spaces()}
+    """
     # input sanity check and sanitization
-    if order is not None:
-        order = int(order)
-        if order < 0:
-            raise ValueError("order should positive or null")
-        condition = (order == 0 and (constant is None or constant)) \
-            or (order == 1 and (linear is None or linear)) \
-            or (polynomial is None or polynomial))
-        if not condition:
-            raise ValueError("Inconsistent arguments")
-        if order > 2:
-            order = 2
-    elif sum([constant, linear, polynomial]) > 1:
-        raise ValueError("Inconsistent arguments")
-    elif sum([constant, linear, polynomial]) = 0 or constant:
-        order = 0
-    elif linear:
-        linear = 1
-    else:
-        order = 2
-
+    def nargs(*args):
+        sum([int(bool(u)) for u in args])
+    kind = None
+    if (order is None and constant) or order == 0 or order == 'constant':
+        kind = 'constant'
+    if (order is None and linear) or order == 1 or order == 'linear':
+        if kind is not None:
+            raise TypeError("Input requests both %s and linear" % kind)
+        kind = 'linear'
+    if kind is None:
+        kind = 'linear' if order is None else 'polynomial'
 
     # Now figure out which to use
-    possible = ${possibles}
-    key = str(order) + str(barycentric) + str(continuous)
-    if key not in possibles:
+    key = (kind, continuous, barycentric, dual, extra)
+    if key not in _scalar_spaces:
         raise ValueError("No space exists for this set of input combinations")
-    return possibles[key](grid, dtype, *args, **kwargs)
+    return _scalar_spaces[key]
+
+def scalar(grid, dtype, barycentric=False, continuous=True, order=None,
+           constant=False, linear=False, dual=False, extra=None, **kwargs):
+    """ Factory for creating scalar spaces
+
+        Parameters
+        ----------
+
+        grid : Grid
+            Grid over which the functions are applied
+
+        dtype : ${'|'.join(dtypes.iterkeys())}
+            Precision and kind of the functions.
+
+        ${tags_params()}
+
+        Other keyword parameters are passed on when constructing the spaces per
+        se.
+
+        ${all_spaces()}
+    """
+    # passes order on to constructor
+    if order is not None and order > 1:
+        kwargs['order'] = order
+    return scalar_class(
+        barycentric=barycentric, continuous=continuous, order=order,
+        constant=constant, linear=linear, dual=dual, extra=extra
+    )(grid, dtype, **kwargs)

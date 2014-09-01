@@ -1,5 +1,5 @@
 <%
-from space import dtypes, spaces, flatten
+from space import dtypes, spaces
 
 def declare_class(text):
     return 'c_{0} "Bempp::{0}"[BASIS]'.format(text)
@@ -25,11 +25,13 @@ cdef extern from "bempp/space/types.h":
 
 
 
-% for space, description in flatten(spaces):
-cdef extern from "bempp/space/${space.header}.hpp":
-    cdef cppclass ${space.class_name | declare_class}:
+% for class_name, description in spaces.iteritems():
+cdef extern from "${description['header']}":
+    cdef cppclass ${class_name | declare_class}:
 %   if description['implementation'] == 'grid_only':
-        ${'c_' + space.class_name}(const shared_ptr[c_Grid] &_grid)
+        ${'c_' + class_name}(const shared_ptr[c_Grid] &_grid)
+%   elif description['implementation'] == 'polynomial':
+        ${'c_' + class_name}(const shared_ptr[c_Grid] &_grid, int order)
 %   endif
 % endfor
 
@@ -44,7 +46,10 @@ cdef class Space:
 
 # Now we define derived types for each space.
 # This is a flat hierarchy. It does not attempt to redeclare the C++ hierarchy.
-% for space, description in flatten(spaces):
-cdef class ${space.class_name}(Space):
+% for class_name, description in spaces.iteritems():
+cdef class ${class_name}(Space):
+%   if description['implementation'] == 'polynomial':
+    cdef readonly unsigned int order
+%   endif
     pass
 % endfor
