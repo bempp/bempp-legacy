@@ -190,6 +190,21 @@ void BlockClusterTree<N>::initializeBlockClusterTree(
   splittingFunction(m_root);
 }
 
+template <int N>
+void getBlockClusterTreeNodeDimensions(
+    const BlockClusterTreeNode<N> &blockClusterTreeNode,
+    IndexRangeType &rowClusterRange,
+    IndexRangeType &columnClusterRange, std::size_t &numberOfRows,
+    std::size_t &numberOfColumns) {
+
+  rowClusterRange =
+      blockClusterTreeNode.data().rowClusterTreeNode->data().indexRange;
+  columnClusterRange =
+      blockClusterTreeNode.data().columnClusterTreeNode->data().indexRange;
+  numberOfRows = rowClusterRange[1] - rowClusterRange[0];
+  numberOfColumns = columnClusterRange[1] - columnClusterRange[0];
+}
+
 inline StandardAdmissibility::StandardAdmissibility(double eta) : m_eta(eta) {}
 
 inline bool StandardAdmissibility::operator()(const BoundingBox &box1,

@@ -13,8 +13,6 @@ template <typename ValueType>
 class HMatrixLowRankData : public HMatrixData<ValueType> {
 
 public:
-  HMatrixLowRankData(int rows, int cols, int rank);
-
   void apply(const arma::Mat<ValueType> &X, arma::Mat<ValueType> &Y,
              TransposeMode trans, ValueType alpha, ValueType beta) const
       override;

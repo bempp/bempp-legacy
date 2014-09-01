@@ -55,6 +55,7 @@ public:
   std::vector<shared_ptr<const BlockClusterTreeNode<N>>> leafNodes() const;
   std::vector<shared_ptr<BlockClusterTreeNode<N>>> leafNodes();
 
+
 private:
   void initializeBlockClusterTree(
       const AdmissibilityFunction &admissibilityFunction, int maxBlockSize);
@@ -64,6 +65,13 @@ private:
 
   shared_ptr<BlockClusterTreeNode<N>> m_root;
 };
+
+template <int N>
+void getBlockClusterTreeNodeDimensions(
+    const BlockClusterTreeNode<N> &blockClusterTreeNode,
+    IndexRangeType &rowClusterRange,
+    IndexRangeType &columnClusterRange, std::size_t &numberOfRows,
+    std::size_t &numberOfColumns);
 
 class StandardAdmissibility {
 public:

@@ -32,7 +32,7 @@ ParameterEntry HMatParameters::defaultHMatAssemblyMode() {
 
 ParameterEntry HMatParameters::defaultMinBlockSize() {
 
-  const unsigned int value = 16;
+  const unsigned int value = 50;
   return ParameterEntry(value, true, false,
                         "Specifies the minimum block size below which "
                         "blocks are assumed to be dense.");

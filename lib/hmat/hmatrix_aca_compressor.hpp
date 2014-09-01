@@ -5,6 +5,7 @@
 
 #include "common.hpp"
 #include "hmatrix_compressor.hpp"
+#include "hmatrix_dense_compressor.hpp"
 #include "data_accessor.hpp"
 
 namespace hmat {
@@ -12,14 +13,27 @@ namespace hmat {
 template <typename ValueType, int N>
 class HMatrixAcaCompressor : public HMatrixCompressor<ValueType, N> {
 public:
-  HMatrixAcaCompressor(const DataAccessor<ValueType, N> &dataAccessor);
+  HMatrixAcaCompressor(const DataAccessor<ValueType, N> &dataAccessor,
+                       double eps, unsigned int maxRank);
 
   void compressBlock(const BlockClusterTreeNode<N> &blockClusterTreeNode,
                      shared_ptr<HMatrixData<ValueType>> &hMatrixData) const
       override;
 
 private:
+  void evaluateMatMinusLowRank(const BlockClusterTreeNode<N> &blockClusterTreeNode,
+      const IndexRangeType& rowIndexRange,
+      const IndexRangeType& columnIndexRange,
+      arma::Mat<ValueType> &data, 
+      const std::vector<shared_ptr<arma::Mat<ValueType>>> &previousColumns,
+      const std::vector<shared_ptr<arma::Mat<ValueType>>> &previousRows) const;
+
+  static std::size_t intRand(const IndexRangeType& range);
+
   const DataAccessor<ValueType, N> &m_dataAccessor;
+  double m_eps;
+  unsigned int m_maxRank;
+  HMatrixDenseCompressor<ValueType,N> m_hMatrixDenseCompressor;
 };
 }
 

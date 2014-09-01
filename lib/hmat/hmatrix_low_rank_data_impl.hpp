@@ -8,10 +8,6 @@
 namespace hmat {
 
 template <typename ValueType>
-HMatrixLowRankData<ValueType>::HMatrixLowRankData(int rows, int cols, int rank)
-    : m_A(rows, rank), m_B(rank, cols) {}
-
-template <typename ValueType>
 const arma::Mat<ValueType> &HMatrixLowRankData<ValueType>::A() const {
   return m_A;
 }
