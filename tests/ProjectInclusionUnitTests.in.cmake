@@ -31,7 +31,7 @@ endif()
 assert_file_included(Python.h ${BEMPP_PYTHON_INCLUDE_DIRS})
 assert_file_included(numpy/arrayobject.h ${BEMPP_PYTHON_INCLUDE_DIRS})
 
-if(NOT TARGET bempp)
+if(NOT TARGET libbempp)
     message(FATAL_ERROR "Target bempp was not imported")
 else()
     message(STATUS "Target bempp is defined")
