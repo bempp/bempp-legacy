@@ -6,7 +6,9 @@ cdef class RangeAccuracyOptions(dict):
         In practice, this is a dictionary where the keys are positive real
         numbers (defined to the accuracy
         :py:data:`RangeAccuracyOptions.__tolerance__`), and the values are
-        :py:class:`QuadratureOptions`.
+        :py:class:`QuadratureOptions`. The keys are the upper limits of the
+        range for which the accuracy (the values) is set. The lower limits for
+        each is zero or the upper limit of the next lowest range.
 
         All values below :py:data:`RangeAccuracyOptions.__tolerance__`, as well
         as None, `'inf'`, and float('inf')` are resolved as `float('inf')`.
