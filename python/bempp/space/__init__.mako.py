@@ -58,7 +58,7 @@ def scalar_class(barycentric=False, continuous=True, order=None,
             barycentric='yes' if barycentric else 'no',
         )
 %>\
-        The default space is the space of constant piecewise continuous
+        The default space is the space of continuous piecewise-constant
         functions on the direct grid. The following set of spaces are
         available:
 
@@ -83,7 +83,11 @@ def scalar_class(barycentric=False, continuous=True, order=None,
     def nargs(*args):
         sum([int(bool(u)) for u in args])
     kind = None
-    if (order is None and constant) or order == 0 or order == 'constant':
+    # default call
+    if order is None and constant is None and linear is None:
+        kind = 'constant'
+    # non-default calls
+    elif (order is None and constant) or order == 0 or order == 'constant':
         kind = 'constant'
     if (order is None and linear) or order == 1 or order == 'linear':
         if kind is not None:
@@ -98,8 +102,9 @@ def scalar_class(barycentric=False, continuous=True, order=None,
         raise ValueError("No space exists for this set of input combinations")
     return _scalar_spaces[key]
 
+
 def scalar(grid, dtype, barycentric=False, continuous=True, order=None,
-           constant=False, linear=False, dual=False, extra=None, **kwargs):
+           constant=None, linear=None, dual=False, extra=None, **kwargs):
     """ Factory for creating scalar spaces
 
         Parameters

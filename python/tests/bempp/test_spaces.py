@@ -29,6 +29,7 @@ def test_instantiation(grid, TestClass, dtype):
 
 
 @mark.parametrize("TestClass, kwargs", [
+    (PiecewiseConstantScalarSpace, {}),
     (PiecewiseConstantScalarSpace, {'constant': True}),
     (PiecewiseConstantScalarSpace, {'order': 0}),
     (PiecewiseConstantScalarSpace, {'order': 'constant'}),
