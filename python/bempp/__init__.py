@@ -1,6 +1,11 @@
-__all__ = ['grid', 'config', '__version__', 'Options']
+""" Boundary Element Method package BEM++ """
+__all__ = [
+    'Grid', 'config', '__version__', 'Options', 'space', 'scalar_spaces'
+]
 
-import grid
+from grid import Grid
+from . import space
+from .space import scalar as scalar_spaces
 import config
 from .options import Options
 # A fair number of packages expose version info via similar variable

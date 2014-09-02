@@ -29,7 +29,9 @@ def setter_func(origin):
                 value = ${default}
             self.${setter_string % (setter, 'value')}
 %   if description['c origin'] == "AcaOptions":
-            # Sets aca options internally
+            # Aca options hidden inside assembly structure
+            # So we must reset them all each time any one changes
+            # Avoid this operation when not using Aca assembly
             if self.assembly.assemblyMode() == ASSEMBLY_MODE_ACA:
                 self.assembly.switchToAcaMode(self.aca_options)
 %   endif
