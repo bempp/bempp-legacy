@@ -26,6 +26,15 @@ def grid():
 def test_instantiation(grid, TestClass, dtype):
     space = TestClass(grid, dtype)
     assert space.dtype == dtype
+    assert space.grid is not None
+    assert space.grid is grid
+
+
+def test_grid_is_readonly(grid):
+    from py.test import raises
+    space = PiecewiseLinearContinuousScalarSpace(grid, 'complex128')
+    with raises(AttributeError):
+        space.grid = grid
 
 
 @mark.parametrize("TestClass, kwargs", [

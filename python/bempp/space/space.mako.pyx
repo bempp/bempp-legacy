@@ -67,5 +67,6 @@ cdef class ${class_name}(Space):
             )
 %       endif
 %    endfor
+        self.grid = grid
 
 % endfor
