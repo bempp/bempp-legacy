@@ -18,8 +18,8 @@ add_custom_target(cython-headers)
 add_dependencies(cython-headers bempp-mako)
 
 # Add empty __init__.pxd file so cython considers the include directory
-file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/__init__.pxd")
-list(APPEND makoed "${CMAKE_CURRENT_BINARY_DIR}/__init__.pxd")
+file(WRITE "${PYTHON_BINARY_DIR}/bempp/include/bempp/__init__.pxd")
+list(APPEND makoed "${PYTHON_BINARY_DIR}/bempp/include/bempp/__init__.pxd")
 
 # headers are setup in python package first so that they can be accessed by
 # cython. The main issue is for mako-generated headers.
