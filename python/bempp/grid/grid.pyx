@@ -171,10 +171,12 @@ cdef class Grid:
         """" Dimension of the grid. """
         def __get__(self):
             return deref(self.impl_).dim()
+
     property dim_world:
         """ Dimension of the space containing the grid. """
         def __get__(self):
             return deref(self.impl_).dimWorld()
+
     property max_level:
         """ Maximum level defined in this grid.
 
@@ -182,6 +184,7 @@ cdef class Grid:
         """
         def __get__(self):
             return deref(self.impl_).maxLevel()
+
     property topology:
         """ Grid topology """
         def __get__(self):
@@ -192,6 +195,7 @@ cdef class Grid:
             elif value == HYBRID_2D:     return 'hybrid2d'
             elif value == TETRAHEDRAL:   return 'tetrahedral'
             raise RuntimeError("C++ to Python bug: Unknown topology")
+
     property bounding_box:
         """ Bounding box surrounding the grid """
         def __get__(self):

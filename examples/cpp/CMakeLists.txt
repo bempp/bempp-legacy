@@ -1,6 +1,6 @@
 # Examples
 add_executable(tutorial_dirichlet tutorial_dirichlet.cpp)
-target_link_libraries(tutorial_dirichlet bempp)
+target_link_libraries(tutorial_dirichlet libbempp)
 
 install(TARGETS tutorial_dirichlet
     EXPORT BemppTargets

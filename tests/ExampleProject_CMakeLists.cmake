@@ -15,4 +15,4 @@ endif()
 include_directories("${BEMPP_INCLUDE_DIRS}")
 add_executable(tut_test
     "@PROJECT_SOURCE_DIR@/examples/cpp/tutorial_dirichlet.cpp")
-target_link_libraries(tut_test bempp)
+target_link_libraries(tut_test libbempp)
