@@ -1,6 +1,5 @@
 set(headers quadrature_options.pxd range_accuracy_options.pxd
     accuracy_options.pxd)
-add_custom_target(bempp.fiber-headers DEPENDS ${headers})
 add_python_module(bempp.fiber ${headers} TARGETNAME bempp.fiber-headers)
 file(WRITE "${PYTHON_BINARY_DIR}/bempp/include/bempp/fiber/__init__.pxd")
 
