@@ -1,2 +1,2 @@
-__all__ = ['AssemblyOptions']
-from assembly_options import AssemblyOptions
+__all__ = ['BoundaryOperator']
+from .boundary_operator import BoundaryOperator

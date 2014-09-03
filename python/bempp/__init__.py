@@ -1,6 +1,7 @@
 """ Boundary Element Method package BEM++ """
 __all__ = [
-    'Grid', 'config', '__version__', 'Options', 'space', 'scalar_spaces'
+    'Grid', 'config', '__version__', 'Options', 'space', 'scalar_spaces',
+    'assembly'
 ]
 
 from grid import Grid
