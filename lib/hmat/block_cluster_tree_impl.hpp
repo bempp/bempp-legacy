@@ -193,9 +193,8 @@ void BlockClusterTree<N>::initializeBlockClusterTree(
 template <int N>
 void getBlockClusterTreeNodeDimensions(
     const BlockClusterTreeNode<N> &blockClusterTreeNode,
-    IndexRangeType &rowClusterRange,
-    IndexRangeType &columnClusterRange, std::size_t &numberOfRows,
-    std::size_t &numberOfColumns) {
+    IndexRangeType &rowClusterRange, IndexRangeType &columnClusterRange,
+    std::size_t &numberOfRows, std::size_t &numberOfColumns) {
 
   rowClusterRange =
       blockClusterTreeNode.data().rowClusterTreeNode->data().indexRange;

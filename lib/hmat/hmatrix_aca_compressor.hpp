@@ -21,19 +21,19 @@ public:
       override;
 
 private:
-  void evaluateMatMinusLowRank(const BlockClusterTreeNode<N> &blockClusterTreeNode,
-      const IndexRangeType& rowIndexRange,
-      const IndexRangeType& columnIndexRange,
-      arma::Mat<ValueType> &data, 
+  void evaluateMatMinusLowRank(
+      const BlockClusterTreeNode<N> &blockClusterTreeNode,
+      const IndexRangeType &rowIndexRange,
+      const IndexRangeType &columnIndexRange, arma::Mat<ValueType> &data,
       const std::vector<shared_ptr<arma::Mat<ValueType>>> &previousColumns,
       const std::vector<shared_ptr<arma::Mat<ValueType>>> &previousRows) const;
 
-  static std::size_t intRand(const IndexRangeType& range);
+  static std::size_t intRand(const IndexRangeType &range);
 
   const DataAccessor<ValueType, N> &m_dataAccessor;
   double m_eps;
   unsigned int m_maxRank;
-  HMatrixDenseCompressor<ValueType,N> m_hMatrixDenseCompressor;
+  HMatrixDenseCompressor<ValueType, N> m_hMatrixDenseCompressor;
 };
 }
 

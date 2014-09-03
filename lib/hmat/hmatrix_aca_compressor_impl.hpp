@@ -54,9 +54,10 @@ void HMatrixAcaCompressor<ValueType, N>::compressBlock(
     arma::uword maxRowInd;
     arma::uword maxColInd;
 
-    arma::Mat<typename ScalarTraits<ValueType>::RealType> absMat = arma::abs(*newRow);
+    arma::Mat<typename ScalarTraits<ValueType>::RealType> absMat =
+        arma::abs(*newRow);
 
-    if (absMat.max(maxRowInd,maxColInd) < 1E-12)
+    if (absMat.max(maxRowInd, maxColInd) < 1E-12)
       continue;
 
     auto pivot = (*newRow)(row, maxColInd);
@@ -84,10 +85,10 @@ void HMatrixAcaCompressor<ValueType, N>::compressBlock(
   hMatrixData.reset(new HMatrixLowRankData<ValueType>());
 
   arma::Mat<ValueType> &A =
-      static_cast<HMatrixLowRankData<ValueType>*>(hMatrixData.get())->A();
+      static_cast<HMatrixLowRankData<ValueType> *>(hMatrixData.get())->A();
 
   arma::Mat<ValueType> &B =
-      static_cast<HMatrixLowRankData<ValueType>*>(hMatrixData.get())->B();
+      static_cast<HMatrixLowRankData<ValueType> *>(hMatrixData.get())->B();
 
   A.resize(numberOfRows, previousColumns.size());
   B.resize(previousRows.size(), numberOfColumns);
