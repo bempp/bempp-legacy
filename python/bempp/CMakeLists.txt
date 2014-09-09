@@ -27,7 +27,8 @@ split_list(pxd_headers pyx_sources makoed ".*\\.pxd")
 install_python(FILES ${headers} DESTINATION bempp/include/bempp)
 
 
-add_python_module(bempp __init__.py ${pyx_sources} CPP LIBRARIES libbempp)
+add_python_module(bempp __init__.py nested_attributes.py ${pyx_sources}
+    CPP LIBRARIES libbempp)
 add_dependencies(bempp cython-headers)
 
 # Sets path variables for in-build system
