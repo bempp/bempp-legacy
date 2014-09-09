@@ -1,4 +1,5 @@
 from py.test import mark
+from numpy import dtype
 
 
 class TestBoundaryOperator(object):
@@ -10,7 +11,8 @@ class TestBoundaryOperator(object):
     @mark.parametrize('basis_type, result_type', [
         ("float32", "float32"),
         ("float32", "complex64"),
-        ("float64", "complex128")
+        ("float64", "complex128"),
+        (dtype('float64'), dtype('complex128'))
     ])
     def test_dtypes(self, basis_type, result_type):
         from bempp.assembly import BoundaryOperator
@@ -26,5 +28,5 @@ class TestBoundaryOperator(object):
     def test_incompatible_dtypes(self, basis_type, result_type):
         from py.test import raises
         from bempp.assembly import BoundaryOperator
-        with raises(ValueError):
+        with raises(TypeError):
             BoundaryOperator(basis_type, result_type)

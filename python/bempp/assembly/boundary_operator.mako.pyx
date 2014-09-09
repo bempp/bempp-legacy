@@ -1,7 +1,7 @@
 <%
-from space import dtypes, compatible_dtypes
+from bempp_operators import dtypes, compatible_dtypes, bops
 ifloop = lambda x: "if" if getattr(x, 'index', x) == 0 else "elif"
-%>
+%>\
 from cpython.mem cimport PyMem_Malloc, PyMem_Free
 from bempp.options cimport Options
 
@@ -29,6 +29,7 @@ cdef extern from "bempp/space/types.h":
             raise RuntimeError(msg)
 </%def>
 
+
 cdef extern from "bempp/assembly/symmetry.hpp" namespace "Bempp":
     cdef enum Symmetry:
         NO_SYMMETRY
@@ -36,13 +37,11 @@ cdef extern from "bempp/assembly/symmetry.hpp" namespace "Bempp":
         HERMITIAN
         AUTO_SYMMETRY
 
-cdef extern from "bempp/assembly/boundary_operator.hpp":
-    cdef cppclass c_BoundaryOperator "Bempp::BoundaryOperator" [BASIS, RESULT]:
-        c_BoundaryOperator()
 
 cdef extern from "bempp/assembly/python.hpp":
     void inplace_boundary_operator[BASIS, RESULT](void* memory)
     void deconstructor[BASIS, RESULT](void* memory)
+
 
 
 cdef class BoundaryOperator:
@@ -69,24 +68,12 @@ cdef class BoundaryOperator:
     def __init__(self, basis_type=None, result_type=None):
         from numpy import dtype
 
-        if basis_type not in ${repr(dtypes.keys() + [None])}:
-            raise ValueError("Incorrect basis type")
-        if result_type not in ${repr(dtypes.keys() + [None])}:
-            raise ValueError("Incorrect result type")
-
-        if basis_type is None:
-            basis_type = Options(result_type=result_type).basis_type
-        elif result_type is None:
-            result_type = Options(basis_type=basis_type).result_type
-        elif basis_type is not None and result_type is not None:
-            options = Options(basis_type=basis_type, result_type=result_type)
-            if basis_type != options.basis_type \
-                or result_type != options.result_type:
-                raise ValueError("Incompatible basis and result type")
+        # Simple way to check basis and result type are compatible
+        Options(basis_type=basis_type, result_type=result_type)
 
 <% type_numbers = {k: i for i, k in enumerate(dtypes)} %>
-        self.basis_type = ${repr(type_numbers)}[basis_type]
-        self.result_type = ${repr(type_numbers)}[result_type]
+        self.basis_type = ${repr(type_numbers)}[str(basis_type)]
+        self.result_type = ${repr(type_numbers)}[str(result_type)]
 
         # Call to in-place new:
 <%
