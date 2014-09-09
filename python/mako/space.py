@@ -6,7 +6,7 @@ dtypes = {
 }
 """ Possible dptypes for spaces and c equivalents """
 
-compatible_dtypes = {  # name: (is real, precision)
+compatible_dtypes = {  # name: (tuple of compatible dtypes)
     'float32': ('float32', 'complex64'),
     'float64': ('float64', 'complex128'),
     'complex64': ('complex64',),

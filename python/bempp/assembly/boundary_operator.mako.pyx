@@ -15,6 +15,20 @@ cdef extern from "bempp/space/types.h":
 %     endif
 % endfor
 
+<%def name="type_loop(inner_text)" filter="trim">
+% for i, (pybasis, cybasis) in enumerate(dtypes.iteritems()):
+%     for j, (pyresult, cyresult) in enumerate(dtypes.iteritems()):
+%         if pyresult in compatible_dtypes[pybasis]:
+        ${ifloop(i + j)} self.basis_type == ${i} and self.result_type == ${j}:
+            ${inner_text(cybasis, cyresult)}
+%         endif
+%     endfor
+% endfor
+        else:
+            msg = "Unknown or incompatible basis and result types"
+            raise RuntimeError(msg)
+</%def>
+
 cdef extern from "bempp/assembly/symmetry.hpp" namespace "Bempp":
     cdef enum Symmetry:
         NO_SYMMETRY
@@ -28,6 +42,7 @@ cdef extern from "bempp/assembly/boundary_operator.hpp":
 
 cdef extern from "bempp/assembly/python.hpp":
     void inplace_boundary_operator[BASIS, RESULT](void* memory)
+    void deconstructor[BASIS, RESULT](void* memory)
 
 
 cdef class BoundaryOperator:
@@ -35,6 +50,7 @@ cdef class BoundaryOperator:
 
     def __cinit__(self, *args, **kwargs):
         """ Initializes memory """
+        self.constructed = False
         cdef int n = max([
 % for pybasis, cybasis in dtypes.iteritems():
 %     for pyresult, cyresult in dtypes.iteritems():
@@ -73,18 +89,36 @@ cdef class BoundaryOperator:
         self.result_type = ${repr(type_numbers)}[result_type]
 
         # Call to in-place new:
-% for i, (pybasis, cybasis) in enumerate(dtypes.iteritems()):
-%     for j, (pyresult, cyresult) in enumerate(dtypes.iteritems()):
-%         if pyresult in compatible_dtypes[pybasis]:
-        ${ifloop(i + j)} self.basis_type != ${i} and self.result_type == ${j}:
-            inplace_boundary_operator[${cybasis}, ${cyresult}](self.memory)
-%         endif
-%     endfor
-% endfor
+<%
+    def create_inplace(cybasis, cyresult):
+        return "inplace_boundary_operator[%s, %s](self.memory)" % (
+            cybasis, cyresult
+        )
+%>\
+        ${type_loop(create_inplace)}
+
+        self.constructed = True
 
     def __dealloc__(self):
+        # indentation issues mean we can't put type loop within if
+        # statement. So this function has three exit points:
+        # 1. Memory was not allocated
+        # 2. Memory was allocated but object was not constructed
+        # 3. Memory was allocated and object was constructed
+        if not self.memory:
+            return
+
         cdef void * memory = self.memory
+        constructed = self.constructed
+        # disables object before deconstructing and deallocating
         self.memory = NULL
+        self.constructed = False
+
+        if not constructed:
+            PyMem_Free(memory)
+            return
+
+        ${type_loop(lambda x, y:"deconstructor[%s, %s](memory)" % (x,y))}
         PyMem_Free(memory)
 
 % for variable in ['basis', 'result']:
