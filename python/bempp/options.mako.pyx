@@ -126,9 +126,23 @@ cdef class Options:
 % for name, description in options.iteritems():
         ${description['pyname'] | assign}
 % endfor
-        # The order of the following two statement matters.
-        self.basis_type = kwargs.pop('basis_type', None)
-        self.result_type = kwargs.pop('result_type', None)
+        # Both basis and result type are given:
+        # Check they are compatible
+        basis = kwargs.pop('basis_type', None)
+        result = kwargs.pop('result_type', None)
+        if basis is not None and result is not None:
+            self.result_type = result
+            self.basis_type = basis
+            if result != self.result_type:
+                raise TypeError("Incompatible basis type")
+        # Only basis type is set, so set it last
+        elif basis is not None:
+            self.result_type = None
+            self.basis_type = basis
+        # basis type is none, so set result type last
+        else:
+            self.basis_type = None
+            self.result_type = result
 
         if len(kwargs) != 0:
             raise TypeError("Unexpected argument(s): %s" % kwargs.keys())
