@@ -27,7 +27,7 @@ def test_instantiation(grid, TestClass, dtype):
     space = TestClass(grid, dtype)
     assert space.dtype == dtype
     assert space.grid is not None
-    assert space.grid is grid
+    assert space.grid == grid
 
 
 def test_grid_is_readonly(grid):
