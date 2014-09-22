@@ -4,15 +4,15 @@ from space import dtypes, compatible_dtypes
 # Describes boundary operators
 bops = {}
 bops["laplace3dSingleLayerBoundaryOperator"] = {
-    'location': ('laplace_3d', 'single_layer'),
+    'location': ('operators', 'laplace', 'boundary', 'single_layer'),
     'doc': "Single-layer-potential boundary operator of 3D Laplace equation"
 }
 bops["laplace3dDoubleLayerBoundaryOperator"] = {
-    'location': ('laplace_3d', 'double_layer'),
+    'location': ('operators', 'laplace', 'boundary', 'double_layer'),
     'doc': "Double-layer-potential boundary operator of 3D Laplace equation"
 }
 bops["identityOperator"] = {
-    'location': ('identity', ),
+    'location': ('operators', 'local', 'identity'),
     'doc': "General identity operator"
 }
 
