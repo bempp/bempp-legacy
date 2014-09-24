@@ -51,11 +51,6 @@ add_subdirectory(python)
 add_subdirectory(examples)
 add_subdirectory(meshes)
 
-# Scratch
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/scratch/CMakeLists.txt")
-    add_subdirectory(scratch)
-endif()
-
 # Uninstall target
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/uninstall.in.cmake"
     "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"

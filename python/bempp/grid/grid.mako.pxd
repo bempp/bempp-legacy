@@ -1,5 +1,7 @@
-from bempp.utils cimport shared_ptr
+from bempp.utils cimport shared_ptr,unique_ptr
 from bempp.utils.armadillo cimport Col
+from bempp.grid.grid_view cimport c_GridView, GridView
+
 
 cdef extern from "bempp/grid/grid.hpp" namespace "Bempp" nogil:
     cdef cppclass c_Grid "Bempp::Grid":
@@ -7,6 +9,7 @@ cdef extern from "bempp/grid/grid.hpp" namespace "Bempp" nogil:
         int dimWorld() const
         int maxLevel() const
         int topology() const
+        unique_ptr[c_GridView] leafView() const
         void getBoundingBox(const Col[double]&, const Col[double]&) const
 
     cdef enum Topology "Bempp::GridParameters::Topology":
@@ -28,3 +31,4 @@ cdef class Grid:
             GridParameters &parameters) except *
     cdef void __create_connected_grid(self, dict kwargs,
             GridParameters& parameters) except *
+    cpdef GridView leaf_view(self)

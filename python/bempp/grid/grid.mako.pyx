@@ -3,7 +3,10 @@ from libcpp.string cimport string
 from libcpp cimport bool as cbool
 from libcpp.vector cimport vector
 from bempp.utils cimport catch_exception
+from bempp.utils cimport unique_ptr
 from bempp.utils.armadillo cimport Col, Mat
+from bempp.grid.grid_view cimport c_GridView, GridView
+from bempp.grid.grid_view cimport _grid_view_from_unique_ptr
 
 cdef extern from "bempp/grid/grid_factory.hpp" namespace "Bempp":
     shared_ptr[c_Grid] grid_from_file "Bempp::GridFactory::importGmshGrid"(
@@ -123,6 +126,12 @@ cdef class Grid:
             del c_upper_right
             del c_subdivisions
             raise
+
+    cpdef GridView leaf_view(self):
+        """Return a leaf view onto the Grid"""
+        cdef unique_ptr[c_GridView] view = deref(self.impl_).leafView()
+        return _grid_view_from_unique_ptr(view)
+
 
     def __cinit__(self, topology='triangular', **kwargs):
         cdef GridParameters parameters
