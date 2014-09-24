@@ -9,21 +9,21 @@ from bempp.grid.grid_view cimport c_GridView, GridView
 from bempp.grid.grid_view cimport _grid_view_from_unique_ptr
 
 cdef extern from "bempp/grid/grid_factory.hpp" namespace "Bempp":
-    shared_ptr[c_Grid] grid_from_file "Bempp::GridFactory::importGmshGrid"(
+    shared_ptr[const c_Grid] grid_from_file "Bempp::GridFactory::importGmshGrid"(
             GridParameters& params,
             string& fileName,
             cbool verbose,
             cbool insertBoundarySegments
     ) except +catch_exception
 
-    shared_ptr[c_Grid] cart_grid "Bempp::GridFactory::createStructuredGrid"(
+    shared_ptr[const c_Grid] cart_grid "Bempp::GridFactory::createStructuredGrid"(
             const GridParameters& params,
             Col[double]& lowerLeft,
             Col[double]& upperRight,
             Col[unsigned int]& nElements
     ) except +catch_exception
 
-    shared_ptr[c_Grid] connect_grid \
+    shared_ptr[const c_Grid] connect_grid \
             "Bempp::GridFactory::createGridFromConnectivityArrays"(
             const GridParameters& params,
             Mat[double]& vertices,
@@ -132,8 +132,10 @@ cdef class Grid:
         cdef unique_ptr[c_GridView] view = deref(self.impl_).leafView()
         return _grid_view_from_unique_ptr(view)
 
+    def __cinit__(self):
+        self.impl_.reset(<const c_Grid*>NULL)
 
-    def __cinit__(self, topology='triangular', **kwargs):
+    def __init__(self, topology='triangular', **kwargs):
         cdef GridParameters parameters
 
         try:
@@ -174,6 +176,10 @@ cdef class Grid:
         else:
             raise AssertionError("Missing implementation for input set")
 
+    def __richcmp__(Grid self, Grid other not None, int op):
+        if op != 2:
+            raise AttributeError("Incorrect operator")
+        return self.impl_.get() == other.impl_.get()
 
 
     property dim:
@@ -224,4 +230,5 @@ cdef class Grid:
                 result[0, i] = lower.at(i)
                 result[1, i] = upper.at(i)
             return result
+
 

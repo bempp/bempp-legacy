@@ -12,6 +12,7 @@ cdef extern from "bempp/space/space.hpp":
     cdef cppclass c_Space "Bempp::Space" [BASIS]:
         c_Space(const shared_ptr[c_Grid]&)
         c_Space(const c_Space[BASIS]&)
+        shared_ptr[const c_Grid] grid() const
 
 # Declares complex type explicitly.
 # Cython 0.20 will fail if templates are nested more than three-deep,
@@ -37,7 +38,6 @@ cdef extern from "${description['header']}":
 
 cdef class Space:
     cdef:
-        readonly Grid grid
         # For simplicity, we define shared pointers to all possible space types
         # There are not that many, so this should not be a problem
 % for pytype, cytype in dtypes.iteritems():

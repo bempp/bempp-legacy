@@ -4,6 +4,7 @@
 """
 from bempp.options import Options
 from py.test import mark, fixture
+from numpy import dtype
 
 
 @fixture
@@ -114,3 +115,18 @@ def test_result_type():
 
     with raises(ValueError):
         options.basis_type = 'int'
+
+
+@mark.parametrize("basis, result", [
+    ('float32', None),
+    (None, 'float64'),
+    (dtype('complex128'), dtype('complex128')),
+])
+def test_set_basis_result_in_constructor(basis, result):
+    options = Options(basis_type=basis, result_type=result)
+    if basis is not None:
+        assert options.basis_type == basis
+    if result is not None:
+        assert options.result_type == result
+
+

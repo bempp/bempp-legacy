@@ -13,7 +13,8 @@ cdef class EntityPointer${codim}:
 
     cpdef Entity${codim} _entity(self):
         cpdef Entity${codim} e = Entity${codim}()
-        e.impl_ = address(deref(self.impl_).entity()) 
+        e.impl_ = address(deref(self.impl_).entity())
+        e._entity_pointer = self
         return e
 
     property codim:

@@ -1,9 +1,16 @@
+<%
+codims = [('0','codim_zero'),('1','codim_one'),('2','codim_two')]
+%>
+
 from bempp.utils.armadillo cimport Mat
 from cython.operator cimport dereference as deref
 import numpy as np
 cimport numpy as np
 
-cdef class Geometry:
+
+% for (codim,codim_template) in codims:
+
+cdef class Geometry${codim}:
 
 
     property corners:
@@ -36,4 +43,4 @@ cdef class Geometry:
         """ Dimension of the space containing the entity. """
         def __get__(self):
             return self.impl_.dimWorld()
-
+% endfor

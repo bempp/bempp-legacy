@@ -6,6 +6,14 @@ dtypes = {
 }
 """ Possible dptypes for spaces and c equivalents """
 
+compatible_dtypes = {  # name: (tuple of compatible dtypes)
+    'float32': ('float32', 'complex64'),
+    'float64': ('float64', 'complex128'),
+    'complex64': ('complex64',),
+    'complex128': ('complex128',),
+}
+""" Compatibility between basis and result types """
+
 
 # Describes available spaces and their wrapper implementation.
 # Most of the characteristics (barycentric, dual...) are guessed later on.
