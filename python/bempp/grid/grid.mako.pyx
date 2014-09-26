@@ -99,6 +99,8 @@ cdef class Grid:
             del c_vertices
             del c_corners
             raise
+        del c_vertices
+        del c_corners
 
     cdef void __create_cartesian_grid(self, dict kwargs,
             GridParameters& parameters) except *:
@@ -126,6 +128,9 @@ cdef class Grid:
             del c_upper_right
             del c_subdivisions
             raise
+        del c_lower_left
+        del c_upper_right
+        del c_subdivisions
 
     cpdef GridView leaf_view(self):
         """Return a leaf view onto the Grid"""
