@@ -17,7 +17,7 @@ bops["identityOperator"] = {
 }
 
 
-for key, description in bops.iteritems():
+for key, description in bops.items():
     if 'implementation' not in description:
         description['implementation'] = 'standard'
 

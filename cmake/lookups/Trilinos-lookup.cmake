@@ -42,23 +42,10 @@ passon_variables(Trilinos
     FILENAME "${EXTERNAL_ROOT}/src/TrilinosVariables.cmake"
     PATTERNS
         "CMAKE_[^_]*_R?PATH" "CMAKE_C_.*" "CMAKE_CXX_.*"
-        "BLAS_.*" "LAPACK_.*" "PYTHON_*" "SWIG_*"
+        "BLAS_.*" "LAPACK_.*" "SWIG_*"
 )
 get_filename_component(TPL_TBB_INCLUDE_DIRS "${TBB_INCLUDE_DIR}" PATH)
-if(Trilinos_PYPACKED)
-    set(prefix_location "${EXTERNAL_ROOT}/python/PyTrilinos")
-    file(APPEND "${EXTERNAL_ROOT}/src/TrilinosVariables.cmake"
-        "\nset(PyTrilinos_INSTALL_DIR \"${prefix_location}\"\n"
-        "   CACHE PATH \"The path where PyTrilinos will be installed\"\n"
-        "   FORCE\n"
-        ")\n"
-        "\nset(PyTrilinos_INSTALL_PREFIX \"\${PyTrilinos_INSTALL_DIR}\"\n"
-        "   CACHE PATH \"The path where PyTrilinos will be installed\"\n"
-        "   FORCE\n"
-        ")\n"
-        "\nset(CMAKE_INSTALL_PREFIX \"\${PyTrilinos_INSTALL_DIR}\" CACHE PATH \"\" FORCE)\n"
-    )
-else()
+if(NOT Trilinos_PYPACKED)
     file(APPEND "${EXTERNAL_ROOT}/src/TrilinosVariables.cmake"
         "\nset(Trilinos_INSTALL_INCLUDE_DIR \"include/Trilinos\" CACHE PATH \"\")\n"
         "\nset(CMAKE_INSTALL_PREFIX \"${EXTERNAL_ROOT}\" CACHE PATH \"\")\n"
@@ -109,7 +96,6 @@ ExternalProject_Add(
                -DTrilinos_ENABLE_ThyraEpetraExtAdapters:BOOL=ON
                -DTrilinos_ENABLE_ThyraTpetraAdapters:BOOL=ON
                -DTrilinos_ENABLE_Tpetra:BOOL=ON
-               -DTrilinos_ENABLE_PyTrilinos:BOOL=ON
                -DTrilinos_ENABLE_AztecOO:BOOL=ON
                -DTrilinos_ENABLE_Fortran:BOOL=OFF
                -DTrilinos_ENABLE_ALL_OPTIONAL_PACKAGES:BOOL=OFF

@@ -19,7 +19,7 @@ cdef class Space:
         """ Precision and kind of this space """
         def __get__(self):
             from numpy import dtype
-% for pyname, cython in dtypes.iteritems():
+% for pyname, cython in dtypes.items():
             ${ifloop(loop)} self.impl_${pyname}.get() is not NULL:
                 return dtype('${pyname}')
 % endfor
@@ -31,13 +31,13 @@ cdef class Space:
             if self.dtype is None:
                 return None
             cdef Grid grid = Grid.__new__(Grid)
-% for pyname in dtypes.iterkeys():
+% for pyname in list(dtypes.keys()):
             ${ifloop(loop)} self.dtype == "${pyname}":
                 grid.impl_ = deref(self.impl_${pyname}).grid()
 % endfor
             return grid
 
-% for class_name, description in spaces.iteritems():
+% for class_name, description in spaces.items():
 cdef class ${class_name}(Space):
     """ ${description['doc']}
 
@@ -64,9 +64,9 @@ cdef class ${class_name}(Space):
         super(Space, self).__init__(grid)
 
         dtype = np_dtype(dtype)
-        if dtype not in ${dtypes.keys()}:
+        if dtype not in ${list(dtypes.keys())}:
                 raise TypeError("Unexpected basis type")
-%    for pytype, cytype in dtypes.iteritems():
+%    for pytype, cytype in dtypes.items():
         if dtype == "${pytype}":
 %       if description['implementation'] == 'grid_only':
             self.impl_${pytype}.reset(

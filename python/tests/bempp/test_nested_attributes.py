@@ -29,16 +29,16 @@ def test_nested_dir(nested):
 def test_access(nested):
     attr = NestedAttributes(nested)
 
-    notnested = {k[0]: v for k, v in nested.iteritems() if len(k) == 1}
-    for k, v in notnested.iteritems():
+    notnested = {k[0]: v for k, v in nested.items() if len(k) == 1}
+    for k, v in notnested.items():
         assert getattr(attr, k) == v
 
 
 def test_nested_access(nested):
     attr = NestedAttributes(nested).there
 
-    notnested = {k[1]: v for k, v in nested.iteritems() if len(k) == 2}
-    for k, v in notnested.iteritems():
+    notnested = {k[1]: v for k, v in nested.items() if len(k) == 2}
+    for k, v in notnested.items():
         assert getattr(attr, k) == v
 
 

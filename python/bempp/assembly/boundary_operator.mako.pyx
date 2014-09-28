@@ -9,15 +9,15 @@ from bempp.options cimport Options
 # Cython 0.20 will fail if templates are nested more than three-deep,
 # as in shared_ptr[ c_Space[ complex[float] ] ]
 cdef extern from "bempp/space/types.h":
-% for ctype in dtypes.itervalues():
+% for ctype in dtypes.values():
 %     if 'complex'  in ctype:
     ctypedef struct ${ctype}
 %     endif
 % endfor
 
 <%def name="type_loop(inner_text)" filter="trim">
-% for i, (pybasis, cybasis) in enumerate(dtypes.iteritems()):
-%     for j, (pyresult, cyresult) in enumerate(dtypes.iteritems()):
+% for i, (pybasis, cybasis) in enumerate(dtypes.items()):
+%     for j, (pyresult, cyresult) in enumerate(dtypes.items()):
 %         if pyresult in compatible_dtypes[pybasis]:
         ${ifloop(i + j)} self.basis_type == ${i} and self.result_type == ${j}:
             ${inner_text(cybasis, cyresult)}
@@ -51,8 +51,8 @@ cdef class BoundaryOperator:
         """ Initializes memory """
         self.constructed = False
         cdef int n = max([
-% for pybasis, cybasis in dtypes.iteritems():
-%     for pyresult, cyresult in dtypes.iteritems():
+% for pybasis, cybasis in dtypes.items():
+%     for pyresult, cyresult in dtypes.items():
 %         if pyresult in compatible_dtypes[pybasis]:
             sizeof(c_BoundaryOperator[${cybasis}, ${cyresult}]),
 %         endif
@@ -112,5 +112,5 @@ cdef class BoundaryOperator:
     property ${variable}_type:
         def __get__(self):
             from numpy import dtype
-            return dtype(${repr(dtypes.keys())}[self.${variable}_type])
+            return dtype(${repr(list(dtypes.keys()))}[self.${variable}_type])
 % endfor

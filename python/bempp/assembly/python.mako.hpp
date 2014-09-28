@@ -8,7 +8,7 @@ from bempp_operators import bops
 #include "bempp/assembly/numerical_quadrature_strategy.hpp"
 #include "bempp/assembly/context.hpp"
 
-% for description in bops.itervalues():
+% for description in bops.values():
 #include "${description['header']}"
 % endfor
 
@@ -28,7 +28,7 @@ namespace {
                 ->~BoundaryOperator<BASIS, RESULT>();
         }
 
-% for opname, description in bops.iteritems():
+% for opname, description in bops.items():
 %     if description['implementation'] == 'standard':
     template<class BASIS, class RESULT> void ${description['c_creator']}(
             BoundaryOperator<BASIS, RESULT>& _output,

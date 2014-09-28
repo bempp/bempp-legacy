@@ -71,7 +71,7 @@ cdef class Grid:
             GridParameters &parameters) except *:
         from os.path import abspath, expandvars, expanduser
         cdef string cfilename
-        cfilename = abspath(expandvars(expanduser(kwargs['filename'])))
+        cfilename = abspath(expandvars(expanduser(kwargs['filename']))).encode('utf-8')
         self.impl_ = grid_from_file(
                 parameters, cfilename,
                 kwargs.pop('verbose', False) == True,

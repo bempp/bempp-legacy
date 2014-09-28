@@ -55,7 +55,7 @@ spaces = {
 # Mostly means guessing wether space operates on the direct or dual grid,
 # whether functions are continuous, whether they are constant, linear, or
 # polynomial, etc. These facts are used later on in the actual space factory.
-for key, description in spaces.iteritems():
+for key, description in spaces.items():
     if 'implementation' not in description:
         description['implementation'] = 'grid_only'
 

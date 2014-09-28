@@ -51,7 +51,7 @@ cdef class RangeAccuracyOptions(dict):
     def update(self, mapping):
         if self.__is_frozen:
             raise AttributeError("This object can no longuer be modified")
-        for key, value in mapping.iteritems():
+        for key, value in mapping.items():
             self[key] = value
 
     def __setitem__(self, key, value):
@@ -105,7 +105,7 @@ cdef class RangeAccuracyOptions(dict):
             if c_key < self.__tolerance__:
                 return float('inf')
 
-            for value in super(RangeAccuracyOptions, self).iterkeys():
+            for value in super(RangeAccuracyOptions, self).keys():
                 c_value = value
                 if c_key - self.__tolerance__ < c_value \
                         and c_key + self.__tolerance__ > c_value:
@@ -124,14 +124,14 @@ cdef class RangeAccuracyOptions(dict):
         cdef cbool c_value = value == True if value is not None \
             else not self.__is_frozen
         self.__is_frozen = c_value
-        for quadops in self.itervalues():
+        for quadops in self.values():
             (<QuadratureOptions> quadops).toggle_freeze(c_value)
 
     cdef void to_cpp(self,
             vector[pair[double, c_QuadratureOptions]] &quadops) except *:
         """ Converts from python to C++ values """
         cdef pair[double, c_QuadratureOptions] c_pair
-        for d, quadop in self.iteritems():
+        for d, quadop in self.items():
             c_pair.first = <double> d
             if quadop.is_relative:
                 c_pair.second.setRelativeQuadratureOrder(quadop.value)
@@ -152,7 +152,7 @@ cdef class RangeAccuracyOptions(dict):
         if len(self) != len(other):
             return not condition
         cdef cbool equal
-        for a, b in chain(zip(self.iteritems(), other.iteritems())):
+        for a, b in chain(zip(self.items(), other.items())):
             equal =                                                     \
                 (abs(a[0] - b[0]) < tol or a[0] == b[0] == float('inf')) \
                 and a[1] == b[1]
@@ -171,6 +171,6 @@ cdef class RangeAccuracyOptions(dict):
                 Default order if the accuracy is relative. Ignored otherwise.
         """
         from operator import itemgetter
-        for d, acc in sorted(self.iteritems(), key=itemgetter(0)):
+        for d, acc in sorted(self.items(), key=itemgetter(0)):
             if distance < d + self.__tolerance__:
                 return acc(order)

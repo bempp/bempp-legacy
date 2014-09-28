@@ -47,11 +47,11 @@ class NestedAttributes(object):
         """ Operator chain indicating location and name of c function """
 
     def __dir__(self):
-        return list(set([u[0] for u in self._chain.iterkeys()]))
+        return list(set([u[0] for u in self._chain.keys()]))
 
     def __getattr__(self, name):
-        chain = {k[1:]: v for k, v in self._chain.iteritems() if k[0] == name}
+        chain = {k[1:]: v for k, v in self._chain.items() if k[0] == name}
         if len(chain) == 0:
             raise AttributeError(name)
         return NestedAttributes(chain) if len(chain) > 1 \
-            else chain.itervalues().next()
+            else next(iter(chain.values()))
