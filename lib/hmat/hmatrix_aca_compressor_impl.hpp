@@ -9,6 +9,7 @@
 #include <random>
 #include <complex>
 #include <cmath>
+#include <algorithm>
 
 namespace hmat {
 
@@ -22,9 +23,6 @@ void HMatrixAcaCompressor<ValueType, N>::compressBlock(
     return;
   }
 
-  std::vector<shared_ptr<arma::Mat<ValueType>>> previousColumns;
-  std::vector<shared_ptr<arma::Mat<ValueType>>> previousRows;
-
   IndexRangeType rowClusterRange;
   IndexRangeType columnClusterRange;
   std::size_t numberOfRows;
@@ -34,54 +32,6 @@ void HMatrixAcaCompressor<ValueType, N>::compressBlock(
                                     columnClusterRange, numberOfRows,
                                     numberOfColumns);
 
-  IndexRangeType rowIndexRange;
-  IndexRangeType columnIndexRange;
-
-  for (int i = 0; i < m_maxRank; ++i) {
-
-    std::size_t row = intRand(rowClusterRange);
-    shared_ptr<arma::Mat<ValueType>> newCol(new arma::Mat<ValueType>());
-    shared_ptr<arma::Mat<ValueType>> newRow(new arma::Mat<ValueType>());
-
-    // Compute complete row
-    rowIndexRange = {{row, row + 1}};
-    columnIndexRange = columnClusterRange;
-
-    evaluateMatMinusLowRank(blockClusterTreeNode, rowIndexRange,
-                            columnIndexRange, *newRow, previousColumns,
-                            previousRows);
-
-    arma::uword maxRowInd;
-    arma::uword maxColInd;
-
-    arma::Mat<typename ScalarTraits<ValueType>::RealType> absMat =
-        arma::abs(*newRow);
-
-    if (absMat.max(maxRowInd, maxColInd) < 1E-12)
-      continue;
-
-    auto pivot = (*newRow)(row, maxColInd);
-
-    *newRow = *newRow / (pivot);
-
-    // Now evaluate column
-
-    rowIndexRange = rowClusterRange;
-    columnClusterRange = {{maxColInd, maxColInd + 1}};
-
-    evaluateMatMinusLowRank(blockClusterTreeNode, rowIndexRange,
-                            columnIndexRange, *newCol, previousColumns,
-                            previousRows);
-
-    previousRows.push_back(newRow);
-    previousColumns.push_back(newCol);
-
-    if (std::abs(pivot) < m_eps)
-      break;
-  }
-
-  // Now fill up the hMatrixData structure
-
   hMatrixData.reset(new HMatrixLowRankData<ValueType>());
 
   arma::Mat<ValueType> &A =
@@ -90,29 +40,94 @@ void HMatrixAcaCompressor<ValueType, N>::compressBlock(
   arma::Mat<ValueType> &B =
       static_cast<HMatrixLowRankData<ValueType> *>(hMatrixData.get())->B();
 
-  A.resize(numberOfRows, previousColumns.size());
-  B.resize(previousRows.size(), numberOfColumns);
+  A.resize(numberOfRows, m_resizeThreshold);
+  B.resize(m_resizeThreshold, numberOfColumns);
 
-  for (int i = 0; i < previousColumns.size(); ++i) {
-    A.col(i) = *(previousColumns[i]);
-    B.row(i) = *(previousRows[i]);
+  std::set<std::size_t> previousRowIndices;
+  std::set<std::size_t> previousColumnIndices;
+
+  std::size_t iterationLimit =
+    std::min(static_cast<std::size_t>(m_maxRank),std::min(numberOfRows,numberOfColumns));
+
+  std::size_t rankCount = 0;
+
+  std::size_t sizeMultiplier = 0;
+
+  for (int i = 0; i < iterationLimit; ++i) {
+
+    std::size_t row = randomIndex(rowClusterRange, previousRowIndices);
+
+    // Compute complete row
+
+    arma::Mat<ValueType> newRow;
+    arma::Mat<ValueType> newCol;
+
+    IndexRangeType rowIndexRange = {{row, row + 1}};
+    IndexRangeType columnIndexRange = columnClusterRange;
+
+    evaluateMatMinusLowRank(blockClusterTreeNode, rowIndexRange,
+                            columnIndexRange, newRow, A, B);
+
+    arma::uword maxRowInd;
+    arma::uword maxColInd;
+
+    arma::Mat<typename ScalarTraits<ValueType>::RealType> absMat =
+        arma::abs(newRow);
+
+    if (absMat.max(maxRowInd, maxColInd) < 1E-12)
+      continue; // Row is effectively zero
+
+    auto pivot = newRow(0, maxColInd);
+
+    newRow = newRow / (pivot);
+
+    // Now evaluate column
+
+    maxColInd += columnClusterRange[0]; // Map back to original variables
+    rowIndexRange = rowClusterRange;
+    columnIndexRange = {{maxColInd, maxColInd + 1}};
+
+    evaluateMatMinusLowRank(blockClusterTreeNode, rowIndexRange,
+                            columnIndexRange, newCol, A, B);
+
+    auto frobeniousNorm = hMatrixData->frobeniusNorm();
+
+    if (rankCount == A.n_cols) {
+      sizeMultiplier++;
+      A.insert_cols(sizeMultiplier * m_resizeThreshold, m_resizeThreshold);
+      B.insert_rows(sizeMultiplier * m_resizeThreshold, m_resizeThreshold);
+    }
+
+    A.col(rankCount) = newCol;
+    B.row(rankCount) = newRow;
+
+    rankCount++;
+
+    if (arma::norm(newCol,2)*arma::norm(newRow,2) < m_eps*frobeniousNorm)
+      break;
   }
+    if (A.n_cols-rankCount > 0){
+     A.shed_cols(rankCount,A.n_cols-1);
+     B.shed_rows(rankCount,B.n_rows-1);
+    }
+
+    
 }
 
 template <typename ValueType, int N>
 HMatrixAcaCompressor<ValueType, N>::HMatrixAcaCompressor(
     const DataAccessor<ValueType, N> &dataAccessor, double eps,
-    unsigned int maxRank)
+    unsigned int maxRank, unsigned int resizeThreshold)
     : m_dataAccessor(dataAccessor), m_eps(eps), m_maxRank(maxRank),
+      m_resizeThreshold(resizeThreshold),
       m_hMatrixDenseCompressor(dataAccessor) {}
 
 template <typename ValueType, int N>
 void HMatrixAcaCompressor<ValueType, N>::evaluateMatMinusLowRank(
     const BlockClusterTreeNode<N> &blockClusterTreeNode,
     const IndexRangeType &rowIndexRange, const IndexRangeType &columnIndexRange,
-    arma::Mat<ValueType> &data,
-    const std::vector<shared_ptr<arma::Mat<ValueType>>> &previousColumns,
-    const std::vector<shared_ptr<arma::Mat<ValueType>>> &previousRows) const {
+    arma::Mat<ValueType> &data, const arma::Mat<ValueType> &A,
+    const arma::Mat<ValueType> &B) const {
 
   auto rowClusterRange =
       blockClusterTreeNode.data().rowClusterTreeNode->data().indexRange;
@@ -125,21 +140,43 @@ void HMatrixAcaCompressor<ValueType, N>::evaluateMatMinusLowRank(
   auto rowStart = rowIndexRange[0] - rowClusterRange[0];
   auto rowEnd = rowIndexRange[1] - rowClusterRange[0];
 
-  auto colStart = columnIndexRange[0] - columnClusterRange[0];
-  auto colEnd = columnIndexRange[1] - columnIndexRange[0];
 
-  for (int i = 0; i < previousColumns.size(); ++i)
-    data -= (previousColumns[i]->rows(rowStart, rowEnd - 1)) *
-            (previousRows[i]->cols(colStart, colEnd - 1));
+  auto colStart = columnIndexRange[0] - columnClusterRange[0];
+  auto colEnd = columnIndexRange[1] - columnClusterRange[0];
+
+  data = data - A.submat(rowStart, 0, rowEnd-1, A.n_cols - 1) *
+                    B.submat(0, colStart, B.n_rows - 1, colEnd-1);
+
+
 }
 
 template <typename ValueType, int N>
-std::size_t
-HMatrixAcaCompressor<ValueType, N>::intRand(const IndexRangeType &range) {
+std::size_t HMatrixAcaCompressor<ValueType, N>::randomIndex(
+    const IndexRangeType &range, std::set<std::size_t> &previousIndices) {
+
+  std::size_t numberOfPossibleIndices =
+      range[1] - range[0] - previousIndices.size();
   static std::random_device generator;
-  std::uniform_int_distribution<std::size_t> distribution(range[0],
-                                                          range[1] - 1);
-  return distribution(generator);
+  std::uniform_int_distribution<std::size_t> distribution(
+      0, numberOfPossibleIndices - 1);
+
+  std::size_t ind = distribution(generator); // New random position
+
+  // Turn the random position into a previously not used index in the range.
+
+  std::size_t newIndex = range[0];
+
+  std::size_t count = 0;
+  while (count <= ind){
+   if (!previousIndices.count(newIndex)){
+     count++;
+     if (count <= ind) newIndex++;
+     continue;
+   }
+   newIndex++;
+  }
+  previousIndices.insert(newIndex);
+  return newIndex;
 }
 }
 

@@ -3,6 +3,10 @@
 #ifndef HMAT_HMATRIX_DATA_HPP
 #define HMAT_HMATRIX_DATA_HPP
 
+#include "common.hpp"
+#include <armadillo>
+#include "scalar_traits.hpp"
+
 namespace hmat {
 
 template <typename ValueType> class HMatrixData {
@@ -18,6 +22,8 @@ public:
   virtual int rows() const = 0;
   virtual int cols() const = 0;
   virtual int rank() const = 0;
+
+  virtual typename ScalarTraits<ValueType>::RealType frobeniusNorm() const = 0;
 
   virtual double memSizeKb() const = 0;
 };

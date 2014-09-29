@@ -31,6 +31,8 @@ public:
   int cols() const override;
   int rank() const override;
 
+  typename ScalarTraits<ValueType>::RealType frobeniusNorm() const override;
+
   double memSizeKb() const override;
 
 private:

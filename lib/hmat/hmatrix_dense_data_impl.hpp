@@ -67,6 +67,12 @@ template <typename ValueType> int HMatrixDenseData<ValueType>::rank() const {
 }
 
 template <typename ValueType>
+typename ScalarTraits<ValueType>::RealType HMatrixDenseData<ValueType>::frobeniusNorm() const {
+  return norm(m_A,"fro");
+}
+
+
+template <typename ValueType>
 double HMatrixDenseData<ValueType>::memSizeKb() const {
   return sizeof(ValueType) * (this->rows()) * (this->cols()) / (1.0 * 1024);
 }

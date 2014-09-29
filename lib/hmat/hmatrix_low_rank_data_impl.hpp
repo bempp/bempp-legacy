@@ -42,6 +42,22 @@ template <typename ValueType> int HMatrixLowRankData<ValueType>::rank() const {
 }
 
 template <typename ValueType>
+typename ScalarTraits<ValueType>::RealType HMatrixLowRankData<ValueType>::frobeniusNorm() const {
+
+  auto aHa = m_A.t() * m_A;
+
+  arma::Mat<ValueType> result(1, 1);
+
+  for (int i = 0; i < m_B.n_cols; ++i) {
+    auto col = m_B.col(i);
+    result += col.t() * aHa * col;
+  }
+
+  return std::sqrt(std::real(result(0,0)));
+
+}
+
+template <typename ValueType>
 double HMatrixLowRankData<ValueType>::memSizeKb() const {
 
   return sizeof(ValueType) * (this->rows() + this->cols()) * this->rank() /
