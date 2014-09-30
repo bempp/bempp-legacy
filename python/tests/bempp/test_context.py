@@ -50,3 +50,7 @@ def test_dirichlet_tut_operators():
     assert double_layer.basis_type == context.basis_type
     assert single_layer.basis_type == context.basis_type
     assert identity.basis_type == context.basis_type
+
+    assert single_layer.domain.is_compatible(constant)
+    assert single_layer.range.is_compatible(linear)
+    assert single_layer.dual_to_range.is_compatible(constant)

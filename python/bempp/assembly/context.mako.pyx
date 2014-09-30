@@ -46,29 +46,20 @@ module_name  = lambda x, y: '.'.join([x] + [u for u in y if len(u) > 0])
         cdef c_AccuracyOptions acc_ops
         self._accuracy.to_cpp(acc_ops)
 
-        result = BoundaryOperator(basis_type=self.basis_type,
-                result_type=self.result_type)
+        cdef:
+            BoundaryOperator result=BoundaryOperator.__new__(BoundaryOperator)
 
         # Loop over possible basis and result type combinations,
         # And call templated function to create the operator
-% for i, (pybasis, cybasis) in enumerate(dtypes.iteritems()):
-%    for j, (pyresult, cyresult) in enumerate(dtypes.iteritems()):
-%       if pyresult in compatible_dtypes[pybasis]:
-        ${ifloop(i + j)} self.basis_type == '${pybasis}' ${'\\'}
-            and self.result_type == '${pyresult}':
-                ${c_creator}[${cybasis}, ${cyresult}](
-                    deref(
-                        <c_BoundaryOperator[${cybasis}, ${cyresult}]*>
-                        result.memory
-                    ),
-                    acc_ops, self.assembly,
-                    domain.impl_${pybasis},
-                    range.impl_${pybasis},
-                    dual_to_range.impl_${pybasis},
-                    label, symmetry
-                )
-%       endif
-%    endfor
+% for pyresult, cyresult in dtypes.iteritems():
+        ${ifloop(loop.index)} self.result_type == '${pyresult}':
+            result.impl_ = ${c_creator}[${cyresult}](
+                acc_ops, self.assembly,
+                domain.impl_,
+                range.impl_,
+                dual_to_range.impl_,
+                label, symmetry
+            )
 % endfor
         else:
             msg = "Unknown or incompatible basis and result types"
@@ -80,10 +71,10 @@ module_name  = lambda x, y: '.'.join([x] + [u for u in y if len(u) > 0])
 from libcpp.string cimport string
 from cython.operator cimport dereference as deref
 from bempp.fiber.accuracy_options cimport c_AccuracyOptions
-from bempp.assembly.boundary_operator cimport c_BoundaryOperator
 from bempp.assembly.boundary_operator cimport BoundaryOperator
+from bempp.assembly.boundary_operator cimport BoundaryOpVariants
 from bempp.options cimport AssemblyOptions, Options
-from bempp.space.space cimport Space, c_Space
+from bempp.space.space cimport Space, SpaceVariants
 from bempp.utils cimport shared_ptr
 
 # Declares complex type explicitly.
@@ -99,17 +90,15 @@ cdef extern from "bempp/space/types.h":
 cdef extern from "bempp/assembly/python.hpp":
 % for opname, description in bops.iteritems():
 %     if description['implementation'] == 'standard':
-    c_BoundaryOperator[BASIS, RESULT] \
-        ${description['c_creator']}[BASIS, RESULT](
-            c_BoundaryOperator[BASIS, RESULT]& _output,
+    BoundaryOpVariants ${description['c_creator']}[RESULT](
             const c_AccuracyOptions& accuracyOptions,
             const AssemblyOptions& assemblyOptions,
-            const shared_ptr[c_Space[BASIS]]& domain,
-            const shared_ptr[c_Space[BASIS]]& range,
-            const shared_ptr[c_Space[BASIS]]& dualToRange,
+            const SpaceVariants& domain,
+            const SpaceVariants& range,
+            const SpaceVariants& dualToRange,
             const string& label,
             int symmetry
-        )
+    ) except+
 %     endif
 % endfor
 
