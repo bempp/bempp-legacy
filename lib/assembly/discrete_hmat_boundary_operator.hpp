@@ -24,10 +24,15 @@
 #include "bempp/common/config_trilinos.hpp"
 #include "../common/common.hpp"
 #include "../common/shared_ptr.hpp"
-#include "../hmat/compressed_matrix.hpp"
 #include "discrete_boundary_operator.hpp"
 #include "../common/armadillo_fwd.hpp"
 #include <Thyra_DefaultSpmdVectorSpace_decl.hpp>
+
+namespace hmat {
+
+template <typename ValueType> class CompressedMatrix;
+
+}
 
 namespace Bempp {
 

@@ -23,7 +23,7 @@ public:
 
   virtual void apply(const arma::Mat<ValueType> &X, arma::Mat<ValueType> &Y,
                      TransposeMode trans, ValueType alpha,
-                     ValueType beta) const;
+                     ValueType beta) const = 0;
 };
 }
 

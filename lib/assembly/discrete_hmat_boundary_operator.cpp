@@ -21,6 +21,7 @@
 #include "discrete_hmat_boundary_operator.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 #include <boost/numeric/conversion/converter.hpp>
+#include "../hmat/compressed_matrix.hpp"
 
 namespace Bempp {
 
@@ -91,3 +92,5 @@ bool DiscreteHMatBoundaryOperator<ValueType>::opSupportedImpl(
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(DiscreteHMatBoundaryOperator);
 }
+
+

@@ -1,12 +1,12 @@
 # Add a warning if pcre library is not found
 find_program(PCRE_CONFIG_EXECUTABLE pcre-config)
 if(NOT PCRE_CONFIG_EXECUTABLE)
-    if(NOT EXISTS ${EXTERNAL_ROOT}/src/SWIG/pcre-8.33.tar.gz)
+    if(NOT EXISTS ${EXTERNAL_ROOT}/src/SWIG/pcre-8.36.tar.gz)
         file(WRITE "${EXTERNAL_ROOT}/src/pcre.cmake"
             "file(DOWNLOAD\n"
             "\"ftp://ftp.csx.cam.ac.uk/pub/software/"
-                "programming/pcre/pcre-8.33.tar.gz\"\n"
-            "\"${EXTERNAL_ROOT}/src/SWIG/pcre-8.33.tar.gz\"\n"
+                "programming/pcre/pcre-8.36.tar.gz\"\n"
+            "\"${EXTERNAL_ROOT}/src/SWIG/pcre-8.36.tar.gz\"\n"
             ")\n"
         )
     endif()
