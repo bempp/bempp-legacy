@@ -47,6 +47,29 @@ class SpaceVariants {
         }
     };
 
+    struct IsSame : public boost::static_visitor<bool> {
+        template<class T0, class T1>
+            typename std::enable_if<
+                std::is_same<
+                    typename std::remove_const<T0>::type,
+                    typename std::remove_const<T1>::type
+                > :: value, bool
+            > :: type operator()(shared_ptr<T0> const &_this,
+                shared_ptr<T1> const &_that) const {
+            return _this.get() == _that.get();
+        }
+        template<class T0, class T1>
+            typename std::enable_if<
+                not std::is_same<
+                    typename std::remove_const<T0>::type,
+                    typename std::remove_const<T1>::type
+                > :: value, bool
+            > :: type operator()(shared_ptr<T0> const &_this,
+                shared_ptr<T1> const &_that) const {
+            return false;
+        }
+    };
+
     struct DType: public boost::static_visitor<std::string> {
 % for pyname, ctype in dtypes.iteritems():
         std::string operator()(
@@ -76,6 +99,13 @@ class SpaceVariants {
             return boost::apply_visitor(SpaceVariants::IsCompatible(),
                     space_, _other.space_);
         }
+        bool isSame(SpaceVariants const &_other) const {
+            return boost::apply_visitor(SpaceVariants::IsSame(),
+                    space_, _other.space_);
+        }
+
+        t_variant & variants() { return space_; }
+        t_variant const & variants() const { return space_; }
     private:
         t_variant space_;
 };

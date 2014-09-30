@@ -46,6 +46,7 @@ cdef extern from "bempp/space/variant.hpp" namespace "Bempp":
         string dtype() const
         shared_ptr[const c_Grid] grid() const
         cbool isCompatible(const SpaceVariants&)
+        cbool is_same "isSame"(const SpaceVariants&)
 
 cdef class Space:
     cdef:

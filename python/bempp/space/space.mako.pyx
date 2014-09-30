@@ -38,6 +38,11 @@ cdef class Space:
             result.impl_ = self.impl_.grid()
             return result
 
+    def __richcmp__(Space self, Space other not None, int op):
+        if op != 2:
+            raise AttributeError("Incorrect operator")
+        return self.impl_.is_same(other.impl_)
+
 
 % for class_name, description in spaces.iteritems():
 cdef class ${class_name}(Space):
