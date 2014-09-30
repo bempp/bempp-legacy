@@ -83,10 +83,12 @@ enum DofType
  *  of local to global degrees of freedom is triggered by calling the function
  *  assignDofs(). Many other member functions of Space may only be invoked after
  *  assignDofs() has beeen called. */
-template <typename BasisFunctionType>
+template <typename BASISFUNCTIONTYPE>
 class Space
 {
 public:
+    /** \brief Instantiation type **/
+    typedef BASISFUNCTIONTYPE BasisFunctionType;
     /** \brief Type used to represent coordinates. */
     typedef typename Fiber::ScalarTraits<BasisFunctionType>::RealType CoordinateType;
     /** \brief Equivalent to std::complex<CoordinateType>. */
