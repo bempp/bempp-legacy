@@ -30,3 +30,10 @@ class TestBoundaryOperator(object):
         from bempp.assembly import BoundaryOperator
         with raises(TypeError):
             BoundaryOperator(basis_type, result_type)
+
+    def test_spaces(self):
+        from bempp.assembly import BoundaryOperator
+        bop = BoundaryOperator("float32", "float32")
+        assert bop.range is None
+        assert bop.domain is None
+        assert bop.dual_to_range is None
