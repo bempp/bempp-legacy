@@ -47,7 +47,8 @@ void HMatrixAcaCompressor<ValueType, N>::compressBlock(
   std::set<std::size_t> previousColumnIndices;
 
   std::size_t iterationLimit =
-    std::min(static_cast<std::size_t>(m_maxRank),std::min(numberOfRows,numberOfColumns));
+      std::min(static_cast<std::size_t>(m_maxRank),
+               std::min(numberOfRows, numberOfColumns));
 
   std::size_t rankCount = 0;
 
@@ -103,15 +104,13 @@ void HMatrixAcaCompressor<ValueType, N>::compressBlock(
 
     rankCount++;
 
-    if (arma::norm(newCol,2)*arma::norm(newRow,2) < m_eps*frobeniousNorm)
+    if (arma::norm(newCol, 2) * arma::norm(newRow, 2) < m_eps * frobeniousNorm)
       break;
   }
-    if (A.n_cols-rankCount > 0){
-     A.shed_cols(rankCount,A.n_cols-1);
-     B.shed_rows(rankCount,B.n_rows-1);
-    }
-
-    
+  if (A.n_cols - rankCount > 0) {
+    A.shed_cols(rankCount, A.n_cols - 1);
+    B.shed_rows(rankCount, B.n_rows - 1);
+  }
 }
 
 template <typename ValueType, int N>
@@ -140,14 +139,11 @@ void HMatrixAcaCompressor<ValueType, N>::evaluateMatMinusLowRank(
   auto rowStart = rowIndexRange[0] - rowClusterRange[0];
   auto rowEnd = rowIndexRange[1] - rowClusterRange[0];
 
-
   auto colStart = columnIndexRange[0] - columnClusterRange[0];
   auto colEnd = columnIndexRange[1] - columnClusterRange[0];
 
-  data = data - A.submat(rowStart, 0, rowEnd-1, A.n_cols - 1) *
-                    B.submat(0, colStart, B.n_rows - 1, colEnd-1);
-
-
+  data = data - A.submat(rowStart, 0, rowEnd - 1, A.n_cols - 1) *
+                    B.submat(0, colStart, B.n_rows - 1, colEnd - 1);
 }
 
 template <typename ValueType, int N>
@@ -167,13 +163,14 @@ std::size_t HMatrixAcaCompressor<ValueType, N>::randomIndex(
   std::size_t newIndex = range[0];
 
   std::size_t count = 0;
-  while (count <= ind){
-   if (!previousIndices.count(newIndex)){
-     count++;
-     if (count <= ind) newIndex++;
-     continue;
-   }
-   newIndex++;
+  while (count <= ind) {
+    if (!previousIndices.count(newIndex)) {
+      count++;
+      if (count <= ind)
+        newIndex++;
+      continue;
+    }
+    newIndex++;
   }
   previousIndices.insert(newIndex);
   return newIndex;

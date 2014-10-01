@@ -42,7 +42,8 @@ template <typename ValueType> int HMatrixLowRankData<ValueType>::rank() const {
 }
 
 template <typename ValueType>
-typename ScalarTraits<ValueType>::RealType HMatrixLowRankData<ValueType>::frobeniusNorm() const {
+typename ScalarTraits<ValueType>::RealType
+HMatrixLowRankData<ValueType>::frobeniusNorm() const {
 
   auto aHa = m_A.t() * m_A;
 
@@ -53,8 +54,7 @@ typename ScalarTraits<ValueType>::RealType HMatrixLowRankData<ValueType>::froben
     result += col.t() * aHa * col;
   }
 
-  return std::sqrt(std::real(result(0,0)));
-
+  return std::sqrt(std::real(result(0, 0)));
 }
 
 template <typename ValueType>

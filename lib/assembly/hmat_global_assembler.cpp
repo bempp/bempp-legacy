@@ -184,8 +184,8 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
   // blockClusterTree->writeToPdfFile("tree.pdf", 1024, 1024);
 
   WeakFormHMatAssemblyHelper<BasisFunctionType, ResultType> helper(
-     *actualTestSpace, *actualTrialSpace, blockClusterTree, localAssemblers,
-     sparseTermsToAdd, denseTermMultipliers, sparseTermMultipliers);
+      *actualTestSpace, *actualTrialSpace, blockClusterTree, localAssemblers,
+      sparseTermsToAdd, denseTermMultipliers, sparseTermMultipliers);
 
   // hmat::HMatrixDenseCompressor<ResultType, 2> compressor(helper);
   // shared_ptr<hmat::CompressedMatrix<ResultType>> hMatrix(
@@ -193,12 +193,12 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
 
   hmat::HMatrixAcaCompressor<ResultType, 2> compressor(helper, 1E-3, 30);
   shared_ptr<hmat::CompressedMatrix<ResultType>> hMatrix(
-     new hmat::DefaultHMatrixType<ResultType>(blockClusterTree, compressor));
+      new hmat::DefaultHMatrixType<ResultType>(blockClusterTree, compressor));
 
   return std::unique_ptr<DiscreteBoundaryOperator<ResultType>>(
-     new DiscreteHMatBoundaryOperator<ResultType>(hMatrix));
+      new DiscreteHMatBoundaryOperator<ResultType>(hMatrix));
 
-  //return std::unique_ptr<DiscreteBoundaryOperator<ResultType>>();
+  // return std::unique_ptr<DiscreteBoundaryOperator<ResultType>>();
 }
 
 template <typename BasisFunctionType, typename ResultType>
