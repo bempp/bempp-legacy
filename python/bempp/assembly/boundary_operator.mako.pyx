@@ -16,6 +16,7 @@ cdef extern from "bempp/space/types.h":
 %     endif
 % endfor
 
+
 cdef class BoundaryOperator:
     """ Holds a reference to a boundary operator """
 
@@ -53,3 +54,62 @@ cdef class BoundaryOperator:
             else:
                 return result
 % endfor
+
+    property label:
+        def __get__(self):
+            return self.impl_.label()
+
+% for opname, op in {'add': '+', 'sub': '-'}.iteritems():
+    def __${opname}__(self, other):
+        if not (
+            isinstance(self, BoundaryOperator)
+            and isinstance(other, BoundaryOperator)
+        ):
+            raise TypeError("Incorrect types in ${opname}")
+        cdef BoundaryOperator res = BoundaryOperator.__new__(BoundaryOperator)
+        res.impl_.assign(
+            (<BoundaryOperator> self).impl_
+            ${op} (<BoundaryOperator> other).impl_
+        )
+        return res
+% endfor
+
+    def __mul__(self, other):
+        cdef BoundaryOperator res = BoundaryOperator.__new__(BoundaryOperator)
+        cdef double asdouble
+        if (
+            isinstance(self, BoundaryOperator)
+            and isinstance(other, BoundaryOperator)
+        ):
+            res.impl_.assign(
+                (<BoundaryOperator> self).impl_
+                * (<BoundaryOperator> other).impl_
+            )
+        elif not isinstance(self, BoundaryOperator):
+            return other.__mul__(self)
+        elif isinstance(other, complex):
+            res.impl_.assign(
+                    (<BoundaryOperator> self).impl_ * (<complex>other))
+        else:
+            try:
+                asdouble = other
+                res.impl_.assign((<BoundaryOperator> self).impl_ * asdouble)
+            except:
+                raise TypeError("Incorrect types in multiplication")
+        return res
+
+    def __div__(BoundaryOperator self, other):
+        cdef BoundaryOperator res = BoundaryOperator.__new__(BoundaryOperator)
+        cdef double asdouble
+        if isinstance(other, BoundaryOperator):
+            raise TypeError("Cannot divide by an operator")
+        elif isinstance(other, complex):
+            res.impl_.assign(
+                    (<BoundaryOperator> self).impl_ * (<complex>other))
+        else:
+            try:
+                asdouble = other
+                res.impl_.assign((<BoundaryOperator> self).impl_ * asdouble)
+            except:
+                raise TypeError("Incorrect types in division")
+        return res

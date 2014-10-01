@@ -43,6 +43,12 @@ class BoundaryOpVariants {
 % endfor
     };
 
+    struct Label: public boost::static_visitor<std::string> {
+        template<class T> std::string operator()(T const &_in) const {
+            return _in.label();
+        }
+    };
+
 
 % for space in ['Domain', 'Range', 'DualToRange']:
     struct ${space}: public boost::static_visitor<SpaceVariants> {
@@ -60,8 +66,58 @@ class BoundaryOpVariants {
     };
 %endfor
 
+% for op, opname in {'+': "Plus", '-': "Minus", '*': "Times"}.iteritems():
+    struct BoundaryOp${opname}BoundaryOp
+        : boost::static_visitor<BoundaryOpVariants> {
+          template<class BASIS, class RESULT> BoundaryOpVariants operator()(
+                  BoundaryOperator<BASIS, RESULT> const &_a,
+                  BoundaryOperator<BASIS, RESULT> const &_b) const {
+              return BoundaryOpVariants(_a ${op} _b);
+          }
+          template<class B0, class B1, class R0, class R1>
+              BoundaryOpVariants operator()(
+                  BoundaryOperator<B0, R0> const &_a,
+                  BoundaryOperator<B1, R1> const &_b) const {
+                  throw std::runtime_error("Incompatible boundary operator");
+              }
+    };
+% endfor
+    template<class T> struct is_scalar : public boost::mpl::has_key<
+        boost::mpl::set<
+            float, double, std::complex<float>, std::complex<double> 
+        >,
+        T
+    > {};
+% for op, opname in {'/': "Divided", '*': "Times"}.iteritems():
+    template<class SCALAR> struct BoundaryOp${opname}Scalar
+        : boost::static_visitor<BoundaryOpVariants> {
+        SCALAR scalar;
+        BoundaryOp${opname}Scalar(SCALAR _scalar) : scalar(_scalar) {}
+        template<class BASIS, class RESULT>
+            typename std::enable_if<
+                std::is_convertible<SCALAR, BASIS>::value,
+                BoundaryOpVariants
+            > :: type
+                operator()(BoundaryOperator<BASIS, RESULT> const &_a) const {
+                    return BoundaryOpVariants(_a ${op} scalar);
+                }
+        template<class BASIS, class RESULT>
+            typename std::enable_if<
+                not std::is_convertible<SCALAR, BASIS>::value,
+                BoundaryOpVariants
+            > :: type
+                operator()(BoundaryOperator<BASIS, RESULT> const &_a) const {
+                    throw std::runtime_error("Incorrect scalar type");
+                }
+    };
+% endfor
+
+
     public:
         BoundaryOpVariants() {}
+        template<class BASIS, class RESULT>
+            BoundaryOpVariants(BoundaryOperator<BASIS, RESULT> const &_bop)
+                : operator_(_bop) {}
 
         template<class Basis, class Result>
             void set(BoundaryOperator<Basis, Result> const &_in) { operator_ = _in; }
@@ -83,10 +139,29 @@ class BoundaryOpVariants {
         SpaceVariants dualToRange() const {
             return boost::apply_visitor(DualToRange(), operator_);
         }
+        std::string label() const {
+            return boost::apply_visitor(Label(), operator_);
+        }
+
+% for op, opname in {'+': "Plus", '-': "Minus", '*': "Times"}.iteritems():
+        BoundaryOpVariants operator${op}(BoundaryOpVariants const &_a) const {
+            return boost::apply_visitor(BoundaryOp${opname}BoundaryOp(),
+                    operator_, _a.operator_);
+        }
+% endfor
+% for op, opname in {'/': "Divided", '*': "Times"}.iteritems():
+    template<class T>
+        typename std::enable_if<
+            is_scalar<T> :: value,
+            BoundaryOpVariants
+        > :: type operator${op}(T const &_a) const {
+            return boost::apply_visitor(BoundaryOp${opname}Scalar<T>(_a),
+                    operator_);
+        }
+% endfor
 
     private:
         t_variant operator_;
 };
-
 }
 #endif
