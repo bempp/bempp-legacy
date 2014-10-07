@@ -4,7 +4,8 @@ from space import dtypes, spaces
 def declare_class(text):
     return 'c_{0} "Bempp::{0}"[BASIS]'.format(text)
 %>
-from libcpp cimport complex as ccomplex
+from libcpp cimport complex as ccomplex, bool as cbool
+from libcpp.string cimport string
 from bempp.utils cimport shared_ptr
 from bempp.grid.grid cimport Grid, c_Grid
 
@@ -36,13 +37,20 @@ cdef extern from "${description['header']}":
 %   endif
 % endfor
 
+cdef extern from "bempp/space/variant.hpp" namespace "Bempp":
+    cdef cppclass SpaceVariants:
+        SpaceVariants()
+        void set[T](const shared_ptr[T] &_in)
+        void set[T](const shared_ptr[const T] &_in)
+        # void reset[T](const shared_ptr[T] &_in)
+        string dtype() const
+        shared_ptr[const c_Grid] grid() const
+        cbool isCompatible(const SpaceVariants&)
+        cbool is_same "isSame"(const SpaceVariants&)
+
 cdef class Space:
     cdef:
-        # For simplicity, we define shared pointers to all possible space types
-        # There are not that many, so this should not be a problem
-% for pytype, cytype in dtypes.iteritems():
-        shared_ptr[c_Space[${cytype}]] impl_${pytype}
-% endfor
+        SpaceVariants impl_
 
 # Now we define derived types for each space.
 # This is a flat hierarchy. It does not attempt to redeclare the C++ hierarchy.

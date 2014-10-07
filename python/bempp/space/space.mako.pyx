@@ -15,27 +15,34 @@ cdef class Space:
     def __init__(self, Grid grid not None):
         pass
 
+    def is_compatible(self, Space other):
+        """ True if other is compatible with this space
+
+            Two spaces are compatible if:
+
+            * They have the same dtype
+            * Their global degress of freedom agree
+        """
+        if other is None:
+            return False
+        return self.impl_.isCompatible(other.impl_)
+
     property dtype:
         """ Precision and kind of this space """
         def __get__(self):
             from numpy import dtype
-% for pyname, cython in dtypes.iteritems():
-            ${ifloop(loop)} self.impl_${pyname}.get() is not NULL:
-                return dtype('${pyname}')
-% endfor
-            return None
-
+            return dtype(self.impl_.dtype());
     property grid:
-        """ Grid over which the space is defined """
         def __get__(self):
-            if self.dtype is None:
-                return None
-            cdef Grid grid = Grid.__new__(Grid)
-% for pyname in dtypes.iterkeys():
-            ${ifloop(loop)} self.dtype == "${pyname}":
-                grid.impl_ = deref(self.impl_${pyname}).grid()
-% endfor
-            return grid
+            cdef Grid result = Grid.__new__(Grid)
+            result.impl_ = self.impl_.grid()
+            return result
+
+    def __richcmp__(Space self, Space other not None, int op):
+        if op != 2:
+            raise AttributeError("Incorrect operator")
+        return self.impl_.is_same(other.impl_)
+
 
 % for class_name, description in spaces.iteritems():
 cdef class ${class_name}(Space):
@@ -69,17 +76,17 @@ cdef class ${class_name}(Space):
 %    for pytype, cytype in dtypes.iteritems():
         if dtype == "${pytype}":
 %       if description['implementation'] == 'grid_only':
-            self.impl_${pytype}.reset(
+            self.impl_.set( shared_ptr[c_Space[${cytype}]](
                 <c_Space[${cytype}]*>
                 new ${'c_' + class_name}[${cytype}](grid.impl_)
-            )
+            ))
 %       elif description['implementation'] == 'polynomial':
             self.order = order
-            self.impl_${pytype}.reset(
+            self.impl_.set( shared_ptr[c_Space[${cytype}]](
                 <c_Space[${cytype}]*> new ${'c_' + class_name}[${cytype}](
                     grid.impl_, <int> self.order
                 )
-            )
+            ))
 %       endif
 %    endfor
 % endfor

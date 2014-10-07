@@ -1,4 +1,6 @@
-mako_files(boundary_operator.mako.pyx python.mako.hpp context.mako.pyx
+mako_files(
+    boundary_operator.mako.pyx variants.mako.hpp python.mako.hpp
+    context.mako.pyx
     OUTPUT_FILES makoed
     DEPENDS "${PROJECT_SOURCE_DIR}/python/mako/space.py"
         "${PROJECT_SOURCE_DIR}/python/mako/bempp_operators.py"

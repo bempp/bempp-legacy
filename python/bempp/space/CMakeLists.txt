@@ -1,4 +1,4 @@
-set(makoes space.mako.pxd space.mako.pyx types.mako.h)
+set(makoes space.mako.pxd space.mako.pyx types.mako.h variant.mako.hpp)
 mako_files(${makoes}
     OUTPUT_FILES makoed
     DEPENDS "${PROJECT_SOURCE_DIR}/python/mako/space.py"
