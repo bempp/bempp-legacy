@@ -16,7 +16,7 @@ from . import space as _cwrappers
 
 _scalar_spaces = {
     # (order, continuous, barycentric, dual, extra): implementation
-% for class_name, description in spaces.iteritems():
+% for class_name, description in spaces.items():
 %   if description['scalar']:
     ${get_key(description)}: _cwrappers.${class_name},
 %   endif
@@ -65,7 +65,7 @@ def scalar_class(barycentric=False, continuous=True, order=None,
         ==========  ==========  =========  ===========
         order       continuous  dual grid  barycentric
         ==========  ==========  =========  ===========
-%   for description in sorted(spaces.itervalues(), key=itemgetter('order')):
+%   for description in sorted(spaces.values(), key=itemgetter('order')):
         ${row(**description)}
 %   endfor
         ==========  ==========  =========  ===========
@@ -113,7 +113,7 @@ def scalar(grid, dtype, barycentric=False, continuous=True, order=None,
         grid : Grid
             Grid over which the functions are applied
 
-        dtype : ${'|'.join(dtypes.iterkeys())}
+        dtype : ${'|'.join(dtypes.keys())}
             Precision and kind of the functions.
 
         ${tags_params()}

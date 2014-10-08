@@ -19,7 +19,7 @@ cdef extern from "bempp/space/space.hpp":
 # Cython 0.20 will fail if templates are nested more than three-deep,
 # as in shared_ptr[ c_Space[ complex[float] ] ]
 cdef extern from "bempp/space/types.h":
-% for ctype in dtypes.itervalues():
+% for ctype in dtypes.values():
 %     if 'complex'  in ctype:
     ctypedef struct ${ctype}
 %     endif
@@ -27,7 +27,7 @@ cdef extern from "bempp/space/types.h":
 
 
 
-% for class_name, description in spaces.iteritems():
+% for class_name, description in spaces.items():
 cdef extern from "${description['header']}":
     cdef cppclass ${class_name | declare_class}:
 %   if description['implementation'] == 'grid_only':
@@ -54,7 +54,7 @@ cdef class Space:
 
 # Now we define derived types for each space.
 # This is a flat hierarchy. It does not attempt to redeclare the C++ hierarchy.
-% for class_name, description in spaces.iteritems():
+% for class_name, description in spaces.items():
 cdef class ${class_name}(Space):
 %   if description['implementation'] == 'polynomial':
     cdef readonly unsigned int order

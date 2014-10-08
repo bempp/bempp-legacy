@@ -1,7 +1,7 @@
 # Looks for trilinos. If not found, download and install it.
 if(Trilinos_ARGUMENTS)
     cmake_parse_arguments(Trilinos
-        "PYPACKED"
+        "PYPACKED;PYTHON"
         "URL;SHA256;BUILD_TYPE;INSTALL_PREFIX"
         ""
         ${Trilinos_ARGUMENTS}
@@ -21,6 +21,11 @@ else()
 endif()
 if(NOT Trilinos_BUILD_TYPE)
     set(Trilinos_BUILD_TYPE Release)
+endif()
+if(Trilinos_PYTHON)
+    set(WITH_PYTHON "ON")
+else()
+    set(WITH_PYTHON "OFF")
 endif()
 
 # Create list of dependencies
@@ -42,10 +47,10 @@ passon_variables(Trilinos
     FILENAME "${EXTERNAL_ROOT}/src/TrilinosVariables.cmake"
     PATTERNS
         "CMAKE_[^_]*_R?PATH" "CMAKE_C_.*" "CMAKE_CXX_.*"
-        "BLAS_.*" "LAPACK_.*" "PYTHON_*" "SWIG_*"
+        "BLAS_.*" "LAPACK_.*" "SWIG_*"
 )
 get_filename_component(TPL_TBB_INCLUDE_DIRS "${TBB_INCLUDE_DIR}" PATH)
-if(Trilinos_PYPACKED)
+if(Trilinos_PYPACKED AND Trilinos_PYTHON)
     set(prefix_location "${EXTERNAL_ROOT}/python/PyTrilinos")
     file(APPEND "${EXTERNAL_ROOT}/src/TrilinosVariables.cmake"
         "\nset(PyTrilinos_INSTALL_DIR \"${prefix_location}\"\n"
@@ -63,6 +68,12 @@ else()
         "\nset(Trilinos_INSTALL_INCLUDE_DIR \"include/Trilinos\" CACHE PATH \"\")\n"
         "\nset(CMAKE_INSTALL_PREFIX \"${EXTERNAL_ROOT}\" CACHE PATH \"\")\n"
         "\nlist(APPEND CMAKE_INCLUDE_PATH \"${EXTERNAL_ROOT}/include/trilinos\")\n"
+    )
+endif()
+if(Trilinos_PYTHON)
+    passon_variables(Trilinos
+        FILENAME "${EXTERNAL_ROOT}/src/TrilinosVariables.cmake"
+        PATTERNS "PYTHON_.*"
     )
 endif()
 file(APPEND "${EXTERNAL_ROOT}/src/TrilinosVariables.cmake"
@@ -109,7 +120,6 @@ ExternalProject_Add(
                -DTrilinos_ENABLE_ThyraEpetraExtAdapters:BOOL=ON
                -DTrilinos_ENABLE_ThyraTpetraAdapters:BOOL=ON
                -DTrilinos_ENABLE_Tpetra:BOOL=ON
-               -DTrilinos_ENABLE_PyTrilinos:BOOL=ON
                -DTrilinos_ENABLE_AztecOO:BOOL=ON
                -DTrilinos_ENABLE_Fortran:BOOL=OFF
                -DTrilinos_ENABLE_ALL_OPTIONAL_PACKAGES:BOOL=OFF
@@ -120,6 +130,7 @@ ExternalProject_Add(
                -DTpetra_INST_FLOAT:BOOL=ON
                -DTPL_ENABLE_MPI:BOOL=${WITH_MPI}
                -DCMAKE_BUILD_TYPE=${Trilinos_BUILD_TYPE}
+               -DTrilinos_ENABLE_PyTrilinos:BOOL=${WITH_PYTHON}
                -C ${EXTERNAL_ROOT}/src/TrilinosVariables.cmake
     PATCH_COMMAND ${patch_script}
     # Wrap download, configure and build steps in a script to log output

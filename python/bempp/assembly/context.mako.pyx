@@ -4,12 +4,12 @@ ifloop = lambda x: "if" if getattr(x, 'index', x) == 0 else "elif"
 module_name  = lambda x, y: '.'.join([x] + [u for u in y if len(u) > 0]) 
 %>
 <%def name="create_module(name, desc)"%>
-%   for submod in sorted(set([u['location'] for u in bops.itervalues])):
+%   for submod in sorted(set([u['location'] for u in bops.values])):
         ${module_name(name, submod)} = ModuleType("${submod[-1]}",
                 "${bops[submod]}"
         )
 %   endfor
-%   for key, desc in bops.iteritems():
+%   for key, desc in bops.items():
         ${'.'.join([name][key])} = self.${value['py_creator']}
 %   endfor
 </%def>
@@ -51,14 +51,14 @@ module_name  = lambda x, y: '.'.join([x] + [u for u in y if len(u) > 0])
 
         # Loop over possible basis and result type combinations,
         # And call templated function to create the operator
-% for pyresult, cyresult in dtypes.iteritems():
+% for pyresult, cyresult in dtypes.items():
         ${ifloop(loop.index)} self.result_type == '${pyresult}':
             result.impl_ = ${c_creator}[${cyresult}](
                 acc_ops, self.assembly,
                 domain.impl_,
                 range.impl_,
                 dual_to_range.impl_,
-                label, symmetry
+                label.encode(), symmetry
             )
 % endfor
         else:
@@ -81,14 +81,14 @@ from bempp.utils cimport shared_ptr
 # Cython 0.20 will fail if templates are nested more than three-deep,
 # as in shared_ptr[ c_Space[ complex[float] ] ]
 cdef extern from "bempp/space/types.h":
-% for ctype in dtypes.itervalues():
+% for ctype in dtypes.values():
 %     if 'complex'  in ctype:
     ctypedef struct ${ctype}
 %     endif
 % endfor
 
 cdef extern from "bempp/assembly/python.hpp":
-% for opname, description in bops.iteritems():
+% for opname, description in bops.items():
 %     if description['implementation'] == 'standard':
     BoundaryOpVariants ${description['c_creator']}[RESULT](
             const c_AccuracyOptions& accuracyOptions,
@@ -115,14 +115,14 @@ cdef class Context(Options):
 
 <%
     allmodules = set([
-        u['location'][:i] for u in bops.itervalues() for i in range(1, len(u))
+        u['location'][:i] for u in bops.values() for i in range(1, len(u))
     ])
 %>
 % for submod in sorted(set([u[:-1] for u in allmodules if len(u) > 1])):
         self.${'.'.join(submod)} = ModuleType("${submod[-1]}",
                 "Operator module")
 % endfor
-% for desc in bops.itervalues():
+% for desc in bops.values():
         self.${'.'.join(desc['location'])} = self.${desc['py_creator']}
 % endfor
 
@@ -138,7 +138,7 @@ cdef class Context(Options):
         return scalar_space(grid, self.basis_type, *args, **kwargs)
 
 
-% for description in bops.itervalues():
+% for description in bops.values():
     %     if description['implementation'] == 'standard':
     ${create_operator(**description)}
 %     endif

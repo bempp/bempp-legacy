@@ -42,7 +42,7 @@ def test_infinity_index():
 ])
 def test_instantiation(kwargs):
     options = RangeAccuracyOptions(kwargs)
-    iterator = kwargs.iteritems() if hasattr(kwargs, 'iteritems') else kwargs
+    iterator = kwargs.items() if hasattr(kwargs, 'items') else kwargs
     for key, value in iterator:
         assert key in options
         assert isinstance(options[key], QuadratureOptions)
@@ -101,7 +101,7 @@ def test_getsetitems():
         2: (5, True),
         'inf': (6, False),
     }
-    for key, value in should_contain.iteritems():
+    for key, value in should_contain.items():
         assert key in options
         assert value == options[key]
 
@@ -128,7 +128,6 @@ def test_frozen():
     options[0.3] = 6
     assert options[0.3].value == 6
 
-    print repr(options), type(options)
     toggle_freeze(options)
     with raises(AttributeError):
         options[0.2] = 1, False
@@ -166,8 +165,8 @@ def test_order():
         0.25: {0: 2, 1: 3},
         0.55: {0: 3, 1: 4},
     }
-    for distance, orders in inputs.iteritems():
-        for order, expected in orders.iteritems():
+    for distance, orders in inputs.items():
+        for order, expected in orders.items():
             assert acc(distance, order) == expected
 
 

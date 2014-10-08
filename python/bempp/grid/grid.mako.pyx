@@ -71,7 +71,7 @@ cdef class Grid:
             GridParameters &parameters) except *:
         from os.path import abspath, expandvars, expanduser
         cdef string cfilename
-        cfilename = abspath(expandvars(expanduser(kwargs['filename'])))
+        cfilename = abspath(expandvars(expanduser(kwargs['filename']))).encode('utf-8')
         self.impl_ = grid_from_file(
                 parameters, cfilename,
                 kwargs.pop('verbose', False) == True,
@@ -161,7 +161,7 @@ cdef class Grid:
             'connected': ['corners', 'vertices']
         }
         check = lambda x: all([kwargs.get(u, None) for u in x])
-        which_set = {k: check(v) for k, v in input_sets.iteritems()}
+        which_set = {k: check(v) for k, v in input_sets.items()}
 
         # Makes sure at least one set of argument is provided
         nargs = sum([1 if x else 0 for x in which_set.itervalues()])

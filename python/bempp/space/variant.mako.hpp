@@ -71,7 +71,7 @@ class SpaceVariants {
     };
 
     struct DType: public boost::static_visitor<std::string> {
-% for pyname, ctype in dtypes.iteritems():
+% for pyname, ctype in dtypes.items():
         std::string operator()(
                 shared_ptr<Space<${ctype}> const> const &_in) const {
             return "${pyname}";

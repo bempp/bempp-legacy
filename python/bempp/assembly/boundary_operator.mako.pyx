@@ -1,6 +1,8 @@
 <%
+from sys import version
 from bempp_operators import dtypes, compatible_dtypes, bops
 ifloop = lambda x: "if" if getattr(x, 'index', x) == 0 else "elif"
+division = '__div__' if int(version[0]) < 3 else '__truediv__'
 %>\
 from cpython.mem cimport PyMem_Malloc, PyMem_Free
 from bempp.options cimport Options
@@ -10,7 +12,7 @@ from bempp.space.space cimport Space
 # Cython 0.20 will fail if templates are nested more than three-deep,
 # as in shared_ptr[ c_Space[ complex[float] ] ]
 cdef extern from "bempp/space/types.h":
-% for ctype in dtypes.itervalues():
+% for ctype in dtypes.values():
 %     if 'complex'  in ctype:
     ctypedef struct ${ctype}
 %     endif
@@ -19,15 +21,14 @@ cdef extern from "bempp/space/types.h":
 
 cdef class BoundaryOperator:
     """ Holds a reference to a boundary operator """
-
     def __init__(self, basis_type=None, result_type=None):
         from numpy import dtype
 
         # Simple way to check basis and result type are compatible
         ops = Options(basis_type=basis_type, result_type=result_type)
 
-% for i, (pybasis, cybasis) in enumerate(dtypes.iteritems()):
-%     for j, (pyresult, cyresult) in enumerate(dtypes.iteritems()):
+% for i, (pybasis, cybasis) in enumerate(dtypes.items()):
+%     for j, (pyresult, cyresult) in enumerate(dtypes.items()):
 %         if pyresult in compatible_dtypes[pybasis]:
         if ops.basis_type == "${pybasis}" and ops.result_type == "${pyresult}":
             self.impl_.set[${cybasis}, ${cyresult}]()
@@ -59,7 +60,7 @@ cdef class BoundaryOperator:
         def __get__(self):
             return self.impl_.label()
 
-% for opname, op in {'add': '+', 'sub': '-'}.iteritems():
+% for opname, op in {'add': '+', 'sub': '-'}.items():
     def __${opname}__(self, other):
         if not (
             isinstance(self, BoundaryOperator)
@@ -98,18 +99,19 @@ cdef class BoundaryOperator:
                 raise TypeError("Incorrect types in multiplication")
         return res
 
-    def __div__(BoundaryOperator self, other):
+    def ${division}(BoundaryOperator self, other):
         cdef BoundaryOperator res = BoundaryOperator.__new__(BoundaryOperator)
         cdef double asdouble
+        print("hello 0")
         if isinstance(other, BoundaryOperator):
             raise TypeError("Cannot divide by an operator")
         elif isinstance(other, complex):
             res.impl_.assign(
-                    (<BoundaryOperator> self).impl_ * (<complex>other))
+                    (<BoundaryOperator> self).impl_ / (<complex>other))
         else:
             try:
                 asdouble = other
-                res.impl_.assign((<BoundaryOperator> self).impl_ * asdouble)
+                res.impl_.assign((<BoundaryOperator> self).impl_ / asdouble)
             except:
                 raise TypeError("Incorrect types in division")
         return res

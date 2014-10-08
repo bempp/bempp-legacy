@@ -12,7 +12,7 @@ from bempp_operators import bops, compatible_dtypes, dtypes
 #include "bempp/assembly/variants.hpp"
 #include "bempp/space/types.h"
 
-% for description in bops.itervalues():
+% for description in bops.values():
 #include "${description['header']}"
 % endfor
 
@@ -22,7 +22,7 @@ namespace {
     //! Basis and Result are compatible
     template<class BASIS, class RESULT> struct is_compatible
         : std::integral_constant<bool, false> {};
-% for basis, results in compatible_dtypes.iteritems():
+% for basis, results in compatible_dtypes.items():
 %   for result in results:
     template<> struct is_compatible<${dtypes[basis]}, ${dtypes[result]}>
         : std::integral_constant<bool, true> {};
@@ -30,7 +30,7 @@ namespace {
 % endfor
 
 
-% for opname, description in bops.iteritems():
+% for opname, description in bops.items():
 %     if description['implementation'] == 'standard':
     // \brief Factory functor for boundary operator
     // \details Works with a BoundaryOpVariants (and hence boost::variants) to 

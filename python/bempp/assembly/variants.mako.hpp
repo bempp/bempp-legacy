@@ -14,8 +14,8 @@ namespace Bempp {
 class BoundaryOpVariants {
 <%
     variants = [(cybasis, cyresult)
-        for pybasis, cybasis in dtypes.iteritems()
-        for pyresult, cyresult in dtypes.iteritems()
+        for pybasis, cybasis in dtypes.items()
+        for pyresult, cyresult in dtypes.items()
         if pyresult in compatible_dtypes[pybasis]
     ]
 %>
@@ -27,7 +27,7 @@ class BoundaryOpVariants {
     > t_variant;
 
     struct BasisType: public boost::static_visitor<std::string> {
-% for pyname, ctype in dtypes.iteritems():
+% for pyname, ctype in dtypes.items():
         template<class T> std::string operator()(
             BoundaryOperator<${ctype}, T> const &_in) const {
             return "${pyname}";
@@ -35,7 +35,7 @@ class BoundaryOpVariants {
 % endfor
     };
     struct ResultType: public boost::static_visitor<std::string> {
-% for pyname, ctype in dtypes.iteritems():
+% for pyname, ctype in dtypes.items():
         template<class T> std::string operator()(
             BoundaryOperator<T, ${ctype}> const &_in) const {
             return "${pyname}";
@@ -66,7 +66,7 @@ class BoundaryOpVariants {
     };
 %endfor
 
-% for op, opname in {'+': "Plus", '-': "Minus", '*': "Times"}.iteritems():
+% for op, opname in {'+': "Plus", '-': "Minus", '*': "Times"}.items():
     struct BoundaryOp${opname}BoundaryOp
         : boost::static_visitor<BoundaryOpVariants> {
           template<class BASIS, class RESULT> BoundaryOpVariants operator()(
@@ -74,10 +74,10 @@ class BoundaryOpVariants {
                   BoundaryOperator<BASIS, RESULT> const &_b) const {
               return BoundaryOpVariants(_a ${op} _b);
           }
-          template<class B0, class B1, class R0, class R1>
+          template<class BASIS0, class BASIS1, class RES0, class RES1>
               BoundaryOpVariants operator()(
-                  BoundaryOperator<B0, R0> const &_a,
-                  BoundaryOperator<B1, R1> const &_b) const {
+                  BoundaryOperator<BASIS0, RES0> const &_a,
+                  BoundaryOperator<BASIS1, RES1> const &_b) const {
                   throw std::runtime_error("Incompatible boundary operator");
               }
     };
@@ -88,7 +88,7 @@ class BoundaryOpVariants {
         >,
         T
     > {};
-% for op, opname in {'/': "Divided", '*': "Times"}.iteritems():
+% for op, opname in {'/': "Divided", '*': "Times"}.items():
     template<class SCALAR> struct BoundaryOp${opname}Scalar
         : boost::static_visitor<BoundaryOpVariants> {
         SCALAR scalar;
@@ -143,13 +143,13 @@ class BoundaryOpVariants {
             return boost::apply_visitor(Label(), operator_);
         }
 
-% for op, opname in {'+': "Plus", '-': "Minus", '*': "Times"}.iteritems():
+% for op, opname in {'+': "Plus", '-': "Minus", '*': "Times"}.items():
         BoundaryOpVariants operator${op}(BoundaryOpVariants const &_a) const {
             return boost::apply_visitor(BoundaryOp${opname}BoundaryOp(),
                     operator_, _a.operator_);
         }
 % endfor
-% for op, opname in {'/': "Divided", '*': "Times"}.iteritems():
+% for op, opname in {'/': "Divided", '*': "Times"}.items():
     template<class T>
         typename std::enable_if<
             is_scalar<T> :: value,
