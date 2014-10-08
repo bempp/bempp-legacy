@@ -50,11 +50,12 @@ public:
 /** \brief New-style options controlling quadrature accuracy. */
 class AccuracyOptionsEx {
 public:
-  /** \brief Constructor.
-   *
-   *  Create an AccuracyOptionsEx object representing default quadrature
-   *  accuracy settings. */
-  AccuracyOptionsEx();
+    typedef std::vector<std::pair<double, QuadratureOptions> > t_range;
+    /** \brief Constructor.
+     *
+     *  Create an AccuracyOptionsEx object representing default quadrature
+     *  accuracy settings. */
+    AccuracyOptionsEx();
 
   /** \brief Constructor.
    *
@@ -202,9 +203,10 @@ public:
                         double maxNormalizedDistance4, int accuracyOrder4,
                         int accuracyOrder5, bool relativeToDefault = true);
 
-  void setSingleRegular(const std::vector<double> &maxNormalizedDistances,
-                        const std::vector<int> &accuracyOrders,
-                        bool relativeToDefault = true);
+    void setSingleRegular(const std::vector<double>& maxNormalizedDistances,
+                          const std::vector<int>& accuracyOrders,
+                          bool relativeToDefault = true);
+    void setSingleRegular(const t_range& options);
 
   /** \brief Return the options controlling integration of regular functions
    *  on pairs of elements.
@@ -326,9 +328,10 @@ public:
                         double maxNormalizedDistance4, int accuracyOrder4,
                         int accuracyOrder5, bool relativeToDefault = true);
 
-  void setDoubleRegular(const std::vector<double> &maxNormalizedDistances,
-                        const std::vector<int> &accuracyOrders,
-                        bool relativeToDefault = true);
+    void setDoubleRegular(const std::vector<double>& maxNormalizedDistances,
+                          const std::vector<int>& accuracyOrders,
+                          bool relativeToDefault = true);
+    void setDoubleRegular(const t_range& options);
 
   /** \brief Return the options controlling integration of singular functions
    *  on pairs of elements. */
@@ -345,11 +348,11 @@ public:
   void setDoubleSingular(int accuracyOrder, bool relativeToDefault = true);
 
 private:
-  /** \cond PRIVATE */
-  std::vector<std::pair<double, QuadratureOptions>> m_singleRegular;
-  std::vector<std::pair<double, QuadratureOptions>> m_doubleRegular;
-  QuadratureOptions m_doubleSingular;
-  /** \endcond */
+    /** \cond PRIVATE */
+    t_range m_singleRegular;
+    t_range m_doubleRegular;
+    QuadratureOptions m_doubleSingular;
+    /** \endcond */
 };
 
 } // namespace Fiber

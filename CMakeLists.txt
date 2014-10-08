@@ -5,8 +5,10 @@ set(Bempp_VERSION 2.0)
 # Needed to find BLAS
 enable_language(C)
 
-set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -DNDEBUG -O3")
-set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -DNDEBUG -O3")
+set(CMAKE_C_FLAGS_RELWITHDEBINFO
+    "${CMAKE_C_FLAGS_RELWITHDEBINFO} -DNDEBUG -O3")
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO
+    "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -DNDEBUG -O3")
 # set(CMAKE_CXX_FLAGS "-Wall -Wnon-virtual-dtor -Wno-sign-compare")
 
 # Tells cmake where to find bem++ specific files
@@ -32,6 +34,12 @@ add_to_rpath("${LIBRARY_INSTALL_PATH}")
 include(BemppOptions)
 include(BemppFindDependencies)
 
+# Documentation target
+if(DOXYGEN_FOUND OR SPHINX_FOUND)
+    add_custom_target(documentation)
+endif()
+
+
 # Tests
 if(WITH_TESTS)
     enable_testing()
@@ -43,19 +51,16 @@ add_subdirectory(python)
 add_subdirectory(examples)
 add_subdirectory(meshes)
 
-## Scratch
-#if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/scratch/CMakeLists.txt")
-#  add_subdirectory(scratch)
-#endif()
-
 # Uninstall target
-configure_file(
-  "${CMAKE_CURRENT_SOURCE_DIR}/cmake/uninstall.in.cmake"
-  "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
-  IMMEDIATE @ONLY)
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/uninstall.in.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
+    IMMEDIATE @ONLY
+)
 
 add_custom_target(uninstall
-  COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
+    COMMAND ${CMAKE_COMMAND} 
+        -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake
+)
 
 # Exports all Bempp so other packages can access it
 include(BemppExport)
