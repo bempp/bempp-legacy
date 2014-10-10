@@ -22,6 +22,9 @@
 
 #include "abstract_boundary_operator.hpp"
 #include "../fiber/explicit_instantiation.hpp"
+#include "../fiber/verbosity_level.hpp"
+#include "../fiber/accuracy_options.hpp"
+#include "numerical_quadrature_strategy.hpp"
 #include <Teuchos_ParameterList.hpp>
 
 #include <boost/make_shared.hpp>
@@ -33,12 +36,95 @@ template <typename BasisFunctionType, typename ResultType>
 Context<BasisFunctionType, ResultType>::Context(
     const shared_ptr<const QuadratureStrategy> &quadStrategy,
     const AssemblyOptions &assemblyOptions,
-    const shared_ptr<Teuchos::ParameterList> &globalParameterList)
+    const ParameterList &globalParameterList)
     : m_quadStrategy(quadStrategy), m_assemblyOptions(assemblyOptions),
       m_globalParameterList(globalParameterList) {
   if (quadStrategy.get() == 0)
     throw std::invalid_argument("Context::Context(): "
                                 "quadStrategy must not be null");
+}
+
+template <typename BasisFunctionType, typename ResultType>
+Context<BasisFunctionType, ResultType>::Context() :
+    Context(GlobalParameters::parameterList()){}
+
+
+template <typename BasisFunctionType, typename ResultType>
+Context<BasisFunctionType, ResultType>::Context(
+    const ParameterList &globalParameterList) {
+
+  ParameterList parameters(globalParameterList);
+  parameters.setParametersNotAlreadySet(GlobalParameters::parameterList());
+
+  std::string assemblyType =
+      parameters.get<std::string>("boundaryOperatorAssemblyType");
+  if (assemblyType == "hmat")
+    m_assemblyOptions.switchToHMatMode();
+  else if (assemblyType == "dense")
+    m_assemblyOptions.switchToDenseMode();
+  else
+    throw std::runtime_error(
+        "Context::Context(): boundaryOperatorAssemblyType has "
+        "unsupported value.");
+
+  m_assemblyOptions.setMaxThreadCount(parameters.get<int>("maxThreadCount"));
+
+  int verbosityLevel = parameters.get<int>("verbosityLevel");
+
+  if (verbosityLevel == -5)
+    m_assemblyOptions.setVerbosityLevel(VerbosityLevel::LOW);
+  else if (verbosityLevel == 0)
+    m_assemblyOptions.setVerbosityLevel(VerbosityLevel::DEFAULT);
+  else if (verbosityLevel == 5)
+    m_assemblyOptions.setVerbosityLevel(VerbosityLevel::HIGH);
+  else
+    throw std::runtime_error(
+        "Context::Context(): verbosityLevel has unsupported value");
+
+  m_assemblyOptions.enableSingularIntegralCaching(
+      parameters.get<bool>("enableSingularIntegralCaching"));
+
+  std::string enableBlasInQuadrature =
+      parameters.get<std::string>("enableBlasInQuadrature");
+  if (enableBlasInQuadrature == "auto")
+    m_assemblyOptions.enableBlasInQuadrature(AssemblyOptions::AUTO);
+  else if (enableBlasInQuadrature == "yes")
+    m_assemblyOptions.enableBlasInQuadrature(AssemblyOptions::YES);
+  else if (enableBlasInQuadrature == "no")
+    m_assemblyOptions.enableBlasInQuadrature(AssemblyOptions::NO);
+  else
+    throw std::runtime_error("Context::Context(): enableBlasInQuadrature "
+                             "has unsupported value");
+
+  Fiber::AccuracyOptionsEx accuracyOptions;
+
+  auto quadOps = parameters.sublist("quadratureOrders");
+
+  accuracyOptions.setSingleRegular(
+      quadOps.sublist("near").get<double>("maxRelDist"),
+      quadOps.sublist("near").get<int>("singleOrder"),
+      quadOps.sublist("medium").get<int>("maxRelDist"),
+      quadOps.sublist("medium").get<int>("singleOrder"),
+      quadOps.sublist("far").get<int>("singleOrder"),
+      quadOps.get<bool>("quadratureOrdersAreRelative"));
+
+  accuracyOptions.setDoubleRegular(
+      quadOps.sublist("near").get<double>("maxRelDist"),
+      quadOps.sublist("near").get<int>("doubleOrder"),
+      quadOps.sublist("medium").get<int>("maxRelDist"),
+      quadOps.sublist("medium").get<int>("doubleOrder"),
+      quadOps.sublist("far").get<int>("doubleOrder"),
+      quadOps.get<bool>("quadratureOrdersAreRelative"));
+
+  accuracyOptions.setDoubleSingular(
+      quadOps.get<int>("doubleSingular"),
+      quadOps.get<bool>("quadratureOrdersAreRelative"));
+
+  m_quadStrategy.reset(
+      new NumericalQuadratureStrategy<BasisFunctionType, ResultType>(
+          accuracyOptions));
+
+  m_globalParameterList = parameters;
 }
 
 template <typename BasisFunctionType, typename ResultType>

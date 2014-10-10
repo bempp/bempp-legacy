@@ -52,7 +52,7 @@ if (TBB_LIBRARY)
 endif()
 
 # Link Cairo
-target_link_libraries(libbempp ${CAIRO_LIBRARIES})
+# target_link_libraries(libbempp ${CAIRO_LIBRARIES})
 
 if(TBB_LIBRARY_DEBUG)
     target_link_libraries(libbempp

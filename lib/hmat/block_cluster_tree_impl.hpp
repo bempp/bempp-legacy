@@ -4,8 +4,8 @@
 #define HMAT_BLOCK_CLUSTER_TREE_IMPL_HPP
 
 #include "block_cluster_tree.hpp"
-#include "cairo/cairo.h"
-#include "cairo/cairo-pdf.h"
+//#include "cairo/cairo.h"
+//#include "cairo/cairo-pdf.h"
 
 namespace hmat {
 
@@ -27,57 +27,57 @@ BlockClusterTree<N>::BlockClusterTree(
   initializeBlockClusterTree(admissibilityFunction, maxBlockSize);
 }
 
-template <int N>
-void BlockClusterTree<N>::writeToPdfFile(const std::string &fname,
-                                         double widthInPoints,
-                                         double heightInPoints) const {
-
-  cairo_surface_t *surface;
-  surface =
-      cairo_pdf_surface_create(fname.c_str(), widthInPoints, heightInPoints);
-  cairo_t *cr = cairo_create(surface);
-  cairo_set_line_width(cr, 1);
-
-  std::function<void(shared_ptr<BlockClusterTreeNode<N>>)> paintImpl;
-
-  paintImpl = [&cr, &paintImpl, widthInPoints, heightInPoints, this](
-      shared_ptr<BlockClusterTreeNode<N>> node) {
-
-    auto nodeData = node->data();
-
-    if (node->isLeaf()) {
-
-      auto rowIndexRange = nodeData.rowClusterTreeNode->data().indexRange;
-      auto columnIndexRange = nodeData.columnClusterTreeNode->data().indexRange;
-
-      auto rowDiameter = rowIndexRange[1] - rowIndexRange[0];
-      auto columnDiameter = columnIndexRange[1] - columnIndexRange[0];
-
-      double x = (widthInPoints * columnIndexRange[0]) / (this->columns());
-      double y = (heightInPoints * rowIndexRange[0]) / (this->rows());
-
-      double rectWidth = (widthInPoints * columnDiameter) / this->columns();
-      double rectHeight = (heightInPoints * rowDiameter) / this->rows();
-
-      double green = nodeData.admissible ? 1.0 : 0.0;
-      double red = 1 - green;
-
-      cairo_set_source_rgb(cr, red, green, 0);
-      cairo_rectangle(cr, x, y, rectWidth, rectHeight);
-      cairo_fill_preserve(cr);
-      cairo_set_source_rgb(cr, 0, 0, 0);
-      cairo_stroke(cr);
-    } else {
-      for (int i = 0; i < N * N; ++i)
-        paintImpl(node->child(i));
-    }
-  };
-
-  paintImpl(m_root);
-
-  cairo_destroy(cr);
-  cairo_surface_destroy(surface);
-}
+//template <int N>
+//void BlockClusterTree<N>::writeToPdfFile(const std::string &fname,
+//                                         double widthInPoints,
+//                                         double heightInPoints) const {
+//
+//  cairo_surface_t *surface;
+//  surface =
+//      cairo_pdf_surface_create(fname.c_str(), widthInPoints, heightInPoints);
+//  cairo_t *cr = cairo_create(surface);
+//  cairo_set_line_width(cr, 1);
+//
+//  std::function<void(shared_ptr<BlockClusterTreeNode<N>>)> paintImpl;
+//
+//  paintImpl = [&cr, &paintImpl, widthInPoints, heightInPoints, this](
+//      shared_ptr<BlockClusterTreeNode<N>> node) {
+//
+//    auto nodeData = node->data();
+//
+//    if (node->isLeaf()) {
+//
+//      auto rowIndexRange = nodeData.rowClusterTreeNode->data().indexRange;
+//      auto columnIndexRange = nodeData.columnClusterTreeNode->data().indexRange;
+//
+//      auto rowDiameter = rowIndexRange[1] - rowIndexRange[0];
+//      auto columnDiameter = columnIndexRange[1] - columnIndexRange[0];
+//
+//      double x = (widthInPoints * columnIndexRange[0]) / (this->columns());
+//      double y = (heightInPoints * rowIndexRange[0]) / (this->rows());
+//
+//      double rectWidth = (widthInPoints * columnDiameter) / this->columns();
+//      double rectHeight = (heightInPoints * rowDiameter) / this->rows();
+//
+//      double green = nodeData.admissible ? 1.0 : 0.0;
+//      double red = 1 - green;
+//
+//      cairo_set_source_rgb(cr, red, green, 0);
+//      cairo_rectangle(cr, x, y, rectWidth, rectHeight);
+//      cairo_fill_preserve(cr);
+//      cairo_set_source_rgb(cr, 0, 0, 0);
+//      cairo_stroke(cr);
+//    } else {
+//      for (int i = 0; i < N * N; ++i)
+//        paintImpl(node->child(i));
+//    }
+//  };
+//
+//  paintImpl(m_root);
+//
+//  cairo_destroy(cr);
+//  cairo_surface_destroy(surface);
+//}
 
 template <int N> std::size_t BlockClusterTree<N>::rows() const {
   return m_rowClusterTree->numberOfDofs();

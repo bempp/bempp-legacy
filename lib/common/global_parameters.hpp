@@ -18,17 +18,30 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "global_parameters.hpp"
-#include "hmat_parameters.hpp"
+#ifndef bempp_global_parameters_hpp
+#define bempp_global_parameters_hpp
+
+#include "../common/common.hpp"
+#include "../common/shared_ptr.hpp"
+
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_ParameterEntry.hpp>
 
 namespace Bempp {
 
-shared_ptr<ParameterList> GlobalParameters::parameterList() {
+using Teuchos::ParameterList;
+using Teuchos::ParameterEntry;
 
-  shared_ptr<ParameterList> parameters(new ParameterList());
+/** \ingroup parameters
+ *  \brief Parameters controlling the BEM++ library.
+ */
 
-  parameters->sublist("HMatParameters")
-      .setParameters(*HMatParameters::parameterList());
-  return parameters;
+struct GlobalParameters {
+
+
+  /** \brief Return a global parameter list. */
+  static ParameterList parameterList();
+};
 }
-}
+
+#endif

@@ -4,10 +4,9 @@
 #include "../common/common.hpp"
 #include "../common/shared_ptr.hpp"
 #include "../fiber/quadrature_strategy.hpp"
-#include "../parameters/global_parameters.hpp"
+#include "../common/global_parameters.hpp"
 #include "assembly_options.hpp"
 #include "discrete_boundary_operator_cache.hpp"
-#include <Teuchos_ParameterList.hpp>
 
 namespace Bempp {
 
@@ -47,10 +46,20 @@ public:
    *
    *  \param[in] globalParameterList
    *    New parameter structure that will supersede the other option objects. */
+  BEMPP_DEPRECATED
   Context(const shared_ptr<const QuadratureStrategy> &quadStrategy,
           const AssemblyOptions &assemblyOptions,
-          const shared_ptr<Teuchos::ParameterList> &globalParameterList =
+          const ParameterList& globalParameterList =
               GlobalParameters::parameterList());
+
+  /** \brief Constructor */
+  Context();
+
+  /** \brief Constructor.
+   *
+   *  \param[in] globalParameterList
+   *     Parameter list that contains the BEM++ options. */
+  Context(const ParameterList& globalParameterList);
 
   /** \brief Return the discrete weak form of the specified abstract operator.
    *
@@ -78,24 +87,16 @@ public:
     return m_quadStrategy;
   }
 
-  /** \brief Return a reference to a \p Teuchos::ParameterList Object that
-   *  contains the global options. This will eventually supersede the other
-   *  option arrays. */
-
-  Teuchos::ParameterList &globalParameterList() {
-    return *m_globalParameterList;
-  }
-
   /** \brief Const version of \p globalParameterList. */
 
-  const Teuchos::ParameterList &globalParameterList() const {
-    return *m_globalParameterList;
+  const ParameterList &globalParameterList() const {
+    return m_globalParameterList;
   }
 
 private:
   shared_ptr<const QuadratureStrategy> m_quadStrategy;
   AssemblyOptions m_assemblyOptions;
-  shared_ptr<Teuchos::ParameterList> m_globalParameterList;
+  ParameterList m_globalParameterList;
 };
 
 } // namespace Bempp

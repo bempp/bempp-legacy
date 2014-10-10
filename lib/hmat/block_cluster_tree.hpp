@@ -40,8 +40,8 @@ public:
                    int maxBlockSize,
                    const AdmissibilityFunction &admissibilityFunction);
 
-  void writeToPdfFile(const std::string &fname, double widthInPoints,
-                      double heightInPoints) const;
+//  void writeToPdfFile(const std::string &fname, double widthInPoints,
+//                      double heightInPoints) const;
 
   std::size_t rows() const;
   std::size_t columns() const;
