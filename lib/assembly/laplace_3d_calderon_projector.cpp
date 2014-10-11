@@ -28,6 +28,7 @@
 #include "identity_operator.hpp"
 #include "blocked_operator_structure.hpp"
 #include "../fiber/explicit_instantiation.hpp"
+#include "../assembly/context.hpp"
 
 #include <boost/make_shared.hpp>
 
@@ -131,7 +132,43 @@ laplace3dInteriorCalderonProjector(
   return BlockedBoundaryOperator<BasisFunctionType, ResultType>(structure);
 }
 
+template <typename BasisFunctionType, typename ResultType>
+BlockedBoundaryOperator<BasisFunctionType, ResultType>
+laplace3dExteriorCalderonProjector(
+    const ParameterList &parameterList,
+    const shared_ptr<const Space<BasisFunctionType>> &hminusSpace,
+    const shared_ptr<const Space<BasisFunctionType>> &hplusSpace,
+    const std::string &label) {
+
+  shared_ptr<const Context<BasisFunctionType, ResultType>> context(
+      new Context<BasisFunctionType, ResultType>(parameterList));
+  return laplace3dExteriorCalderonProjector<BasisFunctionType, ResultType>(
+      context, hminusSpace, hplusSpace, label);
+}
+
+template <typename BasisFunctionType, typename ResultType>
+BlockedBoundaryOperator<BasisFunctionType, ResultType>
+laplace3dInteriorCalderonProjector(
+    const ParameterList &parameterList,
+    const shared_ptr<const Space<BasisFunctionType>> &hminusSpace,
+    const shared_ptr<const Space<BasisFunctionType>> &hplusSpace,
+    const std::string &label) {
+
+  shared_ptr<const Context<BasisFunctionType, ResultType>> context(
+      new Context<BasisFunctionType, ResultType>(parameterList));
+  return laplace3dInteriorCalderonProjector<BasisFunctionType, ResultType>(
+      context, hminusSpace, hplusSpace, label);
+}
+
 #define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS, RESULT)                       \
+  template BlockedBoundaryOperator<BASIS, RESULT>                              \
+  laplace3dExteriorCalderonProjector(                                          \
+      const ParameterList &, const shared_ptr<const Space<BASIS>> &,           \
+      const shared_ptr<const Space<BASIS>> &, const std::string &);            \
+  template BlockedBoundaryOperator<BASIS, RESULT>                              \
+  laplace3dInteriorCalderonProjector(                                          \
+      const ParameterList &, const shared_ptr<const Space<BASIS>> &,           \
+      const shared_ptr<const Space<BASIS>> &, const std::string &);            \
   template BlockedBoundaryOperator<BASIS, RESULT>                              \
   laplace3dExteriorCalderonProjector(                                          \
       const shared_ptr<const Context<BASIS, RESULT>> &,                        \

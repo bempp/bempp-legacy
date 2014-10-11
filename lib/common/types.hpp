@@ -25,6 +25,7 @@
 #include "../fiber/types.hpp"
 #include "../grid/geometry_type.hpp"
 #include "../grid/index_set.hpp"
+#include <Teuchos_ParameterList.hpp>
 
 namespace Bempp {
 
@@ -33,6 +34,8 @@ using Fiber::TEST_TRIAL;
 using Fiber::TRIAL_TEST;
 
 using Fiber::ALL_DOFS;
+
+using Teuchos::ParameterList;
 
 typedef int ElementVariant;
 typedef int EntityIndex;

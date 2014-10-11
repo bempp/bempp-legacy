@@ -32,6 +32,7 @@
 #include "../fiber/simple_test_scalar_kernel_trial_integrand_functor.hpp"
 
 #include "../common/boost_make_shared_fwd.hpp"
+#include "../common/types.hpp"
 
 #include "../fiber/typical_test_scalar_kernel_trial_integral.hpp"
 
@@ -80,7 +81,32 @@ laplace3dDoubleLayerBoundaryOperator(
                               TransformationFunctor(), integral));
   return BoundaryOperator<BasisFunctionType, ResultType>(context, newOp);
 }
+
+
+template <typename BasisFunctionType, typename ResultType>
+BoundaryOperator<BasisFunctionType, ResultType>
+laplace3dDoubleLayerBoundaryOperator(
+    const ParameterList& parameterList,
+    const shared_ptr<const Space<BasisFunctionType>> &domain,
+    const shared_ptr<const Space<BasisFunctionType>> &range,
+    const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
+    const std::string &label, int symmetry){
+
+
+  shared_ptr<const Context<BasisFunctionType, ResultType>> context(
+      new Context<BasisFunctionType, ResultType>(parameterList));
+  return laplace3dDoubleLayerBoundaryOperator(context, domain, range,
+                                              dualToRange, label, symmetry);
+}
+
+
 #define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS, RESULT)                       \
+  template BoundaryOperator<BASIS, RESULT>                                     \
+  laplace3dDoubleLayerBoundaryOperator(                                        \
+      const ParameterList &,                                                   \
+      const shared_ptr<const Space<BASIS>> &,                                  \
+      const shared_ptr<const Space<BASIS>> &,                                  \
+      const shared_ptr<const Space<BASIS>> &, const std::string &, int);       \
   template BoundaryOperator<BASIS, RESULT>                                     \
   laplace3dDoubleLayerBoundaryOperator(                                        \
       const shared_ptr<const Context<BASIS, RESULT>> &,                        \

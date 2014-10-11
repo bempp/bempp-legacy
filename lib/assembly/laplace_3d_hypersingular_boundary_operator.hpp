@@ -22,6 +22,7 @@
 #define bempp_laplace_3d_hypersingular_boundary_operator_hpp
 
 #include "boundary_operator.hpp"
+#include "../common/types.hpp"
 #include "symmetry.hpp"
 
 namespace Bempp {
@@ -93,6 +94,16 @@ laplace3dHypersingularBoundaryOperator(
     const BoundaryOperator<BasisFunctionType, ResultType> &externalSlp =
         BoundaryOperator<BasisFunctionType, ResultType>());
 
+template <typename BasisFunctionType, typename ResultType>
+BoundaryOperator<BasisFunctionType, ResultType>
+laplace3dHypersingularBoundaryOperator(
+    const ParameterList& parameterList,
+    const shared_ptr<const Space<BasisFunctionType>> &domain,
+    const shared_ptr<const Space<BasisFunctionType>> &range,
+    const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
+    const std::string &label = "", int symmetry = NO_SYMMETRY,
+    const BoundaryOperator<BasisFunctionType, ResultType> &externalSlp =
+        BoundaryOperator<BasisFunctionType, ResultType>());
 } // namespace Bempp
 
 #endif

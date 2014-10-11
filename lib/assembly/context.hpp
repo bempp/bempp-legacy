@@ -5,6 +5,7 @@
 #include "../common/shared_ptr.hpp"
 #include "../fiber/quadrature_strategy.hpp"
 #include "../common/global_parameters.hpp"
+#include "../common/types.hpp"
 #include "assembly_options.hpp"
 #include "discrete_boundary_operator_cache.hpp"
 
@@ -59,7 +60,7 @@ public:
    *
    *  \param[in] globalParameterList
    *     Parameter list that contains the BEM++ options. */
-  Context(const ParameterList& globalParameterList);
+  explicit Context(const ParameterList& globalParameterList);
 
   /** \brief Return the discrete weak form of the specified abstract operator.
    *

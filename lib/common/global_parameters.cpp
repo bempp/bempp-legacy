@@ -19,6 +19,8 @@
 // THE SOFTWARE.
 
 #include "global_parameters.hpp"
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_XMLParameterListHelpers.hpp>
 
 namespace Bempp {
 
@@ -111,7 +113,8 @@ ParameterList GlobalParameters::parameterList() {
   hmatParameters.set("eta", static_cast<double>(1.2),
                      "(double) Specifies the block separation parameter eta");
 
-
+  Teuchos::writeParameterListToXmlFile(parameters,"parameters.xml");
+ 
   return parameters;
 }
 }

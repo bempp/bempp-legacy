@@ -23,14 +23,12 @@
 
 #include "../common/common.hpp"
 #include "../common/shared_ptr.hpp"
+#include "../common/types.hpp"
 
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_ParameterEntry.hpp>
 
 namespace Bempp {
-
-using Teuchos::ParameterList;
-using Teuchos::ParameterEntry;
 
 /** \ingroup parameters
  *  \brief Parameters controlling the BEM++ library.

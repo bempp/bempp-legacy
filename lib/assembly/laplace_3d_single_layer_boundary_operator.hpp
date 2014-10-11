@@ -23,6 +23,7 @@
 
 #include "boundary_operator.hpp"
 #include "symmetry.hpp"
+#include "../common/global_parameters.hpp"
 
 namespace Bempp {
 
@@ -93,6 +94,14 @@ laplace3dSingleLayerBoundaryOperator(
     const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
     const std::string &label = "", int symmetry = NO_SYMMETRY);
 
+template <typename BasisFunctionType, typename ResultType>
+BoundaryOperator<BasisFunctionType, ResultType>
+laplace3dSingleLayerBoundaryOperator(
+    const ParameterList& parameterList,
+    const shared_ptr<const Space<BasisFunctionType>> &domain,
+    const shared_ptr<const Space<BasisFunctionType>> &range,
+    const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
+    const std::string &label = "", int symmetry = NO_SYMMETRY);
 } // namespace Bempp
 
 #endif
