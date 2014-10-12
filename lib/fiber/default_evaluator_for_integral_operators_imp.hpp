@@ -183,7 +183,7 @@ ResultType, GeometryFactory>::evaluate(
     const size_t kernelValuesSizePerEvalPoint =
         trialGeomData.globals.n_cols * sizeof(KernelType);
     const size_t chunkSize =
-        std::max(1ul, 10 * 1024 * 1024 / kernelValuesSizePerEvalPoint);
+        std::max(size_t(1), 10 * 1024 * 1024 / kernelValuesSizePerEvalPoint);
     const size_t chunkCount = (pointCount + chunkSize - 1) / chunkSize;
 
     int maxThreadCount = 1;
