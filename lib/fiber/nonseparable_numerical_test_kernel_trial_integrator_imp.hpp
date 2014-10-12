@@ -129,10 +129,19 @@ basisData(ElementType type, const Shapeset<BasisFunctionType>& shapeset) const
         size_t basisDeps = 0, geomDeps = 0;
         transformations.addDependencies(basisDeps, geomDeps);
         shapeset.evaluate(basisDeps, localQuadPoints, ALL_DOFS, *basisData);
-        // Attempt to insert the newly created integrator into the map
+
+        // Release the newly created basis data object from the auto pointer and
+        // try to insert it into the map. If the insertion succeeds, the map
+        // takes ownership of the object, which will be deleted in the
+        // destructor of the integrator. If the insertion fails, it means
+        // another thread has already inserted the basis data for this shapeset,
+        // so our basis data object is now redundant and should be released.
+        BasisData<BasisFunctionType>* ptrBasisData = basisData.release();
         std::pair<typename BasisDataCache::iterator, bool> result =
-                cache.insert(std::make_pair(&shapeset, basisData.release()));
-        it = result.first; // this is the object inserted into the cache
+            cache.insert(std::make_pair(&shapeset, ptrBasisData));
+        it = result.first; // this is the object that ended up into the cache
+        if (!result.second) // insertion failed
+            delete ptrBasisData;
     }
     return *it->second;
 }
