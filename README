@@ -7,6 +7,17 @@ started in October 2011.
 History
 =======
 
+2.0.2 (13 October 2014)
+-----------------------
+
+A maintenance release that fixes a number of bugs discovered over the last few
+months:
+- A memory leak in one of the integrators (issue #165)
+- A compilation error occurring in the 32-bit mode (issue #160)
+- A bug in Solver::checkConsistency() (issue #150)
+- Incorrect Teuchos library name in the CMake config file installed with BEM++
+  (issue #88)
+
 2.0.1 (17 October 2013)
 ------------------------
 
