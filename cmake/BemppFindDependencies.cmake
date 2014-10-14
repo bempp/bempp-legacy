@@ -117,7 +117,7 @@ add_to_ld_path(
     ${TBB_MALLOC_LIBRARY_DEBUG}
 )
 
-lookup_python_package(cython REQUIRED PATH "${EXTERNAL_ROOT}/python")
+lookup_python_package(Cython VERSION 0.21 REQUIRED PATH "${EXTERNAL_ROOT}/python")
 if(WITH_TESTS)
     include(AddPyTest)
     setup_pytest("${EXTERNAL_ROOT}/python" "${PROJECT_BINARY_DIR}/py.test.sh")
