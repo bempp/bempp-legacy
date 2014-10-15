@@ -23,6 +23,7 @@
 #include "modified_helmholtz_3d_single_layer_boundary_operator.hpp"
 
 #include "../fiber/explicit_instantiation.hpp"
+#include "context.hpp"
 
 namespace Bempp {
 
@@ -46,7 +47,37 @@ helmholtz3dSingleLayerBoundaryOperator(
       label, symmetry, useInterpolation, interpPtsPerWavelength);
 }
 
+template <typename BasisFunctionType>
+BoundaryOperator<BasisFunctionType,
+                 typename ScalarTraits<BasisFunctionType>::ComplexType>
+helmholtz3dSingleLayerBoundaryOperator(
+    const ParameterList &parameterList,
+    const shared_ptr<const Space<BasisFunctionType>> &domain,
+    const shared_ptr<const Space<BasisFunctionType>> &range,
+    const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
+    typename ScalarTraits<BasisFunctionType>::ComplexType waveNumber,
+    const std::string &label, int symmetry, bool useInterpolation,
+    int interpPtsPerWavelength) {
+
+  shared_ptr<const Context<
+      BasisFunctionType, typename ScalarTraits<BasisFunctionType>::ComplexType>>
+  context(new Context<BasisFunctionType,
+                      typename ScalarTraits<BasisFunctionType>::ComplexType>(
+      parameterList));
+
+  return helmholtz3dSingleLayerBoundaryOperator(
+      context, domain, range, dualToRange, waveNumber, label, symmetry,
+      useInterpolation, interpPtsPerWavelength);
+}
+
 #define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS)                               \
+  template BoundaryOperator<BASIS, ScalarTraits<BASIS>::ComplexType>           \
+  helmholtz3dSingleLayerBoundaryOperator(                                      \
+      const ParameterList&,                                                    \
+      const shared_ptr<const Space<BASIS>> &,                                  \
+      const shared_ptr<const Space<BASIS>> &,                                  \
+      const shared_ptr<const Space<BASIS>> &,                                  \
+      ScalarTraits<BASIS>::ComplexType, const std::string &, int, bool, int);  \
   template BoundaryOperator<BASIS, ScalarTraits<BASIS>::ComplexType>           \
   helmholtz3dSingleLayerBoundaryOperator(                                      \
       const shared_ptr<                                                        \
