@@ -50,6 +50,8 @@ add_subdirectory(lib)
 add_subdirectory(python)
 add_subdirectory(examples)
 add_subdirectory(meshes)
+# Installs FindX.cmake files for packages depending on cmake
+add_subdirectory(cmake)
 
 # Uninstall target
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/uninstall.in.cmake"

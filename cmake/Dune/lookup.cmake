@@ -116,7 +116,7 @@ ExternalProject_Add(dune-grid
 _get_arguments(localfunctions)
 ExternalProject_Add(dune-localfunctions
     PREFIX ${EXTERNAL_ROOT}
-    DEPENDS dune-geometry dune-common
+    DEPENDS dune-geometry dune-common dune-grid
     ${localfunctions_ARGUMENTS}
     PATCH_COMMAND
         ${CMAKE_COMMAND} -DROOT=${EXTERNAL_ROOT}/src/dune-localfunctions
@@ -125,71 +125,21 @@ ExternalProject_Add(dune-localfunctions
     LOG_DOWNLOAD ON LOG_CONFIGURE ON LOG_BUILD ON
 )
 
-ExternalProject_Add(dune-foamgrid
-    DEPENDS dune-grid dune-geometry dune-common
-    PREFIX ${EXTERNAL_ROOT}
-    URL ${PROJECT_SOURCE_DIR}/contrib/dune/dune-foamgrid
-    PATCH_COMMAND
-       ${CMAKE_COMMAND} -E copy_if_different
-                        ${CURRENT_LOOKUP_DIRECTORY}/foamgrid-install.cmake
-                        ${EXTERNAL_ROOT}/src/dune-foamgrid/CMakeLists.txt
-    CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${EXTERNAL_ROOT}
-)
-
-# This file helps to create a fake dune project
-# It answers the question posed by the duneproject script, including the subsidiary
-# "this directory already exists..."
-file(
-  WRITE ${EXTERNAL_ROOT}/src/bempp.dune.input
-  "dune-bempp
-dune-common dune-geometry dune-grid dune-localfunctions
-1
-me@me
-y
-y
-"
-)
-
-# Create fake dune project, with the sole goal of generating a config.h file!
-# First, generate a new project
-ExternalProject_Add(
-    dune-bempp
-    DEPENDS dune-foamgrid dune-grid dune-geometry dune-common dune-localfunctions
-    PREFIX ${EXTERNAL_ROOT}
-    DOWNLOAD_COMMAND ""
-    CMAKE_ARGS -C "${EXTERNAL_ROOT}/src/DuneVariables.cmake"
-    LOG_DOWNLOAD OFF LOG_CONFIGURE ON LOG_BUILD ON
-    INSTALL_COMMAND
-        ${CMAKE_COMMAND} -E copy_if_different
-               ${EXTERNAL_ROOT}/src/dune-bempp-build/config.h
-               ${EXTERNAL_ROOT}/include/dune_config.h
-    ${build_args}
-)
-ExternalProject_Add_Step(dune-bempp
-    CREATE_PROJECT
-    COMMAND dune-common/bin/duneproject < bempp.dune.input
-    WORKING_DIRECTORY ${EXTERNAL_ROOT}/src
-    COMMENT Creating fake dune-bempp project
-    DEPENDERS configure
-)
-
 # Creates a single target for Dune and remove subcomponents from ALL
 add_custom_target(Dune ALL
     DEPENDS
-        dune-foamgrid dune-grid dune-geometry dune-common dune-localfunctions
-        dune-bempp
+       dune-grid dune-geometry dune-common dune-localfunctions
 )
 set_target_properties(
-    dune-foamgrid dune-grid dune-geometry dune-common dune-localfunctions
-    dune-bempp
+    dune-grid dune-geometry dune-common dune-localfunctions
     PROPERTIES EXCLUDE_FROM_ALL TRUE
 )
 
 
 # Rerun cmake to capture new dune install
-add_recursive_cmake_step(dune-bempp
+add_recursive_cmake_step(dune-localfunctions
     PACKAGE_NAME Dune
     FOUND_VAR Dune_FOUND
     DEPENDEES install
 )
-add_dependencies(lookup_dependencies dune-bempp)
+add_dependencies(lookup_dependencies Dune)

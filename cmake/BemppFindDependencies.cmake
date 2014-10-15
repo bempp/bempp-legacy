@@ -41,7 +41,8 @@ lookup_package(Armadillo REQUIRED ARGUMENTS TIMEOUT 60)
 # ARMA_DONT_USE_WRAPPER means we don't need to include armadillo library
 add_definitions(-DARMA_DONT_USE_WRAPPER)
 lookup_package(TBB REQUIRED)
-lookup_package(Dune REQUIRED COMPONENTS geometry grid localfunctions foamgrid)
+lookup_package(Dune REQUIRED COMPONENTS geometry grid localfunctions)
+include("${PROJECT_SOURCE_DIR}/cmake/dune/local.cmake")
 
 # Using cmake_policy does not seem to work here.
 set(CMAKE_POLICY_DEFAULT_CMP0012 NEW CACHE STRING "Avoids anoying messages")
