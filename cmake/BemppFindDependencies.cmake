@@ -42,7 +42,7 @@ lookup_package(Armadillo REQUIRED ARGUMENTS TIMEOUT 60)
 add_definitions(-DARMA_DONT_USE_WRAPPER)
 lookup_package(TBB REQUIRED)
 lookup_package(Dune REQUIRED COMPONENTS geometry grid localfunctions)
-include("${PROJECT_SOURCE_DIR}/cmake/dune/local.cmake")
+include("${PROJECT_SOURCE_DIR}/cmake/Dune/local.cmake")
 
 # Using cmake_policy does not seem to work here.
 set(CMAKE_POLICY_DEFAULT_CMP0012 NEW CACHE STRING "Avoids anoying messages")
