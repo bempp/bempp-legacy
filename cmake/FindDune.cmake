@@ -29,6 +29,16 @@ foreach(component ${components})
         list(APPEND required_not_found ${component})
     endif()
 endforeach()
+
+find_program(DuneProject_PROGRAM duneproject
+    PATHS "${EXTERNAL_ROOT}/src/dune-common/bin"
+    HINTS ${dune_PREFIX} $ENV{dune_PREFIX} ${dune-common_PREFIX}
+    PATH_SUFFIXES bin
+)
+if(NOT DuneProject_PROGRAM)
+    list(APPEND required_not_found "devel")
+endif()
+
 if("${required_not_found}" STREQUAL "")
     set(Dune_FOUND TRUE)
 elseif(Dune_FIND_REQUIRED)
@@ -36,3 +46,4 @@ elseif(Dune_FIND_REQUIRED)
 else()
     message(STATUS "Could not find dune components ${required_not_found}")
 endif()
+

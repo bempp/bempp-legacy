@@ -1,3 +1,9 @@
+### Adds dune-foamgrid and figures out duneconfig.h by creating fake dune-bempp
+### project.
+if(NOT Dune_FOUND)
+    # Can only be run if Dune is already found.
+    return()
+endif()
 unset(depends)
 foreach(component common geometry grid localfunctions)
     if(TARGET dune-${component})
@@ -34,7 +40,7 @@ if(NOT TARGET Dune)
         FILENAME "${EXTERNAL_ROOT}/src/DuneVariables.cmake"
         PATTERNS
             "CMAKE_[^_]*_R?PATH" "CMAKE_C_.*" "CMAKE_CXX_.*"
-            "BLAS_.*" "LAPACK_.*"
+            "BLAS_.*" "LAPACK_.*" "Dune.*" "dune.*"
         ALSOADD
             "\nset(CMAKE_INSTALL_PREFIX \"${EXTERNAL_ROOT}\" CACHE STRING \"\")\n"
             "set(CMAKE_LIBRARY_PATH ${library_dirs} \"${EXTERNAL_ROOT}/lib\"\n"
@@ -64,8 +70,6 @@ ExternalProject_Add(
                ${EXTERNAL_ROOT}/include/dune_config.h
     ${build_args}
 )
-find_program(DuneProject_PROGRAM duneproject PATHS
-    "${EXTERNAL_ROOT}/src/dune-common/bin")
 ExternalProject_Add_Step(dune-bempp
     CREATE_PROJECT
     COMMAND ${DuneProject_PROGRAM} < bempp.dune.input
