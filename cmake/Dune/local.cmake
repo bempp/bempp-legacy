@@ -1,9 +1,5 @@
 ### Adds dune-foamgrid and figures out duneconfig.h by creating fake dune-bempp
 ### project.
-if(NOT Dune_FOUND)
-    # Can only be run if Dune is already found.
-    return()
-endif()
 unset(depends)
 foreach(component common geometry grid localfunctions)
     if(TARGET dune-${component})
