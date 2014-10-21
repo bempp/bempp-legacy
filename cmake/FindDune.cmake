@@ -1,49 +1,35 @@
-# Pulls together different dune components, some which are exported, some which are not.
+# Pulls together different Dune components, some which are exported, some which are not.
 
-# Look for common library first
-unset(arguments)
-if(Dune_FIND_REQUIRED)
-    list(APPEND arguments REQUIRED)
-endif()
 unset(quietly)
 if(Dune_FIND_QUIETLY)
-    list(APPEND arguments QUIET)
     set(quietly QUIET)
 endif()
-find_package(dune-common ${arguments} ${quietly}
-    HINTS ${dune_PREFIX} $ENV{dune_PREFIX})
-if(NOT dune-common_FOUND)
-    return()
-endif()
 
-
+# List of additional places to look for
+set(hints ${Dune_PREFIX} $ENV{Dune_PREFIX} ${dune_PREFIX} $ENV{dune_PREFIX})
 # Remove foamgrid from components since provided within BEM
+# Remove devel from components since handled separately
 set(components ${Dune_FIND_COMPONENTS})
-list(REMOVE_ITEM components foamgrid)
+list(REMOVE_ITEM components foamgrid devel)
 
-unset(required_not_found)
-foreach(component ${components})
-    find_package(dune-${component} ${quietly}
-        HINTS ${dune_PREFIX} $ENV{dune_PREFIX})
-    if(Dune_FIND_REQUIRED_${component} AND NOT dune-${component}_FOUND)
-        list(APPEND required_not_found ${component})
-    endif()
+foreach(component common ${components})
+    find_package(dune-${component} ${quietly} HINTS ${hints})
+    set(Dune_${component}_FOUND ${dune-${component}_FOUND})
 endforeach()
 
-find_program(DuneProject_PROGRAM duneproject
-    PATHS "${EXTERNAL_ROOT}/src/dune-common/bin"
-    HINTS ${dune_PREFIX} $ENV{dune_PREFIX} ${dune-common_PREFIX}
-    PATH_SUFFIXES bin
-)
-if(NOT DuneProject_PROGRAM)
-    list(APPEND required_not_found "devel")
+# Add devel component
+list(FIND Dune_FIND_COMPONENTS "devel" has_devel_component)
+if(has_devel_component GREATER -1)
+    find_program(DuneProject_PROGRAM duneproject
+        PATHS "${EXTERNAL_ROOT}/src/dune-common/bin"
+        HINTS ${hints} ${Dune_common_PREFIX}
+        PATH_SUFFIXES bin
+    )
+    if(DuneProject_PROGRAM)
+        set(Dune_devel_FOUND TRUE)
+    endif()
 endif()
 
-if("${required_not_found}" STREQUAL "")
-    set(Dune_FOUND TRUE)
-elseif(Dune_FIND_REQUIRED)
-    message(FATAL_ERROR "Could not find dune components ${required_not_found}")
-else()
-    message(STATUS "Could not find dune components ${required_not_found}")
-endif()
-
+include(FindPackageHandleStandardArgs)
+set(dummy TRUE)
+find_package_handle_standard_args(Dune REQUIRED_VARS dune-common_FOUND HANDLE_COMPONENTS)
