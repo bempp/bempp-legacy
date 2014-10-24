@@ -1,5 +1,5 @@
 __all__ = ['dtypes', 'compatible_dtypes', 'bops']
-from space import dtypes, compatible_dtypes
+from space import dtypes, compatible_dtypes, ctypes
 
 # Describes boundary operators
 bops = {}
