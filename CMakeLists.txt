@@ -18,6 +18,8 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 # From here on we can use cookoff recipes
 include(LookUp-GreatCMakeCookOff)
 
+# These are the original flags given by the user when compiling Bempp
+set(ORIGINAL_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
 # Makes this a c++11 project
 include(cpp11_project)
 
