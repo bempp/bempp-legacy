@@ -1,24 +1,4 @@
-"""
-bempp.assembly. \
-        helmholtz
-        laplace
-        modified_helmholtz
-        maxwell
-
-These are subdivided into
-  * boundary_operator
-  * potential_operator
-
-The first contains single_layer, double_layer, conj_double_layer, hypersingular
-The second contains single_layer, double_layer
-
-There should be a bempp.assembly.local_operators
-  with identity, maxwell_identity, laplace_something
-
-Finally, bempp.assembly.maxwell:
-     electric_field (aka single_layer), magnetic_field (double_layer)
-
-"""
+from py.test import mark
 from bempp.assembly import Context
 
 
@@ -56,12 +36,23 @@ def test_dirichlet_tut_operators():
     assert single_layer.dual_to_range.is_compatible(constant)
 
 
-def test_boundary_op_operations():
+@mark.parametrize('result_type, scalar', [
+    ('float32', 2.0),
+    ('float64', 2.0),
+    ('complex64', 0.5 + 2.0j),
+    ('complex128', 0.5 + 2.0j),
+    ('complex128', 0.5),
+    # integer scalars should be promoted
+    ('float64', 2),
+    ('complex128', 2),
+    ('complex128', 2 + 3j)
+])
+def test_boundary_op_operations(result_type, scalar):
     from py.test import raises
     from bempp.grid import sample as sample_grid
     grid = sample_grid()
 
-    context = Context(basis_type='float32')
+    context = Context(result_type=result_type)
     constant = context.scalar_space(grid, order=0)
     linear = context.scalar_space(grid, order=1)
 
@@ -79,14 +70,32 @@ def test_boundary_op_operations():
     with raises(ValueError):
         double_layer * single_layer
 
-    scalop = 3.0 * double_layer
+    scalop = scalar * double_layer
     assert scalop != double_layer
-    scalop = double_layer * 3.0
+    scalop = double_layer * scalar
     assert scalop != double_layer
 
-    divop = double_layer / 3.0
+    divop = double_layer / scalar
     assert divop != double_layer
 
-    # Raised inside C++. Means we went though correct branch.
-    with raises(RuntimeError):
-        scalop = 1.0j * double_layer
+
+@mark.parametrize('b0, b1, r0, r1', [
+    ('float32', 'float32', 'float32', 'complex64'),
+    ('float32', 'float64', 'float32', 'float64')
+])
+def test_incompatible_boundary_op_operations(b0, b1, r0, r1):
+    from py.test import raises
+    from bempp.grid import sample as sample_grid
+    grid = sample_grid()
+
+    c0 = Context(basis_type=b0, result_type=r0)
+    c1 = Context(basis_type=b1, result_type=r1)
+
+    op1 = c0.scalar_space(grid, order=0)
+    op2 = c1.scalar_space(grid, order=0)
+    with raises(TypeError):
+        op1 + op2
+    with raises(TypeError):
+        op1 - op2
+    with raises(TypeError):
+        op1 * op2

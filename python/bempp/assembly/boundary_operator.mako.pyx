@@ -4,7 +4,6 @@ from bempp_operators import dtypes, compatible_dtypes, bops
 ifloop = lambda x: "if" if getattr(x, 'index', x) == 0 else "elif"
 division = '__div__' if int(version[0]) < 3 else '__truediv__'
 %>\
-from cpython.mem cimport PyMem_Malloc, PyMem_Free
 from bempp.options cimport Options
 from bempp.space.space cimport Space
 
@@ -16,6 +15,35 @@ cdef extern from "bempp/space/types.h":
 %     if 'complex'  in ctype:
     ctypedef struct ${ctype}
 %     endif
+% endfor
+
+% for name, op in {'multiply': '*', 'divid': '/'}.items():
+cdef object _scalar_${name}(BoundaryOperator self,
+            BoundaryOperator result, scalar):
+    from numpy import iscomplex
+    cdef:
+        float asfloat
+        double asdouble
+        float complex ascfloat
+        double complex ascdouble
+    if iscomplex(scalar):
+        if self.result_type == 'complex64':
+            ascfloat = scalar
+            result.impl_.assign(self.impl_ ${op} ascfloat)
+        elif self.result_type == 'complex128':
+            ascdouble = scalar
+            result.impl_.assign(self.impl_ ${op} ascdouble)
+        else:
+            raise TypeError(
+               "Unable to scale operator using object %s" % str(scalar))
+    else:
+        if self.result_type in ['complex64', 'float']:
+            asfloat = scalar
+            result.impl_.assign(self.impl_ ${op} asfloat)
+        else:
+            asdouble = scalar
+            result.impl_.assign(self.impl_ ${op}  asdouble)
+    return result
 % endfor
 
 
@@ -31,7 +59,7 @@ cdef class BoundaryOperator:
 %     for j, (pyresult, cyresult) in enumerate(dtypes.items()):
 %         if pyresult in compatible_dtypes[pybasis]:
         if ops.basis_type == "${pybasis}" and ops.result_type == "${pyresult}":
-            self.impl_.set[${cybasis}, ${cyresult}]()
+            self.impl_.set${cybasis}${cyresult}()
 %         endif
 %     endfor
 % endfor
@@ -46,14 +74,11 @@ cdef class BoundaryOperator:
 % for variable in ['domain', 'range', 'dual_to_range']:
     property ${variable}:
         def __get__(self):
-            cdef Space result = Space.__new__(Space)
-            try:
-                result.impl_ = self.impl_.${variable}()
-            except RuntimeError:
-                # Unitialized operator
+            if not self.impl_.valid_${variable}():
                 return None
-            else:
-                return result
+            cdef Space result = Space.__new__(Space)
+            result.impl_ = self.impl_.${variable}()
+            return result
 % endfor
 
     property label:
@@ -76,42 +101,30 @@ cdef class BoundaryOperator:
 % endfor
 
     def __mul__(self, other):
-        cdef BoundaryOperator res = BoundaryOperator.__new__(BoundaryOperator)
-        cdef double asdouble
-        if (
-            isinstance(self, BoundaryOperator)
-            and isinstance(other, BoundaryOperator)
-        ):
+        if not isinstance(self, BoundaryOperator):
+            return other.__mul__(self)
+
+        cdef BoundaryOperator res = ${'\\'}
+            BoundaryOperator(self.basis_type, self.result_type)
+        if isinstance(other, BoundaryOperator):
+            arecompatible =                                     ${'\\'}
+                (<BoundaryOperator> self).basis_type            ${'\\'}
+                    == (<BoundaryOperator> other).basis_type    ${'\\'}
+                and (<BoundaryOperator> self).result_type       ${'\\'}
+                    == (<BoundaryOperator> other).result_type
+            if not arecompatible:
+                raise TypeError("Operators are not compatible")
             res.impl_.assign(
                 (<BoundaryOperator> self).impl_
                 * (<BoundaryOperator> other).impl_
             )
-        elif not isinstance(self, BoundaryOperator):
-            return other.__mul__(self)
-        elif isinstance(other, complex):
-            res.impl_.assign(
-                    (<BoundaryOperator> self).impl_ * (<complex>other))
         else:
-            try:
-                asdouble = other
-                res.impl_.assign((<BoundaryOperator> self).impl_ * asdouble)
-            except:
-                raise TypeError("Incorrect types in multiplication")
+            _scalar_multiply(self, res, other)
         return res
 
     def ${division}(BoundaryOperator self, other):
         cdef BoundaryOperator res = BoundaryOperator.__new__(BoundaryOperator)
-        cdef double asdouble
-        print("hello 0")
         if isinstance(other, BoundaryOperator):
             raise TypeError("Cannot divide by an operator")
-        elif isinstance(other, complex):
-            res.impl_.assign(
-                    (<BoundaryOperator> self).impl_ / (<complex>other))
-        else:
-            try:
-                asdouble = other
-                res.impl_.assign((<BoundaryOperator> self).impl_ / asdouble)
-            except:
-                raise TypeError("Incorrect types in division")
+        _scalar_divid(self, res, other)
         return res

@@ -1,5 +1,5 @@
 <%
-from bempp_operators import bops, dtypes, compatible_dtypes
+from bempp_operators import bops, dtypes, compatible_dtypes, ctypes
 ifloop = lambda x: "if" if getattr(x, 'index', x) == 0 else "elif"
 module_name  = lambda x, y: '.'.join([x] + [u for u in y if len(u) > 0]) 
 %>
@@ -53,7 +53,7 @@ module_name  = lambda x, y: '.'.join([x] + [u for u in y if len(u) > 0])
         # And call templated function to create the operator
 % for pyresult, cyresult in dtypes.items():
         ${ifloop(loop.index)} self.result_type == '${pyresult}':
-            result.impl_ = ${c_creator}[${cyresult}](
+            result.impl_ = ${c_creator}${cyresult}(
                 acc_ops, self.assembly,
                 domain.impl_,
                 range.impl_,
@@ -90,7 +90,8 @@ cdef extern from "bempp/space/types.h":
 cdef extern from "bempp/assembly/python.hpp":
 % for opname, description in bops.items():
 %     if description['implementation'] == 'standard':
-    BoundaryOpVariants ${description['c_creator']}[RESULT](
+%         for cyresult in dtypes.values():
+    BoundaryOpVariants ${description['c_creator']}${cyresult} "${description['c_creator']}<${cyresult | ctypes}>"(
             const c_AccuracyOptions& accuracyOptions,
             const AssemblyOptions& assemblyOptions,
             const SpaceVariants& domain,
@@ -99,6 +100,7 @@ cdef extern from "bempp/assembly/python.hpp":
             const string& label,
             int symmetry
     ) except+
+%         endfor
 %     endif
 % endfor
 
