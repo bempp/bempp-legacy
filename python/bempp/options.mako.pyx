@@ -46,7 +46,7 @@ def setter_func(origin):
 %>
         def __get__(self):
             cdef ${type} c_value = self.${getter_string % getter}
-%   for python, cython in enums.iteritems():
+%   for python, cython in enums.items():
             ${ifloop(loop)} c_value == ${cython}:
                 return ${repr(python)}
 %   endfor
@@ -55,7 +55,7 @@ def setter_func(origin):
         def __set__(self, value):
             if value is None:
                 self.${setter_string % (setter, default)}
-%   for python, cython in enums.iteritems():
+%   for python, cython in enums.items():
             elif ${repr(python)} == value:
                 self.${setter_string % (setter, cython)}
 %   endfor
@@ -94,7 +94,7 @@ cdef class Options:
 
         Parameters
         ----------
-% for option, description in options.iteritems():
+% for option, description in options.items():
 <%
     docstring = description['doc'].rstrip().lstrip()
     if docstring[-1] == '.': docstring = docstring[:-1]
@@ -123,7 +123,7 @@ cdef class Options:
         one type, adjustements are made to other only if stricly necessary.
     """
     def __init__(self, **kwargs):
-% for name, description in options.iteritems():
+% for name, description in options.items():
         ${description['pyname'] | assign}
 % endfor
         # Both basis and result type are given:
@@ -147,7 +147,7 @@ cdef class Options:
         if len(kwargs) != 0:
             raise TypeError("Unexpected argument(s): %s" % kwargs.keys())
 
-% for option, description in options.iteritems():
+% for option, description in options.items():
 
     ${automatic_impls(**description)}
 % endfor
@@ -220,7 +220,7 @@ cdef class Options:
 
     def __str__(self):
         return str({
-%   for name, description in options.iteritems():
+%   for name, description in options.items():
             '${description['pyname']}': self.${description['pyname']},
 %   endfor
         })
@@ -229,12 +229,12 @@ cdef class Options:
         # Figures out defaults so we print the minimum amount of necessary
         # information
         defaults = {
-%   for name, description in options.iteritems():
+%   for name, description in options.items():
             '${description['pyname']}': ${description['doc_default']},
 %   endfor
         }
         kwargs = {
-            k: getattr(self, k) for k, default in defaults.iteritems()
+            k: getattr(self, k) for k, default in defaults.items()
                 if default != getattr(self, k)
         }
         return "bempp.Options(**%s)" % kwargs if len(kwargs) \

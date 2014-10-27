@@ -13,7 +13,7 @@ cdef class Space:
         The exact space depends on the input.
     """
     def __init__(self, Grid grid not None):
-        pass
+        super(Space, self).__init__()
 
     def is_compatible(self, Space other):
         """ True if other is compatible with this space
@@ -32,6 +32,7 @@ cdef class Space:
         def __get__(self):
             from numpy import dtype
             return dtype(self.impl_.dtype());
+
     property grid:
         def __get__(self):
             cdef Grid result = Grid.__new__(Grid)
@@ -44,7 +45,7 @@ cdef class Space:
         return self.impl_.is_same(other.impl_)
 
 
-% for class_name, description in spaces.iteritems():
+% for class_name, description in spaces.items():
 cdef class ${class_name}(Space):
     """ ${description['doc']}
 
@@ -68,12 +69,12 @@ cdef class ${class_name}(Space):
 % endif
                  **kwargs):
         from numpy import dtype as np_dtype
-        super(Space, self).__init__(grid)
+        super(${class_name}, self).__init__(grid)
 
         dtype = np_dtype(dtype)
-        if dtype not in ${dtypes.keys()}:
+        if dtype not in ${list(dtypes.keys())}:
                 raise TypeError("Unexpected basis type")
-%    for pytype, cytype in dtypes.iteritems():
+%    for pytype, cytype in dtypes.items():
         if dtype == "${pytype}":
 %       if description['implementation'] == 'grid_only':
             self.impl_.set( shared_ptr[c_Space[${cytype}]](

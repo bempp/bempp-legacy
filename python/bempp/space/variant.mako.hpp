@@ -10,6 +10,13 @@
 
 namespace Bempp {
 
+# ifdef __INTEL_COMPILER
+#   define BEMPP_EXPLICIT_CONSTRUCTOR(NAME, TYPE) \
+        NAME() : boost::static_visitor<TYPE>() {}
+# else
+#   define BEMPP_EXPLICIT_CONSTRUCTOR(NAME, TYPE) 
+# endif
+
 //! A shared pointer that can hold const and non-const versions
 class SpaceVariants {
     typedef boost::variant<
@@ -20,11 +27,13 @@ class SpaceVariants {
     > t_variant;
 
     struct GetGrid : public boost::static_visitor< shared_ptr<Grid const> > {
+        BEMPP_EXPLICIT_CONSTRUCTOR(GetGrid, shared_ptr<Grid const>);
         template<class T> shared_ptr<Grid const>
             operator()( shared_ptr<T> const &_in) const { return _in->grid(); }
     };
 
     struct IsCompatible : public boost::static_visitor<bool> {
+        BEMPP_EXPLICIT_CONSTRUCTOR(IsCompatible, bool);
         template<class T0, class T1>
             typename std::enable_if<
                 std::is_same<
@@ -48,6 +57,7 @@ class SpaceVariants {
     };
 
     struct IsSame : public boost::static_visitor<bool> {
+        BEMPP_EXPLICIT_CONSTRUCTOR(IsSame, bool);
         template<class T0, class T1>
             typename std::enable_if<
                 std::is_same<
@@ -71,7 +81,8 @@ class SpaceVariants {
     };
 
     struct DType: public boost::static_visitor<std::string> {
-% for pyname, ctype in dtypes.iteritems():
+        BEMPP_EXPLICIT_CONSTRUCTOR(DType, std::string);
+% for pyname, ctype in dtypes.items():
         std::string operator()(
                 shared_ptr<Space<${ctype}> const> const &_in) const {
             return "${pyname}";
@@ -109,6 +120,8 @@ class SpaceVariants {
     private:
         t_variant space_;
 };
+
+#   undef BEMPP_EXPLICIT_CONSTRUCTOR
 
 }
 #endif

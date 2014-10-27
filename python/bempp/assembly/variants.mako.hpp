@@ -10,12 +10,20 @@
 
 namespace Bempp {
 
+# ifdef __INTEL_COMPILER
+#   define BEMPP_EXPLICIT_CONSTRUCTOR(NAME, TYPE) \
+        NAME() : boost::static_visitor<TYPE>() {}
+# else
+#   define BEMPP_EXPLICIT_CONSTRUCTOR(NAME, TYPE) 
+# endif
+
+
 //! A shared pointer that can hold const and non-const versions
 class BoundaryOpVariants {
 <%
     variants = [(cybasis, cyresult)
-        for pybasis, cybasis in dtypes.iteritems()
-        for pyresult, cyresult in dtypes.iteritems()
+        for pybasis, cybasis in dtypes.items()
+        for pyresult, cyresult in dtypes.items()
         if pyresult in compatible_dtypes[pybasis]
     ]
 %>
@@ -27,7 +35,8 @@ class BoundaryOpVariants {
     > t_variant;
 
     struct BasisType: public boost::static_visitor<std::string> {
-% for pyname, ctype in dtypes.iteritems():
+        BEMPP_EXPLICIT_CONSTRUCTOR(BasisType, std::string);
+% for pyname, ctype in dtypes.items():
         template<class T> std::string operator()(
             BoundaryOperator<${ctype}, T> const &_in) const {
             return "${pyname}";
@@ -35,7 +44,8 @@ class BoundaryOpVariants {
 % endfor
     };
     struct ResultType: public boost::static_visitor<std::string> {
-% for pyname, ctype in dtypes.iteritems():
+        BEMPP_EXPLICIT_CONSTRUCTOR(ResultType, std::string);
+% for pyname, ctype in dtypes.items():
         template<class T> std::string operator()(
             BoundaryOperator<T, ${ctype}> const &_in) const {
             return "${pyname}";
@@ -44,6 +54,7 @@ class BoundaryOpVariants {
     };
 
     struct Label: public boost::static_visitor<std::string> {
+        BEMPP_EXPLICIT_CONSTRUCTOR(Label, std::string);
         template<class T> std::string operator()(T const &_in) const {
             return _in.label();
         }
@@ -51,33 +62,42 @@ class BoundaryOpVariants {
 
 
 % for space in ['Domain', 'Range', 'DualToRange']:
+    struct Valid${space}: public boost::static_visitor<bool> {
+        BEMPP_EXPLICIT_CONSTRUCTOR(Valid${space}, bool);
+        template<class BASIS, class RESULT> bool operator()(
+                BoundaryOperator<BASIS, RESULT> const &_in) const {
+            <% name = space[0].lower() + space[1:] %>
+            return (bool) _in.${name}();
+        }
+    };
+
     struct ${space}: public boost::static_visitor<SpaceVariants> {
+        BEMPP_EXPLICIT_CONSTRUCTOR(${space}, SpaceVariants);
         template<class BASIS, class RESULT> SpaceVariants operator()(
                 BoundaryOperator<BASIS, RESULT> const &_in) const {
             <% name = space[0].lower() + space[1:] %>
             shared_ptr<Space<BASIS> const> result = _in.${name}();
-            if(not result)
-                throw std::runtime_error(
-                        "Operator does not have a space defined");
             SpaceVariants space;
-            space.set(result);
+            if(result) space.set(result);
             return space;
         }
     };
 %endfor
 
-% for op, opname in {'+': "Plus", '-': "Minus", '*': "Times"}.iteritems():
+% for op, opname in {'+': "Plus", '-': "Minus", '*': "Times"}.items():
     struct BoundaryOp${opname}BoundaryOp
         : boost::static_visitor<BoundaryOpVariants> {
+          BEMPP_EXPLICIT_CONSTRUCTOR(
+              BoundaryOp${opname}BoundaryOp, BoundaryOpVariants);
           template<class BASIS, class RESULT> BoundaryOpVariants operator()(
                   BoundaryOperator<BASIS, RESULT> const &_a,
                   BoundaryOperator<BASIS, RESULT> const &_b) const {
               return BoundaryOpVariants(_a ${op} _b);
           }
-          template<class B0, class B1, class R0, class R1>
+          template<class BASIS0, class BASIS1, class RES0, class RES1>
               BoundaryOpVariants operator()(
-                  BoundaryOperator<B0, R0> const &_a,
-                  BoundaryOperator<B1, R1> const &_b) const {
+                  BoundaryOperator<BASIS0, RES0> const &_a,
+                  BoundaryOperator<BASIS1, RES1> const &_b) const {
                   throw std::runtime_error("Incompatible boundary operator");
               }
     };
@@ -88,14 +108,15 @@ class BoundaryOpVariants {
         >,
         T
     > {};
-% for op, opname in {'/': "Divided", '*': "Times"}.iteritems():
+% for op, opname in {'/': "Divided", '*': "Times"}.items():
     template<class SCALAR> struct BoundaryOp${opname}Scalar
         : boost::static_visitor<BoundaryOpVariants> {
         SCALAR scalar;
-        BoundaryOp${opname}Scalar(SCALAR _scalar) : scalar(_scalar) {}
+        BoundaryOp${opname}Scalar(SCALAR _scalar)
+            : boost::static_visitor<BoundaryOpVariants>(), scalar(_scalar) {}
         template<class BASIS, class RESULT>
             typename std::enable_if<
-                std::is_convertible<SCALAR, BASIS>::value,
+                std::is_convertible<SCALAR, RESULT>::value,
                 BoundaryOpVariants
             > :: type
                 operator()(BoundaryOperator<BASIS, RESULT> const &_a) const {
@@ -103,7 +124,7 @@ class BoundaryOpVariants {
                 }
         template<class BASIS, class RESULT>
             typename std::enable_if<
-                not std::is_convertible<SCALAR, BASIS>::value,
+                not std::is_convertible<SCALAR, RESULT>::value,
                 BoundaryOpVariants
             > :: type
                 operator()(BoundaryOperator<BASIS, RESULT> const &_a) const {
@@ -130,26 +151,26 @@ class BoundaryOpVariants {
         std::string resultType() const {
             return boost::apply_visitor(ResultType(), operator_);
         }
-        SpaceVariants domain() const {
-            return boost::apply_visitor(Domain(), operator_);
+% for space in ['Domain', 'Range', 'DualToRange']:
+        <% name = space[0].lower() + space[1:] %>
+	SpaceVariants ${name}() const {
+            return boost::apply_visitor(${space}(), operator_);
         }
-        SpaceVariants range() const {
-            return boost::apply_visitor(Range(), operator_);
+	bool valid${space}() const {
+            return boost::apply_visitor(Valid${space}(), operator_);
         }
-        SpaceVariants dualToRange() const {
-            return boost::apply_visitor(DualToRange(), operator_);
-        }
+% endfor
         std::string label() const {
             return boost::apply_visitor(Label(), operator_);
         }
 
-% for op, opname in {'+': "Plus", '-': "Minus", '*': "Times"}.iteritems():
+% for op, opname in {'+': "Plus", '-': "Minus", '*': "Times"}.items():
         BoundaryOpVariants operator${op}(BoundaryOpVariants const &_a) const {
             return boost::apply_visitor(BoundaryOp${opname}BoundaryOp(),
                     operator_, _a.operator_);
         }
 % endfor
-% for op, opname in {'/': "Divided", '*': "Times"}.iteritems():
+% for op, opname in {'/': "Divided", '*': "Times"}.items():
     template<class T>
         typename std::enable_if<
             is_scalar<T> :: value,
@@ -163,5 +184,6 @@ class BoundaryOpVariants {
     private:
         t_variant operator_;
 };
+#   undef BEMPP_EXPLICIT_CONSTRUCTOR
 }
 #endif

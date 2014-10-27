@@ -26,8 +26,10 @@ cdef class GridView:
 % for (codim, codim_template) in codims:
     cpdef EntityIterator${codim} _entity_iterator${codim}(self):
         """Return an entity iterator for entities of codim ${codim}."""
-        cdef EntityIterator${codim} it = EntityIterator${codim}()
-        cdef unique_ptr[c_EntityIterator[${codim_template}]] c_it = deref(self.impl_).entityIterator[${codim_template}]()
+        cdef:
+            EntityIterator${codim} it = EntityIterator${codim}()
+            unique_ptr[c_EntityIterator[${codim_template}]] c_it = ${'\\'}
+                deref(self.impl_).entityIterator${codim}()
         it.impl_.swap(c_it)
         return it
 % endfor

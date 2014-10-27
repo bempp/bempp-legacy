@@ -255,8 +255,8 @@ setup(
     name = "bempp",
     version = "2.0",
 
-    setup_requires = ['numpy', 'pytest'],
-    install_requires = ['numpy', 'pytest'],
+    setup_requires = ['numpy', 'pytest', 'cython>=0.21'],
+    install_requires = ['numpy', 'pytest', 'cython>=0.21'],
     platforms = ['GNU/Linux','Unix','Mac OS-X'],
 
     zip_safe = False,

@@ -16,7 +16,9 @@ def toggle_freeze(CanFreeze quadops):
 
 def test_range_to_cpp():
     from operator import itemgetter
-    should_contain = {0.5: (1, False), 1.5: [2, True], 'inf': (4, False)}
+    should_contain = {
+        0.5: (1, False), 1.5: [2, True], float('inf'): (4, False)
+    }
     options = RangeAccuracyOptions(should_contain)
 
     cdef vector[pair[double, c_QuadratureOptions]] cvector
@@ -26,10 +28,10 @@ def test_range_to_cpp():
 
     cdef vector[pair[double, c_QuadratureOptions]].iterator \
             iterator = cvector.begin()
-    sorted_values = sorted(should_contain.iteritems(), key=itemgetter(0))
+    sorted_values = sorted(should_contain.items(), key=itemgetter(0))
     for distance, values in sorted_values:
         quadop = QuadratureOptions(*values)
-        if distance == 'inf':
+        if distance == float('inf'):
             assert deref(iterator).first == float('inf')
         else:
             assert abs(distance - deref(iterator).first) < 1e-8
