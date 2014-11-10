@@ -6,6 +6,28 @@ dtypes = {
 }
 """ Possible dptypes for spaces and c equivalents """
 
+compatible_dtypes = {  # name: (tuple of compatible dtypes)
+    'float32': ('float32', 'complex64'),
+    'float64': ('float64', 'complex128'),
+    'complex64': ('complex64',),
+    'complex128': ('complex128',),
+}
+""" Compatibility between basis and result types """
+def ctypes(name):
+    """ Valid c++ type if name is a cython or python type 
+
+        Meant only to work with types from dtypes and compatible_dtypes
+    """
+    return {
+        'float32': 'float',
+        'float64': 'double',
+        'complex64': 'std::complex<float>',
+	'complex64': 'std::complex<float>',
+	'complex_float': 'std::complex<float>',
+        'complex_double': 'std::complex<double>'
+    }.get(name, name)
+    
+
 
 # Describes available spaces and their wrapper implementation.
 # Most of the characteristics (barycentric, dual...) are guessed later on.
@@ -47,7 +69,7 @@ spaces = {
 # Mostly means guessing wether space operates on the direct or dual grid,
 # whether functions are continuous, whether they are constant, linear, or
 # polynomial, etc. These facts are used later on in the actual space factory.
-for key, description in spaces.iteritems():
+for key, description in spaces.items():
     if 'implementation' not in description:
         description['implementation'] = 'grid_only'
 

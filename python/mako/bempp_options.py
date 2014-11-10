@@ -156,7 +156,7 @@ aca_ops = [
 for name in aca_ops:
     options[name]['implementation'] = 'getsetters'
 
-for option, desc in options.iteritems():
+for option, desc in options.items():
     if 'enums' in desc and 'doc_type' not in desc:
         desc['doc_type'] = '|'.join([repr(u) for u in desc['enums'].keys()])
     if 'doc_type' not in desc:

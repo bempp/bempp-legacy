@@ -2,7 +2,8 @@ from py.test import mark, fixture
 from bempp.space.space import PiecewiseConstantScalarSpace, \
     PiecewiseLinearContinuousScalarSpace,                   \
     PiecewiseLinearDiscontinuousScalarSpace,                \
-    PiecewisePolynomialContinuousScalarSpace
+    PiecewisePolynomialContinuousScalarSpace,               \
+    PiecewiseConstantDualGridScalarSpace
 
 
 @fixture
@@ -27,7 +28,7 @@ def test_instantiation(grid, TestClass, dtype):
     space = TestClass(grid, dtype)
     assert space.dtype == dtype
     assert space.grid is not None
-    assert space.grid is grid
+    assert space.grid == grid
 
 
 def test_grid_is_readonly(grid):
@@ -65,3 +66,21 @@ def test_polynomial_order(grid):
         actual = scalar(grid, 'float32', order=order)
         assert isinstance(actual, PiecewisePolynomialContinuousScalarSpace)
         assert actual.order == order
+
+
+def test_space_is_compatible(grid):
+    constant64 = PiecewiseConstantScalarSpace(grid, 'complex64')
+    constant128 = PiecewiseConstantScalarSpace(grid, 'complex128')
+
+    assert not constant64.is_compatible(constant128)
+    assert not constant128.is_compatible(constant64)
+    assert constant64.is_compatible(constant64)
+
+    linear64 = PiecewiseLinearContinuousScalarSpace(grid, 'complex64')
+    linear64b = PiecewiseLinearContinuousScalarSpace(grid, 'complex64')
+    assert not constant64.is_compatible(linear64)
+    assert linear64b.is_compatible(linear64)
+    assert linear64.is_compatible(linear64b)
+
+    dual = PiecewiseConstantDualGridScalarSpace(grid, 'complex64')
+    assert not constant64.is_compatible(dual)

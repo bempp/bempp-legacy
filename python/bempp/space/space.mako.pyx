@@ -1,7 +1,10 @@
 """ Wrappers for all types of C++ spaces """
 <%
 from space import dtypes, spaces
+ifloop = lambda x: 'if' if loop.index == 0 else 'elif'
 %>
+from bempp.grid.grid cimport Grid
+from cython.operator cimport dereference as deref
 
 
 cdef class Space:
@@ -10,19 +13,39 @@ cdef class Space:
         The exact space depends on the input.
     """
     def __init__(self, Grid grid not None):
-        self.grid = grid
+        super(Space, self).__init__()
+
+    def is_compatible(self, Space other):
+        """ True if other is compatible with this space
+
+            Two spaces are compatible if:
+
+            * They have the same dtype
+            * Their global degress of freedom agree
+        """
+        if other is None:
+            return False
+        return self.impl_.isCompatible(other.impl_)
 
     property dtype:
         """ Precision and kind of this space """
         def __get__(self):
             from numpy import dtype
-% for pyname, cython in dtypes.iteritems():
-            if self.impl_${pyname}.get() is not NULL:
-                return dtype('${pyname}')
-% endfor
-            return None
+            return dtype(self.impl_.dtype());
 
-% for class_name, description in spaces.iteritems():
+    property grid:
+        def __get__(self):
+            cdef Grid result = Grid.__new__(Grid)
+            result.impl_ = self.impl_.grid()
+            return result
+
+    def __richcmp__(Space self, Space other not None, int op):
+        if op != 2:
+            raise AttributeError("Incorrect operator")
+        return self.impl_.is_same(other.impl_)
+
+
+% for class_name, description in spaces.items():
 cdef class ${class_name}(Space):
     """ ${description['doc']}
 
@@ -30,7 +53,7 @@ cdef class ${class_name}(Space):
         ----------
 
         grid : Grid
-            Grid over which to discrtize the space
+            Grid over which to discretize the space
 
         dtype : numpy.dtype
             Type of the functions acting on the space
@@ -46,27 +69,25 @@ cdef class ${class_name}(Space):
 % endif
                  **kwargs):
         from numpy import dtype as np_dtype
-        super(Space, self).__init__(grid)
+        super(${class_name}, self).__init__(grid)
 
         dtype = np_dtype(dtype)
-        if dtype not in ${dtypes.keys()}:
+        if dtype not in ${list(dtypes.keys())}:
                 raise TypeError("Unexpected basis type")
-%    for pytype, cytype in dtypes.iteritems():
+%    for pytype, cytype in dtypes.items():
         if dtype == "${pytype}":
 %       if description['implementation'] == 'grid_only':
-            self.impl_${pytype}.reset(
+            self.impl_.set( shared_ptr[c_Space[${cytype}]](
                 <c_Space[${cytype}]*>
                 new ${'c_' + class_name}[${cytype}](grid.impl_)
-            )
+            ))
 %       elif description['implementation'] == 'polynomial':
             self.order = order
-            self.impl_${pytype}.reset(
+            self.impl_.set( shared_ptr[c_Space[${cytype}]](
                 <c_Space[${cytype}]*> new ${'c_' + class_name}[${cytype}](
                     grid.impl_, <int> self.order
                 )
-            )
+            ))
 %       endif
 %    endfor
-        self.grid = grid
-
 % endfor

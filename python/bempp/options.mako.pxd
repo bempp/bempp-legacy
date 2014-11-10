@@ -23,7 +23,7 @@ cdef extern from "bempp/assembly/aca_options.hpp":
 cdef extern from "bempp/assembly/aca_options.hpp" namespace "Bempp":
     cdef cppclass AcaOptions:
         AcaOptions()
-% for name, description in options.iteritems():
+% for name, description in options.items():
 %   if description['c origin'] == 'AcaOptions':
         ${description['type'] | bool_type} ${name}
 %   endif
@@ -53,7 +53,7 @@ cdef extern from "bempp/assembly/assembly_options.hpp" namespace "Bempp":
         void switchToAcaMode(const AcaOptions& acaOptions)
         AssemblyMode assemblyMode() const
         void setMaxThreadCount(int)
-% for option, description in options.iteritems():
+% for option, description in options.items():
 <%
     if description['c origin'] != 'AssemblyOptions':
         continue
