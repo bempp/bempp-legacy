@@ -16,7 +16,7 @@ ExternalProject_Add(
     SWIG
     PREFIX ${EXTERNAL_ROOT}
     URL http://prdownloads.sourceforge.net/swig/swig-3.0.2.tar.gz
-    URL_HASH SHA256=a2669657cabcedc371f63c0457407a183e0b6b2ef4e7e303c1ec9a3964cc7813
+    URL_MD5 62f9b0d010cef36a13a010dc530d0d41
     CONFIGURE_COMMAND ./configure --prefix=${EXTERNAL_ROOT}
     BUILD_IN_SOURCE 1
     BUILD_COMMAND make

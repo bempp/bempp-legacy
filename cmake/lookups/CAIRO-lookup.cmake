@@ -3,7 +3,7 @@ ExternalProject_Add(
     CAIRO
     PREFIX ${EXTERNAL_ROOT}
     URL http://cairographics.org/releases/cairo-1.12.16.tar.xz
-    URL_HASH SHA256=2505959eb3f1de3e1841023b61585bfd35684b9733c7b6a3643f4f4cbde6d846
+    URL_MD5 a1304edcdc99282f478b995ee5f8f854
     CONFIGURE_COMMAND ./configure --prefix=${EXTERNAL_ROOT}
     BUILD_IN_SOURCE 1
     BUILD_COMMAND make
