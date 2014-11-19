@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.2)
 project(Bempp CXX)
 set(Bempp_VERSION 2.0)
 

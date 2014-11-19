@@ -9,12 +9,11 @@ endif()
 if(NOT Armadillo_URL)
     set(arguments
         URL;
-        http://sourceforge.net/projects/arma/files/armadillo-4.300.8.tar.gz
-        URL_HASH;
-        SHA256=1d1a77ad7a74e8b4a74d7b71c5e3fe488e26283907b316618de0a8558c60173a
+        http://sourceforge.net/projects/arma/files/armadillo-4.500.1.tar.gz;
+        URL_MD5;bf34a8df65cbfe93177dbcd886959f8a
     )
 elseif(Armadillo_MD5)
-    set(arguments URL;${Armadillo_URL};URL_HASH;MD5=${Armadillo_MD5})
+    set(arguments URL;${Armadillo_URL};URL_MD5 ${Armadillo_MD5})
 else()
     message(FATAL_ERROR "URL specified, but no MD5. Aborting")
 endif()
