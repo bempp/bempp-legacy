@@ -39,7 +39,7 @@ ExternalProject_Add(
     PREFIX ${EXTERNAL_ROOT}
     # Downloads boost from url -- much faster than svn
     URL http://sourceforge.net/projects/boost/files/boost/1.55.0/boost_1_55_0.tar.bz2/download
-    URL_HASH SHA256=fff00023dd79486d444c8e29922f4072e1d451fc5a4d2b6075852ead7f2b7b52
+    URL_MD5 d6eef4b4cacb2183f2bf265a5a03a354
     BUILD_IN_SOURCE 1
     CONFIGURE_COMMAND ./bootstrap.sh
     PATCH_COMMAND ${patch_script}
