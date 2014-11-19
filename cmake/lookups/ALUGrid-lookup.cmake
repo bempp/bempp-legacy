@@ -32,7 +32,7 @@ ExternalProject_Add(
     ALUGrid
     PREFIX ${EXTERNAL_ROOT}
     URL http://aam.mathematik.uni-freiburg.de/IAM/Research/alugrid/ALUGrid-1.52.tar.gz
-    URL_HASH MD5=393c3d8ac1e9def4280765b16b95f5f1
+    URL_MD5 393c3d8ac1e9def4280765b16b95f5f1
     CONFIGURE_COMMAND ${configure_command}
     BUILD_IN_SOURCE 1
     BUILD_COMMAND ${CMAKE_MAKE_PROGRAM}
