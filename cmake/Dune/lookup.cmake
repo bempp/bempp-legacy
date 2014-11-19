@@ -4,16 +4,16 @@ if(TARGET Boost)
 endif()
 set(default_common_URL
     http://www.dune-project.org/download/2.3.1/dune-common-2.3.1.tar.gz)
-set(default_common_SHA256 040cd3811d195631cfa99fab43443d69c1b83f82737b0cd98e4f330ec84051f5)
+set(default_common_MD5 16d442117d65be550d7831d96555acbd)
 set(default_geometry_URL 
     http://www.dune-project.org/download/2.3.1/dune-geometry-2.3.1.tar.gz)
-set(default_geometry_SHA256 caf8f55b79e3217c3e845a9ada48b51a57f090cbbd4e6994e72067f3449b565c)
+set(default_geometry_MD5 87ff1f4733c730ed48b1ea9546665f26)
 set(default_grid_URL
     http://www.dune-project.org/download/2.3.1/dune-grid-2.3.1.tar.gz)
-set(default_grid_SHA256 f565d3c2562275cba317adef74f75b0a4f6f130abf4e9e1c34712bc9ab63ab03)
+set(default_grid_MD5 1619d2adf6938ee2aa4ab4f76d7f5e95)
 set(default_localfunctions_URL
     http://www.dune-project.org/download/2.3.1/dune-localfunctions-2.3.1.tar.gz)
-set(default_localfunctions_SHA256 92c2380f58c7c5f6ff6eb0f4ac694626c3bc81686cbef4534bfb44e351f0b771)
+set(default_localfunctions_MD5 6d5de5dd2e50684c529db8616232c7ed)
 
 # Create list of library paths.
 # They will be added to CMAKE_LIBRARY_PATH
@@ -48,18 +48,18 @@ passon_variables(Dune
 )
 
 macro(_get_arguments component)
-    set(keyvalues  ${component}_URL;${component}_SHA256)
+    set(keyvalues  ${component}_URL;${component}_MD5)
     cmake_parse_arguments(_ "" "${keyvalues}" "" ${Dune_ARGUMENTS})
-    if(__${component}_URL AND NOT __${component}_SHA256)
-        message(FATAL_ERROR "${component} given a URL but no SHA256 hash")
-    elseif(__${component}_URL AND __${component}_SHA256)
+    if(__${component}_URL AND NOT __${component}_MD5)
+        message(FATAL_ERROR "${component} given a URL but no MD5 hash")
+    elseif(__${component}_URL AND __${component}_MD5)
         set(prefix "__")
     else()
         set(prefix "default_")
     endif()
     set(${component}_ARGUMENTS
         URL ${${prefix}${component}_URL}
-        URL_HASH SHA256=${${prefix}${component}_SHA256}
+        URL_MD5 ${${prefix}${component}_MD5}
     )
 endmacro()
 

@@ -2,7 +2,7 @@
 if(Trilinos_ARGUMENTS)
     cmake_parse_arguments(Trilinos
         "PYPACKED;PYTHON"
-        "URL;SHA256;BUILD_TYPE;INSTALL_PREFIX"
+        "URL;MD5;BUILD_TYPE;INSTALL_PREFIX"
         ""
         ${Trilinos_ARGUMENTS}
     )
@@ -11,13 +11,12 @@ if(NOT Trilinos_URL)
     set(arguments
         URL;
         http://trilinos.sandia.gov/download/files/trilinos-11.6.2-Source.tar.bz2
-        URL_HASH;
-        SHA256=c1f8c15f263161a8a2c1211b177122721cf268dd24d192925beb91cdf21ae6ba
+        URL_MD5; 15ea6af5559f872919ff19fe5a322eb6
     )
-elseif(Trilinos_SHA256)
-    set(arguments URL;${Trilinos_URL};URL_HASH;SHA256=${Trilinos_SHA256})
+elseif(Trilinos_MD5)
+    set(arguments URL;${Trilinos_URL};URL_MD5;${Trilinos_MD5})
 else()
-    message(FATAL_ERROR "URL specified, but no SHA256. Aborting")
+    message(FATAL_ERROR "URL specified, but no MD5. Aborting")
 endif()
 if(NOT Trilinos_BUILD_TYPE)
     set(Trilinos_BUILD_TYPE Release)

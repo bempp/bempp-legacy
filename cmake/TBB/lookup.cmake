@@ -4,15 +4,13 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     TBB_URL
     http://www.threadingbuildingblocks.org/sites/default/files/software_releases/mac/tbb42_20140601oss_osx.tgz
   )
-  set(TBB_URL_SHA256 
-      63078757f3f65abb3ef568e75568e721fa83efdecad4d6a060b010255ddbdee3)
+  set(TBB_URL_MD5 9cecb08b25104d3a85f0056396a6c31e)
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
   set(
     TBB_URL
     http://www.threadingbuildingblocks.org/sites/default/files/software_releases/linux/tbb42_20140601oss_lin.tgz
   )
-  set(TBB_URL_SHA256
-      95aab3f82f435aff8aa1f63d1e3608e3181fc66d2d52d0c429873af8c69af882)
+  set(TBB_URL_MD5 8a13558019c9acfbab269e2b34f7fd27)
 else()
   message(FATAL_ERROR "Automatic install of TBB in windows not implemented")
 endif()
@@ -28,7 +26,7 @@ ExternalProject_Add(
     TBB
     PREFIX ${EXTERNAL_ROOT}
     URL ${TBB_URL}
-    URL_HASH SHA256=${TBB_URL_SHA256}
+    URL_MD5 ${TBB_URL_MD5}
     PATCH_COMMAND 
         ${CMAKE_COMMAND} -E copy_if_different
             ${CURRENT_LOOKUP_DIRECTORY}/install.cmake
