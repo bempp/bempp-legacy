@@ -37,7 +37,7 @@ if(WITH_ALUGRID)
     lookup_package(ALUGrid)
 endif()
 # lookup_package(CAIRO REQUIRED)
-lookup_package(Boost 1.55 COMPONENTS unit_test_framework REQUIRED)
+lookup_package(Boost 1.54 COMPONENTS unit_test_framework REQUIRED)
 lookup_package(Armadillo REQUIRED ARGUMENTS TIMEOUT 60)
 # ARMA_DONT_USE_WRAPPER means we don't need to include armadillo library
 add_definitions(-DARMA_DONT_USE_WRAPPER)
