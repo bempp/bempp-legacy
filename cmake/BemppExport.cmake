@@ -8,7 +8,7 @@ if(NOT NOEXPORT)
 endif()
 
 # First in binary dir
-set(ALL_INCLUDE_DIRS "${BEMPP_INCLUDE_DIRS}")
+set(ALL_INCLUDE_DIRS ${BEMPP_INCLUDE_DIRS})
 set(BEMPP_CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 get_filename_component(BEMPP_PREFIX_PATH "${EXTERNAL_ROOT}" ABSOLUTE)
 configure_File(cmake/BemppConfig.in.cmake
