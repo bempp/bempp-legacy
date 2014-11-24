@@ -22,8 +22,7 @@ include(FindPackageHandleStandardArgs)
 FIND_PACKAGE_HANDLE_STANDARD_ARGS(
   TBB
   DEFAULT_MSG
-  TBB_LIBRARY TBB_LIBRARY_DEBUG TBB_MALLOC_LIBRARY TBB_MALLOC_LIBRARY_DEBUG
-  TBB_INCLUDE_DIR
+  TBB_LIBRARY TBB_MALLOC_LIBRARY TBB_INCLUDE_DIR
 )
 
 # Unsets values if not found, so we don't end up with mixes of library from one place and another.

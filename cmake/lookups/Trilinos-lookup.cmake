@@ -35,10 +35,7 @@ foreach(component TBB Boost SWIG)
   endif()
 endforeach()
 
-set(tbb_libraries
-    ${TBB_LIBRARY} ${TBB_LIBRARY_DEBUG}
-    ${TBB_MALLOC_LIBRARY} ${TBB_MALLOC_LIBRARY_DEBUG}
-)
+set(tbb_libraries ${TBB_LIBRARY} ${TBB_MALLOC_LIBRARY})
 
 # Create a file of variables which is parsed by cmake when configuring Trilinos.
 include(PassonVariables)
