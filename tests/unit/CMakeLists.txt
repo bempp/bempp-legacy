@@ -79,7 +79,7 @@ foreach(source ${TEST_SOURCES})
     add_executable(${testname} main.cpp "${source}")
     depends_on_lookups(${testname})
     extra_dependencies("${source}")
-    target_link_libraries(${testname} libbempp ${extras})
+    target_link_libraries(${testname} ${extras} libbempp)
     if(Boost_UNIT_TEST_FRAMEWORK_LIBRARY_DEBUG)
         target_link_libraries(${testname}
         debug ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY_DEBUG}
