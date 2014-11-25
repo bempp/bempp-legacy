@@ -131,8 +131,8 @@ ExternalProject_Add(
     PATCH_COMMAND ${patch_script}
     # Wrap download, configure and build steps in a script to log output
     LOG_DOWNLOAD ON
-    LOG_CONFIGURE ON
-    LOG_BUILD ON
+    LOG_CONFIGURE OFF
+    LOG_BUILD OFF
 )
 
 add_recursive_cmake_step(Trilinos DEPENDEES install)
