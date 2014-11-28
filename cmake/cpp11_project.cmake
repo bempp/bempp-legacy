@@ -6,7 +6,7 @@ include(CheckCXX11Features)
 
 cxx11_feature_check(
     steady_clock obsolete/monotonic_clock
-    REQUIRED unique_ptr nullptr
+    REQUIRED unique_ptr nullptr override constructor_delegate
 )
 if(NOT HAS_CXX11_STEADY_CLOCK AND HAS_CXX11_OBSOLETE_MONOTONIC_CLOCK)
   set(BEMPP_ADD_STEADY_CLOCK_FROM_MONOTONIC_CLOCK TRUE)
