@@ -12,8 +12,11 @@ before_install:
   - sudo apt-get update -qq
 
 install:
-  - sudo apt-get install -qq cmake gcc-4.8
-  - export CXX="g++-4.8"
+  - sudo apt-get install -qq cmake gcc-4.8 g++-4.8
+  - alias gcc='gcc-4.8'
+  - alias g++='g++-4.8';
+  - export CC='gcc-4.8'; export CXX='g++-4.8';
+  - gcc --version
   - g++ --version
 
   # You may want to periodically update this, although the conda update
