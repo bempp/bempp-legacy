@@ -9,6 +9,16 @@ elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     file(WRITE "${EXTERNAL_ROOT}/src/user-config.jam"
       "using gcc : : \"${CMAKE_CXX_COMPILER}\" ; \n"
     )
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    set(toolset "toolset=clang")
+    file(WRITE "${EXTERNAL_ROOT}/src/user-config.jam"
+      "using clang : : \"${CMAKE_CXX_COMPILER}\" ; \n"
+    )
+else()
+  message(FATAL_ERROR
+     "Unknown compiler ${CMAKE_CXX_COMPILER_ID}."
+     "Please install boost manually."
+  )
 endif()
 
 include(PatchScript)
