@@ -22,6 +22,7 @@
 
 #include "blocked_boundary_operator.hpp"
 #include "../fiber/scalar_traits.hpp"
+#include "../common/types.hpp"
 #include "helmholtz_3d_operators_common.hpp"
 #include "symmetry.hpp"
 
@@ -43,6 +44,28 @@ modifiedHelmholtz3dExteriorCalderonProjector(
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 BlockedBoundaryOperator<BasisFunctionType, ResultType>
 modifiedHelmholtz3dInteriorCalderonProjector(
+    const shared_ptr<const Context<BasisFunctionType, ResultType>> &context,
+    const shared_ptr<const Space<BasisFunctionType>> &hminusSpace,
+    const shared_ptr<const Space<BasisFunctionType>> &hplusSpace,
+    KernelType waveNumber, const std::string &label = "",
+    bool useInterpolation = false,
+    int interpPtsPerWavelength = DEFAULT_HELMHOLTZ_INTERPOLATION_DENSITY);
+
+
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+BlockedBoundaryOperator<BasisFunctionType, ResultType>
+modifiedHelmholtz3dExteriorCalderonProjector(
+    const ParameterList& parameterList,
+    const shared_ptr<const Space<BasisFunctionType>> &hminusSpace,
+    const shared_ptr<const Space<BasisFunctionType>> &hplusSpace,
+    KernelType waveNumber, const std::string &label = "",
+    bool useInterpolation = false,
+    int interpPtsPerWavelength = DEFAULT_HELMHOLTZ_INTERPOLATION_DENSITY);
+
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+BlockedBoundaryOperator<BasisFunctionType, ResultType>
+modifiedHelmholtz3dInteriorCalderonProjector(
+    const ParameterList& parameterList,
     const shared_ptr<const Context<BasisFunctionType, ResultType>> &context,
     const shared_ptr<const Space<BasisFunctionType>> &hminusSpace,
     const shared_ptr<const Space<BasisFunctionType>> &hplusSpace,

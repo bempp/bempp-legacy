@@ -53,7 +53,7 @@ modifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator(
       assemblyOptions.acaOptions().mode == AcaOptions::LOCAL_ASSEMBLY)
     return modifiedHelmholtz3dSyntheticBoundaryOperator(
         &modifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator<
-             BasisFunctionType, KernelType, ResultType>,
+            BasisFunctionType, KernelType, ResultType>,
         context, domain, range, dualToRange, waveNumber, label, symmetry,
         useInterpolation, interpPtsPerWavelength, NO_SYMMETRY);
 
@@ -65,7 +65,7 @@ modifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator(
       ModifiedHelmholtz3dAdjointDoubleLayerPotentialKernelInterpolatedFunctor<
           KernelType> InterpolatedKernelFunctor;
   typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
-  TransformationFunctor;
+      TransformationFunctor;
   typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctorExt<
       BasisFunctionType, KernelType, ResultType, 1> IntegrandFunctor;
 
@@ -102,7 +102,31 @@ modifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator(
   return BoundaryOperator<BasisFunctionType, ResultType>(context, newOp);
 }
 
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+BoundaryOperator<BasisFunctionType, ResultType>
+modifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator(
+    const ParameterList &parameterList,
+    const shared_ptr<const Space<BasisFunctionType>> &domain,
+    const shared_ptr<const Space<BasisFunctionType>> &range,
+    const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
+    KernelType waveNumber, const std::string &label, int symmetry,
+    bool useInterpolation, int interpPtsPerWavelength) {
+
+  shared_ptr<const Context<BasisFunctionType, ResultType>> context(
+      new Context<BasisFunctionType, ResultType>(parameterList));
+
+  return modifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator(
+      context, domain, range, dualToRange, waveNumber, label, symmetry,
+      useInterpolation, interpPtsPerWavelength);
+}
+
 #define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS, KERNEL, RESULT)               \
+  template BoundaryOperator<BASIS, RESULT>                                     \
+  modifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator(                       \
+      const ParameterList &, const shared_ptr<const Space<BASIS>> &,           \
+      const shared_ptr<const Space<BASIS>> &,                                  \
+      const shared_ptr<const Space<BASIS>> &, KERNEL, const std::string &,     \
+      int, bool, int);                                                         \
   template BoundaryOperator<BASIS, RESULT>                                     \
   modifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator(                       \
       const shared_ptr<const Context<BASIS, RESULT>> &,                        \

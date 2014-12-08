@@ -23,6 +23,7 @@
 
 #include "boundary_operator.hpp"
 #include "helmholtz_3d_operators_common.hpp"
+#include "../common/types.hpp"
 #include "symmetry.hpp"
 
 namespace Bempp {
@@ -129,6 +130,20 @@ template <typename BasisFunctionType, typename KernelType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType>
 modifiedHelmholtz3dHypersingularBoundaryOperator(
     const shared_ptr<const Context<BasisFunctionType, ResultType>> &context,
+    const shared_ptr<const Space<BasisFunctionType>> &domain,
+    const shared_ptr<const Space<BasisFunctionType>> &range,
+    const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
+    KernelType waveNumber, const std::string &label = "",
+    int symmetry = NO_SYMMETRY, bool useInterpolation = false,
+    int interpPtsPerWavelength = DEFAULT_HELMHOLTZ_INTERPOLATION_DENSITY,
+    const BoundaryOperator<BasisFunctionType, ResultType> &externalSlp =
+        BoundaryOperator<BasisFunctionType, ResultType>());
+
+
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+BoundaryOperator<BasisFunctionType, ResultType>
+modifiedHelmholtz3dHypersingularBoundaryOperator(
+    const ParameterList& parameterList,
     const shared_ptr<const Space<BasisFunctionType>> &domain,
     const shared_ptr<const Space<BasisFunctionType>> &range,
     const shared_ptr<const Space<BasisFunctionType>> &dualToRange,

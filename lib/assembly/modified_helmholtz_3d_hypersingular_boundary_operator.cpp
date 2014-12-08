@@ -67,7 +67,7 @@ modifiedHelmholtz3dSyntheticHypersingularBoundaryOperator(
 
   typedef Fiber::ScalarFunctionValueFunctor<CoordinateType> ValueFunctor;
   typedef Fiber::ScalarFunctionValueTimesNormalFunctor<CoordinateType>
-  ValueTimesNormalFunctor;
+      ValueTimesNormalFunctor;
   typedef Fiber::SurfaceCurl3dFunctor<CoordinateType> CurlFunctor;
   typedef Fiber::SingleComponentTestTrialIntegrandFunctor<
       BasisFunctionType, ResultType> IntegrandFunctor;
@@ -205,7 +205,7 @@ modifiedHelmholtz3dHypersingularBoundaryOperator(
   typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
 
   typedef Fiber::ModifiedHelmholtz3dHypersingularKernelFunctor<KernelType>
-  NoninterpolatedKernelFunctor;
+      NoninterpolatedKernelFunctor;
   typedef Fiber::ModifiedHelmholtz3dHypersingularKernelInterpolatedFunctor<
       KernelType> InterpolatedKernelFunctor;
   typedef Fiber::ModifiedHelmholtz3dHypersingularTransformationFunctor<
@@ -222,7 +222,7 @@ modifiedHelmholtz3dHypersingularBoundaryOperator(
   typedef Fiber::ModifiedHelmholtz3dHypersingularOffDiagonalKernelFunctor<
       KernelType> OffDiagonalNoninterpolatedKernelFunctor;
   typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
-  OffDiagonalTransformationFunctor;
+      OffDiagonalTransformationFunctor;
   typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctorExt<
       BasisFunctionType, KernelType, ResultType, 1> OffDiagonalIntegrandFunctor;
 
@@ -296,7 +296,33 @@ modifiedHelmholtz3dHypersingularBoundaryOperator(
   return BoundaryOperator<BasisFunctionType, ResultType>(context, newOp);
 }
 
+
+
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+BoundaryOperator<BasisFunctionType, ResultType>
+modifiedHelmholtz3dHypersingularBoundaryOperator(
+    const ParameterList& parameterList,
+    const shared_ptr<const Space<BasisFunctionType>> &domain,
+    const shared_ptr<const Space<BasisFunctionType>> &range,
+    const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
+    KernelType waveNumber, const std::string &label, int symmetry,
+    bool useInterpolation, int interpPtsPerWavelength,
+    const BoundaryOperator<BasisFunctionType, ResultType> &externalSlp) {
+
+    shared_ptr<const Context<BasisFunctionType,ResultType>> context(
+            new Context<BasisFunctionType,ResultType>(parameterList));
+    return modifiedHelmholtz3dHypersingularBoundaryOperator(
+            context,domain,range,dualToRange,waveNumber,label,symmetry,
+            useInterpolation,interpPtsPerWavelength,externalSlp);
+}
+
 #define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS, KERNEL, RESULT)               \
+  template BoundaryOperator<BASIS, RESULT>                                     \
+  modifiedHelmholtz3dHypersingularBoundaryOperator(                            \
+      const ParameterList &, const shared_ptr<const Space<BASIS>> &,           \
+      const shared_ptr<const Space<BASIS>> &,                                  \
+      const shared_ptr<const Space<BASIS>> &, KERNEL, const std::string &,     \
+      int, bool, int, const BoundaryOperator<BASIS, RESULT> &externalSlp);     \
   template BoundaryOperator<BASIS, RESULT>                                     \
   modifiedHelmholtz3dHypersingularBoundaryOperator(                            \
       const shared_ptr<const Context<BASIS, RESULT>> &,                        \
