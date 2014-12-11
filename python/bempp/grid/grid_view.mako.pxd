@@ -17,7 +17,10 @@ cdef extern from "bempp/grid/grid_view.hpp" namespace "Bempp":
         int dim() const
         int dimWorld() const
         size_t entityCount(int codim) const
-        unique_ptr[c_EntityIterator[codim]] entityIterator[codim]() const 
+% for (codim,codim_template) in codims:
+        unique_ptr[c_EntityIterator[${codim_template}]]\
+            entityIterator${codim} "entityIterator<${codim}>"() const
+% endfor
 
 cdef class GridView:
     cdef unique_ptr[c_GridView] impl_ 

@@ -34,8 +34,7 @@ namespace Bempp {
       } catch (const std::exception& exn) {
         PyErr_SetString(PyExc_RuntimeError, exn.what());
       }
-      catch (...)
-      {
+      catch (...) {
         PyErr_SetString(PyExc_RuntimeError, "Unknown exception");
       }
     }

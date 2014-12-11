@@ -42,7 +42,8 @@ namespace {
                 const AssemblyOptions& _assemblyOptions,
                 const std::string& _label,
                 int _symmetry
-            ) : accuracyOptions(_accuracyOptions),
+            ) : boost::static_visitor<BoundaryOpVariants>(), // needed by intel
+                accuracyOptions(_accuracyOptions),
                 assemblyOptions(_assemblyOptions),
                 label(_label), symmetry(_symmetry) {}
 
@@ -125,4 +126,5 @@ namespace {
 %     endif
 % endfor
 }
+
 #endif

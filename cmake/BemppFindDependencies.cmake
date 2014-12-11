@@ -42,7 +42,8 @@ lookup_package(Armadillo REQUIRED ARGUMENTS TIMEOUT 60)
 # ARMA_DONT_USE_WRAPPER means we don't need to include armadillo library
 add_definitions(-DARMA_DONT_USE_WRAPPER)
 lookup_package(TBB REQUIRED)
-lookup_package(Dune REQUIRED COMPONENTS geometry grid localfunctions foamgrid)
+lookup_package(Dune REQUIRED COMPONENTS geometry grid localfunctions devel)
+include("${PROJECT_SOURCE_DIR}/cmake/Dune/local.cmake")
 
 # Using cmake_policy does not seem to work here.
 set(CMAKE_POLICY_DEFAULT_CMP0012 NEW CACHE STRING "Avoids anoying messages")
@@ -120,7 +121,7 @@ add_to_ld_path(
     ${CAIRO_LIBRARIES}
 )
 
-lookup_python_package(cython REQUIRED PATH "${EXTERNAL_ROOT}/python")
+lookup_python_package(Cython VERSION 0.21 REQUIRED PATH "${EXTERNAL_ROOT}/python")
 if(WITH_TESTS)
     include(AddPyTest)
     setup_pytest("${EXTERNAL_ROOT}/python" "${PROJECT_BINARY_DIR}/py.test.sh")
