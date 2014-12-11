@@ -83,20 +83,33 @@ public:
     }
 
     void operator() (const tbb::blocked_range<int>& r) const {
-        const int elementCount = m_testIndices.size();
+        const int testElementCount = m_testIndices.size();
         std::vector<arma::Mat<ResultType> > localResult;
         for (int trialIndex = r.begin(); trialIndex != r.end(); ++trialIndex) {
+            // Handle this trial element only if it contributes to any global DOFs.
+            bool skipTrialElement = true;
+            const int trialDofCount = m_trialGlobalDofs[trialIndex].size();
+            for (int trialDof = 0; trialDof < trialDofCount; ++trialDof) {
+                int trialGlobalDof = m_trialGlobalDofs[trialIndex][trialDof];
+                if (trialGlobalDof >= 0) {
+                    skipTrialElement = false;
+                    break;
+                }
+            }
+            if (skipTrialElement)
+                continue;
+
             // Evaluate integrals over pairs of the current trial element and
             // all the test elements
             m_assembler.evaluateLocalWeakForms(TEST_TRIAL, m_testIndices, trialIndex,
                                                ALL_DOFS, localResult);
 
-            const int trialDofCount = m_trialGlobalDofs[trialIndex].size();
             // Global assembly
             {
                 MutexType::scoped_lock lock(m_mutex);
                 // Loop over test indices
-                for (int testIndex = 0; testIndex < elementCount; ++testIndex) {
+                for (int row = 0; row < testElementCount; ++row) {
+                    const int testIndex = m_testIndices[row];
                     const int testDofCount = m_testGlobalDofs[testIndex].size();
                     // Add the integrals to appropriate entries in the operator's matrix
                     for (int trialDof = 0; trialDof < trialDofCount; ++trialDof) {
@@ -112,7 +125,7 @@ public:
                             m_result(testGlobalDof, trialGlobalDof) +=
                                     conj(m_testLocalDofWeights[testIndex][testDof]) *
                                     m_trialLocalDofWeights[trialIndex][trialDof] *
-                                    localResult[testIndex](testDof, trialDof);
+                                    localResult[row](testDof, trialDof);
                         }
                     }
                 }
@@ -165,12 +178,24 @@ public:
 
         std::vector<arma::Mat<ResultType> > localResult;
         for (int trialIndex = r.begin(); trialIndex != r.end(); ++trialIndex) {
+            // Handle this trial element only if it contributes to any global DOFs.
+            bool skipTrialElement = true;
+            const int trialDofCount = m_trialGlobalDofs[trialIndex].size();
+            for (int trialDof = 0; trialDof < trialDofCount; ++trialDof) {
+                int trialGlobalDof = m_trialGlobalDofs[trialIndex][trialDof];
+                if (trialGlobalDof >= 0) {
+                    skipTrialElement = false;
+                    break;
+                }
+            }
+            if (skipTrialElement)
+                continue;
+
             // Evaluate integrals over pairs of the current trial element and
             // all the points and components
             m_assembler.evaluateLocalContributions(
                 m_pointIndices, trialIndex, ALL_DOFS, localResult, nominalDistance);
 
-            const int trialDofCount = m_trialGlobalDofs[trialIndex].size();
             // Global assembly
             {
                 MutexType::scoped_lock lock(m_mutex);
@@ -264,10 +289,19 @@ assembleDetachedWeakForm(
     const int testElementCount = testGlobalDofs.size();
     const int trialElementCount = trialGlobalDofs.size();
 
-    // Make a vector of all element indices
-    std::vector<int> testIndices(testElementCount);
-    for (int i = 0; i < testElementCount; ++i)
-        testIndices[i] = i;
+    // Enumerate the test elements that contribute to at least one global DOF
+    std::vector<int> testIndices;
+    testIndices.reserve(testElementCount);
+    for (int testIndex = 0; testIndex < testElementCount; ++testIndex) {
+        const int testDofCount = testGlobalDofs[testIndex].size();
+        for (int testDof = 0; testDof < testDofCount; ++testDof) {
+            int testGlobalDof = testGlobalDofs[testIndex][testDof];
+            if (testGlobalDof >= 0) {
+                testIndices.push_back(testIndex);
+                break;
+            }
+        }
+    }
 
     // Create the operator's matrix
     arma::Mat<ResultType> result(testSpace.globalDofCount(),
