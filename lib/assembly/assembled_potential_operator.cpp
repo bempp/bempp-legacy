@@ -46,6 +46,7 @@ AssembledPotentialOperator(
         throw std::invalid_argument("AssembledPotentialOperator::"
                                     "AssembledPotentialOperator(): "
                                     "componentCount must be positive");
+    std::cout << m_op->rowCount() << " " << m_componentCount << " " << m_evaluationPoints->n_cols << std::endl;
     if (m_op->rowCount() % m_componentCount != 0)
         throw std::invalid_argument("AssembledPotentialOperator::"
                                     "AssembledPotentialOperator(): "

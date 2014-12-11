@@ -23,6 +23,7 @@
 #include "../fiber/explicit_instantiation.hpp"
 
 #include "assembly_options.hpp"
+#include "evaluation_options.hpp"
 #include "discrete_dense_boundary_operator.hpp"
 #include "context.hpp"
 
@@ -32,6 +33,7 @@
 #include "../fiber/explicit_instantiation.hpp"
 #include "../fiber/serial_blas_region.hpp"
 #include "../fiber/local_assembler_for_integral_operators.hpp"
+#include "../fiber/local_assembler_for_potential_operators.hpp"
 #include "../grid/entity.hpp"
 #include "../grid/entity_iterator.hpp"
 #include "../grid/grid.hpp"
@@ -80,10 +82,10 @@ public:
         m_assembler(assembler), m_result(result), m_mutex(mutex) {
     }
 
-    void operator() (const tbb::blocked_range<size_t>& r) const {
+    void operator() (const tbb::blocked_range<int>& r) const {
         const int elementCount = m_testIndices.size();
         std::vector<arma::Mat<ResultType> > localResult;
-        for (size_t trialIndex = r.begin(); trialIndex != r.end(); ++trialIndex) {
+        for (int trialIndex = r.begin(); trialIndex != r.end(); ++trialIndex) {
             // Evaluate integrals over pairs of the current trial element and
             // all the test elements
             m_assembler.evaluateLocalWeakForms(TEST_TRIAL, m_testIndices, trialIndex,
@@ -127,6 +129,77 @@ private:
     // mutable OK because Assembler is thread-safe. (Alternative to "mutable" here:
     // make assembler's internal integrator map mutable)
     typename Fiber::LocalAssemblerForIntegralOperators<ResultType>& m_assembler;
+    // mutable OK because write access to this matrix is protected by a mutex
+    arma::Mat<ResultType>& m_result;
+
+    // mutex must be mutable because we need to lock and unlock it
+    MutexType& m_mutex;
+};
+
+template <typename BasisFunctionType, typename ResultType>
+class DensePotentialOperatorAssemblerLoopBody
+{
+public:
+    typedef tbb::spin_mutex MutexType;
+    typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
+
+    DensePotentialOperatorAssemblerLoopBody(
+            const std::vector<int>& pointIndices,
+            const std::vector<std::vector<GlobalDofIndex> >& trialGlobalDofs,
+            const std::vector<std::vector<BasisFunctionType> >& trialLocalDofWeights,
+            Fiber::LocalAssemblerForPotentialOperators<ResultType>& assembler,
+            arma::Mat<ResultType>& result, MutexType& mutex) :
+        m_pointIndices(pointIndices),
+        m_trialGlobalDofs(trialGlobalDofs),
+        m_trialLocalDofWeights(trialLocalDofWeights),
+        m_assembler(assembler), m_result(result), m_mutex(mutex) {
+    }
+
+    void operator() (const tbb::blocked_range<int>& r) const {
+        // In the current implementation we don't try to vary integration order
+        // with point-element distance. So we'll supply -1, i.e. "unknown distance".
+        const CoordinateType nominalDistance = -1.;
+
+        const int pointCount = m_pointIndices.size();
+        const int componentCount = m_assembler.resultDimension();
+
+        std::vector<arma::Mat<ResultType> > localResult;
+        for (int trialIndex = r.begin(); trialIndex != r.end(); ++trialIndex) {
+            // Evaluate integrals over pairs of the current trial element and
+            // all the points and components
+            m_assembler.evaluateLocalContributions(
+                m_pointIndices, trialIndex, ALL_DOFS, localResult, nominalDistance);
+
+            const int trialDofCount = m_trialGlobalDofs[trialIndex].size();
+            // Global assembly
+            {
+                MutexType::scoped_lock lock(m_mutex);
+                // Add the integrals to appropriate entries in the operator's matrix
+                for (int trialDof = 0; trialDof < trialDofCount; ++trialDof) {
+                    int trialGlobalDof = m_trialGlobalDofs[trialIndex][trialDof];
+                    if (trialGlobalDof < 0)
+                        continue;
+                    assert(std::abs(m_trialLocalDofWeights[trialIndex][trialDof]) > 0.);
+                    // Loop over point indices
+                    for (int pointIndex = 0; pointIndex < pointCount; ++pointIndex) {
+                        for (int component = 0; component < componentCount; ++component) {
+                            m_result(pointIndex * componentCount + component, trialGlobalDof) +=
+                                m_trialLocalDofWeights[trialIndex][trialDof] *
+                                localResult[pointIndex](component, trialDof);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+private:
+    const std::vector<int>& m_pointIndices;
+    const std::vector<std::vector<GlobalDofIndex> >& m_trialGlobalDofs;
+    const std::vector<std::vector<BasisFunctionType> >& m_trialLocalDofWeights;
+    // mutable OK because Assembler is thread-safe. (Alternative to "mutable" here:
+    // make assembler's internal integrator map mutable)
+    typename Fiber::LocalAssemblerForPotentialOperators<ResultType>& m_assembler;
     // mutable OK because write access to this matrix is protected by a mutex
     arma::Mat<ResultType>& m_result;
 
@@ -188,8 +261,8 @@ assembleDetachedWeakForm(
         trialLocalDofWeights = testLocalDofWeights;
     } else
         gatherGlobalDofs(trialSpace, trialGlobalDofs, trialLocalDofWeights);
-    const size_t testElementCount = testGlobalDofs.size();
-    const size_t trialElementCount = trialGlobalDofs.size();
+    const int testElementCount = testGlobalDofs.size();
+    const int trialElementCount = trialGlobalDofs.size();
 
     // Make a vector of all element indices
     std::vector<int> testIndices(testElementCount);
@@ -216,7 +289,7 @@ assembleDetachedWeakForm(
     tbb::task_scheduler_init scheduler(maxThreadCount);
     {
         Fiber::SerialBlasRegion region;
-        tbb::parallel_for(tbb::blocked_range<size_t>(0, trialElementCount),
+        tbb::parallel_for(tbb::blocked_range<int>(0, trialElementCount),
                           Body(testIndices, testGlobalDofs, trialGlobalDofs,
                                testLocalDofWeights, trialLocalDofWeights,
                                assembler, result, mutex));
@@ -242,6 +315,60 @@ assembleDetachedWeakForm(
     //                        localResult[testIndex](testDof, trialDof);
     //    }
 
+    // Create and return a discrete operator represented by the matrix that
+    // has just been calculated
+    return std::auto_ptr<DiscreteBoundaryOperator<ResultType> >(
+                new DiscreteDenseBoundaryOperator<ResultType>(result));
+}
+
+template <typename BasisFunctionType, typename ResultType>
+std::auto_ptr<DiscreteBoundaryOperator<ResultType> >
+DenseGlobalAssembler<BasisFunctionType, ResultType>::
+assemblePotentialOperator(
+        const arma::Mat<CoordinateType>& points,
+        const Space<BasisFunctionType>& trialSpace,
+        LocalAssemblerForPotentialOperators& assembler,
+        const EvaluationOptions& options)
+{
+    // Global DOF indices corresponding to local DOFs on elements
+    std::vector<std::vector<GlobalDofIndex> > trialGlobalDofs;
+    std::vector<std::vector<BasisFunctionType> > trialLocalDofWeights;
+    gatherGlobalDofs(trialSpace, trialGlobalDofs, trialLocalDofWeights);
+
+    const int trialElementCount = trialGlobalDofs.size();
+    const int pointCount = points.n_cols;
+    const int componentCount = assembler.resultDimension();
+
+    // Make a vector of all element indices
+    std::vector<int> pointIndices(pointCount);
+    for (int i = 0; i < pointCount; ++i)
+        pointIndices[i] = i;
+
+    // Create the operator's matrix
+    arma::Mat<ResultType> result(pointCount * componentCount,
+                                 trialSpace.globalDofCount());
+    result.fill(0.);
+
+    typedef DensePotentialOperatorAssemblerLoopBody<BasisFunctionType, ResultType> Body;
+    typename Body::MutexType mutex;
+
+    const ParallelizationOptions& parallelOptions =
+            options.parallelizationOptions();
+    int maxThreadCount = 1;
+    if (!parallelOptions.isOpenClEnabled()) {
+        if (parallelOptions.maxThreadCount() == ParallelizationOptions::AUTO)
+            maxThreadCount = tbb::task_scheduler_init::automatic;
+        else
+            maxThreadCount = parallelOptions.maxThreadCount();
+    }
+    tbb::task_scheduler_init scheduler(maxThreadCount);
+    {
+        Fiber::SerialBlasRegion region;
+        tbb::parallel_for(tbb::blocked_range<int>(0, trialElementCount),
+                          Body(pointIndices, trialGlobalDofs,
+                               trialLocalDofWeights,
+                               assembler, result, mutex));
+    }
     // Create and return a discrete operator represented by the matrix that
     // has just been calculated
     return std::auto_ptr<DiscreteBoundaryOperator<ResultType> >(
