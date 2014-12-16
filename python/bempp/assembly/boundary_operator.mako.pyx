@@ -4,7 +4,6 @@ from bempp_operators import dtypes, compatible_dtypes, bops
 ifloop = lambda x: "if" if getattr(x, 'index', x) == 0 else "elif"
 division = '__div__' if int(version[0]) < 3 else '__truediv__'
 %>\
-from bempp.options cimport Options
 from bempp.space.space cimport Space
 
 # Declares complex type explicitly.
@@ -52,23 +51,16 @@ cdef class BoundaryOperator:
     def __init__(self, basis_type=None, result_type=None):
         from numpy import dtype
 
-        # Simple way to check basis and result type are compatible
-        ops = Options(basis_type=basis_type, result_type=result_type)
+        self.basis_type = basis_type
+        self.result_type = result_type
 
 % for i, (pybasis, cybasis) in enumerate(dtypes.items()):
 %     for j, (pyresult, cyresult) in enumerate(dtypes.items()):
 %         if pyresult in compatible_dtypes[pybasis]:
-        if ops.basis_type == "${pybasis}" and ops.result_type == "${pyresult}":
+        if basis_type == "${pybasis}" and result_type == "${pyresult}":
             self.impl_.set${cybasis}${cyresult}()
 %         endif
 %     endfor
-% endfor
-
-% for variable in ['basis', 'result']:
-    property ${variable}_type:
-        def __get__(self):
-            from numpy import dtype
-            return dtype(self.impl_.${variable + "Type"}())
 % endfor
 
 % for variable in ['domain', 'range', 'dual_to_range']:
@@ -80,6 +72,20 @@ cdef class BoundaryOperator:
             result.impl_ = self.impl_.${variable}()
             return result
 % endfor
+
+    property basis_type:
+        def __get__(self):
+            return self._basis_type
+
+        def __set__(self, basis_type):
+            self._basis_type = basis_type
+
+    property result_type:
+        def __get__(self):
+            return self._result_type
+
+        def __set__(self, result_type):
+            self._result_type = result_type
 
     property label:
         def __get__(self):

@@ -102,13 +102,13 @@ ParameterList GlobalParameters::parameterList() {
                      "GlobalAssembly and LocalAssembly");
 
   hmatParameters.set(
-      "minBlockSize", static_cast<unsigned int>(50),
-      "(unsigned int) Specifies the minimum block size below which blocks are "
+      "minBlockSize", static_cast<int>(50),
+      "(int) Specifies the minimum block size below which blocks are "
       " assumed to be dense");
 
   hmatParameters.set(
-      "maxBlockSize", static_cast<unsigned int>(2048),
-      "(unsigned int) Specifies the maximum size of an admissible block.");
+      "maxBlockSize", static_cast<int>(2048),
+      "(int) Specifies the maximum size of an admissible block.");
 
   hmatParameters.set("eta", static_cast<double>(1.2),
                      "(double) Specifies the block separation parameter eta");

@@ -4,6 +4,10 @@
 #include <ios>
 #include <dune/common/exceptions.hh>
 #include <Python.h>
+#include <Teuchos_ParameterList.hpp>
+#include <algorithm>
+#include <sstream>
+
 namespace Bempp {
     inline static void catch_exception() {
       try {
@@ -38,4 +42,33 @@ namespace Bempp {
         PyErr_SetString(PyExc_RuntimeError, "Unknown exception");
       }
     }
+
+    inline static int parameter_list_length(const Teuchos::ParameterList& parameters)
+    {
+        int i = 0;
+        for (auto it = std::begin(parameters); it!= std::end(parameters);++it) ++i;
+        return i;
+    }
+
+    inline static std::vector<std::string> parameter_names(const Teuchos::ParameterList& parameters)
+    {
+        std::vector<std::string> names;
+        for (auto it = std::begin(parameters);it!=std::end(parameters);++it)
+        {
+            names.push_back(it->first);
+        }
+        return names;
+    }
+
+    inline static std::string print_parameters(const Teuchos::ParameterList& parameters)
+    {
+
+        std::stringstream ss;
+        ss << parameters;
+        return ss.str();
+    }
+
+
 }
+
+

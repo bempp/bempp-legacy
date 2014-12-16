@@ -5,17 +5,17 @@ include(FilterList)
 include_directories("${PYTHON_BINARY_DIR}/bempp/include")
 
 add_to_python_path("${PROJECT_SOURCE_DIR}/python/mako")
-set(makoes options.mako.pyx options.mako.pxd)
-mako_files(${makoes}
-    OUTPUT_FILES makoed
-    DEPENDS "${PROJECT_SOURCE_DIR}/python/mako/bempp_options.py"
-    TARGETNAME bempp-mako
-    DESTINATION "${PYTHON_BINARY_DIR}/bempp/include/bempp"
-)
+#set(makoes options.mako.pyx options.mako.pxd)
+#mako_files(${makoes}
+#    OUTPUT_FILES makoed
+#    DEPENDS "${PROJECT_SOURCE_DIR}/python/mako/bempp_options.py"
+#    TARGETNAME bempp-mako
+#    DESTINATION "${PYTHON_BINARY_DIR}/bempp/include/bempp"
+##)
 
 # An umbrella target for cython headeres
 add_custom_target(cython-headers)
-add_dependencies(cython-headers bempp-mako)
+#add_dependencies(cython-headers bempp-mako)
 
 # Add empty __init__.pxd file so cython considers the include directory
 file(WRITE "${PYTHON_BINARY_DIR}/bempp/include/bempp/__init__.pxd")
@@ -55,6 +55,7 @@ configure_file(config.in.py "${CMAKE_CURRENT_BINARY_DIR}/config.py" @ONLY)
 install_python(FILES "${CMAKE_CURRENT_BINARY_DIR}/config.py" DESTINATION bempp)
 
 
+add_subdirectory(common)
 add_subdirectory(utils)
 add_subdirectory(grid)
 add_subdirectory(fiber)
