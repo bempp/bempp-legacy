@@ -31,7 +31,7 @@ cdef extern from "Teuchos_ParameterList.hpp" namespace "Teuchos::ParameterList":
         c_ParameterList& setParameters(const c_ParameterList& source)
         int numParams() const
 
-cdef extern from "bempp/utils/utils.hpp" namespace "Bempp":
+cdef extern from "bempp/utils/py_utils.hpp" namespace "Bempp":
     int parameter_list_length(const c_ParameterList& parameters)
     vector[string]  parameter_names(const c_ParameterList& parameters)
     string print_parameters(const c_ParameterList& parameters)

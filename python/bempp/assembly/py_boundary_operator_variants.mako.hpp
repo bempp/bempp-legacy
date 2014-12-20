@@ -3,8 +3,8 @@
 #define BEMPP_PYTHON_ASSEMBLY_VARIANTS_HPP
 
 #include "bempp/assembly/boundary_operator.hpp"
-#include "bempp/space/types.h"
-#include "bempp/space/variant.hpp"
+#include "bempp/utils/py_types.hpp"
+#include "bempp/space/py_space_variants.hpp"
 #include <boost/variant.hpp>
 #include <type_traits>
 

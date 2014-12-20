@@ -1,6 +1,7 @@
 """ Wrappers for all types of C++ spaces """
 <%
-from space import dtypes, spaces
+from data_types import dtypes
+from space import spaces
 ifloop = lambda x: 'if' if loop.index == 0 else 'elif'
 %>
 from bempp.grid.grid cimport Grid

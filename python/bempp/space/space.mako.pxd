@@ -1,5 +1,6 @@
 <%
-from space import dtypes, spaces
+from data_types import dtypes
+from space import spaces
 
 def declare_class(text):
     return 'c_{0} "Bempp::{0}"[BASIS]'.format(text)
@@ -9,7 +10,7 @@ from libcpp.string cimport string
 from bempp.utils cimport shared_ptr
 from bempp.grid.grid cimport Grid, c_Grid
 
-cdef extern from "bempp/space/space.hpp":
+cdef extern from "bempp/space/py_space_variants.hpp":
     cdef cppclass c_Space "Bempp::Space" [BASIS]:
         c_Space(const shared_ptr[c_Grid]&)
         c_Space(const c_Space[BASIS]&)
@@ -18,7 +19,7 @@ cdef extern from "bempp/space/space.hpp":
 # Declares complex type explicitly.
 # Cython 0.20 will fail if templates are nested more than three-deep,
 # as in shared_ptr[ c_Space[ complex[float] ] ]
-cdef extern from "bempp/space/types.h":
+cdef extern from "bempp/utils/py_types.hpp":
 % for ctype in dtypes.values():
 %     if 'complex'  in ctype:
     ctypedef struct ${ctype}
@@ -37,7 +38,7 @@ cdef extern from "${description['header']}":
 %   endif
 % endfor
 
-cdef extern from "bempp/space/variant.hpp" namespace "Bempp":
+cdef extern from "bempp/space/py_space_variants.hpp" namespace "Bempp":
     cdef cppclass SpaceVariants:
         SpaceVariants()
         void set[T](const shared_ptr[T] &_in)

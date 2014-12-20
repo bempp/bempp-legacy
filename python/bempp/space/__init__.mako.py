@@ -1,5 +1,6 @@
 <%!
-from space import spaces, dtypes
+from data_types import dtypes
+from space import spaces
 def get_key(description):
     return (
         description['order'],

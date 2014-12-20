@@ -1,9 +1,14 @@
-<% from space import dtypes, spaces %>
-#ifndef BEMPP_PYTHON_SPACE_VARIANT_HPP
-#define BEMPP_PYTHON_SPACE_VARIANT_HPP
+<% 
+from data_types import dtypes
+from space import spaces 
+
+%>
+#ifndef BEMPP_PYTHON_SPACE_VARIANTS_HPP
+#define BEMPP_PYTHON_SPACE_VARIANTS_HPP
 
 #include "bempp/common/shared_ptr.hpp"
-#include "types.h"
+#include "bempp/space/space.hpp"
+#include "bempp/utils/py_types.hpp"
 #include <boost/variant.hpp>
 #include <type_traits>
 #include <type_traits>

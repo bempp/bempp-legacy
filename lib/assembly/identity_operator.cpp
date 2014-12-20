@@ -19,6 +19,7 @@
 // THE SOFTWARE.
 
 #include "identity_operator.hpp"
+#include "context.hpp"
 
 #include "boundary_operator.hpp"
 
@@ -86,7 +87,7 @@ IdentityOperator<BasisFunctionType, ResultType>::IdentityOperator(
           boost::make_shared<IdentityOperatorId<BasisFunctionType, ResultType>>(
               *this)) {
   typedef Fiber::SimpleTestTrialIntegrandFunctor<BasisFunctionType, ResultType>
-  IntegrandFunctor;
+      IntegrandFunctor;
   typedef Fiber::DefaultTestTrialIntegral<IntegrandFunctor> Integral;
   m_integral.reset(new Integral((IntegrandFunctor())));
 }
@@ -134,12 +135,31 @@ BoundaryOperator<BasisFunctionType, ResultType> identityOperator(
       boost::make_shared<Id>(domain, range, dualToRange, label, symmetry));
 }
 
+template <typename BasisFunctionType, typename ResultType>
+BoundaryOperator<BasisFunctionType, ResultType>
+identityOperator(const ParameterList &parameterList,
+                 const shared_ptr<const Space<BasisFunctionType>> &domain,
+                 const shared_ptr<const Space<BasisFunctionType>> &range,
+                 const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
+                 const std::string &label, int symmetry) {
+
+  shared_ptr<const Context<BasisFunctionType, ResultType>> context(
+      new Context<BasisFunctionType, ResultType>(parameterList));
+  return identityOperator(context, domain, range, dualToRange, label, symmetry);
+}
+
 #define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS, RESULT)                       \
+  template BoundaryOperator<BASIS, RESULT> identityOperator(                   \
+      const ParameterList&,                                                    \
+      const shared_ptr<const Space<BASIS>> &,                                  \
+      const shared_ptr<const Space<BASIS>> &,                                  \
+      const shared_ptr<const Space<BASIS>> &, const std::string &, int);       \
   template BoundaryOperator<BASIS, RESULT> identityOperator(                   \
       const shared_ptr<const Context<BASIS, RESULT>> &,                        \
       const shared_ptr<const Space<BASIS>> &,                                  \
       const shared_ptr<const Space<BASIS>> &,                                  \
       const shared_ptr<const Space<BASIS>> &, const std::string &, int)
+
 FIBER_ITERATE_OVER_BASIS_AND_RESULT_TYPES(INSTANTIATE_NONMEMBER_CONSTRUCTOR);
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(IdentityOperator);

@@ -3,25 +3,14 @@ from bempp_operators import dtypes, compatible_dtypes, bops, ctypes
 %>
 from libcpp cimport bool as cbool
 from libcpp.string cimport string
-from bempp.utils cimport catch_exception
+from bempp.utils cimport catch_exception, complex_float, complex_double
 from bempp.space.space cimport SpaceVariants
-
-# Declares complex type explicitly.
-# Cython 0.20 will fail if templates are nested more than three-deep,
-# as in shared_ptr[ c_Space[ complex[float] ] ]
-cdef extern from "bempp/space/types.h":
-% for ctype in dtypes.values():
-%     if 'complex'  in ctype:
-    ctypedef struct ${ctype}
-%     endif
-% endfor
-
 
 cdef extern from "bempp/assembly/boundary_operator.hpp":
     cdef cppclass c_BoundaryOperator "Bempp::BoundaryOperator" [BASIS, RESULT]:
         c_BoundaryOperator()
 
-cdef extern from "bempp/assembly/variants.hpp" namespace "Bempp":
+cdef extern from "bempp/assembly/py_boundary_operator_variants.hpp" namespace "Bempp":
     cdef cppclass BoundaryOpVariants:
         BoundaryOpVariants() except+
 # Older cythons or cython with --gdb does not work well with templates
@@ -62,4 +51,6 @@ cdef extern from "bempp/assembly/variants.hpp" namespace "Bempp":
 
 
 cdef class BoundaryOperator:
+    cdef object _basis_type
+    cdef object _result_type
     cdef BoundaryOpVariants impl_

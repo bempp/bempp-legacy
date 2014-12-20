@@ -1,8 +1,8 @@
 <%
-from space import dtypes
+from data_types import dtypes
 %>\
-#ifndef BEMPP_PYTHON_SPACE_TYPES_H
-#define BEMPP_PYTHON_SPACE_TYPES_H
+#ifndef BEMPP_PYTHON_TYPES_H
+#define BEMPP_PYTHON_TYPES_H
 
 #include<complex>
 

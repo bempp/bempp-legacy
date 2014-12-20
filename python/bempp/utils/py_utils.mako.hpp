@@ -1,3 +1,6 @@
+#ifndef BEMPP_PYTHON_UTILS_HPP
+#define BEMPP_PYTHON_UTILS_HPP
+
 #include <new>
 #include <typeinfo>
 #include <stdexcept>
@@ -70,5 +73,5 @@ namespace Bempp {
 
 
 }
-
+#endif
 

@@ -6,15 +6,7 @@ division = '__div__' if int(version[0]) < 3 else '__truediv__'
 %>\
 from bempp.space.space cimport Space
 
-# Declares complex type explicitly.
-# Cython 0.20 will fail if templates are nested more than three-deep,
-# as in shared_ptr[ c_Space[ complex[float] ] ]
-cdef extern from "bempp/space/types.h":
-% for ctype in dtypes.values():
-%     if 'complex'  in ctype:
-    ctypedef struct ${ctype}
-%     endif
-% endfor
+from bempp.utils cimport complex_float,complex_double
 
 % for name, op in {'multiply': '*', 'divid': '/'}.items():
 cdef object _scalar_${name}(BoundaryOperator self,
@@ -51,8 +43,8 @@ cdef class BoundaryOperator:
     def __init__(self, basis_type=None, result_type=None):
         from numpy import dtype
 
-        self.basis_type = basis_type
-        self.result_type = result_type
+        self._basis_type = basis_type
+        self._result_type = result_type
 
 % for i, (pybasis, cybasis) in enumerate(dtypes.items()):
 %     for j, (pyresult, cyresult) in enumerate(dtypes.items()):
@@ -77,15 +69,9 @@ cdef class BoundaryOperator:
         def __get__(self):
             return self._basis_type
 
-        def __set__(self, basis_type):
-            self._basis_type = basis_type
-
     property result_type:
         def __get__(self):
             return self._result_type
-
-        def __set__(self, result_type):
-            self._result_type = result_type
 
     property label:
         def __get__(self):

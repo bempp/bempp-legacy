@@ -1,3 +1,2 @@
-__all__ = ['BoundaryOperator', 'Context']
+__all__ = ['BoundaryOperator']
 from .boundary_operator import BoundaryOperator
-from .context import Context

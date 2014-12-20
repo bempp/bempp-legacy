@@ -98,12 +98,12 @@ Context<BasisFunctionType, ResultType>::Context(
 
   Fiber::AccuracyOptionsEx accuracyOptions;
 
-  auto quadOps = parameters.sublist("quadratureOrders");
+  auto quadOps = parameters.sublist("QuadratureOrders");
 
   accuracyOptions.setSingleRegular(
       quadOps.sublist("near").get<double>("maxRelDist"),
       quadOps.sublist("near").get<int>("singleOrder"),
-      quadOps.sublist("medium").get<int>("maxRelDist"),
+      quadOps.sublist("medium").get<double>("maxRelDist"),
       quadOps.sublist("medium").get<int>("singleOrder"),
       quadOps.sublist("far").get<int>("singleOrder"),
       quadOps.get<bool>("quadratureOrdersAreRelative"));
@@ -111,7 +111,7 @@ Context<BasisFunctionType, ResultType>::Context(
   accuracyOptions.setDoubleRegular(
       quadOps.sublist("near").get<double>("maxRelDist"),
       quadOps.sublist("near").get<int>("doubleOrder"),
-      quadOps.sublist("medium").get<int>("maxRelDist"),
+      quadOps.sublist("medium").get<double>("maxRelDist"),
       quadOps.sublist("medium").get<int>("doubleOrder"),
       quadOps.sublist("far").get<int>("doubleOrder"),
       quadOps.get<bool>("quadratureOrdersAreRelative"));
