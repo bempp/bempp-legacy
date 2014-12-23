@@ -182,8 +182,23 @@ class BoundaryOpVariants {
 % endfor
 
     private:
+
+        template<typename BasisFunctionType,typename ResultType>
+        friend shared_ptr<const DiscreteBoundaryOperator<ResultType>>
+        boundary_op_variant_weak_form(const BoundaryOpVariants& variant);
+
         t_variant operator_;
 };
 #   undef BEMPP_EXPLICIT_CONSTRUCTOR
+
+template<typename BasisFunctionType,typename ResultType>
+shared_ptr<const DiscreteBoundaryOperator<ResultType>> 
+boundary_op_variant_weak_form(const BoundaryOpVariants& variant)
+{
+
+    return boost::get<BoundaryOperator<BasisFunctionType,ResultType>>(
+            variant.operator_).weakForm();
+}
+
 }
 #endif

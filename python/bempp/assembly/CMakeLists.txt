@@ -1,5 +1,5 @@
 mako_files(
-    boundary_operator.mako.pxd boundary_operator.mako.pyx py_boundary_operator_variants.mako.hpp
+    boundary_operator.mako.pxd boundary_operator.mako.pyx py_boundary_operator_variants.mako.hpp discrete_boundary_operator.mako.pxd discrete_boundary_operator.mako.pyx
     OUTPUT_FILES makoed
     DEPENDS "${PROJECT_SOURCE_DIR}/python/mako/space.py"
         "${PROJECT_SOURCE_DIR}/python/mako/bempp_operators.py"

@@ -5,6 +5,8 @@ ifloop = lambda x: "if" if getattr(x, 'index', x) == 0 else "elif"
 division = '__div__' if int(version[0]) < 3 else '__truediv__'
 %>\
 from bempp.space.space cimport Space
+from discrete_boundary_operator cimport DiscreteBoundaryOperator
+from numpy cimport dtype
 
 from bempp.utils cimport complex_float,complex_double
 
@@ -54,6 +56,23 @@ cdef class BoundaryOperator:
 %         endif
 %     endfor
 % endfor
+
+    cpdef DiscreteBoundaryOperator weakForm(self):
+        cdef DiscreteBoundaryOperator dbop = DiscreteBoundaryOperator()
+        
+% for pybasis,cybasis in dtypes.items():
+%     for pyresult,cyresult in dtypes.items():
+%         if pyresult in compatible_dtypes[pybasis]:
+
+        if self.basis_type=="${pybasis}" and self.result_type=="${pyresult}":
+            dbop._impl_${pyresult}_.assign(_boundary_operator_variant_weak_form[${cybasis},${cyresult}](self.impl_))
+            dbop._value_type = self.result_type
+            return dbop
+%          endif
+%      endfor
+% endfor
+        raise ValueError("Incompatible basis and result types") 
+        
 
 % for variable in ['domain', 'range', 'dual_to_range']:
     property ${variable}:

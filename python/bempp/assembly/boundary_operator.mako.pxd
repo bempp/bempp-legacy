@@ -5,6 +5,9 @@ from libcpp cimport bool as cbool
 from libcpp.string cimport string
 from bempp.utils cimport catch_exception, complex_float, complex_double
 from bempp.space.space cimport SpaceVariants
+from bempp.assembly.discrete_boundary_operator cimport c_DiscreteBoundaryOperator
+from bempp.assembly.discrete_boundary_operator cimport DiscreteBoundaryOperator
+from bempp.utils cimport shared_ptr
 
 cdef extern from "bempp/assembly/boundary_operator.hpp":
     cdef cppclass c_BoundaryOperator "Bempp::BoundaryOperator" [BASIS, RESULT]:
@@ -49,8 +52,10 @@ cdef extern from "bempp/assembly/py_boundary_operator_variants.hpp" namespace "B
         BoundaryOpVariants operator/(const double complex& _in) except +catch_exception
         string label() const
 
+    cdef shared_ptr[c_DiscreteBoundaryOperator[ResultType]] _boundary_operator_variant_weak_form "Bempp::boundary_op_variant_weak_form" [BasisFunctionType,ResultType] (const BoundaryOpVariants& variant)
 
 cdef class BoundaryOperator:
     cdef object _basis_type
     cdef object _result_type
     cdef BoundaryOpVariants impl_
+    cpdef DiscreteBoundaryOperator weakForm(self) 

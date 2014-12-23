@@ -17,3 +17,19 @@ cdef SymmetryMode symmetry_mode(string name):
 
     return res
 
+cdef TranspositionMode transposition_mode(string name):
+
+    cdef TranspositionMode res
+
+    if name==string(b'no_transpose'):
+        res = no_transpose
+    elif name==string(b'conjugate'):
+        res = conjugate
+    elif name==string(b'transpose'):
+        res = transpose
+    elif name==string(b'conjugate_transpose'):
+        res = conjugate_transpose
+    else:
+        raise ValueError("Unsupported transposition mode")
+
+    return res
