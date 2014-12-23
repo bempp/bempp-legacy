@@ -35,6 +35,9 @@ cdef class DiscreteBoundaryOperatorBase:
         cdef Mat[${cyvalue}]* arma_${pyvalue}_buff_y
 % endfor        
 
+        if not x.flags['F_CONTIGUOUS'] or not y.flags['F_CONTIGUOUS']:
+            raise ValueError("Input arrays must be in Fortran order")
+
         if not (rows==y.shape[0] and cols ==x.shape[0]):
             raise ValueError("Wrong dimensions")
 
@@ -46,7 +49,7 @@ cdef class DiscreteBoundaryOperatorBase:
         if self._value_type == "${pyvalue}":
             arma_${pyvalue}_buff_x = new Mat[${cyvalue}](<${cyvalue}*>&${pyvalue}_buff_x[0,0],xrows,xcols,False,True)
             arma_${pyvalue}_buff_y = new Mat[${cyvalue}](<${cyvalue}*>&${pyvalue}_buff_y[0,0],yrows,ycols,False,True)
-            self._apply_${pyvalue}(transposition_mode(transpose),x,y,alpha,beta)
+            self._apply_${pyvalue}(transposition_mode(transpose),deref(arma_${pyvalue}_buff_x),deref(arma_${pyvalue}_buff_y),alpha,beta)
             del arma_${pyvalue}_buff_y
             del arma_${pyvalue}_buff_x
 
