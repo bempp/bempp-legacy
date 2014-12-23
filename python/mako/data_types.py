@@ -27,5 +27,14 @@ def ctypes(name):
         'complex_double': 'std::complex<double>'
     }.get(name, name)
     
+def scalar_cython_type(name):
+
+    return {
+        'float': 'float',
+        'float64': 'double',
+        'complex_float': 'float complex',
+        'complex_double': 'double complex'
+        }.get(name,name)
+
 
 
