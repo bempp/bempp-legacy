@@ -9,6 +9,7 @@ from cython.operator cimport dereference as deref
 
 % for pyvalue,cyvalue in dtypes.items():
 @cython.boundscheck(False)
+@cython.wraparound(False)
 cdef np.ndarray armadillo_to_np_${pyvalue}(const Mat[${cyvalue}]& x):
     
     cdef int rows = x.n_rows
