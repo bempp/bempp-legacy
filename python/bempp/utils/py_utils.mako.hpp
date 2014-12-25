@@ -10,6 +10,7 @@
 #include <Teuchos_ParameterList.hpp>
 #include <algorithm>
 #include <sstream>
+#include <complex.h>
 
 namespace Bempp {
     inline static void catch_exception() {
@@ -70,7 +71,6 @@ namespace Bempp {
         ss << parameters;
         return ss.str();
     }
-
 
 }
 #endif

@@ -24,11 +24,14 @@ cdef class DiscreteBoundaryOperatorBase:
 
 % for pyvalue,cyvalue in dtypes.items():
     cdef void _apply_${pyvalue}(self,
-            TranspositionMode trans, const Mat[${cyvalue}]& x_in,
-            Mat[${cyvalue}]& y_inout, 
+            TranspositionMode trans, 
+            np.ndarray[${scalar_cython_type(cyvalue)},ndim=2,mode='fortran'] x_in, 
+            np.ndarray[${scalar_cython_type(cyvalue)},ndim=2,mode='fortran'] y_inout, 
             ${scalar_cython_type(cyvalue)} alpha,
             ${scalar_cython_type(cyvalue)} beta)
+    cpdef np.ndarray as_matrix(self)
 % endfor
+    cpdef np.ndarray _as_matrix(self)
 
     cpdef object apply(self,np.ndarray x,np.ndarray y,object transpose,object alpha, object beta)
     
@@ -41,9 +44,11 @@ cdef class DiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
 
 % for pyvalue,cyvalue in dtypes.items():
     cdef void _apply_${pyvalue}(self,
-            TranspositionMode trans, const Mat[${cyvalue}]& x_in,
-            Mat[${cyvalue}]& y_inout, 
+            TranspositionMode trans, 
+            np.ndarray[${scalar_cython_type(cyvalue)},ndim=2,mode='fortran'] x_in, 
+            np.ndarray[${scalar_cython_type(cyvalue)},ndim=2,mode='fortran'] y_inout, 
             ${scalar_cython_type(cyvalue)} alpha,
             ${scalar_cython_type(cyvalue)} beta)
+    cdef np.ndarray _as_matrix_${pyvalue}(self)
 % endfor
-    
+    cpdef np.ndarray _as_matrix(self)    

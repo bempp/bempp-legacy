@@ -1,6 +1,6 @@
 set(makoes py_types.mako.hpp py_utils.mako.hpp
     parameter_list.mako.pxd parameter_list.mako.pyx
-    __init__.mako.pxd armadillo.mako.pxd shared_ptr.mako.pxd
+    __init__.mako.pxd armadillo.mako.pxd armadillo.mako.pyx shared_ptr.mako.pxd
     unique_ptr.mako.pxd enum_types.mako.pxd enum_types.mako.pyx)
 
 mako_files(${makoes}
