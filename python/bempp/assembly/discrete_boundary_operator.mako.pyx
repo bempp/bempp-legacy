@@ -188,3 +188,56 @@ cdef class DiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
         del arma_${pyvalue}_buff_y
         del arma_${pyvalue}_buff_x
 % endfor
+
+
+
+cdef class _ScaledDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
+    cdef DiscreteBoundaryOperatorBase op
+
+% for pyvalue,cyvalue in dtypes.items():
+    cdef ${scalar_cython_type(cyvalue)} alpha_${pyvalue}
+% endfor    
+
+    def __cinit__(self,DiscreteBoundaryOperatorBase op,object alpha):
+
+        self.op = op
+        self._value_type = op._value_type
+% for pyvalue in dtypes:
+        if self._value_type=="${pyvalue}":
+            self.alpha_${pyvalue} = alpha
+% endfor
+
+
+    def __init__(self,object op, object alpha):
+
+        pass
+
+    cpdef np.ndarray _as_matrix(self):
+
+% for pyvalue in dtypes:
+        if self._value_type=="${pyvalue}":
+            return self.alpha_${pyvalue}*self.op.as_matrix()
+% endfor 
+        raise ValueError("Object has unknown dtype")
+
+    property shape:
+
+        def __get__(self):
+            return self.op.shape
+
+% for pyvalue,cyvalue in dtypes.items():
+    cdef void _apply_${pyvalue}(self,
+            TranspositionMode trans, 
+            np.ndarray[${scalar_cython_type(cyvalue)},ndim=2,mode='fortran'] x_in, 
+            np.ndarray[${scalar_cython_type(cyvalue)},ndim=2,mode='fortran'] y_inout, 
+            ${scalar_cython_type(cyvalue)} alpha,
+            ${scalar_cython_type(cyvalue)} beta):
+
+
+        self.op._apply_${pyvalue}(trans,x_in,y_inout,self.alpha_${pyvalue}*alpha,beta)
+% endfor
+
+
+
+
+
