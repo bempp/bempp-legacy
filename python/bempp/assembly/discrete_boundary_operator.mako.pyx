@@ -81,6 +81,47 @@ cdef class DiscreteBoundaryOperatorBase:
         self.apply(x_in,y,'no_transpose',1.0,0.0)
         return y
 
+    def matmat(self,np.ndarray x):
+
+        return self.matvec(x)
+
+    def __call__(self,np.ndarray x):
+
+        return self.matvec(x)
+
+    def __mul__(self,object x):
+
+        if not isinstance(self,DiscreteBoundaryOperatorBase):
+            return x*self
+
+        if isinstance(x,DiscreteBoundaryOperatorBase):
+            return _ProductDiscreteBoundaryOperator(self,x)
+        elif np.isscalar(x):
+            return _ScaledDiscreteBoundaryOperator(self,x)
+
+        else:
+            return self.matvec(x)
+
+    def dot(self,object other):
+        
+        return self.__mul__(other)
+
+    def __add__(self,DiscreteBoundaryOperatorBase other):
+
+        return _SumDiscreteBoundaryOperator(self,other)
+
+    def __neg__(self):
+
+        return _ScaledDiscreteBoundaryOperator(self,-1.0)
+
+    def __sub__(self,DiscreteBoundaryOperatorBase x):
+        return self.__add__(self,-x)
+    
+    def __repr__(self):
+        
+        M,N = self.shape
+        dt = 'dtype=' + str(self.dtype)
+        return '<%text><%dx%d %s with %s></%text>' % (M, N, self.__class__.__name__, dt)
 
 
 cdef class DiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
@@ -190,7 +231,6 @@ cdef class DiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
 % endfor
 
 
-
 cdef class _ScaledDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
     cdef DiscreteBoundaryOperatorBase op
 
@@ -237,7 +277,99 @@ cdef class _ScaledDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
         self.op._apply_${pyvalue}(trans,x_in,y_inout,self.alpha_${pyvalue}*alpha,beta)
 % endfor
 
+cdef class _SumDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
+
+    cdef DiscreteBoundaryOperatorBase op1
+    cdef DiscreteBoundaryOperatorBase op2
+
+    def __cinit__(self,DiscreteBoundaryOperatorBase op1, DiscreteBoundaryOperatorBase op2):
+
+        if not op1.shape == op2.shape:
+            raise ValueError("Both operators must have the same shape")
+
+        if not op1.dtype==op2.dtype:
+            raise ValueError("Both operators must have the same type")
+
+        self.op1 = op1
+        self.op2 = op2
+
+        self._value_type = self.op1._value_type
+
+    def __init__(self,DiscreteBoundaryOperatorBase op1, DiscreteBoundaryOperatorBase op2):
+        pass
+
+    property shape:
+
+        def __get__(self):
+
+            return self.op1.shape
+
+    cpdef np.ndarray _as_matrix(self):
+
+        return self.op1.as_matrix()+self.op2.as_matrix()
 
 
+% for pyvalue,cyvalue in dtypes.items():
+    cdef void _apply_${
+  pyvalue}(self,
+            TranspositionMode trans, 
+            np.ndarray[${scalar_cython_type(cyvalue)},ndim=2,mode='fortran'] x_in, 
+            np.ndarray[${scalar_cython_type(cyvalue)},ndim=2,mode='fortran'] y_inout, 
+            ${scalar_cython_type(cyvalue)} alpha,
+            ${scalar_cython_type(cyvalue)} beta):
 
+
+        self.op1._apply_${pyvalue}(trans,x_in,y_inout,alpha,beta)
+        self.op2._apply_${pyvalue}(trans,x_in,y_inout,alpha,1.0)
+% endfor
+
+cdef class _ProductDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
+
+    cdef DiscreteBoundaryOperatorBase op1
+    cdef DiscreteBoundaryOperatorBase op2
+
+    def __cinit__(self,DiscreteBoundaryOperatorBase op1, DiscreteBoundaryOperatorBase op2):
+
+        if not op1.shape[1]==op2.shape[0]:
+            raise ValueError("Incompatible Dimensions.")
+
+        if not op1.dtype==op2.dtype:
+            raise ValueError("Both operators must have the same type")
+
+        self.op1 = op1
+        self.op2 = op2
+
+        self._value_type = op1._value_type
+
+    def __init__(self,DiscreteBoundaryOperatorBase op1, DiscreteBoundaryOperatorBase op2):
+        pass
+
+    cpdef np.ndarray _as_matrix(self):
+        return self.op1.as_matrix()*self.op2.as_matrix()
+
+    property shape:
+
+        def __get__(self):
+            return (self.op1.shape[0],self.op2.shape[1])
+
+
+% for pyvalue,cyvalue in dtypes.items():
+    cdef void _apply_${pyvalue}(self, TranspositionMode trans,
+  np.ndarray[${scalar_cython_type(cyvalue)}, ndim = 2, mode = 'fortran' ] x_in,
+  np.ndarray[${scalar_cython_type(cyvalue)}, ndim = 2, mode = 'fortran' ] y_inout,
+  ${scalar_cython_type(cyvalue)} alpha,${scalar_cython_type(cyvalue)} beta):
+
+      cdef np.ndarray[${scalar_cython_type(cyvalue)}, ndim = 2, mode = 'fortran' ] tmp
+
+      if (trans == enums.no_transpose or trans == enums.conjugate): 
+          tmp = np.zeros((self.op2.shape[0], x_in.shape[1]), dtype = "${pyvalue}",order = 'F') 
+          self.op2._apply_${pyvalue}(trans, x_in, tmp, 1.0, 0.0)
+          self.op1._apply_${pyvalue}(trans, tmp, y_inout, alpha, beta)
+      elif( trans == enums.transpose or trans == enums.conjugate_transpose): 
+          tmp = np.zeros((self.op1.shape[1], x_in.shape[1]), dtype = "${pyvalue}",order = 'F') 
+          self.op1._apply_${pyvalue}(trans, x_in, tmp, 1.0, 0.0)
+          self.op2._apply_${pyvalue}(trans, tmp, y_inout, alpha, beta)
+      else:
+        raise ValueError("Unknown transposition mode")
+% endfor
 
