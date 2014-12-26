@@ -6,30 +6,14 @@
 # The default implementation is 'grid_only', eg a single constructor that takes
 # a grid as its only argument.
 spaces = {
-    'PiecewiseConstantScalarSpace': {
-        'doc': 'Space of piecewise constant scalar functions',
-    },
-    'PiecewiseConstantScalarSpaceBarycentric': {
-        'doc': 'Space of piecewise constant scalar functions',
-    },
-    'PiecewiseConstantDualGridScalarSpace': {
-        'doc': 'Space of piecewise constant scalar functions on the dual grid',
-    },
-    'PiecewiseLinearContinuousScalarSpace': {
-        'doc': 'Space of continuous, piecewise linear scalar functions',
-    },
-    'PiecewiseLinearDiscontinuousScalarSpace': {
-        'doc':
-        'Space of piecewise linear, possibly discontinuous, scalar functions',
-    },
-    'PiecewiseLinearDiscontinuousScalarSpaceBarycentric': {
-        'doc':
-        'Space of piecewise constant functions define on the dual grid',
-        'dual': True  # According top the doxygen tag...
-    },
     'PiecewisePolynomialContinuousScalarSpace': {
         'doc':
         'Space of continuous, piecewise polynomial scalar functions',
+        'implementation': 'polynomial'
+    },
+    'PiecewisePolynomialDiscontinuousScalarSpace': {
+        'doc':
+        'Space of discontinuous, piecewise polynomial scalar functions',
         'implementation': 'polynomial'
     }
 }

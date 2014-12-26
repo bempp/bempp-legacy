@@ -16,18 +16,6 @@ cdef class Space:
     def __init__(self, Grid grid not None):
         super(Space, self).__init__()
 
-    def is_compatible(self, Space other):
-        """ True if other is compatible with this space
-
-            Two spaces are compatible if:
-
-            * They have the same dtype
-            * Their global degress of freedom agree
-        """
-        if other is None:
-            return False
-        return self.impl_.isCompatible(other.impl_)
-
     property dtype:
         """ Precision and kind of this space """
         def __get__(self):
@@ -61,12 +49,12 @@ cdef class ${class_name}(Space):
 
 % if description['implementation'] == 'polynomial':
         order : int
-            Order of the polynomial. Defaults to 2.
+            Order of the polynomial. 
 % endif
     """
     def __init__(self, Grid grid not None, dtype,
 % if description['implementation'] == 'polynomial':
-                 order=2,
+                 order,
 % endif
                  **kwargs):
         from numpy import dtype as np_dtype
