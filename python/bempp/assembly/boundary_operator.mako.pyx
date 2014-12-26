@@ -149,6 +149,9 @@ cdef class _SumBoundaryOperator(BoundaryOperatorBase):
         if not (op1._basis_type==op2._basis_type and op1._result_type==op2._result_type):
             raise ValueError("Operators have different types.")
 
+        self._basis_type = op1._basis_type
+        self._result_type = op2._result_type
+
         self.op1 = op1
         self.op2 = op2
 
