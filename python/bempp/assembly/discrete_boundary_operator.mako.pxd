@@ -8,6 +8,7 @@ from bempp.utils cimport shared_ptr
 from bempp.utils cimport complex_float,complex_double
 cimport numpy as np
 
+
 cdef extern from "bempp/assembly/discrete_boundary_operator.hpp" namespace "Bempp":
     cdef cppclass c_DiscreteBoundaryOperator "Bempp::DiscreteBoundaryOperator"[ValueType]:
         

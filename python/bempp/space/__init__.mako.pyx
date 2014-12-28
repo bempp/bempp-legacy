@@ -1,4 +1,6 @@
+from .space cimport c_Space, _py_get_space_ptr, SpaceVariants
 from . import space as s
+
 
 def space(grid, kind, order, dtype='float64'):
 
@@ -10,7 +12,4 @@ def space(grid, kind, order, dtype='float64'):
         return s.PiecewisePolynomialDiscontinuousScalarSpace(grid,dtype,order)
     else:
         raise ValueError("Unknown kind")
-
-
-
 

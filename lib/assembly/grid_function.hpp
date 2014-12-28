@@ -26,6 +26,7 @@
 #include "../common/armadillo_fwd.hpp"
 #include "../common/deprecated.hpp"
 #include "../common/shared_ptr.hpp"
+#include "../common/types.hpp"
 
 #include "../grid/vtk_writer.hpp"
 #include "../fiber/quadrature_strategy.hpp"
@@ -59,6 +60,9 @@ template <typename BasisFunctionType, typename ResultType> class Context;
 
 using Fiber::Function;
 
+
+
+
 /** \ingroup assembly_functions
  *  \brief Function defined on a grid.
  *
@@ -83,8 +87,8 @@ public:
     PROJECTIONS
   };
   enum ConstructionMode {
-    APPROXIMATE,
-    INTERPOLATE
+    APPROXIMATE = 0,
+    INTERPOLATE = 1
   };
 
   // Recommended constructors
@@ -113,6 +117,11 @@ public:
       const shared_ptr<const Space<BasisFunctionType>> &space,
       const arma::Col<ResultType> &coefficients);
 
+  GridFunction(
+      const ParameterList& parameterList,
+      const shared_ptr<const Space<BasisFunctionType>> &space,
+      const arma::Col<ResultType> &coefficients);
+
   /** Constructor.
    *
    *  \param[in] context      Assembly context from which a quadrature
@@ -134,6 +143,13 @@ public:
       const shared_ptr<const Space<BasisFunctionType>> &dualSpace,
       const arma::Col<ResultType> &projections);
 
+
+  GridFunction(
+      const ParameterList& parameterList,
+      const shared_ptr<const Space<BasisFunctionType>> &space,
+      const shared_ptr<const Space<BasisFunctionType>> &dualSpace,
+      const arma::Col<ResultType> &projections);
+  
   /** \brief Constructor.
    *
    *  \param[in] context      Assembly context from which a quadrature
@@ -168,6 +184,14 @@ public:
    *  (see Space::getGlobalDofInterpolationPoints() for more details). */
   GridFunction(
       const shared_ptr<const Context<BasisFunctionType, ResultType>> &context,
+      const shared_ptr<const Space<BasisFunctionType>> &space,
+      const shared_ptr<const Space<BasisFunctionType>> &dualSpace,
+      const Function<ResultType> &function,
+      ConstructionMode mode = APPROXIMATE);
+
+
+  GridFunction(
+      const ParameterList& parameterList,
       const shared_ptr<const Space<BasisFunctionType>> &space,
       const shared_ptr<const Space<BasisFunctionType>> &dualSpace,
       const Function<ResultType> &function,

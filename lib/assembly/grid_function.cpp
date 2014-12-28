@@ -214,6 +214,18 @@ GridFunction<BasisFunctionType, ResultType>::GridFunction(
   initializeFromCoefficients(context, space, coefficients);
 }
 
+
+template <typename BasisFunctionType, typename ResultType>
+GridFunction<BasisFunctionType, ResultType>::GridFunction(
+    const ParameterList& parameterList,
+    const shared_ptr<const Space<BasisFunctionType>> &space,
+    const arma::Col<ResultType> &coefficients) {
+
+  shared_ptr<const Context<BasisFunctionType, ResultType>> context(
+          new Context<BasisFunctionType,ResultType>(parameterList));
+  initializeFromCoefficients(context, space, coefficients);
+}
+
 template <typename BasisFunctionType, typename ResultType>
 GridFunction<BasisFunctionType, ResultType>::GridFunction(
     const shared_ptr<const Context<BasisFunctionType, ResultType>> &context,
@@ -227,11 +239,41 @@ GridFunction<BasisFunctionType, ResultType>::GridFunction(
 
 template <typename BasisFunctionType, typename ResultType>
 GridFunction<BasisFunctionType, ResultType>::GridFunction(
+    const ParameterList& parameterList,
+    const shared_ptr<const Space<BasisFunctionType>> &space,
+    const shared_ptr<const Space<BasisFunctionType>> &dualSpace,
+    const arma::Col<ResultType> &projections) {
+
+  shared_ptr<const Context<BasisFunctionType, ResultType>> context(
+          new Context<BasisFunctionType,ResultType>(parameterList));
+
+  initializeFromProjections(context, space, dualSpace, projections);
+  m_dualSpace = dualSpace;
+}
+
+
+template <typename BasisFunctionType, typename ResultType>
+GridFunction<BasisFunctionType, ResultType>::GridFunction(
+    const ParameterList& parameterList,
+    const shared_ptr<const Space<BasisFunctionType>> &space,
+    const shared_ptr<const Space<BasisFunctionType>> &dualSpace,
+    const Function<ResultType> &function, ConstructionMode mode)
+    {
+
+  shared_ptr<const Context<BasisFunctionType, ResultType>> context(
+          new Context<BasisFunctionType,ResultType>(parameterList));
+  GridFunction(context,space,dualSpace,function,mode);
+
+    }
+
+template <typename BasisFunctionType, typename ResultType>
+GridFunction<BasisFunctionType, ResultType>::GridFunction(
     const shared_ptr<const Context<BasisFunctionType, ResultType>> &context,
     const shared_ptr<const Space<BasisFunctionType>> &space,
     const shared_ptr<const Space<BasisFunctionType>> &dualSpace,
     const Function<ResultType> &function, ConstructionMode mode)
     : m_context(context), m_space(space), m_dualSpace(dualSpace) {
+
   if (!context)
     throw std::invalid_argument(
         "GridFunction::GridFunction(): context must not be null");
@@ -267,6 +309,8 @@ GridFunction<BasisFunctionType, ResultType>::GridFunction(
     throw std::invalid_argument(
         "GridFunction::GridFunction(): "
         "space and dualSpace must be defined on the same grid");
+
+  std::cout << "About to enter approximation" << std::endl;
 
   if (mode == APPROXIMATE)
     setProjections(m_dualSpace,

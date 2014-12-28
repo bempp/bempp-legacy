@@ -12,6 +12,7 @@ cdef extern from "<armadillo>" namespace "arma":
     cdef cppclass Col[T]:
         Col(T*, uword, cbool copy_aux_mem, cbool strict) nogil
         Col() nogil
+        Col(Col[T])
         T* memptr()
         T& value "operator()"(int i) # bounds checking
         T& at(int i) # No bounds checking

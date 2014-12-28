@@ -1,5 +1,5 @@
 mako_files(
-    boundary_operator.mako.pxd boundary_operator.mako.pyx py_boundary_operator_variants.mako.hpp discrete_boundary_operator.mako.pxd discrete_boundary_operator.mako.pyx
+    boundary_operator.mako.pxd boundary_operator.mako.pyx py_boundary_operator_variants.mako.hpp discrete_boundary_operator.mako.pxd discrete_boundary_operator.mako.pyx grid_function.mako.pxd grid_function.mako.pyx py_functors.mako.hpp
     OUTPUT_FILES makoed
     DEPENDS "${PROJECT_SOURCE_DIR}/python/mako/space.py"
         "${PROJECT_SOURCE_DIR}/python/mako/bempp_operators.py"
@@ -19,7 +19,7 @@ install_python(FILES ${headers} DESTINATION bempp/include/bempp/assembly)
 add_dependencies(cython-headers bempp.assembly-mako)
 
 add_python_module(bempp.assembly
-    ${sources} __init__.py
+    ${sources} __init__.py 
     TARGETNAME bempp.assembly
     CPP
     LIBRARIES libbempp

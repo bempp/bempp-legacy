@@ -95,6 +95,9 @@ class SpaceVariants {
 % endfor
     };
 
+    template <typename BasisFunctionType>
+    friend shared_ptr<Space<BasisFunctionType>> _py_get_space_ptr(const SpaceVariants& space_variant);
+
     public:
         SpaceVariants() {}
 
@@ -125,6 +128,14 @@ class SpaceVariants {
     private:
         t_variant space_;
 };
+
+template <typename BasisFunctionType>
+shared_ptr<Space<BasisFunctionType>> _py_get_space_ptr(const SpaceVariants& space_variant)
+{
+    return boost::get<shared_ptr<Space<BasisFunctionType>>>(space_variant.space_);
+}
+
+
 
 #   undef BEMPP_EXPLICIT_CONSTRUCTOR
 

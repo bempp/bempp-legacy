@@ -14,6 +14,5 @@ cdef extern from "bempp/assembly/transposition_mode.hpp":
         transpose "Bempp::TranspositionMode::TRANSPOSE"
         conjugate_transpose "Bempp::TranspositionMode::CONJUGATE_TRANSPOSE"
 
-
 cdef SymmetryMode symmetry_mode(string name)
 cdef TranspositionMode transposition_mode(string name)

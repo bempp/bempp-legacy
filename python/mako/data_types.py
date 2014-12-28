@@ -36,5 +36,11 @@ def scalar_cython_type(name):
         'complex_double': 'double complex'
         }.get(name,name)
 
+def real_cython_type(name):
 
-
+    return {
+        'float': 'float',
+        'float64': 'double',
+        'complex_float': 'float',
+        'complex_double': 'double'
+        }.get(name,name)
