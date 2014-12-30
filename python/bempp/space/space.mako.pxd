@@ -55,8 +55,7 @@ cdef extern from "bempp/space/py_space_variants.hpp" namespace "Bempp":
 cdef class Space:
     cdef:
         SpaceVariants impl_
-
-
+    cpdef cbool is_compatible(self, Space other)
 
 # Now we define derived types for each space.
 # This is a flat hierarchy. It does not attempt to redeclare the C++ hierarchy.

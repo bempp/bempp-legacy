@@ -61,7 +61,10 @@ template <typename BasisFunctionType, typename ResultType> class Context;
 using Fiber::Function;
 
 
-
+  enum ConstructionMode {
+    APPROXIMATE = 0,
+    INTERPOLATE = 1
+  };
 
 /** \ingroup assembly_functions
  *  \brief Function defined on a grid.
@@ -86,10 +89,8 @@ public:
     COEFFICIENTS,
     PROJECTIONS
   };
-  enum ConstructionMode {
-    APPROXIMATE = 0,
-    INTERPOLATE = 1
-  };
+
+  typedef Bempp::ConstructionMode ConstructionMode;
 
   // Recommended constructors
 

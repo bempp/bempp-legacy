@@ -14,5 +14,11 @@ cdef extern from "bempp/assembly/transposition_mode.hpp":
         transpose "Bempp::TranspositionMode::TRANSPOSE"
         conjugate_transpose "Bempp::TranspositionMode::CONJUGATE_TRANSPOSE"
 
+cdef extern from "bempp/assembly/grid_function.hpp":
+    cdef enum ConstructionMode "Bempp::ConstructionMode":
+        approximate "Bempp::ConstructionMode::APPROXIMATE"
+        interpolate "Bempp::ConstructionMode::INTERPOLATE"
+
 cdef SymmetryMode symmetry_mode(string name)
 cdef TranspositionMode transposition_mode(string name)
+cdef ConstructionMode construction_mode(string name)

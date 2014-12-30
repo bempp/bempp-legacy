@@ -6,6 +6,7 @@
 from bempp.utils.armadillo cimport armadillo_to_np_${pyvalue}, armadillo_col_to_np_${pyvalue}
 % endfor
     
+from bempp.space.space cimport Space
 from bempp.utils.armadillo cimport Col
 from bempp.utils cimport shared_ptr 
 from bempp.space.space cimport c_Space, _py_get_space_ptr 
@@ -13,6 +14,7 @@ from bempp.utils.parameter_list cimport ParameterList, c_ParameterList
 from bempp.utils.armadillo cimport Mat
 from bempp.utils cimport catch_exception
 from bempp.utils cimport complex_float,complex_double
+from bempp.utils.enum_types cimport construction_mode
 from cython.operator cimport dereference as deref
 import numpy as np
 cimport numpy as np
@@ -50,18 +52,20 @@ cdef void _fun_interface_${pyvalue}(const Col[${real_cython_type(cyvalue)}]& x,
 
 cdef class GridFunction:
     
-    def __cinit__(self,**kwargs):
+    def __cinit__(self,ParameterList parameter_list,Space space,**kwargs):
         pass
 
-    def __init__(self,**kwargs):
+    def __init__(self,ParameterList parameter_list,Space space,**kwargs):
 
-        cdef ParameterList params = kwargs['parameter_list']
+% for pyvalue,cyvalue in dtypes.items():
+        cdef Col[${cyvalue}]* arma_data_${pyvalue}
+        cdef ${scalar_cython_type(cyvalue)} [:] data_view_${pyvalue}
+% endfor
+
         global _fun
 
-        self._space = kwargs['space']
-        self._dual_space = kwargs['dual_space']
-        _fun = kwargs['fun']
-      
+        self._space = space
+
         if 'basis_type' in kwargs:
             self._basis_type = np.dtype(kwargs['basis_type'])
         else:
@@ -72,19 +76,78 @@ cdef class GridFunction:
         else:
             self._result_type = np.dtype('float64')
 
+        if 'fun' in kwargs:
+
+            _fun = kwargs['fun']
+
+            if 'dual_space' not in kwargs:
+                raise ValueError('Need to specify dual space')
+
+            approx_mode = bytes('approximate',"UTF-8")
+            if 'approximation_mode' in kwargs:
+                approx_mode = bytes(kwargs['approximation_mode'],"UTF-8")
+
 % for pybasis,cybasis in dtypes.items():
 %     for pyresult,cyresult in dtypes.items():
 %         if pyresult in compatible_dtypes[pybasis]:
-        if (self._basis_type=="${pybasis}") and (self._result_type=="${pyresult}"):
-            self._impl_${pybasis}_${pyresult}.reset(
-                    new c_GridFunction[${cybasis},${cyresult}](deref(params.impl_),
-                    _py_get_space_ptr[${cybasis}](self._space.impl_),
-                    _py_get_space_ptr[${cybasis}](self._dual_space.impl_),
-                    deref(_py_surface_normal_dependent_function_${pyresult}(_fun_interface_${pyresult},3,
-                        self._space.codomainDimension))))
+            if (self._basis_type=="${pybasis}") and (self._result_type=="${pyresult}"):
+                self._impl_${pybasis}_${pyresult}.reset(
+                        new c_GridFunction[${cybasis},${cyresult}](deref(parameter_list.impl_),
+                        _py_get_space_ptr[${cybasis}](self._space.impl_),
+                        _py_get_space_ptr[${cybasis}]((<Space>kwargs['dual_space']).impl_),
+                        deref(_py_surface_normal_dependent_function_${pyresult}(_fun_interface_${pyresult},3,
+                            self._space.codomainDimension)),
+                        construction_mode(approx_mode)))
 %         endif
 %     endfor
 % endfor
+
+        elif 'projections' in kwargs:
+
+            if 'dual_space' not in kwargs:
+                raise ValueError('Need to specify dual space')
+
+% for pybasis,cybasis in dtypes.items():
+%     for pyresult,cyresult in dtypes.items():
+%         if pyresult in compatible_dtypes[pybasis]:
+            if (self._basis_type=="${pybasis}") and (self._result_type=="${pyresult}"):
+                num_entries = kwargs['projections'].shape[0]
+                data_view_${pyresult} = kwargs['projections']
+                arma_data_${pyresult} = new Col[${cyresult}](<${cyresult}*>&data_view_${pyresult}[0],num_entries,True,False)
+
+                self._impl_${pybasis}_${pyresult}.reset(
+                        new c_GridFunction[${cybasis},${cyresult}](deref(parameter_list.impl_),
+                        _py_get_space_ptr[${cybasis}](self._space.impl_),
+                        _py_get_space_ptr[${cybasis}]((<Space>kwargs['dual_space']).impl_),
+                        deref(arma_data_${pyresult})))
+                del arma_data_${pyresult}
+%         endif
+%     endfor
+% endfor
+
+        elif 'coefficients' in kwargs:
+
+% for pybasis,cybasis in dtypes.items():
+%     for pyresult,cyresult in dtypes.items():
+%         if pyresult in compatible_dtypes[pybasis]:
+            if (self._basis_type=="${pybasis}") and (self._result_type=="${pyresult}"):
+                num_entries = kwargs['coefficients'].shape[0]
+                data_view_${pyresult} = kwargs['coefficients']
+                arma_data_${pyresult} = new Col[${cyresult}](<${cyresult}*>&data_view_${pyresult}[0],num_entries,True,False)
+
+                self._impl_${pybasis}_${pyresult}.reset(
+                        new c_GridFunction[${cybasis},${cyresult}](deref(parameter_list.impl_),
+                        _py_get_space_ptr[${cybasis}](self._space.impl_),
+                        deref(arma_data_${pyresult})))
+                del arma_data_${pyresult}
+%         endif
+%     endfor
+% endfor
+        else:
+            raise ValueError("Need to specify at least one of 'coefficients', 'projections' or 'fun'")
+
+
+
 
 
 % for pybasis,cybasis in dtypes.items():
@@ -96,6 +159,7 @@ cdef class GridFunction:
 %          endif
 %      endfor
 %  endfor
+
 
 
 % for pybasis,cybasis in dtypes.items():
@@ -169,3 +233,25 @@ cdef class GridFunction:
 %      endfor
 %  endfor
 
+    property grid:
+        def __get__(self):
+% for pybasis,cybasis in dtypes.items():
+%     for pyresult,cyresult in dtypes.items():
+%         if pyresult in compatible_dtypes[pybasis]:
+            if (self._basis_type=="${pybasis}") and (self._result_type=="${pyresult}"):
+                return self._space.grid
+%          endif
+%      endfor
+%  endfor
+
+
+    property space:
+        def __get__(self):
+% for pybasis,cybasis in dtypes.items():
+%     for pyresult,cyresult in dtypes.items():
+%         if pyresult in compatible_dtypes[pybasis]:
+            if (self._basis_type=="${pybasis}") and (self._result_type=="${pyresult}"):
+                return self._space
+%          endif
+%      endfor
+%  endfor

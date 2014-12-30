@@ -8,6 +8,7 @@ from bempp.utils.parameter_list cimport ParameterList, c_ParameterList
 from bempp.utils.armadillo cimport Mat
 from bempp.utils cimport catch_exception
 from bempp.utils cimport complex_float,complex_double
+from bempp.utils.enum_types cimport ConstructionMode
 cimport numpy as np
 import numpy as np
 
@@ -20,12 +21,18 @@ cdef extern from "bempp/assembly/grid_function.hpp" namespace "Bempp":
     cdef cppclass c_GridFunction "Bempp::GridFunction"[ BASIS, RESULT ]: 
         c_GridFunction(const c_ParameterList &parameterList,
                        const shared_ptr[c_Space[BASIS]] & space,
-                       const Mat[RESULT] & coefficients) except+catch_exception
+                       const Col[RESULT] & coefficients) except+catch_exception
+
+        c_GridFunction(const c_ParameterList &parameterList,
+                       const shared_ptr[c_Space[BASIS]] & space,
+                       const shared_ptr[c_Space[BASIS]] & dual_space,
+                       const Col[RESULT] & projections) except+catch_exception
 
         c_GridFunction(const c_ParameterList &parameterList,
                         const shared_ptr[c_Space[BASIS]]& space,
                         const shared_ptr[c_Space[BASIS]]& dualSpace,
-                        const c_Function[RESULT]& function) except+catch_exception
+                        const c_Function[RESULT]& function,
+                        ConstructionMode constructionMde) except+catch_exception
 
  
 % for pybasis,cybasis in dtypes.items():
@@ -53,7 +60,6 @@ cdef class GridFunction:
     cdef object _basis_type,
     cdef object _result_type,
     cdef Space _space,
-    cdef Space _dual_space
 
 % for pybasis,cybasis in dtypes.items():
 %     for pyresult,cyresult in dtypes.items():

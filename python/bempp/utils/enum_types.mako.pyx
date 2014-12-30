@@ -33,3 +33,18 @@ cdef TranspositionMode transposition_mode(string name):
         raise ValueError("Unsupported transposition mode")
 
     return res
+
+cdef ConstructionMode construction_mode(string name):
+
+    cdef ConstructionMode res
+
+    if name==string(b'approximate'):
+        res = approximate
+    elif name==string(b'interpolate'):
+        res = interpolate
+    else:
+        raise ValueError("Unsupported construction mode")
+
+    return res
+
+

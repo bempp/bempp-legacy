@@ -6,6 +6,7 @@ ifloop = lambda x: 'if' if loop.index == 0 else 'elif'
 %>
 from bempp.grid.grid cimport Grid
 from cython.operator cimport dereference as deref
+from libcpp cimport bool as cbool
 
 
 cdef class Space:
@@ -33,11 +34,8 @@ cdef class Space:
             result.impl_ = self.impl_.grid()
             return result
 
-    def __richcmp__(Space self, Space other not None, int op):
-        if op != 2:
-            raise AttributeError("Incorrect operator")
-        return self.impl_.is_same(other.impl_)
-
+    cpdef cbool is_compatible(self,Space other):
+        return self.impl_.isCompatible(other.impl_)
 
 % for class_name, description in spaces.items():
 cdef class ${class_name}(Space):
