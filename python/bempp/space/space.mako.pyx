@@ -35,6 +35,7 @@ cdef class Space:
             return result
 
     cpdef cbool is_compatible(self,Space other):
+        if not (self.dtype==other.dtype): return False
         return self.impl_.isCompatible(other.impl_)
 
 % for class_name, description in spaces.items():

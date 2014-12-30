@@ -21,11 +21,11 @@ BoundaryOpVariants c_identityOperator(
         const std::string& label,
         int symmetry)
 {
-    typedef shared_ptr<Space<BasisFunctionType>> space_t;
+    typedef shared_ptr<const Space<BasisFunctionType>> space_t;
 
-    space_t my_domain = boost::get<space_t>(domain.variants());
-    space_t my_range = boost::get<space_t>(range.variants());
-    space_t my_dual_to_range = boost::get<space_t>(dual_to_range.variants());
+    space_t my_domain = _py_get_space_ptr<BasisFunctionType>(domain);
+    space_t my_range = _py_get_space_ptr<BasisFunctionType>(range);
+    space_t my_dual_to_range = _py_get_space_ptr<BasisFunctionType>(dual_to_range);
 
     return identityOperator<BasisFunctionType,ResultType>(
             parameterList,

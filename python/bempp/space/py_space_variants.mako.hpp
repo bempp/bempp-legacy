@@ -101,7 +101,7 @@ class SpaceVariants {
     };
 
     template <typename BasisFunctionType>
-    friend shared_ptr<Space<BasisFunctionType>> _py_get_space_ptr(const SpaceVariants& space_variant);
+    friend shared_ptr<const Space<BasisFunctionType>> _py_get_space_ptr(const SpaceVariants& space_variant);
 
     public:
         SpaceVariants() {}
@@ -132,6 +132,7 @@ class SpaceVariants {
                     space_, _other.space_);
         }
 
+
         t_variant & variants() { return space_; }
         t_variant const & variants() const { return space_; }
     private:
@@ -139,10 +140,23 @@ class SpaceVariants {
 };
 
 template <typename BasisFunctionType>
-shared_ptr<Space<BasisFunctionType>> _py_get_space_ptr(const SpaceVariants& space_variant)
+shared_ptr<const Space<BasisFunctionType>> _py_get_space_ptr(const SpaceVariants& space_variant)
 {
-    return boost::get<shared_ptr<Space<BasisFunctionType>>>(space_variant.space_);
+    shared_ptr<const Space<BasisFunctionType>> res;
+    bool success = true;
+
+    try {
+        res = boost::get<shared_ptr<Space<BasisFunctionType>>>(space_variant.space_);
+    }
+    catch (...) {
+        success = false;
+    }
+    if (!success)
+        res = boost::get<shared_ptr<const Space<BasisFunctionType>>>(space_variant.space_);
+    return res;
 }
+
+
 
 
 

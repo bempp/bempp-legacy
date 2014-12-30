@@ -49,7 +49,6 @@ cdef void _fun_interface_${pyvalue}(const Col[${real_cython_type(cyvalue)}]& x,
 % endfor
 
 
-
 cdef class GridFunction:
     
     def __cinit__(self,ParameterList parameter_list,Space space,**kwargs):
@@ -61,6 +60,8 @@ cdef class GridFunction:
         cdef Col[${cyvalue}]* arma_data_${pyvalue}
         cdef ${scalar_cython_type(cyvalue)} [:] data_view_${pyvalue}
 % endfor
+
+        self._parameter_list = parameter_list
 
         global _fun
 
@@ -199,6 +200,41 @@ cdef class GridFunction:
 %      endfor
 %  endfor
 
+    def __add__(self,GridFunction other):
+
+        if not (self.basis_type==other.basis_type and self.result_type==other.result_type):
+            raise ValueError("Types do not match")
+
+        if not self.space.is_compatible(other.space):
+            raise ValueError("Spaces do not match")
+
+        return GridFunction(self.parameter_list,self.space,
+                coefficients=self.coefficients+other.coefficients,
+                basis_type=self.basis_type,
+                result_type=self.result_type)
+
+
+    def __mul__(self,object alpha):
+
+        if not isinstance(self,GridFunction):
+            return alpha*self
+
+        if np.isscalar(alpha):
+            scale = self.result_type.type(alpha)
+            return GridFunction(self.parameter_list,self.space,
+                    coefficients=scale*self.coefficients,
+                    basis_type=self.basis_type,
+                    result_type=self.result_type)
+        else:
+            raise ValueError("Cannot multiply Gridfunction with object of type "+str(type(alpha)))
+
+    def __neg__(self):
+
+        return self.__mul__(-1.0)
+
+    def __sub__(self,GridFunction other):
+        return self.__add__(self,-other)
+
     property coefficients:
         
         def __get__(self):
@@ -255,3 +291,18 @@ cdef class GridFunction:
 %          endif
 %      endfor
 %  endfor
+
+    property parameter_list:
+
+        def __get__(self):
+            return self._parameter_list
+
+    property basis_type:
+
+        def __get__(self):
+            return self._basis_type
+
+    property result_type:
+
+        def __get__(self):
+            return self._result_type

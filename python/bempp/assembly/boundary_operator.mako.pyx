@@ -7,6 +7,7 @@ from bempp.space.space cimport Space
 from discrete_boundary_operator cimport DiscreteBoundaryOperator
 from discrete_boundary_operator cimport DiscreteBoundaryOperatorBase
 from bempp.utils.byte_conversion import convert_to_bytes
+from bempp.assembly.grid_function cimport GridFunction
 
 from numpy cimport dtype
 
@@ -43,6 +44,9 @@ cdef class BoundaryOperatorBase:
         if np.isscalar(x):
             return _ScaledBoundaryOperator(self,x)
 
+        if isinstance(x,GridFunction):
+            return self._apply_grid_function(x)
+
         raise ValueError("Multiplication not supported for type"+str(type(x)))
 
     def __neg__(self):
@@ -54,6 +58,10 @@ cdef class BoundaryOperatorBase:
         return self.__add__(-other)
 
     cpdef DiscreteBoundaryOperatorBase weak_form(self):
+
+        raise NotImplementedError("Method not implemented")
+
+    def _apply_grid_function(self,GridFunction g):
 
         raise NotImplementedError("Method not implemented")
 
@@ -73,6 +81,18 @@ cdef class BoundaryOperator(BoundaryOperatorBase):
 %         endif
 %     endfor
 % endfor
+
+    def _apply_grid_function(self,GridFunction g):
+        if not(self.domain.is_compatible(g.space)):
+            raise ValueError("Spaces do not match")
+        if not self.result_type==g.result_type:
+            raise ValueError("Result types do not match")
+
+        op_w =  self.weak_form()
+        coeffs = g.coefficients
+        result_projections = (op_w*coeffs)
+        return GridFunction(g.parameter_list,self.range,dual_space=self.dual_to_range,
+                projections=result_projections)
 
     cpdef DiscreteBoundaryOperatorBase weak_form(self):
         cdef DiscreteBoundaryOperator dbop = DiscreteBoundaryOperator()

@@ -60,6 +60,7 @@ cdef class GridFunction:
     cdef object _basis_type,
     cdef object _result_type,
     cdef Space _space,
+    cdef ParameterList _parameter_list
 
 % for pybasis,cybasis in dtypes.items():
 %     for pyresult,cyresult in dtypes.items():

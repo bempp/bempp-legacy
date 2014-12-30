@@ -76,9 +76,11 @@ cdef class DiscreteBoundaryOperatorBase:
         else:
             raise ValueError('x must have at most two dimensions')
 
-        y = np.zeros((rows,x.shape[1]),dtype=self.dtype,order='F')
+        y = np.zeros((rows,x_in.shape[1]),dtype=self.dtype,order='F')
 
         self.apply(x_in,y,'no_transpose',1.0,0.0)
+        if (x.ndim==1):
+            y = y.ravel()
         return y
 
     def matmat(self,np.ndarray x):
@@ -98,7 +100,6 @@ cdef class DiscreteBoundaryOperatorBase:
             return _ProductDiscreteBoundaryOperator(self,x)
         elif np.isscalar(x):
             return _ScaledDiscreteBoundaryOperator(self,x)
-
         else:
             return self.matvec(x)
 
