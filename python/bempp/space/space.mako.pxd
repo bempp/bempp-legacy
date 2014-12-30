@@ -48,12 +48,14 @@ cdef extern from "bempp/space/py_space_variants.hpp" namespace "Bempp":
         shared_ptr[const c_Grid] grid() const
         cbool isCompatible(const SpaceVariants&)
         cbool is_same "isSame"(const SpaceVariants&)
+        int codomainDimension() const
 
     cdef shared_ptr[c_Space[BASIS]] _py_get_space_ptr[BASIS](const SpaceVariants& space_variant)
 
 cdef class Space:
     cdef:
         SpaceVariants impl_
+
 
 
 # Now we define derived types for each space.

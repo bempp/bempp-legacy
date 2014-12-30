@@ -258,11 +258,54 @@ GridFunction<BasisFunctionType, ResultType>::GridFunction(
     const shared_ptr<const Space<BasisFunctionType>> &space,
     const shared_ptr<const Space<BasisFunctionType>> &dualSpace,
     const Function<ResultType> &function, ConstructionMode mode)
+    : m_context(shared_ptr<const Context<BasisFunctionType, ResultType>>(
+          new Context<BasisFunctionType,ResultType>(parameterList))),
+    m_space(space), m_dualSpace(dualSpace)
     {
 
-  shared_ptr<const Context<BasisFunctionType, ResultType>> context(
-          new Context<BasisFunctionType,ResultType>(parameterList));
-  GridFunction(context,space,dualSpace,function,mode);
+  if (!m_context)
+    throw std::invalid_argument(
+        "GridFunction::GridFunction(): context must not be null");
+  if (!space)
+    throw std::invalid_argument(
+        "GridFunction::GridFunction(): space must not be null");
+  if (!dualSpace)
+    throw std::invalid_argument(
+        "GridFunction::GridFunction(): dualSpace must not be null");
+
+  if (space->codomainDimension() != dualSpace->codomainDimension())
+    throw std::invalid_argument(
+        "GridFunction::GridFunction(): "
+        "functions from 'space' and 'dualSpace' have a different "
+        "number of components");
+  if (function.codomainDimension() != space->codomainDimension())
+    throw std::invalid_argument(
+        "GridFunction::GridFunction(): "
+        "functions from 'space' have a different number of "
+        "components than 'function'");
+  if (mode != APPROXIMATE && mode != INTERPOLATE)
+    throw std::invalid_argument(
+        "GridFunction::GridFunction(): "
+        "'mode' must be either APPROXIMATE or INTERPOLATE");
+
+  bool isBarycentricSpace =
+      (space->isBarycentric() || dualSpace->isBarycentric());
+  if (isBarycentricSpace) {
+    m_space = space->barycentricSpace(space);
+    m_dualSpace = dualSpace->barycentricSpace(dualSpace);
+  }
+  if (m_space->grid() != m_dualSpace->grid())
+    throw std::invalid_argument(
+        "GridFunction::GridFunction(): "
+        "space and dualSpace must be defined on the same grid");
+
+
+  if (mode == APPROXIMATE){
+    setProjections(m_dualSpace,
+                   *calculateProjections(*m_context, function, *m_dualSpace));
+  }
+  else // mode == INTERPOLATE
+    setCoefficients(interpolate(function, *m_space));
 
     }
 
@@ -310,11 +353,10 @@ GridFunction<BasisFunctionType, ResultType>::GridFunction(
         "GridFunction::GridFunction(): "
         "space and dualSpace must be defined on the same grid");
 
-  std::cout << "About to enter approximation" << std::endl;
-
-  if (mode == APPROXIMATE)
+  if (mode == APPROXIMATE){
     setProjections(m_dualSpace,
                    *calculateProjections(*context, function, *m_dualSpace));
+  }
   else // mode == INTERPOLATE
     setCoefficients(interpolate(function, *m_space));
 }
@@ -509,6 +551,7 @@ GridFunction<BasisFunctionType, ResultType>::approximateInSpace(
 template <typename BasisFunctionType, typename ResultType>
 const arma::Col<ResultType> &
 GridFunction<BasisFunctionType, ResultType>::coefficients() const {
+
   if (!m_space || (!m_coefficients && !m_projections))
     throw std::runtime_error("GridFunction::coefficients() must not be called "
                              "on an uninitialized GridFunction object");

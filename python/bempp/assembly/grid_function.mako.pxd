@@ -27,6 +27,20 @@ cdef extern from "bempp/assembly/grid_function.hpp" namespace "Bempp":
                         const shared_ptr[c_Space[BASIS]]& dualSpace,
                         const c_Function[RESULT]& function) except+catch_exception
 
+ 
+% for pybasis,cybasis in dtypes.items():
+%     for pyresult,cyresult in dtypes.items():
+%         if pyresult in compatible_dtypes[pybasis]:
+
+        ${real_cython_type(cyresult)} L2Norm_${pybasis}_${pyresult} "Bempp::GridFunction<${cybasis},${cyresult}>::L2Norm"()
+%         endif
+%     endfor
+% endfor
+
+        const Col[RESULT]& coefficients() except+catch_exception
+        void setCoefficients(const Col[RESULT]& coeffs) except+catch_exception
+        Col[RESULT] projections(const shared_ptr[const c_Space[BASIS]] &dualSpace)        
+
     
 cdef extern from "bempp/assembly/py_functors.hpp" namespace "Bempp":
 % for pyvalue,cyvalue in dtypes.items():
@@ -36,14 +50,20 @@ cdef extern from "bempp/assembly/py_functors.hpp" namespace "Bempp":
 % endfor
 
 cdef class GridFunction:
-% for pybasis,cybasis in dtypes.items():
-%     for pyresult,cyresult in dtypes.items():
-%         if pyresult in compatible_dtypes[pybasis]:
-    cdef shared_ptr[c_GridFunction[${cybasis},${cyresult}]] _impl_${pybasis}_${pyresult}
-%         endif
-%     endfor
-% endfor
     cdef object _basis_type,
     cdef object _result_type,
     cdef Space _space,
     cdef Space _dual_space
+
+% for pybasis,cybasis in dtypes.items():
+%     for pyresult,cyresult in dtypes.items():
+%         if pyresult in compatible_dtypes[pybasis]:
+    cdef shared_ptr[c_GridFunction[${cybasis},${cyresult}]] _impl_${pybasis}_${pyresult}
+
+    cdef np.ndarray _get_coefficients_${pybasis}_${pyresult}(self)
+    cdef void _set_coefficients_${pybasis}_${pyresult}(self,np.ndarray[${scalar_cython_type(cyresult)},ndim=1,mode='fortran'] coeffs)
+    cdef np.ndarray _projections_${pybasis}_${pyresult}(self,Space dual_space)
+%         endif
+%     endfor
+% endfor    
+

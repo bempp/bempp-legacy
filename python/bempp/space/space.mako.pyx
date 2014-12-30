@@ -22,6 +22,11 @@ cdef class Space:
             from numpy import dtype
             return dtype(self.impl_.dtype());
 
+    property codomainDimension:
+        """Number of components of values of functions in this space (e.g. 1 for scalar functions)"""
+        def __get__(self):
+            return self.impl_.codomainDimension()
+
     property grid:
         def __get__(self):
             cdef Grid result = Grid.__new__(Grid)

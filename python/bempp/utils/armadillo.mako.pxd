@@ -31,3 +31,8 @@ cdef extern from "<armadillo>" namespace "arma":
 % for pyvalue,cyvalue in dtypes.items():
 cdef np.ndarray armadillo_to_np_${pyvalue}(const Mat[${cyvalue}]& x)
 % endfor
+
+
+% for pyvalue,cyvalue in dtypes.items():
+cdef np.ndarray armadillo_col_to_np_${pyvalue}(const Col[${cyvalue}]& x)
+% endfor

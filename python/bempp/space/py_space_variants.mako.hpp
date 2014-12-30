@@ -37,6 +37,11 @@ class SpaceVariants {
             operator()( shared_ptr<T> const &_in) const { return _in->grid(); }
     };
 
+    struct GetCodomainDimension : public boost::static_visitor< int > {
+        BEMPP_EXPLICIT_CONSTRUCTOR(GetCodomainDimension, int);
+        template<typename T> int operator()(shared_ptr<T> const &_in) const { return _in->codomainDimension();}
+    };
+
     struct IsCompatible : public boost::static_visitor<bool> {
         BEMPP_EXPLICIT_CONSTRUCTOR(IsCompatible, bool);
         template<class T0, class T1>
@@ -112,6 +117,10 @@ class SpaceVariants {
 
         shared_ptr<Grid const> grid() const {
             return boost::apply_visitor(SpaceVariants::GetGrid(), space_);
+        }
+
+        int codomainDimension() const {
+            return boost::apply_visitor(SpaceVariants::GetCodomainDimension(), space_);
         }
 
         bool isCompatible(SpaceVariants const &_other) const {
