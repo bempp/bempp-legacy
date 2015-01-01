@@ -6,6 +6,16 @@
 # The default implementation is 'grid_only', eg a single constructor that takes
 # a grid as its only argument.
 spaces = {
+    'PiecewiseConstantScalarSpace':
+    { 'doc':
+       'Space of discontinuous, piecewise constant scalar functions',
+       'implementation': 'grid_only'
+    },
+    'PiecewiseLinearContinuousScalarSpace':
+    { 'doc':
+       'Space of continuous, piecewise linear scalar functions',
+       'implementation': 'grid_only'
+    },
     'PiecewisePolynomialContinuousScalarSpace': {
         'doc':
         'Space of continuous, piecewise polynomial scalar functions',

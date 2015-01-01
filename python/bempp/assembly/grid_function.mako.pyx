@@ -97,7 +97,7 @@ cdef class GridFunction:
                         _py_get_space_ptr[${cybasis}](self._space.impl_),
                         _py_get_space_ptr[${cybasis}]((<Space>kwargs['dual_space']).impl_),
                         deref(_py_surface_normal_dependent_function_${pyresult}(_fun_interface_${pyresult},3,
-                            self._space.codomainDimension)),
+                            self._space.codomain_dimension)),
                         construction_mode(approx_mode)))
 %         endif
 %     endfor

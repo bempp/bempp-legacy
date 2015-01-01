@@ -530,7 +530,7 @@ public:
     }
 
     /** \brief Retrieve the unit vectors normal to the grid at the positions of
-     *  global degrees of freedom.
+     *  local degrees of freedom.
      *
      *  \param[out] normals
      *    Vector whose <em>i</em>th element contains the unit vector normal to

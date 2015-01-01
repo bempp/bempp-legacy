@@ -42,6 +42,30 @@ class SpaceVariants {
         template<typename T> int operator()(shared_ptr<T> const &_in) const { return _in->codomainDimension();}
     };
 
+
+    struct IsDiscontinuous : public boost::static_visitor< bool > {
+        BEMPP_EXPLICIT_CONSTRUCTOR(IsDiscontinuous, bool);
+        template<typename T> bool operator()(shared_ptr<T> const &_in) const { return _in->isDiscontinuous();}
+    };
+
+
+    struct GetDomainDimension : public boost::static_visitor< int > {
+        BEMPP_EXPLICIT_CONSTRUCTOR(GetDomainDimension, int);
+        template<typename T> int operator()(shared_ptr<T> const &_in) const { return _in->domainDimension();}
+    };
+
+
+    struct GetGlobalDofCount : public boost::static_visitor< size_t > {
+        BEMPP_EXPLICIT_CONSTRUCTOR(GetGlobalDofCount, size_t);
+        template<typename T> size_t operator()(shared_ptr<T> const &_in) const { return _in->globalDofCount();}
+    };
+
+    struct GetFlatLocalDofCount : public boost::static_visitor< size_t > {
+        BEMPP_EXPLICIT_CONSTRUCTOR(GetFlatLocalDofCount, size_t);
+        template<typename T> size_t operator()(shared_ptr<T> const &_in) const { return _in->flatLocalDofCount();}
+    };
+
+
     struct IsCompatible : public boost::static_visitor<bool> {
         BEMPP_EXPLICIT_CONSTRUCTOR(IsCompatible, bool);
         template<class T0, class T1>
@@ -132,6 +156,17 @@ class SpaceVariants {
                     space_, _other.space_);
         }
 
+        int domainDimension() const {
+            return boost::apply_visitor(SpaceVariants::GetDomainDimension(),space_);
+        }
+
+        size_t globalDofCount() const {
+            return boost::apply_visitor(SpaceVariants::GetGlobalDofCount(),space_);
+        }
+
+        size_t flatLocalDofCount() const {
+            return boost::apply_visitor(SpaceVariants::GetFlatLocalDofCount(),space_);
+        }
 
         t_variant & variants() { return space_; }
         t_variant const & variants() const { return space_; }
@@ -156,9 +191,26 @@ shared_ptr<const Space<BasisFunctionType>> _py_get_space_ptr(const SpaceVariants
     return res;
 }
 
+template<typename BasisFunctionType>
+arma::Mat<typename Fiber::ScalarTraits<BasisFunctionType>::RealType> _py_space_get_global_dof_interp_points(
+        const SpaceVariants& space_variant){
+
+    shared_ptr<const Space<BasisFunctionType>> space_ptr = _py_get_space_ptr<BasisFunctionType>(space_variant);
+    arma::Mat<typename Fiber::ScalarTraits<BasisFunctionType>::RealType> result;
+    space_ptr->getGlobalDofInterpolationPoints(result);
+    return result;
+}
 
 
+template<typename BasisFunctionType>
+arma::Mat<typename Fiber::ScalarTraits<BasisFunctionType>::RealType> _py_space_get_global_dof_normals(
+        const SpaceVariants& space_variant){
 
+    shared_ptr<const Space<BasisFunctionType>> space_ptr = _py_get_space_ptr<BasisFunctionType>(space_variant);
+    arma::Mat<typename Fiber::ScalarTraits<BasisFunctionType>::RealType> result;
+    space_ptr->getNormalsAtGlobalDofInterpolationPoints(result);
+    return result;
+}
 
 #   undef BEMPP_EXPLICIT_CONSTRUCTOR
 

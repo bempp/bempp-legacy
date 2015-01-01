@@ -484,6 +484,9 @@ PiecewisePolynomialDiscontinuousScalarSpace<BasisFunctionType>::assignDofsImpl(
   SpaceHelper<BasisFunctionType>::initializeLocal2FlatLocalDofMap(
       m_flatLocalDofCount, m_local2globalDofs, m_flatLocal2localDofs);
 
+  m_flatLocalDofCount = m_global2localDofs.size();
+
+
 #ifndef NDEBUG
   for (size_t i = 0; i < m_globalDofBoundingBoxes.size(); ++i) {
     const BoundingBox<CoordinateType> &bbox = acc(m_globalDofBoundingBoxes, i);
