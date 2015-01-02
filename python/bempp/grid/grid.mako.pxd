@@ -31,4 +31,3 @@ cdef class Grid:
             GridParameters &parameters) except *
     cdef void __create_connected_grid(self, dict kwargs,
             GridParameters& parameters) except *
-    cpdef GridView leaf_view(self)

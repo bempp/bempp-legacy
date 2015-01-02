@@ -33,7 +33,7 @@ cdef extern from "bempp/grid/grid_factory.hpp" namespace "Bempp":
 
 
 cdef class Grid:
-    """ Grid information
+    """ Grid object
 
         Initialization can be done via several sets of parameters:
 
@@ -132,10 +132,6 @@ cdef class Grid:
         del c_upper_right
         del c_subdivisions
 
-    cpdef GridView leaf_view(self):
-        """Return a leaf view onto the Grid"""
-        cdef unique_ptr[c_GridView] view = deref(self.impl_).leafView()
-        return _grid_view_from_unique_ptr(view)
 
     def __cinit__(self):
         self.impl_.reset(<const c_Grid*>NULL)
@@ -236,4 +232,8 @@ cdef class Grid:
                 result[1, i] = upper.at(i)
             return result
 
-
+    property leaf_view:
+        def __get__(self):
+            """Return a leaf view onto the Grid"""
+            cdef unique_ptr[c_GridView] view = deref(self.impl_).leafView()
+            return _grid_view_from_unique_ptr(view)
