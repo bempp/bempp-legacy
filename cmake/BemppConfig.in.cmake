@@ -22,7 +22,7 @@ if(NOT "@CMAKE_PREFIX_PATH@" STREQUAL "")
     list(APPEND CMAKE_PREFIX_PATH @CMAKE_PREFIX_PATH@)
 endif()
 
-find_package(Boost 1.55 REQUIRED)
+find_package(Boost @Boost_MAJOR_VERSION@.@Boost_MINOR_VERSION@ REQUIRED)
 find_package(Armadillo REQUIRED)
 find_package(TBB REQUIRED)
 find_package(Dune REQUIRED COMPONENTS geometry grid localfunctions)
