@@ -10,8 +10,8 @@ endif()
 if(NOT Trilinos_URL)
     set(arguments
         URL;
-        http://trilinos.sandia.gov/download/files/trilinos-11.6.2-Source.tar.bz2
-        URL_MD5; 15ea6af5559f872919ff19fe5a322eb6
+        http://trilinos.org/oldsite/download/files/trilinos-11.12.1-Source.tar.gz
+        URL_MD5; 26a07a4fe43e49a8208953dea5ab2652
     )
 elseif(Trilinos_MD5)
     set(arguments URL;${Trilinos_URL};URL_MD5;${Trilinos_MD5})
