@@ -1,3 +1,6 @@
+#cython: embedsignature=True
+
+
 from bempp.utils cimport shared_ptr
 from bempp.grid.grid cimport c_Grid, Grid
 from libcpp.vector cimport vector
@@ -6,25 +9,65 @@ from cython.operator cimport dereference as deref
 
 import os.path
 
-cdef class Gmsh:
+__doc__="""
 
-    def __cinit__(self, grid=None, file_name=None, physical_entity=-1):
+This module provides classes and methods to import data from Gmsh files
+into BEM++ and to export BEM++ data to Gmsh.
+
+Classes
+-------
+
+.. autoclass:: Gmsh
+    :members: write
+
+"""
+
+cdef class Gmsh:
+    """
+
+This class provides an interface to an existing Gmsh .msh file.
+It can return a Grid object from a Gmsh file and provides conversions
+between Gmsh numbering of nodes and elements and the corresponding
+BEM++ numbering.
+
+Attributes
+----------
+grid: bempp.Grid
+    Return a Python grid object
+nodes_bempp_to_gmsh_numbering: vector[int] 
+    Return a vector v, where v[i] gives the Gmsh number of the ith node in BEM++.
+elements_bempp_to_gmsh_numbering: vector[int]
+    Return a vector v, where v[i] gives the Gmsh number of the ith element in BEM++.
+nodes_gmsh_to_bempp_numbering: vector[int]
+    Return a vector v, where v[i] gives the BEM++ number of the node with number i in Gmsh 
+    or -1 if the node is not contained in the BEM++ grid object.
+elements_gmsh_to_bempp_numbering: vector[int]
+    Return a vector v, where v[i] gives the BEM++ number of the node with number i in Gmsh
+    or -1 if the node is not contained in the BEM++ grid object.
+
+
+Example
+-------
+To load the grid from a Gmsh file named ``grid.msh`` use
+
+>>> grid = Gmsh("grid.msh").grid()
+
+    """
+
+
+    def __cinit__(self,**kwargs):
         pass
 
-    def __init__(self, grid=None, file_name=None, physical_entity=-1):
+    def __init__(self,file_name): 
 
-        if grid is not None:
-            self.impl_.reset(new c_GmshIo((<Grid>grid).impl_))
-        elif file_name is not None:
-            if not os.path.isfile(file_name):
-                raise ValueError("File does not exist")
-            self.impl_.reset(new c_GmshIo(convert_to_bytes(file_name),physical_entity))
-        else:
-            raise ValueError("One of `grid` or `file_name` must be provided.")
+        physical_entity = -1 # At the moment read all physical entities by default
 
+        if not os.path.isfile(file_name):
+            raise ValueError("File does not exist")
+            self.impl_.reset(new c_GmshIo(convert_to_bytes(kwargs['file_name']),physical_entity))
 
     property grid:
-        """ Return a bempp.grid object. """
+        """ Return a Grid object. """
 
         def __get__(self):
 
@@ -75,18 +118,14 @@ cdef class Gmsh:
             return deref(self.impl_).inverseElementPermutation()
 
     def write(self,file_name):
-        """ gmsh.write(file_name) 
-        
-            Write out a grid in Gmsh format with name given by 'file_name'. 
+        """ Write out grid data in Gmsh format. 
 
             Parameters
             ----------
-            
             file_name : string
-                Name of output file
+                name of file to write to (file is overwritten)
 
         """
 
         deref(self.impl_).write(convert_to_bytes(file_name))
-
 
