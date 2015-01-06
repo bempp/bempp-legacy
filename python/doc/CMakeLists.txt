@@ -11,14 +11,9 @@ if (SPHINX_FOUND)
                 -c ${CMAKE_CURRENT_BINARY_DIR}
                 -E   # don't use cached files
                 ${CMAKE_CURRENT_SOURCE_DIR}
-                doc/python/html
-        COMMAND ${LOCAL_PYTHON_EXECUTABLE}
-                ${CMAKE_CURRENT_SOURCE_DIR}/postprocess_html.py
-                ${PROJECT_BINARY_DIR}/doc/python
-                WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
+                ${CMAKE_BINARY_DIR}/doc/python/html
         COMMENT "Generate Python API documentation with Sphinx" VERBATIM
-        DEPENDS ${SWIG_MODULE_core_REAL_NAME}
-            ${CMAKE_CURRENT_BINARY_DIR}/conf.py
+        DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/conf.py
     )
     add_dependencies(documentation python_documentation)
     if(EXISTS "${PROJECT_BINARY_DIR}/doc/python")
