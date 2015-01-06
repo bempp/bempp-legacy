@@ -6,7 +6,7 @@ from cython.operator cimport dereference as deref
 
 import os.path
 
-cdef class GmshIo:
+cdef class Gmsh:
 
     def __cinit__(self, grid=None, file_name=None, physical_entity=-1):
         pass
@@ -75,7 +75,7 @@ cdef class GmshIo:
             return deref(self.impl_).inverseElementPermutation()
 
     def write(self,file_name):
-        """ gmsh_io.write(file_name) 
+        """ gmsh.write(file_name) 
         
             Write out a grid in Gmsh format with name given by 'file_name'. 
 
@@ -88,3 +88,5 @@ cdef class GmshIo:
         """
 
         deref(self.impl_).write(convert_to_bytes(file_name))
+
+

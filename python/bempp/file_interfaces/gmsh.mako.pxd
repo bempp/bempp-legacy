@@ -18,7 +18,7 @@ cdef extern from "bempp/io/gmsh.hpp" namespace "Bempp":
 
         void write(string fileName) except+catch_exception
 
-cdef class GmshIo:
+cdef class Gmsh:
     cdef shared_ptr[c_GmshIo] impl_
 
 
