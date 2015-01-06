@@ -40,7 +40,7 @@ cdef class Grid:
         1. From a file:
             - topology
             - filename
-        1. Structure grid:
+        2. Structure grid:
             - topology
             - lower_left
             - upper_right
