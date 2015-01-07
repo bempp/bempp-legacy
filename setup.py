@@ -75,15 +75,12 @@ class Build(dBuild):
         other_args = [
             cmake_cache_line('PYTHON_EXECUTABLE', executable, 'PATH'),
             cmake_cache_line('NOEXPORT', 'TRUE', 'BOOL'),
-            cmake_cache_line('PYPACKED', 'TRUE', 'BOOL'),
+            cmake_cache_line('PYPACKED', 'TRUE', 'BOOL')
         ]
         if(self.external):
             other_args.extend([
                 cmake_cache_line('EXTERNAL_ROOT', self.external, 'PATH'),
-                cmake_cache_line('CMAKE_PREFIX_PATH',
-                    self.external + ";" + join(self.external, 'python', 'PyTrilinos'),
-                    'PATH'
-                )
+		cmake_cache_line('CMAKE_PREFIX_PATH', self.external, 'PATH')
             ])
         other_args.append('\n')
 
@@ -273,10 +270,9 @@ setup(
     url = "https://github.com/bempp/bempp",
     ext_modules = [Extension('bempp._core', [])],
     ext_package = 'bempp',
-    packages = ['bempp', 'PyTrilinos'],
+    packages = ['bempp'],
     package_dir = {
-        'bempp': join(basename(package_dir), 'bempp'),
-        'PyTrilinos': join(basename(package_dir), 'PyTrilinos'),
+        'bempp': join(basename(package_dir), 'bempp')
     },
     include_package_data=True,
 

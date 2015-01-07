@@ -43,7 +43,7 @@ passon_variables(Trilinos
     FILENAME "${EXTERNAL_ROOT}/src/TrilinosVariables.cmake"
     PATTERNS
         "CMAKE_[^_]*_R?PATH" "CMAKE_C_.*" "CMAKE_CXX_.*"
-        "BLAS_.*" "LAPACK_.*" "SWIG_*"
+        "BLAS_.*" "LAPACK_.*" "SWIG_*" "Trilinos_PYTHON"
 )
 get_filename_component(TPL_TBB_INCLUDE_DIRS "${TBB_INCLUDE_DIR}" PATH)
 if(Trilinos_PYPACKED AND Trilinos_PYTHON)
@@ -137,7 +137,7 @@ ExternalProject_Add(
 
 add_recursive_cmake_step(Trilinos DEPENDEES install)
 # If installing in bizarre location (ie all under python package dir), then add
-# post-lookup script sot that the package can be found.
+# post-lookup script so that the package can be found.
 if(Trilinos_PYPACKED)
     write_lookup_hook(POST_LOOKUP Trilinos
         "list(FIND CMAKE_PREFIX_PATH \"${prefix_location}\" has_prefix)\n"
