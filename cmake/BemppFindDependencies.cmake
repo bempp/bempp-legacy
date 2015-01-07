@@ -51,6 +51,9 @@ unset(arguments)
 if(PYPACKED)
     set(arguments ARGUMENTS PYPACKED)
 endif()
+if(Trilinos_PYTHON)
+    set(arguments ${arguments} PYTHON)
+endif()
 # Trilinos depends on SWIG, Boost and TBB, so those packages must be looked up
 # first.
 lookup_package(Trilinos
@@ -138,7 +141,8 @@ if(EXISTS "${EXTERNAL_ROOT}/include")
 endif()
 if(EXISTS "${EXTERNAL_ROOT}/share")
     install(DIRECTORY "${EXTERNAL_ROOT}/share/"
-        DESTINATION "${SHARE_INSTALL_PATH}")
+        DESTINATION "${SHARE_INSTALL_PATH}"
+        PATTERN "doc" EXCLUDE)
 endif()
 # Trilinos is installed in its own subdirectory, since it is a python package.
 if(EXISTS "${EXTERNAL_ROOT}/python/PyTrilinos")

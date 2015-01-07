@@ -10,8 +10,8 @@ endif()
 if(NOT Trilinos_URL)
     set(arguments
         URL;
-        http://trilinos.sandia.gov/download/files/trilinos-11.6.2-Source.tar.bz2
-        URL_MD5; 15ea6af5559f872919ff19fe5a322eb6
+        http://trilinos.org/oldsite/download/files/trilinos-11.12.1-Source.tar.gz
+        URL_MD5; 26a07a4fe43e49a8208953dea5ab2652
     )
 elseif(Trilinos_MD5)
     set(arguments URL;${Trilinos_URL};URL_MD5;${Trilinos_MD5})
@@ -43,7 +43,7 @@ passon_variables(Trilinos
     FILENAME "${EXTERNAL_ROOT}/src/TrilinosVariables.cmake"
     PATTERNS
         "CMAKE_[^_]*_R?PATH" "CMAKE_C_.*" "CMAKE_CXX_.*"
-        "BLAS_.*" "LAPACK_.*" "SWIG_*"
+        "BLAS_.*" "LAPACK_.*" "SWIG_*" "Trilinos_PYTHON"
 )
 get_filename_component(TPL_TBB_INCLUDE_DIRS "${TBB_INCLUDE_DIR}" PATH)
 if(Trilinos_PYPACKED AND Trilinos_PYTHON)
@@ -137,7 +137,7 @@ ExternalProject_Add(
 
 add_recursive_cmake_step(Trilinos DEPENDEES install)
 # If installing in bizarre location (ie all under python package dir), then add
-# post-lookup script sot that the package can be found.
+# post-lookup script so that the package can be found.
 if(Trilinos_PYPACKED)
     write_lookup_hook(POST_LOOKUP Trilinos
         "list(FIND CMAKE_PREFIX_PATH \"${prefix_location}\" has_prefix)\n"

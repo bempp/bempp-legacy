@@ -19,7 +19,7 @@ endforeach()
 
 # Add devel component
 list(FIND Dune_FIND_COMPONENTS "devel" has_devel_component)
-if(has_devel_component GREATER -1)
+if(has_devel_component GREATER -1 AND dune-common_FOUND)
     find_program(DuneProject_PROGRAM duneproject
         PATHS "${EXTERNAL_ROOT}/src/dune-common/bin"
         HINTS ${hints} ${Dune_common_PREFIX}
