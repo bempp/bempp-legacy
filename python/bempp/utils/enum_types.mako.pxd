@@ -19,6 +19,13 @@ cdef extern from "bempp/assembly/grid_function.hpp":
         approximate "Bempp::ConstructionMode::APPROXIMATE"
         interpolate "Bempp::ConstructionMode::INTERPOLATE"
 
+cdef extern from "bempp/io/gmsh.hpp":
+    cdef enum GmshPostDataType "Bempp::GmshPostData::Type":
+        node "Bempp::GmshPostData::NODE"
+        element "Bempp::GmshPostData::ELEMENT"
+        element_node "Bempp::GmshPostData::ELEMENT_NODE"
+
 cdef SymmetryMode symmetry_mode(string name)
 cdef TranspositionMode transposition_mode(string name)
 cdef ConstructionMode construction_mode(string name)
+cdef GmshPostDataType gmsh_post_data_type(string name)

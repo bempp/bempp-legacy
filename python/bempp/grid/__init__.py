@@ -1,13 +1,5 @@
 """ Grids """
-__all__ = ['Grid', 'sample']
-from .grid import Grid
+__all__ = ['Grid', 'create_structured_grid','create_grid_from_element_data']
+from .grid import Grid, create_structured_grid, create_grid_from_element_data
 
 
-def sample(topology='triangular', filename="sphere-h-0.4.msh"):
-    """ Convenience function to access the sample grids """
-    from os.path import join, exists
-    from ..config import paths
-    filename = join(paths.meshes, filename)
-    if not exists(filename):
-        raise IOError("Mesh %s does not exist" % filename)
-    return Grid(topology="triangular", filename=filename)

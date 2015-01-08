@@ -25,9 +25,3 @@ cdef extern from "bempp/grid/grid.hpp" namespace "Bempp" nogil:
 cdef class Grid:
     ## Holds pointer to C++ implementation
     cdef shared_ptr[const c_Grid] impl_
-    cdef void __create_from_file(self, dict kwargs,
-            GridParameters &parameters) except *
-    cdef void __create_cartesian_grid(self, dict kwargs,
-            GridParameters &parameters) except *
-    cdef void __create_connected_grid(self, dict kwargs,
-            GridParameters& parameters) except *

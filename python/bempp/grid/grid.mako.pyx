@@ -9,12 +9,6 @@ from bempp.grid.grid_view cimport c_GridView, GridView
 from bempp.grid.grid_view cimport _grid_view_from_unique_ptr
 
 cdef extern from "bempp/grid/grid_factory.hpp" namespace "Bempp":
-    shared_ptr[const c_Grid] grid_from_file "Bempp::GridFactory::importGmshGrid"(
-            GridParameters& params,
-            string& fileName,
-            cbool verbose,
-            cbool insertBoundarySegments
-    ) except +catch_exception
 
     shared_ptr[const c_Grid] cart_grid "Bempp::GridFactory::createStructuredGrid"(
             const GridParameters& params,
@@ -33,149 +27,64 @@ cdef extern from "bempp/grid/grid_factory.hpp" namespace "Bempp":
 
 
 cdef class Grid:
-    """ Grid object
+    """ 
+        
+Direct initialization can be done via two sets of parameters:
 
-        Initialization can be done via several sets of parameters:
+1. Structure grid:
+    - lower_left
+    - upper_right
+    - nelements
+2. From numpy arrays:
+    - vertices
+    - elements
+    - domain_indices
 
-        1. From a file:
-            - topology
-            - filename
-        2. Structure grid:
-            - topology
-            - lower_left
-            - upper_right
-            - nelements
+To import a grid from a Gmsh file see bempp.file_interfaces.gmsh.
 
-        Parameters:
-        -----------
 
-        topology : string
-            The topology of the grid. One of "linear", "triangular"
-            "quadrilateral", "hybrid_2d", or "tetrahedral".
+Parameters:
+-----------
+lower_left : tuple
+    Coordinates of the lower left coordinate of a structured grid.
 
-        filename : str
-            Path to the file. The path is expanded for environment
-            variables and such.
+upper_right : tuple
+    Coordinates of the upper right coordinate of a structured grid.
 
-        upper_right : tuple
-            Coordinates of the upper right coordinate of a structured grid.
+nelements : tuple
+    Number of elements for each axis of a structured grid.
 
-        lower_left : tuple
-            Coordinates of the lower left coordinate of a structured grid.
+vertices : numpy.ndarray
+    (3xN) Array of vertices.
 
-        nelements : tuple
-            Number of elements for each axis of a structured grid.
+elements : numpy.ndarray
+    (3xN) Array of vertex indices defining the elements.
+
+domain_indicies : list[int]
+    Integer list containing the domain indicies of the elements (optional).
+    
+
+Examples
+--------
+
+To discretise the screen [0,1]x[0,1]x0 use
+
+>>> grid = Grid(lower_left=(0,0),upper_right=(1,1),nelements=(100,100))
+
+The following creates a grid consisting of two elements
+
+>>> grid = Grid(
+
+
 
     """
-    cdef void __create_from_file(self, dict kwargs,
-            GridParameters &parameters) except *:
-        from os.path import abspath, expandvars, expanduser
-        cdef string cfilename
-        cfilename = abspath(expandvars(expanduser(kwargs['filename']))).encode('utf-8')
-        self.impl_ = grid_from_file(
-                parameters, cfilename,
-                kwargs.pop('verbose', False) == True,
-                kwargs.pop('insert_boundary_segments', False) == True
-        )
-
-    cdef void __create_connected_grid(self, dict kwargs,
-            GridParameters& parameters) except *:
-        from numpy import require
-        cdef:
-            double[::1, :] vert_ptr \
-                    = require(kwargs['vertices'], "double", 'F')
-            int[::1, :] corners_ptr = require(kwargs['corners'], "intc", 'F')
-            vector[int] domain_indices
-            Mat[double]* c_vertices = new Mat[double](&vert_ptr[0, 0],
-                vert_ptr.shape[0], vert_ptr.shape[1], False, True)
-            Mat[int]* c_corners = new Mat[int](&corners_ptr[0, 0],
-                corners_ptr.shape[0], corners_ptr.shape[1], False, True)
-        for index in kwargs.get('indice', []):
-            domain_indices.push_back(int(index))
-        try:
-            self.impl_ = connect_grid(parameters, deref(c_vertices),
-                    deref(c_corners), domain_indices)
-        except:
-            del c_vertices
-            del c_corners
-            raise
-        del c_vertices
-        del c_corners
-
-    cdef void __create_cartesian_grid(self, dict kwargs,
-            GridParameters& parameters) except *:
-        from numpy import require
-        cdef:
-            double[::1] ll_ptr = require(kwargs['lower_left'], "double", 'C')
-            double[::1] ur_ptr = require(kwargs['upper_right'], "double", 'C')
-            int[::1] n_ptr = require(kwargs['subdivisions'], "intc", 'C')
-            int nelements = len(ll_ptr)
-        if len(ll_ptr) != len(ur_ptr) or len(ll_ptr) != len(n_ptr):
-            raise ValueError("Inputs have differing lengths")
-        cdef:
-            Col[double]* c_lower_left = new Col[double](&ll_ptr[0],
-                nelements, False, True)
-            Col[double]* c_upper_right = new Col[double](&ur_ptr[0],
-                nelements, False, True)
-            Col[unsigned int]* c_subdivisions = \
-                    new Col[unsigned int](<unsigned int*>&n_ptr[0],
-                            nelements, False, True)
-        try:
-            self.impl_ = cart_grid(parameters, deref(c_lower_left),
-                    deref(c_upper_right), deref(c_subdivisions))
-        except:
-            del c_lower_left
-            del c_upper_right
-            del c_subdivisions
-            raise
-        del c_lower_left
-        del c_upper_right
-        del c_subdivisions
 
 
     def __cinit__(self):
         self.impl_.reset(<const c_Grid*>NULL)
 
-    def __init__(self, topology='triangular', **kwargs):
-        cdef GridParameters parameters
-
-        try:
-            parameters.topology = {
-                'linear': LINEAR, 'l': LINEAR,
-                'triangular': TRIANGULAR, 'triangle': TRIANGULAR,
-                'quadrilateral': QUADRILATERAL, 'q': QUADRILATERAL,
-                'hybrid2d': HYBRID_2D, 'hybrid_2d': HYBRID_2D, 'h': HYBRID_2D,
-                'tetrahedral': TETRAHEDRAL, 'tetra': TETRAHEDRAL
-            }[topology]
-        except KeyError:
-            raise ValueError("Incorrect topology %s" % topology)
-
-        # Check which set of input has been given
-        input_sets = {
-            'file': ['filename'],
-            'cartesian': ['lower_left', 'upper_right', 'subdivisions'],
-            'connected': ['corners', 'vertices']
-        }
-        check = lambda x: all([kwargs.get(u, None) for u in x])
-        which_set = {k: check(v) for k, v in input_sets.items()}
-
-        # Makes sure at least one set of argument is provided
-        nargs = sum([1 if x else 0 for x in which_set.itervalues()])
-        if nargs == 0:
-            raise TypeError("Incorrect set of input arguments")
-        elif nargs > 1:
-            msg = "Ambiguous input: matches %i set of input arguments"
-            raise TypeError(msg % nargs)
-
-        # At this point, we can choose how to initialize the grid
-        if which_set['file']:
-            self.__create_from_file(kwargs, parameters)
-        elif which_set['cartesian']:
-            self.__create_cartesian_grid(kwargs, parameters)
-        elif which_set['connected']:
-            self.__create_connected_grid(kwargs, parameters)
-        else:
-            raise AssertionError("Missing implementation for input set")
+    def __init__(self):
+        pass
 
     def __richcmp__(Grid self, Grid other not None, int op):
         if op != 2:
@@ -237,3 +146,63 @@ cdef class Grid:
             """Return a leaf view onto the Grid"""
             cdef unique_ptr[c_GridView] view = deref(self.impl_).leafView()
             return _grid_view_from_unique_ptr(view)
+
+
+def create_grid_from_element_data(vertices, elements, domain_indices=[]):
+    from numpy import require
+    cdef:
+        GridParameters parameters
+        double[::1, :] vert_ptr \
+                = require(vertices, "double", 'F')
+        int[::1, :] corners_ptr = require(elements, "intc", 'F')
+        vector[int] indices
+        Mat[double]* c_vertices = new Mat[double](&vert_ptr[0, 0],
+            vert_ptr.shape[0], vert_ptr.shape[1], False, True)
+        Mat[int]* c_corners = new Mat[int](&corners_ptr[0, 0],
+            corners_ptr.shape[0], corners_ptr.shape[1], False, True)
+        Grid grid = Grid.__new__(Grid)
+    for index in domain_indices:
+        indices.push_back(int(index))
+    parameters.topology = TRIANGULAR
+    try:
+        grid.impl_ = connect_grid(parameters, deref(c_vertices),
+                deref(c_corners), indices)
+    except:
+        del c_vertices
+        del c_corners
+        raise
+    del c_vertices
+    del c_corners
+
+def create_structured_grid(lower_left,upper_right,subdivisions):
+    from numpy import require
+    cdef:
+        GridParameters parameters
+        double[::1] ll_ptr = require(lower_left, "double", 'C')
+        double[::1] ur_ptr = require(upper_right, "double", 'C')
+        int[::1] n_ptr = require(subdivisions, "intc", 'C')
+        int nelements = len(ll_ptr)
+    if len(ll_ptr) != len(ur_ptr) or len(ll_ptr) != len(n_ptr):
+        raise ValueError("Inputs have differing lengths")
+    cdef:
+        Col[double]* c_lower_left = new Col[double](&ll_ptr[0],
+            nelements, False, True)
+        Col[double]* c_upper_right = new Col[double](&ur_ptr[0],
+            nelements, False, True)
+        Col[unsigned int]* c_subdivisions = \
+                new Col[unsigned int](<unsigned int*>&n_ptr[0],
+                        nelements, False, True)
+        Grid grid = Grid.__new__(Grid)
+    parameters.topology = TRIANGULAR
+    try:
+        grid.impl_ = cart_grid(parameters, deref(c_lower_left),
+                deref(c_upper_right), deref(c_subdivisions))
+    except:
+        del c_lower_left
+        del c_upper_right
+        del c_subdivisions
+        raise
+    del c_lower_left
+    del c_upper_right
+    del c_subdivisions
+

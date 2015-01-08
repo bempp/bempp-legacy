@@ -48,3 +48,17 @@ cdef ConstructionMode construction_mode(string name):
     return res
 
 
+cdef GmshPostDataType gmsh_post_data_type(string name):
+
+    cdef GmshPostDataType res
+
+    if name==string(b'node'):
+        res = node 
+    elif name==string(b'element'):
+        res = element
+    elif name==string(b'element_node'):
+        res = element_node
+    else:
+        raise ValueError("Unsupported gmsh type")
+
+    return res
