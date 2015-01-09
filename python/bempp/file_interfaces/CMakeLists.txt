@@ -1,4 +1,4 @@
-set(makoes __init__.mako.pxd __init__.mako.pyx gmsh.mako.pxd gmsh.mako.pyx)
+set(makoes __init__.mako.pxd gmsh.mako.pxd gmsh.mako.pyx)
 
 mako_files(${makoes}
     OUTPUT_FILES makoed
@@ -14,7 +14,7 @@ install_python(FILES ${headers}
                DESTINATION bempp/include/bempp/file_interfaces)
 
 add_python_module(bempp.file_interfaces
-    ${sources} 
+    __init__.py ${sources} 
     TARGETNAME bempp.file_interfaces
     CPP
     LIBRARIES libbempp

@@ -1,5 +1,5 @@
+__all__=['initialize_space']
 from . import space
-
 
 def initialize_space(grid, kind, order, dtype='float64'):
     """ initialize_space(grid, kind, order, dtype='float64')
