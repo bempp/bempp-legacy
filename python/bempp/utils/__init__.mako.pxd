@@ -9,7 +9,8 @@ cdef extern from "<complex>" namespace "std":
     cdef cppclass cpp_complex "std::complex"[T]:
         cpp_complex()
         cpp_complex(T alpha,T beta)
-        
+
+
 
 # Declares complex type explicitly.
 # Cython 0.20 will fail if templates are nested more than three-deep,
