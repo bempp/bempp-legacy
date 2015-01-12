@@ -25,4 +25,20 @@ cdef extern from "bempp/operators/py_operators.hpp" namespace "Bempp":
             const string&,
             int) except+catch_exception
 
+cdef extern from "bempp/operators/py_operators.hpp" namespace "Bempp":
+    BoundaryOpVariants c_laplace3dHypersingularBoundaryOperator[BASIS,RESULT](
+            const c_ParameterList&,
+            const SpaceVariants&,
+            const SpaceVariants&,
+            const SpaceVariants&,
+            const string&,
+            int) except+catch_exception
 
+cdef extern from "bempp/operators/py_operators.hpp" namespace "Bempp":
+    BoundaryOpVariants c_laplace3dAdjointDoubleLayerBoundaryOperator[BASIS,RESULT](
+            const c_ParameterList&,
+            const SpaceVariants&,
+            const SpaceVariants&,
+            const SpaceVariants&,
+            const string&,
+            int) except+catch_exception
