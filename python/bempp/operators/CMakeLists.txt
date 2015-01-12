@@ -26,4 +26,5 @@ add_dependencies(bempp.operators cython-headers)
 add_dependencies(cython-headers bempp.operators-mako)
 
 add_subdirectory(sparse)
+add_subdirectory(laplace)
 
