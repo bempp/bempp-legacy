@@ -2,48 +2,48 @@ __all__=['initialize_space']
 from . import space
 
 def initialize_space(grid, kind, order, dtype='float64'):
-    """ initialize_space(grid, kind, order, dtype='float64')
+    """ 
 
-        Return a space defined over a given grid.
+    Return a space defined over a given grid.
 
-        Parameters
-        ----------
-        grid : bempp.Grid
-            The grid object over which the space is defined.
+    Parameters
+    ----------
+    grid : bempp.Grid
+        The grid object over which the space is defined.
 
-        kind : string
-            The type of space. Currently, the following types
-            are supported:
-            "P" : Continuous and piecewise polynomial functions.
-            "DP" : Discontinuous and elementwise polynomial functions.
+    kind : string
+        The type of space. Currently, the following types
+        are supported:
+        "P" : Continuous and piecewise polynomial functions.
+        "DP" : Discontinuous and elementwise polynomial functions.
 
-        order : int
-            The order of the space, e.g. 0 for piecewise const, 1 for
-            piecewise linear functions.
+    order : int
+        The order of the space, e.g. 0 for piecewise const, 1 for
+        piecewise linear functions.
 
-        dtype : np.dtype, optional
-            The data type of values of the basis functions in the space.
-            The default is 'np.float64'.
+    dtype : np.dtype, optional
+        The data type of values of the basis functions in the space.
+        The default is 'np.float64'.
 
-        Notes
-        -----
-        The most frequent used types are the space of piecewise constant
-        functions (kind="DP", order=0) and the space of continuous,
-        piecewise linear functions (kind="DP", order=0).
+    Notes
+    -----
+    The most frequent used types are the space of piecewise constant
+    functions (kind="DP", order=0) and the space of continuous,
+    piecewise linear functions (kind="DP", order=0).
 
-        This is a factory function that initializes a space object. To 
-        see a detailed help for space objects see the documentation
-        of the instantiated object.
+    This is a factory function that initializes a space object. To 
+    see a detailed help for space objects see the documentation
+    of the instantiated object.
 
-        Examples
-        --------
-        To initialize a space of piecewise constant functions use
+    Examples
+    --------
+    To initialize a space of piecewise constant functions use
 
-        >>> space = initialize_space(grid,"DP",0)
+    >>> space = initialize_space(grid,"DP",0)
 
-        To initialize a space of continuous, piecewise linear functions, use
+    To initialize a space of continuous, piecewise linear functions, use
 
-        >>> space = initialize_space(grid,"P",1)
+    >>> space = initialize_space(grid,"P",1)
 
     """
 

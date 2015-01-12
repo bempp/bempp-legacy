@@ -103,16 +103,17 @@ laplace3dDoubleLayerBoundaryOperator(
 #define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS, RESULT)                       \
   template BoundaryOperator<BASIS, RESULT>                                     \
   laplace3dDoubleLayerBoundaryOperator(                                        \
-      const ParameterList &,                                                   \
+      const shared_ptr<const Context<BASIS, RESULT>> &,                        \
       const shared_ptr<const Space<BASIS>> &,                                  \
       const shared_ptr<const Space<BASIS>> &,                                  \
       const shared_ptr<const Space<BASIS>> &, const std::string &, int);       \
   template BoundaryOperator<BASIS, RESULT>                                     \
   laplace3dDoubleLayerBoundaryOperator(                                        \
-      const shared_ptr<const Context<BASIS, RESULT>> &,                        \
+      const ParameterList&,                                                    \
       const shared_ptr<const Space<BASIS>> &,                                  \
       const shared_ptr<const Space<BASIS>> &,                                  \
-      const shared_ptr<const Space<BASIS>> &, const std::string &, int);
+      const shared_ptr<const Space<BASIS>> &, const std::string &, int)
 FIBER_ITERATE_OVER_BASIS_AND_RESULT_TYPES(INSTANTIATE_NONMEMBER_CONSTRUCTOR);
+
 
 } // namespace Bempp

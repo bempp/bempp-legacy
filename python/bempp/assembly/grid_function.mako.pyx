@@ -1,4 +1,4 @@
-
+#cython: embedsignature=True
 <% from data_types import dtypes, compatible_dtypes, ctypes, scalar_cython_type, real_cython_type
 %> 
 
@@ -50,6 +50,94 @@ cdef void _fun_interface_${pyvalue}(const Col[${real_cython_type(cyvalue)}]& x,
 
 
 cdef class GridFunction:
+    """
+
+    This class represents functions defined on a grid. It can be initialized
+    in three different ways.
+
+    1. By providing a Python callable. Any Python callable of the following form
+       is valid.::
+
+            callable(x,n,result)
+
+       Here, x, n, and result are all numpy arrays. x contains the current evaluation
+       point, n the associated outward normal direction and result is a numpy array
+       that will store the result of the Python callable.
+
+       The following example defines input data that is the inner product of the
+       coordinate x with the normal direction n.::
+
+            fun(x,n,result):
+                result[0] =  np.dot(x,n)
+
+    2. By providing a vector of coefficients at the nodes. This is preferable if
+       the coefficients of the data are coming from an external code.
+
+    3. By providing a vector of projection data and a corresponding dual space.
+
+
+    Parameters
+    ----------
+    parameter_list : bempp.ParameterList
+        A ParameterList object used for the assembly of
+        the GridFunction.
+    space : bempp.Space
+        The space over which the GridFunction is defined.
+    result_type : string
+        The data type of the range of the grid function
+        (default 'float64').
+    dual_space : bempp.Space
+        A representation of the dual space (optional).
+    fun : callable
+        A Python function from which the GridFunction is constructed
+        (optional).
+    coefficients : np.ndarray
+        A 1-dimensional array with the coefficients of the GridFunction
+        at the interpolatoin points of the space (optional).
+    projections : np.ndarray
+        A 1-dimensional array with the projections of the GridFunction
+        onto a dual space (optional).
+
+    Attributes
+    ----------
+    coefficients : np.ndarray
+        Return or set the vector of coefficients.
+    l2_norm : double
+        Return the L2 norm of the GridFunction.
+    space : bemp.Space
+        Return the space over which the GridFunction is defined.
+    grid : bempp.Grid
+        Return the underlying grid.
+    parameter_list : bempp.ParameterList
+        Return the set of parameters.
+    basis_type : np.dtype
+        Return the basis function type.
+    result_type : np.dtype
+        Return the result type.
+
+
+    Notes
+    -----
+    * Only one of projections, coefficients, or fun is allowed as parameter.
+    * To export a GridFunction to a file see the module bempp.file_interfaces.
+
+    Examples
+    --------
+    To create a GridFunction from a Python callable my_fun use
+
+    >>> grid_function = GridFunction(parameter_list,space,fun=my_fun)
+
+    To create a GridFunction from a vector of coefficients coeffs use
+
+    >>> grid_function = GridFunction(parameter_list,space,coefficients=coeffs)
+
+    To create a GridFunction from a vector of projections proj use
+    
+    >>> grid_function = GridFunction(parameter_list,space,projections=proj)
+
+
+    """
+
     
     def __cinit__(self,ParameterList parameter_list,Space space,**kwargs):
         pass
@@ -67,10 +155,7 @@ cdef class GridFunction:
 
         self._space = space
 
-        if 'basis_type' in kwargs:
-            self._basis_type = np.dtype(kwargs['basis_type'])
-        else:
-            self._basis_type = np.dtype('float64')
+        self._basis_type = space.dtype
 
         if 'result_type' in kwargs:
             self._result_type = np.dtype(kwargs['result_type'])
@@ -190,12 +275,28 @@ cdef class GridFunction:
 
 
     def projections(self, Space dual_space):
+        """
+
+        Compute the vector of projections onto the 
+        given dual space.
+
+        Parameters
+        ----------
+        dual_space : bempp.Space
+            A representation of the dual space.
+
+        Returns
+        -------
+        out : np.ndarray
+            A vector of projections onto the dual space.
+
+        """
 
 % for pybasis,cybasis in dtypes.items():
 %     for pyresult,cyresult in dtypes.items():
 %         if pyresult in compatible_dtypes[pybasis]:
-            if (self._basis_type=="${pybasis}") and (self._result_type=="${pyresult}"):
-                return self._projections_${pybasis}_${pyresult}(dual_space)
+        if (self._basis_type=="${pybasis}") and (self._result_type=="${pyresult}"):
+            return self._projections_${pybasis}_${pyresult}(dual_space)
 %          endif
 %      endfor
 %  endfor
@@ -236,6 +337,8 @@ cdef class GridFunction:
         return self.__add__(self,-other)
 
     property coefficients:
+        """ Return or set the vector of coefficients. """
+
         
         def __get__(self):
 % for pybasis,cybasis in dtypes.items():
@@ -258,6 +361,7 @@ cdef class GridFunction:
 %  endfor
 
     property l2_norm:
+        """ Return the L2 norm of the GridFunction. """
 
         def __get__(self):
 % for pybasis,cybasis in dtypes.items():
@@ -270,6 +374,8 @@ cdef class GridFunction:
 %  endfor
 
     property grid:
+        """ Return the underlying grid. """
+
         def __get__(self):
 % for pybasis,cybasis in dtypes.items():
 %     for pyresult,cyresult in dtypes.items():
@@ -282,6 +388,8 @@ cdef class GridFunction:
 
 
     property space:
+        """ Return the space over which the GridFunction is defined. """
+
         def __get__(self):
 % for pybasis,cybasis in dtypes.items():
 %     for pyresult,cyresult in dtypes.items():
@@ -293,16 +401,19 @@ cdef class GridFunction:
 %  endfor
 
     property parameter_list:
+        """ Return the set of parameters. """
 
         def __get__(self):
             return self._parameter_list
 
     property basis_type:
+        """ Return the basis function type. """
 
         def __get__(self):
             return self._basis_type
 
     property result_type:
+        """ Return the result type. """
 
         def __get__(self):
             return self._result_type

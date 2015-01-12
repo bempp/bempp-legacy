@@ -1,3 +1,5 @@
+#cython: embedsignature=True
+
 from cython.operator cimport dereference as deref
 from libcpp.string cimport string
 from libcpp cimport bool as cbool
@@ -140,7 +142,8 @@ def grid_from_element_data(vertices, elements, domain_indices=[]):
 
     Returns
     -------
-    A bempp.Grid object.
+    grid : bempp.Grid
+        The grid representing the specified element data.
 
     Examples
     --------
@@ -202,7 +205,8 @@ def structured_grid(lower_left,upper_right,subdivisions):
 
     Returns
     -------
-    A bempp.Grid object.
+    grid : bempp.Grid
+        A structured grid.
 
     Examples
     --------
@@ -265,7 +269,8 @@ def grid_from_sphere(int n, double radius=1.0, object origin = [0,0,0]):
 
     Returns
     -------
-    A bempp.grid object
+    grid : bempp.Grid
+        The discretization of a sphere.
 
     Examples
     --------

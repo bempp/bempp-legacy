@@ -1,7 +1,7 @@
 __doc__="""
 
 This module defines the grid data structure in BEM++
-and provide several methods to create grids on the fly.
+and provides methods to create grids on the fly.
 
 In order to read grids from various file formats see
 the package bempp.file_interfaces.

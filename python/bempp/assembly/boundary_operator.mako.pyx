@@ -17,6 +17,22 @@ cimport numpy as np
 
 
 cdef class BoundaryOperatorBase:
+    """
+
+    A boundary operator is an abstract representation of an operator
+    acting on the boundary of a mesh. It can be multiplied with GridFunction
+    objects and provides an operation
+    `weak_form` that returns a discrete representation of the boundary
+    operator.
+
+    Notes
+    -----
+    Boundary operators are not constructed directly but through factory
+    functions (see for example bempp.operators)
+
+    """
+    
+
 
     def __cinit__(self):
         pass
@@ -58,6 +74,18 @@ cdef class BoundaryOperatorBase:
         return self.__add__(-other)
 
     cpdef DiscreteBoundaryOperatorBase weak_form(self):
+        """
+
+        This method returns an assembled representation
+        of a boundary operator that allows matrix-vector
+        multiplication.
+
+        Returns
+        -------
+        discrete_operator : bempp.assembly.DiscreteBoundaryOperatorBase
+            A discrete representation of the boundary operator.
+
+        """
 
         raise NotImplementedError("Method not implemented")
 
