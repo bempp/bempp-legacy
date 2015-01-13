@@ -15,6 +15,7 @@ from bempp.utils.armadillo cimport Mat
 from bempp.utils cimport catch_exception
 from bempp.utils cimport complex_float,complex_double
 from bempp.utils.enum_types cimport construction_mode
+from bempp.common import global_parameters
 from cython.operator cimport dereference as deref
 import numpy as np
 cimport numpy as np
@@ -78,14 +79,11 @@ cdef class GridFunction:
 
     Parameters
     ----------
-    parameter_list : bempp.ParameterList
-        A ParameterList object used for the assembly of
-        the GridFunction.
     space : bempp.Space
         The space over which the GridFunction is defined.
     result_type : string
         The data type of the range of the grid function
-        (default 'float64').
+        (optional, default 'float64').
     dual_space : bempp.Space
         A representation of the dual space (optional).
     fun : callable
@@ -97,6 +95,9 @@ cdef class GridFunction:
     projections : np.ndarray
         A 1-dimensional array with the projections of the GridFunction
         onto a dual space (optional).
+    parameter_list : bempp.ParameterList
+        A ParameterList object used for the assembly of
+        the GridFunction (optional).
 
     Attributes
     ----------
@@ -125,31 +126,34 @@ cdef class GridFunction:
     --------
     To create a GridFunction from a Python callable my_fun use
 
-    >>> grid_function = GridFunction(parameter_list,space,fun=my_fun)
+    >>> grid_function = GridFunction(space, dual_space=dual_space,fun=my_fun)
 
     To create a GridFunction from a vector of coefficients coeffs use
 
-    >>> grid_function = GridFunction(parameter_list,space,coefficients=coeffs)
+    >>> grid_function = GridFunction(space,coefficients=coeffs)
 
     To create a GridFunction from a vector of projections proj use
     
-    >>> grid_function = GridFunction(parameter_list,space,projections=proj)
+    >>> grid_function = GridFunction(space,dual_space=dual_space, projections=proj)
 
 
     """
 
     
-    def __cinit__(self,ParameterList parameter_list,Space space,**kwargs):
+    def __cinit__(self,Space space,**kwargs):
         pass
 
-    def __init__(self,ParameterList parameter_list,Space space,**kwargs):
+    def __init__(self,Space space,**kwargs):
 
 % for pyvalue,cyvalue in dtypes.items():
         cdef Col[${cyvalue}]* arma_data_${pyvalue}
         cdef ${scalar_cython_type(cyvalue)} [:] data_view_${pyvalue}
 % endfor
 
-        self._parameter_list = parameter_list
+        if 'parameter_list' in kwargs:
+            self._parameter_list = kwargs['parameter_list']
+        else:
+            self._parameter_list = global_parameters()
 
         global _fun
 
@@ -178,7 +182,7 @@ cdef class GridFunction:
 %         if pyresult in compatible_dtypes[pybasis]:
             if (self._basis_type=="${pybasis}") and (self._result_type=="${pyresult}"):
                 self._impl_${pybasis}_${pyresult}.reset(
-                        new c_GridFunction[${cybasis},${cyresult}](deref(parameter_list.impl_),
+                        new c_GridFunction[${cybasis},${cyresult}](deref((<ParameterList>self.parameter_list).impl_),
                         _py_get_space_ptr[${cybasis}](self._space.impl_),
                         _py_get_space_ptr[${cybasis}]((<Space>kwargs['dual_space']).impl_),
                         deref(_py_surface_normal_dependent_function_${pyresult}(_fun_interface_${pyresult},3,
@@ -202,7 +206,7 @@ cdef class GridFunction:
                 arma_data_${pyresult} = new Col[${cyresult}](<${cyresult}*>&data_view_${pyresult}[0],num_entries,True,False)
 
                 self._impl_${pybasis}_${pyresult}.reset(
-                        new c_GridFunction[${cybasis},${cyresult}](deref(parameter_list.impl_),
+                        new c_GridFunction[${cybasis},${cyresult}](deref((<ParameterList>self.parameter_list).impl_),
                         _py_get_space_ptr[${cybasis}](self._space.impl_),
                         _py_get_space_ptr[${cybasis}]((<Space>kwargs['dual_space']).impl_),
                         deref(arma_data_${pyresult})))
@@ -222,7 +226,7 @@ cdef class GridFunction:
                 arma_data_${pyresult} = new Col[${cyresult}](<${cyresult}*>&data_view_${pyresult}[0],num_entries,True,False)
 
                 self._impl_${pybasis}_${pyresult}.reset(
-                        new c_GridFunction[${cybasis},${cyresult}](deref(parameter_list.impl_),
+                        new c_GridFunction[${cybasis},${cyresult}](deref((<ParameterList>self.parameter_list).impl_),
                         _py_get_space_ptr[${cybasis}](self._space.impl_),
                         deref(arma_data_${pyresult})))
                 del arma_data_${pyresult}
@@ -309,10 +313,11 @@ cdef class GridFunction:
         if not self.space.is_compatible(other.space):
             raise ValueError("Spaces do not match")
 
-        return GridFunction(self.parameter_list,self.space,
+        return GridFunction(self.space,
                 coefficients=self.coefficients+other.coefficients,
                 basis_type=self.basis_type,
-                result_type=self.result_type)
+                result_type=self.result_type,
+                parameter_list=self.parameter_list)
 
 
     def __mul__(self,object alpha):
@@ -322,10 +327,11 @@ cdef class GridFunction:
 
         if np.isscalar(alpha):
             scale = self.result_type.type(alpha)
-            return GridFunction(self.parameter_list,self.space,
+            return GridFunction(self.space,
                     coefficients=scale*self.coefficients,
                     basis_type=self.basis_type,
-                    result_type=self.result_type)
+                    result_type=self.result_type,
+                    parameter_list=self.parameter_list)
         else:
             raise ValueError("Cannot multiply Gridfunction with object of type "+str(type(alpha)))
 
@@ -334,7 +340,7 @@ cdef class GridFunction:
         return self.__mul__(-1.0)
 
     def __sub__(self,GridFunction other):
-        return self.__add__(self,-other)
+        return self.__add__(-other)
 
     property coefficients:
         """ Return or set the vector of coefficients. """

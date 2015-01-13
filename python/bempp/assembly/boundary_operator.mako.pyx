@@ -90,7 +90,6 @@ cdef class BoundaryOperatorBase:
         raise NotImplementedError("Method not implemented")
 
     def _apply_grid_function(self,GridFunction g):
-
         raise NotImplementedError("Method not implemented")
 
 cdef class BoundaryOperator(BoundaryOperatorBase):
@@ -119,8 +118,8 @@ cdef class BoundaryOperator(BoundaryOperatorBase):
         op_w =  self.weak_form()
         coeffs = g.coefficients
         result_projections = (op_w*coeffs)
-        return GridFunction(g.parameter_list,self.range,dual_space=self.dual_to_range,
-                projections=result_projections)
+        return GridFunction(self.range,dual_space=self.dual_to_range,
+                projections=result_projections,parameter_list=g.parameter_list)
 
     cpdef DiscreteBoundaryOperatorBase weak_form(self):
         cdef DiscreteBoundaryOperator dbop = DiscreteBoundaryOperator()
@@ -186,6 +185,13 @@ cdef class _ScaledBoundaryOperator(BoundaryOperatorBase):
 % endfor
         raise ValueError("Unknown result type")
 
+    def _apply_grid_function(self,GridFunction g):
+% for pyvalue in dtypes:
+        if self._result_type == "${pyvalue}":
+            return self._alpha_${pyvalue}*(self.op*g)
+% endfor
+        raise ValueError("Unknown result type")
+
 
 cdef class _SumBoundaryOperator(BoundaryOperatorBase):
     cdef BoundaryOperatorBase op1
@@ -218,7 +224,9 @@ cdef class _SumBoundaryOperator(BoundaryOperatorBase):
 
         return self.op1.weak_form()+self.op2.weak_form()
 
+    def _apply_grid_function(self, GridFunction g):
 
+        return self.op1*g+self.op2*g
 
 
 

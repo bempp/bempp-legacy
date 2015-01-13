@@ -90,7 +90,7 @@ ParameterList GlobalParameters::parameterList() {
 
   createQuadratureOptions("near",2,3,3);
   createQuadratureOptions("medium",4,2,2);
-  createQuadratureOptions("far",std::numeric_limits<double>::infinity(),1,1);
+  createQuadratureOptions("far",std::numeric_limits<double>::infinity(),2,2);
 
 
   quadratureOrders.sublist("far").remove("maxRelDist");
