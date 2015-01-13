@@ -46,13 +46,6 @@ BEM++ numbering.
 The class is initialized by either providing a valid Gmsh file
 or a bempp.Grid object.
 
-Parameters
-----------
-grid : bempp.Grid
-    Grid to initialize the Gmsh object.
-file_name : string
-    Gmsh file, from which the Gmsh object is initialized.
-
 Attributes
 ----------
 grid: bempp.Grid
@@ -73,24 +66,35 @@ Examples
 --------
 To load the grid from a Gmsh file named ``grid.msh`` use
 
->>> grid = GmshInterface(file_name="grid.msh").grid()
+>>> grid = GmshInterface("grid.msh").grid()
 
 To write an existing grid object to a new file ``grid.msh`` use
 
->>> GmshInterface(grid=grid).write("grid.msh")
+>>> GmshInterface(grid).write("grid.msh")
 
     """
 
 
-    def __cinit__(self,grid=None,file_name=None):
+    def __cinit__(self,*args):
         pass
 
-    def __init__(self,grid=None,file_name=None): 
+    def __init__(self,*args): 
+
+        file_name = None
+        grid = None
+
+        if len(args) is not 1:
+            raise ValueError("Exactly one argument must be provided.")
+
+        if isinstance(args[0],Grid):
+            grid = args[0]
+        elif isinstance(args[0],str):
+            file_name = args[0]
+        else:
+            raise ValueError("Argument must be either a `Grid` or `str` object")
 
 
-        if ((grid is not None and file_name is not None) or
-                (grid is None and file_name is None)):
-            raise ValueError("Exactly one of `file_name` or `grid` must be specified")
+
 
         physical_entity = -1 # At the moment read all physical entities by default
 

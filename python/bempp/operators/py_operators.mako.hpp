@@ -1,3 +1,9 @@
+<%
+op_types = ['3dSingleLayerBoundaryOperator',
+            '3dDoubleLayerBoundaryOperator',
+            '3dAdjointDoubleLayerBoundaryOperator',
+            '3dHypersingularBoundaryOperator']
+%>
 
 #ifndef BEMPP_OPERATORS_HPP
 #define BEMPP_OPERATORS_HPP
@@ -10,6 +16,11 @@
 #include "bempp/assembly/laplace_3d_single_layer_boundary_operator.hpp"
 #include "bempp/assembly/laplace_3d_adjoint_double_layer_boundary_operator.hpp"
 #include "bempp/assembly/laplace_3d_hypersingular_boundary_operator.hpp"
+#include "bempp/assembly/modified_helmholtz_3d_single_layer_boundary_operator.hpp"
+#include "bempp/assembly/modified_helmholtz_3d_double_layer_boundary_operator.hpp"
+#include "bempp/assembly/modified_helmholtz_3d_adjoint_double_layer_boundary_operator.hpp"
+#include "bempp/assembly/modified_helmholtz_3d_hypersingular_boundary_operator.hpp"
+
 #include "boost/variant/get.hpp"
 #include "bempp/common/shared_ptr.hpp"
 #include "bempp/space/space.hpp"
@@ -122,6 +133,33 @@ BoundaryOpVariants c_laplace3dAdjointDoubleLayerBoundaryOperator(
                                                                               my_domain,my_range,my_dual_to_range,
                                                                               label,symmetry);
 }
+
+% for op in op_types:
+template <typename BasisFunctionType, typename ResultType>
+BoundaryOpVariants c_modifiedHelmholtz${op}(
+                                       const ParameterList& parameterList,
+                                       const SpaceVariants& domain,
+                                       const SpaceVariants& range,
+                                       const SpaceVariants& dual_to_range,
+                                       ResultType waveNumber,
+                                       const std::string& label,
+                                       int symmetry)
+{
+
+    typedef shared_ptr<const Space<BasisFunctionType>> space_t;
+
+    space_t my_domain = _py_get_space_ptr<BasisFunctionType>(domain);
+    space_t my_range = _py_get_space_ptr<BasisFunctionType>(range);
+    space_t my_dual_to_range = _py_get_space_ptr<BasisFunctionType>(dual_to_range);
+    
+    return modifiedHelmholtz${op}<BasisFunctionType,ResultType,ResultType>(
+                                                                              parameterList,
+                                                                              my_domain,my_range,my_dual_to_range,
+                                                                              waveNumber,
+                                                                              label,symmetry);
+
+}
+% endfor
 
 
 }
