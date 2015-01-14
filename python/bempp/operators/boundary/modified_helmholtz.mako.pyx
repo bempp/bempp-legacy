@@ -1,10 +1,14 @@
 #cython: embedsignature=True
 <%
 from data_types import dtypes, compatible_dtypes, ctypes, scalar_cython_type
-op_names = [('single_layer','c_modifiedHelmholtz3dSingleLayerBoundaryOperator'),
-            ('double_layer','c_modifiedHelmholtz3dDoubleLayerBoundaryOperator'),
-            ('adjoint_double_layer','c_modifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator'),
-            ('hypersingular','c_modifiedHelmholtz3dHypersingularBoundaryOperator')]
+op_names = [('single_layer','c_modifiedHelmholtz3dSingleLayerBoundaryOperator',
+             'Return the modified Helmholtz single layer boundary operator.'),
+            ('double_layer','c_modifiedHelmholtz3dDoubleLayerBoundaryOperator',
+             'Return the modified Helmholtz double layer boundary operator.'),
+            ('adjoint_double_layer','c_modifiedHelmholtz3dAdjointDoubleLayerBoundaryOperator',
+             'Return the modified Helmholtz adjoint double layer boundary operator.'),
+            ('hypersingular','c_modifiedHelmholtz3dHypersingularBoundaryOperator',
+              'Return the modified Helmholtz hypersingular boundary operator.')]
 
 %>
 
@@ -21,12 +25,17 @@ from bempp.common import global_parameters
 import numpy as np
 cimport numpy as np
 
-% for pyname,c_name in op_names:
+% for pyname,c_name,help_text in op_names:
 def ${pyname}(Space domain, Space range, Space dual_to_range,
         object wave_number,
         object label="", object symmetry="auto_symmetry", 
         object result_type=None,
         object parameter_list=None):
+    """
+
+    ${help_text}
+
+    """
 
     cdef ParameterList parameters
     cdef BoundaryOperator bop 

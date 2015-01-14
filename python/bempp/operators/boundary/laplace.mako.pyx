@@ -18,6 +18,11 @@ def single_layer(Space domain, Space range, Space dual_to_range,
         object label="", object symmetry="auto_symmetry", 
         object result_type="float64",
         object parameter_list=None):
+    """
+
+    Return the Laplace single layer boundary operator.
+
+    """
 
     cdef ParameterList parameters
     cdef BoundaryOperator bop 
@@ -56,6 +61,11 @@ def double_layer(Space domain, Space range, Space dual_to_range,
         object label="", object symmetry="no_symmetry", 
         object result_type="float64",
         object parameter_list=None):
+    """
+
+    Return the Laplace double layer boundary operator.
+
+    """
 
     cdef ParameterList parameters
     cdef BoundaryOperator bop 
@@ -95,6 +105,11 @@ def adjoint_double_layer(Space domain, Space range, Space dual_to_range,
         object label="", object symmetry="no_symmetry", 
         object result_type="float64",
         object parameter_list=None):
+    """
+
+    Return the Laplace adjoint double layer boundary operator.
+
+    """
 
     cdef ParameterList parameters
     cdef BoundaryOperator bop 
@@ -134,6 +149,11 @@ def hypersingular(Space domain, Space range, Space dual_to_range,
         object label="", object symmetry="no_symmetry", 
         object result_type="float64",
         object parameter_list=None):
+    """
+
+    Return the Laplace hypersingular boundary operator.
+
+    """
 
     cdef ParameterList parameters
     cdef BoundaryOperator bop 

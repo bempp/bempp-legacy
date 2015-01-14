@@ -1,0 +1,34 @@
+#cython: embedsignature=True
+
+from bempp.utils.parameter_list cimport ParameterList
+from bempp.space.space cimport Space
+from bempp.operators.boundary import modified_helmholtz
+
+<% ops = [('single_layer','Return the Helmholtz single layer boundary operator.'),
+          ('double_layer','Return the Helmholtz double layer boundary operator.'),
+          ('adjoint_double_layer','Return the Helmholtz adjoint double layer boundary operator.'),
+          ('hypersingular','Return the Helmholtz hypersingular boundary operator.')]
+    
+%>
+
+% for op,help_text in ops:
+def ${op}(Space domain, Space range, Space dual_to_range,
+        object wave_number,
+        object label="",
+        object symmetry="auto_symmetry",
+        object parameter_list=None):
+    """ 
+
+    ${help_text}
+
+    """
+
+    return modified_helmholtz.${op}(domain,range,dual_to_range,
+            wave_number/1j,label,symmetry,parameter_list)
+
+
+% endfor
+
+
+
+
