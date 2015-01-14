@@ -168,7 +168,7 @@ cdef class _ScaledBoundaryOperator(BoundaryOperatorBase):
 % for pyvalue in dtypes:
         if  self._result_type == "${pyvalue}":
             self._alpha_${pyvalue} = alpha
-            self._label = bytes(str(alpha)+"*"+op.label,"UTF-8")
+            self._label = str(alpha)+"*"+op.label.encode("UTF-8")
 % endfor
 
     def __init__(self,BoundaryOperator op, object alpha):
@@ -209,7 +209,7 @@ cdef class _SumBoundaryOperator(BoundaryOperatorBase):
         self.op1 = op1
         self.op2 = op2
 
-        self._label = bytes("("+op1.label+"+"+op2.label+")","UTF-8")
+        self._label = "("+op1.label+"+"+op2.label+")".encode("UTF-8")
 
     def __init__(self,BoundaryOperatorBase op1, BoundaryOperatorBase op2):
 

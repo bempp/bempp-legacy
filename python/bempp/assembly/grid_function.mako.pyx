@@ -173,9 +173,9 @@ cdef class GridFunction:
             if 'dual_space' not in kwargs:
                 raise ValueError('Need to specify dual space')
 
-            approx_mode = bytes('approximate',"UTF-8")
+            approx_mode = 'approximate'.encode("UTF-8")
             if 'approximation_mode' in kwargs:
-                approx_mode = bytes(kwargs['approximation_mode'],"UTF-8")
+                approx_mode = kwargs['approximation_mode'].encode("UTF-8")
 
 % for pybasis,cybasis in dtypes.items():
 %     for pyresult,cyresult in dtypes.items():
