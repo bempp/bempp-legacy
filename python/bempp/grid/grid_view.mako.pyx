@@ -13,11 +13,25 @@ from bempp.grid.entity_iterator cimport c_EntityIterator
 from bempp.grid.entity_iterator cimport EntityIterator${codim}
 % endfor
 
+from bempp.utils.armadillo cimport armadillo_to_np_float64, armadillo_to_np_int
+from bempp.utils.armadillo cimport Mat
+from libcpp.vector cimport vector
+
+import numpy as np
+cimport numpy as np
+
 cdef class GridView:
     """GridView information
 
        A GridView object contains a view on the entities of a grid.
     """
+
+
+    def __cinit__(self):
+        self._raw_data_is_computed = False
+
+    def __init__(self):
+        pass
 
     cpdef size_t entity_count(self,int codim):
         """Return the number of entities of the given codim."""
@@ -33,6 +47,22 @@ cdef class GridView:
         it.impl_.swap(c_it)
         return it
 % endfor
+
+    cdef void _compute_raw_element_data(self):
+        if self._raw_data_is_computed: return
+
+        cdef:
+            Mat[double] vertices
+            Mat[int] elements
+            Mat[char] aux_data
+
+        deref(self.impl_).getRawElementData(vertices,elements,aux_data,self._domain_indices)
+
+        self._vertices = armadillo_to_np_float64(vertices)
+        self._elements = armadillo_to_np_int(elements)[:-1,:] # Last row not needed for triangular grids
+
+        return
+
 
     def entity_iterator(self,codim):
         """Return iterator for entities of given codim."""
@@ -54,6 +84,28 @@ cdef class GridView:
         """ Dimension of the space containing the grid. """
         def __get__(self):
             return deref(self.impl_).dimWorld()
+
+    property vertices:
+        """ Return the vertices of the grid. """
+
+        def __get__(self):
+            self._compute_raw_element_data()
+            return self._vertices
+
+    property elements:
+        """ Return the elements of the grid. """
+
+        def __get__(self):
+            self._compute_raw_element_data()
+            return self._elements
+
+    property domain_indices:
+        """ Return the domain indices of the elements. """
+
+        def __get__(self):
+            self._compute_raw_element_data()
+            return self._domain_indices
+
 
 
 cdef GridView _grid_view_from_unique_ptr(unique_ptr[c_GridView]& c_view):

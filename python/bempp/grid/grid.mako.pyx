@@ -289,7 +289,7 @@ def grid_from_sphere(int n, double radius=1.0, object origin = [0,0,0]):
     cdef np.ndarray nodes
     cdef np.ndarray elements
     cdef np.ndarray[double,ndim=2] nodes_buf
-    cdef np.ndarray[long,ndim=2] elements_buf
+    cdef np.ndarray[int,ndim=2] elements_buf
 
     cdef int number_of_nodes;
     cdef int number_of_elements;
@@ -305,7 +305,7 @@ def grid_from_sphere(int n, double radius=1.0, object origin = [0,0,0]):
     number_of_elements = deref(c_elements).size()
 
     nodes = np.empty((3,number_of_nodes),dtype='float64')
-    elements = np.empty((3,number_of_elements),dtype='int64')
+    elements = np.empty((3,number_of_elements),dtype='intc')
 
     nodes_buf = nodes
     elements_buf = elements

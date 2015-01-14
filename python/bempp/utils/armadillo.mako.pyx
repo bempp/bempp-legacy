@@ -40,3 +40,20 @@ cdef np.ndarray armadillo_col_to_np_${pyvalue}(const Col[${cyvalue}]& x):
         res[i] = deref(<${scalar_cython_type(cyvalue)}*>&x.at(i))
     return res
 % endfor
+
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+cdef np.ndarray armadillo_to_np_int(const Mat[int]& x):
+    
+    cdef int rows = x.n_rows
+    cdef int cols = x.n_cols
+    cdef int j
+    cdef int i
+
+    cdef np.ndarray[int,ndim=2,mode='fortran'] res = np.empty((rows,cols),dtype="intc",order='F')
+
+    for j in range(cols):
+        for i in range(rows):
+            res[i,j] = x.at(i,j)
+    return res
