@@ -29,7 +29,7 @@ def function_space(grid, kind, order, dtype='float64'):
     -----
     The most frequent used types are the space of piecewise constant
     functions (kind="DP", order=0) and the space of continuous,
-    piecewise linear functions (kind="DP", order=0).
+    piecewise linear functions (kind="P", order=1).
 
     This is a factory function that initializes a space object. To 
     see a detailed help for space objects see the documentation
