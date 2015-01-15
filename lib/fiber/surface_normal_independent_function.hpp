@@ -98,7 +98,7 @@ public:
   }
 
 private:
-  const Functor &m_functor;
+  Functor m_functor;
 };
 
 } // namespace Fiber

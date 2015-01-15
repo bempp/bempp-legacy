@@ -22,9 +22,9 @@ cimport numpy as np
 
 np.import_array()
 
-cdef void _fun_interface(object x, object normal, object res, object call_fun):
+cdef void _fun_interface(object x, object normal, int domain_index, object res, object call_fun):
 
-    call_fun(x,normal,res) 
+    call_fun(x,normal,domain_index,res) 
 
 
 cdef class GridFunction:
@@ -36,16 +36,18 @@ cdef class GridFunction:
     1. By providing a Python callable. Any Python callable of the following form
        is valid.::
 
-            callable(x,n,result)
+            callable(x,n,domain_index,result)
 
        Here, x, n, and result are all numpy arrays. x contains the current evaluation
        point, n the associated outward normal direction and result is a numpy array
-       that will store the result of the Python callable.
+       that will store the result of the Python callable. The variable domain_index
+       stores the index of the subdomain on which x lies (default 0). This makes it
+       possible to define different functions for different subdomains.
 
        The following example defines input data that is the inner product of the
        coordinate x with the normal direction n.::
 
-            fun(x,n,result):
+            fun(x,n,domain_index,result):
                 result[0] =  np.dot(x,n)
 
     2. By providing a vector of coefficients at the nodes. This is preferable if

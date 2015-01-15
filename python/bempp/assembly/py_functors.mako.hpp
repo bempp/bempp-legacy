@@ -1,7 +1,7 @@
 #ifndef PY_FUNCTORS_HPP
 #define PY_FUNCTORS_HPP
 
-#include "bempp/fiber/surface_normal_dependent_function.hpp"
+#include "bempp/fiber/surface_normal_and_domain_index_dependent_function.hpp"
 #include "bempp/fiber/scalar_traits.hpp"
 #include <vector>
 #include <armadillo>
@@ -32,16 +32,16 @@ namespace Bempp
 
 
 template <typename ValueType_>
-class PythonSurfaceNormalDependentFunctor
+class PythonFunctor
 {
 public:
     typedef ValueType_ ValueType;
     typedef typename Fiber::ScalarTraits<ValueType>::RealType CoordinateType;
-    typedef void (*pyFunc_t)(PyObject* x, PyObject* normal, PyObject* result, PyObject* callable);
+    typedef void (*pyFunc_t)(PyObject* x, PyObject* normal, int domainIndex, PyObject* result, PyObject* callable);
 
 
 
-    PythonSurfaceNormalDependentFunctor(
+    PythonFunctor(
         pyFunc_t pyFunc, PyObject* callable,
         int argumentDimension, int resultDimension) :
             m_pyFunc(pyFunc),
@@ -65,7 +65,7 @@ public:
 
             } 
 
-    PythonSurfaceNormalDependentFunctor(const PythonSurfaceNormalDependentFunctor<ValueType>& other):
+    PythonFunctor(const PythonFunctor<ValueType>& other):
         m_pyFunc(other.m_pyFunc), m_argumentDimension(other.m_argumentDimension),
         m_resultDimension(other.m_resultDimension),m_x(other.m_x),m_normal(other.m_normal),
         m_result(other.m_result),m_callable(other.m_callable) {
@@ -77,7 +77,7 @@ public:
 
         }
 
-    ~PythonSurfaceNormalDependentFunctor(){
+    ~PythonFunctor(){
 
         Py_DECREF(m_x);
         Py_DECREF(m_normal);
@@ -95,7 +95,7 @@ public:
     }
 
     void evaluate(const arma::Col<CoordinateType>& point, const arma::Col<CoordinateType>& normal,
-                  arma::Col<ValueType>& result_) const
+                  int domainIndex, arma::Col<ValueType>& result_) const
     {
 
         CoordinateType* xPtr = (CoordinateType*)PyArray_DATA(m_x);
@@ -104,7 +104,7 @@ public:
         CoordinateType* normalPtr = (CoordinateType*)PyArray_DATA(m_normal);
         for (int i = 0; i< m_argumentDimension;++i) normalPtr[i] = normal.at(i);
 
-        m_pyFunc(m_x,m_normal,m_result,m_callable);
+        m_pyFunc(m_x,m_normal,domainIndex,m_result,m_callable);
 
         ValueType* resPtr = (ValueType*)PyArray_DATA(m_result);
         for (int i = 0; i< m_resultDimension;++i) result_.at(i) = resPtr[i];
@@ -124,12 +124,12 @@ private:
 
 template <typename ValueType>
 shared_ptr<Fiber::Function<ValueType>> _py_surface_normal_dependent_function(
-        typename PythonSurfaceNormalDependentFunctor<ValueType>::pyFunc_t pyFunc,PyObject* callable, 
+        typename PythonFunctor<ValueType>::pyFunc_t pyFunc,PyObject* callable, 
         int argumentDimension, int resultDimension)
 {
     return shared_ptr<Fiber::Function<ValueType>>(
-        new Fiber::SurfaceNormalDependentFunction<PythonSurfaceNormalDependentFunctor<ValueType>>(
-            PythonSurfaceNormalDependentFunctor<ValueType>(pyFunc,callable,argumentDimension,resultDimension)));
+        new Fiber::SurfaceNormalAndDomainIndexDependentFunction<PythonFunctor<ValueType>>(
+            PythonFunctor<ValueType>(pyFunc,callable,argumentDimension,resultDimension)));
 }
 } // namespace Bempp
 
