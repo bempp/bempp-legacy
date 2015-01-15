@@ -148,7 +148,7 @@ cdef class ${class_name}(Space):
 
         Notes
         -----
-        A space instance should always be created using the function 'initialize_space'.
+        A space instance should always be created using the function 'bempp.function_space'.
     """
     def __init__(self, Grid grid not None, order, dtype):
 

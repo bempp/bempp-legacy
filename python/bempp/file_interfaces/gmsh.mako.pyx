@@ -261,7 +261,7 @@ def save_grid_function_to_gmsh(grid_function, data_label, file_name,
    >>> save_grid_function_to_gmsh(grid_function,"data","data.msh")
 
    """
-   gmsh_interface = GmshInterface(grid=grid_function.grid)
+   gmsh_interface = GmshInterface(grid_function.grid)
    gmsh_interface.save_grid_function(<GridFunction>grid_function,data_label,gmsh_type,complex_mode)
    gmsh_interface.write(file_name)
 

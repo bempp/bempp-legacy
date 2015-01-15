@@ -113,8 +113,6 @@ ParameterList GlobalParameters::parameterList() {
   hmatParameters.set("eta", static_cast<double>(1.2),
                      "(double) Specifies the block separation parameter eta");
 
-  Teuchos::writeParameterListToXmlFile(parameters,"parameters.xml");
- 
   return parameters;
 }
 }

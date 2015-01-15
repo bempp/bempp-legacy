@@ -1,7 +1,7 @@
-__all__=['initialize_space']
+__all__=['function_space']
 from . import space
 
-def initialize_space(grid, kind, order, dtype='float64'):
+def function_space(grid, kind, order, dtype='float64'):
     """ 
 
     Return a space defined over a given grid.
@@ -39,11 +39,11 @@ def initialize_space(grid, kind, order, dtype='float64'):
     --------
     To initialize a space of piecewise constant functions use
 
-    >>> space = initialize_space(grid,"DP",0)
+    >>> space = function_space(grid,"DP",0)
 
     To initialize a space of continuous, piecewise linear functions, use
 
-    >>> space = initialize_space(grid,"P",1)
+    >>> space = function_space(grid,"P",1)
 
     """
 
