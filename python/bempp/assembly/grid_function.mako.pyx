@@ -22,32 +22,9 @@ cimport numpy as np
 
 np.import_array()
 
-cdef object _fun = None
+cdef void _fun_interface(object x, object normal, object res, object call_fun):
 
-% for pyvalue,cyvalue in dtypes.items():
-cdef void _fun_interface_${pyvalue}(const Col[${real_cython_type(cyvalue)}]& x, 
-        const Col[${real_cython_type(cyvalue)}]& normal,
-        Col[${cyvalue}]& result):
-
-    cdef np.npy_intp shape_x[1]
-    cdef np.npy_intp shape_normal[1]
-    cdef np.npy_intp shape_res[1]
-    cdef np.ndarray[${scalar_cython_type(cyvalue)},ndim=1,mode='fortran'] py_x
-    cdef np.ndarray[${scalar_cython_type(cyvalue)},ndim=1,mode='fortran'] py_normal
-    cdef np.ndarray[${scalar_cython_type(cyvalue)},ndim=1,mode='fortran'] py_res
-    cdef Col[${real_cython_type(cyvalue)}] my_x = Col[${real_cython_type(cyvalue)}](x)
-    cdef Col[${real_cython_type(cyvalue)}] my_normal = Col[${real_cython_type(cyvalue)}](normal)
-
-    shape_x[0] = <np.npy_intp> x.n_rows
-    shape_normal[0] = <np.npy_intp> normal.n_rows
-    shape_res[0] = <np.npy_intp> result.n_rows
-
-    py_x = np.PyArray_SimpleNewFromData(1,shape_x,np.dtype("${pyvalue}").num,my_x.memptr())
-    py_normal = np.PyArray_SimpleNewFromData(1,shape_normal,np.dtype("${pyvalue}").num,my_normal.memptr())
-    py_res = np.PyArray_SimpleNewFromData(1,shape_res,np.dtype("${pyvalue}").num,result.memptr())
-
-    _fun(py_x,py_normal,py_res) 
-% endfor
+    call_fun(x,normal,res) 
 
 
 cdef class GridFunction:
@@ -168,8 +145,6 @@ cdef class GridFunction:
 
         if 'fun' in kwargs:
 
-            _fun = kwargs['fun']
-
             if 'dual_space' not in kwargs:
                 raise ValueError('Need to specify dual space')
 
@@ -185,7 +160,7 @@ cdef class GridFunction:
                         new c_GridFunction[${cybasis},${cyresult}](deref((<ParameterList>self.parameter_list).impl_),
                         _py_get_space_ptr[${cybasis}](self._space.impl_),
                         _py_get_space_ptr[${cybasis}]((<Space>kwargs['dual_space']).impl_),
-                        deref(_py_surface_normal_dependent_function_${pyresult}(_fun_interface_${pyresult},3,
+                        deref(_py_surface_normal_dependent_function_${pyresult}(_fun_interface,kwargs['fun'],3,
                             self._space.codomain_dimension)),
                         construction_mode(approx_mode)))
 %         endif

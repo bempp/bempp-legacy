@@ -52,7 +52,7 @@ cdef extern from "bempp/assembly/grid_function.hpp" namespace "Bempp":
 cdef extern from "bempp/assembly/py_functors.hpp" namespace "Bempp":
 % for pyvalue,cyvalue in dtypes.items():
     cdef shared_ptr[c_Function[${cyvalue}]] _py_surface_normal_dependent_function_${pyvalue} "Bempp::_py_surface_normal_dependent_function<${ctypes(cyvalue)}>"(
-            void (*callable)(const Col[${real_cython_type(cyvalue)}]&,const Col[${real_cython_type(cyvalue)}]&, Col[${cyvalue}]&),
+            void (*callable)(object,object,object,object),object,
             int argumentDimension, int resultDimension) except+catch_exception
 % endfor
 

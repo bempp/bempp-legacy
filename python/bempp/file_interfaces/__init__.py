@@ -8,7 +8,7 @@ def export(obj, file_name,**kwargs):
     extension = os.path.splitext(file_name)[1].lower()
 
     if extension=='.msh':
-        import gmsh
+        from bempp.file_interfaces import gmsh
 
         if isinstance(obj,Grid):
             gmsh.GmshInterface(obj).write(file_name)
