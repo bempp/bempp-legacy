@@ -50,6 +50,6 @@ cdef class BoundaryOperatorBase:
 
     cpdef DiscreteBoundaryOperatorBase weak_form(self) 
 
-cdef class BoundaryOperator(BoundaryOperatorBase):
+cdef class DenseBoundaryOperator(BoundaryOperatorBase):
     cdef BoundaryOpVariants impl_
     cpdef DiscreteBoundaryOperatorBase weak_form(self) 

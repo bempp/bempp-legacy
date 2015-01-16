@@ -22,8 +22,8 @@ class TestGmsh(object):
         return self.test_instantiate_from_file()
 
     def test_instantiate_from_grid(self):
-        gmsh_interface = gmsh.GmshInterface(grid=self.grid())
+        gmsh_interface = gmsh.GmshInterface(self.grid())
 
     def test_instantiate_from_file(self):
-        gmsh_interface = gmsh.GmshInterface(file_name=self.mesh_path())
+        gmsh_interface = gmsh.GmshInterface(self.mesh_path())
         return gmsh_interface.grid

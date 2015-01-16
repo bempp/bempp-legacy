@@ -92,7 +92,7 @@ cdef class BoundaryOperatorBase:
     def _apply_grid_function(self,GridFunction g):
         raise NotImplementedError("Method not implemented")
 
-cdef class BoundaryOperator(BoundaryOperatorBase):
+cdef class DenseBoundaryOperator(BoundaryOperatorBase):
     """ Holds a reference to a boundary operator """
     def __init__(self, basis_type=None, result_type=None):
         from numpy import dtype
@@ -171,7 +171,7 @@ cdef class _ScaledBoundaryOperator(BoundaryOperatorBase):
             self._label = (str(alpha)+"*"+op.label).encode("UTF-8")
 % endfor
 
-    def __init__(self,BoundaryOperator op, object alpha):
+    def __init__(self,BoundaryOperatorBase op, object alpha):
         pass
 
     property label:

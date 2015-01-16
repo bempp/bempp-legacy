@@ -16,7 +16,7 @@ from bempp.utils.parameter_list cimport c_ParameterList, ParameterList
 from bempp.space.space cimport SpaceVariants,Space
 from libcpp.string cimport string
 from bempp.utils.enum_types cimport symmetry_mode
-from bempp.assembly.boundary_operator cimport BoundaryOperator,BoundaryOpVariants
+from bempp.assembly.boundary_operator cimport DenseBoundaryOperator,BoundaryOpVariants
 from cython.operator cimport dereference as deref
 from bempp.utils.byte_conversion import convert_to_bytes
 from bempp.utils.enum_types cimport symmetry_mode
@@ -38,7 +38,7 @@ def ${pyname}(Space domain, Space range, Space dual_to_range,
     """
 
     cdef ParameterList parameters
-    cdef BoundaryOperator bop 
+    cdef DenseBoundaryOperator bop 
 
 
 % for pyresult,cyresult in dtypes.items():
@@ -79,7 +79,7 @@ def ${pyname}(Space domain, Space range, Space dual_to_range,
 
 
 
-    bop = BoundaryOperator(basis_type=basis_type,result_type=actual_result_type)
+    bop = DenseBoundaryOperator(basis_type=basis_type,result_type=actual_result_type)
 
 
 % for pybasis, cybasis in dtypes.items():

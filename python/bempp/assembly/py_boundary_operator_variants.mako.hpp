@@ -5,6 +5,10 @@
 #include "bempp/assembly/boundary_operator.hpp"
 #include "bempp/utils/py_types.hpp"
 #include "bempp/space/py_space_variants.hpp"
+#include "bempp/assembly/discrete_sparse_boundary_operator.hpp"
+#include "Python.h"
+#include "numpy/arrayobject.h"
+#include "Epetra_CrsMatrix.h"
 #include <boost/variant.hpp>
 #include <type_traits>
 
@@ -199,6 +203,52 @@ boundary_op_variant_weak_form(const BoundaryOpVariants& variant)
     return boost::get<BoundaryOperator<BasisFunctionType,ResultType>>(
             variant.operator_).weakForm();
 }
+
+/*
+static PyObject* py_get_csr_data(const shared_ptr<const DiscreteBoundaryOperator< ValueType > >& op)
+        {
+                shared_ptr<const Epetra_CrsMatrix> epetraOperator = Bempp::DiscreteSparseBoundaryOperator< ValueType >::castToSparse(op)->epetraMatrix();
+
+                PyObject* data;
+                PyObject* colind;
+                PyObject* row_ptr;
+                int M;
+                int N;
+
+                npy_intp num_nonzeros = epetraOperators->NumGlobalNonzeros();
+                npy_intp num_row_ptr = epetraOperator->NumGlobalRows()+1;
+
+                data = PyArray_ZEROS(1,&num_nonzeros,NPY_FLOAT64,1);
+                colind = PyArray_ZEROS(1,&num_nonzeros,NPY_INT,1);
+                row_ptr = PyArray_ZEROS(1,&num_row_ptr,NPY_INT,1);
+
+                int* indexOffset;
+                int* indices;
+                double* values;
+                
+                epetraOperator->ExtractCrsDataPointers(indexOffset,indices,values);
+
+                double* pyDataPtr = (double*)PyArray_DATA(data);
+
+                for (int i = 0; i < num_nonzeros; ++i)
+                        pyDataPtr[i] = values[i];
+
+                int* pyColPtr = (int*)PyArray_DATA(colind);
+                for (int i = 0; i < num_nonzeros; ++i)
+                        pyColPtr[i] = indices[i];
+
+                int* pyRowPtr = (int*)PyArray_DATA(row_ptr);
+                for (int i = 0; i < num_row_ptr; ++i)
+                        pyRowPtr[i] = indexOffset[i];
+                             
+                M = epetraOperator->NumGlobalRows();
+                N = epetraOperator->NumGlobalCols();
+
+                
+        }                
+*/
+
+
 
 }
 #endif

@@ -59,10 +59,6 @@ public:
             m_normal = PyArray_ZEROS(1,&pyArgumentDimension,NumpyType<CoordinateType>::value,1);
             m_result = PyArray_ZEROS(1,&pyResultDimension,NumpyType<ValueType>::value,1);
 
-            Py_INCREF(m_x);
-            Py_INCREF(m_normal);
-            Py_INCREF(m_result);
-
             } 
 
     PythonFunctor(const PythonFunctor<ValueType>& other):
@@ -74,6 +70,7 @@ public:
             Py_INCREF(m_x);
             Py_INCREF(m_normal);
             Py_INCREF(m_result);
+            
 
         }
 
@@ -83,6 +80,7 @@ public:
         Py_DECREF(m_normal);
         Py_DECREF(m_result);
         Py_DECREF(m_callable);
+
     }
 
 

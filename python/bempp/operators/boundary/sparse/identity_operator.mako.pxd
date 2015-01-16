@@ -1,5 +1,5 @@
 from bempp.utils cimport catch_exception, complex_float, complex_double
-from bempp.assembly.boundary_operator cimport BoundaryOpVariants,BoundaryOperator
+from bempp.assembly.boundary_operator cimport BoundaryOpVariants
 from bempp.utils.parameter_list cimport c_ParameterList, ParameterList
 from bempp.space.space cimport SpaceVariants,Space
 from bempp.utils cimport shared_ptr
