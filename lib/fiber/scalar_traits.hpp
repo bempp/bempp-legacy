@@ -51,21 +51,25 @@ template <typename T> struct ScalarTraits {
 template <> struct ScalarTraits<float> {
   typedef float RealType;
   typedef std::complex<float> ComplexType;
+  enum {NumpyTypeNum = 11 };
 };
 
 template <> struct ScalarTraits<double> {
   typedef double RealType;
   typedef std::complex<double> ComplexType;
+  enum {NumpyTypeNum = 12 };
 };
 
 template <> struct ScalarTraits<std::complex<float>> {
   typedef float RealType;
   typedef std::complex<float> ComplexType;
+  enum {NumpyTypeNum = 14 };
 };
 
 template <> struct ScalarTraits<std::complex<double>> {
   typedef double RealType;
   typedef std::complex<double> ComplexType;
+  enum {NumpyTypeNum = 15 };
 };
 
 /** \brief "Larger" of the types U and V. */

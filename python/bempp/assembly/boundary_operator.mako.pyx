@@ -5,9 +5,12 @@ from data_types import scalar_cython_type
 %>
 from bempp.space.space cimport Space
 from discrete_boundary_operator cimport DiscreteBoundaryOperator
+from discrete_boundary_operator cimport DenseDiscreteBoundaryOperator
 from discrete_boundary_operator cimport DiscreteBoundaryOperatorBase
+from discrete_boundary_operator import SparseDiscreteBoundaryOperator
 from bempp.utils.byte_conversion import convert_to_bytes
 from bempp.assembly.grid_function cimport GridFunction
+from bempp.utils cimport shared_ptr,static_pointer_cast
 
 from numpy cimport dtype
 
@@ -15,6 +18,7 @@ from bempp.utils cimport complex_float,complex_double
 import numpy as np
 cimport numpy as np
 
+np.import_array()
 
 cdef class BoundaryOperatorBase:
     """
@@ -32,7 +36,6 @@ cdef class BoundaryOperatorBase:
 
     """
     
-
 
     def __cinit__(self):
         pass
@@ -73,7 +76,7 @@ cdef class BoundaryOperatorBase:
 
         return self.__add__(-other)
 
-    cpdef DiscreteBoundaryOperatorBase weak_form(self):
+    def weak_form(self):
         """
 
         This method returns an assembled representation
@@ -92,8 +95,14 @@ cdef class BoundaryOperatorBase:
     def _apply_grid_function(self,GridFunction g):
         raise NotImplementedError("Method not implemented")
 
-cdef class DenseBoundaryOperator(BoundaryOperatorBase):
+cdef class GeneralBoundaryOperator(BoundaryOperatorBase):
     """ Holds a reference to a boundary operator """
+
+
+    def __cinit__(self, basis_type=None, result_type=None):
+        pass
+
+
     def __init__(self, basis_type=None, result_type=None):
         from numpy import dtype
 
@@ -121,7 +130,7 @@ cdef class DenseBoundaryOperator(BoundaryOperatorBase):
         return GridFunction(self.range,dual_space=self.dual_to_range,
                 projections=result_projections,parameter_list=g.parameter_list)
 
-    cpdef DiscreteBoundaryOperatorBase weak_form(self):
+    def weak_form(self):
         cdef DiscreteBoundaryOperator dbop = DiscreteBoundaryOperator()
         
 % for pybasis,cybasis in dtypes.items():
@@ -178,7 +187,7 @@ cdef class _ScaledBoundaryOperator(BoundaryOperatorBase):
         def __get__(self):
             return self._label.decode("UTF-8")
 
-    cpdef DiscreteBoundaryOperatorBase weak_form(self):
+    def weak_form(self):
 % for pyvalue in dtypes:
         if self._result_type == "${pyvalue}":
             return self._alpha_${pyvalue}*self.op.weak_form()
@@ -220,7 +229,7 @@ cdef class _SumBoundaryOperator(BoundaryOperatorBase):
         def __get__(self):
             return self._label.decode("UTF-8")
 
-    cpdef DiscreteBoundaryOperatorBase weak_form(self):
+    def weak_form(self):
 
         return self.op1.weak_form()+self.op2.weak_form()
 
@@ -230,4 +239,61 @@ cdef class _SumBoundaryOperator(BoundaryOperatorBase):
 
 
 
+cdef class SparseBoundaryOperator(GeneralBoundaryOperator):
+    """ Holds a reference to a boundary operator """
+
+
+    def __cinit__(self, basis_type=None, result_type=None):
+        pass
+
+
+    def __init__(self, basis_type=None, result_type=None):
+
+        super(SparseBoundaryOperator,self).__init__(basis_type,result_type)
+
+    def weak_form(self):
+
+        import scipy.sparse
+
+        cdef DiscreteBoundaryOperator discrete_operator = super(SparseBoundaryOperator,self).weak_form()
+        res = None
+% for pyvalue,cyvalue in dtypes.items():
+
+        if discrete_operator.dtype=="${pyvalue}":
+            res = py_get_sparse_from_discrete_operator[${cyvalue}](discrete_operator._impl_${pyvalue}_)
+% endfor
+
+        if res is None:
+            raise ValueError("Unknown data type")
+
+        return SparseDiscreteBoundaryOperator(res)
+
+cdef class DenseBoundaryOperator(GeneralBoundaryOperator):
+
+
+    def __cinit__(self, GeneralBoundaryOperator op):
+        pass
+
+
+    def __init__(self,GeneralBoundaryOperator op):
+
+        super(DenseBoundaryOperator,self).__init__(basis_type=op.basis_type,result_type=op.result_type)
+        self.impl_ = op.impl_
+
+    def weak_form(self):
+        cdef DenseDiscreteBoundaryOperator dbop = DenseDiscreteBoundaryOperator()
+        
+% for pybasis,cybasis in dtypes.items():
+%     for pyresult,cyresult in dtypes.items():
+%         if pyresult in compatible_dtypes[pybasis]:
+
+        if self.basis_type=="${pybasis}" and self.result_type=="${pyresult}":
+            dbop._impl_${pyresult}_.assign(_boundary_operator_variant_weak_form[${cybasis},${cyresult}](self.impl_))
+            dbop._value_type = self.result_type
+            return dbop
+%          endif
+%      endfor
+% endfor
+        raise ValueError("Incompatible basis and result types") 
+        
 

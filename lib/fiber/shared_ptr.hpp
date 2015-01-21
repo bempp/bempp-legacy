@@ -50,6 +50,7 @@ namespace Fiber {
 
 using boost::shared_ptr;
 using boost::dynamic_pointer_cast;
+using boost::static_pointer_cast;
 
 struct null_deleter {
   void operator()(const void *) const {}

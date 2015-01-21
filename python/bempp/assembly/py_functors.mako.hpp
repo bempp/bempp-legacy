@@ -3,6 +3,7 @@
 
 #include "bempp/fiber/surface_normal_and_domain_index_dependent_function.hpp"
 #include "bempp/fiber/scalar_traits.hpp"
+#include "bempp/utils/py_types.hpp"
 #include <vector>
 #include <armadillo>
 #include <Python.h>
@@ -10,25 +11,6 @@
 
 namespace Bempp
 {
-
-    template <typename T> struct NumpyType {
-    };
-
-    template <> struct NumpyType<float> {
-        enum { value = 11 };
-    };
-
-    template <> struct NumpyType<double> {
-        enum { value = 12 };
-    };
-
-    template <> struct NumpyType<std::complex<float>> {
-        enum { value = 14 };
-    };
-
-    template <> struct NumpyType<std::complex<double>> {
-        enum { value = 15 };
-    };
 
 
 template <typename ValueType_>

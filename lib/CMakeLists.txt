@@ -78,6 +78,8 @@ if(ALUGrid_GITTER_INCLUDE_DIR)
     )
 endif()
 
+target_link_libraries(libbempp ${PYTHON_LIBRARY})
+
 if (WITH_CUDA)
    include(FindCUDA)
 endif ()

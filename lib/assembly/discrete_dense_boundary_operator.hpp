@@ -29,6 +29,8 @@
 
 #include "../common/shared_ptr.hpp"
 
+#include <Python.h>
+
 #ifdef WITH_TRILINOS
 #include <Teuchos_RCP.hpp>
 #include <Thyra_SpmdVectorSpaceBase_decl.hpp>
@@ -59,6 +61,8 @@ public:
                         const std::vector<int> &cols, const ValueType alpha,
                         arma::Mat<ValueType> &block) const;
 
+  PyObject* asNumpyObject() const;
+
 #ifdef WITH_TRILINOS
 public:
   virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>> domain() const;
@@ -77,7 +81,7 @@ private:
 
 private:
   /** \cond PRIVATE */
-  arma::Mat<ValueType> m_mat;
+mutable  arma::Mat<ValueType> m_mat;
 #ifdef WITH_TRILINOS
   Teuchos::RCP<const Thyra::SpmdVectorSpaceBase<ValueType>> m_domainSpace;
   Teuchos::RCP<const Thyra::SpmdVectorSpaceBase<ValueType>> m_rangeSpace;

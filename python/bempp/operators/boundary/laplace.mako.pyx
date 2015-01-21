@@ -7,7 +7,8 @@ from bempp.utils.parameter_list cimport c_ParameterList, ParameterList
 from bempp.space.space cimport SpaceVariants,Space
 from libcpp.string cimport string
 from bempp.utils.enum_types cimport symmetry_mode
-from bempp.assembly.boundary_operator cimport DenseBoundaryOperator,BoundaryOpVariants
+from bempp.assembly.boundary_operator cimport GeneralBoundaryOperator,BoundaryOpVariants
+from bempp.assembly.boundary_operator cimport DenseBoundaryOperator
 from cython.operator cimport dereference as deref
 from bempp.utils.byte_conversion import convert_to_bytes
 from bempp.utils.enum_types cimport symmetry_mode
@@ -25,7 +26,7 @@ def single_layer(Space domain, Space range, Space dual_to_range,
     """
 
     cdef ParameterList parameters
-    cdef DenseBoundaryOperator bop 
+    cdef GeneralBoundaryOperator bop 
 
     if not len({domain.dtype,range.dtype,dual_to_range.dtype})==1:
         raise ValueError("All spaces must have the same data type")
@@ -39,7 +40,7 @@ def single_layer(Space domain, Space range, Space dual_to_range,
 
 
     basis_type = domain.dtype
-    bop = DenseBoundaryOperator(basis_type=basis_type,result_type=result_type)
+    bop = GeneralBoundaryOperator(basis_type=basis_type,result_type=result_type)
 
 % for pybasis, cybasis in dtypes.items():
 %     for pyresult, cyresult in dtypes.items():
@@ -50,7 +51,10 @@ def single_layer(Space domain, Space range, Space dual_to_range,
             deref(parameters.impl_),domain.impl_,range.impl_,
             dual_to_range.impl_,convert_to_bytes(label),
             symmetry_mode(convert_to_bytes(symmetry))))
-        return bop
+        if 'boundaryOperatorAssemblyType' in parameters and parameters['boundaryOperatorAssemblyType']=='dense': 
+            return DenseBoundaryOperator(bop)
+        else:
+            return bop
 %           endif
 %       endfor
 % endfor
@@ -68,7 +72,7 @@ def double_layer(Space domain, Space range, Space dual_to_range,
     """
 
     cdef ParameterList parameters
-    cdef DenseBoundaryOperator bop 
+    cdef GeneralBoundaryOperator bop 
 
     if not len({domain.dtype,range.dtype,dual_to_range.dtype})==1:
         raise ValueError("All spaces must have the same data type")
@@ -82,7 +86,7 @@ def double_layer(Space domain, Space range, Space dual_to_range,
         parameters = parameter_list
 
     basis_type = domain.dtype
-    bop = DenseBoundaryOperator(basis_type=basis_type,result_type=result_type)
+    bop = GeneralBoundaryOperator(basis_type=basis_type,result_type=result_type)
 
 
 % for pybasis, cybasis in dtypes.items():
@@ -94,7 +98,10 @@ def double_layer(Space domain, Space range, Space dual_to_range,
             deref(parameters.impl_),domain.impl_,range.impl_,
             dual_to_range.impl_,convert_to_bytes(label),
             symmetry_mode(convert_to_bytes(symmetry))))
-        return bop
+        if 'boundaryOperatorAssemblyType' in parameters and parameters['boundaryOperatorAssemblyType']=='dense': 
+            return DenseBoundaryOperator(bop)
+        else:
+            return bop
 %           endif
 %       endfor
 % endfor
@@ -112,7 +119,7 @@ def adjoint_double_layer(Space domain, Space range, Space dual_to_range,
     """
 
     cdef ParameterList parameters
-    cdef DenseBoundaryOperator bop 
+    cdef GeneralBoundaryOperator bop 
 
     if not len({domain.dtype,range.dtype,dual_to_range.dtype})==1:
         raise ValueError("All spaces must have the same data type")
@@ -126,7 +133,7 @@ def adjoint_double_layer(Space domain, Space range, Space dual_to_range,
         parameters = parameter_list
 
     basis_type = domain.dtype
-    bop = DenseBoundaryOperator(basis_type=basis_type,result_type=result_type)
+    bop = GeneralBoundaryOperator(basis_type=basis_type,result_type=result_type)
 
 
 % for pybasis, cybasis in dtypes.items():
@@ -138,7 +145,10 @@ def adjoint_double_layer(Space domain, Space range, Space dual_to_range,
             deref(parameters.impl_),domain.impl_,range.impl_,
             dual_to_range.impl_,convert_to_bytes(label),
             symmetry_mode(convert_to_bytes(symmetry))))
-        return bop
+        if 'boundaryOperatorAssemblyType' in parameters and parameters['boundaryOperatorAssemblyType']=='dense': 
+            return DenseBoundaryOperator(bop)
+        else:
+            return bop
 %           endif
 %       endfor
 % endfor
@@ -156,7 +166,7 @@ def hypersingular(Space domain, Space range, Space dual_to_range,
     """
 
     cdef ParameterList parameters
-    cdef DenseBoundaryOperator bop 
+    cdef GeneralBoundaryOperator bop 
 
     if not len({domain.dtype,range.dtype,dual_to_range.dtype})==1:
         raise ValueError("All spaces must have the same data type")
@@ -170,7 +180,7 @@ def hypersingular(Space domain, Space range, Space dual_to_range,
         parameters = parameter_list
 
     basis_type = domain.dtype
-    bop = DenseBoundaryOperator(basis_type=basis_type,result_type=result_type)
+    bop = GeneralBoundaryOperator(basis_type=basis_type,result_type=result_type)
 
 
 % for pybasis, cybasis in dtypes.items():
@@ -182,7 +192,10 @@ def hypersingular(Space domain, Space range, Space dual_to_range,
             deref(parameters.impl_),domain.impl_,range.impl_,
             dual_to_range.impl_,convert_to_bytes(label),
             symmetry_mode(convert_to_bytes(symmetry))))
-        return bop
+        if 'boundaryOperatorAssemblyType' in parameters and parameters['boundaryOperatorAssemblyType']=='dense': 
+            return DenseBoundaryOperator(bop)
+        else:
+            return bop
 %           endif
 %       endfor
 % endfor

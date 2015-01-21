@@ -1,5 +1,6 @@
-from bempp.utils.shared_ptr cimport shared_ptr
+from bempp.utils.shared_ptr cimport shared_ptr, static_pointer_cast
 from bempp.utils.unique_ptr cimport unique_ptr
+
 from bempp.utils.parameter_list cimport ParameterList
 
 cdef extern from "bempp/utils/py_utils.hpp" namespace "Bempp":

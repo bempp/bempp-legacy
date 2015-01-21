@@ -13,5 +13,27 @@ namespace {
     typedef std::complex<${ctype[8:]}> ${ctype};
 %     endif
 % endfor
+
+
+    template <typename T> struct NumpyType {
+    };
+
+    template <> struct NumpyType<float> {
+        enum { value = 11 };
+    };
+
+    template <> struct NumpyType<double> {
+        enum { value = 12 };
+    };
+
+    template <> struct NumpyType<std::complex<float>> {
+        enum { value = 14 };
+    };
+
+    template <> struct NumpyType<std::complex<double>> {
+        enum { value = 15 };
+    };
+
+
 }
 #endif

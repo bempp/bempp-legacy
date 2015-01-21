@@ -16,7 +16,7 @@ from bempp.utils.parameter_list cimport c_ParameterList, ParameterList
 from bempp.space.space cimport SpaceVariants,Space
 from libcpp.string cimport string
 from bempp.utils.enum_types cimport symmetry_mode
-from bempp.assembly.boundary_operator cimport DenseBoundaryOperator,BoundaryOpVariants
+from bempp.assembly.boundary_operator cimport GeneralBoundaryOperator,DenseBoundaryOperator,BoundaryOpVariants
 from cython.operator cimport dereference as deref
 from bempp.utils.byte_conversion import convert_to_bytes
 from bempp.utils.enum_types cimport symmetry_mode
@@ -38,7 +38,7 @@ def ${pyname}(Space domain, Space range, Space dual_to_range,
     """
 
     cdef ParameterList parameters
-    cdef DenseBoundaryOperator bop 
+    cdef GeneralBoundaryOperator bop 
 
 
 % for pyresult,cyresult in dtypes.items():
@@ -79,7 +79,7 @@ def ${pyname}(Space domain, Space range, Space dual_to_range,
 
 
 
-    bop = DenseBoundaryOperator(basis_type=basis_type,result_type=actual_result_type)
+    bop = GeneralBoundaryOperator(basis_type=basis_type,result_type=actual_result_type)
 
 
 % for pybasis, cybasis in dtypes.items():
@@ -96,7 +96,8 @@ def ${pyname}(Space domain, Space range, Space dual_to_range,
             deref(parameters.impl_),domain.impl_,range.impl_,
             dual_to_range.impl_, c_wave_number_${pyresult}, convert_to_bytes(label),
             symmetry_mode(convert_to_bytes(symmetry))))
-        return bop
+        if 'boundaryOperatorAssemblyType' in parameters and parameters['boundaryOperatorAssemblyType']=='dense': 
+            return DenseBoundaryOperator(bop)
 %           endif
 %       endfor
 % endfor

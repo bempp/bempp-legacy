@@ -1,4 +1,4 @@
-// Copyright (C) 2011-2012 by the BEM++ Authors
+// Copyright (C) 2011-2015 by the BEM++ Authors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -18,20 +18,26 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_shared_ptr_hpp
-#define bempp_shared_ptr_hpp
+#ifndef NUMPY_INIT_HPP
+#define NUMPY_INIT_HPP
 
-#include "../fiber/shared_ptr.hpp"
+#include <Python.h>
+#include "numpy/arrayobject.h"
 
-namespace Bempp {
+namespace {
 
-using Fiber::shared_ptr;
-using Fiber::make_shared_from_ref;
-using Fiber::make_shared_from_const_ref;
-using Fiber::null_deleter;
-using Fiber::dynamic_pointer_cast;
-using Fiber::static_pointer_cast;
+static class InitializeNumpy {
+public:
+  InitializeNumpy() { init(); }
 
-} // namespace Bempp
+private:
+#if PY_MAJOR_VERSION >= 3
+  void *init() { 
+      import_array(); }
+#else
+  void init() { import_array(); }
+#endif
+} initializeNumpy;
+}
 
-#endif // bempp_shared_ptr_hpp
+#endif

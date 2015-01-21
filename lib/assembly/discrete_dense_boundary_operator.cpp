@@ -24,8 +24,12 @@
 #include "../common/boost_make_shared_fwd.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
+#include "fiber/scalar_traits.hpp"
+#include "../common/numpy_init.hpp"
+
 #include <iostream>
 #include <stdexcept>
+#include <array>
 
 #ifdef WITH_TRILINOS
 #include <Thyra_DefaultSpmdVectorSpace_decl.hpp>
@@ -76,6 +80,20 @@ void DiscreteDenseBoundaryOperator<ValueType>::addBlock(
   for (size_t col = 0; col < cols.size(); ++col)
     for (size_t row = 0; row < rows.size(); ++row)
       block(row, col) += alpha * m_mat(rows[row], cols[col]);
+}
+
+template <typename ValueType>
+PyObject* DiscreteDenseBoundaryOperator<ValueType>::asNumpyObject() const {
+
+    int nd = 2;
+    std::array<npy_intp,2> dims {this->rowCount(),this->columnCount()};
+
+    return PyArray_New(&PyArray_Type,nd,dims.data(),
+            Fiber::ScalarTraits<ValueType>::NumpyTypeNum,
+            NULL,m_mat.memptr(),0,NPY_ARRAY_F_CONTIGUOUS,NULL);
+
+
+
 }
 
 #ifdef WITH_TRILINOS

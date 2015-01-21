@@ -9,6 +9,7 @@ from cython.operator cimport dereference as deref
 from bempp.utils.enum_types cimport TranspositionMode
 cimport bempp.utils.enum_types as enums
 from bempp.utils.byte_conversion import convert_to_bytes
+from bempp.utils cimport shared_ptr, static_pointer_cast
 % for pyvalue in dtypes:
 from bempp.utils.armadillo cimport armadillo_to_np_${pyvalue}
 % endfor
@@ -34,16 +35,16 @@ cdef class DiscreteBoundaryOperatorBase:
         raise NotImplementedError("Method _apply_${pyvalue} is not implemented.")
 % endfor
 
-    cpdef np.ndarray as_matrix(self):
+    def as_matrix(self):
 
         return self._as_matrix()
 
-    cpdef np.ndarray _as_matrix(self):
+    def _as_matrix(self):
 
         raise NotImplementedError("Method not implemented.")
 
 
-    cpdef object apply(self,np.ndarray x,np.ndarray y,object transpose,object alpha, object beta):
+    def apply(self,np.ndarray x,np.ndarray y,object transpose,object alpha, object beta):
 
         if not (x.dtype==self.dtype and y.dtype==self.dtype):
             raise ValueError("Wrong dtype of input arrays")
@@ -53,7 +54,7 @@ cdef class DiscreteBoundaryOperatorBase:
 
 % for pyvalue,cyvalue in dtypes.items():
 
-        if self._value_type == "${pyvalue}":
+        if self.dtype == "${pyvalue}":
             self._apply_${pyvalue}(transposition_mode(convert_to_bytes(transpose)),
                     x,y,alpha,beta)
             return None
@@ -61,6 +62,9 @@ cdef class DiscreteBoundaryOperatorBase:
 
 
     def matvec(self,np.ndarray x):
+
+        if self.dtype in ['float32','float64'] and np.iscomplexobj(x):
+            return self*np.real(x)+1j*(self*np.imag(x))
 
         cdef np.ndarray x_in
         cdef np.ndarray y_inout
@@ -140,14 +144,14 @@ cdef class DiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
             cdef unsigned int cols
 
 % for pyvalue,cyvalue in dtypes.items():
-            if self._value_type=="${pyvalue}":
+            if self.dtype=="${pyvalue}":
                 rows = deref(self._impl_${pyvalue}_).rowCount()
                 cols = deref(self._impl_${pyvalue}_).columnCount()
                 return (rows,cols)
 % endfor
             raise ValueError("Unknown value type")
     
-    cpdef np.ndarray _as_matrix(self):
+    def _as_matrix(self):
 
 % for pyvalue in dtypes:
 
@@ -167,10 +171,6 @@ cdef class DiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
 % endfor
 
         
-
-
-
-
 % for pyvalue,cyvalue in dtypes.items():
     cdef void _apply_${pyvalue}(self,
             TranspositionMode trans, 
@@ -253,7 +253,7 @@ cdef class _ScaledDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
 
         pass
 
-    cpdef np.ndarray _as_matrix(self):
+    def _as_matrix(self):
 
 % for pyvalue in dtypes:
         if self._value_type=="${pyvalue}":
@@ -305,7 +305,7 @@ cdef class _SumDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
 
             return self.op1.shape
 
-    cpdef np.ndarray _as_matrix(self):
+    def _as_matrix(self):
 
         return self.op1.as_matrix()+self.op2.as_matrix()
 
@@ -345,7 +345,7 @@ cdef class _ProductDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
     def __init__(self,DiscreteBoundaryOperatorBase op1, DiscreteBoundaryOperatorBase op2):
         pass
 
-    cpdef np.ndarray _as_matrix(self):
+    def _as_matrix(self):
         return self.op1.as_matrix()*self.op2.as_matrix()
 
     property shape:
@@ -373,4 +373,124 @@ cdef class _ProductDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
       else:
         raise ValueError("Unknown transposition mode")
 % endfor
+
+cdef class SparseDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
+
+    def __cinit__(self,op):
+        pass
+
+    def __init__(self,op):
+        from scipy.sparse import csr_matrix
+
+        if not isinstance(op,csr_matrix):
+            raise ValueError("op must be of type scipy.sparse.csr.csr_matrix")
+
+        self._op = op
+        self._op_transpose = None
+        self._value_type = self._op.dtype
+
+    def _as_matrix(self):
+
+        return self.sparsesparse_operatorerator.todense()
+
+    def apply(self,np.ndarray x, np.ndarray y, object transpose, object alpha, object beta):
+
+        if not (x.dtype==self.dtype and y.dtype==self.dtype):
+            raise ValueError("Wrong dtype of input arrays")
+
+        if beta==0:
+            y[:] = np.zeros_like(y)
+
+        if transpose=='no_transpose':
+            y[:] = beta*y+alpha*self.sparse_operator*x
+        elif transpose=='conjugate':
+            y[:] = beta*y+alpha*np.conjugate(self.sparse_operator*np.conjugate(x))
+        elif transpose=='transpose':
+            if self._op_transpose is None:
+                self._op_transpose = self.sparse_operator.T
+            y[:] = beta*y+alpha*self._op_transpose*x
+        elif transpose=='conjugate_tranpsose':
+            if self._op_transpose is None:
+                self._op_transpose = self.sparse_operator.T
+            y[:] = beta*y+alpha*np.conjugate(self._op_transpose*np.conjugate(x))
+        else:
+            ValueError('Unknown transposition mode')
+
+    def __add__(self,DiscreteBoundaryOperatorBase other):
+
+        if isinstance(other,SparseDiscreteBoundaryOperator):
+            return SparseDiscreteBoundaryOperator(self.sparse_operator+other.sparse_operator)
+
+        else:
+            return super(SparseDiscreteBoundaryOperator,self).__add__(other)
+
+    def __mul__(self,object x):
+
+        if not isinstance(self,SparseDiscreteBoundaryOperator):
+            return x*self
+
+        if np.isscalar(x):
+            return SparseDiscreteBoundaryOperator(x*self.sparse_operator)
+        return super(SparseDiscreteBoundaryOperator,self).__mul__(x)
+
+    def __neg__(self):
+
+        return SparseDiscreteBoundaryOperator(-self.sparse_operator)
+
+
+    def __sub__(self,other):
+
+        if isinstance(other,SparseDiscreteBoundaryOperator):
+            return SparseDiscreteBoundaryOperator(self.sparse_operator-other.sparse_operator)
+
+        else:
+            return super(SparseDiscreteBoundaryOperator,self).__sub__(other)
+
+    def __getitem__(self,key):
+
+        return self.sparse_operator[key]
+
+    property sparse_operator:
+        """ The SciPy sparse matrix representation of the operator """
+
+        def __get__(self):
+            return self._op
+
+    property shape:
+
+        def __get__(self):
+            return self._op.shape
+
+    property dtype:
+        def __get__(self):
+            return self._op.dtype
+
+cdef class DenseDiscreteBoundaryOperator(DiscreteBoundaryOperator):
+
+
+    def __cinit__(self):
+        pass
+
+    def __init__(self):
+        self._array_view = None
+
+    cdef object _init_array_view(self):
+        """ Initialize the view on the dense operator via a Numpy Array """
+        if self._array_view is not None:
+            return
+% for pyvalue,cyvalue in dtypes.items():
+        if self.dtype=="${pyvalue}":
+            self._array_view = py_array_from_dense_operator[${cyvalue}](self._impl_${pyvalue}_)
+            return
+% endfor
+
+        raise ValueError("Unknown data type")
+
+
+    def __getitem__(self,key):
+        self._init_array_view()
+        return self._array_view[key]
+
+
+
 

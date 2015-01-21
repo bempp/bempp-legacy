@@ -103,7 +103,10 @@ set(BEMPP_INCLUDE_DIRS
    ${Trilinos_INCLUDE_DIRS}
    ${Trilinos_TPL_INCLUDE_DIRS}
    ${CAIRO_INCLUDE_DIRS}
+   ${PYTHON_INCLUDE_DIR}
+   ${NUMPY_INCLUDE_DIRS}
 )
+
 foreach(component Boost BLAS LAPACK ARMADILLO TBB ALUGrid)
     if(${component}_INCLUDE_DIR)
         list(APPEND BEMPP_INCLUDE_DIRS ${${component}_INCLUDE_DIR})
@@ -122,6 +125,7 @@ add_to_ld_path(
     ${TBB_MALLOC_LIBRARY}
     ${TBB_MALLOC_LIBRARY_DEBUG}
     ${CAIRO_LIBRARIES}
+    ${PYTHON_LIBRARY}
 )
 
 lookup_python_package(Cython VERSION 0.21 REQUIRED PATH "${EXTERNAL_ROOT}/python")
