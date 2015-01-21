@@ -23,10 +23,10 @@ To build and install BEM++ you will need to have the following installed:
 Obtaining the Code
 ------------------
 
-The code is available from <https://github.com/bempp/bempp>. You can
+The code is available from https://github.com/bempp/bempp. You can
 get the latest stable version be executing::
 
-    .. git clone https://github.com/bempp/bempp.git
+    git clone https://github.com/bempp/bempp.git
 
 Compiling
 ---------
@@ -34,17 +34,17 @@ Compiling
 To compile BEM++, navigate to the directory where the source code has
 downloaded::
 
-    ..cd bempp
+    cd bempp
 
 then make a folder called build and navigate into it::
 
-    ..mkdir build
-    ..cd build
+    mkdir build
+    cd build
 
 BEM++ will compile in this directory. Next, make the configuration file
 for the build with cmake::
 
-    ..cmake ..
+    cmake ..
 
 At this point, you can edit to locations of libraries by editing
 CMakeCache.txt. Most importantly, make sure that the PYTHON_EXECUTABLE,
@@ -55,7 +55,7 @@ cmake within a python `virtual environment
 
 Next, compile the BEM++ library::
 
-    ..make
+    make
 
 The installer will download any dependencies you do not have.
 
@@ -67,17 +67,17 @@ Running BEM++
 To run BEM++ from Python, run the localhost.sh script in the build
 directory::
 
-    .. ./localhost.sh
+    ./localhost.sh
 
 You may find it useful to add an alias to this to your .bash_aliases
 file::
 
-    ..nano ~/.bash_rc
+    nano ~/.bash_rc
     
 then add the following lines::
 
-    ..alias bempp="/home/matt/source/bempp/build/localpython.sh"
-    ..alias ibempp="/home/matt/source/bempp/build/localpython.sh -m IPython"
+    alias bempp="/home/matt/source/bempp/build/localpython.sh"
+    alias ibempp="/home/matt/source/bempp/build/localpython.sh -m IPython"
 
 then press Ctrl+o to save then Ctrl+x to exit.
 
