@@ -35,8 +35,7 @@ class PyInit {
 public:
   PyInit() : m_pyFinalize(false) {
     if (!Py_IsInitialized()) {
-      Py_SetProgramName(PYTHON_EXE_NAME);  
-      std::wcout << Py_GetProgramName() << std::endl;
+      Py_SetPythonHome(PYTHON_HOME_NAME);  
       Py_Initialize();
       PyEval_InitThreads();
       m_pyFinalize = true;

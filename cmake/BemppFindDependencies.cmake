@@ -27,10 +27,16 @@ include(lapack_and_blas)
 # Look for python libraries corresponding to the python interpreter
 # This step is likely not compatible with (automatic) cross-compilation
 find_package(CoherentPython REQUIRED)
+# Get Python home directory
+include(CallPython)
+call_python(PYTHON_HOME "import sys; print(sys.prefix)")
+
 find_package(Sphinx)
 if (WITH_CUDA)
    find_package(CUDA)
 endif ()
+
+
 
 list(INSERT CMAKE_LOOKUP_PATH 0 ${PROJECT_SOURCE_DIR}/cmake/lookups)
 if(WITH_ALUGRID)

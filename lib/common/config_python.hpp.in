@@ -3,6 +3,6 @@
 #define CONFIG_PYTHON_HPP
 
 
-wchar_t* PYTHON_EXE_NAME = L"@PYTHON_EXECUTABLE@";
+wchar_t* PYTHON_HOME_NAME = L"@PYTHON_HOME@";
 
 #endif
