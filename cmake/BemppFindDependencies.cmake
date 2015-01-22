@@ -124,8 +124,6 @@ add_to_ld_path(
     ${TBB_LIBRARY_DEBUG}
     ${TBB_MALLOC_LIBRARY}
     ${TBB_MALLOC_LIBRARY_DEBUG}
-    ${CAIRO_LIBRARIES}
-    ${PYTHON_LIBRARY}
 )
 
 lookup_python_package(Cython VERSION 0.21 REQUIRED PATH "${EXTERNAL_ROOT}/python")

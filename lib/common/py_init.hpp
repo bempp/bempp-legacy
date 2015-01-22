@@ -18,7 +18,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+
 #include <Python.h>
+#define PY_ARRAY_UNIQUE_SYMBOL bempp_ARRAY_API
+#include "numpy/arrayobject.h"
+
 #include <iostream>
 
 #ifndef PY_INIT_HPP
@@ -33,14 +37,22 @@ public:
    m_pyFinalize(false) {
     if (!Py_IsInitialized()) {
       Py_Initialize();
+      PyEval_InitThreads();
       m_pyFinalize = true;
+      numpy_init();
     }
-  }
+   }
+  
   ~PyInit() {
       if (Py_IsInitialized() && m_pyFinalize) Py_Finalize();
   }
 
 private:
+
+  void* numpy_init() {
+      import_array();
+  }
+
   bool m_pyFinalize;
   PyInit(const PyInit &other);
   const PyInit &operator=(const PyInit &other);

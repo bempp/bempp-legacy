@@ -29,4 +29,9 @@
 #define DUNE_COMMON_FIELDVECTOR_SIZE_IS_METHOD 1
 #include <dune_config.h>
 
+#include <Python.h>
+#define NO_IMPORT_ARRAY
+#define PY_ARRAY_UNIQUE_SYMBOL bempp_ARRAY_API
+#include "numpy/arrayobject.h"
+
 #endif

@@ -29,8 +29,6 @@
 
 #include "../common/shared_ptr.hpp"
 
-#include <Python.h>
-
 #ifdef WITH_TRILINOS
 #include <Teuchos_RCP.hpp>
 #include <Thyra_SpmdVectorSpaceBase_decl.hpp>

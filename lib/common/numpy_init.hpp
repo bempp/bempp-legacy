@@ -28,12 +28,16 @@ namespace {
 
 static class InitializeNumpy {
 public:
-  InitializeNumpy() { init(); }
+  InitializeNumpy() { 
+      PyGILState_STATE gstate = PyGILState_Ensure();
+      init();
+      PyGILState_Release(gstate); }
 
 private:
 #if PY_MAJOR_VERSION >= 3
   void *init() { 
-      import_array(); }
+      import_array();
+       }
 #else
   void init() { import_array(); }
 #endif
