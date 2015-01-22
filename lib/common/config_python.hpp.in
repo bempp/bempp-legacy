@@ -1,0 +1,8 @@
+
+#ifndef CONFIG_PYTHON_HPP
+#define CONFIG_PYTHON_HPP
+
+
+wchar_t* PYTHON_EXE_NAME = L"@PYTHON_EXECUTABLE@";
+
+#endif

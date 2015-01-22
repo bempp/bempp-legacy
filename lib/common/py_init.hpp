@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-
+#include "bempp/common/config_python.hpp"
 #include <Python.h>
 #define PY_ARRAY_UNIQUE_SYMBOL bempp_ARRAY_API
 #include "numpy/arrayobject.h"
@@ -33,25 +33,24 @@ namespace Bempp {
 class PyInit {
 
 public:
-  PyInit():
-   m_pyFinalize(false) {
+  PyInit() : m_pyFinalize(false) {
     if (!Py_IsInitialized()) {
+      Py_SetProgramName(PYTHON_EXE_NAME);  
+      std::wcout << Py_GetProgramName() << std::endl;
       Py_Initialize();
       PyEval_InitThreads();
       m_pyFinalize = true;
-      numpy_init();
     }
-   }
-  
+    numpy_init();
+  }
+
   ~PyInit() {
-      if (Py_IsInitialized() && m_pyFinalize) Py_Finalize();
+    if (Py_IsInitialized() && m_pyFinalize)
+      Py_Finalize();
   }
 
 private:
-
-  void* numpy_init() {
-      import_array();
-  }
+  void *numpy_init() { import_array(); }
 
   bool m_pyFinalize;
   PyInit(const PyInit &other);

@@ -87,9 +87,12 @@ PyObject* DiscreteDenseBoundaryOperator<ValueType>::asNumpyObject() const {
     int nd = 2;
     std::array<npy_intp,2> dims {this->rowCount(),this->columnCount()};
 
+    PyGILState_STATE gstate;
+    gstate = PyGILState_Ensure(); 
     PyObject* out = PyArray_New(&PyArray_Type,nd,dims.data(),
             Fiber::ScalarTraits<ValueType>::NumpyTypeNum,
             NULL,m_mat.memptr(),0,NPY_ARRAY_F_CONTIGUOUS,NULL);
+    PyGILState_Release(gstate);
     return out;
 
 }

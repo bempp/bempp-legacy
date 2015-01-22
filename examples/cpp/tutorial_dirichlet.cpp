@@ -112,6 +112,7 @@ int main()
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(params, meshFile);
+    
 
     // Initialize the spaces
 
