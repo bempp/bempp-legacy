@@ -93,7 +93,7 @@ double zRayIntersectsTriangle(
         return 0.;
     else { // ray intersection
         for (int i = 0; i < 3; ++i)
-            intersection[i] = v1[i] + u * e1[i] + v * e2[i];
+            intersection[i] = v0[i] + u * e1[i] + v * e2[i];
 
         if ((u == 0. && v == 0.) || (u == 0. && v == 1.) || (u == 1. && v == 0.))
             // vertex
