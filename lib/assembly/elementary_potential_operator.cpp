@@ -27,6 +27,7 @@
 #include "interpolated_function.hpp"
 #include "local_assembler_construction_helper.hpp"
 #include "discrete_null_boundary_operator.hpp"
+#include "dense_global_assembler.hpp"
 
 #include "../common/shared_ptr.hpp"
 
@@ -290,91 +291,9 @@ ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
         const Space<BasisFunctionType> &space,
         const arma::Mat<CoordinateType> &evaluationPoints,
         LocalAssembler &assembler, const EvaluationOptions &options) const {
-  throw std::runtime_error(
-      "ElementaryPotentialOperator::"
-      "assembleOperatorInDenseMode(): not implemented yet");
-  //    const Space<BasisFunctionType>& testSpace = *this->dualToRange();
-  //    const Space<BasisFunctionType>& trialSpace = *this->domain();
 
-  //    // Global DOF indices corresponding to local DOFs on elements
-  //    std::vector<std::vector<GlobalDofIndex> > testGlobalDofs,
-  // trialGlobalDofs;
-  //    std::vector<std::vector<BasisFunctionType> > testLocalDofWeights,
-  //        trialLocalDofWeights;
-  //    gatherGlobalDofs(testSpace, testGlobalDofs, testLocalDofWeights);
-  //    if (&testSpace == &trialSpace) {
-  //        trialGlobalDofs = testGlobalDofs;
-  //        trialLocalDofWeights = testLocalDofWeights;
-  //    } else
-  //        gatherGlobalDofs(trialSpace, trialGlobalDofs, trialLocalDofWeights);
-  //    const size_t testElementCount = testGlobalDofs.size();
-  //    const size_t trialElementCount = trialGlobalDofs.size();
-
-  //    // Make a vector of all element indices
-  //    std::vector<int> testIndices(testElementCount);
-  //    for (int i = 0; i < testElementCount; ++i)
-  //        testIndices[i] = i;
-
-  //    // Create the operator's matrix
-  //    arma::Mat<ResultType> result(testSpace.globalDofCount(),
-  //                                 trialSpace.globalDofCount());
-  //    result.fill(0.);
-
-  //    typedef DenseWeakFormAssemblerLoopBody<BasisFunctionType, ResultType>
-  // Body;
-  //    typename Body::MutexType mutex;
-
-  //    const ParallelizationOptions& parallelOptions =
-  //            options.parallelizationOptions();
-  //    int maxThreadCount = 1;
-  //    if (!parallelOptions.isOpenClEnabled()) {
-  //        if (parallelOptions.maxThreadCount() ==
-  // ParallelizationOptions::AUTO)
-  //            maxThreadCount = tbb::task_scheduler_init::automatic;
-  //        else
-  //            maxThreadCount = parallelOptions.maxThreadCount();
-  //    }
-  //    tbb::task_scheduler_init scheduler(maxThreadCount);
-  //    {
-  //        Fiber::SerialBlasRegion region;
-  //        tbb::parallel_for(tbb::blocked_range<size_t>(0, trialElementCount),
-  //                          Body(testIndices, testGlobalDofs, trialGlobalDofs,
-  //                               testLocalDofWeights, trialLocalDofWeights,
-  //                               assembler, result, mutex));
-  //    }
-
-  //    //// Old serial code (TODO: decide whether to keep it behind e.g.
-  // #ifndef PARALLEL)
-  //    //    std::vector<arma::Mat<ValueType> > localResult;
-  //    //    // Loop over trial elements
-  //    //    for (int trialIndex = 0; trialIndex < trialElementCount;
-  // ++trialIndex)
-  //    //    {
-  //    //        // Evaluate integrals over pairs of the current trial element
-  // and
-  //    //        // all the test elements
-  //    //        assembler.evaluateLocalWeakForms(TEST_TRIAL, testIndices,
-  // trialIndex,
-  //    //                                         ALL_DOFS, localResult);
-
-  //    //        // Loop over test indices
-  //    //        for (int testIndex = 0; testIndex < testElementCount;
-  // ++testIndex)
-  //    //            // Add the integrals to appropriate entries in the
-  // operator's matrix
-  //    //            for (int trialDof = 0; trialDof <
-  // trialGlobalDofs[trialIndex].size(); ++trialDof)
-  //    //                for (int testDof = 0; testDof <
-  // testGlobalDofs[testIndex].size(); ++testDof)
-  //    //                result(testGlobalDofs[testIndex][testDof],
-  //    //                       trialGlobalDofs[trialIndex][trialDof]) +=
-  //    //                        localResult[testIndex](testDof, trialDof);
-  //    //    }
-
-  //    // Create and return a discrete operator represented by the matrix that
-  //    // has just been calculated
-  //    return std::unique_ptr<DiscreteBoundaryOperator<ResultType> >(
-  //                new DiscreteDenseBoundaryOperator<ResultType>(result));
+    return DenseGlobalAssembler<BasisFunctionType, ResultType>::assemblePotentialOperator(
+            evaluationPoints, space, assembler, options);
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
