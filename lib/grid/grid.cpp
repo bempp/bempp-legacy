@@ -167,7 +167,7 @@ std::vector<bool> areInside(const Grid& grid, const arma::Mat<double>& points)
                                            intersection.colptr(0)) > 0.)
                     if (isNew(intersection, intersections))
                         intersections.push_back(intersection);
-        result[pt] = intersections.size();
+        result[pt] = intersections.size() % 2 == 1;
     }
     return result;
 }
