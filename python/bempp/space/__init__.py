@@ -1,7 +1,7 @@
 __all__=['function_space']
 from . import space
 
-def function_space(grid, kind, order, dtype='float64'):
+def function_space(grid, kind, order):
     """ 
 
     Return a space defined over a given grid.
@@ -20,10 +20,6 @@ def function_space(grid, kind, order, dtype='float64'):
     order : int
         The order of the space, e.g. 0 for piecewise const, 1 for
         piecewise linear functions.
-
-    dtype : np.dtype, optional
-        The data type of values of the basis functions in the space.
-        The default is 'np.float64'.
 
     Notes
     -----
@@ -55,16 +51,16 @@ def function_space(grid, kind, order, dtype='float64'):
         if not (order>=1 and order <=10):
             raise ValueError("Order must be between 1 and 10")
         if (order==1):
-            s = space.PiecewiseLinearContinuousScalarSpace(grid,order,dtype)
+            s = space.PiecewiseLinearContinuousScalarSpace(grid,order)
         else:
-            s = space.PiecewisePolynomialContinuousScalarSpace(grid,order,dtype)
+            s = space.PiecewisePolynomialContinuousScalarSpace(grid,order)
     elif kind=="DP":
         if not (order>=0 and order <=10):
             raise ValueError("Order must be between 0 and 10")
         if (order==0):
-            s = space.PiecewiseConstantScalarSpace(grid,order,dtype)
+            s = space.PiecewiseConstantScalarSpace(grid,order)
         else:
-            s = space.PiecewisePolynomialDiscontinuousScalarSpace(grid,order,dtype)
+            s = space.PiecewisePolynomialDiscontinuousScalarSpace(grid,order)
     else:
         raise ValueError("Unknown kind")
 

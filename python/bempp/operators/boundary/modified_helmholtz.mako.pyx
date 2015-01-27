@@ -29,7 +29,6 @@ cimport numpy as np
 def ${pyname}(Space domain, Space range, Space dual_to_range,
         object wave_number,
         object label="", object symmetry="auto_symmetry", 
-        object result_type=None,
         object parameter_list=None):
     """
 
@@ -39,7 +38,6 @@ def ${pyname}(Space domain, Space range, Space dual_to_range,
 
     cdef ParameterList parameters
     cdef GeneralBoundaryOperator bop 
-
 
 % for pyresult,cyresult in dtypes.items():
     cdef ${scalar_cython_type(cyresult)} cy_wave_number_${pyresult}
@@ -56,30 +54,16 @@ def ${pyname}(Space domain, Space range, Space dual_to_range,
             raise ValueError("parameter_list must be of type bempp.ParameterList")
         parameters = parameter_list
 
-    actual_result_type = None
     basis_type = domain.dtype
 
-    if result_type is None:
-        if np.iscomplexobj(wave_number):
-            if basis_type=='float32':
-                actual_result_type = 'complex64'
-            elif basis_type=='float64':
-                actual_result_type = 'complex128'
-            else:
-                raise ValueError("Only 'float32' and 'float64' are supported as basis types.")
-        else:
-            if basis_type=='float32':
-                actual_result_type = 'float32'
-            elif basis_type=='float64':
-                actual_result_type = 'float64'
-            else:
-                raise ValueError("Only 'float32' and 'float64' are supported as basis types.")
+    result_type = None
+
+    if np.iscomplexobj(wave_number):
+        result_type = 'complex128'
     else:
-        actual_result_type = result_type
+        result_type = 'float64'
 
-
-
-    bop = GeneralBoundaryOperator(basis_type=basis_type,result_type=actual_result_type)
+    bop = GeneralBoundaryOperator(basis_type=basis_type,result_type=result_type)
 
 
 % for pybasis, cybasis in dtypes.items():
@@ -87,7 +71,7 @@ def ${pyname}(Space domain, Space range, Space dual_to_range,
 %         if pyresult in compatible_dtypes[pybasis]:
 
 
-    if basis_type=="${pybasis}" and actual_result_type=="${pyresult}":
+    if basis_type=="${pybasis}" and result_type=="${pyresult}":
 
         cy_wave_number_${pyresult} = wave_number
         c_wave_number_${pyresult} = deref(<${cyresult}*>&cy_wave_number_${pyresult})

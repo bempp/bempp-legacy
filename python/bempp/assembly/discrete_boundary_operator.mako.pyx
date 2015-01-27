@@ -13,6 +13,7 @@ from bempp.utils cimport shared_ptr, static_pointer_cast
 % for pyvalue in dtypes:
 from bempp.utils.armadillo cimport armadillo_to_np_${pyvalue}
 % endfor
+from bempp.utils import combined_type
 cimport numpy as np
 import numpy as np
 cimport cython
@@ -22,70 +23,19 @@ cdef class DiscreteBoundaryOperatorBase:
 
     property dtype:
         def __get__(self):
-            return self._value_type
+            return self._dtype
 
-% for pyvalue,cyvalue in dtypes.items():
-    cdef void _apply_${pyvalue}(self,
-            TranspositionMode trans, 
-            np.ndarray[${scalar_cython_type(cyvalue)},ndim=2,mode='fortran'] x_in, 
-            np.ndarray[${scalar_cython_type(cyvalue)},ndim=2,mode='fortran'] y_inout, 
-            ${scalar_cython_type(cyvalue)} alpha,
-            ${scalar_cython_type(cyvalue)} beta):
-
-        raise NotImplementedError("Method _apply_${pyvalue} is not implemented.")
-% endfor
+    property shape:
+        def __get__(self):
+            raise NotImplementedError("Method not implemented.")
 
     def as_matrix(self):
 
-        return self._as_matrix()
-
-    def _as_matrix(self):
-
         raise NotImplementedError("Method not implemented.")
 
+    def matvec(self):
 
-    def apply(self,np.ndarray x,np.ndarray y,object transpose,object alpha, object beta):
-
-        if not (x.dtype==self.dtype and y.dtype==self.dtype):
-            raise ValueError("Wrong dtype of input arrays")
-
-        if not x.flags['F_CONTIGUOUS'] or not y.flags['F_CONTIGUOUS']:
-            raise ValueError("Input arrays must be in Fortran order")
-
-% for pyvalue,cyvalue in dtypes.items():
-
-        if self.dtype == "${pyvalue}":
-            self._apply_${pyvalue}(transposition_mode(convert_to_bytes(transpose)),
-                    x,y,alpha,beta)
-            return None
-% endfor
-
-
-    def matvec(self,np.ndarray x):
-
-        if self.dtype in ['float32','float64'] and np.iscomplexobj(x):
-            return self*np.real(x)+1j*(self*np.imag(x))
-
-        cdef np.ndarray x_in
-        cdef np.ndarray y_inout
-
-        cdef int rows = self.shape[0]
-        cdef int cols = self.shape[1]
-
-        if (x.ndim==1):
-            x_in = x.reshape((-1,1),order='F').astype(self.dtype,
-                    order='F',casting='safe',copy=False)
-        elif (x.ndim==2):
-            x_in = x.astype(self.dtype,order='F',casting='safe',copy=False)
-        else:
-            raise ValueError('x must have at most two dimensions')
-
-        y = np.zeros((rows,x_in.shape[1]),dtype=self.dtype,order='F')
-
-        self.apply(x_in,y,'no_transpose',1.0,0.0)
-        if (x.ndim==1):
-            y = y.ravel()
-        return y
+        raise NotImplementedError("Method not implemented.")
 
     def matmat(self,np.ndarray x):
 
@@ -151,7 +101,7 @@ cdef class DiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
 % endfor
             raise ValueError("Unknown value type")
     
-    def _as_matrix(self):
+    def as_matrix(self):
 
 % for pyvalue in dtypes:
 
@@ -170,6 +120,48 @@ cdef class DiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
 
 % endfor
 
+    def _apply(self,np.ndarray x,np.ndarray y,object transpose,object alpha, object beta):
+
+        if not (x.dtype==self.dtype and y.dtype==self.dtype):
+            raise ValueError("Wrong dtype of input arrays")
+
+        if not x.flags['F_CONTIGUOUS'] or not y.flags['F_CONTIGUOUS']:
+            raise ValueError("Input arrays must be in Fortran order")
+
+% for pyvalue,cyvalue in dtypes.items():
+
+        if self.dtype == "${pyvalue}":
+            self._apply_${pyvalue}(transposition_mode(convert_to_bytes(transpose)),
+                    x,y,alpha,beta)
+            return None
+% endfor
+
+
+    def matvec(self,np.ndarray x):
+
+        if self.dtype in 'float64' and np.iscomplexobj(x):
+            return self*np.real(x)+1j*(self*np.imag(x))
+
+        cdef np.ndarray x_in
+        cdef np.ndarray y_inout
+
+        cdef int rows = self.shape[0]
+        cdef int cols = self.shape[1]
+
+        if (x.ndim==1):
+            x_in = x.reshape((-1,1),order='F').astype(self.dtype,
+                    order='F',casting='safe',copy=False)
+        elif (x.ndim==2):
+            x_in = x.astype(self.dtype,order='F',casting='safe',copy=False)
+        else:
+            raise ValueError('x must have at most two dimensions')
+
+        y = np.zeros((rows,x_in.shape[1]),dtype=self.dtype,order='F')
+
+        self._apply(x_in,y,'no_transpose',1.0,0.0)
+        if (x.ndim==1):
+            y = y.ravel()
+        return y
         
 % for pyvalue,cyvalue in dtypes.items():
     cdef void _apply_${pyvalue}(self,
@@ -208,9 +200,6 @@ cdef class DiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
             raise ValueError("Unknown transposition mode")
 
 
-
-
-
 % if pyvalue=='complex128' or pyvalue=='complex64':
         cdef ${cyvalue} cpp_alpha = ${cyvalue}(alpha.real,alpha.imag)
         cdef ${cyvalue} cpp_beta = ${cyvalue}(beta.real,beta.imag)
@@ -233,146 +222,91 @@ cdef class DiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
 
 
 cdef class _ScaledDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
-    cdef DiscreteBoundaryOperatorBase op
-
-% for pyvalue,cyvalue in dtypes.items():
-    cdef ${scalar_cython_type(cyvalue)} alpha_${pyvalue}
-% endfor    
+    cdef DiscreteBoundaryOperatorBase _op
+    cdef object _alpha
 
     def __cinit__(self,DiscreteBoundaryOperatorBase op,object alpha):
-
-        self.op = op
-        self._value_type = op._value_type
-% for pyvalue in dtypes:
-        if self._value_type=="${pyvalue}":
-            self.alpha_${pyvalue} = alpha
-% endfor
-
-
-    def __init__(self,object op, object alpha):
-
         pass
 
-    def _as_matrix(self):
+    def __init__(self,DiscreteBoundaryOperatorBase op, object alpha):
 
-% for pyvalue in dtypes:
-        if self._value_type=="${pyvalue}":
-            return self.alpha_${pyvalue}*self.op.as_matrix()
-% endfor 
-        raise ValueError("Object has unknown dtype")
+        self._op = op
+        self._alpha = alpha
+        self._dtype = combined_type(type(alpha),op.dtype)
+
+    def as_matrix(self):
+
+        return self._alpha*self._op.as_matrix()
 
     property shape:
 
         def __get__(self):
             return self.op.shape
 
-% for pyvalue,cyvalue in dtypes.items():
-    cdef void _apply_${pyvalue}(self,
-            TranspositionMode trans, 
-            np.ndarray[${scalar_cython_type(cyvalue)},ndim=2,mode='fortran'] x_in, 
-            np.ndarray[${scalar_cython_type(cyvalue)},ndim=2,mode='fortran'] y_inout, 
-            ${scalar_cython_type(cyvalue)} alpha,
-            ${scalar_cython_type(cyvalue)} beta):
+    def matvec(self,np.ndarray x):
 
-
-        self.op._apply_${pyvalue}(trans,x_in,y_inout,self.alpha_${pyvalue}*alpha,beta)
-% endfor
+        return self._alpha*self._op*x
 
 cdef class _SumDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
 
-    cdef DiscreteBoundaryOperatorBase op1
-    cdef DiscreteBoundaryOperatorBase op2
+    cdef DiscreteBoundaryOperatorBase _op1
+    cdef DiscreteBoundaryOperatorBase _op2
 
     def __cinit__(self,DiscreteBoundaryOperatorBase op1, DiscreteBoundaryOperatorBase op2):
+        pass
 
+    def __init__(self,DiscreteBoundaryOperatorBase op1, DiscreteBoundaryOperatorBase op2):
         if not op1.shape == op2.shape:
             raise ValueError("Both operators must have the same shape")
 
-        if not op1.dtype==op2.dtype:
-            raise ValueError("Both operators must have the same type")
+        self._op1 = op1
+        self._op2 = op2
 
-        self.op1 = op1
-        self.op2 = op2
-
-        self._value_type = self.op1._value_type
-
-    def __init__(self,DiscreteBoundaryOperatorBase op1, DiscreteBoundaryOperatorBase op2):
-        pass
+        self._dtype = combined_type(self._op1.dtype,self._op2.dtype)
 
     property shape:
 
         def __get__(self):
 
-            return self.op1.shape
+            return self._op1.shape
 
-    def _as_matrix(self):
+    def as_matrix(self):
 
-        return self.op1.as_matrix()+self.op2.as_matrix()
+        return self._op1.as_matrix()+self._op2.as_matrix()
 
+    def matvec(self,np.ndarray x):
 
-% for pyvalue,cyvalue in dtypes.items():
-    cdef void _apply_${
-  pyvalue}(self,
-            TranspositionMode trans, 
-            np.ndarray[${scalar_cython_type(cyvalue)},ndim=2,mode='fortran'] x_in, 
-            np.ndarray[${scalar_cython_type(cyvalue)},ndim=2,mode='fortran'] y_inout, 
-            ${scalar_cython_type(cyvalue)} alpha,
-            ${scalar_cython_type(cyvalue)} beta):
+        return self._op1*x+self._op2*x
 
-
-        self.op1._apply_${pyvalue}(trans,x_in,y_inout,alpha,beta)
-        self.op2._apply_${pyvalue}(trans,x_in,y_inout,alpha,1.0)
-% endfor
 
 cdef class _ProductDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
 
-    cdef DiscreteBoundaryOperatorBase op1
-    cdef DiscreteBoundaryOperatorBase op2
+    cdef DiscreteBoundaryOperatorBase _op1
+    cdef DiscreteBoundaryOperatorBase _op2
 
     def __cinit__(self,DiscreteBoundaryOperatorBase op1, DiscreteBoundaryOperatorBase op2):
+        pass
 
+    def __init__(self,DiscreteBoundaryOperatorBase op1, DiscreteBoundaryOperatorBase op2):
         if not op1.shape[1]==op2.shape[0]:
             raise ValueError("Incompatible Dimensions.")
 
-        if not op1.dtype==op2.dtype:
-            raise ValueError("Both operators must have the same type")
+        self._op1 = op1
+        self._op2 = op2
 
-        self.op1 = op1
-        self.op2 = op2
+        self._dtype = combined_type(self._op1.dtype,self._op2.dtype)
 
-        self._value_type = op1._value_type
+    def as_matrix(self):
+        return self._op1.as_matrix()*self._op2.as_matrix()
 
-    def __init__(self,DiscreteBoundaryOperatorBase op1, DiscreteBoundaryOperatorBase op2):
-        pass
+    def matvec(self,np.ndarray x):
 
-    def _as_matrix(self):
-        return self.op1.as_matrix()*self.op2.as_matrix()
+        return self._op1*(self._op2*x)
 
     property shape:
 
         def __get__(self):
-            return (self.op1.shape[0],self.op2.shape[1])
-
-
-% for pyvalue,cyvalue in dtypes.items():
-    cdef void _apply_${pyvalue}(self, TranspositionMode trans,
-  np.ndarray[${scalar_cython_type(cyvalue)}, ndim = 2, mode = 'fortran' ] x_in,
-  np.ndarray[${scalar_cython_type(cyvalue)}, ndim = 2, mode = 'fortran' ] y_inout,
-  ${scalar_cython_type(cyvalue)} alpha,${scalar_cython_type(cyvalue)} beta):
-
-      cdef np.ndarray[${scalar_cython_type(cyvalue)}, ndim = 2, mode = 'fortran' ] tmp
-
-      if (trans == enums.no_transpose or trans == enums.conjugate): 
-          tmp = np.zeros((self.op2.shape[0], x_in.shape[1]), dtype = "${pyvalue}",order = 'F') 
-          self.op2._apply_${pyvalue}(trans, x_in, tmp, 1.0, 0.0)
-          self.op1._apply_${pyvalue}(trans, tmp, y_inout, alpha, beta)
-      elif( trans == enums.transpose or trans == enums.conjugate_transpose): 
-          tmp = np.zeros((self.op1.shape[1], x_in.shape[1]), dtype = "${pyvalue}",order = 'F') 
-          self.op1._apply_${pyvalue}(trans, x_in, tmp, 1.0, 0.0)
-          self.op2._apply_${pyvalue}(trans, tmp, y_inout, alpha, beta)
-      else:
-        raise ValueError("Unknown transposition mode")
-% endfor
+            return (self._op1.shape[0],self._op2.shape[1])
 
 cdef class SparseDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
 
@@ -386,35 +320,15 @@ cdef class SparseDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
             raise ValueError("op must be of type scipy.sparse.csr.csr_matrix")
 
         self._op = op
-        self._op_transpose = None
-        self._value_type = self._op.dtype
+        self._dtype = self._op.dtype
 
-    def _as_matrix(self):
+    def as_matrix(self):
 
-        return self.sparsesparse_operatorerator.todense()
+        return self._op.todense()
 
-    def apply(self,np.ndarray x, np.ndarray y, object transpose, object alpha, object beta):
+    def matvec(self,x):
 
-        if not (x.dtype==self.dtype and y.dtype==self.dtype):
-            raise ValueError("Wrong dtype of input arrays")
-
-        if beta==0:
-            y[:] = np.zeros_like(y)
-
-        if transpose=='no_transpose':
-            y[:] = beta*y+alpha*self.sparse_operator*x
-        elif transpose=='conjugate':
-            y[:] = beta*y+alpha*np.conjugate(self.sparse_operator*np.conjugate(x))
-        elif transpose=='transpose':
-            if self._op_transpose is None:
-                self._op_transpose = self.sparse_operator.T
-            y[:] = beta*y+alpha*self._op_transpose*x
-        elif transpose=='conjugate_tranpsose':
-            if self._op_transpose is None:
-                self._op_transpose = self.sparse_operator.T
-            y[:] = beta*y+alpha*np.conjugate(self._op_transpose*np.conjugate(x))
-        else:
-            ValueError('Unknown transposition mode')
+        return self._op*x
 
     def __add__(self,DiscreteBoundaryOperatorBase other):
 
@@ -436,7 +350,6 @@ cdef class SparseDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
     def __neg__(self):
 
         return SparseDiscreteBoundaryOperator(-self.sparse_operator)
-
 
     def __sub__(self,other):
 
@@ -466,7 +379,6 @@ cdef class SparseDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
             return self._op.dtype
 
 cdef class DenseDiscreteBoundaryOperator(DiscreteBoundaryOperator):
-
 
     def __cinit__(self):
         pass

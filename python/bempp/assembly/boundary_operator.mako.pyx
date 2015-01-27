@@ -11,6 +11,7 @@ from discrete_boundary_operator import SparseDiscreteBoundaryOperator
 from bempp.utils.byte_conversion import convert_to_bytes
 from bempp.assembly.grid_function cimport GridFunction
 from bempp.utils cimport shared_ptr,static_pointer_cast
+from bempp.utils import combined_type
 
 from numpy cimport dtype
 
@@ -121,14 +122,13 @@ cdef class GeneralBoundaryOperator(BoundaryOperatorBase):
     def _apply_grid_function(self,GridFunction g):
         if not(self.domain.is_compatible(g.space)):
             raise ValueError("Spaces do not match")
-        if not self.result_type==g.result_type:
-            raise ValueError("Result types do not match")
 
         op_w =  self.weak_form()
         coeffs = g.coefficients
         result_projections = (op_w*coeffs)
         return GridFunction(self.range,dual_space=self.dual_to_range,
-                projections=result_projections,parameter_list=g.parameter_list)
+                projections=result_projections,parameter_list=g.parameter_list,
+                result_type=result_projections.dtype)
 
     def weak_form(self):
         cdef DiscreteBoundaryOperator dbop = DiscreteBoundaryOperator()
@@ -139,7 +139,7 @@ cdef class GeneralBoundaryOperator(BoundaryOperatorBase):
 
         if self.basis_type=="${pybasis}" and self.result_type=="${pyresult}":
             dbop._impl_${pyresult}_.assign(_boundary_operator_variant_weak_form[${cybasis},${cyresult}](self.impl_))
-            dbop._value_type = self.result_type
+            dbop._dtype = self.result_type
             return dbop
 %          endif
 %      endfor
@@ -209,11 +209,9 @@ cdef class _SumBoundaryOperator(BoundaryOperatorBase):
 
     def __cinit__(self,BoundaryOperatorBase op1, BoundaryOperatorBase op2):
 
-        if not (op1._basis_type==op2._basis_type and op1._result_type==op2._result_type):
-            raise ValueError("Operators have different types.")
 
-        self._basis_type = op1._basis_type
-        self._result_type = op2._result_type
+        self._basis_type = combined_type(op1._basis_type,op2._basis_type)
+        self._result_type = combined_type(op1._result_type,op2._result_type)
 
         self.op1 = op1
         self.op2 = op2
@@ -289,7 +287,7 @@ cdef class DenseBoundaryOperator(GeneralBoundaryOperator):
 
         if self.basis_type=="${pybasis}" and self.result_type=="${pyresult}":
             dbop._impl_${pyresult}_.assign(_boundary_operator_variant_weak_form[${cybasis},${cyresult}](self.impl_))
-            dbop._value_type = self.result_type
+            dbop._dtype = self.result_type
             return dbop
 %          endif
 %      endfor

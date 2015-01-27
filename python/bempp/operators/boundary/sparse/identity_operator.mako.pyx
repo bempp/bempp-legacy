@@ -16,7 +16,6 @@ from bempp.common import global_parameters
 
 def identity_operator(Space domain, Space range, Space dual_to_range,
         object label="", object symmetry="auto_symmetry", 
-        object result_type="float64",
         parameter_list=None):
 
     cdef ParameterList parameters
@@ -35,6 +34,8 @@ def identity_operator(Space domain, Space range, Space dual_to_range,
 
 
     basis_type = domain.dtype
+    result_type = 'float64'
+
     bop = SparseBoundaryOperator(basis_type=basis_type,result_type=result_type)
 
 

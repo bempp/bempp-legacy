@@ -24,17 +24,7 @@ cdef extern from "bempp/assembly/py_discrete_operator_support.hpp" namespace "Be
     cdef object py_array_from_dense_operator[VALUE](const shared_ptr[const c_DiscreteBoundaryOperator[VALUE]]&)
 
 cdef class DiscreteBoundaryOperatorBase:
-    cdef object _value_type
-
-% for pyvalue,cyvalue in dtypes.items():
-    cdef void _apply_${pyvalue}(self,
-            TranspositionMode trans, 
-            np.ndarray[${scalar_cython_type(cyvalue)},ndim=2,mode='fortran'] x_in, 
-            np.ndarray[${scalar_cython_type(cyvalue)},ndim=2,mode='fortran'] y_inout, 
-            ${scalar_cython_type(cyvalue)} alpha,
-            ${scalar_cython_type(cyvalue)} beta)
-% endfor
-
+    cdef object _dtype
 
 cdef class DiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
 
@@ -49,12 +39,20 @@ cdef class DiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
             np.ndarray[${scalar_cython_type(cyvalue)},ndim=2,mode='fortran'] y_inout, 
             ${scalar_cython_type(cyvalue)} alpha,
             ${scalar_cython_type(cyvalue)} beta)
+% endfor
+
+% for pyvalue,cyvalue in dtypes.items():
+    cdef void _apply_${pyvalue}(self,
+            TranspositionMode trans, 
+            np.ndarray[${scalar_cython_type(cyvalue)},ndim=2,mode='fortran'] x_in, 
+            np.ndarray[${scalar_cython_type(cyvalue)},ndim=2,mode='fortran'] y_inout, 
+            ${scalar_cython_type(cyvalue)} alpha,
+            ${scalar_cython_type(cyvalue)} beta)
     cdef np.ndarray _as_matrix_${pyvalue}(self)
 % endfor
 
 cdef class SparseDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
     cdef object _op
-    cdef object _op_transpose
 
 cdef class DenseDiscreteBoundaryOperator(DiscreteBoundaryOperator):
     cdef object _array_view

@@ -17,7 +17,6 @@ from bempp.common import global_parameters
 
 def single_layer(Space domain, Space range, Space dual_to_range,
         object label="", object symmetry="auto_symmetry", 
-        object result_type="float64",
         object parameter_list=None):
     """
 
@@ -38,6 +37,7 @@ def single_layer(Space domain, Space range, Space dual_to_range,
             raise ValueError("parameter_list must be of type bempp.ParameterList")
         parameters = parameter_list
 
+    result_type = 'float64'
 
     basis_type = domain.dtype
     bop = GeneralBoundaryOperator(basis_type=basis_type,result_type=result_type)
@@ -63,7 +63,6 @@ def single_layer(Space domain, Space range, Space dual_to_range,
 
 def double_layer(Space domain, Space range, Space dual_to_range,
         object label="", object symmetry="no_symmetry", 
-        object result_type="float64",
         object parameter_list=None):
     """
 
@@ -73,6 +72,8 @@ def double_layer(Space domain, Space range, Space dual_to_range,
 
     cdef ParameterList parameters
     cdef GeneralBoundaryOperator bop 
+
+    result_type = 'float64'
 
     if not len({domain.dtype,range.dtype,dual_to_range.dtype})==1:
         raise ValueError("All spaces must have the same data type")
@@ -110,7 +111,6 @@ def double_layer(Space domain, Space range, Space dual_to_range,
 
 def adjoint_double_layer(Space domain, Space range, Space dual_to_range,
         object label="", object symmetry="no_symmetry", 
-        object result_type="float64",
         object parameter_list=None):
     """
 
@@ -120,6 +120,8 @@ def adjoint_double_layer(Space domain, Space range, Space dual_to_range,
 
     cdef ParameterList parameters
     cdef GeneralBoundaryOperator bop 
+
+    result_type = 'float64'
 
     if not len({domain.dtype,range.dtype,dual_to_range.dtype})==1:
         raise ValueError("All spaces must have the same data type")
@@ -167,6 +169,8 @@ def hypersingular(Space domain, Space range, Space dual_to_range,
 
     cdef ParameterList parameters
     cdef GeneralBoundaryOperator bop 
+
+    result_type = 'float64'
 
     if not len({domain.dtype,range.dtype,dual_to_range.dtype})==1:
         raise ValueError("All spaces must have the same data type")

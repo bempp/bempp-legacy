@@ -9,8 +9,6 @@ from cython.operator cimport dereference as deref
 from libcpp cimport bool as cbool
 from bempp.utils.armadillo cimport armadillo_to_np_float32,armadillo_to_np_float64
 
-
-
 cdef class Space:
     """ Space of functions defined on a grid
 
@@ -150,12 +148,12 @@ cdef class ${class_name}(Space):
         -----
         A space instance should always be created using the function 'bempp.function_space'.
     """
-    def __init__(self, Grid grid not None, order, dtype):
+    def __init__(self, Grid grid not None, order):
 
         from numpy import dtype as np_dtype
         super(${class_name}, self).__init__(grid,order)
 
-        dtype = np_dtype(dtype)
+        dtype = 'float64'
         if dtype not in ${list(dtypes.keys())}:
                 raise TypeError("Unexpected basis type")
 %    for pytype, cytype in dtypes.items():
