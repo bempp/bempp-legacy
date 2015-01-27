@@ -13,7 +13,9 @@ History
 A maintenance release that fixes two issues:
 - A problem with the download of the TBB package (issue #200)
 - A bug in the areInside() function that made it misclassify some points located
-  outside meshes as interior points
+  outside meshes as interior points.
+In addition, the documentation of the RaviartThomas0VectorSpace and Shapeset
+classes has been improved.
 
 2.0.2 (13 October 2014)
 -----------------------
