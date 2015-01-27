@@ -7,6 +7,14 @@ started in October 2011.
 History
 =======
 
+2.0.3 (27 January 2015)
+-----------------------
+
+A maintenance release that fixes two issues:
+- A problem with the download of the TBB package (issue #200)
+- A bug in the areInside() function that made it misclassify some points located
+  outside meshes as interior points
+
 2.0.2 (13 October 2014)
 -----------------------
 
@@ -26,12 +34,12 @@ A maintenance release that fixes the following issues
 - An MKL linking issue introduced in Version 2.0.0
 - Support for Anaconda Python 1.7
 
-
 2.0.0 (27 September 2013)
 -------------------------
 
-This is a major new release. It contains many bugfixes to the 1.9 beta release and supports opposite order preconditioning for Dirichlet and Helmholtz problems.
-
+This is a major new release. It contains many bugfixes to the 1.9 beta release
+and supports opposite order preconditioning for Dirichlet and Helmholtz
+problems.
 
 1.9.2 (7 August 2013)
 --------------------
