@@ -45,7 +45,11 @@ class GridView;
 /** \endcond */
 
 /** \ingroup space
- *  \brief Space of continuous, piecewise linear scalar functions. */
+ *  \brief Space spanned by the lowest order Raviart-Thomas functions.
+ *
+ *  On boundaries between elements, the functions from this space have
+ *  continuous normal components.
+ */
 template <typename BasisFunctionType>
 class RaviartThomas0VectorSpace : public Space<BasisFunctionType>
 {
@@ -58,10 +62,45 @@ public:
     typedef typename Base::CollectionOfBasisTransformations
     CollectionOfBasisTransformations;
 
+    /** \brief Constructor.
+     *        
+     *  \param[in] grid
+     *    Grid on which the functions from the newly constructed space will be
+     *    defined.
+     *  \param[in] putDofsOnBoundaries
+     *    If set to \c false (default), degrees of freedom will not be placed on
+     *    edges lying on boundaries of the grid. This is usually the desired
+     *    behaviour for simulations of open perfectly conducting surfaces
+     *    (sheets). If set to \c true, degrees of freedom will be placed on all
+     *    edges belonging to the chosen segment of the grid. 
+     */
     explicit RaviartThomas0VectorSpace(
             const shared_ptr<const Grid>& grid,
             bool putDofsOnBoundaries = false);
-    RaviartThomas0VectorSpace(
+
+    /** \brief Constructor.
+     *        
+     *  \param[in] grid
+     *    Grid on which the functions from the newly constructed space will be
+     *    defined.
+     *  \param [in] segment
+     *    Segment of the grid on which the space should be defined.
+     *  \param[in] putDofsOnBoundaries
+     *    If set to \c false (default), degrees of freedom will not be placed on
+     *    edges lying on boundaries of the grid. This is usually the desired
+     *    behaviour for simulations of open perfectly conducting surfaces
+     *    (sheets). If set to \c true, degrees of freedom will be placed on all
+     *    edges belonging to the chosen segment of the grid. 
+     *  \param[in] dofMode
+     *    If set to EDGE_ON_SEGMENT (default), degrees of freedom will be placed
+     *    on the edges belonging to \p segment. If set to ELEMENT_ON_SEGMENT,
+     *    degrees of freedom will be placed on the edges adjacent to at least
+     *    one element belonging to \p segment. (This distinction is important
+     *    for example if \p segment was constructed as the intersection of two
+     *    closed domains; such an intersection may contain no elements, but only
+     *    some vertices and edges). 
+     */
+         RaviartThomas0VectorSpace(
             const shared_ptr<const Grid>& grid,
             const GridSegment& segment,
             bool putDofsOnBoundaries = false,
