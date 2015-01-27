@@ -49,6 +49,43 @@ public:
     virtual int size() const = 0;
     /** \brief Return the maximum polynomial order of shape functions. */
     virtual int order() const = 0;
+
+    /** \brief Evaluate the shape functions making up this shapeset
+     *  and/or their derivatives at specified points.
+     *
+     *  \param[in] what
+     *
+     *     Bitwise combination of zero or more flags defined as members of
+     *     the BasisDataType enum. Specifies what shall be evaluated: the
+     *     values of the shape functions, their derivatives, both, or
+     *     none.
+     *
+     *  \param[in] points
+     *
+     *     A 2D array whose (i, j) element is the ith coordinate of the
+     *     jth point at which the shape functions and/or their derivatives
+     *     shall be evaluated.
+     *
+     *  \param[in] localDofIndex.
+     *
+     *     If set to ALL_DOFS, all the shape functions from the shapeset
+     *     shall be evaluated; otherwise only the \p localDofIndex'th
+     *     function shall be evaluated.
+     *
+     *  \param[out] basisData
+     *
+     *     Receives evaluation results.
+     *
+     *     If \p what contains the flag VALUES, on output
+     *     <tt>basisData.values(i, k, l)</tt> shall contain the value of
+     *     the ith component of the kth evaluated shape function at the 
+     *     lth point.
+     *
+     *     If \p what contains the flag DERIVATIVES, on output
+     *     <tt>basisData.derivatives(i, j, k, l)</tt> shall contain the
+     *     derivative in direction j of the ith component of the kth 
+     *     evaluated shape function at the lth point.
+     */
     virtual void evaluate(size_t what,
                           const arma::Mat<CoordinateType>& points,
                           LocalDofIndex localDofIndex,
