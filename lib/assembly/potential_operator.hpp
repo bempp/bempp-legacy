@@ -26,6 +26,8 @@
 #include "../fiber/quadrature_strategy.hpp"
 #include "../common/scalar_traits.hpp"
 #include "../common/shared_ptr.hpp"
+#include "../assembly/context.hpp"
+#include "../assembly/evaluation_options.hpp"
 
 #include "../common/armadillo_fwd.hpp"
 #include <memory>
@@ -124,6 +126,20 @@ public:
                  const QuadratureStrategy &quadStrategy,
                  const EvaluationOptions &options) const = 0;
 
+  std::unique_ptr<InterpolatedFunction<ResultType>>
+  evaluateOnGrid(const GridFunction<BasisFunctionType, ResultType> &argument,
+                 const Grid &evaluationGrid,
+                 const ParameterList& parameterList) {
+
+        shared_ptr<Context<BasisFunctionType,ResultType>> context(
+              new Context<BasisFunctionType,ResultType>(
+                parameterList));
+       
+        return evaluateOnGrid(argument,evaluationGrid,
+             context->quadStrategy(),EvaluationOptions(parameterList));   
+
+  }
+
   /** \brief Evaluate the potential of a given charge distribution at
    *  prescribed points.
    *
@@ -160,6 +176,21 @@ public:
                    const QuadratureStrategy &quadStrategy,
                    const EvaluationOptions &options) const = 0;
 
+  arma::Mat<ResultType>
+  evaluateAtPoints(const GridFunction<BasisFunctionType, ResultType> &argument,
+                   const arma::Mat<CoordinateType> &evaluationPoints,
+                   const ParameterList& parameterList)
+  {
+
+        shared_ptr<Context<BasisFunctionType,ResultType>> context(
+              new Context<BasisFunctionType,ResultType>(
+                parameterList));
+       
+        return evaluateAtPoints(argument,evaluationPoints,
+             context->quadStrategy(),EvaluationOptions(parameterList));   
+
+  }
+
   /** \brief Create and return an AssembledPotentialOperator object.
    *
    *  The returned AssembledPotentialOperator object stores the values of the
@@ -189,6 +220,22 @@ public:
            const shared_ptr<const arma::Mat<CoordinateType>> &evaluationPoints,
            const QuadratureStrategy &quadStrategy,
            const EvaluationOptions &options) const = 0;
+
+
+  AssembledPotentialOperator<BasisFunctionType, ResultType>
+  assemble(const shared_ptr<const Space<BasisFunctionType>> &space,
+           const shared_ptr<const arma::Mat<CoordinateType>> &evaluationPoints,
+           const ParameterList& parameterList){
+
+
+        shared_ptr<Context<BasisFunctionType,ResultType>> context(
+              new Context<BasisFunctionType,ResultType>(
+                parameterList));
+       
+        return assemble(space,evaluationPoints,
+             context->quadStrategy(),EvaluationOptions(parameterList));   
+
+  }
 
   /** \brief Number of components of the values of the potential.
    *

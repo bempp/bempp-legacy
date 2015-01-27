@@ -23,21 +23,22 @@
 
 namespace Bempp {
 
-EvaluationOptions::EvaluationOptions() : EvaluationOptions(globalParameters());
+EvaluationOptions::EvaluationOptions()
+    : EvaluationOptions(GlobalParameters::parameterList()) {}
 
 EvaluationOptions::EvaluationOptions(const ParameterList &parameters)
     : m_parameterList(parameters) {
 
   std::string assemblyType =
       parameters.get<std::string>("potentialOperatorAssemblyType");
-  int maxThreadCount = paramters.get<int>("maxThreadCount");
+  int maxThreadCount = parameters.get<int>("maxThreadCount");
   int verbosityLevel = parameters.get<int>("verbosityLevel");
 
   m_parallelizationOptions.setMaxThreadCount(maxThreadCount);
 
-  if (assemblyType == 'dense') {
+  if (assemblyType == "dense") {
     m_evaluationMode = DENSE;
-  } else if (assemblyType == 'hmat') {
+  } else if (assemblyType == "hmat") {
     m_evaluationMode = HMAT;
   } else
     throw std::runtime_error(

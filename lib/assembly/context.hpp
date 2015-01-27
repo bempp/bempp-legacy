@@ -47,7 +47,6 @@ public:
    *
    *  \param[in] globalParameterList
    *    New parameter structure that will supersede the other option objects. */
-  BEMPP_DEPRECATED
   Context(const shared_ptr<const QuadratureStrategy> &quadStrategy,
           const AssemblyOptions &assemblyOptions,
           const ParameterList& globalParameterList =
