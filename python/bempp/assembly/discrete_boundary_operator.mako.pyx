@@ -359,9 +359,6 @@ cdef class SparseDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
         else:
             return super(SparseDiscreteBoundaryOperator,self).__sub__(other)
 
-    def __getitem__(self,key):
-
-        return self.sparse_operator[key]
 
     property sparse_operator:
         """ The SciPy sparse matrix representation of the operator """
@@ -398,11 +395,11 @@ cdef class DenseDiscreteBoundaryOperator(DiscreteBoundaryOperator):
 
         raise ValueError("Unknown data type")
 
+    property numpy_view:
 
-    def __getitem__(self,key):
-        self._init_array_view()
-        return self._array_view[key]
+        def __get__(self):
+            self._init_array_view()
+            return self._array_view[:]
 
 
-
-
+        
