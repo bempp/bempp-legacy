@@ -50,6 +50,8 @@ cdef class GridFunction:
             fun(x,n,domain_index,result):
                 result[0] =  np.dot(x,n)
 
+       If the input function returns complex data the keyword argument 
+       'complex=True' needs to be specified in the contructor of the GridFunction.    
     2. By providing a vector of coefficients at the nodes. This is preferable if
        the coefficients of the data are coming from an external code.
 
@@ -60,9 +62,9 @@ cdef class GridFunction:
     ----------
     space : bempp.Space
         The space over which the GridFunction is defined.
-    result_type : string
-        The data type of the range of the grid function
-        (optional, default 'float64').
+    complex_data : bool
+        Specify whether an input function returns complex numbers. 
+        (optional, default False).
     dual_space : bempp.Space
         A representation of the dual space (optional).
     fun : callable
@@ -103,9 +105,14 @@ cdef class GridFunction:
 
     Examples
     --------
-    To create a GridFunction from a Python callable my_fun use
+    To create a GridFunction from a real Python callable my_fun use
 
     >>> grid_function = GridFunction(space, dual_space=dual_space,fun=my_fun)
+
+    To create a GridFunction from a complex Python callable my_fun use
+
+    >>> grid_function = GridFunction(space, dual_space=dual_space,fun=my_fun,
+    ...    complex_data=True)
 
     To create a GridFunction from a vector of coefficients coeffs use
 
@@ -139,13 +146,15 @@ cdef class GridFunction:
         self._space = space
 
         self._basis_type = space.dtype
+        self._result_type = None
 
-        if 'result_type' in kwargs:
-            self._result_type = np.dtype(kwargs['result_type'])
-        else:
-            self._result_type = np.dtype('float64')
 
         if 'fun' in kwargs:
+
+            if 'complex_data' in kwargs:
+                self._result_type = np.dtype('complex128')
+            else:
+                self._result_type = np.dtype('float64')
 
             if 'dual_space' not in kwargs:
                 raise ValueError('Need to specify dual space')
@@ -171,6 +180,11 @@ cdef class GridFunction:
 
         elif 'projections' in kwargs:
 
+            if np.iscomplexobj(kwargs['projections']):
+                self._result_type = np.dtype('complex128')
+            else:
+                self._result_type = np.dtype('float64')
+
             if 'dual_space' not in kwargs:
                 raise ValueError('Need to specify dual space')
 
@@ -193,6 +207,11 @@ cdef class GridFunction:
 % endfor
 
         elif 'coefficients' in kwargs:
+
+            if np.iscomplexobj(kwargs['coefficients']):
+                self._result_type = np.dtype('complex128')
+            else:
+                self._result_type = np.dtype('float64')
 
 % for pybasis,cybasis in dtypes.items():
 %     for pyresult,cyresult in dtypes.items():
@@ -284,16 +303,11 @@ cdef class GridFunction:
 
     def __add__(self,GridFunction other):
 
-        if not (self.basis_type==other.basis_type and self.result_type==other.result_type):
-            raise ValueError("Types do not match")
-
         if not self.space.is_compatible(other.space):
             raise ValueError("Spaces do not match")
 
         return GridFunction(self.space,
                 coefficients=self.coefficients+other.coefficients,
-                basis_type=self.basis_type,
-                result_type=self.result_type,
                 parameter_list=self.parameter_list)
 
 
@@ -303,11 +317,8 @@ cdef class GridFunction:
             return alpha*self
 
         if np.isscalar(alpha):
-            scale = self.result_type.type(alpha)
             return GridFunction(self.space,
-                    coefficients=scale*self.coefficients,
-                    basis_type=self.basis_type,
-                    result_type=self.result_type,
+                    coefficients=alpha*self.coefficients,
                     parameter_list=self.parameter_list)
         else:
             raise ValueError("Cannot multiply Gridfunction with object of type "+str(type(alpha)))

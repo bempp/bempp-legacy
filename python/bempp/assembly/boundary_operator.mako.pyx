@@ -127,8 +127,7 @@ cdef class GeneralBoundaryOperator(BoundaryOperatorBase):
         coeffs = g.coefficients
         result_projections = (op_w*coeffs)
         return GridFunction(self.range,dual_space=self.dual_to_range,
-                projections=result_projections,parameter_list=g.parameter_list,
-                result_type=result_projections.dtype)
+                projections=result_projections,parameter_list=g.parameter_list_)
 
     def weak_form(self):
         cdef DiscreteBoundaryOperator dbop = DiscreteBoundaryOperator()
@@ -163,64 +162,49 @@ cdef class GeneralBoundaryOperator(BoundaryOperatorBase):
             return self.impl_.label().decode("UTF-8")
 
 cdef class _ScaledBoundaryOperator(BoundaryOperatorBase):
-    cdef BoundaryOperatorBase op
+    cdef BoundaryOperatorBase _op
     cdef string _label
-% for pyvalue,cyvalue in dtypes.items():
-    cdef ${scalar_cython_type(cyvalue)} _alpha_${pyvalue}
-% endfor
+    cdef object _alpha
 
     def __cinit__(self,BoundaryOperatorBase op,object alpha):
-
-        self._basis_type = op._basis_type
-        self._result_type = op._result_type
-        self.op = op
-% for pyvalue in dtypes:
-        if  self._result_type == "${pyvalue}":
-            self._alpha_${pyvalue} = alpha
-            self._label = (str(alpha)+"*"+op.label).encode("UTF-8")
-% endfor
+        pass
 
     def __init__(self,BoundaryOperatorBase op, object alpha):
-        pass
+        
+        self._alpha = 1.0*alpha # make sure it is not integer
+        self._basis_type = op._basis_type
+        self._result_type = combined_type(np.dtype(type(self._alpha)),op.result_type)
+        self._op = op
 
     property label:
         def __get__(self):
             return self._label.decode("UTF-8")
 
     def weak_form(self):
-% for pyvalue in dtypes:
-        if self._result_type == "${pyvalue}":
-            return self._alpha_${pyvalue}*self.op.weak_form()
-% endfor
-        raise ValueError("Unknown result type")
+        return self._alpha*self._op.weak_form()
 
     def _apply_grid_function(self,GridFunction g):
-% for pyvalue in dtypes:
-        if self._result_type == "${pyvalue}":
-            return self._alpha_${pyvalue}*(self.op*g)
-% endfor
-        raise ValueError("Unknown result type")
 
+        return self._alpha*(self._op*g)
 
 cdef class _SumBoundaryOperator(BoundaryOperatorBase):
-    cdef BoundaryOperatorBase op1
-    cdef BoundaryOperatorBase op2
+    cdef BoundaryOperatorBase _op1
+    cdef BoundaryOperatorBase _op2
     cdef string _label
 
     def __cinit__(self,BoundaryOperatorBase op1, BoundaryOperatorBase op2):
+        pass
 
+
+    def __init__(self,BoundaryOperatorBase op1, BoundaryOperatorBase op2):
 
         self._basis_type = combined_type(op1._basis_type,op2._basis_type)
         self._result_type = combined_type(op1._result_type,op2._result_type)
 
-        self.op1 = op1
-        self.op2 = op2
+        self._op1 = op1
+        self._op2 = op2
 
         self._label = ("("+op1.label+"+"+op2.label+")").encode("UTF-8")
-
-    def __init__(self,BoundaryOperatorBase op1, BoundaryOperatorBase op2):
-
-        pass
 
     property label:
 
@@ -229,11 +213,11 @@ cdef class _SumBoundaryOperator(BoundaryOperatorBase):
 
     def weak_form(self):
 
-        return self.op1.weak_form()+self.op2.weak_form()
+        return self._op1.weak_form()+self._op2.weak_form()
 
     def _apply_grid_function(self, GridFunction g):
 
-        return self.op1*g+self.op2*g
+        return self._op1*g+self._op2*g
 
 
 

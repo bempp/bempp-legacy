@@ -231,8 +231,8 @@ cdef class _ScaledDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
     def __init__(self,DiscreteBoundaryOperatorBase op, object alpha):
 
         self._op = op
-        self._alpha = alpha
-        self._dtype = combined_type(type(alpha),op.dtype)
+        self._alpha = 1.0*alpha # make sure it is not integer 
+        self._dtype = combined_type(np.dtype(type(self._alpha)),op.dtype)
 
     def as_matrix(self):
 
@@ -241,7 +241,7 @@ cdef class _ScaledDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
     property shape:
 
         def __get__(self):
-            return self.op.shape
+            return self._op.shape
 
     def matvec(self,np.ndarray x):
 
