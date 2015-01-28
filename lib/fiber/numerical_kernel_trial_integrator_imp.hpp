@@ -90,10 +90,20 @@ integrate(const std::vector<int>& pointIndices,
         "NumericalKernelTrialIntegrator::integrate(): "
         "arrays 'result' and 'pointCount' must have the same number "
         "of elements");
-    if (pointCount == 0 || quadPointCount == 0)
+
+    for (size_t i = 0; i < result.size(); ++i) {
+        assert(result[i]);
+        result[i]->set_size(componentCount, trialDofCount);
+    }
+
+    if (pointCount == 0 || trialDofCount == 0)
         return;
-    // TODO: in the (pathological) case that quadPointCount == 0 but
-    // geometryCount != 0, set elements of result to 0.
+
+    if (quadPointCount == 0) {
+        for (size_t i = 0; i < result.size(); ++i)
+            result[i]->fill(0.);
+        return;
+    }
 
     BasisData<BasisFunctionType> trialBasisData;
     GeometricalData<CoordinateType> pointGeomData, trialGeomData;
@@ -110,11 +120,6 @@ integrate(const std::vector<int>& pointIndices,
 
     CollectionOf3dArrays<BasisFunctionType> trialValues;
     CollectionOf4dArrays<KernelType> kernelValues;
-
-    for (size_t i = 0; i < result.size(); ++i) {
-        assert(result[i]);
-        result[i]->set_size(componentCount, trialDofCount);
-    }
 
     m_rawGeometry.setupGeometry(trialElementIndex, *trialGeometry);
     trialShapeset.evaluate(trialBasisDeps, m_localQuadPoints,
@@ -156,10 +161,20 @@ integrate(int pointIndex,
         "NumericalKernelTrialIntegrator::integrate(): "
         "arrays 'result' and 'pointCount' must have the same number "
         "of elements");
-    if (trialElementCount == 0 || quadPointCount == 0)
+
+    for (size_t i = 0; i < result.size(); ++i) {
+        assert(result[i]);
+        result[i]->set_size(componentCount, trialDofCount);
+    }
+
+    if (trialElementCount == 0 || trialDofCount == 0)
         return;
-    // TODO: in the (pathological) case that quadPointCount == 0 but
-    // geometryCount != 0, set elements of result to 0.
+
+    if (trialElementCount == 0 || quadPointCount == 0) {
+        for (size_t i = 0; i < result.size(); ++i)
+            result[i]->fill(0.);
+        return;
+    }
 
     BasisData<BasisFunctionType> trialBasisData;
     GeometricalData<CoordinateType> pointGeomData, trialGeomData;
@@ -177,10 +192,6 @@ integrate(int pointIndex,
     CollectionOf3dArrays<BasisFunctionType> trialValues;
     CollectionOf4dArrays<KernelType> kernelValues;
 
-    for (size_t i = 0; i < result.size(); ++i) {
-        assert(result[i]);
-        result[i]->set_size(componentCount, trialDofCount);
-    }
     _3dArray<ResultType> result3d(componentCount, trialDofCount, 1);
 
     pointGeomData.globals = m_points.col(pointIndex);
@@ -229,10 +240,20 @@ integrate(const std::vector<PointElementIndexPair>& pointElementIndexPairs,
         "NumericalKernelTrialIntegrator::integrate(): "
         "arrays 'result' and 'pointCount' must have the same number "
         "of elements");
-    if (pairCount == 0 || quadPointCount == 0)
+
+    for (size_t i = 0; i < result.size(); ++i) {
+        assert(result[i]);
+        result[i]->set_size(componentCount, trialDofCount);
+    }
+
+    if (pairCount == 0 || trialDofCount == 0)
         return;
-    // TODO: in the (pathological) case that quadPointCount == 0 but
-    // geometryCount != 0, set elements of result to 0.
+
+    if (quadPointCount == 0) {
+        for (size_t i = 0; i < result.size(); ++i)
+            result[i]->fill(0.);
+        return;
+    }
 
     BasisData<BasisFunctionType> trialBasisData;
     GeometricalData<CoordinateType> pointGeomData, trialGeomData;
@@ -249,11 +270,6 @@ integrate(const std::vector<PointElementIndexPair>& pointElementIndexPairs,
 
     CollectionOf3dArrays<BasisFunctionType> trialValues;
     CollectionOf4dArrays<KernelType> kernelValues;
-
-    for (size_t i = 0; i < result.size(); ++i) {
-        assert(result[i]);
-        result[i]->set_size(componentCount, trialDofCount);
-    }
 
     // Iterate over the (point, trial element) pairs
     for (int i = 0; i < pairCount; ++i) {

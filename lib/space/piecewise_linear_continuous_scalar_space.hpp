@@ -29,6 +29,7 @@
 #include "../grid/grid_view.hpp"
 #include "../common/types.hpp"
 #include "../fiber/piecewise_linear_continuous_scalar_basis.hpp"
+#include "../fiber/null_scalar_shapeset.hpp"
 
 #include <map>
 #include <memory>
@@ -99,6 +100,9 @@ public:
 
     virtual bool isDiscontinuous() const;
 
+    virtual const Fiber::Shapeset<BasisFunctionType>& shapeset(
+            const Entity<0>& element) const;
+
     virtual size_t globalDofCount() const;
     virtual size_t flatLocalDofCount() const;
     virtual void getGlobalDofs(const Entity<0>& element,
@@ -145,6 +149,7 @@ private:
     std::vector<std::vector<GlobalDofIndex> > m_local2globalDofs;
     std::vector<std::vector<LocalDof> > m_global2localDofs;
     std::vector<LocalDof> m_flatLocal2localDofs;
+    Fiber::NullScalarShapeset<BasisFunctionType> m_nullShapeset;
     mutable shared_ptr<Space<BasisFunctionType> > m_discontinuousSpace;
     mutable shared_ptr<Space<BasisFunctionType> > m_barycentricSpace;
     mutable tbb::mutex m_discontinuousSpaceMutex;

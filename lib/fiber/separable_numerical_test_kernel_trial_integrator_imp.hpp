@@ -204,24 +204,36 @@ integrateCpu(
 {
     const int testPointCount = m_localTestQuadPoints.n_cols;
     const int trialPointCount = m_localTrialQuadPoints.n_cols;
-    const int elementACount = elementIndicesA.size();
-
-    if (result.size() != elementIndicesA.size())
-        throw std::invalid_argument(
-        "SeparableNumericalTestKernelTrialIntegrator::integrate(): "
-        "arrays 'result' and 'elementIndicesA' must have the same number "
-        "of elements");
-    if (testPointCount == 0 || trialPointCount == 0 || elementACount == 0)
-        return;
-    // TODO: in the (pathological) case that pointCount == 0 but
-    // geometryCount != 0, set elements of result to 0.
-
-    // Evaluate constants
 
     const int dofCountA = basisA.size();
     const int dofCountB = localDofIndexB == ALL_DOFS ? basisB.size() : 1;
+
     const int testDofCount = callVariant == TEST_TRIAL ? dofCountA : dofCountB;
     const int trialDofCount = callVariant == TEST_TRIAL ? dofCountB : dofCountA;
+
+    const int elementACount = elementIndicesA.size();
+
+    if (result.size() != elementACount)
+        throw std::invalid_argument(
+            "SeparableNumericalTestKernelTrialIntegrator::integrate(): "
+            "arrays 'result' and 'elementIndicesA' must have the same number "
+            "of elements");
+
+    for (size_t i = 0; i < result.size(); ++i) {
+        assert(result[i]);
+        result[i]->set_size(testDofCount, trialDofCount);
+    }
+
+    if (elementACount == 0 || testDofCount == 0 || trialDofCount == 0)
+        return;
+
+    if (testPointCount == 0 || trialPointCount == 0) {
+        for (size_t i = 0; i < result.size(); ++i)
+            result[i]->fill(0.);
+        return;
+    }
+
+    // Evaluate constants
 
     BasisData<BasisFunctionType> testBasisData, trialBasisData;
     GeometricalData<CoordinateType>* testGeomData = &m_testGeomData.local();
@@ -259,11 +271,6 @@ integrateCpu(
 
     CollectionOf3dArrays<BasisFunctionType> testValues, trialValues;
     CollectionOf4dArrays<KernelType> kernelValues;
-
-    for (size_t i = 0; i < result.size(); ++i) {
-        assert(result[i]);
-        result[i]->set_size(testDofCount, trialDofCount);
-    }
 
     if (!m_cacheGeometricalData)
         rawGeometryB->setupGeometry(elementIndexB, *geometryB);
@@ -684,20 +691,30 @@ integrateCpu(
     const int trialPointCount = m_localTrialQuadPoints.n_cols;
     const int geometryPairCount = elementIndexPairs.size();
 
-    if (result.size() != elementIndexPairs.size())
+    const int testDofCount = testShapeset.size();
+    const int trialDofCount = trialShapeset.size();
+
+    if (result.size() != geometryPairCount)
         throw std::invalid_argument(
         "NonseparableNumericalTestKernelTrialIntegrator::integrate(): "
         "arrays 'result' and 'elementIndicesA' must have the same number "
         "of elements");
-    if (testPointCount == 0 || trialPointCount == 0 || geometryPairCount == 0)
+
+    for (size_t i = 0; i < result.size(); ++i) {
+        assert(result[i]);
+        result[i]->set_size(testDofCount, trialDofCount);
+    }
+
+    if (geometryPairCount == 0 || testDofCount == 0 || trialDofCount == 0)
         return;
-    // TODO: in the (pathological) case that pointCount == 0 but
-    // geometryPairCount != 0, set elements of result to 0.
+
+    if (testPointCount == 0 || trialPointCount == 0) {
+        for (size_t i = 0; i < result.size(); ++i)
+            result[i]->fill(0.);
+        return;
+    }
 
     // Evaluate constants
-
-    const int testDofCount = testShapeset.size();
-    const int trialDofCount = trialShapeset.size();
 
     BasisData<BasisFunctionType> testBasisData, trialBasisData;
     GeometricalData<CoordinateType>* testGeomData = &m_testGeomData.local();
@@ -723,11 +740,6 @@ integrateCpu(
 
     CollectionOf3dArrays<BasisFunctionType> testValues, trialValues;
     CollectionOf4dArrays<KernelType> kernelValues;
-
-    for (size_t i = 0; i < result.size(); ++i) {
-        assert(result[i]);
-        result[i]->set_size(testDofCount, trialDofCount);
-    }
 
     testShapeset.evaluate(testBasisDeps, m_localTestQuadPoints, ALL_DOFS, testBasisData);
     trialShapeset.evaluate(trialBasisDeps, m_localTrialQuadPoints, ALL_DOFS, trialBasisData);

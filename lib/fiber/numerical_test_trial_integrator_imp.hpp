@@ -73,15 +73,21 @@ void NumericalTestTrialIntegrator<BasisFunctionType, ResultType, GeometryFactory
     const size_t pointCount = m_localQuadPoints.n_cols;
     const size_t elementCount = elementIndices.size();
 
-    if (pointCount == 0 || elementCount == 0)
-        return;
-    // TODO: in the (pathological) case that pointCount == 0 but
-    // elementCount != 0, set elements of result to 0.
-
     // Evaluate constants
     const int componentCount = m_testTransformations.resultDimension(0);
     const int testDofCount = testShapeset.size();
     const int trialDofCount = trialShapeset.size();
+
+    result.set_size(testDofCount, trialDofCount, elementCount);
+
+    if (testDofCount == 0 || trialDofCount == 0 || elementCount == 0)
+        return;
+
+    if (pointCount == 0)
+    {
+        result.fill(0.);
+        return;
+    }
 
 //    if (m_trialTransformations.codomainDimension() != componentCount)
 //        throw std::runtime_error("NumericalTestTrialIntegrator::integrate(): "
@@ -102,8 +108,6 @@ void NumericalTestTrialIntegrator<BasisFunctionType, ResultType, GeometryFactory
     std::auto_ptr<Geometry> geometry(m_geometryFactory.make());
 
     CollectionOf3dArrays<BasisFunctionType> testValues, trialValues;
-
-    result.set_size(testDofCount, trialDofCount, elementCount);
 
     testShapeset.evaluate(testBasisDeps, m_localQuadPoints, ALL_DOFS, testBasisData);
     trialShapeset.evaluate(trialBasisDeps, m_localQuadPoints, ALL_DOFS, trialBasisData);

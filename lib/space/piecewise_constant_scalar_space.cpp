@@ -27,6 +27,7 @@
 #include "../common/bounding_box_helpers.hpp"
 #include "../common/not_implemented_error.hpp"
 #include "../fiber/explicit_instantiation.hpp"
+#include "../fiber/null_scalar_shapeset.hpp"
 #include "../grid/entity.hpp"
 #include "../grid/entity_iterator.hpp"
 #include "../grid/geometry.hpp"
@@ -94,7 +95,11 @@ const Fiber::Shapeset<BasisFunctionType>&
 PiecewiseConstantScalarSpace<BasisFunctionType>::shapeset(
         const Entity<0>& element) const
 {
-    return m_shapeset;
+    EntityIndex index = m_view->elementMapper().entityIndex(element);
+    if (!acc(m_local2globalDofs, index).empty())
+        return m_shapeset;
+    else
+        return m_nullShapeset;
 }
 
 template <typename BasisFunctionType>
@@ -189,13 +194,20 @@ void PiecewiseConstantScalarSpace<BasisFunctionType>::assignDofsImpl(
             localDofs[0] = LocalDof(index, 0 /* local DOF #0 */);
             m_global2localDofs.push_back(localDofs);
             globalDofs[0] = globalDofCount_++;
+            m_local2globalDofs[index] = globalDofs;            
         } else {
             // std::cout << "does not contain " << index << "\n";
-            globalDofs[0] = -1;
+            // No need to do anything; a shapeset with 0 functions will be 
+            // returned for this element
+            // globalDofs[0] = -1;
         }
-        m_local2globalDofs[index] = globalDofs;
         it->next();
     }
+
+    // Initialize the container mapping the flat local dof indices to
+    // local dof indices
+    SpaceHelper<BasisFunctionType>::initializeLocal2FlatLocalDofMap(
+                globalDofCount_, m_local2globalDofs, m_flatLocal2localDofs);
 }
 
 template <typename BasisFunctionType>
@@ -207,7 +219,7 @@ size_t PiecewiseConstantScalarSpace<BasisFunctionType>::globalDofCount() const
 template <typename BasisFunctionType>
 size_t PiecewiseConstantScalarSpace<BasisFunctionType>::flatLocalDofCount() const
 {
-    return m_view->entityCount(0);
+    return globalDofCount();
 }
 
 template <typename BasisFunctionType>
@@ -226,7 +238,7 @@ void PiecewiseConstantScalarSpace<BasisFunctionType>::global2localDofs(
 {
     localDofs.resize(globalDofs.size());
     for (size_t i = 0; i < globalDofs.size(); ++i)
-        localDofs[i] = m_global2localDofs[globalDofs[i]];
+        localDofs[i] = acc(m_global2localDofs, globalDofs[i]);
 }
 
 template <typename BasisFunctionType>
@@ -234,10 +246,9 @@ void PiecewiseConstantScalarSpace<BasisFunctionType>::flatLocal2localDofs(
         const std::vector<FlatLocalDofIndex>& flatLocalDofs,
         std::vector<LocalDof>& localDofs) const
 {
-    // Use the fact that each element contains exactly one DOF
     localDofs.resize(flatLocalDofs.size());
     for (size_t i = 0; i < flatLocalDofs.size(); ++i)
-        localDofs[i] = LocalDof(flatLocalDofs[i], 0 /* local DOF #0 */);
+        localDofs[i] = acc(m_flatLocal2localDofs, flatLocalDofs[i]);
 }
 
 template <typename BasisFunctionType>

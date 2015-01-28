@@ -83,12 +83,6 @@ integrate(
     const size_t pointCount = m_localQuadPoints.n_cols;
     const size_t elementCount = elementIndices.size();
 
-    if (pointCount == 0 || elementCount == 0)
-        return;
-    // TODO: in the (pathological) case that pointCount == 0 but
-    // elementCount != 0, set elements of result to 0.
-
-    // Evaluate constants
     const int componentCount = m_testTransformations.resultDimension(0);
     const int testDofCount = testShapeset.size();
 
@@ -96,6 +90,16 @@ integrate(
         throw std::runtime_error("NumericalTestFunctionIntegrator::integrate(): "
                                  "test functions and the \"arbitrary\" function "
                                  "must have the same number of components");
+
+    result.set_size(testDofCount, elementCount);
+
+    if (elementCount == 0 || testDofCount == 0)
+        return;
+
+    if (pointCount == 0) {
+        result.fill(0.);
+        return;
+    }
 
     BasisData<BasisFunctionType> testBasisData;
     GeometricalData<CoordinateType> geomData;
@@ -111,8 +115,6 @@ integrate(
 
     Fiber::CollectionOf3dArrays<BasisFunctionType> testValues;
     arma::Mat<UserFunctionType> functionValues;
-
-    result.set_size(testDofCount, elementCount);
 
     testShapeset.evaluate(testBasisDeps, m_localQuadPoints, ALL_DOFS, testBasisData);
 

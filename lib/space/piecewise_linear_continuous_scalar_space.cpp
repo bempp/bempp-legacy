@@ -87,6 +87,18 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::initialize()
 }
 
 template <typename BasisFunctionType>
+const Fiber::Shapeset<BasisFunctionType>&
+PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::shapeset(
+        const Entity<0>& element) const
+{
+    EntityIndex index = m_view->elementMapper().entityIndex(element);
+    if (!acc(m_local2globalDofs, index).empty())
+        return PiecewiseLinearScalarSpace<BasisFunctionType>::shapeset(element);
+    else
+        return m_nullShapeset;
+}
+
+template <typename BasisFunctionType>
 shared_ptr<const Space<BasisFunctionType> >
 PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::discontinuousSpace(
     const shared_ptr<const Space<BasisFunctionType> >& self) const
@@ -228,6 +240,7 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::assignDofsImpl()
         std::vector<GlobalDofIndex>& globalDofs =
                 acc(m_local2globalDofs, elementIndex);
         globalDofs.resize(cornerCount);
+        bool anyGlobalDofsAssigned = false;
         for (int i = 0; i < cornerCount; ++i) {
             int vertexIndex = indexSet.subEntityIndex(element, i, gridDim);
             int globalDofIndex =
@@ -236,9 +249,15 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::assignDofsImpl()
             acc(globalDofs, i) = globalDofIndex;
             if (globalDofIndex >= 0) {
                 acc(m_global2localDofs, globalDofIndex).push_back(
-                            LocalDof(elementIndex, i));
+                    LocalDof(elementIndex, i));
+                anyGlobalDofsAssigned = true;
                 ++flatLocalDofCount_;
             }
+        }
+        if (!anyGlobalDofsAssigned)
+        {
+            // A shapeset with zero basis functions will be returned for this element
+            globalDofs.clear();
         }
         it->next();
     }

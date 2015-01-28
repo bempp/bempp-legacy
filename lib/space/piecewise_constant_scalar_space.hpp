@@ -28,6 +28,7 @@
 #include "scalar_space.hpp"
 #include "../common/types.hpp"
 #include "../fiber/constant_scalar_shapeset.hpp"
+#include "../fiber/null_scalar_shapeset.hpp"
 
 #include <map>
 #include <memory>
@@ -148,8 +149,10 @@ private:
     std::auto_ptr<GridView> m_view;
     GridSegment m_segment;
     Fiber::ConstantScalarShapeset<BasisFunctionType> m_shapeset;
+    Fiber::NullScalarShapeset<BasisFunctionType> m_nullShapeset;
     std::vector<std::vector<GlobalDofIndex> > m_local2globalDofs;
     std::vector<std::vector<LocalDof> > m_global2localDofs;
+    std::vector<LocalDof> m_flatLocal2localDofs;
     mutable shared_ptr<Space<BasisFunctionType> > m_barycentricSpace;
     mutable tbb::mutex m_barycentricSpaceMutex;
 

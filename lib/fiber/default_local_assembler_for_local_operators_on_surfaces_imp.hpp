@@ -101,6 +101,12 @@ evaluateLocalWeakForms(
         const Shapeset& activeTestShapeset  = *it->template get<1>();
         const Shapeset& activeTrialShapeset = *it->template get<2>();
 
+        // Armadillo doesn't allow cubes to have *only some* dimensions 
+        // equal to zero. Therefore we have to handle empty shapesets 
+        // in a special way.
+        const int activeTestShapesetSize = activeTestShapeset.size();
+        const int activeTrialShapesetSize = activeTrialShapeset.size();
+
         // Find all the test elements for which quadrature should proceed
         // according to the current quadrature variant
         activeElementIndices.clear();
@@ -108,18 +114,27 @@ evaluateLocalWeakForms(
             if (quadVariants[e] == activeQuadVariant)
                 activeElementIndices.push_back(elementIndices[e]);
 
-        // Integrate!
-        arma::Cube<ResultType> localResult;
-        activeIntegrator.integrate(activeElementIndices,
-                                   activeTestShapeset, activeTrialShapeset,
-                                   localResult);
+        if (activeTestShapesetSize != 0 && activeTrialShapesetSize != 0)
+        {
+            // Integrate!
+            arma::Cube<ResultType> localResult;
+            activeIntegrator.integrate(activeElementIndices,
+                                       activeTestShapeset, activeTrialShapeset,
+                                       localResult);
 
-        // Distribute the just calculated integrals into the result array
-        // that will be returned to caller
-        int i = 0;
-        for (int e = 0; e < elementCount; ++e)
-            if (quadVariants[e] == activeQuadVariant)
-                result[e] = localResult.slice(i++);
+            // Distribute the just calculated integrals into the result array
+            // that will be returned to caller
+            int i = 0;
+            for (int e = 0; e < elementCount; ++e)
+                if (quadVariants[e] == activeQuadVariant)
+                    result[e] = localResult.slice(i++);
+        }
+        else
+        {
+            for (int e = 0; e < elementCount; ++e)
+                if (quadVariants[e] == activeQuadVariant)
+                    result[e].set_size(activeTestShapesetSize, activeTrialShapesetSize);
+        }
     }
 }
 
