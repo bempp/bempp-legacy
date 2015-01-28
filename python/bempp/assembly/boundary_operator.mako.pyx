@@ -12,6 +12,7 @@ from bempp.utils.byte_conversion import convert_to_bytes
 from bempp.assembly.grid_function cimport GridFunction
 from bempp.utils cimport shared_ptr,static_pointer_cast
 from bempp.utils import combined_type
+from bempp.space.space cimport Space
 
 from numpy cimport dtype
 
@@ -51,6 +52,21 @@ cdef class BoundaryOperatorBase:
     property result_type:
         def __get__(self):
             return self._result_type
+
+    property domain:
+
+        def __get__(self):
+            raise ValueError("Method not implemented.")
+
+    property range:
+
+        def __get__(self):
+            raise ValueError("Method not implemented.")
+
+    property dual_to_range:
+
+        def __get__(self):
+            raise ValueError("Method not implemented.")
 
     def __add__(self,BoundaryOperatorBase other):
 
@@ -127,7 +143,7 @@ cdef class GeneralBoundaryOperator(BoundaryOperatorBase):
         coeffs = g.coefficients
         result_projections = (op_w*coeffs)
         return GridFunction(self.range,dual_space=self.dual_to_range,
-                projections=result_projections,parameter_list=g.parameter_list_)
+                projections=result_projections,parameter_list=g.parameter_list)
 
     def weak_form(self):
         cdef DiscreteBoundaryOperator dbop = DiscreteBoundaryOperator()
@@ -187,6 +203,22 @@ cdef class _ScaledBoundaryOperator(BoundaryOperatorBase):
 
         return self._alpha*(self._op*g)
 
+
+    property domain:
+
+        def __get__(self):
+            return self._op.domain
+
+    property range:
+
+        def __get__(self):
+            return self._op.range
+
+    property dual_to_range:
+
+        def __get__(self):
+            return self._op.dual_to_range
+
 cdef class _SumBoundaryOperator(BoundaryOperatorBase):
     cdef BoundaryOperatorBase _op1
     cdef BoundaryOperatorBase _op2
@@ -200,6 +232,11 @@ cdef class _SumBoundaryOperator(BoundaryOperatorBase):
 
         self._basis_type = combined_type(op1._basis_type,op2._basis_type)
         self._result_type = combined_type(op1._result_type,op2._result_type)
+
+        if not (op1.range.is_compatible(op2.range) and 
+                op1.dual_to_range.is_compatible(op2.dual_to_range) and
+                op1.domain.is_compatible(op2.domain)):
+            raise ValueError("Incompatible Spaces")
 
         self._op1 = op1
         self._op2 = op2
@@ -219,10 +256,25 @@ cdef class _SumBoundaryOperator(BoundaryOperatorBase):
 
         return self._op1*g+self._op2*g
 
+    property domain:
+
+        def __get__(self):
+            return self._op1.domain
+
+    property range:
+
+        def __get__(self):
+            return self._op1.range
+
+    property dual_to_range:
+
+        def __get__(self):
+            return self._op1.dual_to_range
 
 
 cdef class SparseBoundaryOperator(GeneralBoundaryOperator):
     """ Holds a reference to a boundary operator """
+
 
 
     def __cinit__(self, basis_type=None, result_type=None):
@@ -249,6 +301,22 @@ cdef class SparseBoundaryOperator(GeneralBoundaryOperator):
             raise ValueError("Unknown data type")
 
         return SparseDiscreteBoundaryOperator(res)
+
+
+    property domain:
+
+        def __get__(self):
+            return self._domain
+
+    property range:
+
+        def __get__(self):
+            return self._range
+
+    property dual_to_range:
+
+        def __get__(self):
+            return self._dual_to_range
 
 cdef class DenseBoundaryOperator(GeneralBoundaryOperator):
 

@@ -37,7 +37,9 @@ def identity_operator(Space domain, Space range, Space dual_to_range,
     result_type = 'float64'
 
     bop = SparseBoundaryOperator(basis_type=basis_type,result_type=result_type)
-
+    bop._domain = domain
+    bop._range = range
+    bop._dual_to_range = dual_to_range
 
 % for pybasis, cybasis in dtypes.items():
 %     for pyresult, cyresult in dtypes.items():

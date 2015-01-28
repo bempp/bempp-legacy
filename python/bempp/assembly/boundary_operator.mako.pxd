@@ -9,6 +9,7 @@ from bempp.assembly.discrete_boundary_operator cimport c_DiscreteBoundaryOperato
 from bempp.assembly.discrete_boundary_operator cimport DiscreteBoundaryOperator
 from bempp.assembly.discrete_boundary_operator cimport DiscreteBoundaryOperatorBase
 from bempp.utils cimport shared_ptr
+from bempp.space.space cimport Space
 
 cdef extern from "bempp/assembly/boundary_operator.hpp":
     cdef cppclass c_BoundaryOperator "Bempp::BoundaryOperator" [BASIS, RESULT]:
@@ -58,5 +59,7 @@ cdef class DenseBoundaryOperator(GeneralBoundaryOperator):
     pass
 
 cdef class SparseBoundaryOperator(GeneralBoundaryOperator):
-    pass
+    cdef Space _domain
+    cdef Space _range
+    cdef Space _dual_to_range
 
