@@ -22,6 +22,7 @@
 #define bempp_evaluation_options_hpp
 
 #include "../common/common.hpp"
+#include "../common/types.hpp"
 
 #include "aca_options.hpp"
 
@@ -48,6 +49,9 @@ public:
   /** \brief Constructor. */
   EvaluationOptions();
 
+  /** \brief Constructor. */
+  EvaluationOptions(const ParameterList& parameters);
+
   /** @name Evaluation mode
     @{ */
 
@@ -57,7 +61,9 @@ public:
     DENSE,
     /** \brief Assemble hierarchical matrices using adaptive cross approximation
        (ACA). */
-    ACA
+    ACA,
+    /** \brief Assemble hierarchical matrices using HMat. */
+    HMAT    
   };
 
   /** \brief Use dense-matrix representations of elementary potential operators.
@@ -168,12 +174,14 @@ public:
 
   /** @} */
 
+
 private:
   /** \cond */
   Mode m_evaluationMode;
   AcaOptions m_acaOptions;
   ParallelizationOptions m_parallelizationOptions;
   VerbosityLevel::Level m_verbosityLevel;
+  ParameterList m_parameterList;
   /** \endcond */
 };
 

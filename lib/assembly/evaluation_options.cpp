@@ -19,17 +19,41 @@
 // THE SOFTWARE.
 
 #include "evaluation_options.hpp"
+#include "../common/global_parameters.hpp"
 
 namespace Bempp {
 
 EvaluationOptions::EvaluationOptions()
-    : m_evaluationMode(DENSE), m_verbosityLevel(VerbosityLevel::DEFAULT) {}
+    : EvaluationOptions(GlobalParameters::parameterList()) {}
 
-void EvaluationOptions::switchToDenseMode() { m_evaluationMode = DENSE; }
+EvaluationOptions::EvaluationOptions(const ParameterList &parameters)
+    : m_parameterList(parameters) {
 
-void EvaluationOptions::switchToAcaMode(const AcaOptions &acaOptions) {
-  m_evaluationMode = ACA;
-  m_acaOptions = acaOptions;
+  std::string assemblyType =
+      parameters.get<std::string>("potentialOperatorAssemblyType");
+  int maxThreadCount = parameters.get<int>("maxThreadCount");
+  int verbosityLevel = parameters.get<int>("verbosityLevel");
+
+  m_parallelizationOptions.setMaxThreadCount(maxThreadCount);
+
+  if (assemblyType == "dense") {
+    m_evaluationMode = DENSE;
+  } else if (assemblyType == "hmat") {
+    m_evaluationMode = HMAT;
+  } else
+    throw std::runtime_error(
+        "EvaluationOptions::EvaluationOptions(): "
+        "potentialoperatorAssemblyType has unsupported value.");
+
+  if (verbosityLevel == -5)
+    m_verbosityLevel = VerbosityLevel::LOW;
+  else if (verbosityLevel == 0)
+    m_verbosityLevel = VerbosityLevel::DEFAULT;
+  else if (verbosityLevel == 5)
+    m_verbosityLevel = VerbosityLevel::HIGH;
+  else
+    throw std::runtime_error(
+        "Context::Context(): verbosityLevel has unsupported value");
 }
 
 EvaluationOptions::Mode EvaluationOptions::evaluationMode() const {
