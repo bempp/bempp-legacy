@@ -1,5 +1,7 @@
 #cython: embedsignature=True
 
+__all__=['single_layer','double_layer','adjoint_double_layer','hypersingular']
+
 from bempp.utils.parameter_list cimport ParameterList
 from bempp.space.space cimport Space
 from bempp.operators.boundary import modified_helmholtz

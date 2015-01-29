@@ -133,7 +133,7 @@ cdef class GridFunction:
 
 % for pyvalue,cyvalue in dtypes.items():
         cdef Col[${cyvalue}]* arma_data_${pyvalue}
-        cdef ${scalar_cython_type(cyvalue)} [:] data_view_${pyvalue}
+        cdef ${scalar_cython_type(cyvalue)} [::1] data_view_${pyvalue}
 % endfor
 
         if 'parameter_list' in kwargs:
@@ -193,7 +193,8 @@ cdef class GridFunction:
 %         if pyresult in compatible_dtypes[pybasis]:
             if (self._basis_type=="${pybasis}") and (self._result_type=="${pyresult}"):
                 num_entries = kwargs['projections'].shape[0]
-                data_view_${pyresult} = kwargs['projections']
+                data_view_${pyresult} = np.require(kwargs['projections'],
+                        "${pyresult}","F")
                 arma_data_${pyresult} = new Col[${cyresult}](<${cyresult}*>&data_view_${pyresult}[0],num_entries,True,False)
 
                 self._impl_${pybasis}_${pyresult}.reset(
@@ -218,7 +219,8 @@ cdef class GridFunction:
 %         if pyresult in compatible_dtypes[pybasis]:
             if (self._basis_type=="${pybasis}") and (self._result_type=="${pyresult}"):
                 num_entries = kwargs['coefficients'].shape[0]
-                data_view_${pyresult} = kwargs['coefficients']
+                data_view_${pyresult} = np.require(kwargs['coefficients'],
+                        "${pyresult}","F")
                 arma_data_${pyresult} = new Col[${cyresult}](<${cyresult}*>&data_view_${pyresult}[0],num_entries,True,False)
 
                 self._impl_${pybasis}_${pyresult}.reset(
@@ -252,9 +254,10 @@ cdef class GridFunction:
 %     for pyresult,cyresult in dtypes.items():
 %         if pyresult in compatible_dtypes[pybasis]:
     cdef void _set_coefficients_${pybasis}_${pyresult}(self, 
-            np.ndarray[${scalar_cython_type(cyresult)},ndim=1,mode='fortran'] coeffs):
+            np.ndarray coeffs):
+        cdef np.ndarray[${scalar_cython_type(cyresult)},ndim=1,mode='fortran'] coeffs_converted = np.require(coeffs,"${pyresult}","F")
         cdef Col[${cyresult}]* arma_coeffs = new Col[${cyresult}](
-                <${cyresult}*>&coeffs[0],coeffs.shape[0],False,True)
+                <${cyresult}*>&coeffs_converted[0],coeffs_converted.shape[0],False,True)
         deref(self._impl_${pybasis}_${pyresult}).setCoefficients((deref(arma_coeffs)))
         del arma_coeffs
 %          endif
@@ -321,7 +324,7 @@ cdef class GridFunction:
                     coefficients=alpha*self.coefficients,
                     parameter_list=self.parameter_list)
         else:
-            raise ValueError("Cannot multiply Gridfunction with object of type "+str(type(alpha)))
+            raise NotImplementedError("Cannot multiply Gridfunction with object of type "+str(type(alpha)))
 
     def __neg__(self):
 

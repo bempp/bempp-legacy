@@ -3,6 +3,7 @@ op_types = ['3dSingleLayerBoundaryOperator',
             '3dDoubleLayerBoundaryOperator',
             '3dAdjointDoubleLayerBoundaryOperator',
             '3dHypersingularBoundaryOperator']
+
 %>
 
 #ifndef BEMPP_OPERATORS_HPP
@@ -15,15 +16,23 @@ op_types = ['3dSingleLayerBoundaryOperator',
 #include "bempp/assembly/laplace_3d_double_layer_boundary_operator.hpp"
 #include "bempp/assembly/laplace_3d_single_layer_boundary_operator.hpp"
 #include "bempp/assembly/laplace_3d_adjoint_double_layer_boundary_operator.hpp"
+#include "bempp/assembly/laplace_3d_double_layer_potential_operator.hpp"
+#include "bempp/assembly/laplace_3d_single_layer_potential_operator.hpp"
 #include "bempp/assembly/laplace_3d_hypersingular_boundary_operator.hpp"
 #include "bempp/assembly/modified_helmholtz_3d_single_layer_boundary_operator.hpp"
 #include "bempp/assembly/modified_helmholtz_3d_double_layer_boundary_operator.hpp"
 #include "bempp/assembly/modified_helmholtz_3d_adjoint_double_layer_boundary_operator.hpp"
 #include "bempp/assembly/modified_helmholtz_3d_hypersingular_boundary_operator.hpp"
+#include "bempp/assembly/discrete_boundary_operator.hpp"
+#include "bempp/assembly/assembled_potential_operator.hpp"
+
+#include "bempp/assembly/modified_helmholtz_3d_double_layer_potential_operator.hpp"
+#include "bempp/assembly/modified_helmholtz_3d_single_layer_potential_operator.hpp"
 
 #include "boost/variant/get.hpp"
 #include "bempp/common/shared_ptr.hpp"
 #include "bempp/space/space.hpp"
+
 
 
 namespace Bempp {
@@ -161,6 +170,89 @@ BoundaryOpVariants c_modifiedHelmholtz${op}(
 }
 % endfor
 
+static inline shared_ptr<const DiscreteBoundaryOperator<double>> 
+py_laplace_single_layer_potential_discrete_operator(
+        const SpaceVariants& space, 
+        const arma::Mat<double>& evaluationPoints,
+        const ParameterList& parameterList){
 
+    typedef shared_ptr<const Space<double>> space_t;
+
+    space_t my_space = _py_get_space_ptr<double>(space);
+    shared_ptr<arma::Mat<double>> point_ptr(
+            new arma::Mat<double>(evaluationPoints));
+
+    shared_ptr<PotentialOperator<double,double>> op( 
+                new Laplace3dSingleLayerPotentialOperator<double,double>());
+    
+    return op->assemble(my_space,
+            point_ptr,
+            parameterList).discreteOperator();
+}
+
+
+static inline shared_ptr<const DiscreteBoundaryOperator<double>> 
+py_laplace_double_layer_potential_discrete_operator(
+        const SpaceVariants& space, 
+        const arma::Mat<double>& evaluationPoints,
+        const ParameterList& parameterList){
+
+    typedef shared_ptr<const Space<double>> space_t;
+
+    space_t my_space = _py_get_space_ptr<double>(space);
+    shared_ptr<arma::Mat<double>> point_ptr(
+            new arma::Mat<double>(evaluationPoints));
+
+    shared_ptr<PotentialOperator<double,double>> op( 
+                new Laplace3dDoubleLayerPotentialOperator<double,double>());
+    
+    return op->assemble(my_space,
+            point_ptr,
+            parameterList).discreteOperator();
+}
+
+static inline shared_ptr<const DiscreteBoundaryOperator<std::complex<double>>> 
+py_modified_helmholtz_single_layer_potential_discrete_operator(
+        const SpaceVariants& space, 
+        const arma::Mat<double>& evaluationPoints,
+        std::complex<double> waveNumber,
+        const ParameterList& parameterList){
+
+    typedef shared_ptr<const Space<double>> space_t;
+
+    space_t my_space = _py_get_space_ptr<double>(space);
+    shared_ptr<arma::Mat<double>> point_ptr(
+            new arma::Mat<double>(evaluationPoints));
+
+    shared_ptr<PotentialOperator<double,std::complex<double>>> op( 
+                new ModifiedHelmholtz3dSingleLayerPotentialOperator<double>(
+                    waveNumber));
+    
+    return op->assemble(my_space,
+            point_ptr,
+            parameterList).discreteOperator();
+}
+
+static inline shared_ptr<const DiscreteBoundaryOperator<std::complex<double>>> 
+py_modified_helmholtz_double_layer_potential_discrete_operator(
+        const SpaceVariants& space, 
+        const arma::Mat<double>& evaluationPoints,
+        std::complex<double> waveNumber,
+        const ParameterList& parameterList){
+
+    typedef shared_ptr<const Space<double>> space_t;
+
+    space_t my_space = _py_get_space_ptr<double>(space);
+    shared_ptr<arma::Mat<double>> point_ptr(
+            new arma::Mat<double>(evaluationPoints));
+
+    shared_ptr<PotentialOperator<double,std::complex<double>>> op( 
+                new ModifiedHelmholtz3dDoubleLayerPotentialOperator<double>(
+                    waveNumber));
+    
+    return op->assemble(my_space,
+            point_ptr,
+            parameterList).discreteOperator();
+}
 }
 #endif

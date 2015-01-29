@@ -70,7 +70,7 @@ cdef class DiscreteBoundaryOperatorBase:
         return _ScaledDiscreteBoundaryOperator(self,-1.0)
 
     def __sub__(self,DiscreteBoundaryOperatorBase x):
-        return self.__add__(self,-x)
+        return self.__add__(-x)
     
     def __repr__(self):
         
@@ -139,7 +139,7 @@ cdef class DiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
 
     def matvec(self,np.ndarray x):
 
-        if self.dtype in 'float64' and np.iscomplexobj(x):
+        if self.dtype=='float64' and np.iscomplexobj(x):
             return self*np.real(x)+1j*(self*np.imag(x))
 
         cdef np.ndarray x_in
@@ -245,7 +245,7 @@ cdef class _ScaledDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
 
     def matvec(self,np.ndarray x):
 
-        return self._alpha*self._op*x
+        return self._alpha*(self._op*x)
 
 cdef class _SumDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
 

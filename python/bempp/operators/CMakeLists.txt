@@ -20,3 +20,4 @@ add_python_module(bempp.operators
 add_dependencies(cython-headers bempp.operators-mako)
 add_dependencies(bempp.operators cython-headers)
 add_subdirectory(boundary)
+add_subdirectory(potential)

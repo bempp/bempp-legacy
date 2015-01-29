@@ -83,7 +83,7 @@ cdef class BoundaryOperatorBase:
         if isinstance(x,GridFunction):
             return self._apply_grid_function(x)
 
-        raise ValueError("Multiplication not supported for type"+str(type(x)))
+        raise NotImplementedError("Multiplication not supported for type"+str(type(x)))
 
     def __neg__(self):
 

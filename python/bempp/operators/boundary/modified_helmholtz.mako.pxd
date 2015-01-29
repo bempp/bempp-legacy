@@ -1,3 +1,7 @@
+#cython: embedsignature=True
+
+__all__=['single_layer','double_layer','adjoint_double_layer','hypersingular']
+
 from bempp.utils cimport catch_exception, complex_float, complex_double
 from bempp.assembly.boundary_operator cimport BoundaryOpVariants
 from bempp.utils.parameter_list cimport c_ParameterList, ParameterList
