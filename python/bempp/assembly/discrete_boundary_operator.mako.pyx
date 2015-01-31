@@ -33,7 +33,7 @@ cdef class DiscreteBoundaryOperatorBase:
 
         raise NotImplementedError("Method not implemented.")
 
-    def matvec(self):
+    def matvec(self,np.ndarray x):
 
         raise NotImplementedError("Method not implemented.")
 
@@ -77,6 +77,30 @@ cdef class DiscreteBoundaryOperatorBase:
         M,N = self.shape
         dt = 'dtype=' + str(self.dtype)
         return '<%text><%dx%d %s with %s></%text>' % (M, N, self.__class__.__name__, dt)
+
+cdef class ZeroDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
+
+    cdef object _shape
+
+    def __cinit__(self,int M, int N):
+        pass
+
+    def __init__(self,int M, int N):
+        self._shape = (M,N)
+        self._dtype = np.dtype('float64')
+
+    property shape:
+        def __get__(self):
+            return self._shape
+
+    def as_matrix(self):
+
+        return np.zeros(self.shape,dtype=self.dtype)
+
+    def matvec(self, np.ndarray x):
+
+        return np.zeros_like(x)
+
 
 
 cdef class DiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
@@ -401,5 +425,83 @@ cdef class DenseDiscreteBoundaryOperator(DiscreteBoundaryOperator):
             self._init_array_view()
             return self._array_view[:]
 
+cdef class BlockedDiscereteBoundaryOperator(DiscreteBoundaryOperatorBase):
 
+    cdef np.ndarray _row_dimensions
+    cdef np.ndarray _column_dimensions
+
+    cdef np.ndarray _row_sums
+    cdef np.ndarray _column_sums
+
+    cdef np.ndarray _operators
+
+    cdef object _shape
+
+    def __cinit__(self,np.ndarray[int,ndim=1,mode='fortran'] row_dimensions, 
+            np.ndarray[int,ndim=1,mode='fortran'] column_dimensions):
+        pass
+
+    def __init__(self,np.ndarray[int,ndim=1,mode='fortran'] row_dimensions, 
+            np.ndarray[int,ndim=1,mode='fortran'] column_dimensions):
+        self._row_dimensions = row_dimensions
+        self._column_dimensions = column_dimensions
+        self._row_sums = np.hstack(([0],np.cumsum(self._row_dimensions)))
+        self._column_sums = np.hstack(([0],np.cumsm(self._column_dimensions)))
+
+        self._shape = (len(row_dimensions),len(column_dimensions))
+
+        self._operators = np.empty(self._shape,dtype=np.object)
+
+        for row,i in enumerate(self._row_dimensions):
+            for col,j in enumerate(self._column_dimensions):
+                self._operators[i,j] = ZeroDiscreteBoundaryOperator(
+                        row,col)
+                
+    property shape:
+
+        def __get__(self):
+            return self._shape
+
+    property dtype:
+
+        def __get__(self):
+            cdef object dt = np.dtype('float64')
+            for op in self._operators.ravel():
+                dt = combined_type(dt,op.dtype)
+            return dt
+
+    def __get__item(self,key):
+        return self._operators[key]
+
+    def __setitem(self,key, DiscreteBoundaryOperatorBase op):
+
+        if not (op.shape==self._operators[key].shape):
+            raise ValueError("Wrong dimensions")
+
+        self._operators[key] = op
+
+    def as_matrix(self):
+
+        res = np.empty(self.shape,dtype=self.dtype)
+        for row_dim,i in enumerate(self._row_dimensions):
+            for col_dim,j in enumerate(self._column_dimensions):
+                res[self._row_sums[i]:self._row_sums[i+1],
+                        self._column_sums[i]:self._column_sums[i+1]]=self._operators[i,j].as_matrix()
+        return res
+
+
+    def matvec(self,np.ndarray x):
+
+        res = np.zeros((self.shape[0],x.shape[1]),dtype=self.dtype)
+
+        for i in range(len(self._row_dimensions)):
+            for j in range(len(self._column_dimensions)):
+                res[self._row_sums[i]:self._row_sums[i+1],:] = res[self._row_sums[i]:self._row_sums[i+1],:] + self[i,j]*x[self._column_sums[j]:self._column_sums[j+1],:]
+        return res
+
+
+
+
+
+    
         

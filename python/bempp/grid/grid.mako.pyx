@@ -122,7 +122,9 @@ cdef class Grid:
         def __get__(self):
             """Return a leaf view onto the Grid"""
             cdef unique_ptr[c_GridView] view = deref(self.impl_).leafView()
-            return _grid_view_from_unique_ptr(view)
+            cdef GridView grid_view = _grid_view_from_unique_ptr(view)
+            grid_view._grid = self
+            return grid_view
 
 
 def grid_from_element_data(vertices, elements, domain_indices=[]):

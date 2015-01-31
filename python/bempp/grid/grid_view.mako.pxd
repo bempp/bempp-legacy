@@ -4,7 +4,7 @@ codims = [('0','codim_zero'),('1','codim_one'),('2','codim_two')]
 
 from bempp.utils cimport unique_ptr
 from bempp.grid.codim_template cimport codim_zero,codim_one,codim_two
-
+from bempp.grid.grid cimport Grid
 
 from bempp.grid.entity_iterator cimport c_EntityIterator
 from libcpp.vector cimport vector
@@ -42,6 +42,7 @@ cdef class GridView:
     cdef np.ndarray _elements
     cdef vector[int] _domain_indices
     cdef unique_ptr[c_GridView] impl_ 
+    cdef Grid _grid
     cpdef size_t entity_count(self,int codim)
     cdef void _compute_raw_element_data(self)
  

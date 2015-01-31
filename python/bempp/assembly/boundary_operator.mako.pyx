@@ -8,6 +8,7 @@ from discrete_boundary_operator cimport DiscreteBoundaryOperator
 from discrete_boundary_operator cimport DenseDiscreteBoundaryOperator
 from discrete_boundary_operator cimport DiscreteBoundaryOperatorBase
 from discrete_boundary_operator import SparseDiscreteBoundaryOperator
+from discrete_boundary_operator import ZeroDiscreteBoundaryOperator
 from bempp.utils.byte_conversion import convert_to_bytes
 from bempp.assembly.grid_function cimport GridFunction
 from bempp.utils cimport shared_ptr,static_pointer_cast
@@ -345,5 +346,190 @@ cdef class DenseBoundaryOperator(GeneralBoundaryOperator):
 %      endfor
 % endfor
         raise ValueError("Incompatible basis and result types") 
+
+cdef class ZeroBoundaryOperator(BoundaryOperatorBase): 
+
+    cdef Space _domain
+    cdef Space _range
+    cdef Space _dual_to_range
+
+    def __cinit__(self,Space domain, Space range, Space dual_to_range):
+        pass
+
+    def __init__(self,Space domain, Space range, Space dual_to_range):
+
+        self._domain = domain
+        self._range = range
+        self._dual_to_range = dual_to_range
+        self._basis_type = np.dtype('float64')
+        self._result_type = np.dtype('float64')
+
+    property basis_type:
+        def __get__(self):
+            return self._basis_type
+
+    property result_type:
+        def __get__(self):
+            return self._result_type
+
+    property domain:
+
+        def __get__(self):
+            return self._domain
+
+    property range:
+
+        def __get__(self):
+            return self._range
+
+    property dual_to_range:
+
+        def __get__(self):
+            return self._dual_to_range
+
+    def weak_form(self):
+        """
+
+        This method returns an assembled representation
+        of a boundary operator that allows matrix-vector
+        multiplication.
+
+        Returns
+        -------
+        discrete_operator : bempp.assembly.DiscreteBoundaryOperatorBase
+            A discrete representation of the boundary operator.
+
+        """
+
+        return ZeroDiscreteBoundaryOperator(self._domain.global_dof_count,
+                self._dual_to_range.global_dof_count)
+
+    def _apply_grid_function(self,GridFunction g):
+        return GridFunction(self._domain,
+                coefficients=np.zeros(self._domain.global_dof_count,
+                    dtype='float64'))
+
+cdef class BlockedBoundaryOperator:
+
+    cdef object _shape
+    cdef object _operators
+    cdef object _domain_spaces
+    cdef object _range_spaces 
+    cdef object _dual_to_range_spaces
+
+    def __cinit__(self,shape,domain_spaces,range_spaces,dual_to_range_spaces):
+        pass
+
+    def __init__(self,shape,domain_spaces,range_spaces,dual_to_range_spaces):
+        self._operators = np.empty(shape,dtype=np.object)
+        self._domain_spaces = domain_spaces
+        self._range_spaces = range_spaces
+        self._dual_to_range_spaces = dual_to_range_spaces
+
+        for range_space,i in enumerate(range_spaces):
+            for domain_space,j in enumerate(domain_spaces):
+                self._operators[i,j] = ZeroBoundaryOperator(
+                        domain_space,range_space,
+                        self._dual_to_range_spaces[i])
+
+
+    property domain:
+
+        def __get__(self):
+            return self._domain_spaces
+
+    property range:
+
+        def __get__(self):
+            return self._range_spaces
+    
+    property dual_to_range:
+
+        def __get__(self):
+            return self._dual_to_range_spaces
+
+    property shape:
+
+        def __get__(self):
+            return self._operators.shape
+
+    def __getitem__(self,key):
+        return self._operators[key]
+
+    def __setitem__(self,key,BoundaryOperatorBase op):
+
+        if not self[key].domain.is_compatible(op.domain):
+            raise ValueError("Domain space is not compatible")
+
+        if not self[key].range.is_compatible(op.range):
+            raise ValueError("Range Space is not compatible")
+
+        if not self[key].dual_to_range.is_compatible(op.dual_to_range):
+            raise ValueError("Dual space is not compatible")
         
+        self._operators[key] = op
+
+    def __add__(self,BlockedBoundaryOperator other):
+
+        if not self.shape==other.shape:
+            raise ValueError("Dimensions not compatible")
+        
+        sum_operator = BlockedBoundaryOperator(
+                self.domain,self.range,self.dual_to_range)
+
+        for i in range(self.shape[0]):
+            for j in range(self.shape[1]):
+                sum_operator[i,j] = self[i,j]+other[i,j]
+        return sum_operator
+                
+    def __mul__(self, object x):
+
+        if not isinstance(self,BlockedBoundaryOperator):
+            return x*self
+
+        if np.isscalar(x):
+            scaled_blocked_operator = BlockedBoundaryOperator(
+                    self.domain,self.range,self._dual_to_range)
+            for i in range(self.shape[0]):
+                for j in range(self.shape[1]):
+                    scaled_blocked_operator[i,j] = x*self[i,j]
+            return scaled_blocked_operator
+
+        for g in x:
+            if not isinstance(g,GridFunction):
+                raise NotImplementedError("Multiplication not supported for type"+str(type(x)))
+
+        res = []
+        for row in self.shape[0]:
+            res_fun = GridFunction(self.range[0],
+                    coefficients=np.zeros(self.range[0].global_dof_count))
+            for col in self.shape[1]:
+                res_fun = res_fun+self[row,col]*x[col]
+            res.append(res_fun)
+        return res
+
+    def __neg__(self):
+
+        return self.__mul__(-1.0)
+
+    def __sub__(self,BlockedBoundaryOperator other):
+
+        return self.__add__(-other)
+
+    def weak_form(self):
+        """
+
+        This method returns an assembled representation
+        of a boundary operator that allows matrix-vector
+        multiplication.
+
+        Returns
+        -------
+        discrete_operator : bempp.assembly.DiscreteBoundaryOperatorBase
+            A discrete representation of the boundary operator.
+
+        """
+
+        raise NotImplementedError("Method not implemented")
+
 

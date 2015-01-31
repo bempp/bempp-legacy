@@ -12,6 +12,8 @@ op_names = [('single_layer','c_modifiedHelmholtz3dSingleLayerBoundaryOperator',
 
 %>
 
+__all__=['single_layer','double_layer','adjoint_double_layer','hypersingular']
+
 from bempp.utils.parameter_list cimport c_ParameterList, ParameterList
 from bempp.space.space cimport SpaceVariants,Space
 from libcpp.string cimport string

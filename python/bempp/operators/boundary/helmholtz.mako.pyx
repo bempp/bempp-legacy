@@ -4,7 +4,7 @@ __all__=['single_layer','double_layer','adjoint_double_layer','hypersingular']
 
 from bempp.utils.parameter_list cimport ParameterList
 from bempp.space.space cimport Space
-from bempp.operators.boundary import modified_helmholtz
+from bempp.operators.boundary import modified_helmholtz as _modified_helmholtz
 
 <% ops = [('single_layer','Return the Helmholtz single layer boundary operator.'),
           ('double_layer','Return the Helmholtz double layer boundary operator.'),
@@ -25,7 +25,7 @@ def ${op}(Space domain, Space range, Space dual_to_range,
 
     """
 
-    return modified_helmholtz.${op}(domain,range,dual_to_range,
+    return _modified_helmholtz.${op}(domain,range,dual_to_range,
             wave_number/1j,label,symmetry,parameter_list)
 
 
