@@ -35,7 +35,11 @@ class PyInit {
 public:
   PyInit() : m_pyFinalize(false) {
     if (!Py_IsInitialized()) {
-      Py_SetPythonHome(PYTHON_HOME_NAME);  
+#if PY_MAJOR_VERSION>=3
+      Py_SetPythonHome(const_cast<wchar_t*>(PYTHON_HOME_NAME));
+#else
+      Py_SetPythonHome(const_cast<char*>(PYTHON_HOME_NAME));
+#endif  
       Py_Initialize();
       PyEval_InitThreads();
       m_pyFinalize = true;
@@ -49,7 +53,14 @@ public:
   }
 
 private:
-  void *numpy_init() { import_array(); }
+#if PY_MAJOR_VERSION>=3
+  void *numpy_init() { 
+      import_array(); }
+#else
+  void numpy_init() {
+      import_array();
+  }
+#endif
 
   bool m_pyFinalize;
   PyInit(const PyInit &other);
