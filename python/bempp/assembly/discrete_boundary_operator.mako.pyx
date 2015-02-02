@@ -17,6 +17,7 @@ from bempp.utils import combined_type
 cimport numpy as np
 import numpy as np
 cimport cython
+from libcpp cimport bool
 
 
 cdef class DiscreteBoundaryOperatorBase:
@@ -99,7 +100,19 @@ cdef class ZeroDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
 
     def matvec(self, np.ndarray x):
 
-        return np.zeros_like(x)
+        cdef bool is_reshaped=False
+        if not x.shape[0]==self.shape[1]:
+            return ValueError("Wrong dimensions.")
+
+        if x.ndim==1:
+            x = x.reshape((-1,1))
+            is_reshaped=True
+
+        cdef np.ndarray result = np.zeros((self.shape[0],x.shape[1]),
+                dtype=x.dtype)
+        if is_reshaped:
+            result = result.ravel()
+        return result
 
 
 
@@ -172,9 +185,12 @@ cdef class DiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
         cdef int rows = self.shape[0]
         cdef int cols = self.shape[1]
 
+        cdef bool is_reshaped = False
+
         if (x.ndim==1):
             x_in = x.reshape((-1,1),order='F').astype(self.dtype,
                     order='F',casting='safe',copy=False)
+            is_reshaped = True
         elif (x.ndim==2):
             x_in = x.astype(self.dtype,order='F',casting='safe',copy=False)
         else:
@@ -183,7 +199,7 @@ cdef class DiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
         y = np.zeros((rows,x_in.shape[1]),dtype=self.dtype,order='F')
 
         self._apply(x_in,y,'no_transpose',1.0,0.0)
-        if (x.ndim==1):
+        if is_reshaped:
             y = y.ravel()
         return y
         
