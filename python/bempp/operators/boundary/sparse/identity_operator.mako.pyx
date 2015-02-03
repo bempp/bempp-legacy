@@ -14,7 +14,7 @@ from bempp.utils.enum_types cimport symmetry_mode
 from bempp.utils cimport complex_float, complex_double
 from bempp.common import global_parameters
 
-def identity_operator(Space domain, Space range, Space dual_to_range,
+def identity(Space domain, Space range, Space dual_to_range,
         object label="", object symmetry="auto_symmetry", 
         parameter_list=None):
 

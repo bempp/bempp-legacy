@@ -441,7 +441,7 @@ cdef class DenseDiscreteBoundaryOperator(DiscreteBoundaryOperator):
             self._init_array_view()
             return self._array_view[:]
 
-cdef class BlockedDiscereteBoundaryOperator(DiscreteBoundaryOperatorBase):
+cdef class BlockedDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
 
     cdef np.ndarray _row_dimensions
     cdef np.ndarray _column_dimensions
@@ -453,23 +453,24 @@ cdef class BlockedDiscereteBoundaryOperator(DiscreteBoundaryOperatorBase):
 
     cdef object _shape
 
-    def __cinit__(self,np.ndarray[int,ndim=1,mode='fortran'] row_dimensions, 
-            np.ndarray[int,ndim=1,mode='fortran'] column_dimensions):
+    def __cinit__(self,np.ndarray[long,ndim=1,mode='fortran'] row_dimensions, 
+            np.ndarray[long,ndim=1,mode='fortran'] column_dimensions):
         pass
 
-    def __init__(self,np.ndarray[int,ndim=1,mode='fortran'] row_dimensions, 
-            np.ndarray[int,ndim=1,mode='fortran'] column_dimensions):
+    def __init__(self,np.ndarray[long,ndim=1,mode='fortran'] row_dimensions, 
+            np.ndarray[long,ndim=1,mode='fortran'] column_dimensions):
         self._row_dimensions = row_dimensions
         self._column_dimensions = column_dimensions
         self._row_sums = np.hstack(([0],np.cumsum(self._row_dimensions)))
-        self._column_sums = np.hstack(([0],np.cumsm(self._column_dimensions)))
+        self._column_sums = np.hstack(([0],np.cumsum(self._column_dimensions)))
 
-        self._shape = (len(row_dimensions),len(column_dimensions))
+        self._shape = (self._row_sums[-1],self._column_sums[-1])
 
-        self._operators = np.empty(self._shape,dtype=np.object)
+        self._operators = np.empty((len(self._row_dimensions),
+                len(self._column_dimensions)),dtype=np.object)
 
-        for row,i in enumerate(self._row_dimensions):
-            for col,j in enumerate(self._column_dimensions):
+        for i,row in enumerate(self._row_dimensions):
+            for j,col in enumerate(self._column_dimensions):
                 self._operators[i,j] = ZeroDiscreteBoundaryOperator(
                         row,col)
                 
@@ -486,38 +487,84 @@ cdef class BlockedDiscereteBoundaryOperator(DiscreteBoundaryOperatorBase):
                 dt = combined_type(dt,op.dtype)
             return dt
 
-    def __get__item(self,key):
+    property row_dimensions:
+        
+        def __get__(self):
+            return self._row_dimensions
+
+    property column_dimensions:
+        
+        def __get__(self):
+            return self._column_dimensions
+
+    property ndims:
+
+        def __get__(self):
+            return (len(self.row_dimensions),len(self.column_dimensions))
+
+    def __getitem__(self,key):
         return self._operators[key]
 
-    def __setitem(self,key, DiscreteBoundaryOperatorBase op):
+    def __setitem__(self,key, DiscreteBoundaryOperatorBase op):
 
         if not (op.shape==self._operators[key].shape):
-            raise ValueError("Wrong dimensions")
+            raise ValueError("Wrong dimensions. Item has {0}, but expected is {1}".format(op.shape,self._operators[key].shape)) 
 
         self._operators[key] = op
 
     def as_matrix(self):
 
         res = np.empty(self.shape,dtype=self.dtype)
-        for row_dim,i in enumerate(self._row_dimensions):
-            for col_dim,j in enumerate(self._column_dimensions):
+        for i in range(self.ndims[0]):
+            for j in range(self.ndims[1]):
                 res[self._row_sums[i]:self._row_sums[i+1],
-                        self._column_sums[i]:self._column_sums[i+1]]=self._operators[i,j].as_matrix()
+                        self._column_sums[j]:self._column_sums[j+1]]=self._operators[i,j].as_matrix()
         return res
-
 
     def matvec(self,np.ndarray x):
 
         res = np.zeros((self.shape[0],x.shape[1]),dtype=self.dtype)
 
-        for i in range(len(self._row_dimensions)):
-            for j in range(len(self._column_dimensions)):
+        for i in range(self.ndims[0]):
+            for j in range(self.ndims[1]):
                 res[self._row_sums[i]:self._row_sums[i+1],:] = res[self._row_sums[i]:self._row_sums[i+1],:] + self[i,j]*x[self._column_sums[j]:self._column_sums[j+1],:]
         return res
 
+    def __mul__(self,object x):
 
+        if not isinstance(self,DiscreteBoundaryOperatorBase):
+            return x*self
 
+        if np.isscalar(x):
+            res = BlockedDiscreteBoundaryOperator(
+                    self.row_dimensions,
+                    self.column_dimensions)
 
+            for i in range(self.ndims[0]):
+                for j in range(self.ndims[1]):
+                    res[i,j] = x*self[i,j]
+            return res
+        else:
+            return super(BlockedDiscreteBoundaryOperator,self).__mul__(x)
 
+    def __add__(self,DiscreteBoundaryOperatorBase other):
+
+        if isinstance(other,BlockedDiscreteBoundaryOperator):
+
+            if not (self.ndims==other.ndims and
+                    np.all(self.row_dimensions-other.row_dimensions==0) and
+                    np.all(self.column_dimensions-other.column_dimensions==0)):
+                raise ValueError("Incompatible block structure.")
+
+            res = BlockedDiscreteBoundaryOperator(
+                    self.row_dimensions,
+                    self.column_dimensions)
+
+            for i in range(self.ndims[0]):
+                for j in range(self.ndims[1]):
+                    res[i,j] = self[i,j]+other[i,j]
+            return res
+        else:
+            return super(BlockedDiscreteBoundaryOperator,self).__add__(other)
     
         

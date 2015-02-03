@@ -1,5 +1,5 @@
-__all__=['identity_operator']
+__all__=['identity']
 
-from .identity_operator import identity_operator
+from .identity_operator import identity
 
 

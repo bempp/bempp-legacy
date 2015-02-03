@@ -4,6 +4,7 @@ from bempp import function_space
 from bempp.operators.boundary.laplace import single_layer as laplace_slp
 from bempp.operators.boundary.helmholtz import single_layer as helmholtz_slp
 from bempp.assembly.discrete_boundary_operator import ZeroDiscreteBoundaryOperator
+from bempp.assembly.discrete_boundary_operator import BlockedDiscreteBoundaryOperator
 
 import numpy as np
 
@@ -176,3 +177,113 @@ class TestZeroDiscreteBoundaryOperator(object):
     def test_shape(self,zero_operator):
 
         assert zero_operator.shape==(200,100)
+
+class TestBlockedDiscreteBoundaryOperator(object):
+
+    @pytest.fixture
+    def row_dimensions(self):
+        return np.array([20,512,40])
+
+    @pytest.fixture
+    def column_dimensions(self):
+        return np.array([512,30])
+
+    def test_initialization(self,row_dimensions,column_dimensions):
+        op = BlockedDiscreteBoundaryOperator(row_dimensions,column_dimensions)
+
+    def test_shape(self,row_dimensions,column_dimensions):
+        op = BlockedDiscreteBoundaryOperator(row_dimensions,column_dimensions)
+        assert op.shape == (572,542)
+
+    def test_ndims(self,row_dimensions,column_dimensions):
+        op = BlockedDiscreteBoundaryOperator(row_dimensions,column_dimensions)
+        assert op.ndims == (3,2)
+
+    def test_row_dimensions(self,row_dimensions,column_dimensions):
+        op = BlockedDiscreteBoundaryOperator(row_dimensions,column_dimensions)
+        assert np.linalg.norm(op.row_dimensions-row_dimensions)==0 
+
+    def test_column_dimensions(self,row_dimensions,column_dimensions):
+        op = BlockedDiscreteBoundaryOperator(row_dimensions,column_dimensions)
+        assert np.linalg.norm(op.column_dimensions-column_dimensions)==0
+
+    def test_set_operator(self,row_dimensions,column_dimensions,
+            real_operator):
+        op = BlockedDiscreteBoundaryOperator(row_dimensions,column_dimensions)
+
+        op[1,0] = real_operator
+
+    def test_dtype(self,row_dimensions,column_dimensions,
+            real_operator,complex_operator):
+        op = BlockedDiscreteBoundaryOperator(row_dimensions,column_dimensions)
+
+        op[1,0] = real_operator
+
+        assert op.dtype=='float64'
+
+        op[1,0] = complex_operator
+
+        assert op.dtype=='complex128'
+
+    def test_matvec(self,row_dimensions,column_dimensions,
+            real_operator):
+
+        op = BlockedDiscreteBoundaryOperator(row_dimensions,column_dimensions)
+
+        op[1,0] = real_operator
+
+        vec = np.random.rand(op.shape[1],2)
+        actual = op*vec
+
+        expected = np.zeros((op.shape[0],vec.shape[1]),dtype=op.dtype)
+        expected[20:20+512,:] = real_operator*vec[:512,:]
+        assert np.linalg.norm(actual-expected)<_eps
+
+    def test_as_matrix(self,row_dimensions,column_dimensions,real_operator):
+
+
+        op = BlockedDiscreteBoundaryOperator(row_dimensions,column_dimensions)
+        op[1,0] = real_operator
+
+        expected = op*np.eye(op.shape[1],dtype=op.dtype)
+        actual = op.as_matrix()
+
+        assert np.linalg.norm(expected-actual)<_eps
+
+    def test_scale(self,row_dimensions,column_dimensions,real_operator):
+
+        op = BlockedDiscreteBoundaryOperator(row_dimensions,column_dimensions)
+        op[1,0] = real_operator
+
+        alpha = 1+2.0j
+        res = alpha*op
+
+        expected = alpha*(op.as_matrix())
+        actual = res.as_matrix()
+
+        assert np.linalg.norm(expected-actual)<_eps
+        assert isinstance(res,BlockedDiscreteBoundaryOperator)
+
+    def test_add_blocked_operator(self,row_dimensions,column_dimensions,
+            real_operator):
+        op = BlockedDiscreteBoundaryOperator(row_dimensions,column_dimensions)
+        op[1,0] = real_operator
+
+        res = op+op
+        actual = res.as_matrix()
+        expected = 2*op.as_matrix()
+
+        assert isinstance(res,BlockedDiscreteBoundaryOperator)
+        assert np.linalg.norm(actual-expected)<_eps
+
+    def test_add_nonblocked_operator(self,row_dimensions,column_dimensions,
+            real_operator):
+
+        op = BlockedDiscreteBoundaryOperator(row_dimensions,column_dimensions)
+        op[1,0] = real_operator
+
+        res = op+ZeroDiscreteBoundaryOperator(op.shape[0],op.shape[1])
+        actual = res.as_matrix()
+        expected = op.as_matrix()
+
+        assert np.linalg.norm(actual-expected)<_eps

@@ -193,6 +193,8 @@ cdef class _ScaledBoundaryOperator(BoundaryOperatorBase):
         self._result_type = combined_type(np.dtype(type(self._alpha)),op.result_type)
         self._op = op
 
+        self._label = (str(alpha)+"*"+self._op.label).encode("UTF-8")
+
     property label:
         def __get__(self):
             return self._label.decode("UTF-8")
@@ -219,6 +221,7 @@ cdef class _ScaledBoundaryOperator(BoundaryOperatorBase):
 
         def __get__(self):
             return self._op.dual_to_range
+    
 
 cdef class _SumBoundaryOperator(BoundaryOperatorBase):
     cdef BoundaryOperatorBase _op1
@@ -271,7 +274,6 @@ cdef class _SumBoundaryOperator(BoundaryOperatorBase):
 
         def __get__(self):
             return self._op1.dual_to_range
-
 
 cdef class SparseBoundaryOperator(GeneralBoundaryOperator):
     """ Holds a reference to a boundary operator """
@@ -411,27 +413,36 @@ cdef class ZeroBoundaryOperator(BoundaryOperatorBase):
 
 cdef class BlockedBoundaryOperator:
 
-    cdef object _shape
     cdef object _operators
     cdef object _domain_spaces
     cdef object _range_spaces 
     cdef object _dual_to_range_spaces
 
-    def __cinit__(self,shape,domain_spaces,range_spaces,dual_to_range_spaces):
+    def __cinit__(self,domain_spaces,range_spaces,dual_to_range_spaces):
         pass
 
-    def __init__(self,shape,domain_spaces,range_spaces,dual_to_range_spaces):
-        self._operators = np.empty(shape,dtype=np.object)
+    def __init__(self,domain_spaces,range_spaces,dual_to_range_spaces):
+
+        if not len(dual_to_range_spaces)==len(range_spaces):
+            raise ValueError("Dimension of 'dual_to_range_spaces' must be identical to dimension of 'range_spaces'")
+
         self._domain_spaces = domain_spaces
         self._range_spaces = range_spaces
         self._dual_to_range_spaces = dual_to_range_spaces
 
-        for range_space,i in enumerate(range_spaces):
-            for domain_space,j in enumerate(domain_spaces):
+        self._operators = np.empty(self.ndims,dtype=np.object)
+
+        for i,range_space in enumerate(range_spaces):
+            for j,domain_space in enumerate(domain_spaces):
                 self._operators[i,j] = ZeroBoundaryOperator(
                         domain_space,range_space,
-                        self._dual_to_range_spaces[i])
+                        self.dual_to_range[i])
 
+    property ndims:
+
+        def __get__(self):
+
+            return (len(self.range),len(self.domain))
 
     property domain:
 
