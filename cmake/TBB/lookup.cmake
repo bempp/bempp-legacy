@@ -8,9 +8,9 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
   set(
     TBB_URL
-    http://www.threadingbuildingblocks.org/sites/default/files/software_releases/linux/tbb42_20140601oss_lin.tgz
+    https://www.threadingbuildingblocks.org/sites/default/files/software_releases/linux/tbb43_20141204oss_lin.tgz
   )
-  set(TBB_URL_MD5 8a13558019c9acfbab269e2b34f7fd27)
+  set(TBB_URL_MD5 d5d31f74c554097816aa02e2b9acfe51)
 else()
   message(FATAL_ERROR "Automatic install of TBB in windows not implemented")
 endif()
