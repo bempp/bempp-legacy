@@ -174,13 +174,8 @@ cdef class GeneralBoundaryOperator(BoundaryOperatorBase):
 % endfor
 
 
-    property label:
-        def __get__(self):
-            return self.impl_.label().decode("UTF-8")
-
 cdef class _ScaledBoundaryOperator(BoundaryOperatorBase):
     cdef BoundaryOperatorBase _op
-    cdef string _label
     cdef object _alpha
 
     def __cinit__(self,BoundaryOperatorBase op,object alpha):
@@ -193,11 +188,7 @@ cdef class _ScaledBoundaryOperator(BoundaryOperatorBase):
         self._result_type = combined_type(np.dtype(type(self._alpha)),op.result_type)
         self._op = op
 
-        self._label = (str(alpha)+"*"+self._op.label).encode("UTF-8")
 
-    property label:
-        def __get__(self):
-            return self._label.decode("UTF-8")
 
     def weak_form(self):
         return self._alpha*self._op.weak_form()
@@ -226,7 +217,6 @@ cdef class _ScaledBoundaryOperator(BoundaryOperatorBase):
 cdef class _SumBoundaryOperator(BoundaryOperatorBase):
     cdef BoundaryOperatorBase _op1
     cdef BoundaryOperatorBase _op2
-    cdef string _label
 
     def __cinit__(self,BoundaryOperatorBase op1, BoundaryOperatorBase op2):
         pass
@@ -245,12 +235,6 @@ cdef class _SumBoundaryOperator(BoundaryOperatorBase):
         self._op1 = op1
         self._op2 = op2
 
-        self._label = ("("+op1.label+"+"+op2.label+")").encode("UTF-8")
-
-    property label:
-
-        def __get__(self):
-            return self._label.decode("UTF-8")
 
     def weak_form(self):
 
@@ -277,8 +261,6 @@ cdef class _SumBoundaryOperator(BoundaryOperatorBase):
 
 cdef class SparseBoundaryOperator(GeneralBoundaryOperator):
     """ Holds a reference to a boundary operator """
-
-
 
     def __cinit__(self, basis_type=None, result_type=None):
         pass
@@ -413,134 +395,202 @@ cdef class ZeroBoundaryOperator(BoundaryOperatorBase):
 
 cdef class BlockedBoundaryOperator:
 
-    cdef object _operators
+    cdef np.ndarray _operators
+    cdef object _ndims
+    
+    cdef object _range_spaces
     cdef object _domain_spaces
-    cdef object _range_spaces 
     cdef object _dual_to_range_spaces
 
-    def __cinit__(self,domain_spaces,range_spaces,dual_to_range_spaces):
+    def __cinit__(self,M,N):
         pass
 
-    def __init__(self,domain_spaces,range_spaces,dual_to_range_spaces):
+    def __init__(self,M,N):
 
-        if not len(dual_to_range_spaces)==len(range_spaces):
-            raise ValueError("Dimension of 'dual_to_range_spaces' must be identical to dimension of 'range_spaces'")
+        self._ndims = (M,N)
+        self._operators = np.empty((M,N),dtype=np.object)
 
-        self._domain_spaces = domain_spaces
-        self._range_spaces = range_spaces
-        self._dual_to_range_spaces = dual_to_range_spaces
-
-        self._operators = np.empty(self.ndims,dtype=np.object)
-
-        for i,range_space in enumerate(range_spaces):
-            for j,domain_space in enumerate(domain_spaces):
-                self._operators[i,j] = ZeroBoundaryOperator(
-                        domain_space,range_space,
-                        self.dual_to_range[i])
+        self._domain_spaces = np.empty(N,dtype=np.object)
+        self._range_spaces = np.empty(M,dtype=np.object)
+        self._dual_to_range_spaces = np.empty(M,dtype=np.object)
 
     property ndims:
 
         def __get__(self):
+            return self._ndims
 
-            return (len(self.range),len(self.domain))
+    property range_spaces:
 
-    property domain:
+        def __get__(self):
+            return self._range_spaces
+
+    property domain_spaces:
 
         def __get__(self):
             return self._domain_spaces
 
-    property range:
-
-        def __get__(self):
-            return self._range_spaces
-    
-    property dual_to_range:
+    property dual_to_range_spaces:
 
         def __get__(self):
             return self._dual_to_range_spaces
 
-    property shape:
+    property result_type:
 
         def __get__(self):
-            return self._operators.shape
+            dt = np.dtype('float64')
+            for op in self._operators.ravel():
+                if op is not None:
+                    dt = combined_type(dt,op.result_type)
+            return dt
+
+    property basis_type:
+
+        def __get__(self):
+            dt = np.dtype('float64')
+            for op in self._operators.ravel():
+                if op is not None:
+                    dt = combined_type(dt,op.basis_type)
+            return dt
+
+
+    def fill_complete(self):
+
+        for i in range(self.ndims[0]):
+            for j in range(self.ndims[1]):
+                if (self._domain_spaces[j] is None):
+                    raise ValueError("No operator found in column {0}".format(j))
+                if (self._range_spaces[i] is None):
+                    raise ValueError("No operator found in row {0}".format(i))
+
+                if self._operators[i,j] is None:
+                    self._operators[i,j] = ZeroBoundaryOperator(
+                            self._domain_spaces[j],self.range_spaces[i],
+                            self._dual_to_range_spaces[i])
 
     def __getitem__(self,key):
+
         return self._operators[key]
 
     def __setitem__(self,key,BoundaryOperatorBase op):
-
-        if not self[key].domain.is_compatible(op.domain):
-            raise ValueError("Domain space is not compatible")
-
-        if not self[key].range.is_compatible(op.range):
-            raise ValueError("Range Space is not compatible")
-
-        if not self[key].dual_to_range.is_compatible(op.dual_to_range):
-            raise ValueError("Dual space is not compatible")
         
+        i,j = key
+        if (self._range_spaces[i] is not None) and (not self._range_spaces[i].is_compatible(op.range)):
+                raise ValueError("Range space not compatible")
+        if (self._domain_spaces[j] is not None) and (not self._domain_spaces[j].is_compatible(op.domain)):
+                raise ValueError("Domain space not compatible")
+        if (self._dual_to_range_spaces[i] is not None) and (not self._dual_to_range_spaces[i].is_compatible(op.dual_to_range)):
+                raise ValueError("Dual to range space not compatible")
         self._operators[key] = op
+
+        if self._range_spaces[i] is None:
+            self._range_spaces[i] = op.range
+
+        if self._domain_spaces[j] is None:
+            self._domain_spaces[j] = op.domain
+
+        if self._dual_to_range_spaces[i] is None:
+            self._dual_to_range_spaces[i] = op.dual_to_range
+
+    def weak_form(self):
+
+        from bempp.assembly.discrete_boundary_operator import BlockedDiscreteBoundaryOperator
+        
+        self.fill_complete()
+
+        row_dimensions = np.zeros(self.ndims[0],dtype=np.int)
+        column_dimensions = np.zeros(self.ndims[1],dtype=np.int)
+
+        for i in range(self.ndims[0]):
+            row_dimensions[i] = self._operators[i,0].dual_to_range.global_dof_count
+        for j in range(self.ndims[1]):
+            column_dimensions[j] = self._operators[0,j].domain.global_dof_count
+
+        discrete_operator = BlockedDiscreteBoundaryOperator(
+                row_dimensions,column_dimensions)
+
+        for i in range(self.ndims[0]):
+            for j in range(self.ndims[1]):
+                discrete_operator[i,j] = self._operators[i,j].weak_form()
+        return discrete_operator
 
     def __add__(self,BlockedBoundaryOperator other):
 
-        if not self.shape==other.shape:
-            raise ValueError("Dimensions not compatible")
+        if not self.ndims==other.ndims:
+            raise ValueError("Dimensions do not match")
         
-        sum_operator = BlockedBoundaryOperator(
-                self.domain,self.range,self.dual_to_range)
+        self.fill_complete()
+        other.fill_complete()
 
-        for i in range(self.shape[0]):
-            for j in range(self.shape[1]):
-                sum_operator[i,j] = self[i,j]+other[i,j]
-        return sum_operator
-                
-    def __mul__(self, object x):
+        result = BlockedBoundaryOperator(self.ndims[0],self.ndims[1])
+
+        for i in range(self.ndims[0]):
+            for j in range(self.ndims[1]):
+                result[i,j] = self[i,j]+other[i,j]
+
+        return result
+
+    def __mul__(self, other):
 
         if not isinstance(self,BlockedBoundaryOperator):
-            return x*self
+            return other*self
 
-        if np.isscalar(x):
-            scaled_blocked_operator = BlockedBoundaryOperator(
-                    self.domain,self.range,self._dual_to_range)
-            for i in range(self.shape[0]):
-                for j in range(self.shape[1]):
-                    scaled_blocked_operator[i,j] = x*self[i,j]
-            return scaled_blocked_operator
+        self.fill_complete()
 
-        for g in x:
-            if not isinstance(g,GridFunction):
-                raise NotImplementedError("Multiplication not supported for type"+str(type(x)))
+        if np.isscalar(other):
+            result = BlockedBoundaryOperator(self.ndims[0],self.ndims[1])
+            for i in range(self.ndims[0]):
+                for j in range(self.ndims[1]):
+                    result[i,j] = other*self[i,j]
+            return result
 
-        res = []
-        for row in self.shape[0]:
-            res_fun = GridFunction(self.range[0],
-                    coefficients=np.zeros(self.range[0].global_dof_count))
-            for col in self.shape[1]:
-                res_fun = res_fun+self[row,col]*x[col]
-            res.append(res_fun)
-        return res
+        if not len(other)==self.ndims[1]:
+            raise NotImplementedError("Wrong type or length of multiplicator")
+
+        result = []
+        for i in range(self.ndims[0]):
+            g = GridFunction(space=self.range_spaces[i],
+                    coefficients=np.zeros(self.range_spaces[i].global_dof_count))
+            for j in range(self.ndims[1]):
+                g = g+self[i,j]*other[j]
+            result.append(g)
+        return result
 
     def __neg__(self):
 
-        return self.__mul__(-1.0)
+        return self.__mul__(-1)
 
-    def __sub__(self,BlockedBoundaryOperator other):
+    def __sub__(self,other):
 
         return self.__add__(-other)
 
-    def weak_form(self):
-        """
 
-        This method returns an assembled representation
-        of a boundary operator that allows matrix-vector
-        multiplication.
 
-        Returns
-        -------
-        discrete_operator : bempp.assembly.DiscreteBoundaryOperatorBase
-            A discrete representation of the boundary operator.
 
-        """
 
-        raise NotImplementedError("Method not implemented")
+
+
+        
+
+
+
+
+
+
+
+
+
+        
+
+
+
+
+
+
+        
+
+
+
+
+
 
 

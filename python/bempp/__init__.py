@@ -6,10 +6,12 @@ __all__=['GmshInterface',
          'function_space',
          'GridFunction',
          'global_parameters',
+         'BlockedBoundaryOperator',
          'export']
 
 from bempp.grid import Grid,grid_from_sphere,grid_from_element_data
 from bempp.assembly import GridFunction
+from bempp.assembly import BlockedBoundaryOperator
 from bempp.space import function_space
 from bempp.file_interfaces.gmsh import GmshInterface
 from bempp.common import global_parameters

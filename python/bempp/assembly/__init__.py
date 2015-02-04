@@ -1,5 +1,5 @@
-__all__ = ['BoundaryOperatorBase','GridFunction']
-from .boundary_operator import BoundaryOperatorBase
+__all__ = ['BoundaryOperatorBase','GridFunction','BlockedBoundaryOperator']
+from .boundary_operator import BoundaryOperatorBase,BlockedBoundaryOperator
 from .grid_function import GridFunction
 
 __doc__="""

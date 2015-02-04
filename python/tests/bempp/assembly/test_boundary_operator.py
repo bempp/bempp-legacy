@@ -7,6 +7,8 @@ from bempp.operators.boundary.helmholtz import single_layer as helmholtz_slp
 from bempp.operators.boundary.sparse import identity
 from bempp.assembly.boundary_operator import _SumBoundaryOperator
 from bempp.assembly.boundary_operator import _ScaledBoundaryOperator
+from bempp.assembly.boundary_operator import BlockedBoundaryOperator
+from bempp import GridFunction
 
 
 import numpy as np
@@ -66,13 +68,8 @@ class TestSumBoundaryOperator(object):
         assert np.linalg.norm(expected_real.as_matrix()-actual_real.as_matrix())<_eps
         assert np.linalg.norm(expected_complex.as_matrix()-actual_complex.as_matrix())<_eps
 
-    def test_label(self,real_operator):
 
-        res = real_operator+real_operator
-        label = res.label
-        assert isinstance(label,str)
-
-class TestScaledBoundaryOperator(object):
+class TestScaledBoundaryOperator:
 
     def test_scale_boundary_operator(self,real_operator):
 
@@ -96,14 +93,78 @@ class TestScaledBoundaryOperator(object):
         assert np.linalg.norm(actual_real-expected_real)<_eps
         assert np.linalg.norm(actual_complex-expected_complex)<_eps
 
-    def test_label(self,real_operator):
+class TestBlockedBoundaryOperator:
 
-        alpha = 2.0
+    def test_initialization(self):
 
-        res = alpha*real_operator
+        blocked_operator = BlockedBoundaryOperator(3,2)
 
-        label = res.label
+    def test_assign_operators(self,real_operator,complex_operator):
 
-        assert isinstance(label,str)
+        blocked_operator = BlockedBoundaryOperator(3,2)
+
+        blocked_operator[0,0] = real_operator
+        assert blocked_operator.domain_spaces[0] is not None
+        assert blocked_operator.range_spaces[0] is not None
+        assert blocked_operator.dual_to_range_spaces[0] is not None
+        assert blocked_operator.domain_spaces[1] is None
+
+    def test_result_type(self,real_operator,complex_operator):
+
+        blocked_operator = BlockedBoundaryOperator(3,2)
+        blocked_operator[0,0] = real_operator
+        assert blocked_operator.result_type=='float64'
+
+        blocked_operator[1,1] = complex_operator
+        assert blocked_operator.result_type=='complex128'
+
+    def test_basis_type(self):
+
+        blocked_operator = BlockedBoundaryOperator(3,2)
+        assert blocked_operator.basis_type=='float64'
+
+    def test_weak_form(self,real_operator,complex_operator):
+
+        blocked_operator = BlockedBoundaryOperator(3,2)
+        blocked_operator[0,0] = real_operator
+        with pytest.raises(ValueError):
+            weak_form = blocked_operator.weak_form()
+        blocked_operator[1,1] = complex_operator
+        blocked_operator[2,0] = real_operator
+        weak_form = blocked_operator.weak_form()
+
+        assert weak_form.ndims == (3,2)
+
+    def test_apply_grid_function(self,real_operator,complex_operator,space):
+
+        blocked_operator = BlockedBoundaryOperator(2,2)
+        blocked_operator[0,0] = real_operator
+        blocked_operator[1,0] = complex_operator
+        blocked_operator[1,1] = real_operator
+
+        g = GridFunction(space=space,
+                coefficients = np.ones(space.global_dof_count))
+        g_vec = [g,2*g]
+        res = blocked_operator*g_vec
+        actual = res[1].coefficients
+        expected = (2*real_operator*g+complex_operator*g).coefficients
+
+        assert np.linalg.norm(actual-expected)<_eps
+
+    def test_add_blocked_boundary_operator(self,real_operator,complex_operator):
+
+        blocked_operator = BlockedBoundaryOperator(2,2)
+        blocked_operator[0,0] = real_operator
+        blocked_operator[1,0] = complex_operator
+        blocked_operator[1,1] = real_operator
+
+        result = blocked_operator+blocked_operator
+
+        expected = 2*blocked_operator.weak_form().as_matrix()
+        actual = result.weak_form().as_matrix()
+
+        assert np.linalg.norm(expected-actual)<_eps
+
+
 
 

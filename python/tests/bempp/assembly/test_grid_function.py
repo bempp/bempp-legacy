@@ -46,3 +46,18 @@ class TestGridFunction(object):
         fun = GridFunction(space,dual_space=space,fun=py_fun,complex_data=True)
         assert np.linalg.norm(coefficients-fun.coefficients)<_eps
 
+    def test_add_grid_functions(self,space):
+
+        coefficients = np.random.rand(space.global_dof_count)
+        fun = GridFunction(space,coefficients=coefficients)
+        res = fun+fun
+        expected = 2*fun.coefficients
+        actual = res.coefficients
+
+        assert np.linalg.norm(expected-actual)<_eps
+
+
+
+
+
+
