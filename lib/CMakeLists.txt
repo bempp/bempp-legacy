@@ -38,7 +38,7 @@ set(imported_targets
     teuchoscomm teuchoscore teuchosnumerics teuchosparameterlist
     teuchosremainder rtop
     # Dune targets
-    dunecommon dunegeometry dunegrid
+    dunecommon dunegeometry dunegrid dunealugrid
 )
 unset(library_files)
 foreach(library ${imported_targets})

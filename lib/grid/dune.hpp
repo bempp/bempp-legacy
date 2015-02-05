@@ -27,12 +27,13 @@
 #include <dune/common/shared_ptr.hh> // fix a bug in foamgrid -- this header
                                      // is not included where it should be
 #include <dune/foamgrid/foamgrid.hh>
+#include <dune/alugrid/grid.hh>
 
 namespace Bempp {
 /** \ingroup grid_internal
  *  \brief Default Dune grid implementation used to represent 2D grids
  *  embedded in 3D space. */
-typedef Dune::FoamGrid<3 /* dimWorld */> Default2dIn3dDuneGrid;
+typedef Dune::ALUGrid<2,3,Dune::simplex,Dune::conforming> Default2dIn3dDuneGrid;
 } // namespace Bempp
 
 #endif

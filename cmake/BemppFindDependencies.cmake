@@ -109,9 +109,10 @@ set(BEMPP_INCLUDE_DIRS
    ${CAIRO_INCLUDE_DIRS}
    ${PYTHON_INCLUDE_DIR}
    ${NUMPY_INCLUDE_DIRS}
+   ${dune-alugrid_INCLUDE_DIRS}
 )
 
-foreach(component Boost BLAS LAPACK ARMADILLO TBB ALUGrid)
+foreach(component Boost BLAS LAPACK ARMADILLO TBB)
     if(${component}_INCLUDE_DIR)
         list(APPEND BEMPP_INCLUDE_DIRS ${${component}_INCLUDE_DIR})
     endif()

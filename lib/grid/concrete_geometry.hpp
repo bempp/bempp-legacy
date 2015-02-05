@@ -33,6 +33,7 @@
 #include <dune/common/fmatrix.hh>
 #include <dune/common/static_assert.hh>
 #include <dune/grid/common/grid.hh>
+#include <dune/alugrid/2d/alu2dinclude.hh>
 
 #include "../common/armadillo_fwd.hpp"
 #include <memory>
@@ -60,8 +61,24 @@ Default2dIn3dDuneGrid::Codim<0>::Geometry
 setupDuneGeometry<Default2dIn3dDuneGrid::Codim<0>::Geometry>(
     const GeometryType &type,
     const std::vector<Dune::FieldVector<double, 3>> &corners) {
-  return Default2dIn3dDuneGrid::Codim<0>::Geometry(
-      Dune::FoamGridGeometry<2, 3, const Dune::FoamGrid<3>>(type, corners));
+    typedef typename Dune::ALU2dImplTraits<3,ALU2DGrid::triangle>::ElementType triangle_t;
+
+    double v1_data[3];
+    double v2_data[3];
+    double v3_data[3];
+
+    for (int i = 0; i <3; ++i) {
+        v1_data[i] = corners[0][i];
+        v2_data[i] = corners[1][i];
+        v3_data[i] = corners[2][i];
+    }
+
+    ALU2DGrid::Fullvertex<3> v1(v1_data,0);
+    ALU2DGrid::Fullvertex<3> v2(v2_data,0);
+    ALU2DGrid::Fullvertex<3> v3(v3_data,0);
+
+//  return Default2dIn3dDuneGrid::Codim<0>::Geometry(
+//      Dune::FoamGridGeometry<2, 3, const Dune::FoamGrid<3>>(type, corners));
 }
 
 /** \ingroup grid_internal
