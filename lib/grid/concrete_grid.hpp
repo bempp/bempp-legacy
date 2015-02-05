@@ -154,6 +154,8 @@ public:
   /** \brief Return a barycentrically refined grid based on the LeafView */
   virtual shared_ptr<Grid> barycentricGrid() const {
 
+      /*
+
     if (!m_barycentricGrid.get()) {
       tbb::mutex::scoped_lock lock(m_barycentricSpaceMutex);
       if (!m_barycentricGrid.get()) {
@@ -181,6 +183,9 @@ public:
       }
     }
     return m_barycentricGrid;
+    */
+    throw std::runtime_error("Barycentric Grid not implemented.");
+    return shared_ptr<Grid>();
   }
 
   /** \brief Return \p true if a barycentric refinement of this grid has

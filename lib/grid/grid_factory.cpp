@@ -34,9 +34,6 @@ namespace Bempp {
 
 // Default grid typedef
 typedef ConcreteGrid<Default2dIn3dDuneGrid> Default2dIn3dGrid;
-#ifdef WITH_ALUGRID
-typedef ConcreteGrid<Default3dIn3dDuneGrid> Default3dIn3dGrid;
-#endif
 
 shared_ptr<Grid>
 GridFactory::createStructuredGrid(const GridParameters &params,
@@ -102,16 +99,6 @@ shared_ptr<Grid> GridFactory::importGmshGrid(const GridParameters &params,
         duneGrid, params.topology, elementIndex2PhysicalEntity,
         true)); // true -> owns Dune grid
   }
-#ifdef WITH_ALUGRID
-  else if (params.topology == GridParameters::TETRAHEDRAL) {
-    Default3dIn3dDuneGrid *duneGrid =
-        Dune::GmshReader<Default3dIn3dDuneGrid>::read(
-            fileName, boundaryId2PhysicalEntity, elementIndex2PhysicalEntity,
-            verbose, insertBoundarySegments);
-    return shared_ptr<Grid>(new Default3dIn3dGrid(
-        duneGrid, params.topology, elementIndex2PhysicalEntity, true));
-  }
-#endif
   else
     throw std::invalid_argument("GridFactory::importGmshGrid(): "
                                 "unsupported grid topology");
@@ -132,17 +119,6 @@ GridFactory::importGmshGrid(const GridParameters &params,
         duneGrid, params.topology, elementIndex2PhysicalEntity,
         true)); // true -> owns Dune grid
   }
-#ifdef WITH_ALUGRID
-  else if (params.topology == GridParameters::TETRAHEDRAL) {
-    Default3dIn3dDuneGrid *duneGrid =
-        Dune::GmshReader<Default3dIn3dDuneGrid>::read(
-            fileName, boundaryId2PhysicalEntity, elementIndex2PhysicalEntity,
-            verbose, insertBoundarySegments);
-    return shared_ptr<Grid>(new Default3dIn3dGrid(
-        duneGrid, params.topology, elementIndex2PhysicalEntity,
-        true)); // true -> owns Dune grid
-  }
-#endif
   else
     throw std::invalid_argument("GridFactory::importGmshGrid(): "
                                 "unsupported grid topology");

@@ -3,7 +3,6 @@ option(WITH_TESTS "Compile unit tests (can be run with 'make test')" ON)
 option(WITH_INTEGRATION_TESTS "Compile integration tests" OFF)
 option(WITH_OPENCL "Add OpenCL support for Fiber module" OFF)
 option(WITH_CUDA "Add CUDA support for Fiber module" OFF)
-option(WITH_ALUGRID "Have or install Alugrid" OFF)
 option(WITH_MPI "Whether to compile with MPI" OFF)
 
 option(ENABLE_SINGLE_PRECISION "Enable support for single-precision calculations" ON)

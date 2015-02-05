@@ -15,6 +15,7 @@ set(default_localfunctions_URL
     http://www.dune-project.org/download/2.3.1/dune-localfunctions-2.3.1.tar.gz)
 set(default_localfunctions_MD5 6d5de5dd2e50684c529db8616232c7ed)
 
+
 # Create list of library paths.
 # They will be added to CMAKE_LIBRARY_PATH
 set(library_dirs ${CMAKE_LIBRARY_PATH})
@@ -144,13 +145,14 @@ ExternalProject_Add(dune-localfunctions
     LOG_DOWNLOAD ON LOG_CONFIGURE ON LOG_BUILD ON
 )
 
+
 # Creates a single target for Dune and remove subcomponents from ALL
 add_custom_target(Dune ALL
     DEPENDS
-       dune-grid dune-geometry dune-common dune-localfunctions
+       dune-grid dune-geometry dune-common dune-localfunctions 
 )
 set_target_properties(
-    dune-grid dune-geometry dune-common dune-localfunctions
+    dune-grid dune-geometry dune-common dune-localfunctions 
     PROPERTIES EXCLUDE_FROM_ALL TRUE
 )
 

@@ -23,7 +23,7 @@ ExternalProject_Add(dune-foamgrid
 file(
   WRITE ${EXTERNAL_ROOT}/src/bempp.dune.input
   "dune-bempp
-dune-common dune-geometry dune-grid dune-localfunctions
+dune-common dune-geometry dune-grid dune-localfunctions 
 1
 me@me
 y

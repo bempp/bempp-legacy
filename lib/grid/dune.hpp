@@ -23,31 +23,16 @@
 
 #include "../common/common.hpp"
 
-#include "bempp/common/config_alugrid.hpp"
-
 #include <memory>
 #include <dune/common/shared_ptr.hh> // fix a bug in foamgrid -- this header
                                      // is not included where it should be
 #include <dune/foamgrid/foamgrid.hh>
-#ifdef WITH_ALUGRID
-#include <dune/grid/alugrid.hh>
-#endif
 
 namespace Bempp {
 /** \ingroup grid_internal
  *  \brief Default Dune grid implementation used to represent 2D grids
  *  embedded in 3D space. */
 typedef Dune::FoamGrid<3 /* dimWorld */> Default2dIn3dDuneGrid;
-#ifdef WITH_ALUGRID
-/** \ingroup grid_internal
- *  \brief Default Dune grid implementation used to represent 3D grids
- *  embedded in 3D space (only available if BEM++ is compiled with ALUGrid).
- *
- *  \note BEM++ compiled with ALUGrid is covered by the GPL licence.
- */
-typedef Dune::ALUSimplexGrid<3 /*dimGrid */, 3 /* dimWorld */>
-Default3dIn3dDuneGrid;
-#endif
 } // namespace Bempp
 
 #endif

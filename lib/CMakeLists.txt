@@ -1,5 +1,5 @@
 #Configure All Option files
-foreach(config_file trilinos ahmed opencl alugrid data_types blas_and_lapack python)
+foreach(config_file trilinos ahmed opencl data_types blas_and_lapack python)
     set(filename common/config_${config_file}.hpp)
     configure_file(${filename}.in
         ${PROJECT_BINARY_DIR}/include/bempp/${filename}

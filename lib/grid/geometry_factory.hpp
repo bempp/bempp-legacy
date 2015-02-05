@@ -23,8 +23,6 @@
 
 #include "../common/common.hpp"
 
-#include "bempp/common/config_alugrid.hpp"
-
 #include "geometry.hpp"
 
 #include <memory>
