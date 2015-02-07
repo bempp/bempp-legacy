@@ -37,6 +37,7 @@
 #include "../fiber/explicit_instantiation.hpp"
 #include "../fiber/function.hpp"
 #include "../fiber/geometrical_data.hpp"
+#include "../grid/mapper.hpp"
 
 namespace Bempp {
 
@@ -166,10 +167,12 @@ makeEvaluator(const GridFunction<BasisFunctionType, ResultType> &gridFunction,
       boost::make_shared<CoefficientsVector>(elementCount);
 
   std::unique_ptr<EntityIterator<0>> it = view.entityIterator<0>();
-  for (int i = 0; i < elementCount; ++i) {
-    const Entity<0> &element = it->entity();
-    gridFunction.getLocalCoefficients(element, (*localCoefficients)[i]);
-    it->next();
+  const Mapper& mapper = view.elementMapper();
+  while (!it->finished()){
+      const Entity<0>& element = it->entity();
+      const int elementIndex = mapper.entityIndex(element);
+        gridFunction.getLocalCoefficients(element, (*localCoefficients)[elementIndex]);
+        it->next();
   }
 
   // Construct kernels collection

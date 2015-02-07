@@ -297,8 +297,8 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(global2local_agrees_with_Dune_for_one_point_an
     arma::Mat<ctype> local;
     geo.global2local(global, local);
     Dune::FieldVector<ctype, dimLocal> duneLocal = duneGeo.local(duneGlobal);
-
-    BOOST_CHECK_EQUAL(local.col(0), duneLocal);
+    for (int i = 0; i < local.n_rows; ++i)
+        BOOST_CHECK_CLOSE(local(i,0), duneLocal[i],1E-13);
 }
 
 // Helper function for the two following tests
@@ -311,10 +311,7 @@ static void global2local_agrees_with_Dune_for_nth_of_several_points_and_uninitia
     const int nPoints = 5;
 
     std::unique_ptr<EntityPointer<codim> > ep = f.getPointerToSecondEntityOnLevel0<codim>();
-    typename BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::LevelGridView::Codim<codim>::Iterator duneEp =
-        f.getDunePointerToSecondEntityOnLevel0<codim>();
-
-    const Geometry& geo = ep->entity().geometry();
+    typename BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::LevelGridView::Codim<codim>::Iterator duneEp = f.getDunePointerToSecondEntityOnLevel0<codim>(); const Geometry& geo = ep->entity().geometry();
     const typename BOOST_AUTO_TEST_CASE_FIXTURE::DuneGrid::Codim<codim>::Entity::Geometry&
     duneGeo = duneEp->geometry();
 
@@ -331,8 +328,10 @@ static void global2local_agrees_with_Dune_for_nth_of_several_points_and_uninitia
     arma::Mat<ctype> local;
     geo.global2local(global, local);
     Dune::FieldVector<ctype, dimLocal> duneLocal = duneGeo.local(duneGlobal);
+    for (int i = 0; i < local.n_rows; ++i)
+        BOOST_CHECK_CLOSE(local(i,nTestedPoint), duneLocal[i],1E-13);
 
-    BOOST_CHECK_EQUAL(local.col(nTestedPoint), duneLocal);
+    //BOOST_CHECK_EQUAL(local.col(nTestedPoint), duneLocal);
 }
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(global2local_agrees_with_Dune_for_first_of_several_points_and_uninitialised_output_and_codim,
@@ -383,7 +382,9 @@ static void global2local_agrees_with_Dune_for_nth_of_several_points_and_initiali
     geo.global2local(global, local);
     Dune::FieldVector<ctype, dimLocal> duneLocal = duneGeo.local(duneGlobal);
 
-    BOOST_CHECK_EQUAL(local.col(nTestedPoint), duneLocal);
+    for (int i = 0; i < local.n_rows; ++i)
+        BOOST_CHECK_CLOSE(local(i,nTestedPoint), duneLocal[i],1E-13);
+
 }
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(global2local_agrees_with_Dune_for_first_of_several_points_and_initialised_output_and_codim,

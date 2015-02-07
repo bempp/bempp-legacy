@@ -850,7 +850,7 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
   {
     const Mapper &mapper = view.elementMapper();
     std::unique_ptr<EntityIterator<0>> it = view.entityIterator<0>();
-    for (size_t e = 0; e < elementCount; ++e) {
+    while (!it->finished()){
       const Entity<0> &element = it->entity();
       const int elementIndex = mapper.entityIndex(element);
       basesAndCornerCounts[elementIndex] =

@@ -42,6 +42,7 @@
 #include "../grid/grid.hpp"
 #include "../grid/grid_view.hpp"
 #include "../grid/index_set.hpp"
+#include "../grid/mapper.hpp"
 
 namespace Bempp {
 
@@ -210,11 +211,13 @@ ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
   shared_ptr<CoefficientsVector> localCoefficients =
       boost::make_shared<CoefficientsVector>(elementCount);
 
+  const Mapper& mapper = view.elementMapper();
   std::unique_ptr<EntityIterator<0>> it = view.entityIterator<0>();
-  for (int i = 0; i < elementCount; ++i) {
-    const Entity<0> &element = it->entity();
-    argument.getLocalCoefficients(element, (*localCoefficients)[i]);
-    it->next();
+  while (!it->finished()){
+      const Entity<0>& element = it->entity();
+      const int elementIndex = mapper.entityIndex(element);
+      argument.getLocalCoefficients(element, (*localCoefficients)[elementIndex]);
+      it->next();
   }
 
   // Now create the evaluator

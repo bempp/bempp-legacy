@@ -70,7 +70,13 @@ public:
 
   virtual const Mapper &elementMapper() const { return m_element_mapper; }
 
-  virtual size_t entityCount(int codim) const { return m_dune_gv.size(codim); }
+  virtual size_t entityCount(int codim) const { 
+      
+      if (DuneGridView::dimension-codim<0)
+          return 0;
+      else
+        return m_dune_gv.size(codim); 
+  }
 
   virtual size_t entityCount(const GeometryType &type) const {
     return m_dune_gv.size(type);
