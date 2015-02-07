@@ -18,6 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION 
 #include "bempp/common/config_python.hpp"
 #include <Python.h>
 #define PY_ARRAY_UNIQUE_SYMBOL bempp_ARRAY_API

@@ -25,6 +25,8 @@
 #pragma warning(disable : 279 186 858 262 1011 654 597)
 #endif
 
+#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION 
+
 // Yes, use the new syntax from Dune 2.2
 #define DUNE_COMMON_FIELDVECTOR_SIZE_IS_METHOD 1
 #include <dune_config.h>

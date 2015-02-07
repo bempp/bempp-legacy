@@ -33,10 +33,10 @@ namespace Bempp {
  *  geometry of type DuneGeometry.
  *
  *  \note For internal use (in integrators from the Fiber module). */
-template <typename DuneGeometry>
+template <int dim>
 class ConcreteGeometryFactory : public GeometryFactory {
   virtual std::unique_ptr<Geometry> make() const {
-    return std::unique_ptr<Geometry>(new ConcreteGeometry<DuneGeometry>());
+    return std::unique_ptr<Geometry>(new ConcreteGeometry<dim>());
   }
 };
 

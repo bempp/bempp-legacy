@@ -21,6 +21,7 @@
 #define bempp_concrete_grid_view_hpp
 
 #include "../common/common.hpp"
+#include "dune.hpp"
 
 #include "grid_view.hpp"
 #include "concrete_element_mapper.hpp"
@@ -28,7 +29,6 @@
 #include "concrete_index_set.hpp"
 #include "concrete_range_entity_iterator.hpp"
 #include "concrete_vtk_writer.hpp"
-#include "geometry_type.hpp"
 #include "reverse_element_mapper.hpp"
 
 namespace Bempp {

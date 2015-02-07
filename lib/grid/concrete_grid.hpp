@@ -133,8 +133,7 @@ public:
   @{ */
 
   virtual std::unique_ptr<GeometryFactory> elementGeometryFactory() const {
-    return std::unique_ptr<GeometryFactory>(new ConcreteGeometryFactory<
-        typename DuneGrid::template Codim<0>::Geometry>());
+    return std::unique_ptr<GeometryFactory>(new ConcreteGeometryFactory<2>());
   }
 
   /** @}

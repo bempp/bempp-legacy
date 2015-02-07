@@ -22,7 +22,7 @@
 
 #include "../common/common.hpp"
 
-#include "geometry_type.hpp"
+#include "dune.hpp"
 #include "entity_iterator.hpp"
 
 #include "../common/armadillo_fwd.hpp"

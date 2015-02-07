@@ -23,8 +23,7 @@
 
 #include "../common/common.hpp"
 
-#include "geometry_type.hpp"
-
+#include "dune.hpp"
 #include "../common/armadillo_fwd.hpp"
 #include "../fiber/_3d_array.hpp"
 

@@ -24,7 +24,6 @@
 
 #include "../common/common.hpp"
 
-#include <dune/common/deprecated.hh>
 #include <dune/geometry/type.hh>
 
 namespace Bempp {

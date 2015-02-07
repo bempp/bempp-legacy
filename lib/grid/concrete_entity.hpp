@@ -22,6 +22,7 @@
 #define bempp_concrete_entity_hpp
 
 #include "../common/common.hpp"
+#include "dune.hpp"
 
 #include "concrete_entity_decl.hpp"
 #include "concrete_entity_pointer.hpp"

@@ -24,16 +24,24 @@
 #include "../common/common.hpp"
 
 #include <memory>
-#include <dune/common/shared_ptr.hh> // fix a bug in foamgrid -- this header
-                                     // is not included where it should be
-#include <dune/foamgrid/foamgrid.hh>
 #include <dune/alugrid/grid.hh>
+#include <dune/geometry/multilineargeometry.hh>
 
 namespace Bempp {
 /** \ingroup grid_internal
  *  \brief Default Dune grid implementation used to represent 2D grids
  *  embedded in 3D space. */
 typedef Dune::ALUGrid<2,3,Dune::simplex,Dune::conforming> Default2dIn3dDuneGrid;
+
+/** \ingroup grid
+    \brief Identifier of geometry type. */
+typedef Dune::GeometryType GeometryType;
+
+/** \ingroup grid
+    \brief Geometry data structure */
+template<int dim> using DuneGeometry = Dune::MultiLinearGeometry<double,dim,3>; 
+    
+
 } // namespace Bempp
 
 #endif

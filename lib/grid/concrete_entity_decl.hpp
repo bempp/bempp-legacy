@@ -26,7 +26,7 @@
 #include "entity.hpp"
 #include "concrete_geometry.hpp"
 #include "domain_index.hpp"
-#include "geometry_type.hpp"
+#include "dune.hpp"
 
 #include <boost/utility/enable_if.hpp>
 #include <dune/common/static_assert.hh>
@@ -48,10 +48,11 @@ class ConcreteEntity : public Entity<codim> {
                      "ConcreteEntity: codimension mismatch");
 
 private:
+  
   const DuneEntity *m_dune_entity;
   /** \internal Entity geometry. Updated on demand (on calling
    * geometry()), hence declared as mutable. */
-  mutable ConcreteGeometry<typename DuneEntity::Geometry> m_geometry;
+  mutable ConcreteGeometry<DuneEntity::mydimension> m_geometry;
 
   template <typename> friend class ConcreteEntityPointer;
   template <typename, typename> friend class ConcreteRangeEntityIterator;
@@ -111,7 +112,7 @@ private:
   const DomainIndex &m_domain_index;
   /** \internal Entity geometry. Updated on demand (on calling
    * geometry()), hence declared as mutable. */
-  mutable ConcreteGeometry<typename DuneEntity::Geometry> m_geometry;
+  mutable ConcreteGeometry<DuneEntity::mydimension> m_geometry;
 
   template <typename> friend class ConcreteEntityPointer;
   template <typename, typename> friend class ConcreteRangeEntityIterator;

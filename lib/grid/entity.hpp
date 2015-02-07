@@ -23,11 +23,9 @@
 
 #include "../common/common.hpp"
 
-#include "geometry_type.hpp"
-
+#include "dune.hpp"
 #include <boost/utility/enable_if.hpp>
 #include <dune/common/static_assert.hh>
-#include <dune/grid/common/geometry.hh>
 #include <memory>
 #include <stdexcept>
 
