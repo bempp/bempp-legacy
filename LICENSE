@@ -1,4 +1,24 @@
-The main library (situated under lib) is licensed under the MIT license.
+BEM++ consists of a main library (situated under lib and under python), 
+and several support libraries with various licenses. 
+The following gives a summary of the licenses of BEM++ and the various components
+
+BEM++ main library: MIT License
+Alugrid: GPL v2
+Armadillo: Mozilla Public License 2.0
+Boost: Boost Software License
+Dune: GPL v2 with runtime exception
+Intel Threading Building Blocks: GPL v2 with runtime exception
+Trilinos: Mixture of BSD and LGPL
+
+The license of the complete BEM++ package including all components
+is GPL v2 due to the inclusion of Alugrid. Other Dune compatible
+grid managers with different license can be enable by editing the file 
+dune.hpp in the lib/grid subdirectory.
+
+In the following we summarize the license text of the various components.
+===========================================
+
+The main library (situated under lib and python) is licensed under the MIT license.
 Most of the files have the following license text:
 
 Copyright (C) 2011 by the BEM++ Authors
@@ -24,24 +44,29 @@ THE SOFTWARE.
 The files under lib/fiber/quadrature are part of the HyENA project
 (http://portal.tugraz.at/portal/page/portal/Files/i2610/files/Forschung/Software/HyENA/html/index.html)
 and have been relicensed under an MIT license with permission by the authors.
------------------------------------------------------------------
-The installer downloads several dependencies with varying licenses, which are
-listed below.
-------------------------------------------
+
+================================
+
+Alugrid (https://www.dune-project.org/external_libraries/install_alugrid.html)
+
+The DUNE-ALUGrid module is licensed under the GNU General
+Public License (GPL) version 2. The full license text can be found 
+in the file COPYING and via http://www.gnu.org/licenses/gpl.html .
+
+
+================================
+
 Armadillo (arma.sourceforge.net)
 
-The Armadillo C++ library is provided without any warranty
-of fitness for any purpose. You can redistribute the library
-and/or modify it under the terms of the GNU Lesser General
-Public License (LGPL) as published by the Free Software
-Foundation, either version 3 of the License or (at your option)
-any later version.
+The Armadillo library can be distributed and/or modified under the terms 
+of the Mozilla Public License 2.0 (MPL). You are free to choose the license 
+for work that uses the Armadillo library (eg. a proprietary application). 
+The MPL does not automatically apply to your programs
 
-Note that the LGPL v3 is formulated as an extension/modification
-of the GPL v3 license, providing additional permissions.
-For example, programs that use Armadillo can be distributed under
-a different license, provided some conditions are met.
-------------------------------------------
+
+================================
+
+
 Boost (www.boost.org)
 
 Boost Software License - Version 1.0 - August 17th, 2003
@@ -67,7 +92,11 @@ SHALL THE COPYRIGHT HOLDERS OR ANYONE DISTRIBUTING THE SOFTWARE BE LIABLE
 FOR ANY DAMAGES OR OTHER LIABILITY, WHETHER IN CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 DEALINGS IN THE SOFTWARE.
-------------------------------------------
+
+
+================================
+
+
 Dune (www.dune-project.org)
 
 The DUNE library and headers are licensed under version 2 of the GNU General
@@ -90,21 +119,20 @@ The exact wording of the exception reads as follows:
 
 This license clones the one of the libstc++ library. For further implications
 please see the license page of libstdc++.
-------------------------------------------
+
+================================
+
 Intel Threading Building Blocks (threadingbuildingblocks.org)
 
 The open-source version of Intel TBB is licensed under GPL v2 with a runtime
 exception. Details can be found at
 
 http://threadingbuildingblocks.org/wiki/index.php?title=Licensing
--------------------------------------------
-Trilinos (trilinos.sandia.gov)
+
+================================
+
+Trilinos (www.trilinos.org)
 
 Most of the Trilinos packages use a BSD or a LGPL license. For further details
-see
+see www.trilinos.org
 
-http://trilinos.sandia.gov/license-10.10.html
---------------------------------------------
-Urlgrabber (http://urlgrabber.baseurl.org)
-
-Urlgrabber is licensed under the GNU LGPL Version 2.1.
