@@ -67,16 +67,6 @@ else()
         PRIVATE $<$<CONFIG:Debug>:TBB_USE_DEBUG=1>)
 endif()
 change_tbb_install_name(libbempp)
-if(ALUGrid_GITTER_INCLUDE_DIR)
-    get_source_file_property(file_flags
-        grid/grid_factory.cpp COMPILE_FLAGS
-    )
-    set_source_files_properties(
-        grid/grid_factory.cpp
-        PROPERTIES
-        COMPILE_FLAGS "${file_flagS} -I${ALUGrid_GITTER_INCLUDE_DIR}"
-    )
-endif()
 
 target_link_libraries(libbempp ${PYTHON_LIBRARY})
 
@@ -84,10 +74,6 @@ if (WITH_CUDA)
    include(FindCUDA)
 endif ()
 
-if (WITH_AHMED)
-    target_link_libraries (libbempp ${AHMED_LIB})
-    include_directories(${AHMED_INCLUDE_DIR})
-endif ()
 
 
 # Install library
