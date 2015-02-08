@@ -7,10 +7,8 @@ endif()
 
 # List of additional places to look for
 set(hints ${Dune_PREFIX} $ENV{Dune_PREFIX} ${dune_PREFIX} $ENV{dune_PREFIX})
-# Remove foamgrid from components since provided within BEM
 # Remove devel from components since handled separately
 set(components ${Dune_FIND_COMPONENTS})
-list(REMOVE_ITEM components foamgrid devel)
 
 foreach(component common ${components})
     find_package(dune-${component} ${quietly} HINTS ${hints})
