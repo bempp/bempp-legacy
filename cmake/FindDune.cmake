@@ -9,6 +9,7 @@ endif()
 set(hints ${Dune_PREFIX} $ENV{Dune_PREFIX} ${dune_PREFIX} $ENV{dune_PREFIX})
 # Remove devel from components since handled separately
 set(components ${Dune_FIND_COMPONENTS})
+list(REMOVE_ITEM components devel)
 
 foreach(component common ${components})
     find_package(dune-${component} ${quietly} HINTS ${hints})
