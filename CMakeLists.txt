@@ -81,3 +81,12 @@ file(WRITE "${PROJECT_BINARY_DIR}/post_install/CMakeLists.txt"
 )
 add_subdirectory("${PROJECT_BINARY_DIR}/post_install"
     "${PROJECT_BINARY_DIR}/post_install-build")
+
+# Create directory with shortcuts for Python
+file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
+file(WRITE ${PROJECT_BINARY_DIR}/bin/bempp "${PROJECT_BINARY_DIR}/localpython.sh")
+file(WRITE ${PROJECT_BINARY_DIR}/bin/ibempp "${PROJECT_BINARY_DIR}/localpython.sh -m IPython")
+execute_process(COMMAND chmod +x ${PROJECT_BINARY_DIR}/bin/bempp)
+execute_process(COMMAND chmod +x ${PROJECT_BINARY_DIR}/bin/ibempp)
+
+
