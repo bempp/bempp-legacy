@@ -62,24 +62,17 @@ The installer will download any dependencies you do not have.
 Running BEM++
 -------------
 
-(Is this going to change before release?)
+To run a Python or IPython environment including BEM++, run::
 
-To run BEM++ from Python, run the localhost.sh script in the build
-directory::
+    build/bin/bempp
 
-    ./localhost.sh
+or::
 
-You may find it useful to add an alias to this to your .bash_aliases
-file::
+    build/bin/ibempp
 
-    nano ~/.bash_rc
-    
-then add the following lines::
+If you run the following::
 
-    alias bempp="/home/matt/source/bempp/build/localpython.sh"
-    alias ibempp="/home/matt/source/bempp/build/localpython.sh -m IPython"
+    export PATH="/path/to/bempp/build/bin:$PATH"
 
-then press Ctrl+o to save then Ctrl+x to exit.
-
-You can now run Python or IPython with BEM++ by typing `bempp` or
-`ibempp` repectively.
+Then you will be able to run a Python or IPython environment including BEM++
+by typing bempp or ibempp in terminal. You may find it useful to this to end of your .bashrc file.
