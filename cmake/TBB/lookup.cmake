@@ -2,13 +2,13 @@
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   set(
     TBB_URL
-    http://www.threadingbuildingblocks.org/sites/default/files/software_releases/mac/tbb42_20140601oss_osx.tgz
+    https://www.threadingbuildingblocks.org/sites/default/files/software_releases/mac/tbb43_20150209oss_osx.tgz
   )
-  set(TBB_URL_MD5 9cecb08b25104d3a85f0056396a6c31e)
+  set(TBB_URL_MD5 3e683c19792582b61382e0d760ea5db2)
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
   set(
     TBB_URL
-    http://www.threadingbuildingblocks.org/sites/default/files/software_releases/linux/tbb42_20140601oss_lin.tgz
+    https://www.threadingbuildingblocks.org/sites/default/files/software_releases/linux/tbb43_20150209oss_lin.tgz
   )
   set(TBB_URL_MD5 8a13558019c9acfbab269e2b34f7fd27)
 else()

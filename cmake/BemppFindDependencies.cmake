@@ -99,6 +99,12 @@ if(NOT EXISTS "${PROJECT_BINARY_DIR}/include/FC.h")
     file(WRITE "${PROJECT_BINARY_DIR}/include/FC.h" "// fake Fortran-C file")
 endif()
 
+if(WITH_FENICS)
+    include(BemppFenicsDependencies)
+endif()
+
+
+
 # Now include all dependency directories once and for all
 set(BEMPP_INCLUDE_DIRS
    "${PROJECT_BINARY_DIR}/include/"

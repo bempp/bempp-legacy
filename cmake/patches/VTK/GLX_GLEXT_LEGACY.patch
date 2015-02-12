@@ -1,0 +1,23 @@
+diff -Nru VTK.orig/Rendering/vtkOpenGL.h VTK/Rendering/vtkOpenGL.h
+--- VTK.orig/Rendering/vtkOpenGL.h	2014-12-07 10:27:53.956000731 +0100
++++ VTK/Rendering/vtkOpenGL.h	2014-12-07 10:29:45.640035032 +0100
+@@ -19,6 +19,7 @@
+ 
+ // To prevent gl.h to include glext.h provided by the system
+ #define GL_GLEXT_LEGACY
++#define GLX_GLEXT_LEGACY
+ #if defined(__APPLE__) && (defined(VTK_USE_CARBON) || defined(VTK_USE_COCOA))
+ # include <OpenGL/gl.h> // Include OpenGL API.
+ #else
+diff -Nru VTK.orig/Rendering/vtkXOpenGLRenderWindow.cxx VTK/Rendering/vtkXOpenGLRenderWindow.cxx
+--- VTK.orig/Rendering/vtkXOpenGLRenderWindow.cxx	2014-12-07 10:27:53.964000734 +0100
++++ VTK/Rendering/vtkXOpenGLRenderWindow.cxx	2014-12-07 10:31:09.708061382 +0100
+@@ -27,7 +27,7 @@
+ 
+ // define GLX_GLXEXT_LEGACY to prevent glx.h to include glxext.h provided by
+ // the system
+-//#define GLX_GLXEXT_LEGACY
++#define GLX_GLXEXT_LEGACY
+ #include "GL/glx.h"
+ 
+ #include "vtkgl.h"
