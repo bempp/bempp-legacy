@@ -27,11 +27,11 @@
 
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION 
 
+#include <Python.h>
 // Yes, use the new syntax from Dune 2.2
 #define DUNE_COMMON_FIELDVECTOR_SIZE_IS_METHOD 1
 #include <dune_config.h>
 
-#include <Python.h>
 #define NO_IMPORT_ARRAY
 #define PY_ARRAY_UNIQUE_SYMBOL bempp_ARRAY_API
 #include "numpy/arrayobject.h"

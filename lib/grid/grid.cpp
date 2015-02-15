@@ -19,7 +19,6 @@
 // THE SOFTWARE.
 
 #include "grid.hpp"
-
 #include "entity.hpp"
 #include "entity_iterator.hpp"
 #include "geometry.hpp"

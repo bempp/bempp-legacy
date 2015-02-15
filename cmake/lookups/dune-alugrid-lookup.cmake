@@ -2,6 +2,11 @@
 # This should remove some issues that arises when cmake tries to build
 # a complicated command line
 
+if(NOT ALUGRID_BUILD_TYPE)
+    set(ALUGRID_BUILD_TYPE Release)
+endif()
+
+
 if(NOT TARGET Dune)
     include(PassonVariables)
     passon_variables(Dune
@@ -33,7 +38,8 @@ ExternalProject_Add(
     DEPENDS ${depends}
     PREFIX ${EXTERNAL_ROOT}
     GIT_REPOSITORY https://github.com/tbetcke/ALUGrid_Bempp.git
-    CMAKE_ARGS -C "${EXTERNAL_ROOT}/src/DuneVariables.cmake"
+    CMAKE_ARGS -DCMAKE_BUILD_TYPE=${ALUGRID_BUILD_TYPE}
+               -C "${EXTERNAL_ROOT}/src/DuneVariables.cmake"
     LOG_DOWNLOAD ON LOG_CONFIGURE ON LOG_BUILD ON
 )
 add_recursive_cmake_step(dune-alugrid DEPENDEES install)

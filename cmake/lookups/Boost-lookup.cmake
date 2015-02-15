@@ -34,7 +34,7 @@ file(WRITE "${PROJECT_BINARY_DIR}/CMakeFiles/external/boost_configure.sh"
     "userjam=\"${EXTERNAL_ROOT}/src/user-config.jam\"\n"
     "[ -e $userjam ] && cp $userjam tools/build/v2\n"
     "\n"
-    "./b2 ${toolset} link=static variant=release --with-test \\\n"
+    "./b2 ${toolset} link=static variant=release --with-test --with-filesystem --with-program_options --with-system --with-thread --with-iostreams\\\n"
     "    cxxflags=\"${CMAKE_CXX_FLAGS}\"\n"
 )
 set(configure_command "${EXTERNAL_ROOT}/src/boost_configure.sh")
@@ -48,13 +48,12 @@ ExternalProject_Add(
     Boost
     PREFIX ${EXTERNAL_ROOT}
     # Downloads boost from url -- much faster than svn
-    URL http://sourceforge.net/projects/boost/files/boost/1.55.0/boost_1_55_0.tar.bz2/download
-    URL_MD5 d6eef4b4cacb2183f2bf265a5a03a354
+    URL http://downloads.sourceforge.net/project/boost/boost/1.57.0/boost_1_57_0.tar.bz2
     BUILD_IN_SOURCE 1
     CONFIGURE_COMMAND ./bootstrap.sh
-    PATCH_COMMAND ${patch_script}
+    #PATCH_COMMAND ${patch_script}
     BUILD_COMMAND ${configure_command}
-    INSTALL_COMMAND ./b2 ${toolset} link=static variant=release --with-test
+    INSTALL_COMMAND ./b2 ${toolset} link=static variant=release --with-test --with-filesystem --with-program_options --with-system --with-thread --with-iostreams
         --prefix=${EXTERNAL_ROOT} install
     LOG_DOWNLOAD ON
     LOG_CONFIGURE ON

@@ -1,5 +1,5 @@
 if(NOT IS_DIRECTORY ${EXTERNAL_ROOT}/include)
-    file(MAKE_DIRECTORY ${EXTERNAL_ROOT/include)
+    file(MAKE_DIRECTORY ${EXTERNAL_ROOT}/include)
 endif()
 
 ExternalProject_Add(Eigen3

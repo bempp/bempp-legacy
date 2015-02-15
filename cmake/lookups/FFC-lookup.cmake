@@ -2,7 +2,7 @@
 if("${CMAKE_SYSTEM_NAME}" MATCHES "Darwin")
     file(WRITE "${EXTERNAL_ROOT}/src/ffc_install.sh" 
         "cd ${EXTERNAL_ROOT}/src/FFC\n" 
-        "CXXFLAGS='-stdlib=libc++' MACOSX_DEPLOYMENT_TARGET=10.9 ${PROJECT_BINARY_DIR}/localpython.sh ./setup.py install --prefix ${EXTERNAL_ROOT} --install-lib ${EXTERNAL_ROOT}/python\n")
+        "MACOSX_DEPLOYMENT_TARGET=10.9 ${PROJECT_BINARY_DIR}/localpython.sh ./setup.py install --prefix ${EXTERNAL_ROOT} --install-lib ${EXTERNAL_ROOT}/python\n")
 elseif("${CMAKE_SYSTEM_NAME}" MATCHES "Linux")
     file(WRITE "${EXTERNAL_ROOT}/src/ffc_install.sh" 
         "cd ${EXTERNAL_ROOT}/src/FFC\n" 

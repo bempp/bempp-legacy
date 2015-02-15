@@ -5,12 +5,11 @@
 # Eigen3_INCLUDE_DIR
 
 if(NOT Eigen3_INCLUDE_DIR)
-    set(Eigen3_INCLUDE_DIR ${PROJECT_BINARY_DIR}/external/include)
+    set(Eigen3_DIR ${PROJECT_BINARY_DIR}/external/include)
 endif()
 
-find_path(Eigen3_INCLUDE_DIR Core
-    HINTS ${Eigen3_INCLUDE_DIR}
-    PATH_SUFFIXES Eigen
+find_path(Eigen3_INCLUDE_DIR Eigen/Eigen
+    HINTS ${Eigen3_DIR}
     DOC "Eigen3 Directory"
     )
 

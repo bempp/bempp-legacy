@@ -42,7 +42,7 @@ include(PassonVariables)
 passon_variables(Trilinos
     FILENAME "${EXTERNAL_ROOT}/src/TrilinosVariables.cmake"
     PATTERNS
-        "CMAKE_[^_]*_R?PATH" "CMAKE_C_.*" "CMAKE_CXX_.*"
+        "CMAKE_[^_]*_R?PATH" 
         "BLAS_.*" "LAPACK_.*" "SWIG_*" "Trilinos_PYTHON"
 )
 get_filename_component(TPL_TBB_INCLUDE_DIRS "${TBB_INCLUDE_DIR}" PATH)
@@ -91,12 +91,26 @@ create_patch_script(Trilinos patch_script
     "${patchdir}/pytrilinos_eigenvalue_typemap.patch"
 )
 
+set(Trilinox_CXX_COMPILER)
+set(Trilinos_C_COMPILER)
+if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    set(Trilinos_CXX_COMPILER /usr/bin/clang++)
+    set(Trilinos_C_COMPILER /usr/bin/clang)
+else()
+    set(Trilinos_CXX_COMPILER "${CMAKE_CXX_COMPILER}")
+    set(Trilinos_C_COMPILER "${CMAKE_C_COMPILER}")
+endif()
+
 ExternalProject_Add(
     Trilinos
     PREFIX ${EXTERNAL_ROOT}
     DEPENDS ${depends_on}
     ${arguments}
-    CMAKE_ARGS -DBUILD_SHARED_LIBS:BOOL=ON
+    CMAKE_ARGS -DCMAKE_C_COMPILER=${Trilinos_C_COMPILER}
+               -DCMAKE_CXX_COMPILER=${Trilinos_CXX_COMPILER}
+               -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
+               -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
+               -DBUILD_SHARED_LIBS:BOOL=ON
                -DTPL_ENABLE_BLAS:BOOL=ON
                -DTPL_ENABLE_LAPACK:BOOL=ON
                -DTPL_ENABLE_TBB:BOOL=ON
