@@ -35,10 +35,13 @@ ExternalProject_Add(
                -D DOLFIN_INSTALL_PYTHON_MODULE_DIR=${EXTERNAL_ROOT}/python
                -D DOLFIN_INSTALL_PYTHON_PURE_MODULE_DIR=${EXTERNAL_ROOT}/python
                -D DOLFIN_ENABLE_PETSC4PY:BOOL=OFF
+               -D DOLFIN_SKIP_BUILD_TESTS:BOOL=ON
                -D DOLFIN_ENABLE_PETSC:BOOL=OFF
                -D DOLFIN_ENABLE_SLEPC4PY:BOOL=OFF
                -D DOLFIN_ENABLE_SLEPC:BOOL=OFF
                -C ${EXTERNAL_ROOT}/src/DOLFINVariables.cmake
+    BUILD_COMMAND /bin/bash -c "PYTHONPATH=${EXTERNAL_ROOT}/python make -j4"
+    INSTALL_COMMAND make install
     LOG_DOWNLOAD ON
     LOG_CONFIGURE ON
     LOG_BUILD ON
