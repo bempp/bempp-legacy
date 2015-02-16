@@ -63,11 +63,15 @@ function(lookup_fiat_package package)
     )
 
     execute_process(
-        COMMAND ${LOCALPYTHON} ${EXTERNAL_ROOT}/install_fiat.py
+        COMMAND ${LOCALPYTHON} ${EXTERNAL_ROOT}/install_FIAT.py
         RESULT_VARIABLE result
         ERROR_VARIABLE error
         OUTPUT_VARIABLE output
     )
+    message(STATUS ${LOCALPYTHON})
+    message(STATUS ${EXTERNAL_ROOT})
+    message(STATUS ${ERROR_VARIABLE})
+    message(STATUS ${OUTPUT_VARIABLE})
     if(result EQUAL 0)
         if(lpp_REQUIRED)
             list(APPEND arguments REQUIRED)

@@ -25,7 +25,7 @@ endforeach()
 ExternalProject_Add(
     DOLFIN
     DEPENDS ${depends}
-    URL https://bitbucket.org/fenics-project/dolfin/downloads/dolfin-1.5.0.tar.gz
+    URL http://bitbucket.org/fenics-project/dolfin/downloads/dolfin-1.5.0.tar.gz
     PREFIX ${EXTERNAL_ROOT}
     DEPENDS ${depends}
     CMAKE_ARGS -D CMAKE_BUILD_TYPE=${DOLFIN_BUILD_TYPE} 
