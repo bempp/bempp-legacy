@@ -1730,6 +1730,38 @@ def createNullOperator(context, domain, range, dualToRange, label=None):
     return _constructOperator(
         "nullOperator", context, domain, range, dualToRange, label)
 
+def pseudoinverse(boundaryOp, dualToRange=None):
+    """
+    Create and return a boundary operator whose discrete weak form is the
+    (pseudo)inverse of the discrete weak form of the boundary operator
+    boundaryOp.
+
+    *Parameters:*
+       - boundaryOp (BoundaryOperator)
+            Boundary operator whose (pseudo)inverse should be constructed.
+       - dualToRange (Space)
+            The function space to be taken as the dual to the range
+            of the inverse operator. If not given, BEM++ will try to determine
+            it automatically.
+
+    *Returns* a newly constructed BoundaryOperator_BasisFunctionType_ResultType
+    object, with BasisFunctionType and ResultType determined automatically from
+    the boundaryOp argument and equal to either float32, float64, complex64 or
+    complex128.
+    """
+    basisFunctionType = checkType(boundaryOp.basisFunctionType())
+    resultType = checkType(boundaryOp.resultType())
+    if dualToRange is None:
+        return _constructObjectTemplatedOnBasisAndResult(
+            core, "pseudoinverse",
+            basisFunctionType, resultType, boundaryOp)
+    else:
+        if basisFunctionType != dualToRange.basisFunctionType():
+            raise TypeError("BasisFunctionType of boundaryOp and dualToRange must be the same")
+        return _constructObjectTemplatedOnBasisAndResult(
+            core, "pseudoinverse",
+            basisFunctionType, resultType, boundaryOp, dualToRange)
+
 def __gridFunctionFromFunctor(
         functorType,
         context, space, dualSpace, function, mode,

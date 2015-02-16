@@ -184,6 +184,7 @@ AUTO_PTR_TYPEMAPS_FOR_CLASS_TEMPLATED_ON_RESULT(Bempp::InterpolatedFunction)
 %include "assembly/discrete_aca_boundary_operator.i"
 %include "assembly/discrete_dense_boundary_operator.i"
 %include "assembly/discrete_inverse_sparse_boundary_operator.i"
+%include "assembly/pseudoinverse.i"
 
 // Linear algebra
 %include "linalg/parameter_list.i"
