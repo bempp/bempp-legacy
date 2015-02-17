@@ -9,8 +9,8 @@ from bempp.utils cimport unique_ptr
 from bempp.utils.armadillo cimport Col, Mat
 from bempp.grid.grid_view cimport c_GridView, GridView
 from bempp.grid.grid_view cimport _grid_view_from_unique_ptr
-import numpy as np
-cimport numpy as np
+import numpy as _np
+cimport numpy as _np
 cimport cython
 
 
@@ -288,10 +288,10 @@ def grid_from_sphere(int n, double radius=1.0, object origin = [0,0,0]):
     cdef SphereMesh* mesh
     cdef vector[c_vertex]* c_nodes
     cdef vector[c_element]* c_elements 
-    cdef np.ndarray nodes
-    cdef np.ndarray elements
-    cdef np.ndarray[double,ndim=2] nodes_buf
-    cdef np.ndarray[int,ndim=2] elements_buf
+    cdef _np.ndarray nodes
+    cdef _np.ndarray elements
+    cdef _np.ndarray[double,ndim=2] nodes_buf
+    cdef _np.ndarray[int,ndim=2] elements_buf
 
     cdef int number_of_nodes;
     cdef int number_of_elements;
@@ -306,8 +306,8 @@ def grid_from_sphere(int n, double radius=1.0, object origin = [0,0,0]):
     number_of_nodes = deref(c_nodes).size()
     number_of_elements = deref(c_elements).size()
 
-    nodes = np.empty((3,number_of_nodes),dtype='float64')
-    elements = np.empty((3,number_of_elements),dtype='intc')
+    nodes = _np.empty((3,number_of_nodes),dtype='float64')
+    elements = _np.empty((3,number_of_elements),dtype='intc')
 
     nodes_buf = nodes
     elements_buf = elements
@@ -322,6 +322,29 @@ def grid_from_sphere(int n, double radius=1.0, object origin = [0,0,0]):
     del mesh
 
     return grid_from_element_data(nodes,elements)
+
+def boundary_grid_from_fenics_mesh(fenics_mesh):
+    """
+
+    Return a boundary grid from a FEniCS Mesh
+
+    """
+    
+    try:
+        import dolfin
+    except:
+        print("Cannot import dolfin. Check your FEniCS installation.")
+        return None
+
+    bm = dolfin.BoundaryMesh(fenics_mesh, "exterior", False)
+    bm_coords = bm.coordinates()
+    bm_cells  = bm.cells()
+    bm_nodes  = bm.entity_map(0).array().astype(_np.int64)
+    grid = grid_from_element_data(bm_coords.transpose(),bm_cells.transpose())
+
+    return grid
+
+
 
 
         

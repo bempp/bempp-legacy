@@ -3,13 +3,15 @@
 __all__=['GmshInterface',
          'grid_from_sphere',
          'grid_from_element_data',
+         'structured_grid',
+         'boundary_grid_from_fenics_mesh',
          'function_space',
          'GridFunction',
          'global_parameters',
          'BlockedBoundaryOperator',
          'export']
 
-from bempp.grid import Grid,grid_from_sphere,grid_from_element_data
+from bempp.grid import Grid,grid_from_sphere,grid_from_element_data, structured_grid, boundary_grid_from_fenics_mesh
 from bempp.assembly import GridFunction
 from bempp.assembly import BlockedBoundaryOperator
 from bempp.space import function_space

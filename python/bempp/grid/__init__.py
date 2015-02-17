@@ -22,8 +22,8 @@ Functions
 
 __all__ = ['Grid', 'structured_grid',
             'grid_from_element_data',
-            'grid_from_sphere']
-from .grid import Grid, structured_grid, grid_from_element_data, grid_from_sphere
-
+            'grid_from_sphere',
+            'boundary_grid_from_fenics_mesh']
+from .grid import Grid, structured_grid, grid_from_element_data, grid_from_sphere, boundary_grid_from_fenics_mesh
 
 
