@@ -40,7 +40,8 @@ endif ()
 
 list(INSERT CMAKE_LOOKUP_PATH 0 ${PROJECT_SOURCE_DIR}/cmake/lookups)
 # lookup_package(CAIRO REQUIRED)
-lookup_package(Boost 1.54 COMPONENTS unit_test_framework REQUIRED)
+lookup_package(Boost 1.57 COMPONENTS unit_test_framework filesystem
+               program_options system thread iostreams REQUIRED)
 lookup_package(Armadillo REQUIRED ARGUMENTS TIMEOUT 60)
 # ARMA_DONT_USE_WRAPPER means we don't need to include armadillo library
 add_definitions(-DARMA_DONT_USE_WRAPPER)
@@ -98,6 +99,12 @@ endif ()
 if(NOT EXISTS "${PROJECT_BINARY_DIR}/include/FC.h")
     file(WRITE "${PROJECT_BINARY_DIR}/include/FC.h" "// fake Fortran-C file")
 endif()
+
+if(WITH_FENICS)
+    include(BemppFenicsDependencies)
+endif()
+
+
 
 # Now include all dependency directories once and for all
 set(BEMPP_INCLUDE_DIRS

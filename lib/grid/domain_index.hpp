@@ -21,6 +21,7 @@
 #ifndef bempp_domain_index_hpp
 #define bempp_domain_index_hpp
 
+#include "../common/common.hpp"
 #include <memory>
 #include <vector>
 #include <utility>
