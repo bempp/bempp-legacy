@@ -37,6 +37,9 @@ BoundaryOperator<BasisFunctionType, ResultType>::BoundaryOperator()
     : m_holdWeakForm(true) {}
 
 template <typename BasisFunctionType, typename ResultType>
+BoundaryOperator<BasisFunctionType, ResultType>::~BoundaryOperator(){}
+
+template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType>::BoundaryOperator(
     const shared_ptr<const Context<BasisFunctionType, ResultType>> &context,
     const shared_ptr<const AbstractBoundaryOperator<BasisFunctionType,

@@ -234,7 +234,16 @@ cdef class GridFunction:
         else:
             raise ValueError("Need to specify at least one of 'coefficients', 'projections' or 'fun'")
 
+    def __dealloc__(self):
 
+
+% for pybasis,cybasis in dtypes.items():
+%     for pyresult,cyresult in dtypes.items():
+%         if pyresult in compatible_dtypes[pybasis]:
+        self._impl_${pybasis}_${pyresult}.reset()
+%         endif
+%     endfor
+% endfor    
 
 
 

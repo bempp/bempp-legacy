@@ -7,7 +7,7 @@ from bempp.utils.parameter_list cimport c_ParameterList, ParameterList
 from bempp.space.space cimport SpaceVariants,Space
 from libcpp.string cimport string
 from bempp.utils.enum_types cimport symmetry_mode
-from bempp.assembly.boundary_operator cimport SparseBoundaryOperator,BoundaryOpVariants
+from bempp.assembly.boundary_operator cimport BoundaryOpVariants,GeneralBoundaryOperator
 from cython.operator cimport dereference as deref
 from bempp.utils.byte_conversion import convert_to_bytes
 from bempp.utils.enum_types cimport symmetry_mode
@@ -19,7 +19,7 @@ def identity(Space domain, Space range, Space dual_to_range,
         parameter_list=None):
 
     cdef ParameterList parameters
-    cdef SparseBoundaryOperator bop 
+    cdef GeneralBoundaryOperator bop 
 
     if not len({domain.dtype,range.dtype,dual_to_range.dtype})==1:
         raise ValueError("All spaces must have the same data type")
@@ -36,26 +36,15 @@ def identity(Space domain, Space range, Space dual_to_range,
     basis_type = domain.dtype
     result_type = 'float64'
 
-    bop = SparseBoundaryOperator(basis_type=basis_type,result_type=result_type)
-    bop._domain = domain
-    bop._range = range
-    bop._dual_to_range = dual_to_range
+    bop = GeneralBoundaryOperator(basis_type,result_type,
+            parameters,True)
 
-% for pybasis, cybasis in dtypes.items():
-%     for pyresult, cyresult in dtypes.items():
-%         if pyresult in compatible_dtypes[pybasis]:
+    bop.impl_.assign(c_identityOperator[double,double](
+        deref(parameters.impl_),domain.impl_,range.impl_,
+        dual_to_range.impl_,convert_to_bytes(label),
+        symmetry_mode(convert_to_bytes(symmetry))))
 
-    if basis_type=="${pybasis}" and result_type=="${pyresult}":
-        bop.impl_.assign(c_identityOperator[${cybasis},${cyresult}](
-            deref(parameters.impl_),domain.impl_,range.impl_,
-            dual_to_range.impl_,convert_to_bytes(label),
-            symmetry_mode(convert_to_bytes(symmetry))))
-        return bop
-%           endif
-%       endfor
-% endfor
-
-    raise ValueError("Wrong basis_type or result_type")
+    return bop
 
 
 

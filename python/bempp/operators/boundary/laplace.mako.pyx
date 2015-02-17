@@ -1,6 +1,16 @@
 #cython: embedsignature=True
 <%
 from data_types import dtypes, compatible_dtypes, ctypes
+
+op_names = [('single_layer','c_laplace3dSingleLayerBoundaryOperator',
+             'Return the Laplace single layer boundary operator.'),
+            ('double_layer','c_laplace3dDoubleLayerBoundaryOperator',
+             'Return the Laplace double layer boundary operator.'),
+            ('adjoint_double_layer','c_laplace3dAdjointDoubleLayerBoundaryOperator',
+             'Return the Laplace adjoint double layer boundary operator.'),
+            ('hypersingular','c_laplace3dHypersingularBoundaryOperator',
+              'Return the Laplace hypersingular boundary operator.')]
+
 %>
 
 __all__=['single_layer','double_layer','adjoint_double_layer','hypersingular']
@@ -17,12 +27,13 @@ from bempp.utils.enum_types cimport symmetry_mode
 from bempp.utils cimport complex_float, complex_double
 from bempp.common import global_parameters
 
-def single_layer(Space domain, Space range, Space dual_to_range,
+% for pyname,c_name,help_text in op_names:
+def ${pyname}(Space domain, Space range, Space dual_to_range,
         object label="", object symmetry="auto_symmetry", 
         object parameter_list=None):
     """
 
-    Return the Laplace single layer boundary operator.
+    ${help_text}
 
     """
 
@@ -42,171 +53,15 @@ def single_layer(Space domain, Space range, Space dual_to_range,
     result_type = 'float64'
 
     basis_type = domain.dtype
-    bop = GeneralBoundaryOperator(basis_type=basis_type,result_type=result_type)
+    bop = GeneralBoundaryOperator(basis_type,result_type,
+            parameters)
 
-% for pybasis, cybasis in dtypes.items():
-%     for pyresult, cyresult in dtypes.items():
-%         if pyresult in compatible_dtypes[pybasis]:
-
-    if basis_type=="${pybasis}" and result_type=="${pyresult}":
-        bop.impl_.assign(c_laplace3dSingleLayerBoundaryOperator[${cybasis},${cyresult}](
+    bop.impl_.assign(
+            ${c_name}[double,double](
             deref(parameters.impl_),domain.impl_,range.impl_,
             dual_to_range.impl_,convert_to_bytes(label),
             symmetry_mode(convert_to_bytes(symmetry))))
-        if 'boundaryOperatorAssemblyType' in parameters and parameters['boundaryOperatorAssemblyType']=='dense': 
-            return DenseBoundaryOperator(bop)
-        else:
-            return bop
-%           endif
-%       endfor
-% endfor
 
-    raise ValueError("Wrong basis_type or result_type")
+    return bop
 
-def double_layer(Space domain, Space range, Space dual_to_range,
-        object label="", object symmetry="no_symmetry", 
-        object parameter_list=None):
-    """
-
-    Return the Laplace double layer boundary operator.
-
-    """
-
-    cdef ParameterList parameters
-    cdef GeneralBoundaryOperator bop 
-
-    result_type = 'float64'
-
-    if not len({domain.dtype,range.dtype,dual_to_range.dtype})==1:
-        raise ValueError("All spaces must have the same data type")
-
-
-    if parameter_list is None:
-        parameters = global_parameters()
-    else:
-        if not isinstance(parameter_list,ParameterList):
-            raise ValueError("parameter_list must be of type bempp.ParameterList")
-        parameters = parameter_list
-
-    basis_type = domain.dtype
-    bop = GeneralBoundaryOperator(basis_type=basis_type,result_type=result_type)
-
-
-% for pybasis, cybasis in dtypes.items():
-%     for pyresult, cyresult in dtypes.items():
-%         if pyresult in compatible_dtypes[pybasis]:
-
-    if basis_type=="${pybasis}" and result_type=="${pyresult}":
-        bop.impl_.assign(c_laplace3dDoubleLayerBoundaryOperator[${cybasis},${cyresult}](
-            deref(parameters.impl_),domain.impl_,range.impl_,
-            dual_to_range.impl_,convert_to_bytes(label),
-            symmetry_mode(convert_to_bytes(symmetry))))
-        if 'boundaryOperatorAssemblyType' in parameters and parameters['boundaryOperatorAssemblyType']=='dense': 
-            return DenseBoundaryOperator(bop)
-        else:
-            return bop
-%           endif
-%       endfor
-% endfor
-
-    raise ValueError("Wrong basis_type or result_type")
-
-def adjoint_double_layer(Space domain, Space range, Space dual_to_range,
-        object label="", object symmetry="no_symmetry", 
-        object parameter_list=None):
-    """
-
-    Return the Laplace adjoint double layer boundary operator.
-
-    """
-
-    cdef ParameterList parameters
-    cdef GeneralBoundaryOperator bop 
-
-    result_type = 'float64'
-
-    if not len({domain.dtype,range.dtype,dual_to_range.dtype})==1:
-        raise ValueError("All spaces must have the same data type")
-
-
-    if parameter_list is None:
-        parameters = global_parameters()
-    else:
-        if not isinstance(parameter_list,ParameterList):
-            raise ValueError("parameter_list must be of type bempp.ParameterList")
-        parameters = parameter_list
-
-    basis_type = domain.dtype
-    bop = GeneralBoundaryOperator(basis_type=basis_type,result_type=result_type)
-
-
-% for pybasis, cybasis in dtypes.items():
-%     for pyresult, cyresult in dtypes.items():
-%         if pyresult in compatible_dtypes[pybasis]:
-
-    if basis_type=="${pybasis}" and result_type=="${pyresult}":
-        bop.impl_.assign(c_laplace3dAdjointDoubleLayerBoundaryOperator[${cybasis},${cyresult}](
-            deref(parameters.impl_),domain.impl_,range.impl_,
-            dual_to_range.impl_,convert_to_bytes(label),
-            symmetry_mode(convert_to_bytes(symmetry))))
-        if 'boundaryOperatorAssemblyType' in parameters and parameters['boundaryOperatorAssemblyType']=='dense': 
-            return DenseBoundaryOperator(bop)
-        else:
-            return bop
-%           endif
-%       endfor
-% endfor
-
-    raise ValueError("Wrong basis_type or result_type")
-
-def hypersingular(Space domain, Space range, Space dual_to_range,
-        object label="", object symmetry="no_symmetry", 
-        object result_type="float64",
-        object parameter_list=None):
-    """
-
-    Return the Laplace hypersingular boundary operator.
-
-    """
-
-    cdef ParameterList parameters
-    cdef GeneralBoundaryOperator bop 
-
-    result_type = 'float64'
-
-    if not len({domain.dtype,range.dtype,dual_to_range.dtype})==1:
-        raise ValueError("All spaces must have the same data type")
-
-
-    if parameter_list is None:
-        parameters = global_parameters()
-    else:
-        if not isinstance(parameter_list,ParameterList):
-            raise ValueError("parameter_list must be of type bempp.ParameterList")
-        parameters = parameter_list
-
-    basis_type = domain.dtype
-    bop = GeneralBoundaryOperator(basis_type=basis_type,result_type=result_type)
-
-
-% for pybasis, cybasis in dtypes.items():
-%     for pyresult, cyresult in dtypes.items():
-%         if pyresult in compatible_dtypes[pybasis]:
-
-    if basis_type=="${pybasis}" and result_type=="${pyresult}":
-        bop.impl_.assign(c_laplace3dHypersingularBoundaryOperator[${cybasis},${cyresult}](
-            deref(parameters.impl_),domain.impl_,range.impl_,
-            dual_to_range.impl_,convert_to_bytes(label),
-            symmetry_mode(convert_to_bytes(symmetry))))
-        if 'boundaryOperatorAssemblyType' in parameters and parameters['boundaryOperatorAssemblyType']=='dense': 
-            return DenseBoundaryOperator(bop)
-        else:
-            return bop
-%           endif
-%       endfor
-% endfor
-
-    raise ValueError("Wrong basis_type or result_type")
-
-
-
+%endfor

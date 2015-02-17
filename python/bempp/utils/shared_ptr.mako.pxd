@@ -10,5 +10,6 @@ cdef extern from "<boost/shared_ptr.hpp>" namespace "boost":
         T& operator*()
         T* get()
         void reset(T*) except *
+        void reset()
 
     shared_ptr[T] static_pointer_cast[T,U](const shared_ptr[U]&)

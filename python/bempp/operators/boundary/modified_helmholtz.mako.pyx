@@ -65,9 +65,6 @@ def ${pyname}(Space domain, Space range, Space dual_to_range,
     else:
         result_type = 'float64'
 
-    bop = GeneralBoundaryOperator(basis_type=basis_type,result_type=result_type)
-
-
 % for pybasis, cybasis in dtypes.items():
 %     for pyresult, cyresult in dtypes.items():
 %         if pyresult in compatible_dtypes[pybasis]:
@@ -77,13 +74,17 @@ def ${pyname}(Space domain, Space range, Space dual_to_range,
 
         cy_wave_number_${pyresult} = wave_number
         c_wave_number_${pyresult} = deref(<${cyresult}*>&cy_wave_number_${pyresult})
+        bop = GeneralBoundaryOperator(basis_type,result_type,
+                parameters)
 
-        bop.impl_.assign(${c_name}[${cybasis},${cyresult}](
+        bop.impl_.assign(
+            ${c_name}[${cybasis},${cyresult}](
             deref(parameters.impl_),domain.impl_,range.impl_,
             dual_to_range.impl_, c_wave_number_${pyresult}, convert_to_bytes(label),
             symmetry_mode(convert_to_bytes(symmetry))))
-        if 'boundaryOperatorAssemblyType' in parameters and parameters['boundaryOperatorAssemblyType']=='dense': 
-            return DenseBoundaryOperator(bop)
+
+        return bop
+
 %           endif
 %       endfor
 % endfor

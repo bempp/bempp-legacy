@@ -10,6 +10,8 @@ from bempp.assembly.discrete_boundary_operator cimport DiscreteBoundaryOperator
 from bempp.assembly.discrete_boundary_operator cimport DiscreteBoundaryOperatorBase
 from bempp.utils cimport shared_ptr
 from bempp.space.space cimport Space
+from bempp.utils cimport ParameterList
+from libcpp cimport bool as cbool
 
 cdef extern from "bempp/assembly/boundary_operator.hpp":
     cdef cppclass c_BoundaryOperator "Bempp::BoundaryOperator" [BASIS, RESULT]:
@@ -54,6 +56,8 @@ cdef class BoundaryOperatorBase:
 
 cdef class GeneralBoundaryOperator(BoundaryOperatorBase):
     cdef BoundaryOpVariants impl_
+    cdef ParameterList _parameters
+    cdef cbool _is_sparse
 
 cdef class DenseBoundaryOperator(GeneralBoundaryOperator):
     pass

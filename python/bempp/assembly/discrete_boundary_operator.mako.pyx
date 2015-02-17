@@ -124,6 +124,12 @@ cdef class DiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
     def __init__(self):
         pass
 
+    def __dealloc__(self):
+
+% for pybasis, cybasis in dtypes.items():
+        self._impl_${pybasis}_.reset()
+% endfor
+
     property shape:
 
         def __get__(self):
@@ -422,6 +428,9 @@ cdef class DenseDiscreteBoundaryOperator(DiscreteBoundaryOperator):
 
     def __init__(self):
         self._array_view = None
+
+    def __dealloc__(self):
+        pass
 
     cdef object _init_array_view(self):
         """ Initialize the view on the dense operator via a Numpy Array """

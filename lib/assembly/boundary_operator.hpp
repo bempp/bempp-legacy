@@ -65,6 +65,10 @@ public:
   /** \brief Construct an uninitialized BoundaryOperator. */
   BoundaryOperator();
 
+
+  /** \brief Destructor. */
+  virtual ~BoundaryOperator();
+
   /** \brief Construct and initialize a BoundaryOperator.
    *
    *  Equivalent to calling the initialize() function on a BoundaryOperator
