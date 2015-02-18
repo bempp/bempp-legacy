@@ -323,27 +323,6 @@ def grid_from_sphere(int n, double radius=1.0, object origin = [0,0,0]):
 
     return grid_from_element_data(nodes,elements)
 
-def boundary_grid_from_fenics_mesh(fenics_mesh):
-    """
-
-    Return a boundary grid from a FEniCS Mesh
-
-    """
-    
-    try:
-        import dolfin
-    except:
-        print("Cannot import dolfin. Check your FEniCS installation.")
-        return None
-
-    bm = dolfin.BoundaryMesh(fenics_mesh, "exterior", False)
-    bm_coords = bm.coordinates()
-    bm_cells  = bm.cells()
-    bm_nodes  = bm.entity_map(0).array().astype(_np.int64)
-    grid = grid_from_element_data(bm_coords.transpose(),bm_cells.transpose())
-
-    return grid
-
 
 
 
