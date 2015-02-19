@@ -21,8 +21,8 @@ namespace Bempp {
 template <typename ValueType>
 PyObject* py_get_sparse_from_discrete_operator(const shared_ptr<const DiscreteBoundaryOperator< ValueType > >& op)
         {
-                shared_ptr<const Epetra_CrsMatrix> epetraOperator = Bempp::DiscreteSparseBoundaryOperator< ValueType >::castToSparse(op)->epetraMatrix();
-
+                shared_ptr<const Epetra_CrsMatrix> epetraOperator = (static_pointer_cast<const DiscreteSparseBoundaryOperator<ValueType>>(op.get()))->epetraMatrix();
+                    
                 PyObject* data;
                 PyObject* colind;
                 PyObject* row_ptr;
@@ -69,11 +69,19 @@ PyObject* py_get_sparse_from_discrete_operator(const shared_ptr<const DiscreteBo
                 PyTuple_SetItem(pArgsShape, 1, pN);
 
 
-                data = PyArray_SimpleNewFromData(1,&num_nonzeros,NPY_FLOAT64,values);
-                colind = PyArray_SimpleNewFromData(1,&num_nonzeros,NPY_INT,indices);
-                row_ptr = PyArray_SimpleNewFromData(1,&num_row_ptr,NPY_INT,indexOffset);
-                
-                
+                data = PyArray_SimpleNew(1,&num_nonzeros,NPY_FLOAT64);
+                colind = PyArray_SimpleNew(1,&num_nonzeros,NPY_INT);
+                row_ptr = PyArray_SimpleNew(1,&num_row_ptr,NPY_INT);
+               
+                for (npy_intp i = 0;i < num_nonzeros;++i)
+                   *((double*)PyArray_GETPTR1(data,i)) = values[i];
+
+                for (npy_intp i = 0;i < num_nonzeros;++i)
+                   *((int*)PyArray_GETPTR1(colind,i)) = indices[i];
+
+                for (npy_intp i = 0;i < num_row_ptr;++i)
+                   *((int*)PyArray_GETPTR1(row_ptr,i)) = indexOffset[i];
+               
                 pArgsCsr = PyTuple_New(3); 
                 pArgs = PyTuple_New(2); 
                              
