@@ -51,6 +51,7 @@ def fenics_to_global_map(fenics_space):
     return map
 
 def fenics_to_bempp_mass_matrix(bempp_space,fenics_space):
+    """Returns a mass matrix"""
     from bempp.operators.boundary.sparse import identity
     trace_space = boundary_space_from_fenics_space(fenics_space,bempp_space.grid)
     id = identity(trace_space,trace_space,bempp_space)
