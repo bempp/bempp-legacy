@@ -3,17 +3,13 @@ from scipy.sparse import lil_matrix
 
 def boundary_grid_from_fenics_mesh(fenics_mesh):
     """Return a boundary grid from a FEniCS Mesh."""
-    try:
-        fenics_mesh.bempp_boundary_grid
-    except AttributeError:
-        from bempp import grid_from_element_data
+    from bempp import grid_from_element_data
 
-        bm = _dolfin.BoundaryMesh(fenics_mesh, "exterior", False)
-        bm_coords = bm.coordinates()
-        bm_cells  = bm.cells()
-        fenics_mesh.bempp_boundary_grid = grid_from_element_data(bm_coords.transpose(),bm_cells.transpose())
-
-    return fenics_mesh.bempp_boundary_grid
+    bm = _dolfin.BoundaryMesh(fenics_mesh, "exterior", False)
+    bm_coords = bm.coordinates()
+    bm_cells  = bm.cells()
+    bempp_boundary_grid = grid_from_element_data(bm_coords.transpose(),bm_cells.transpose())
+    return bempp_boundary_grid
 
 def fenics_to_bempp_map(fenics_space,bempp_space):
     """Return the permutation matrix from the FEniCS space to the BEM++ space."""
