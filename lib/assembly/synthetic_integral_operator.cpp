@@ -22,7 +22,6 @@
 
 #include "synthetic_integral_operator.hpp"
 
-#include "abstract_boundary_operator_pseudoinverse.hpp"
 #include "boundary_operator.hpp"
 #include "context.hpp"
 #include "discrete_boundary_operator.hpp"

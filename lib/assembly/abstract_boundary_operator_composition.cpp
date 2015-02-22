@@ -73,6 +73,10 @@ shared_ptr<DiscreteBoundaryOperator<ResultType>>
 AbstractBoundaryOperatorComposition<BasisFunctionType, ResultType>::
     assembleWeakFormImpl(const Context<BasisFunctionType, ResultType> &context)
     const {
+
+  throw std::runtime_error("AbstractBoundaryOperatorComposition disabled");
+/*
+
   typedef BoundaryOperator<BasisFunctionType, ResultType> BoundaryOp;
   typedef DiscreteBoundaryOperator<ResultType> DiscreteLinOp;
 
@@ -94,6 +98,8 @@ AbstractBoundaryOperatorComposition<BasisFunctionType, ResultType>::
           pinvId.weakForm(), discreteInner);
   return boost::make_shared<DiscreteBoundaryOperatorComposition<ResultType>>(
       discreteOuter, temp);
+*/
+
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(

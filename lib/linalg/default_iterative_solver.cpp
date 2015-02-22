@@ -70,6 +70,8 @@ struct DefaultIterativeSolver<BasisFunctionType, ResultType>::Impl {
   Impl(const BoundaryOperator<BasisFunctionType, ResultType> &op_,
        ConvergenceTestMode::Mode mode_)
       : op(op_), mode(mode_) {
+    throw std::runtime_error("DefaultIterativeSolver disabled.");
+          /*
     typedef BoundaryOperator<BasisFunctionType, ResultType> BoundaryOp;
     typedef Solver<BasisFunctionType, ResultType> Solver_;
     const BoundaryOp &boundaryOp = boost::get<BoundaryOp>(op);
@@ -107,12 +109,16 @@ struct DefaultIterativeSolver<BasisFunctionType, ResultType>::Impl {
       throw std::invalid_argument(
           "DefaultIterativeSolver::DefaultIterativeSolver(): "
           "invalid convergence test mode");
+          */
   }
 
   // Constructor for blocked operators
   Impl(const BlockedBoundaryOperator<BasisFunctionType, ResultType> &op_,
        ConvergenceTestMode::Mode mode_)
       : op(op_), mode(mode_) {
+
+throw std::runtime_error("DefaultIterativeSolver disabled");
+/*
     typedef BlockedBoundaryOperator<BasisFunctionType, ResultType> BoundaryOp;
     typedef Solver<BasisFunctionType, ResultType> Solver_;
     const BoundaryOp &boundaryOp = boost::get<BoundaryOp>(op);
@@ -164,6 +170,7 @@ struct DefaultIterativeSolver<BasisFunctionType, ResultType>::Impl {
       throw std::invalid_argument(
           "DefaultIterativeSolver::DefaultIterativeSolver(): "
           "invalid convergence test mode");
+          */
   }
 
   boost::variant<BoundaryOperator<BasisFunctionType, ResultType>,
