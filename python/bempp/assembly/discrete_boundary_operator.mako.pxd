@@ -58,3 +58,7 @@ cdef class DenseDiscreteBoundaryOperator(DiscreteBoundaryOperator):
     cdef object _array_view
     
     cdef object _init_array_view(self)
+
+cdef class HMatDiscreteBoundaryOperator(DiscreteBoundaryOperator):
+    pass
+

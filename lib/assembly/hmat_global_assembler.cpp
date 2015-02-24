@@ -164,7 +164,7 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
 
   shared_ptr<const Space<BasisFunctionType>> actualTestSpace;
   shared_ptr<const Space<BasisFunctionType>> actualTrialSpace;
-  if (indexWithGlobalDofs) {
+  if (!indexWithGlobalDofs) {
     actualTestSpace = testSpacePointer->discontinuousSpace(testSpacePointer);
     actualTrialSpace = trialSpacePointer->discontinuousSpace(trialSpacePointer);
   } else {
@@ -181,24 +181,37 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
   auto blockClusterTree = generateBlockClusterTree(
       *actualTestSpace, *actualTrialSpace, minBlockSize, maxBlockSize, eta);
 
-  // blockClusterTree->writeToPdfFile("tree.pdf", 1024, 1024);
-
   WeakFormHMatAssemblyHelper<BasisFunctionType, ResultType> helper(
       *actualTestSpace, *actualTrialSpace, blockClusterTree, localAssemblers,
       sparseTermsToAdd, denseTermMultipliers, sparseTermMultipliers);
 
-  // hmat::HMatrixDenseCompressor<ResultType, 2> compressor(helper);
-  // shared_ptr<hmat::CompressedMatrix<ResultType>> hMatrix(
-  //    new hmat::DefaultHMatrixType<ResultType>(blockClusterTree, compressor));
+  auto defaultCompressionAlg = hMatParameterList.
+      template get<std::string>("defaultCompressionAlg");
 
-  hmat::HMatrixAcaCompressor<ResultType, 2> compressor(helper, 1E-3, 30);
-  shared_ptr<hmat::CompressedMatrix<ResultType>> hMatrix(
-      new hmat::DefaultHMatrixType<ResultType>(blockClusterTree, compressor));
+  shared_ptr<hmat::DefaultHMatrixType<ResultType>> hMatrix;
 
+  if (defaultCompressionAlg=="aca")
+  {
+
+    auto eps = hMatParameterList.template get<double>("eps");
+    auto maxRank = hMatParameterList.template get<int>("maxRank");
+    hmat::HMatrixAcaCompressor<ResultType, 2> 
+        compressor(helper, 1E-3, 30);
+    hMatrix.reset(new hmat::DefaultHMatrixType<ResultType>
+            (blockClusterTree, compressor));
+  }
+  else if (defaultCompressionAlg=="dense")
+  {
+    hmat::HMatrixDenseCompressor<ResultType, 2> compressor(helper);
+    hMatrix.reset(new hmat::DefaultHMatrixType<ResultType>
+            (blockClusterTree,compressor));
+  }
+  else throw std::runtime_error(
+          "HMatGlobalAssember::assembleDetachedWeakForm: "
+          "Unknown compression algorithm");
   return std::unique_ptr<DiscreteBoundaryOperator<ResultType>>(
       new DiscreteHMatBoundaryOperator<ResultType>(hMatrix));
 
-  // return std::unique_ptr<DiscreteBoundaryOperator<ResultType>>();
 }
 
 template <typename BasisFunctionType, typename ResultType>

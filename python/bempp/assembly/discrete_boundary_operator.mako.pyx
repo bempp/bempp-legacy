@@ -450,6 +450,18 @@ cdef class DenseDiscreteBoundaryOperator(DiscreteBoundaryOperator):
             self._init_array_view()
             return self._array_view[:]
 
+cdef class HMatDiscreteBoundaryOperator(DiscreteBoundaryOperator):
+
+    def __cinit__(self):
+        pass
+
+    def __init__(self):
+        pass
+
+    def __dealloc__(self):
+        pass
+
+
 cdef class BlockedDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
 
     cdef np.ndarray _row_dimensions

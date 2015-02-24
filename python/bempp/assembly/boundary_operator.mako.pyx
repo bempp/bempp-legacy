@@ -147,6 +147,8 @@ cdef class GeneralBoundaryOperator(BoundaryOperatorBase):
             return self._sparse_weak_form()
         elif self.parameter_list['boundaryOperatorAssemblyType']=='dense':
             return self._dense_weak_form()
+        elif self.parameter_list['boundaryOperatorAssemblyType']=='hmat':
+            return self._hmat_weak_form()
         else:
             return self._default_weak_form()
 
@@ -186,6 +188,10 @@ cdef class GeneralBoundaryOperator(BoundaryOperatorBase):
 %      endfor
 % endfor
         raise ValueError("Incompatible basis and result types") 
+
+    def _hmat_weak_form(self):
+
+        return self._default_weak_form()
 
     def _default_weak_form(self):
 
