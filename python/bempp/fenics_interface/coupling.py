@@ -13,7 +13,7 @@ def boundary_grid_from_fenics_mesh(fenics_mesh):
     bempp_boundary_grid = grid_from_element_data(bm_coords.transpose(),bm_cells.transpose())
     return bempp_boundary_grid
 
-def fenics_to_bempp_trace(fenics_space):
+def fenics_to_bempp_trace_data(fenics_space):
     """
     Returns tuple (space,mass_matrix,trace_matrix)
     """
