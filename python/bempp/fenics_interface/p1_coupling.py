@@ -30,48 +30,38 @@ def p1_trace(fenics_space):
     bempp_boundary_grid = grid_from_element_data(bm_coords.transpose(),bm_cells.transpose())
 
     # First get trace space 
-
     space = function_space(bempp_boundary_grid,"P",1)
 
     # Now compute the mapping from BEM++ dofs to FEniCS dofs
 
-    # First the BEM++ dofs to the vertices
-
+    # First the BEM++ dofs to the boundary vertices
     from ._lagrange_coupling import p1_vertex_map
     from scipy.sparse import coo_matrix
+    # this is giving [0,1,2,...]
     vertex_to_dof_map =  p1_vertex_map(space)
+    # this is giving [0,1,2,...]
     vertex_indices = np.arange(space.global_dof_count)
     data = np.ones(space.global_dof_count)
-    bempp_dofs_to_vertices = coo_matrix((data,(vertex_indices,vertex_to_dof_map)),dtype='float64').tocsr()
+    # this gives identity matrix...
+    bempp_dofs_from_b_vertices = coo_matrix((data,(vertex_to_dof_map,vertex_indices)),dtype='float64').tocsr()
+    # this gives identity matrix...
 
-    # Now the vertices to FEniCS dofs
+    # Now the boundary vertices to all the vertices
+    b_vertices_from_vertices = coo_matrix((
+        np.ones(len(bm_nodes)),(np.arange(len(bm_nodes)),bm_nodes)),
+        shape=(len(bm_nodes),mesh.num_vertices()),dtype='float64').tocsr()
 
-    vertices_to_fenics_dofs = coo_matrix((
-        np.ones(len(bm_nodes)),(bm_nodes,np.arange(len(bm_nodes)))),
-        shape=(mesh.num_vertices(),len(bm_nodes)),dtype='float64').tocsr()
+    # Finally the vertices to FEniCS dofs
+    vertices_from_fenics_dofs = coo_matrix((
+        np.ones(mesh.num_vertices()),(dolfin.dof_to_vertex_map(fenics_space),np.arange(mesh.num_vertices()))),
+        shape=(mesh.num_vertices(),mesh.num_vertices()),dtype='float64').tocsr()
 
     # Get trace matrix by multiplication
-    # FIXME Remove transpose
+    trace_matrix = bempp_dofs_from_b_vertices*b_vertices_from_vertices*vertices_from_fenics_dofs
 
-    trace_matrix = bempp_dofs_to_vertices.transpose()*vertices_to_fenics_dofs.transpose()
-    
     # Now compute the mass matrix 
-
     from bempp.operators.boundary.sparse import identity
-
     mass_matrix = trace_matrix.transpose()*identity(space,space,space).weak_form().sparse_operator
 
     # Now return everything
-
-    return (space,mass_matrix,trace_matrix)
-
-
-
-
-
-
-
-
-
-
-
+    return (space,mass_matrix,trace_matrix,bempp_dofs_from_b_vertices)
