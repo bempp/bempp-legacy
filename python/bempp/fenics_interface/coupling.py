@@ -1,5 +1,4 @@
 import dolfin as _dolfin
-from scipy.sparse import lil_matrix
 
 def boundary_grid_from_fenics_mesh(fenics_mesh):
     """
