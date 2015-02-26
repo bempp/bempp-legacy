@@ -64,4 +64,4 @@ def p1_trace(fenics_space):
     mass_matrix = trace_matrix.transpose()*identity(space,space,space).weak_form().sparse_operator
 
     # Now return everything
-    return (space,mass_matrix,trace_matrix,bempp_dofs_from_b_vertices)
+    return (space,mass_matrix,trace_matrix)
