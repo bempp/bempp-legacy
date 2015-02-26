@@ -14,7 +14,7 @@ def boundary_grid_from_fenics_mesh(fenics_mesh):
 
 def fenics_to_bempp_trace_data(fenics_space):
     """
-    Returns tuple (space,mass_matrix,trace_matrix)
+    Returns tuple (space,trace_matrix)
     """
 
     family,degree = fenics_space_info(fenics_space)
