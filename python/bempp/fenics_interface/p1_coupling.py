@@ -59,9 +59,5 @@ def p1_trace(fenics_space):
     # Get trace matrix by multiplication
     trace_matrix = bempp_dofs_from_b_vertices*b_vertices_from_vertices*vertices_from_fenics_dofs
 
-    # Now compute the mass matrix 
-    from bempp.operators.boundary.sparse import identity
-    mass_matrix = trace_matrix.transpose()*identity(space,space,space).weak_form().sparse_operator
-
     # Now return everything
-    return (space,mass_matrix,trace_matrix,bempp_dofs_from_b_vertices)
+    return (space,trace_matrix)
