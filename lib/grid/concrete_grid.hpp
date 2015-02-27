@@ -33,11 +33,36 @@
 #include "concrete_geometry_factory.hpp"
 #include "concrete_grid_view.hpp"
 #include "concrete_id_set.hpp"
+
+#include <dune/grid/common/gridview.hh>
+
 #include <armadillo>
 
 #include <memory>
 
 namespace Bempp {
+
+/** \ingroup grid_internal
+ *\brief Permute domain indices according to the grid index ordering. */
+
+template <typename DuneGrid>
+std::vector<int>
+permuteInsertionDomainIndices(const std::vector<int> &domainIndices,
+                              const Dune::GridFactory<DuneGrid> &factory,
+                              const DuneGrid &grid) {
+
+  std::vector<int> output(domainIndices.size());
+  auto view = grid.leafGridView();
+  const auto &indexSet = view.indexSet();
+  for (auto it = grid.template leafbegin<0>(); it != grid.template leafend<0>();
+       ++it) {
+    const typename DuneGrid::template Codim<0>::Entity &element = *it;
+    int insertionIndex = factory.insertionIndex(element);
+    output[indexSet.index(element)] = domainIndices[insertionIndex];
+  }
+
+  return output;
+}
 
 /** \cond FORWARD_DECL */
 template <int codim> class Entity;
@@ -57,8 +82,9 @@ private:
   bool m_owns_dune_grid;
   GridParameters::Topology m_topology;
   ConcreteIdSet<DuneGrid, typename DuneGrid::Traits::GlobalIdSet>
-  m_global_id_set;
+      m_global_id_set;
   ConcreteDomainIndex<DuneGrid> m_domain_index;
+  shared_ptr<const Dune::GridFactory<DuneGrid>> m_factory;
 
 public:
   /** \brief Underlying Dune grid's type*/
@@ -91,6 +117,24 @@ public:
         m_topology(topology), m_global_id_set(&dune_grid->globalIdSet()),
         m_domain_index(*dune_grid, domainIndices) {}
 
+  explicit ConcreteGrid(shared_ptr<Dune::GridFactory<DuneGrid>> factory,
+                        GridParameters::Topology topology)
+      : m_factory(factory), m_owns_dune_grid(true),
+        m_dune_grid(factory->createGrid()), m_topology(topology),
+        m_global_id_set(&m_dune_grid->globalIdSet()),
+        m_domain_index(*m_dune_grid,
+                       std::vector<int>(m_dune_grid->size(0, 0), 0)) {}
+
+  explicit ConcreteGrid(const shared_ptr<Dune::GridFactory<DuneGrid>> &factory,
+                        GridParameters::Topology topology,
+                        const std::vector<int> &domainIndices)
+      : m_factory(factory), m_owns_dune_grid(true),
+        m_dune_grid(factory->createGrid()), m_topology(topology),
+        m_global_id_set(&m_dune_grid->globalIdSet()),
+        m_domain_index(*m_dune_grid,
+                       permuteInsertionDomainIndices(domainIndices, *factory,
+                                                     *m_dune_grid)) {}
+
   /** \brief Destructor. */
   ~ConcreteGrid() {
     if (m_owns_dune_grid)
@@ -99,6 +143,12 @@ public:
 
   /** \brief Read-only access to the underlying Dune grid object. */
   const DuneGrid &duneGrid() const { return *m_dune_grid; }
+
+  /** \brief Return the GridFactory used for creation of the grid (if it exists). */
+
+  const shared_ptr<const Dune::GridFactory<DuneGrid>> factory() const{
+      return m_factory;
+  }
 
   /** \brief Access to the underlying Dune grid object. Use at your own risk! */
   DuneGrid &duneGrid() { return *m_dune_grid; }
@@ -153,36 +203,36 @@ public:
   /** \brief Return a barycentrically refined grid based on the LeafView */
   virtual shared_ptr<Grid> barycentricGrid() const {
 
-      /*
+    /*
 
+  if (!m_barycentricGrid.get()) {
+    tbb::mutex::scoped_lock lock(m_barycentricSpaceMutex);
     if (!m_barycentricGrid.get()) {
-      tbb::mutex::scoped_lock lock(m_barycentricSpaceMutex);
-      if (!m_barycentricGrid.get()) {
 
-        arma::Mat<double> vertices;
-        arma::Mat<int> elementCorners;
-        arma::Mat<char> auxData;
-        std::vector<int> domainIndices;
+      arma::Mat<double> vertices;
+      arma::Mat<int> elementCorners;
+      arma::Mat<char> auxData;
+      std::vector<int> domainIndices;
 
-        std::unique_ptr<GridView> view = this->leafView();
+      std::unique_ptr<GridView> view = this->leafView();
 
-        view->getRawElementData(vertices, elementCorners, auxData,
-                                domainIndices);
+      view->getRawElementData(vertices, elementCorners, auxData,
+                              domainIndices);
 
-        GridParameters params;
-        params.topology = GridParameters::TRIANGULAR;
-        shared_ptr<Grid> newGrid =
-            GridFactory::createGridFromConnectivityArrays(
-                params, vertices, elementCorners, domainIndices);
-        shared_ptr<ConcreteGrid<DuneGrid>> concreteGrid =
-            dynamic_pointer_cast<ConcreteGrid<DuneGrid>>(newGrid);
-        (concreteGrid->duneGrid()).globalBarycentricRefine(1);
+      GridParameters params;
+      params.topology = GridParameters::TRIANGULAR;
+      shared_ptr<Grid> newGrid =
+          GridFactory::createGridFromConnectivityArrays(
+              params, vertices, elementCorners, domainIndices);
+      shared_ptr<ConcreteGrid<DuneGrid>> concreteGrid =
+          dynamic_pointer_cast<ConcreteGrid<DuneGrid>>(newGrid);
+      (concreteGrid->duneGrid()).globalBarycentricRefine(1);
 
-        m_barycentricGrid = newGrid;
-      }
+      m_barycentricGrid = newGrid;
     }
-    return m_barycentricGrid;
-    */
+  }
+  return m_barycentricGrid;
+  */
     throw std::runtime_error("Barycentric Grid not implemented.");
     return shared_ptr<Grid>();
   }
