@@ -37,14 +37,10 @@ def p1_trace(fenics_space):
     # First the BEM++ dofs to the boundary vertices
     from ._lagrange_coupling import p1_vertex_map
     from scipy.sparse import coo_matrix
-    # this is giving [0,1,2,...]
     vertex_to_dof_map =  p1_vertex_map(space)
-    # this is giving [0,1,2,...]
     vertex_indices = np.arange(space.global_dof_count)
     data = np.ones(space.global_dof_count)
-    # this gives identity matrix...
     bempp_dofs_from_b_vertices = coo_matrix((data,(vertex_to_dof_map,vertex_indices)),dtype='float64').tocsr()
-    # this gives identity matrix...
 
     # Now the boundary vertices to all the vertices
     b_vertices_from_vertices = coo_matrix((
@@ -60,8 +56,4 @@ def p1_trace(fenics_space):
     trace_matrix = bempp_dofs_from_b_vertices*b_vertices_from_vertices*vertices_from_fenics_dofs
 
     # Now return everything
-<<<<<<< HEAD
-    return (space,mass_matrix,trace_matrix)
-=======
     return (space,trace_matrix)
->>>>>>> 29f2e28d47264621ca1c778281bc8fb6f89ece9f
