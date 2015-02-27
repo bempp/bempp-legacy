@@ -5,6 +5,7 @@
 #include "bempp/space/py_space_variants.hpp"
 #include "bempp/common/shared_ptr.hpp"
 #include "bempp/grid/grid.hpp"
+#include "bempp/grid/concrete_grid.hpp"
 
 
 namespace Bempp {
@@ -17,6 +18,7 @@ namespace Bempp {
        auto grid = space.grid();
        auto view = grid->leafView();
        const IndexSet& indexSet = view->indexSet();
+       auto factory = static_cast<const ConcreteGrid<Default2dIn3dDuneGrid>*>(grid.get())->factory();
 
        npy_intp globalDofCount = space.globalDofCount();
 
@@ -31,9 +33,16 @@ namespace Bempp {
            const Entity<0> &element = it->entity();
            std::vector<GlobalDofIndex> dofs;
            space.getGlobalDofs(element,dofs);
-           for (int i = 0; i < 3;++i){
-               int index = indexSet.subEntityIndex(element,i,2);
+           std::unique_ptr<EntityIterator<2>> subIt = 
+               element.subEntityIterator<2>();
+           int i = 0;
+           while(!subIt->finished()){
+               const Entity<2>& vertex = subIt->entity();
+               int index = factory->insertionIndex(
+                   static_cast<const ConcreteEntity<2,typename Default2dIn3dDuneGrid::template Codim<2>::Entity>*>(&vertex)->duneEntity());
                *((int*)PyArray_GETPTR1(vertexMap,index)) = dofs[i];
+               ++i;
+               subIt->next();
            }
            it->next();
        }

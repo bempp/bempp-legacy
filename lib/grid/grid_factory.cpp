@@ -146,14 +146,15 @@ shared_ptr<Grid> GridFactory::createGridFromConnectivityArrays(
         "'domainIndices' must either be empty or contain as many "
         "elements as 'elementCorners' has columns");
 
-  Dune::GridFactory<Default2dIn3dDuneGrid> factory;
+  shared_ptr<Dune::GridFactory<Default2dIn3dDuneGrid>> factory(
+         new Dune::GridFactory<Default2dIn3dDuneGrid>());
 
   for (size_t i = 0; i < vertices.n_cols; ++i) {
     Dune::FieldVector<double, dimWorld> v;
     v[0] = vertices(0, i);
     v[1] = vertices(1, i);
     v[2] = vertices(2, i);
-    factory.insertVertex(v);
+    factory->insertVertex(v);
   }
 
   const GeometryType type(GeometryType::simplex, dimGrid);
@@ -169,17 +170,16 @@ shared_ptr<Grid> GridFactory::createGridFromConnectivityArrays(
     corners[0] = elementCorners(0, i);
     corners[1] = elementCorners(1, i);
     corners[2] = elementCorners(2, i);
-    factory.insertElement(type, corners);
+    factory->insertElement(type, corners);
   }
   shared_ptr<Grid> result;
   if (domainIndices.empty())
-    result.reset(new Default2dIn3dGrid(factory.createGrid(),
-                                       GridParameters::TRIANGULAR,
-                                       true /* owns Dune grid */));
+    result.reset(new Default2dIn3dGrid(factory,
+                                       GridParameters::TRIANGULAR));
   else
     result.reset(
-        new Default2dIn3dGrid(factory.createGrid(), GridParameters::TRIANGULAR,
-                              domainIndices, true /* owns Dune grid */));
+        new Default2dIn3dGrid(factory,GridParameters::TRIANGULAR,
+                              domainIndices));
   return result;
 }
 
