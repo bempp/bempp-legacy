@@ -29,6 +29,13 @@ else()
     set(DOLFIN_OMP ON)
 endif()
 
+include(PatchScript)
+set(patchdir "${PROJECT_SOURCE_DIR}/cmake/patches/DOLFIN")
+create_patch_script(DOLFIN patch_script
+    CMDLINE "-p0"
+    WORKING_DIRECTORY "${EXTERNAL_ROOT}/src/DOLFIN"
+    "${patchdir}/dolfin_cmake.patch"
+)
 
 ExternalProject_Add(
     DOLFIN
@@ -50,6 +57,7 @@ ExternalProject_Add(
                -D DOLFIN_ENABLE_OPENMP:BOOL=${DOLFIN_OMP}
                -D PY_PLY_FOUND:BOOL=ON
                -C ${EXTERNAL_ROOT}/src/DOLFINVariables.cmake
+    PATCH_COMMAND ${patch_script}
     BUILD_COMMAND /bin/bash -c "PYTHONPATH=${EXTERNAL_ROOT}/python make -j4"
     INSTALL_COMMAND make install
     LOG_DOWNLOAD ON
