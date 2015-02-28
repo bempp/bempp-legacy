@@ -2,6 +2,7 @@ include(PythonFiatLookup)
 
 lookup_python_package(instant)
 lookup_python_package(six)
+lookup_python_package(sympy)
 lookup_fiat_package(FIAT)
 lookup_python_package(ufl)
 lookup_package(Eigen3 REQUIRED)
