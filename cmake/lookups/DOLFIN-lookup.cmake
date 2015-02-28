@@ -48,6 +48,7 @@ ExternalProject_Add(
                -D DOLFIN_ENABLE_SLEPC4PY:BOOL=OFF
                -D DOLFIN_ENABLE_SLEPC:BOOL=OFF
                -D DOLFIN_ENABLE_OPENMP:BOOL=${DOLFIN_OMP}
+               -D PLY_FOUND:BOOL=ON
                -C ${EXTERNAL_ROOT}/src/DOLFINVariables.cmake
     BUILD_COMMAND /bin/bash -c "PYTHONPATH=${EXTERNAL_ROOT}/python make -j4"
     INSTALL_COMMAND make install
