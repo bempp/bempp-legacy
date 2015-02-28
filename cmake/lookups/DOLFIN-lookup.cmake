@@ -58,7 +58,7 @@ ExternalProject_Add(
                -D PY_PLY_FOUND:BOOL=ON
                -C ${EXTERNAL_ROOT}/src/DOLFINVariables.cmake
     PATCH_COMMAND ${patch_script}
-    BUILD_COMMAND /bin/bash -c "PYTHONPATH=${EXTERNAL_ROOT}/python make -j4"
+    BUILD_COMMAND /bin/bash -c "PYTHONPATH=${EXTERNAL_ROOT}/python cmake .; make -j4"
     INSTALL_COMMAND make install
     LOG_DOWNLOAD ON
     LOG_CONFIGURE ON
