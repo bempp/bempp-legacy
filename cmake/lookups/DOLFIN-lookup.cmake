@@ -22,6 +22,21 @@ foreach(component Boost SWIG FFC Umfpack VTK Eigen3)
         endif()
 endforeach()
 
+set(DOLFIN_OMP)
+if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    set(DOLFIN_OMP OFF)
+else()
+    set(DOLFIN_OMP ON)
+endif()
+
+include(PatchScript)
+set(patchdir "${PROJECT_SOURCE_DIR}/cmake/patches/DOLFIN")
+create_patch_script(DOLFIN patch_script
+    CMDLINE "-p0"
+    WORKING_DIRECTORY "${EXTERNAL_ROOT}/src/DOLFIN"
+    "${patchdir}/dolfin_cmake.patch"
+)
+
 ExternalProject_Add(
     DOLFIN
     DEPENDS ${depends}
@@ -39,8 +54,11 @@ ExternalProject_Add(
                -D DOLFIN_ENABLE_PETSC:BOOL=OFF
                -D DOLFIN_ENABLE_SLEPC4PY:BOOL=OFF
                -D DOLFIN_ENABLE_SLEPC:BOOL=OFF
+               -D DOLFIN_ENABLE_OPENMP:BOOL=${DOLFIN_OMP}
+               -D PY_PLY_FOUND:BOOL=ON
                -C ${EXTERNAL_ROOT}/src/DOLFINVariables.cmake
-    BUILD_COMMAND /bin/bash -c "PYTHONPATH=${EXTERNAL_ROOT}/python make -j4"
+    PATCH_COMMAND ${patch_script}
+    BUILD_COMMAND /bin/bash -c "PYTHONPATH=${EXTERNAL_ROOT}/python cmake .; make -j4"
     INSTALL_COMMAND make install
     LOG_DOWNLOAD ON
     LOG_CONFIGURE ON

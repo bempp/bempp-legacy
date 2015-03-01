@@ -1,0 +1,19 @@
+--- ./CMakeLists.txt	2015-02-28 19:33:44.000000000 +0000
++++ ./CMakeLists.txt.new	2015-02-28 19:33:57.000000000 +0000
+@@ -380,11 +380,11 @@
+     find_package(NumPy REQUIRED)
+ 
+     # Check for ply
+-    include(FindPythonModule)
+-    find_python_module(ply REQUIRED)
+-    if (NOT PY_PLY_FOUND)
+-      message(FATAL_ERROR "Required Python module 'ply' (http://www.dabeaz.com/ply/) could not be found. Install ply or set DOLFIN_ENABLE_PYTHON to false.")
+-    endif()
++    #    include(FindPythonModule)
++    #find_python_module(ply REQUIRED)
++    #if (NOT PY_PLY_FOUND)
++    #  message(FATAL_ERROR "Required Python module 'ply' (http://www.dabeaz.com/ply/) could not be found. Install ply or set DOLFIN_ENABLE_PYTHON to false.")
++    #endif()
+ 
+     # Check for SWIG
+     if (DEFINED UFC_SWIG_EXECUTABLE)

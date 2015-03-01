@@ -113,6 +113,15 @@ ParameterList GlobalParameters::parameterList() {
   hmatParameters.set("eta", static_cast<double>(1.2),
                      "(double) Specifies the block separation parameter eta");
 
+  hmatParameters.set("eps", static_cast<double>(1E-3),
+          "(double) Specifies the accuracy of low-rank approximations");
+
+  hmatParameters.set("maxRank", static_cast<int>(30),
+          "(int) maximum rank of a low rank subblock");
+
+  hmatParameters.set("defaultCompressionAlg",std::string("aca"),
+          "(string) Compression Algorithm");
+
   return parameters;
 }
 }

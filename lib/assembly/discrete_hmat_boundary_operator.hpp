@@ -27,12 +27,7 @@
 #include "discrete_boundary_operator.hpp"
 #include "../common/armadillo_fwd.hpp"
 #include <Thyra_DefaultSpmdVectorSpace_decl.hpp>
-
-namespace hmat {
-
-template <typename ValueType> class CompressedMatrix;
-
-}
+#include "../hmat/hmatrix.hpp"
 
 namespace Bempp {
 
@@ -41,11 +36,13 @@ class DiscreteHMatBoundaryOperator
     : public DiscreteBoundaryOperator<ValueType> {
 public:
   DiscreteHMatBoundaryOperator(
-      const shared_ptr<hmat::CompressedMatrix<ValueType>> &compressedMatrix);
+      const shared_ptr<hmat::DefaultHMatrixType<ValueType>> &hMatrix);
 
   unsigned int rowCount() const override;
 
   unsigned int columnCount() const override;
+
+  shared_ptr<const hmat::DefaultHMatrixType<ValueType>> hMatrix() const;
 
   void addBlock(const std::vector<int> &rows, const std::vector<int> &cols,
                 const ValueType alpha, arma::Mat<ValueType> &block) const
@@ -53,6 +50,7 @@ public:
 
   Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>> domain() const;
   Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>> range() const;
+
 
 protected:
   bool opSupportedImpl(Thyra::EOpTransp M_trans) const;
@@ -63,7 +61,7 @@ private:
                         arma::Col<ValueType> &y_inout, const ValueType alpha,
                         const ValueType beta) const override;
 
-  shared_ptr<hmat::CompressedMatrix<ValueType>> m_compressedMatrix;
+  shared_ptr<hmat::DefaultHMatrixType<ValueType>> m_hMatrix;
 
   Teuchos::RCP<const Thyra::SpmdVectorSpaceBase<ValueType>> m_domainSpace;
   Teuchos::RCP<const Thyra::SpmdVectorSpaceBase<ValueType>> m_rangeSpace;

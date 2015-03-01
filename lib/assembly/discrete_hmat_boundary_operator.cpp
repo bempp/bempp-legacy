@@ -22,30 +22,38 @@
 #include "../fiber/explicit_instantiation.hpp"
 #include <boost/numeric/conversion/converter.hpp>
 #include "../hmat/compressed_matrix.hpp"
+#include "../hmat/hmatrix.hpp"
 
 namespace Bempp {
 
 template <typename ValueType>
 DiscreteHMatBoundaryOperator<ValueType>::DiscreteHMatBoundaryOperator(
-    const shared_ptr<hmat::CompressedMatrix<ValueType>> &compressedMatrix)
-    : m_compressedMatrix(compressedMatrix),
+    const shared_ptr<hmat::DefaultHMatrixType<ValueType>> &hMatrix)
+    : m_hMatrix(hMatrix),
       m_domainSpace(Thyra::defaultSpmdVectorSpace<ValueType>(
-          compressedMatrix->columns())),
+          hMatrix->columns())),
       m_rangeSpace(
-          Thyra::defaultSpmdVectorSpace<ValueType>(compressedMatrix->rows())) {}
+          Thyra::defaultSpmdVectorSpace<ValueType>(hMatrix->rows())) {}
 
 template <typename ValueType>
 unsigned int DiscreteHMatBoundaryOperator<ValueType>::rowCount() const {
 
   return boost::numeric::converter<unsigned int, std::size_t>::convert(
-      m_compressedMatrix->rows());
+      m_hMatrix->rows());
 }
 
 template <typename ValueType>
 unsigned int DiscreteHMatBoundaryOperator<ValueType>::columnCount() const {
 
   return boost::numeric::converter<unsigned int, std::size_t>::convert(
-      m_compressedMatrix->columns());
+      m_hMatrix->columns());
+}
+
+template <typename ValueType>
+shared_ptr<const hmat::DefaultHMatrixType<ValueType>> 
+DiscreteHMatBoundaryOperator<ValueType>::hMatrix() const
+{
+    return m_hMatrix;
 }
 
 template <typename ValueType>
@@ -68,7 +76,7 @@ void DiscreteHMatBoundaryOperator<ValueType>::applyBuiltInImpl(
     hmatTrans = hmat::CONJ;
   else
     hmatTrans = hmat::CONJTRANS;
-  m_compressedMatrix->apply(x_in, y_inout, hmatTrans, alpha, beta);
+  m_hMatrix->apply(x_in, y_inout, hmatTrans, alpha, beta);
 }
 
 template <typename ValueType>
