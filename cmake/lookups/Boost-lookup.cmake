@@ -34,7 +34,7 @@ file(WRITE "${PROJECT_BINARY_DIR}/CMakeFiles/external/boost_configure.sh"
     "userjam=\"${EXTERNAL_ROOT}/src/user-config.jam\"\n"
     "[ -e $userjam ] && cp $userjam tools/build/v2\n"
     "\n"
-    "./b2 ${toolset} link=static variant=release --with-test --with-filesystem --with-program_options --with-system --with-thread --with-iostreams\\\n"
+    "./b2 ${toolset} variant=release link=shared --with-test --with-filesystem --with-program_options --with-system --with-thread --with-iostreams\\\n"
     "    cxxflags=\"${CMAKE_CXX_FLAGS}\"\n"
 )
 set(configure_command "${EXTERNAL_ROOT}/src/boost_configure.sh")
@@ -53,7 +53,7 @@ ExternalProject_Add(
     CONFIGURE_COMMAND ./bootstrap.sh
     #PATCH_COMMAND ${patch_script}
     BUILD_COMMAND ${configure_command}
-    INSTALL_COMMAND ./b2 ${toolset} link=static variant=release --with-test --with-filesystem --with-program_options --with-system --with-thread --with-iostreams
+    INSTALL_COMMAND ./b2 ${toolset} link=shared variant=release --with-test --with-filesystem --with-program_options --with-system --with-thread --with-iostreams
         --prefix=${EXTERNAL_ROOT} install
     LOG_DOWNLOAD ON
     LOG_CONFIGURE ON
