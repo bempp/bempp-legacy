@@ -43,7 +43,8 @@ ExternalProject_Add(
     URL http://bitbucket.org/fenics-project/dolfin/downloads/dolfin-1.5.0.tar.gz
     PREFIX ${EXTERNAL_ROOT}
     DEPENDS ${depends}
-    CMAKE_ARGS -D CMAKE_BUILD_TYPE=${DOLFIN_BUILD_TYPE} 
+    CONFIGURE_COMMAND /bin/bash -c "PYTHONPATH=${EXTERNAL_ROOT}/python cmake 
+               -D CMAKE_BUILD_TYPE=${DOLFIN_BUILD_TYPE} 
                -D UFC_DIR=${EXTERNAL_ROOT}/share/ufc
                -D EIGEN3_INCLUDE_DIR=${Eigen3_INCLUDE_DIR}
                -D CMAKE_INSTALL_PREFIX=${EXTERNAL_ROOT}
@@ -57,9 +58,8 @@ ExternalProject_Add(
                -D DOLFIN_ENABLE_OPENMP:BOOL=${DOLFIN_OMP}
                -D PY_PLY_FOUND:BOOL=ON
                -C ${EXTERNAL_ROOT}/src/DOLFINVariables.cmake
+               ${EXTERNAL_ROOT}/src/DOLFIN/"
     PATCH_COMMAND ${patch_script}
-    BUILD_COMMAND /bin/bash -c "PYTHONPATH=${EXTERNAL_ROOT}/python cmake .; make -j4"
-    INSTALL_COMMAND make install
     LOG_DOWNLOAD ON
     LOG_CONFIGURE ON
     LOG_BUILD ON
