@@ -1,11 +1,15 @@
 Introduction
 ============
 
-BEM++ is a novel open-source HPC boundary-element library. Its development
-started in October 2011.
+BEM++ is an open-source boundary element library. For details see
+www.bempp.org
 
 History
 =======
+
+2.9.0 (10 March 2015)
+---------------------
+Development version as part of a major redesign of BEM++.
 
 2.0.1 (17 October 2013)
 ------------------------
