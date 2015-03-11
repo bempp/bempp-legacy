@@ -13,6 +13,7 @@ op_types = ['3dSingleLayerBoundaryOperator',
 #include "bempp/common/types.hpp"
 #include "bempp/assembly/symmetry.hpp"
 #include "bempp/assembly/identity_operator.hpp"
+#include "bempp/assembly/maxwell_3d_identity_operator.hpp"
 #include "bempp/assembly/laplace_3d_double_layer_boundary_operator.hpp"
 #include "bempp/assembly/laplace_3d_single_layer_boundary_operator.hpp"
 #include "bempp/assembly/laplace_3d_adjoint_double_layer_boundary_operator.hpp"
@@ -254,5 +255,29 @@ py_modified_helmholtz_double_layer_potential_discrete_operator(
             point_ptr,
             parameterList).discreteOperator();
 }
+
+template <typename BasisFunctionType, typename ResultType>
+BoundaryOpVariants c_maxwellIdentityOperator(
+        const ParameterList& parameterList,
+        const SpaceVariants& domain,
+        const SpaceVariants& range,
+        const SpaceVariants& dual_to_range,
+        const std::string& label,
+        int symmetry)
+{
+    typedef shared_ptr<const Space<BasisFunctionType>> space_t;
+
+    space_t my_domain = _py_get_space_ptr<BasisFunctionType>(domain);
+    space_t my_range = _py_get_space_ptr<BasisFunctionType>(range);
+    space_t my_dual_to_range = _py_get_space_ptr<BasisFunctionType>(dual_to_range);
+
+    return maxwell3dIdentityOperator<BasisFunctionType,ResultType>(
+            parameterList,
+            my_domain,my_range,my_dual_to_range,
+            label,symmetry);
+}
+
+
+
 }
 #endif
