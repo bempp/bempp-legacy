@@ -24,6 +24,7 @@
 #include "boundary_operator.hpp"
 #include "helmholtz_3d_operators_common.hpp"
 #include "symmetry.hpp"
+#include "../common/types.hpp"
 
 #include "../common/scalar_traits.hpp"
 
@@ -132,6 +133,18 @@ maxwell3dSingleLayerBoundaryOperator(
     bool useInterpolation = false,
     int interpPtsPerWavelength = DEFAULT_HELMHOLTZ_INTERPOLATION_DENSITY);
 
+template <typename BasisFunctionType>
+BoundaryOperator<BasisFunctionType,
+                 typename ScalarTraits<BasisFunctionType>::ComplexType>
+maxwell3dSingleLayerBoundaryOperator(
+    const ParameterList& parameterList,
+    const shared_ptr<const Space<BasisFunctionType>> &domain,
+    const shared_ptr<const Space<BasisFunctionType>> &range,
+    const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
+    typename ScalarTraits<BasisFunctionType>::ComplexType waveNumber,
+    const std::string &label = "", int symmetry = NO_SYMMETRY,
+    bool useInterpolation = false,
+    int interpPtsPerWavelength = DEFAULT_HELMHOLTZ_INTERPOLATION_DENSITY);
 } // namespace Bempp
 
 #endif

@@ -234,7 +234,37 @@ maxwell3dSingleLayerBoundaryOperator(
                                IntegrandFunctor()));
 }
 
+template <typename BasisFunctionType>
+BoundaryOperator<BasisFunctionType,
+                 typename ScalarTraits<BasisFunctionType>::ComplexType>
+maxwell3dSingleLayerBoundaryOperator(
+    const ParameterList& parameterList,
+    const shared_ptr<const Space<BasisFunctionType>> &domain,
+    const shared_ptr<const Space<BasisFunctionType>> &range,
+    const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
+    typename ScalarTraits<BasisFunctionType>::ComplexType waveNumber,
+    const std::string &label, int symmetry,
+    bool useInterpolation,
+    int interpPtsPerWavelength){
+
+  shared_ptr<const Context<BasisFunctionType, 
+    typename ScalarTraits<BasisFunctionType>::ComplexType>> context(
+      new Context<BasisFunctionType, 
+        typename ScalarTraits<BasisFunctionType>::ComplexType>(parameterList));
+  return maxwell3dSingleLayerBoundaryOperator
+      (context, domain, range, dualToRange, waveNumber, label, symmetry,
+       useInterpolation,interpPtsPerWavelength);
+}
+
+
 #define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS)                               \
+  template BoundaryOperator<BASIS, ScalarTraits<BASIS>::ComplexType>           \
+  maxwell3dSingleLayerBoundaryOperator(                                        \
+      const ParameterList&,                                                    \
+      const shared_ptr<const Space<BASIS>> &,                                  \
+      const shared_ptr<const Space<BASIS>> &,                                  \
+      const shared_ptr<const Space<BASIS>> &,                                  \
+      ScalarTraits<BASIS>::ComplexType, const std::string &, int, bool, int);  \
   template BoundaryOperator<BASIS, ScalarTraits<BASIS>::ComplexType>           \
   maxwell3dSingleLayerBoundaryOperator(                                        \
       const shared_ptr<                                                        \
