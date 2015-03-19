@@ -1,4 +1,4 @@
 from .iterative_solvers import cg,gmres
-from .direct_solvers import lu_solve
+from .direct_solvers import lu
 
 
