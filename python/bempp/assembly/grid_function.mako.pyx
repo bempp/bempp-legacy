@@ -51,7 +51,7 @@ cdef class GridFunction:
                 result[0] =  np.dot(x,n)
 
        If the input function returns complex data the keyword argument 
-       'complex=True' needs to be specified in the contructor of the GridFunction.    
+       'complex_data=True' needs to be specified in the contructor of the GridFunction.    
     2. By providing a vector of coefficients at the nodes. This is preferable if
        the coefficients of the data are coming from an external code.
 
@@ -107,11 +107,11 @@ cdef class GridFunction:
     --------
     To create a GridFunction from a real Python callable my_fun use
 
-    >>> grid_function = GridFunction(space, dual_space=dual_space,fun=my_fun)
+    >>> grid_function = GridFunction(space, fun=my_fun)
 
     To create a GridFunction from a complex Python callable my_fun use
 
-    >>> grid_function = GridFunction(space, dual_space=dual_space,fun=my_fun,
+    >>> grid_function = GridFunction(space, fun=my_fun,
     ...    complex_data=True)
 
     To create a GridFunction from a vector of coefficients coeffs use
@@ -157,7 +157,9 @@ cdef class GridFunction:
                 self._result_type = np.dtype('float64')
 
             if 'dual_space' not in kwargs:
-                raise ValueError('Need to specify dual space')
+                dual_space = space
+            else:
+                dual_space = kwargs['dual_space']
 
             approx_mode = 'approximate'.encode("UTF-8")
             if 'approximation_mode' in kwargs:
@@ -170,7 +172,7 @@ cdef class GridFunction:
                 self._impl_${pybasis}_${pyresult}.reset(
                         new c_GridFunction[${cybasis},${cyresult}](deref((<ParameterList>self.parameter_list).impl_),
                         _py_get_space_ptr[${cybasis}](self._space.impl_),
-                        _py_get_space_ptr[${cybasis}]((<Space>kwargs['dual_space']).impl_),
+                        _py_get_space_ptr[${cybasis}]((<Space>dual_space).impl_),
                         deref(_py_surface_normal_dependent_function_${pyresult}(_fun_interface,kwargs['fun'],3,
                             self._space.codomain_dimension)),
                         construction_mode(approx_mode)))
