@@ -29,6 +29,8 @@
 #include "../fiber/explicit_instantiation.hpp"
 #include "../fiber/simple_test_trial_integrand_functor.hpp"
 #include "../fiber/surface_grad_3d_functor.hpp"
+#include "../fiber/shared_ptr.hpp"
+#include "context.hpp"
 
 #include <boost/type_traits/is_complex.hpp>
 
@@ -68,7 +70,28 @@ BoundaryOperator<BasisFunctionType, ResultType> laplaceBeltrami3dOperator(
                              IntegrandFunctor()));
 }
 
+template <typename BasisFunctionType, typename ResultType>
+BoundaryOperator<BasisFunctionType, ResultType> laplaceBeltrami3dOperator(
+    const ParameterList& parameterList,
+    const shared_ptr<const Space<BasisFunctionType>> &domain,
+    const shared_ptr<const Space<BasisFunctionType>> &range,
+    const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
+    const std::string &label, int symmetry) {
+
+
+  shared_ptr<const Context<BasisFunctionType, ResultType>> context(
+      new Context<BasisFunctionType, ResultType>(parameterList));
+  return laplaceBeltrami3dOperator(context, domain, range, dualToRange, label, symmetry);
+
+}
+
+
 #define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS, RESULT)                       \
+  template BoundaryOperator<BASIS, RESULT> laplaceBeltrami3dOperator(          \
+      const ParameterList&,                                                    \
+      const shared_ptr<const Space<BASIS>> &,                                  \
+      const shared_ptr<const Space<BASIS>> &,                                  \
+      const shared_ptr<const Space<BASIS>> &, const std::string &, int);       \
   template BoundaryOperator<BASIS, RESULT> laplaceBeltrami3dOperator(          \
       const shared_ptr<const Context<BASIS, RESULT>> &,                        \
       const shared_ptr<const Space<BASIS>> &,                                  \

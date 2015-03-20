@@ -18,6 +18,7 @@ cdef extern from "bempp/space/py_space_variants.hpp":
         c_Space(const c_Space[BASIS]&)
         shared_ptr[const c_Grid] grid() const
 
+
 # Declares complex type explicitly.
 # Cython 0.20 will fail if templates are nested more than three-deep,
 # as in shared_ptr[ c_Space[ complex[float] ] ]
@@ -39,6 +40,10 @@ cdef extern from "${description['header']}":
         ${'c_' + class_name}(const shared_ptr[c_Grid] &_grid, int order)
 %   endif
 % endfor
+
+cdef extern from "bempp/space/raviart_thomas_0_vector_space.hpp" namespace "Bempp":
+    cdef cppclass c_RaviartThomas0VectorSpace "Bempp::RaviartThomas0VectorSpace<double>":
+        c_RaviartThomas0VectorSpace(const shared_ptr[c_Grid] &_grid)
 
 cdef extern from "bempp/space/py_space_variants.hpp" namespace "Bempp":
     cdef cppclass SpaceVariants:
