@@ -22,6 +22,7 @@
 #define bempp_laplace_beltrami_3d_operator_hpp
 
 #include "../common/common.hpp"
+#include "../common/types.hpp"
 
 #include "elementary_local_operator.hpp"
 
@@ -76,6 +77,13 @@ BoundaryOperator<BasisFunctionType, ResultType> laplaceBeltrami3dOperator(
     const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
     const std::string &label = "", int symmetry = NO_SYMMETRY);
 
+template <typename BasisFunctionType, typename ResultType>
+BoundaryOperator<BasisFunctionType, ResultType> laplaceBeltrami3dOperator(
+    const ParameterList& parameterList,
+    const shared_ptr<const Space<BasisFunctionType>> &domain,
+    const shared_ptr<const Space<BasisFunctionType>> &range,
+    const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
+    const std::string &label = "", int symmetry = NO_SYMMETRY);
 } // namespace Bempp
 
 #endif

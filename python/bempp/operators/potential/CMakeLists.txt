@@ -1,4 +1,4 @@
-mako_files(laplace.mako.pyx modified_helmholtz.mako.pyx helmholtz.mako.pyx
+mako_files(laplace.mako.pyx modified_helmholtz.mako.pyx helmholtz.mako.pyx maxwell.mako.pyx
     __init__.mako.pxd
     OUTPUT_FILES makoed
     DESTINATION "${PYTHON_BINARY_DIR}/bempp/include/bempp/operators/potential"

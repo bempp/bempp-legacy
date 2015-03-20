@@ -23,6 +23,7 @@
 #include "general_elementary_singular_integral_operator_imp.hpp"
 #include "sanitized_context.hpp"
 
+#include "context.hpp"
 #include "../common/boost_make_shared_fwd.hpp"
 
 #include "../fiber/explicit_instantiation.hpp"
@@ -92,7 +93,38 @@ maxwell3dDoubleLayerBoundaryOperator(
                                IntegrandFunctor()));
 }
 
+template <typename BasisFunctionType>
+BoundaryOperator<BasisFunctionType,
+                 typename ScalarTraits<BasisFunctionType>::ComplexType>
+maxwell3dDoubleLayerBoundaryOperator(
+    const ParameterList& parameterList,
+    const shared_ptr<const Space<BasisFunctionType>> &domain,
+    const shared_ptr<const Space<BasisFunctionType>> &range,
+    const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
+    typename ScalarTraits<BasisFunctionType>::ComplexType waveNumber,
+    const std::string &label, int symmetry,
+    bool useInterpolation,
+    int interpPtsPerWavelength){
+
+  shared_ptr<const Context<BasisFunctionType, 
+    typename ScalarTraits<BasisFunctionType>::ComplexType>> context(
+      new Context<BasisFunctionType, 
+        typename ScalarTraits<BasisFunctionType>::ComplexType>(parameterList));
+  return maxwell3dDoubleLayerBoundaryOperator
+      (context, domain, range, dualToRange, waveNumber, label, symmetry,
+       useInterpolation,interpPtsPerWavelength);
+
+
+}
+
 #define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS)                               \
+  template BoundaryOperator<BASIS, ScalarTraits<BASIS>::ComplexType>           \
+  maxwell3dDoubleLayerBoundaryOperator(                                        \
+      const ParameterList&,                                                    \
+      const shared_ptr<const Space<BASIS>> &,                                  \
+      const shared_ptr<const Space<BASIS>> &,                                  \
+      const shared_ptr<const Space<BASIS>> &,                                  \
+      ScalarTraits<BASIS>::ComplexType, const std::string &, int, bool, int);  \
   template BoundaryOperator<BASIS, ScalarTraits<BASIS>::ComplexType>           \
   maxwell3dDoubleLayerBoundaryOperator(                                        \
       const shared_ptr<                                                        \
@@ -101,6 +133,7 @@ maxwell3dDoubleLayerBoundaryOperator(
       const shared_ptr<const Space<BASIS>> &,                                  \
       const shared_ptr<const Space<BASIS>> &,                                  \
       ScalarTraits<BASIS>::ComplexType, const std::string &, int, bool, int)
+
 FIBER_ITERATE_OVER_BASIS_TYPES(INSTANTIATE_NONMEMBER_CONSTRUCTOR);
 
 } // namespace Bempp

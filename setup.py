@@ -250,7 +250,7 @@ class SDist(dSDist):
             dist.packages, dist.package_dir = old_values[2:]
 setup(
     name = "bempp",
-    version = "2.0",
+    version = "2.9",
 
     setup_requires = ['numpy', 'pytest', 'cython>=0.21'],
     install_requires = ['numpy', 'pytest', 'cython>=0.21'],

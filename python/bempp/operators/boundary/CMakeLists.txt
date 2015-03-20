@@ -1,6 +1,6 @@
 
 mako_files(laplace.mako.pxd laplace.mako.pyx modified_helmholtz.mako.pxd 
-    modified_helmholtz.mako.pyx helmholtz.mako.pyx
+    modified_helmholtz.mako.pyx helmholtz.mako.pyx maxwell.mako.pyx
     OUTPUT_FILES makoed
     DESTINATION "${PYTHON_BINARY_DIR}/bempp/include/bempp/operators/boundary"
     TARGETNAME bempp.operators.boundary-mako
