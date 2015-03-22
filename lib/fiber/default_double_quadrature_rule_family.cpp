@@ -19,6 +19,7 @@
 // THE SOFTWARE.
 
 #include "default_double_quadrature_rule_family.hpp"
+#include "types.hpp"
 
 #include "explicit_instantiation.hpp"
 #include "numerical_quadrature.hpp"
@@ -28,8 +29,8 @@ namespace Fiber {
 template <typename CoordinateType>
 void DefaultDoubleQuadratureRuleFamily<CoordinateType>::
     fillQuadraturePointsAndWeights(const DoubleQuadratureDescriptor &desc,
-                                   arma::Mat<CoordinateType> &testPoints,
-                                   arma::Mat<CoordinateType> &trialPoints,
+                                   Matrix<CoordinateType> &testPoints,
+                                   Matrix<CoordinateType> &trialPoints,
                                    std::vector<CoordinateType> &testWeights,
                                    std::vector<CoordinateType> &trialWeights,
                                    bool &isTensor) const {

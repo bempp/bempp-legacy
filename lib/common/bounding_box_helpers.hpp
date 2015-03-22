@@ -22,8 +22,8 @@
 #define bempp_bounding_box_helpers_hpp
 
 #include "common.hpp"
-#include "armadillo_fwd.hpp"
 #include "bounding_box.hpp"
+#include "../common/eigen_support.hpp"
 
 #include <cassert>
 #include <cmath>
@@ -38,9 +38,9 @@ namespace Bempp {
  */
 template <typename CoordinateType>
 void extendBoundingBox(BoundingBox<CoordinateType> &bbox,
-                       const arma::Mat<CoordinateType> &points) {
-  assert(points.n_rows == 3);
-  for (size_t j = 0; j < points.n_cols; ++j) {
+                       const Matrix<CoordinateType> &points) {
+  assert(points.rows() == 3);
+  for (size_t j = 0; j < points.cols(); ++j) {
     bbox.lbound.x = std::min(bbox.lbound.x, points(0, j));
     bbox.lbound.y = std::min(bbox.lbound.y, points(1, j));
     bbox.lbound.z = std::min(bbox.lbound.z, points(2, j));
@@ -57,8 +57,8 @@ void extendBoundingBox(BoundingBox<CoordinateType> &bbox,
  */
 template <typename CoordinateType>
 void setBoundingBoxReference(BoundingBox<CoordinateType> &bbox,
-                             const arma::Col<CoordinateType> &point) {
-  assert(point.n_rows == 3);
+                             const Vector<CoordinateType> &point) {
+  assert(point.rows() == 3);
   bbox.reference.x = point(0);
   bbox.reference.y = point(1);
   bbox.reference.z = point(2);

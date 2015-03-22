@@ -61,9 +61,9 @@ void solveWithAmesos<double>(Epetra_LinearProblem &problem,
   assert(rhsCount == armaSolution.cols());
 
   Epetra_Map map((int)rowCount, 0 /* base index */, Epetra_SerialComm());
-  Epetra_MultiVector solution(View, map, armaSolution.memptr(), rowCount,
+  Epetra_MultiVector solution(View, map, armaSolution.data(), rowCount,
                               rhsCount);
-  Epetra_MultiVector rhs(View, map, const_cast<double *>(armaRhs.memptr()),
+  Epetra_MultiVector rhs(View, map, const_cast<double *>(armaRhs.data()),
                          rowCount, rhsCount);
   problem.SetLHS(&solution);
   problem.SetRHS(&rhs);

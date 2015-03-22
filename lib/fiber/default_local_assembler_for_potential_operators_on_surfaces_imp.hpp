@@ -42,7 +42,7 @@ template <typename BasisFunctionType, typename KernelType, typename ResultType,
 DefaultLocalAssemblerForPotentialOperatorsOnSurfaces<
     BasisFunctionType, KernelType, ResultType, GeometryFactory>::
     DefaultLocalAssemblerForPotentialOperatorsOnSurfaces(
-        const arma::Mat<CoordinateType> &points,
+        const Matrix<CoordinateType> &points,
         const shared_ptr<const GeometryFactory> &geometryFactory,
         const shared_ptr<const RawGridGeometry<CoordinateType>> &rawGeometry,
         const shared_ptr<const std::vector<
@@ -91,7 +91,7 @@ void DefaultLocalAssemblerForPotentialOperatorsOnSurfaces<
     evaluateLocalContributions(const std::vector<int> &pointIndices,
                                int trialElementIndex,
                                LocalDofIndex localTrialDofIndex,
-                               std::vector<arma::Mat<ResultType>> &result,
+                               std::vector<Matrix<ResultType>> &result,
                                CoordinateType nominalDistance) {
   typedef Shapeset<BasisFunctionType> Shapeset;
 
@@ -124,7 +124,7 @@ void DefaultLocalAssemblerForPotentialOperatorsOnSurfaces<
 
   std::vector<int> activePointIndices;
   activePointIndices.reserve(pointCount);
-  std::vector<arma::Mat<ResultType> *> activeLocalResults;
+  std::vector<Matrix<ResultType> *> activeLocalResults;
   activeLocalResults.reserve(pointCount);
 
   // Now loop over unique quadrature variants
@@ -156,7 +156,7 @@ void DefaultLocalAssemblerForPotentialOperatorsOnSurfaces<
     BasisFunctionType, KernelType, ResultType, GeometryFactory>::
     evaluateLocalContributions(int pointIndex, int componentIndex,
                                const std::vector<int> &trialElementIndices,
-                               std::vector<arma::Mat<ResultType>> &result,
+                               std::vector<Matrix<ResultType>> &result,
                                CoordinateType nominalDistance) {
   typedef Shapeset<BasisFunctionType> Shapeset;
 
@@ -186,7 +186,7 @@ void DefaultLocalAssemblerForPotentialOperatorsOnSurfaces<
 
   std::vector<int> activeTrialElementIndices;
   activeTrialElementIndices.reserve(trialElementCount);
-  std::vector<arma::Mat<ResultType> *> activeLocalResults;
+  std::vector<Matrix<ResultType> *> activeLocalResults;
   activeLocalResults.reserve(trialElementCount);
 
   // Now loop over unique quadrature variants
@@ -219,7 +219,7 @@ void DefaultLocalAssemblerForPotentialOperatorsOnSurfaces<
     BasisFunctionType, KernelType, ResultType, GeometryFactory>::
     evaluateLocalContributions(const std::vector<int> &pointIndices,
                                const std::vector<int> &trialElementIndices,
-                               Fiber::_2dArray<arma::Mat<ResultType>> &result,
+                               Fiber::_2dArray<Matrix<ResultType>> &result,
                                CoordinateType nominalDistance) {
   typedef Fiber::Shapeset<BasisFunctionType> Shapeset;
 
@@ -254,7 +254,7 @@ void DefaultLocalAssemblerForPotentialOperatorsOnSurfaces<
                                          ResultType>::PointElementIndexPair
   PointElementIndexPair;
   std::vector<PointElementIndexPair> activePointElementPairs;
-  std::vector<arma::Mat<ResultType> *> activeLocalResults;
+  std::vector<Matrix<ResultType> *> activeLocalResults;
   activePointElementPairs.reserve(pointCount * trialElementCount);
   activeLocalResults.reserve(pointCount * trialElementCount);
 
@@ -308,8 +308,8 @@ DefaultLocalAssemblerForPotentialOperatorsOnSurfaces<
     BasisFunctionType, KernelType, ResultType,
     GeometryFactory>::selectIntegrator(int pointIndex, int trialElementIndex,
                                        CoordinateType nominalDistance) {
-  const arma::Col<CoordinateType> &pointCoords =
-      m_points.unsafe_col(pointIndex);
+  const Eigen::Map<Vector<CoordinateType>> pointCoords(m_points.col(pointIndex).data(),m_points.rows());
+      //m_points.unsafe_col(pointIndex);
   SingleQuadratureDescriptor desc = m_quadDescSelector->quadratureDescriptor(
       pointCoords, trialElementIndex, nominalDistance);
   return getIntegrator(desc);
@@ -336,7 +336,7 @@ DefaultLocalAssemblerForPotentialOperatorsOnSurfaces<
   // Integrator doesn't exist yet and must be created.
   Integrator *integrator = 0;
   // Create a quadrature rule
-  arma::Mat<CoordinateType> trialPoints;
+  Matrix<CoordinateType> trialPoints;
   std::vector<CoordinateType> trialWeights;
 
   m_quadRuleFamily->fillQuadraturePointsAndWeights(desc, trialPoints,

@@ -24,6 +24,7 @@
 #define bempp_transposed_discrete_boundary_operator_hpp
 
 #include "../common/common.hpp"
+#include "../common/eigen_support.hpp"
 
 #include "discrete_boundary_operator.hpp"
 
@@ -53,14 +54,14 @@ public:
   TransposedDiscreteBoundaryOperator(TranspositionMode trans,
                                      const shared_ptr<const Base> &op);
 
-  virtual arma::Mat<ValueType> asMatrix() const;
+  virtual Matrix<ValueType> asMatrix() const;
 
   virtual unsigned int rowCount() const;
   virtual unsigned int columnCount() const;
 
   virtual void addBlock(const std::vector<int> &rows,
                         const std::vector<int> &cols, const ValueType alpha,
-                        arma::Mat<ValueType> &block) const;
+                        Matrix<ValueType> &block) const;
 
 #ifdef WITH_TRILINOS
 public:
@@ -75,8 +76,8 @@ private:
   bool isTransposed() const;
 
   virtual void applyBuiltInImpl(const TranspositionMode trans,
-                                const arma::Col<ValueType> &x_in,
-                                arma::Col<ValueType> &y_inout,
+                                const Vector<ValueType> &x_in,
+                                Vector<ValueType> &y_inout,
                                 const ValueType alpha,
                                 const ValueType beta) const;
 

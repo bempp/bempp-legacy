@@ -25,6 +25,7 @@
 #include "quadrature_options.hpp"
 #include "raw_grid_geometry.hpp"
 #include "shapeset.hpp"
+#include "types.hpp"
 
 namespace Fiber {
 
@@ -87,9 +88,9 @@ DefaultQuadratureDescriptorSelectorForIntegralOperators<
   DoubleQuadratureDescriptor desc;
 
   // Get corner indices of the specified elements
-  arma::Col<int> testElementCornerIndices =
+  Vector<int> testElementCornerIndices =
       m_testRawGeometry->elementCornerIndices(testElementIndex);
-  arma::Col<int> trialElementCornerIndices =
+  Vector<int> trialElementCornerIndices =
       m_trialRawGeometry->elementCornerIndices(trialElementIndex);
   if (testAndTrialGridsAreIdentical()) {
     desc.topology = determineElementPairTopologyIn3D(testElementCornerIndices,

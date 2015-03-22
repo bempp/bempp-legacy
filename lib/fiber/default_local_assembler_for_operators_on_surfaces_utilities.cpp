@@ -43,7 +43,7 @@ void DefaultLocalAssemblerForOperatorsOnSurfacesUtilities<BasisFunctionType>::
     precalculateElementSizesAndCentersForSingleGrid(
         const RawGridGeometry<CoordinateType> &rawGeometry,
         std::vector<CoordinateType> &elementSizesSquared,
-        arma::Mat<CoordinateType> &elementCenters,
+        Matrix<CoordinateType> &elementCenters,
         CoordinateType &averageElementSize) {
   const size_t elementCount = rawGeometry.elementCount();
   const int worldDim = rawGeometry.worldDimension();
@@ -57,7 +57,7 @@ void DefaultLocalAssemblerForOperatorsOnSurfacesUtilities<BasisFunctionType>::
   }
   averageElementSize /= elementCount;
 
-  elementCenters.set_size(worldDim, elementCount);
+  elementCenters.resize(worldDim, elementCount);
   for (int e = 0; e < elementCount; ++e)
     elementCenters.col(e) = elementCenter(e, rawGeometry);
 }
@@ -70,43 +70,43 @@ DefaultLocalAssemblerForOperatorsOnSurfacesUtilities<BasisFunctionType>::
                        const RawGridGeometry<CoordinateType> &rawGeometry) {
   // This implementation could be optimised
   CoordinateType maxEdgeLengthSquared = 0.;
-  const arma::Mat<int> &cornerIndices = rawGeometry.elementCornerIndices();
-  const arma::Mat<CoordinateType> &vertices = rawGeometry.vertices();
-  arma::Col<CoordinateType> edge;
-  if (cornerIndices(cornerIndices.n_rows - 1, elementIndex) == -1) {
+  const Matrix<int> &cornerIndices = rawGeometry.elementCornerIndices();
+  const Matrix<CoordinateType> &vertices = rawGeometry.vertices();
+  Vertex<CoordinateType> edge;
+  if (cornerIndices(cornerIndices.rows() - 1, elementIndex) == -1) {
     // Triangular element
     const int cornerCount = 3;
     for (int i = 0; i < cornerCount; ++i) {
       edge = vertices.col(cornerIndices((i + 1) % cornerCount, elementIndex)) -
              vertices.col(cornerIndices(i, elementIndex));
-      CoordinateType edgeLengthSquared = arma::dot(edge, edge);
+      CoordinateType edgeLengthSquared = edge.squaredNorm();
       maxEdgeLengthSquared = std::max(maxEdgeLengthSquared, edgeLengthSquared);
     }
   } else {
     // Quadrilateral element. We assume it is convex.
     edge = vertices.col(cornerIndices(2, elementIndex)) -
            vertices.col(cornerIndices(0, elementIndex));
-    maxEdgeLengthSquared = arma::dot(edge, edge);
+    maxEdgeLengthSquared = edge.squaredNorm();
     edge = vertices.col(cornerIndices(3, elementIndex)) -
            vertices.col(cornerIndices(1, elementIndex));
-    CoordinateType edgeLengthSquared = arma::dot(edge, edge);
+    CoordinateType edgeLengthSquared = edge.squaredNorm();
     maxEdgeLengthSquared = std::max(maxEdgeLengthSquared, edgeLengthSquared);
   }
   return maxEdgeLengthSquared;
 }
 
 template <typename BasisFunctionType>
-inline arma::Col<typename DefaultLocalAssemblerForOperatorsOnSurfacesUtilities<
+inline Vector<typename DefaultLocalAssemblerForOperatorsOnSurfacesUtilities<
     BasisFunctionType>::CoordinateType>
 DefaultLocalAssemblerForOperatorsOnSurfacesUtilities<
     BasisFunctionType>::elementCenter(int elementIndex,
                                       const RawGridGeometry<CoordinateType> &
                                           rawGeometry) {
-  const arma::Mat<int> &cornerIndices = rawGeometry.elementCornerIndices();
-  const arma::Mat<CoordinateType> &vertices = rawGeometry.vertices();
-  const int maxCornerCount = cornerIndices.n_rows;
+  const Matrix<int> &cornerIndices = rawGeometry.elementCornerIndices();
+  const Matrix<CoordinateType> &vertices = rawGeometry.vertices();
+  const int maxCornerCount = cornerIndices.rows();
   // each element has at least one corner
-  arma::Col<CoordinateType> center(
+  Vector<CoordinateType> center(
       vertices.col(cornerIndices(0, elementIndex)));
   int i = 1;
   for (; i < maxCornerCount; ++i) {

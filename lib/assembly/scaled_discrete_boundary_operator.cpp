@@ -2,6 +2,7 @@
 #include "discrete_aca_boundary_operator.hpp"
 
 #include "../common/complex_aux.hpp"
+#include "../common/eigen_support.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
 namespace Bempp {
@@ -17,7 +18,7 @@ ScaledDiscreteBoundaryOperator<ValueType>::ScaledDiscreteBoundaryOperator(
 }
 
 template <typename ValueType>
-arma::Mat<ValueType>
+Matrix<ValueType>
 ScaledDiscreteBoundaryOperator<ValueType>::asMatrix() const {
   return m_multiplier * m_operator->asMatrix();
 }
@@ -35,7 +36,7 @@ unsigned int ScaledDiscreteBoundaryOperator<ValueType>::columnCount() const {
 template <typename ValueType>
 void ScaledDiscreteBoundaryOperator<ValueType>::addBlock(
     const std::vector<int> &rows, const std::vector<int> &cols,
-    const ValueType alpha, arma::Mat<ValueType> &block) const {
+    const ValueType alpha, Matrix<ValueType> &block) const {
   m_operator->addBlock(rows, cols, m_multiplier * alpha, block);
 }
 
@@ -72,8 +73,8 @@ bool ScaledDiscreteBoundaryOperator<ValueType>::opSupportedImpl(
 
 template <typename ValueType>
 void ScaledDiscreteBoundaryOperator<ValueType>::applyBuiltInImpl(
-    const TranspositionMode trans, const arma::Col<ValueType> &x_in,
-    arma::Col<ValueType> &y_inout, const ValueType alpha,
+    const TranspositionMode trans, const Vector<ValueType> &x_in,
+    Vector<ValueType> &y_inout, const ValueType alpha,
     const ValueType beta) const {
   ValueType multiplier = m_multiplier;
   if (trans == CONJUGATE || trans == CONJUGATE_TRANSPOSE)

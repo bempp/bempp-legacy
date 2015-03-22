@@ -26,10 +26,10 @@
 #include "../fiber/quadrature_strategy.hpp"
 #include "../common/scalar_traits.hpp"
 #include "../common/shared_ptr.hpp"
+#include "../common/eigen_support.hpp"
 #include "../assembly/context.hpp"
 #include "../assembly/evaluation_options.hpp"
 
-#include "../common/armadillo_fwd.hpp"
 #include <memory>
 
 namespace Bempp {
@@ -162,15 +162,15 @@ public:
    * loss of accuracy *near* \f$\Gamma\f$, either. Users are advised to
    * increase the quadrature accuracy for points lying in the vicinity of
    * \f$\Gamma\f$. */
-  virtual arma::Mat<ResultType>
+  virtual Matrix<ResultType>
   evaluateAtPoints(const GridFunction<BasisFunctionType, ResultType> &argument,
-                   const arma::Mat<CoordinateType> &evaluationPoints,
+                   const Matrix<CoordinateType> &evaluationPoints,
                    const QuadratureStrategy &quadStrategy,
                    const EvaluationOptions &options) const = 0;
 
-  virtual arma::Mat<ResultType>
+  virtual Matrix<ResultType>
   evaluateAtPoints(const GridFunction<BasisFunctionType, ResultType> &argument,
-                   const arma::Mat<CoordinateType> &evaluationPoints,
+                   const Matrix<CoordinateType> &evaluationPoints,
                    const ParameterList& parameterList) const;
 
   /** \brief Create and return an AssembledPotentialOperator object.
@@ -199,14 +199,14 @@ public:
    */
   virtual AssembledPotentialOperator<BasisFunctionType, ResultType>
   assemble(const shared_ptr<const Space<BasisFunctionType>> &space,
-           const shared_ptr<const arma::Mat<CoordinateType>> &evaluationPoints,
+           const shared_ptr<const Matrix<CoordinateType>> &evaluationPoints,
            const QuadratureStrategy &quadStrategy,
            const EvaluationOptions &options) const = 0;
 
 
   virtual AssembledPotentialOperator<BasisFunctionType, ResultType>
   assemble(const shared_ptr<const Space<BasisFunctionType>> &space,
-           const shared_ptr<const arma::Mat<CoordinateType>> &evaluationPoints,
+           const shared_ptr<const Matrix<CoordinateType>> &evaluationPoints,
            const ParameterList& parameterList) const;
 
 

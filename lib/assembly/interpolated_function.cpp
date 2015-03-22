@@ -27,13 +27,15 @@
 #include "../grid/vtk_writer.hpp"
 #include "../grid/vtk_writer_helper.hpp"
 
+#include "../common/eigen_support.hpp"
+
 #include "../space/piecewise_linear_continuous_scalar_space.hpp"
 
 namespace Bempp {
 
 template <typename ValueType>
 InterpolatedFunction<ValueType>::InterpolatedFunction(
-    const Grid &grid, const arma::Mat<ValueType> &vertexValues,
+    const Grid &grid, const Matrix<ValueType> &vertexValues,
     InterpolationMethod method)
     : m_grid(grid), m_vertexValues(vertexValues), m_method(method) {
   std::unique_ptr<GridView> view = grid.leafView();
@@ -71,11 +73,11 @@ void InterpolatedFunction<ValueType>::addGeometricalDependencies(
 template <typename ValueType>
 void InterpolatedFunction<ValueType>::evaluate(
     const Fiber::GeometricalData<CoordinateType> &geomData,
-    arma::Mat<ValueType> &result) const {
+    Matrix<ValueType> &result) const {
 
 #ifndef NDEBUG
-  const arma::Mat<CoordinateType> &points = geomData.globals;
-  if ((int)points.n_rows != worldDimension())
+  const Matrix<CoordinateType> &points = geomData.globals;
+  if ((int)points.rows() != worldDimension())
     throw std::invalid_argument("InterpolatedFunction::evaluate(): "
                                 "incompatible world dimension");
 #endif

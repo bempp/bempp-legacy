@@ -35,7 +35,6 @@
 #include "../assembly/discrete_boundary_operator.hpp"
 #include "../assembly/discrete_boundary_operator_composition.hpp"
 #include "../assembly/identity_operator.hpp"
-#include "../assembly/vector.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 #include "../space/space.hpp"
 
@@ -223,6 +222,11 @@ template <typename BasisFunctionType, typename ResultType>
 Solution<BasisFunctionType, ResultType>
 DefaultIterativeSolver<BasisFunctionType, ResultType>::solveImplNonblocked(
     const GridFunction<BasisFunctionType, ResultType> &rhs) const {
+
+    throw std::runtime_error("Default iterative solver disabled.");
+
+  /*
+
   typedef BoundaryOperator<BasisFunctionType, ResultType> BoundaryOp;
   typedef typename ScalarTraits<ResultType>::RealType MagnitudeType;
   typedef Thyra::MultiVectorBase<ResultType> TrilinosVector;
@@ -281,12 +285,18 @@ DefaultIterativeSolver<BasisFunctionType, ResultType>::solveImplNonblocked(
       GridFunction<BasisFunctionType, ResultType>(
           boundaryOp->context(), boundaryOp->domain(), armaSolution),
       status);
+
+*/
 }
 
 template <typename BasisFunctionType, typename ResultType>
 BlockedSolution<BasisFunctionType, ResultType>
 DefaultIterativeSolver<BasisFunctionType, ResultType>::solveImplBlocked(
     const std::vector<GridFunction<BasisFunctionType, ResultType>> &rhs) const {
+
+  throw std::runtime_error("Default iterative solver disabled.");
+  /*
+
   typedef BlockedBoundaryOperator<BasisFunctionType, ResultType> BoundaryOp;
   typedef typename ScalarTraits<ResultType>::RealType MagnitudeType;
   typedef Thyra::MultiVectorBase<ResultType> TrilinosVector;
@@ -376,6 +386,8 @@ DefaultIterativeSolver<BasisFunctionType, ResultType>::solveImplBlocked(
   // Return solution
   return BlockedSolution<BasisFunctionType, ResultType>(solutionFunctions,
                                                         status);
+
+  */
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(DefaultIterativeSolver);

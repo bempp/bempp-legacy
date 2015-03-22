@@ -22,6 +22,7 @@
 #define fiber_default_double_quadrature_rule_family_hpp
 
 #include "double_quadrature_rule_family.hpp"
+#include "types.hpp"
 
 namespace Fiber {
 
@@ -38,8 +39,8 @@ public:
 
   virtual void
   fillQuadraturePointsAndWeights(const DoubleQuadratureDescriptor &desc,
-                                 arma::Mat<CoordinateType> &testPoints,
-                                 arma::Mat<CoordinateType> &trialPoints,
+                                 Matrix<CoordinateType> &testPoints,
+                                 Matrix<CoordinateType> &trialPoints,
                                  std::vector<CoordinateType> &testWeights,
                                  std::vector<CoordinateType> &trialWeights,
                                  bool &isTensor) const;

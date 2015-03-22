@@ -24,7 +24,6 @@
 #include "../common/common.hpp"
 
 #include "ahmed_aux_fwd.hpp"
-#include "../common/armadillo_fwd.hpp"
 #include "../common/shared_ptr.hpp"
 #include "../common/types.hpp"
 #include "../fiber/scalar_traits.hpp"

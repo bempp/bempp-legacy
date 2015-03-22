@@ -151,14 +151,14 @@ void DiscreteDenseBoundaryOperator<ValueType>::applyBuiltInImpl(
 
 template <typename ValueType>
 shared_ptr<DiscreteDenseBoundaryOperator<ValueType>>
-discreteDenseBoundaryOperator(const arma::Mat<ValueType> &mat) {
+discreteDenseBoundaryOperator(const Matrix<ValueType> &mat) {
   typedef DiscreteDenseBoundaryOperator<ValueType> Op;
   return boost::make_shared<Op>(mat);
 }
 
 #define INSTANTIATE_NONMEMBER_CONSTRUCTOR(VALUE)                               \
   template shared_ptr<DiscreteDenseBoundaryOperator<VALUE>>                    \
-  discreteDenseBoundaryOperator(const arma::Mat<VALUE> &)
+  discreteDenseBoundaryOperator(const Matrix<VALUE> &)
 FIBER_ITERATE_OVER_VALUE_TYPES(INSTANTIATE_NONMEMBER_CONSTRUCTOR);
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(DiscreteDenseBoundaryOperator);

@@ -20,8 +20,8 @@
 
 #include "sparse_inverse.hpp"
 
-#include "../common/armadillo_fwd.hpp"
 #include "../common/boost_make_shared_fwd.hpp"
+#include "../common/eigen_support.hpp"
 
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_LocalMap.h>
@@ -46,16 +46,16 @@ shared_ptr<Epetra_CrsMatrix> sparseInverse(const Epetra_CrsMatrix &mat) {
   shared_ptr<Epetra_CrsMatrix> result = boost::make_shared<Epetra_CrsMatrix>(
       Copy, rowMap, columnMap, mat.GlobalMaxNumEntries());
 
-  arma::Mat<double> localMat;
-  arma::Mat<double> localInverse;
+  Matrix<double> localMat;
+  Matrix<double> localInverse;
   std::vector<bool> processed(size, false);
   for (size_t r = 0; r < size; ++r) {
     if (processed[r])
       continue;
     int localSize = rowOffsets[r + 1] - rowOffsets[r];
-    localMat.set_size(localSize, localSize);
-    localMat.fill(0.);
-    localInverse.set_size(localSize, localSize);
+    localMat.resize(localSize, localSize);
+    localMat.setZero();
+    localInverse.resize(localSize, localSize);
     for (int s = 0; s < localSize; ++s) {
       int row = colIndices[rowOffsets[r] + s];
       for (int c = 0; c < localSize; ++c) {
@@ -73,7 +73,7 @@ shared_ptr<Epetra_CrsMatrix> sparseInverse(const Epetra_CrsMatrix &mat) {
         localMat(s, c) = values[rowOffsets[row] + c];
       }
     }
-    localInverse = arma::inv(localMat);
+    localInverse = localMat.inverse();
     for (int s = 0; s < localSize; ++s) {
       int row = colIndices[rowOffsets[r] + s];
       processed[row] = true;

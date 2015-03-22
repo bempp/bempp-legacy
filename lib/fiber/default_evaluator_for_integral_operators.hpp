@@ -28,8 +28,7 @@
 #include "collection_of_2d_arrays.hpp"
 #include "parallelization_options.hpp"
 #include "quadrature_options.hpp"
-
-#include "../common/armadillo_fwd.hpp"
+#include "types.hpp"
 #include <vector>
 
 namespace Fiber {
@@ -76,8 +75,8 @@ public:
       const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType>> &
           quadRuleFamily);
 
-  virtual void evaluate(Region region, const arma::Mat<CoordinateType> &points,
-                        arma::Mat<ResultType> &result) const;
+  virtual void evaluate(Region region, const Matrix<CoordinateType> &points,
+                        Matrix<ResultType> &result) const;
 
 private:
   void cacheTrialData();

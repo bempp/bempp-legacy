@@ -22,9 +22,9 @@
 #define bempp_potential_operator_aca_assembly_helper_hpp
 
 #include "../common/common.hpp"
+#include "../common/eigen_support.hpp"
 
 #include "ahmed_aux_fwd.hpp"
-#include "../common/armadillo_fwd.hpp"
 #include "../common/shared_ptr.hpp"
 #include "../common/types.hpp"
 #include "../fiber/scalar_traits.hpp"
@@ -68,7 +68,7 @@ public:
   typedef typename AhmedTypeTraits<ResultType>::Type AhmedResultType;
 
   PotentialOperatorAcaAssemblyHelper(
-      const arma::Mat<CoordinateType> &points,
+      const Matrix<CoordinateType> &points,
       const Space<BasisFunctionType> &trialSpace,
       const std::vector<unsigned int> &p2oPoints,
       const std::vector<unsigned int> &p2oTrialDofs,
@@ -117,7 +117,7 @@ private:
 
 private:
   /** \cond PRIVATE */
-  const arma::Mat<CoordinateType> &m_points;
+  const Matrix<CoordinateType> &m_points;
   const Space<BasisFunctionType> &m_trialSpace;
   const std::vector<unsigned int> &m_p2oPoints;
   const std::vector<unsigned int> &m_p2oTrialDofs;

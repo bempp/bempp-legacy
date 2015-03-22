@@ -55,8 +55,8 @@ using Fiber::SurfaceNormalIndependentFunction;
       // Evaluate the function at the point "point" and store result in
       // the array "result". The "point" and "result" arrays will be
       // preinitialized to correct dimensions.
-      void evaluate(const arma::Col<CoordinateType>& point,
-                    arma::Col<ValueType>& result) const;
+      void evaluate(const Vector<CoordinateType>& point,
+                    Vector<ValueType>& result) const;
   };
   \endcode
 

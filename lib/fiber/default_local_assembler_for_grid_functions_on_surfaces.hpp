@@ -71,7 +71,7 @@ public:
 public:
   virtual void
   evaluateLocalWeakForms(const std::vector<int> &elementIndices,
-                         std::vector<arma::Col<ResultType>> &result);
+                         std::vector<Vector<ResultType>> &result);
 
 private:
   typedef TestFunctionIntegrator<BasisFunctionType, ResultType> Integrator;

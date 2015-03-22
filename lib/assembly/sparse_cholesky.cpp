@@ -1,6 +1,6 @@
 #include "sparse_cholesky.hpp"
 
-#include "../common/armadillo_fwd.hpp"
+#include "../common/eigen_support.hpp"
 #include "../common/boost_make_shared_fwd.hpp"
 
 #include <Epetra_CrsMatrix.h>
@@ -26,16 +26,16 @@ shared_ptr<Epetra_CrsMatrix> sparseCholesky(const Epetra_CrsMatrix &mat) {
   shared_ptr<Epetra_CrsMatrix> result = boost::make_shared<Epetra_CrsMatrix>(
       Copy, rowMap, columnMap, mat.GlobalMaxNumEntries());
 
-  arma::Mat<double> localMat;
-  arma::Mat<double> localCholesky;
+  Matrix<double> localMat;
+  Matrix<double> localCholesky;
   std::vector<bool> processed(size, false);
   for (size_t r = 0; r < size; ++r) {
     if (processed[r])
       continue;
     int localSize = rowOffsets[r + 1] - rowOffsets[r];
-    localMat.set_size(localSize, localSize);
-    localMat.fill(0.);
-    localCholesky.set_size(localSize, localSize);
+    localMat.resize(localSize, localSize);
+    localMat.setZero();
+    localCholesky.resize(localSize, localSize);
     for (int s = 0; s < localSize; ++s) {
       int row = colIndices[rowOffsets[r] + s];
       for (int c = 0; c < localSize; ++c) {
@@ -46,9 +46,9 @@ shared_ptr<Epetra_CrsMatrix> sparseCholesky(const Epetra_CrsMatrix &mat) {
         localMat(s, c) = values[rowOffsets[row] + c];
       }
     }
-    assert(arma::norm(localMat - localMat.t(), "fro") <
-           1e-12 * arma::norm(localMat, "fro"));
-    localCholesky = arma::chol(localMat); // localCholesky: U
+    (localMat - localMat.adjoint()).norm() <
+           1e-12 * localMat.norm();
+    localCholesky = localMat.llt().matrixL().adjoint();
     for (int s = 0; s < localSize; ++s) {
       int row = colIndices[rowOffsets[r] + s];
       processed[row] = true;

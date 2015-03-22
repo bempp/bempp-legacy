@@ -22,8 +22,8 @@
 #define bempp_weak_form_hmat_assembly_helper_hpp
 
 #include "../common/common.hpp"
+#include "../common/eigen_support.hpp"
 
-#include "../common/armadillo_fwd.hpp"
 #include "../common/shared_ptr.hpp"
 #include "../common/types.hpp"
 #include "../fiber/scalar_traits.hpp"
@@ -81,7 +81,7 @@ public:
       const hmat::IndexRangeType &testIndexRange,
       const hmat::IndexRangeType &trialIndexRange,
       const hmat::DefaultBlockClusterTreeNodeType &blockClusterTreeNode,
-      arma::Mat<ResultType> &data) const override;
+      Matrix<ResultType> &data) const override;
 
   // /** \brief Return the number of entries in the matrix that have been
   //  *  accessed so far. */

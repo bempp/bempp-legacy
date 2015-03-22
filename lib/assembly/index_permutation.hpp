@@ -23,8 +23,8 @@
 
 #include "../common/common.hpp"
 
-#include "../common/armadillo_fwd.hpp"
 #include "../common/shared_ptr.hpp"
+#include "../common/eigen_support.hpp"
 
 class Epetra_CrsMatrix;
 
@@ -65,20 +65,20 @@ public:
 
   /** \brief Convert a vector from original to permuted ordering. */
   template <typename ValueType>
-  void permuteVector(const arma::Col<ValueType> &original,
-                     arma::Col<ValueType> &permuted) const {
-    const int dim = original.n_elem;
-    permuted.set_size(dim);
+  void permuteVector(const Vector<ValueType> &original,
+                     Vector<ValueType> &permuted) const {
+    const int dim = original.rows();
+    permuted.resize(dim);
     for (int i = 0; i < dim; ++i)
       permuted(m_permutedIndices[i]) = original(i);
   }
 
   /** \brief Convert a vector from permuted to original ordering. */
   template <typename ValueType>
-  void unpermuteVector(const arma::Col<ValueType> &permuted,
-                       arma::Col<ValueType> &original) const {
-    const int dim = permuted.n_elem;
-    original.set_size(dim);
+  void unpermuteVector(const Vector<ValueType> &permuted,
+                       Vector<ValueType> &original) const {
+    const int dim = permuted.rows();
+    original.resize(dim);
     for (int i = 0; i < dim; ++i)
       original(i) = permuted(m_permutedIndices[i]);
   }

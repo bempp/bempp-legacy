@@ -2,6 +2,7 @@
 #include "discrete_aca_boundary_operator.hpp"
 
 #include "../fiber/explicit_instantiation.hpp"
+#include "../common/eigen_support.hpp"
 
 namespace Bempp {
 
@@ -22,18 +23,18 @@ TransposedDiscreteBoundaryOperator<ValueType>::
 }
 
 template <typename ValueType>
-arma::Mat<ValueType>
+Matrix<ValueType>
 TransposedDiscreteBoundaryOperator<ValueType>::asMatrix() const {
-  arma::Mat<ValueType> origMatrix = m_operator->asMatrix();
+  Matrix<ValueType> origMatrix = m_operator->asMatrix();
   switch (m_trans) {
   case NO_TRANSPOSE:
     return origMatrix;
   case TRANSPOSE:
-    return origMatrix.st();
+    return origMatrix.transpose();
   case CONJUGATE:
-    return arma::conj(origMatrix);
+    return origMatrix.conjugate();
   case CONJUGATE_TRANSPOSE:
-    return origMatrix.t();
+    return origMatrix.adjoint();
   default:
     throw std::runtime_error("TransposedDiscreteBoundaryOperator::asMatrix(): "
                              "invalid transposition mode");
@@ -59,7 +60,7 @@ TransposedDiscreteBoundaryOperator<ValueType>::columnCount() const {
 template <typename ValueType>
 void TransposedDiscreteBoundaryOperator<ValueType>::addBlock(
     const std::vector<int> &rows, const std::vector<int> &cols,
-    const ValueType alpha, arma::Mat<ValueType> &block) const {
+    const ValueType alpha, Matrix<ValueType> &block) const {
   m_operator->addBlock(cols, rows, alpha, block);
 }
 
@@ -87,8 +88,8 @@ bool TransposedDiscreteBoundaryOperator<ValueType>::opSupportedImpl(
 
 template <typename ValueType>
 void TransposedDiscreteBoundaryOperator<ValueType>::applyBuiltInImpl(
-    const TranspositionMode trans, const arma::Col<ValueType> &x_in,
-    arma::Col<ValueType> &y_inout, const ValueType alpha,
+    const TranspositionMode trans, const Vector<ValueType> &x_in,
+    Vector<ValueType> &y_inout, const ValueType alpha,
     const ValueType beta) const {
   // Bitwise xor. We use the fact that bit 0 of M_trans denotes
   // conjugation, and bit 1 -- transposition.
