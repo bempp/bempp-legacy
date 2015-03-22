@@ -32,7 +32,8 @@
 #include "discrete_boundary_operator_composition.hpp"
 #include "discrete_sparse_boundary_operator.hpp"
 
-#include "../common/armadillo_fwd.hpp"
+
+#include "../common/eigen_support.hpp"
 #include "../common/auto_timer.hpp"
 #include "../common/boost_shared_array_fwd.hpp"
 #include "../common/chunk_statistics.hpp"
@@ -851,7 +852,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
 template <typename BasisFunctionType, typename ResultType>
 std::unique_ptr<DiscreteBoundaryOperator<ResultType>>
 AcaGlobalAssembler<BasisFunctionType, ResultType>::assemblePotentialOperator(
-    const arma::Mat<CoordinateType> &points,
+    const Matrix<CoordinateType> &points,
     const Space<BasisFunctionType> &trialSpace,
     const std::vector<LocalAssemblerForPotentialOperators *> &localAssemblers,
     const std::vector<ResultType> &termMultipliers,
@@ -980,7 +981,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assemblePotentialOperator(
 template <typename BasisFunctionType, typename ResultType>
 std::unique_ptr<DiscreteBoundaryOperator<ResultType>>
 AcaGlobalAssembler<BasisFunctionType, ResultType>::assemblePotentialOperator(
-    const arma::Mat<CoordinateType> &points,
+    const Matrix<CoordinateType> &points,
     const Space<BasisFunctionType> &trialSpace,
     LocalAssemblerForPotentialOperators &localAssembler,
     const EvaluationOptions &options) {

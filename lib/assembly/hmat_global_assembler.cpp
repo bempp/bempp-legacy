@@ -31,7 +31,6 @@
 #include "weak_form_hmat_assembly_helper.hpp"
 #include "discrete_hmat_boundary_operator.hpp"
 
-#include "../common/armadillo_fwd.hpp"
 #include "../common/auto_timer.hpp"
 #include "../common/chunk_statistics.hpp"
 #include "../common/to_string.hpp"

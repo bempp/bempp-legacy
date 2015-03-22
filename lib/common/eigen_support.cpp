@@ -1,4 +1,4 @@
-// Copyright (C) 2011-2015 by the BEM++ Authors
+// Copyright (C) 2011-2015 by the Fiber Authors
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -18,30 +18,20 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef NUMPY_INIT_HPP
-#define NUMPY_INIT_HPP
+#include "eigen_support.hpp"
+#include <iostream>
 
-#include <Python.h>
-#include "numpy/arrayobject.h"
+namespace Bempp {
 
-namespace {
+EigenInit::EigenInit() {
 
-static class InitializeNumpy {
-public:
-  InitializeNumpy() { 
-      PyGILState_STATE gstate = PyGILState_Ensure();
-      init();
-      PyGILState_Release(gstate); }
+    std::cout << "Initialize Eigen" << std::endl;
+    Eigen::initParallel();
+    Eigen::setNbThreads(1);
 
-private:
-#if PY_MAJOR_VERSION >= 3
-  void *init() { 
-      import_array();
-       }
-#else
-  void init() { import_array(); }
-#endif
-} initializeNumpy;
 }
 
-#endif
+EigenInit EigenInit::m_singleton;
+
+
+}

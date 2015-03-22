@@ -23,9 +23,9 @@
 
 #include "bempp/common/config_trilinos.hpp"
 #include "../common/common.hpp"
+#include "../common/eigen_support.hpp"
 #include "../common/shared_ptr.hpp"
 #include "discrete_boundary_operator.hpp"
-#include "../common/armadillo_fwd.hpp"
 #include <Thyra_DefaultSpmdVectorSpace_decl.hpp>
 #include "../hmat/hmatrix.hpp"
 
@@ -45,7 +45,7 @@ public:
   shared_ptr<const hmat::DefaultHMatrixType<ValueType>> hMatrix() const;
 
   void addBlock(const std::vector<int> &rows, const std::vector<int> &cols,
-                const ValueType alpha, arma::Mat<ValueType> &block) const
+                const ValueType alpha, Matrix<ValueType> &block) const
       override;
 
   Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>> domain() const;
@@ -57,8 +57,8 @@ protected:
 
 private:
   void applyBuiltInImpl(const TranspositionMode trans,
-                        const arma::Col<ValueType> &x_in,
-                        arma::Col<ValueType> &y_inout, const ValueType alpha,
+                        const Vector<ValueType> &x_in,
+                        Vector<ValueType> &y_inout, const ValueType alpha,
                         const ValueType beta) const override;
 
   shared_ptr<hmat::DefaultHMatrixType<ValueType>> m_hMatrix;

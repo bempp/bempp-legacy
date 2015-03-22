@@ -1,5 +1,6 @@
 #include "complexified_discrete_boundary_operator.hpp"
 #include "discrete_aca_boundary_operator.hpp"
+#include "../common/eigen_support.hpp"
 
 #include "../fiber/explicit_instantiation.hpp"
 
@@ -28,13 +29,11 @@ ComplexifiedDiscreteBoundaryOperator<RealType>::
 }
 
 template <typename RealType>
-arma::Mat<std::complex<RealType>>
+Matrix<std::complex<RealType>>
 ComplexifiedDiscreteBoundaryOperator<RealType>::asMatrix() const {
-  // arma::Mat<RealType> origMatrix = m_operator->asMatrix();
-  // return origMatrix;
-  arma::Mat<ValueType> result(rowCount(), columnCount());
-  result.fill(0.);
-  result.set_real(m_operator->asMatrix());
+  Matrix<ValueType> result(rowCount(), columnCount());
+  result.setZero();
+  result.real() = m_operator->asMatrix();
   return result;
 }
 
@@ -52,7 +51,7 @@ ComplexifiedDiscreteBoundaryOperator<RealType>::columnCount() const {
 template <typename RealType>
 void ComplexifiedDiscreteBoundaryOperator<RealType>::addBlock(
     const std::vector<int> &rows, const std::vector<int> &cols,
-    const ValueType alpha, arma::Mat<ValueType> &block) const {
+    const ValueType alpha, Matrix<ValueType> &block) const {
   throw std::runtime_error("ComplexifiedDiscreteBoundaryOperator::addBlock(): "
                            "not implemented yet");
 }
@@ -79,19 +78,19 @@ bool ComplexifiedDiscreteBoundaryOperator<RealType>::opSupportedImpl(
 
 template <typename RealType>
 void ComplexifiedDiscreteBoundaryOperator<RealType>::applyBuiltInImpl(
-    const TranspositionMode trans, const arma::Col<ValueType> &x_in,
-    arma::Col<ValueType> &y_inout, const ValueType alpha,
+    const TranspositionMode trans, const Vector<ValueType> &x_in,
+    Vector<ValueType> &y_inout, const ValueType alpha,
     const ValueType beta) const {
   if (beta == static_cast<ValueType>(0.))
-    y_inout.fill(static_cast<ValueType>(0.));
+    y_inout.setZero();
   else
     y_inout *= beta;
 
-  arma::Col<RealType> x_re = arma::real(x_in);
-  arma::Col<RealType> x_im = arma::imag(x_in);
+  Vector<RealType> x_re = x_in.real();
+  Vector<RealType> x_im = x_in.imag();
 
-  arma::Col<RealType> y_re = arma::real(y_inout);
-  arma::Col<RealType> y_im = arma::imag(y_inout);
+  Vector<RealType> y_re = y_inout.real();
+  Vector<RealType> y_im = y_inout.imag();
 
   m_operator->apply(trans, x_re, y_re, alpha.real(), 1.);
   m_operator->apply(trans, x_im, y_re, -alpha.imag(), 1.);

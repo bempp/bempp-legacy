@@ -2,7 +2,6 @@
 #define bempp_dense_global_assembler_hpp
 
 #include "../common/common.hpp"
-#include "../common/armadillo_fwd.hpp"
 #include "../common/scalar_traits.hpp"
 
 #include <memory>
@@ -44,7 +43,7 @@ namespace Bempp
                             const Context<BasisFunctionType, ResultType>& context);
                 static std::unique_ptr<DiscreteBoundaryOperator<ResultType> >
                     assemblePotentialOperator(
-                            const arma::Mat<CoordinateType>& points,
+                            const Matrix<CoordinateType>& points,
                             const Space<BasisFunctionType>& trialSpace,
                             LocalAssemblerForPotentialOperators& assembler,
                             const EvaluationOptions& options);

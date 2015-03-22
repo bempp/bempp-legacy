@@ -23,7 +23,8 @@
 
 #include "../common/common.hpp"
 
-#include "../common/armadillo_fwd.hpp"
+#include "../common/eigen_support.hpp"
+
 #include "../common/shared_ptr.hpp"
 #include "../fiber/scalar_traits.hpp"
 #include "ahmed_aux_fwd.hpp"
@@ -56,7 +57,7 @@ private:
                                   shared_ptr<IndexPermutation> &o2p,
                                   shared_ptr<IndexPermutation> &p2o);
 
-  static void constructBemCluster(const arma::Mat<CoordinateType> &points,
+  static void constructBemCluster(const Matrix<CoordinateType> &points,
                                   int componentCount,
                                   const AcaOptions &acaOptions,
                                   shared_ptr<AhmedBemCluster> &cluster,
@@ -72,12 +73,12 @@ private:
                                       const blcluster *refCluster);
 
   static void
-  getComponentDofPositions(const arma::Mat<CoordinateType> &points,
+  getComponentDofPositions(const Matrix<CoordinateType> &points,
                            int componentCount,
                            std::vector<Point3D<CoordinateType>> &positions);
 
   static void getComponentBoundingBoxes(
-      const arma::Mat<CoordinateType> &points, int componentCount,
+      const Matrix<CoordinateType> &points, int componentCount,
       std::vector<BoundingBox<CoordinateType>> &boundingBoxes);
 };
 

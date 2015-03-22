@@ -27,6 +27,7 @@
 #include "discrete_boundary_operator.hpp"
 
 #include "../common/shared_ptr.hpp"
+#include "../common/eigen_support.hpp"
 #include "../fiber/_2d_array.hpp"
 
 #ifdef WITH_TRILINOS
@@ -86,7 +87,7 @@ public:
 
   virtual void addBlock(const std::vector<int> &rows,
                         const std::vector<int> &cols, const ValueType alpha,
-                        arma::Mat<ValueType> &block) const;
+                        Matrix<ValueType> &block) const;
 
   /** \brief Return a new DiscreteBlockedBoundaryOperator, in which every
     * component is castable to a DiscreteAcaBoundaryOperator.
@@ -127,8 +128,8 @@ protected:
 
 private:
   virtual void applyBuiltInImpl(const TranspositionMode trans,
-                                const arma::Col<ValueType> &x_in,
-                                arma::Col<ValueType> &y_inout,
+                                const Vector<ValueType> &x_in,
+                                Vector<ValueType> &y_inout,
                                 const ValueType alpha,
                                 const ValueType beta) const;
 

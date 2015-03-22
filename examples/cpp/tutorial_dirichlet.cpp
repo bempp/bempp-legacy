@@ -43,6 +43,8 @@
 #include "bempp/space/piecewise_linear_continuous_scalar_space.hpp"
 #include "bempp/space/piecewise_constant_scalar_space.hpp"
 
+#include "bempp/common/eigen_support.hpp"
+
 #include <iostream>
 #include <fstream>
 
@@ -65,8 +67,8 @@ public:
 
     // Evaluate the function at the point "point" and store result in
     // the array "result"
-    inline void evaluate(const arma::Col<CoordinateType>& point,
-                         arma::Col<ValueType>& result) const {
+    inline void evaluate(const Vector<CoordinateType>& point,
+                         Vector<ValueType>& result) const {
         CoordinateType x = point(0), y = point(1), z = point(2);
         CoordinateType r = sqrt(point(0) * point(0) +
                 point(1) * point(1) +
@@ -90,8 +92,8 @@ public:
 
     // Evaluate the function at the point "point" and store result in
     // the array "result"
-    inline void evaluate(const arma::Col<CoordinateType>& point,
-                         arma::Col<ValueType>& result) const {
+    inline void evaluate(const Vector<CoordinateType>& point,
+                         Vector<ValueType>& result) const {
         CoordinateType x = point(0), y = point(1), z = point(2);
         CoordinateType r = sqrt(point(0) * point(0) +
                 point(1) * point(1) +
@@ -225,7 +227,7 @@ int main()
     const CT minTheta = 0., maxTheta = 2. * M_PI;
     const CT minR = 1., maxR = 2.;
     const int dimWorld = 3;
-    arma::Mat<CT> evaluationPoints(dimWorld, rCount * thetaCount);
+    Matrix<CT> evaluationPoints(dimWorld, rCount * thetaCount);
     for (int iTheta = 0; iTheta < thetaCount; ++iTheta) {
         CT theta = minTheta + (maxTheta - minTheta) *
             iTheta / (thetaCount - 1);
@@ -241,7 +243,7 @@ int main()
 
     EvaluationOptions evaluationOptions;
 
-    arma::Mat<RT> field =
+    Matrix<RT> field =
         -slPotOp.evaluateAtPoints(solFun, evaluationPoints,
                                   quadStrategy, evaluationOptions) +
          dlPotOp.evaluateAtPoints(dirichletData, evaluationPoints,

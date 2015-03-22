@@ -30,6 +30,7 @@
 #include "dense_global_assembler.hpp"
 
 #include "../common/shared_ptr.hpp"
+#include "../common/eigen_support.hpp"
 
 #include "../fiber/evaluator_for_integral_operators.hpp"
 #include "../fiber/explicit_instantiation.hpp"
@@ -71,7 +72,7 @@ ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
   std::unique_ptr<GridView> evalView = evaluationGrid.leafView();
   const int evalGridDim = evaluationGrid.dim();
   const int evalPointCount = evalView->entityCount(evalGridDim);
-  arma::Mat<CoordinateType> evalPoints(evalGridDim, evalPointCount);
+  Matrix<CoordinateType> evalPoints(evalGridDim, evalPointCount);
 
   const IndexSet &evalIndexSet = evalView->indexSet();
   // TODO: extract into template function, perhaps add case evalGridDim == 1
@@ -83,7 +84,7 @@ ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
       const Entity<vertexCodim> &vertex = it->entity();
       const Geometry &geo = vertex.geometry();
       const int vertexIndex = evalIndexSet.entityIndex(vertex);
-      arma::Col<CoordinateType> activeCol(evalPoints.unsafe_col(vertexIndex));
+      Eigen::Map<Vector<CoordinateType>> activeCol(evalPoints.col(vertexIndex).data(),evalPoints.rows());
       geo.getCenter(activeCol);
       it->next();
     }
@@ -95,13 +96,13 @@ ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
       const Entity<vertexCodim> &vertex = it->entity();
       const Geometry &geo = vertex.geometry();
       const int vertexIndex = evalIndexSet.entityIndex(vertex);
-      arma::Col<CoordinateType> activeCol(evalPoints.unsafe_col(vertexIndex));
+      Eigen::Map<Vector<CoordinateType>> activeCol(evalPoints.col(vertexIndex).data(),evalPoints.rows());
       geo.getCenter(activeCol);
       it->next();
     }
   }
 
-  arma::Mat<ResultType> result;
+  Matrix<ResultType> result;
   result = evaluateAtPoints(argument, evalPoints, quadStrategy, options);
 
   return std::unique_ptr<InterpolatedFunction<ResultType>>(
@@ -109,14 +110,14 @@ ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
-arma::Mat<ResultType>
+Matrix<ResultType>
 ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
     evaluateAtPoints(
         const GridFunction<BasisFunctionType, ResultType> &argument,
-        const arma::Mat<CoordinateType> &evaluationPoints,
+        const Matrix<CoordinateType> &evaluationPoints,
         const QuadratureStrategy &quadStrategy,
         const EvaluationOptions &options) const {
-  if (evaluationPoints.n_rows != argument.grid()->dimWorld())
+  if (evaluationPoints.rows() != argument.grid()->dimWorld())
     throw std::invalid_argument(
         "ElementaryPotentialOperator::evaluateAtPoints(): "
         "the number of coordinates of each evaluation point must be "
@@ -129,7 +130,7 @@ ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
 
     // right now we don't bother about far and near field
     // (this might depend on evaluation options)
-    arma::Mat<ResultType> result;
+    Matrix<ResultType> result;
     evaluator->evaluate(Evaluator::FAR_FIELD, evaluationPoints, result);
     return result;
   } else if (options.evaluationMode() == EvaluationOptions::ACA) {
@@ -148,7 +149,7 @@ AssembledPotentialOperator<BasisFunctionType, ResultType>
 ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
     assemble(
         const shared_ptr<const Space<BasisFunctionType>> &space,
-        const shared_ptr<const arma::Mat<CoordinateType>> &evaluationPoints,
+        const shared_ptr<const Matrix<CoordinateType>> &evaluationPoints,
         const QuadratureStrategy &quadStrategy,
         const EvaluationOptions &options) const {
   if (!space)
@@ -233,7 +234,7 @@ std::unique_ptr<typename ElementaryPotentialOperator<
     BasisFunctionType, KernelType, ResultType>::LocalAssembler>
 ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
     makeAssembler(const Space<BasisFunctionType> &space,
-                  const arma::Mat<CoordinateType> &evaluationPoints,
+                  const Matrix<CoordinateType> &evaluationPoints,
                   const QuadratureStrategy &quadStrategy,
                   const EvaluationOptions &options) const {
   // Collect the standard set of data necessary for construction of
@@ -268,7 +269,7 @@ template <typename BasisFunctionType, typename KernelType, typename ResultType>
 shared_ptr<DiscreteBoundaryOperator<ResultType>>
 ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
     assembleOperator(const Space<BasisFunctionType> &space,
-                     const arma::Mat<CoordinateType> &evaluationPoints,
+                     const Matrix<CoordinateType> &evaluationPoints,
                      LocalAssembler &assembler,
                      const EvaluationOptions &options) const {
   switch (options.evaluationMode()) {
@@ -292,7 +293,7 @@ std::unique_ptr<DiscreteBoundaryOperator<ResultType>>
 ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
     assembleOperatorInDenseMode(
         const Space<BasisFunctionType> &space,
-        const arma::Mat<CoordinateType> &evaluationPoints,
+        const Matrix<CoordinateType> &evaluationPoints,
         LocalAssembler &assembler, const EvaluationOptions &options) const {
 
     return DenseGlobalAssembler<BasisFunctionType, ResultType>::assemblePotentialOperator(
@@ -303,7 +304,7 @@ template <typename BasisFunctionType, typename KernelType, typename ResultType>
 std::unique_ptr<DiscreteBoundaryOperator<ResultType>>
 ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
     assembleOperatorInAcaMode(const Space<BasisFunctionType> &space,
-                              const arma::Mat<CoordinateType> &evaluationPoints,
+                              const Matrix<CoordinateType> &evaluationPoints,
                               LocalAssembler &assembler,
                               const EvaluationOptions &options) const {
   return AcaGlobalAssembler<BasisFunctionType, ResultType>::

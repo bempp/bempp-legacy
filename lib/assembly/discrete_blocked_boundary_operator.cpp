@@ -20,6 +20,7 @@
 
 #include "bempp/common/config_trilinos.hpp"
 #include "bempp/common/config_ahmed.hpp"
+#include "../common/eigen_support.hpp"
 
 #include "discrete_blocked_boundary_operator.hpp"
 
@@ -515,7 +516,7 @@ DiscreteBlockedBoundaryOperator<ValueType>::getComponent(int row,
 template <typename ValueType>
 void DiscreteBlockedBoundaryOperator<ValueType>::addBlock(
     const std::vector<int> &rows, const std::vector<int> &cols,
-    const ValueType alpha, arma::Mat<ValueType> &block) const {
+    const ValueType alpha, Matrix<ValueType> &block) const {
   throw std::runtime_error(
       "DiscreteBlockedBoundaryOperator::DiscreteBlockedBoundaryOperator(): "
       "addBlock: not implemented yet");
@@ -810,8 +811,8 @@ bool DiscreteBlockedBoundaryOperator<ValueType>::opSupportedImpl(
 
 template <typename ValueType>
 void DiscreteBlockedBoundaryOperator<ValueType>::applyBuiltInImpl(
-    const TranspositionMode trans, const arma::Col<ValueType> &x_in,
-    arma::Col<ValueType> &y_inout, const ValueType alpha,
+    const TranspositionMode trans, const Vector<ValueType> &x_in,
+    Vector<ValueType> &y_inout, const ValueType alpha,
     const ValueType beta) const {
   bool transpose = (trans == TRANSPOSE || trans == CONJUGATE_TRANSPOSE);
   size_t y_count = transpose ? m_columnCounts.size() : m_rowCounts.size();
@@ -819,8 +820,9 @@ void DiscreteBlockedBoundaryOperator<ValueType>::applyBuiltInImpl(
 
   for (int yi = 0, y_start = 0; yi < y_count; ++yi) {
     size_t y_chunk_size = transpose ? m_columnCounts[yi] : m_rowCounts[yi];
-    arma::Col<ValueType> y_chunk(&y_inout[y_start], y_chunk_size,
-                                 false /* copy_aux_mem */);
+    Eigen::Map<Vector<ValueType>> y_chunk(y_inout.data()+y_start,y_chunk_size);
+//    arma::Col<ValueType> y_chunk(&y_inout[y_start], y_chunk_size,
+//                                 false /* copy_aux_mem */);
     for (int xi = 0, x_start = 0; xi < x_count; ++xi) {
       size_t x_chunk_size = transpose ? m_rowCounts[xi] : m_columnCounts[xi];
       shared_ptr<const Base> op =
@@ -832,17 +834,17 @@ void DiscreteBlockedBoundaryOperator<ValueType>::applyBuiltInImpl(
         // This branch ensures that the "y += beta * y" part is done
         if (op)
           //                    op->apply(trans, x_chunk, y_chunk, alpha, beta);
-          op->apply(trans, x_in.rows(x_start, x_start + x_chunk_size - 1),
+          op->apply(trans, x_in.segment(x_start, x_chunk_size),
                     y_chunk, alpha, beta);
         else {
           if (beta == static_cast<ValueType>(0.))
-            y_chunk.fill(0.);
+            y_chunk.setZero();
           else
             y_chunk *= beta;
         }
       } else if (op)
         //                    op->apply(trans, x_chunk, y_chunk, alpha, 1.);
-        op->apply(trans, x_in.rows(x_start, x_start + x_chunk_size - 1),
+        op->apply(trans, x_in.segment(x_start, x_chunk_size ),
                   y_chunk, alpha, 1.);
       x_start += x_chunk_size;
     }

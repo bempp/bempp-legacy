@@ -24,6 +24,7 @@
 #include "potential_operator.hpp"
 
 #include "../common/shared_ptr.hpp"
+#include "../common/eigen_support.hpp"
 
 namespace Fiber {
 
@@ -134,15 +135,15 @@ public:
                  const QuadratureStrategy &quadStrategy,
                  const EvaluationOptions &options) const;
 
-  virtual arma::Mat<ResultType_>
+  virtual Matrix<ResultType_>
   evaluateAtPoints(const GridFunction<BasisFunctionType, ResultType> &argument,
-                   const arma::Mat<CoordinateType> &evaluationPoints,
+                   const Matrix<CoordinateType> &evaluationPoints,
                    const QuadratureStrategy &quadStrategy,
                    const EvaluationOptions &options) const;
 
   virtual AssembledPotentialOperator<BasisFunctionType_, ResultType_>
   assemble(const shared_ptr<const Space<BasisFunctionType>> &space,
-           const shared_ptr<const arma::Mat<CoordinateType>> &evaluationPoints,
+           const shared_ptr<const Matrix<CoordinateType>> &evaluationPoints,
            const QuadratureStrategy &quadStrategy,
            const EvaluationOptions &options) const;
 
@@ -174,25 +175,25 @@ private:
 
   std::unique_ptr<LocalAssembler>
   makeAssembler(const Space<BasisFunctionType> &space,
-                const arma::Mat<CoordinateType> &evaluationPoints,
+                const Matrix<CoordinateType> &evaluationPoints,
                 const QuadratureStrategy &quadStrategy,
                 const EvaluationOptions &options) const;
 
   shared_ptr<DiscreteBoundaryOperator<ResultType_>>
   assembleOperator(const Space<BasisFunctionType> &space,
-                   const arma::Mat<CoordinateType> &evaluationPoints,
+                   const Matrix<CoordinateType> &evaluationPoints,
                    LocalAssembler &assembler,
                    const EvaluationOptions &options) const;
 
   std::unique_ptr<DiscreteBoundaryOperator<ResultType_>>
   assembleOperatorInDenseMode(const Space<BasisFunctionType> &space,
-                              const arma::Mat<CoordinateType> &evaluationPoints,
+                              const Matrix<CoordinateType> &evaluationPoints,
                               LocalAssembler &assembler,
                               const EvaluationOptions &options) const;
 
   std::unique_ptr<DiscreteBoundaryOperator<ResultType_>>
   assembleOperatorInAcaMode(const Space<BasisFunctionType> &space,
-                            const arma::Mat<CoordinateType> &evaluationPoints,
+                            const Matrix<CoordinateType> &evaluationPoints,
                             LocalAssembler &assembler,
                             const EvaluationOptions &options) const;
   /** \endcond */

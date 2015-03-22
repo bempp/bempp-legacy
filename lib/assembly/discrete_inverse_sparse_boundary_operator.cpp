@@ -24,6 +24,7 @@
 #include "discrete_inverse_sparse_boundary_operator.hpp"
 #include "discrete_sparse_boundary_operator.hpp"
 #include "../fiber/explicit_instantiation.hpp"
+#include "../common/eigen_support.hpp"
 
 #include <iostream>
 #include <stdexcept>
@@ -45,19 +46,19 @@ namespace {
 // Type-agnostic wrapper for the Amesos solver
 template <typename ValueType>
 void solveWithAmesos(Epetra_LinearProblem &problem, Amesos_BaseSolver &solver,
-                     arma::Mat<ValueType> &solution,
-                     const arma::Mat<ValueType> &rhs);
+                     Matrix<ValueType> &solution,
+                     const Matrix<ValueType> &rhs);
 
 template <>
 void solveWithAmesos<double>(Epetra_LinearProblem &problem,
                              Amesos_BaseSolver &solver,
-                             arma::Mat<double> &armaSolution,
-                             const arma::Mat<double> &armaRhs) {
+                             Matrix<double> &armaSolution,
+                             const Matrix<double> &armaRhs) {
 
-  const size_t rowCount = armaRhs.n_rows;
-  assert(rowCount == armaSolution.n_rows);
-  const size_t rhsCount = armaRhs.n_cols;
-  assert(rhsCount == armaSolution.n_cols);
+  const size_t rowCount = armaRhs.rows();
+  assert(rowCount == armaSolution.rows());
+  const size_t rhsCount = armaRhs.cols();
+  assert(rhsCount == armaSolution.cols());
 
   Epetra_Map map((int)rowCount, 0 /* base index */, Epetra_SerialComm());
   Epetra_MultiVector solution(View, map, armaSolution.memptr(), rowCount,
@@ -74,47 +75,48 @@ void solveWithAmesos<double>(Epetra_LinearProblem &problem,
 template <>
 void solveWithAmesos<float>(Epetra_LinearProblem &problem,
                             Amesos_BaseSolver &solver,
-                            arma::Mat<float> &armaSolution,
-                            const arma::Mat<float> &armaRhs) {
+                            Matrix<float> &armaSolution,
+                            const Matrix<float> &armaRhs) {
   // Right now we only support single rhs vectors
-  assert(armaSolution.n_cols == 1);
-  assert(armaRhs.n_cols == 1);
+  assert(armaSolution.cols() == 1);
+  assert(armaRhs.cols() == 1);
 
-  arma::Col<double> solution_double(armaSolution.n_rows);
-  std::copy(armaSolution.begin(), armaSolution.end(), solution_double.begin());
-  arma::Col<double> rhs_double(armaRhs.n_rows);
-  std::copy(armaRhs.begin(), armaRhs.end(), rhs_double.begin());
+  Vector<double> solution_double(armaSolution.rows());
+  for (int i = 0; i < armaSolution.rows(); ++i) solution_double(i) = armaSolution(i,1);
+
+  Vector<double> rhs_double(armaRhs.rows());
+  for (int i = 0; i < armaRhs.rows(); ++i) rhs_double(i) = armaRhs(i,1);
 
   solveWithAmesos<double>(problem, solver, solution_double, rhs_double);
 
-  std::copy(solution_double.begin(), solution_double.end(),
-            armaSolution.begin());
+  for (int i = 0; i < solution_double.rows(); ++i) armaSolution(i,1) = solution_double(i);
+
 }
 
 template <>
 void solveWithAmesos<std::complex<float>>(
     Epetra_LinearProblem &problem, Amesos_BaseSolver &solver,
-    arma::Mat<std::complex<float>> &armaSolution,
-    const arma::Mat<std::complex<float>> &armaRhs) {
+    Matrix<std::complex<float>> &armaSolution,
+    const Matrix<std::complex<float>> &armaRhs) {
   // Right now we only support single rhs vectors
-  assert(armaSolution.n_cols == 1);
-  assert(armaRhs.n_cols == 1);
+  assert(armaSolution.cols() == 1);
+  assert(armaRhs.cols() == 1);
 
   // Solve for the real and imaginary part separately
   // (The copy of the solution (before solving) is probably not necessary...)
-  arma::Mat<double> solution_double(armaSolution.n_rows, 2);
-  for (size_t i = 0; i < armaSolution.n_rows; ++i) {
+  Matrix<double> solution_double(armaSolution.rows(), 2);
+  for (size_t i = 0; i < armaSolution.rows(); ++i) {
     solution_double(i, 0) = armaSolution(i).real();
     solution_double(i, 1) = armaSolution(i).imag();
   }
-  arma::Mat<double> rhs_double(armaRhs.n_rows, 2);
-  for (size_t i = 0; i < armaRhs.n_rows; ++i) {
+  arma::Mat<double> rhs_double(armaRhs.rows(), 2);
+  for (size_t i = 0; i < armaRhs.rows(); ++i) {
     rhs_double(i, 0) = armaRhs(i).real();
     rhs_double(i, 1) = armaRhs(i).imag();
   }
 
   solveWithAmesos<double>(problem, solver, solution_double, rhs_double);
-  for (size_t i = 0; i < armaSolution.n_rows; ++i)
+  for (size_t i = 0; i < armaSolution.rows(); ++i)
     armaSolution(i) =
         std::complex<float>(solution_double(i, 0), solution_double(i, 1));
 }
@@ -122,27 +124,27 @@ void solveWithAmesos<std::complex<float>>(
 template <>
 void solveWithAmesos<std::complex<double>>(
     Epetra_LinearProblem &problem, Amesos_BaseSolver &solver,
-    arma::Mat<std::complex<double>> &armaSolution,
-    const arma::Mat<std::complex<double>> &armaRhs) {
+    Matrix<std::complex<double>> &armaSolution,
+    const Matrix<std::complex<double>> &armaRhs) {
   // Right now we only support single rhs vectors
-  assert(armaSolution.n_cols == 1);
-  assert(armaRhs.n_cols == 1);
+  assert(armaSolution.cols() == 1);
+  assert(armaRhs.cols() == 1);
 
   // Solve for the real and imaginary part separately
   // (The copy of the solution (before solving) is probably not necessary...)
-  arma::Mat<double> solution_double(armaSolution.n_rows, 2);
-  for (size_t i = 0; i < armaSolution.n_rows; ++i) {
+  arma::Mat<double> solution_double(armaSolution.rows(), 2);
+  for (size_t i = 0; i < armaSolution.rows(); ++i) {
     solution_double(i, 0) = armaSolution(i).real();
     solution_double(i, 1) = armaSolution(i).imag();
   }
-  arma::Mat<double> rhs_double(armaRhs.n_rows, 2);
-  for (size_t i = 0; i < armaRhs.n_rows; ++i) {
+  arma::Mat<double> rhs_double(armaRhs.rows(), 2);
+  for (size_t i = 0; i < armaRhs.rows(); ++i) {
     rhs_double(i, 0) = armaRhs(i).real();
     rhs_double(i, 1) = armaRhs(i).imag();
   }
 
   solveWithAmesos<double>(problem, solver, solution_double, rhs_double);
-  for (size_t i = 0; i < armaSolution.n_rows; ++i)
+  for (size_t i = 0; i < armaSolution.rows(); ++i)
     armaSolution(i) =
         std::complex<double>(solution_double(i, 0), solution_double(i, 1));
 }
@@ -209,7 +211,7 @@ DiscreteInverseSparseBoundaryOperator<ValueType>::columnCount() const {
 template <typename ValueType>
 void DiscreteInverseSparseBoundaryOperator<ValueType>::addBlock(
     const std::vector<int> &rows, const std::vector<int> &cols,
-    const ValueType alpha, arma::Mat<ValueType> &block) const {
+    const ValueType alpha, Matrix<ValueType> &block) const {
   throw std::runtime_error("DiscreteInverseSparseBoundaryOperator::"
                            "addBlock(): not implemented");
 }
@@ -234,8 +236,8 @@ bool DiscreteInverseSparseBoundaryOperator<ValueType>::opSupportedImpl(
 
 template <typename ValueType>
 void DiscreteInverseSparseBoundaryOperator<ValueType>::applyBuiltInImpl(
-    const TranspositionMode trans, const arma::Col<ValueType> &x_in,
-    arma::Col<ValueType> &y_inout, const ValueType alpha,
+    const TranspositionMode trans, const Vector<ValueType> &x_in,
+    Vector<ValueType> &y_inout, const ValueType alpha,
     const ValueType beta) const {
   // TODO: protect with a mutex (this function is not thread-safe)
   if (trans != NO_TRANSPOSE)
@@ -243,12 +245,12 @@ void DiscreteInverseSparseBoundaryOperator<ValueType>::applyBuiltInImpl(
                                 "applyBuiltInImpl(): "
                                 "transposes and conjugates are not supported");
   const size_t dim = m_space->dim();
-  if (x_in.n_rows != dim || y_inout.n_rows != dim)
+  if (x_in.rows() != dim || y_inout.rows() != dim)
     throw std::invalid_argument("DiscreteInverseSparseBoundaryOperator::"
                                 "applyBuiltInImpl(): "
                                 "incorrect vector lengths");
-  arma::Col<ValueType> solution(dim);
-  solution.fill(0.);
+  Vector<ValueType> solution(dim);
+  solution.setZero();
   solveWithAmesos(*m_problem, *m_solver, solution, x_in);
   if (beta == static_cast<ValueType>(0.))
     y_inout = alpha * solution;

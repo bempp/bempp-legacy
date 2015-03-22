@@ -23,6 +23,8 @@
 #include "discrete_boundary_operator_composition.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
+#include "../common/eigen_support.hpp"
+
 namespace Bempp {
 
 template <typename ValueType>
@@ -55,7 +57,7 @@ DiscreteBoundaryOperatorComposition<ValueType>::columnCount() const {
 template <typename ValueType>
 void DiscreteBoundaryOperatorComposition<ValueType>::addBlock(
     const std::vector<int> &rows, const std::vector<int> &cols,
-    const ValueType alpha, arma::Mat<ValueType> &block) const {
+    const ValueType alpha, Matrix<ValueType> &block) const {
   throw std::runtime_error("DiscreteBoundaryOperatorComposition::"
                            "DiscreteBoundaryOperatorComposition(): "
                            "addBlock: not implemented yet");
@@ -83,15 +85,15 @@ bool DiscreteBoundaryOperatorComposition<ValueType>::opSupportedImpl(
 
 template <typename ValueType>
 void DiscreteBoundaryOperatorComposition<ValueType>::applyBuiltInImpl(
-    const TranspositionMode trans, const arma::Col<ValueType> &x_in,
-    arma::Col<ValueType> &y_inout, const ValueType alpha,
+    const TranspositionMode trans, const Vector<ValueType> &x_in,
+    Vector<ValueType> &y_inout, const ValueType alpha,
     const ValueType beta) const {
   if (trans == TRANSPOSE || trans == CONJUGATE_TRANSPOSE) {
-    arma::Col<ValueType> tmp(m_outer->columnCount());
+    Vector<ValueType> tmp(m_outer->columnCount());
     m_outer->apply(trans, x_in, tmp, alpha, 0.);
     m_inner->apply(trans, tmp, y_inout, 1., beta);
   } else {
-    arma::Col<ValueType> tmp(m_inner->rowCount());
+    Vector<ValueType> tmp(m_inner->rowCount());
     m_inner->apply(trans, x_in, tmp, alpha, 0.);
     m_outer->apply(trans, tmp, y_inout, 1., beta);
   }

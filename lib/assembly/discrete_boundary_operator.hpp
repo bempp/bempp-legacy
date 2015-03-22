@@ -29,8 +29,6 @@
 #include "transposition_mode.hpp"
 #include "boost/enable_shared_from_this.hpp"
 
-#include "../common/armadillo_fwd.hpp"
-
 #ifdef WITH_TRILINOS
 #include <Thyra_LinearOpDefaultBase_decl.hpp>
 #endif
@@ -143,8 +141,8 @@ public:
    *  This overload is always available, even if the library was compiled
    *  without Trilinos.
    */
-  void apply(const TranspositionMode trans, const arma::Mat<ValueType> &x_in,
-             arma::Mat<ValueType> &y_inout, const ValueType alpha,
+  void apply(const TranspositionMode trans, Matrix<ValueType> &x_in,
+             Matrix<ValueType> &y_inout, const ValueType alpha,
              const ValueType beta) const;
 
   /** \brief Return a representation that can be cast to a
@@ -188,7 +186,7 @@ public:
   /** \brief Matrix representation of the operator.
 
   The default implementation is slow and should be overridden where possible. */
-  virtual arma::Mat<ValueType> asMatrix() const;
+  virtual Matrix<ValueType> asMatrix() const;
 
   /** \brief Number of rows of the operator. */
   virtual unsigned int rowCount() const = 0;
@@ -217,7 +215,7 @@ public:
    * intended for internal use during weak-form assembly. */
   virtual void addBlock(const std::vector<int> &rows,
                         const std::vector<int> &cols, const ValueType alpha,
-                        arma::Mat<ValueType> &block) const = 0;
+                        Matrix<ValueType> &block) const = 0;
 
 #ifdef WITH_TRILINOS
 protected:
@@ -230,8 +228,8 @@ protected:
 
 private:
   virtual void applyBuiltInImpl(const TranspositionMode trans,
-                                const arma::Col<ValueType> &x_in,
-                                arma::Col<ValueType> &y_inout,
+                                const Vector<ValueType> &x_in,
+                                Vector<ValueType> &y_inout,
                                 const ValueType alpha,
                                 const ValueType beta) const = 0;
 };

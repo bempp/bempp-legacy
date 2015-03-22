@@ -26,7 +26,6 @@
 #include "bempp/common/config_trilinos.hpp"
 #include "discrete_boundary_operator.hpp"
 
-#include "ahmed_aux_fwd.hpp"
 #include "index_permutation.hpp"
 #include "../fiber/scalar_traits.hpp"
 #include "../fiber/verbosity_level.hpp"
@@ -68,7 +67,7 @@ public:
 
   virtual void addBlock(const std::vector<int> &rows,
                         const std::vector<int> &cols, const ValueType alpha,
-                        arma::Mat<ValueType> &block) const;
+                        Matrix<ValueType> &block) const;
 
 #ifdef WITH_TRILINOS
 public:
@@ -81,8 +80,8 @@ protected:
 
 private:
   virtual void applyBuiltInImpl(const TranspositionMode trans,
-                                const arma::Col<ValueType> &x_in,
-                                arma::Col<ValueType> &y_inout,
+                                const Vector<ValueType> &x_in,
+                                Vector<ValueType> &y_inout,
                                 const ValueType alpha,
                                 const ValueType beta) const;
 

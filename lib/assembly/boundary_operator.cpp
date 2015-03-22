@@ -179,8 +179,8 @@ void BoundaryOperator<BasisFunctionType, ResultType>::apply(
       m_abstractOp->dualToRange();
 
   // Extract coefficient vectors
-  arma::Col<ResultType> xVals = x_in.coefficients();
-  arma::Col<ResultType> yVals = y_inout.projections(dualToRange);
+  Vector<ResultType> xVals = x_in.coefficients();
+  Vector<ResultType> yVals = y_inout.projections(dualToRange);
 
   // Apply operator and assign the result to y_inout's projections
   weakForm()->apply(trans, xVals, yVals, alpha, beta);
@@ -283,8 +283,8 @@ operator*(const BoundaryOperator<BasisFunctionType, ResultType> &op,
 
   shared_ptr<const Space<BasisFunctionType>> space = op.range();
   shared_ptr<const Space<BasisFunctionType>> dualSpace = op.dualToRange();
-  arma::Col<ResultType> projections(dualSpace->globalDofCount());
-  projections.fill(0.);
+  Vector<ResultType> projections(dualSpace->globalDofCount());
+  projections.setZero();
   GF result(op.context(), space, dualSpace, projections);
   op.apply(NO_TRANSPOSE, fun, result, 1., 0.);
   return result;

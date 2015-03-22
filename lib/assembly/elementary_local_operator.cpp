@@ -52,6 +52,7 @@
 #include "../space/space.hpp"
 
 #include "../common/boost_make_shared_fwd.hpp"
+#include "../common/eigen_support.hpp"
 #include <boost/type_traits/is_complex.hpp>
 
 #include <tbb/tick_count.h>
@@ -88,14 +89,14 @@ template <typename ValueType>
 int epetraSumIntoGlobalValues(Epetra_FECrsMatrix &matrix,
                               const std::vector<int> &rowIndices,
                               const std::vector<int> &colIndices,
-                              const arma::Mat<ValueType> &values);
+                              const Matrix<ValueType> &values);
 
 // Specialisation for double -- no intermediate array is needed
 template <>
 inline int epetraSumIntoGlobalValues<double>(Epetra_FECrsMatrix &matrix,
                                              const std::vector<int> &rowIndices,
                                              const std::vector<int> &colIndices,
-                                             const arma::Mat<double> &values) {
+                                             const Matrix<double> &values) {
   assert(rowIndices.size() == values.n_rows);
   assert(colIndices.size() == values.n_cols);
   return matrix.SumIntoGlobalValues(
@@ -108,10 +109,13 @@ template <>
 inline int epetraSumIntoGlobalValues<float>(Epetra_FECrsMatrix &matrix,
                                             const std::vector<int> &rowIndices,
                                             const std::vector<int> &colIndices,
-                                            const arma::Mat<float> &values) {
+                                            const Matrix<float> &values) {
   // Convert data from float into double (expected by Epetra)
-  arma::Mat<double> doubleValues(values.n_rows, values.n_cols);
-  std::copy(values.begin(), values.end(), doubleValues.begin());
+  Matrix<double> doubleValues(values.rows(), values.cols());
+  for (int j = 0; i < values.cols(); ++j)
+      for (int i = 0; i < values.rows(); ++i)
+          doubleValues(i,j) = values(i,j);
+
   return epetraSumIntoGlobalValues<double>(matrix, rowIndices, colIndices,
                                            doubleValues);
 }
@@ -123,13 +127,15 @@ template <>
 inline int epetraSumIntoGlobalValues<std::complex<float>>(
     Epetra_FECrsMatrix &matrix, const std::vector<int> &rowIndices,
     const std::vector<int> &colIndices,
-    const arma::Mat<std::complex<float>> &values) {
+    const Matrix<std::complex<float>> &values) {
   // Extract the real part of "values" into an array of type double
-  arma::Mat<double> doubleValues(values.n_rows, values.n_cols);
+  Matrix<double> doubleValues(values.rows(), values.cols());
   // Check whether arma::real returns a view or a copy (if the latter,
   // this assert will fail)
-  for (size_t i = 0; i < values.n_elem; ++i)
-    doubleValues[i] = values[i].real();
+  for (int j = 0; j < values.cols(); ++j)
+      for (int i = 0; i < values.rows(); ++i)
+          doubleValues(i,j) = values(i,j).real();
+
   return epetraSumIntoGlobalValues<double>(matrix, rowIndices, colIndices,
                                            doubleValues);
 }
@@ -141,11 +147,14 @@ template <>
 inline int epetraSumIntoGlobalValues<std::complex<double>>(
     Epetra_FECrsMatrix &matrix, const std::vector<int> &rowIndices,
     const std::vector<int> &colIndices,
-    const arma::Mat<std::complex<double>> &values) {
+    const Matrix<std::complex<double>> &values) {
   // Extract the real part of "values" into an array of type double
-  arma::Mat<double> doubleValues(values.n_rows, values.n_cols);
-  for (size_t i = 0; i < values.n_elem; ++i)
-    doubleValues[i] = values[i].real();
+  Matrix<double> doubleValues(values.rows(), values.cols());
+
+  for (int j = 0; j < values.cols(); ++j)
+      for (int i = 0; i < values.rows(); ++i)
+          doubleValues(i,j) = values(i,j).real();
+
   return epetraSumIntoGlobalValues<double>(matrix, rowIndices, colIndices,
                                            doubleValues);
 }
@@ -265,13 +274,13 @@ ElementaryLocalOperator<BasisFunctionType, ResultType>::
   std::vector<int> elementIndices(elementCount);
   for (size_t i = 0; i < elementCount; ++i)
     elementIndices[i] = i;
-  std::vector<arma::Mat<ResultType>> localResult;
+  std::vector<Matrix<ResultType>> localResult;
   assembler.evaluateLocalWeakForms(elementIndices, localResult);
 
   // Create the operator's matrix
-  arma::Mat<ResultType> result(testSpace.globalDofCount(),
+  Matrix<ResultType> result(testSpace.globalDofCount(),
                                trialSpace.globalDofCount());
-  result.fill(0.);
+  result.setZero();
 
   // Retrieve global DOFs corresponding to local DOFs on all elements
   std::vector<std::vector<GlobalDofIndex>> testGdofs(elementCount);
@@ -323,7 +332,7 @@ ElementaryLocalOperator<BasisFunctionType, ResultType>::
   std::vector<int> elementIndices(elementCount);
   for (size_t i = 0; i < elementCount; ++i)
     elementIndices[i] = i;
-  std::vector<arma::Mat<ResultType>> localResult;
+  std::vector<Matrix<ResultType>> localResult;
   assembler.evaluateLocalWeakForms(elementIndices, localResult);
 
   // Global DOF indices corresponding to local DOFs on elements
@@ -354,8 +363,8 @@ ElementaryLocalOperator<BasisFunctionType, ResultType>::
 
   const int testGlobalDofCount = testSpace.globalDofCount();
   const int trialGlobalDofCount = trialSpace.globalDofCount();
-  arma::Col<int> nonzeroEntryCountEstimates(testGlobalDofCount);
-  nonzeroEntryCountEstimates.fill(0);
+  Vector<int> nonzeroEntryCountEstimates(testGlobalDofCount);
+  nonzeroEntryCountEstimates.setZero();
 
   // Upper estimate for the number of global trial DOFs coupled to a given
   // global test DOF: sum of the local trial DOF counts for each element that
@@ -382,8 +391,8 @@ ElementaryLocalOperator<BasisFunctionType, ResultType>::
         std::max(maxLdofCount, testGdofs[e].size() * trialGdofs[e].size());
 
   // Initialise sparse matrix with zeros at required positions
-  arma::Col<double> zeros(maxLdofCount);
-  zeros.fill(0.);
+  Vector<double> zeros(maxLdofCount);
+  zeros.setZero();
   for (size_t e = 0; e < elementCount; ++e)
     result->InsertGlobalValues(testGdofs[e].size(), &testGdofs[e][0],
                                trialGdofs[e].size(), &trialGdofs[e][0],

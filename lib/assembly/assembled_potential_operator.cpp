@@ -24,6 +24,7 @@
 #include "grid_function.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 #include "../space/space.hpp"
+#include "../common/eigen_support.hpp"
 
 namespace Bempp {
 
@@ -31,7 +32,7 @@ template <typename BasisFunctionType, typename ResultType>
 AssembledPotentialOperator<BasisFunctionType, ResultType>::
     AssembledPotentialOperator(
         const shared_ptr<const Space<BasisFunctionType>> &space_,
-        const shared_ptr<const arma::Mat<CoordinateType>> &evaluationPoints_,
+        const shared_ptr<const Matrix<CoordinateType>> &evaluationPoints_,
         const shared_ptr<const DiscreteBoundaryOperator<ResultType>> &op_,
         int componentCount_)
     : m_space(space_), m_evaluationPoints(evaluationPoints_), m_op(op_),
@@ -49,7 +50,7 @@ AssembledPotentialOperator<BasisFunctionType, ResultType>::
                                 "AssembledPotentialOperator(): "
                                 "incorrect number of rows in op_");
   if (m_evaluationPoints &&
-      m_op->rowCount() != m_componentCount * m_evaluationPoints->n_cols)
+      m_op->rowCount() != m_componentCount * m_evaluationPoints->cols())
     throw std::invalid_argument("AssembledPotentialOperator::"
                                 "AssembledPotentialOperator(): "
                                 "incorrect number of rows in op_");
@@ -67,7 +68,7 @@ AssembledPotentialOperator<BasisFunctionType, ResultType>::space() const {
 }
 
 template <typename BasisFunctionType, typename ResultType>
-shared_ptr<const arma::Mat<typename AssembledPotentialOperator<
+shared_ptr<const Matrix<typename AssembledPotentialOperator<
     BasisFunctionType, ResultType>::CoordinateType>>
 AssembledPotentialOperator<BasisFunctionType, ResultType>::evaluationPoints()
     const {
@@ -88,7 +89,7 @@ int AssembledPotentialOperator<BasisFunctionType, ResultType>::componentCount()
 }
 
 template <typename BasisFunctionType, typename ResultType>
-arma::Mat<ResultType>
+Matrix<ResultType>
 AssembledPotentialOperator<BasisFunctionType, ResultType>::apply(
     const GridFunction<BasisFunctionType, ResultType> &argument) const {
   if (m_space && argument.space() != m_space)
@@ -96,12 +97,12 @@ AssembledPotentialOperator<BasisFunctionType, ResultType>::apply(
         "AssembledPotentialOperator::apply(): "
         "space used to expand 'argument' does not "
         "match the one used during operator construction");
-  arma::Mat<ResultType> result(m_op->rowCount(), 1);
-  arma::Col<ResultType> colResult = result.unsafe_col(0);
-  const arma::Col<ResultType> &coeffs = argument.coefficients();
+  Matrix<ResultType> result(m_op->rowCount(), 1);
+  Vector<ResultType> colResult = result.unsafe_col(0);
+  const Vector<ResultType> &coeffs = argument.coefficients();
   m_op->apply(NO_TRANSPOSE, coeffs, colResult, 1., 0.);
-  assert(result.n_rows % m_componentCount == 0);
-  result.reshape(m_componentCount, result.n_rows / m_componentCount);
+  assert(result.rows() % m_componentCount == 0);
+  result.resize(m_componentCount, result.n_rows / m_componentCount);
   return result;
 }
 

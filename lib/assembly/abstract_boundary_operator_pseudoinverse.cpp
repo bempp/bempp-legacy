@@ -28,6 +28,8 @@
 #include "../common/to_string.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
+#include "../common/eigen_support.hpp"
+
 #ifdef WITH_TRILINOS
 
 #include "../assembly/discrete_inverse_sparse_boundary_operator.hpp"
@@ -231,11 +233,11 @@ AbstractBoundaryOperatorPseudoinverse<BasisFunctionType, ResultType>::
   if (wrappedDiscreteOp->rowCount() == wrappedDiscreteOp->columnCount())
     // TODO: store an LU decomposition instead of the inverse matrix.
     return boost::make_shared<DiscreteDenseLinOp>(
-        arma::inv(wrappedDiscreteOp->asMatrix()));
+        (wrappedDiscreteOp->asMatrix()).inverse());
   else
     // compute and store pseudoinverse
     return boost::make_shared<DiscreteDenseLinOp>(
-        arma::pinv(wrappedDiscreteOp->asMatrix()));
+        eigenMatPinv(wrappedDiscreteOp->asMatrix()));
 }
 
 template <typename BasisFunctionType, typename ResultType>

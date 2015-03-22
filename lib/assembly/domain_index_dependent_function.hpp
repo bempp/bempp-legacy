@@ -22,6 +22,7 @@
 #define bempp_domain_index_dependent_function_hpp
 
 #include "../common/common.hpp"
+#include "../common/eigen_support.hpp"
 
 #include "../fiber/domain_index_dependent_function.hpp"
 
@@ -54,9 +55,9 @@ using Fiber::DomainIndexDependentFunction;
       // Evaluate the function at the point "point" lying on an element from
       // domain "domainIndex" and store result in the array "result".
       // All arrays will be preinitialised to correct dimensions.
-      void evaluate(const arma::Col<CoordinateType>& point,
+      void evaluate(const Vector<CoordinateType>& point,
                     int domainIndex,
-                    arma::Col<ValueType>& result) const;
+                    Vector<ValueType>& result) const;
   };
   \endcode
 

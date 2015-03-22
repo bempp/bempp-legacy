@@ -30,6 +30,7 @@
 #include "sparse_to_h_matrix_converter.hpp"
 
 #include "../common/boost_shared_array_fwd.hpp"
+#include "../common/eigen_support.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 #include "../fiber/parallelization_options.hpp"
 
@@ -50,28 +51,28 @@ namespace {
 template <typename ValueType>
 void reallyApplyBuiltInImpl(const Epetra_CrsMatrix &mat,
                             const TranspositionMode trans,
-                            const arma::Col<ValueType> &x_in,
-                            arma::Col<ValueType> &y_inout,
+                            const Vector<ValueType> &x_in,
+                            Vector<ValueType> &y_inout,
                             const ValueType alpha, const ValueType beta);
 
 template <>
 void reallyApplyBuiltInImpl<double>(const Epetra_CrsMatrix &mat,
                                     const TranspositionMode trans,
-                                    const arma::Col<double> &x_in,
-                                    arma::Col<double> &y_inout,
+                                    const Vector<double> &x_in,
+                                    Vector<double> &y_inout,
                                     const double alpha, const double beta) {
   if (trans == TRANSPOSE || trans == CONJUGATE_TRANSPOSE) {
-    assert(mat.NumGlobalRows() == static_cast<int>(x_in.n_rows));
-    assert(mat.NumGlobalCols() == static_cast<int>(y_inout.n_rows));
+    assert(mat.NumGlobalRows() == static_cast<int>(x_in.rows()));
+    assert(mat.NumGlobalCols() == static_cast<int>(y_inout.rows()));
   } else {
-    assert(mat.NumGlobalCols() == static_cast<int>(x_in.n_rows));
-    assert(mat.NumGlobalRows() == static_cast<int>(y_inout.n_rows));
+    assert(mat.NumGlobalCols() == static_cast<int>(x_in.rows()));
+    assert(mat.NumGlobalRows() == static_cast<int>(y_inout.rows()));
   }
 
-  Epetra_Map map_x((int)x_in.n_rows, 0, Epetra_SerialComm());
-  Epetra_Map map_y((int)y_inout.n_rows, 0, Epetra_SerialComm());
+  Epetra_Map map_x((int)x_in.rows(), 0, Epetra_SerialComm());
+  Epetra_Map map_y((int)y_inout.rows(), 0, Epetra_SerialComm());
 
-  Epetra_Vector vec_x(View, map_x, const_cast<double *>(x_in.memptr()));
+  Epetra_Vector vec_x(View, map_x, const_cast<double *>(x_in.data()));
   // vec_temp will store the result of matrix * x_in
   Epetra_Vector vec_temp(map_y, false /* no need to initialise to zero */);
 
@@ -79,60 +80,62 @@ void reallyApplyBuiltInImpl<double>(const Epetra_CrsMatrix &mat,
                vec_temp);
 
   if (beta == 0.)
-    for (size_t i = 0; i < y_inout.n_rows; ++i)
+    for (size_t i = 0; i < y_inout.rows(); ++i)
       y_inout(i) = alpha * vec_temp[i];
   else
-    for (size_t i = 0; i < y_inout.n_rows; ++i)
+    for (size_t i = 0; i < y_inout.rows(); ++i)
       y_inout(i) = alpha * vec_temp[i] + beta * y_inout(i);
 }
 
 template <>
 void reallyApplyBuiltInImpl<float>(const Epetra_CrsMatrix &mat,
                                    const TranspositionMode trans,
-                                   const arma::Col<float> &x_in,
-                                   arma::Col<float> &y_inout, const float alpha,
+                                   const Vector<float> &x_in,
+                                   Vector<float> &y_inout, const float alpha,
                                    const float beta) {
   // Copy the float vectors to double vectors
-  arma::Col<double> x_in_double(x_in.n_rows);
-  std::copy(x_in.begin(), x_in.end(), x_in_double.begin());
-  arma::Col<double> y_inout_double(y_inout.n_rows);
+  Vector<double> x_in_double(x_in.rows());
+  for (int i = 0; i < x_in.rows(); ++i) x_in_double(i) = x_in(i);
+
+  Vector<double> y_inout_double(y_inout.rows());
   if (beta != 0.f)
-    std::copy(y_inout.begin(), y_inout.end(), y_inout_double.begin());
+      for (int i = 0 ;i < y_inout.rows(); ++i ) y_inout_double(i) = y_inout(i);
 
   // Do the operation on the double vectors
   reallyApplyBuiltInImpl<double>(mat, trans, x_in_double, y_inout_double, alpha,
                                  beta);
 
   // Copy the result back to the float vector
-  std::copy(y_inout_double.begin(), y_inout_double.end(), y_inout.begin());
+  for (int i = 0; i < y_inout_double.rows(); ++i) y_inout(i) = y_inout_double(i);
+
 }
 
 template <>
 void reallyApplyBuiltInImpl<std::complex<float>>(
     const Epetra_CrsMatrix &mat, const TranspositionMode trans,
-    const arma::Col<std::complex<float>> &x_in,
-    arma::Col<std::complex<float>> &y_inout, const std::complex<float> alpha,
+    const Vector<std::complex<float>> &x_in,
+    Vector<std::complex<float>> &y_inout, const std::complex<float> alpha,
     const std::complex<float> beta) {
   // Do the y_inout *= beta part
   const std::complex<float> zero(0.f, 0.f);
   if (beta == zero)
-    y_inout.fill(zero);
+    y_inout.setZero();
   else
     y_inout *= beta;
 
   // Separate the real and imaginary components and store them in
   // double-precision vectors
-  arma::Col<double> x_real(x_in.n_rows);
-  for (size_t i = 0; i < x_in.n_rows; ++i)
+  Vector<double> x_real(x_in.rows());
+  for (size_t i = 0; i < x_in.rows(); ++i)
     x_real(i) = x_in(i).real();
-  arma::Col<double> x_imag(x_in.n_rows);
-  for (size_t i = 0; i < x_in.n_rows; ++i)
+  Vector<double> x_imag(x_in.rows());
+  for (size_t i = 0; i < x_in.rows(); ++i)
     x_imag(i) = x_in(i).imag();
-  arma::Col<double> y_real(y_inout.n_rows);
-  for (size_t i = 0; i < y_inout.n_rows; ++i)
+  Vector<double> y_real(y_inout.rows);
+  for (size_t i = 0; i < y_inout.rows(); ++i)
     y_real(i) = y_inout(i).real();
-  arma::Col<double> y_imag(y_inout.n_rows);
-  for (size_t i = 0; i < y_inout.n_rows; ++i)
+  Vector<double> y_imag(y_inout.rows());
+  for (size_t i = 0; i < y_inout.rows(); ++i)
     y_imag(i) = y_inout(i).imag();
 
   // Do the "+= alpha A x" part (in steps)
@@ -142,15 +145,15 @@ void reallyApplyBuiltInImpl<std::complex<float>>(
   reallyApplyBuiltInImpl<double>(mat, trans, x_imag, y_imag, alpha.real(), 1.);
 
   // Copy the result back to the complex vector
-  for (size_t i = 0; i < y_inout.n_rows; ++i)
+  for (size_t i = 0; i < y_inout.rows(); ++i)
     y_inout(i) = std::complex<float>(y_real(i), y_imag(i));
 }
 
 template <>
 void reallyApplyBuiltInImpl<std::complex<double>>(
     const Epetra_CrsMatrix &mat, const TranspositionMode trans,
-    const arma::Col<std::complex<double>> &x_in,
-    arma::Col<std::complex<double>> &y_inout, const std::complex<double> alpha,
+    const Vector<std::complex<double>> &x_in,
+    Vector<std::complex<double>> &y_inout, const std::complex<double> alpha,
     const std::complex<double> beta) {
   // Do the y_inout *= beta part
   const std::complex<double> zero(0., 0.);
@@ -160,10 +163,10 @@ void reallyApplyBuiltInImpl<std::complex<double>>(
     y_inout *= beta;
 
   // Separate the real and imaginary components
-  arma::Col<double> x_real(arma::real(x_in));
-  arma::Col<double> x_imag(arma::imag(x_in));
-  arma::Col<double> y_real(arma::real(y_inout));
-  arma::Col<double> y_imag(arma::imag(y_inout));
+  Vector<double> x_real(x_in.real());
+  Vector<double> x_imag(x_in.imag());
+  Vector<double> y_real(y_inout.real());
+  Vector<double> y_imag(y_inout.imag());
 
   // Do the "+= alpha A x" part (in steps)
   reallyApplyBuiltInImpl<double>(mat, trans, x_real, y_real, alpha.real(), 1.);
@@ -172,7 +175,7 @@ void reallyApplyBuiltInImpl<std::complex<double>>(
   reallyApplyBuiltInImpl<double>(mat, trans, x_imag, y_imag, alpha.real(), 1.);
 
   // Copy the result back to the complex vector
-  for (size_t i = 0; i < y_inout.n_rows; ++i)
+  for (size_t i = 0; i < y_inout.rows(); ++i)
     y_inout(i) = std::complex<double>(y_real(i), y_imag(i));
 }
 
@@ -202,7 +205,7 @@ void DiscreteSparseBoundaryOperator<ValueType>::dump() const {
 }
 
 template <typename ValueType>
-arma::Mat<ValueType>
+Matrix<ValueType>
 DiscreteSparseBoundaryOperator<ValueType>::asMatrix() const {
   if (m_mat->Comm().NumProc() != 1)
     throw std::runtime_error(
@@ -211,8 +214,8 @@ DiscreteSparseBoundaryOperator<ValueType>::asMatrix() const {
 
   bool transposed = isTransposed();
   const int untransposedRowCount = m_mat->NumGlobalRows();
-  arma::Mat<ValueType> mat(rowCount(), columnCount());
-  mat.fill(0.);
+  Matrix<ValueType> mat(rowCount(), columnCount());
+  mat.setZero();
   for (int row = 0; row < untransposedRowCount; ++row) {
     int entryCount = 0;
     double *values = 0;
@@ -244,13 +247,13 @@ unsigned int DiscreteSparseBoundaryOperator<ValueType>::columnCount() const {
 template <typename ValueType>
 void DiscreteSparseBoundaryOperator<ValueType>::addBlock(
     const std::vector<int> &rows, const std::vector<int> &cols,
-    const ValueType alpha, arma::Mat<ValueType> &block) const {
+    const ValueType alpha, Matrix<ValueType> &block) const {
   // indices of entries of the untransposed (stored) matrix
   bool transposed = isTransposed();
   const std::vector<int> &untransposedRows = transposed ? cols : rows;
   const std::vector<int> &untransposedCols = transposed ? rows : cols;
 
-  if (block.n_rows != rows.size() || block.n_cols != cols.size())
+  if (block.rows() != rows.size() || block.cols() != cols.size())
     throw std::invalid_argument("DiscreteSparseBoundaryOperator::addBlock(): "
                                 "incorrect block size");
 
@@ -386,8 +389,8 @@ bool DiscreteSparseBoundaryOperator<ValueType>::isTransposed() const {
 
 template <typename ValueType>
 void DiscreteSparseBoundaryOperator<ValueType>::applyBuiltInImpl(
-    const TranspositionMode trans, const arma::Col<ValueType> &x_in,
-    arma::Col<ValueType> &y_inout, const ValueType alpha,
+    const TranspositionMode trans, const Vector<ValueType> &x_in,
+    Vector<ValueType> &y_inout, const ValueType alpha,
     const ValueType beta) const {
   TranspositionMode realTrans = trans;
   bool transposed = isTransposed();

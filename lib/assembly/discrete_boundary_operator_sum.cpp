@@ -23,6 +23,7 @@
 #include "discrete_boundary_operator_sum.hpp"
 #include "discrete_aca_boundary_operator.hpp"
 #include "../fiber/explicit_instantiation.hpp"
+#include "../common/eigen_support.hpp"
 
 namespace Bempp {
 
@@ -43,8 +44,8 @@ DiscreteBoundaryOperatorSum<ValueType>::DiscreteBoundaryOperatorSum(
 }
 
 template <typename ValueType>
-arma::Mat<ValueType> DiscreteBoundaryOperatorSum<ValueType>::asMatrix() const {
-  arma::Mat<ValueType> result = m_term1->asMatrix();
+Matrix<ValueType> DiscreteBoundaryOperatorSum<ValueType>::asMatrix() const {
+  Matrix<ValueType> result = m_term1->asMatrix();
   result += m_term2->asMatrix();
   return result;
 }
@@ -62,7 +63,7 @@ unsigned int DiscreteBoundaryOperatorSum<ValueType>::columnCount() const {
 template <typename ValueType>
 void DiscreteBoundaryOperatorSum<ValueType>::addBlock(
     const std::vector<int> &rows, const std::vector<int> &cols,
-    const ValueType alpha, arma::Mat<ValueType> &block) const {
+    const ValueType alpha, Matrix<ValueType> &block) const {
   m_term1->addBlock(rows, cols, alpha, block);
   m_term2->addBlock(rows, cols, alpha, block);
 }
@@ -111,8 +112,8 @@ bool DiscreteBoundaryOperatorSum<ValueType>::opSupportedImpl(
 
 template <typename ValueType>
 void DiscreteBoundaryOperatorSum<ValueType>::applyBuiltInImpl(
-    const TranspositionMode trans, const arma::Col<ValueType> &x_in,
-    arma::Col<ValueType> &y_inout, const ValueType alpha,
+    const TranspositionMode trans, const Vector<ValueType> &x_in,
+    Vector<ValueType> &y_inout, const ValueType alpha,
     const ValueType beta) const {
   m_term1->apply(trans, x_in, y_inout, alpha, beta);
   m_term2->apply(trans, x_in, y_inout, alpha,

@@ -18,11 +18,16 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include "../common/common.hpp"
+#include "../common/eigen_support.hpp"
+
 #include "discrete_hmat_boundary_operator.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 #include <boost/numeric/conversion/converter.hpp>
 #include "../hmat/compressed_matrix.hpp"
 #include "../hmat/hmatrix.hpp"
+
+
 
 namespace Bempp {
 
@@ -59,12 +64,12 @@ DiscreteHMatBoundaryOperator<ValueType>::hMatrix() const
 template <typename ValueType>
 void DiscreteHMatBoundaryOperator<ValueType>::addBlock(
     const std::vector<int> &rows, const std::vector<int> &cols,
-    const ValueType alpha, arma::Mat<ValueType> &block) const {}
+    const ValueType alpha, Matrix<ValueType> &block) const {}
 
 template <typename ValueType>
 void DiscreteHMatBoundaryOperator<ValueType>::applyBuiltInImpl(
-    const TranspositionMode trans, const arma::Col<ValueType> &x_in,
-    arma::Col<ValueType> &y_inout, const ValueType alpha,
+    const TranspositionMode trans, const Vector<ValueType> &x_in,
+    Vector<ValueType> &y_inout, const ValueType alpha,
     const ValueType beta) const {
 
   hmat::TransposeMode hmatTrans;

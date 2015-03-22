@@ -22,6 +22,7 @@
 
 #include "discrete_dense_boundary_operator.hpp"
 #include "../common/boost_make_shared_fwd.hpp"
+#include "../common/eigen_support.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
 #include "fiber/scalar_traits.hpp"
@@ -38,7 +39,7 @@ namespace Bempp {
 
 template <typename ValueType>
 DiscreteDenseBoundaryOperator<ValueType>::DiscreteDenseBoundaryOperator(
-    const arma::Mat<ValueType> &mat)
+    const Matrix<ValueType> &mat)
     : m_mat(mat)
 #ifdef WITH_TRILINOS
       ,
@@ -54,7 +55,7 @@ void DiscreteDenseBoundaryOperator<ValueType>::dump() const {
 }
 
 template <typename ValueType>
-arma::Mat<ValueType>
+Matrix<ValueType>
 DiscreteDenseBoundaryOperator<ValueType>::asMatrix() const {
   return m_mat;
 }
@@ -72,8 +73,8 @@ unsigned int DiscreteDenseBoundaryOperator<ValueType>::columnCount() const {
 template <typename ValueType>
 void DiscreteDenseBoundaryOperator<ValueType>::addBlock(
     const std::vector<int> &rows, const std::vector<int> &cols,
-    const ValueType alpha, arma::Mat<ValueType> &block) const {
-  if (block.n_rows != rows.size() || block.n_cols != cols.size())
+    const ValueType alpha, Matrix<ValueType> &block) const {
+  if (block.rows() != rows.size() || block.cols() != cols.size())
     throw std::invalid_argument("DiscreteDenseBoundaryOperator::addBlock(): "
                                 "incorrect block size");
   for (size_t col = 0; col < cols.size(); ++col)
@@ -120,8 +121,8 @@ bool DiscreteDenseBoundaryOperator<ValueType>::opSupportedImpl(
 
 template <typename ValueType>
 void DiscreteDenseBoundaryOperator<ValueType>::applyBuiltInImpl(
-    const TranspositionMode trans, const arma::Col<ValueType> &x_in,
-    arma::Col<ValueType> &y_inout, const ValueType alpha,
+    const TranspositionMode trans, const Vector<ValueType> &x_in,
+    Vector<ValueType> &y_inout, const ValueType alpha,
     const ValueType beta) const {
   if (beta == static_cast<ValueType>(0.))
     y_inout.fill(static_cast<ValueType>(0.));
@@ -133,13 +134,13 @@ void DiscreteDenseBoundaryOperator<ValueType>::applyBuiltInImpl(
     y_inout += alpha * m_mat * x_in;
     break;
   case CONJUGATE:
-    y_inout += alpha * arma::conj(m_mat) * x_in;
+    y_inout += alpha * (m_mat.conjugate()) * x_in;
     break;
   case TRANSPOSE:
-    y_inout += alpha * m_mat.st() * x_in;
+    y_inout += alpha * m_mat.transpose() * x_in;
     break;
   case CONJUGATE_TRANSPOSE:
-    y_inout += alpha * m_mat.t() * x_in;
+    y_inout += alpha * m_mat.adjoint() * x_in;
     break;
   default:
     throw std::invalid_argument(
