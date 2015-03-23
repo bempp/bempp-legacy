@@ -79,7 +79,7 @@ public:
 
   virtual int order() const { return 1; }
 
-  virtual void evaluate(size_t what, const arma::Mat<CoordinateType> &points,
+  virtual void evaluate(size_t what, const Matrix<CoordinateType> &points,
                         LocalDofIndex localDofIndex,
                         BasisData<ValueType> &data) const {
     if (localDofIndex != ALL_DOFS &&

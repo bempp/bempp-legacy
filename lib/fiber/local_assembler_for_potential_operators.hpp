@@ -66,7 +66,7 @@ public:
   evaluateLocalContributions(const std::vector<int> &pointIndices,
                              int trialElementIndex,
                              LocalDofIndex localTrialDofIndex,
-                             std::vector<arma::Mat<ResultType>> &result,
+                             std::vector<Matrix<ResultType>> &result,
                              CoordinateType nominalDistance = -1.) = 0;
 
   /** \brief Assemble local contributions.
@@ -78,7 +78,7 @@ public:
   virtual void
   evaluateLocalContributions(int pointIndex, int componentIndex,
                              const std::vector<int> &trialElementIndices,
-                             std::vector<arma::Mat<ResultType>> &result,
+                             std::vector<Matrix<ResultType>> &result,
                              CoordinateType nominalDistance = -1.) = 0;
 
   /** \brief Assemble local contributions.
@@ -90,7 +90,7 @@ public:
   virtual void
   evaluateLocalContributions(const std::vector<int> &pointIndices,
                              const std::vector<int> &trialElementIndices,
-                             Fiber::_2dArray<arma::Mat<ResultType>> &result,
+                             Fiber::_2dArray<Matrix<ResultType>> &result,
                              CoordinateType nominalDistance = -1.) = 0;
 
   virtual int resultDimension() const = 0;

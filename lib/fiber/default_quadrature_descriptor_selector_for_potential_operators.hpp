@@ -26,6 +26,7 @@
 #include "../common/shared_ptr.hpp"
 #include "accuracy_options.hpp"
 #include "scalar_traits.hpp"
+#include "types.hpp"
 
 namespace Fiber {
 
@@ -56,7 +57,7 @@ public:
       const AccuracyOptionsEx &accuracyOptions);
 
   virtual SingleQuadratureDescriptor
-  quadratureDescriptor(const arma::Col<CoordinateType> &point,
+  quadratureDescriptor(const Vector<CoordinateType> &point,
                        int trialElementIndex,
                        CoordinateType nominalDistance) const;
 
@@ -68,10 +69,10 @@ private:
   /** \cond PRIVATE */
   void precalculateElementSizesAndCenters();
 
-  int order(const arma::Col<CoordinateType> &point, int trialElementIndex,
+  int order(const Vector<CoordinateType> &point, int trialElementIndex,
             CoordinateType nominalDistance) const;
   CoordinateType
-  pointElementDistanceSquared(const arma::Col<CoordinateType> &point,
+  pointElementDistanceSquared(const Vector<CoordinateType> &point,
                               int trialElementIndex) const;
 
   typedef DefaultLocalAssemblerForOperatorsOnSurfacesUtilities<
@@ -83,7 +84,7 @@ private:
   AccuracyOptionsEx m_accuracyOptions;
 
   std::vector<CoordinateType> m_elementSizesSquared;
-  arma::Mat<CoordinateType> m_elementCenters;
+  Matrix<CoordinateType> m_elementCenters;
   CoordinateType m_averageElementSize;
   /** \endcond */
 };

@@ -29,8 +29,7 @@
 
 #include "double_quadrature_descriptor.hpp"
 #include "single_quadrature_descriptor.hpp"
-
-#include "../common/armadillo_fwd.hpp"
+#include "types.hpp"
 
 namespace Fiber {
 
@@ -47,13 +46,13 @@ namespace Fiber {
 template <typename ValueType>
 void fillSingleQuadraturePointsAndWeights(int elementCornerCount,
                                           int accuracyOrder,
-                                          arma::Mat<ValueType> &points,
+                                          Matrix<ValueType> &points,
                                           std::vector<ValueType> &weights);
 
 template <typename ValueType>
 void fillDoubleSingularQuadraturePointsAndWeights(
-    const DoubleQuadratureDescriptor &desc, arma::Mat<ValueType> &testPoints,
-    arma::Mat<ValueType> &trialPoints, std::vector<ValueType> &weights);
+    const DoubleQuadratureDescriptor &desc, Matrix<ValueType> &testPoints,
+    Matrix<ValueType> &trialPoints, std::vector<ValueType> &weights);
 
 } // namespace Fiber
 

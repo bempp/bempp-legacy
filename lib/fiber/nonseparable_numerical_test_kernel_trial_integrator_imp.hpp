@@ -49,8 +49,8 @@ template <typename BasisFunctionType, typename KernelType, typename ResultType,
 NonseparableNumericalTestKernelTrialIntegrator<BasisFunctionType, KernelType,
                                                ResultType, GeometryFactory>::
     NonseparableNumericalTestKernelTrialIntegrator(
-        const arma::Mat<CoordinateType> &localTestQuadPoints,
-        const arma::Mat<CoordinateType> &localTrialQuadPoints,
+        const Matrix<CoordinateType> &localTestQuadPoints,
+        const Matrix<CoordinateType> &localTrialQuadPoints,
         const std::vector<CoordinateType> quadWeights,
         const GeometryFactory &testGeometryFactory,
         const GeometryFactory &trialGeometryFactory,
@@ -73,8 +73,8 @@ NonseparableNumericalTestKernelTrialIntegrator<BasisFunctionType, KernelType,
       m_trialTransformations(trialTransformations), m_integral(integral),
       m_openClHandler(openClHandler) {
   const size_t pointCount = quadWeights.size();
-  if (localTestQuadPoints.n_cols != pointCount ||
-      localTrialQuadPoints.n_cols != pointCount)
+  if (localTestQuadPoints.cols() != pointCount ||
+      localTrialQuadPoints.cols() != pointCount)
     throw std::invalid_argument(
         "NonseparableNumericalTestKernelTrialIntegrator::"
         "NonseparableNumericalTestKernelTrialIntegrator(): "
@@ -113,7 +113,7 @@ NonseparableNumericalTestKernelTrialIntegrator<
       type == TEST ? m_cachedTestBasisData : m_cachedTrialBasisData;
   const CollectionOfShapesetTransformations<CoordinateType> &transformations =
       type == TEST ? m_testTransformations : m_trialTransformations;
-  const arma::Mat<CoordinateType> &localQuadPoints =
+  const Matrix<CoordinateType> &localQuadPoints =
       type == TEST ? m_localTestQuadPoints : m_localTrialQuadPoints;
 
   typename BasisDataCache::iterator it = cache.find(&shapeset);
@@ -153,7 +153,7 @@ void NonseparableNumericalTestKernelTrialIntegrator<
               int elementIndexB, const Shapeset<BasisFunctionType> &basisA,
               const Shapeset<BasisFunctionType> &basisB,
               LocalDofIndex localDofIndexB,
-              const std::vector<arma::Mat<ResultType> *> &result) const {
+              const std::vector<Matrix<ResultType> *> &result) const {
   const int pointCount = m_quadWeights.size();
   const int elementACount = elementIndicesA.size();
 
@@ -207,7 +207,7 @@ void NonseparableNumericalTestKernelTrialIntegrator<
 
   for (size_t i = 0; i < result.size(); ++i) {
     assert(result[i]);
-    result[i]->set_size(testDofCount, trialDofCount);
+    result[i]->resize(testDofCount, trialDofCount);
   }
 
   rawGeometryB->setupGeometry(elementIndexB, *geometryB);
@@ -262,7 +262,7 @@ void NonseparableNumericalTestKernelTrialIntegrator<
     integrate(const std::vector<ElementIndexPair> &elementIndexPairs,
               const Shapeset<BasisFunctionType> &testShapeset,
               const Shapeset<BasisFunctionType> &trialShapeset,
-              const std::vector<arma::Mat<ResultType> *> &result) const {
+              const std::vector<Matrix<ResultType> *> &result) const {
   const int pointCount = m_quadWeights.size();
   const int geometryPairCount = elementIndexPairs.size();
 

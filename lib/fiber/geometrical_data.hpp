@@ -23,7 +23,7 @@
 
 #include "../common/common.hpp"
 
-#include "../common/armadillo_fwd.hpp"
+#include "types.hpp"
 #include "_3d_array.hpp"
 
 #include <cassert>
@@ -51,24 +51,24 @@ template <typename CoordinateType> class ConstGeometricalDataSlice;
  */
 template <typename CoordinateType> class GeometricalData {
 public:
-  arma::Mat<CoordinateType> globals;
-  arma::Row<CoordinateType> integrationElements;
+  Matrix<CoordinateType> globals;
+  RowVector<CoordinateType> integrationElements;
   Fiber::_3dArray<CoordinateType> jacobiansTransposed;
   Fiber::_3dArray<CoordinateType> jacobianInversesTransposed;
-  arma::Mat<CoordinateType> normals;
+  Matrix<CoordinateType> normals;
   int domainIndex;
 
   // For the time being, I (somewhat dangerously) assume that
   // integrationElements or globals or normals are always used
   int pointCount() const {
-    int result = std::max(std::max(globals.n_cols, normals.n_cols),
-                          integrationElements.n_cols);
+    int result = std::max(std::max(globals.cols(), normals.cols()),
+                          integrationElements.cols());
     assert(result > 0);
     return result;
   }
 
   int dimWorld() const {
-    int result = std::max(globals.n_rows, normals.n_rows);
+    int result = std::max(globals.rows(), normals.rows());
     assert(result > 0);
     return result;
   }

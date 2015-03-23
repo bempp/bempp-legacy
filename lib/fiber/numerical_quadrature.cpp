@@ -35,7 +35,7 @@ namespace {
 
 template <ELEMENT_SHAPE SHAPE, typename ValueType>
 inline void reallyFillPointsAndWeightsRegular(int order,
-                                              arma::Mat<ValueType> &points,
+                                              Matrix<ValueType> &points,
                                               std::vector<ValueType> &weights) {
   const int elementDim = 2;
   if (SHAPE == QUADRANGLE)
@@ -46,7 +46,7 @@ inline void reallyFillPointsAndWeightsRegular(int order,
   order = std::max(order, 1); // Hyena does not accept order == 0 for triangles
   const QuadratureRule<SHAPE, GAUSS> &rule(order);
   const int pointCount = rule.getNumPoints();
-  points.set_size(elementDim, pointCount);
+  points.resize(elementDim, pointCount);
   for (int i = 0; i < pointCount; ++i) {
     const Point2 point = rule.getPoint(i);
     for (int dim = 0; dim < elementDim; ++dim)
@@ -66,20 +66,20 @@ inline void reallyFillPointsAndWeightsRegular(int order,
 
 template <typename ValueType>
 inline void remapPointsSharedVertexTriangle(int sharedVertex,
-                                            arma::Mat<ValueType> &points) {
+                                            Matrix<ValueType> &points) {
   // Map vertex 0 to vertex #sharedVertex
   if (sharedVertex == 0)
     ; // do nothing
   else if (sharedVertex == 1) {
-    const int pointCount = points.n_cols;
-    arma::Mat<ValueType> oldPoints(points);
+    const int pointCount = points.cols();
+    Matrix<ValueType> oldPoints(points);
     for (int i = 0; i < pointCount; ++i) {
       points(0, i) = -oldPoints(0, i) - oldPoints(1, i) + 1.;
       points(1, i) = oldPoints(1, i);
     }
   } else if (sharedVertex == 2) {
-    const int pointCount = points.n_cols;
-    arma::Mat<ValueType> oldPoints(points);
+    const int pointCount = points.cols();
+    Matrix<ValueType> oldPoints(points);
     for (int i = 0; i < pointCount; ++i) {
       points(0, i) = oldPoints(0, i);
       points(1, i) = -oldPoints(0, i) - oldPoints(1, i) + 1.;
@@ -91,7 +91,7 @@ inline void remapPointsSharedVertexTriangle(int sharedVertex,
 
 template <typename ValueType>
 inline void remapPointsSharedVertexQuadrilateral(int sharedVertex,
-                                                 arma::Mat<ValueType> &points) {
+                                                 Matrix<ValueType> &points) {
   throw std::runtime_error("remapPointsSharedVertexQuadrilateral(): "
                            "not implemented yet");
 }
@@ -108,30 +108,30 @@ inline int nonsharedVertexTriangle(int sharedVertex0, int sharedVertex1) {
 
 template <typename ValueType>
 inline void remapPointsSharedEdgeTriangle(int sharedVertex0, int sharedVertex1,
-                                          arma::Mat<ValueType> &points) {
+                                          Matrix<ValueType> &points) {
   assert(0 <= sharedVertex0 && sharedVertex0 <= 2);
   assert(0 <= sharedVertex1 && sharedVertex1 <= 2);
   assert(sharedVertex0 != sharedVertex1);
-  assert(points.n_rows == 2);
+  assert(points.rows() == 2);
 
   // Vertices of the reference triangle
-  arma::Mat<ValueType> refVertices(2, 3);
+  Matrix<ValueType> refVertices(2, 3);
   refVertices.fill(0.);
   refVertices(0, 1) = 1.;
   refVertices(1, 2) = 1.;
 
-  arma::Mat<ValueType> newVertices(2, 3);
+  Matrix<ValueType> newVertices(2, 3);
   newVertices.col(0) = refVertices.col(sharedVertex0);
   newVertices.col(1) = refVertices.col(sharedVertex1);
   newVertices.col(2) =
       refVertices.col(nonsharedVertexTriangle(sharedVertex0, sharedVertex1));
 
-  arma::Col<ValueType> b(newVertices.col(0));
-  arma::Mat<ValueType> A(2, 2);
+  Vector<ValueType> b(newVertices.col(0));
+  Matrix<ValueType> A(2, 2);
   A.col(0) = newVertices.col(1) - b;
   A.col(1) = newVertices.col(2) - b;
 
-  arma::Mat<ValueType> oldPoints(points);
+  Matrix<ValueType> oldPoints(points);
 
   // points := A * oldPoints + b[extended to pointCount columns)
   for (size_t col = 0; col < points.n_cols; ++col)
@@ -143,14 +143,14 @@ inline void remapPointsSharedEdgeTriangle(int sharedVertex0, int sharedVertex1,
 template <typename ValueType>
 inline void remapPointsSharedEdgeQuadrilateral(int sharedVertex0,
                                                int sharedVertex1,
-                                               arma::Mat<ValueType> &points) {
+                                               Matrix<ValueType> &points) {
   throw std::runtime_error("remapPointsSharedEdgeQuadrilateral(): "
                            "not implemented yet");
 }
 
 template <ELEMENT_SHAPE SHAPE, typename ValueType>
 inline void remapPointsSharedVertex(int sharedVertex,
-                                    arma::Mat<ValueType> &points) {
+                                    Matrix<ValueType> &points) {
   // compile-time dispatch; circumvent the rule that no specialisation
   // of member template functions is possible
   BOOST_STATIC_ASSERT(SHAPE == TRIANGLE || SHAPE == QUADRANGLE);
@@ -162,7 +162,7 @@ inline void remapPointsSharedVertex(int sharedVertex,
 
 template <ELEMENT_SHAPE SHAPE, typename ValueType>
 inline void remapPointsSharedEdge(int sharedVertex0, int sharedVertex1,
-                                  arma::Mat<ValueType> &points) {
+                                  Matrix<ValueType> &points) {
   // compile-time dispatch; circumvent the rule that no specialisation
   // of member template functions is possible
   BOOST_STATIC_ASSERT(SHAPE == TRIANGLE || SHAPE == QUADRANGLE);
@@ -174,8 +174,8 @@ inline void remapPointsSharedEdge(int sharedVertex0, int sharedVertex1,
 
 template <ELEMENT_SHAPE SHAPE, SING_INT SINGULARITY, typename ValueType>
 inline void reallyFillPointsAndWeightsSingular(
-    const DoubleQuadratureDescriptor &desc, arma::Mat<ValueType> &testPoints,
-    arma::Mat<ValueType> &trialPoints, std::vector<ValueType> &weights) {
+    const DoubleQuadratureDescriptor &desc, Matrix<ValueType> &testPoints,
+    Matrix<ValueType> &trialPoints, std::vector<ValueType> &weights) {
   const int elementDim = 2;
   // Is there a more efficient way?
   const int order = std::max(desc.testOrder, desc.trialOrder);
@@ -190,8 +190,8 @@ inline void reallyFillPointsAndWeightsSingular(
   Point2 point;
 
   // Quadrature points
-  testPoints.set_size(elementDim, totalPointCount);
-  trialPoints.set_size(elementDim, totalPointCount);
+  testPoints.resize(elementDim, totalPointCount);
+  trialPoints.resize(elementDim, totalPointCount);
   for (int region = 0; region < regionCount; ++region)
     for (int testIndex = 0; testIndex < pointCount; ++testIndex)
       for (int trialIndex = 0; trialIndex < pointCount; ++trialIndex) {
@@ -249,7 +249,7 @@ inline void reallyFillPointsAndWeightsSingular(
 template <typename ValueType>
 void fillSingleQuadraturePointsAndWeights(int elementCornerCount,
                                           int accuracyOrder,
-                                          arma::Mat<ValueType> &points,
+                                          Matrix<ValueType> &points,
                                           std::vector<ValueType> &weights) {
   if (elementCornerCount == 3)
     reallyFillPointsAndWeightsRegular<TRIANGLE>(accuracyOrder, points, weights);
@@ -263,8 +263,8 @@ void fillSingleQuadraturePointsAndWeights(int elementCornerCount,
 
 template <typename ValueType>
 void fillDoubleSingularQuadraturePointsAndWeights(
-    const DoubleQuadratureDescriptor &desc, arma::Mat<ValueType> &testPoints,
-    arma::Mat<ValueType> &trialPoints, std::vector<ValueType> &weights) {
+    const DoubleQuadratureDescriptor &desc, Matrix<ValueType> &testPoints,
+    Matrix<ValueType> &trialPoints, std::vector<ValueType> &weights) {
   const ElementPairTopology &topology = desc.topology;
   if (topology.testVertexCount == 3 && topology.trialVertexCount == 3) {
     if (topology.type == ElementPairTopology::SharedVertex)
@@ -303,19 +303,19 @@ void fillDoubleSingularQuadraturePointsAndWeights(
 
 #ifdef ENABLE_SINGLE_PRECISION
 template void fillSingleQuadraturePointsAndWeights<float>(
-    int elementCornerCount, int accuracyOrder, arma::Mat<float> &points,
+    int elementCornerCount, int accuracyOrder, Matrix<float> &points,
     std::vector<float> &weights);
 template void fillDoubleSingularQuadraturePointsAndWeights<float>(
-    const DoubleQuadratureDescriptor &desc, arma::Mat<float> &testPoints,
-    arma::Mat<float> &trialPoints, std::vector<float> &weights);
+    const DoubleQuadratureDescriptor &desc, Matrix<float> &testPoints,
+    Matrix<float> &trialPoints, std::vector<float> &weights);
 #endif
 #ifdef ENABLE_DOUBLE_PRECISION
 template void fillSingleQuadraturePointsAndWeights<double>(
-    int elementCornerCount, int accuracyOrder, arma::Mat<double> &points,
+    int elementCornerCount, int accuracyOrder, Matrix<double> &points,
     std::vector<double> &weights);
 template void fillDoubleSingularQuadraturePointsAndWeights<double>(
-    const DoubleQuadratureDescriptor &desc, arma::Mat<double> &testPoints,
-    arma::Mat<double> &trialPoints, std::vector<double> &weights);
+    const DoubleQuadratureDescriptor &desc, Matrix<double> &testPoints,
+    Matrix<double> &trialPoints, std::vector<double> &weights);
 #endif
 
 } // namespace Fiber

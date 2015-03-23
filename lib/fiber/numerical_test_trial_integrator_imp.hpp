@@ -40,7 +40,7 @@ template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory>
 NumericalTestTrialIntegrator<BasisFunctionType, ResultType, GeometryFactory>::
     NumericalTestTrialIntegrator(
-        const arma::Mat<CoordinateType> &localQuadPoints,
+        const Matrix<CoordinateType> &localQuadPoints,
         const std::vector<CoordinateType> quadWeights,
         const GeometryFactory &geometryFactory,
         const RawGridGeometry<CoordinateType> &rawGeometry,
@@ -68,8 +68,8 @@ NumericalTestTrialIntegrator<BasisFunctionType, ResultType, GeometryFactory>::
     integrate(const std::vector<int> &elementIndices,
               const Shapeset<BasisFunctionType> &testShapeset,
               const Shapeset<BasisFunctionType> &trialShapeset,
-              arma::Cube<ResultType> &result) const {
-  const size_t pointCount = m_localQuadPoints.n_cols;
+              std::vector<Matrix<ResultType>> &result) const {
+  const size_t pointCount = m_localQuadPoints.cols();
   const size_t elementCount = elementIndices.size();
 
   if (pointCount == 0 || elementCount == 0)
@@ -96,7 +96,8 @@ NumericalTestTrialIntegrator<BasisFunctionType, ResultType, GeometryFactory>::
 
   CollectionOf3dArrays<BasisFunctionType> testValues, trialValues;
 
-  result.set_size(testDofCount, trialDofCount, elementCount);
+  //result.set_size(testDofCount, trialDofCount, elementCount);
+  result.resize(elementCount);
 
   testShapeset.evaluate(testBasisDeps, m_localQuadPoints, ALL_DOFS,
                         testBasisData);
@@ -105,6 +106,7 @@ NumericalTestTrialIntegrator<BasisFunctionType, ResultType, GeometryFactory>::
 
   // Iterate over the elements
   for (size_t e = 0; e < elementCount; ++e) {
+    result[e].resize(testDofCount, trialDofCount);
     const int elementIndex = elementIndices[e];
     m_rawGeometry.setupGeometry(elementIndex, *geometry);
     geometry->getData(geomDeps, m_localQuadPoints, geomData);
@@ -114,7 +116,7 @@ NumericalTestTrialIntegrator<BasisFunctionType, ResultType, GeometryFactory>::
     m_trialTransformations.evaluate(trialBasisData, geomData, trialValues);
 
     m_integral.evaluate(geomData, testValues, trialValues, m_quadWeights,
-                        result.slice(e));
+                        result[e]);
   }
 }
 

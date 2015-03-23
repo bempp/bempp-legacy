@@ -22,7 +22,7 @@
 #define fiber_double_quadrature_rule_family_hpp
 
 #include "../common/common.hpp"
-#include "../common/armadillo_fwd.hpp"
+#include "types.hpp"
 #include "double_quadrature_descriptor.hpp"
 
 #include <vector>
@@ -75,8 +75,8 @@ public:
    *    tensor-product rule, otherwise it is not. */
   virtual void
   fillQuadraturePointsAndWeights(const DoubleQuadratureDescriptor &desc,
-                                 arma::Mat<CoordinateType> &testPoints,
-                                 arma::Mat<CoordinateType> &trialPoints,
+                                 Matrix<CoordinateType> &testPoints,
+                                 Matrix<CoordinateType> &trialPoints,
                                  std::vector<CoordinateType> &testWeights,
                                  std::vector<CoordinateType> &trialWeights,
                                  bool &isTensor) const = 0;

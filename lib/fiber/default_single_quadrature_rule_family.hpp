@@ -22,6 +22,7 @@
 #define fiber_default_single_quadrature_rule_family_hpp
 
 #include "single_quadrature_rule_family.hpp"
+#include "types.hpp"
 
 namespace Fiber {
 
@@ -32,7 +33,7 @@ class DefaultSingleQuadratureRuleFamily
 public:
   virtual void
   fillQuadraturePointsAndWeights(const SingleQuadratureDescriptor &desc,
-                                 arma::Mat<CoordinateType> &points,
+                                 Matrix<CoordinateType> &points,
                                  std::vector<CoordinateType> &weights) const;
 };
 

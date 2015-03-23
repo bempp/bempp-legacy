@@ -53,8 +53,8 @@ public:
   typedef typename Base::ElementIndexPair ElementIndexPair;
 
   SeparableNumericalTestKernelTrialIntegrator(
-      const arma::Mat<CoordinateType> &localTestQuadPoints,
-      const arma::Mat<CoordinateType> &localTrialQuadPoints,
+      const Matrix<CoordinateType> &localTestQuadPoints,
+      const Matrix<CoordinateType> &localTrialQuadPoints,
       const std::vector<CoordinateType> &testQuadWeights,
       const std::vector<CoordinateType> &trialQuadWeights,
       const GeometryFactory &testGeometryFactory,
@@ -77,13 +77,13 @@ public:
             int elementIndexB, const Shapeset<BasisFunctionType> &basisA,
             const Shapeset<BasisFunctionType> &basisB,
             LocalDofIndex localDofIndexB,
-            const std::vector<arma::Mat<ResultType> *> &result) const;
+            const std::vector<Matrix<ResultType> *> &result) const;
 
   virtual void
   integrate(const std::vector<ElementIndexPair> &elementIndexPairs,
             const Shapeset<BasisFunctionType> &testShapeset,
             const Shapeset<BasisFunctionType> &trialShapeset,
-            const std::vector<arma::Mat<ResultType> *> &result) const;
+            const std::vector<Matrix<ResultType> *> &result) const;
 
 private:
   void integrateCpu(CallVariant callVariant,
@@ -91,28 +91,28 @@ private:
                     const Shapeset<BasisFunctionType> &basisA,
                     const Shapeset<BasisFunctionType> &basisB,
                     LocalDofIndex localDofIndexB,
-                    const std::vector<arma::Mat<ResultType> *> &result) const;
+                    const std::vector<Matrix<ResultType> *> &result) const;
 
   void integrateCl(CallVariant callVariant,
                    const std::vector<int> &elementIndicesA, int elementIndexB,
                    const Shapeset<BasisFunctionType> &basisA,
                    const Shapeset<BasisFunctionType> &basisB,
                    LocalDofIndex localDofIndexB,
-                   const std::vector<arma::Mat<ResultType> *> &result) const;
+                   const std::vector<Matrix<ResultType> *> &result) const;
 
   void integrateCpu(const std::vector<ElementIndexPair> &elementIndexPairs,
                     const Shapeset<BasisFunctionType> &testShapeset,
                     const Shapeset<BasisFunctionType> &trialShapeset,
-                    const std::vector<arma::Mat<ResultType> *> &result) const;
+                    const std::vector<Matrix<ResultType> *> &result) const;
 
   void integrateCl(const std::vector<ElementIndexPair> &elementIndexPairs,
                    const Shapeset<BasisFunctionType> &testShapeset,
                    const Shapeset<BasisFunctionType> &trialShapeset,
-                   const std::vector<arma::Mat<ResultType> *> &result) const;
+                   const std::vector<Matrix<ResultType> *> &result) const;
 
   void precalculateGeometricalData();
   void precalculateGeometricalDataOnSingleGrid(
-      const arma::Mat<CoordinateType> &localQuadPoints,
+      const Matrix<CoordinateType> &localQuadPoints,
       const GeometryFactory &geometryFactory,
       const RawGridGeometry<CoordinateType> &rawGeometry, size_t geomDeps,
       std::vector<GeometricalData<CoordinateType>> &geomData);
@@ -123,8 +123,8 @@ private:
    */
   const std::pair<const char *, int> clStrIntegrateRowOrCol() const;
 
-  arma::Mat<CoordinateType> m_localTestQuadPoints;
-  arma::Mat<CoordinateType> m_localTrialQuadPoints;
+  Matrix<CoordinateType> m_localTestQuadPoints;
+  Matrix<CoordinateType> m_localTrialQuadPoints;
   std::vector<CoordinateType> m_testQuadWeights;
   std::vector<CoordinateType> m_trialQuadWeights;
 

@@ -26,7 +26,6 @@
 #include "scalar_traits.hpp"
 #include "types.hpp"
 
-#include "../common/armadillo_fwd.hpp"
 
 namespace Fiber {
 
@@ -46,7 +45,7 @@ public:
   virtual int size() const = 0;
   /** \brief Return the maximum polynomial order of shape functions. */
   virtual int order() const = 0;
-  virtual void evaluate(size_t what, const arma::Mat<CoordinateType> &points,
+  virtual void evaluate(size_t what, const Matrix<CoordinateType> &points,
                         LocalDofIndex localDofIndex,
                         BasisData<ValueType> &data) const = 0;
 

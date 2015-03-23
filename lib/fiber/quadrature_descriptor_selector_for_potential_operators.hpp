@@ -23,7 +23,7 @@
 
 #include "../common/common.hpp"
 
-#include "../common/armadillo_fwd.hpp"
+#include "types.hpp"
 #include "scalar_traits.hpp"
 #include "single_quadrature_descriptor.hpp"
 
@@ -60,7 +60,7 @@ public:
    *    selector should try to estimate the distance on its own and
    *    adjust the quadrature order accordingly. */
   virtual SingleQuadratureDescriptor
-  quadratureDescriptor(const arma::Col<CoordinateType> &point,
+  quadratureDescriptor(const Vector<CoordinateType> &point,
                        int trialElementIndex,
                        CoordinateType nominalDistance) const = 0;
 

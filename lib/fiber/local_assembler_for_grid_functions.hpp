@@ -44,7 +44,7 @@ public:
    */
   virtual void
   evaluateLocalWeakForms(const std::vector<int> &elementIndices,
-                         std::vector<arma::Col<ResultType>> &result) = 0;
+                         std::vector<Vector<ResultType>> &result) = 0;
 };
 
 } // namespace Fiber

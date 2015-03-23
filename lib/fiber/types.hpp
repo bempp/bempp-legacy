@@ -28,6 +28,7 @@ namespace Fiber {
 
 template <typename T> using Vector = Bempp::Vector<T>;
 template <typename T> using Matrix = Bempp::Matrix<T>;
+template <typename T> using RowVector = Bempp::RowVector<T>;
 
 enum CallVariant {
   TEST_TRIAL = 0,

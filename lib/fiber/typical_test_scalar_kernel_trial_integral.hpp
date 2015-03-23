@@ -104,7 +104,7 @@ public:
       const CollectionOf4dArrays<KernelType> &kernelValues,
       const std::vector<CoordinateType> &testQuadWeights,
       const std::vector<CoordinateType> &trialQuadWeights,
-      arma::Mat<ResultType> &result) const;
+      Matrix<ResultType> &result) const;
 
   virtual void evaluateWithNontensorQuadratureRule(
       const GeometricalData<CoordinateType> &testGeomData,
@@ -113,7 +113,7 @@ public:
       const CollectionOf3dArrays<BasisFunctionType> &trialValues,
       const CollectionOf3dArrays<KernelType> &kernelValues,
       const std::vector<CoordinateType> &quadWeights,
-      arma::Mat<ResultType> &result) const;
+      Matrix<ResultType> &result) const;
 };
 
 template <typename CoordinateType_>
@@ -145,7 +145,7 @@ public:
       const CollectionOf4dArrays<KernelType> &kernelValues,
       const std::vector<CoordinateType> &testQuadWeights,
       const std::vector<CoordinateType> &trialQuadWeights,
-      arma::Mat<ResultType> &result) const;
+      Matrix<ResultType> &result) const;
 
   virtual void evaluateWithNontensorQuadratureRule(
       const GeometricalData<CoordinateType> &testGeomData,
@@ -154,7 +154,7 @@ public:
       const CollectionOf3dArrays<BasisFunctionType> &trialValues,
       const CollectionOf3dArrays<KernelType> &kernelValues,
       const std::vector<CoordinateType> &quadWeights,
-      arma::Mat<ResultType> &result) const;
+      Matrix<ResultType> &result) const;
 };
 
 template <typename CoordinateType_>
@@ -188,7 +188,7 @@ public:
       const CollectionOf4dArrays<KernelType> &kernelValues,
       const std::vector<CoordinateType> &testQuadWeights,
       const std::vector<CoordinateType> &trialQuadWeights,
-      arma::Mat<ResultType> &result) const;
+      Matrix<ResultType> &result) const;
 
   virtual void evaluateWithNontensorQuadratureRule(
       const GeometricalData<CoordinateType> &testGeomData,
@@ -197,7 +197,7 @@ public:
       const CollectionOf3dArrays<BasisFunctionType> &trialValues,
       const CollectionOf3dArrays<KernelType> &kernelValues,
       const std::vector<CoordinateType> &quadWeights,
-      arma::Mat<ResultType> &result) const;
+      Matrix<ResultType> &result) const;
 
 private:
   DefaultTestKernelTrialIntegral<TestScalarKernelTrialIntegrandFunctor<

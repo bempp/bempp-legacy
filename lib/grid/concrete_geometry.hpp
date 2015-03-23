@@ -22,6 +22,7 @@
 #define bempp_concrete_geometry_hpp
 
 #include "../common/common.hpp"
+#include "../common/eigen_support.hpp"
 
 #include "dune.hpp"
 #include "geometry.hpp"
@@ -34,7 +35,6 @@
 #include <dune/grid/common/grid.hh>
 #include <dune/alugrid/2d/alu2dinclude.hh>
 
-#include "../common/armadillo_fwd.hpp"
 #include <memory>
 
 namespace Bempp {
@@ -100,11 +100,11 @@ public:
 
   virtual int dimWorld() const { return DuneGeometry<dim_>::coorddimension; }
 
-  virtual void setupImpl(const arma::Mat<double> &corners,
-                         const arma::Col<char> &auxData) {
+  virtual void setupImpl(const Matrix<double> &corners,
+                         const Vector<char> &auxData) {
     const int dimWorld = DuneGeometry<dim_>::coorddimension;
-    const int cornerCount = corners.n_cols;
-    assert((int)corners.n_rows == dimWorld);
+    const int cornerCount = corners.cols();
+    assert((int)corners.rows() == dimWorld);
 
     GeometryType type;
     if (DuneGeometry<dim_>::mydimension == 0) {
@@ -138,10 +138,10 @@ public:
 
   virtual int cornerCount() const { return m_dune_geometry->corners(); }
 
-  virtual void getCornersImpl(arma::Mat<double> &c) const {
+  virtual void getCornersImpl(Matrix<double> &c) const {
     const int cdim = DuneGeometry<dim_>::coorddimension;
     const int n = m_dune_geometry->corners();
-    c.set_size(cdim, n);
+    c.resize(cdim, n);
 
     /* TODO: In future this copying should be optimised away by casting
     appropriate columns of c to Dune field vectors. But this
@@ -154,17 +154,17 @@ public:
     }
   }
 
-  virtual void local2globalImpl(const arma::Mat<double> &local,
-                                arma::Mat<double> &global) const {
+  virtual void local2globalImpl(const Matrix<double> &local,
+                                Matrix<double> &global) const {
     const int mdim = DuneGeometry<dim_>::mydimension;
     const int cdim = DuneGeometry<dim_>::coorddimension;
 #ifndef NDEBUG
-    if ((int)local.n_rows != mdim)
+    if ((int)local.rows() != mdim)
       throw std::invalid_argument("Geometry::local2global(): invalid "
                                   "dimensions of the 'local' array");
 #endif
-    const size_t n = local.n_cols;
-    global.set_size(cdim, n);
+    const size_t n = local.cols();
+    global.resize(cdim, n);
 
     /* TODO: Optimise (get rid of data copying). */
     typename DuneGeometry<dim_>::GlobalCoordinate g;
@@ -178,17 +178,17 @@ public:
     }
   }
 
-  virtual void global2localImpl(const arma::Mat<double> &global,
-                                arma::Mat<double> &local) const {
+  virtual void global2localImpl(const Matrix<double> &global,
+                                Matrix<double> &local) const {
     const int mdim = DuneGeometry<dim_>::mydimension;
     const int cdim = DuneGeometry<dim_>::coorddimension;
 #ifndef NDEBUG
-    if ((int)global.n_rows != cdim)
+    if ((int)global.rows() != cdim)
       throw std::invalid_argument("Geometry::global2local(): invalid "
                                   "dimensions of the 'global' array");
 #endif
-    const size_t n = global.n_cols;
-    local.set_size(mdim, n);
+    const size_t n = global.cols();
+    local.resize(mdim, n);
 
     /* TODO: Optimise (get rid of data copying). */
     typename DuneGeometry<dim_>::GlobalCoordinate g;
@@ -203,16 +203,16 @@ public:
   }
 
   virtual void
-  getIntegrationElementsImpl(const arma::Mat<double> &local,
-                             arma::Row<double> &int_element) const {
+  getIntegrationElementsImpl(const Matrix<double> &local,
+                             RowVector<double> &int_element) const {
     const int mdim = DuneGeometry<dim_>::mydimension;
 #ifndef NDEBUG
-    if ((int)local.n_rows != mdim)
+    if ((int)local.rows() != mdim)
       throw std::invalid_argument("Geometry::local2global(): invalid "
                                   "dimensions of the 'local' array");
 #endif
-    const size_t n = local.n_cols;
-    int_element.set_size(n);
+    const size_t n = local.cols();
+    int_element.resize(n);
 
     /* TODO: Optimise (get rid of data copying). */
     typename DuneGeometry<dim_>::LocalCoordinate l;
@@ -226,9 +226,9 @@ public:
 
   virtual double volume() const { return m_dune_geometry->volume(); }
 
-  virtual void getCenterImpl(arma::Col<double> &c) const {
+  virtual void getCenterImpl(Vector<double> &c) const {
     const int cdim = DuneGeometry<dim_>::coorddimension;
-    c.set_size(cdim);
+    c.resize(cdim);
 
     /* TODO: Optimise (get rid of data copying). */
     typename DuneGeometry<dim_>::GlobalCoordinate g = m_dune_geometry->center();
@@ -237,16 +237,50 @@ public:
   }
 
   virtual void
-  getJacobiansTransposedImpl(const arma::Mat<double> &local,
-                             Fiber::_3dArray<double> &jacobian_t) const {
+  getJacobiansTransposedImpl(const Matrix<double> &local,
+                             std::vector<Matrix<double>>& jacobian_t) const {
     const int mdim = DuneGeometry<dim_>::mydimension;
     const int cdim = DuneGeometry<dim_>::coorddimension;
 #ifndef NDEBUG
-    if ((int)local.n_rows != mdim)
+    if ((int)local.rows() != mdim)
       throw std::invalid_argument("Geometry::getJacobiansTransposed(): "
                                   "invalid dimensions of the 'local' array");
 #endif
-    const size_t n = local.n_cols;
+    const size_t n = local.cols();
+    jacobian_t.resize(n);
+    //jacobian_t.resize(mdim, cdim, n);
+
+    /* Unfortunately Dune::FieldMatrix (the underlying type of
+    JacobianTransposed) stores elements rowwise, while Armadillo does it
+    columnwise. Hence element-by-element filling of jacobian_t seems
+    unavoidable). */
+    // typename DuneGeometry::JacobianTransposed j_t;
+    // Dune::FieldMatrix<double,mdim,cdim> j_t;
+    typename DuneGeometry<dim_>::LocalCoordinate l;
+    for (size_t k = 0; k < n; ++k) {
+      /* However, this bit of data copying could be avoided. */
+      for (int i = 0; i < mdim; ++i)
+        l[i] = local(i, k);
+      Dune::FieldMatrix<double, mdim, cdim> j_t =
+          m_dune_geometry->jacobianTransposed(l);
+      jacobian_t[k].resize(mdim,cdim);
+      for (int j = 0; j < cdim; ++j)
+        for (int i = 0; i < mdim; ++i)
+          jacobian_t[k](i, j) = j_t[i][j];
+    }
+  }
+
+  virtual void
+  getJacobiansTransposedImpl(const Matrix<double> &local,
+                             Fiber::_3dArray<double>& jacobian_t) const {
+    const int mdim = DuneGeometry<dim_>::mydimension;
+    const int cdim = DuneGeometry<dim_>::coorddimension;
+#ifndef NDEBUG
+    if ((int)local.rows() != mdim)
+      throw std::invalid_argument("Geometry::getJacobiansTransposed(): "
+                                  "invalid dimensions of the 'local' array");
+#endif
+    const size_t n = local.cols();
     jacobian_t.set_size(mdim, cdim, n);
 
     /* Unfortunately Dune::FieldMatrix (the underlying type of
@@ -268,23 +302,50 @@ public:
     }
   }
 
+
   virtual void getJacobianInversesTransposedImpl(
-      const arma::Mat<double> &local,
-      Fiber::_3dArray<double> &jacobian_inv_t) const {
+      const Matrix<double> &local,
+      std::vector<Matrix<double>> &jacobian_inv_t) const {
     const int mdim = DuneGeometry<dim_>::mydimension;
     const int cdim = DuneGeometry<dim_>::coorddimension;
 #ifndef NDEBUG
-    if ((int)local.n_rows != mdim)
+    if ((int)local.rows() != mdim)
       throw std::invalid_argument("Geometry::getJacobianInversesTransposed(): "
                                   "invalid dimensions of the 'local' array");
 #endif
-    const size_t n = local.n_cols;
-    jacobian_inv_t.set_size(cdim, mdim, n);
+    const size_t n = local.cols();
+    jacobian_inv_t.resize(n);
+    //jacobian_inv_t.resize(cdim, mdim, n);
 
-    /* Unfortunately Dune::FieldMatrix (the underlying type of
-    Jacobian) stores elements rowwise, while Armadillo does it
-    columnwise. Hence element-by-element filling of jacobian_t seems
-    unavoidable). */
+    // typename DuneGeometry::Jacobian j_inv_t;
+    // Dune::FieldMatrix<double,cdim,mdim> j_inv_t;
+    typename DuneGeometry<dim_>::LocalCoordinate l;
+    for (size_t k = 0; k < n; ++k) {
+      /** \fixme However, this bit of data copying could be avoided. */
+      for (int i = 0; i < mdim; ++i)
+        l[i] = local(i, k);
+      Dune::FieldMatrix<double, cdim, mdim> j_inv_t =
+          m_dune_geometry->jacobianInverseTransposed(l);
+      jacobian_inv_t[k].resize(cdim,mdim);
+      for (int j = 0; j < mdim; ++j)
+        for (int i = 0; i < cdim; ++i)
+          jacobian_inv_t[k](i, j) = j_inv_t[i][j];
+    }
+  }
+
+  virtual void getJacobianInversesTransposedImpl(
+      const Matrix<double> &local,
+      Fiber::_3dArray<double>& jacobian_inv_t) const {
+    const int mdim = DuneGeometry<dim_>::mydimension;
+    const int cdim = DuneGeometry<dim_>::coorddimension;
+#ifndef NDEBUG
+    if ((int)local.rows() != mdim)
+      throw std::invalid_argument("Geometry::getJacobianInversesTransposed(): "
+                                  "invalid dimensions of the 'local' array");
+#endif
+    const size_t n = local.cols();
+    jacobian_inv_t.resize(cdim, mdim, n);
+
     // typename DuneGeometry::Jacobian j_inv_t;
     // Dune::FieldMatrix<double,cdim,mdim> j_inv_t;
     typename DuneGeometry<dim_>::LocalCoordinate l;
@@ -300,14 +361,15 @@ public:
     }
   }
 
-  virtual void getNormalsImpl(const arma::Mat<double> &local,
-                              arma::Mat<double> &normal) const {
+
+  virtual void getNormalsImpl(const Matrix<double> &local,
+                              Matrix<double> &normal) const {
     Fiber::_3dArray<double> jacobian_t;
     getJacobiansTransposed(local, jacobian_t);
     calculateNormals(jacobian_t, normal);
   }
 
-  virtual void getDataImpl(size_t what, const arma::Mat<double> &local,
+  virtual void getDataImpl(size_t what, const Matrix<double> &local,
                            Fiber::GeometricalData<double> &data) const {
     // In this first implementation we call the above virtual functions as
     // required.
@@ -332,7 +394,7 @@ public:
 
 private:
   void calculateNormals(const Fiber::_3dArray<double> &jt,
-                        arma::Mat<double> &normals) const {
+                        Matrix<double> &normals) const {
     const int mdim = DuneGeometry<dim_>::mydimension;
     const int cdim = DuneGeometry<dim_>::coorddimension;
 
@@ -342,7 +404,7 @@ private:
                              "entities of dimension (worldDimension - 1)");
 
     const size_t pointCount = jt.extent(2); // jt.n_slices;
-    normals.set_size(cdim, pointCount);
+    normals.resize(cdim, pointCount);
 
     // First calculate normal vectors of arbitrary length
 

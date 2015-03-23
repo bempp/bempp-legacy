@@ -178,7 +178,7 @@ private:
 
   virtual std::unique_ptr<LocalAssemblerForPotentialOperators<ResultType>>
   makeAssemblerForPotentialOperatorsImplRealKernel(
-      const arma::Mat<CoordinateType> &evaluationPoints,
+      const Matrix<CoordinateType> &evaluationPoints,
       const shared_ptr<const GeometryFactory> &geometryFactory,
       const shared_ptr<const RawGridGeometry<CoordinateType>> &rawGeometry,
       const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
@@ -365,7 +365,7 @@ private:
 
   virtual std::unique_ptr<LocalAssemblerForPotentialOperators<ResultType>>
   makeAssemblerForPotentialOperatorsImplComplexKernel(
-      const arma::Mat<CoordinateType> &evaluationPoints,
+      const Matrix<CoordinateType> &evaluationPoints,
       const shared_ptr<const GeometryFactory> &geometryFactory,
       const shared_ptr<const RawGridGeometry<CoordinateType>> &rawGeometry,
       const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &

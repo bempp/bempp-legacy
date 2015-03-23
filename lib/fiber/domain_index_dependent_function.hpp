@@ -25,6 +25,7 @@
 
 #include "function.hpp"
 #include "geometrical_data.hpp"
+#include "types.hpp"
 
 namespace Fiber {
 
@@ -52,9 +53,9 @@ namespace Fiber {
       // Evaluate the function at the point "point" lying on an element from
       // domain "domainIndex" and store result in the array "result".
       // All arrays will be preinitialised to correct dimensions.
-      void evaluate(const arma::Col<CoordinateType>& point,
+      void evaluate(const Vector<CoordinateType>& point,
                     int domainIndex,
-                    arma::Col<ValueType>& result) const;
+                    Vector<ValueType>& result) const;
   };
   \endcode
 */
@@ -77,8 +78,8 @@ public:
   }
 
   virtual void evaluate(const GeometricalData<CoordinateType> &geomData,
-                        arma::Mat<ValueType> &result) const {
-    const arma::Mat<CoordinateType> &points = geomData.globals;
+                        Matrix<ValueType> &result) const {
+    const Matrix<CoordinateType> &points = geomData.globals;
 
 #ifndef NDEBUG
     if ((int)points.n_rows != worldDimension())
@@ -87,10 +88,11 @@ public:
 #endif
 
     const size_t pointCount = points.n_cols;
-    result.set_size(codomainDimension(), pointCount);
+    result.resize(codomainDimension(), pointCount);
     for (size_t i = 0; i < pointCount; ++i) {
-      arma::Col<ValueType> activeResultColumn = result.unsafe_col(i);
-      m_functor.evaluate(points.unsafe_col(i), geomData.domainIndex,
+      Eigen::Map<Vector<ValueType>> activeResultColumn(result.col(i).data(),result.rows());
+      //Vector<ValueType> activeResultColumn = result.unsafe_col(i);
+      m_functor.evaluate(points.col(i), geomData.domainIndex,
                          activeResultColumn);
     }
   }

@@ -52,8 +52,8 @@ template <typename BasisFunctionType, typename KernelType, typename ResultType,
 SeparableNumericalTestKernelTrialIntegrator<BasisFunctionType, KernelType,
                                             ResultType, GeometryFactory>::
     SeparableNumericalTestKernelTrialIntegrator(
-        const arma::Mat<CoordinateType> &localTestQuadPoints,
-        const arma::Mat<CoordinateType> &localTrialQuadPoints,
+        const Matrix<CoordinateType> &localTestQuadPoints,
+        const Matrix<CoordinateType> &localTrialQuadPoints,
         const std::vector<CoordinateType> &testQuadWeights,
         const std::vector<CoordinateType> &trialQuadWeights,
         const GeometryFactory &testGeometryFactory,
@@ -148,7 +148,7 @@ template <typename BasisFunctionType, typename KernelType, typename ResultType,
 void SeparableNumericalTestKernelTrialIntegrator<BasisFunctionType, KernelType,
                                                  ResultType, GeometryFactory>::
     precalculateGeometricalDataOnSingleGrid(
-        const arma::Mat<CoordinateType> &localQuadPoints,
+        const Matrix<CoordinateType> &localQuadPoints,
         const GeometryFactory &geometryFactory,
         const RawGridGeometry<CoordinateType> &rawGeometry, size_t geomDeps,
         std::vector<GeometricalData<CoordinateType>> &geomData) {
@@ -172,7 +172,7 @@ void SeparableNumericalTestKernelTrialIntegrator<BasisFunctionType, KernelType,
               int elementIndexB, const Shapeset<BasisFunctionType> &basisA,
               const Shapeset<BasisFunctionType> &basisB,
               LocalDofIndex localDofIndexB,
-              const std::vector<arma::Mat<ResultType> *> &result) const {
+              const std::vector<Matrix<ResultType> *> &result) const {
   if (m_openClHandler.UseOpenCl()) {
     integrateCl(callVariant, elementIndicesA, elementIndexB, basisA, basisB,
                 localDofIndexB, result);
@@ -191,7 +191,7 @@ void SeparableNumericalTestKernelTrialIntegrator<BasisFunctionType, KernelType,
                  const Shapeset<BasisFunctionType> &basisA,
                  const Shapeset<BasisFunctionType> &basisB,
                  LocalDofIndex localDofIndexB,
-                 const std::vector<arma::Mat<ResultType> *> &result) const {
+                 const std::vector<Matrix<ResultType> *> &result) const {
   const int testPointCount = m_localTestQuadPoints.n_cols;
   const int trialPointCount = m_localTrialQuadPoints.n_cols;
   const int elementACount = elementIndicesA.size();
@@ -329,7 +329,7 @@ void SeparableNumericalTestKernelTrialIntegrator<BasisFunctionType, KernelType,
                 const Shapeset<BasisFunctionType> &basisA,
                 const Shapeset<BasisFunctionType> &basisB,
                 LocalDofIndex localDofIndexB,
-                const std::vector<arma::Mat<ResultType> *> &result) const {
+                const std::vector<Matrix<ResultType> *> &result) const {
   //#ifdef WITH_OPENCL
   //  // DEBUG: test latency
   //  {
@@ -681,7 +681,7 @@ void SeparableNumericalTestKernelTrialIntegrator<BasisFunctionType, KernelType,
     integrate(const std::vector<ElementIndexPair> &elementIndexPairs,
               const Shapeset<BasisFunctionType> &testShapeset,
               const Shapeset<BasisFunctionType> &trialShapeset,
-              const std::vector<arma::Mat<ResultType> *> &result) const {
+              const std::vector<Matrix<ResultType> *> &result) const {
   if (m_openClHandler.UseOpenCl()) {
     integrateCl(elementIndexPairs, testShapeset, trialShapeset, result);
   } else {
@@ -696,7 +696,7 @@ void SeparableNumericalTestKernelTrialIntegrator<BasisFunctionType, KernelType,
     integrateCpu(const std::vector<ElementIndexPair> &elementIndexPairs,
                  const Shapeset<BasisFunctionType> &testShapeset,
                  const Shapeset<BasisFunctionType> &trialShapeset,
-                 const std::vector<arma::Mat<ResultType> *> &result) const {
+                 const std::vector<Matrix<ResultType> *> &result) const {
   const int testPointCount = m_localTestQuadPoints.n_cols;
   const int trialPointCount = m_localTrialQuadPoints.n_cols;
   const int geometryPairCount = elementIndexPairs.size();
@@ -792,7 +792,7 @@ void SeparableNumericalTestKernelTrialIntegrator<BasisFunctionType, KernelType,
     integrateCl(const std::vector<ElementIndexPair> &elementIndexPairs,
                 const Shapeset<BasisFunctionType> &testShapeset,
                 const Shapeset<BasisFunctionType> &trialShapeset,
-                const std::vector<arma::Mat<ResultType> *> &result) const {
+                const std::vector<Matrix<ResultType> *> &result) const {
   //#ifdef WITH_OPENCL
   //    const int testPointCount = m_localTestQuadPoints.n_cols;
   //    const int trialPointCount = m_localTrialQuadPoints.n_cols;

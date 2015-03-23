@@ -22,7 +22,6 @@
 #define fiber_quadrature_descriptor_selector_factory_hpp
 
 #include "../common/common.hpp"
-#include "../common/armadillo_fwd.hpp"
 #include "../common/shared_ptr.hpp"
 #include "scalar_traits.hpp"
 

@@ -39,8 +39,8 @@ double max3(double x, double y, double z) {
   return std::max(x, std::max(y, z));
 }
 
-bool isNew(const arma::Col<double> &intersection,
-           const std::vector<arma::Col<double>> &intersections) {
+bool isNew(Vector<double> &intersection,
+           const std::vector<Vector<double>> &intersections) {
   const double EPSILON = 1e-10;
   for (size_t i = 0; i < intersections.size(); ++i)
     if (fabs(intersections[i](0) - intersection(0)) < EPSILON &&
@@ -59,10 +59,10 @@ bool Grid::isBarycentricRepresentationOf(const Grid &other) const {
     return (this == other.barycentricGrid().get());
 }
 
-void Grid::getBoundingBox(arma::Col<double> &lowerBound,
-                          arma::Col<double> &upperBound) const {
+void Grid::getBoundingBox(Vector<double> &lowerBound,
+                          Vector<double> &upperBound) const {
   // In this simple implementation we assume that all elements are flat.
-  if (m_lowerBound.n_rows == dimWorld() && m_upperBound.n_rows == dimWorld()) {
+  if (m_lowerBound.n_rows == dimWorld() && m_upperBound.rows() == dimWorld()) {
     lowerBound = m_lowerBound;
     upperBound = m_upperBound;
     return;
@@ -70,9 +70,9 @@ void Grid::getBoundingBox(arma::Col<double> &lowerBound,
 
   std::unique_ptr<GridView> view = leafView();
 
-  arma::Mat<double> vertices;
-  arma::Mat<int> elementCorners; // unused
-  arma::Mat<char> auxData;       // unused
+  Matrix<double> vertices;
+  Matrix<int> elementCorners; // unused
+  Matrix<char> auxData;       // unused
   view->getRawElementData(vertices, elementCorners, auxData);
 
   m_lowerBound = lowerBound =

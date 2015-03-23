@@ -45,9 +45,9 @@ template <typename BasisFunctionType, typename KernelType, typename ResultType,
 NumericalKernelTrialIntegrator<BasisFunctionType, KernelType, ResultType,
                                GeometryFactory>::
     NumericalKernelTrialIntegrator(
-        const arma::Mat<CoordinateType> &localQuadPoints,
+        const Matrix<CoordinateType> &localQuadPoints,
         const std::vector<CoordinateType> quadWeights,
-        const arma::Mat<CoordinateType> &points,
+        const Matrix<CoordinateType> &points,
         const GeometryFactory &geometryFactory,
         const RawGridGeometry<CoordinateType> &rawGeometry,
         const CollectionOfKernels<KernelType> &kernels,
@@ -59,7 +59,7 @@ NumericalKernelTrialIntegrator<BasisFunctionType, KernelType, ResultType,
       m_points(points), m_geometryFactory(geometryFactory),
       m_rawGeometry(rawGeometry), m_kernels(kernels),
       m_trialTransformations(trialTransformations), m_integral(integral) {
-  if (localQuadPoints.n_cols != quadWeights.size())
+  if (localQuadPoints.cols() != quadWeights.size())
     throw std::invalid_argument("NumericalKernelTrialIntegrator::"
                                 "NumericalKernelTrialIntegrator(): "
                                 "numbers of test points and weights "
@@ -73,8 +73,8 @@ void NumericalKernelTrialIntegrator<BasisFunctionType, KernelType, ResultType,
     integrate(const std::vector<int> &pointIndices, int trialElementIndex,
               const Shapeset<BasisFunctionType> &trialShapeset,
               LocalDofIndex localTrialDofIndex,
-              const std::vector<arma::Mat<ResultType> *> &result) const {
-  const int quadPointCount = m_localQuadPoints.n_cols;
+              const std::vector<Matrix<ResultType> *> &result) const {
+  const int quadPointCount = m_localQuadPoints.cols();
   const int pointCount = pointIndices.size();
   const int componentCount = m_integral.resultDimension();
   const int trialDofCount =
@@ -137,8 +137,8 @@ void NumericalKernelTrialIntegrator<BasisFunctionType, KernelType, ResultType,
     integrate(int pointIndex, int componentIndex,
               const std::vector<int> &trialElementIndices,
               const Shapeset<BasisFunctionType> &trialShapeset,
-              const std::vector<arma::Mat<ResultType> *> &result) const {
-  const int quadPointCount = m_localQuadPoints.n_cols;
+              const std::vector<Matrix<ResultType> *> &result) const {
+  const int quadPointCount = m_localQuadPoints.cols();
   const int trialElementCount = trialElementIndices.size();
   const int componentCount =
       componentIndex == ALL_COMPONENTS ? m_integral.resultDimension() : 1;
@@ -210,8 +210,8 @@ void NumericalKernelTrialIntegrator<BasisFunctionType, KernelType, ResultType,
                                     GeometryFactory>::
     integrate(const std::vector<PointElementIndexPair> &pointElementIndexPairs,
               const Shapeset<BasisFunctionType> &trialShapeset,
-              const std::vector<arma::Mat<ResultType> *> &result) const {
-  const int quadPointCount = m_localQuadPoints.n_cols;
+              const std::vector<Matrix<ResultType> *> &result) const {
+  const int quadPointCount = m_localQuadPoints.cols;
   const int pairCount = pointElementIndexPairs.size();
   const int componentCount = m_integral.resultDimension();
   const int trialDofCount = trialShapeset.size();

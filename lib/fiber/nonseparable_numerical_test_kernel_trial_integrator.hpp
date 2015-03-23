@@ -53,8 +53,8 @@ public:
   typedef typename Base::ElementIndexPair ElementIndexPair;
 
   NonseparableNumericalTestKernelTrialIntegrator(
-      const arma::Mat<CoordinateType> &localTestQuadPoints,
-      const arma::Mat<CoordinateType> &localTrialQuadPoints,
+      const Matrix<CoordinateType> &localTestQuadPoints,
+      const Matrix<CoordinateType> &localTrialQuadPoints,
       const std::vector<CoordinateType> quadWeights,
       const GeometryFactory &testGeometryFactory,
       const GeometryFactory &trialGgeometryFactory,
@@ -75,13 +75,13 @@ public:
             int elementIndexB, const Shapeset<BasisFunctionType> &basisA,
             const Shapeset<BasisFunctionType> &basisB,
             LocalDofIndex localDofIndexB,
-            const std::vector<arma::Mat<ResultType> *> &result) const;
+            const std::vector<Matrix<ResultType> *> &result) const;
 
   virtual void
   integrate(const std::vector<ElementIndexPair> &elementIndexPairs,
             const Shapeset<BasisFunctionType> &testShapeset,
             const Shapeset<BasisFunctionType> &trialShapeset,
-            const std::vector<arma::Mat<ResultType> *> &result) const;
+            const std::vector<Matrix<ResultType> *> &result) const;
 
 private:
   enum ElementType {
@@ -93,8 +93,8 @@ private:
   basisData(ElementType type,
             const Shapeset<BasisFunctionType> &shapeset) const;
 
-  arma::Mat<CoordinateType> m_localTestQuadPoints;
-  arma::Mat<CoordinateType> m_localTrialQuadPoints;
+  Matrix<CoordinateType> m_localTestQuadPoints;
+  Matrix<CoordinateType> m_localTrialQuadPoints;
   std::vector<CoordinateType> m_quadWeights;
 
   const GeometryFactory &m_testGeometryFactory;

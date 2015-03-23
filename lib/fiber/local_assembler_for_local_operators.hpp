@@ -59,7 +59,7 @@ public:
                                for \p i in \p elementIndices. */
   virtual void
   evaluateLocalWeakForms(const std::vector<int> &elementIndices,
-                         std::vector<arma::Mat<ResultType>> &result) = 0;
+                         std::vector<Matrix<ResultType>> &result) = 0;
 };
 
 } // namespace Fiber

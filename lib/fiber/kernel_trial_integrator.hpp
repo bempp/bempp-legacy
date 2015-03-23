@@ -26,7 +26,6 @@
 #include "scalar_traits.hpp"
 #include "types.hpp"
 
-#include "../common/armadillo_fwd.hpp"
 #include <utility>
 #include <vector>
 
@@ -49,18 +48,18 @@ public:
   integrate(const std::vector<int> &pointIndices, int trialElementIndex,
             const Shapeset<BasisFunctionType> &trialShapeset,
             LocalDofIndex localTrialDofIndex,
-            const std::vector<arma::Mat<ResultType> *> &result) const = 0;
+            const std::vector<Matrix<ResultType> *> &result) const = 0;
 
   virtual void
   integrate(int pointIndex, int componentIndex,
             const std::vector<int> &trialElementIndices,
             const Shapeset<BasisFunctionType> &trialShapeset,
-            const std::vector<arma::Mat<ResultType> *> &result) const = 0;
+            const std::vector<Matrix<ResultType> *> &result) const = 0;
 
   virtual void
   integrate(const std::vector<PointElementIndexPair> &pointElementIndexPairs,
             const Shapeset<BasisFunctionType> &trialShapeset,
-            const std::vector<arma::Mat<ResultType> *> &result) const = 0;
+            const std::vector<Matrix<ResultType> *> &result) const = 0;
 };
 
 } // namespace Fiber

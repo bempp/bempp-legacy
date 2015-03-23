@@ -22,6 +22,7 @@
 #define fiber_default_test_trial_integral_hpp
 
 #include "test_trial_integral.hpp"
+#include "types.hpp"
 
 namespace Fiber {
 
@@ -47,7 +48,7 @@ public:
            const CollectionOf3dArrays<BasisFunctionType> &testValues,
            const CollectionOf3dArrays<BasisFunctionType> &trialValues,
            const std::vector<CoordinateType> &weights,
-           arma::Mat<ResultType> &result) const;
+           Matrix<ResultType> &result) const;
 
 private:
   IntegrandFunctor m_functor;

@@ -24,8 +24,7 @@
 #include "../common/common.hpp"
 
 #include "scalar_traits.hpp"
-
-#include "../common/armadillo_fwd.hpp"
+#include "types.hpp"
 
 namespace Fiber {
 
@@ -82,10 +81,10 @@ public:
    *  all the types of geometrical data specified in the implementation of
    *  addGeometricalDependencies(). Before filling the array \p result, this
    *  method must ensure that its size is correct, calling
-   *  <tt>arma::Mat::set_size()</tt> if necessary.
+   *  <tt>Matrix::resize()</tt> if necessary.
    */
   virtual void evaluate(const GeometricalData<CoordinateType> &geomData,
-                        arma::Mat<ValueType> &result) const = 0;
+                        Matrix<ValueType> &result) const = 0;
 };
 
 } // namespace Fiber

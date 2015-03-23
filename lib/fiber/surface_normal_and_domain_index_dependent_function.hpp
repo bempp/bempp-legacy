@@ -25,6 +25,7 @@
 
 #include "function.hpp"
 #include "geometrical_data.hpp"
+#include "types.hpp"
 
 namespace Fiber {
 
@@ -54,10 +55,10 @@ namespace Fiber {
       // domain "domainIndex", with "normal" the local unit normal vector, and
       // store result in the array "result". All arrays will be preinitialised
       // to correct dimensions.
-      void evaluate(const arma::Col<CoordinateType>& point,
-                    const arma::Col<CoordinateType>& normal,
+      void evaluate(const Vector<CoordinateType>& point,
+                    const Vectorl<CoordinateType>& normal,
                     int domainIndex,
-                    arma::Col<ValueType>& result) const;
+                    Vector<ValueType>& result) const;
   };
   \endcode
 */
@@ -81,23 +82,23 @@ public:
   }
 
   virtual void evaluate(const GeometricalData<CoordinateType> &geomData,
-                        arma::Mat<ValueType> &result) const {
-    const arma::Mat<CoordinateType> &points = geomData.globals;
-    const arma::Mat<CoordinateType> &normals = geomData.normals;
+                        Matrix<ValueType> &result) const {
+    const Matrix<CoordinateType> &points = geomData.globals;
+    const Matrix<CoordinateType> &normals = geomData.normals;
 
 #ifndef NDEBUG
-    if ((int)points.n_rows != worldDimension() ||
-        (int)points.n_rows != worldDimension())
+    if ((int)points.rows() != worldDimension() ||
+        (int)points.rows() != worldDimension())
       throw std::invalid_argument(
           "SurfaceNormalAndDomainIndexDependentFunction::evaluate(): "
           "incompatible world dimension");
 #endif
 
     const size_t pointCount = points.n_cols;
-    result.set_size(codomainDimension(), pointCount);
+    result.resize(codomainDimension(), pointCount);
     for (size_t i = 0; i < pointCount; ++i) {
-      arma::Col<ValueType> activeResultColumn = result.unsafe_col(i);
-      m_functor.evaluate(points.unsafe_col(i), normals.unsafe_col(i),
+      Eigen::Map<Vector<ValueType>> activeResultColumn(result.col(i).data(),result.rows());
+      m_functor.evaluate(points.col(i), normals.col(i),
                          geomData.domainIndex, activeResultColumn);
     }
   }

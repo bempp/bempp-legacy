@@ -22,7 +22,7 @@
 #define fiber_test_trial_integral_hpp
 
 #include "../common/common.hpp"
-#include "../common/armadillo_fwd.hpp"
+#include "types.hpp"
 
 #include "scalar_traits.hpp"
 
@@ -49,7 +49,7 @@ public:
            const CollectionOf3dArrays<BasisFunctionType> &testValues,
            const CollectionOf3dArrays<BasisFunctionType> &trialValues,
            const std::vector<CoordinateType> &weights,
-           arma::Mat<ResultType> &result) const = 0;
+           Matrix<ResultType> &result) const = 0;
 };
 
 } // namespace Fiber
