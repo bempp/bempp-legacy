@@ -21,6 +21,7 @@
 #include "simple_triangular_grid_manager.hpp"
 #include "grid/grid_factory.hpp"
 #include "grid/structured_grid_factory.hpp"
+#include "common/eigen_support.hpp"
 
 // Fixture member definitions
 
@@ -31,9 +32,9 @@ Bempp::shared_ptr<Bempp::Grid> SimpleTriangularGridManager::createGrid()
 
     const int dimGrid = 2;
     typedef double ctype;
-    arma::Col<double> lowerLeft(dimGrid);
-    arma::Col<double> upperRight(dimGrid);
-    arma::Col<unsigned int> nElements(dimGrid);
+    Vector<double> lowerLeft(dimGrid);
+    Vector<double> upperRight(dimGrid);
+    Vector<unsigned int> nElements(dimGrid);
     lowerLeft.fill(0);
     upperRight.fill(1);
     nElements(0) = N_ELEMENTS_X;

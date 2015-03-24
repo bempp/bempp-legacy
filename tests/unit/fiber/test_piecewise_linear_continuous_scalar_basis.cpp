@@ -24,7 +24,7 @@
 #include "../check_arrays_are_close.hpp"
 
 #include <algorithm>
-#include "common/armadillo_fwd.hpp"
+#include "common/eigen_support.hpp"
 #include <boost/test/unit_test.hpp>
 #include <boost/test/test_case_template.hpp>
 #include <boost/test/floating_point_comparison.hpp>
@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_works_for_all_dofs,
     const int pointCount = vertexCount;
     typedef Fiber::PiecewiseLinearContinuousScalarBasis<vertexCount, ValueType> Basis;
     Basis basis;
-    arma::Mat<typename Basis::CoordinateType> points(elementDim, pointCount);
+    Matrix<typename Basis::CoordinateType> points(elementDim, pointCount);
     points.fill(0.);
     points(0, 1) = 1.;
     points(1, 2) = 1.;
@@ -82,7 +82,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_works_for_second_dof,
     const int dofIndex = 1;
     typedef Fiber::PiecewiseLinearContinuousScalarBasis<vertexCount, ValueType> Basis;
     Basis basis;
-    arma::Mat<typename Basis::CoordinateType> points(elementDim, pointCount);
+    Matrix<typename Basis::CoordinateType> points(elementDim, pointCount);
     points.fill(0.);
     points(0, 1) = 1.;
     points(1, 2) = 1.;
@@ -106,7 +106,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_derivatives_works_for_all_dofs,
     const int pointCount = vertexCount;
     typedef Fiber::PiecewiseLinearContinuousScalarBasis<vertexCount, ValueType> Basis;
     Basis basis;
-    arma::Mat<typename Basis::CoordinateType> points(elementDim, pointCount);
+    Matrix<typename Basis::CoordinateType> points(elementDim, pointCount);
     points.fill(0.);
     points(0, 1) = 1.;
     points(1, 2) = 1.;
@@ -142,7 +142,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_and_derivatives_works_for_all_dofs
     const int pointCount = 3;
     typedef Fiber::PiecewiseLinearContinuousScalarBasis<vertexCount, ValueType> Basis;
     Basis basis;
-    arma::Mat<typename Basis::CoordinateType> points(elementDim, pointCount);
+    Matrix<typename Basis::CoordinateType> points(elementDim, pointCount);
     points.fill(0.);
     points(0, 1) = 1.;
     points(1, 2) = 1.;
@@ -206,7 +206,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_works_for_all_dofs,
     const int pointCount = vertexCount;
     typedef Fiber::PiecewiseLinearContinuousScalarBasis<vertexCount, ValueType> Basis;
     Basis basis;
-    arma::Mat<typename Basis::CoordinateType> points(elementDim, pointCount);
+    Matrix<typename Basis::CoordinateType> points(elementDim, pointCount);
     points.fill(0.);
     points(0, 1) = 1.;
     points(1, 2) = 1.;
@@ -236,7 +236,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_works_for_second_dof,
     const int dofIndex = 1;
     typedef Fiber::PiecewiseLinearContinuousScalarBasis<vertexCount, ValueType> Basis;
     Basis basis;
-    arma::Mat<typename Basis::CoordinateType> points(elementDim, pointCount);
+    Matrix<typename Basis::CoordinateType> points(elementDim, pointCount);
     points.fill(0.);
     points(0, 1) = 1.;
     points(1, 2) = 1.;
@@ -262,7 +262,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_derivatives_works_for_all_dofs,
     const int pointCount = vertexCount;
     typedef Fiber::PiecewiseLinearContinuousScalarBasis<vertexCount, ValueType> Basis;
     Basis basis;
-    arma::Mat<typename Basis::CoordinateType> points(elementDim, pointCount);
+    Matrix<typename Basis::CoordinateType> points(elementDim, pointCount);
     points.fill(0.);
     points(0, 1) = 1.;
     points(1, 2) = 1.;
@@ -299,7 +299,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_and_derivatives_works_for_all_dofs
     const int pointCount = vertexCount;
     typedef Fiber::PiecewiseLinearContinuousScalarBasis<vertexCount, ValueType> Basis;
     Basis basis;
-    arma::Mat<typename Basis::CoordinateType> points(elementDim, pointCount);
+    Matrix<typename Basis::CoordinateType> points(elementDim, pointCount);
     points.fill(0.);
     points(0, 1) = 1.;
     points(1, 2) = 1.;

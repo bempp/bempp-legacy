@@ -39,7 +39,7 @@
 #include "space/piecewise_constant_scalar_space.hpp"
 
 #include <algorithm>
-#include "common/armadillo_fwd.hpp"
+#include "common/eigen_support.hpp"
 #include <boost/test/unit_test.hpp>
 #include <boost/test/floating_point_comparison.hpp>
 #include <boost/version.hpp>
@@ -103,11 +103,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2
     RT alpha(2.);
     RT beta(0.);
 
-    arma::Col<RT> x = generateRandomVector<RT>(dop->columnCount());
-    arma::Col<RT> y(dop->rowCount());
+    Vector<RT> x = generateRandomVector<RT>(dop->columnCount());
+    Vector<RT> y(dop->rowCount());
     y.fill(std::numeric_limits<CT>::quiet_NaN());
 
-    arma::Col<RT> expected = alpha * dop->asMatrix() * x;
+    Vector<RT> expected = alpha * dop->asMatrix() * x;
 
     dop->apply(NO_TRANSPOSE, x, y, alpha, beta);
     
@@ -130,11 +130,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2
     RT alpha(2., 3.);
     RT beta(0.);
 
-    arma::Col<RT> x = generateRandomVector<RT>(dop->columnCount());
-    arma::Col<RT> y(dop->rowCount());
+    Vector<RT> x = generateRandomVector<RT>(dop->columnCount());
+    Vector<RT> y(dop->rowCount());
     y.fill(std::numeric_limits<CT>::quiet_NaN());
 
-    arma::Col<RT> expected = alpha * dop->asMatrix() * x;
+    Vector<RT> expected = alpha * dop->asMatrix() * x;
 
     dop->apply(NO_TRANSPOSE, x, y, alpha, beta);
     
@@ -157,10 +157,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2
     RT alpha(2.);
     RT beta(3.);
 
-    arma::Col<RT> x = generateRandomVector<RT>(dop->columnCount());
-    arma::Col<RT> y = generateRandomVector<RT>(dop->rowCount());
+    Vector<RT> x = generateRandomVector<RT>(dop->columnCount());
+    Vector<RT> y = generateRandomVector<RT>(dop->rowCount());
 
-    arma::Col<RT> expected = alpha * dop->asMatrix() * x + beta * y;
+    Vector<RT> expected = alpha * dop->asMatrix() * x + beta * y;
 
     dop->apply(NO_TRANSPOSE, x, y, alpha, beta);
     
@@ -182,10 +182,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2
     RT alpha(2., 3.);
     RT beta(4., -5.);
 
-    arma::Col<RT> x = generateRandomVector<RT>(dop->columnCount());
-    arma::Col<RT> y = generateRandomVector<RT>(dop->rowCount());
+    Vector<RT> x = generateRandomVector<RT>(dop->columnCount());
+    Vector<RT> y = generateRandomVector<RT>(dop->rowCount());
 
-    arma::Col<RT> expected = alpha * dop->asMatrix() * x + beta * y;
+    Vector<RT> expected = alpha * dop->asMatrix() * x + beta * y;
 
     dop->apply(NO_TRANSPOSE, x, y, alpha, beta);
     
@@ -207,10 +207,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2
     RT alpha(2.);
     RT beta(3.);
 
-    arma::Col<RT> x = generateRandomVector<RT>(dop->rowCount());
-    arma::Col<RT> y = generateRandomVector<RT>(dop->columnCount());
+    Vector<RT> x = generateRandomVector<RT>(dop->rowCount());
+    Vector<RT> y = generateRandomVector<RT>(dop->columnCount());
 
-    arma::Col<RT> expected = alpha * dop->asMatrix().st() * x + beta * y;
+    Vector<RT> expected = alpha * dop->asMatrix().st() * x + beta * y;
 
     dop->apply(TRANSPOSE, x, y, alpha, beta);
 
@@ -232,10 +232,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2
     RT alpha(2., 3.);
     RT beta(4., -5.);
 
-    arma::Col<RT> x = generateRandomVector<RT>(dop->rowCount());
-    arma::Col<RT> y = generateRandomVector<RT>(dop->columnCount());
+    Vector<RT> x = generateRandomVector<RT>(dop->rowCount());
+    Vector<RT> y = generateRandomVector<RT>(dop->columnCount());
 
-    arma::Col<RT> expected = alpha * dop->asMatrix().st() * x + beta * y;
+    Vector<RT> expected = alpha * dop->asMatrix().st() * x + beta * y;
 
     dop->apply(TRANSPOSE, x, y, alpha, beta);
 

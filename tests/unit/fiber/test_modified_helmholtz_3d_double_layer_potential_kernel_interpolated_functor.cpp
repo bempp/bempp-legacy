@@ -29,7 +29,7 @@
 #include "../random_arrays.hpp"
 
 #include <algorithm>
-#include "common/armadillo_fwd.hpp"
+#include "common/eigen_support.hpp"
 #include <boost/test/unit_test.hpp>
 #include <boost/test/floating_point_comparison.hpp>
 #include <boost/version.hpp>

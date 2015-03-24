@@ -39,7 +39,7 @@
 #include "space/piecewise_constant_scalar_space.hpp"
 
 #include <algorithm>
-#include "common/armadillo_fwd.hpp"
+#include "common/eigen_support.hpp"
 #include <boost/test/unit_test.hpp>
 #include <boost/test/floating_point_comparison.hpp>
 #include <boost/version.hpp>
@@ -94,9 +94,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2
 
     const int dimGrid = 2;
     typedef double ctype;
-    arma::Col<double> lowerLeft(dimGrid);
-    arma::Col<double> upperRight(dimGrid);
-    arma::Col<unsigned int> nElements(dimGrid);
+    Vector<double> lowerLeft(dimGrid);
+    Vector<double> upperRight(dimGrid);
+    Vector<unsigned int> nElements(dimGrid);
     lowerLeft.fill(0);
     upperRight.fill(1);
     nElements(0) = 2;
@@ -131,12 +131,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2
     RT alpha = static_cast<RT>(2.);
     RT beta = static_cast<RT>(0.);
 
-    arma::Col<RT> x(dop->columnCount());
+    Vector<RT> x(dop->columnCount());
     x.fill(1.);
-    arma::Col<RT> y(dop->rowCount());
+    Vector<RT> y(dop->rowCount());
     y.fill(std::numeric_limits<CT>::quiet_NaN());
 
-    arma::Col<RT> expected = alpha * dop->asMatrix() * x;
+    Vector<RT> expected = alpha * dop->asMatrix() * x;
 
     dop->apply(NO_TRANSPOSE, x, y, alpha, beta);
 

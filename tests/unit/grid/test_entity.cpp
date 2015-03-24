@@ -19,8 +19,9 @@
 // THE SOFTWARE.
 
 #include "test_entity.hpp"
-#include "grid/armadillo_helpers.hpp"
+#include "grid/eigen_helpers.hpp"
 #include "grid/geometry.hpp"
+#include "common/eigen_support.hpp"
 
 #include <boost/test/unit_test.hpp>
 #include "../num_template.hpp"
@@ -163,7 +164,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(subEntityIterator_second_entity_agrees_with_Du
 {
     const int codimSub = T::value;
 
-    arma::Col<double> elementCenter;
+    Vector<double> elementCenter;
     {
         std::unique_ptr<EntityPointer<0> > ep = getPointerToSecondEntityOnLevel0<0>();
         std::unique_ptr<EntityIterator<codimSub> > it = ep->entity().subEntityIterator<codimSub>();

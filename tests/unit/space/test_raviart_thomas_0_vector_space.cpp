@@ -68,8 +68,8 @@ public:
     int argumentDimension() const { return 3; }
     int resultDimension() const { return 3; }
 
-    inline void evaluate(const arma::Col<CoordinateType>& point,
-                         arma::Col<ValueType>& result) const {
+    inline void evaluate(const Vector<CoordinateType>& point,
+                         Vector<ValueType>& result) const {
         CoordinateType x = point(0), y = point(1);
         CoordinateType red_x = fmod(x, 0.2);
         CoordinateType red_y = fmod(y, 0.2);

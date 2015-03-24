@@ -28,7 +28,7 @@
 #include "assembly/discrete_dense_boundary_operator.hpp"
 
 #include <algorithm>
-#include "common/armadillo_fwd.hpp"
+#include "common/eigen_support.hpp"
 #include <boost/test/unit_test.hpp>
 #include <boost/test/floating_point_comparison.hpp>
 #include <boost/version.hpp>
@@ -46,7 +46,7 @@ struct TransposedDiscreteBoundaryOperatorFixture
 {
     TransposedDiscreteBoundaryOperatorFixture()
     {
-        arma::Mat<RT> mat = generateRandomMatrix<RT>(4, 5);
+        Matrix<RT> mat = generateRandomMatrix<RT>(4, 5);
         op.reset(new DiscreteDenseBoundaryOperator<RT>(mat));
         unmodifiedOp = transpose(NO_TRANSPOSE, op);
         transposedOp = transpose(op);
@@ -74,17 +74,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_no_transpose_and
     typedef typename Fiber::ScalarTraits<RT>::RealType CT;
 
     TransposedDiscreteBoundaryOperatorFixture<RT> fixture;
-    arma::Mat<RT> mat = fixture.op->asMatrix();
+    Matrix<RT> mat = fixture.op->asMatrix();
     shared_ptr<const DiscreteBoundaryOperator<RT> > dop = fixture.unmodifiedOp;
 
     RT alpha(2.);
     RT beta(0.);
 
-    arma::Col<RT> x = generateRandomVector<RT>(dop->columnCount());
-    arma::Col<RT> y(dop->rowCount());
+    Vector<RT> x = generateRandomVector<RT>(dop->columnCount());
+    Vector<RT> y(dop->rowCount());
     y.fill(std::numeric_limits<CT>::quiet_NaN());
 
-    arma::Col<RT> expected = alpha * mat * x;
+    Vector<RT> expected = alpha * mat * x;
 
     dop->apply(NO_TRANSPOSE, x, y, alpha, beta);
     
@@ -103,17 +103,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_no_transpose_and
     typedef typename Fiber::ScalarTraits<RT>::RealType CT;
 
     TransposedDiscreteBoundaryOperatorFixture<RT> fixture;
-    arma::Mat<RT> mat = fixture.op->asMatrix();
+    Matrix<RT> mat = fixture.op->asMatrix();
     shared_ptr<const DiscreteBoundaryOperator<RT> > dop = fixture.unmodifiedOp;
 
     RT alpha(2., 3.);
     RT beta(0.);
 
-    arma::Col<RT> x = generateRandomVector<RT>(dop->columnCount());
-    arma::Col<RT> y(dop->rowCount());
+    Vector<RT> x = generateRandomVector<RT>(dop->columnCount());
+    Vector<RT> y(dop->rowCount());
     y.fill(std::numeric_limits<CT>::quiet_NaN());
 
-    arma::Col<RT> expected = alpha * mat * x;
+    Vector<RT> expected = alpha * mat * x;
 
     dop->apply(NO_TRANSPOSE, x, y, alpha, beta);
     
@@ -132,16 +132,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_no_transpose_and
     typedef typename Fiber::ScalarTraits<RT>::RealType CT;
 
     TransposedDiscreteBoundaryOperatorFixture<RT> fixture;
-    arma::Mat<RT> mat = fixture.op->asMatrix();
+    Matrix<RT> mat = fixture.op->asMatrix();
     shared_ptr<const DiscreteBoundaryOperator<RT> > dop = fixture.unmodifiedOp;
 
     RT alpha(2.);
     RT beta(3.);
 
-    arma::Col<RT> x = generateRandomVector<RT>(dop->columnCount());
-    arma::Col<RT> y = generateRandomVector<RT>(dop->rowCount());
+    Vector<RT> x = generateRandomVector<RT>(dop->columnCount());
+    Vector<RT> y = generateRandomVector<RT>(dop->rowCount());
 
-    arma::Col<RT> expected = alpha * mat * x + beta * y;
+    Vector<RT> expected = alpha * mat * x + beta * y;
 
     dop->apply(NO_TRANSPOSE, x, y, alpha, beta);
     
@@ -159,16 +159,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_no_transpose_and
     typedef typename Fiber::ScalarTraits<RT>::RealType CT;
 
     TransposedDiscreteBoundaryOperatorFixture<RT> fixture;
-    arma::Mat<RT> mat = fixture.op->asMatrix();
+    Matrix<RT> mat = fixture.op->asMatrix();
     shared_ptr<const DiscreteBoundaryOperator<RT> > dop = fixture.unmodifiedOp;
 
     RT alpha(2., 3.);
     RT beta(4., -5.);
 
-    arma::Col<RT> x = generateRandomVector<RT>(dop->columnCount());
-    arma::Col<RT> y = generateRandomVector<RT>(dop->rowCount());
+    Vector<RT> x = generateRandomVector<RT>(dop->columnCount());
+    Vector<RT> y = generateRandomVector<RT>(dop->rowCount());
 
-    arma::Col<RT> expected = alpha * mat * x + beta * y;
+    Vector<RT> expected = alpha * mat * x + beta * y;
 
     dop->apply(NO_TRANSPOSE, x, y, alpha, beta);
     
@@ -188,17 +188,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_transpose_and_al
     typedef typename Fiber::ScalarTraits<RT>::RealType CT;
 
     TransposedDiscreteBoundaryOperatorFixture<RT> fixture;
-    arma::Mat<RT> mat = fixture.op->asMatrix().st();
+    Matrix<RT> mat = fixture.op->asMatrix().st();
     shared_ptr<const DiscreteBoundaryOperator<RT> > dop = fixture.transposedOp;
 
     RT alpha(2.);
     RT beta(0.);
 
-    arma::Col<RT> x = generateRandomVector<RT>(dop->columnCount());
-    arma::Col<RT> y(dop->rowCount());
+    Vector<RT> x = generateRandomVector<RT>(dop->columnCount());
+    Vector<RT> y(dop->rowCount());
     y.fill(std::numeric_limits<CT>::quiet_NaN());
 
-    arma::Col<RT> expected = alpha * mat * x;
+    Vector<RT> expected = alpha * mat * x;
 
     dop->apply(NO_TRANSPOSE, x, y, alpha, beta);
 
@@ -217,17 +217,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_transpose_and_al
     typedef typename Fiber::ScalarTraits<RT>::RealType CT;
 
     TransposedDiscreteBoundaryOperatorFixture<RT> fixture;
-    arma::Mat<RT> mat = fixture.op->asMatrix().st();
+    Matrix<RT> mat = fixture.op->asMatrix().st();
     shared_ptr<const DiscreteBoundaryOperator<RT> > dop = fixture.transposedOp;
 
     RT alpha(2., 3.);
     RT beta(0.);
 
-    arma::Col<RT> x = generateRandomVector<RT>(dop->columnCount());
-    arma::Col<RT> y(dop->rowCount());
+    Vector<RT> x = generateRandomVector<RT>(dop->columnCount());
+    Vector<RT> y(dop->rowCount());
     y.fill(std::numeric_limits<CT>::quiet_NaN());
 
-    arma::Col<RT> expected = alpha * mat * x;
+    Vector<RT> expected = alpha * mat * x;
 
     dop->apply(NO_TRANSPOSE, x, y, alpha, beta);
 
@@ -246,16 +246,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_transpose_and_al
     typedef typename Fiber::ScalarTraits<RT>::RealType CT;
 
     TransposedDiscreteBoundaryOperatorFixture<RT> fixture;
-    arma::Mat<RT> mat = fixture.op->asMatrix().st();
+    Matrix<RT> mat = fixture.op->asMatrix().st();
     shared_ptr<const DiscreteBoundaryOperator<RT> > dop = fixture.transposedOp;
 
     RT alpha(2.);
     RT beta(3.);
 
-    arma::Col<RT> x = generateRandomVector<RT>(dop->columnCount());
-    arma::Col<RT> y = generateRandomVector<RT>(dop->rowCount());
+    Vector<RT> x = generateRandomVector<RT>(dop->columnCount());
+    Vector<RT> y = generateRandomVector<RT>(dop->rowCount());
 
-    arma::Col<RT> expected = alpha * mat * x + beta * y;
+    Vector<RT> expected = alpha * mat * x + beta * y;
 
     dop->apply(NO_TRANSPOSE, x, y, alpha, beta);
 
@@ -273,16 +273,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_transpose_andalp
     typedef typename Fiber::ScalarTraits<RT>::RealType CT;
 
     TransposedDiscreteBoundaryOperatorFixture<RT> fixture;
-    arma::Mat<RT> mat = fixture.op->asMatrix().st();
+    Matrix<RT> mat = fixture.op->asMatrix().st();
     shared_ptr<const DiscreteBoundaryOperator<RT> > dop = fixture.transposedOp;
 
     RT alpha(2., 3.);
     RT beta(4., -5.);
 
-    arma::Col<RT> x = generateRandomVector<RT>(dop->columnCount());
-    arma::Col<RT> y = generateRandomVector<RT>(dop->rowCount());
+    Vector<RT> x = generateRandomVector<RT>(dop->columnCount());
+    Vector<RT> y = generateRandomVector<RT>(dop->rowCount());
 
-    arma::Col<RT> expected = alpha * mat * x + beta * y;
+    Vector<RT> expected = alpha * mat * x + beta * y;
 
     dop->apply(NO_TRANSPOSE, x, y, alpha, beta);
 
@@ -302,17 +302,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_conjugate_and_al
     typedef typename Fiber::ScalarTraits<RT>::RealType CT;
 
     TransposedDiscreteBoundaryOperatorFixture<RT> fixture;
-    arma::Mat<RT> mat = arma::conj(fixture.op->asMatrix());
+    Matrix<RT> mat = (fixture.op->asMatrix()).conjugate();
     shared_ptr<const DiscreteBoundaryOperator<RT> > dop = fixture.conjugatedOp;
 
     RT alpha(2.);
     RT beta(0.);
 
-    arma::Col<RT> x = generateRandomVector<RT>(dop->columnCount());
-    arma::Col<RT> y(dop->rowCount());
+    Vector<RT> x = generateRandomVector<RT>(dop->columnCount());
+    Vector<RT> y(dop->rowCount());
     y.fill(std::numeric_limits<CT>::quiet_NaN());
 
-    arma::Col<RT> expected = alpha * mat * x;
+    Vector<RT> expected = alpha * mat * x;
 
     dop->apply(NO_TRANSPOSE, x, y, alpha, beta);
 
@@ -331,17 +331,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_conjugate_and_al
     typedef typename Fiber::ScalarTraits<RT>::RealType CT;
 
     TransposedDiscreteBoundaryOperatorFixture<RT> fixture;
-    arma::Mat<RT> mat = arma::conj(fixture.op->asMatrix());
+    Matrix<RT> mat = (fixture.op->asMatrix()).conjugate();
     shared_ptr<const DiscreteBoundaryOperator<RT> > dop = fixture.conjugatedOp;
 
     RT alpha(2., 3.);
     RT beta(0.);
 
-    arma::Col<RT> x = generateRandomVector<RT>(dop->columnCount());
-    arma::Col<RT> y(dop->rowCount());
+    Vector<RT> x = generateRandomVector<RT>(dop->columnCount());
+    Vector<RT> y(dop->rowCount());
     y.fill(std::numeric_limits<CT>::quiet_NaN());
 
-    arma::Col<RT> expected = alpha * mat * x;
+    Vector<RT> expected = alpha * mat * x;
 
     dop->apply(NO_TRANSPOSE, x, y, alpha, beta);
 
@@ -360,16 +360,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_conjugate_and_al
     typedef typename Fiber::ScalarTraits<RT>::RealType CT;
 
     TransposedDiscreteBoundaryOperatorFixture<RT> fixture;
-    arma::Mat<RT> mat = arma::conj(fixture.op->asMatrix());
+    Matrix<RT> mat = (fixture.op->asMatrix()).conjugate();
     shared_ptr<const DiscreteBoundaryOperator<RT> > dop = fixture.conjugatedOp;
 
     RT alpha(2.);
     RT beta(3.);
 
-    arma::Col<RT> x = generateRandomVector<RT>(dop->columnCount());
-    arma::Col<RT> y = generateRandomVector<RT>(dop->rowCount());
+    Vector<RT> x = generateRandomVector<RT>(dop->columnCount());
+    Vector<RT> y = generateRandomVector<RT>(dop->rowCount());
 
-    arma::Col<RT> expected = alpha * mat * x + beta * y;
+    Vector<RT> expected = alpha * mat * x + beta * y;
 
     dop->apply(NO_TRANSPOSE, x, y, alpha, beta);
 
@@ -387,16 +387,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_conjugate_andalp
     typedef typename Fiber::ScalarTraits<RT>::RealType CT;
 
     TransposedDiscreteBoundaryOperatorFixture<RT> fixture;
-    arma::Mat<RT> mat = arma::conj(fixture.op->asMatrix());
+    Matrix<RT> mat = (fixture.op->asMatrix()).conjugate();
     shared_ptr<const DiscreteBoundaryOperator<RT> > dop = fixture.conjugatedOp;
 
     RT alpha(2., 3.);
     RT beta(4., -5.);
 
-    arma::Col<RT> x = generateRandomVector<RT>(dop->columnCount());
-    arma::Col<RT> y = generateRandomVector<RT>(dop->rowCount());
+    Vector<RT> x = generateRandomVector<RT>(dop->columnCount());
+    Vector<RT> y = generateRandomVector<RT>(dop->rowCount());
 
-    arma::Col<RT> expected = alpha * mat * x + beta * y;
+    Vector<RT> expected = alpha * mat * x + beta * y;
 
     dop->apply(NO_TRANSPOSE, x, y, alpha, beta);
 
@@ -416,17 +416,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_conjugate_transp
     typedef typename Fiber::ScalarTraits<RT>::RealType CT;
 
     TransposedDiscreteBoundaryOperatorFixture<RT> fixture;
-    arma::Mat<RT> mat = fixture.op->asMatrix().t();
+    Matrix<RT> mat = fixture.op->asMatrix().t();
     shared_ptr<const DiscreteBoundaryOperator<RT> > dop = fixture.conjugateTransposedOp;
 
     RT alpha(2.);
     RT beta(0.);
 
-    arma::Col<RT> x = generateRandomVector<RT>(dop->columnCount());
-    arma::Col<RT> y(dop->rowCount());
+    Vector<RT> x = generateRandomVector<RT>(dop->columnCount());
+    Vector<RT> y(dop->rowCount());
     y.fill(std::numeric_limits<CT>::quiet_NaN());
 
-    arma::Col<RT> expected = alpha * mat * x;
+    Vector<RT> expected = alpha * mat * x;
 
     dop->apply(NO_TRANSPOSE, x, y, alpha, beta);
 
@@ -445,17 +445,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_conjugate_transp
     typedef typename Fiber::ScalarTraits<RT>::RealType CT;
 
     TransposedDiscreteBoundaryOperatorFixture<RT> fixture;
-    arma::Mat<RT> mat = fixture.op->asMatrix().t();
+    Matrix<RT> mat = fixture.op->asMatrix().t();
     shared_ptr<const DiscreteBoundaryOperator<RT> > dop = fixture.conjugateTransposedOp;
 
     RT alpha(2., 3.);
     RT beta(0.);
 
-    arma::Col<RT> x = generateRandomVector<RT>(dop->columnCount());
-    arma::Col<RT> y(dop->rowCount());
+    Vector<RT> x = generateRandomVector<RT>(dop->columnCount());
+    Vector<RT> y(dop->rowCount());
     y.fill(std::numeric_limits<CT>::quiet_NaN());
 
-    arma::Col<RT> expected = alpha * mat * x;
+    Vector<RT> expected = alpha * mat * x;
 
     dop->apply(NO_TRANSPOSE, x, y, alpha, beta);
 
@@ -474,16 +474,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_conjugate_transp
     typedef typename Fiber::ScalarTraits<RT>::RealType CT;
 
     TransposedDiscreteBoundaryOperatorFixture<RT> fixture;
-    arma::Mat<RT> mat = fixture.op->asMatrix().t();
+    Matrix<RT> mat = fixture.op->asMatrix().t();
     shared_ptr<const DiscreteBoundaryOperator<RT> > dop = fixture.conjugateTransposedOp;
 
     RT alpha(2.);
     RT beta(3.);
 
-    arma::Col<RT> x = generateRandomVector<RT>(dop->columnCount());
-    arma::Col<RT> y = generateRandomVector<RT>(dop->rowCount());
+    Vector<RT> x = generateRandomVector<RT>(dop->columnCount());
+    Vector<RT> y = generateRandomVector<RT>(dop->rowCount());
 
-    arma::Col<RT> expected = alpha * mat * x + beta * y;
+    Vector<RT> expected = alpha * mat * x + beta * y;
 
     dop->apply(NO_TRANSPOSE, x, y, alpha, beta);
 
@@ -501,16 +501,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_conjugate_transp
     typedef typename Fiber::ScalarTraits<RT>::RealType CT;
 
     TransposedDiscreteBoundaryOperatorFixture<RT> fixture;
-    arma::Mat<RT> mat = fixture.op->asMatrix().t();
+    Matrix<RT> mat = fixture.op->asMatrix().t();
     shared_ptr<const DiscreteBoundaryOperator<RT> > dop = fixture.conjugateTransposedOp;
 
     RT alpha(2., 3.);
     RT beta(4., -5.);
 
-    arma::Col<RT> x = generateRandomVector<RT>(dop->columnCount());
-    arma::Col<RT> y = generateRandomVector<RT>(dop->rowCount());
+    Vector<RT> x = generateRandomVector<RT>(dop->columnCount());
+    Vector<RT> y = generateRandomVector<RT>(dop->rowCount());
 
-    arma::Col<RT> expected = alpha * mat * x + beta * y;
+    Vector<RT> expected = alpha * mat * x + beta * y;
 
     dop->apply(NO_TRANSPOSE, x, y, alpha, beta);
 

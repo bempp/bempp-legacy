@@ -46,7 +46,7 @@
 #include "space/piecewise_linear_discontinuous_scalar_space.hpp"
 #include "space/piecewise_linear_continuous_scalar_space.hpp"
 
-#include "common/armadillo_fwd.hpp"
+#include "common/eigen_support.hpp"
 #include "common/boost_make_shared_fwd.hpp"
 
 #include <boost/test/unit_test.hpp>
@@ -93,8 +93,8 @@ BOOST_AUTO_TEST_CASE(sparse_cholesky_works_for_piecewise_linears)
     shared_ptr<DiscreteBoundaryOperatorComposition<RT> > opLLT =
             boost::make_shared<OpComposition>(opL, opLT);
 
-    arma::Mat<double> A = dop->asMatrix();
-    arma::Mat<double> LLT = opLLT->asMatrix();
+    Matrix<double> A = dop->asMatrix();
+    Matrix<double> LLT = opLLT->asMatrix();
 
 //    arma::Mat<double> matL = opL->asMatrix();
 //    std::cout << "A:\n" << A;
@@ -140,8 +140,8 @@ BOOST_AUTO_TEST_CASE(sparse_cholesky_works_for_piecewise_constants)
     shared_ptr<DiscreteBoundaryOperatorComposition<RT> > opLLT =
             boost::make_shared<OpComposition>(opL, opLT);
 
-    arma::Mat<double> A = dop->asMatrix();
-    arma::Mat<double> LLT = opLLT->asMatrix();
+    Matrix<double> A = dop->asMatrix();
+    Matrix<double> LLT = opLLT->asMatrix();
 
     BOOST_CHECK(check_arrays_are_close<double>(
                     A, LLT, 100. * std::numeric_limits<double>::epsilon()));

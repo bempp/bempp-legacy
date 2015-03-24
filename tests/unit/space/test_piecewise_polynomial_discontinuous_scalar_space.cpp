@@ -51,8 +51,8 @@ public:
     int argumentDimension() const { return 3; }
     int resultDimension() const { return 1; }
 
-    inline void evaluate(const arma::Col<CoordinateType>& point,
-                         arma::Col<ValueType>& result) const {
+    inline void evaluate(const Vector<CoordinateType>& point,
+                         Vector<ValueType>& result) const {
         CoordinateType x = point(0), y = point(1), z = point(2);
         result(0) = x + y + z;
     }
@@ -68,8 +68,8 @@ public:
     int argumentDimension() const { return 3; }
     int resultDimension() const { return 1; }
 
-    inline void evaluate(const arma::Col<CoordinateType>& point,
-                         arma::Col<ValueType>& result) const {
+    inline void evaluate(const Vector<CoordinateType>& point,
+                         Vector<ValueType>& result) const {
         CoordinateType x = point(0), y = point(1), z = point(2);
         result(0) = x*x + y*y + z*z;
     }
@@ -85,8 +85,8 @@ public:
     int argumentDimension() const { return 3; }
     int resultDimension() const { return 1; }
 
-    inline void evaluate(const arma::Col<CoordinateType>& point,
-                         arma::Col<ValueType>& result) const {
+    inline void evaluate(const Vector<CoordinateType>& point,
+                         Vector<ValueType>& result) const {
         CoordinateType x = point(0), y = point(1), z = point(2);
         result(0) = x*x*x + y*y*y + z*z*z;
     }
@@ -102,8 +102,8 @@ public:
     int argumentDimension() const { return 3; }
     int resultDimension() const { return 1; }
 
-    inline void evaluate(const arma::Col<CoordinateType>& point,
-                         arma::Col<ValueType>& result) const {
+    inline void evaluate(const Vector<CoordinateType>& point,
+                         Vector<ValueType>& result) const {
         CoordinateType x = point(0), y = point(1), z = point(2);
         result(0) = x*x*x*x + y*y*y*y + z*z*z*z;
     }

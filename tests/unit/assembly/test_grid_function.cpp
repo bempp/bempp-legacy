@@ -38,6 +38,7 @@
 #include "space/piecewise_constant_scalar_space.hpp"
 
 #include <boost/test/floating_point_comparison.hpp>
+#include "common/eigen_support.hpp"
 
 using namespace Bempp;
 
@@ -51,8 +52,8 @@ public:
     int argumentDimension() const { return 3; }
     int resultDimension() const { return 1; }
 
-    inline void evaluate(const arma::Col<CoordinateType>& point,
-                         arma::Col<ValueType>& result) const {
+    inline void evaluate(const Vector<CoordinateType>& point,
+                         Vector<ValueType>& result) const {
         result(0) = 2.;
     }
 };
@@ -67,8 +68,8 @@ public:
     int argumentDimension() const { return 3; }
     int resultDimension() const { return 1; }
 
-    inline void evaluate(const arma::Col<CoordinateType>& point,
-                         arma::Col<ValueType>& result) const {
+    inline void evaluate(const Vector<CoordinateType>& point,
+                         Vector<ValueType>& result) const {
         result(0) = point(0);
     }
 };
@@ -83,8 +84,8 @@ public:
     int argumentDimension() const { return 3; }
     int resultDimension() const { return 1; }
 
-    inline void evaluate(const arma::Col<CoordinateType>& point,
-                         arma::Col<ValueType>& result) const {
+    inline void evaluate(const Vector<CoordinateType>& point,
+                         Vector<ValueType>& result) const {
         result(0) = std::exp(ValueType(0., point(0)));
     }
 };

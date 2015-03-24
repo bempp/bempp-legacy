@@ -26,7 +26,6 @@ endif()
 
 # declare fixture libraries that will be used by tests
 add_library(grid_fixture STATIC "assembly/create_regular_grid.cpp")
-add_library(dirichlet_fixture STATIC "linalg/laplace_3d_dirichlet_fixture.cpp")
 add_library(manager_fixture STATIC "grid/simple_triangular_grid_manager.cpp")
 foreach(fixture grid dirichlet manager)
     depends_on_lookups(${fixture}_fixture)

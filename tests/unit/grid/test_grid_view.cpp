@@ -19,7 +19,7 @@
 // THE SOFTWARE.
 
 #include "test_grid_view.hpp"
-#include "grid/armadillo_helpers.hpp"
+#include "grid/eigen_helpers.hpp"
 #include "grid/entity.hpp"
 #include "grid/entity_iterator.hpp"
 #include "grid/geometry.hpp"
@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityIterator_second_entity_agrees_with_Dune_
 {
     const int codim = T::value;
 
-    arma::Col<double> elementCenter;
+    Vector<double> elementCenter;
     {
         std::unique_ptr<EntityIterator<codim> > it = bemppGridView->entityIterator<codim>();
         it->next();
@@ -326,7 +326,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityIterator_second_entity_agrees_with_Dune_
 {
     const int codim = T::value;
 
-    arma::Col<double> elementCenter;
+    Vector<double> elementCenter;
     {
         std::unique_ptr<EntityIterator<codim> > it = bemppGridView->entityIterator<codim>();
         it->next();

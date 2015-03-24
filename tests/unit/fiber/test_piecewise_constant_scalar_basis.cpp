@@ -22,7 +22,7 @@
 #include "../type_template.hpp"
 
 #include <algorithm>
-#include "common/armadillo_fwd.hpp"
+#include "common/eigen_support.hpp"
 #include <boost/test/unit_test.hpp>
 #include <boost/test/test_case_template.hpp>
 #include <boost/test/floating_point_comparison.hpp>
@@ -49,9 +49,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_works_for_all_dofs,
 {
     typedef Fiber::PiecewiseConstantScalarBasis<ValueType> Basis;
     Basis basis;
-    arma::Mat<typename Basis::CoordinateType> points(3, 4);
+    Matrix<typename Basis::CoordinateType> points(3, 4);
     srand(1);
-    points.randu();
+    points.setRandom();
     Fiber::BasisData<ValueType> data;
     basis.evaluate(Fiber::VALUES, points, Fiber::ALL_DOFS, data);
 
@@ -72,9 +72,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_works_for_one_dof,
 {
     typedef Fiber::PiecewiseConstantScalarBasis<ValueType> Basis;
     Basis basis;
-    arma::Mat<typename Basis::CoordinateType> points(3, 4);
+    Matrix<typename Basis::CoordinateType> points(3, 4);
     srand(1);
-    points.randu();
+    points.setRandom();
     Fiber::BasisData<ValueType> data;
     basis.evaluate(Fiber::VALUES, points, 0 /* dof number */, data);
 
@@ -95,9 +95,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_derivatives_works_for_all_dofs,
 {
     typedef Fiber::PiecewiseConstantScalarBasis<ValueType> Basis;
     Basis basis;
-    arma::Mat<typename Basis::CoordinateType> points(3, 4);
+    Matrix<typename Basis::CoordinateType> points(3, 4);
     srand(1);
-    points.randu();
+    points.setRandom();
     Fiber::BasisData<ValueType> data;
     basis.evaluate(Fiber::DERIVATIVES, points, Fiber::ALL_DOFS, data);
 
@@ -121,9 +121,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_derivatives_works_for_one_dof,
 {
     typedef Fiber::PiecewiseConstantScalarBasis<ValueType> Basis;
     Basis basis;
-    arma::Mat<typename Basis::CoordinateType> points(3, 4);
+    Matrix<typename Basis::CoordinateType> points(3, 4);
     srand(1);
-    points.randu();
+    points.setRandom();
     Fiber::BasisData<ValueType> data;
     basis.evaluate(Fiber::DERIVATIVES, points, 0 /* dof number */, data);
 
@@ -147,9 +147,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_and_derivatives_works_for_all_dofs
 {
     typedef Fiber::PiecewiseConstantScalarBasis<ValueType> Basis;
     Basis basis;
-    arma::Mat<typename Basis::CoordinateType> points(3, 4);
+    Matrix<typename Basis::CoordinateType> points(3, 4);
     srand(1);
-    points.randu();
+    points.setRandom();
     Fiber::BasisData<ValueType> data;
     basis.evaluate(Fiber::VALUES | Fiber::DERIVATIVES, points, 0 /* dof number */, data);
 

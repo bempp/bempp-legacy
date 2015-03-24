@@ -35,7 +35,7 @@
 #include "../type_template.hpp"
 
 #include <algorithm>
-#include "common/armadillo_fwd.hpp"
+#include "common/eigen_support.hpp"
 #include <boost/test/unit_test.hpp>
 #include <boost/test/test_case_template.hpp>
 #include <boost/test/floating_point_comparison.hpp>
@@ -57,9 +57,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_works,
     size_t basisDeps = 0, geomDeps = 0;
     functor.addDependencies(basisDeps, geomDeps);
 
-    arma::Mat<CoordinateType> points(2, 4);
+    Matrix<CoordinateType> points(2, 4);
     srand(1);
-    points.randu();
+    points.setRandom();
 
     typedef Fiber::PiecewiseLinearContinuousScalarBasis<3, ValueType> Basis;
     Basis basis;
