@@ -95,14 +95,14 @@ void PiecewiseLinearScalarSpace<BasisFunctionType>::setElementVariant(
 template <typename BasisFunctionType>
 void
 PiecewiseLinearScalarSpace<BasisFunctionType>::getGlobalDofInterpolationPoints(
-    arma::Mat<CoordinateType> &points) const {
+    Matrix<CoordinateType> &points) const {
   SpaceHelper<BasisFunctionType>::
       getGlobalDofInterpolationPoints_defaultImplementation(*this, points);
 }
 
 template <typename BasisFunctionType>
 void PiecewiseLinearScalarSpace<BasisFunctionType>::
-    getNormalsAtGlobalDofInterpolationPoints(arma::Mat<CoordinateType> &normals)
+    getNormalsAtGlobalDofInterpolationPoints(Matrix<CoordinateType> &normals)
     const {
   SpaceHelper<BasisFunctionType>::
       getNormalsAtGlobalDofInterpolationPoints_defaultImplementation(*this,

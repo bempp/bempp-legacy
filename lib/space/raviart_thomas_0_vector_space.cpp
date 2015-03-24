@@ -251,8 +251,8 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::assignDofsImpl() {
 
   // Iterate over elements
   it = m_view->entityIterator<elementCodim>();
-  arma::Mat<CoordinateType> vertices;
-  arma::Col<CoordinateType> dofPosition;
+  Matrix<CoordinateType> vertices;
+  Vector<CoordinateType> dofPosition;
   while (!it->finished()) {
     const Entity<elementCodim> &element = it->entity();
     const Geometry &geo = element.geometry();
@@ -487,7 +487,7 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::getFlatLocalDofBoundingBoxes(
   const IndexSet &indexSet = m_view->indexSet();
   int elementCount = m_view->entityCount(0);
 
-  std::vector<arma::Mat<CoordinateType>> elementCorners(elementCount);
+  std::vector<Matrix<CoordinateType>> elementCorners(elementCount);
   std::unique_ptr<EntityIterator<0>> it = m_view->entityIterator<0>();
   while (!it->finished()) {
     const Entity<0> &e = it->entity();
@@ -501,11 +501,11 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::getFlatLocalDofBoundingBoxes(
   }
 
   size_t flatLdofIndex = 0;
-  arma::Col<CoordinateType> dofPosition;
+  Vector<CoordinateType> dofPosition;
   for (size_t e = 0; e < m_local2globalDofs.size(); ++e)
     for (size_t v = 0; v < acc(m_local2globalDofs, e).size(); ++v)
       if (acc(acc(m_local2globalDofs, e), v) >= 0) { // is this LDOF used?
-        const arma::Mat<CoordinateType> &vertices = acc(elementCorners, e);
+        const Matrix<CoordinateType> &vertices = acc(elementCorners, e);
         BoundingBox<CoordinateType> &bbox = acc(bboxes, flatLdofIndex);
         if (v == 0)
           dofPosition = 0.5 * (vertices.col(0) + vertices.col(1));
@@ -531,11 +531,11 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::getGlobalDofNormals(
   const IndexSet &indexSet = m_view->indexSet();
   int elementCount = m_view->entityCount(0);
 
-  arma::Mat<CoordinateType> elementNormals(worldDim, elementCount);
+  Matrix<CoordinateType> elementNormals(worldDim, elementCount);
   std::unique_ptr<EntityIterator<0>> it = m_view->entityIterator<0>();
-  arma::Col<CoordinateType> center(gridDim);
+  Vector<CoordinateType> center(gridDim);
   center.fill(0.5);
-  arma::Col<CoordinateType> normal;
+  Vector<CoordinateType> normal;
   while (!it->finished()) {
     const Entity<0> &e = it->entity();
     int index = indexSet.entityIndex(e);
@@ -571,11 +571,11 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::getFlatLocalDofNormals(
   const IndexSet &indexSet = m_view->indexSet();
   int elementCount = m_view->entityCount(0);
 
-  arma::Mat<CoordinateType> elementNormals(worldDim, elementCount);
+  Matrix<CoordinateType> elementNormals(worldDim, elementCount);
   std::unique_ptr<EntityIterator<0>> it = m_view->entityIterator<0>();
-  arma::Col<CoordinateType> center(gridDim);
+  Vector<CoordinateType> center(gridDim);
   center.fill(0.5);
-  arma::Col<CoordinateType> normal;
+  Vector<CoordinateType> normal;
   while (!it->finished()) {
     const Entity<0> &e = it->entity();
     int index = indexSet.entityIndex(e);

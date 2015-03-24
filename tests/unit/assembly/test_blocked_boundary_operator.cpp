@@ -22,6 +22,7 @@
 #include "../check_arrays_are_close.hpp"
 
 #include "bempp/common/config_ahmed.hpp"
+#include "bempp/common/eigen_support.hpp"
 #include "assembly/blocked_boundary_operator.hpp"
 #include "assembly/blocked_operator_structure.hpp"
 #include "assembly/context.hpp"
@@ -82,8 +83,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
   structure.setBlock(0, 0, op00);
   Bempp::BlockedBoundaryOperator<BFT, RT> blockedOp(structure);
 
-  arma::Mat<RT> nonblockedWeakForm = op00.weakForm()->asMatrix();
-  arma::Mat<RT> blockedWeakForm = blockedOp.weakForm()->asMatrix();
+  Matrix<RT> nonblockedWeakForm = op00.weakForm()->asMatrix();
+  Matrix<RT> blockedWeakForm = blockedOp.weakForm()->asMatrix();
 
   BOOST_CHECK(check_arrays_are_close<ValueType>(
       nonblockedWeakForm, blockedWeakForm,
@@ -134,10 +135,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
   structure.setBlock(1, 0, op10);
   Bempp::BlockedBoundaryOperator<BFT, RT> blockedOp(structure);
 
-  arma::Mat<RT> mat00 = op00.weakForm()->asMatrix();
-  arma::Mat<RT> mat10 = op10.weakForm()->asMatrix();
-  arma::Mat<RT> nonblockedWeakForm = arma::join_cols(mat00, mat10);
-  arma::Mat<RT> blockedWeakForm = blockedOp.weakForm()->asMatrix();
+  Matrix<RT> mat00 = op00.weakForm()->asMatrix();
+  Matrix<RT> mat10 = op10.weakForm()->asMatrix();
+  Matrix<RT> nonblockedWeakForm(mat00.rows()+mat10.rows(),mat00.cols());
+  nonblockedweakForm << mat00,
+                        mat10;
+  Matrix<RT> blockedWeakForm = blockedOp.weakForm()->asMatrix();
 
   BOOST_CHECK(check_arrays_are_close<ValueType>(
       nonblockedWeakForm, blockedWeakForm,
@@ -206,17 +209,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
   structure.setBlock(1, 2, op12);
   Bempp::BlockedBoundaryOperator<BFT, RT> blockedOp(structure);
 
-  arma::Mat<RT> mat00 = op00.weakForm()->asMatrix();
-  arma::Mat<RT> mat01 = op01.weakForm()->asMatrix();
-  arma::Mat<RT> mat02 = op02.weakForm()->asMatrix();
-  arma::Mat<RT> mat10 = op10.weakForm()->asMatrix();
-  arma::Mat<RT> mat11 = op11.weakForm()->asMatrix();
-  arma::Mat<RT> mat12 = op12.weakForm()->asMatrix();
-  arma::Mat<RT> nonblockedWeakForm =
-      arma::join_rows(arma::join_rows(arma::join_cols(mat00, mat10),
-                                      arma::join_cols(mat01, mat11)),
-                      arma::join_cols(mat02, mat12));
-  arma::Mat<RT> blockedWeakForm = blockedOp.weakForm()->asMatrix();
+  Matrix<RT> mat00 = op00.weakForm()->asMatrix();
+  Matrix<RT> mat01 = op01.weakForm()->asMatrix();
+  Matrix<RT> mat02 = op02.weakForm()->asMatrix();
+  Matrix<RT> mat10 = op10.weakForm()->asMatrix();
+  Matrix<RT> mat11 = op11.weakForm()->asMatrix();
+  Matrix<RT> mat12 = op12.weakForm()->asMatrix();
+  Matrix<RT> nonblockedWeakForm =
+      eigenJoinRows(eigenJoinRows(eigenJoinCols(mat00, mat10),
+                                      eigenJoinCols(mat01, mat11)),
+                      eigenJoinCols(mat02, mat12));
+  Matrix<RT> blockedWeakForm = blockedOp.weakForm()->asMatrix();
 
   BOOST_CHECK(check_arrays_are_close<ValueType>(
       nonblockedWeakForm, blockedWeakForm,
@@ -282,17 +285,18 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
   structure.setBlock(1, 1, op11);
   Bempp::BlockedBoundaryOperator<BFT, RT> blockedOp(structure);
 
-  arma::Mat<RT> mat00 = 0. * op00.weakForm()->asMatrix();
-  arma::Mat<RT> mat01 = 0. * op01.weakForm()->asMatrix();
-  arma::Mat<RT> mat02 = op02.weakForm()->asMatrix();
-  arma::Mat<RT> mat10 = op10.weakForm()->asMatrix();
-  arma::Mat<RT> mat11 = op11.weakForm()->asMatrix();
-  arma::Mat<RT> mat12 = 0. * op12.weakForm()->asMatrix();
-  arma::Mat<RT> nonblockedWeakForm =
-      arma::join_rows(arma::join_rows(arma::join_cols(mat00, mat10),
-                                      arma::join_cols(mat01, mat11)),
-                      arma::join_cols(mat02, mat12));
-  arma::Mat<RT> blockedWeakForm = blockedOp.weakForm()->asMatrix();
+  Matrix<RT> mat00 = 0. * op00.weakForm()->asMatrix();
+  Matrix<RT> mat01 = 0. * op01.weakForm()->asMatrix();
+  Matrix<RT> mat02 = op02.weakForm()->asMatrix();
+  Matrix<RT> mat10 = op10.weakForm()->asMatrix();
+  Matrix<RT> mat11 = op11.weakForm()->asMatrix();
+  Matrix<RT> mat12 = 0. * op12.weakForm()->asMatrix();
+
+  Matrix<RT> nonblockedWeakForm =
+      eigenJoinRows(eigenJoinRows(eigenJoinCols(mat00, mat10),
+                                      eigenJoinCols(mat01, mat11)),
+                      eigenJoinCols(mat02, mat12));
+  Matrix<RT> blockedWeakForm = blockedOp.weakForm()->asMatrix();
 
   BOOST_CHECK(check_arrays_are_close<ValueType>(
       nonblockedWeakForm, blockedWeakForm,
@@ -340,8 +344,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
   structure.setBlock(0, 0, op00);
   Bempp::BlockedBoundaryOperator<BFT, RT> blockedOp(structure);
 
-  arma::Mat<RT> nonblockedWeakForm = op00.weakForm()->asMatrix();
-  arma::Mat<RT> acaBlockedWeakForm =
+  Matrix<RT> nonblockedWeakForm = op00.weakForm()->asMatrix();
+  Matrix<RT> acaBlockedWeakForm =
       blockedOp.weakForm()->asDiscreteAcaBoundaryOperator()->asMatrix();
 
   BOOST_CHECK(check_arrays_are_close<ValueType>(
@@ -396,10 +400,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
   structure.setBlock(1, 0, op10);
   Bempp::BlockedBoundaryOperator<BFT, RT> blockedOp(structure);
 
-  arma::Mat<RT> mat00 = op00.weakForm()->asMatrix();
-  arma::Mat<RT> mat10 = op10.weakForm()->asMatrix();
-  arma::Mat<RT> nonblockedWeakForm = arma::join_cols(mat00, mat10);
-  arma::Mat<RT> acaBlockedWeakForm =
+  Matrix<RT> mat00 = op00.weakForm()->asMatrix();
+  Matrix<RT> mat10 = op10.weakForm()->asMatrix();
+  Matrix<RT> nonblockedWeakForm = arma::join_cols(mat00, mat10);
+  Matrix<RT> acaBlockedWeakForm =
       blockedOp.weakForm()->asDiscreteAcaBoundaryOperator()->asMatrix();
 
   BOOST_CHECK(check_arrays_are_close<ValueType>(
@@ -472,17 +476,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
   structure.setBlock(1, 2, op12);
   Bempp::BlockedBoundaryOperator<BFT, RT> blockedOp(structure);
 
-  arma::Mat<RT> mat00 = op00.weakForm()->asMatrix();
-  arma::Mat<RT> mat01 = op01.weakForm()->asMatrix();
-  arma::Mat<RT> mat02 = op02.weakForm()->asMatrix();
-  arma::Mat<RT> mat10 = op10.weakForm()->asMatrix();
-  arma::Mat<RT> mat11 = op11.weakForm()->asMatrix();
-  arma::Mat<RT> mat12 = op12.weakForm()->asMatrix();
-  arma::Mat<RT> nonblockedWeakForm =
+  Matrix<RT> mat00 = op00.weakForm()->asMatrix();
+  Matrix<RT> mat01 = op01.weakForm()->asMatrix();
+  Matrix<RT> mat02 = op02.weakForm()->asMatrix();
+  Matrix<RT> mat10 = op10.weakForm()->asMatrix();
+  Matrix<RT> mat11 = op11.weakForm()->asMatrix();
+  Matrix<RT> mat12 = op12.weakForm()->asMatrix();
+  Matrix<RT> nonblockedWeakForm =
       arma::join_rows(arma::join_rows(arma::join_cols(mat00, mat10),
                                       arma::join_cols(mat01, mat11)),
                       arma::join_cols(mat02, mat12));
-  arma::Mat<RT> acaBlockedWeakForm =
+  Matrix<RT> acaBlockedWeakForm =
       blockedOp.weakForm()->asDiscreteAcaBoundaryOperator()->asMatrix();
 
   BOOST_CHECK(check_arrays_are_close<ValueType>(
@@ -552,17 +556,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
   structure.setBlock(1, 1, op11);
   Bempp::BlockedBoundaryOperator<BFT, RT> blockedOp(structure);
 
-  arma::Mat<RT> mat00 = 0. * op00.weakForm()->asMatrix();
-  arma::Mat<RT> mat01 = 0. * op01.weakForm()->asMatrix();
-  arma::Mat<RT> mat02 = op02.weakForm()->asMatrix();
-  arma::Mat<RT> mat10 = op10.weakForm()->asMatrix();
-  arma::Mat<RT> mat11 = op11.weakForm()->asMatrix();
-  arma::Mat<RT> mat12 = 0. * op12.weakForm()->asMatrix();
-  arma::Mat<RT> nonblockedWeakForm =
+  Matrix<RT> mat00 = 0. * op00.weakForm()->asMatrix();
+  Matrix<RT> mat01 = 0. * op01.weakForm()->asMatrix();
+  Matrix<RT> mat02 = op02.weakForm()->asMatrix();
+  Matrix<RT> mat10 = op10.weakForm()->asMatrix();
+  Matrix<RT> mat11 = op11.weakForm()->asMatrix();
+  Matrix<RT> mat12 = 0. * op12.weakForm()->asMatrix();
+  Matrix<RT> nonblockedWeakForm =
       arma::join_rows(arma::join_rows(arma::join_cols(mat00, mat10),
                                       arma::join_cols(mat01, mat11)),
                       arma::join_cols(mat02, mat12));
-  arma::Mat<RT> acaBlockedWeakForm =
+  Matrix<RT> acaBlockedWeakForm =
       blockedOp.weakForm()->asDiscreteAcaBoundaryOperator()->asMatrix();
 
   BOOST_CHECK(check_arrays_are_close<ValueType>(
@@ -611,10 +615,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
   structure.setBlock(1, 0, op10);
   Bempp::BlockedBoundaryOperator<BFT, RT> blockedOp(structure);
 
-  arma::Mat<RT> mat00 = op00.weakForm()->asMatrix();
-  arma::Mat<RT> mat10 = op10.weakForm()->asMatrix();
-  arma::Mat<RT> nonblockedWeakForm = arma::join_cols(mat00, mat10);
-  arma::Mat<RT> acaBlockedWeakForm =
+  Matrix<RT> mat00 = op00.weakForm()->asMatrix();
+  Matrix<RT> mat10 = op10.weakForm()->asMatrix();
+  Matrix<RT> nonblockedWeakForm = arma::join_cols(mat00, mat10);
+  Matrix<RT> acaBlockedWeakForm =
       blockedOp.weakForm()->asDiscreteAcaBoundaryOperator()->asMatrix();
 
   BOOST_CHECK(check_arrays_are_close<ValueType>(
@@ -661,8 +665,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
   structure.setBlock(0, 0, op00);
   Bempp::BlockedBoundaryOperator<BFT, RT> blockedOp(structure);
 
-  arma::Mat<RT> nonblockedWeakForm = op00.weakForm()->asMatrix();
-  arma::Mat<RT> acaBlockedWeakForm =
+  Matrix<RT> nonblockedWeakForm = op00.weakForm()->asMatrix();
+  Matrix<RT> acaBlockedWeakForm =
       blockedOp.weakForm()
           ->asDiscreteAcaBoundaryOperator(-1, -1, true /*interleave*/)
           ->asMatrix();
@@ -719,10 +723,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
   structure.setBlock(1, 0, op10);
   Bempp::BlockedBoundaryOperator<BFT, RT> blockedOp(structure);
 
-  arma::Mat<RT> mat00 = op00.weakForm()->asMatrix();
-  arma::Mat<RT> mat10 = op10.weakForm()->asMatrix();
-  arma::Mat<RT> nonblockedWeakForm = arma::join_cols(mat00, mat10);
-  arma::Mat<RT> acaBlockedWeakForm =
+  Matrix<RT> mat00 = op00.weakForm()->asMatrix();
+  Matrix<RT> mat10 = op10.weakForm()->asMatrix();
+  Matrix<RT> nonblockedWeakForm = arma::join_cols(mat00, mat10);
+  Matrix<RT> acaBlockedWeakForm =
       blockedOp.weakForm()
           ->asDiscreteAcaBoundaryOperator(-1, -1, true /*interleave*/)
           ->asMatrix();
@@ -797,17 +801,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
   structure.setBlock(1, 2, op12);
   Bempp::BlockedBoundaryOperator<BFT, RT> blockedOp(structure);
 
-  arma::Mat<RT> mat00 = op00.weakForm()->asMatrix();
-  arma::Mat<RT> mat01 = op01.weakForm()->asMatrix();
-  arma::Mat<RT> mat02 = op02.weakForm()->asMatrix();
-  arma::Mat<RT> mat10 = op10.weakForm()->asMatrix();
-  arma::Mat<RT> mat11 = op11.weakForm()->asMatrix();
-  arma::Mat<RT> mat12 = op12.weakForm()->asMatrix();
-  arma::Mat<RT> nonblockedWeakForm =
+  Matrix<RT> mat00 = op00.weakForm()->asMatrix();
+  Matrix<RT> mat01 = op01.weakForm()->asMatrix();
+  Matrix<RT> mat02 = op02.weakForm()->asMatrix();
+  Matrix<RT> mat10 = op10.weakForm()->asMatrix();
+  Matrix<RT> mat11 = op11.weakForm()->asMatrix();
+  Matrix<RT> mat12 = op12.weakForm()->asMatrix();
+  Matrix<RT> nonblockedWeakForm =
       arma::join_rows(arma::join_rows(arma::join_cols(mat00, mat10),
                                       arma::join_cols(mat01, mat11)),
                       arma::join_cols(mat02, mat12));
-  arma::Mat<RT> acaBlockedWeakForm =
+  Matrix<RT> acaBlockedWeakForm =
       blockedOp.weakForm()
           ->asDiscreteAcaBoundaryOperator(-1, -1, true /*interleave*/)
           ->asMatrix();
@@ -879,17 +883,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
   structure.setBlock(1, 1, op11);
   Bempp::BlockedBoundaryOperator<BFT, RT> blockedOp(structure);
 
-  arma::Mat<RT> mat00 = 0. * op00.weakForm()->asMatrix();
-  arma::Mat<RT> mat01 = 0. * op01.weakForm()->asMatrix();
-  arma::Mat<RT> mat02 = op02.weakForm()->asMatrix();
-  arma::Mat<RT> mat10 = op10.weakForm()->asMatrix();
-  arma::Mat<RT> mat11 = op11.weakForm()->asMatrix();
-  arma::Mat<RT> mat12 = 0. * op12.weakForm()->asMatrix();
-  arma::Mat<RT> nonblockedWeakForm =
+  Matrix<RT> mat00 = 0. * op00.weakForm()->asMatrix();
+  Matrix<RT> mat01 = 0. * op01.weakForm()->asMatrix();
+  Matrix<RT> mat02 = op02.weakForm()->asMatrix();
+  Matrix<RT> mat10 = op10.weakForm()->asMatrix();
+  Matrix<RT> mat11 = op11.weakForm()->asMatrix();
+  Matrix<RT> mat12 = 0. * op12.weakForm()->asMatrix();
+  Matrix<RT> nonblockedWeakForm =
       arma::join_rows(arma::join_rows(arma::join_cols(mat00, mat10),
                                       arma::join_cols(mat01, mat11)),
                       arma::join_cols(mat02, mat12));
-  arma::Mat<RT> acaBlockedWeakForm =
+  Matrix<RT> acaBlockedWeakForm =
       blockedOp.weakForm()
           ->asDiscreteAcaBoundaryOperator(-1, -1, true /*interleave*/)
           ->asMatrix();
@@ -940,10 +944,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
   structure.setBlock(1, 0, op10);
   Bempp::BlockedBoundaryOperator<BFT, RT> blockedOp(structure);
 
-  arma::Mat<RT> mat00 = op00.weakForm()->asMatrix();
-  arma::Mat<RT> mat10 = op10.weakForm()->asMatrix();
-  arma::Mat<RT> nonblockedWeakForm = arma::join_cols(mat00, mat10);
-  arma::Mat<RT> acaBlockedWeakForm =
+  Matrix<RT> mat00 = op00.weakForm()->asMatrix();
+  Matrix<RT> mat10 = op10.weakForm()->asMatrix();
+  Matrix<RT> nonblockedWeakForm = arma::join_cols(mat00, mat10);
+  Matrix<RT> acaBlockedWeakForm =
       blockedOp.weakForm()
           ->asDiscreteAcaBoundaryOperator(-1, -1, true /*interleave*/)
           ->asMatrix();
@@ -994,8 +998,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
   structure.setBlock(0, 0, op00);
   Bempp::BlockedBoundaryOperator<BFT, RT> blockedOp(structure);
 
-  arma::Mat<RT> nonblockedWeakForm = op00.weakForm()->asMatrix();
-  arma::Mat<RT> acaBlockedWeakForm =
+  Matrix<RT> nonblockedWeakForm = op00.weakForm()->asMatrix();
+  Matrix<RT> acaBlockedWeakForm =
       blockedOp.weakForm()
           ->asDiscreteAcaBoundaryOperator(-1, -1, true /*interleave*/)
           ->asMatrix();
@@ -1054,10 +1058,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
   structure.setBlock(1, 0, op10);
   Bempp::BlockedBoundaryOperator<BFT, RT> blockedOp(structure);
 
-  arma::Mat<RT> mat00 = op00.weakForm()->asMatrix();
-  arma::Mat<RT> mat10 = op10.weakForm()->asMatrix();
-  arma::Mat<RT> nonblockedWeakForm = arma::join_cols(mat00, mat10);
-  arma::Mat<RT> acaBlockedWeakForm =
+  Matrix<RT> mat00 = op00.weakForm()->asMatrix();
+  Matrix<RT> mat10 = op10.weakForm()->asMatrix();
+  Matrix<RT> nonblockedWeakForm = arma::join_cols(mat00, mat10);
+  Matrix<RT> acaBlockedWeakForm =
       blockedOp.weakForm()
           ->asDiscreteAcaBoundaryOperator(-1, -1, true /*interleave*/)
           ->asMatrix();
@@ -1137,17 +1141,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
   structure.setBlock(1, 2, op12);
   Bempp::BlockedBoundaryOperator<BFT, RT> blockedOp(structure);
 
-  arma::Mat<RT> mat00 = op00.weakForm()->asMatrix();
-  arma::Mat<RT> mat01 = op01.weakForm()->asMatrix();
-  arma::Mat<RT> mat02 = op02.weakForm()->asMatrix();
-  arma::Mat<RT> mat10 = op10.weakForm()->asMatrix();
-  arma::Mat<RT> mat11 = op11.weakForm()->asMatrix();
-  arma::Mat<RT> mat12 = op12.weakForm()->asMatrix();
-  arma::Mat<RT> nonblockedWeakForm =
+  Matrix<RT> mat00 = op00.weakForm()->asMatrix();
+  Matrix<RT> mat01 = op01.weakForm()->asMatrix();
+  Matrix<RT> mat02 = op02.weakForm()->asMatrix();
+  Matrix<RT> mat10 = op10.weakForm()->asMatrix();
+  Matrix<RT> mat11 = op11.weakForm()->asMatrix();
+  Matrix<RT> mat12 = op12.weakForm()->asMatrix();
+  Matrix<RT> nonblockedWeakForm =
       arma::join_rows(arma::join_rows(arma::join_cols(mat00, mat10),
                                       arma::join_cols(mat01, mat11)),
                       arma::join_cols(mat02, mat12));
-  arma::Mat<RT> acaBlockedWeakForm =
+  Matrix<RT> acaBlockedWeakForm =
       blockedOp.weakForm()
           ->asDiscreteAcaBoundaryOperator(-1, -1, true /*interleave*/)
           ->asMatrix();
@@ -1224,17 +1228,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
   structure.setBlock(1, 1, op11);
   Bempp::BlockedBoundaryOperator<BFT, RT> blockedOp(structure);
 
-  arma::Mat<RT> mat00 = 0. * op00.weakForm()->asMatrix();
-  arma::Mat<RT> mat01 = 0. * op01.weakForm()->asMatrix();
-  arma::Mat<RT> mat02 = op02.weakForm()->asMatrix();
-  arma::Mat<RT> mat10 = op10.weakForm()->asMatrix();
-  arma::Mat<RT> mat11 = op11.weakForm()->asMatrix();
-  arma::Mat<RT> mat12 = 0. * op12.weakForm()->asMatrix();
-  arma::Mat<RT> nonblockedWeakForm =
+  Matrix<RT> mat00 = 0. * op00.weakForm()->asMatrix();
+  Matrix<RT> mat01 = 0. * op01.weakForm()->asMatrix();
+  Matrix<RT> mat02 = op02.weakForm()->asMatrix();
+  Matrix<RT> mat10 = op10.weakForm()->asMatrix();
+  Matrix<RT> mat11 = op11.weakForm()->asMatrix();
+  Matrix<RT> mat12 = 0. * op12.weakForm()->asMatrix();
+  Matrix<RT> nonblockedWeakForm =
       arma::join_rows(arma::join_rows(arma::join_cols(mat00, mat10),
                                       arma::join_cols(mat01, mat11)),
                       arma::join_cols(mat02, mat12));
-  arma::Mat<RT> acaBlockedWeakForm =
+  Matrix<RT> acaBlockedWeakForm =
       blockedOp.weakForm()
           ->asDiscreteAcaBoundaryOperator(-1, -1, true /*interleave*/)
           ->asMatrix();
@@ -1284,8 +1288,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
   structure.setBlock(0, 0, op00);
   Bempp::BlockedBoundaryOperator<BFT, RT> blockedOp(structure);
 
-  arma::Mat<RT> nonblockedWeakForm = op00.weakForm()->asMatrix();
-  arma::Mat<RT> acaBlockedWeakForm =
+  Matrix<RT> nonblockedWeakForm = op00.weakForm()->asMatrix();
+  Matrix<RT> acaBlockedWeakForm =
       blockedOp.weakForm()
           ->asDiscreteAcaBoundaryOperator(-1, -1, true /*interleave*/)
           ->asMatrix();
@@ -1343,10 +1347,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
   structure.setBlock(1, 0, op10);
   Bempp::BlockedBoundaryOperator<BFT, RT> blockedOp(structure);
 
-  arma::Mat<RT> mat00 = op00.weakForm()->asMatrix();
-  arma::Mat<RT> mat10 = op10.weakForm()->asMatrix();
-  arma::Mat<RT> nonblockedWeakForm = arma::join_cols(mat00, mat10);
-  arma::Mat<RT> acaBlockedWeakForm =
+  Matrix<RT> mat00 = op00.weakForm()->asMatrix();
+  Matrix<RT> mat10 = op10.weakForm()->asMatrix();
+  Matrix<RT> nonblockedWeakForm = arma::join_cols(mat00, mat10);
+  Matrix<RT> acaBlockedWeakForm =
       blockedOp.weakForm()
           ->asDiscreteAcaBoundaryOperator(-1, -1, true /*interleave*/)
           ->asMatrix();
@@ -1425,17 +1429,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
   structure.setBlock(1, 2, op12);
   Bempp::BlockedBoundaryOperator<BFT, RT> blockedOp(structure);
 
-  arma::Mat<RT> mat00 = op00.weakForm()->asMatrix();
-  arma::Mat<RT> mat01 = op01.weakForm()->asMatrix();
-  arma::Mat<RT> mat02 = op02.weakForm()->asMatrix();
-  arma::Mat<RT> mat10 = op10.weakForm()->asMatrix();
-  arma::Mat<RT> mat11 = op11.weakForm()->asMatrix();
-  arma::Mat<RT> mat12 = op12.weakForm()->asMatrix();
-  arma::Mat<RT> nonblockedWeakForm =
+  Matrix<RT> mat00 = op00.weakForm()->asMatrix();
+  Matrix<RT> mat01 = op01.weakForm()->asMatrix();
+  Matrix<RT> mat02 = op02.weakForm()->asMatrix();
+  Matrix<RT> mat10 = op10.weakForm()->asMatrix();
+  Matrix<RT> mat11 = op11.weakForm()->asMatrix();
+  Matrix<RT> mat12 = op12.weakForm()->asMatrix();
+  Matrix<RT> nonblockedWeakForm =
       arma::join_rows(arma::join_rows(arma::join_cols(mat00, mat10),
                                       arma::join_cols(mat01, mat11)),
                       arma::join_cols(mat02, mat12));
-  arma::Mat<RT> acaBlockedWeakForm =
+  Matrix<RT> acaBlockedWeakForm =
       blockedOp.weakForm()
           ->asDiscreteAcaBoundaryOperator(-1, -1, true /*interleave*/)
           ->asMatrix();
@@ -1511,17 +1515,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
   structure.setBlock(1, 1, op11);
   Bempp::BlockedBoundaryOperator<BFT, RT> blockedOp(structure);
 
-  arma::Mat<RT> mat00 = 0. * op00.weakForm()->asMatrix();
-  arma::Mat<RT> mat01 = 0. * op01.weakForm()->asMatrix();
-  arma::Mat<RT> mat02 = op02.weakForm()->asMatrix();
-  arma::Mat<RT> mat10 = op10.weakForm()->asMatrix();
-  arma::Mat<RT> mat11 = op11.weakForm()->asMatrix();
-  arma::Mat<RT> mat12 = 0. * op12.weakForm()->asMatrix();
-  arma::Mat<RT> nonblockedWeakForm =
+  Matrix<RT> mat00 = 0. * op00.weakForm()->asMatrix();
+  Matrix<RT> mat01 = 0. * op01.weakForm()->asMatrix();
+  Matrix<RT> mat02 = op02.weakForm()->asMatrix();
+  Matrix<RT> mat10 = op10.weakForm()->asMatrix();
+  Matrix<RT> mat11 = op11.weakForm()->asMatrix();
+  Matrix<RT> mat12 = 0. * op12.weakForm()->asMatrix();
+  Matrix<RT> nonblockedWeakForm =
       arma::join_rows(arma::join_rows(arma::join_cols(mat00, mat10),
                                       arma::join_cols(mat01, mat11)),
                       arma::join_cols(mat02, mat12));
-  arma::Mat<RT> acaBlockedWeakForm =
+  Matrix<RT> acaBlockedWeakForm =
       blockedOp.weakForm()
           ->asDiscreteAcaBoundaryOperator(-1, -1, true /*interleave*/)
           ->asMatrix();

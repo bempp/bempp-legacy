@@ -40,7 +40,7 @@ std::set<int> entitiesWithNonpositiveX(const GridView &view) {
   std::set<int> result;
   std::unique_ptr<EntityIterator<codim>> it = view.entityIterator<codim>();
   const IndexSet &indexSet = view.indexSet();
-  arma::Col<double> center;
+  Vector<double> center;
   while (!it->finished()) {
     const Entity<codim> &entity = it->entity();
     entity.geometry().getCenter(center);

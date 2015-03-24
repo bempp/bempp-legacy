@@ -4,7 +4,7 @@
 #define HMAT_DATA_ACCESSOR_HPP
 
 #include "common.hpp"
-#include <armadillo>
+#include "eigen_fwd.hpp"
 
 namespace hmat {
 
@@ -14,7 +14,7 @@ public:
   computeMatrixBlock(const IndexRangeType &rowIndexRange,
                      const IndexRangeType &columnIndexRange,
                      const BlockClusterTreeNode<N> &blockClusterTreeNode,
-                     arma::Mat<ValueType> &data) const = 0;
+                     Matrix<ValueType> &data) const = 0;
 };
 }
 

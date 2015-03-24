@@ -38,7 +38,7 @@
 #include "space/piecewise_constant_scalar_space.hpp"
 
 #include <algorithm>
-#include "common/armadillo_fwd.hpp"
+#include "common/eigen_support.hpp"
 #include <boost/test/unit_test.hpp>
 #include <boost/test/floating_point_comparison.hpp>
 #include <boost/version.hpp>
@@ -94,8 +94,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(adjoint_dlp_agrees_with_adlp, ResultType, complex_
         make_shared_from_ref(pwiseLinears),
         waveNumber);
 
-    arma::Mat<RT> matOp = op.weakForm()->asMatrix();
-    arma::Mat<RT> expected = adlp.weakForm()->asMatrix();
+    Matrix<RT> matOp = op.weakForm()->asMatrix();
+    Matrix<RT> expected = adlp.weakForm()->asMatrix();
 
     // we won't get full-precision agreement because singular quadrature rules
     // are not symmetric

@@ -400,7 +400,7 @@ void PiecewiseLinearDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::
   const IndexSet &indexSet = this->gridView().indexSet();
   const int elementCount = this->gridView().entityCount(0);
 
-  std::vector<arma::Mat<CoordinateType>> elementCorners(elementCount);
+  std::vector<Matrix<CoordinateType>> elementCorners(elementCount);
   std::unique_ptr<EntityIterator<0>> it =
       this->gridView().template entityIterator<0>();
   while (!it->finished()) {
@@ -450,12 +450,12 @@ void PiecewiseLinearDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::
   const IndexSet &indexSet = this->gridView().indexSet();
   int elementCount = this->gridView().entityCount(0);
 
-  arma::Mat<CoordinateType> elementNormals(worldDim, elementCount);
+  Matrix<CoordinateType> elementNormals(worldDim, elementCount);
   std::unique_ptr<EntityIterator<0>> it =
       this->gridView().template entityIterator<0>();
-  arma::Col<CoordinateType> center(gridDim);
-  center.fill(0.5);
-  arma::Col<CoordinateType> normal;
+  Vector<CoordinateType> center(gridDim);
+  center.setZero();
+  Vector<CoordinateType> normal;
   while (!it->finished()) {
     const Entity<0> &e = it->entity();
     int index = indexSet.entityIndex(e);
@@ -503,12 +503,12 @@ void PiecewiseLinearDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::
   const IndexSet &indexSet = this->gridView().indexSet();
   int elementCount = this->gridView().entityCount(0);
 
-  arma::Mat<CoordinateType> elementNormals(worldDim, elementCount);
+  Matrix<CoordinateType> elementNormals(worldDim, elementCount);
   std::unique_ptr<EntityIterator<0>> it =
       this->gridView().template entityIterator<0>();
-  arma::Col<CoordinateType> center(gridDim);
+  Vector<CoordinateType> center(gridDim);
   center.fill(0.5);
-  arma::Col<CoordinateType> normal;
+  Vector<CoordinateType> normal;
   while (!it->finished()) {
     const Entity<0> &e = it->entity();
     int index = indexSet.entityIndex(e);
@@ -565,14 +565,14 @@ void PiecewiseLinearDiscontinuousScalarSpaceBarycentric<
 
   std::unique_ptr<VtkWriter> vtkWriter = this->gridView().vtkWriter();
   if (dofType == GLOBAL_DOFS) {
-    arma::Row<double> data(idCount);
+    RowVector<double> data(idCount);
     for (size_t i = 0; i < idCount; ++i)
       data(i) = clusterIdsOfDofs[i];
     vtkWriter->addVertexData(data, "ids");
     vtkWriter->write(fileName);
   } else {
-    arma::Mat<double> data(idCount, globalDofCount());
-    data.fill(0.);
+    Matrix<double> data(idCount, globalDofCount());
+    data.setZero();
     size_t row = 0;
     for (size_t id = 0; id < idCount; ++id) {
       bool exists = false;
@@ -586,7 +586,7 @@ void PiecewiseLinearDiscontinuousScalarSpaceBarycentric<
         }
       }
       if (!exists)
-        data.shed_row(row); // very inefficient, of course
+        eigenRemoveRowFromMatrix(data,row); // very inefficient, of course
       else
         ++row;
     }

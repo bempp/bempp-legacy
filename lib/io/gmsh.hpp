@@ -29,7 +29,7 @@
 #include <set>
 #include "../common/shared_ptr.hpp"
 #include "../assembly/grid_function.hpp"
-#include <armadillo>
+#include "../common/eigen_support.hpp"
 
 namespace Bempp {
 

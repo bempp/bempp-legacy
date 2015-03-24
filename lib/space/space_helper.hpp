@@ -22,9 +22,9 @@
 #define bempp_space_utils_hpp
 
 #include "../common/common.hpp"
-#include "../common/armadillo_fwd.hpp"
 #include "../common/scalar_traits.hpp"
 #include "../common/types.hpp"
+#include "../common/eigen_support.hpp"
 
 #include <vector>
 
@@ -40,11 +40,11 @@ public:
   typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
 
   static void getGlobalDofInterpolationPoints_defaultImplementation(
-      const Space<BasisFunctionType> &space, arma::Mat<CoordinateType> &points);
+      const Space<BasisFunctionType> &space, Matrix<CoordinateType> &points);
 
   static void getNormalsAtGlobalDofInterpolationPoints_defaultImplementation(
       const Space<BasisFunctionType> &space,
-      arma::Mat<CoordinateType> &normals);
+      Matrix<CoordinateType> &normals);
 
   static void getGlobalDofBoundingBoxes_defaultImplementation(
       const GridView &view,

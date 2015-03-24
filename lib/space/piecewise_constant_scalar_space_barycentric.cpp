@@ -262,14 +262,14 @@ PiecewiseConstantScalarSpaceBarycentric<BasisFunctionType>::flatLocal2localDofs(
 
 template <typename BasisFunctionType>
 void PiecewiseConstantScalarSpaceBarycentric<BasisFunctionType>::
-    getGlobalDofInterpolationPoints(arma::Mat<CoordinateType> &points) const {
+    getGlobalDofInterpolationPoints(Matrix<CoordinateType> &points) const {
   SpaceHelper<BasisFunctionType>::
       getGlobalDofInterpolationPoints_defaultImplementation(*this, points);
 }
 
 template <typename BasisFunctionType>
 void PiecewiseConstantScalarSpaceBarycentric<BasisFunctionType>::
-    getNormalsAtGlobalDofInterpolationPoints(arma::Mat<CoordinateType> &normals)
+    getNormalsAtGlobalDofInterpolationPoints(Matrix<CoordinateType> &normals)
     const {
   SpaceHelper<BasisFunctionType>::
       getNormalsAtGlobalDofInterpolationPoints_defaultImplementation(*this,
@@ -335,12 +335,12 @@ void PiecewiseConstantScalarSpaceBarycentric<BasisFunctionType>::
   const IndexSet &indexSet = this->gridView().indexSet();
   int elementCount = this->gridView().entityCount(0);
 
-  arma::Mat<CoordinateType> elementNormals(worldDim, elementCount);
+  Matrix<CoordinateType> elementNormals(worldDim, elementCount);
   std::unique_ptr<EntityIterator<0>> it =
       this->gridView().template entityIterator<0>();
-  arma::Col<CoordinateType> center(gridDim);
+  Vector<CoordinateType> center(gridDim);
   center.fill(0.5);
-  arma::Col<CoordinateType> normal;
+  Vector<CoordinateType> normal;
   while (!it->finished()) {
     const Entity<0> &e = it->entity();
     int index = indexSet.entityIndex(e);
@@ -392,7 +392,7 @@ PiecewiseConstantScalarSpaceBarycentric<BasisFunctionType>::dumpClusterIdsEx(
 
   std::unique_ptr<GridView> view = this->grid()->leafView();
   std::unique_ptr<VtkWriter> vtkWriter = view->vtkWriter();
-  arma::Row<double> data(idCount);
+  RowVector<double> data(idCount);
   for (size_t i = 0; i < idCount; ++i)
     data(i) = clusterIdsOfGlobalDofs[i];
   vtkWriter->addCellData(data, "ids");

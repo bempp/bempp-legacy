@@ -26,7 +26,7 @@ void HMatrixDenseCompressor<ValueType, N>::compressBlock(
 
   hMatrixData.reset(new HMatrixDenseData<ValueType>());
 
-  arma::Mat<ValueType> &A =
+  Matrix<ValueType> &A =
       static_cast<HMatrixDenseData<ValueType> *>(hMatrixData.get())->A();
 
   m_dataAccessor.computeMatrixBlock(rowIndexRange, columnIndexRange,

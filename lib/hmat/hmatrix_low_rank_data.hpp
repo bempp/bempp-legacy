@@ -5,7 +5,7 @@
 
 #include "common.hpp"
 #include "hmatrix_data.hpp"
-#include <armadillo>
+#include "eigen_fwd.hpp"
 
 namespace hmat {
 
@@ -13,19 +13,15 @@ template <typename ValueType>
 class HMatrixLowRankData : public HMatrixData<ValueType> {
 
 public:
-  void apply(const arma::Mat<ValueType> &X, arma::Mat<ValueType> &Y,
+  void apply(const Matrix<ValueType> &X, Matrix<ValueType> &Y,
              TransposeMode trans, ValueType alpha, ValueType beta) const
       override;
 
-  void apply(const arma::subview<ValueType> &X, arma::subview<ValueType> &Y,
-             TransposeMode trans, ValueType alpha, ValueType beta) const
-      override;
+  const Matrix<ValueType> &A() const;
+  Matrix<ValueType> &A();
 
-  const arma::Mat<ValueType> &A() const;
-  arma::Mat<ValueType> &A();
-
-  const arma::Mat<ValueType> &B() const;
-  arma::Mat<ValueType> &B();
+  const Matrix<ValueType> &B() const;
+  Matrix<ValueType> &B();
 
   int rows() const override;
   int cols() const override;
@@ -36,8 +32,8 @@ public:
   double memSizeKb() const override;
 
 private:
-  arma::Mat<ValueType> m_A;
-  arma::Mat<ValueType> m_B;
+  Matrix<ValueType> m_A;
+  Matrix<ValueType> m_B;
 };
 }
 

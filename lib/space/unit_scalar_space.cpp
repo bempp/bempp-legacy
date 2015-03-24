@@ -184,7 +184,7 @@ void UnitScalarSpace<BasisFunctionType>::getGlobalDofPositions(
     std::unique_ptr<EntityIterator<0>> it = m_view->entityIterator<0>();
     while (!it->finished()) {
       const Entity<0> &e = it->entity();
-      arma::Col<CoordinateType> center;
+      Vector<CoordinateType> center;
       e.geometry().getCenter(center);
 
       positions[0].x += center(0);
@@ -216,7 +216,7 @@ void UnitScalarSpace<BasisFunctionType>::getFlatLocalDofPositions(
     while (!it->finished()) {
       const Entity<0> &e = it->entity();
       int index = mapper.entityIndex(e);
-      arma::Col<CoordinateType> center;
+      Vector<CoordinateType> center;
       e.geometry().getCenter(center);
 
       positions[index].x = center(0);
@@ -248,7 +248,7 @@ void UnitScalarSpace<BasisFunctionType>::getGlobalDofBoundingBoxes(
   bbox.ubound.y = -std::numeric_limits<CoordinateType>::max();
   bbox.ubound.z = -std::numeric_limits<CoordinateType>::max();
 
-  arma::Mat<CoordinateType> corners;
+  Matrix<CoordinateType> corners;
 
   if (gridDim == 1)
     throw NotImplementedError("UnitScalarSpace::getGlobalDofBoundingBoxes(): "
@@ -257,7 +257,7 @@ void UnitScalarSpace<BasisFunctionType>::getGlobalDofBoundingBoxes(
     std::unique_ptr<EntityIterator<0>> it = m_view->entityIterator<0>();
     while (!it->finished()) {
       const Entity<0> &e = it->entity();
-      arma::Col<CoordinateType> center;
+      Vector<CoordinateType> center;
       const Geometry &geo = e.geometry();
       geo.getCenter(center);
       bbox.reference.x += center(0);
@@ -307,7 +307,7 @@ void UnitScalarSpace<BasisFunctionType>::getFlatLocalDofBoundingBoxes(
   bboxes.resize(flatLocalDofCount_);
 
   const Mapper &mapper = m_view->elementMapper();
-  arma::Mat<CoordinateType> corners;
+  Matrix<CoordinateType> corners;
 
   if (gridDim == 1)
     throw NotImplementedError(
@@ -318,7 +318,7 @@ void UnitScalarSpace<BasisFunctionType>::getFlatLocalDofBoundingBoxes(
     while (!it->finished()) {
       const Entity<0> &e = it->entity();
       int index = mapper.entityIndex(e);
-      arma::Col<CoordinateType> center;
+      Vector<CoordinateType> center;
       const Geometry &geo = e.geometry();
       geo.getCenter(center);
       BoundingBox<CoordinateType> &bbox = bboxes[index];
@@ -385,7 +385,7 @@ void UnitScalarSpace<BasisFunctionType>::dumpClusterIdsEx(
 
   std::unique_ptr<GridView> view = this->grid()->leafView();
   std::unique_ptr<VtkWriter> vtkWriter = view->vtkWriter();
-  arma::Row<double> data(idCount);
+  RowVector<double> data(idCount);
   for (size_t i = 0; i < idCount; ++i)
     data(i) = clusterIdsOfGlobalDofs[i];
   vtkWriter->addCellData(data, "ids");

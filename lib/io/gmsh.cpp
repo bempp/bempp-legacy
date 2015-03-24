@@ -32,7 +32,7 @@
 #include "../space/piecewise_linear_discontinuous_scalar_space.hpp"
 #include "../common/scalar_traits.hpp"
 #include <boost/array.hpp>
-#include <armadillo>
+#include "../common/eigen_support.hpp"
 
 #include "../grid/entity_iterator.hpp"
 #include "../grid/geometry.hpp"
@@ -1104,7 +1104,7 @@ GmshIo::GmshIo(const shared_ptr<const Grid> &grid) : m_grid(grid) {
     const Entity<2> &node = nodeIterator->entity();
     int index = m_nodePermutation[indexSet.entityIndex(node)];
     const Geometry &geom = node.geometry();
-    arma::Col<double> coords(3, 1);
+    Vector<double> coords(3, 1);
     geom.getCenter(coords);
     m_gmshData.addNode(index, coords(0), coords(1), coords(2));
     nodeIterator->next();
@@ -1195,24 +1195,24 @@ shared_ptr<const Grid> GmshIo::grid() const {
       }
     }
   }
-  arma::Mat<double> armaNodes(3, m_nodePermutation.size());
-  arma::Mat<int> armaElements(3, m_elementPermutation.size());
+  Matrix<double> eigenNodes(3, m_nodePermutation.size());
+  Matrix<int> eigenElements(3, m_elementPermutation.size());
   for (int i = 0; i < m_nodePermutation.size(); ++i) {
     double x, y, z;
     m_gmshData.getNode(m_nodePermutation[i], x, y, z);
-    armaNodes(0, i) = x;
-    armaNodes(1, i) = y;
-    armaNodes(2, i) = z;
+    eigenNodes(0, i) = x;
+    eigenNodes(1, i) = y;
+    eigenNodes(2, i) = z;
   }
   for (int i = 0; i < m_elementPermutation.size(); ++i) {
-    armaElements(0, i) = elements[i][0];
-    armaElements(1, i) = elements[i][1];
-    armaElements(2, i) = elements[i][2];
+    eigenElements(0, i) = elements[i][0];
+    eigenElements(1, i) = elements[i][1];
+    eigenElements(2, i) = elements[i][2];
   }
   GridParameters params;
   params.topology = GridParameters::TRIANGULAR;
   m_grid = GridFactory::createGridFromConnectivityArrays(
-      params, armaNodes, armaElements, domainIndices);
+      params, eigenNodes, eigenElements, domainIndices);
   return m_grid;
 }
 
@@ -1294,7 +1294,7 @@ GridFunction<BasisFunctionType, ResultType> gridFunctionFromGmsh(
       throw std::runtime_error("gridFunctionFromGmsh(): Number of element "
                                "indices does not agree with the number of grid "
                                "elements.");
-    arma::Col<ResultType> coefficients(numberOfElements);
+    Vector<ResultType> coefficients(numberOfElements);
     for (int i = 0; i < elementIndices.size(); ++i)
       coefficients(acc(inverseElementPermutation, elementIndices[i])) =
           (ResultRealType)values[i][0];
@@ -1332,7 +1332,7 @@ GridFunction<BasisFunctionType, ResultType> gridFunctionFromGmsh(
       throw std::runtime_error("gridFunctionFromGmsh(): Number of element "
                                "indices does not agree with the number of grid "
                                "elements.");
-    arma::Col<ResultType> coefficients(3 * numberOfElements);
+    Vector<ResultType> coefficients(3 * numberOfElements);
     for (int i = 0; i < elementIndices.size(); ++i)
       for (int j = 0; j < 3; ++j) {
         coefficients(3 * acc(inverseElementPermutation, elementIndices[i]) +
@@ -1366,7 +1366,7 @@ GridFunction<BasisFunctionType, ResultType> gridFunctionFromGmsh(
       throw std::runtime_error("gridFunctionFromGmsh(): Number of node indices "
                                "does not agree with the number of grid "
                                "elements.");
-    arma::Col<ResultType> coefficients(numberOfNodes);
+    Vector<ResultType> coefficients(numberOfNodes);
     for (int i = 0; i < nodeIndices.size(); ++i)
       coefficients(acc(inverseNodePermutation, nodeIndices[i])) =
           (ResultRealType)values[i][0];
@@ -1430,7 +1430,7 @@ void exportToGmsh(GridFunction<BasisFunctionType, ResultType> gridFunction,
   std::vector<double> realTags;
 
   typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
-  boost::array<arma::Mat<CoordinateType>, 5> localCoordsOnTriangles;
+  boost::array<Matrix<CoordinateType>, 5> localCoordsOnTriangles;
 
   localCoordsOnTriangles[0].set_size(2, 3);
   localCoordsOnTriangles[0].fill(0.);
@@ -1493,8 +1493,8 @@ void exportToGmsh(GridFunction<BasisFunctionType, ResultType> gridFunction,
   elementTypes[3] = 21;
   elementTypes[4] = 25;
 
-  arma::Mat<ResultType> values;
-  arma::Mat<CoordinateType> globalCoords;
+  Matrix<ResultType> values;
+  Matrix<CoordinateType> globalCoords;
   const GridView &view = space->gridView();
   int numberOfNodes = view.entityCount(2);
   int numberOfElements = view.entityCount(0);
@@ -1503,15 +1503,15 @@ void exportToGmsh(GridFunction<BasisFunctionType, ResultType> gridFunction,
   if (gmshPostDataType == GmshPostData::NODE) {
 
     const std::vector<int> &nodePermutation = gmshIo.nodePermutation();
-    arma::Mat<ResultType> values;
+    Matrix<ResultType> values;
     gridFunction.evaluateAtSpecialPoints(VtkWriter::VERTEX_DATA, values);
-    arma::Mat<CoordinateType> modifiedValues;
+    Matrix<CoordinateType> modifiedValues;
     if (complexMode == "real")
-      modifiedValues = arma::real(values);
+      modifiedValues = values.real();
     else if (complexMode == "imag")
-      modifiedValues = arma::imag(values);
+      modifiedValues = values.imag();
     else if (complexMode == "abs")
-      modifiedValues = arma::abs(values);
+      modifiedValues = values.cwiseAbs();
     int dataSetIndex = gmshData.numberOfNodeDataSets();
     gmshData.addNodeDataSet(stringTags, realTags, values.n_rows, numberOfNodes);
     for (int i = 0; i < numberOfNodes; ++i) {
@@ -1524,15 +1524,15 @@ void exportToGmsh(GridFunction<BasisFunctionType, ResultType> gridFunction,
   } else if (gmshPostDataType == GmshPostData::ELEMENT) {
 
     const std::vector<int> &elementPermutation = gmshIo.elementPermutation();
-    arma::Mat<ResultType> values;
+    Matrix<ResultType> values;
     gridFunction.evaluateAtSpecialPoints(VtkWriter::CELL_DATA, values);
-    arma::Mat<CoordinateType> modifiedValues;
+    Matrix<CoordinateType> modifiedValues;
     if (complexMode == "real")
-      modifiedValues = arma::real(values);
+      modifiedValues = values.real();
     else if (complexMode == "imag")
-      modifiedValues = arma::imag(values);
+      modifiedValues = values.imag();
     else if (complexMode == "abs")
-      modifiedValues = arma::abs(values);
+      modifiedValues = values.cwiseAbs();
     int dataSetIndex = gmshData.numberOfElementDataSets();
     gmshData.addElementDataSet(stringTags, realTags, values.n_rows,
                                numberOfElements);
@@ -1555,20 +1555,20 @@ void exportToGmsh(GridFunction<BasisFunctionType, ResultType> gridFunction,
 
       const Entity<0> &element = it->entity();
       int elementIndex = indexSet.entityIndex(element);
-      arma::Mat<ResultType> values;
-      arma::Mat<CoordinateType> modifiedValues;
+      Matrix<ResultType> values;
+      Matrix<CoordinateType> modifiedValues;
       gridFunction.evaluate(element, localCoordsOnTriangles[0], values);
       if (complexMode == "real")
-        modifiedValues = arma::real(values);
+        modifiedValues = values.real();
       else if (complexMode == "imag")
-        modifiedValues = arma::imag(values);
+        modifiedValues = values.imag();
       else if (complexMode == "abs")
-        modifiedValues = arma::abs(values);
+        modifiedValues = values.cwiseAbs();
 
-      std::vector<std::vector<double>> vals(values.n_cols);
-      for (int j = 0; j < values.n_cols; ++j) {
-        vals[j].reserve(values.n_rows);
-        for (int i = 0; i < values.n_rows; ++i)
+      std::vector<std::vector<double>> vals(values.cols());
+      for (int j = 0; j < values.cols(); ++j) {
+        vals[j].reserve(values.rows());
+        for (int i = 0; i < values.rows(); ++i)
           vals[j].push_back(modifiedValues(i, j));
       }
       gmshData.addElementNodeData(dataSetIndex,

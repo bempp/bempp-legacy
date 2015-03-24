@@ -4,41 +4,42 @@
 #define HMAT_HMATRIX_DATA_IMPL_HPP
 
 #include "hmatrix_low_rank_data.hpp"
+#include "eigen_fwd.hpp"
 
 namespace hmat {
 
 template <typename ValueType>
-const arma::Mat<ValueType> &HMatrixLowRankData<ValueType>::A() const {
+const Matrix<ValueType> &HMatrixLowRankData<ValueType>::A() const {
   return m_A;
 }
 
 template <typename ValueType>
-arma::Mat<ValueType> &HMatrixLowRankData<ValueType>::A() {
+Matrix<ValueType> &HMatrixLowRankData<ValueType>::A() {
   return m_A;
 }
 
 template <typename ValueType>
-const arma::Mat<ValueType> &HMatrixLowRankData<ValueType>::B() const {
+const Matrix<ValueType> &HMatrixLowRankData<ValueType>::B() const {
   return m_B;
 }
 
 template <typename ValueType>
-arma::Mat<ValueType> &HMatrixLowRankData<ValueType>::B() {
+Matrix<ValueType> &HMatrixLowRankData<ValueType>::B() {
   return m_B;
 }
 
 template <typename ValueType> int HMatrixLowRankData<ValueType>::rows() const {
-  return m_A.n_rows;
+  return m_A.rows();
 }
 
 template <typename ValueType> int HMatrixLowRankData<ValueType>::cols() const {
 
-  return m_B.n_cols;
+  return m_B.cols();
 }
 
 template <typename ValueType> int HMatrixLowRankData<ValueType>::rank() const {
 
-  return m_A.n_cols;
+  return m_A.cols();
 }
 
 template <typename ValueType>
@@ -47,11 +48,11 @@ HMatrixLowRankData<ValueType>::frobeniusNorm() const {
 
   auto aHa = m_A.t() * m_A;
 
-  arma::Mat<ValueType> result(1, 1);
+  Matrix<ValueType> result(1, 1);
 
   for (int i = 0; i < m_B.n_cols; ++i) {
     auto col = m_B.col(i);
-    result += col.t() * aHa * col;
+    result += col.adjoint * aHa * col;
   }
 
   return std::sqrt(std::real(result(0, 0)));
@@ -65,21 +66,11 @@ double HMatrixLowRankData<ValueType>::memSizeKb() const {
 }
 
 template <typename ValueType>
-void HMatrixLowRankData<ValueType>::apply(const arma::Mat<ValueType> &X,
-                                          arma::Mat<ValueType> &Y,
+void HMatrixLowRankData<ValueType>::apply(const Matrix<ValueType> &X,
+                                          Matrix<ValueType> &Y,
                                           TransposeMode trans, ValueType alpha,
                                           ValueType beta) const {
 
-  arma::subview<ValueType> xsub = X.submat(arma::span::all, arma::span::all);
-  arma::subview<ValueType> ysub = Y.submat(arma::span::all, arma::span::all);
-
-  this->apply(xsub, ysub, trans, alpha, beta);
-}
-template <typename ValueType>
-void HMatrixLowRankData<ValueType>::apply(const arma::subview<ValueType> &X,
-                                          arma::subview<ValueType> &Y,
-                                          TransposeMode trans, ValueType alpha,
-                                          ValueType beta) const {
   if (beta == ValueType(0))
     Y.zeros();
   if (alpha == ValueType(0)) {
@@ -90,11 +81,11 @@ void HMatrixLowRankData<ValueType>::apply(const arma::subview<ValueType> &X,
   if (trans == TransposeMode::NOTRANS)
     Y = alpha * m_A * (m_B * X) + beta * Y;
   else if (trans == TransposeMode::TRANS)
-    Y = alpha * m_B.st() * (m_A.st() * X) + beta * Y;
+    Y = alpha * m_B.transpose() * (m_A.transpose() * X) + beta * Y;
   else if (trans == TransposeMode::CONJ)
-    Y = alpha * arma::conj(m_A) * (arma::conj(m_B) * X) + beta * Y;
+    Y = alpha * m_A.conjugate() * (m_B.conjugate()* X) + beta * Y;
   else
-    Y = alpha * m_B.t() * (m_A.t() * X) + beta * Y;
+    Y = alpha * m_B.adjoint() * (m_A.adjoint() * X) + beta * Y;
 }
 }
 

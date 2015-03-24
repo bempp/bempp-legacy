@@ -217,14 +217,14 @@ void PiecewiseConstantScalarSpace<BasisFunctionType>::flatLocal2localDofs(
 
 template <typename BasisFunctionType>
 void PiecewiseConstantScalarSpace<BasisFunctionType>::
-    getGlobalDofInterpolationPoints(arma::Mat<CoordinateType> &points) const {
+    getGlobalDofInterpolationPoints(Matrix<CoordinateType> &points) const {
   SpaceHelper<BasisFunctionType>::
       getGlobalDofInterpolationPoints_defaultImplementation(*this, points);
 }
 
 template <typename BasisFunctionType>
 void PiecewiseConstantScalarSpace<BasisFunctionType>::
-    getNormalsAtGlobalDofInterpolationPoints(arma::Mat<CoordinateType> &normals)
+    getNormalsAtGlobalDofInterpolationPoints(Matrix<CoordinateType> &normals)
     const {
   SpaceHelper<BasisFunctionType>::
       getNormalsAtGlobalDofInterpolationPoints_defaultImplementation(*this,
@@ -254,8 +254,8 @@ void PiecewiseConstantScalarSpace<BasisFunctionType>::getGlobalDofBoundingBoxes(
   const IndexSet &indexSet = m_view->indexSet();
   const int elementCount = m_view->entityCount(0);
 
-  std::vector<arma::Mat<CoordinateType>> elementCorners(elementCount);
-  std::vector<arma::Col<CoordinateType>> elementCenters(elementCount);
+  std::vector<Matrix<CoordinateType>> elementCorners(elementCount);
+  std::vector<Vector<CoordinateType>> elementCenters(elementCount);
   std::unique_ptr<EntityIterator<0>> it = m_view->entityIterator<0>();
   while (!it->finished()) {
     const Entity<0> &e = it->entity();
@@ -340,7 +340,7 @@ void PiecewiseConstantScalarSpace<BasisFunctionType>::dumpClusterIdsEx(
 
   std::unique_ptr<GridView> view = this->grid()->leafView();
   std::unique_ptr<VtkWriter> vtkWriter = view->vtkWriter();
-  arma::Row<double> data(idCount);
+  RowVector<double> data(idCount);
   for (size_t i = 0; i < idCount; ++i)
     data(i) = clusterIdsOfGlobalDofs[i];
   vtkWriter->addCellData(data, "ids");

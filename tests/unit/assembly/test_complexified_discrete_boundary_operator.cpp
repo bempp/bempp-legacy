@@ -28,7 +28,7 @@
 #include "assembly/discrete_dense_boundary_operator.hpp"
 
 #include <algorithm>
-#include "common/armadillo_fwd.hpp"
+#include "common/eigen_support.hpp"
 #include <boost/test/unit_test.hpp>
 #include <boost/test/floating_point_comparison.hpp>
 #include <boost/version.hpp>
@@ -46,7 +46,7 @@ struct ComplexifiedDiscreteBoundaryOperatorFixture
 {
     ComplexifiedDiscreteBoundaryOperatorFixture()
     {
-        arma::Mat<RealType> mat = generateRandomMatrix<RealType>(4, 5);
+        Matrix<RealType> mat = generateRandomMatrix<RealType>(4, 5);
         op.reset(new DiscreteDenseBoundaryOperator<RealType>(mat));
         complexifiedOp = complexify(op);
     }
@@ -69,21 +69,21 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2
                            std::numeric_limits<RealType>::quiet_NaN());
 
     ComplexifiedDiscreteBoundaryOperatorFixture<RealType> fixture;
-    arma::Mat<RealType> mat = fixture.op->asMatrix();
-    arma::Mat<ComplexType> complexMat(mat.n_rows, mat.n_cols);
+    Matrix<RealType> mat = fixture.op->asMatrix();
+    Matrix<ComplexType> complexMat(mat.rows(), mat.cols());
     complexMat.fill(0.);
-    complexMat.set_real(mat);
+    complexMat.real() = mat;
 
     shared_ptr<const DiscreteBoundaryOperator<ComplexType> > dop = fixture.complexifiedOp;
 
     ComplexType alpha(2., 3.);
     ComplexType beta(0.);
 
-    arma::Col<ComplexType> x = generateRandomVector<ComplexType>(dop->columnCount());
-    arma::Col<ComplexType> y(dop->rowCount());
+    Vector<ComplexType> x = generateRandomVector<ComplexType>(dop->columnCount());
+    Vector<ComplexType> y(dop->rowCount());
     y.fill(complexNan);
 
-    arma::Col<ComplexType> expected = alpha * mat * x;
+    Vector<ComplexType> expected = alpha * mat * x;
     dop->apply(NO_TRANSPOSE, x, y, alpha, beta);
     
     BOOST_CHECK(y.is_finite());
@@ -99,20 +99,20 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_no_transpose_and
     typedef std::complex<RealType> ComplexType;
 
     ComplexifiedDiscreteBoundaryOperatorFixture<RealType> fixture;
-    arma::Mat<RealType> mat = fixture.op->asMatrix();
-    arma::Mat<ComplexType> complexMat(mat.n_rows, mat.n_cols);
-    complexMat.fill(0.);
-    complexMat.set_real(mat);
+    Matrix<RealType> mat = fixture.op->asMatrix();
+    Matrix<ComplexType> complexMat(mat.n_rows, mat.n_cols);
+    complexMat.setZero();
+    complexMat.real() = mat;
 
     shared_ptr<const DiscreteBoundaryOperator<ComplexType> > dop = fixture.complexifiedOp;
 
     ComplexType alpha(2., 3.);
     ComplexType beta(4., -5.);
 
-    arma::Col<ComplexType> x = generateRandomVector<ComplexType>(dop->columnCount());
-    arma::Col<ComplexType> y = generateRandomVector<ComplexType>(dop->rowCount());
+    Vector<ComplexType> x = generateRandomVector<ComplexType>(dop->columnCount());
+    Vector<ComplexType> y = generateRandomVector<ComplexType>(dop->rowCount());
 
-    arma::Col<ComplexType> expected = alpha * mat * x + beta * y;
+    Vector<ComplexType> expected = alpha * mat * x + beta * y;
 
     dop->apply(NO_TRANSPOSE, x, y, alpha, beta);
     

@@ -296,8 +296,8 @@ PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::dumpClusterIdsEx(
   std::unique_ptr<GridView> view = this->grid()->leafView();
   std::unique_ptr<VtkWriter> vtkWriter = view->vtkWriter();
 
-  arma::Mat<double> data(idCount, globalDofCount());
-  data.fill(0.);
+  Matrix<double> data(idCount, globalDofCount());
+  data.setZero();
   size_t row = 0;
   for (size_t id = 0; id < idCount; ++id) {
     bool exists = false;
@@ -311,7 +311,7 @@ PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::dumpClusterIdsEx(
       }
     }
     if (!exists)
-      data.shed_row(row); // very inefficient, of course
+      eigenRemoveRowFromMatrix(data,row); // very inefficient, of course
     else
       ++row;
   }

@@ -8,7 +8,7 @@
 #include "hmatrix_compressor.hpp"
 #include "data_accessor.hpp"
 #include "compressed_matrix.hpp"
-#include <armadillo>
+#include "eigen_fwd.hpp"
 #include <unordered_map>
 
 namespace hmat {
@@ -32,15 +32,15 @@ public:
   bool isInitialized() const;
   void reset();
 
-  void apply(const arma::Mat<ValueType> &X, arma::Mat<ValueType> &Y,
+  void apply(const Matrix<ValueType> &X, Matrix<ValueType> &Y,
              TransposeMode trans, ValueType alpha, ValueType beta) const
       override;
 
-  arma::Mat<ValueType> permuteMatToHMatDofs(const arma::Mat<ValueType> &mat,
+  Matrix<ValueType> permuteMatToHMatDofs(const Matrix<ValueType> &mat,
                                             RowColSelector rowOrColumn) const
       override;
-  arma::Mat<ValueType>
-  permuteMatToOriginalDofs(const arma::Mat<ValueType> &mat,
+  Matrix<ValueType>
+  permuteMatToOriginalDofs(const Matrix<ValueType> &mat,
                            RowColSelector rowOrColumn) const override;
 
 private:
