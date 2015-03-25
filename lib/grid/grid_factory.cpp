@@ -127,7 +127,7 @@ GridFactory::importGmshGrid(const GridParameters &params,
 shared_ptr<Grid> GridFactory::createGridFromConnectivityArrays(
     const GridParameters &params, const Matrix<double> &vertices,
     const Matrix<int> &elementCorners,
-    const Matrix<int> &domainIndices) {
+    const std::vector<int> &domainIndices) {
   const int dimGrid = 2, dimWorld = 3;
   if (params.topology != GridParameters::TRIANGULAR)
     throw std::invalid_argument("createGridFromConnectivityArrays(): "

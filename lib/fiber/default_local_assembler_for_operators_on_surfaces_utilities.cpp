@@ -11,20 +11,20 @@ void DefaultLocalAssemblerForOperatorsOnSurfacesUtilities<BasisFunctionType>::
     checkConsistencyOfGeometryAndShapesets(
         const RawGridGeometry<CoordinateType> &rawGeometry,
         const std::vector<const Shapeset<BasisFunctionType> *> &shapesets) {
-  if (rawGeometry.vertices().n_rows != 3)
+  if (rawGeometry.vertices().rows() != 3)
     throw std::invalid_argument(
         "DefaultLocalAssemblerForOperatorsOnSurfacesUtilities::"
         "checkConsistencyOfGeometryAndShapesets(): "
         "vertex coordinates must be three-dimensional");
-  const size_t elementCount = rawGeometry.elementCornerIndices().n_cols;
-  if (rawGeometry.elementCornerIndices().n_rows < 3 ||
-      4 < rawGeometry.elementCornerIndices().n_rows)
+  const size_t elementCount = rawGeometry.elementCornerIndices().cols();
+  if (rawGeometry.elementCornerIndices().rows() < 3 ||
+      4 < rawGeometry.elementCornerIndices().rows())
     throw std::invalid_argument(
         "DefaultLocalAssemblerForOperatorsOnSurfacesUtilities::"
         "checkConsistencyOfGeometryAndShapesets(): "
         "Elements must have either 3 or 4 corners");
-  if (!rawGeometry.auxData().is_empty() &&
-      rawGeometry.auxData().n_cols != elementCount)
+  if (!is_empty(rawGeometry.auxData()) &&
+      rawGeometry.auxData().cols() != elementCount)
     throw std::invalid_argument(
         "DefaultLocalAssemblerForOperatorsOnSurfacesUtilities::"
         "checkConsistencyOfGeometryAndShapesets(): "
@@ -72,7 +72,7 @@ DefaultLocalAssemblerForOperatorsOnSurfacesUtilities<BasisFunctionType>::
   CoordinateType maxEdgeLengthSquared = 0.;
   const Matrix<int> &cornerIndices = rawGeometry.elementCornerIndices();
   const Matrix<CoordinateType> &vertices = rawGeometry.vertices();
-  Vertex<CoordinateType> edge;
+  Vector<CoordinateType> edge;
   if (cornerIndices(cornerIndices.rows() - 1, elementIndex) == -1) {
     // Triangular element
     const int cornerCount = 3;

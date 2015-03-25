@@ -146,6 +146,12 @@ public:
              Matrix<ValueType> &y_inout, const ValueType alpha,
              const ValueType beta) const;
 
+  /** \overload */
+  void apply(const TranspositionMode trans, const Vector<ValueType> &x_in,
+             Vector<ValueType> &y_inout, const ValueType alpha,
+             const ValueType beta) const;
+
+
   /** \brief Return a representation that can be cast to a
    *  DiscreteAcaBoundaryOperator
    *

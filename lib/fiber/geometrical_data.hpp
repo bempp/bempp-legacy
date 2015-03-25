@@ -110,10 +110,12 @@ public:
   // Inefficient, but safe
   GeometricalData<CoordinateType> asGeometricalData() const {
     GeometricalData<CoordinateType> result;
-    if (!m_geomData.globals.is_empty())
+    if (!is_empty(m_geomData.globals))
       result.globals = m_geomData.globals.col(m_point);
-    if (!m_geomData.integrationElements.is_empty())
-      result.integrationElements = m_geomData.integrationElements(m_point);
+    if (!is_empty(m_geomData.integrationElements)){
+      result.integrationElements.resize(1);
+      result.integrationElements(0) = m_geomData.integrationElements(m_point);
+    }
     if (!m_geomData.jacobiansTransposed.is_empty()) {
       result.jacobiansTransposed.set_size(
           1, 1, m_geomData.jacobiansTransposed.extent(2));
@@ -128,7 +130,7 @@ public:
         result.jacobianInversesTransposed(0, 0, i) =
             m_geomData.jacobianInversesTransposed(m_point, m_point, i);
     }
-    if (!m_geomData.normals.is_empty())
+    if (!is_empty(m_geomData.normals))
       result.normals = m_geomData.normals.col(m_point);
     result.domainIndex = m_geomData.domainIndex;
     return result;

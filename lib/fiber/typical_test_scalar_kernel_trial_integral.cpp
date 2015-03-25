@@ -39,26 +39,12 @@ namespace Fiber {
 // Internal functions
 namespace {
 
-template <typename BasisFunctionType, typename ResultType>
-void setToProduct(const Matrix<BasisFunctionType> &source,
-                  BasisFunctionType weight, Matrix<ResultType> &result) {
+template <typename BasisFunctionType, typename Derived>
+void setToProduct(const Eigen::MatrixBase<Derived> &source,
+                  BasisFunctionType weight, Eigen::MatrixBase<Derived>& result) {
   result = weight * source.adjoint();
 }
 
-template <typename BasisFunctionType, typename ResultType>
-void setToProduct(const Matrix<BasisFunctionType> &source,
-                  typename ScalarTraits<BasisFunctionType>::RealType weight,
-                  Matrix<ResultType> &result) {
-  result = weight * source.adjoint();
-}
-
-template <typename CoordinateType>
-void setToProduct(const Matrix<CoordinateType> &source,
-                  CoordinateType weight,
-                  Matrix<std::complex<CoordinateType>> &result) {
-  result.setZero();
-  result.real() = weight*source.adjoint();
-}
 
 template <typename BasisFunctionType, typename ResultType>
 void outOfPlaceMultiplyByWeightsAndConjugateTransposeDimAndDofDimensions(
@@ -82,13 +68,13 @@ void outOfPlaceMultiplyByWeightsAndConjugateTransposeDimAndDofDimensions(
   for (size_t point = 0; point < pointCount; ++point) {
     Eigen::Map<Matrix<BasisFunctionType>> origMat(
                 const_cast<BasisFunctionType*>(sourceSliceStart),transDim,dofCount);
-    Eigen::Map<Matrix<BasisFunctionType>> transposedMat(
+    Eigen::Map<Matrix<ResultType>> transposedMat(
                 destSliceStart,dofCount,transDim);
 
     const CoordinateType weight =
         geomData.integrationElements(point) * quadWeights[point];
     // we take the complex conjugate here
-    setToProduct(origMat, weight, transposedMat);
+    transposedMat = (weight*origMat.adjoint()).template cast<ResultType>();
     sourceSliceStart += sliceSize;
     destSliceStart += sliceSize;
   }
@@ -152,16 +138,10 @@ void outOfPlaceConjugateTransposeDimAndDofDimensions(
   }
 }
 
-template <typename BasisFunctionType, typename ResultType>
-inline void addABt(const Matrix<BasisFunctionType> &A,
-                   const Matrix<BasisFunctionType> &B,
-                   Matrix<ResultType> &C) {
-  C += A * B.adjoint();
-}
-
-template <typename ResultType>
-inline void addABt(const Matrix<ResultType> &A,
-                   const Matrix<ResultType> &B, Matrix<ResultType> &C) {
+template <typename Derived>
+inline void addABt(const Eigen::MatrixBase<Derived> &A,
+                   const Eigen::MatrixBase<Derived> &B,
+                   Eigen::MatrixBase<Derived> &C) {
   C += A * B.adjoint();
 }
 
@@ -233,8 +213,10 @@ void evaluateWithNontensorQuadratureRuleStandardImpl(
     Eigen::Map<Matrix<BasisFunctionType>> matTrial(&tmpTrial[0], trialDofCount,
                                           pointCount * transDim);
 
+    Eigen::Map<Matrix<ResultType>> resultMatrix(result.data(),result.rows(),result.cols());
+
     // this removes the complex conjugate from matTrial
-    addABt(matTest, matTrial, result);
+    resultMatrix += (matTest*matTrial.adjoint()).template cast<ResultType>();
   }
 }
 
@@ -331,7 +313,7 @@ void evaluateWithTensorQuadratureRuleImpl(
           testValues[transIndex], testGeomData, testQuadWeights, tmpReordered);
       Eigen::Map<Matrix<ResultType>> matTest(&tmpReordered[0], testDofCount * transDim,
                                     testPointCount);
-      tmpIntermediate.resize(matTest.n_rows * matKernel.n_cols);
+      tmpIntermediate.resize(matTest.rows() * matKernel.cols());
 
       Eigen::Map<Matrix<IntermediateType>> matTmp(
           &tmpIntermediate[0], testDofCount * transDim, trialPointCount);

@@ -89,7 +89,7 @@ public:
         imin = i;
       }
     }
-    return v[mapper.map(e, imin, dim) * ncomps_ + comp];
+    return v(mapper.map(e, imin, dim) * ncomps_ + comp);
   }
 
   //! get name

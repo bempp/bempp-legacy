@@ -381,9 +381,9 @@ void PiecewiseConstantDiscontinuousScalarSpaceBarycentric<
 
   std::unique_ptr<GridView> view = this->grid()->leafView();
   std::unique_ptr<VtkWriter> vtkWriter = view->vtkWriter();
-  RowVector<double> data(idCount);
+  Matrix<double> data(1,idCount);
   for (size_t i = 0; i < idCount; ++i)
-    data(i) = clusterIdsOfGlobalDofs[i];
+    data(1,i) = clusterIdsOfGlobalDofs[i];
   vtkWriter->addCellData(data, "ids");
   vtkWriter->write(fileName);
 }

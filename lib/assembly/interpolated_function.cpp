@@ -40,7 +40,7 @@ InterpolatedFunction<ValueType>::InterpolatedFunction(
     : m_grid(grid), m_vertexValues(vertexValues), m_method(method) {
   std::unique_ptr<GridView> view = grid.leafView();
 
-  if (view->entityCount(grid.dim()) != vertexValues.n_cols)
+  if (view->entityCount(grid.dim()) != vertexValues.cols())
     throw std::invalid_argument("VolumeGridFunction::VolumeGridFunction(): "
                                 "dimension of expansionCoefficients "
                                 "does not match the number of grid vertices");
@@ -61,7 +61,7 @@ int InterpolatedFunction<ValueType>::worldDimension() const {
 
 template <typename ValueType>
 int InterpolatedFunction<ValueType>::codomainDimension() const {
-  return m_vertexValues.n_rows;
+  return m_vertexValues.rows();
 }
 
 template <typename ValueType>
@@ -117,8 +117,8 @@ template <typename ValueType>
 void InterpolatedFunction<ValueType>::checkCompatibility(
     const InterpolatedFunction<ValueType> &other) const {
   if (&m_grid != &other.m_grid ||
-      m_vertexValues.n_rows != other.m_vertexValues.n_rows ||
-      m_vertexValues.n_cols != other.m_vertexValues.n_cols ||
+      m_vertexValues.rows() != other.m_vertexValues.rows() ||
+      m_vertexValues.cols() != other.m_vertexValues.cols() ||
       m_method != other.m_method)
     throw std::runtime_error("InterpolatedFunction::checkCompatibility(): "
                              "incompatible operands");

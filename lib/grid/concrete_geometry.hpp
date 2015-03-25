@@ -124,7 +124,7 @@ public:
                                 "not implemented yet for 3D entities");
 
     std::vector<Dune::FieldVector<double, dimWorld>> duneCorners(cornerCount);
-    for (size_t i = 0; i < corners.n_cols; ++i)
+    for (size_t i = 0; i < corners.cols(); ++i)
       for (int j = 0; j < dimWorld; ++j)
         duneCorners[i][j] = corners(j, i);
 
@@ -226,7 +226,7 @@ public:
 
   virtual double volume() const { return m_dune_geometry->volume(); }
 
-  virtual void getCenterImpl(Vector<double> &c) const {
+  virtual void getCenterImpl(Eigen::Ref<Vector<double>> c) const {
     const int cdim = DuneGeometry<dim_>::coorddimension;
     c.resize(cdim);
 
@@ -344,7 +344,7 @@ public:
                                   "invalid dimensions of the 'local' array");
 #endif
     const size_t n = local.cols();
-    jacobian_inv_t.resize(cdim, mdim, n);
+    jacobian_inv_t.set_size(cdim, mdim, n);
 
     // typename DuneGeometry::Jacobian j_inv_t;
     // Dune::FieldMatrix<double,cdim,mdim> j_inv_t;

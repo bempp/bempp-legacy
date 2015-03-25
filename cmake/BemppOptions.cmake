@@ -6,7 +6,7 @@ option(WITH_CUDA "Add CUDA support for Fiber module" OFF)
 option(WITH_MPI "Whether to compile with MPI" OFF)
 option(WITH_FENICS "Whether to compile with FEniCS support" OFF)
 
-option(ENABLE_SINGLE_PRECISION "Enable support for single-precision calculations" ON)
+option(ENABLE_SINGLE_PRECISION "Enable support for single-precision calculations" OFF)
 option(ENABLE_DOUBLE_PRECISION "Enable support for double-precision calculations" ON)
 option(ENABLE_COMPLEX_KERNELS  "Enable support for complex-valued kernel functions" ON)
 option(ENABLE_COMPLEX_BASIS_FUNCTIONS  "Enable support for complex-valued basis functions" ON)

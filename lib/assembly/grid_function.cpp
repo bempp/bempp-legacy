@@ -184,12 +184,12 @@ Vector<ResultType> interpolate(const Function<ResultType> &globalFunction,
   Matrix<ResultType> values;
   globalFunction.evaluate(geomData, values);
 
-  const size_t componentCount = values.n_rows;
-  const size_t pointCount = values.n_cols;
+  const size_t componentCount = values.rows();
+  const size_t pointCount = values.cols();
 
   Matrix<CoordinateType> directions;
   space.getGlobalDofInterpolationDirections(directions);
-  assert(directions.n_rows == values.n_rows);
+  assert(directions.n_rows == values.rows());
   assert(directions.n_cols == pointCount);
 
   Vector<ResultType> result(pointCount);
@@ -444,7 +444,7 @@ void GridFunction<BasisFunctionType, ResultType>::initializeFromCoefficients(
   if (!space)
     throw std::invalid_argument(
         "GridFunction::initializeFromCoefficients(): space must not be null");
-  if (coefficients.n_rows != space->globalDofCount())
+  if (coefficients.rows() != space->globalDofCount())
     throw std::invalid_argument("GridFunction::initializeFromCoefficients(): "
                                 "the coefficients vector has incorrect length");
   m_context = context;
@@ -481,7 +481,7 @@ void GridFunction<BasisFunctionType, ResultType>::initializeFromProjections(
         "GridFunction::initializeFromProjections(): "
         "space and dualSpace must be defined on the same grid");
 
-  if (projections.n_rows != dualSpace->globalDofCount())
+  if (projections.rows() != dualSpace->globalDofCount())
     throw std::invalid_argument("GridFunction::initializeFromProjections(): "
                                 "the projections vector has incorrect length");
   m_context = context;
@@ -638,7 +638,7 @@ void GridFunction<BasisFunctionType, ResultType>::setProjections(
     throw std::invalid_argument(
         "GridFunction::setProjections(): "
         "space and dual space must be defined on the same grid");
-  if (projects.n_rows != dualSpace_->globalDofCount())
+  if (projects.rows() != dualSpace_->globalDofCount())
     throw std::invalid_argument(
         "GridFunction::setProjections(): dimension of the provided "
         "vector does not match the number of global DOFs in the dual space");
@@ -687,7 +687,7 @@ GridFunction<BasisFunctionType, ResultType>::updateProjectionsFromCoefficients(
   BoundaryOp id = identityOperator(m_context, m_space, m_space, dualSpace_);
 
   shared_ptr<Vector<ResultType>> newProjections(
-      new Vector<ResultType>(dualSpace_->globalDofCount()));
+              new Vector<ResultType>(dualSpace_->globalDofCount()));
   id.weakForm()->apply(NO_TRANSPOSE, *m_coefficients, *newProjections,
                        static_cast<ResultType>(1.),
                        static_cast<ResultType>(0.));
@@ -731,7 +731,7 @@ GridFunction<BasisFunctionType, ResultType>::L2Norm() const {
   typedef BoundaryOperator<BasisFunctionType, ResultType> BoundaryOp;
 
   // Get the vector of coefficients
-  const Vector<ResultType> &coeffs = coefficients();
+  const Vector<ResultType>& coeffs = coefficients();
 
   // Calculate the mass matrix
   BoundaryOp id = identityOperator(m_context, m_space, m_space, m_space);
@@ -740,7 +740,7 @@ GridFunction<BasisFunctionType, ResultType>::L2Norm() const {
 
   Vector<ResultType> product(coeffs.rows());
   massMatrix->apply(NO_TRANSPOSE, coeffs, product, 1., 0.);
-  ResultType result = coeffs.conj().dot(product);
+  ResultType result = coeffs.conjugate().dot(product);
   if (fabs(imagPart(result)) >
       1000. * std::numeric_limits<MagnitudeType>::epsilon())
     std::cout << "Warning: squared L2Norm has non-negligible imaginary part: "
@@ -816,10 +816,10 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
   const size_t elementCount = view.entityCount(elementCodim);
   const size_t vertexCount = view.entityCount(vertexCodim);
 
-  values.set_size(nComponents, dataType == VtkWriter::CELL_DATA ? elementCount
+  values.resize(nComponents, dataType == VtkWriter::CELL_DATA ? elementCount
                                                                 : vertexCount);
   values.setZero();
-  points.set_size(worldDim, values.n_cols);
+  points.resize(worldDim, values.cols());
 
   // Number of elements contributing to each column in result
   // (this will be greater than 1 for VERTEX_DATA)
@@ -1026,7 +1026,7 @@ template <typename BasisFunctionType, typename ResultType>
 void GridFunction<BasisFunctionType, ResultType>::evaluate(
     const Entity<0> &element, const Matrix<CoordinateType> &local,
     Matrix<ResultType> &values) const {
-  if (local.n_rows != m_space->grid()->dim())
+  if (local.rows() != m_space->grid()->dim())
     throw std::invalid_argument("evaluate(): points in 'local' have an "
                                 "invalid number of coordinates");
 
@@ -1048,7 +1048,7 @@ void GridFunction<BasisFunctionType, ResultType>::evaluate(
   // Get geometrical data
   Fiber::GeometricalData<CoordinateType> geomData;
   element.geometry().getData(geomDeps, local, geomData);
-  values.resize(nComponents, local.n_cols);
+  values.resize(nComponents, local.cols());
   // Get shape function values
   Fiber::CollectionOf3dArrays<BasisFunctionType> functionValues;
   transformations.evaluate(basisData, geomData, functionValues);
@@ -1060,7 +1060,7 @@ void GridFunction<BasisFunctionType, ResultType>::evaluate(
   assert(localCoefficients.size() == shapeset.size());
 
   // Calculate grid function values
-  values.resize(functionValues[0].extent(0), local.n_cols);
+  values.resize(functionValues[0].extent(0), local.cols());
   values.setZero();
   for (size_t p = 0; p < functionValues[0].extent(2); ++p)
     for (size_t f = 0; f < functionValues[0].extent(1); ++f)

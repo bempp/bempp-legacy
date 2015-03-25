@@ -46,8 +46,8 @@ shared_ptr<Epetra_CrsMatrix> sparseCholesky(const Epetra_CrsMatrix &mat) {
         localMat(s, c) = values[rowOffsets[row] + c];
       }
     }
-    (localMat - localMat.adjoint()).norm() <
-           1e-12 * localMat.norm();
+    assert((localMat - localMat.adjoint()).norm() <
+           1e-12 * localMat.norm());
     localCholesky = localMat.llt().matrixL().adjoint();
     for (int s = 0; s < localSize; ++s) {
       int row = colIndices[rowOffsets[r] + s];
@@ -56,7 +56,7 @@ shared_ptr<Epetra_CrsMatrix> sparseCholesky(const Epetra_CrsMatrix &mat) {
       int errorCode =
 #endif
           result->InsertGlobalValues(row, s + 1 /* number of values */,
-                                     localCholesky.colptr(s),
+                                     localCholesky.col(s).data(),
                                      colIndices + rowOffsets[r]);
       assert(errorCode == 0);
     }

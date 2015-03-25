@@ -87,10 +87,10 @@ private:
   template <typename ValueType>
   void addCellDataImpl(const Matrix<ValueType> &data,
                        const std::string &name) {
-    const size_t ncomp = data.n_rows;
+    const size_t ncomp = data.rows();
     if (ncomp < 1)
       return; // empty matrix
-    if ((int)data.n_cols != m_dune_gv->size(0 /* cell codim */))
+    if ((int)data.cols() != m_dune_gv->size(0 /* cell codim */))
       throw std::logic_error("VtkWriter::addCellData(): number of columns "
                              "of 'data' different from the number of cells");
 
@@ -113,10 +113,10 @@ private:
   template <typename ValueType>
   void addVertexDataImpl(const Matrix<ValueType> &data,
                          const std::string &name) {
-    const size_t ncomp = data.n_rows;
+    const size_t ncomp = data.rows();
     if (ncomp < 1)
       return; // empty matrix
-    if ((int)data.n_cols !=
+    if ((int)data.cols() !=
         m_dune_gv->size(DuneGridView::dimension /* vertex codim */))
       throw std::logic_error("VtkWriter::addVertexData(): number of columns "
                              "of 'data' different from the number of vertices");

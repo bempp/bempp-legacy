@@ -22,6 +22,7 @@
 #define bempp_index_permutation_hpp
 
 #include "../common/common.hpp"
+#include <vector>
 
 #include "../common/shared_ptr.hpp"
 #include "../common/eigen_support.hpp"

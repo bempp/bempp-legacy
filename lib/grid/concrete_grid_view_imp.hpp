@@ -92,7 +92,7 @@ void ConcreteGridView<DuneGridView>::getRawElementDataImpl(
       elementCorners(i, index) = -1;
   }
 
-  auxData.resize(0, elementCorners.n_cols);
+  auxData.resize(0, elementCorners.cols());
 
   if (domainIndices) {
     // Somewhat inelegant: we perform a second iteration over elements,

@@ -84,7 +84,8 @@ ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
       const Entity<vertexCodim> &vertex = it->entity();
       const Geometry &geo = vertex.geometry();
       const int vertexIndex = evalIndexSet.entityIndex(vertex);
-      Eigen::Map<Vector<CoordinateType>> activeCol(evalPoints.col(vertexIndex).data(),evalPoints.rows());
+      //Eigen::Map<Vector<CoordinateType>> activeCol(evalPoints.col(vertexIndex).data(),evalPoints.rows());
+      Eigen::Ref<Vector<CoordinateType>> activeCol(evalPoints.col(vertexIndex));
       geo.getCenter(activeCol);
       it->next();
     }
@@ -96,7 +97,7 @@ ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
       const Entity<vertexCodim> &vertex = it->entity();
       const Geometry &geo = vertex.geometry();
       const int vertexIndex = evalIndexSet.entityIndex(vertex);
-      Eigen::Map<Vector<CoordinateType>> activeCol(evalPoints.col(vertexIndex).data(),evalPoints.rows());
+      Eigen::Ref<Vector<CoordinateType>> activeCol(evalPoints.col(vertexIndex));
       geo.getCenter(activeCol);
       it->next();
     }
@@ -159,7 +160,7 @@ ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
     throw std::invalid_argument(
         "ElementaryPotentialOperator::assemble(): "
         "the shared pointer 'evaluationPoints' must not be null");
-  if (evaluationPoints->n_rows != space->grid()->dimWorld())
+  if (evaluationPoints->rows() != space->grid()->dimWorld())
     throw std::invalid_argument(
         "ElementaryPotentialOperator::assemble(): "
         "the number of coordinates of each evaluation point must be "

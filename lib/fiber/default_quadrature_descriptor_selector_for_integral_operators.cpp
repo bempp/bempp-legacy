@@ -96,8 +96,8 @@ DefaultQuadratureDescriptorSelectorForIntegralOperators<
     desc.topology = determineElementPairTopologyIn3D(testElementCornerIndices,
                                                      trialElementCornerIndices);
   } else {
-    desc.topology.testVertexCount = testElementCornerIndices.n_rows;
-    desc.topology.trialVertexCount = trialElementCornerIndices.n_rows;
+    desc.topology.testVertexCount = testElementCornerIndices.rows();
+    desc.topology.trialVertexCount = trialElementCornerIndices.rows();
     desc.topology.type = ElementPairTopology::Disjoint;
   }
 

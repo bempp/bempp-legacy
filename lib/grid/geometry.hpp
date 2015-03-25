@@ -22,6 +22,7 @@
 #define bempp_geometry_hpp
 
 #include "../common/common.hpp"
+#include "../common/eigen_support.hpp"
 
 #include "dune.hpp"
 #include "../fiber/_3d_array.hpp"
@@ -169,9 +170,10 @@ public:
    *
    * \param[out]  c  Coordinates of the center of geometry.
    */
-  void getCenter(Vector<double> &c) const;
+  void getCenter(Eigen::Ref<Vector<double>> c) const;
+
   /** \overload */
-  void getCenter(Vector<float> &c) const;
+  void getCenter(Eigen::Ref<Vector<float>> c) const;
 
   /** \brief Get transposed Jacobian matrices at specified points.
    *
@@ -283,7 +285,8 @@ private:
   virtual void
   getIntegrationElementsImpl(const Matrix<double> &local,
                              RowVector<double> &int_element) const = 0;
-  virtual void getCenterImpl(Vector<double> &c) const = 0;
+
+  virtual void getCenterImpl(Eigen::Ref<Vector<double>> c) const = 0;
   virtual void
   getJacobiansTransposedImpl(const Matrix<double> &local,
                              Fiber::_3dArray<double> &jacobian_t) const = 0;

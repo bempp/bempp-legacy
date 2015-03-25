@@ -86,6 +86,21 @@ void DiscreteBoundaryOperator<ValueType>::apply(
 }
 
 template <typename ValueType>
+void DiscreteBoundaryOperator<ValueType>::apply(
+    const TranspositionMode trans, const Vector<ValueType> &x_in,
+    Vector<ValueType> &y_inout, const ValueType alpha,
+    const ValueType beta) const {
+
+    Matrix<ValueType> x_inMat = x_in;
+    Matrix<ValueType> y_inoutMat = y_inout;
+
+    this->apply(trans,x_inMat,y_inoutMat,alpha,beta);
+
+    y_inout = y_inoutMat.col(0);
+
+}
+
+template <typename ValueType>
 shared_ptr<const DiscreteBoundaryOperator<ValueType>>
 DiscreteBoundaryOperator<ValueType>::asDiscreteAcaBoundaryOperator(
     double eps, int maximumRank, bool interleave) const {

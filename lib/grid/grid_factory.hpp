@@ -25,6 +25,7 @@
 #include "../common/shared_ptr.hpp"
 #include "grid_parameters.hpp"
 #include "../common/eigen_support.hpp"
+#include <vector>
 
 #include <memory>
 

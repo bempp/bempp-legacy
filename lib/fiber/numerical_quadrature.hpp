@@ -22,6 +22,7 @@
 #define fiber_numerical_quadrature_hpp
 
 #include "../common/common.hpp"
+#include <vector>
 
 /** \file
  *

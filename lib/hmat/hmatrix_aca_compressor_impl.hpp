@@ -4,6 +4,7 @@
 #define HMAT_HMATRIX_ACA_COMPRESSOR_IMPL_HPP
 
 #include "hmatrix_aca_compressor.hpp"
+#include <boost/numeric/conversion/cast.hpp>
 #include "hmatrix_low_rank_data.hpp"
 #include "eigen_fwd.hpp"
 #include "scalar_traits.hpp"
@@ -18,6 +19,10 @@ template <typename ValueType, int N>
 void HMatrixAcaCompressor<ValueType, N>::compressBlock(
     const BlockClusterTreeNode<N> &blockClusterTreeNode,
     shared_ptr<HMatrixData<ValueType>> &hMatrixData) const {
+
+  throw std::runtime_error("not yet implemented.");
+
+  /*
 
   if (!blockClusterTreeNode.data().admissible) {
     m_hMatrixDenseCompressor.compressBlock(blockClusterTreeNode, hMatrixData);
@@ -87,7 +92,7 @@ void HMatrixAcaCompressor<ValueType, N>::compressBlock(
 
     maxColInd += columnClusterRange[0]; // Map back to original variables
     rowIndexRange = rowClusterRange;
-    columnIndexRange = {{maxColInd, maxColInd + 1}};
+    columnIndexRange = {{boost::numeric_cast<std::size_t>(maxColInd), boost::numeric_cast<std::size_t>(maxColInd) + 1}};
 
     evaluateMatMinusLowRank(blockClusterTreeNode, rowIndexRange,
                             columnIndexRange, newCol, A, B);
@@ -112,6 +117,9 @@ void HMatrixAcaCompressor<ValueType, N>::compressBlock(
       A = A.block(0,0,A.rows(),rankCount);
       B = B.block(0,0,B.rows(),rankCount);
   }
+
+  */
+
 }
 
 template <typename ValueType, int N>

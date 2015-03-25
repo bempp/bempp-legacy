@@ -87,6 +87,11 @@ Matrix<T> eigenMatPinv(const Matrix<T>& mat)
         return mat.transpose()*(mat*mat.transpose()).inverse();
 }
 
+template <typename Derived>
+bool is_empty(const Eigen::MatrixBase<Derived>& m){
+
+    return (m.rows() * m.cols() == 0);
+}
 
 
 }

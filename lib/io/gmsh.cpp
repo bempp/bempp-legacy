@@ -1105,7 +1105,7 @@ GmshIo::GmshIo(const shared_ptr<const Grid> &grid) : m_grid(grid) {
     int index = m_nodePermutation[indexSet.entityIndex(node)];
     const Geometry &geom = node.geometry();
     Vector<double> coords(3, 1);
-    geom.getCenter(coords);
+    geom.getCenter(Eigen::Ref<Vector<double>>(coords));
     m_gmshData.addNode(index, coords(0), coords(1), coords(2));
     nodeIterator->next();
   }
@@ -1432,14 +1432,14 @@ void exportToGmsh(GridFunction<BasisFunctionType, ResultType> gridFunction,
   typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
   boost::array<Matrix<CoordinateType>, 5> localCoordsOnTriangles;
 
-  localCoordsOnTriangles[0].set_size(2, 3);
+  localCoordsOnTriangles[0].resize(2, 3);
   localCoordsOnTriangles[0].fill(0.);
   localCoordsOnTriangles[0](0, 1) = 1.;
   localCoordsOnTriangles[0](1, 2) = 1.;
 
   localCoordsOnTriangles[1] = localCoordsOnTriangles[0];
 
-  localCoordsOnTriangles[2].set_size(2, 6);
+  localCoordsOnTriangles[2].resize(2, 6);
   localCoordsOnTriangles[2].fill(0.);
   localCoordsOnTriangles[2](0, 1) = 1.;
   localCoordsOnTriangles[2](1, 2) = 1.;
@@ -1448,7 +1448,7 @@ void exportToGmsh(GridFunction<BasisFunctionType, ResultType> gridFunction,
   localCoordsOnTriangles[2](1, 4) = 0.5;
   localCoordsOnTriangles[2](1, 5) = 0.5;
 
-  localCoordsOnTriangles[3].set_size(2, 10);
+  localCoordsOnTriangles[3].resize(2, 10);
   localCoordsOnTriangles[3].fill(0.);
   localCoordsOnTriangles[3](0, 1) = 1.;
   localCoordsOnTriangles[3](1, 2) = 1.;
@@ -1463,7 +1463,7 @@ void exportToGmsh(GridFunction<BasisFunctionType, ResultType> gridFunction,
   localCoordsOnTriangles[3](0, 9) = 1. / 3.;
   localCoordsOnTriangles[3](1, 9) = 1. / 3.;
 
-  localCoordsOnTriangles[4].set_size(2, 15);
+  localCoordsOnTriangles[4].resize(2, 15);
   localCoordsOnTriangles[4].fill(0.);
   localCoordsOnTriangles[4](0, 1) = 1.;
   localCoordsOnTriangles[4](1, 2) = 1.;
@@ -1505,18 +1505,18 @@ void exportToGmsh(GridFunction<BasisFunctionType, ResultType> gridFunction,
     const std::vector<int> &nodePermutation = gmshIo.nodePermutation();
     Matrix<ResultType> values;
     gridFunction.evaluateAtSpecialPoints(VtkWriter::VERTEX_DATA, values);
-    Matrix<CoordinateType> modifiedValues;
+    Matrix<double> modifiedValues;
     if (complexMode == "real")
-      modifiedValues = values.real();
+      modifiedValues = values.real().template cast<double>();
     else if (complexMode == "imag")
-      modifiedValues = values.imag();
+      modifiedValues = (values.template cast<std::complex<double>>()).imag();
     else if (complexMode == "abs")
-      modifiedValues = values.cwiseAbs();
+      modifiedValues = values.cwiseAbs().template cast<double>();
     int dataSetIndex = gmshData.numberOfNodeDataSets();
-    gmshData.addNodeDataSet(stringTags, realTags, values.n_rows, numberOfNodes);
+    gmshData.addNodeDataSet(stringTags, realTags, values.rows(), numberOfNodes);
     for (int i = 0; i < numberOfNodes; ++i) {
-      std::vector<double> vals(values.n_rows);
-      for (int j = 0; j < values.n_rows; ++j)
+      std::vector<double> vals(values.rows());
+      for (int j = 0; j < values.rows(); ++j)
         vals[j] = modifiedValues(j, i);
       gmshData.addNodeData(dataSetIndex, nodePermutation[i], vals);
     }
@@ -1526,19 +1526,19 @@ void exportToGmsh(GridFunction<BasisFunctionType, ResultType> gridFunction,
     const std::vector<int> &elementPermutation = gmshIo.elementPermutation();
     Matrix<ResultType> values;
     gridFunction.evaluateAtSpecialPoints(VtkWriter::CELL_DATA, values);
-    Matrix<CoordinateType> modifiedValues;
+    Matrix<double> modifiedValues;
     if (complexMode == "real")
-      modifiedValues = values.real();
+      modifiedValues = values.real().template cast<double>();
     else if (complexMode == "imag")
-      modifiedValues = values.imag();
+      modifiedValues = (values.template cast<std::complex<double>>()).imag();
     else if (complexMode == "abs")
-      modifiedValues = values.cwiseAbs();
+      modifiedValues = values.cwiseAbs().template cast<double>();
     int dataSetIndex = gmshData.numberOfElementDataSets();
-    gmshData.addElementDataSet(stringTags, realTags, values.n_rows,
+    gmshData.addElementDataSet(stringTags, realTags, values.rows(),
                                numberOfElements);
     for (int i = 0; i < numberOfElements; ++i) {
-      std::vector<double> vals(values.n_rows);
-      for (int j = 0; j < values.n_rows; ++j)
+      std::vector<double> vals(values.rows());
+      for (int j = 0; j < values.rows(); ++j)
         vals[j] = modifiedValues(j, i);
       gmshData.addElementData(dataSetIndex, elementPermutation[i], vals);
     }
@@ -1556,14 +1556,14 @@ void exportToGmsh(GridFunction<BasisFunctionType, ResultType> gridFunction,
       const Entity<0> &element = it->entity();
       int elementIndex = indexSet.entityIndex(element);
       Matrix<ResultType> values;
-      Matrix<CoordinateType> modifiedValues;
+      Matrix<double> modifiedValues;
       gridFunction.evaluate(element, localCoordsOnTriangles[0], values);
       if (complexMode == "real")
-        modifiedValues = values.real();
+        modifiedValues = values.real().template cast<double>();
       else if (complexMode == "imag")
-        modifiedValues = values.imag();
+        modifiedValues = (values.template cast<std::complex<double>>()).imag();
       else if (complexMode == "abs")
-        modifiedValues = values.cwiseAbs();
+        modifiedValues = values.cwiseAbs().template cast<double>();
 
       std::vector<std::vector<double>> vals(values.cols());
       for (int j = 0; j < values.cols(); ++j) {

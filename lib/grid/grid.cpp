@@ -62,7 +62,7 @@ bool Grid::isBarycentricRepresentationOf(const Grid &other) const {
 void Grid::getBoundingBox(Vector<double> &lowerBound,
                           Vector<double> &upperBound) const {
   // In this simple implementation we assume that all elements are flat.
-  if (m_lowerBound.n_rows == dimWorld() && m_upperBound.rows() == dimWorld()) {
+  if (m_lowerBound.rows() == dimWorld() && m_upperBound.rows() == dimWorld()) {
     lowerBound = m_lowerBound;
     upperBound = m_upperBound;
     return;
@@ -154,7 +154,7 @@ std::vector<bool> areInside(const Grid &grid, const Matrix<double> &points) {
         if (zRayIntersectsTriangle(points.col(pt).data(), triangles[tri].col(0).data(),
                                    triangles[tri].col(1).data(),
                                    triangles[tri].col(2).data(),
-                                   intersection.col(0)) > 0.)
+                                   intersection.col(0).data()) > 0.)
           if (isNew(intersection, intersections))
             intersections.push_back(intersection);
     result[pt] = intersections.size();

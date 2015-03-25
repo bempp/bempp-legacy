@@ -25,6 +25,7 @@
 
 #include "../common/common.hpp"
 #include "../common/shared_ptr.hpp"
+#include "../common/eigen_support.hpp"
 #include "grid_parameters.hpp"
 
 #include <cstddef> // size_t

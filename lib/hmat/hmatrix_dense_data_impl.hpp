@@ -17,7 +17,7 @@ void HMatrixDenseData<ValueType>::apply(const Matrix<ValueType> &X,
                                         ValueType beta) const {
 
   if (beta == ValueType(0))
-    Y.zeros();
+    Y.setZero();
   if (alpha == ValueType(0)) {
     Y = beta * Y;
     return;

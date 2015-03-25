@@ -30,6 +30,8 @@ template <typename T> using Vector = Bempp::Vector<T>;
 template <typename T> using Matrix = Bempp::Matrix<T>;
 template <typename T> using RowVector = Bempp::RowVector<T>;
 
+using Bempp::is_empty;
+
 enum CallVariant {
   TEST_TRIAL = 0,
   TRIAL_TEST = 1

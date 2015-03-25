@@ -96,16 +96,18 @@ Geometry::getIntegrationElements(const Matrix<float> &local,
       int_element(i) = int_elementDouble(i);
 }
 
-inline void Geometry::getCenter(Vector<double> &c) const {
+inline void Geometry::getCenter(Eigen::Ref<Vector<double>> c) const {
   getCenterImpl(c);
 }
 
-inline void Geometry::getCenter(Vector<float> &c) const {
-  Vector<double> cDouble;
-  getCenterImpl(cDouble);
-  c.resize(cDouble.rows());
-  for (int i = 0; i < cDouble.rows(); ++i)
-      c(i) = cDouble(i);
+inline void Geometry::getCenter(Eigen::Ref<Vector<float>> c) const {
+
+    Vector<double> cDouble;
+    cDouble.resize(c.rows());
+    getCenterImpl(cDouble);
+    for (int i = 0; i < c.rows(); ++i)
+        c(i) = cDouble(i);
+
 }
 
 inline void
