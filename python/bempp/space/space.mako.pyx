@@ -72,40 +72,6 @@ cdef class Space:
             return self._order
 
 
-    property global_dof_interpolation_points:
-        """ (3xN) matrix of global interpolation points for the space, where each column is the
-            coordinate of an interpolation points. """
-
-        def __get__(self):
-            pass
-
-% for pybasis,cybasis in dtypes.items():
-            if self.dtype=="${pybasis}":
-%     if pybasis in ['float32','complex64']:
-                    return armadillo_to_np_float32(_py_space_get_global_dof_interp_points_${pybasis}(self.impl_))
-%     else:
-                    return armadillo_to_np_float64(_py_space_get_global_dof_interp_points_${pybasis}(self.impl_))
-%     endif
-% endfor
-            raise("Unknown dtype for space")
-
-
-    property global_dof_normals:
-        """ (3xN) matrix of normal directions associated with the interpolation points. """
-
-        def __get__(self):
-            pass
-
-% for pybasis,cybasis in dtypes.items():
-            if self.dtype=="${pybasis}":
-%     if pybasis in ['float32','complex64']:
-                    return armadillo_to_np_float32(_py_space_get_global_dof_normals_${pybasis}(self.impl_))
-%     else:
-                    return armadillo_to_np_float64(_py_space_get_global_dof_normals_${pybasis}(self.impl_))
-%     endif
-% endfor
-            raise("Unknown dtype for space")
-
 
                 
 
@@ -171,5 +137,87 @@ cdef class ${class_name}(Space):
             ))
 %       endif
 %    endfor
+
+
+    property global_dof_interpolation_points:
+        """ (3xN) matrix of global interpolation points for the space, where each column is the
+            coordinate of an interpolation points. """
+
+        def __get__(self):
+
+% for pybasis,cybasis in dtypes.items():
+            if self.dtype=="${pybasis}":
+%     if pybasis in ['float32','complex64']:
+                    return armadillo_to_np_float32(_py_space_get_global_dof_interp_points_${pybasis}(self.impl_))
+%     else:
+                    return armadillo_to_np_float64(_py_space_get_global_dof_interp_points_${pybasis}(self.impl_))
+%     endif
 % endfor
+            raise("Unknown dtype for space")
+
+
+    property global_dof_normals:
+        """ (3xN) matrix of normal directions associated with the interpolation points. """
+
+        def __get__(self):
+
+% for pybasis,cybasis in dtypes.items():
+            if self.dtype=="${pybasis}":
+%     if pybasis in ['float32','complex64']:
+                    return armadillo_to_np_float32(_py_space_get_global_dof_normals_${pybasis}(self.impl_))
+%     else:
+                    return armadillo_to_np_float64(_py_space_get_global_dof_normals_${pybasis}(self.impl_))
+%     endif
+% endfor
+            raise("Unknown dtype for space")
+
+
+% endfor
+
+
+
+cdef class RaviartThomas0VectorSpace(Space):
+    """ Raviart Thomas Basis functions of order 0
+
+        Attributes
+        ----------
+
+        grid : Grid
+            Grid over which to discretize the space.
+
+        dtype : numpy.dtype
+            Type of the basis functions in this space.
+
+        codomain_dimension : int
+            Number of components of values of functions in this space.
+
+        domain_dimension : int
+            Dimension of the domain on which the space is defined.
+
+        global_dof_count : int
+            Number of global degrees of freedom.
+
+        flat_local_dof_count : int
+            Total number of local degrees of freedom.
+
+        global_dof_interpolation_points : np.ndarray 
+            (3xN) matrix of global interpolation points for the space,
+            where each column is the coordinate of an interpolation point.
+
+        global_dof_interpolation_points : np.ndarray
+            (3xN) matrix of normal directions associated with the interpolation points.
+
+        order : int
+            Order of the polynomial degre of the space. 
+
+        Notes
+        -----
+        A space instance should always be created using the function 'bempp.function_space'.
+    """
+
+    def __init__(self, Grid grid not None, order):
+
+        super(RaviartThomas0VectorSpace,self).__init__(grid,order)
+        self.impl_.set( shared_ptr[c_Space[double]](
+            <c_Space[double]*>new c_RaviartThomas0VectorSpace(grid.impl_)))
 

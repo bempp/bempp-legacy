@@ -1,5 +1,6 @@
 mako_files(
-    identity_operator.mako.pxd identity_operator.mako.pyx
+    identity_operator.mako.pxd identity_operator.mako.pyx maxwell_identity.mako.pxd
+    maxwell_identity.mako.pyx laplace_beltrami_operator.mako.pxd laplace_beltrami_operator.mako.pyx
     OUTPUT_FILES makoed
     DESTINATION "${PYTHON_BINARY_DIR}/bempp/include/bempp/operators/boundary/sparse"
     TARGETNAME bempp.operators.boundary.sparse-mako
