@@ -97,11 +97,11 @@ inline int epetraSumIntoGlobalValues<double>(Epetra_FECrsMatrix &matrix,
                                              const std::vector<int> &rowIndices,
                                              const std::vector<int> &colIndices,
                                              const Matrix<double> &values) {
-  assert(rowIndices.size() == values.n_rows);
-  assert(colIndices.size() == values.n_cols);
+  assert(rowIndices.size() == values.rows());
+  assert(colIndices.size() == values.cols());
   return matrix.SumIntoGlobalValues(
       rowIndices.size(), &rowIndices[0], colIndices.size(), &colIndices[0],
-      values.memptr(), Epetra_FECrsMatrix::COLUMN_MAJOR);
+      values.data(), Epetra_FECrsMatrix::COLUMN_MAJOR);
 }
 
 // Specialisation for float
@@ -112,7 +112,7 @@ inline int epetraSumIntoGlobalValues<float>(Epetra_FECrsMatrix &matrix,
                                             const Matrix<float> &values) {
   // Convert data from float into double (expected by Epetra)
   Matrix<double> doubleValues(values.rows(), values.cols());
-  for (int j = 0; i < values.cols(); ++j)
+  for (int j = 0; j < values.cols(); ++j)
       for (int i = 0; i < values.rows(); ++i)
           doubleValues(i,j) = values(i,j);
 
@@ -381,7 +381,7 @@ ElementaryLocalOperator<BasisFunctionType, ResultType>::
   Epetra_LocalMap colMap(trialGlobalDofCount, 0 /* index_base */, comm);
   shared_ptr<Epetra_FECrsMatrix> result =
       boost::make_shared<Epetra_FECrsMatrix>(
-          Copy, rowMap, colMap, nonzeroEntryCountEstimates.memptr());
+          Copy, rowMap, colMap, nonzeroEntryCountEstimates.data());
 
   // TODO: make each process responsible for a subset of elements
   // Find maximum number of local dofs per element
@@ -396,7 +396,7 @@ ElementaryLocalOperator<BasisFunctionType, ResultType>::
   for (size_t e = 0; e < elementCount; ++e)
     result->InsertGlobalValues(testGdofs[e].size(), &testGdofs[e][0],
                                trialGdofs[e].size(), &trialGdofs[e][0],
-                               zeros.memptr());
+                               zeros.data());
   // Add contributions from individual elements
   for (size_t e = 0; e < elementCount; ++e)
     epetraSumIntoGlobalValues(*result, testGdofs[e], trialGdofs[e],

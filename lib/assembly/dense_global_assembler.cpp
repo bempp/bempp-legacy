@@ -370,7 +370,7 @@ assemblePotentialOperator(
     gatherGlobalDofs(trialSpace, trialGlobalDofs, trialLocalDofWeights);
 
     const int trialElementCount = trialGlobalDofs.size();
-    const int pointCount = points.n_cols;
+    const int pointCount = points.cols();
     const int componentCount = assembler.resultDimension();
 
     // Make a vector of all element indices
@@ -381,7 +381,7 @@ assemblePotentialOperator(
     // Create the operator's matrix
     Matrix<ResultType> result(pointCount * componentCount,
                                  trialSpace.globalDofCount());
-    result.setZero(0.);
+    result.setZero();
 
     typedef DensePotentialOperatorAssemblerLoopBody<BasisFunctionType, ResultType> Body;
     typename Body::MutexType mutex;

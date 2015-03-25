@@ -72,7 +72,7 @@ public:
    */
   AssembledPotentialOperator(
       const shared_ptr<const Space<BasisFunctionType>> &space_,
-      const shared_ptr<Matrix<CoordinateType>> &evaluationPoints_,
+      const shared_ptr<const Matrix<CoordinateType>> &evaluationPoints_,
       const shared_ptr<const DiscreteBoundaryOperator<ResultType>> &op_,
       int componentCount_);
 

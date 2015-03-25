@@ -81,15 +81,15 @@ void solveWithAmesos<float>(Epetra_LinearProblem &problem,
   assert(armaSolution.cols() == 1);
   assert(armaRhs.cols() == 1);
 
-  Vector<double> solution_double(armaSolution.rows());
-  for (int i = 0; i < armaSolution.rows(); ++i) solution_double(i) = armaSolution(i,1);
+  Matrix<double> solution_double(armaSolution.rows(),1);
+  for (int i = 0; i < armaSolution.rows(); ++i) solution_double(i,0) = armaSolution(i,0);
 
-  Vector<double> rhs_double(armaRhs.rows());
-  for (int i = 0; i < armaRhs.rows(); ++i) rhs_double(i) = armaRhs(i,1);
+  Matrix<double> rhs_double(armaRhs.rows(),1);
+  for (int i = 0; i < armaRhs.rows(); ++i) rhs_double(i,0) = armaRhs(i,0);
 
   solveWithAmesos<double>(problem, solver, solution_double, rhs_double);
 
-  for (int i = 0; i < solution_double.rows(); ++i) armaSolution(i,1) = solution_double(i);
+  for (int i = 0; i < solution_double.rows(); ++i) armaSolution(i,0) = solution_double(i,0);
 
 }
 
@@ -109,7 +109,7 @@ void solveWithAmesos<std::complex<float>>(
     solution_double(i, 0) = armaSolution(i).real();
     solution_double(i, 1) = armaSolution(i).imag();
   }
-  arma::Mat<double> rhs_double(armaRhs.rows(), 2);
+  Matrix<double> rhs_double(armaRhs.rows(), 2);
   for (size_t i = 0; i < armaRhs.rows(); ++i) {
     rhs_double(i, 0) = armaRhs(i).real();
     rhs_double(i, 1) = armaRhs(i).imag();
@@ -132,12 +132,12 @@ void solveWithAmesos<std::complex<double>>(
 
   // Solve for the real and imaginary part separately
   // (The copy of the solution (before solving) is probably not necessary...)
-  arma::Mat<double> solution_double(armaSolution.rows(), 2);
+  Matrix<double> solution_double(armaSolution.rows(), 2);
   for (size_t i = 0; i < armaSolution.rows(); ++i) {
     solution_double(i, 0) = armaSolution(i).real();
     solution_double(i, 1) = armaSolution(i).imag();
   }
-  arma::Mat<double> rhs_double(armaRhs.rows(), 2);
+  Matrix<double> rhs_double(armaRhs.rows(), 2);
   for (size_t i = 0; i < armaRhs.rows(); ++i) {
     rhs_double(i, 0) = armaRhs(i).real();
     rhs_double(i, 1) = armaRhs(i).imag();
@@ -249,14 +249,15 @@ void DiscreteInverseSparseBoundaryOperator<ValueType>::applyBuiltInImpl(
     throw std::invalid_argument("DiscreteInverseSparseBoundaryOperator::"
                                 "applyBuiltInImpl(): "
                                 "incorrect vector lengths");
-  Vector<ValueType> solution(dim);
+  Matrix<ValueType> solution(dim,1);
   solution.setZero();
-  solveWithAmesos(*m_problem, *m_solver, solution, x_in);
+  Matrix<ValueType> x_inMat = x_in;
+  solveWithAmesos(*m_problem, *m_solver, solution, x_inMat);
   if (beta == static_cast<ValueType>(0.))
-    y_inout = alpha * solution;
+    y_inout = alpha * solution.col(0);
   else {
     y_inout *= beta;
-    y_inout += alpha * solution;
+    y_inout += alpha * solution.col(0);
   }
 }
 

@@ -232,8 +232,9 @@ AbstractBoundaryOperatorPseudoinverse<BasisFunctionType, ResultType>::
 
   if (wrappedDiscreteOp->rowCount() == wrappedDiscreteOp->columnCount())
     // TODO: store an LU decomposition instead of the inverse matrix.
-    return boost::make_shared<DiscreteDenseLinOp>(
-        (wrappedDiscreteOp->asMatrix()).inverse());
+    return shared_ptr<DiscreteBoundaryOperator<ResultType>>(
+           new DiscreteDenseLinOp(
+                             (wrappedDiscreteOp->asMatrix()).inverse().eval() ));
   else
     // compute and store pseudoinverse
     return boost::make_shared<DiscreteDenseLinOp>(

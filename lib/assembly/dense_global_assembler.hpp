@@ -2,6 +2,7 @@
 #define bempp_dense_global_assembler_hpp
 
 #include "../common/common.hpp"
+#include "../common/eigen_support.hpp"
 #include "../common/scalar_traits.hpp"
 
 #include <memory>

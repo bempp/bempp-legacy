@@ -820,7 +820,7 @@ void DiscreteBlockedBoundaryOperator<ValueType>::applyBuiltInImpl(
 
   for (int yi = 0, y_start = 0; yi < y_count; ++yi) {
     size_t y_chunk_size = transpose ? m_columnCounts[yi] : m_rowCounts[yi];
-    Eigen::Map<Vector<ValueType>> y_chunk(y_inout.data()+y_start,y_chunk_size);
+    Matrix<ValueType> y_chunk = y_inout.segment(y_start,y_chunk_size);
 //    arma::Col<ValueType> y_chunk(&y_inout[y_start], y_chunk_size,
 //                                 false /* copy_aux_mem */);
     for (int xi = 0, x_start = 0; xi < x_count; ++xi) {
@@ -832,20 +832,26 @@ void DiscreteBlockedBoundaryOperator<ValueType>::applyBuiltInImpl(
       //                                         false /* copy_aux_mem */);
       if (xi == 0) {
         // This branch ensures that the "y += beta * y" part is done
-        if (op)
+        if (op){
           //                    op->apply(trans, x_chunk, y_chunk, alpha, beta);
-          op->apply(trans, x_in.segment(x_start, x_chunk_size),
+          Matrix<ValueType> x_inChunk = x_in.segment(x_start, x_chunk_size);
+          op->apply(trans, x_inChunk,
                     y_chunk, alpha, beta);
+          y_inout.segment(y_start,y_chunk_size) = y_chunk;
+        }
         else {
           if (beta == static_cast<ValueType>(0.))
             y_chunk.setZero();
           else
             y_chunk *= beta;
         }
-      } else if (op)
+      } else if (op){
         //                    op->apply(trans, x_chunk, y_chunk, alpha, 1.);
-        op->apply(trans, x_in.segment(x_start, x_chunk_size ),
+        Matrix<ValueType> x_inChunk = x_in.segment(x_start, x_chunk_size);
+        op->apply(trans, x_inChunk,
                   y_chunk, alpha, 1.);
+        y_inout.segment(y_start,y_chunk_size) = y_chunk;
+      }
       x_start += x_chunk_size;
     }
     y_start += y_chunk_size;

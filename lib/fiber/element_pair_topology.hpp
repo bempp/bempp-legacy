@@ -111,10 +111,10 @@ inline ElementPairTopology determineElementPairTopologyIn3D(
   const int MIN_VERTEX_COUNT = 3;
 #endif
   const int MAX_VERTEX_COUNT = 4;
-  topology.testVertexCount = testElementCornerIndices.n_rows;
+  topology.testVertexCount = testElementCornerIndices.rows();
   assert(MIN_VERTEX_COUNT <= topology.testVertexCount &&
          topology.testVertexCount <= MAX_VERTEX_COUNT);
-  topology.trialVertexCount = trialElementCornerIndices.n_rows;
+  topology.trialVertexCount = trialElementCornerIndices.rows();
   assert(MIN_VERTEX_COUNT <= topology.trialVertexCount &&
          topology.trialVertexCount <= MAX_VERTEX_COUNT);
 

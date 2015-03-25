@@ -108,7 +108,7 @@ void NumericalKernelTrialIntegrator<BasisFunctionType, KernelType, ResultType,
 
   for (size_t i = 0; i < result.size(); ++i) {
     assert(result[i]);
-    result[i]->set_size(componentCount, trialDofCount);
+    result[i]->resize(componentCount, trialDofCount);
   }
 
   m_rawGeometry.setupGeometry(trialElementIndex, *trialGeometry);
@@ -124,7 +124,7 @@ void NumericalKernelTrialIntegrator<BasisFunctionType, KernelType, ResultType,
     pointGeomData.globals = m_points.col(pointIndices[i]);
     m_kernels.evaluateOnGrid(pointGeomData, trialGeomData, kernelValues);
     _3dArray<ResultType> result3dView(componentCount, trialDofCount, 1,
-                                      result[i]->memptr(), true /* strict */);
+                                      result[i]->data(), true /* strict */);
     m_integral.evaluateWithPureWeights(trialGeomData, kernelValues, trialValues,
                                        m_quadWeights, result3dView);
   }
@@ -172,7 +172,7 @@ void NumericalKernelTrialIntegrator<BasisFunctionType, KernelType, ResultType,
 
   for (size_t i = 0; i < result.size(); ++i) {
     assert(result[i]);
-    result[i]->set_size(componentCount, trialDofCount);
+    result[i]->resize(componentCount, trialDofCount);
   }
   _3dArray<ResultType> result3d(componentCount, trialDofCount, 1);
 
@@ -211,7 +211,7 @@ void NumericalKernelTrialIntegrator<BasisFunctionType, KernelType, ResultType,
     integrate(const std::vector<PointElementIndexPair> &pointElementIndexPairs,
               const Shapeset<BasisFunctionType> &trialShapeset,
               const std::vector<Matrix<ResultType> *> &result) const {
-  const int quadPointCount = m_localQuadPoints.cols;
+  const int quadPointCount = m_localQuadPoints.cols();
   const int pairCount = pointElementIndexPairs.size();
   const int componentCount = m_integral.resultDimension();
   const int trialDofCount = trialShapeset.size();
@@ -244,7 +244,7 @@ void NumericalKernelTrialIntegrator<BasisFunctionType, KernelType, ResultType,
 
   for (size_t i = 0; i < result.size(); ++i) {
     assert(result[i]);
-    result[i]->set_size(componentCount, trialDofCount);
+    result[i]->resize(componentCount, trialDofCount);
   }
 
   // Iterate over the (point, trial element) pairs
@@ -263,7 +263,7 @@ void NumericalKernelTrialIntegrator<BasisFunctionType, KernelType, ResultType,
     m_trialTransformations.evaluate(trialBasisData, trialGeomData, trialValues);
     m_kernels.evaluateOnGrid(pointGeomData, trialGeomData, kernelValues);
     _3dArray<ResultType> result3dView(componentCount, trialDofCount, 1,
-                                      result[i]->memptr(), true /* strict */);
+                                      result[i]->data(), true /* strict */);
     m_integral.evaluateWithPureWeights(trialGeomData, kernelValues, trialValues,
                                        m_quadWeights, result3dView);
   }

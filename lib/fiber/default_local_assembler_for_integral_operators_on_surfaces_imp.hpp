@@ -401,9 +401,9 @@ void DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
   const Matrix<int> &elementCornerIndices =
       rawGeometry.elementCornerIndices();
 
-  const int vertexCount = vertices.n_cols;
-  const int elementCount = elementCornerIndices.n_cols;
-  const int maxCornerCount = elementCornerIndices.n_rows;
+  const int vertexCount = vertices.cols();
+  const int elementCount = elementCornerIndices.cols();
+  const int maxCornerCount = elementCornerIndices.rows();
 
   typedef std::vector<int> ElementIndexVector;
   // ith entry: set of elements sharing vertex number i

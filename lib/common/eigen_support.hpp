@@ -75,7 +75,7 @@ private:
 };
 
 template <typename T>
-Matrix<T> eigenMatPinv(const Matrix<T>& mat) const
+Matrix<T> eigenMatPinv(const Matrix<T>& mat)
 {
 
     if (mat.rows()==mat.cols())

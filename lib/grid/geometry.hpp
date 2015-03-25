@@ -287,9 +287,15 @@ private:
   virtual void
   getJacobiansTransposedImpl(const Matrix<double> &local,
                              Fiber::_3dArray<double> &jacobian_t) const = 0;
+  virtual void
+  getJacobiansTransposedImpl(const Matrix<double> &local,
+                             std::vector<Matrix<double>> &jacobian_t) const = 0;
   virtual void getJacobianInversesTransposedImpl(
       const Matrix<double> &local,
       Fiber::_3dArray<double> &jacobian_inv_t) const = 0;
+  virtual void getJacobianInversesTransposedImpl(
+      const Matrix<double> &local,
+      std::vector<Matrix<double>> &jacobian_inv_t) const = 0;
   virtual void getNormalsImpl(const Matrix<double> &local,
                               Matrix<double> &normal) const = 0;
   virtual void getDataImpl(size_t what, const Matrix<double> &local,
@@ -298,6 +304,10 @@ private:
   // Helper functions for implementation
   template <typename T1, typename T2>
   void convertMat(const Matrix<T1> &in, Matrix<T2> &out) const;
+  template <typename T1, typename T2>
+  void convertMat(const Vector<T1> &in, Vector<T2> &out) const;
+  template <typename T1, typename T2>
+  void convertMat(const RowVector<T1> &in, RowVector<T2> &out) const;
   template <typename T1, typename T2>
   void convertCube(const std::vector<Matrix<T1>> &in,std::vector<Matrix<T2>> &out) const;
   template <typename T1, typename T2>

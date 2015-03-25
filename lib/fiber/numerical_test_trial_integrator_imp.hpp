@@ -55,7 +55,7 @@ NumericalTestTrialIntegrator<BasisFunctionType, ResultType, GeometryFactory>::
       m_testTransformations(testTransformations),
       m_trialTransformations(trialTransformations), m_integral(integral),
       m_openClHandler(openClHandler) {
-  if (localQuadPoints.n_cols != quadWeights.size())
+  if (localQuadPoints.cols() != quadWeights.size())
     throw std::invalid_argument("NumericalTestTrialIntegrator::"
                                 "NumericalTestTrialIntegrator(): "
                                 "numbers of points and weights do not match");

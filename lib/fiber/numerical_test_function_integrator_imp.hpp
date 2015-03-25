@@ -73,7 +73,7 @@ void NumericalTestFunctionIntegrator<
     GeometryFactory>::integrate(const std::vector<int> &elementIndices,
                                 const Shapeset<BasisFunctionType> &testShapeset,
                                 Matrix<ResultType> &result) const {
-  const size_t pointCount = m_localQuadPoints.n_cols;
+  const size_t pointCount = m_localQuadPoints.cols();
   const size_t elementCount = elementIndices.size();
 
   if (pointCount == 0 || elementCount == 0)

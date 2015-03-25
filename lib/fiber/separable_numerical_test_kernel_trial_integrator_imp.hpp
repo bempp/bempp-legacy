@@ -78,12 +78,12 @@ SeparableNumericalTestKernelTrialIntegrator<BasisFunctionType, KernelType,
       m_trialTransformations(trialTransformations), m_integral(integral),
       m_openClHandler(openClHandler),
       m_cacheGeometricalData(cacheGeometricalData) {
-  if (localTestQuadPoints.n_cols != testQuadWeights.size())
+  if (localTestQuadPoints.cols() != testQuadWeights.size())
     throw std::invalid_argument(
         "SeparableNumericalTestKernelTrialIntegrator::"
         "SeparableNumericalTestKernelTrialIntegrator(): "
         "numbers of test points and weights do not match");
-  if (localTrialQuadPoints.n_cols != trialQuadWeights.size())
+  if (localTrialQuadPoints.cols() != trialQuadWeights.size())
     throw std::invalid_argument(
         "SeparableNumericalTestKernelTrialIntegrator::"
         "SeparableNumericalTestKernelTrialIntegrator(): "
@@ -192,8 +192,8 @@ void SeparableNumericalTestKernelTrialIntegrator<BasisFunctionType, KernelType,
                  const Shapeset<BasisFunctionType> &basisB,
                  LocalDofIndex localDofIndexB,
                  const std::vector<Matrix<ResultType> *> &result) const {
-  const int testPointCount = m_localTestQuadPoints.n_cols;
-  const int trialPointCount = m_localTrialQuadPoints.n_cols;
+  const int testPointCount = m_localTestQuadPoints.cols();
+  const int trialPointCount = m_localTrialQuadPoints.cols();
   const int elementACount = elementIndicesA.size();
 
   if (result.size() != elementIndicesA.size())
@@ -249,7 +249,7 @@ void SeparableNumericalTestKernelTrialIntegrator<BasisFunctionType, KernelType,
 
   for (size_t i = 0; i < result.size(); ++i) {
     assert(result[i]);
-    result[i]->set_size(testDofCount, trialDofCount);
+    result[i]->resize(testDofCount, trialDofCount);
   }
 
   if (!m_cacheGeometricalData)
@@ -697,8 +697,8 @@ void SeparableNumericalTestKernelTrialIntegrator<BasisFunctionType, KernelType,
                  const Shapeset<BasisFunctionType> &testShapeset,
                  const Shapeset<BasisFunctionType> &trialShapeset,
                  const std::vector<Matrix<ResultType> *> &result) const {
-  const int testPointCount = m_localTestQuadPoints.n_cols;
-  const int trialPointCount = m_localTrialQuadPoints.n_cols;
+  const int testPointCount = m_localTestQuadPoints.cols();
+  const int trialPointCount = m_localTrialQuadPoints.cols();
   const int geometryPairCount = elementIndexPairs.size();
 
   if (result.size() != elementIndexPairs.size())
@@ -743,7 +743,7 @@ void SeparableNumericalTestKernelTrialIntegrator<BasisFunctionType, KernelType,
 
   for (size_t i = 0; i < result.size(); ++i) {
     assert(result[i]);
-    result[i]->set_size(testDofCount, trialDofCount);
+    result[i]->resize(testDofCount, trialDofCount);
   }
 
   testShapeset.evaluate(testBasisDeps, m_localTestQuadPoints, ALL_DOFS,

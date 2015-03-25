@@ -244,11 +244,11 @@ void BlockedBoundaryOperator<BasisFunctionType, ResultType>::apply(
   size_t xSize = 0;
   for (size_t col = 0; col < columnCount; ++col)
     xSize += m_domains[col]->globalDofCount();
-  Vector<ResultType> xVals(xSize);
+  Matrix<ResultType> xVals(xSize,1);
   for (size_t col = 0, start = 0; col < columnCount; ++col) {
     const Vector<ResultType> &chunk = x_in[col].coefficients();
     size_t chunkSize = chunk.rows();
-    xVals.segment(start, chunkSize ) = chunk;
+    xVals.block(start,0, chunkSize,1 ) = chunk;
     start += chunkSize;
   }
 
@@ -256,23 +256,24 @@ void BlockedBoundaryOperator<BasisFunctionType, ResultType>::apply(
   size_t ySize = 0;
   for (size_t row = 0; row < rowCount; ++row)
     ySize += m_dualsToRanges[row]->globalDofCount();
-  Vector<ResultType> yVals(ySize);
+  Matrix<ResultType> yVals(ySize,1);
   for (size_t row = 0, start = 0; row < rowCount; ++row) {
     Vector<ResultType> chunk =
         y_inout[row].projections(m_dualsToRanges[row]);
     size_t chunkSize = chunk.rows();
-    yVals.segment(start, chunkSize ) = chunk;
+    yVals.block(start,0, chunkSize,1 ) = chunk;
     start += chunkSize;
   }
 
   // Apply operator and assign the result to y_inout's projections
+
   weakForm()->apply(trans, xVals, yVals, alpha, beta);
 
   // Assign the result to the grid functions from y_inout
   for (size_t row = 0, start = 0; row < rowCount; ++row) {
     size_t chunkSize = m_dualsToRanges[row]->globalDofCount();
     y_inout[row].setProjections(m_dualsToRanges[row],
-                                yVals.rows(start, start + chunkSize - 1));
+                                yVals.col(0).segment(start,chunkSize));
     start += chunkSize;
   }
 }

@@ -91,7 +91,9 @@ Geometry::getIntegrationElements(const Matrix<float> &local,
   RowVector<double> int_elementDouble;
   convertMat(local, localDouble);
   getIntegrationElementsImpl(localDouble, int_elementDouble);
-  convertMat(int_elementDouble, int_element);
+  int_element.resize(int_elementDouble.cols());
+  for (int i = 0; i < int_elementDouble.cols();++i)
+      int_element(i) = int_elementDouble(i);
 }
 
 inline void Geometry::getCenter(Vector<double> &c) const {
@@ -101,7 +103,9 @@ inline void Geometry::getCenter(Vector<double> &c) const {
 inline void Geometry::getCenter(Vector<float> &c) const {
   Vector<double> cDouble;
   getCenterImpl(cDouble);
-  convertMat(cDouble, c);
+  c.resize(cDouble.rows());
+  for (int i = 0; i < cDouble.rows(); ++i)
+      c(i) = cDouble(i);
 }
 
 inline void
@@ -118,7 +122,7 @@ inline void
 Geometry::getJacobiansTransposed(const Matrix<float> &local,
                                  std::vector<Matrix<float>> &jacobian_t) const {
   Matrix<double> localDouble;
-  std::vector<Matrix<float>> jacobian_tDouble;
+  std::vector<Matrix<double>> jacobian_tDouble;
   convertMat(local, localDouble);
   getJacobiansTransposedImpl(localDouble, jacobian_tDouble);
   jacobian_t.resize(jacobian_tDouble.size());
@@ -158,8 +162,8 @@ inline void Geometry::getJacobianInversesTransposed(
   std::vector<Matrix<double>> jacobian_inv_tDouble;
   convertMat(local, localDouble);
   getJacobianInversesTransposed(localDouble, jacobian_inv_tDouble);
-  jacobian_t.resize(jacobian_tDouble.size());
-  for (int i = 0; i<jacobian_t.size();++i){
+  jacobian_inv_t.resize(jacobian_inv_tDouble.size());
+  for (int i = 0; i<jacobian_inv_t.size();++i){
       jacobian_inv_t[i].resize(jacobian_inv_tDouble[i].rows(),jacobian_inv_tDouble[i].cols());
       for (int j = 0; j < jacobian_inv_tDouble[i].cols();++j)
           for (int k = 0; k < jacobian_inv_tDouble[i].rows();++k)
@@ -223,6 +227,22 @@ void Geometry::convertMat(const Matrix<T1> &in, Matrix<T2> &out) const {
       for (int i = 0 ; i < in.rows(); ++i)
           out(i,j) = in(i,j);
 }
+
+template <typename T1, typename T2>
+void Geometry::convertMat(const Vector<T1> &in, Vector<T2> &out) const {
+  out.resize(in.rows());
+  for (int j = 0; j < in.rows();++j )
+      out(j) = in(j);
+}
+
+template <typename T1, typename T2>
+void Geometry::convertMat(const RowVector<T1> &in, RowVector<T2> &out) const {
+  out.resize(in.cols());
+  for (int j = 0; j < in.cols();++j )
+      out(j) = in(j);
+}
+
+
 
 template <typename T1, typename T2>
 void Geometry::convertCube(const Fiber::_3dArray<T1> &in,

@@ -98,11 +98,12 @@ AssembledPotentialOperator<BasisFunctionType, ResultType>::apply(
         "space used to expand 'argument' does not "
         "match the one used during operator construction");
   Matrix<ResultType> result(m_op->rowCount(), 1);
-  Vector<ResultType> colResult = result.unsafe_col(0);
-  const Vector<ResultType> &coeffs = argument.coefficients();
-  m_op->apply(NO_TRANSPOSE, coeffs, colResult, 1., 0.);
+  const Vector<ResultType>& coeffs = argument.coefficients();
+  Matrix<ResultType> coeffsMatrix(coeffs.rows(),1);
+  coeffsMatrix.col(0) = coeffs;
+  m_op->apply(NO_TRANSPOSE, coeffsMatrix, result, 1., 0.);
   assert(result.rows() % m_componentCount == 0);
-  result.resize(m_componentCount, result.n_rows / m_componentCount);
+  result.resize(m_componentCount, result.rows() / m_componentCount);
   return result;
 }
 

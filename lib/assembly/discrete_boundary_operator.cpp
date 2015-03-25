@@ -48,12 +48,13 @@ Matrix<ValueType> DiscreteBoundaryOperator<ValueType>::asMatrix() const {
                    // override...
   unit.setZero();
   for (size_t i = 0; i < nCols; ++i) {
-    Eigen::Map<Vector<ValueType>> activeCol(result.col(i).data(),result.rows());
+    Vector<ValueType> activeCol(result.rows());
     // arma::Col<ValueType> activeCol(result.unsafe_col(i));
     if (i > 0)
       unit(i - 1) = 0.;
     unit(i) = 1.;
     applyBuiltInImpl(NO_TRANSPOSE, unit, activeCol, 1., 0.);
+    result.col(i) = activeCol;
   }
 
   return result;
@@ -78,9 +79,9 @@ void DiscreteBoundaryOperator<ValueType>::apply(
 
   for (size_t i = 0; i < x_in.cols(); ++i) {
 
-    const Eigen::Map<Vector<ValueType>> x_in_col(x_in.col(i).data(),x_in.rows());
-    Eigen::Map<Vector<ValueType>> y_inout_col(y_inout.col(i).data(),y_inout.rows());
-    applyBuiltInImpl(trans, x_in_col, y_inout_col, alpha, beta);
+    Vector<ValueType> y_inout_col = y_inout.col(i);
+    applyBuiltInImpl(trans, x_in.col(i), y_inout_col, alpha, beta);
+    y_inout.col(i) = y_inout_col;
   }
 }
 
@@ -115,6 +116,10 @@ void DiscreteBoundaryOperator<ValueType>::applyImpl(
     const ValueType alpha, const ValueType beta) const {
   typedef Thyra::Ordinal Ordinal;
 
+
+  throw std::runtime_error("Thyra apply disabled.");
+  /*
+
   // Note: the name is VERY misleading: these asserts don't disappear in
   // release runs, and in case of failure throw exceptions rather than
   // abort.
@@ -137,9 +142,13 @@ void DiscreteBoundaryOperator<ValueType>::applyImpl(
 
     const Eigen::Map<Vector<ValueType>> xCol(const_cast<ValueType *>(xArray.get()),xArray.size());
     Eigen::Map<Vector<ValueType>> yCol(yArray.get(),yArray.size());
+
     applyBuiltInImpl(static_cast<TranspositionMode>(M_trans), xCol, yCol, alpha,
                      beta);
+
+
   }
+  */
 }
 #endif
 

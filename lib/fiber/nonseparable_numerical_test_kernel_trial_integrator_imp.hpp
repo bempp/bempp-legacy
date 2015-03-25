@@ -303,7 +303,7 @@ void NonseparableNumericalTestKernelTrialIntegrator<
 
   for (size_t i = 0; i < result.size(); ++i) {
     assert(result[i]);
-    result[i]->set_size(testDofCount, trialDofCount);
+    result[i]->resize(testDofCount, trialDofCount);
   }
 
   // Iterate over the elements

@@ -88,15 +88,18 @@ void DiscreteBoundaryOperatorComposition<ValueType>::applyBuiltInImpl(
     const TranspositionMode trans, const Vector<ValueType> &x_in,
     Vector<ValueType> &y_inout, const ValueType alpha,
     const ValueType beta) const {
+    Matrix<ValueType> x_inMat = x_in;
+    Matrix<ValueType> y_inoutMat = y_inout;
   if (trans == TRANSPOSE || trans == CONJUGATE_TRANSPOSE) {
-    Vector<ValueType> tmp(m_outer->columnCount());
-    m_outer->apply(trans, x_in, tmp, alpha, 0.);
-    m_inner->apply(trans, tmp, y_inout, 1., beta);
+    Matrix<ValueType> tmp(m_outer->columnCount(),1);
+    m_outer->apply(trans, x_inMat, tmp, alpha, 0.);
+    m_inner->apply(trans, tmp, y_inoutMat, 1., beta);
   } else {
-    Vector<ValueType> tmp(m_inner->rowCount());
-    m_inner->apply(trans, x_in, tmp, alpha, 0.);
-    m_outer->apply(trans, tmp, y_inout, 1., beta);
+    Matrix<ValueType> tmp(m_inner->rowCount(),1);
+    m_inner->apply(trans, x_inMat, tmp, alpha, 0.);
+    m_outer->apply(trans, tmp, y_inoutMat, 1., beta);
   }
+  y_inout = y_inoutMat.col(0);
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(

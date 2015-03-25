@@ -73,8 +73,8 @@ protected:
 
 private:
   virtual void applyBuiltInImpl(const TranspositionMode trans,
-                                const Matrix<ValueType> &x_in,
-                                Matrix<ValueType> &y_inout,
+                                const Vector<ValueType> &x_in,
+                                Vector<ValueType> &y_inout,
                                 const ValueType alpha,
                                 const ValueType beta) const;
 

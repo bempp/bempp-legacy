@@ -86,11 +86,11 @@ void ComplexifiedDiscreteBoundaryOperator<RealType>::applyBuiltInImpl(
   else
     y_inout *= beta;
 
-  Vector<RealType> x_re = x_in.real();
-  Vector<RealType> x_im = x_in.imag();
+  Matrix<RealType> x_re = x_in.real();
+  Matrix<RealType> x_im = x_in.imag();
 
-  Vector<RealType> y_re = y_inout.real();
-  Vector<RealType> y_im = y_inout.imag();
+  Matrix<RealType> y_re = y_inout.real();
+  Matrix<RealType> y_im = y_inout.imag();
 
   m_operator->apply(trans, x_re, y_re, alpha.real(), 1.);
   m_operator->apply(trans, x_im, y_re, -alpha.imag(), 1.);
@@ -98,8 +98,8 @@ void ComplexifiedDiscreteBoundaryOperator<RealType>::applyBuiltInImpl(
   m_operator->apply(trans, x_re, y_im, alpha.imag(), 1.);
   m_operator->apply(trans, x_im, y_im, alpha.real(), 1.);
 
-  y_inout.set_real(y_re);
-  y_inout.set_imag(y_im);
+  y_inout.real() = y_re.col(0);
+  y_inout.imag() = y_im.col(0);
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT_REAL_ONLY(

@@ -129,9 +129,9 @@ DefaultEvaluatorForIntegralOperators<BasisFunctionType, KernelType, ResultType,
       m_openClHandler(openClHandler),
       m_parallelizationOptions(parallelizationOptions),
       m_quadDescSelector(quadDescSelector), m_quadRuleFamily(quadRuleFamily) {
-  const size_t elementCount = rawGeometry->elementCount();
-  if (!rawGeometry->auxData().is_empty() &&
-      rawGeometry->auxData().n_cols != elementCount)
+const size_t elementCount = rawGeometry->elementCount();
+if (rawGeometry->auxData().rows() > 0 &&
+      rawGeometry->auxData().cols() != elementCount)
     throw std::invalid_argument(
         "DefaultEvaluatorForIntegralOperators::"
         "DefaultEvaluatorForIntegralOperators(): "
@@ -430,11 +430,11 @@ void DefaultEvaluatorForIntegralOperators<BasisFunctionType, KernelType,
 
   // Fill member matrices of trialGeomData
   if (kernelTrialGeomDeps & GLOBALS)
-    trialGeomData.globals.set_size(worldDim, quadPointCount);
+    trialGeomData.globals.resize(worldDim, quadPointCount);
   if (kernelTrialGeomDeps & INTEGRATION_ELEMENTS)
-    trialGeomData.integrationElements.set_size(quadPointCount);
+    trialGeomData.integrationElements.resize(quadPointCount);
   if (kernelTrialGeomDeps & NORMALS)
-    trialGeomData.normals.set_size(worldDim, quadPointCount);
+    trialGeomData.normals.resize(worldDim, quadPointCount);
   if (kernelTrialGeomDeps & JACOBIANS_TRANSPOSED)
     trialGeomData.jacobiansTransposed.set_size(gridDim, worldDim,
                                                quadPointCount);
@@ -456,13 +456,13 @@ void DefaultEvaluatorForIntegralOperators<BasisFunctionType, KernelType,
        startCol += trialTransfValuesPerElement[e][0].extent(1), ++e) {
     int endCol = startCol + trialTransfValuesPerElement[e][0].extent(1) - 1;
     if (kernelTrialGeomDeps & GLOBALS)
-      trialGeomData.globals.cols(startCol, endCol) =
+      trialGeomData.globals.block(0,startCol, trialGeomData.globals.rows(), endCol-startCol+1) =
           geomDataPerElement[e].globals;
     if (kernelTrialGeomDeps & INTEGRATION_ELEMENTS)
-      trialGeomData.integrationElements.cols(startCol, endCol) =
+      trialGeomData.integrationElements.block(0,startCol, 1,endCol-startCol+1) =
           geomDataPerElement[e].integrationElements;
     if (kernelTrialGeomDeps & NORMALS)
-      trialGeomData.normals.cols(startCol, endCol) =
+      trialGeomData.normals.block(0,startCol, trialGeomData.normals.rows(),endCol-startCol+1) =
           geomDataPerElement[e].normals;
     if (kernelTrialGeomDeps & JACOBIANS_TRANSPOSED) {
       const size_t n = trialGeomData.jacobiansTransposed.extent(1);

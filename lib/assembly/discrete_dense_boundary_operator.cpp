@@ -43,8 +43,8 @@ DiscreteDenseBoundaryOperator<ValueType>::DiscreteDenseBoundaryOperator(
     : m_mat(mat)
 #ifdef WITH_TRILINOS
       ,
-      m_domainSpace(Thyra::defaultSpmdVectorSpace<ValueType>(mat.n_cols)),
-      m_rangeSpace(Thyra::defaultSpmdVectorSpace<ValueType>(mat.n_rows))
+      m_domainSpace(Thyra::defaultSpmdVectorSpace<ValueType>(mat.cols())),
+      m_rangeSpace(Thyra::defaultSpmdVectorSpace<ValueType>(mat.rows()))
 #endif
 {
 }
@@ -62,12 +62,12 @@ DiscreteDenseBoundaryOperator<ValueType>::asMatrix() const {
 
 template <typename ValueType>
 unsigned int DiscreteDenseBoundaryOperator<ValueType>::rowCount() const {
-  return m_mat.n_rows;
+  return m_mat.rows();
 }
 
 template <typename ValueType>
 unsigned int DiscreteDenseBoundaryOperator<ValueType>::columnCount() const {
-  return m_mat.n_cols;
+  return m_mat.cols();
 }
 
 template <typename ValueType>
@@ -92,7 +92,7 @@ PyObject* DiscreteDenseBoundaryOperator<ValueType>::asNumpyObject() const {
     gstate = PyGILState_Ensure(); 
     PyObject* out = PyArray_New(&PyArray_Type,nd,dims.data(),
             Fiber::ScalarTraits<ValueType>::NumpyTypeNum,
-            NULL,m_mat.memptr(),0,NPY_ARRAY_F_CONTIGUOUS,NULL);
+            NULL,m_mat.data(),0,NPY_ARRAY_F_CONTIGUOUS,NULL);
     PyGILState_Release(gstate);
     return out;
 

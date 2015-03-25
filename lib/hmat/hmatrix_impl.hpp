@@ -114,12 +114,12 @@ void HMatrix<ValueType, N>::apply(const Matrix<ValueType> &X,
                                   ValueType alpha, ValueType beta) const {
 
   if (beta == ValueType(0))
-    Y.zeros();
+    Y.setZero();
   else
     Y *= beta;
 
   Matrix<ValueType> xPermuted;
-  Matrixt<ValueType> yPermuted;
+  Matrix<ValueType> yPermuted;
 
   if (trans == TransposeMode::NOTRANS) {
 
@@ -146,13 +146,13 @@ void HMatrix<ValueType, N>::apply(const Matrix<ValueType> &X,
       outputRange = elem.first->data().columnClusterTreeNode->data().indexRange;
     }
 
-    Eigen::Map<Matrix<ValueType>> xDataBlock(xData.block(inputRange[0],0,inputRange[1]-inputRange[0],xData.cols()).data(),
-            inputRange[1]-inputRange[0],xData.cols());
-    Eigen::Map<Matrix<ValueType>> yDataBlock(yData.block(outputRange[0],0,outputRange[1]-outputRange[0],yData.cols()).data(),
-            outputRange[1]-outputRange[0],yData.cols());
+    Matrix<ValueType> xData = xPermuted.block(inputRange[0],0,inputRange[1]-inputRange[0],xData.cols());
+    Matrix<ValueType> yData = yPermuted.block(outputRange[0],0,outputRange[1]-outputRange[0],yData.cols());
 
 
-    elem.second->apply(xDataBlock, yDataBlock, trans, alpha, 1);
+    elem.second->apply(xData, yData, trans, alpha, 1);
+
+    yPermuted.block(outputRange[0],0,outputRange[1]-outputRange[0],yData.cols()) = yData;
   });
 
   Y = this->permuteMatToOriginalDofs(yPermuted, ROW);

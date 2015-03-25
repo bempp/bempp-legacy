@@ -49,7 +49,7 @@ public:
 
   const std::vector<int> &domainIndices() const { return m_domainIndices; }
 
-  int elementCount() const { return m_elementCornerIndices.n_cols; }
+  int elementCount() const { return m_elementCornerIndices.cols(); }
 
   int gridDimension() const { return m_gridDim; }
 
@@ -90,16 +90,17 @@ public:
 
   template <typename Geometry>
   void setupGeometry(int elementIndex, Geometry &geometry) const {
-    const int dimGrid = m_vertices.n_rows;
+    const int dimGrid = m_vertices.rows();
     size_t cornerCount = 0;
-    for (; cornerCount < m_elementCornerIndices.n_rows; ++cornerCount)
+    for (; cornerCount < m_elementCornerIndices.rows(); ++cornerCount)
       if (m_elementCornerIndices(cornerCount, elementIndex) < 0)
         break;
     Matrix<CoordinateType> corners(dimGrid, cornerCount);
     for (size_t cornerIndex = 0; cornerIndex < cornerCount; ++cornerIndex)
       corners.col(cornerIndex) =
           m_vertices.col(m_elementCornerIndices(cornerIndex, elementIndex));
-    geometry.setup(corners, m_auxData.unsafe_col(elementIndex));
+    Eigen::Map<Matrix<char>> auxDataMap(const_cast<char*>(m_auxData.col(elementIndex).data()),m_auxData.rows(),1);
+    geometry.setup(corners, auxDataMap);
   }
 
 private:

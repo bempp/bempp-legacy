@@ -131,7 +131,7 @@ void reallyApplyBuiltInImpl<std::complex<float>>(
   Vector<double> x_imag(x_in.rows());
   for (size_t i = 0; i < x_in.rows(); ++i)
     x_imag(i) = x_in(i).imag();
-  Vector<double> y_real(y_inout.rows);
+  Vector<double> y_real(y_inout.rows());
   for (size_t i = 0; i < y_inout.rows(); ++i)
     y_real(i) = y_inout(i).real();
   Vector<double> y_imag(y_inout.rows());

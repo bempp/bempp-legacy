@@ -81,7 +81,12 @@ void DiscreteHMatBoundaryOperator<ValueType>::applyBuiltInImpl(
     hmatTrans = hmat::CONJ;
   else
     hmatTrans = hmat::CONJTRANS;
-  m_hMatrix->apply(x_in, y_inout, hmatTrans, alpha, beta);
+  Matrix<ValueType> x_inMat = x_in;
+  Matrix<ValueType> y_inoutMat = y_inout;
+
+  m_hMatrix->apply(x_inMat, y_inoutMat, hmatTrans, alpha, beta);
+
+  y_inout = y_inoutMat.col(0);
 }
 
 template <typename ValueType>

@@ -25,6 +25,7 @@
 
 #include "../common/common.hpp"
 #include "../common/shared_ptr.hpp"
+#include "../common/eigen_support.hpp"
 
 #include "transposition_mode.hpp"
 #include "boost/enable_shared_from_this.hpp"
@@ -141,7 +142,7 @@ public:
    *  This overload is always available, even if the library was compiled
    *  without Trilinos.
    */
-  void apply(const TranspositionMode trans, Matrix<ValueType> &x_in,
+  void apply(const TranspositionMode trans, const Matrix<ValueType> &x_in,
              Matrix<ValueType> &y_inout, const ValueType alpha,
              const ValueType beta) const;
 

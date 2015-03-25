@@ -179,15 +179,15 @@ void BoundaryOperator<BasisFunctionType, ResultType>::apply(
       m_abstractOp->dualToRange();
 
   // Extract coefficient vectors
-  Vector<ResultType> xVals = x_in.coefficients();
-  Vector<ResultType> yVals = y_inout.projections(dualToRange);
+  Matrix<ResultType> xVals = x_in.coefficients();
+  Matrix<ResultType> yVals = y_inout.projections(dualToRange);
 
   // Apply operator and assign the result to y_inout's projections
   weakForm()->apply(trans, xVals, yVals, alpha, beta);
   // TODO: make interfaces to the Trilinos and fallback
   // DiscreteBoundaryOperator::apply() compatible.
   // Perhaps by declaring an asPtrToBaseVector method in Vector...
-  y_inout.setProjections(dualToRange, yVals);
+  y_inout.setProjections(dualToRange, yVals.col(0));
 }
 
 template <typename BasisFunctionType, typename ResultType>
