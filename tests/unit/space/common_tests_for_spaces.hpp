@@ -40,6 +40,8 @@
 #include "grid/grid_view.hpp"
 #include "space/space.hpp"
 
+#include "common/eigen_support.hpp"
+
 #include <boost/test/unit_test.hpp>
 
 namespace Bempp
@@ -171,10 +173,10 @@ void complement_is_really_a_complement(
 
     GridFunction<BFT, RT> gf1(
                 context, space1,
-                arma::ones<arma::Col<RT> >(space1->globalDofCount()));
+                Vector<RT>::Ones(space1->globalDofCount()));
     GridFunction<BFT, RT> gf2(
                 context, space2,
-                arma::ones<arma::Col<RT> >(space2->globalDofCount()));
+                Vector<RT>::Ones(space2->globalDofCount()));
 
     BoundaryOperator<BFT, RT> s1_to_s =
             identityOperator<BFT, RT>(context, space1, space, space);
@@ -182,7 +184,7 @@ void complement_is_really_a_complement(
             identityOperator<BFT, RT>(context, space2, space, space);
 
     GridFunction<BFT, RT> total = s1_to_s * gf1 + s2_to_s * gf2;
-    arma::Col<RT> ones(space->globalDofCount());
+    Vector<RT> ones(space->globalDofCount());
     ones.fill(1.);
     BOOST_CHECK(check_arrays_are_close<RT>(total.coefficients(), ones,
                                            100. * std::numeric_limits<CT>::epsilon()));

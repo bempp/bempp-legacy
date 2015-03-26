@@ -126,7 +126,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityIterator_second_entity_agrees_with_Dune_
         it->next();
         const Entity<codim>& e = it->entity();
         const Geometry& geo = e.geometry();
-        geo.getCenter(elementCenter);
+        geo.getCenter(Eigen::Ref<Vector<double>>(elementCenter));
     }
 
     Dune::FieldVector<DuneGrid::ctype, DuneGrid::dimensionworld> duneElementCenter;
@@ -332,7 +332,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityIterator_second_entity_agrees_with_Dune_
         it->next();
         const Entity<codim>& e = it->entity();
         const Geometry& geo = e.geometry();
-        geo.getCenter(elementCenter);
+        geo.getCenter(Eigen::Ref<Vector<double>>(elementCenter));
     }
 
     Dune::FieldVector<DuneGrid::ctype, DuneGrid::dimensionworld> duneElementCenter;

@@ -82,7 +82,7 @@ BOOST_AUTO_TEST_CASE(elements_cover_the_unit_square)
 
     Vector<ctype> center;
     while(!it->finished()) {
-        it->entity().geometry().getCenter(Eigen::Ref<ctype>(center));
+        it->entity().geometry().getCenter(Eigen::Ref<Vector<double>>(center));
         max_x = std::max(max_x, center(0));
         max_y = std::max(max_y, center(1));
         min_x = std::min(min_x, center(0));
@@ -116,7 +116,12 @@ BOOST_AUTO_TEST_CASE(jacobian_is_constant_everywhere_on_the_second_face)
     RowVector<ctype> intElement;
     geo.getIntegrationElements(local, intElement);
 
-    BOOST_CHECK_SMALL(stddev(intElement), EPSILON);
+    // Compute standard deviation
+    double mean = intElement.mean();
+    RowVector<ctype> diff = (intElement.array()-mean).matrix();
+    double deviation = diff.norm()/std::sqrt(diff.cols());
+
+    BOOST_CHECK_SMALL(deviation, EPSILON);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
