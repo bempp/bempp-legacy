@@ -258,7 +258,7 @@ PiecewisePolynomialDiscontinuousScalarSpace<BasisFunctionType>::assignDofsImpl(
     typedef Vector<CoordinateType> Col;
     const Geometry &geo = element.geometry();
     geo.getCorners(vertices);
-    int vertexCount = vertices.n_cols;
+    int vertexCount = vertices.cols();
     int localDofCount =
         vertexCount == 3 ? localDofCountPerTriangle : localDofCountPerQuad;
 
@@ -293,7 +293,7 @@ PiecewisePolynomialDiscontinuousScalarSpace<BasisFunctionType>::assignDofsImpl(
           m_globalDofBoundingBoxes.push_back(bbox);
           setBoundingBoxReference<CoordinateType>(
               acc(m_globalDofBoundingBoxes, globalDofCount),
-              (vertices.col(0) + vertices(1) + vertices(2)) / 3);
+              (vertices.col(0) + vertices.col(1) + vertices.col(2)) / 3);
           ++globalDofCount;
         } else
           acc(globalDofs, ldof) = -1;

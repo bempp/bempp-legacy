@@ -33,6 +33,7 @@
 #include <boost/test/floating_point_comparison.hpp>
 #include <boost/version.hpp>
 #include <complex>
+#include <cmath>
 
 // Tests
 
@@ -86,7 +87,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2
     Vector<ComplexType> expected = alpha * mat * x;
     dop->apply(NO_TRANSPOSE, x, y, alpha, beta);
     
-    BOOST_CHECK(y.is_finite());
+
+    for (int j = 0; j < y.cols(); ++j)
+        for (int i = 0; i < y.rows(); ++i)
+            BOOST_CHECK(std::isfinite(std::abs(y(i,j))));
+
     BOOST_CHECK(check_arrays_are_close<ComplexType>(
                     y, expected,  10. * std::numeric_limits<RealType>::epsilon()));
 }
@@ -100,7 +105,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_no_transpose_and
 
     ComplexifiedDiscreteBoundaryOperatorFixture<RealType> fixture;
     Matrix<RealType> mat = fixture.op->asMatrix();
-    Matrix<ComplexType> complexMat(mat.n_rows, mat.n_cols);
+    Matrix<ComplexType> complexMat(mat.rows(), mat.cols());
     complexMat.setZero();
     complexMat.real() = mat;
 

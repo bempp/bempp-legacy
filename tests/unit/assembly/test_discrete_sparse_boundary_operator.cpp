@@ -111,8 +111,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2
 
     dop->apply(NO_TRANSPOSE, x, y, alpha, beta);
     
-    BOOST_CHECK(y.is_finite());
-    BOOST_CHECK(check_arrays_are_close<RT>(y, expected, 
+    for (int j = 0; j < y.cols(); ++j)
+        for (int i = 0; i  < y.rows(); ++i)
+            BOOST_CHECK(std::isfinite(std::abs(y(i,j))));
+
+    BOOST_CHECK(check_arrays_are_close<RT>(y, expected,
                                            10. * std::numeric_limits<CT>::epsilon()));
 }
 
@@ -138,8 +141,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2
 
     dop->apply(NO_TRANSPOSE, x, y, alpha, beta);
     
-    BOOST_CHECK(y.is_finite());
-    BOOST_CHECK(check_arrays_are_close<RT>(y, expected, 
+    for (int j = 0; j < y.cols(); ++j)
+        for (int i = 0; i  < y.rows(); ++i)
+            BOOST_CHECK(std::isfinite(std::abs(y(i,j))));
+
+    BOOST_CHECK(check_arrays_are_close<RT>(y, expected,
                                            10. * std::numeric_limits<CT>::epsilon()));
 }
 
@@ -210,7 +216,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2
     Vector<RT> x = generateRandomVector<RT>(dop->rowCount());
     Vector<RT> y = generateRandomVector<RT>(dop->columnCount());
 
-    Vector<RT> expected = alpha * dop->asMatrix().st() * x + beta * y;
+    Vector<RT> expected = alpha * dop->asMatrix().transpose() * x + beta * y;
 
     dop->apply(TRANSPOSE, x, y, alpha, beta);
 
@@ -235,7 +241,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2
     Vector<RT> x = generateRandomVector<RT>(dop->rowCount());
     Vector<RT> y = generateRandomVector<RT>(dop->columnCount());
 
-    Vector<RT> expected = alpha * dop->asMatrix().st() * x + beta * y;
+    Vector<RT> expected = alpha * dop->asMatrix().transpose() * x + beta * y;
 
     dop->apply(TRANSPOSE, x, y, alpha, beta);
 

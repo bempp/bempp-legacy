@@ -138,7 +138,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
   Matrix<RT> mat00 = op00.weakForm()->asMatrix();
   Matrix<RT> mat10 = op10.weakForm()->asMatrix();
   Matrix<RT> nonblockedWeakForm(mat00.rows()+mat10.rows(),mat00.cols());
-  nonblockedweakForm << mat00,
+  nonblockedWeakForm << mat00,
                         mat10;
   Matrix<RT> blockedWeakForm = blockedOp.weakForm()->asMatrix();
 

@@ -25,6 +25,8 @@
 
 #include <dune/common/fvector.hh>
 
+using namespace Bempp;
+
 // Internal implementations for general Eigen objects
 template <typename M, typename T, int size>
 bool _eigen_fieldvector_compare(const M &x,
@@ -80,14 +82,14 @@ namespace test_tools {
 namespace tt_detail {
 
 template <typename T, int size>
-bool operator==(const ::Bempp::Vector<T> &x,
-                const ::Dune::FieldVector<T, size> &y) {
+bool operator==(const Bempp::Vector<T> &x,
+                const Dune::FieldVector<T, size> &y) {
   return ::operator==(x, y);
 }
 
 template <typename T, int size>
-bool operator==(const ::Dune::FieldVector<T, size> &x,
-                const ::Bempp::Vector<T> &y) {
+bool operator==(const Dune::FieldVector<T, size> &x,
+                const Bempp::Vector<T> &y) {
   return ::operator==(x, y);
 }
 

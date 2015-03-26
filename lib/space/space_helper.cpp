@@ -44,7 +44,7 @@ void SpaceHelper<BasisFunctionType>::
 
   const size_t pointCount = vPoints.size();
   const size_t worldDim = space.worldDimension();
-  points.set_size(worldDim, pointCount);
+  points.resize(worldDim, pointCount);
   for (size_t p = 0; p < pointCount; ++p) {
     points(0, p) = acc(vPoints, p).x;
     if (worldDim > 1)
@@ -64,7 +64,7 @@ void SpaceHelper<BasisFunctionType>::
 
   const size_t pointCount = vNormals.size();
   const size_t worldDim = space.worldDimension();
-  normals.set_size(worldDim, pointCount);
+  normals.resize(worldDim, pointCount);
   for (size_t p = 0; p < pointCount; ++p) {
     normals(0, p) = acc(vNormals, p).x;
     if (worldDim > 1)
@@ -143,14 +143,14 @@ void SpaceHelper<BasisFunctionType>::getGlobalDofNormals_defaultImplementation(
   // Note: we assume here that elements are flat and so the position at which
   // the normal is calculated does not matter.
   center.fill(0.5);
-  Vector<CoordinateType> normal;
+  Matrix<CoordinateType> normal;
   while (!it->finished()) {
     const Entity<0> &e = it->entity();
     int index = indexSet.entityIndex(e);
     e.geometry().getNormals(center, normal);
 
     for (int dim = 0; dim < worldDim; ++dim)
-      elementNormals(dim, index) = normal(dim);
+      elementNormals(dim, index) = normal(dim,0);
     it->next();
   }
 

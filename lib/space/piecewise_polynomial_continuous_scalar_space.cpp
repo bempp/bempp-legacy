@@ -364,7 +364,7 @@ PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::assignDofsImpl() {
         !m_strictlyOnSegment || m_segment.contains(0, elementIndex);
 
     geo.getCorners(vertices);
-    int vertexCount = vertices.n_cols;
+    int vertexCount = vertices.cols();
 
     // List of global DOF indices corresponding to the local DOFs of the
     // current element

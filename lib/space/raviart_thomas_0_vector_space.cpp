@@ -262,7 +262,7 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::assignDofsImpl() {
                                 : true;
 
     geo.getCorners(vertices);
-    const int vertexCount = vertices.n_cols;
+    const int vertexCount = vertices.cols();
     const int edgeCount = vertexCount;
     if (edgeCount != 3)
       throw std::runtime_error(
@@ -493,7 +493,7 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::getFlatLocalDofBoundingBoxes(
     const Entity<0> &e = it->entity();
     int index = indexSet.entityIndex(e);
     e.geometry().getCorners(acc(elementCorners, index));
-    if (acc(elementCorners, index).n_cols != 3)
+    if (acc(elementCorners, index).cols() != 3)
       throw std::runtime_error(
           "RaviartThomas0VectorSpace::getFlatLocalDofBoundingBoxes(): "
           "only triangular elements are supported at present");
@@ -535,14 +535,14 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::getGlobalDofNormals(
   std::unique_ptr<EntityIterator<0>> it = m_view->entityIterator<0>();
   Vector<CoordinateType> center(gridDim);
   center.fill(0.5);
-  Vector<CoordinateType> normal;
+  Matrix<CoordinateType> normal;
   while (!it->finished()) {
     const Entity<0> &e = it->entity();
     int index = indexSet.entityIndex(e);
     e.geometry().getNormals(center, normal);
 
     for (int dim = 0; dim < worldDim; ++dim)
-      elementNormals(dim, index) = normal(dim);
+      elementNormals(dim, index) = normal(dim,0);
     it->next();
   }
 
@@ -575,14 +575,14 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::getFlatLocalDofNormals(
   std::unique_ptr<EntityIterator<0>> it = m_view->entityIterator<0>();
   Vector<CoordinateType> center(gridDim);
   center.fill(0.5);
-  Vector<CoordinateType> normal;
+  Matrix<CoordinateType> normal;
   while (!it->finished()) {
     const Entity<0> &e = it->entity();
     int index = indexSet.entityIndex(e);
     e.geometry().getNormals(center, normal);
 
     for (int dim = 0; dim < worldDim; ++dim)
-      elementNormals(dim, index) = center(dim);
+      elementNormals(dim, index) = center(dim,0);
     it->next();
   }
 

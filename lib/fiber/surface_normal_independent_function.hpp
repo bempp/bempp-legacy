@@ -92,8 +92,10 @@ public:
     const size_t pointCount = points.cols();
     result.resize(codomainDimension(), pointCount);
     for (size_t i = 0; i < pointCount; ++i) {
-      Eigen::Map<Vector<ValueType>> activeResultColumn(result.col(i).data(),result.rows());
-      m_functor.evaluate(points.col(i), activeResultColumn);
+      Vector<ValueType> resultColumn(result.rows());
+      Vector<CoordinateType> currentPoint = points.col(i);
+      m_functor.evaluate(currentPoint, resultColumn);
+      result.col(i) = resultColumn;
     }
   }
 

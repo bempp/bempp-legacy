@@ -185,7 +185,7 @@ void UnitScalarSpace<BasisFunctionType>::getGlobalDofPositions(
     while (!it->finished()) {
       const Entity<0> &e = it->entity();
       Vector<CoordinateType> center;
-      e.geometry().getCenter(center);
+      e.geometry().getCenter(Eigen::Ref<Vector<CoordinateType>>(center));
 
       positions[0].x += center(0);
       positions[0].y += center(1);
@@ -217,7 +217,7 @@ void UnitScalarSpace<BasisFunctionType>::getFlatLocalDofPositions(
       const Entity<0> &e = it->entity();
       int index = mapper.entityIndex(e);
       Vector<CoordinateType> center;
-      e.geometry().getCenter(center);
+      e.geometry().getCenter(Eigen::Ref<Vector<CoordinateType>>(center));
 
       positions[index].x = center(0);
       positions[index].y = center(1);
@@ -259,14 +259,14 @@ void UnitScalarSpace<BasisFunctionType>::getGlobalDofBoundingBoxes(
       const Entity<0> &e = it->entity();
       Vector<CoordinateType> center;
       const Geometry &geo = e.geometry();
-      geo.getCenter(center);
+      geo.getCenter(Eigen::Ref<Vector<CoordinateType>>(center));
       bbox.reference.x += center(0);
       bbox.reference.y += center(1);
       bbox.reference.z += center(2);
 
       geo.getCorners(corners);
-      assert(corners.n_cols > 0);
-      for (size_t i = 0; i < corners.n_cols; ++i) {
+      assert(corners.cols() > 0);
+      for (size_t i = 0; i < corners.cols(); ++i) {
         bbox.lbound.x = std::min(bbox.lbound.x, corners(0, i));
         bbox.lbound.y = std::min(bbox.lbound.y, corners(1, i));
         bbox.lbound.z = std::min(bbox.lbound.z, corners(2, i));
@@ -320,7 +320,7 @@ void UnitScalarSpace<BasisFunctionType>::getFlatLocalDofBoundingBoxes(
       int index = mapper.entityIndex(e);
       Vector<CoordinateType> center;
       const Geometry &geo = e.geometry();
-      geo.getCenter(center);
+      geo.getCenter(Eigen::Ref<Vector<CoordinateType>>(center));
       BoundingBox<CoordinateType> &bbox = bboxes[index];
       bbox.reference.x = center(0);
       bbox.reference.y = center(1);
@@ -332,7 +332,7 @@ void UnitScalarSpace<BasisFunctionType>::getFlatLocalDofBoundingBoxes(
       bbox.lbound.y = corners(1, 0);
       bbox.lbound.z = corners(2, 0);
       bbox.ubound = bbox.lbound;
-      for (size_t i = 1; i < corners.n_cols; ++i) {
+      for (size_t i = 1; i < corners.cols(); ++i) {
         bbox.lbound.x = std::min(bbox.lbound.x, corners(0, i));
         bbox.lbound.y = std::min(bbox.lbound.y, corners(1, i));
         bbox.lbound.z = std::min(bbox.lbound.z, corners(2, i));
@@ -385,9 +385,9 @@ void UnitScalarSpace<BasisFunctionType>::dumpClusterIdsEx(
 
   std::unique_ptr<GridView> view = this->grid()->leafView();
   std::unique_ptr<VtkWriter> vtkWriter = view->vtkWriter();
-  RowVector<double> data(idCount);
+  Matrix<double> data(1,idCount);
   for (size_t i = 0; i < idCount; ++i)
-    data(i) = clusterIdsOfGlobalDofs[i];
+    data(0,i) = clusterIdsOfGlobalDofs[i];
   vtkWriter->addCellData(data, "ids");
   vtkWriter->write(fileName);
 }

@@ -262,7 +262,8 @@ void PiecewiseConstantScalarSpace<BasisFunctionType>::getGlobalDofBoundingBoxes(
     int index = indexSet.entityIndex(e);
     const Geometry &geo = e.geometry();
     geo.getCorners(acc(elementCorners, index));
-    geo.getCenter(acc(elementCenters, index));
+    Eigen::Ref<Vector<CoordinateType>> elementCenterRef(acc(elementCenters,index));
+    geo.getCenter(elementCenterRef);
     it->next();
   }
 
@@ -340,9 +341,9 @@ void PiecewiseConstantScalarSpace<BasisFunctionType>::dumpClusterIdsEx(
 
   std::unique_ptr<GridView> view = this->grid()->leafView();
   std::unique_ptr<VtkWriter> vtkWriter = view->vtkWriter();
-  RowVector<double> data(idCount);
+  Matrix<double> data(1,idCount);
   for (size_t i = 0; i < idCount; ++i)
-    data(i) = clusterIdsOfGlobalDofs[i];
+    data(0,i) = clusterIdsOfGlobalDofs[i];
   vtkWriter->addCellData(data, "ids");
   vtkWriter->write(fileName);
 }

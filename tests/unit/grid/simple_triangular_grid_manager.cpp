@@ -25,6 +25,8 @@
 
 // Fixture member definitions
 
+using namespace Bempp;
+
 Bempp::shared_ptr<Bempp::Grid> SimpleTriangularGridManager::createGrid()
 {
     Bempp::GridParameters params;

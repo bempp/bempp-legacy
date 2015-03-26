@@ -88,8 +88,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_no_transpose_and
 
     dop->apply(NO_TRANSPOSE, x, y, alpha, beta);
     
-    BOOST_CHECK(y.is_finite());
-    BOOST_CHECK(check_arrays_are_close<RT>(y, expected, 
+    for (int j = 0; j < y.cols(); ++j)
+        for (int i = 0; i  < y.rows(); ++i)
+            BOOST_CHECK(std::isfinite(std::abs(y(i,j))));
+
+    BOOST_CHECK(check_arrays_are_close<RT>(y, expected,
                                            10. * std::numeric_limits<CT>::epsilon()));
 }
 
@@ -117,8 +120,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_no_transpose_and
 
     dop->apply(NO_TRANSPOSE, x, y, alpha, beta);
     
-    BOOST_CHECK(y.is_finite());
-    BOOST_CHECK(check_arrays_are_close<RT>(y, expected, 
+    for (int j = 0; j < y.cols(); ++j)
+        for (int i = 0; i  < y.rows(); ++i)
+            BOOST_CHECK(std::isfinite(std::abs(y(i,j))));
+
+    BOOST_CHECK(check_arrays_are_close<RT>(y, expected,
                                            10. * std::numeric_limits<CT>::epsilon()));
 }
 
@@ -188,7 +194,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_transpose_and_al
     typedef typename Fiber::ScalarTraits<RT>::RealType CT;
 
     TransposedDiscreteBoundaryOperatorFixture<RT> fixture;
-    Matrix<RT> mat = fixture.op->asMatrix().st();
+    Matrix<RT> mat = fixture.op->asMatrix().transpose();
     shared_ptr<const DiscreteBoundaryOperator<RT> > dop = fixture.transposedOp;
 
     RT alpha(2.);
@@ -202,7 +208,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_transpose_and_al
 
     dop->apply(NO_TRANSPOSE, x, y, alpha, beta);
 
-    BOOST_CHECK(y.is_finite());
+    for (int j = 0; j < y.cols(); ++j)
+        for (int i = 0; i  < y.rows(); ++i)
+            BOOST_CHECK(std::isfinite(std::abs(y(i,j))));
+
     BOOST_CHECK(check_arrays_are_close<RT>(y, expected,
                                            10. * std::numeric_limits<CT>::epsilon()));
 }
@@ -217,7 +226,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_transpose_and_al
     typedef typename Fiber::ScalarTraits<RT>::RealType CT;
 
     TransposedDiscreteBoundaryOperatorFixture<RT> fixture;
-    Matrix<RT> mat = fixture.op->asMatrix().st();
+    Matrix<RT> mat = fixture.op->asMatrix().transpose();
     shared_ptr<const DiscreteBoundaryOperator<RT> > dop = fixture.transposedOp;
 
     RT alpha(2., 3.);
@@ -231,7 +240,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_transpose_and_al
 
     dop->apply(NO_TRANSPOSE, x, y, alpha, beta);
 
-    BOOST_CHECK(y.is_finite());
+    for (int j = 0; j < y.cols(); ++j)
+        for (int i = 0; i  < y.rows(); ++i)
+            BOOST_CHECK(std::isfinite(std::abs(y(i,j))));
+
     BOOST_CHECK(check_arrays_are_close<RT>(y, expected,
                                            10. * std::numeric_limits<CT>::epsilon()));
 }
@@ -246,7 +258,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_transpose_and_al
     typedef typename Fiber::ScalarTraits<RT>::RealType CT;
 
     TransposedDiscreteBoundaryOperatorFixture<RT> fixture;
-    Matrix<RT> mat = fixture.op->asMatrix().st();
+    Matrix<RT> mat = fixture.op->asMatrix().transpose();
     shared_ptr<const DiscreteBoundaryOperator<RT> > dop = fixture.transposedOp;
 
     RT alpha(2.);
@@ -273,7 +285,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_transpose_andalp
     typedef typename Fiber::ScalarTraits<RT>::RealType CT;
 
     TransposedDiscreteBoundaryOperatorFixture<RT> fixture;
-    Matrix<RT> mat = fixture.op->asMatrix().st();
+    Matrix<RT> mat = fixture.op->asMatrix().transpose();
     shared_ptr<const DiscreteBoundaryOperator<RT> > dop = fixture.transposedOp;
 
     RT alpha(2., 3.);
@@ -316,7 +328,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_conjugate_and_al
 
     dop->apply(NO_TRANSPOSE, x, y, alpha, beta);
 
-    BOOST_CHECK(y.is_finite());
+    for (int j = 0; j < y.cols(); ++j)
+        for (int i = 0; i  < y.rows(); ++i)
+            BOOST_CHECK(std::isfinite(std::abs(y(i,j))));
+
     BOOST_CHECK(check_arrays_are_close<RT>(y, expected,
                                            10. * std::numeric_limits<CT>::epsilon()));
 }
@@ -345,7 +360,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_conjugate_and_al
 
     dop->apply(NO_TRANSPOSE, x, y, alpha, beta);
 
-    BOOST_CHECK(y.is_finite());
+    for (int j = 0; j < y.cols(); ++j)
+        for (int i = 0; i  < y.rows(); ++i)
+            BOOST_CHECK(std::isfinite(std::abs(y(i,j))));
+
     BOOST_CHECK(check_arrays_are_close<RT>(y, expected,
                                            10. * std::numeric_limits<CT>::epsilon()));
 }
@@ -416,7 +434,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_conjugate_transp
     typedef typename Fiber::ScalarTraits<RT>::RealType CT;
 
     TransposedDiscreteBoundaryOperatorFixture<RT> fixture;
-    Matrix<RT> mat = fixture.op->asMatrix().t();
+    Matrix<RT> mat = fixture.op->asMatrix().adjoint();
     shared_ptr<const DiscreteBoundaryOperator<RT> > dop = fixture.conjugateTransposedOp;
 
     RT alpha(2.);
@@ -430,7 +448,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_conjugate_transp
 
     dop->apply(NO_TRANSPOSE, x, y, alpha, beta);
 
-    BOOST_CHECK(y.is_finite());
+    for (int j = 0; j < y.cols(); ++j)
+        for (int i = 0; i  < y.rows(); ++i)
+            BOOST_CHECK(std::isfinite(std::abs(y(i,j))));
+
     BOOST_CHECK(check_arrays_are_close<RT>(y, expected,
                                            10. * std::numeric_limits<CT>::epsilon()));
 }
@@ -445,7 +466,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_conjugate_transp
     typedef typename Fiber::ScalarTraits<RT>::RealType CT;
 
     TransposedDiscreteBoundaryOperatorFixture<RT> fixture;
-    Matrix<RT> mat = fixture.op->asMatrix().t();
+    Matrix<RT> mat = fixture.op->asMatrix().adjoint();
     shared_ptr<const DiscreteBoundaryOperator<RT> > dop = fixture.conjugateTransposedOp;
 
     RT alpha(2., 3.);
@@ -459,7 +480,10 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_conjugate_transp
 
     dop->apply(NO_TRANSPOSE, x, y, alpha, beta);
 
-    BOOST_CHECK(y.is_finite());
+    for (int j = 0; j < y.cols(); ++j)
+        for (int i = 0; i  < y.rows(); ++i)
+            BOOST_CHECK(std::isfinite(std::abs(y(i,j))));
+
     BOOST_CHECK(check_arrays_are_close<RT>(y, expected,
                                            10. * std::numeric_limits<CT>::epsilon()));
 }
@@ -474,7 +498,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_conjugate_transp
     typedef typename Fiber::ScalarTraits<RT>::RealType CT;
 
     TransposedDiscreteBoundaryOperatorFixture<RT> fixture;
-    Matrix<RT> mat = fixture.op->asMatrix().t();
+    Matrix<RT> mat = fixture.op->asMatrix().adjoint();
     shared_ptr<const DiscreteBoundaryOperator<RT> > dop = fixture.conjugateTransposedOp;
 
     RT alpha(2.);
@@ -501,7 +525,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_conjugate_transp
     typedef typename Fiber::ScalarTraits<RT>::RealType CT;
 
     TransposedDiscreteBoundaryOperatorFixture<RT> fixture;
-    Matrix<RT> mat = fixture.op->asMatrix().t();
+    Matrix<RT> mat = fixture.op->asMatrix().adjoint();
     shared_ptr<const DiscreteBoundaryOperator<RT> > dop = fixture.conjugateTransposedOp;
 
     RT alpha(2., 3.);

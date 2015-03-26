@@ -459,14 +459,14 @@ void PiecewiseLinearContinuousScalarSpaceBarycentric<BasisFunctionType>::
   std::unique_ptr<EntityIterator<0>> it = m_view->entityIterator<0>();
   Vector<CoordinateType> center(gridDim);
   center.fill(0.5);
-  Vector<CoordinateType> normal;
+  Matrix<CoordinateType> normal;
   while (!it->finished()) {
     const Entity<0> &e = it->entity();
     int index = indexSet.entityIndex(e);
     e.geometry().getNormals(center, normal);
 
     for (int dim = 0; dim < worldDim; ++dim)
-      elementNormals(dim, index) = normal(dim);
+      elementNormals(dim, index) = normal(dim,0);
     it->next();
   }
 
@@ -511,14 +511,14 @@ void PiecewiseLinearContinuousScalarSpaceBarycentric<BasisFunctionType>::
   std::unique_ptr<EntityIterator<0>> it = m_view->entityIterator<0>();
   Vector<CoordinateType> center(gridDim);
   center.fill(0.5);
-  Vector<CoordinateType> normal;
+  Matrix<CoordinateType> normal;
   while (!it->finished()) {
     const Entity<0> &e = it->entity();
     int index = indexSet.entityIndex(e);
     e.geometry().getNormals(center, normal);
 
     for (int dim = 0; dim < worldDim; ++dim)
-      elementNormals(dim, index) = normal(dim);
+      elementNormals(dim, index) = normal(dim,0);
     it->next();
   }
 
@@ -569,9 +569,9 @@ void PiecewiseLinearContinuousScalarSpaceBarycentric<
   std::unique_ptr<GridView> view = this->grid()->leafView();
   std::unique_ptr<VtkWriter> vtkWriter = view->vtkWriter();
   if (dofType == GLOBAL_DOFS) {
-    RowVector<double> data(idCount);
+    Matrix<double> data(1,idCount);
     for (size_t i = 0; i < idCount; ++i)
-      data(i) = clusterIdsOfDofs[i];
+      data(0,i) = clusterIdsOfDofs[i];
     vtkWriter->addVertexData(data, "ids");
     vtkWriter->write(fileName);
   } else {
@@ -590,7 +590,7 @@ void PiecewiseLinearContinuousScalarSpaceBarycentric<
         }
       }
       if (!exists)
-        data.shed_row(row); // very inefficient, of course
+        eigenRemoveRowFromMatrix(data,row);
       else
         ++row;
     }

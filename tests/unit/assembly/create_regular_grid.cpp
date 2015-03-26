@@ -22,6 +22,8 @@
 #include "grid/grid_factory.hpp"
 #include "common/eigen_support.hpp"
 
+using namespace Bempp;
+
 Bempp::shared_ptr<Bempp::Grid> createRegularTriangularGrid(
     int nElementsX, int nElementsY, double maxX, double maxY)
 {

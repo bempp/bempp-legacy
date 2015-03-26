@@ -61,7 +61,7 @@ BOOST_AUTO_TEST_CASE(elements_are_in_the_z_plane)
     ctype max_abs_z = 0.;
     Vector<ctype> center;
     while(!it->finished()) {
-        it->entity().geometry().getCenter(center);
+        it->entity().geometry().getCenter(Eigen::Ref<Vector<ctype>>(center));
         max_abs_z = std::max(max_abs_z, fabs(center(2)));
         it->next();
     }
@@ -82,7 +82,7 @@ BOOST_AUTO_TEST_CASE(elements_cover_the_unit_square)
 
     Vector<ctype> center;
     while(!it->finished()) {
-        it->entity().geometry().getCenter(center);
+        it->entity().geometry().getCenter(Eigen::Ref<ctype>(center));
         max_x = std::max(max_x, center(0));
         max_y = std::max(max_y, center(1));
         min_x = std::min(min_x, center(0));

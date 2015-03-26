@@ -171,7 +171,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(subEntityIterator_second_entity_agrees_with_Du
         it->next();
         const Entity<codimSub>& e = it->entity();
         const Geometry& geo = e.geometry();
-        geo.getCenter(elementCenter);
+        geo.getCenter(Eigen::Ref<Vector<double>>(elementCenter));
     }
 
     Dune::FieldVector<DuneGrid::ctype, DuneGrid::dimensionworld> duneElementCenter;

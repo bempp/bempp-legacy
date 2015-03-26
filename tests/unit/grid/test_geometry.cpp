@@ -109,7 +109,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(corners_first_corner_agrees_with_Dune_for_codi
 
     Dune::FieldVector<ctype, DuneGrid::dimensionworld> duneCorner = duneGeo.corner(nTestedCorner);
 
-    BOOST_CHECK_EQUAL(corners.col(nTestedCorner), duneCorner);
+    BOOST_CHECK_EQUAL(Vector<ctype>(corners.col(nTestedCorner)), duneCorner);
 }
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(corners_last_corner_agrees_with_Dune_for_codim,
@@ -129,7 +129,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(corners_last_corner_agrees_with_Dune_for_codim
 
     Dune::FieldVector<ctype, DuneGrid::dimensionworld> duneCorner = duneGeo.corner(nTestedCorner);
 
-    BOOST_CHECK_EQUAL(corners.col(nTestedCorner), duneCorner);
+    BOOST_CHECK_EQUAL(Vector<ctype>(corners.col(nTestedCorner)), duneCorner);
 }
 
 // ____________________________________________________________________________
@@ -159,7 +159,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(local2global_agrees_with_Dune_for_one_point_an
     geo.local2global(local, global);
     duneGlobal = duneGeo.global(duneLocal);
 
-    BOOST_CHECK_EQUAL(global.col(0), duneGlobal);
+    BOOST_CHECK_EQUAL(Vector<ctype>(global.col(0)), duneGlobal);
 }
 
 // Helper function for the two following tests
@@ -195,7 +195,7 @@ static void local2global_agrees_with_Dune_for_nth_of_several_points_and_uninitia
     geo.local2global(local, global);
     duneGlobal = duneGeo.global(duneLocal);
 
-    BOOST_CHECK_EQUAL(global.col(nTestedPoint), duneGlobal);
+    BOOST_CHECK_EQUAL(Vector<ctype>(global.col(nTestedPoint)), duneGlobal);
 }
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(local2global_agrees_with_Dune_for_first_of_several_points_and_uninitialised_output_and_codim,
@@ -248,7 +248,7 @@ static void local2global_agrees_with_Dune_for_nth_of_several_points_and_initiali
     geo.local2global(local, global);
     duneGlobal = duneGeo.global(duneLocal);
 
-    BOOST_CHECK_EQUAL(global.col(nTestedPoint), duneGlobal);
+    BOOST_CHECK_EQUAL(Vector<ctype>(global.col(nTestedPoint)), duneGlobal);
 }
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(local2global_agrees_with_Dune_for_first_of_several_points_and_initialised_output_and_codim,
@@ -297,7 +297,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(global2local_agrees_with_Dune_for_one_point_an
     Matrix<ctype> local;
     geo.global2local(global, local);
     Dune::FieldVector<ctype, dimLocal> duneLocal = duneGeo.local(duneGlobal);
-    for (int i = 0; i < local.n_rows; ++i)
+    for (int i = 0; i < local.rows(); ++i)
         BOOST_CHECK_CLOSE(local(i,0), duneLocal[i],1E-13);
 }
 
@@ -328,7 +328,7 @@ static void global2local_agrees_with_Dune_for_nth_of_several_points_and_uninitia
     Matrix<ctype> local;
     geo.global2local(global, local);
     Dune::FieldVector<ctype, dimLocal> duneLocal = duneGeo.local(duneGlobal);
-    for (int i = 0; i < local.n_rows; ++i)
+    for (int i = 0; i < local.rows(); ++i)
         BOOST_CHECK_CLOSE(local(i,nTestedPoint), duneLocal[i],1E-13);
 
     //BOOST_CHECK_EQUAL(local.col(nTestedPoint), duneLocal);
@@ -382,7 +382,7 @@ static void global2local_agrees_with_Dune_for_nth_of_several_points_and_initiali
     geo.global2local(global, local);
     Dune::FieldVector<ctype, dimLocal> duneLocal = duneGeo.local(duneGlobal);
 
-    for (int i = 0; i < local.n_rows; ++i)
+    for (int i = 0; i < local.rows(); ++i)
         BOOST_CHECK_CLOSE(local(i,nTestedPoint), duneLocal[i],1E-13);
 
 }
@@ -569,7 +569,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(center_agrees_with_Dune_for_codim,
     const typename DuneGrid::Codim<codim>::Entity::Geometry& duneGeo = duneEp->geometry();
 
     Vector<ctype> center;
-    geo.getCenter(center);
+    geo.getCenter(Eigen::Ref<Vector<ctype>>(center));
     Dune::FieldVector<ctype, dimGlobal> duneCenter = duneGeo.center();
 
     BOOST_CHECK_EQUAL(center, duneCenter);
@@ -690,7 +690,8 @@ static void jacobianTransposed_agrees_with_Dune_for_nth_of_several_points_and_in
 
     // Note: matrix jacobianT is initialised to incorrect shape
     // (jacobianTransposed is expected to resize it)
-    std::vector<Matrix<ctype>> jacobianT(10,10,10);
+    std::vector<Matrix<ctype>> jacobianT(10);
+    for (int i = 0 ; i < 10 ; ++i ) jacobianT[i].resize(10,10);
     geo.getJacobiansTransposed(local, jacobianT);
     typedef Dune::FieldMatrix<typename DuneGeometry::ctype,DuneGeometry::mydimension,DuneGeometry::coorddimension>
       DuneJacobianTransposedType;
@@ -837,7 +838,8 @@ static void jacobianInverseTransposed_agrees_with_Dune_for_nth_of_several_points
 
     // Note: matrix jacobianInvT is initialised to incorrect shape
     // (getJacobianInversesTransposed is expected to resize it)
-    std::vector<Matrix<ctype>> jacobianInvT(10,10,10);
+    std::vector<Matrix<ctype>> jacobianInvT(10);
+    for (int i = 0 ; i < 10 ; ++i ) jacobianInvT[i].resize(10,10);
     geo.getJacobianInversesTransposed(local, jacobianInvT);
     Dune::FieldMatrix<typename DuneGeometry::ctype,DuneGeometry::coorddimension,DuneGeometry::mydimension>
             duneJacobianInvT = duneGeo.jacobianInverseTransposed(duneLocal);

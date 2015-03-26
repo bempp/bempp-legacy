@@ -261,13 +261,13 @@ evaluateLocalWeakForms_for_ALL_DOFS_and_single_dof_agree_for_callVariant_TEST_TR
     mgr.assembler->evaluateLocalWeakForms(Fiber::TEST_TRIAL, elementIndicesA,
                                           elementIndexB,
                                           Fiber::ALL_DOFS, completeResult);
-    int elementBDofCount = completeResult[0].n_cols;
+    int elementBDofCount = completeResult[0].cols();
 
     // Gather successive rows
     std::vector<Matrix<ResultType> > resultForSingleDof;
     std::vector<Matrix<ResultType> > expected(elementCount);
     for (int i = 0; i < elementCount; ++i)
-        expected[i].set_size(completeResult[i].n_rows, completeResult[i].n_cols);
+        expected[i].resize(completeResult[i].rows(), completeResult[i].cols());
 
     for (int dof = 0; dof < elementBDofCount; ++dof)
     {
@@ -318,13 +318,13 @@ evaluateLocalWeakForms_for_ALL_DOFS_and_single_dof_agree_for_callVariant_TRIAL_T
     mgr.assembler->evaluateLocalWeakForms(Fiber::TRIAL_TEST, elementIndicesA,
                                           elementIndexB,
                                           Fiber::ALL_DOFS, completeResult);
-    int elementBDofCount = completeResult[0].n_rows;
+    int elementBDofCount = completeResult[0].rows();
 
     // Gather successive rows
     std::vector<Matrix<ResultType> > resultForSingleDof;
     std::vector<Matrix<ResultType> > expected(elementCount);
     for (int i = 0; i < elementCount; ++i)
-        expected[i].set_size(completeResult[i].n_rows, completeResult[i].n_cols);
+        expected[i].resize(completeResult[i].rows(), completeResult[i].cols());
 
     for (int dof = 0; dof < elementBDofCount; ++dof)
     {

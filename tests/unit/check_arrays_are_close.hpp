@@ -31,6 +31,8 @@
 #include <iomanip>
 #include <boost/test/unit_test.hpp>
 
+using namespace Bempp;
+
 template <typename ValueType>
 boost::test_tools::predicate_result
 check_arrays_are_close(const Matrix<ValueType>& left,
@@ -74,21 +76,10 @@ check_arrays_are_close(const std::vector<Matrix<ValueType>>& left,
     const int digits10 = std::numeric_limits<RealType>::digits10;
 
     boost::test_tools::predicate_result result(true);
-    if (left.n_rows != right.n_rows ||
-            left.n_cols != right.n_cols ||
-            left.n_slices != right.n_slices) {
-        result = false;
-        result.message() << "Size mismatch [("
-                         << left.n_rows << ", " << left.n_cols << ", "
-                         << left.n_slices << ") != ("
-                         << right.n_rows << ", " << right.n_cols << ", "
-                         << right.n_slices << ")]";
-        return result;
-    }
 
     if (left.size()!=right.size()){
         result = false;
-        result.message << "Number of slices matrices mismatch: ["
+        result.message() << "Number of slices matrices mismatch: ["
                        <<  left.size() << " != " << right.size() << "]";
         return result;
     }
@@ -97,12 +88,12 @@ check_arrays_are_close(const std::vector<Matrix<ValueType>>& left,
         if (left[s].rows() != right[s].rows() ||
                 left[s].cols() != right[s].cols()){
             result = false;
-            result.message << "Size mismatch in slice " << s << ". "
-                           << "[(" << left.rows() << "," << left.cols() << ") != "
-                           << "(" << right.rows() << "," << right.cols() << ")]";
+            result.message() << "Size mismatch in slice " << s << ". "
+                           << "[(" << left[s].rows() << "," << left[s].cols() << ") != "
+                           << "(" << right[s].rows() << "," << right[s].cols() << ")]";
         }
-        for (size_t r = 0; r < left.rows(); ++r)
-            for (size_t c = 0; c < left.cols(); ++c){
+        for (size_t r = 0; r < left[s].rows(); ++r)
+            for (size_t c = 0; c < left[s].cols(); ++c){
                 RealType diff = std::abs(left[s](r,c) - right[s](r,c));
                 RealType avg = std::abs(left[s](r,c) + right[s](r,c))/2.;
                 if (diff > tolerance * (1+avg)) {
@@ -237,8 +228,8 @@ check_arrays_are_close(const Fiber::_2dArray<Matrix<ValueType> >& leftArrays,
                                  << right.rows() << ", " << right.cols() << ")]";
                 return result;
             }
-            for (size_t r = 0; r < left.n_rows; ++r)
-                for (size_t c = 0; c < left.n_cols; ++c) {
+            for (size_t r = 0; r < left.rows(); ++r)
+                for (size_t c = 0; c < left.cols(); ++c) {
                     RealType diff = std::abs(left(r, c) - right(r, c));
                     RealType avg = std::abs(left(r, c) + right(r, c)) / 2.;
                     if (diff > tolerance * (1 + avg)) {
@@ -255,51 +246,6 @@ check_arrays_are_close(const Fiber::_2dArray<Matrix<ValueType> >& leftArrays,
     return result;
 }
 
-template <typename ValueType>
-boost::test_tools::predicate_result
-check_arrays_are_close(const std::vector<Matrix<ValueType> >& leftArrays,
-                       const std::vector<Matrix<ValueType> >& rightArrays,
-                       typename Fiber::ScalarTraits<ValueType>::RealType tolerance)
-{
-    typedef typename Fiber::ScalarTraits<ValueType>::RealType RealType;
-    const int digits10 = std::numeric_limits<RealType>::digits10;
 
-    boost::test_tools::predicate_result result(true);
-    if (leftArrays.size() != rightArrays.size()) {
-        result = false;
-        result.message() << "Size mismatch of std::vector ["
-                         << leftArrays.size() << " != "
-                         << rightArrays.size() << "]";
-        return result;
-    }
-
-    for (size_t ra = 0; ra < leftArrays.size(); ++ra) {
-        const Matrix<ValueType>& left = leftArrays[ra];
-        const Matrix<ValueType>& right = rightArrays[ra];
-        if (left.rows() != right.rows() || left.cols() != right.cols()) {
-            result = false;
-            result.message() << "Size mismatch of matrix ("
-                             << ra << ") [("
-                             << left.rows() << ", " << left.cols() << ") != ("
-                             << right.rows() << ", " << right.cols() << ")]";
-            return result;
-        }
-        for (size_t r = 0; r < left.rows(); ++r)
-            for (size_t c = 0; c < left.cols(); ++c) {
-                RealType diff = std::abs(left(r, c) - right(r, c));
-                RealType avg = std::abs(left(r, c) + right(r, c)) / 2.;
-                if (diff > tolerance * (1 + avg)) {
-                    result = false;
-                    result.message() << std::setprecision(digits10)
-                                     << "\n  Mismatch in matrix ("
-                                     << ra << ") at position ("
-                                     << r << ", " << c << ") ["
-                                     << left(r, c) << " != " << right(r, c) << "]";
-                }
-            }
-    }
-
-    return result;
-}
 
 #endif

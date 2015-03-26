@@ -60,11 +60,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_works_for_points_on_x_axis,
     const int worldDim = 3;
     const int testPointCount = 2, trialPointCount = 3;
     // Note: points lying on x axis only
-    testGeomData.globals.set_size(worldDim, testPointCount);
+    testGeomData.globals.resize(worldDim, testPointCount);
     testGeomData.globals.fill(0.);
     testGeomData.globals(0, 1) = 1.;
 
-    trialGeomData.globals.set_size(worldDim, trialPointCount);
+    trialGeomData.globals.resize(worldDim, trialPointCount);
     trialGeomData.globals.fill(0.);
     trialGeomData.globals(0, 0) = 2.;
     trialGeomData.globals(0, 1) = 3.;
@@ -96,11 +96,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_works_for_points_on_y_axis,
     const int worldDim = 3;
     const int testPointCount = 2, trialPointCount = 3;
     // Note: points lying on y axis only
-    testGeomData.globals.set_size(worldDim, testPointCount);
+    testGeomData.globals.resize(worldDim, testPointCount);
     testGeomData.globals.fill(0.);
     testGeomData.globals(1, 1) = 1.;
 
-    trialGeomData.globals.set_size(worldDim, trialPointCount);
+    trialGeomData.globals.resize(worldDim, trialPointCount);
     trialGeomData.globals.fill(0.);
     trialGeomData.globals(1, 0) = 2.;
     trialGeomData.globals(1, 1) = 3.;
@@ -135,11 +135,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_agrees_with_evaluateAtPointPairs,
     // Collect data with evaluateOnGrid
     GeomData testGeomDataOnGrid, trialGeomDataOnGrid;
 
-    testGeomDataOnGrid.globals.set_size(worldDim, testPointCount);
+    testGeomDataOnGrid.globals.resize(worldDim, testPointCount);
     testGeomDataOnGrid.globals.fill(0.);
     testGeomDataOnGrid.globals(0, 1) = 1.;
 
-    trialGeomDataOnGrid.globals.set_size(worldDim, trialPointCount);
+    trialGeomDataOnGrid.globals.resize(worldDim, trialPointCount);
     trialGeomDataOnGrid.globals.fill(1.);
     trialGeomDataOnGrid.globals(0, 0) = 2.;
     trialGeomDataOnGrid.globals(0, 1) = 3.;
@@ -156,8 +156,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_agrees_with_evaluateAtPointPairs,
 
     // Collect data with evaluateAtPointPairs
     GeomData testGeomDataAtPointPairs, trialGeomDataAtPointPairs;
-    testGeomDataAtPointPairs.globals.set_size(worldDim, testPointCount * trialPointCount);
-    trialGeomDataAtPointPairs.globals.set_size(worldDim, testPointCount * trialPointCount);
+    testGeomDataAtPointPairs.globals.resize(worldDim, testPointCount * trialPointCount);
+    trialGeomDataAtPointPairs.globals.resize(worldDim, testPointCount * trialPointCount);
     for (int testPoint = 0; testPoint < testPointCount; ++testPoint)
         for (int trialPoint = 0; trialPoint < trialPointCount; ++trialPoint) {
             testGeomDataAtPointPairs.globals.col(testPoint + trialPoint * testPointCount) =
