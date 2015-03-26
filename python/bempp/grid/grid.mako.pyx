@@ -6,7 +6,7 @@ from libcpp cimport bool as cbool
 from libcpp.vector cimport vector
 from bempp.utils cimport catch_exception
 from bempp.utils cimport unique_ptr
-from bempp.utils.armadillo cimport Col, Mat
+from bempp.utils.armadillo cimport Vector, Matrix
 from bempp.grid.grid_view cimport c_GridView, GridView
 from bempp.grid.grid_view cimport _grid_view_from_unique_ptr
 import numpy as _np
@@ -28,16 +28,16 @@ cdef extern from "bempp/grid/grid_factory.hpp" namespace "Bempp":
 
     shared_ptr[const c_Grid] cart_grid "Bempp::GridFactory::createStructuredGrid"(
             const GridParameters& params,
-            Col[double]& lowerLeft,
-            Col[double]& upperRight,
-            Col[unsigned int]& nElements
+            Vector[double]& lowerLeft,
+            Vector[double]& upperRight,
+            Vector[unsigned int]& nElements
     ) except +catch_exception
 
     shared_ptr[const c_Grid] connect_grid \
             "Bempp::GridFactory::createGridFromConnectivityArrays"(
             const GridParameters& params,
-            Mat[double]& vertices,
-            Mat[int]& elementCorners,
+            Matrix[double]& vertices,
+            Matrix[int]& elementCorners,
             vector[int]& domainIndices
     ) except +catch_exception
 
@@ -104,18 +104,18 @@ cdef class Grid:
             from numpy import ones
             cdef:
                 int n = deref(self.impl_).dimWorld()
-                Col[double] lower
-                Col[double] upper
+                Vector[double] lower
+                Vector[double] upper
 
 
             deref(self.impl_).getBoundingBox(lower, upper)
-            if upper.n_rows != n or lower.n_rows != n:
+            if upper.rows() != n or lower.rows() != n:
                 raise RuntimeError("Error in getBoundingBox")
 
             result = ones((2, n), dtype="double", order='C')
             for i in range(n):
-                result[0, i] = lower.at(i)
-                result[1, i] = upper.at(i)
+                result[0, i] = lower(i)
+                result[1, i] = upper(i)
             return result
 
     property leaf_view:

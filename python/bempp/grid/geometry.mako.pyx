@@ -2,7 +2,7 @@
 codims = [('0','codim_zero'),('1','codim_one'),('2','codim_two')]
 %>
 
-from bempp.utils.armadillo cimport Mat
+from bempp.utils.eigen cimport Matrix
 from cython.operator cimport dereference as deref
 import numpy as np
 cimport numpy as np
@@ -19,7 +19,7 @@ cdef class Geometry${codim}:
 
             cdef np.ndarray c_np = np.empty((self.dim_world,self.corner_count),dtype='float64',order='F')
             cdef double[::1,:] c_np_view = c_np
-            cdef Mat[double]* c = new Mat[double](&c_np_view[0,0],self.dim_world,self.corner_count,False,True)
+            cdef Matrix[double]* c = new Mat[double](&c_np_view[0,0],self.dim_world,self.corner_count,False,True)
             self.impl_.getCorners(deref(c))
             del c
             return c_np

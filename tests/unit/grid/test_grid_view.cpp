@@ -234,14 +234,14 @@ BOOST_AUTO_TEST_CASE(entityCount_is_zero_for_codim_3)
 }
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityCount_agrees_with_Dune_for_codim,
-                                  T, list_0_to_3)
+                                  T, list_0_to_2)
 {
     const int codim = T::value;
     BOOST_CHECK_EQUAL(bemppGridView->entityCount(codim), (size_t) duneGridView.size(codim));
 }
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityCount_agrees_with_Dune_for_simplex_of_dim,
-                                  T, list_0_to_3)
+                                  T, list_0_to_2)
 {
     const int dim = T::value;
     const GeometryType type(GeometryType::simplex, dim);
