@@ -413,8 +413,8 @@ void TypicalTestScalarKernelTrialIntegral<CoordinateType,
     assert(testValues[i].extent(2) == pointCount);
   for (size_t i = 0; i < transCount; ++i)
     assert(trialValues[i].extent(2) == pointCount);
-  assert(result.n_rows == testDofCount);
-  assert(result.n_cols == trialDofCount);
+  assert(result.rows() == testDofCount);
+  assert(result.cols() == trialDofCount);
 
   // Allocate memory for temporary arrays
   std::vector<CoordinateType, tbb::scalable_allocator<CoordinateType>>

@@ -29,6 +29,8 @@
 #include "../random_arrays.hpp"
 
 #include <algorithm>
+#include <typeinfo>
+
 #include "common/eigen_support.hpp"
 #include <boost/test/unit_test.hpp>
 #include <boost/test/floating_point_comparison.hpp>
@@ -122,7 +124,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(agrees_with_noninterpolated_for_negative_real_wave
             generateRandomMatrix<CoordinateType>(worldDim, trialPointCount);
     trialGeomData.globals.col(0).fill(0.);
     trialGeomData.globals.block(0,1, trialGeomData.globals.rows(),10) *= 0.01; // to test well the area near origin
-    trialGeomData.globals.block(0, 11, trialGeomData.globals.rows(),20) *= 0.1;
+    trialGeomData.globals.block(0, 11, trialGeomData.globals.rows(),10) *= 0.1;
 
     testGeomData.normals.resize(worldDim, testPointCount);
     testGeomData.normals.fill(0.);
@@ -172,7 +174,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(agrees_with_noninterpolated_for_negative_imag_wave
             generateRandomMatrix<CoordinateType>(worldDim, trialPointCount);
     trialGeomData.globals.col(0).fill(0.);
     trialGeomData.globals.block(0, 1 ,trialGeomData.globals.rows(), 10) *= 0.01; // to test well the area near origin
-    trialGeomData.globals.block(0, 11, trialGeomData.globals.rows(), 20) *= 0.1;
+    trialGeomData.globals.block(0, 11, trialGeomData.globals.rows(), 10) *= 0.1;
 
     testGeomData.normals.resize(worldDim, testPointCount);
     testGeomData.normals.fill(0.);
@@ -180,8 +182,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(agrees_with_noninterpolated_for_negative_imag_wave
     testGeomData.normals.row(1).fill(0.5);
     testGeomData.normals.row(2).fill(1. / sqrt(2.)); // just to make them nonzero and nonequal
 
+
     Fiber::CollectionOf4dArrays<ValueType> noninterpResult, interpResult;
+
+
     noninterpKernels.evaluateOnGrid(testGeomData, trialGeomData, noninterpResult);
+
     interpKernels.evaluateOnGrid(testGeomData, trialGeomData, interpResult);
 
     CoordinateType tol = 50 * std::numeric_limits<CoordinateType>::epsilon();
@@ -222,7 +228,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(agrees_with_noninterpolated_for_imag_wave_number,
             generateRandomMatrix<CoordinateType>(worldDim, trialPointCount);
     trialGeomData.globals.col(0).fill(0.);
     trialGeomData.globals.block(0, 1, trialGeomData.globals.rows(), 10) *= 0.01; // to test well the area near origin
-    trialGeomData.globals.block(0, 11, trialGeomData.globals.rows(), 20) *= 0.1;
+    trialGeomData.globals.block(0, 11, trialGeomData.globals.rows(), 10) *= 0.1;
 
     testGeomData.normals.resize(worldDim, testPointCount);
     testGeomData.normals.fill(0.);
@@ -272,7 +278,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(agrees_with_noninterpolated_for_complex_wave_numbe
             generateRandomMatrix<CoordinateType>(worldDim, trialPointCount);
     trialGeomData.globals.col(0).fill(0.);
     trialGeomData.globals.block(0, 1, trialGeomData.globals.rows(), 10) *= 0.01; // to test well the area near origin
-    trialGeomData.globals.block(0, 11, trialGeomData.globals.rows(), 20) *= 0.1;
+    trialGeomData.globals.block(0, 11, trialGeomData.globals.rows(), 10) *= 0.1;
 
     testGeomData.normals.resize(worldDim, testPointCount);
     testGeomData.normals.fill(0.);

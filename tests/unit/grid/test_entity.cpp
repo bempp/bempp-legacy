@@ -164,7 +164,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(subEntityIterator_second_entity_agrees_with_Du
 {
     const int codimSub = T::value;
 
-    Vector<double> elementCenter;
+    Vector<double> elementCenter(3);
     {
         std::unique_ptr<EntityPointer<0> > ep = getPointerToSecondEntityOnLevel0<0>();
         std::unique_ptr<EntityIterator<codimSub> > it = ep->entity().subEntityIterator<codimSub>();

@@ -108,7 +108,7 @@ void ClusterConstructionHelper<BasisFunctionType>::constructBemCluster(
     const AcaOptions &acaOptions, shared_ptr<AhmedBemCluster> &cluster,
     shared_ptr<IndexPermutation> &o2p, shared_ptr<IndexPermutation> &p2o) {
 #ifdef WITH_AHMED
-  const size_t pointCount = points.n_cols;
+  const size_t pointCount = points.cols();
   const size_t dofCount = pointCount * componentCount;
 
   std::vector<unsigned int> o2pDofs(dofCount);
@@ -228,8 +228,8 @@ template <typename BasisFunctionType>
 void ClusterConstructionHelper<BasisFunctionType>::getComponentDofPositions(
     const arma::Mat<CoordinateType> &points, int componentCount,
     std::vector<Point3D<CoordinateType>> &positions) {
-  const size_t pointCount = points.n_cols;
-  const int dim = points.n_rows;
+  const size_t pointCount = points.cols();
+  const int dim = points.rows();
   if (dim > 3)
     throw std::invalid_argument(
         "ClusterConstructionHelper::getComponentDofPositions(): "
@@ -248,8 +248,8 @@ template <typename BasisFunctionType>
 void ClusterConstructionHelper<BasisFunctionType>::getComponentBoundingBoxes(
     const arma::Mat<CoordinateType> &points, int componentCount,
     std::vector<BoundingBox<CoordinateType>> &boundingBoxes) {
-  const size_t pointCount = points.n_cols;
-  const int dim = points.n_rows;
+  const size_t pointCount = points.cols();
+  const int dim = points.rows();
   if (dim > 3)
     throw std::invalid_argument(
         "ClusterConstructionHelper::getComponentDofBoundingBoxes(): "

@@ -189,8 +189,8 @@ Vector<ResultType> interpolate(const Function<ResultType> &globalFunction,
 
   Matrix<CoordinateType> directions;
   space.getGlobalDofInterpolationDirections(directions);
-  assert(directions.n_rows == values.rows());
-  assert(directions.n_cols == pointCount);
+  assert(directions.rows() == values.rows());
+  assert(directions.cols() == pointCount);
 
   Vector<ResultType> result(pointCount);
   result.setZero();
@@ -740,7 +740,7 @@ GridFunction<BasisFunctionType, ResultType>::L2Norm() const {
 
   Vector<ResultType> product(coeffs.rows());
   massMatrix->apply(NO_TRANSPOSE, coeffs, product, 1., 0.);
-  ResultType result = coeffs.conjugate().dot(product);
+  ResultType result = coeffs.dot(product); // dot is already Hermitian conjugate
   if (fabs(imagPart(result)) >
       1000. * std::numeric_limits<MagnitudeType>::epsilon())
     std::cout << "Warning: squared L2Norm has non-negligible imaginary part: "

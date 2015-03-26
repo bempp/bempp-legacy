@@ -82,12 +82,12 @@ public:
     const Matrix<CoordinateType> &points = geomData.globals;
 
 #ifndef NDEBUG
-    if ((int)points.n_rows != worldDimension())
+    if ((int)points.rows() != worldDimension())
       throw std::invalid_argument("DomainIndexDependentFunction::evaluate(): "
                                   "incompatible world dimension");
 #endif
 
-    const size_t pointCount = points.n_cols;
+    const size_t pointCount = points.cols();
     result.resize(codomainDimension(), pointCount);
     for (size_t i = 0; i < pointCount; ++i) {
       Eigen::Map<Vector<ValueType>> activeResultColumn(result.col(i).data(),result.rows());

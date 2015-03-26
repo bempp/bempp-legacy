@@ -884,7 +884,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assemblePotentialOperator(
     throw std::runtime_error("AcaGlobalAssembler::assemblePotentialOperator(): "
                              "the 'localAssemblers' vector must not be empty");
 
-  const size_t pointCount = points.n_cols;
+  const size_t pointCount = points.cols();
   const int componentCount = localAssemblers[0]->resultDimension();
   const size_t testDofCount = pointCount * componentCount;
   const size_t trialDofCount = indexWithGlobalDofs

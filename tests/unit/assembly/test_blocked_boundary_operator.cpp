@@ -402,7 +402,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
 
   Matrix<RT> mat00 = op00.weakForm()->asMatrix();
   Matrix<RT> mat10 = op10.weakForm()->asMatrix();
-  Matrix<RT> nonblockedWeakForm = arma::join_cols(mat00, mat10);
+  Matrix<RT> nonblockedWeakForm = arma::joicols()(mat00, mat10);
   Matrix<RT> acaBlockedWeakForm =
       blockedOp.weakForm()->asDiscreteAcaBoundaryOperator()->asMatrix();
 
@@ -483,9 +483,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
   Matrix<RT> mat11 = op11.weakForm()->asMatrix();
   Matrix<RT> mat12 = op12.weakForm()->asMatrix();
   Matrix<RT> nonblockedWeakForm =
-      arma::join_rows(arma::join_rows(arma::join_cols(mat00, mat10),
-                                      arma::join_cols(mat01, mat11)),
-                      arma::join_cols(mat02, mat12));
+      arma::joirows()(arma::joirows()(arma::joicols()(mat00, mat10),
+                                      arma::joicols()(mat01, mat11)),
+                      arma::joicols()(mat02, mat12));
   Matrix<RT> acaBlockedWeakForm =
       blockedOp.weakForm()->asDiscreteAcaBoundaryOperator()->asMatrix();
 
@@ -563,9 +563,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
   Matrix<RT> mat11 = op11.weakForm()->asMatrix();
   Matrix<RT> mat12 = 0. * op12.weakForm()->asMatrix();
   Matrix<RT> nonblockedWeakForm =
-      arma::join_rows(arma::join_rows(arma::join_cols(mat00, mat10),
-                                      arma::join_cols(mat01, mat11)),
-                      arma::join_cols(mat02, mat12));
+      arma::joirows()(arma::joirows()(arma::joicols()(mat00, mat10),
+                                      arma::joicols()(mat01, mat11)),
+                      arma::joicols()(mat02, mat12));
   Matrix<RT> acaBlockedWeakForm =
       blockedOp.weakForm()->asDiscreteAcaBoundaryOperator()->asMatrix();
 
@@ -617,7 +617,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
 
   Matrix<RT> mat00 = op00.weakForm()->asMatrix();
   Matrix<RT> mat10 = op10.weakForm()->asMatrix();
-  Matrix<RT> nonblockedWeakForm = arma::join_cols(mat00, mat10);
+  Matrix<RT> nonblockedWeakForm = arma::joicols()(mat00, mat10);
   Matrix<RT> acaBlockedWeakForm =
       blockedOp.weakForm()->asDiscreteAcaBoundaryOperator()->asMatrix();
 
@@ -725,7 +725,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
 
   Matrix<RT> mat00 = op00.weakForm()->asMatrix();
   Matrix<RT> mat10 = op10.weakForm()->asMatrix();
-  Matrix<RT> nonblockedWeakForm = arma::join_cols(mat00, mat10);
+  Matrix<RT> nonblockedWeakForm = arma::joicols()(mat00, mat10);
   Matrix<RT> acaBlockedWeakForm =
       blockedOp.weakForm()
           ->asDiscreteAcaBoundaryOperator(-1, -1, true /*interleave*/)
@@ -808,9 +808,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
   Matrix<RT> mat11 = op11.weakForm()->asMatrix();
   Matrix<RT> mat12 = op12.weakForm()->asMatrix();
   Matrix<RT> nonblockedWeakForm =
-      arma::join_rows(arma::join_rows(arma::join_cols(mat00, mat10),
-                                      arma::join_cols(mat01, mat11)),
-                      arma::join_cols(mat02, mat12));
+      arma::joirows()(arma::joirows()(arma::joicols()(mat00, mat10),
+                                      arma::joicols()(mat01, mat11)),
+                      arma::joicols()(mat02, mat12));
   Matrix<RT> acaBlockedWeakForm =
       blockedOp.weakForm()
           ->asDiscreteAcaBoundaryOperator(-1, -1, true /*interleave*/)
@@ -890,9 +890,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
   Matrix<RT> mat11 = op11.weakForm()->asMatrix();
   Matrix<RT> mat12 = 0. * op12.weakForm()->asMatrix();
   Matrix<RT> nonblockedWeakForm =
-      arma::join_rows(arma::join_rows(arma::join_cols(mat00, mat10),
-                                      arma::join_cols(mat01, mat11)),
-                      arma::join_cols(mat02, mat12));
+      arma::joirows()(arma::joirows()(arma::joicols()(mat00, mat10),
+                                      arma::joicols()(mat01, mat11)),
+                      arma::joicols()(mat02, mat12));
   Matrix<RT> acaBlockedWeakForm =
       blockedOp.weakForm()
           ->asDiscreteAcaBoundaryOperator(-1, -1, true /*interleave*/)
@@ -946,7 +946,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
 
   Matrix<RT> mat00 = op00.weakForm()->asMatrix();
   Matrix<RT> mat10 = op10.weakForm()->asMatrix();
-  Matrix<RT> nonblockedWeakForm = arma::join_cols(mat00, mat10);
+  Matrix<RT> nonblockedWeakForm = arma::joicols()(mat00, mat10);
   Matrix<RT> acaBlockedWeakForm =
       blockedOp.weakForm()
           ->asDiscreteAcaBoundaryOperator(-1, -1, true /*interleave*/)
@@ -1060,7 +1060,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
 
   Matrix<RT> mat00 = op00.weakForm()->asMatrix();
   Matrix<RT> mat10 = op10.weakForm()->asMatrix();
-  Matrix<RT> nonblockedWeakForm = arma::join_cols(mat00, mat10);
+  Matrix<RT> nonblockedWeakForm = arma::joicols()(mat00, mat10);
   Matrix<RT> acaBlockedWeakForm =
       blockedOp.weakForm()
           ->asDiscreteAcaBoundaryOperator(-1, -1, true /*interleave*/)
@@ -1148,9 +1148,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
   Matrix<RT> mat11 = op11.weakForm()->asMatrix();
   Matrix<RT> mat12 = op12.weakForm()->asMatrix();
   Matrix<RT> nonblockedWeakForm =
-      arma::join_rows(arma::join_rows(arma::join_cols(mat00, mat10),
-                                      arma::join_cols(mat01, mat11)),
-                      arma::join_cols(mat02, mat12));
+      arma::joirows()(arma::joirows()(arma::joicols()(mat00, mat10),
+                                      arma::joicols()(mat01, mat11)),
+                      arma::joicols()(mat02, mat12));
   Matrix<RT> acaBlockedWeakForm =
       blockedOp.weakForm()
           ->asDiscreteAcaBoundaryOperator(-1, -1, true /*interleave*/)
@@ -1235,9 +1235,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
   Matrix<RT> mat11 = op11.weakForm()->asMatrix();
   Matrix<RT> mat12 = 0. * op12.weakForm()->asMatrix();
   Matrix<RT> nonblockedWeakForm =
-      arma::join_rows(arma::join_rows(arma::join_cols(mat00, mat10),
-                                      arma::join_cols(mat01, mat11)),
-                      arma::join_cols(mat02, mat12));
+      arma::joirows()(arma::joirows()(arma::joicols()(mat00, mat10),
+                                      arma::joicols()(mat01, mat11)),
+                      arma::joicols()(mat02, mat12));
   Matrix<RT> acaBlockedWeakForm =
       blockedOp.weakForm()
           ->asDiscreteAcaBoundaryOperator(-1, -1, true /*interleave*/)
@@ -1349,7 +1349,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
 
   Matrix<RT> mat00 = op00.weakForm()->asMatrix();
   Matrix<RT> mat10 = op10.weakForm()->asMatrix();
-  Matrix<RT> nonblockedWeakForm = arma::join_cols(mat00, mat10);
+  Matrix<RT> nonblockedWeakForm = arma::joicols()(mat00, mat10);
   Matrix<RT> acaBlockedWeakForm =
       blockedOp.weakForm()
           ->asDiscreteAcaBoundaryOperator(-1, -1, true /*interleave*/)
@@ -1436,9 +1436,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
   Matrix<RT> mat11 = op11.weakForm()->asMatrix();
   Matrix<RT> mat12 = op12.weakForm()->asMatrix();
   Matrix<RT> nonblockedWeakForm =
-      arma::join_rows(arma::join_rows(arma::join_cols(mat00, mat10),
-                                      arma::join_cols(mat01, mat11)),
-                      arma::join_cols(mat02, mat12));
+      arma::joirows()(arma::joirows()(arma::joicols()(mat00, mat10),
+                                      arma::joicols()(mat01, mat11)),
+                      arma::joicols()(mat02, mat12));
   Matrix<RT> acaBlockedWeakForm =
       blockedOp.weakForm()
           ->asDiscreteAcaBoundaryOperator(-1, -1, true /*interleave*/)
@@ -1522,9 +1522,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(
   Matrix<RT> mat11 = op11.weakForm()->asMatrix();
   Matrix<RT> mat12 = 0. * op12.weakForm()->asMatrix();
   Matrix<RT> nonblockedWeakForm =
-      arma::join_rows(arma::join_rows(arma::join_cols(mat00, mat10),
-                                      arma::join_cols(mat01, mat11)),
-                      arma::join_cols(mat02, mat12));
+      arma::joirows()(arma::joirows()(arma::joicols()(mat00, mat10),
+                                      arma::joicols()(mat01, mat11)),
+                      arma::joicols()(mat02, mat12));
   Matrix<RT> acaBlockedWeakForm =
       blockedOp.weakForm()
           ->asDiscreteAcaBoundaryOperator(-1, -1, true /*interleave*/)

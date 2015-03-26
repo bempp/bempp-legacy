@@ -72,7 +72,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(agrees_with_noninterpolated_for_real_wave_number,
             generateRandomMatrix<CoordinateType>(worldDim, trialPointCount);
     trialGeomData.globals.col(0).fill(0.);
     trialGeomData.globals.block(0, 1, trialGeomData.globals.rows(), 10) *= 0.01; // to test well the area near origin
-    trialGeomData.globals.block(0, 11, trialGeomData.globals.rows(), 20) *= 0.1;
+    trialGeomData.globals.block(0, 11, trialGeomData.globals.rows(), 10) *= 0.1;
 
     Fiber::CollectionOf4dArrays<ValueType> noninterpResult, interpResult;
     noninterpKernels.evaluateOnGrid(testGeomData, trialGeomData, noninterpResult);
@@ -116,7 +116,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(agrees_with_noninterpolated_for_negative_real_wave
             generateRandomMatrix<CoordinateType>(worldDim, trialPointCount);
     trialGeomData.globals.col(0).fill(0.);
     trialGeomData.globals.block(0, 1, trialGeomData.globals.rows(), 10) *= 0.01; // to test well the area near origin
-    trialGeomData.globals.block(0, 11, trialGeomData.globals.rows(), 20) *= 0.1;
+    trialGeomData.globals.block(0, 11, trialGeomData.globals.rows(), 10) *= 0.1;
 
     Fiber::CollectionOf4dArrays<ValueType> noninterpResult, interpResult;
     noninterpKernels.evaluateOnGrid(testGeomData, trialGeomData, noninterpResult);
@@ -160,7 +160,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(agrees_with_noninterpolated_for_negative_imag_wave
             generateRandomMatrix<CoordinateType>(worldDim, trialPointCount);
     trialGeomData.globals.col(0).fill(0.);
     trialGeomData.globals.block(0, 1, trialGeomData.globals.rows(), 10) *= 0.01; // to test well the area near origin
-    trialGeomData.globals.block(0, 11, trialGeomData.globals.rows(), 20) *= 0.1;
+    trialGeomData.globals.block(0, 11, trialGeomData.globals.rows(), 10) *= 0.1;
 
     Fiber::CollectionOf4dArrays<ValueType> noninterpResult, interpResult;
     noninterpKernels.evaluateOnGrid(testGeomData, trialGeomData, noninterpResult);
@@ -204,7 +204,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(agrees_with_noninterpolated_for_imag_wave_number,
             generateRandomMatrix<CoordinateType>(worldDim, trialPointCount);
     trialGeomData.globals.col(0).fill(0.);
     trialGeomData.globals.block(0, 1, trialGeomData.globals.rows(), 10) *= 0.01; // to test well the area near origin
-    trialGeomData.globals.block(0, 11, trialGeomData.globals.rows(), 20) *= 0.1;
+    trialGeomData.globals.block(0, 11, trialGeomData.globals.rows(), 10) *= 0.1;
 
     Fiber::CollectionOf4dArrays<ValueType> noninterpResult, interpResult;
     noninterpKernels.evaluateOnGrid(testGeomData, trialGeomData, noninterpResult);
@@ -248,7 +248,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(agrees_with_noninterpolated_for_complex_wave_numbe
             generateRandomMatrix<CoordinateType>(worldDim, trialPointCount);
     trialGeomData.globals.col(0).fill(0.);
     trialGeomData.globals.block(0, 1, trialGeomData.globals.rows(), 10) *= 0.01; // to test well the area near origin
-    trialGeomData.globals.block(0, 11, trialGeomData.globals.rows(), 20) *= 0.1;
+    trialGeomData.globals.block(0, 11, trialGeomData.globals.rows(), 10) *= 0.1;
 
     Fiber::CollectionOf4dArrays<ValueType> noninterpResult, interpResult;
     noninterpKernels.evaluateOnGrid(testGeomData, trialGeomData, noninterpResult);

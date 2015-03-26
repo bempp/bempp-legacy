@@ -230,15 +230,15 @@ void OpenClHandler::pushGeometry(const arma::Mat<CoordinateType> &vtx,
   cl_int err;
 
   // Allocate the buffers
-  meshgeom.size.dim = vtx.n_rows;
-  meshgeom.size.nvtx = vtx.n_cols;
+  meshgeom.size.dim = vtx.rows();
+  meshgeom.size.nvtx = vtx.cols();
   size_t vtxbuf_size =
       meshgeom.size.dim * meshgeom.size.nvtx * sizeof(CoordinateType);
   meshgeom.cl_vtxbuf =
       cl::Buffer(context, CL_MEM_READ_ONLY, vtxbuf_size, NULL, &err);
 
-  meshgeom.size.nels = idx.n_cols;
-  meshgeom.size.nidx = idx.n_rows;
+  meshgeom.size.nels = idx.cols();
+  meshgeom.size.nidx = idx.rows();
   size_t idxbuf_size =
       meshgeom.size.nels * meshgeom.size.nidx * sizeof(IndexType);
   meshgeom.cl_elbuf =
@@ -297,7 +297,7 @@ cl::Buffer *OpenClHandler::pushRow(const arma::Row<BufferType> &row) const {
   CALLECHO();
 
   cl_int err;
-  size_t bufsize = row.n_rows * row.n_cols * sizeof(BufferType);
+  size_t bufsize = row.rows() * row.cols() * sizeof(BufferType);
   cl::Buffer *clbuf =
       new cl::Buffer(context, CL_MEM_READ_ONLY, bufsize, NULL, &err);
   queue.enqueueWriteBuffer(*clbuf, CL_TRUE, 0, bufsize, row.memptr(), NULL,
@@ -310,7 +310,7 @@ cl::Buffer *OpenClHandler::pushMatrix(const arma::Mat<BufferType> &mat) const {
   CALLECHO();
 
   cl_int err;
-  size_t bufsize = mat.n_rows * mat.n_cols * sizeof(BufferType);
+  size_t bufsize = mat.rows() * mat.cols() * sizeof(BufferType);
   cl::Buffer *clbuf =
       new cl::Buffer(context, CL_MEM_READ_ONLY, bufsize, NULL, &err);
   queue.enqueueWriteBuffer(*clbuf, CL_TRUE, 0, bufsize, mat.memptr(), NULL,
@@ -324,7 +324,7 @@ cl::Buffer *OpenClHandler::pushCube(const arma::Cube<BufferType> &cube) const {
 
   cl_int err;
   size_t bufsize =
-      cube.n_rows * cube.n_cols * cube.n_slices * sizeof(BufferType);
+      cube.rows() * cube.cols() * cube.n_slices * sizeof(BufferType);
   cl::Buffer *clbuf =
       new cl::Buffer(context, CL_MEM_READ_ONLY, bufsize, NULL, &err);
   queue.enqueueWriteBuffer(*clbuf, CL_TRUE, 0, bufsize, cube.memptr(), NULL,
@@ -348,7 +348,7 @@ void OpenClHandler::pullCube(const cl::Buffer &clbuf,
   CALLECHO();
 
   size_t bufsize =
-      cube.n_rows * cube.n_cols * cube.n_slices * sizeof(BufferType);
+      cube.rows() * cube.cols() * cube.n_slices * sizeof(BufferType);
   queue.enqueueReadBuffer(clbuf, CL_TRUE, 0, bufsize, cube.memptr(), NULL,
                           &event);
 }

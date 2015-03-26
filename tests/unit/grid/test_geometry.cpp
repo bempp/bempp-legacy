@@ -568,7 +568,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(center_agrees_with_Dune_for_codim,
     const Geometry& geo = ep->entity().geometry();
     const typename DuneGrid::Codim<codim>::Entity::Geometry& duneGeo = duneEp->geometry();
 
-    Vector<ctype> center;
+    Vector<ctype> center(3);
     geo.getCenter(Eigen::Ref<Vector<ctype>>(center));
     Dune::FieldVector<ctype, dimGlobal> duneCenter = duneGeo.center();
 

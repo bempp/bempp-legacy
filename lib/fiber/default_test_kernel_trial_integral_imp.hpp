@@ -69,8 +69,8 @@ void DefaultTestKernelTrialIntegral<IntegrandFunctor>::
   for (size_t i = 0; i < trialValues.size(); ++i)
     assert(trialValues[i].extent(2) == trialPointCount);
 
-  assert(result.n_rows == testDofCount);
-  assert(result.n_cols == trialDofCount);
+  assert(result.rows() == testDofCount);
+  assert(result.cols() == trialDofCount);
 
   // Integrate
 

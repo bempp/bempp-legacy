@@ -184,7 +184,7 @@ void UnitScalarSpace<BasisFunctionType>::getGlobalDofPositions(
     std::unique_ptr<EntityIterator<0>> it = m_view->entityIterator<0>();
     while (!it->finished()) {
       const Entity<0> &e = it->entity();
-      Vector<CoordinateType> center;
+      Vector<CoordinateType> center(m_view->dimWorld());
       e.geometry().getCenter(Eigen::Ref<Vector<CoordinateType>>(center));
 
       positions[0].x += center(0);
@@ -216,7 +216,7 @@ void UnitScalarSpace<BasisFunctionType>::getFlatLocalDofPositions(
     while (!it->finished()) {
       const Entity<0> &e = it->entity();
       int index = mapper.entityIndex(e);
-      Vector<CoordinateType> center;
+      Vector<CoordinateType> center(m_view->dimWorld());
       e.geometry().getCenter(Eigen::Ref<Vector<CoordinateType>>(center));
 
       positions[index].x = center(0);
@@ -257,7 +257,7 @@ void UnitScalarSpace<BasisFunctionType>::getGlobalDofBoundingBoxes(
     std::unique_ptr<EntityIterator<0>> it = m_view->entityIterator<0>();
     while (!it->finished()) {
       const Entity<0> &e = it->entity();
-      Vector<CoordinateType> center;
+      Vector<CoordinateType> center(m_view->dimWorld());
       const Geometry &geo = e.geometry();
       geo.getCenter(Eigen::Ref<Vector<CoordinateType>>(center));
       bbox.reference.x += center(0);
@@ -318,7 +318,7 @@ void UnitScalarSpace<BasisFunctionType>::getFlatLocalDofBoundingBoxes(
     while (!it->finished()) {
       const Entity<0> &e = it->entity();
       int index = mapper.entityIndex(e);
-      Vector<CoordinateType> center;
+      Vector<CoordinateType> center(m_view->dimWorld());
       const Geometry &geo = e.geometry();
       geo.getCenter(Eigen::Ref<Vector<CoordinateType>>(center));
       BoundingBox<CoordinateType> &bbox = bboxes[index];
@@ -327,7 +327,7 @@ void UnitScalarSpace<BasisFunctionType>::getFlatLocalDofBoundingBoxes(
       bbox.reference.z = center(2);
 
       geo.getCorners(corners);
-      assert(corners.n_cols > 0);
+      assert(corners.cols() > 0);
       bbox.lbound.x = corners(0, 0);
       bbox.lbound.y = corners(1, 0);
       bbox.lbound.z = corners(2, 0);

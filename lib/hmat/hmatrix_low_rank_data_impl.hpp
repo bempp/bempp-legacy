@@ -50,7 +50,7 @@ HMatrixLowRankData<ValueType>::frobeniusNorm() const {
 
   Matrix<ValueType> result(1, 1);
 
-  for (int i = 0; i < m_B.n_cols; ++i) {
+  for (int i = 0; i < m_B.cols(); ++i) {
     auto col = m_B.col(i);
     result += col.adjoint * aHa * col;
   }

@@ -262,6 +262,7 @@ void PiecewiseConstantScalarSpace<BasisFunctionType>::getGlobalDofBoundingBoxes(
     int index = indexSet.entityIndex(e);
     const Geometry &geo = e.geometry();
     geo.getCorners(acc(elementCorners, index));
+    acc(elementCenters,index).resize(m_view->dimWorld());
     Eigen::Ref<Vector<CoordinateType>> elementCenterRef(acc(elementCenters,index));
     geo.getCenter(elementCenterRef);
     it->next();

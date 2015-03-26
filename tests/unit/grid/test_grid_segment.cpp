@@ -49,7 +49,7 @@ std::set<int> entitiesWithNonpositiveY(const GridView& view)
     std::set<int> result;
     std::unique_ptr<EntityIterator<codim> > it = view.entityIterator<codim>();
     const IndexSet& indexSet = view.indexSet();
-    Vector<double> center;
+    Vector<double> center(3);
     while (!it->finished()) {
         const Entity<codim>& entity = it->entity();
         entity.geometry().getCenter(Eigen::Ref<Vector<double>>(center));

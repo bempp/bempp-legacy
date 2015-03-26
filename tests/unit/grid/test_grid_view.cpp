@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityIterator_second_entity_agrees_with_Dune_
 {
     const int codim = T::value;
 
-    Vector<double> elementCenter;
+    Vector<double> elementCenter(3);
     {
         std::unique_ptr<EntityIterator<codim> > it = bemppGridView->entityIterator<codim>();
         it->next();
@@ -326,7 +326,7 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityIterator_second_entity_agrees_with_Dune_
 {
     const int codim = T::value;
 
-    Vector<double> elementCenter;
+    Vector<double> elementCenter(3);
     {
         std::unique_ptr<EntityIterator<codim> > it = bemppGridView->entityIterator<codim>();
         it->next();

@@ -90,7 +90,7 @@ public:
 
   MblockMultiplicationLoopBody(MblockMultiplicationLoopBody &other, tbb::split)
       : m_trans(other.m_trans), m_multiplier(other.m_multiplier),
-        m_x(other.m_x), m_local_y(other.m_local_y.n_rows),
+        m_x(other.m_x), m_local_y(other.m_local_y.rows()),
         m_leafClusters(other.m_leafClusters), m_blocks(other.m_blocks),
         m_leafClusterIndexQueue(other.m_leafClusterIndexQueue),
         m_stats(other.m_stats) {
@@ -414,9 +414,9 @@ void DiscreteAcaBoundaryOperator<ValueType>::applyBuiltInImpl(
   blcluster *nonconstBlockCluster = const_cast<blcluster *>(blockCluster);
 
   if ((!transposed &&
-       (columnCount() != x_in.n_rows || rowCount() != y_inout.n_rows)) ||
+       (columnCount() != x_in.rows() || rowCount() != y_inout.rows())) ||
       (transposed &&
-       (rowCount() != x_in.n_rows || columnCount() != y_inout.n_rows)))
+       (rowCount() != x_in.rows() || columnCount() != y_inout.rows())))
     throw std::invalid_argument(
         "DiscreteAcaBoundaryOperator::applyBuiltInImpl(): "
         "incorrect vector length");

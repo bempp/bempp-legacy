@@ -366,10 +366,10 @@ void SeparableNumericalTestKernelTrialIntegrator<BasisFunctionType, KernelType,
   //    const Expression<CoordinateType>& m_trialExpression =
   // m_trialTransformation.term(0);
 
-  //    const int testPointCount = m_localTestQuadPoints.n_cols;
-  //    const int trialPointCount = m_localTrialQuadPoints.n_cols;
+  //    const int testPointCount = m_localTestQuadPoints.cols();
+  //    const int trialPointCount = m_localTrialQuadPoints.cols();
   //    const int elementACount = elementIndicesA.size();
-  //    const int pointDim = m_localTestQuadPoints.n_rows;
+  //    const int pointDim = m_localTestQuadPoints.rows();
   //    const int meshDim = m_openClHandler.meshGeom().size.dim;
 
   //    if (testPointCount == 0 || trialPointCount == 0 || elementACount == 0)
@@ -794,10 +794,10 @@ void SeparableNumericalTestKernelTrialIntegrator<BasisFunctionType, KernelType,
                 const Shapeset<BasisFunctionType> &trialShapeset,
                 const std::vector<Matrix<ResultType> *> &result) const {
   //#ifdef WITH_OPENCL
-  //    const int testPointCount = m_localTestQuadPoints.n_cols;
-  //    const int trialPointCount = m_localTrialQuadPoints.n_cols;
+  //    const int testPointCount = m_localTestQuadPoints.cols();
+  //    const int trialPointCount = m_localTrialQuadPoints.cols();
   //    const int geometryPairCount = elementIndexPairs.size();
-  //    const int pointDim = m_localTestQuadPoints.n_rows;
+  //    const int pointDim = m_localTestQuadPoints.rows();
   //    const int meshDim = m_openClHandler.meshGeom().size.dim;
 
   //    if (testPointCount == 0 || trialPointCount == 0 || geometryPairCount ==

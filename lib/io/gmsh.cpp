@@ -1104,7 +1104,7 @@ GmshIo::GmshIo(const shared_ptr<const Grid> &grid) : m_grid(grid) {
     const Entity<2> &node = nodeIterator->entity();
     int index = m_nodePermutation[indexSet.entityIndex(node)];
     const Geometry &geom = node.geometry();
-    Vector<double> coords(3, 1);
+    Vector<double> coords(3);
     geom.getCenter(Eigen::Ref<Vector<double>>(coords));
     m_gmshData.addNode(index, coords(0), coords(1), coords(2));
     nodeIterator->next();
@@ -1692,7 +1692,7 @@ void exportToGmsh(GridFunction<BasisFunctionType, ResultType> gridFunction,
 //        gridFunction.evaluate(element, localCoordsOnTriangles[order], values);
 //        geo.local2global(localCoordsOnTriangles[order], globalCoords);
 
-//        const size_t pointCount = localCoordsOnTriangles[order].n_cols;
+//        const size_t pointCount = localCoordsOnTriangles[order].cols();
 //        for (size_t p = 0; p < pointCount; ++p) {
 //            nodes << nodeCount + 1 + p;
 //            for (size_t d = 0; d < dimWorld; ++d)
@@ -1707,7 +1707,7 @@ void exportToGmsh(GridFunction<BasisFunctionType, ResultType> gridFunction,
 
 //        for (size_t p = 0; p < pointCount; ++p) {
 //            data << nodeCount + 1 + p;
-//            for (size_t d = 0; d < values.n_rows; ++d)
+//            for (size_t d = 0; d < values.rows(); ++d)
 //                data << ' ' << realPart(values(d, p)); // TODO: export imag.
 // part too
 //            data << '\n';

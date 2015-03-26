@@ -94,7 +94,7 @@ public:
           "incompatible world dimension");
 #endif
 
-    const size_t pointCount = points.n_cols;
+    const size_t pointCount = points.cols();
     result.resize(codomainDimension(), pointCount);
     for (size_t i = 0; i < pointCount; ++i) {
       Eigen::Map<Vector<ValueType>> activeResultColumn(result.col(i).data(),result.rows());

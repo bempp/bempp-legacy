@@ -59,7 +59,7 @@ BOOST_AUTO_TEST_CASE(elements_are_in_the_z_plane)
 
     typedef double ctype;
     ctype max_abs_z = 0.;
-    Vector<ctype> center;
+    Vector<ctype> center(3);
     while(!it->finished()) {
         it->entity().geometry().getCenter(Eigen::Ref<Vector<ctype>>(center));
         max_abs_z = std::max(max_abs_z, fabs(center(2)));
@@ -80,7 +80,7 @@ BOOST_AUTO_TEST_CASE(elements_cover_the_unit_square)
     ctype min_y =  1e100;
     ctype max_y = -1e100;
 
-    Vector<ctype> center;
+    Vector<ctype> center(3);
     while(!it->finished()) {
         it->entity().geometry().getCenter(Eigen::Ref<Vector<double>>(center));
         max_x = std::max(max_x, center(0));

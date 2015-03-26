@@ -178,7 +178,7 @@ void AcaApproximateLuInverse<ValueType>::applyBuiltInImpl(
     throw std::runtime_error(
         "AcaApproximateLuInverse::applyBuiltInImpl(): "
         "transposition modes other than NO_TRANSPOSE are not supported");
-  if (columnCount() != x_in.n_rows && rowCount() != y_inout.n_rows)
+  if (columnCount() != x_in.rows() && rowCount() != y_inout.rows())
     throw std::invalid_argument("AcaApproximateLuInverse::applyBuiltInImpl(): "
                                 "incorrect vector length");
 

@@ -228,7 +228,6 @@ public:
 
   virtual void getCenterImpl(Eigen::Ref<Vector<double>> c) const {
     const int cdim = DuneGeometry<dim_>::coorddimension;
-    c.resize(cdim);
 
     /* TODO: Optimise (get rid of data copying). */
     typename DuneGeometry<dim_>::GlobalCoordinate g = m_dune_geometry->center();
@@ -246,27 +245,31 @@ public:
       throw std::invalid_argument("Geometry::getJacobiansTransposed(): "
                                   "invalid dimensions of the 'local' array");
 #endif
-    const size_t n = local.cols();
-    jacobian_t.resize(n);
-    //jacobian_t.resize(mdim, cdim, n);
 
-    /* Unfortunately Dune::FieldMatrix (the underlying type of
+    if (mdim * cdim == 0) jacobian_t.clear();
+    else {
+        const size_t n = local.cols();
+        jacobian_t.resize(n);
+        //jacobian_t.resize(mdim, cdim, n);
+
+        /* Unfortunately Dune::FieldMatrix (the underlying type of
     JacobianTransposed) stores elements rowwise, while Armadillo does it
     columnwise. Hence element-by-element filling of jacobian_t seems
     unavoidable). */
-    // typename DuneGeometry::JacobianTransposed j_t;
-    // Dune::FieldMatrix<double,mdim,cdim> j_t;
-    typename DuneGeometry<dim_>::LocalCoordinate l;
-    for (size_t k = 0; k < n; ++k) {
-      /* However, this bit of data copying could be avoided. */
-      for (int i = 0; i < mdim; ++i)
-        l[i] = local(i, k);
-      Dune::FieldMatrix<double, mdim, cdim> j_t =
-          m_dune_geometry->jacobianTransposed(l);
-      jacobian_t[k].resize(mdim,cdim);
-      for (int j = 0; j < cdim; ++j)
-        for (int i = 0; i < mdim; ++i)
-          jacobian_t[k](i, j) = j_t[i][j];
+        // typename DuneGeometry::JacobianTransposed j_t;
+        // Dune::FieldMatrix<double,mdim,cdim> j_t;
+        typename DuneGeometry<dim_>::LocalCoordinate l;
+        for (size_t k = 0; k < n; ++k) {
+            /* However, this bit of data copying could be avoided. */
+            for (int i = 0; i < mdim; ++i)
+                l[i] = local(i, k);
+            Dune::FieldMatrix<double, mdim, cdim> j_t =
+                    m_dune_geometry->jacobianTransposed(l);
+            jacobian_t[k].resize(mdim,cdim);
+            for (int j = 0; j < cdim; ++j)
+                for (int i = 0; i < mdim; ++i)
+                    jacobian_t[k](i, j) = j_t[i][j];
+        }
     }
   }
 
@@ -313,23 +316,27 @@ public:
       throw std::invalid_argument("Geometry::getJacobianInversesTransposed(): "
                                   "invalid dimensions of the 'local' array");
 #endif
-    const size_t n = local.cols();
-    jacobian_inv_t.resize(n);
-    //jacobian_inv_t.resize(cdim, mdim, n);
 
-    // typename DuneGeometry::Jacobian j_inv_t;
-    // Dune::FieldMatrix<double,cdim,mdim> j_inv_t;
-    typename DuneGeometry<dim_>::LocalCoordinate l;
-    for (size_t k = 0; k < n; ++k) {
-      /** \fixme However, this bit of data copying could be avoided. */
-      for (int i = 0; i < mdim; ++i)
-        l[i] = local(i, k);
-      Dune::FieldMatrix<double, cdim, mdim> j_inv_t =
-          m_dune_geometry->jacobianInverseTransposed(l);
-      jacobian_inv_t[k].resize(cdim,mdim);
-      for (int j = 0; j < mdim; ++j)
-        for (int i = 0; i < cdim; ++i)
-          jacobian_inv_t[k](i, j) = j_inv_t[i][j];
+    if (mdim * cdim == 0) jacobian_inv_t.clear();
+    else {
+        const size_t n = local.cols();
+        jacobian_inv_t.resize(n);
+        //jacobian_inv_t.resize(cdim, mdim, n);
+
+        // typename DuneGeometry::Jacobian j_inv_t;
+        // Dune::FieldMatrix<double,cdim,mdim> j_inv_t;
+        typename DuneGeometry<dim_>::LocalCoordinate l;
+        for (size_t k = 0; k < n; ++k) {
+            /** \fixme However, this bit of data copying could be avoided. */
+            for (int i = 0; i < mdim; ++i)
+                l[i] = local(i, k);
+            Dune::FieldMatrix<double, cdim, mdim> j_inv_t =
+                    m_dune_geometry->jacobianInverseTransposed(l);
+            jacobian_inv_t[k].resize(cdim,mdim);
+            for (int j = 0; j < mdim; ++j)
+                for (int i = 0; i < cdim; ++i)
+                    jacobian_inv_t[k](i, j) = j_inv_t[i][j];
+        }
     }
   }
 
