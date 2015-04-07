@@ -34,7 +34,8 @@ cdef np.ndarray eigen_matrix_to_np_${pyvalue}(const Matrix[${cyvalue}]& x)
 cdef np.ndarray eigen_vector_to_np_${pyvalue}(const Vector[${cyvalue}]& x)
 
 % endfor
-#cdef np.ndarray eigen_matrix_to_np_int(const Matrix[int]& x)
+cdef np.ndarray eigen_matrix_to_np_int(const Matrix[int]& x)
+cdef np.ndarray eigen_vector_to_np_int(const Vector[int]& x)
 
 
 

@@ -6,7 +6,6 @@ cimport numpy as np
 import numpy as np
 from bempp.utils cimport complex_float,complex_double
 from cython.operator cimport dereference as deref
-from cython import view
 
 % for pyvalue,cyvalue in dtypes.items():
 @cython.boundscheck(False)
@@ -42,4 +41,31 @@ cdef np.ndarray eigen_vector_to_np_${pyvalue}(const Vector[${cyvalue}]& x):
 % endfor
 
 
+@cython.boundscheck(False)
+@cython.wraparound(False)
+cdef np.ndarray eigen_vector_to_np_int(const Vector[int]& x):
+    
+    cdef int rows = x.rows()
+    cdef int i
 
+    cdef np.ndarray[int,ndim=1,mode='fortran'] res = np.empty(rows,dtype="intc",order='F')
+
+    for i in range(rows):
+        res[i] = x.value(i)
+    return res
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+cdef np.ndarray eigen_matrix_to_np_int(const Matrix[int]& x):
+    
+    cdef int rows = x.rows()
+    cdef int cols = x.cols()
+    cdef int j
+    cdef int i
+
+    cdef np.ndarray[int,ndim=2,mode='fortran'] res = np.empty((rows,cols),dtype="intc",order='F')
+
+    for j in range(cols):
+        for i in range(rows):
+            res[i,j] = x.value(i,j)
+    return res

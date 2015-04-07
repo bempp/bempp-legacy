@@ -9,7 +9,7 @@ from bempp.grid.grid cimport Grid
 from bempp.grid.entity_iterator cimport c_EntityIterator
 from libcpp.vector cimport vector
 from libcpp cimport bool as cbool
-from bempp.utils.armadillo cimport Mat
+from bempp.utils cimport Matrix, Vector
 
 % for (codim, codim_template) in codims:
 from bempp.grid.entity_iterator cimport EntityIterator${codim}
@@ -24,9 +24,9 @@ cdef extern from "bempp/grid/grid_view.hpp" namespace "Bempp":
         int dimWorld() const
         size_t entityCount(int codim) const
 
-        void getRawElementData(Mat[double]& vertices,
-                               Mat[int]& elementCorners,
-                               Mat[char]& auxData,
+        void getRawElementData(Matrix[double]& vertices,
+                               Matrix[int]& elementCorners,
+                               Matrix[char]& auxData,
                                vector[int]& domainIndices)
                                     
 

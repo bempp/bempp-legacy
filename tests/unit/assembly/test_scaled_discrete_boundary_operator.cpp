@@ -96,7 +96,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(builtin_apply_works_correctly_for_alpha_equal_to_2
     typedef double ctype;
     Vector<double> lowerLeft(dimGrid);
     Vector<double> upperRight(dimGrid);
-    Vector<unsigned int> nElements(dimGrid);
+    Vector<int> nElements(dimGrid);
     lowerLeft.fill(0);
     upperRight.fill(1);
     nElements(0) = 2;

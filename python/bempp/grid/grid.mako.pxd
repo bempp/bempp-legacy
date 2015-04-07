@@ -1,5 +1,5 @@
 from bempp.utils cimport shared_ptr,unique_ptr
-from bempp.utils.eigen cimport Col
+from bempp.utils cimport Vector
 from bempp.grid.grid_view cimport c_GridView, GridView
 
 

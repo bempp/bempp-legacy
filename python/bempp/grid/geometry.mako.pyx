@@ -2,10 +2,11 @@
 codims = [('0','codim_zero'),('1','codim_one'),('2','codim_two')]
 %>
 
-from bempp.utils.eigen cimport Matrix
+from bempp.utils cimport Matrix
+from bempp.utils.eigen cimport eigen_matrix_to_np_float64
 from cython.operator cimport dereference as deref
-import numpy as np
-cimport numpy as np
+import numpy as _np
+cimport numpy as _np
 
 
 % for (codim,codim_template) in codims:
@@ -17,12 +18,12 @@ cdef class Geometry${codim}:
         """Corners of entity"""
         def __get__(self):
 
-            cdef np.ndarray c_np = np.empty((self.dim_world,self.corner_count),dtype='float64',order='F')
-            cdef double[::1,:] c_np_view = c_np
-            cdef Matrix[double]* c = new Mat[double](&c_np_view[0,0],self.dim_world,self.corner_count,False,True)
+            cdef Matrix[double]* c = new Matrix[double](self.dim_world,self.corner_count)
+            cdef _np.ndarray res 
             self.impl_.getCorners(deref(c))
+            res = eigen_matrix_to_np_float64(deref(c))
             del c
-            return c_np
+            return res
 
     property corner_count:
         """Number of corners of element"""

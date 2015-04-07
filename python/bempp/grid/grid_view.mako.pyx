@@ -13,12 +13,12 @@ from bempp.grid.entity_iterator cimport c_EntityIterator
 from bempp.grid.entity_iterator cimport EntityIterator${codim}
 % endfor
 
-from bempp.utils.armadillo cimport armadillo_to_np_float64, armadillo_to_np_int
-from bempp.utils.armadillo cimport Mat
+from bempp.utils.eigen cimport eigen_matrix_to_np_float64, eigen_matrix_to_np_int
+from bempp.utils cimport Matrix, Vector
 from libcpp.vector cimport vector
 
-import numpy as np
-cimport numpy as np
+import numpy as _np
+cimport numpy as _np
 
 cdef class GridView:
     """GridView information
@@ -29,6 +29,9 @@ cdef class GridView:
 
     def __cinit__(self):
         self._raw_data_is_computed = False
+
+    def __dealloc__(self):
+        self.impl_.reset()
 
     def __init__(self):
         pass
@@ -52,14 +55,14 @@ cdef class GridView:
         if self._raw_data_is_computed: return
 
         cdef:
-            Mat[double] vertices
-            Mat[int] elements
-            Mat[char] aux_data
+            Matrix[double] vertices
+            Matrix[int] elements
+            Matrix[char] aux_data
 
         deref(self.impl_).getRawElementData(vertices,elements,aux_data,self._domain_indices)
 
-        self._vertices = armadillo_to_np_float64(vertices)
-        self._elements = armadillo_to_np_int(elements)[:-1,:] # Last row not needed for triangular grids
+        self._vertices = eigen_matrix_to_np_float64(vertices)
+        self._elements = eigen_matrix_to_np_int(elements)[:-1,:] # Last row not needed for triangular grids
 
         return
 

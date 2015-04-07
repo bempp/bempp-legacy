@@ -22,6 +22,7 @@
 #include "concrete_grid.hpp"
 #include "dune.hpp"
 #include "structured_grid_factory.hpp"
+#include "../common/eigen_support.hpp"
 
 #include "../common/to_string.hpp"
 
@@ -39,7 +40,7 @@ shared_ptr<Grid>
 GridFactory::createStructuredGrid(const GridParameters &params,
                                   const Vector<double> &lowerLeft,
                                   const Vector<double> &upperRight,
-                                  const Vector<unsigned int> &nElements) {
+                                  const Vector<int> &nElements) {
   // TODO: Support quadrilateral and linear grids
 
   // Check arguments
@@ -105,6 +106,27 @@ shared_ptr<Grid> GridFactory::importGmshGrid(const GridParameters &params,
 }
 
 shared_ptr<Grid>
+GridFactory::createStructuredGrid(const GridParameters &params,
+                       const double* lowerLeft,
+                       const double* upperRight,
+                       const int* nElements){
+
+    Vector<double> v_lowerLeft(2);
+    Vector<double> v_upperRight(2);
+
+    Vector<int> v_nElements(2);
+
+    for (int i = 0; i < 2; ++i){
+        v_lowerLeft(i) = lowerLeft[i];
+        v_upperRight(i) = upperRight[i];
+        v_nElements(i) = nElements[i];
+    }
+
+    return GridFactory::createStructuredGrid(params,v_lowerLeft,v_upperRight,v_nElements);
+
+}
+
+shared_ptr<Grid>
 GridFactory::importGmshGrid(const GridParameters &params,
                             const std::string &fileName,
                             std::vector<int> &boundaryId2PhysicalEntity,
@@ -125,8 +147,8 @@ GridFactory::importGmshGrid(const GridParameters &params,
 }
 
 shared_ptr<Grid> GridFactory::createGridFromConnectivityArrays(
-    const GridParameters &params, const Matrix<double> &vertices,
-    const Matrix<int> &elementCorners,
+    const GridParameters &params, const Eigen::Ref<Matrix<double>> &vertices,
+    const Eigen::Ref<Matrix<int>> &elementCorners,
     const std::vector<int> &domainIndices) {
   const int dimGrid = 2, dimWorld = 3;
   if (params.topology != GridParameters::TRIANGULAR)
@@ -182,5 +204,35 @@ shared_ptr<Grid> GridFactory::createGridFromConnectivityArrays(
                               domainIndices));
   return result;
 }
+
+
+shared_ptr<Grid> 
+GridFactory::createGridFromConnectivityArrays(
+      const GridParameters &params, const Matrix<double> &vertices,
+      const Matrix<int> &elementCorners,
+      const std::vector<int> &domainIndices){
+
+    return GridFactory::createGridFromConnectivityArrays(
+            params, Eigen::Ref<Matrix<double>>(const_cast<Matrix<double>&>(vertices)),
+            Eigen::Ref<Matrix<int>>(const_cast<Matrix<int>&>(elementCorners)),
+            domainIndices);
+}
+
+shared_ptr<Grid> 
+GridFactory::createGridFromConnectivityArrays(
+      const GridParameters &params, const double* vertices,
+      int nvertices, const int* elementCorners,
+      int nelements,
+      const std::vector<int> & domainIndices){
+
+    Eigen::Map<Matrix<double>> matVertices(const_cast<double*>(vertices),3,nvertices);
+    Eigen::Map<Matrix<int>> matElements(const_cast<int*>(elementCorners),3,nelements);
+    return GridFactory::createGridFromConnectivityArrays(
+            params,
+            Eigen::Ref<Matrix<double>>(matVertices),
+            Eigen::Ref<Matrix<int>>(matElements),
+            domainIndices);
+}
+
 
 } // namespace Bempp

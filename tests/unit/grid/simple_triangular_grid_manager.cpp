@@ -36,7 +36,7 @@ Bempp::shared_ptr<Bempp::Grid> SimpleTriangularGridManager::createGrid()
     typedef double ctype;
     Vector<double> lowerLeft(dimGrid);
     Vector<double> upperRight(dimGrid);
-    Vector<unsigned int> nElements(dimGrid);
+    Vector<int> nElements(dimGrid);
     lowerLeft.fill(0);
     upperRight.fill(1);
     nElements(0) = N_ELEMENTS_X;

@@ -3,7 +3,7 @@ codims = [('0','codim_zero'),('1','codim_one'),('2','codim_two')]
 %>
 
 from libcpp cimport bool as cbool
-from bempp.utils.eigen cimport Matrix
+from bempp.utils cimport Matrix
 
 cdef extern from "bempp/grid/geometry.hpp" namespace "Bempp":
     cdef cppclass c_Geometry "Bempp::Geometry":

@@ -71,8 +71,16 @@ public:
   createStructuredGrid(const GridParameters &params,
                        const Vector<double> &lowerLeft,
                        const Vector<double> &upperRight,
-                       const Vector<unsigned int> &nElements);
+                       const Vector<int> &nElements);
 
+
+  /** \overload */
+  static shared_ptr<Grid>
+  createStructuredGrid(const GridParameters &params,
+                       const double* lowerLeft,
+                       const double* upperRight,
+                       const int* nElements);
+  
   /** \brief Import grid from a file in Gmsh format.
 
     \param[in] params Parameters of the grid to be constructed.
@@ -134,6 +142,19 @@ public:
       const GridParameters &params, const Matrix<double> &vertices,
       const Matrix<int> &elementCorners,
       const std::vector<int> &domainIndices = std::vector<int>());
+
+  /** \overload */
+  static shared_ptr<Grid> createGridFromConnectivityArrays(
+      const GridParameters &params, const Eigen::Ref<Matrix<double>> &vertices,
+      const Eigen::Ref<Matrix<int>> &elementCorners,
+      const std::vector<int> &domainIndices = std::vector<int>());
+
+  /** \overload */
+  static shared_ptr<Grid> createGridFromConnectivityArrays(
+          const GridParameters &params, const double* vertices,
+          int nvertices, const int* elementCorners, int nelements,
+          const std::vector<int> & domainIndices = std::vector<int>());
+
 };
 
 } // namespace Bempp

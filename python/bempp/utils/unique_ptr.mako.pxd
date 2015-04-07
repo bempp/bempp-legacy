@@ -9,4 +9,5 @@ cdef extern from "<memory>" namespace "std":
         T* get()
         T* release()
         void reset(T*)
+        void reset()
         void swap(unique_ptr[T]& other)

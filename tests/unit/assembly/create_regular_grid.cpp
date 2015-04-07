@@ -33,7 +33,7 @@ Bempp::shared_ptr<Bempp::Grid> createRegularTriangularGrid(
     const int dimGrid = 2;
     Vector<double> lowerLeft(dimGrid);
     Vector<double> upperRight(dimGrid);
-    Vector<unsigned int> nElements(dimGrid);
+    Vector<int> nElements(dimGrid);
     lowerLeft.fill(0);
     upperRight(0) = maxX;
     upperRight(1) = maxY;
