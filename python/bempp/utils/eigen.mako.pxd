@@ -7,29 +7,35 @@ from libcpp cimport bool as cbool
 cimport numpy as np
 from bempp.utils cimport complex_float,complex_double
 
-cdef extern from "bempp/common/eigen_support" namespace "Bempp":
+cdef extern from "bempp/common/eigen_support.hpp" namespace "Bempp":
     cdef cppclass Vector[T]:
-        Vector() 
+        Vector()
+        Vector(int)
         Vector(Vector[T])
+        void resize(int)
         T* data()
         T& value "operator()"(int i) 
         int rows()
         int cols()
 
     cdef cppclass Matrix[T]:
-        Vector() 
-        Vector(Vector[T])
+        Matrix()
+        Matrix(int,int)
+        Matrix(Matrix[T])
+        void resize(int,int)
         T* data()
         T& value "operator()"(int i, int j) 
         int rows()
         int cols()
 
-cdef extern from "Eigen/Dense" namespace "Eigen":
 
 % for pyvalue,cyvalue in dtypes.items():
 cdef np.ndarray eigen_matrix_to_np_${pyvalue}(const Matrix[${cyvalue}]& x)
 cdef np.ndarray eigen_vector_to_np_${pyvalue}(const Vector[${cyvalue}]& x)
+
 % endfor
-cdef np.ndarray eigen_matrix_to_np_int(const Matrix[int]& x)
+#cdef np.ndarray eigen_matrix_to_np_int(const Matrix[int]& x)
+
+
 
 
