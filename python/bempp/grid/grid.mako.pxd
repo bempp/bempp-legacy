@@ -25,3 +25,4 @@ cdef extern from "bempp/grid/grid.hpp" namespace "Bempp" nogil:
 cdef class Grid:
     ## Holds pointer to C++ implementation
     cdef shared_ptr[const c_Grid] impl_
+    cdef GridView _grid_view

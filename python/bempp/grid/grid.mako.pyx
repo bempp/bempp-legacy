@@ -126,9 +126,13 @@ cdef class Grid:
     property leaf_view:
         def __get__(self):
             """Return a leaf view onto the Grid"""
+            if self._grid_view is not None:
+                return self._grid_view
+
             cdef unique_ptr[c_GridView] view = deref(self.impl_).leafView()
             cdef GridView grid_view = _grid_view_from_unique_ptr(view)
             grid_view._grid = self
+            self._grid_view = grid_view
             return grid_view
 
 

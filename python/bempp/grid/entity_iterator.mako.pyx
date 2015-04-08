@@ -25,7 +25,7 @@ cdef class EntityIterator${codim}:
     cdef void c_next(self) except +catch_exception:
         deref(self.impl_).next()
 
-    cdef EntityPointer${codim} frozen(self):
+    cdef EntityPointer${codim} _frozen(self):
         cdef EntityPointer${codim} ep = EntityPointer${codim}()
         cdef unique_ptr[c_EntityPointer[${codim_template}]] c_ep = deref(self.impl_).frozen()
         ep.impl_.swap(c_ep)
@@ -34,9 +34,9 @@ cdef class EntityIterator${codim}:
     def __next__(self):
         cdef EntityPointer${codim} ep
         if not self.finished():
-            ep = self.frozen()
+            ep = self._frozen()
             self.c_next()
-            return ep
+            return ep.entity
         else:
             raise StopIteration()
 

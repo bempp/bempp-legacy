@@ -21,7 +21,7 @@ cdef class EntityIterator${codim}:
     cdef unique_ptr[c_EntityIterator[${codim_template}]] impl_
     cdef cbool finished(self)
     cdef void c_next(self) except *
-    cdef EntityPointer${codim} frozen(self)
+    cdef EntityPointer${codim} _frozen(self)
 
 % endfor
 
