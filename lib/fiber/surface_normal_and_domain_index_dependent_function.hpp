@@ -55,10 +55,10 @@ namespace Fiber {
       // domain "domainIndex", with "normal" the local unit normal vector, and
       // store result in the array "result". All arrays will be preinitialised
       // to correct dimensions.
-      void evaluate(const Vector<CoordinateType>& point,
-                    const Vectorl<CoordinateType>& normal,
+      void evaluate(const Eigen::Ref<Vector<CoordinateType>>& point,
+                    const Eigen::Ref<Vector<CoordinateType>>& normal,
                     int domainIndex,
-                    Vector<ValueType>& result) const;
+                    Eigen::Ref<Vector<ValueType>> result) const;
   };
   \endcode
 */
@@ -97,9 +97,11 @@ public:
     const size_t pointCount = points.cols();
     result.resize(codomainDimension(), pointCount);
     for (size_t i = 0; i < pointCount; ++i) {
-      Eigen::Map<Vector<ValueType>> activeResultColumn(result.col(i).data(),result.rows());
-      m_functor.evaluate(points.col(i), normals.col(i),
-                         geomData.domainIndex, activeResultColumn);
+      m_functor.evaluate(
+              Eigen::Ref<Vector<CoordinateType>>(points.col(i)), 
+              Eigen::Ref<Vector<CoordinateType>>(normals.col(i)),
+              geomData.domainIndex, 
+              Eigen::Ref<Vector<ValueType>>(result.col(i)));
     }
   }
 

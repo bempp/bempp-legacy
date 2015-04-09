@@ -121,8 +121,8 @@ bool DiscreteDenseBoundaryOperator<ValueType>::opSupportedImpl(
 
 template <typename ValueType>
 void DiscreteDenseBoundaryOperator<ValueType>::applyBuiltInImpl(
-    const TranspositionMode trans, const Vector<ValueType> &x_in,
-    Vector<ValueType> &y_inout, const ValueType alpha,
+    const TranspositionMode trans, const Eigen::Ref<Vector<ValueType>> &x_in,
+    Eigen::Ref<Vector<ValueType>> y_inout, const ValueType alpha,
     const ValueType beta) const {
   if (beta == static_cast<ValueType>(0.))
     y_inout.fill(static_cast<ValueType>(0.));

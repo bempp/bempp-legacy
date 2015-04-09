@@ -5,7 +5,6 @@
 #include "bempp/fiber/scalar_traits.hpp"
 #include "bempp/utils/py_types.hpp"
 #include <vector>
-#include <armadillo>
 #include <Python.h>
 #include <numpy/arrayobject.h>
 
@@ -74,20 +73,22 @@ public:
         return m_resultDimension;
     }
 
-    void evaluate(const arma::Col<CoordinateType>& point, const arma::Col<CoordinateType>& normal,
-                  int domainIndex, arma::Col<ValueType>& result_) const
+    void evaluate(const Eigen::Ref<Vector<CoordinateType>>& point, 
+                  const Eigen::Ref<Vector<CoordinateType>>& normal,
+                  int domainIndex, 
+                  Eigen::Ref<Vector<CoordinateType>> result_) const
     {
 
         CoordinateType* xPtr = (CoordinateType*)PyArray_DATA(m_x);
-        for (int i = 0; i< m_argumentDimension;++i) xPtr[i] = point.at(i);
+        for (int i = 0; i< m_argumentDimension;++i) xPtr[i] = point(i);
 
         CoordinateType* normalPtr = (CoordinateType*)PyArray_DATA(m_normal);
-        for (int i = 0; i< m_argumentDimension;++i) normalPtr[i] = normal.at(i);
+        for (int i = 0; i< m_argumentDimension;++i) normalPtr[i] = normal(i);
 
         m_pyFunc(m_x,m_normal,domainIndex,m_result,m_callable);
 
         ValueType* resPtr = (ValueType*)PyArray_DATA(m_result);
-        for (int i = 0; i< m_resultDimension;++i) result_.at(i) = resPtr[i];
+        for (int i = 0; i< m_resultDimension;++i) result_(i) = resPtr[i];
     }
 
 private:

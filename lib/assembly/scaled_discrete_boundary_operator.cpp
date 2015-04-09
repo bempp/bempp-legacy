@@ -73,8 +73,8 @@ bool ScaledDiscreteBoundaryOperator<ValueType>::opSupportedImpl(
 
 template <typename ValueType>
 void ScaledDiscreteBoundaryOperator<ValueType>::applyBuiltInImpl(
-    const TranspositionMode trans, const Vector<ValueType> &x_in,
-    Vector<ValueType> &y_inout, const ValueType alpha,
+    const TranspositionMode trans, const Eigen::Ref<Vector<ValueType>> &x_in,
+    Eigen::Ref<Vector<ValueType>> y_inout, const ValueType alpha,
     const ValueType beta) const {
   ValueType multiplier = m_multiplier;
   if (trans == CONJUGATE || trans == CONJUGATE_TRANSPOSE)

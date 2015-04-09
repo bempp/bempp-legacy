@@ -51,15 +51,15 @@ namespace {
 template <typename ValueType>
 void reallyApplyBuiltInImpl(const Epetra_CrsMatrix &mat,
                             const TranspositionMode trans,
-                            const Vector<ValueType> &x_in,
-                            Vector<ValueType> &y_inout,
+                            const Eigen::Ref<Vector<ValueType>> &x_in,
+                            Eigen::Ref<Vector<ValueType>> y_inout,
                             const ValueType alpha, const ValueType beta);
 
 template <>
 void reallyApplyBuiltInImpl<double>(const Epetra_CrsMatrix &mat,
                                     const TranspositionMode trans,
-                                    const Vector<double> &x_in,
-                                    Vector<double> &y_inout,
+                                    const Eigen::Ref<Vector<double>> &x_in,
+                                    Eigen::Ref<Vector<double>> y_inout,
                                     const double alpha, const double beta) {
   if (trans == TRANSPOSE || trans == CONJUGATE_TRANSPOSE) {
     assert(mat.NumGlobalRows() == static_cast<int>(x_in.rows()));
@@ -90,8 +90,8 @@ void reallyApplyBuiltInImpl<double>(const Epetra_CrsMatrix &mat,
 template <>
 void reallyApplyBuiltInImpl<float>(const Epetra_CrsMatrix &mat,
                                    const TranspositionMode trans,
-                                   const Vector<float> &x_in,
-                                   Vector<float> &y_inout, const float alpha,
+                                   const Eigen::Ref<Vector<float>> &x_in,
+                                   Eigen::Ref<Vector<float>> y_inout, const float alpha,
                                    const float beta) {
   // Copy the float vectors to double vectors
   Vector<double> x_in_double(x_in.rows());
@@ -102,7 +102,7 @@ void reallyApplyBuiltInImpl<float>(const Epetra_CrsMatrix &mat,
       for (int i = 0 ;i < y_inout.rows(); ++i ) y_inout_double(i) = y_inout(i);
 
   // Do the operation on the double vectors
-  reallyApplyBuiltInImpl<double>(mat, trans, x_in_double, y_inout_double, alpha,
+  reallyApplyBuiltInImpl<double>(mat, trans, Eigen::Ref<Vector<double>>(x_in_double), Eigen::Ref<Vector<double>>(y_inout_double), alpha,
                                  beta);
 
   // Copy the result back to the float vector
@@ -113,8 +113,8 @@ void reallyApplyBuiltInImpl<float>(const Epetra_CrsMatrix &mat,
 template <>
 void reallyApplyBuiltInImpl<std::complex<float>>(
     const Epetra_CrsMatrix &mat, const TranspositionMode trans,
-    const Vector<std::complex<float>> &x_in,
-    Vector<std::complex<float>> &y_inout, const std::complex<float> alpha,
+    const Eigen::Ref<Vector<std::complex<float>>> &x_in,
+    Eigen::Ref<Vector<std::complex<float>>> y_inout, const std::complex<float> alpha,
     const std::complex<float> beta) {
   // Do the y_inout *= beta part
   const std::complex<float> zero(0.f, 0.f);
@@ -139,10 +139,10 @@ void reallyApplyBuiltInImpl<std::complex<float>>(
     y_imag(i) = y_inout(i).imag();
 
   // Do the "+= alpha A x" part (in steps)
-  reallyApplyBuiltInImpl<double>(mat, trans, x_real, y_real, alpha.real(), 1.);
-  reallyApplyBuiltInImpl<double>(mat, trans, x_imag, y_real, -alpha.imag(), 1.);
-  reallyApplyBuiltInImpl<double>(mat, trans, x_real, y_imag, alpha.imag(), 1.);
-  reallyApplyBuiltInImpl<double>(mat, trans, x_imag, y_imag, alpha.real(), 1.);
+  reallyApplyBuiltInImpl<double>(mat, trans, Eigen::Ref<Vector<double>>(x_real), Eigen::Ref<Vector<double>>(y_real), alpha.real(), 1.);
+  reallyApplyBuiltInImpl<double>(mat, trans, Eigen::Ref<Vector<double>>(x_imag), Eigen::Ref<Vector<double>>(y_real), -alpha.imag(), 1.);
+  reallyApplyBuiltInImpl<double>(mat, trans, Eigen::Ref<Vector<double>>(x_real), Eigen::Ref<Vector<double>>(y_imag), alpha.imag(), 1.);
+  reallyApplyBuiltInImpl<double>(mat, trans, Eigen::Ref<Vector<double>>(x_imag), Eigen::Ref<Vector<double>>(y_imag), alpha.real(), 1.);
 
   // Copy the result back to the complex vector
   for (size_t i = 0; i < y_inout.rows(); ++i)
@@ -152,8 +152,8 @@ void reallyApplyBuiltInImpl<std::complex<float>>(
 template <>
 void reallyApplyBuiltInImpl<std::complex<double>>(
     const Epetra_CrsMatrix &mat, const TranspositionMode trans,
-    const Vector<std::complex<double>> &x_in,
-    Vector<std::complex<double>> &y_inout, const std::complex<double> alpha,
+    const Eigen::Ref<Vector<std::complex<double>>> &x_in,
+    Eigen::Ref<Vector<std::complex<double>>> y_inout, const std::complex<double> alpha,
     const std::complex<double> beta) {
   // Do the y_inout *= beta part
   const std::complex<double> zero(0., 0.);
@@ -169,10 +169,10 @@ void reallyApplyBuiltInImpl<std::complex<double>>(
   Vector<double> y_imag(y_inout.imag());
 
   // Do the "+= alpha A x" part (in steps)
-  reallyApplyBuiltInImpl<double>(mat, trans, x_real, y_real, alpha.real(), 1.);
-  reallyApplyBuiltInImpl<double>(mat, trans, x_imag, y_real, -alpha.imag(), 1.);
-  reallyApplyBuiltInImpl<double>(mat, trans, x_real, y_imag, alpha.imag(), 1.);
-  reallyApplyBuiltInImpl<double>(mat, trans, x_imag, y_imag, alpha.real(), 1.);
+  reallyApplyBuiltInImpl<double>(mat, trans, Eigen::Ref<Vector<double>>(x_real), Eigen::Ref<Vector<double>>(y_real), alpha.real(), 1.);
+  reallyApplyBuiltInImpl<double>(mat, trans, Eigen::Ref<Vector<double>>(x_imag), Eigen::Ref<Vector<double>>(y_real), -alpha.imag(), 1.);
+  reallyApplyBuiltInImpl<double>(mat, trans, Eigen::Ref<Vector<double>>(x_real), Eigen::Ref<Vector<double>>(y_imag), alpha.imag(), 1.);
+  reallyApplyBuiltInImpl<double>(mat, trans, Eigen::Ref<Vector<double>>(x_imag), Eigen::Ref<Vector<double>>(y_imag), alpha.real(), 1.);
 
   // Copy the result back to the complex vector
   for (size_t i = 0; i < y_inout.rows(); ++i)
@@ -389,8 +389,8 @@ bool DiscreteSparseBoundaryOperator<ValueType>::isTransposed() const {
 
 template <typename ValueType>
 void DiscreteSparseBoundaryOperator<ValueType>::applyBuiltInImpl(
-    const TranspositionMode trans, const Vector<ValueType> &x_in,
-    Vector<ValueType> &y_inout, const ValueType alpha,
+    const TranspositionMode trans, const Eigen::Ref<Vector<ValueType>> &x_in,
+    Eigen::Ref<Vector<ValueType>> y_inout, const ValueType alpha,
     const ValueType beta) const {
   TranspositionMode realTrans = trans;
   bool transposed = isTransposed();

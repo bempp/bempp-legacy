@@ -78,28 +78,42 @@ bool ComplexifiedDiscreteBoundaryOperator<RealType>::opSupportedImpl(
 
 template <typename RealType>
 void ComplexifiedDiscreteBoundaryOperator<RealType>::applyBuiltInImpl(
-    const TranspositionMode trans, const Vector<ValueType> &x_in,
-    Vector<ValueType> &y_inout, const ValueType alpha,
+    const TranspositionMode trans, const Eigen::Ref<Vector<ValueType>> &x_in,
+    Eigen::Ref<Vector<ValueType>> y_inout, const ValueType alpha,
     const ValueType beta) const {
   if (beta == static_cast<ValueType>(0.))
     y_inout.setZero();
   else
     y_inout *= beta;
 
-  Matrix<RealType> x_re = x_in.real();
-  Matrix<RealType> x_im = x_in.imag();
+  Vector<RealType> x_re = x_in.real();
+  Vector<RealType> x_im = x_in.imag();
 
-  Matrix<RealType> y_re = y_inout.real();
-  Matrix<RealType> y_im = y_inout.imag();
+  Vector<RealType> y_re = y_inout.real();
+  Vector<RealType> y_im = y_inout.imag();
 
-  m_operator->apply(trans, x_re, y_re, alpha.real(), 1.);
-  m_operator->apply(trans, x_im, y_re, -alpha.imag(), 1.);
+  m_operator->apply(trans,
+                    Eigen::Ref<Vector<RealType>>(x_re),
+                    Eigen::Ref<Vector<RealType>>(y_re),
+                    alpha.real(), 1.);
 
-  m_operator->apply(trans, x_re, y_im, alpha.imag(), 1.);
-  m_operator->apply(trans, x_im, y_im, alpha.real(), 1.);
+  m_operator->apply(trans,
+                    Eigen::Ref<Vector<RealType>>(x_im),
+                    Eigen::Ref<Vector<RealType>>(y_re),
+                    -alpha.imag(), 1.);
 
-  y_inout.real() = y_re.col(0);
-  y_inout.imag() = y_im.col(0);
+  m_operator->apply(trans,
+                    Eigen::Ref<Vector<RealType>>(x_re),
+                    Eigen::Ref<Vector<RealType>>(y_im),
+                    alpha.imag(), 1.);
+
+  m_operator->apply(trans,
+                    Eigen::Ref<Vector<RealType>>(x_im),
+                    Eigen::Ref<Vector<RealType>>(y_im),
+                    alpha.real(), 1.);
+
+  y_inout.real() = y_re;
+  y_inout.imag() = y_im;
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT_REAL_ONLY(

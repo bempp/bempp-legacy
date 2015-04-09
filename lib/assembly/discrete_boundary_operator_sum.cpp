@@ -112,15 +112,12 @@ bool DiscreteBoundaryOperatorSum<ValueType>::opSupportedImpl(
 
 template <typename ValueType>
 void DiscreteBoundaryOperatorSum<ValueType>::applyBuiltInImpl(
-    const TranspositionMode trans, const Vector<ValueType> &x_in,
-    Vector<ValueType> &y_inout, const ValueType alpha,
+    const TranspositionMode trans, const Eigen::Ref<Vector<ValueType>> &x_in,
+    Eigen::Ref<Vector<ValueType>> y_inout, const ValueType alpha,
     const ValueType beta) const {
-  Matrix<ValueType> x_inMat = x_in;
-  Matrix<ValueType> y_inoutMat = y_inout;
-  m_term1->apply(trans, x_inMat, y_inoutMat, alpha, beta);
-  m_term2->apply(trans, x_inMat, y_inoutMat, alpha,
+  m_term1->apply(trans, x_in, y_inout, alpha, beta);
+  m_term2->apply(trans, x_in, y_inout, alpha,
                  1. /* "+ beta * y_inout" has already been done */);
-  y_inout = y_inoutMat.col(0);
 
 }
 

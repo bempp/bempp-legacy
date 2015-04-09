@@ -68,8 +68,8 @@ void DiscreteHMatBoundaryOperator<ValueType>::addBlock(
 
 template <typename ValueType>
 void DiscreteHMatBoundaryOperator<ValueType>::applyBuiltInImpl(
-    const TranspositionMode trans, const Vector<ValueType> &x_in,
-    Vector<ValueType> &y_inout, const ValueType alpha,
+    const TranspositionMode trans, const Eigen::Ref<Vector<ValueType>> &x_in,
+    Eigen::Ref<Vector<ValueType>> y_inout, const ValueType alpha,
     const ValueType beta) const {
 
   hmat::TransposeMode hmatTrans;

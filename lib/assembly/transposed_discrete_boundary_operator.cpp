@@ -88,8 +88,8 @@ bool TransposedDiscreteBoundaryOperator<ValueType>::opSupportedImpl(
 
 template <typename ValueType>
 void TransposedDiscreteBoundaryOperator<ValueType>::applyBuiltInImpl(
-    const TranspositionMode trans, const Vector<ValueType> &x_in,
-    Vector<ValueType> &y_inout, const ValueType alpha,
+    const TranspositionMode trans, const Eigen::Ref<Vector<ValueType>> &x_in,
+    Eigen::Ref<Vector<ValueType>> y_inout, const ValueType alpha,
     const ValueType beta) const {
   // Bitwise xor. We use the fact that bit 0 of M_trans denotes
   // conjugation, and bit 1 -- transposition.

@@ -811,8 +811,8 @@ bool DiscreteBlockedBoundaryOperator<ValueType>::opSupportedImpl(
 
 template <typename ValueType>
 void DiscreteBlockedBoundaryOperator<ValueType>::applyBuiltInImpl(
-    const TranspositionMode trans, const Vector<ValueType> &x_in,
-    Vector<ValueType> &y_inout, const ValueType alpha,
+    const TranspositionMode trans, const Eigen::Ref<Vector<ValueType>> &x_in,
+    Eigen::Ref<Vector<ValueType>> y_inout, const ValueType alpha,
     const ValueType beta) const {
   bool transpose = (trans == TRANSPOSE || trans == CONJUGATE_TRANSPOSE);
   size_t y_count = transpose ? m_columnCounts.size() : m_rowCounts.size();

@@ -79,9 +79,9 @@ void DiscreteBoundaryOperator<ValueType>::apply(
 
   for (size_t i = 0; i < x_in.cols(); ++i) {
 
-    Vector<ValueType> y_inout_col = y_inout.col(i);
-    applyBuiltInImpl(trans, x_in.col(i), y_inout_col, alpha, beta);
-    y_inout.col(i) = y_inout_col;
+      applyBuiltInImpl(trans,Eigen::Ref<Vector<ValueType>>(const_cast<Matrix<ValueType>&>(x_in).col(i)),
+                       Eigen::Ref<Vector<ValueType>>(const_cast<Matrix<ValueType>&>(y_inout).col(i)),
+                       alpha,beta);
   }
 }
 
@@ -91,14 +91,22 @@ void DiscreteBoundaryOperator<ValueType>::apply(
     Vector<ValueType> &y_inout, const ValueType alpha,
     const ValueType beta) const {
 
-    Matrix<ValueType> x_inMat = x_in;
-    Matrix<ValueType> y_inoutMat = y_inout;
-
-    this->apply(trans,x_inMat,y_inoutMat,alpha,beta);
-
-    y_inout = y_inoutMat.col(0);
+    this->apply(trans,
+                Eigen::Ref<Vector<ValueType>>(const_cast<Vector<ValueType>&>(x_in)),
+                Eigen::Ref<Vector<ValueType>>(const_cast<Vector<ValueType>&>(y_inout)),
+                alpha,beta);
 
 }
+
+template <typename ValueType>
+void DiscreteBoundaryOperator<ValueType>::apply(const TranspositionMode trans, const Eigen::Ref<Vector<ValueType>> &x_in,
+           Eigen::Ref<Vector<ValueType>> y_inout, const ValueType alpha,
+           const ValueType beta) const {
+
+    applyBuiltInImpl(trans, x_in, y_inout, alpha, beta);
+
+}
+
 
 template <typename ValueType>
 shared_ptr<const DiscreteBoundaryOperator<ValueType>>

@@ -57,8 +57,8 @@ protected:
 
 private:
   void applyBuiltInImpl(const TranspositionMode trans,
-                        const Vector<ValueType> &x_in,
-                        Vector<ValueType> &y_inout, const ValueType alpha,
+                        const Eigen::Ref<Vector<ValueType>> &x_in,
+                        Eigen::Ref<Vector<ValueType>> y_inout, const ValueType alpha,
                         const ValueType beta) const override;
 
   shared_ptr<hmat::DefaultHMatrixType<ValueType>> m_hMatrix;

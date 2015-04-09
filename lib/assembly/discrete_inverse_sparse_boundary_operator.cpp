@@ -236,8 +236,8 @@ bool DiscreteInverseSparseBoundaryOperator<ValueType>::opSupportedImpl(
 
 template <typename ValueType>
 void DiscreteInverseSparseBoundaryOperator<ValueType>::applyBuiltInImpl(
-    const TranspositionMode trans, const Vector<ValueType> &x_in,
-    Vector<ValueType> &y_inout, const ValueType alpha,
+    const TranspositionMode trans, const Eigen::Ref<Vector<ValueType>> &x_in,
+    Eigen::Ref<Vector<ValueType>> y_inout, const ValueType alpha,
     const ValueType beta) const {
   // TODO: protect with a mutex (this function is not thread-safe)
   if (trans != NO_TRANSPOSE)
