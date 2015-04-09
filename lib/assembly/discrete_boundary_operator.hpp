@@ -156,6 +156,9 @@ public:
              Eigen::Ref<Vector<ValueType>> y_inout, const ValueType alpha,
              const ValueType beta) const;
 
+  /** \overload */
+  PyObject* apply(const TranspositionMode trans, const PyObject* x_in);
+
 
   /** \brief Return a representation that can be cast to a
    *  DiscreteAcaBoundaryOperator
