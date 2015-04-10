@@ -109,7 +109,7 @@ void DiscreteBoundaryOperator<ValueType>::apply(const TranspositionMode trans, c
 }
 
 template <typename ValueType>
-PyObject* DiscreteBoundaryOperator<ValueType>::apply(const TranspositionMode trans, const PyObject* x_in){
+PyObject* DiscreteBoundaryOperator<ValueType>::apply(const TranspositionMode trans, const PyObject* x_in) const {
 
   PyObject* x = const_cast<PyObject*>(x_in);
 

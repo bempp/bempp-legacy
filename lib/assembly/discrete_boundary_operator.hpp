@@ -157,7 +157,7 @@ public:
              const ValueType beta) const;
 
   /** \overload */
-  PyObject* apply(const TranspositionMode trans, const PyObject* x_in);
+  PyObject* apply(const TranspositionMode trans, const PyObject* x_in) const;
 
 
   /** \brief Return a representation that can be cast to a

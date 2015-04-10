@@ -1,11 +1,10 @@
 <% from data_types import dtypes, compatible_dtypes, ctypes, scalar_cython_type , ctypes, real_cython_type
 %> 
     
-from bempp.utils.armadillo cimport Col
+from bempp.utils cimport Vector
 from bempp.utils cimport shared_ptr 
 from bempp.space.space cimport c_Space, _py_get_space_ptr,Space
 from bempp.utils.parameter_list cimport ParameterList, c_ParameterList 
-from bempp.utils.armadillo cimport Mat
 from bempp.utils cimport catch_exception
 from bempp.utils cimport complex_float,complex_double
 from bempp.utils.enum_types cimport ConstructionMode
@@ -21,12 +20,12 @@ cdef extern from "bempp/assembly/grid_function.hpp" namespace "Bempp":
     cdef cppclass c_GridFunction "Bempp::GridFunction"[ BASIS, RESULT ]: 
         c_GridFunction(const c_ParameterList &parameterList,
                        const shared_ptr[c_Space[BASIS]] & space,
-                       const Col[RESULT] & coefficients) except+catch_exception
+                       const Vector[RESULT] & coefficients) except+catch_exception
 
         c_GridFunction(const c_ParameterList &parameterList,
                        const shared_ptr[c_Space[BASIS]] & space,
                        const shared_ptr[c_Space[BASIS]] & dual_space,
-                       const Col[RESULT] & projections) except+catch_exception
+                       const Vector[RESULT] & projections) except+catch_exception
 
         c_GridFunction(const c_ParameterList &parameterList,
                         const shared_ptr[c_Space[BASIS]]& space,
@@ -44,9 +43,9 @@ cdef extern from "bempp/assembly/grid_function.hpp" namespace "Bempp":
 %     endfor
 % endfor
 
-        const Col[RESULT]& coefficients() except+catch_exception
-        void setCoefficients(const Col[RESULT]& coeffs) except+catch_exception
-        Col[RESULT] projections(const shared_ptr[const c_Space[BASIS]] &dualSpace)        
+        const Vector[RESULT]& coefficients() except+catch_exception
+        void setCoefficients(const Vector[RESULT]& coeffs) except+catch_exception
+        Vector[RESULT] projections(const shared_ptr[const c_Space[BASIS]] &dualSpace)        
 
     
 cdef extern from "bempp/assembly/py_functors.hpp" namespace "Bempp":

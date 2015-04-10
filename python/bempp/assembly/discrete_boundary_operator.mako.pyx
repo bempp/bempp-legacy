@@ -2,7 +2,7 @@
 from data_types import dtypes, scalar_cython_type
 %>
 
-from bempp.utils.armadillo cimport Mat
+from bempp.utils cimport Matrix
 from bempp.utils.enum_types cimport transposition_mode
 from bempp.utils cimport complex_float,complex_double
 from cython.operator cimport dereference as deref
@@ -11,7 +11,7 @@ cimport bempp.utils.enum_types as enums
 from bempp.utils.byte_conversion import convert_to_bytes
 from bempp.utils cimport shared_ptr, static_pointer_cast
 % for pyvalue in dtypes:
-from bempp.utils.armadillo cimport armadillo_to_np_${pyvalue}
+from bempp.utils.eigen cimport eigen_matrix_to_np_${pyvalue}
 % endfor
 from bempp.utils import combined_type
 cimport numpy as np
@@ -158,8 +158,8 @@ cdef class DiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
 % for pyvalue,cyvalue in dtypes.items():
     cdef np.ndarray _as_matrix_${pyvalue}(self):
 
-        cdef Mat[${cyvalue}] mat_data = deref(self._impl_${pyvalue}_).asMatrix()
-        return armadillo_to_np_${pyvalue}(mat_data)
+        cdef Matrix[${cyvalue}] mat_data = deref(self._impl_${pyvalue}_).asMatrix()
+        return eigen_matrix_to_np_${pyvalue}(mat_data)
 
 % endfor
 
@@ -202,71 +202,20 @@ cdef class DiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
         else:
             raise ValueError('x must have at most two dimensions')
 
-        y = np.zeros((rows,x_in.shape[1]),dtype=self.dtype,order='F')
+        if (x_in.shape[0]!=self.shape[1]):
+            raise ValueError("Wrong dimensions.")
 
-        self._apply(x_in,y,'no_transpose',1.0,0.0)
+        if self.shape=='float64':
+            y = deref(self._impl_float64_).apply(enums.no_transpose,x_in)
+        elif self.shape=='complex128':
+            y = deref(self._impl_complex128_).apply(enums.no_transpose,x_in)
+        else:
+            raise NotImplementedError("Data type not supported.")
+
         if is_reshaped:
             y = y.ravel()
         return y
         
-% for pyvalue,cyvalue in dtypes.items():
-    cdef void _apply_${pyvalue}(self,
-            TranspositionMode trans, 
-            np.ndarray[${scalar_cython_type(cyvalue)},ndim=2,mode='fortran'] x_in, 
-            np.ndarray[${scalar_cython_type(cyvalue)},ndim=2,mode='fortran'] y_inout, 
-            ${scalar_cython_type(cyvalue)} alpha,
-            ${scalar_cython_type(cyvalue)} beta):
-
-
-        cdef int rows = self.shape[0]
-        cdef int cols = self.shape[1]
-        cdef int xrows = x_in.shape[0]
-        cdef int xcols = x_in.shape[1]
-        cdef int yrows = y_inout.shape[0]
-        cdef int ycols = y_inout.shape[1]
-
-        cdef Mat[${cyvalue}]* arma_${pyvalue}_buff_x
-        cdef Mat[${cyvalue}]* arma_${pyvalue}_buff_y
-
-        if (trans==enums.no_transpose or trans==enums.conjugate):
-
-            if not (rows==yrows and cols ==xrows):
-                raise ValueError("Wrong dimensions")
-
-            if not (xcols==ycols):
-                raise ValueError("Wrong dimensions")
-        elif (trans==enums.transpose or trans==enums.conjugate_transpose):
-
-            if not (cols==yrows and rows ==xrows):
-                raise ValueError("Wrong dimensions")
-
-            if not (xcols==ycols):
-                raise ValueError("Wrong dimensions")
-        else:
-            raise ValueError("Unknown transposition mode")
-
-
-% if pyvalue=='complex128' or pyvalue=='complex64':
-        cdef ${cyvalue} cpp_alpha = ${cyvalue}(alpha.real,alpha.imag)
-        cdef ${cyvalue} cpp_beta = ${cyvalue}(beta.real,beta.imag)
-% else:
-        cdef ${cyvalue} cpp_alpha = alpha
-        cdef ${cyvalue} cpp_beta = beta
-% endif
-
-        arma_${pyvalue}_buff_x = new Mat[${cyvalue}](<${cyvalue}*>&x_in[0,0],xrows,xcols,False,True)
-        arma_${pyvalue}_buff_y = new Mat[${cyvalue}](<${cyvalue}*>&y_inout[0,0],yrows,ycols,False,True)
-
-        deref(self._impl_${pyvalue}_).apply(trans,
-                deref(arma_${pyvalue}_buff_x),
-                deref(arma_${pyvalue}_buff_y),
-                cpp_alpha,cpp_beta)
-
-        del arma_${pyvalue}_buff_y
-        del arma_${pyvalue}_buff_x
-% endfor
-
-
 cdef class _ScaledDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
     cdef DiscreteBoundaryOperatorBase _op
     cdef object _alpha

@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <sstream>
 #include <complex>
+#include "bempp/common/eigen_support.hpp"
 
 namespace Bempp {
     inline static void catch_exception() {
@@ -72,6 +73,28 @@ namespace Bempp {
         return ss.str();
     }
 
+    template <typename T>
+    Vector<T> copy_buf_to_vec(T* buf, int n){
+
+        Vector<T> res(n);
+        for (int i = 0; i < n; ++i)
+            res(i) = buf[i];
+
+        return res;
+
+    }
+
+    template <typename T>
+    Matrix<T> copy_buf_to_mat(T* buf, int m, int n){
+
+        Matrix<T> res(m,n);
+        for (int j = 0; j < n; ++j)
+            for (int i = 0; i < m; ++i)
+                res(i,j) = buf[j*m+i];
+
+        return res;
+
+    }
 }
 #endif
 

@@ -76,7 +76,7 @@ public:
     void evaluate(const Eigen::Ref<Vector<CoordinateType>>& point, 
                   const Eigen::Ref<Vector<CoordinateType>>& normal,
                   int domainIndex, 
-                  Eigen::Ref<Vector<CoordinateType>> result_) const
+                  Eigen::Ref<Vector<ValueType>> result_) const
     {
 
         CoordinateType* xPtr = (CoordinateType*)PyArray_DATA(m_x);

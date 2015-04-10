@@ -98,8 +98,8 @@ public:
     result.resize(codomainDimension(), pointCount);
     for (size_t i = 0; i < pointCount; ++i) {
       m_functor.evaluate(
-              Eigen::Ref<Vector<CoordinateType>>(points.col(i)), 
-              Eigen::Ref<Vector<CoordinateType>>(normals.col(i)),
+              Eigen::Ref<Vector<CoordinateType>>(const_cast<Matrix<CoordinateType>&>(points).col(i)), 
+              Eigen::Ref<Vector<CoordinateType>>(const_cast<Matrix<CoordinateType>&>(normals).col(i)),
               geomData.domainIndex, 
               Eigen::Ref<Vector<ValueType>>(result.col(i)));
     }
