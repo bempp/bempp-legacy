@@ -6,7 +6,7 @@ from bempp.utils cimport shared_ptr
 from bempp.assembly.discrete_boundary_operator cimport c_DiscreteBoundaryOperator
 from bempp.space.space cimport SpaceVariants
 from bempp.utils.parameter_list cimport c_ParameterList, ParameterList
-from bempp.utils.eigen cimport np_to_eigen_matrix_float64
+from bempp.utils.eigen cimport np_to_eigen_matrix_float64, Matrix
 from bempp.utils cimport complex_double
 from bempp.assembly.potential_operator cimport PotentialOperator
 from bempp.assembly.discrete_boundary_operator cimport DiscreteBoundaryOperator
@@ -20,11 +20,13 @@ cimport numpy as np
 cdef extern from "bempp/operators/py_operators.hpp" namespace "Bempp":
     cdef shared_ptr[const c_DiscreteBoundaryOperator[complex_double]] py_helmholtz_single_layer_far_field_discrete_operator(
                 const SpaceVariants& space,
+                const Matrix[double]& evaluationPoints,
                 complex_double waveNumber,
                 const c_ParameterList& parameterList) 
 
     cdef shared_ptr[const c_DiscreteBoundaryOperator[complex_double]] py_helmholtz_double_layer_far_field_discrete_operator(
                 const SpaceVariants& space,
+                const Matrix[double]& evaluationPoints,
                 complex_double waveNumber,
                 const c_ParameterList& parameterList) 
 
@@ -49,7 +51,7 @@ def single_layer(Space space,
 
         op._impl_complex128_.assign(
              py_helmholtz_single_layer_far_field_discrete_operator(
-                 space.impl_,deref(np_to_eigen_matrix_float64(points)),
+                 space.impl_,np_to_eigen_matrix_float64(points),
                  cpp_wave_number,deref(parameter_list.impl_)))
         op._dtype = np.dtype('complex128')
 
@@ -76,7 +78,7 @@ def double_layer(Space space,
 
         op._impl_complex128_.assign(
              py_helmholtz_double_layer_far_field_discrete_operator(
-                 space.impl_,deref(np_to_eigen_matrix_float64(points)),
+                 space.impl_,np_to_eigen_matrix_float64(points),
                  cpp_wave_number,deref(parameter_list.impl_)))
         op._dtype = np.dtype('complex128')
 

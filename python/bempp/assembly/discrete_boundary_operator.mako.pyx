@@ -163,14 +163,6 @@ cdef class DiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
 
 % endfor
 
-    def _apply(self,np.ndarray x,np.ndarray y,object transpose,object alpha, object beta):
-
-        if not (x.dtype==self.dtype and y.dtype==self.dtype):
-            raise ValueError("Wrong dtype of input arrays")
-
-        if not x.flags['F_CONTIGUOUS'] or not y.flags['F_CONTIGUOUS']:
-            raise ValueError("Input arrays must be in Fortran order")
-
 % for pyvalue,cyvalue in dtypes.items():
 
         if self.dtype == "${pyvalue}":
@@ -205,9 +197,9 @@ cdef class DiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
         if (x_in.shape[0]!=self.shape[1]):
             raise ValueError("Wrong dimensions.")
 
-        if self.shape=='float64':
+        if self.dtype=='float64':
             y = deref(self._impl_float64_).apply(enums.no_transpose,x_in)
-        elif self.shape=='complex128':
+        elif self.dtype=='complex128':
             y = deref(self._impl_complex128_).apply(enums.no_transpose,x_in)
         else:
             raise NotImplementedError("Data type not supported.")
