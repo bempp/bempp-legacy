@@ -70,15 +70,6 @@ public:
                                 bool interleave = false) const;
 #endif
 
-#ifdef WITH_TRILINOS
-public:
-  virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>> domain() const;
-  virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>> range() const;
-
-protected:
-  virtual bool opSupportedImpl(Thyra::EOpTransp M_trans) const;
-#endif
-
 private:
   virtual void applyBuiltInImpl(const TranspositionMode trans,
                                 const Eigen::Ref<Vector<ValueType>> &x_in,

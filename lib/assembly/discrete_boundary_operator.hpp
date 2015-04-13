@@ -30,9 +30,8 @@
 #include "transposition_mode.hpp"
 #include "boost/enable_shared_from_this.hpp"
 
-#ifdef WITH_TRILINOS
-#include <Thyra_LinearOpDefaultBase_decl.hpp>
-#endif
+#include <vector>
+
 
 #include <boost/mpl/set.hpp>
 #include <boost/mpl/has_key.hpp>
@@ -53,15 +52,6 @@ namespace Bempp {
  *  space*. The way the matrix is stored can be arbitrary. Concrete subclasses
  *  of this class implement specific storage methods.
  *
- *  If BEM++ is compiled with Trilinos, this class is derived from
- *  <tt>Thyra::LinearOpDefaultBase<ValueType></tt> and hence inherits all
- *  non-private member function of this class; see <a
- *  href="http://trilinos.sandia.gov/packages/docs/dev/packages/thyra/doc/html/classThyra_1_1LinearOpDefaultBase.html">Trilinos
- *  documentation</a> for full documentation of these functions.
- *
- *  If Trilinos is not available during compilation, a simple fallback interface
- *  is provided.
- *
  *  \note The lifetime of DiscreteBoundaryOperator objects must managed by
  *  shared pointers.
  *
@@ -73,50 +63,10 @@ namespace Bempp {
 template <typename ValueType>
 class DiscreteBoundaryOperator
     : public boost::enable_shared_from_this<DiscreteBoundaryOperator<ValueType>>
-#ifdef WITH_TRILINOS
-      ,
-      public Thyra::LinearOpDefaultBase<ValueType>
-#endif
       {
 public:
   /** \brief Destructor. */
   virtual ~DiscreteBoundaryOperator() {}
-
-#ifdef WITH_TRILINOS
-#ifndef DOXYGEN
-  // import the apply() member function from base class
-  // before we overload it
-  using Thyra::LinearOpDefaultBase<ValueType>::apply;
-#else  // DOXYGEN
-  /** \brief Apply the linear operator to a multivector.
-   *
-   *  Set the elements of the multivector <tt>y_inout</tt> to
-   *
-   *  <tt>y_inout := alpha * trans(L) * x_in + beta * y_inout</tt>,
-   *
-   *  where \c L is the linear operator represented by this object.
-   *
-   *  \param[in] M_trans
-   *    Determines whether what is applied is the "bare" operator, its
-   *    transpose, conjugate or conjugate transpose.
-   *  \param[in] x_in
-   *    The right-hand-side multivector.
-   *  \param[in,out] y_inout
-   *    The target multivector being transformed. When <tt>beta == 0.0</tt>,
-   *    this multivector can have uninitialized elements.
-   *  \param[in] alpha
-   *    Scalar multiplying this operator.
-   *  \param[in] beta
-   *    The multiplier for the target multivector \p y_inout.
-   *
-   *  This overload of the apply() member function is only available if
-   *  the library was compiled with Trilinos. */
-  void apply(const Thyra::EOpTransp M_trans,
-             const Thyra::MultiVectorBase<ValueType> &x_in,
-             const Thyra::Ptr<Thyra::MultiVectorBase<ValueType>> &y_inout,
-             const ValueType alpha, const ValueType beta) const;
-#endif // DOXYGEN
-#endif // WITH_TRILINOS
 
   /** \brief Apply the operator to a vector.
    *
@@ -231,15 +181,6 @@ public:
   virtual void addBlock(const std::vector<int> &rows,
                         const std::vector<int> &cols, const ValueType alpha,
                         Matrix<ValueType> &block) const = 0;
-
-#ifdef WITH_TRILINOS
-protected:
-  virtual void
-  applyImpl(const Thyra::EOpTransp M_trans,
-            const Thyra::MultiVectorBase<ValueType> &X_in,
-            const Teuchos::Ptr<Thyra::MultiVectorBase<ValueType>> &Y_inout,
-            const ValueType alpha, const ValueType beta) const;
-#endif
 
 private:
   virtual void applyBuiltInImpl(const TranspositionMode trans,
@@ -381,18 +322,6 @@ template <typename ValueType>
 shared_ptr<DiscreteBoundaryOperator<ValueType>>
 transpose(TranspositionMode trans,
           const shared_ptr<const DiscreteBoundaryOperator<ValueType>> &op);
-
-/** \relates DiscreteBoundaryOperator
- *  \brief Return a shared pointer to a DiscreteBoundaryOperator representing
- *  the "complexified" operator <tt>*op</tt>.
- *
- *  The returned operator has the same matrix representation as the original
- *  operator, but is able to act on vectors of complex numbers.
- *
- *  An exception is thrown if \p op is null. */
-template <typename RealType>
-shared_ptr<DiscreteBoundaryOperator<std::complex<RealType>>>
-complexify(const shared_ptr<const DiscreteBoundaryOperator<RealType>> &op);
 
 template <typename ValueType>
 shared_ptr<DiscreteBoundaryOperator<ValueType>>

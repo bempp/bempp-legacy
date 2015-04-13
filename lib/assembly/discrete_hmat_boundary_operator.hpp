@@ -26,7 +26,6 @@
 #include "../common/eigen_support.hpp"
 #include "../common/shared_ptr.hpp"
 #include "discrete_boundary_operator.hpp"
-#include <Thyra_DefaultSpmdVectorSpace_decl.hpp>
 #include "../hmat/hmatrix.hpp"
 
 namespace Bempp {
@@ -48,13 +47,6 @@ public:
                 const ValueType alpha, Matrix<ValueType> &block) const
       override;
 
-  Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>> domain() const;
-  Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>> range() const;
-
-
-protected:
-  bool opSupportedImpl(Thyra::EOpTransp M_trans) const;
-
 private:
   void applyBuiltInImpl(const TranspositionMode trans,
                         const Eigen::Ref<Vector<ValueType>> &x_in,
@@ -63,8 +55,6 @@ private:
 
   shared_ptr<hmat::DefaultHMatrixType<ValueType>> m_hMatrix;
 
-  Teuchos::RCP<const Thyra::SpmdVectorSpaceBase<ValueType>> m_domainSpace;
-  Teuchos::RCP<const Thyra::SpmdVectorSpaceBase<ValueType>> m_rangeSpace;
 };
 }
 

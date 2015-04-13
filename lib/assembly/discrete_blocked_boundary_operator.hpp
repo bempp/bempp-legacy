@@ -117,14 +117,6 @@ public:
   asDiscreteAcaBoundaryOperator(double eps = -1, int maximumRank = -1,
                                 bool interleave = false) const;
 
-#ifdef WITH_TRILINOS
-public:
-  virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>> domain() const;
-  virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>> range() const;
-
-protected:
-  virtual bool opSupportedImpl(Thyra::EOpTransp M_trans) const;
-#endif
 
 private:
   virtual void applyBuiltInImpl(const TranspositionMode trans,
@@ -147,10 +139,6 @@ private:
   Fiber::_2dArray<shared_ptr<const Base>> m_blocks;
   std::vector<size_t> m_rowCounts;
   std::vector<size_t> m_columnCounts;
-#ifdef WITH_TRILINOS
-  Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>> m_domainSpace;
-  Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>> m_rangeSpace;
-#endif
   /** \endcond */
 };
 

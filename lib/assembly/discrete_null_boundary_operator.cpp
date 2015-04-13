@@ -28,23 +28,14 @@
 #include <iostream>
 #include <stdexcept>
 
-#ifdef WITH_TRILINOS
-#include <Thyra_DefaultSpmdVectorSpace_decl.hpp>
-#endif
-
 namespace Bempp {
 
 template <typename ValueType>
 DiscreteNullBoundaryOperator<ValueType>::DiscreteNullBoundaryOperator(
     size_t rowCount_, size_t columnCount_)
     :
-#ifdef WITH_TRILINOS
-      m_domainSpace(Thyra::defaultSpmdVectorSpace<ValueType>(columnCount_)),
-      m_rangeSpace(Thyra::defaultSpmdVectorSpace<ValueType>(rowCount_))
-#else
       m_rowCount(rowCount_),
       m_columnCount(columnCount_)
-#endif
 {
 }
 
@@ -60,20 +51,12 @@ Matrix<ValueType> DiscreteNullBoundaryOperator<ValueType>::asMatrix() const {
 
 template <typename ValueType>
 unsigned int DiscreteNullBoundaryOperator<ValueType>::rowCount() const {
-#ifdef WITH_TRILINOS
-  return m_rangeSpace->dim();
-#else
   return m_rowCount;
-#endif
 }
 
 template <typename ValueType>
 unsigned int DiscreteNullBoundaryOperator<ValueType>::columnCount() const {
-#ifdef WITH_TRILINOS
-  return m_domainSpace->dim();
-#else
   return m_columnCount;
-#endif
 }
 
 template <typename ValueType>
@@ -82,27 +65,6 @@ void DiscreteNullBoundaryOperator<ValueType>::addBlock(
     const ValueType alpha, Matrix<ValueType> &block) const {
   // don't do anything
 }
-
-#ifdef WITH_TRILINOS
-template <typename ValueType>
-Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>>
-DiscreteNullBoundaryOperator<ValueType>::domain() const {
-  return m_domainSpace;
-}
-
-template <typename ValueType>
-Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>>
-DiscreteNullBoundaryOperator<ValueType>::range() const {
-  return m_rangeSpace;
-}
-
-template <typename ValueType>
-bool DiscreteNullBoundaryOperator<ValueType>::opSupportedImpl(
-    Thyra::EOpTransp M_trans) const {
-  return (M_trans == Thyra::NOTRANS || M_trans == Thyra::TRANS ||
-          M_trans == Thyra::CONJ || M_trans == Thyra::CONJTRANS);
-}
-#endif // WITH_TRILINOS
 
 template <typename ValueType>
 void DiscreteNullBoundaryOperator<ValueType>::applyBuiltInImpl(

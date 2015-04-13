@@ -36,7 +36,6 @@
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>
 #include <Epetra_SerialComm.h>
-#include <Thyra_DefaultSpmdVectorSpace_decl.hpp>
 
 namespace Bempp {
 
@@ -156,7 +155,6 @@ DiscreteInverseSparseBoundaryOperator<ValueType>::
     DiscreteInverseSparseBoundaryOperator(
         const shared_ptr<const Epetra_CrsMatrix> &mat, int symmetry)
     : m_mat(mat), m_problem(new Epetra_LinearProblem),
-      m_space(Thyra::defaultSpmdVectorSpace<ValueType>(mat->NumGlobalRows())),
       m_symmetry(symmetry) {
 
   if (m_mat->NumGlobalRows() != m_mat->NumGlobalCols())
@@ -199,13 +197,13 @@ DiscreteInverseSparseBoundaryOperator<
 template <typename ValueType>
 unsigned int
 DiscreteInverseSparseBoundaryOperator<ValueType>::rowCount() const {
-  return m_space->dim();
+  return m_mat->NumGlobalRows();
 }
 
 template <typename ValueType>
 unsigned int
 DiscreteInverseSparseBoundaryOperator<ValueType>::columnCount() const {
-  return m_space->dim();
+  return m_mat->NumGlobalCols();
 }
 
 template <typename ValueType>
@@ -214,24 +212,6 @@ void DiscreteInverseSparseBoundaryOperator<ValueType>::addBlock(
     const ValueType alpha, Matrix<ValueType> &block) const {
   throw std::runtime_error("DiscreteInverseSparseBoundaryOperator::"
                            "addBlock(): not implemented");
-}
-
-template <typename ValueType>
-Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>>
-DiscreteInverseSparseBoundaryOperator<ValueType>::domain() const {
-  return m_space;
-}
-
-template <typename ValueType>
-Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>>
-DiscreteInverseSparseBoundaryOperator<ValueType>::range() const {
-  return m_space;
-}
-
-template <typename ValueType>
-bool DiscreteInverseSparseBoundaryOperator<ValueType>::opSupportedImpl(
-    Thyra::EOpTransp M_trans) const {
-  return (M_trans == Thyra::NOTRANS);
 }
 
 template <typename ValueType>
@@ -244,7 +224,7 @@ void DiscreteInverseSparseBoundaryOperator<ValueType>::applyBuiltInImpl(
     throw std::invalid_argument("DiscreteInverseSparseBoundaryOperator::"
                                 "applyBuiltInImpl(): "
                                 "transposes and conjugates are not supported");
-  const size_t dim = m_space->dim();
+  const size_t dim = m_mat->NumGlobalRows();
   if (x_in.rows() != dim || y_inout.rows() != dim)
     throw std::invalid_argument("DiscreteInverseSparseBoundaryOperator::"
                                 "applyBuiltInImpl(): "

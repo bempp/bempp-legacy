@@ -20,7 +20,6 @@
 
 #include "bempp/common/config_trilinos.hpp"
 #include "bempp/common/config_ahmed.hpp"
-#ifdef WITH_TRILINOS
 
 #include "discrete_sparse_boundary_operator.hpp"
 
@@ -41,7 +40,6 @@
 #include <Epetra_Vector.h>
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_SerialComm.h>
-#include <Thyra_DefaultSpmdVectorSpace_decl.hpp>
 
 namespace Bempp {
 
@@ -190,10 +188,6 @@ DiscreteSparseBoundaryOperator<ValueType>::DiscreteSparseBoundaryOperator(
     : m_mat(mat), m_symmetry(symmetry), m_trans(trans),
       m_blockCluster(blockCluster), m_domainPermutation(domainPermutation),
       m_rangePermutation(rangePermutation) {
-  m_domainSpace = Thyra::defaultSpmdVectorSpace<ValueType>(
-      isTransposed() ? m_mat->NumGlobalRows() : m_mat->NumGlobalCols());
-  m_rangeSpace = Thyra::defaultSpmdVectorSpace<ValueType>(
-      isTransposed() ? m_mat->NumGlobalCols() : m_mat->NumGlobalRows());
 }
 
 template <typename ValueType>
@@ -364,25 +358,6 @@ DiscreteSparseBoundaryOperator<ValueType>::transpositionMode() const {
 }
 
 template <typename ValueType>
-Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>>
-DiscreteSparseBoundaryOperator<ValueType>::domain() const {
-  return m_domainSpace;
-}
-
-template <typename ValueType>
-Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>>
-DiscreteSparseBoundaryOperator<ValueType>::range() const {
-  return m_rangeSpace;
-}
-
-template <typename ValueType>
-bool DiscreteSparseBoundaryOperator<ValueType>::opSupportedImpl(
-    Thyra::EOpTransp M_trans) const {
-  return (M_trans == Thyra::NOTRANS || M_trans == Thyra::TRANS ||
-          M_trans == Thyra::CONJ || M_trans == Thyra::CONJTRANS);
-}
-
-template <typename ValueType>
 bool DiscreteSparseBoundaryOperator<ValueType>::isTransposed() const {
   return m_trans & (TRANSPOSE | CONJUGATE_TRANSPOSE);
 }
@@ -418,4 +393,3 @@ FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(DiscreteSparseBoundaryOperator);
 
 } // namespace Bempp
 
-#endif // WITH_TRILINOS

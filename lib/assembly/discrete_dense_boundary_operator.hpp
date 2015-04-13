@@ -30,11 +30,6 @@
 
 #include "../common/shared_ptr.hpp"
 
-#ifdef WITH_TRILINOS
-#include <Teuchos_RCP.hpp>
-#include <Thyra_SpmdVectorSpaceBase_decl.hpp>
-#endif
-
 namespace Bempp {
 
 /** \ingroup discrete_boundary_operators
@@ -62,15 +57,6 @@ public:
 
   PyObject* asNumpyObject() const;
 
-#ifdef WITH_TRILINOS
-public:
-  virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>> domain() const;
-  virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>> range() const;
-
-protected:
-  virtual bool opSupportedImpl(Thyra::EOpTransp M_trans) const;
-#endif
-
 private:
   virtual void applyBuiltInImpl(const TranspositionMode trans,
                                 const Eigen::Ref<Vector<ValueType>> &x_in,
@@ -81,10 +67,6 @@ private:
 private:
   /** \cond PRIVATE */
 mutable  Matrix<ValueType> m_mat;
-#ifdef WITH_TRILINOS
-  Teuchos::RCP<const Thyra::SpmdVectorSpaceBase<ValueType>> m_domainSpace;
-  Teuchos::RCP<const Thyra::SpmdVectorSpaceBase<ValueType>> m_rangeSpace;
-#endif
   /** \endcond */
 };
 

@@ -31,6 +31,8 @@
 #include <boost/weak_ptr.hpp>
 #include <string>
 
+#include <complex>
+
 namespace Bempp {
 
 /** \cond FORWARD_DECL */

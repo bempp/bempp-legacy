@@ -51,26 +51,6 @@ ScaledDiscreteBoundaryOperator<ValueType>::asDiscreteAcaBoundaryOperator(
 }
 #endif // WITH_AHMED
 
-#ifdef WITH_TRILINOS
-template <typename ValueType>
-Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>>
-ScaledDiscreteBoundaryOperator<ValueType>::domain() const {
-  return m_operator->domain();
-}
-
-template <typename ValueType>
-Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>>
-ScaledDiscreteBoundaryOperator<ValueType>::range() const {
-  return m_operator->range();
-}
-
-template <typename ValueType>
-bool ScaledDiscreteBoundaryOperator<ValueType>::opSupportedImpl(
-    Thyra::EOpTransp M_trans) const {
-  return m_operator->opSupported(M_trans);
-}
-#endif
-
 template <typename ValueType>
 void ScaledDiscreteBoundaryOperator<ValueType>::applyBuiltInImpl(
     const TranspositionMode trans, const Eigen::Ref<Vector<ValueType>> &x_in,

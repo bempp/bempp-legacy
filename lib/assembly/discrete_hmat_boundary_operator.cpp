@@ -34,11 +34,7 @@ namespace Bempp {
 template <typename ValueType>
 DiscreteHMatBoundaryOperator<ValueType>::DiscreteHMatBoundaryOperator(
     const shared_ptr<hmat::DefaultHMatrixType<ValueType>> &hMatrix)
-    : m_hMatrix(hMatrix),
-      m_domainSpace(Thyra::defaultSpmdVectorSpace<ValueType>(
-          hMatrix->columns())),
-      m_rangeSpace(
-          Thyra::defaultSpmdVectorSpace<ValueType>(hMatrix->rows())) {}
+    : m_hMatrix(hMatrix) {}
 
 template <typename ValueType>
 unsigned int DiscreteHMatBoundaryOperator<ValueType>::rowCount() const {
@@ -87,25 +83,6 @@ void DiscreteHMatBoundaryOperator<ValueType>::applyBuiltInImpl(
   m_hMatrix->apply(x_inMat, y_inoutMat, hmatTrans, alpha, beta);
 
   y_inout = y_inoutMat.col(0);
-}
-
-template <typename ValueType>
-Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>>
-DiscreteHMatBoundaryOperator<ValueType>::domain() const {
-  return m_domainSpace;
-}
-
-template <typename ValueType>
-Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>>
-DiscreteHMatBoundaryOperator<ValueType>::range() const {
-  return m_rangeSpace;
-}
-
-template <typename ValueType>
-bool DiscreteHMatBoundaryOperator<ValueType>::opSupportedImpl(
-    Thyra::EOpTransp M_trans) const {
-  return (M_trans == Thyra::NOTRANS || M_trans == Thyra::TRANS ||
-          M_trans == Thyra::CONJTRANS);
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(DiscreteHMatBoundaryOperator);

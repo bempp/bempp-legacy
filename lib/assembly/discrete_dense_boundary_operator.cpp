@@ -31,21 +31,12 @@
 #include <stdexcept>
 #include <array>
 
-#ifdef WITH_TRILINOS
-#include <Thyra_DefaultSpmdVectorSpace_decl.hpp>
-#endif
-
 namespace Bempp {
 
 template <typename ValueType>
 DiscreteDenseBoundaryOperator<ValueType>::DiscreteDenseBoundaryOperator(
     const Matrix<ValueType> &mat)
     : m_mat(mat)
-#ifdef WITH_TRILINOS
-      ,
-      m_domainSpace(Thyra::defaultSpmdVectorSpace<ValueType>(mat.cols())),
-      m_rangeSpace(Thyra::defaultSpmdVectorSpace<ValueType>(mat.rows()))
-#endif
 {
 }
 
@@ -97,27 +88,6 @@ PyObject* DiscreteDenseBoundaryOperator<ValueType>::asNumpyObject() const {
     return out;
 
 }
-
-#ifdef WITH_TRILINOS
-template <typename ValueType>
-Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>>
-DiscreteDenseBoundaryOperator<ValueType>::domain() const {
-  return m_domainSpace;
-}
-
-template <typename ValueType>
-Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>>
-DiscreteDenseBoundaryOperator<ValueType>::range() const {
-  return m_rangeSpace;
-}
-
-template <typename ValueType>
-bool DiscreteDenseBoundaryOperator<ValueType>::opSupportedImpl(
-    Thyra::EOpTransp M_trans) const {
-  return (M_trans == Thyra::NOTRANS || M_trans == Thyra::TRANS ||
-          M_trans == Thyra::CONJ || M_trans == Thyra::CONJTRANS);
-}
-#endif // WITH_TRILINOS
 
 template <typename ValueType>
 void DiscreteDenseBoundaryOperator<ValueType>::applyBuiltInImpl(

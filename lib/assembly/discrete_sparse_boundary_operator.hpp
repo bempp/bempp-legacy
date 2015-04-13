@@ -36,13 +36,7 @@
 #include "../common/eigen_support.hpp"
 #include "../fiber/scalar_traits.hpp"
 
-#ifdef WITH_TRILINOS
-#include <Teuchos_RCP.hpp>
-#include <Thyra_SpmdVectorSpaceBase_decl.hpp>
-/** \cond FORWARD_DECL */
 class Epetra_CrsMatrix;
-/** \endcond */
-#endif
 
 namespace Bempp {
 /** \cond FORWARD_DECL */
@@ -60,7 +54,6 @@ class DiscreteSparseBoundaryOperator
   typedef bbxbemblcluster<AhmedDofType, AhmedDofType> AhmedBemBlcluster;
   typedef mblock<typename AhmedTypeTraits<ValueType>::Type> AhmedMblock;
 
-#ifdef WITH_TRILINOS
 public:
   /** \brief Constructor.
    *
@@ -82,13 +75,11 @@ public:
           shared_ptr<IndexPermutation>(),
       const shared_ptr<IndexPermutation> &rangePermutation =
           shared_ptr<IndexPermutation>());
-#else
   // This class cannot be used without Trilinos
 private:
   DiscreteSparseBoundaryOperator();
 
 public:
-#endif
 
   virtual void dump() const;
 
@@ -136,14 +127,6 @@ public:
   /** \brief Return the symmetry type of the sparse matrix */
   inline int symmetryMode() const { return m_symmetry; }
 
-#ifdef WITH_TRILINOS
-public:
-  virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>> domain() const;
-  virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>> range() const;
-
-protected:
-  virtual bool opSupportedImpl(Thyra::EOpTransp M_trans) const;
-#endif
 
 private:
   /** \cond PRIVATE */
@@ -166,16 +149,12 @@ private:
 
 private:
 /** \cond PRIVATE */
-#ifdef WITH_TRILINOS
   shared_ptr<const Epetra_CrsMatrix> m_mat;
   int m_symmetry;
   TranspositionMode m_trans;
   shared_ptr<AhmedBemBlcluster> m_blockCluster;
   // o2p
   shared_ptr<IndexPermutation> m_domainPermutation, m_rangePermutation;
-  Teuchos::RCP<const Thyra::SpmdVectorSpaceBase<ValueType>> m_domainSpace;
-  Teuchos::RCP<const Thyra::SpmdVectorSpaceBase<ValueType>> m_rangeSpace;
-#endif
   /** \endcond */
 };
 

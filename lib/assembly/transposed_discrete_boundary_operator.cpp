@@ -64,28 +64,6 @@ void TransposedDiscreteBoundaryOperator<ValueType>::addBlock(
   m_operator->addBlock(cols, rows, alpha, block);
 }
 
-#ifdef WITH_TRILINOS
-template <typename ValueType>
-Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>>
-TransposedDiscreteBoundaryOperator<ValueType>::domain() const {
-  return isTransposed() ? m_operator->range() : m_operator->domain();
-}
-
-template <typename ValueType>
-Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>>
-TransposedDiscreteBoundaryOperator<ValueType>::range() const {
-  return isTransposed() ? m_operator->domain() : m_operator->range();
-}
-
-template <typename ValueType>
-bool TransposedDiscreteBoundaryOperator<ValueType>::opSupportedImpl(
-    Thyra::EOpTransp M_trans) const {
-  // Bitwise xor. We use the fact that bit 0 of M_trans denotes
-  // conjugation, and bit 1 -- transposition.
-  return m_operator->opSupported(Thyra::EOpTransp(M_trans ^ m_trans));
-}
-#endif
-
 template <typename ValueType>
 void TransposedDiscreteBoundaryOperator<ValueType>::applyBuiltInImpl(
     const TranspositionMode trans, const Eigen::Ref<Vector<ValueType>> &x_in,

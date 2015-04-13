@@ -40,7 +40,7 @@ DiscreteBoundaryOperatorComposition<ValueType>::
     throw std::invalid_argument("DiscreteBoundaryOperatorComposition::"
                                 "DiscreteBoundaryOperatorComposition(): "
                                 "term dimensions do not match");
-  // TODO: perhaps test for compatibility of Thyra spaces
+
 }
 
 template <typename ValueType>
@@ -62,26 +62,6 @@ void DiscreteBoundaryOperatorComposition<ValueType>::addBlock(
                            "DiscreteBoundaryOperatorComposition(): "
                            "addBlock: not implemented yet");
 }
-
-#ifdef WITH_TRILINOS
-template <typename ValueType>
-Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>>
-DiscreteBoundaryOperatorComposition<ValueType>::domain() const {
-  return m_inner->domain();
-}
-
-template <typename ValueType>
-Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>>
-DiscreteBoundaryOperatorComposition<ValueType>::range() const {
-  return m_outer->range();
-}
-
-template <typename ValueType>
-bool DiscreteBoundaryOperatorComposition<ValueType>::opSupportedImpl(
-    Thyra::EOpTransp M_trans) const {
-  return (m_outer->opSupported(M_trans) && m_inner->opSupported(M_trans));
-}
-#endif // WITH_TRILINOS
 
 template <typename ValueType>
 void DiscreteBoundaryOperatorComposition<ValueType>::applyBuiltInImpl(

@@ -34,9 +34,6 @@
 
 #include <memory>
 
-#include <Teuchos_RCP.hpp>
-#include <Thyra_SpmdVectorSpaceBase_decl.hpp>
-
 /** \cond FORWARD_DECL */
 class Amesos_BaseSolver;
 class Epetra_LinearProblem;
@@ -73,13 +70,6 @@ public:
                         const std::vector<int> &cols, const ValueType alpha,
                         Matrix<ValueType> &block) const;
 
-public:
-  virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>> domain() const;
-  virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>> range() const;
-
-protected:
-  virtual bool opSupportedImpl(Thyra::EOpTransp M_trans) const;
-
 private:
   virtual void applyBuiltInImpl(const TranspositionMode trans,
                                 const Eigen::Ref<Vector<ValueType>> &x_in,
@@ -91,7 +81,6 @@ private:
   /** \cond PRIVATE */
   shared_ptr<const Epetra_CrsMatrix> m_mat;
   std::unique_ptr<Epetra_LinearProblem> m_problem;
-  Teuchos::RCP<const Thyra::SpmdVectorSpaceBase<ValueType>> m_space;
   int m_symmetry;
   std::unique_ptr<Amesos_BaseSolver> m_solver;
   /** \endcond */

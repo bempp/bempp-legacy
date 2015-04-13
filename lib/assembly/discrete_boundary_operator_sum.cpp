@@ -90,26 +90,6 @@ DiscreteBoundaryOperatorSum<ValueType>::asDiscreteAcaBoundaryOperator(
 }
 #endif // WITH_AHMED
 
-#ifdef WITH_TRILINOS
-template <typename ValueType>
-Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>>
-DiscreteBoundaryOperatorSum<ValueType>::domain() const {
-  return m_term1->domain();
-}
-
-template <typename ValueType>
-Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>>
-DiscreteBoundaryOperatorSum<ValueType>::range() const {
-  return m_term1->range();
-}
-
-template <typename ValueType>
-bool DiscreteBoundaryOperatorSum<ValueType>::opSupportedImpl(
-    Thyra::EOpTransp M_trans) const {
-  return (m_term1->opSupported(M_trans) && m_term2->opSupported(M_trans));
-}
-#endif // WITH_TRILINOS
-
 template <typename ValueType>
 void DiscreteBoundaryOperatorSum<ValueType>::applyBuiltInImpl(
     const TranspositionMode trans, const Eigen::Ref<Vector<ValueType>> &x_in,

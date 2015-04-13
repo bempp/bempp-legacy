@@ -32,11 +32,6 @@
 #include "../common/shared_ptr.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
-#ifdef WITH_TRILINOS
-
-#include <boost/make_shared.hpp>
-#endif
-
 namespace Bempp {
 
 template <typename BasisFunctionType, typename ResultType>

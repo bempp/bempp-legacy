@@ -22,7 +22,6 @@
 
 #include "discrete_boundary_operator.hpp"
 
-#include "complexified_discrete_boundary_operator.hpp"
 #include "discrete_boundary_operator_sum.hpp"
 #include "discrete_boundary_operator_composition.hpp"
 #include "scaled_discrete_boundary_operator.hpp"
@@ -32,8 +31,6 @@
 
 #include "../fiber/explicit_instantiation.hpp"
 #include "../fiber/scalar_traits.hpp"
-
-#include <Thyra_DetachedSpmdVectorView.hpp>
 
 namespace Bempp {
 
@@ -203,50 +200,7 @@ void DiscreteBoundaryOperator<ValueType>::dump() const {
   std::cout << asMatrix() << std::endl;
 }
 
-#ifdef WITH_TRILINOS
-template <typename ValueType>
-void DiscreteBoundaryOperator<ValueType>::applyImpl(
-    const Thyra::EOpTransp M_trans,
-    const Thyra::MultiVectorBase<ValueType> &X_in,
-    const Teuchos::Ptr<Thyra::MultiVectorBase<ValueType>> &Y_inout,
-    const ValueType alpha, const ValueType beta) const {
-  typedef Thyra::Ordinal Ordinal;
 
-
-  throw std::runtime_error("Thyra apply disabled.");
-  /*
-
-  // Note: the name is VERY misleading: these asserts don't disappear in
-  // release runs, and in case of failure throw exceptions rather than
-  // abort.
-  TEUCHOS_ASSERT(this->opSupported(M_trans));
-  TEUCHOS_ASSERT(X_in.range()->isCompatible(*this->domain()));
-  TEUCHOS_ASSERT(Y_inout->range()->isCompatible(*this->range()));
-  TEUCHOS_ASSERT(Y_inout->domain()->isCompatible(*X_in.domain()));
-
-  const Ordinal colCount = X_in.domain()->dim();
-
-  // Loop over the input columns
-
-  for (Ordinal col = 0; col < colCount; ++col) {
-    // Get access the the elements of X_in's and Y_inout's column #col
-    Thyra::ConstDetachedSpmdVectorView<ValueType> xVec(X_in.col(col));
-    Thyra::DetachedSpmdVectorView<ValueType> yVec(Y_inout->col(col));
-    const Teuchos::ArrayRCP<const ValueType> xArray(xVec.sv().values());
-    const Teuchos::ArrayRCP<ValueType> yArray(yVec.sv().values());
-
-
-    const Eigen::Map<Vector<ValueType>> xCol(const_cast<ValueType *>(xArray.get()),xArray.size());
-    Eigen::Map<Vector<ValueType>> yCol(yArray.get(),yArray.size());
-
-    applyBuiltInImpl(static_cast<TranspositionMode>(M_trans), xCol, yCol, alpha,
-                     beta);
-
-
-  }
-  */
-}
-#endif
 
 template <typename ValueType>
 shared_ptr<const DiscreteBoundaryOperator<ValueType>>
@@ -371,13 +325,6 @@ transpose(TranspositionMode trans,
       new TransposedDiscreteBoundaryOperator<ValueType>(trans, op));
 }
 
-template <typename RealType>
-shared_ptr<DiscreteBoundaryOperator<std::complex<RealType>>>
-complexify(const shared_ptr<const DiscreteBoundaryOperator<RealType>> &op) {
-  return shared_ptr<DiscreteBoundaryOperator<std::complex<RealType>>>(
-      new ComplexifiedDiscreteBoundaryOperator<RealType>(op));
-}
-
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(DiscreteBoundaryOperator);
 
 #define INSTANTIATE_FREE_FUNCTIONS(VALUE)                                      \
@@ -421,15 +368,10 @@ FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(DiscreteBoundaryOperator);
       const shared_ptr<const DiscreteBoundaryOperator<VALUE>> &op,             \
       SCALAR scalar);
 
-#define INSTANTIATE_FREE_FUNCTIONS_REAL_ONLY(VALUE)                            \
-  template shared_ptr<DiscreteBoundaryOperator<std::complex<VALUE>>>           \
-  complexify(const shared_ptr<const DiscreteBoundaryOperator<VALUE>> &op);
-
 #if defined(ENABLE_SINGLE_PRECISION)
 INSTANTIATE_FREE_FUNCTIONS(float);
 INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(float, float);
 INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(float, double);
-INSTANTIATE_FREE_FUNCTIONS_REAL_ONLY(float);
 #endif
 
 #if defined(ENABLE_SINGLE_PRECISION) &&                                        \
@@ -448,7 +390,6 @@ INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(std::complex<float>,
 INSTANTIATE_FREE_FUNCTIONS(double);
 INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(double, float);
 INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(double, double);
-INSTANTIATE_FREE_FUNCTIONS_REAL_ONLY(double);
 #endif
 
 #if defined(ENABLE_DOUBLE_PRECISION) &&                                        \

@@ -33,9 +33,6 @@
 #include "../fiber/explicit_instantiation.hpp"
 
 #include <numeric>
-#ifdef WITH_TRILINOS
-#include <Thyra_DefaultSpmdVectorSpace_decl.hpp>
-#endif // WITH_TRILINOS
 
 namespace Bempp {
 
@@ -488,12 +485,6 @@ DiscreteBlockedBoundaryOperator<ValueType>::DiscreteBlockedBoundaryOperator(
               toString(rowCounts[row]) + ", " + toString(columnCounts[col]) +
               ")");
       }
-#ifdef WITH_TRILINOS
-  m_domainSpace = Thyra::defaultSpmdVectorSpace<ValueType>(
-      std::accumulate(m_columnCounts.begin(), m_columnCounts.end(), 0));
-  m_rangeSpace = Thyra::defaultSpmdVectorSpace<ValueType>(
-      std::accumulate(m_rowCounts.begin(), m_rowCounts.end(), 0));
-#endif
 }
 
 template <typename ValueType>
@@ -785,29 +776,6 @@ DiscreteBlockedBoundaryOperator<ValueType>::asDiscreteAcaBoundaryOperator(
 #endif
 }
 
-#ifdef WITH_TRILINOS
-template <typename ValueType>
-Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>>
-DiscreteBlockedBoundaryOperator<ValueType>::domain() const {
-  return m_domainSpace;
-}
-
-template <typename ValueType>
-Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>>
-DiscreteBlockedBoundaryOperator<ValueType>::range() const {
-  return m_rangeSpace;
-}
-
-template <typename ValueType>
-bool DiscreteBlockedBoundaryOperator<ValueType>::opSupportedImpl(
-    Thyra::EOpTransp M_trans) const {
-  for (size_t col = 0; col < m_blocks.extent(1); ++col)
-    for (size_t row = 0; row < m_blocks.extent(0); ++row)
-      if (m_blocks(row, col) && !m_blocks(row, col)->opSupported(M_trans))
-        return false;
-  return true;
-}
-#endif // WITH_TRILINOS
 
 template <typename ValueType>
 void DiscreteBlockedBoundaryOperator<ValueType>::applyBuiltInImpl(
