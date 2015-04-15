@@ -30,8 +30,6 @@
 #include <memory>
 #include <vector>
 
-class Epetra_CrsMatrix;
-
 namespace Fiber {
 
 /** \cond FORWARD_DECL */

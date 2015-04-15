@@ -19,7 +19,7 @@
 // THE SOFTWARE.
 
 #include "space.hpp"
-#include "bempp/common/config_trilinos.hpp"
+#include "../common/eigen_support.hpp"
 
 #include "../assembly/discrete_sparse_boundary_operator.hpp"
 #include "../assembly/discrete_boundary_operator.hpp"
@@ -36,17 +36,11 @@
 #include "../grid/mapper.hpp"
 #include "../grid/geometry_factory.hpp"
 
-#ifdef WITH_TRILINOS
-#include <Epetra_CrsMatrix.h>
-#include <Epetra_LocalMap.h>
-#include <Epetra_SerialComm.h>
-#endif
 
 namespace Bempp {
 
 namespace {
 
-#ifdef WITH_TRILINOS
 template <typename BasisFunctionType>
 void constructGlobalToFlatLocalDofsMappingVectors(
     const Space<BasisFunctionType> &space, std::vector<int> &rows,
@@ -94,7 +88,7 @@ void constructGlobalToFlatLocalDofsMappingVectors(
 }
 
 template <typename BasisFunctionType>
-shared_ptr<Epetra_CrsMatrix> constructGlobalToFlatLocalDofsMappingEpetraMatrix(
+shared_ptr<RealSparseMatrix> constructGlobalToFlatLocalDofsMappingSparseMatrix(
     const Space<BasisFunctionType> &space) {
   std::vector<int> rows, cols;
   std::vector<double> values;
@@ -107,25 +101,17 @@ shared_ptr<Epetra_CrsMatrix> constructGlobalToFlatLocalDofsMappingEpetraMatrix(
   const size_t rowCount = space.flatLocalDofCount();
   const size_t columnCount = space.globalDofCount();
 
-  Epetra_SerialComm comm; // To be replaced once we begin to use MPI
-  Epetra_LocalMap rowMap((int)rowCount, 0 /* index_base */, comm);
-  Epetra_LocalMap columnMap((int)columnCount, 0 /* index_base */, comm);
-  shared_ptr<Epetra_CrsMatrix> result = boost::make_shared<Epetra_CrsMatrix>(
-      Copy, rowMap, columnMap, 1 /* entries per row */);
+  shared_ptr<RealSparseMatrix> result = boost::make_shared<RealSparseMatrix>(rowCount,columnCount);
 
-  for (size_t i = 0; i < entryCount; ++i) {
-#ifndef NDEBUG
-    int errorCode =
-#endif
-        result->InsertGlobalValues(rows[i], 1 /* number of inserted entries */,
-                                   &values[i], &cols[i]);
-    assert(errorCode == 0);
-  }
-  result->FillComplete(columnMap, rowMap);
+  std::vector<Eigen::Triplet<double>> triplets;
+  triplets.reserve(entryCount);
+
+  for (size_t i = 0; i < entryCount; ++i)
+      triplets.push_back(Eigen::Triplet<double>(rows[i],cols[i],values[i]));
+  result->setFromTriplets(triplets.begin(),triplets.end());
 
   return result;
 }
-#endif // WITH_TRILINOS
 
 } // namespace
 
@@ -285,13 +271,12 @@ int maximumShapesetOrder(const Space<BasisFunctionType> &space) {
   return maxOrder;
 }
 
-#ifdef WITH_TRILINOS
 template <typename BasisFunctionType, typename ResultType>
 shared_ptr<DiscreteSparseBoundaryOperator<ResultType>>
 constructOperatorMappingGlobalToFlatLocalDofs(
     const Space<BasisFunctionType> &space) {
-  shared_ptr<Epetra_CrsMatrix> mat =
-      constructGlobalToFlatLocalDofsMappingEpetraMatrix(space);
+  shared_ptr<RealSparseMatrix> mat =
+      constructGlobalToFlatLocalDofsMappingSparseMatrix(space);
   return boost::make_shared<DiscreteSparseBoundaryOperator<ResultType>>(mat);
 }
 
@@ -299,12 +284,11 @@ template <typename BasisFunctionType, typename ResultType>
 shared_ptr<DiscreteSparseBoundaryOperator<ResultType>>
 constructOperatorMappingFlatLocalToGlobalDofs(
     const Space<BasisFunctionType> &space) {
-  shared_ptr<Epetra_CrsMatrix> mat =
-      constructGlobalToFlatLocalDofsMappingEpetraMatrix(space);
+  shared_ptr<RealSparseMatrix> mat =
+      constructGlobalToFlatLocalDofsMappingSparseMatrix(space);
   return boost::make_shared<DiscreteSparseBoundaryOperator<ResultType>>(
       mat, NO_SYMMETRY, TRANSPOSE);
 }
-#endif // WITH_TRILINOS
 
 BEMPP_GCC_DIAG_OFF(deprecated - declarations);
 

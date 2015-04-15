@@ -5,12 +5,15 @@
 #include <Eigen/Dense>
 #include <Eigen/LU>
 #include <Eigen/Cholesky>
+#include <Eigen/Sparse>
 
 namespace Bempp {
 
 template <typename T> using Matrix = Eigen::Matrix<T,Eigen::Dynamic,Eigen::Dynamic>;
 template <typename T> using Vector = Eigen::Matrix<T,Eigen::Dynamic,1>;
 template <typename T> using RowVector = Eigen::Matrix<T,1,Eigen::Dynamic>;
+
+typedef Eigen::SparseMatrix<double> RealSparseMatrix;
 
 // see http://stackoverflow.com/questions/13290395/how-to-remove-a-certain-row-or-column-while-using-eigen-library-c
 // for the following two functions

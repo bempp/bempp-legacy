@@ -22,6 +22,7 @@
 #define bempp_sparse_inverse_hpp
 
 #include "../common/common.hpp"
+#include "../common/eigen_support.hpp"
 #include "../common/shared_ptr.hpp"
 
 class Epetra_CrsMatrix;
@@ -37,7 +38,7 @@ namespace Bempp {
  *  Be aware that explicit inversion of \f$A\f$ is usually not the most
  *  accurate way to solve the equation \f$A^{-1} X = B\f$.
  */
-shared_ptr<Epetra_CrsMatrix> sparseInverse(const Epetra_CrsMatrix &mat);
+shared_ptr<RealSparseMatrix> sparseInverse(const RealSparseMatrix &mat);
 
 } // namespace Bempp
 

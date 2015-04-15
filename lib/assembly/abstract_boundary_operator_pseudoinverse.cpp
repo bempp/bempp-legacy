@@ -36,10 +36,6 @@
 #include "../assembly/discrete_sparse_boundary_operator.hpp"
 #include "../assembly/discrete_boundary_operator_composition.hpp"
 
-#include <Epetra_CrsMatrix.h>
-#include <Epetra_LocalMap.h>
-#include <Epetra_SerialComm.h>
-#include <EpetraExt_MatrixMatrix.h>
 #include <boost/make_shared.hpp>
 #include <tbb/tick_count.h>
 
@@ -170,10 +166,10 @@ AbstractBoundaryOperatorPseudoinverse<BasisFunctionType, ResultType>::
   typedef DiscreteInverseSparseBoundaryOperator<ResultType>
   DiscreteInverseSparseOp;
 
-  shared_ptr<const Epetra_CrsMatrix> matrix = wrappedDiscreteOp->epetraMatrix();
+  shared_ptr<const RealSparseMatrix> matrix = wrappedDiscreteOp->sparseMatrix();
 
-  const int rowCount = matrix->NumGlobalRows();
-  const int colCount = matrix->NumGlobalCols();
+  const int rowCount = matrix->rows();
+  const int colCount = matrix->cols();
   if (rowCount == colCount) {
     // Square matrix; construct M^{-1}
     return boost::make_shared<DiscreteInverseSparseOp>(
@@ -185,21 +181,14 @@ AbstractBoundaryOperatorPseudoinverse<BasisFunctionType, ResultType>::
 
     // Construct the discrete operator representing the smaller of
     // (M^H M)^{-1} and (M M^H)^{-1}
-    Epetra_SerialComm comm; // To be replaced once we begin to use MPI
-    int size = std::min(rowCount, colCount);
-    Epetra_LocalMap map(size, 0 /* index_base */, comm);
-    shared_ptr<Epetra_CrsMatrix> productMatrix =
-        boost::make_shared<Epetra_CrsMatrix>(
-            Copy, map, map,
-            // estimate of the number of nonzero entries per row
-            3 * matrix->GlobalMaxNumEntries());
+    shared_ptr<RealSparseMatrix> productMatrix;
 
     if (rowCount > colCount) {
       // Tall matrix (overdetermined least-square problem);
       // construct (M^H M)^{-1} M^H
-      EpetraExt::MatrixMatrix::Multiply(*matrix, true /* transpose */, *matrix,
-                                        false /* no transpose */,
-                                        *productMatrix);
+        productMatrix.reset(
+                    new RealSparseMatrix(matrix->transpose().eval()*(*matrix)));
+
       shared_ptr<DiscreteOp> productInverseOp =
           boost::make_shared<DiscreteInverseSparseOp>(productMatrix, HERMITIAN);
 
@@ -209,9 +198,9 @@ AbstractBoundaryOperatorPseudoinverse<BasisFunctionType, ResultType>::
     } else {
       // Wide matrix (underdetermined least-square problem);
       // construct M^H (M M^H)^{-1}
-      EpetraExt::MatrixMatrix::Multiply(*matrix, false /* no transpose */,
-                                        *matrix, true /* transpose */,
-                                        *productMatrix);
+
+      productMatrix.reset(
+                    new RealSparseMatrix((*matrix)*(matrix->transpose().eval())));
       shared_ptr<DiscreteOp> productInverseOp =
           boost::make_shared<DiscreteInverseSparseOp>(productMatrix, HERMITIAN);
       return boost::make_shared<

@@ -26,7 +26,6 @@
 #include "bempp/common/config_trilinos.hpp"
 #include "discrete_boundary_operator.hpp"
 
-#include "index_permutation.hpp"
 #include "../fiber/scalar_traits.hpp"
 #include "../fiber/verbosity_level.hpp"
 

@@ -23,9 +23,9 @@
 
 #include "../common/common.hpp"
 #include "bempp/common/config_ahmed.hpp"
-#include "bempp/common/config_trilinos.hpp"
 
 #include "discrete_boundary_operator.hpp"
+#include "../common/eigen_support.hpp"
 
 #include "ahmed_aux_fwd.hpp"
 #include "symmetry.hpp"
@@ -36,12 +36,7 @@
 #include "../common/eigen_support.hpp"
 #include "../fiber/scalar_traits.hpp"
 
-class Epetra_CrsMatrix;
-
 namespace Bempp {
-/** \cond FORWARD_DECL */
-class IndexPermutation;
-/** \endcond */
 
 /** \ingroup discrete_boundary_operators
  *  \brief Discrete boundary operator stored as a sparse matrix.
@@ -50,9 +45,6 @@ template <typename ValueType>
 class DiscreteSparseBoundaryOperator
     : public DiscreteBoundaryOperator<ValueType> {
   typedef typename Fiber::ScalarTraits<ValueType>::RealType CoordinateType;
-  typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
-  typedef bbxbemblcluster<AhmedDofType, AhmedDofType> AhmedBemBlcluster;
-  typedef mblock<typename AhmedTypeTraits<ValueType>::Type> AhmedMblock;
 
 public:
   /** \brief Constructor.
@@ -67,15 +59,8 @@ public:
    *    If different from NO_TRANSPOSE, the discrete operator will represent
    *    a transposed and/or complex-conjugated matrix \p mat. */
   DiscreteSparseBoundaryOperator(
-      const shared_ptr<const Epetra_CrsMatrix> &mat, int symmetry = NO_SYMMETRY,
-      TranspositionMode trans = NO_TRANSPOSE,
-      const shared_ptr<AhmedBemBlcluster> &blockCluster =
-          shared_ptr<AhmedBemBlcluster>(),
-      const shared_ptr<IndexPermutation> &domainPermutation =
-          shared_ptr<IndexPermutation>(),
-      const shared_ptr<IndexPermutation> &rangePermutation =
-          shared_ptr<IndexPermutation>());
-  // This class cannot be used without Trilinos
+      const shared_ptr<const RealSparseMatrix> &mat, int symmetry = NO_SYMMETRY,
+      TranspositionMode trans = NO_TRANSPOSE);
 private:
   DiscreteSparseBoundaryOperator();
 
@@ -92,12 +77,6 @@ public:
                         const std::vector<int> &cols, const ValueType alpha,
                         Matrix<ValueType> &block) const;
 
-#ifdef WITH_AHMED
-  virtual shared_ptr<const DiscreteBoundaryOperator<ValueType>>
-  asDiscreteAcaBoundaryOperator(double eps = -1, int maximumRank = -1,
-                                bool interleave = false) const;
-#endif
-
   /** \brief Downcast a shared pointer to a DiscreteBoundaryOperator object to
    *  a shared pointer to a DiscreteSparseBoundaryOperator.
    *
@@ -107,15 +86,14 @@ public:
   castToSparse(const shared_ptr<const DiscreteBoundaryOperator<ValueType>> &
                    discreteOperator);
 
-#ifdef WITH_TRILINOS
+
   /** \brief Return a shared pointer to the sparse matrix stored within
    *  this operator.
    *
    *  \note The discrete operator represents the matrix returned by this
    *  function *and possibly transposed and/or complex-conjugated*, depending on
    *  the value returned by transpositionMode(). */
-  shared_ptr<const Epetra_CrsMatrix> epetraMatrix() const;
-#endif
+  shared_ptr<const RealSparseMatrix> sparseMatrix() const;
 
   /** \brief Return the active sparse matrix transformation.
    *
@@ -137,24 +115,13 @@ private:
                                 const ValueType beta) const;
   bool isTransposed() const;
 
-  // void constructAhmedMatrix(
-  //         int* rowOffsets, int* colIndices, double* values,
-  //         std::vector<unsigned int>& domain_o2p,
-  //         std::vector<unsigned int>& range_p2o,
-  //         double eps,
-  //         AhmedBemBlcluster* blockCluster,
-  //         boost::shared_array<AhmedMblock*>& mblocks,
-  //         int& maximumRank) const;
   /** \endcond */
 
 private:
 /** \cond PRIVATE */
-  shared_ptr<const Epetra_CrsMatrix> m_mat;
+  shared_ptr<const RealSparseMatrix> m_mat;
   int m_symmetry;
   TranspositionMode m_trans;
-  shared_ptr<AhmedBemBlcluster> m_blockCluster;
-  // o2p
-  shared_ptr<IndexPermutation> m_domainPermutation, m_rangePermutation;
   /** \endcond */
 };
 
