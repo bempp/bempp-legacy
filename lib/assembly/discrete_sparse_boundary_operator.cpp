@@ -18,7 +18,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "bempp/common/config_trilinos.hpp"
 #include "bempp/common/config_ahmed.hpp"
 
 #include "discrete_sparse_boundary_operator.hpp"

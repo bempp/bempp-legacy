@@ -19,7 +19,6 @@
 // THE SOFTWARE.
 
 #include "bempp/common/config_ahmed.hpp"
-#include "bempp/common/config_trilinos.hpp"
 
 #ifndef bempp_scaled_discrete_boundary_operator_hpp
 #define bempp_scaled_discrete_boundary_operator_hpp
@@ -30,10 +29,6 @@
 #include "discrete_boundary_operator.hpp"
 
 #include "../common/shared_ptr.hpp"
-
-#ifdef WITH_TRILINOS
-#include <Teuchos_RCP.hpp>
-#endif
 
 namespace Bempp {
 

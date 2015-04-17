@@ -22,8 +22,6 @@ from bempp.utils cimport complex_float,complex_double
 import numpy as np
 cimport numpy as np
 
-np.import_array()
-
 cdef class BoundaryOperatorBase:
     """
 

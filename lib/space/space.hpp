@@ -24,7 +24,6 @@
 #include "space_identifier.hpp"
 
 #include "../common/common.hpp"
-#include "bempp/common/config_trilinos.hpp"
 
 #include "../common/bounding_box.hpp"
 #include "../common/not_implemented_error.hpp"
@@ -639,7 +638,6 @@ getAllBases(const Space<BasisFunctionType> &space,
 template <typename BasisFunctionType>
 int maximumShapesetOrder(const Space<BasisFunctionType> &space);
 
-#ifdef WITH_TRILINOS
 template <typename BasisFunctionType, typename ResultType>
 shared_ptr<DiscreteSparseBoundaryOperator<ResultType>>
 constructOperatorMappingGlobalToFlatLocalDofs(
@@ -649,7 +647,6 @@ template <typename BasisFunctionType, typename ResultType>
 shared_ptr<DiscreteSparseBoundaryOperator<ResultType>>
 constructOperatorMappingFlatLocalToGlobalDofs(
     const Space<BasisFunctionType> &space);
-#endif // WITH_TRILINOS
 
 } // namespace Bempp
 

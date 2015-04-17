@@ -25,9 +25,6 @@
 #include "../common/shared_ptr.hpp"
 #include "../common/types.hpp"
 
-#include <Teuchos_ParameterList.hpp>
-#include <Teuchos_ParameterEntry.hpp>
-
 namespace Bempp {
 
 /** \ingroup parameters

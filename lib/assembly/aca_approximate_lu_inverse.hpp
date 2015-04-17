@@ -23,7 +23,6 @@
 
 #include "../common/common.hpp"
 
-#include "bempp/common/config_trilinos.hpp"
 #include "discrete_boundary_operator.hpp"
 
 #include "../fiber/scalar_traits.hpp"

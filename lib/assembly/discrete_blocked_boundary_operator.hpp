@@ -22,17 +22,12 @@
 #define bempp_discrete_blocked_boundary_operator_hpp
 
 #include "bempp/common/config_ahmed.hpp"
-#include "bempp/common/config_trilinos.hpp"
 
 #include "discrete_boundary_operator.hpp"
 
 #include "../common/shared_ptr.hpp"
 #include "../common/eigen_support.hpp"
 #include "../fiber/_2d_array.hpp"
-
-#ifdef WITH_TRILINOS
-#include <Teuchos_RCP.hpp>
-#endif // WITH_TRILINOS
 
 class blcluster;
 

@@ -54,10 +54,11 @@ Context<BasisFunctionType, ResultType>::Context(
     const ParameterList &globalParameterList) {
 
   ParameterList parameters(globalParameterList);
-  parameters.setParametersNotAlreadySet(GlobalParameters::parameterList());
+  auto defaults = GlobalParameters::parameterList();
 
   std::string assemblyType =
-      parameters.get<std::string>("boundaryOperatorAssemblyType");
+      parameters.get<std::string>("options.assembly.boundaryOperatorAssemblyType",
+                                  defaults.get<std::string>("options.assembly.boundaryOperatorAssemblyType"));
   if (assemblyType == "hmat")
     m_assemblyOptions.switchToHMatMode();
   else if (assemblyType == "dense")
@@ -67,9 +68,11 @@ Context<BasisFunctionType, ResultType>::Context(
         "Context::Context(): boundaryOperatorAssemblyType has "
         "unsupported value.");
 
-  m_assemblyOptions.setMaxThreadCount(parameters.get<int>("maxThreadCount"));
+  m_assemblyOptions.setMaxThreadCount(parameters.get<int>("options.global.maxThreadCount",
+                                                          defaults.get<int>("options.global.maxThreadCount")));
 
-  int verbosityLevel = parameters.get<int>("verbosityLevel");
+  int verbosityLevel = parameters.get<int>("options.global.verbosityLevel",
+                                           defaults.get<int>("options.global.verbosityLevel"));
 
   if (verbosityLevel == -5)
     m_assemblyOptions.setVerbosityLevel(VerbosityLevel::LOW);
@@ -82,43 +85,46 @@ Context<BasisFunctionType, ResultType>::Context(
         "Context::Context(): verbosityLevel has unsupported value");
 
   m_assemblyOptions.enableSingularIntegralCaching(
-      parameters.get<bool>("enableSingularIntegralCaching"));
+      parameters.get<bool>("options.assembly.enableSingularIntegralCaching",
+                           defaults.get<bool>("options.assembly.enableSingularIntegralCaching")));
 
-  std::string enableBlasInQuadrature =
-      parameters.get<std::string>("enableBlasInQuadrature");
-  if (enableBlasInQuadrature == "auto")
-    m_assemblyOptions.enableBlasInQuadrature(AssemblyOptions::AUTO);
-  else if (enableBlasInQuadrature == "yes")
-    m_assemblyOptions.enableBlasInQuadrature(AssemblyOptions::YES);
-  else if (enableBlasInQuadrature == "no")
-    m_assemblyOptions.enableBlasInQuadrature(AssemblyOptions::NO);
-  else
-    throw std::runtime_error("Context::Context(): enableBlasInQuadrature "
-                             "has unsupported value");
+  m_assemblyOptions.enableBlasInQuadrature(AssemblyOptions::AUTO);
 
   Fiber::AccuracyOptionsEx accuracyOptions;
 
-  auto quadOps = parameters.sublist("QuadratureOrders");
-
   accuracyOptions.setSingleRegular(
-      quadOps.sublist("near").get<double>("maxRelDist"),
-      quadOps.sublist("near").get<int>("singleOrder"),
-      quadOps.sublist("medium").get<double>("maxRelDist"),
-      quadOps.sublist("medium").get<int>("singleOrder"),
-      quadOps.sublist("far").get<int>("singleOrder"),
-      quadOps.get<bool>("quadratureOrdersAreRelative"));
+      parameters.get<double>("options.quadrature.near.maxRelDist",
+                             defaults.get<double>("options.quadrature.near.maxRelDist")),
+      parameters.get<int>("options.quadrature.near.singleOrder",
+                          defaults.get<int>("options.quadrature.near.singleOrder")),
+      parameters.get<double>("options.quadrature.medium.maxRelDist",
+                             defaults.get<double>("options.quadrature.medium.maxRelDist")),
+      parameters.get<int>("options.quadrature.medium.singleOrder",
+                          defaults.get<int>("options.quadrature.medium.singleOrder")),
+      parameters.get<int>("options.quadrature.far.singleOrder",
+                          defaults.get<int>("options.quadrature.far.singleOrder")),
+      parameters.get<bool>("options.quadrature.quadratureOrdersAreRelative",
+                           defaults.get<bool>("options.quadrature.quadratureOrdersAreRelative")));
 
   accuracyOptions.setDoubleRegular(
-      quadOps.sublist("near").get<double>("maxRelDist"),
-      quadOps.sublist("near").get<int>("doubleOrder"),
-      quadOps.sublist("medium").get<double>("maxRelDist"),
-      quadOps.sublist("medium").get<int>("doubleOrder"),
-      quadOps.sublist("far").get<int>("doubleOrder"),
-      quadOps.get<bool>("quadratureOrdersAreRelative"));
+              parameters.get<double>("options.quadrature.near.maxRelDist",
+                                     defaults.get<double>("options.quadrature.near.maxRelDist")),
+              parameters.get<int>("options.quadrature.near.doubleOrder",
+                                  defaults.get<int>("options.quadrature.near.doubleOrder")),
+              parameters.get<double>("options.quadrature.medium.maxRelDist",
+                                     defaults.get<double>("options.quadrature.medium.maxRelDist")),
+              parameters.get<int>("options.quadrature.medium.doubleOrder",
+                                  defaults.get<int>("options.quadrature.medium.doubleOrder")),
+              parameters.get<int>("options.quadrature.far.doubleOrder",
+                                  defaults.get<int>("options.quadrature.far.doubleOrder")),
+              parameters.get<bool>("options.quadrature.quadratureOrdersAreRelative",
+                                   defaults.get<bool>("options.quadrature.quadratureOrdersAreRelative")));
 
   accuracyOptions.setDoubleSingular(
-      quadOps.get<int>("doubleSingular"),
-      quadOps.get<bool>("quadratureOrdersAreRelative"));
+      parameters.get<int>("options.quadrature.doubleSingular",
+                          defaults.get<int>("options.quadrature.doubleSingular")),
+      parameters.get<bool>("options.quadrature.quadratureOrdersAreRelative",
+                        defaults.get<bool>("options.quadrature.quadratureOrdersAreRelative")));
 
   m_quadStrategy.reset(
       new NumericalQuadratureStrategy<BasisFunctionType, ResultType>(

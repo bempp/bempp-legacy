@@ -19,7 +19,6 @@
 // THE SOFTWARE.
 
 #include "bempp/common/config_ahmed.hpp"
-#include "bempp/common/config_trilinos.hpp"
 #ifdef WITH_AHMED
 
 #include "discrete_aca_boundary_operator.hpp"

@@ -30,7 +30,6 @@
 
 #include "../common/eigen_support.hpp"
 
-#ifdef WITH_TRILINOS
 
 #include "../assembly/discrete_inverse_sparse_boundary_operator.hpp"
 #include "../assembly/discrete_sparse_boundary_operator.hpp"
@@ -39,7 +38,6 @@
 #include <boost/make_shared.hpp>
 #include <tbb/tick_count.h>
 
-#endif
 
 namespace Bempp {
 

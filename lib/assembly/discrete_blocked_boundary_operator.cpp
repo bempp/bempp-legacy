@@ -18,9 +18,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "bempp/common/config_trilinos.hpp"
 #include "bempp/common/config_ahmed.hpp"
 #include "../common/eigen_support.hpp"
+
+#include <iostream>
 
 #include "discrete_blocked_boundary_operator.hpp"
 

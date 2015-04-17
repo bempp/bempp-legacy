@@ -20,7 +20,6 @@ from cython.operator cimport dereference as deref
 import numpy as np
 cimport numpy as np
 
-np.import_array()
 
 cdef void _fun_interface(object x, object normal, int domain_index, object res, object call_fun):
 

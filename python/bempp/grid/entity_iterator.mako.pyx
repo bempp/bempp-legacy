@@ -22,7 +22,7 @@ cdef class EntityIterator${codim}:
     cdef cbool finished(self):
         return deref(self.impl_).finished()
 
-    cdef void c_next(self) except +catch_exception:
+    cdef void c_next(self) except + :
         deref(self.impl_).next()
 
     cdef EntityPointer${codim} _frozen(self):

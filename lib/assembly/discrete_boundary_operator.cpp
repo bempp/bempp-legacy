@@ -20,6 +20,8 @@
 
 #include "bempp/common/config_ahmed.hpp"
 
+#include <iostream>
+
 #include "discrete_boundary_operator.hpp"
 
 #include "discrete_boundary_operator_sum.hpp"

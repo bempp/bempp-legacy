@@ -19,8 +19,6 @@
 // THE SOFTWARE.
 
 #include "global_parameters.hpp"
-#include <Teuchos_ParameterList.hpp>
-#include <Teuchos_XMLParameterListHelpers.hpp>
 
 namespace Bempp {
 
@@ -28,63 +26,53 @@ ParameterList GlobalParameters::parameterList() {
 
   ParameterList parameters;
 
-  parameters.set(
-      "maxThreadCount", static_cast<int>(-1),
-      "(int) Specifies the maximum number of threads to use "
-      "-1 denotes automatic selection of number of threads via TBB.");
+  // Specifies the maximum number of threads to use
+  // -1 denotes automatic selection of number of threads via TBB.
+  parameters.put(
+      "options.global.maxThreadCount", static_cast<int>(-1));
 
-  parameters.set("boundaryOperatorAssemblyType", std::string("dense"),
-                  "(string) Default assembly type for boundary operators. "
-                  "Allowed values are dense and hmat.");
+  // Default Verbosity of BEM++. Supported values are
+  // -5 (low verbosity), 0 (default), 5 (high verbosity)
+  parameters.put("options.global.verbosityLevel",
+          static_cast<int>(0));
 
-  parameters.set("potentialOperatorAssemblyType", std::string("dense"),
-          "(string) Default assembly type for potential oeprators. "
-          "Allowed values are dense and hmat.");
+  // Default assembly type for boundary operators. Allowed values are
+  // "dense" and "hmat".
+  parameters.put("options.assembly.boundaryOperatorAssemblyType", std::string("dense"));
 
-  parameters.set("verbosityLevel",
-          static_cast<int>(0),
-          "(int) Default Verbosity of BEM++. Supported values are "
-          "-5 (low verbosity), 0 (default), 5 (high verbosity)");
-
-  parameters.set("enableSingularIntegralCaching", 
-          true,
-          "(bool) If true then singular integrals are pre-calculated and cached "
-          "before the boundary operator assembly");
+  // Default assembly type for potential oeprators.
+  // Allowed values are "dense" and "hmat".
+  parameters.put("options.assembly.potentialOperatorAssemblyType", std::string("dense"));
 
 
-  parameters.set("enableBlasInQuadrature",
-          std::string("auto"),
-          "(std::string) Specifies whether to use BLAS in quadrature routines. "
-          " If set to auto use only for quadratic and higher order basis functions "
-          "(default). If set to  no disable and if set to yes  always enable.");
+  // If true then singular integrals are pre-calculated and cached
+  // before the boundary oeprator assembly.
 
+  parameters.put("options.assembly.enableSingularIntegralCaching",
+          true);
    
-  ParameterList& quadratureOrders = parameters.sublist("QuadratureOrders");
+  // Specify whether quadrature options are relative to default.
+  parameters.put("options.quadrature.quadratureOrdersAreRelative",
+         static_cast<bool>(true));
 
-  quadratureOrders.set("quadratureOrdersAreRelative",
-         static_cast<bool>(true),
-        "(bool) Specify whether quadrature options are relative to default "
-        "orders. ");
+  // Order for singular double integrals.
+  parameters.put("options.quadrature.doubleSingular",static_cast<int>(0));
 
-  quadratureOrders.set("doubleSingular",static_cast<int>(0),
-          "(int) Order for singular double integrals.");
-
-  auto createQuadratureOptions = [&quadratureOrders](const std::string name,
+  auto createQuadratureOptions = [&parameters](const std::string name,
           double relDist, int singleOrder, int doubleOrder) {
 
 
-      ParameterList& paramList = quadratureOrders.sublist(name);
-      paramList.set("maxRelDist",
-              static_cast<double>(relDist),
-              "(int) (Relative) distance of quadrature point to element.");
+      // Relative destance of quadrature point to element.
+      parameters.put((std::string("options.quadrature.")+name+std::string(".maxRelDist")).c_str(),
+              static_cast<double>(relDist));
 
-      paramList.set("singleOrder",
-              static_cast<int>(singleOrder),
-              "(int) (Relative) order of single regular integrals.");
+      // (Relative) order of single regular integrals.
+      parameters.put((std::string("options.quadrature.")+name+std::string(".singleOrder")).c_str(),
+              static_cast<int>(singleOrder));
 
-      paramList.set("doubleOrder",
-              static_cast<int>(doubleOrder),
-              "(int) (Relative) order of double regular integrals.");
+      // (Relative) order of double regular integrals.
+      parameters.put((std::string("options.quadrature.")+name+std::string(".doubleOrder")).c_str(),
+              static_cast<int>(doubleOrder));
 
   };
 
@@ -92,35 +80,28 @@ ParameterList GlobalParameters::parameterList() {
   createQuadratureOptions("medium",4,2,2);
   createQuadratureOptions("far",std::numeric_limits<double>::infinity(),2,2);
 
+  parameters.erase("options.quadrature.far.maxRelDist");
 
-  quadratureOrders.sublist("far").remove("maxRelDist");
+  // Specifies assembly mode. Allowed values are GlobalAssembly and LocalAssembly.
+  parameters.put("options.hmat.hMatAssemblyMode", std::string("GlobalAssembly"));
 
-  ParameterList& hmatParameters = parameters.sublist("HMat");
+  // Specifies the minimum block size below which blocks are assumed to be dense
+  parameters.put("options.hmat.minBlockSize",static_cast<int>(50));
 
-  hmatParameters.set("HMatAssemblyMode", std::string("GlobalAssembly"),
-                     "(string) Specifies assembly mode. Allowed values are "
-                     "GlobalAssembly and LocalAssembly");
+  // Specifies the maximum size of an admissible block
+  parameters.put("options.hmat.maxBlockSize",static_cast<int>(2048));
 
-  hmatParameters.set(
-      "minBlockSize", static_cast<int>(50),
-      "(int) Specifies the minimum block size below which blocks are "
-      " assumed to be dense");
+  // Specifies the block separation parameter eta.
+  parameters.put("options.hmat.eta",static_cast<double>(1.2));
 
-  hmatParameters.set(
-      "maxBlockSize", static_cast<int>(2048),
-      "(int) Specifies the maximum size of an admissible block.");
+  // Specifies the accuracy of low-rank approximations.
+  parameters.put("options.hmat.eps",static_cast<double>(1E-3));
 
-  hmatParameters.set("eta", static_cast<double>(1.2),
-                     "(double) Specifies the block separation parameter eta");
+  // Maximum rank of a low rank subblock
+  parameters.put("options.hmat.maxRank", static_cast<int>(30));
 
-  hmatParameters.set("eps", static_cast<double>(1E-3),
-          "(double) Specifies the accuracy of low-rank approximations");
-
-  hmatParameters.set("maxRank", static_cast<int>(30),
-          "(int) maximum rank of a low rank subblock");
-
-  hmatParameters.set("defaultCompressionAlg",std::string("aca"),
-          "(string) Compression Algorithm");
+  // Compression algorithm
+  parameters.put("options.hmat.defaultCompressionAlg",std::string("aca"));
 
   return parameters;
 }

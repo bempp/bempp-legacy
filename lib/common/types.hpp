@@ -21,11 +21,11 @@
 #ifndef bempp_types_hpp
 #define bempp_types_hpp
 
-/** \file common/types.hpp Types used in various parts of BEM++ */
+/** \file common/types.hpp Types and headers used in various parts of BEM++ */
+#include "common.hpp"
 #include "../fiber/types.hpp"
 #include "../grid/geometry_type.hpp"
 #include "../grid/index_set.hpp"
-#include <Teuchos_ParameterList.hpp>
 
 namespace Bempp {
 
@@ -35,7 +35,7 @@ using Fiber::TRIAL_TEST;
 
 using Fiber::ALL_DOFS;
 
-using Teuchos::ParameterList;
+typedef boost::property_tree::ptree ParameterList;
 
 typedef int ElementVariant;
 typedef int EntityIndex;

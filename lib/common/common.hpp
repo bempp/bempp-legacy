@@ -21,11 +21,12 @@
 #ifndef bempp_common_hpp
 #define bempp_common_hpp
 
+// Needs to be included before Python support
+#include <boost/property_tree/ptree.hpp>
+
 #ifdef __INTEL_COMPILER
 #pragma warning(disable : 279 186 858 262 1011 654 597)
 #endif
-
-#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION 
 
 #include <Python.h>
 // Yes, use the new syntax from Dune 2.2

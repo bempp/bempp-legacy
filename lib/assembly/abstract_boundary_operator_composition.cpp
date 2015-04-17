@@ -18,8 +18,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "bempp/common/config_trilinos.hpp"
-
 #include "abstract_boundary_operator_composition.hpp"
 
 #include "abstract_boundary_operator_pseudoinverse.hpp"

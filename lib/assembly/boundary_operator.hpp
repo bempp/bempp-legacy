@@ -30,6 +30,7 @@
 #include <boost/utility/enable_if.hpp>
 #include <boost/weak_ptr.hpp>
 #include <string>
+#include <iostream>
 
 #include <complex>
 

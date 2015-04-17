@@ -30,9 +30,9 @@ EvaluationOptions::EvaluationOptions(const ParameterList &parameters)
     : m_parameterList(parameters) {
 
   std::string assemblyType =
-      parameters.get<std::string>("potentialOperatorAssemblyType");
-  int maxThreadCount = parameters.get<int>("maxThreadCount");
-  int verbosityLevel = parameters.get<int>("verbosityLevel");
+      parameters.get<std::string>("options.assembly.potentialOperatorAssemblyType");
+  int maxThreadCount = parameters.get<int>("options.global.maxThreadCount");
+  int verbosityLevel = parameters.get<int>("options.global.verbosityLevel");
 
   m_parallelizationOptions.setMaxThreadCount(maxThreadCount);
 

@@ -21,7 +21,6 @@
 #ifndef bempp_discrete_boundary_operator_composition_hpp
 #define bempp_discrete_boundary_operator_composition_hpp
 
-#include "bempp/common/config_trilinos.hpp"
 
 #include "../common/common.hpp"
 #include "../common/eigen_support.hpp"
@@ -29,10 +28,6 @@
 #include "discrete_boundary_operator.hpp"
 
 #include "../common/shared_ptr.hpp"
-
-#ifdef WITH_TRILINOS
-#include <Teuchos_RCP.hpp>
-#endif
 
 namespace Bempp {
 
