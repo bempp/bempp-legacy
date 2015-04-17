@@ -301,10 +301,10 @@ cdef class SparseDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
         pass
 
     def __init__(self,op):
-        from scipy.sparse import csr_matrix
+        from scipy.sparse import csc_matrix
 
-        if not isinstance(op,csr_matrix):
-            raise ValueError("op must be of type scipy.sparse.csr.csr_matrix")
+        if not isinstance(op,csc_matrix):
+            raise ValueError("op must be of type scipy.sparse.csc.csc_matrix")
 
         self._op = op
         self._dtype = self._op.dtype

@@ -27,6 +27,61 @@
 #include <iostream>
 #include <stdexcept>
 
+namespace {
+
+template <typename ValueType>
+Bempp::Vector<ValueType> solveWithEigen(const Eigen::SparseLU<Bempp::RealSparseMatrix>& solver,
+                                 const Eigen::Ref<Bempp::Vector<ValueType>>& x);
+
+template <>
+Bempp::Vector<double> solveWithEigen<double>(const Eigen::SparseLU<Bempp::RealSparseMatrix>& solver,
+                                 const Eigen::Ref<Bempp::Vector<double>>& x){
+
+    return solver.solve(x);
+
+}
+
+template <>
+Bempp::Vector<float> solveWithEigen<float>(const Eigen::SparseLU<Bempp::RealSparseMatrix>& solver,
+                                 const Eigen::Ref<Bempp::Vector<float>>& x){
+
+    return solver.solve(x.template cast<double>()).template cast<float>();
+
+}
+
+template <>
+Bempp::Vector<std::complex<float>> solveWithEigen<std::complex<float>>(const Eigen::SparseLU<Bempp::RealSparseMatrix>& solver,
+                                 const Eigen::Ref<Bempp::Vector<std::complex<float>>>& x){
+
+    Bempp::Vector<double> x_re = x.real().template cast<double>();
+    Bempp::Vector<double> x_im = x.imag().template cast<double>();
+
+    Bempp::Vector<std::complex<float>> result(x.rows());
+    result.real() = solver.solve(x_re).template cast<float>();
+    result.imag() = solver.solve(x_im).template cast<float>();
+    return result;
+}
+
+template <>
+Bempp::Vector<std::complex<double>> solveWithEigen<std::complex<double>>(const Eigen::SparseLU<Bempp::RealSparseMatrix>& solver,
+                                 const Eigen::Ref<Bempp::Vector<std::complex<double>>>& x){
+
+    Bempp::Vector<std::complex<double>> result(x.rows());
+    Bempp::Vector<double> x_real = x.real();
+    Bempp::Vector<double> x_imag = x.imag();
+
+    Bempp::Vector<double> res_real = solver.solve(x_real);
+    Bempp::Vector<double> res_imag = solver.solve(x_imag);
+
+    result.real() = res_real;
+    result.imag() = res_imag;
+    return result;
+}
+
+
+
+}
+
 namespace Bempp {
 
 
@@ -35,7 +90,7 @@ template <typename ValueType>
 DiscreteInverseSparseBoundaryOperator<ValueType>::
     DiscreteInverseSparseBoundaryOperator(
         const shared_ptr<const RealSparseMatrix> &mat, int symmetry)
-    : m_mat(mat), m_solver(new Eigen::SparseLU<RealSparseMatrix<double>>()),
+    : m_mat(mat), m_solver(new Eigen::SparseLU<RealSparseMatrix>()),
       m_symmetry(symmetry) {
 
   if (m_mat->rows() != m_mat->cols())
@@ -92,12 +147,12 @@ void DiscreteInverseSparseBoundaryOperator<ValueType>::applyBuiltInImpl(
                                 "applyBuiltInImpl(): "
                                 "incorrect vector lengths");
 
-
-  if (beta == static_cast<ValueType>(0.))
-    y_inout = alpha * m_solver->solve(x_in);
+  if (beta == static_cast<ValueType>(0.)){
+    y_inout = alpha * solveWithEigen<ValueType>(*m_solver,x_in);
+  }
   else {
     y_inout *= beta;
-    y_inout += alpha * m_solver->solve(x_in);
+    y_inout += alpha * solveWithEigen<ValueType>(*m_solver,x_in);
   }
 }
 

@@ -49,6 +49,10 @@ void reallyApplyBuiltInImpl<double>(const RealSparseMatrix &mat,
                                     const Eigen::Ref<Vector<double>> &x_in,
                                     Eigen::Ref<Vector<double>> y_inout,
                                     const double alpha, const double beta) {
+  if (beta == 0.)
+      y_inout.setZero();
+
+
   if (trans == TRANSPOSE || trans == CONJUGATE_TRANSPOSE) {
     assert(mat.rows() == static_cast<int>(x_in.rows()));
     assert(mat.cols() == static_cast<int>(y_inout.rows()));
@@ -132,6 +136,54 @@ void reallyApplyBuiltInImpl<std::complex<float>>(
 //    y_inout(i) = std::complex<float>(y_real(i), y_imag(i));
 }
 
+template <>
+void reallyApplyBuiltInImpl<std::complex<double>>(
+    const RealSparseMatrix &mat, const TranspositionMode trans,
+    const Eigen::Ref<Vector<std::complex<double>>> &x_in,
+    Eigen::Ref<Vector<std::complex<double>>> y_inout, const std::complex<double> alpha,
+    const std::complex<double> beta) {
+  // Do the y_inout *= beta part
+  const std::complex<double> zero(0.f, 0.f);
+  if (beta == zero)
+    y_inout.setZero();
+  else
+    y_inout *= beta;
+
+  // Separate the real and imaginary components and store them in
+  // double-precision vectors
+
+  Vector<double> x_real = x_in.real();
+  Vector<double> x_imag = x_in.imag();
+  Vector<double> y_real = y_inout.real();
+  Vector<double> y_imag = y_inout.imag();
+
+//  Vector<double> x_real(x_in.rows());
+//  for (size_t i = 0; i < x_in.rows(); ++i)
+//    x_real(i) = x_in(i).real();
+//  Vector<double> x_imag(x_in.rows());
+//  for (size_t i = 0; i < x_in.rows(); ++i)
+//    x_imag(i) = x_in(i).imag();
+//  Vector<double> y_real(y_inout.rows());
+//  for (size_t i = 0; i < y_inout.rows(); ++i)
+//    y_real(i) = y_inout(i).real();
+//  Vector<double> y_imag(y_inout.rows());
+//  for (size_t i = 0; i < y_inout.rows(); ++i)
+//    y_imag(i) = y_inout(i).imag();
+
+  // Do the "+= alpha A x" part (in steps)
+  reallyApplyBuiltInImpl<double>(mat, trans, Eigen::Ref<Vector<double>>(x_real), Eigen::Ref<Vector<double>>(y_real), alpha.real(), 1.);
+  reallyApplyBuiltInImpl<double>(mat, trans, Eigen::Ref<Vector<double>>(x_imag), Eigen::Ref<Vector<double>>(y_real), -alpha.imag(), 1.);
+  reallyApplyBuiltInImpl<double>(mat, trans, Eigen::Ref<Vector<double>>(x_real), Eigen::Ref<Vector<double>>(y_imag), alpha.imag(), 1.);
+  reallyApplyBuiltInImpl<double>(mat, trans, Eigen::Ref<Vector<double>>(x_imag), Eigen::Ref<Vector<double>>(y_imag), alpha.real(), 1.);
+
+  y_inout.real() = y_real;
+  y_inout.imag() = y_imag;
+
+//  // Copy the result back to the complex vector
+//  for (size_t i = 0; i < y_inout.rows(); ++i)
+//    y_inout(i) = std::complex<float>(y_real(i), y_imag(i));
+}
+
 
 } // namespace
 
@@ -155,9 +207,9 @@ DiscreteSparseBoundaryOperator<ValueType>::asMatrix() const {
 
   bool transposed = isTransposed();
   if (transposed)
-      return Matrix<ValueType>m_mat.transpose().cast<ValueType>();
+      return m_mat->transpose().template cast<ValueType>();
   else
-      return Matrix<ValueType>(m_mat.cast<ValueType>());
+      return m_mat->cast<ValueType>();
 
 }
 

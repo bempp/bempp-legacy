@@ -21,45 +21,42 @@ namespace Bempp {
 template <typename ValueType>
 PyObject* py_get_sparse_from_discrete_operator(const shared_ptr<const DiscreteBoundaryOperator< ValueType > >& op)
         {
-                shared_ptr<const Epetra_CrsMatrix> epetraOperator = (static_pointer_cast<const DiscreteSparseBoundaryOperator<ValueType>>(op.get()))->epetraMatrix();
+                shared_ptr<const RealSparseMatrix> sparseOperator = (static_pointer_cast<const DiscreteSparseBoundaryOperator<ValueType>>(op.get()))->sparseMatrix();
                     
                 PyObject* data;
-                PyObject* colind;
-                PyObject* row_ptr;
+                PyObject* rowind;
+                PyObject* col_ptr;
                 PyObject* pModule;
                 PyObject* pDict;
                 PyObject* pFunc;
-                PyObject* pArgsCsr;
+                PyObject* pArgsCsc;
                 PyObject* pArgsShape;
                 PyObject* pArgs;
                 PyObject* pM;
                 PyObject* pN;
-                PyObject* pCsr;
+                PyObject* pCsc;
 
                 int M;
                 int N;
 
-                // Get the CSR matrix function
+                // Get the CSC matrix function
 
                 pModule = PyImport_ImportModule("scipy.sparse");
                 pDict = PyModule_GetDict(pModule);
-                pFunc = PyDict_GetItemString(pDict, "csr_matrix");
+                pFunc = PyDict_GetItemString(pDict, "csc_matrix");
 
                 // Now get the parameter objects
 
 
-                int* indexOffset;
-                int* indices;
-                double* values;
+                RealSparseMatrix::Index* indexOffset = const_cast<RealSparseMatrix::Index*>(sparseOperator->outerIndexPtr());
+                RealSparseMatrix::Index* indices = const_cast<RealSparseMatrix::Index*>(sparseOperator->innerIndexPtr());
+                double* values = const_cast<double*>(sparseOperator->valuePtr());
 
-                npy_intp num_nonzeros = epetraOperator->NumGlobalNonzeros();
-                npy_intp num_row_ptr = 1+epetraOperator->NumGlobalRows();
+                npy_intp num_nonzeros = sparseOperator->nonZeros();
+                npy_intp num_col_ptr = 1+sparseOperator->rows();
 
-                M = epetraOperator->NumGlobalRows();
-                N = epetraOperator->NumGlobalCols();
-
-                epetraOperator->ExtractCrsDataPointers(indexOffset,indices,values);
-
+                M = sparseOperator->rows();
+                N = sparseOperator->cols();
                 
                 pM = PyInt_FromLong(M);
                 pN = PyInt_FromLong(N);
@@ -70,31 +67,31 @@ PyObject* py_get_sparse_from_discrete_operator(const shared_ptr<const DiscreteBo
 
 
                 data = PyArray_SimpleNew(1,&num_nonzeros,NPY_FLOAT64);
-                colind = PyArray_SimpleNew(1,&num_nonzeros,NPY_INT);
-                row_ptr = PyArray_SimpleNew(1,&num_row_ptr,NPY_INT);
+                rowind = PyArray_SimpleNew(1,&num_nonzeros,NPY_INT);
+                col_ptr = PyArray_SimpleNew(1,&num_col_ptr,NPY_INT);
                
                 for (npy_intp i = 0;i < num_nonzeros;++i)
                    *((double*)PyArray_GETPTR1(data,i)) = values[i];
 
                 for (npy_intp i = 0;i < num_nonzeros;++i)
-                   *((int*)PyArray_GETPTR1(colind,i)) = indices[i];
+                   *((int*)PyArray_GETPTR1(rowind,i)) = indices[i];
 
-                for (npy_intp i = 0;i < num_row_ptr;++i)
-                   *((int*)PyArray_GETPTR1(row_ptr,i)) = indexOffset[i];
+                for (npy_intp i = 0;i < num_col_ptr;++i)
+                   *((int*)PyArray_GETPTR1(col_ptr,i)) = indexOffset[i];
                
-                pArgsCsr = PyTuple_New(3); 
+                pArgsCsc = PyTuple_New(3);
                 pArgs = PyTuple_New(2); 
                              
-                PyTuple_SetItem(pArgsCsr, 0, data);
-                PyTuple_SetItem(pArgsCsr, 1, colind);
-                PyTuple_SetItem(pArgsCsr, 2, row_ptr);
+                PyTuple_SetItem(pArgsCsc, 0, data);
+                PyTuple_SetItem(pArgsCsc, 1, rowind);
+                PyTuple_SetItem(pArgsCsc, 2, col_ptr);
 
-                PyTuple_SetItem(pArgs,0,pArgsCsr);
+                PyTuple_SetItem(pArgs,0,pArgsCsc);
                 PyTuple_SetItem(pArgs,1,pArgsShape);
                 
-                // Now create the CSR matrix object
+                // Now create the CSC matrix object
                 
-                pCsr = PyObject_CallObject(pFunc, pArgs);
+                pCsc = PyObject_CallObject(pFunc, pArgs);
 
                 // Now clean up
 
@@ -102,7 +99,7 @@ PyObject* py_get_sparse_from_discrete_operator(const shared_ptr<const DiscreteBo
                 Py_DECREF(pModule);
                 Py_DECREF(pArgs);
 
-                return pCsr;
+                return pCsc;
 
         }                
 

@@ -34,7 +34,7 @@ shared_ptr<RealSparseMatrix> sparseInverse(const RealSparseMatrix &mat) {
   if (!mat.isCompressed())
       throw std::invalid_argument("sparseInverse(): matrix must be in compressed form");
 
-  shared_ptr<RealSparseMatrix> result = boost::make_shared<RealSparseMatr>(
+  shared_ptr<RealSparseMatrix> result = boost::make_shared<RealSparseMatrix>(
               size,size);
 
   std::vector<Eigen::Triplet<double>> triplets;
@@ -64,7 +64,7 @@ shared_ptr<RealSparseMatrix> sparseInverse(const RealSparseMatrix &mat) {
               "element only");
       }      
     }
-    localInverse = mat.block(r,r,localSize,localSize).inverse();
+    localInverse = Matrix<double>(mat.block(r,r,localSize,localSize)).inverse();
     for (int s = 0; s < localSize; ++s) {
       processed[r+s] = true;
       for (int c = 0 ; c < localSize; ++c)

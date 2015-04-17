@@ -95,6 +95,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(pseudoinverse_is_inverse_for_square_matrix, Result
     Matrix<RT> mat = fixture.idOp.weakForm()->asMatrix();
     Matrix<RT> invMat = fixture.op.weakForm()->asMatrix();
 
+    std::cout << "Output matrices" << std::endl;
+
+    std::cout << mat;
+    std::cout << std::endl;
+    std::cout << invMat;
+
     Matrix<RT> productFwd = mat * invMat;
     Matrix<RT> productBwd = invMat * mat;
     Matrix<RT> expected = Matrix<RT>::Identity(mat.rows(), mat.cols());
