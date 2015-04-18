@@ -143,9 +143,9 @@ cdef class GeneralBoundaryOperator(BoundaryOperatorBase):
 
         if self.is_sparse:
             return self._sparse_weak_form()
-        elif self.parameter_list['boundaryOperatorAssemblyType']=='dense':
+        elif self.parameter_list.assembly.boundary_assembly_type == 'dense':
             return self._dense_weak_form()
-        elif self.parameter_list['boundaryOperatorAssemblyType']=='hmat':
+        elif self.parameter_list.assembly.boundary_assembly_type =='hmat':
             return self._hmat_weak_form()
         else:
             return self._default_weak_form()
