@@ -21,9 +21,8 @@ create_environment_script(
 )
 
 # First, find general packages
+find_package(ZLIB REQUIRED)
 find_package(Doxygen)
-# Look for lapack and blas
-include(lapack_and_blas)
 # Look for python libraries corresponding to the python interpreter
 # This step is likely not compatible with (automatic) cross-compilation
 find_package(CoherentPython REQUIRED)
@@ -40,11 +39,9 @@ endif ()
 
 list(INSERT CMAKE_LOOKUP_PATH 0 ${PROJECT_SOURCE_DIR}/cmake/lookups)
 # lookup_package(CAIRO REQUIRED)
+lookup_package(Eigen3 REQUIRED)
 lookup_package(Boost 1.57 COMPONENTS unit_test_framework filesystem
                program_options system thread iostreams REQUIRED)
-lookup_package(Armadillo REQUIRED ARGUMENTS TIMEOUT 60)
-# ARMA_DONT_USE_WRAPPER means we don't need to include armadillo library
-add_definitions(-DARMA_DONT_USE_WRAPPER)
 lookup_package(TBB REQUIRED)
 lookup_package(Dune REQUIRED COMPONENTS geometry grid localfunctions devel )
 lookup_package(dune-alugrid REQUIRED)
@@ -56,15 +53,6 @@ unset(arguments)
 if(PYPACKED)
     set(arguments ARGUMENTS PYPACKED)
 endif()
-if(Trilinos_PYTHON)
-    set(arguments ${arguments} PYTHON)
-endif()
-# Trilinos depends on SWIG, Boost and TBB, so those packages must be looked up
-# first.
-lookup_package(Trilinos
-    DOWNLOAD_BY_DEFAULT REQUIRED CHECK_EXTERNAL
-    ${arguments}
-)
 unset(CMAKE_POLICY_DEFAULT_CMP0012 CACHE)
 
 if("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux")
@@ -111,15 +99,13 @@ set(BEMPP_INCLUDE_DIRS
    "${PROJECT_BINARY_DIR}/include/"
    "${PROJECT_BINARY_DIR}/include/bempp"
    ${dune-common_INCLUDE_DIRS}
-   ${Trilinos_INCLUDE_DIRS}
-   ${Trilinos_TPL_INCLUDE_DIRS}
    ${CAIRO_INCLUDE_DIRS}
    ${PYTHON_INCLUDE_DIR}
    ${NUMPY_INCLUDE_DIRS}
    ${dune-alugrid_INCLUDE_DIRS}
 )
 
-foreach(component Boost BLAS LAPACK ARMADILLO TBB)
+foreach(component Boost TBB)
     if(${component}_INCLUDE_DIR)
         list(APPEND BEMPP_INCLUDE_DIRS ${${component}_INCLUDE_DIR})
     endif()
@@ -128,8 +114,8 @@ endforeach()
 
 # Add locations of different libraries
 add_to_ld_path(
+    ${ZLIB_LIBRARIES}
     "${EXTERNAL_ROOT}/lib"
-    ${BLAS_LIBRARIES}
     ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY_DEBUG}
     ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY_RELEASE}
     ${TBB_LIBRARY}
@@ -157,11 +143,6 @@ if(EXISTS "${EXTERNAL_ROOT}/share")
     install(DIRECTORY "${EXTERNAL_ROOT}/share/"
         DESTINATION "${SHARE_INSTALL_PATH}"
         PATTERN "doc" EXCLUDE)
-endif()
-# Trilinos is installed in its own subdirectory, since it is a python package.
-if(EXISTS "${EXTERNAL_ROOT}/python/PyTrilinos")
-    install(DIRECTORY "${EXTERNAL_ROOT}/python/PyTrilinos"
-        DESTINATION "${PYTHON_PKG_DIR}")
 endif()
 
 if(WITH_OPENCL)

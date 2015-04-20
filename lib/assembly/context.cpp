@@ -25,7 +25,6 @@
 #include "../fiber/verbosity_level.hpp"
 #include "../fiber/accuracy_options.hpp"
 #include "numerical_quadrature_strategy.hpp"
-#include <Teuchos_ParameterList.hpp>
 
 #include <boost/make_shared.hpp>
 #include <iostream>

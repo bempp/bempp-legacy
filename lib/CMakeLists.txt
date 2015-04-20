@@ -29,14 +29,8 @@ endif ()
 # However, it makes it easy to differentiate from python targets
 set_target_properties(libbempp PROPERTIES PREFIX "")
 
-# Add includes and target links
-target_link_libraries(libbempp ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 # Add targets that may not yet exist, if they are being built as lookups
 set(imported_targets
-    # Trilinos target
-    amesos stratimikos stratimikosbelos belos epetra epetraext thyracore
-    teuchoscomm teuchoscore teuchosnumerics teuchosparameterlist
-    teuchosremainder rtop
     # Dune targets
     dunecommon dunegeometry dunegrid dunealugrid
 )
@@ -69,6 +63,7 @@ endif()
 change_tbb_install_name(libbempp)
 
 target_link_libraries(libbempp ${PYTHON_LIBRARY})
+target_link_libraries(libbempp ${ZLIB_LIBRARIES})
 
 if (WITH_CUDA)
    include(FindCUDA)

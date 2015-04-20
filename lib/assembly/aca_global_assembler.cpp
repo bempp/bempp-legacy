@@ -74,23 +74,6 @@
 #include "weak_form_aca_assembly_helper.hpp"
 #endif
 
-// This is a workaround of the problem of the abs() function being declared
-// both in Epetra and in AHMED. It relies of the implementation detail (!) that
-// in Epetra the declaration of abs is put between #ifndef __IBMCPP__ ...
-// #endif. So it may well break in future versions of Trilinos. The ideal
-// solution would be for AHMED to use namespaces.
-
-// Note: this particular instance of this kludge could be removed --
-// we could move permuteEpetraMatrix() to another file
-#ifndef __IBMCPP__
-#define __IBMCPP__
-#include <Epetra_CrsMatrix.h>
-#include <EpetraExt_MatrixMatrix.h>
-#undef __IBMCPP__
-#else
-#include <Epetra_CrsMatrix.h>
-#include <EpetraExt_MatrixMatrix.h>
-#endif
 
 // #define DUMP_DENSE_BLOCKS // if defined, contents and DOF lists of blocks
 // stored as dense matrices will be printed to the

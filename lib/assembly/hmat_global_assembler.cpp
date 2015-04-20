@@ -60,7 +60,6 @@
 #include <tbb/task_scheduler_init.h>
 #include <tbb/concurrent_queue.h>
 
-#include <Teuchos_ParameterList.hpp>
 
 namespace Bempp {
 

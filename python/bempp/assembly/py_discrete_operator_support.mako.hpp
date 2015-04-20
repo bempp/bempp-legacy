@@ -10,7 +10,6 @@
 #include "fiber/scalar_traits.hpp"
 #include <Python.h>
 #include "numpy/arrayobject.h"
-#include "Epetra_CrsMatrix.h"
 #include <boost/variant.hpp>
 #include <type_traits>
 

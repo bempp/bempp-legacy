@@ -40,8 +40,6 @@ typedef monotonic_clock steady_clock;
 }
 #endif
 
-#include <armadillo>
-
 #ifdef __INTEL_COMPILER
 #pragma warning(default : 2089 488)
 #endif
