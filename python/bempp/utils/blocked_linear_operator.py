@@ -157,6 +157,21 @@ class BlockedDiscreteLinearOperator(object):
 
         return (self._m,self._n)
 
+    def as_matrix(self):
+        if not self._fill_complete():
+            raise ValueError("Not all rows or columns contain operators.")
+
+        from scipy.sparse import lil_matrix as _lil,csr_matrix as _csr
+        the_matrix = _lil((int(self._rows.sum()),int(self._cols.sum())))
+        for i in range(self._m):
+            for j in range(self._n):
+                if self[i,j] is not None:
+                    the_matrix[
+                               int(self._rows[:i].sum()) : int(self._rows[:i+1].sum()),
+                               int(self._cols[:j].sum()) : int(self._cols[:j+1].sum())
+                              ] = self[i,j]
+        return _csr(the_matrix)
+
     shape = property(get_shape)
     dtype = property(get_dtype)
     ndims = property(get_ndims)
