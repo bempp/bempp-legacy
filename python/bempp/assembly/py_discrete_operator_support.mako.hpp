@@ -53,7 +53,7 @@ PyObject* py_get_sparse_from_discrete_operator(const shared_ptr<const DiscreteBo
                 double* values = const_cast<double*>(sparseOperator->valuePtr());
 
                 npy_intp num_nonzeros = sparseOperator->nonZeros();
-                npy_intp num_col_ptr = 1+sparseOperator->rows();
+                npy_intp num_col_ptr = 1+sparseOperator->cols();
 
                 M = sparseOperator->rows();
                 N = sparseOperator->cols();
@@ -69,7 +69,7 @@ PyObject* py_get_sparse_from_discrete_operator(const shared_ptr<const DiscreteBo
                 data = PyArray_SimpleNew(1,&num_nonzeros,NPY_FLOAT64);
                 rowind = PyArray_SimpleNew(1,&num_nonzeros,NPY_INT);
                 col_ptr = PyArray_SimpleNew(1,&num_col_ptr,NPY_INT);
-               
+
                 for (npy_intp i = 0;i < num_nonzeros;++i)
                    *((double*)PyArray_GETPTR1(data,i)) = values[i];
 
