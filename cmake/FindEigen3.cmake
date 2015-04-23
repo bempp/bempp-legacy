@@ -9,7 +9,7 @@ if(NOT Eigen3_INCLUDE_DIR)
 endif()
 
 find_path(Eigen3_INCLUDE_DIR Eigen/Eigen
-    HINTS ${Eigen3_DIR}
+    HINTS ${Eigen3_DIR} /usr/local/include/eigen3 
     DOC "Eigen3 Directory"
     )
 

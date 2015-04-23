@@ -1,17 +1,22 @@
 import pytest
 import numpy as np
+import bempp
+
 
 class TestP1Coupling(object):
 
     def test_dolfin_p1_identity_equals_bempp_p1_identity(self):
 
+        if not bempp.have_dolfin:
+            return
+
         import dolfin
-        from bempp.fenics_interface import coupling
+        from bempp.fenics_interface import fenics_to_bempp_trace_data
 
         mesh = dolfin.UnitCubeMesh(5,5,5)
         V = dolfin.FunctionSpace(mesh,"CG",1)
 
-        space, trace_matrix = coupling.fenics_to_bempp_trace_data(V)
+        space, trace_matrix = fenics_to_bempp_trace_data(V)
 
         u = dolfin.TestFunction(V)
         v = dolfin.TrialFunction(V)

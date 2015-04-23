@@ -1,6 +1,15 @@
 cmake_minimum_required(VERSION 2.8.6)
 project(Bempp CXX)
-set(Bempp_VERSION 2.0)
+set(Bempp_VERSION 2.9)
+
+# Set a default build type if none was specified
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+  message(STATUS "Setting build type to 'RelWithDebInfo' as none was specified.")
+  set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "Choose the type of build." FORCE)
+  # Set the possible values of build type for cmake-gui
+  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release"
+    "MinSizeRel" "RelWithDebInfo")
+endif()
 
 # Needed to find BLAS
 enable_language(C)
@@ -10,6 +19,7 @@ set(CMAKE_C_FLAGS_RELWITHDEBINFO
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO
     "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -DNDEBUG -O3")
 # set(CMAKE_CXX_FLAGS "-Wall -Wnon-virtual-dtor -Wno-sign-compare")
+
 
 # Tells cmake where to find bem++ specific files
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)

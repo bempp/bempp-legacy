@@ -103,6 +103,7 @@ set(BEMPP_INCLUDE_DIRS
    ${PYTHON_INCLUDE_DIR}
    ${NUMPY_INCLUDE_DIRS}
    ${dune-alugrid_INCLUDE_DIRS}
+   ${Eigen3_INCLUDE_DIR}
 )
 
 foreach(component Boost TBB)

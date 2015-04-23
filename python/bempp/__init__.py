@@ -10,13 +10,15 @@ __all__=['GmshInterface',
          'BlockedBoundaryOperator',
          'export']
 
-
 # This imports dolfin at the same time as bempp if available to avoid delays
 # at later imports of dolfin
+
 try:
-    import dolfin as _dolfin
+    import dolfin
 except:
-    pass
+    have_dolfin = False
+else:
+    have_dolfin = True
 
 from bempp.grid import Grid,grid_from_sphere,grid_from_element_data, structured_grid
 from bempp.assembly import GridFunction
