@@ -25,7 +25,6 @@ namespace Bempp {
 
 EigenInit::EigenInit() {
 
-    std::cout << "Initialize Eigen" << std::endl;
     Eigen::initParallel();
     Eigen::setNbThreads(1);
 
