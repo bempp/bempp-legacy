@@ -17,6 +17,10 @@ cdef class EntityPointer${codim}:
         e._entity_pointer = self
         return e
 
+    def __dealloc__(self):
+
+        self.impl_.reset()
+
     property codim:
         def __get__(self):
             return deref(self.impl_).codimension

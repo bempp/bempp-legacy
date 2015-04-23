@@ -65,7 +65,7 @@ template <typename BasisFunctionType, typename ResultType,
 void DefaultLocalAssemblerForLocalOperatorsOnSurfaces<
     BasisFunctionType, ResultType, GeometryFactory>::
     evaluateLocalWeakForms(const std::vector<int> &elementIndices,
-                           std::vector<arma::Mat<ResultType>> &result) {
+                           std::vector<Matrix<ResultType>> &result) {
   typedef TestTrialIntegrator<BasisFunctionType, ResultType> Integrator;
   typedef Shapeset<BasisFunctionType> Shapeset;
 
@@ -110,7 +110,7 @@ void DefaultLocalAssemblerForLocalOperatorsOnSurfaces<
         activeElementIndices.push_back(elementIndices[e]);
 
     // Integrate!
-    arma::Cube<ResultType> localResult;
+    std::vector<Matrix<ResultType>> localResult;
     activeIntegrator.integrate(activeElementIndices, activeTestShapeset,
                                activeTrialShapeset, localResult);
 
@@ -119,7 +119,7 @@ void DefaultLocalAssemblerForLocalOperatorsOnSurfaces<
     int i = 0;
     for (int e = 0; e < elementCount; ++e)
       if (quadVariants[e] == activeQuadVariant)
-        result[e] = localResult.slice(i++);
+        result[e] = localResult[i++];
   }
 }
 
@@ -150,7 +150,7 @@ DefaultLocalAssemblerForLocalOperatorsOnSurfaces<
   // found" << std::endl;
 
   // Integrator doesn't exist yet and must be created.
-  arma::Mat<CoordinateType> points;
+  Matrix<CoordinateType> points;
   std::vector<CoordinateType> weights;
   m_quadRuleFamily->fillQuadraturePointsAndWeights(desc, points, weights);
 

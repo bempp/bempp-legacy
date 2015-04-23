@@ -4,6 +4,7 @@
 #define HMAT_HMATRIX_ACA_COMPRESSOR_HPP
 
 #include "common.hpp"
+#include "eigen_fwd.hpp"
 #include "hmatrix_compressor.hpp"
 #include "hmatrix_dense_compressor.hpp"
 #include "data_accessor.hpp"
@@ -26,8 +27,8 @@ private:
   void evaluateMatMinusLowRank(
       const BlockClusterTreeNode<N> &blockClusterTreeNode,
       const IndexRangeType &rowIndexRange,
-      const IndexRangeType &columnIndexRange, arma::Mat<ValueType> &data,
-      const arma::Mat<ValueType> &A, const arma::Mat<ValueType> &B) const;
+      const IndexRangeType &columnIndexRange, Matrix<ValueType> &data,
+      const Matrix<ValueType> &A, const Matrix<ValueType> &B) const;
 
   static std::size_t randomIndex(const IndexRangeType &range,
                                  std::set<std::size_t> &previousIndices);

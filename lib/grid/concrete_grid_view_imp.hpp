@@ -20,6 +20,7 @@
 
 #include "../common/common.hpp"
 #include "../common/acc.hpp"
+#include "../common/eigen_support.hpp"
 
 #include "concrete_grid_view.hpp" // to make IDEs happy
 
@@ -27,23 +28,23 @@ namespace Bempp {
 
 template <typename DuneGridView>
 void ConcreteGridView<DuneGridView>::getRawElementDataDoubleImpl(
-    arma::Mat<double> &vertices, arma::Mat<int> &elementCorners,
-    arma::Mat<char> &auxData, std::vector<int> *domainIndices) const {
+    Matrix<double> &vertices, Matrix<int> &elementCorners,
+    Matrix<char> &auxData, std::vector<int> *domainIndices) const {
   getRawElementDataImpl(vertices, elementCorners, auxData, domainIndices);
 }
 
 template <typename DuneGridView>
 void ConcreteGridView<DuneGridView>::getRawElementDataFloatImpl(
-    arma::Mat<float> &vertices, arma::Mat<int> &elementCorners,
-    arma::Mat<char> &auxData, std::vector<int> *domainIndices) const {
+    Matrix<float> &vertices, Matrix<int> &elementCorners,
+    Matrix<char> &auxData, std::vector<int> *domainIndices) const {
   getRawElementDataImpl(vertices, elementCorners, auxData, domainIndices);
 }
 
 template <typename DuneGridView>
 template <typename CoordinateType>
 void ConcreteGridView<DuneGridView>::getRawElementDataImpl(
-    arma::Mat<CoordinateType> &vertices, arma::Mat<int> &elementCorners,
-    arma::Mat<char> &auxData, std::vector<int> *domainIndices) const {
+    Matrix<CoordinateType> &vertices, Matrix<int> &elementCorners,
+    Matrix<char> &auxData, std::vector<int> *domainIndices) const {
   typedef typename DuneGridView::Grid DuneGrid;
   typedef typename DuneGridView::IndexSet DuneIndexSet;
   const int dimGrid = DuneGrid::dimension;
@@ -64,7 +65,7 @@ void ConcreteGridView<DuneGridView>::getRawElementDataImpl(
 
   const DuneIndexSet &indexSet = m_dune_gv.indexSet();
 
-  vertices.set_size(dimWorld, indexSet.size(codimVertex));
+  vertices.resize(dimWorld, indexSet.size(codimVertex));
   for (DuneVertexIterator it = m_dune_gv.template begin<codimVertex>();
        it != m_dune_gv.template end<codimVertex>(); ++it) {
     size_t index = indexSet.index(*it);
@@ -77,7 +78,7 @@ void ConcreteGridView<DuneGridView>::getRawElementDataImpl(
   const int MAX_CORNER_COUNT = dimWorld == 2 ? 2 : 4;
   DuneElementMapper elementMapper(m_dune_gv.grid());
   const int elementCount = elementMapper.size();
-  elementCorners.set_size(MAX_CORNER_COUNT, elementCount);
+  elementCorners.resize(MAX_CORNER_COUNT, elementCount);
   for (DuneElementIterator it = m_dune_gv.template begin<codimElement>();
        it != m_dune_gv.template end<codimElement>(); ++it) {
     size_t index = indexSet.index(*it);
@@ -91,7 +92,7 @@ void ConcreteGridView<DuneGridView>::getRawElementDataImpl(
       elementCorners(i, index) = -1;
   }
 
-  auxData.set_size(0, elementCorners.n_cols);
+  auxData.resize(0, elementCorners.cols());
 
   if (domainIndices) {
     // Somewhat inelegant: we perform a second iteration over elements,

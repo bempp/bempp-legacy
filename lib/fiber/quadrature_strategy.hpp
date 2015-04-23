@@ -26,11 +26,12 @@
 #include "scalar_traits.hpp"
 #include "shared_ptr.hpp"
 #include "verbosity_level.hpp"
+#include "types.hpp"
 
-#include "../common/armadillo_fwd.hpp"
 #include <boost/type_traits/is_same.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <memory>
+#include <vector>
 
 namespace Fiber {
 
@@ -174,7 +175,7 @@ public:
    * kernel. */
   std::unique_ptr<LocalAssemblerForPotentialOperators<ResultType>>
   makeAssemblerForPotentialOperators(
-      const arma::Mat<CoordinateType> &evaluationPoints,
+      const Matrix<CoordinateType> &evaluationPoints,
       const shared_ptr<const GeometryFactory> &geometryFactory,
       const shared_ptr<const RawGridGeometry<CoordinateType>> &rawGeometry,
       const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
@@ -245,7 +246,7 @@ private:
 
   virtual std::unique_ptr<LocalAssemblerForPotentialOperators<ResultType>>
   makeAssemblerForPotentialOperatorsImplRealKernel(
-      const arma::Mat<CoordinateType> &evaluationPoints,
+      const Matrix<CoordinateType> &evaluationPoints,
       const shared_ptr<const GeometryFactory> &geometryFactory,
       const shared_ptr<const RawGridGeometry<CoordinateType>> &rawGeometry,
       const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
@@ -355,7 +356,7 @@ public:
    *  kernel. */
   std::unique_ptr<LocalAssemblerForPotentialOperators<ResultType>>
   makeAssemblerForPotentialOperators(
-      const arma::Mat<CoordinateType> &evaluationPoints,
+      const Matrix<CoordinateType> &evaluationPoints,
       const shared_ptr<const GeometryFactory> &geometryFactory,
       const shared_ptr<const RawGridGeometry<CoordinateType>> &rawGeometry,
       const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
@@ -426,7 +427,7 @@ private:
 
   virtual std::unique_ptr<LocalAssemblerForPotentialOperators<ResultType>>
   makeAssemblerForPotentialOperatorsImplComplexKernel(
-      const arma::Mat<CoordinateType> &evaluationPoints,
+      const Matrix<CoordinateType> &evaluationPoints,
       const shared_ptr<const GeometryFactory> &geometryFactory,
       const shared_ptr<const RawGridGeometry<CoordinateType>> &rawGeometry,
       const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &

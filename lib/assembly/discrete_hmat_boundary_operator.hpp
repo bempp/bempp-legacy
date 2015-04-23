@@ -21,12 +21,10 @@
 #ifndef bempp_discrete_hmat_boundary_operator_hpp
 #define bempp_discrete_hmat_boundary_operator_hpp
 
-#include "bempp/common/config_trilinos.hpp"
 #include "../common/common.hpp"
+#include "../common/eigen_support.hpp"
 #include "../common/shared_ptr.hpp"
 #include "discrete_boundary_operator.hpp"
-#include "../common/armadillo_fwd.hpp"
-#include <Thyra_DefaultSpmdVectorSpace_decl.hpp>
 #include "../hmat/hmatrix.hpp"
 
 namespace Bempp {
@@ -45,26 +43,17 @@ public:
   shared_ptr<const hmat::DefaultHMatrixType<ValueType>> hMatrix() const;
 
   void addBlock(const std::vector<int> &rows, const std::vector<int> &cols,
-                const ValueType alpha, arma::Mat<ValueType> &block) const
+                const ValueType alpha, Matrix<ValueType> &block) const
       override;
-
-  Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>> domain() const;
-  Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>> range() const;
-
-
-protected:
-  bool opSupportedImpl(Thyra::EOpTransp M_trans) const;
 
 private:
   void applyBuiltInImpl(const TranspositionMode trans,
-                        const arma::Col<ValueType> &x_in,
-                        arma::Col<ValueType> &y_inout, const ValueType alpha,
+                        const Eigen::Ref<Vector<ValueType>> &x_in,
+                        Eigen::Ref<Vector<ValueType>> y_inout, const ValueType alpha,
                         const ValueType beta) const override;
 
   shared_ptr<hmat::DefaultHMatrixType<ValueType>> m_hMatrix;
 
-  Teuchos::RCP<const Thyra::SpmdVectorSpaceBase<ValueType>> m_domainSpace;
-  Teuchos::RCP<const Thyra::SpmdVectorSpaceBase<ValueType>> m_rangeSpace;
 };
 }
 

@@ -26,9 +26,8 @@ endif()
 
 # declare fixture libraries that will be used by tests
 add_library(grid_fixture STATIC "assembly/create_regular_grid.cpp")
-add_library(dirichlet_fixture STATIC "linalg/laplace_3d_dirichlet_fixture.cpp")
 add_library(manager_fixture STATIC "grid/simple_triangular_grid_manager.cpp")
-foreach(fixture grid dirichlet manager)
+foreach(fixture grid manager)
     depends_on_lookups(${fixture}_fixture)
     add_dependencies(${fixture}_fixture copy_headers)
 endforeach()
@@ -48,10 +47,6 @@ function(extra_dependencies SOURCE)
         OR "${filename}" STREQUAL "raviart_thomas_0_vector_space"
     )
         list(APPEND extras grid_fixture)
-    endif()
-    if("${filename}" STREQUAL "default_direct_solver"
-            OR "${filename}" STREQUAL "default_iterative_solver")
-        list(APPEND extras dirichlet_fixture)
     endif()
     if("${filename}" STREQUAL "entity"
         OR "${filename}" STREQUAL "grid"

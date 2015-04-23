@@ -7,6 +7,7 @@ set(makoes entity.mako.pxd entity.mako.pyx
            geometry.mako.pxd geometry.mako.pyx
            codim_template.mako.pxd
            py_sphere.mako.hpp)
+
 mako_files(${makoes}
            OUTPUT_FILES makoed
            DESTINATION "${PYTHON_BINARY_DIR}/bempp/include/bempp/grid"

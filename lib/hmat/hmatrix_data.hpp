@@ -4,20 +4,15 @@
 #define HMAT_HMATRIX_DATA_HPP
 
 #include "common.hpp"
-#include <armadillo>
 #include "scalar_traits.hpp"
 
 namespace hmat {
 
 template <typename ValueType> class HMatrixData {
 public:
-  virtual void apply(const arma::Mat<ValueType> &X, arma::Mat<ValueType> &Y,
+  virtual void apply(const Matrix<ValueType> &X, Matrix<ValueType> &Y,
                      TransposeMode trans, ValueType alpha,
                      ValueType beta) const = 0;
-
-  virtual void apply(const arma::subview<ValueType> &X,
-                     arma::subview<ValueType> &Y, TransposeMode trans,
-                     ValueType alpha, ValueType beta) const = 0;
 
   virtual int rows() const = 0;
   virtual int cols() const = 0;

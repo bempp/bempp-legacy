@@ -247,18 +247,18 @@ PiecewisePolynomialDiscontinuousScalarSpace<BasisFunctionType>::assignDofsImpl(
 
   // Fill in global<->local dof maps
   std::unique_ptr<EntityIterator<0>> it = m_view->entityIterator<0>();
-  arma::Mat<CoordinateType> vertices;
-  arma::Col<CoordinateType> dofPosition;
+  Matrix<CoordinateType> vertices;
+  Vector<CoordinateType> dofPosition;
   GlobalDofIndex globalDofCount = 0;
   while (!it->finished()) {
     const Entity<0> &element = it->entity();
     EntityIndex elementIndex = elementMapper.entityIndex(element);
     bool elementContained = !(dofMode & ELEMENT_ON_SEGMENT) ||
                             segment.contains(elementCodim, elementIndex);
-    typedef arma::Col<CoordinateType> Col;
+    typedef Vector<CoordinateType> Col;
     const Geometry &geo = element.geometry();
     geo.getCorners(vertices);
-    int vertexCount = vertices.n_cols;
+    int vertexCount = vertices.cols();
     int localDofCount =
         vertexCount == 3 ? localDofCountPerTriangle : localDofCountPerQuad;
 
@@ -293,7 +293,7 @@ PiecewisePolynomialDiscontinuousScalarSpace<BasisFunctionType>::assignDofsImpl(
           m_globalDofBoundingBoxes.push_back(bbox);
           setBoundingBoxReference<CoordinateType>(
               acc(m_globalDofBoundingBoxes, globalDofCount),
-              (vertices.col(0) + vertices(1) + vertices(2)) / 3);
+              (vertices.col(0) + vertices.col(1) + vertices.col(2)) / 3);
           ++globalDofCount;
         } else
           acc(globalDofs, ldof) = -1;

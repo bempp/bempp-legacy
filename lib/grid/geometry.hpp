@@ -22,9 +22,9 @@
 #define bempp_geometry_hpp
 
 #include "../common/common.hpp"
+#include "../common/eigen_support.hpp"
 
 #include "dune.hpp"
-#include "../common/armadillo_fwd.hpp"
 #include "../fiber/_3d_array.hpp"
 
 namespace Fiber {
@@ -59,9 +59,9 @@ public:
                         entity. Interpretation of these data in subclasses of
                         Geometry may vary. They can be used for example to
                         define a *curvilinear* element. */
-  void setup(const arma::Mat<double> &corners, const arma::Col<char> &auxData);
+  void setup(const Matrix<double> &corners, const Vector<char> &auxData);
   /** \overload */
-  void setup(const arma::Mat<float> &corners, const arma::Col<char> &auxData);
+  void setup(const Matrix<float> &corners, const Vector<char> &auxData);
 
   /** \brief Type of the reference element.
 
@@ -87,9 +87,9 @@ public:
    *  the \f$i\f$th corner. The numbering of corners follows the conventions
    *  of the generic reference element.
    */
-  void getCorners(arma::Mat<double> &c) const;
+  void getCorners(Matrix<double> &c) const;
   /** \overload */
-  void getCorners(arma::Mat<float> &c) const;
+  void getCorners(Matrix<float> &c) const;
 
   /** \brief Convert local (logical) to global (physical) coordinates.
 
@@ -98,11 +98,11 @@ public:
     \param[out] global Matrix whose \f$i\f$th column contains the
       global coordinates of \f$x_i\f$, i.e. \f$g(x_i)\f$.
   */
-  void local2global(const arma::Mat<double> &local,
-                    arma::Mat<double> &global) const;
+  void local2global(const Matrix<double> &local,
+                    Matrix<double> &global) const;
   /** \overload */
-  void local2global(const arma::Mat<float> &local,
-                    arma::Mat<float> &global) const;
+  void local2global(const Matrix<float> &local,
+                    Matrix<float> &global) const;
 
   /** \brief Convert global (physical) to local (logical) coordinates.
 
@@ -115,11 +115,11 @@ public:
     Maybe the docstring should say that we convert some sort of *projection*
     of global to local.
   */
-  void global2local(const arma::Mat<double> &global,
-                    arma::Mat<double> &local) const;
+  void global2local(const Matrix<double> &global,
+                    Matrix<double> &local) const;
   /** \overload */
-  void global2local(const arma::Mat<float> &global,
-                    arma::Mat<float> &local) const;
+  void global2local(const Matrix<float> &global,
+                    Matrix<float> &local) const;
 
   /** \brief Get the factor appearing in the integral transformation formula
     at specified points.
@@ -147,11 +147,11 @@ public:
     efficiency. For example in an equidistant structured mesh it may be as
     simple as \f$h^\textrm{mydim}\f$.
   */
-  void getIntegrationElements(const arma::Mat<double> &local,
-                              arma::Row<double> &int_element) const;
+  void getIntegrationElements(const Matrix<double> &local,
+                              RowVector<double> &int_element) const;
   /** \overload */
-  void getIntegrationElements(const arma::Mat<float> &local,
-                              arma::Row<float> &int_element) const;
+  void getIntegrationElements(const Matrix<float> &local,
+                              RowVector<float> &int_element) const;
 
   /** \brief Volume of geometry. */
   virtual double volume() const = 0;
@@ -170,9 +170,10 @@ public:
    *
    * \param[out]  c  Coordinates of the center of geometry.
    */
-  void getCenter(arma::Col<double> &c) const;
+  void getCenter(Eigen::Ref<Vector<double>> c) const;
+
   /** \overload */
-  void getCenter(arma::Col<float> &c) const;
+  void getCenter(Eigen::Ref<Vector<float>> c) const;
 
   /** \brief Get transposed Jacobian matrices at specified points.
    *
@@ -186,16 +187,16 @@ public:
    *    3D array whose \f$i\f$th slice (i.e. jacobian_t(:,:,i)) contains the
    *    transposed Jacobian matrix at \f$x_i\f$, i.e. \f$J_g^T(x_i)\f$.
    */
-  void getJacobiansTransposed(const arma::Mat<double> &local,
-                              arma::Cube<double> &jacobian_t) const;
+  void getJacobiansTransposed(const Matrix<double> &local,
+                              std::vector<Matrix<double>> &jacobian_t) const;
   /** \overload */
-  void getJacobiansTransposed(const arma::Mat<float> &local,
-                              arma::Cube<float> &jacobian_t) const;
+  void getJacobiansTransposed(const Matrix<float> &local,
+                              std::vector<Matrix<float>> &jacobian_t) const;
   /** \overload */
-  void getJacobiansTransposed(const arma::Mat<double> &local,
+  void getJacobiansTransposed(const Matrix<double> &local,
                               Fiber::_3dArray<double> &jacobian_t) const;
   /** \overload */
-  void getJacobiansTransposed(const arma::Mat<float> &local,
+  void getJacobiansTransposed(const Matrix<float> &local,
                               Fiber::_3dArray<float> &jacobian_t) const;
 
   /** \brief Get inverses of transposed Jacobian matrices at specified points.
@@ -222,18 +223,18 @@ public:
    *        This means that it is inverse for all tangential vectors in
    *        \f$g(x)\f$ while mapping all normal vectors to zero.
    */
-  void getJacobianInversesTransposed(const arma::Mat<double> &local,
-                                     arma::Cube<double> &jacobian_inv_t) const;
+  void getJacobianInversesTransposed(const Matrix<double> &local,
+                                     std::vector<Matrix<double>> &jacobian_inv_t) const;
   /** \overload */
-  void getJacobianInversesTransposed(const arma::Mat<float> &local,
-                                     arma::Cube<float> &jacobian_inv_t) const;
+  void getJacobianInversesTransposed(const Matrix<float> &local,
+                                     std::vector<Matrix<float>> &jacobian_inv_t) const;
   /** \overload */
   void
-  getJacobianInversesTransposed(const arma::Mat<double> &local,
+  getJacobianInversesTransposed(const Matrix<double> &local,
                                 Fiber::_3dArray<double> &jacobian_inv_t) const;
   /** \overload */
   void
-  getJacobianInversesTransposed(const arma::Mat<float> &local,
+  getJacobianInversesTransposed(const Matrix<float> &local,
                                 Fiber::_3dArray<float> &jacobian_inv_t) const;
 
   /** \brief Get unit vectors normal to the entity at specified points.
@@ -247,11 +248,11 @@ public:
    *    Matrix whose \f$i\f$th column containts components of a unit vector
    *    normal to the entity at \f$x_i\f$.
    */
-  void getNormals(const arma::Mat<double> &local,
-                  arma::Mat<double> &normal) const;
+  void getNormals(const Matrix<double> &local,
+                  Matrix<double> &normal) const;
   /** \overload */
-  void getNormals(const arma::Mat<float> &local,
-                  arma::Mat<float> &normal) const;
+  void getNormals(const Matrix<float> &local,
+                  Matrix<float> &normal) const;
 
   /** \brief Get several types of geometrical data.
    *
@@ -266,46 +267,57 @@ public:
    *    will be filled with the appropriate geometrical data. The remaining
    *    fields (and the field \c domainIndex) are not accessed.
    */
-  void getData(size_t what, const arma::Mat<double> &local,
+  void getData(size_t what, const Matrix<double> &local,
                Fiber::GeometricalData<double> &data) const;
   /** \overload */
-  void getData(size_t what, const arma::Mat<float> &local,
+  void getData(size_t what, const Matrix<float> &local,
                Fiber::GeometricalData<float> &data) const;
 
 private:
   // Virtual functions to be implemented in subclasses
-  virtual void setupImpl(const arma::Mat<double> &corners,
-                         const arma::Col<char> &auxData) = 0;
-  virtual void getCornersImpl(arma::Mat<double> &c) const = 0;
-  virtual void local2globalImpl(const arma::Mat<double> &local,
-                                arma::Mat<double> &global) const = 0;
-  virtual void global2localImpl(const arma::Mat<double> &global,
-                                arma::Mat<double> &local) const = 0;
+  virtual void setupImpl(const Matrix<double> &corners,
+                         const Vector<char> &auxData) = 0;
+  virtual void getCornersImpl(Matrix<double> &c) const = 0;
+  virtual void local2globalImpl(const Matrix<double> &local,
+                                Matrix<double> &global) const = 0;
+  virtual void global2localImpl(const Matrix<double> &global,
+                                Matrix<double> &local) const = 0;
   virtual void
-  getIntegrationElementsImpl(const arma::Mat<double> &local,
-                             arma::Row<double> &int_element) const = 0;
-  virtual void getCenterImpl(arma::Col<double> &c) const = 0;
+  getIntegrationElementsImpl(const Matrix<double> &local,
+                             RowVector<double> &int_element) const = 0;
+
+  virtual void getCenterImpl(Eigen::Ref<Vector<double>> c) const = 0;
   virtual void
-  getJacobiansTransposedImpl(const arma::Mat<double> &local,
+  getJacobiansTransposedImpl(const Matrix<double> &local,
                              Fiber::_3dArray<double> &jacobian_t) const = 0;
+  virtual void
+  getJacobiansTransposedImpl(const Matrix<double> &local,
+                             std::vector<Matrix<double>> &jacobian_t) const = 0;
   virtual void getJacobianInversesTransposedImpl(
-      const arma::Mat<double> &local,
+      const Matrix<double> &local,
       Fiber::_3dArray<double> &jacobian_inv_t) const = 0;
-  virtual void getNormalsImpl(const arma::Mat<double> &local,
-                              arma::Mat<double> &normal) const = 0;
-  virtual void getDataImpl(size_t what, const arma::Mat<double> &local,
+  virtual void getJacobianInversesTransposedImpl(
+      const Matrix<double> &local,
+      std::vector<Matrix<double>> &jacobian_inv_t) const = 0;
+  virtual void getNormalsImpl(const Matrix<double> &local,
+                              Matrix<double> &normal) const = 0;
+  virtual void getDataImpl(size_t what, const Matrix<double> &local,
                            Fiber::GeometricalData<double> &data) const = 0;
 
   // Helper functions for implementation
   template <typename T1, typename T2>
-  void convertMat(const arma::Mat<T1> &in, arma::Mat<T2> &out) const;
+  void convertMat(const Matrix<T1> &in, Matrix<T2> &out) const;
   template <typename T1, typename T2>
-  void convertCube(const arma::Cube<T1> &in, arma::Cube<T2> &out) const;
+  void convertMat(const Vector<T1> &in, Vector<T2> &out) const;
+  template <typename T1, typename T2>
+  void convertMat(const RowVector<T1> &in, RowVector<T2> &out) const;
+  template <typename T1, typename T2>
+  void convertCube(const std::vector<Matrix<T1>> &in,std::vector<Matrix<T2>> &out) const;
   template <typename T1, typename T2>
   void convertCube(const Fiber::_3dArray<T1> &in,
                    Fiber::_3dArray<T2> &out) const;
   template <typename T1, typename T2>
-  void convertCube(const Fiber::_3dArray<T1> &in, arma::Cube<T2> &out) const;
+  void convertCube(const Fiber::_3dArray<T1> &in, std::vector<Matrix<T2>> &out) const;
 };
 
 } // namespace Bempp

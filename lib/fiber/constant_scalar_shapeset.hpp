@@ -22,6 +22,7 @@
 #define fiber_constant_scalar_shapeset_hpp
 
 #include "../common/common.hpp"
+#include "../common/eigen_support.hpp"
 
 #include "basis.hpp"
 #include "basis_data.hpp"
@@ -40,7 +41,7 @@ public:
 
   virtual int order() const { return 0; }
 
-  virtual void evaluate(size_t what, const arma::Mat<CoordinateType> &points,
+  virtual void evaluate(size_t what, const Matrix<CoordinateType> &points,
                         LocalDofIndex localDofIndex,
                         BasisData<ValueType> &data) const {
     if (localDofIndex != ALL_DOFS && localDofIndex != 0)
@@ -51,13 +52,13 @@ public:
 
     const int componentCount = 1;
     const int functionCount = 1;
-    const int pointCount = points.n_cols;
+    const int pointCount = points.cols();
     if (what & VALUES) {
       data.values.set_size(componentCount, functionCount, pointCount);
       std::fill(data.values.begin(), data.values.end(), 1.);
     }
     if (what & DERIVATIVES) {
-      const int coordCount = points.n_rows;
+      const int coordCount = points.rows();
       data.derivatives.set_size(componentCount, coordCount, functionCount,
                                 pointCount);
       std::fill(data.derivatives.begin(), data.derivatives.end(), 0.);

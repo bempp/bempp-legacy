@@ -19,7 +19,6 @@
 // THE SOFTWARE.
 
 #include "bempp/common/config_ahmed.hpp"
-#include "bempp/common/config_trilinos.hpp"
 
 #ifdef WITH_AHMED
 #include "aca_approximate_lu_inverse.hpp"
@@ -178,7 +177,7 @@ void AcaApproximateLuInverse<ValueType>::applyBuiltInImpl(
     throw std::runtime_error(
         "AcaApproximateLuInverse::applyBuiltInImpl(): "
         "transposition modes other than NO_TRANSPOSE are not supported");
-  if (columnCount() != x_in.n_rows && rowCount() != y_inout.n_rows)
+  if (columnCount() != x_in.rows() && rowCount() != y_inout.rows())
     throw std::invalid_argument("AcaApproximateLuInverse::applyBuiltInImpl(): "
                                 "incorrect vector length");
 

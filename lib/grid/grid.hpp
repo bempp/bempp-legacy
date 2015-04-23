@@ -25,9 +25,9 @@
 
 #include "../common/common.hpp"
 #include "../common/shared_ptr.hpp"
+#include "../common/eigen_support.hpp"
 #include "grid_parameters.hpp"
 
-#include "../common/armadillo_fwd.hpp"
 #include <cstddef> // size_t
 #include <memory>
 #include <vector>
@@ -110,12 +110,12 @@ public:
    *  The grid lies in the box defined by the inequalities
    *  <tt>lowerBound(i) <= x_i <= upperBound(i)</tt>, where x_i is the ith
    *  coordinate. */
-  void getBoundingBox(arma::Col<double> &lowerBound,
-                      arma::Col<double> &upperBound) const;
+  void getBoundingBox(Vector<double> &lowerBound,
+                      Vector<double> &upperBound) const;
 
 private:
   /** \cond PRIVATE */
-  mutable arma::Col<double> m_lowerBound, m_upperBound;
+  mutable Vector<double> m_lowerBound, m_upperBound;
   /** \endcond */
 };
 
@@ -138,8 +138,8 @@ private:
  *  \note The implementation assumes that no grid vertices are separated by less
  *    than 1e-9.
  */
-std::vector<bool> areInside(const Grid &grid, const arma::Mat<double> &points);
-std::vector<bool> areInside(const Grid &grid, const arma::Mat<float> &points);
+std::vector<bool> areInside(const Grid &grid, const Matrix<double> &points);
+std::vector<bool> areInside(const Grid &grid, const Matrix<float> &points);
 
 } // namespace Bempp
 

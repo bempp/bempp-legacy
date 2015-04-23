@@ -2,7 +2,7 @@
 codims = [('0','codim_zero'),('1','codim_one'),('2','codim_two')]
 %>
 
-from bempp.utils cimport unique_ptr
+from bempp.utils cimport unique_ptr, catch_exception
 from libcpp cimport bool as cbool
 from bempp.grid.codim_template cimport codim_zero,codim_one,codim_two
 from bempp.grid.entity_pointer cimport c_EntityPointer
@@ -20,8 +20,8 @@ from bempp.grid.entity_pointer cimport EntityPointer${codim}
 cdef class EntityIterator${codim}:
     cdef unique_ptr[c_EntityIterator[${codim_template}]] impl_
     cdef cbool finished(self)
-    cdef void c_next(self) except *
-    cdef EntityPointer${codim} frozen(self)
+    cdef void c_next(self) except +
+    cdef EntityPointer${codim} _frozen(self)
 
 % endfor
 

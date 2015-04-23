@@ -53,7 +53,7 @@ void DefaultQuadratureDescriptorSelectorForPotentialOperators<
 template <typename BasisFunctionType>
 SingleQuadratureDescriptor
 DefaultQuadratureDescriptorSelectorForPotentialOperators<BasisFunctionType>::
-    quadratureDescriptor(const arma::Col<CoordinateType> &point,
+    quadratureDescriptor(const Vector<CoordinateType> &point,
                          int trialElementIndex,
                          CoordinateType nominalDistance) const {
   SingleQuadratureDescriptor desc;
@@ -64,7 +64,7 @@ DefaultQuadratureDescriptorSelectorForPotentialOperators<BasisFunctionType>::
 
 template <typename BasisFunctionType>
 int DefaultQuadratureDescriptorSelectorForPotentialOperators<
-    BasisFunctionType>::order(const arma::Col<CoordinateType> &point,
+    BasisFunctionType>::order(const Vector<CoordinateType> &point,
                               int trialElementIndex,
                               CoordinateType nominalDistance) const {
   // Order required for exact quadrature on affine elements with a constant
@@ -93,12 +93,12 @@ template <typename BasisFunctionType>
 inline typename DefaultQuadratureDescriptorSelectorForPotentialOperators<
     BasisFunctionType>::CoordinateType
 DefaultQuadratureDescriptorSelectorForPotentialOperators<BasisFunctionType>::
-    pointElementDistanceSquared(const arma::Col<CoordinateType> &point,
+    pointElementDistanceSquared(const Vector<CoordinateType> &point,
                                 int trialElementIndex) const {
   // TODO: optimize
-  arma::Col<CoordinateType> diff =
+  Vector<CoordinateType> diff =
       point - m_elementCenters.col(trialElementIndex);
-  return arma::dot(diff, diff);
+  return diff.squaredNorm();
 }
 
 template <typename BasisFunctionType>

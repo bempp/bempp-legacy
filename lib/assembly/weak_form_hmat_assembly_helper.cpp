@@ -27,6 +27,7 @@
 #include "discrete_boundary_operator.hpp"
 #include "../fiber/local_assembler_for_integral_operators.hpp"
 #include "../fiber/conjugate.hpp"
+#include "../common/eigen_support.hpp"
 
 namespace Bempp {
 
@@ -92,7 +93,7 @@ WeakFormHMatAssemblyHelper<BasisFunctionType, ResultType>::computeMatrixBlock(
     const hmat::IndexRangeType &testIndexRange,
     const hmat::IndexRangeType &trialIndexRange,
     const hmat::DefaultBlockClusterTreeNodeType &blockClusterTreeNode,
-    arma::Mat<ResultType> &data) const {
+    Matrix<ResultType> &data) const {
 
   auto numberOfTestIndices = testIndexRange[1] - testIndexRange[0];
   auto numberOfTrialIndices = trialIndexRange[1] - trialIndexRange[0];
@@ -137,7 +138,7 @@ WeakFormHMatAssemblyHelper<BasisFunctionType, ResultType>::computeMatrixBlock(
   const std::vector<std::vector<int>> &blockCols = trialDofLists->arrayIndices;
 
   data.resize(numberOfTestIndices, numberOfTrialIndices);
-  data.fill(0.);
+  data.setZero();
 
   // First, evaluate the contributions of the dense terms
   if (numberOfTrialIndices == 1) {
@@ -145,7 +146,7 @@ WeakFormHMatAssemblyHelper<BasisFunctionType, ResultType>::computeMatrixBlock(
     // one local DOF from just one or a few trialElements. Evaluate the
     // local weak form for one local trial DOF at a time.
 
-    std::vector<arma::Mat<ResultType>> localResult;
+    std::vector<Matrix<ResultType>> localResult;
     for (size_t nTrialElem = 0; nTrialElem < trialElementIndices.size();
          ++nTrialElem) {
       const int activeTrialElementIndex = trialElementIndices[nTrialElem];
@@ -180,7 +181,7 @@ WeakFormHMatAssemblyHelper<BasisFunctionType, ResultType>::computeMatrixBlock(
     // one local DOF from just one or a few testElements. Evaluate the
     // local weak form for one local test DOF at a time.
 
-    std::vector<arma::Mat<ResultType>> localResult;
+    std::vector<Matrix<ResultType>> localResult;
     for (size_t nTestElem = 0; nTestElem < testElementIndices.size();
          ++nTestElem) {
       const int activeTestElementIndex = testElementIndices[nTestElem];
@@ -216,7 +217,7 @@ WeakFormHMatAssemblyHelper<BasisFunctionType, ResultType>::computeMatrixBlock(
     // Evaluate the full local weak form for each pair of test and trial
     // elements and then select the entries that we need.
 
-    Fiber::_2dArray<arma::Mat<ResultType>> localResult;
+    Fiber::_2dArray<Matrix<ResultType>> localResult;
     for (size_t nTerm = 0; nTerm < m_assemblers.size(); ++nTerm) {
       m_assemblers[nTerm]->evaluateLocalWeakForms(
           testElementIndices, trialElementIndices, localResult, minDist);
@@ -238,7 +239,7 @@ WeakFormHMatAssemblyHelper<BasisFunctionType, ResultType>::computeMatrixBlock(
                       trialLocalDofs[nTrialElem][nTrialDof]);
     }
   } else {
-    std::vector<arma::Mat<ResultType>> localResult;
+    std::vector<Matrix<ResultType>> localResult;
     for (size_t nTestElem = 0; nTestElem < testElementIndices.size();
          ++nTestElem) {
       const int activeTestElementIndex = testElementIndices[nTestElem];

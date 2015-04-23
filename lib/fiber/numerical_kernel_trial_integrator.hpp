@@ -46,9 +46,9 @@ public:
   typedef typename Base::PointElementIndexPair PointElementIndexPair;
 
   NumericalKernelTrialIntegrator(
-      const arma::Mat<CoordinateType> &localQuadPoints,
+      const Matrix<CoordinateType> &localQuadPoints,
       const std::vector<CoordinateType> quadWeights,
-      const arma::Mat<CoordinateType> &points,
+      const Matrix<CoordinateType> &points,
       const GeometryFactory &geometryFactory,
       const RawGridGeometry<CoordinateType> &rawGeometry,
       const CollectionOfKernels<KernelType> &kernels,
@@ -61,25 +61,25 @@ public:
   integrate(const std::vector<int> &pointIndices, int trialElementIndex,
             const Shapeset<BasisFunctionType> &trialShapeset,
             LocalDofIndex localTrialDofIndex,
-            const std::vector<arma::Mat<ResultType> *> &result) const;
+            const std::vector<Matrix<ResultType> *> &result) const;
 
   virtual void
   integrate(int pointIndex, int componentIndex,
             const std::vector<int> &trialElementIndices,
             const Shapeset<BasisFunctionType> &trialShapeset,
-            const std::vector<arma::Mat<ResultType> *> &result) const;
+            const std::vector<Matrix<ResultType> *> &result) const;
 
   virtual void
   integrate(const std::vector<PointElementIndexPair> &pointElementIndexPairs,
             const Shapeset<BasisFunctionType> &trialShapeset,
-            const std::vector<arma::Mat<ResultType> *> &result) const;
+            const std::vector<Matrix<ResultType> *> &result) const;
 
 private:
   /** \cond PRIVATE */
-  arma::Mat<CoordinateType> m_localQuadPoints;
+  Matrix<CoordinateType> m_localQuadPoints;
   std::vector<CoordinateType> m_quadWeights;
 
-  const arma::Mat<CoordinateType> &m_points;
+  const Matrix<CoordinateType> &m_points;
 
   const GeometryFactory &m_geometryFactory;
   const RawGridGeometry<CoordinateType> &m_rawGeometry;

@@ -6,7 +6,7 @@ from libcpp cimport bool as cbool
 from libcpp.vector cimport vector
 from bempp.utils cimport catch_exception
 from bempp.utils cimport unique_ptr
-from bempp.utils.armadillo cimport Col, Mat
+from bempp.utils cimport Vector
 from bempp.grid.grid_view cimport c_GridView, GridView
 from bempp.grid.grid_view cimport _grid_view_from_unique_ptr
 import numpy as _np
@@ -28,16 +28,18 @@ cdef extern from "bempp/grid/grid_factory.hpp" namespace "Bempp":
 
     shared_ptr[const c_Grid] cart_grid "Bempp::GridFactory::createStructuredGrid"(
             const GridParameters& params,
-            Col[double]& lowerLeft,
-            Col[double]& upperRight,
-            Col[unsigned int]& nElements
+            const double* lowerLeft,
+            const double*  upperRight,
+            const int* nElements
     ) except +catch_exception
 
     shared_ptr[const c_Grid] connect_grid \
             "Bempp::GridFactory::createGridFromConnectivityArrays"(
             const GridParameters& params,
-            Mat[double]& vertices,
-            Mat[int]& elementCorners,
+            const double* vertices,
+            int nvertices,
+            const int* elementCorners,
+            int nelements,
             vector[int]& domainIndices
     ) except +catch_exception
 
@@ -62,6 +64,9 @@ cdef class Grid:
 
     def __init__(self):
         pass
+
+    def __dealloc__(self):
+        self.impl_.reset(<const c_Grid*>NULL)
 
     def __richcmp__(Grid self, Grid other not None, int op):
         if op != 2:
@@ -101,29 +106,33 @@ cdef class Grid:
     property bounding_box:
         """ Bounding box surrounding the grid """
         def __get__(self):
-            from numpy import ones
             cdef:
                 int n = deref(self.impl_).dimWorld()
-                Col[double] lower
-                Col[double] upper
+                Vector[double] lower
+                Vector[double] upper
+                int i
 
 
             deref(self.impl_).getBoundingBox(lower, upper)
-            if upper.n_rows != n or lower.n_rows != n:
+            if upper.rows() != n or lower.rows() != n:
                 raise RuntimeError("Error in getBoundingBox")
 
-            result = ones((2, n), dtype="double", order='C')
+            cdef _np.ndarray result = _np.ones((2, n), dtype="double", order='C')
             for i in range(n):
-                result[0, i] = lower.at(i)
-                result[1, i] = upper.at(i)
+                result[0, i] = lower.value(i)
+                result[1, i] = upper.value(i)
             return result
 
     property leaf_view:
         def __get__(self):
             """Return a leaf view onto the Grid"""
+            if self._grid_view is not None:
+                return self._grid_view
+
             cdef unique_ptr[c_GridView] view = deref(self.impl_).leafView()
             cdef GridView grid_view = _grid_view_from_unique_ptr(view)
             grid_view._grid = self
+            self._grid_view = grid_view
             return grid_view
 
 
@@ -170,23 +179,16 @@ def grid_from_element_data(vertices, elements, domain_indices=[]):
                 = require(vertices, "double", 'F')
         int[::1, :] corners_ptr = require(elements, "intc", 'F')
         vector[int] indices
-        Mat[double]* c_vertices = new Mat[double](&vert_ptr[0, 0],
-            vert_ptr.shape[0], vert_ptr.shape[1], False, True)
-        Mat[int]* c_corners = new Mat[int](&corners_ptr[0, 0],
-            corners_ptr.shape[0], corners_ptr.shape[1], False, True)
         Grid grid = Grid.__new__(Grid)
     for index in domain_indices:
         indices.push_back(int(index))
     parameters.topology = TRIANGULAR
     try:
-        grid.impl_ = connect_grid(parameters, deref(c_vertices),
-                deref(c_corners), indices)
+        grid.impl_ = connect_grid(parameters, &vert_ptr[0,0],
+                vert_ptr.shape[1], &corners_ptr[0,0], 
+                corners_ptr.shape[1], indices)
     except:
-        del c_vertices
-        del c_corners
         raise
-    del c_vertices
-    del c_corners
     return grid
 
 def structured_grid(lower_left,upper_right,subdivisions):
@@ -226,29 +228,16 @@ def structured_grid(lower_left,upper_right,subdivisions):
         double[::1] ur_ptr = require(upper_right, "double", 'C')
         int[::1] n_ptr = require(subdivisions, "intc", 'C')
         int nelements = len(ll_ptr)
-    if len(ll_ptr) != len(ur_ptr) or len(ll_ptr) != len(n_ptr):
-        raise ValueError("Inputs have differing lengths")
-    cdef:
-        Col[double]* c_lower_left = new Col[double](&ll_ptr[0],
-            nelements, False, True)
-        Col[double]* c_upper_right = new Col[double](&ur_ptr[0],
-            nelements, False, True)
-        Col[unsigned int]* c_subdivisions = \
-                new Col[unsigned int](<unsigned int*>&n_ptr[0],
-                        nelements, False, True)
-        Grid grid = Grid.__new__(Grid)
+    if len(ll_ptr) != 2 or len(ur_ptr) != 2 or len(n_ptr)!= 2:
+        raise ValueError("Inputs have wrong dimension.")
+
+    cdef Grid grid = Grid.__new__(Grid)
     parameters.topology = TRIANGULAR
     try:
-        grid.impl_ = cart_grid(parameters, deref(c_lower_left),
-                deref(c_upper_right), deref(c_subdivisions))
+        grid.impl_ = cart_grid(parameters, &ll_ptr[0], &ur_ptr[0],
+                 &n_ptr[0])
     except:
-        del c_lower_left
-        del c_upper_right
-        del c_subdivisions
         raise
-    del c_lower_left
-    del c_upper_right
-    del c_subdivisions
     return grid
 
 @cython.boundscheck(False)

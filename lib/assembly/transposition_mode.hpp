@@ -23,11 +23,6 @@
 
 #include "../common/common.hpp"
 
-#include "bempp/common/config_trilinos.hpp"
-
-#ifdef WITH_TRILINOS
-#include <Thyra_OperatorVectorTypes.hpp>
-#endif
 namespace Bempp {
 
 /** \ingroup discrete_boundary_operators
@@ -35,23 +30,10 @@ namespace Bempp {
  *  transformed before being applied.
  */
 enum TranspositionMode {
-#ifdef WITH_TRILINOS
-  /** \brief Use the non-transposed operator. */
-  NO_TRANSPOSE = Thyra::NOTRANS,
-  /** \brief Use the non-transposed operator with complex-conjugated elements
-   *  (same as \c NO_TRANSPOSE for operators with real elements). */
-  CONJUGATE = Thyra::CONJ,
-  /** \brief Use the transposed operator. */
-  TRANSPOSE = Thyra::TRANS,
-  /** \brief Use the transposed operator with complex-conjugated elements
-   *  (same as \c TRANSPOSE for operators with real elements). */
-  CONJUGATE_TRANSPOSE = Thyra::CONJTRANS
-#else
   NO_TRANSPOSE,
   CONJUGATE,
   TRANSPOSE,
   CONJUGATE_TRANSPOSE
-#endif
 };
 
 } // namespace Bempp

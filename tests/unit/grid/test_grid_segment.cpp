@@ -34,6 +34,7 @@
 #include "grid/grid_segment.hpp"
 #include "grid/grid_factory.hpp"
 #include "grid/index_set.hpp"
+#include "grid/eigen_helpers.hpp"
 
 #include <boost/test/floating_point_comparison.hpp>
 
@@ -48,10 +49,10 @@ std::set<int> entitiesWithNonpositiveY(const GridView& view)
     std::set<int> result;
     std::unique_ptr<EntityIterator<codim> > it = view.entityIterator<codim>();
     const IndexSet& indexSet = view.indexSet();
-    arma::Col<double> center;
+    Vector<double> center(3);
     while (!it->finished()) {
         const Entity<codim>& entity = it->entity();
-        entity.geometry().getCenter(center);
+        entity.geometry().getCenter(Eigen::Ref<Vector<double>>(center));
         if (center(1) <= 0.)
             result.insert(indexSet.entityIndex(entity));
         it->next();

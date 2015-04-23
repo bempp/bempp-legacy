@@ -23,7 +23,7 @@
 
 #include "../common/common.hpp"
 
-#include "../common/armadillo_fwd.hpp"
+#include "types.hpp"
 #include "_3d_array.hpp"
 
 #include <cassert>
@@ -51,24 +51,24 @@ template <typename CoordinateType> class ConstGeometricalDataSlice;
  */
 template <typename CoordinateType> class GeometricalData {
 public:
-  arma::Mat<CoordinateType> globals;
-  arma::Row<CoordinateType> integrationElements;
+  Matrix<CoordinateType> globals;
+  RowVector<CoordinateType> integrationElements;
   Fiber::_3dArray<CoordinateType> jacobiansTransposed;
   Fiber::_3dArray<CoordinateType> jacobianInversesTransposed;
-  arma::Mat<CoordinateType> normals;
+  Matrix<CoordinateType> normals;
   int domainIndex;
 
   // For the time being, I (somewhat dangerously) assume that
   // integrationElements or globals or normals are always used
   int pointCount() const {
-    int result = std::max(std::max(globals.n_cols, normals.n_cols),
-                          integrationElements.n_cols);
+    int result = std::max(std::max(globals.cols(), normals.cols()),
+                          integrationElements.cols());
     assert(result > 0);
     return result;
   }
 
   int dimWorld() const {
-    int result = std::max(globals.n_rows, normals.n_rows);
+    int result = std::max(globals.rows(), normals.rows());
     assert(result > 0);
     return result;
   }
@@ -110,10 +110,12 @@ public:
   // Inefficient, but safe
   GeometricalData<CoordinateType> asGeometricalData() const {
     GeometricalData<CoordinateType> result;
-    if (!m_geomData.globals.is_empty())
+    if (!is_empty(m_geomData.globals))
       result.globals = m_geomData.globals.col(m_point);
-    if (!m_geomData.integrationElements.is_empty())
-      result.integrationElements = m_geomData.integrationElements(m_point);
+    if (!is_empty(m_geomData.integrationElements)){
+      result.integrationElements.resize(1);
+      result.integrationElements(0) = m_geomData.integrationElements(m_point);
+    }
     if (!m_geomData.jacobiansTransposed.is_empty()) {
       result.jacobiansTransposed.set_size(
           1, 1, m_geomData.jacobiansTransposed.extent(2));
@@ -128,7 +130,7 @@ public:
         result.jacobianInversesTransposed(0, 0, i) =
             m_geomData.jacobianInversesTransposed(m_point, m_point, i);
     }
-    if (!m_geomData.normals.is_empty())
+    if (!is_empty(m_geomData.normals))
       result.normals = m_geomData.normals.col(m_point);
     result.domainIndex = m_geomData.domainIndex;
     return result;

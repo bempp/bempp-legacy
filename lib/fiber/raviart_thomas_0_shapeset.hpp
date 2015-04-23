@@ -24,6 +24,7 @@
 #include "../common/common.hpp"
 
 #include "basis.hpp"
+#include "types.hpp"
 
 #include "basis_data.hpp"
 #include "dune_basis_helper.hpp"
@@ -69,7 +70,7 @@ public:
 
   virtual int order() const { return 1; }
 
-  virtual void evaluate(size_t what, const arma::Mat<CoordinateType> &points,
+  virtual void evaluate(size_t what, const Matrix<CoordinateType> &points,
                         LocalDofIndex localDofIndex,
                         BasisData<ValueType> &data) const {
     if (localDofIndex != ALL_DOFS &&

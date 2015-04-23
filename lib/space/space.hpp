@@ -24,18 +24,18 @@
 #include "space_identifier.hpp"
 
 #include "../common/common.hpp"
-#include "bempp/common/config_trilinos.hpp"
 
 #include "../common/bounding_box.hpp"
 #include "../common/not_implemented_error.hpp"
 #include "../common/deprecated.hpp"
 #include "../common/shared_ptr.hpp"
 #include "../common/types.hpp"
+#include "../common/eigen_support.hpp"
 #include "../fiber/basis.hpp"
 #include "../fiber/collection_of_basis_transformations.hpp"
 #include "../fiber/scalar_traits.hpp"
 
-#include "../common/armadillo_fwd.hpp"
+
 #include <vector>
 
 namespace Fiber {
@@ -421,7 +421,7 @@ public:
      *  element contains the <em>i</em>th coordinate of the interpolation point
      *  \f$x_j\f$. */
     virtual void getGlobalDofInterpolationPoints(
-            arma::Mat<CoordinateType>& points) const {
+            Matrix<CoordinateType>& points) const {
         throw NotImplementedError(
                     "Space::getGlobalDofInterpolationPoints(): not implemented");
     }
@@ -434,7 +434,7 @@ public:
      *  to the grid at the interpolation point \f$x_j\f$ defined in the
      *  documentation of getGlobalDofInterpolationPoints(). */
     virtual void getNormalsAtGlobalDofInterpolationPoints(
-            arma::Mat<CoordinateType>& normals) const {
+            Matrix<CoordinateType>& normals) const {
         throw NotImplementedError(
                     "Space::getNormalsAtGlobalDofInterpolationPoints(): not implemented");
     }
@@ -446,7 +446,7 @@ public:
      *  element contains the <em>i</em>th component of the vector \f$d_j\f$
      *  defined in the documentation of getGlobalDofInterpolationPoints(). */
     virtual void getGlobalDofInterpolationDirections(
-            arma::Mat<CoordinateType>& directions) const {
+            Matrix<CoordinateType>& directions) const {
         throw NotImplementedError(
                     "Space::getGlobalDofInterpolationDirections(): not implemented");
     }
@@ -638,7 +638,6 @@ getAllBases(const Space<BasisFunctionType> &space,
 template <typename BasisFunctionType>
 int maximumShapesetOrder(const Space<BasisFunctionType> &space);
 
-#ifdef WITH_TRILINOS
 template <typename BasisFunctionType, typename ResultType>
 shared_ptr<DiscreteSparseBoundaryOperator<ResultType>>
 constructOperatorMappingGlobalToFlatLocalDofs(
@@ -648,7 +647,6 @@ template <typename BasisFunctionType, typename ResultType>
 shared_ptr<DiscreteSparseBoundaryOperator<ResultType>>
 constructOperatorMappingFlatLocalToGlobalDofs(
     const Space<BasisFunctionType> &space);
-#endif // WITH_TRILINOS
 
 } // namespace Bempp
 

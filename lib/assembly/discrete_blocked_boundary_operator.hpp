@@ -22,16 +22,12 @@
 #define bempp_discrete_blocked_boundary_operator_hpp
 
 #include "bempp/common/config_ahmed.hpp"
-#include "bempp/common/config_trilinos.hpp"
 
 #include "discrete_boundary_operator.hpp"
 
 #include "../common/shared_ptr.hpp"
+#include "../common/eigen_support.hpp"
 #include "../fiber/_2d_array.hpp"
-
-#ifdef WITH_TRILINOS
-#include <Teuchos_RCP.hpp>
-#endif // WITH_TRILINOS
 
 class blcluster;
 
@@ -86,7 +82,7 @@ public:
 
   virtual void addBlock(const std::vector<int> &rows,
                         const std::vector<int> &cols, const ValueType alpha,
-                        arma::Mat<ValueType> &block) const;
+                        Matrix<ValueType> &block) const;
 
   /** \brief Return a new DiscreteBlockedBoundaryOperator, in which every
     * component is castable to a DiscreteAcaBoundaryOperator.
@@ -116,19 +112,11 @@ public:
   asDiscreteAcaBoundaryOperator(double eps = -1, int maximumRank = -1,
                                 bool interleave = false) const;
 
-#ifdef WITH_TRILINOS
-public:
-  virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>> domain() const;
-  virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>> range() const;
-
-protected:
-  virtual bool opSupportedImpl(Thyra::EOpTransp M_trans) const;
-#endif
 
 private:
   virtual void applyBuiltInImpl(const TranspositionMode trans,
-                                const arma::Col<ValueType> &x_in,
-                                arma::Col<ValueType> &y_inout,
+                                const Eigen::Ref<Vector<ValueType>> &x_in,
+                                Eigen::Ref<Vector<ValueType>> y_inout,
                                 const ValueType alpha,
                                 const ValueType beta) const;
 
@@ -146,10 +134,6 @@ private:
   Fiber::_2dArray<shared_ptr<const Base>> m_blocks;
   std::vector<size_t> m_rowCounts;
   std::vector<size_t> m_columnCounts;
-#ifdef WITH_TRILINOS
-  Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>> m_domainSpace;
-  Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>> m_rangeSpace;
-#endif
   /** \endcond */
 };
 

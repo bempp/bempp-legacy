@@ -24,7 +24,7 @@
 #include "grid_function.hpp"
 #include "local_assembler_construction_helper.hpp"
 
-#include "../common/armadillo_fwd.hpp"
+#include "../common/eigen_support.hpp"
 #include "../common/complex_aux.hpp"
 #include "../common/shared_ptr.hpp"
 
@@ -72,12 +72,12 @@ public:
       CollectionOf2dSlicesOfNdArrays<ValueType> &result) const {
     Fiber::GeometricalData<CoordinateType> geomData =
         trialGeomData.asGeometricalData();
-    arma::Mat<ValueType> resultMatrix;
+    Matrix<ValueType> resultMatrix;
     m_function.evaluate(geomData, resultMatrix);
-    assert(resultMatrix.n_rows == result[0].extent(0));
-    assert(resultMatrix.n_cols == result[0].extent(1));
-    for (size_t j = 0; j < resultMatrix.n_cols; ++j)
-      for (size_t i = 0; i < resultMatrix.n_rows; ++i)
+    assert(resultMatrix.rows() == result[0].extent(0));
+    assert(resultMatrix.cols() == result[0].extent(1));
+    for (size_t j = 0; j < resultMatrix.cols(); ++j)
+      for (size_t i = 0; i < resultMatrix.rows(); ++i)
         result[0](i, j) = resultMatrix(i, j);
   }
 
@@ -218,9 +218,9 @@ typename ScalarTraits<BasisFunctionType>::RealType L2NormOfDifference(
   typedef typename Fiber::ScalarTraits<BasisFunctionType>::RealType
   MagnitudeType;
   typedef MagnitudeType CoordinateType;
-  arma::Mat<CoordinateType> evaluationPoints(1, 1);
+  Matrix<CoordinateType> evaluationPoints(1, 1);
   evaluationPoints(0, 0) = 0.;
-  arma::Mat<ResultType> resultMatrix;
+  Matrix<ResultType> resultMatrix;
   evaluator->evaluate(Evaluator::FAR_FIELD, evaluationPoints, resultMatrix);
 
   ResultType result = resultMatrix(0, 0);

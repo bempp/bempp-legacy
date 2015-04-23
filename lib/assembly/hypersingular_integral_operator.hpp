@@ -28,7 +28,6 @@
 #include "../fiber/types.hpp"
 
 #include <vector>
-#include "../common/armadillo_fwd.hpp"
 
 namespace Fiber {
 

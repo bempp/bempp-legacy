@@ -22,13 +22,15 @@
 #include "../type_template.hpp"
 
 #include <algorithm>
-#include "common/armadillo_fwd.hpp"
+#include "common/eigen_support.hpp"
 #include <boost/test/unit_test.hpp>
 #include <boost/test/test_case_template.hpp>
 #include <boost/test/floating_point_comparison.hpp>
 #include <boost/version.hpp>
 
 // Tests
+
+using namespace Bempp;
 
 BOOST_AUTO_TEST_SUITE(PiecewiseConstantScalarBasis)
 
@@ -49,18 +51,18 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_works_for_all_dofs,
 {
     typedef Fiber::PiecewiseConstantScalarBasis<ValueType> Basis;
     Basis basis;
-    arma::Mat<typename Basis::CoordinateType> points(3, 4);
+    Matrix<typename Basis::CoordinateType> points(3, 4);
     srand(1);
-    points.randu();
+    points.setRandom();
     Fiber::BasisData<ValueType> data;
     basis.evaluate(Fiber::VALUES, points, Fiber::ALL_DOFS, data);
 
-    Fiber::_3dArray<ValueType> expected(1, 1, points.n_cols);
+    Fiber::_3dArray<ValueType> expected(1, 1, points.cols());
     std::fill(expected.begin(), expected.end(), 1.);
 
     BOOST_CHECK_EQUAL(data.values.extent(0), 1u); // 1 component
     BOOST_CHECK_EQUAL(data.values.extent(1), 1u); // 1 basis function
-    BOOST_CHECK_EQUAL(data.values.extent(2), points.n_cols);
+    BOOST_CHECK_EQUAL(data.values.extent(2), points.cols());
     BOOST_CHECK_EQUAL_COLLECTIONS(data.values.begin(),
                                   data.values.end(),
                                   expected.begin(),
@@ -72,18 +74,18 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_works_for_one_dof,
 {
     typedef Fiber::PiecewiseConstantScalarBasis<ValueType> Basis;
     Basis basis;
-    arma::Mat<typename Basis::CoordinateType> points(3, 4);
+    Matrix<typename Basis::CoordinateType> points(3, 4);
     srand(1);
-    points.randu();
+    points.setRandom();
     Fiber::BasisData<ValueType> data;
     basis.evaluate(Fiber::VALUES, points, 0 /* dof number */, data);
 
-    Fiber::_3dArray<ValueType> expected(1, 1, points.n_cols);
+    Fiber::_3dArray<ValueType> expected(1, 1, points.cols());
     std::fill(expected.begin(), expected.end(), 1.);
 
     BOOST_CHECK_EQUAL(data.values.extent(0), 1u); // 1 component
     BOOST_CHECK_EQUAL(data.values.extent(1), 1u); // 1 basis function
-    BOOST_CHECK_EQUAL(data.values.extent(2), points.n_cols);
+    BOOST_CHECK_EQUAL(data.values.extent(2), points.cols());
     BOOST_CHECK_EQUAL_COLLECTIONS(data.values.begin(),
                                   data.values.end(),
                                   expected.begin(),
@@ -95,16 +97,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_derivatives_works_for_all_dofs,
 {
     typedef Fiber::PiecewiseConstantScalarBasis<ValueType> Basis;
     Basis basis;
-    arma::Mat<typename Basis::CoordinateType> points(3, 4);
+    Matrix<typename Basis::CoordinateType> points(3, 4);
     srand(1);
-    points.randu();
+    points.setRandom();
     Fiber::BasisData<ValueType> data;
     basis.evaluate(Fiber::DERIVATIVES, points, Fiber::ALL_DOFS, data);
 
     Fiber::_4dArray<ValueType> expected(1,  // 1 component
-                                        points.n_rows,
+                                        points.rows(),
                                         1,  // 1 basis functions
-                                        points.n_cols);
+                                        points.cols());
     std::fill(expected.begin(), expected.end(), 0.);
     BOOST_CHECK_EQUAL(data.derivatives.extent(0), expected.extent(0));
     BOOST_CHECK_EQUAL(data.derivatives.extent(1), expected.extent(1));
@@ -121,16 +123,16 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_derivatives_works_for_one_dof,
 {
     typedef Fiber::PiecewiseConstantScalarBasis<ValueType> Basis;
     Basis basis;
-    arma::Mat<typename Basis::CoordinateType> points(3, 4);
+    Matrix<typename Basis::CoordinateType> points(3, 4);
     srand(1);
-    points.randu();
+    points.setRandom();
     Fiber::BasisData<ValueType> data;
     basis.evaluate(Fiber::DERIVATIVES, points, 0 /* dof number */, data);
 
     Fiber::_4dArray<ValueType> expected(1,  // 1 component
-                                        points.n_rows,
+                                        points.rows(),
                                         1,  // 1 basis functions
-                                        points.n_cols);
+                                        points.cols());
     std::fill(expected.begin(), expected.end(), 0.);
     BOOST_CHECK_EQUAL(data.derivatives.extent(0), expected.extent(0));
     BOOST_CHECK_EQUAL(data.derivatives.extent(1), expected.extent(1));
@@ -147,18 +149,18 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_and_derivatives_works_for_all_dofs
 {
     typedef Fiber::PiecewiseConstantScalarBasis<ValueType> Basis;
     Basis basis;
-    arma::Mat<typename Basis::CoordinateType> points(3, 4);
+    Matrix<typename Basis::CoordinateType> points(3, 4);
     srand(1);
-    points.randu();
+    points.setRandom();
     Fiber::BasisData<ValueType> data;
     basis.evaluate(Fiber::VALUES | Fiber::DERIVATIVES, points, 0 /* dof number */, data);
 
     {
-        Fiber::_3dArray<ValueType> expected(1, 1, points.n_cols);
+        Fiber::_3dArray<ValueType> expected(1, 1, points.cols());
         std::fill(expected.begin(), expected.end(), 1.);
         BOOST_CHECK_EQUAL(data.values.extent(0), 1); // 1 component
         BOOST_CHECK_EQUAL(data.values.extent(1), 1); // 1 basis function
-        BOOST_CHECK_EQUAL(data.values.extent(2), points.n_cols);
+        BOOST_CHECK_EQUAL(data.values.extent(2), points.cols());
         BOOST_CHECK_EQUAL_COLLECTIONS(data.values.begin(),
                                       data.values.end(),
                                       expected.begin(),
@@ -167,9 +169,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_and_derivatives_works_for_all_dofs
 
     {
         Fiber::_4dArray<ValueType> expected(1,  // 1 component
-                                            points.n_rows,
+                                            points.rows(),
                                             1,  // 1 basis functions
-                                            points.n_cols);
+                                            points.cols());
         std::fill(expected.begin(), expected.end(), 0.);
         BOOST_CHECK_EQUAL(data.derivatives.extent(0), expected.extent(0));
         BOOST_CHECK_EQUAL(data.derivatives.extent(1), expected.extent(1));

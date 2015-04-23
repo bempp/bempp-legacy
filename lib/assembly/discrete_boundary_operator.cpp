@@ -20,38 +20,41 @@
 
 #include "bempp/common/config_ahmed.hpp"
 
+#include <iostream>
+
 #include "discrete_boundary_operator.hpp"
 
-#include "complexified_discrete_boundary_operator.hpp"
 #include "discrete_boundary_operator_sum.hpp"
 #include "discrete_boundary_operator_composition.hpp"
 #include "scaled_discrete_boundary_operator.hpp"
 #include "transposed_discrete_boundary_operator.hpp"
 #include "../common/shared_ptr.hpp"
+#include "../common/eigen_support.hpp"
 
 #include "../fiber/explicit_instantiation.hpp"
-
-#include <Thyra_DetachedSpmdVectorView.hpp>
+#include "../fiber/scalar_traits.hpp"
 
 namespace Bempp {
 
 template <typename ValueType>
-arma::Mat<ValueType> DiscreteBoundaryOperator<ValueType>::asMatrix() const {
+Matrix<ValueType> DiscreteBoundaryOperator<ValueType>::asMatrix() const {
   // Default brute-force implementation: apply operator to all basis vectors
   const size_t nRows = rowCount();
   const size_t nCols = columnCount();
-  arma::Col<ValueType> unit(nCols);
-  arma::Mat<ValueType> result(nRows, nCols);
-  result.fill(0.); // for safety, in case there was a bug in the handling of
+  Vector<ValueType> unit(nCols);
+  Matrix<ValueType> result(nRows, nCols);
+  result.setZero(); // for safety, in case there was a bug in the handling of
                    // beta == 0. in a particular subclass' applyBuiltInImpl()
                    // override...
-  unit.fill(0.);
+  unit.setZero();
   for (size_t i = 0; i < nCols; ++i) {
-    arma::Col<ValueType> activeCol(result.unsafe_col(i));
+    Vector<ValueType> activeCol(result.rows());
+    // arma::Col<ValueType> activeCol(result.unsafe_col(i));
     if (i > 0)
       unit(i - 1) = 0.;
     unit(i) = 1.;
     applyBuiltInImpl(NO_TRANSPOSE, unit, activeCol, 1., 0.);
+    result.col(i) = activeCol;
   }
 
   return result;
@@ -59,27 +62,123 @@ arma::Mat<ValueType> DiscreteBoundaryOperator<ValueType>::asMatrix() const {
 
 template <typename ValueType>
 void DiscreteBoundaryOperator<ValueType>::apply(
-    const TranspositionMode trans, const arma::Mat<ValueType> &x_in,
-    arma::Mat<ValueType> &y_inout, const ValueType alpha,
+    const TranspositionMode trans, const Matrix<ValueType> &x_in,
+    Matrix<ValueType> &y_inout, const ValueType alpha,
     const ValueType beta) const {
   bool transposed = (trans == TRANSPOSE || trans == CONJUGATE_TRANSPOSE);
-  if (x_in.n_rows != (transposed ? rowCount() : columnCount()))
+  if (x_in.rows() != (transposed ? rowCount() : columnCount()))
     throw std::invalid_argument("DiscreteBoundaryOperator::apply(): "
                                 "vector x_in has invalid length");
-  if (y_inout.n_rows != (transposed ? columnCount() : rowCount()))
+  if (y_inout.rows() != (transposed ? columnCount() : rowCount()))
     throw std::invalid_argument("DiscreteBoundaryOperator::apply(): "
                                 "vector y_inout has invalid length");
-  if (x_in.n_cols != y_inout.n_cols)
+  if (x_in.cols() != y_inout.cols())
     throw std::invalid_argument("DiscreteBoundaryOperator::apply(): "
                                 "vectors x_in and y_inout must have "
                                 "the same number of columns");
 
-  for (size_t i = 0; i < x_in.n_cols; ++i) {
-    const arma::Col<ValueType> x_in_col = x_in.unsafe_col(i);
-    arma::Col<ValueType> y_inout_col = y_inout.unsafe_col(i);
-    applyBuiltInImpl(trans, x_in_col, y_inout_col, alpha, beta);
+  for (size_t i = 0; i < x_in.cols(); ++i) {
+
+      applyBuiltInImpl(trans,Eigen::Ref<Vector<ValueType>>(const_cast<Matrix<ValueType>&>(x_in).col(i)),
+                       Eigen::Ref<Vector<ValueType>>(const_cast<Matrix<ValueType>&>(y_inout).col(i)),
+                       alpha,beta);
   }
 }
+
+template <typename ValueType>
+void DiscreteBoundaryOperator<ValueType>::apply(
+    const TranspositionMode trans, const Vector<ValueType> &x_in,
+    Vector<ValueType> &y_inout, const ValueType alpha,
+    const ValueType beta) const {
+
+    this->apply(trans,
+                Eigen::Ref<Vector<ValueType>>(const_cast<Vector<ValueType>&>(x_in)),
+                Eigen::Ref<Vector<ValueType>>(const_cast<Vector<ValueType>&>(y_inout)),
+                alpha,beta);
+
+}
+
+template <typename ValueType>
+void DiscreteBoundaryOperator<ValueType>::apply(const TranspositionMode trans, const Eigen::Ref<Vector<ValueType>> &x_in,
+           Eigen::Ref<Vector<ValueType>> y_inout, const ValueType alpha,
+           const ValueType beta) const {
+
+    applyBuiltInImpl(trans, x_in, y_inout, alpha, beta);
+
+}
+
+template <typename ValueType>
+PyObject* DiscreteBoundaryOperator<ValueType>::apply(const TranspositionMode trans, const PyObject* x_in) const {
+
+  PyObject* x = const_cast<PyObject*>(x_in);
+
+  Py_INCREF(x); // Increase reference count while in function
+
+  if (!PyArray_Check(x)){
+      Py_DECREF(x);
+      throw std::invalid_argument("DiscreteBoundaryOperator::apply(): "
+              "Python object is not of PyArray type");
+  }
+
+  int typenum = PyArray_TYPE(reinterpret_cast<PyArrayObject*>(x));
+  if (typenum!=Fiber::ScalarTraits<ValueType>::NumpyTypeNum){
+      Py_DECREF(x);
+      throw std::invalid_argument("DiscreteBoundaryOperator::apply() "
+              "Python Array has wrong type.");
+
+  }
+
+  if (!PyArray_ISALIGNED(reinterpret_cast<PyArrayObject*>(x))){
+      Py_DECREF(x);
+      throw std::invalid_argument("DiscreteBoundaryOperator::apply(): "
+              "Python array must be aligned.");
+  }
+
+  PyObject* x_f;
+
+  if (!PyArray_IS_F_CONTIGUOUS(reinterpret_cast<PyArrayObject*>(x)))
+      x_f = PyArray_NewCopy(reinterpret_cast<PyArrayObject*>(x),NPY_FORTRANORDER);
+  else
+      x_f = x;
+
+  int ndim = PyArray_NDIM(reinterpret_cast<PyArrayObject*>(x_f));
+
+  if (ndim != 2){
+      Py_DECREF(x_f);
+      throw std::invalid_argument("DiscreteBoundaryOperator::apply(): "
+              "PyArray x_in must have two dimensions.");
+  }
+
+  npy_intp nrows = PyArray_DIM(reinterpret_cast<PyArrayObject*>(x_f),0);
+  npy_intp ncols = PyArray_DIM(reinterpret_cast<PyArrayObject*>(x_f),1);
+
+  bool transposed = (trans == TRANSPOSE || trans == CONJUGATE_TRANSPOSE);
+  if (nrows != (transposed ? rowCount() : columnCount())){
+    Py_DECREF(x_f);
+    throw std::invalid_argument("DiscreteBoundaryOperator::apply(): "
+                                "PyArray x_in has invalid number of rows");
+  }
+  int resultRows = transposed ? columnCount() : rowCount();
+
+  npy_intp dims[2] = {resultRows,ncols};
+  PyObject* y_inout = PyArray_ZEROS(2,dims,typenum,true);
+
+  // Create Maps to the underlying data
+  
+  Eigen::Map<Matrix<ValueType>> x_mat(reinterpret_cast<ValueType*>(PyArray_DATA(reinterpret_cast<PyArrayObject*>(x_f))),nrows,ncols);
+
+  Eigen::Map<Matrix<ValueType>> y_mat(reinterpret_cast<ValueType*>(PyArray_DATA(reinterpret_cast<PyArrayObject*>(y_inout))),resultRows,ncols);
+
+  for (int i = 0; i < ncols; ++i)
+      this->apply(trans,
+              Eigen::Ref<Vector<ValueType>>(x_mat.col(i)),
+              Eigen::Ref<Vector<ValueType>>(y_mat.col(i)),
+              1.0,0.0);
+
+  Py_DECREF(x_f);
+  return y_inout;
+}
+
 
 template <typename ValueType>
 shared_ptr<const DiscreteBoundaryOperator<ValueType>>
@@ -103,46 +202,7 @@ void DiscreteBoundaryOperator<ValueType>::dump() const {
   std::cout << asMatrix() << std::endl;
 }
 
-#ifdef WITH_TRILINOS
-template <typename ValueType>
-void DiscreteBoundaryOperator<ValueType>::applyImpl(
-    const Thyra::EOpTransp M_trans,
-    const Thyra::MultiVectorBase<ValueType> &X_in,
-    const Teuchos::Ptr<Thyra::MultiVectorBase<ValueType>> &Y_inout,
-    const ValueType alpha, const ValueType beta) const {
-  typedef Thyra::Ordinal Ordinal;
 
-  // Note: the name is VERY misleading: these asserts don't disappear in
-  // release runs, and in case of failure throw exceptions rather than
-  // abort.
-  TEUCHOS_ASSERT(this->opSupported(M_trans));
-  TEUCHOS_ASSERT(X_in.range()->isCompatible(*this->domain()));
-  TEUCHOS_ASSERT(Y_inout->range()->isCompatible(*this->range()));
-  TEUCHOS_ASSERT(Y_inout->domain()->isCompatible(*X_in.domain()));
-
-  const Ordinal colCount = X_in.domain()->dim();
-
-  // Loop over the input columns
-
-  for (Ordinal col = 0; col < colCount; ++col) {
-    // Get access the the elements of X_in's and Y_inout's column #col
-    Thyra::ConstDetachedSpmdVectorView<ValueType> xVec(X_in.col(col));
-    Thyra::DetachedSpmdVectorView<ValueType> yVec(Y_inout->col(col));
-    const Teuchos::ArrayRCP<const ValueType> xArray(xVec.sv().values());
-    const Teuchos::ArrayRCP<ValueType> yArray(yVec.sv().values());
-
-    // Wrap the Trilinos array in an Armadillo vector. const_cast is used
-    // because it's more natural to have a const arma::Col<ValueType> array
-    // than an arma::Col<const ValueType> one.
-    const arma::Col<ValueType> xCol(const_cast<ValueType *>(xArray.get()),
-                                    xArray.size(), false /* copy_aux_mem */);
-    arma::Col<ValueType> yCol(yArray.get(), yArray.size(), false);
-
-    applyBuiltInImpl(static_cast<TranspositionMode>(M_trans), xCol, yCol, alpha,
-                     beta);
-  }
-}
-#endif
 
 template <typename ValueType>
 shared_ptr<const DiscreteBoundaryOperator<ValueType>>
@@ -267,13 +327,6 @@ transpose(TranspositionMode trans,
       new TransposedDiscreteBoundaryOperator<ValueType>(trans, op));
 }
 
-template <typename RealType>
-shared_ptr<DiscreteBoundaryOperator<std::complex<RealType>>>
-complexify(const shared_ptr<const DiscreteBoundaryOperator<RealType>> &op) {
-  return shared_ptr<DiscreteBoundaryOperator<std::complex<RealType>>>(
-      new ComplexifiedDiscreteBoundaryOperator<RealType>(op));
-}
-
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(DiscreteBoundaryOperator);
 
 #define INSTANTIATE_FREE_FUNCTIONS(VALUE)                                      \
@@ -317,15 +370,10 @@ FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(DiscreteBoundaryOperator);
       const shared_ptr<const DiscreteBoundaryOperator<VALUE>> &op,             \
       SCALAR scalar);
 
-#define INSTANTIATE_FREE_FUNCTIONS_REAL_ONLY(VALUE)                            \
-  template shared_ptr<DiscreteBoundaryOperator<std::complex<VALUE>>>           \
-  complexify(const shared_ptr<const DiscreteBoundaryOperator<VALUE>> &op);
-
 #if defined(ENABLE_SINGLE_PRECISION)
 INSTANTIATE_FREE_FUNCTIONS(float);
 INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(float, float);
 INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(float, double);
-INSTANTIATE_FREE_FUNCTIONS_REAL_ONLY(float);
 #endif
 
 #if defined(ENABLE_SINGLE_PRECISION) &&                                        \
@@ -344,7 +392,6 @@ INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(std::complex<float>,
 INSTANTIATE_FREE_FUNCTIONS(double);
 INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(double, float);
 INSTANTIATE_FREE_FUNCTIONS_WITH_SCALAR(double, double);
-INSTANTIATE_FREE_FUNCTIONS_REAL_ONLY(double);
 #endif
 
 #if defined(ENABLE_DOUBLE_PRECISION) &&                                        \

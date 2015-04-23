@@ -4,7 +4,9 @@
 #define HMAT_HMATRIX_ACA_COMPRESSOR_IMPL_HPP
 
 #include "hmatrix_aca_compressor.hpp"
+#include <boost/numeric/conversion/cast.hpp>
 #include "hmatrix_low_rank_data.hpp"
+#include "eigen_fwd.hpp"
 #include "scalar_traits.hpp"
 #include <random>
 #include <complex>
@@ -17,6 +19,10 @@ template <typename ValueType, int N>
 void HMatrixAcaCompressor<ValueType, N>::compressBlock(
     const BlockClusterTreeNode<N> &blockClusterTreeNode,
     shared_ptr<HMatrixData<ValueType>> &hMatrixData) const {
+
+  throw std::runtime_error("not yet implemented.");
+
+  /*
 
   if (!blockClusterTreeNode.data().admissible) {
     m_hMatrixDenseCompressor.compressBlock(blockClusterTreeNode, hMatrixData);
@@ -34,10 +40,10 @@ void HMatrixAcaCompressor<ValueType, N>::compressBlock(
 
   hMatrixData.reset(new HMatrixLowRankData<ValueType>());
 
-  arma::Mat<ValueType> &A =
+  Matrix<ValueType> &A =
       static_cast<HMatrixLowRankData<ValueType> *>(hMatrixData.get())->A();
 
-  arma::Mat<ValueType> &B =
+  Matrix<ValueType> &B =
       static_cast<HMatrixLowRankData<ValueType> *>(hMatrixData.get())->B();
 
   A.resize(numberOfRows, m_resizeThreshold);
@@ -60,8 +66,8 @@ void HMatrixAcaCompressor<ValueType, N>::compressBlock(
 
     // Compute complete row
 
-    arma::Mat<ValueType> newRow;
-    arma::Mat<ValueType> newCol;
+    Matrix<ValueType> newRow;
+    Matrix<ValueType> newCol;
 
     IndexRangeType rowIndexRange = {{row, row + 1}};
     IndexRangeType columnIndexRange = columnClusterRange;
@@ -69,13 +75,13 @@ void HMatrixAcaCompressor<ValueType, N>::compressBlock(
     evaluateMatMinusLowRank(blockClusterTreeNode, rowIndexRange,
                             columnIndexRange, newRow, A, B);
 
-    arma::uword maxRowInd;
-    arma::uword maxColInd;
+    std::ptrdiff_t maxRowInd;
+    std::ptrdiff_t maxColInd;
 
-    arma::Mat<typename ScalarTraits<ValueType>::RealType> absMat =
-        arma::abs(newRow);
+    Matrix<typename ScalarTraits<ValueType>::RealType> absMat =
+        newRow.cwiseAbs();
 
-    if (absMat.max(maxRowInd, maxColInd) < 1E-12)
+    if (absMat.maxCoeff(maxRowInd, maxColInd) < 1E-12)
       continue; // Row is effectively zero
 
     auto pivot = newRow(0, maxColInd);
@@ -86,14 +92,14 @@ void HMatrixAcaCompressor<ValueType, N>::compressBlock(
 
     maxColInd += columnClusterRange[0]; // Map back to original variables
     rowIndexRange = rowClusterRange;
-    columnIndexRange = {{maxColInd, maxColInd + 1}};
+    columnIndexRange = {{boost::numeric_cast<std::size_t>(maxColInd), boost::numeric_cast<std::size_t>(maxColInd) + 1}};
 
     evaluateMatMinusLowRank(blockClusterTreeNode, rowIndexRange,
                             columnIndexRange, newCol, A, B);
 
     auto frobeniousNorm = hMatrixData->frobeniusNorm();
 
-    if (rankCount == A.n_cols) {
+    if (rankCount == A.cols()) {
       sizeMultiplier++;
       A.insert_cols(sizeMultiplier * m_resizeThreshold, m_resizeThreshold);
       B.insert_rows(sizeMultiplier * m_resizeThreshold, m_resizeThreshold);
@@ -104,13 +110,16 @@ void HMatrixAcaCompressor<ValueType, N>::compressBlock(
 
     rankCount++;
 
-    if (arma::norm(newCol, 2) * arma::norm(newRow, 2) < m_eps * frobeniousNorm)
+    if (newCol.norm() * newRow.norm() < m_eps * frobeniousNorm)
       break;
   }
-  if (A.n_cols - rankCount > 0) {
-    A.shed_cols(rankCount, A.n_cols - 1);
-    B.shed_rows(rankCount, B.n_rows - 1);
+  if (A.cols() - rankCount > 0) {
+      A = A.block(0,0,A.rows(),rankCount);
+      B = B.block(0,0,B.rows(),rankCount);
   }
+
+  */
+
 }
 
 template <typename ValueType, int N>
@@ -125,8 +134,8 @@ template <typename ValueType, int N>
 void HMatrixAcaCompressor<ValueType, N>::evaluateMatMinusLowRank(
     const BlockClusterTreeNode<N> &blockClusterTreeNode,
     const IndexRangeType &rowIndexRange, const IndexRangeType &columnIndexRange,
-    arma::Mat<ValueType> &data, const arma::Mat<ValueType> &A,
-    const arma::Mat<ValueType> &B) const {
+    Matrix<ValueType> &data, const Matrix<ValueType> &A,
+    const Matrix<ValueType> &B) const {
 
   auto rowClusterRange =
       blockClusterTreeNode.data().rowClusterTreeNode->data().indexRange;
@@ -142,8 +151,8 @@ void HMatrixAcaCompressor<ValueType, N>::evaluateMatMinusLowRank(
   auto colStart = columnIndexRange[0] - columnClusterRange[0];
   auto colEnd = columnIndexRange[1] - columnClusterRange[0];
 
-  data = data - A.submat(rowStart, 0, rowEnd - 1, A.n_cols - 1) *
-                    B.submat(0, colStart, B.n_rows - 1, colEnd - 1);
+  data = data - A.block(rowStart, 0, rowEnd - rowStart, A.cols()) *
+                    B.submat(0, colStart, B.rows(), colEnd - colStart);
 }
 
 template <typename ValueType, int N>

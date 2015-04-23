@@ -27,7 +27,7 @@
 #include "_3d_array.hpp"
 #include "_4d_array.hpp"
 
-#include "../common/armadillo_fwd.hpp"
+#include "types.hpp"
 #include "../common/deprecated.hpp"
 #include <cassert>
 #include <vector>
@@ -35,17 +35,17 @@
 namespace Fiber {
 
 template <typename CoordinateType, typename ValueType, typename DuneBasis>
-void evaluateShapeFunctionsWithDune(const arma::Mat<CoordinateType> &local,
+void evaluateShapeFunctionsWithDune(const Matrix<CoordinateType> &local,
                                     LocalDofIndex localDofIndex,
                                     _3dArray<ValueType> &result,
                                     const DuneBasis &basis = DuneBasis()) {
   typedef typename DuneBasis::Traits Traits;
-  assert(local.n_rows == Traits::dimDomain);
+  assert(local.rows() == Traits::dimDomain);
   assert(localDofIndex == ALL_DOFS ||
          (localDofIndex >= 0 && localDofIndex < basis.size()));
 
   const int functionCount = localDofIndex == ALL_DOFS ? basis.size() : 1;
-  const int pointCount = local.n_cols;
+  const int pointCount = local.cols();
 
   typename Traits::DomainType point;
   std::vector<typename Traits::RangeType> values;
@@ -68,22 +68,22 @@ void evaluateShapeFunctionsWithDune(const arma::Mat<CoordinateType> &local,
 
 template <typename CoordinateType, typename ValueType, typename DuneBasis>
 BEMPP_DEPRECATED void evaluateBasisFunctionsWithDune(
-    const arma::Mat<CoordinateType> &local, LocalDofIndex localDofIndex,
+    const Matrix<CoordinateType> &local, LocalDofIndex localDofIndex,
     _3dArray<ValueType> &result, const DuneBasis &basis = DuneBasis()) {
   evaluateShapeFunctionsWithDune(local, localDofIndex, result, basis);
 }
 
 template <typename CoordinateType, typename ValueType, typename DuneBasis>
 void evaluateShapeFunctionDerivativesWithDune(
-    const arma::Mat<CoordinateType> &local, LocalDofIndex localDofIndex,
+    const Matrix<CoordinateType> &local, LocalDofIndex localDofIndex,
     _4dArray<ValueType> &result, const DuneBasis &basis = DuneBasis()) {
   typedef typename DuneBasis::Traits Traits;
-  assert(local.n_rows == Traits::dimDomain);
+  assert(local.rows() == Traits::dimDomain);
   assert(localDofIndex == ALL_DOFS ||
          (localDofIndex >= 0 && localDofIndex < basis.size()));
 
   const int functionCount = localDofIndex == ALL_DOFS ? basis.size() : 1;
-  const int pointCount = local.n_cols;
+  const int pointCount = local.cols();
 
   typename Traits::DomainType point;
   std::vector<typename Traits::JacobianType> jacobians;
@@ -111,7 +111,7 @@ void evaluateShapeFunctionDerivativesWithDune(
 
 template <typename CoordinateType, typename ValueType, typename DuneBasis>
 BEMPP_DEPRECATED void evaluateBasisFunctionDerivativesWithDune(
-    const arma::Mat<CoordinateType> &local, LocalDofIndex localDofIndex,
+    const Matrix<CoordinateType> &local, LocalDofIndex localDofIndex,
     _4dArray<ValueType> &result, const DuneBasis &basis = DuneBasis()) {
   evaluateShapeFunctionDerivativesWithDune(local, localDofIndex, result, basis);
 }

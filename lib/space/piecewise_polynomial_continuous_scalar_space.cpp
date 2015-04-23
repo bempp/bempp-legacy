@@ -352,8 +352,8 @@ PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::assignDofsImpl() {
 
   // Iterate over elements
   it = m_view->entityIterator<0>();
-  arma::Mat<CoordinateType> vertices;
-  arma::Col<CoordinateType> dofPosition;
+  Matrix<CoordinateType> vertices;
+  Vector<CoordinateType> dofPosition;
   m_flatLocalDofCount = 0;
   std::vector<int> gdofAccessCounts(globalDofCount_, 0);
   while (!it->finished()) {
@@ -364,7 +364,7 @@ PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::assignDofsImpl() {
         !m_strictlyOnSegment || m_segment.contains(0, elementIndex);
 
     geo.getCorners(vertices);
-    int vertexCount = vertices.n_cols;
+    int vertexCount = vertices.cols();
 
     // List of global DOF indices corresponding to the local DOFs of the
     // current element

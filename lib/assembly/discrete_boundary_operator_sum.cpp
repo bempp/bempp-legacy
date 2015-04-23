@@ -18,11 +18,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "bempp/common/config_trilinos.hpp"
 
 #include "discrete_boundary_operator_sum.hpp"
 #include "discrete_aca_boundary_operator.hpp"
 #include "../fiber/explicit_instantiation.hpp"
+#include "../common/eigen_support.hpp"
 
 namespace Bempp {
 
@@ -43,8 +43,8 @@ DiscreteBoundaryOperatorSum<ValueType>::DiscreteBoundaryOperatorSum(
 }
 
 template <typename ValueType>
-arma::Mat<ValueType> DiscreteBoundaryOperatorSum<ValueType>::asMatrix() const {
-  arma::Mat<ValueType> result = m_term1->asMatrix();
+Matrix<ValueType> DiscreteBoundaryOperatorSum<ValueType>::asMatrix() const {
+  Matrix<ValueType> result = m_term1->asMatrix();
   result += m_term2->asMatrix();
   return result;
 }
@@ -62,7 +62,7 @@ unsigned int DiscreteBoundaryOperatorSum<ValueType>::columnCount() const {
 template <typename ValueType>
 void DiscreteBoundaryOperatorSum<ValueType>::addBlock(
     const std::vector<int> &rows, const std::vector<int> &cols,
-    const ValueType alpha, arma::Mat<ValueType> &block) const {
+    const ValueType alpha, Matrix<ValueType> &block) const {
   m_term1->addBlock(rows, cols, alpha, block);
   m_term2->addBlock(rows, cols, alpha, block);
 }
@@ -89,34 +89,15 @@ DiscreteBoundaryOperatorSum<ValueType>::asDiscreteAcaBoundaryOperator(
 }
 #endif // WITH_AHMED
 
-#ifdef WITH_TRILINOS
-template <typename ValueType>
-Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>>
-DiscreteBoundaryOperatorSum<ValueType>::domain() const {
-  return m_term1->domain();
-}
-
-template <typename ValueType>
-Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>>
-DiscreteBoundaryOperatorSum<ValueType>::range() const {
-  return m_term1->range();
-}
-
-template <typename ValueType>
-bool DiscreteBoundaryOperatorSum<ValueType>::opSupportedImpl(
-    Thyra::EOpTransp M_trans) const {
-  return (m_term1->opSupported(M_trans) && m_term2->opSupported(M_trans));
-}
-#endif // WITH_TRILINOS
-
 template <typename ValueType>
 void DiscreteBoundaryOperatorSum<ValueType>::applyBuiltInImpl(
-    const TranspositionMode trans, const arma::Col<ValueType> &x_in,
-    arma::Col<ValueType> &y_inout, const ValueType alpha,
+    const TranspositionMode trans, const Eigen::Ref<Vector<ValueType>> &x_in,
+    Eigen::Ref<Vector<ValueType>> y_inout, const ValueType alpha,
     const ValueType beta) const {
   m_term1->apply(trans, x_in, y_inout, alpha, beta);
   m_term2->apply(trans, x_in, y_inout, alpha,
                  1. /* "+ beta * y_inout" has already been done */);
+
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(DiscreteBoundaryOperatorSum);

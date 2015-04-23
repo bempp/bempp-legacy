@@ -23,9 +23,10 @@
 
 #include "../common/common.hpp"
 
-#include "../common/armadillo_fwd.hpp"
 #include "../common/shared_ptr.hpp"
 #include "../fiber/scalar_traits.hpp"
+
+#include "../common/eigen_support.hpp"
 
 #include <memory>
 #include <vector>
@@ -89,14 +90,14 @@ public:
                      // is converted to 1 == SYMMETRIC
 
   static std::unique_ptr<DiscreteBndOp> assemblePotentialOperator(
-      const arma::Mat<CoordinateType> &points,
+      const Matrix<CoordinateType> &points,
       const Space<BasisFunctionType> &trialSpace,
       const std::vector<LocalAssemblerForPotentialOperators *> &localAssemblers,
       const std::vector<ResultType> &termMultipliers,
       const EvaluationOptions &options);
 
   static std::unique_ptr<DiscreteBndOp>
-  assemblePotentialOperator(const arma::Mat<CoordinateType> &points,
+  assemblePotentialOperator(const Matrix<CoordinateType> &points,
                             const Space<BasisFunctionType> &trialSpace,
                             LocalAssemblerForPotentialOperators &localAssembler,
                             const EvaluationOptions &options);

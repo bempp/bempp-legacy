@@ -18,8 +18,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "bempp/common/config_trilinos.hpp"
-
 #include "abstract_boundary_operator_composition.hpp"
 
 #include "abstract_boundary_operator_pseudoinverse.hpp"
@@ -31,11 +29,6 @@
 #include "../common/boost_make_shared_fwd.hpp"
 #include "../common/shared_ptr.hpp"
 #include "../fiber/explicit_instantiation.hpp"
-
-#ifdef WITH_TRILINOS
-
-#include <boost/make_shared.hpp>
-#endif
 
 namespace Bempp {
 
@@ -73,6 +66,10 @@ shared_ptr<DiscreteBoundaryOperator<ResultType>>
 AbstractBoundaryOperatorComposition<BasisFunctionType, ResultType>::
     assembleWeakFormImpl(const Context<BasisFunctionType, ResultType> &context)
     const {
+
+  throw std::runtime_error("AbstractBoundaryOperatorComposition disabled");
+/*
+
   typedef BoundaryOperator<BasisFunctionType, ResultType> BoundaryOp;
   typedef DiscreteBoundaryOperator<ResultType> DiscreteLinOp;
 
@@ -94,6 +91,8 @@ AbstractBoundaryOperatorComposition<BasisFunctionType, ResultType>::
           pinvId.weakForm(), discreteInner);
   return boost::make_shared<DiscreteBoundaryOperatorComposition<ResultType>>(
       discreteOuter, temp);
+*/
+
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(

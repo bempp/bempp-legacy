@@ -22,8 +22,8 @@
 #define fiber_single_quadrature_rule_family_hpp
 
 #include "../common/common.hpp"
-#include "../common/armadillo_fwd.hpp"
 #include "single_quadrature_descriptor.hpp"
+#include "types.hpp"
 
 #include <vector>
 
@@ -42,7 +42,7 @@ public:
    *    contain the ith (local) coordinate of the jth quadrature point.
    *  \param[out] weights Vector of quadrature point weights. */
   virtual void fillQuadraturePointsAndWeights(
-      const SingleQuadratureDescriptor &desc, arma::Mat<CoordinateType> &points,
+      const SingleQuadratureDescriptor &desc, Matrix<CoordinateType> &points,
       std::vector<CoordinateType> &weights) const = 0;
 };
 

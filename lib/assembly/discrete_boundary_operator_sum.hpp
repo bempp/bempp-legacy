@@ -22,17 +22,13 @@
 #define bempp_discrete_boundary_operator_sum_hpp
 
 #include "bempp/common/config_ahmed.hpp"
-#include "bempp/common/config_trilinos.hpp"
 
 #include "../common/common.hpp"
+#include "../common/eigen_support.hpp"
 
 #include "discrete_boundary_operator.hpp"
 
 #include "../common/shared_ptr.hpp"
-
-#ifdef WITH_TRILINOS
-#include <Teuchos_RCP.hpp>
-#endif
 
 namespace Bempp {
 
@@ -54,14 +50,14 @@ public:
   DiscreteBoundaryOperatorSum(const shared_ptr<const Base> &term1,
                               const shared_ptr<const Base> &term2);
 
-  virtual arma::Mat<ValueType> asMatrix() const;
+  virtual Matrix<ValueType> asMatrix() const;
 
   virtual unsigned int rowCount() const;
   virtual unsigned int columnCount() const;
 
   virtual void addBlock(const std::vector<int> &rows,
                         const std::vector<int> &cols, const ValueType alpha,
-                        arma::Mat<ValueType> &block) const;
+                        Matrix<ValueType> &block) const;
 
 #ifdef WITH_AHMED
   virtual shared_ptr<const DiscreteBoundaryOperator<ValueType>>
@@ -69,19 +65,10 @@ public:
                                 bool interleave = false) const;
 #endif
 
-#ifdef WITH_TRILINOS
-public:
-  virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>> domain() const;
-  virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>> range() const;
-
-protected:
-  virtual bool opSupportedImpl(Thyra::EOpTransp M_trans) const;
-#endif
-
 private:
   virtual void applyBuiltInImpl(const TranspositionMode trans,
-                                const arma::Col<ValueType> &x_in,
-                                arma::Col<ValueType> &y_inout,
+                                const Eigen::Ref<Vector<ValueType>> &x_in,
+                                Eigen::Ref<Vector<ValueType>> y_inout,
                                 const ValueType alpha,
                                 const ValueType beta) const;
 

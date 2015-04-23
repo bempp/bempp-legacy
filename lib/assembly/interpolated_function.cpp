@@ -27,18 +27,20 @@
 #include "../grid/vtk_writer.hpp"
 #include "../grid/vtk_writer_helper.hpp"
 
+#include "../common/eigen_support.hpp"
+
 #include "../space/piecewise_linear_continuous_scalar_space.hpp"
 
 namespace Bempp {
 
 template <typename ValueType>
 InterpolatedFunction<ValueType>::InterpolatedFunction(
-    const Grid &grid, const arma::Mat<ValueType> &vertexValues,
+    const Grid &grid, const Matrix<ValueType> &vertexValues,
     InterpolationMethod method)
     : m_grid(grid), m_vertexValues(vertexValues), m_method(method) {
   std::unique_ptr<GridView> view = grid.leafView();
 
-  if (view->entityCount(grid.dim()) != vertexValues.n_cols)
+  if (view->entityCount(grid.dim()) != vertexValues.cols())
     throw std::invalid_argument("VolumeGridFunction::VolumeGridFunction(): "
                                 "dimension of expansionCoefficients "
                                 "does not match the number of grid vertices");
@@ -59,7 +61,7 @@ int InterpolatedFunction<ValueType>::worldDimension() const {
 
 template <typename ValueType>
 int InterpolatedFunction<ValueType>::codomainDimension() const {
-  return m_vertexValues.n_rows;
+  return m_vertexValues.rows();
 }
 
 template <typename ValueType>
@@ -71,11 +73,11 @@ void InterpolatedFunction<ValueType>::addGeometricalDependencies(
 template <typename ValueType>
 void InterpolatedFunction<ValueType>::evaluate(
     const Fiber::GeometricalData<CoordinateType> &geomData,
-    arma::Mat<ValueType> &result) const {
+    Matrix<ValueType> &result) const {
 
 #ifndef NDEBUG
-  const arma::Mat<CoordinateType> &points = geomData.globals;
-  if ((int)points.n_rows != worldDimension())
+  const Matrix<CoordinateType> &points = geomData.globals;
+  if ((int)points.rows() != worldDimension())
     throw std::invalid_argument("InterpolatedFunction::evaluate(): "
                                 "incompatible world dimension");
 #endif
@@ -115,8 +117,8 @@ template <typename ValueType>
 void InterpolatedFunction<ValueType>::checkCompatibility(
     const InterpolatedFunction<ValueType> &other) const {
   if (&m_grid != &other.m_grid ||
-      m_vertexValues.n_rows != other.m_vertexValues.n_rows ||
-      m_vertexValues.n_cols != other.m_vertexValues.n_cols ||
+      m_vertexValues.rows() != other.m_vertexValues.rows() ||
+      m_vertexValues.cols() != other.m_vertexValues.cols() ||
       m_method != other.m_method)
     throw std::runtime_error("InterpolatedFunction::checkCompatibility(): "
                              "incompatible operands");

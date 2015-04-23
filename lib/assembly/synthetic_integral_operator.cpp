@@ -18,11 +18,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "bempp/common/config_trilinos.hpp"
 
 #include "synthetic_integral_operator.hpp"
+#include "../common/eigen_support.hpp"
 
-#include "abstract_boundary_operator_pseudoinverse.hpp"
 #include "boundary_operator.hpp"
 #include "context.hpp"
 #include "discrete_boundary_operator.hpp"
@@ -35,15 +34,8 @@
 #include "../common/shared_ptr.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
-#ifdef WITH_TRILINOS
 
 #include <boost/make_shared.hpp>
-#endif
-
-#include <Epetra_CrsGraph.h>
-#include <Epetra_CrsMatrix.h>
-#include <EpetraExt_MatrixMatrix.h>
-
 #include <tbb/tick_count.h>
 
 namespace Bempp {
@@ -63,7 +55,7 @@ std::vector<shared_ptr<const DiscreteBoundaryOperator<ResultType>>>
 coalesceTestOperators(
     const std::vector<shared_ptr<const DiscreteBoundaryOperator<ResultType>>> &
         discreteLocalOps,
-    const shared_ptr<const Epetra_CrsMatrix> &idInverse) {
+    const shared_ptr<const RealSparseMatrix> &idInverse) {
   typedef DiscreteBoundaryOperator<ResultType> DiscreteOp;
   typedef DiscreteSparseBoundaryOperator<ResultType> SparseOp;
   std::vector<shared_ptr<const DiscreteOp>> result(discreteLocalOps.size());
@@ -75,15 +67,9 @@ coalesceTestOperators(
     shared_ptr<const SparseOp> op =
         boost::dynamic_pointer_cast<const SparseOp>(discreteLocalOps[i]);
     if (op) {
-      shared_ptr<const Epetra_CrsMatrix> opMat = op->epetraMatrix();
-      shared_ptr<Epetra_CrsMatrix> composition(
-          new Epetra_CrsMatrix(Copy, opMat->Graph()));
-      int err = EpetraExt::MatrixMatrix::Multiply(
-          *opMat, false /* transpose */, *idInverse, false, *composition);
-      if (err != 0)
-        throw std::runtime_error(
-            "SyntheticIntegralOperator::assembleWeakFormImpl(): "
-            "Epetra matrix-matrix multiplication (1) failed");
+      shared_ptr<const RealSparseMatrix> opMat = op->sparseMatrix();
+      shared_ptr<RealSparseMatrix> composition(
+                  new RealSparseMatrix(*opMat*(*idInverse)));
       result[i].reset(new SparseOp(composition));
     } else
       throw std::runtime_error(
@@ -98,7 +84,7 @@ std::vector<shared_ptr<const DiscreteBoundaryOperator<ResultType>>>
 coalesceTrialOperators(
     const std::vector<shared_ptr<const DiscreteBoundaryOperator<ResultType>>> &
         discreteLocalOps,
-    const shared_ptr<const Epetra_CrsMatrix> &idInverse) {
+    const shared_ptr<const RealSparseMatrix> &idInverse) {
   typedef DiscreteBoundaryOperator<ResultType> DiscreteOp;
   typedef DiscreteSparseBoundaryOperator<ResultType> SparseOp;
   std::vector<shared_ptr<const DiscreteOp>> result(discreteLocalOps.size());
@@ -110,15 +96,9 @@ coalesceTrialOperators(
     shared_ptr<const SparseOp> op =
         boost::dynamic_pointer_cast<const SparseOp>(discreteLocalOps[i]);
     if (op) {
-      shared_ptr<const Epetra_CrsMatrix> opMat = op->epetraMatrix();
-      shared_ptr<Epetra_CrsMatrix> composition(
-          new Epetra_CrsMatrix(Copy, opMat->Graph()));
-      int err = EpetraExt::MatrixMatrix::Multiply(
-          *idInverse, true /* transpose */, *opMat, false, *composition);
-      if (err != 0)
-        throw std::runtime_error(
-            "SyntheticIntegralOperator::assembleWeakFormImpl(): "
-            "Epetra matrix-matrix multiplication (1) failed");
+      shared_ptr<const RealSparseMatrix> opMat = op->sparseMatrix();
+      shared_ptr<RealSparseMatrix> composition(
+          new RealSparseMatrix(*idInverse*(*opMat)));
       result[i].reset(new SparseOp(composition));
     } else
       throw std::runtime_error(
@@ -150,7 +130,7 @@ transposeTestOperators(
         mode &= ~TRANSPOSE;
       else
         mode |= TRANSPOSE;
-      result[i].reset(new SparseOp(op->epetraMatrix(), op->symmetryMode(),
+      result[i].reset(new SparseOp(op->sparseMatrix(), op->symmetryMode(),
                                    static_cast<TranspositionMode>(mode)));
     } else
       result[i].reset(new TransposedDiscreteBoundaryOperator<ResultType>(
@@ -359,7 +339,7 @@ SyntheticIntegralOperator<BasisFunctionType, ResultType>::assembleWeakFormImpl(
   // Calculate the inverse mass matrices
   typedef DiscreteSparseBoundaryOperator<ResultType> SparseOp;
   shared_ptr<const SparseOp> discreteTestId, discreteTrialId;
-  shared_ptr<Epetra_CrsMatrix> testInverse, trialInverse;
+  shared_ptr<RealSparseMatrix> testInverse, trialInverse;
   if (!discreteTestLocalOps.empty()) {
     BoundaryOp testId = identityOperator(
         // We don't need a persistent shared_ptr since identityOperator
@@ -382,7 +362,7 @@ SyntheticIntegralOperator<BasisFunctionType, ResultType>::assembleWeakFormImpl(
     // form explicit inverses of very small (e.g. 3 x 3) blocks, and mass
     // matrices are usually well conditioned. So explicit inversion
     // shouldn't cause any significant loss of accuracy.
-    testInverse = sparseInverse(*discreteTestId->epetraMatrix());
+    testInverse = sparseInverse(*discreteTestId->sparseMatrix());
   }
 
   if (!discreteTrialLocalOps.empty()) {
@@ -400,7 +380,7 @@ SyntheticIntegralOperator<BasisFunctionType, ResultType>::assembleWeakFormImpl(
         throw std::runtime_error(
             "SyntheticIntegralOperator::SyntheticIntegralOperator(): "
             "identity operator must be represented by a sparse matrix");
-      trialInverse = sparseInverse(*discreteTrialId->epetraMatrix());
+      trialInverse = sparseInverse(*discreteTrialId->sparseMatrix());
     }
   }
 

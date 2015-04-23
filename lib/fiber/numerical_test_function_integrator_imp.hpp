@@ -42,7 +42,7 @@ template <typename BasisFunctionType, typename UserFunctionType,
 NumericalTestFunctionIntegrator<BasisFunctionType, UserFunctionType, ResultType,
                                 GeometryFactory>::
     NumericalTestFunctionIntegrator(
-        const arma::Mat<CoordinateType> &localQuadPoints,
+        const Matrix<CoordinateType> &localQuadPoints,
         const std::vector<CoordinateType> quadWeights,
         const GeometryFactory &geometryFactory,
         const RawGridGeometry<CoordinateType> &rawGeometry,
@@ -54,7 +54,7 @@ NumericalTestFunctionIntegrator<BasisFunctionType, UserFunctionType, ResultType,
       m_geometryFactory(geometryFactory), m_rawGeometry(rawGeometry),
       m_testTransformations(testTransformations), m_function(function),
       m_openClHandler(openClHandler) {
-  if (localQuadPoints.n_cols != quadWeights.size())
+  if (localQuadPoints.cols() != quadWeights.size())
     throw std::invalid_argument("NumericalTestTrialIntegrator::"
                                 "NumericalTestTrialIntegrator(): "
                                 "numbers of points and weights do not match");
@@ -72,8 +72,8 @@ void NumericalTestFunctionIntegrator<
     BasisFunctionType, UserFunctionType, ResultType,
     GeometryFactory>::integrate(const std::vector<int> &elementIndices,
                                 const Shapeset<BasisFunctionType> &testShapeset,
-                                arma::Mat<ResultType> &result) const {
-  const size_t pointCount = m_localQuadPoints.n_cols;
+                                Matrix<ResultType> &result) const {
+  const size_t pointCount = m_localQuadPoints.cols();
   const size_t elementCount = elementIndices.size();
 
   if (pointCount == 0 || elementCount == 0)
@@ -103,9 +103,9 @@ void NumericalTestFunctionIntegrator<
   std::unique_ptr<Geometry> geometry(m_geometryFactory.make());
 
   Fiber::CollectionOf3dArrays<BasisFunctionType> testValues;
-  arma::Mat<UserFunctionType> functionValues;
+  Matrix<UserFunctionType> functionValues;
 
-  result.set_size(testDofCount, elementCount);
+  result.resize(testDofCount, elementCount);
 
   testShapeset.evaluate(testBasisDeps, m_localQuadPoints, ALL_DOFS,
                         testBasisData);

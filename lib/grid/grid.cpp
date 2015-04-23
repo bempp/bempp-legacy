@@ -39,8 +39,8 @@ double max3(double x, double y, double z) {
   return std::max(x, std::max(y, z));
 }
 
-bool isNew(const arma::Col<double> &intersection,
-           const std::vector<arma::Col<double>> &intersections) {
+bool isNew(Vector<double> &intersection,
+           const std::vector<Vector<double>> &intersections) {
   const double EPSILON = 1e-10;
   for (size_t i = 0; i < intersections.size(); ++i)
     if (fabs(intersections[i](0) - intersection(0)) < EPSILON &&
@@ -59,10 +59,10 @@ bool Grid::isBarycentricRepresentationOf(const Grid &other) const {
     return (this == other.barycentricGrid().get());
 }
 
-void Grid::getBoundingBox(arma::Col<double> &lowerBound,
-                          arma::Col<double> &upperBound) const {
+void Grid::getBoundingBox(Vector<double> &lowerBound,
+                          Vector<double> &upperBound) const {
   // In this simple implementation we assume that all elements are flat.
-  if (m_lowerBound.n_rows == dimWorld() && m_upperBound.n_rows == dimWorld()) {
+  if (m_lowerBound.rows() == dimWorld() && m_upperBound.rows() == dimWorld()) {
     lowerBound = m_lowerBound;
     upperBound = m_upperBound;
     return;
@@ -70,18 +70,16 @@ void Grid::getBoundingBox(arma::Col<double> &lowerBound,
 
   std::unique_ptr<GridView> view = leafView();
 
-  arma::Mat<double> vertices;
-  arma::Mat<int> elementCorners; // unused
-  arma::Mat<char> auxData;       // unused
+  Matrix<double> vertices;
+  Matrix<int> elementCorners; // unused
+  Matrix<char> auxData;       // unused
   view->getRawElementData(vertices, elementCorners, auxData);
 
-  m_lowerBound = lowerBound =
-      arma::min(vertices, 1); // 1 -> min. value in each row
-  m_upperBound = upperBound =
-      arma::max(vertices, 1); // 1 -> max. value in each row
+  m_lowerBound = lowerBound = vertices.rowwise().minCoeff(); // min. value in each row
+  m_upperBound = upperBound = vertices.rowwise().maxCoeff(); // max. value in each row
 }
 
-std::vector<bool> areInside(const Grid &grid, const arma::Mat<double> &points) {
+std::vector<bool> areInside(const Grid &grid, const Matrix<double> &points) {
   if (grid.dim() != 2 || grid.dimWorld() != 3)
     throw NotImplementedError("areInside(): currently implemented only for"
                               "2D grids embedded in 3D spaces");
@@ -89,18 +87,18 @@ std::vector<bool> areInside(const Grid &grid, const arma::Mat<double> &points) {
   std::unique_ptr<GridView> view = grid.leafView();
   std::unique_ptr<EntityIterator<0>> it = view->entityIterator<0>();
 
-  std::vector<arma::Mat<double>> triangles;
+  std::vector<Matrix<double>> triangles;
   triangles.reserve(view->entityCount(0));
 
   {
-    arma::Mat<double> triangle(grid.dimWorld(), 3);
-    arma::Mat<double> corners;
+    Matrix<double> triangle(grid.dimWorld(), 3);
+    Matrix<double> corners;
     while (!it->finished()) {
       const Entity<0> &element = it->entity();
       element.geometry().getCorners(corners);
-      if (corners.n_cols == 3) // triangle
+      if (corners.cols() == 3) // triangle
         triangles.push_back(corners);
-      else if (corners.n_cols == 4) { // quadrilateral, split into 2 triangles
+      else if (corners.cols() == 4) { // quadrilateral, split into 2 triangles
         // NOTE: this won't work for concave quads,
         triangle.col(0) = corners.col(0);
         triangle.col(1) = corners.col(1);
@@ -117,14 +115,14 @@ std::vector<bool> areInside(const Grid &grid, const arma::Mat<double> &points) {
   }
 
   const size_t triangleCount = triangles.size();
-  arma::Row<double> xMins(triangleCount);
-  arma::Row<double> xMaxs(triangleCount);
-  arma::Row<double> yMins(triangleCount);
-  arma::Row<double> yMaxs(triangleCount);
-  arma::Row<double> zMins(triangleCount);
-  arma::Row<double> zMaxs(triangleCount);
+  RowVector<double> xMins(triangleCount);
+  RowVector<double> xMaxs(triangleCount);
+  RowVector<double> yMins(triangleCount);
+  RowVector<double> yMaxs(triangleCount);
+  RowVector<double> zMins(triangleCount);
+  RowVector<double> zMaxs(triangleCount);
   for (size_t i = 0; i < triangleCount; ++i) {
-    const arma::Mat<double> &triangle = triangles[i];
+    const Matrix<double> &triangle = triangles[i];
     xMins(i) = min3(triangle(0, 0), triangle(0, 1), triangle(0, 2));
     xMaxs(i) = max3(triangle(0, 0), triangle(0, 1), triangle(0, 2));
     yMins(i) = min3(triangle(1, 0), triangle(1, 1), triangle(1, 2));
@@ -133,17 +131,17 @@ std::vector<bool> areInside(const Grid &grid, const arma::Mat<double> &points) {
     zMaxs(i) = max3(triangle(2, 0), triangle(2, 1), triangle(2, 2));
   }
 
-  const double gridXMin = arma::min(xMins);
-  const double gridXMax = arma::max(xMaxs);
-  const double gridYMin = arma::min(yMins);
-  const double gridYMax = arma::max(yMaxs);
-  const double gridZMin = arma::min(zMins);
-  const double gridZMax = arma::max(zMaxs);
+  const double gridXMin = xMins.minCoeff();
+  const double gridXMax = xMaxs.maxCoeff();
+  const double gridYMin = yMins.minCoeff();
+  const double gridYMax = yMaxs.maxCoeff();
+  const double gridZMin = zMins.minCoeff();
+  const double gridZMax = zMaxs.maxCoeff();
 
-  const size_t pointCount = points.n_cols;
+  const size_t pointCount = points.cols();
   std::vector<bool> result(pointCount, false);
-  std::vector<arma::Col<double>> intersections;
-  arma::Col<double> intersection(3);
+  std::vector<Vector<double>> intersections;
+  Vector<double> intersection(3);
   for (size_t pt = 0; pt < pointCount; ++pt) {
     if (points(0, pt) < gridXMin || points(0, pt) > gridXMax ||
         points(1, pt) < gridYMin || points(1, pt) > gridYMax ||
@@ -153,10 +151,10 @@ std::vector<bool> areInside(const Grid &grid, const arma::Mat<double> &points) {
     for (size_t tri = 0; tri < triangleCount; ++tri)
       if (points(0, pt) >= xMins(tri) && points(0, pt) <= xMaxs(tri) &&
           points(1, pt) >= yMins(tri) && points(1, pt) <= yMaxs(tri))
-        if (zRayIntersectsTriangle(points.colptr(pt), triangles[tri].colptr(0),
-                                   triangles[tri].colptr(1),
-                                   triangles[tri].colptr(2),
-                                   intersection.colptr(0)) > 0.)
+        if (zRayIntersectsTriangle(points.col(pt).data(), triangles[tri].col(0).data(),
+                                   triangles[tri].col(1).data(),
+                                   triangles[tri].col(2).data(),
+                                   intersection.col(0).data()) > 0.)
           if (isNew(intersection, intersections))
             intersections.push_back(intersection);
     result[pt] = intersections.size();
@@ -164,10 +162,10 @@ std::vector<bool> areInside(const Grid &grid, const arma::Mat<double> &points) {
   return result;
 }
 
-std::vector<bool> areInside(const Grid &grid, const arma::Mat<float> &points) {
-  arma::Mat<double> pointsDouble(points.n_rows, points.n_cols);
-  for (int c = 0; c < points.n_cols; ++c)
-    for (int r = 0; r < points.n_rows; ++r)
+std::vector<bool> areInside(const Grid &grid, const Matrix<float> &points) {
+  Matrix<double> pointsDouble(points.rows(), points.cols());
+  for (int c = 0; c < points.cols(); ++c)
+    for (int r = 0; r < points.rows(); ++r)
       pointsDouble(r, c) = points(r, c);
   return areInside(grid, pointsDouble);
 }

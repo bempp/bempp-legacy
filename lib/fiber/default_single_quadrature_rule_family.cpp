@@ -22,13 +22,14 @@
 
 #include "explicit_instantiation.hpp"
 #include "numerical_quadrature.hpp"
+#include "types.hpp"
 
 namespace Fiber {
 
 template <typename CoordinateType>
 void DefaultSingleQuadratureRuleFamily<CoordinateType>::
     fillQuadraturePointsAndWeights(const SingleQuadratureDescriptor &desc,
-                                   arma::Mat<CoordinateType> &points,
+                                   Matrix<CoordinateType> &points,
                                    std::vector<CoordinateType> &weights) const {
   fillSingleQuadraturePointsAndWeights(desc.vertexCount, desc.order, points,
                                        weights);

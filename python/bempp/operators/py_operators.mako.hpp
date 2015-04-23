@@ -10,6 +10,7 @@ op_types = ['3dSingleLayerBoundaryOperator',
 #define BEMPP_OPERATORS_HPP
 
 #include "bempp/assembly/py_boundary_operator_variants.hpp"
+#include "bempp/common/eigen_support.hpp"
 #include "bempp/common/types.hpp"
 #include "bempp/assembly/symmetry.hpp"
 #include "bempp/assembly/identity_operator.hpp"
@@ -207,14 +208,14 @@ BoundaryOpVariants c_modifiedHelmholtz${op}(
 static inline shared_ptr<const DiscreteBoundaryOperator<double>> 
 py_laplace_single_layer_potential_discrete_operator(
         const SpaceVariants& space, 
-        const arma::Mat<double>& evaluationPoints,
+        const Matrix<double>& evaluationPoints,
         const ParameterList& parameterList){
 
     typedef shared_ptr<const Space<double>> space_t;
 
     space_t my_space = _py_get_space_ptr<double>(space);
-    shared_ptr<arma::Mat<double>> point_ptr(
-            new arma::Mat<double>(evaluationPoints));
+    shared_ptr<Matrix<double>> point_ptr(
+            new Matrix<double>(evaluationPoints));
 
     shared_ptr<PotentialOperator<double,double>> op( 
                 new Laplace3dSingleLayerPotentialOperator<double,double>());
@@ -228,14 +229,14 @@ py_laplace_single_layer_potential_discrete_operator(
 static inline shared_ptr<const DiscreteBoundaryOperator<double>> 
 py_laplace_double_layer_potential_discrete_operator(
         const SpaceVariants& space, 
-        const arma::Mat<double>& evaluationPoints,
+        const Matrix<double>& evaluationPoints,
         const ParameterList& parameterList){
 
     typedef shared_ptr<const Space<double>> space_t;
 
     space_t my_space = _py_get_space_ptr<double>(space);
-    shared_ptr<arma::Mat<double>> point_ptr(
-            new arma::Mat<double>(evaluationPoints));
+    shared_ptr<Matrix<double>> point_ptr(
+            new Matrix<double>(evaluationPoints));
 
     shared_ptr<PotentialOperator<double,double>> op( 
                 new Laplace3dDoubleLayerPotentialOperator<double,double>());
@@ -248,15 +249,15 @@ py_laplace_double_layer_potential_discrete_operator(
 static inline shared_ptr<const DiscreteBoundaryOperator<std::complex<double>>> 
 py_modified_helmholtz_single_layer_potential_discrete_operator(
         const SpaceVariants& space, 
-        const arma::Mat<double>& evaluationPoints,
+        const Matrix<double>& evaluationPoints,
         std::complex<double> waveNumber,
         const ParameterList& parameterList){
 
     typedef shared_ptr<const Space<double>> space_t;
 
     space_t my_space = _py_get_space_ptr<double>(space);
-    shared_ptr<arma::Mat<double>> point_ptr(
-            new arma::Mat<double>(evaluationPoints));
+    shared_ptr<Matrix<double>> point_ptr(
+            new Matrix<double>(evaluationPoints));
 
     shared_ptr<PotentialOperator<double,std::complex<double>>> op( 
                 new ModifiedHelmholtz3dSingleLayerPotentialOperator<double>(
@@ -270,15 +271,15 @@ py_modified_helmholtz_single_layer_potential_discrete_operator(
 static inline shared_ptr<const DiscreteBoundaryOperator<std::complex<double>>> 
 py_modified_helmholtz_double_layer_potential_discrete_operator(
         const SpaceVariants& space, 
-        const arma::Mat<double>& evaluationPoints,
+        const Matrix<double>& evaluationPoints,
         std::complex<double> waveNumber,
         const ParameterList& parameterList){
 
     typedef shared_ptr<const Space<double>> space_t;
 
     space_t my_space = _py_get_space_ptr<double>(space);
-    shared_ptr<arma::Mat<double>> point_ptr(
-            new arma::Mat<double>(evaluationPoints));
+    shared_ptr<Matrix<double>> point_ptr(
+            new Matrix<double>(evaluationPoints));
 
     shared_ptr<PotentialOperator<double,std::complex<double>>> op( 
                 new ModifiedHelmholtz3dDoubleLayerPotentialOperator<double>(
@@ -364,15 +365,15 @@ BoundaryOpVariants c_maxwellDoubleLayerOperator(
 static inline shared_ptr<const DiscreteBoundaryOperator<std::complex<double>>> 
 py_maxwell_double_layer_potential_discrete_operator(
         const SpaceVariants& space, 
-        const arma::Mat<double>& evaluationPoints,
+        const Matrix<double>& evaluationPoints,
         std::complex<double> waveNumber,
         const ParameterList& parameterList){
 
     typedef shared_ptr<const Space<double>> space_t;
 
     space_t my_space = _py_get_space_ptr<double>(space);
-    shared_ptr<arma::Mat<double>> point_ptr(
-            new arma::Mat<double>(evaluationPoints));
+    shared_ptr<Matrix<double>> point_ptr(
+            new Matrix<double>(evaluationPoints));
 
     shared_ptr<PotentialOperator<double,std::complex<double>>> op( 
                 new Maxwell3dDoubleLayerPotentialOperator<double>(
@@ -387,15 +388,15 @@ py_maxwell_double_layer_potential_discrete_operator(
 static inline shared_ptr<const DiscreteBoundaryOperator<std::complex<double>>> 
 py_maxwell_single_layer_potential_discrete_operator(
         const SpaceVariants& space, 
-        const arma::Mat<double>& evaluationPoints,
+        const Matrix<double>& evaluationPoints,
         std::complex<double> waveNumber,
         const ParameterList& parameterList){
 
     typedef shared_ptr<const Space<double>> space_t;
 
     space_t my_space = _py_get_space_ptr<double>(space);
-    shared_ptr<arma::Mat<double>> point_ptr(
-            new arma::Mat<double>(evaluationPoints));
+    shared_ptr<Matrix<double>> point_ptr(
+            new Matrix<double>(evaluationPoints));
 
     shared_ptr<PotentialOperator<double,std::complex<double>>> op( 
                 new Maxwell3dSingleLayerPotentialOperator<double>(
@@ -409,15 +410,15 @@ py_maxwell_single_layer_potential_discrete_operator(
 static inline shared_ptr<const DiscreteBoundaryOperator<std::complex<double>>> 
 py_helmholtz_single_layer_far_field_discrete_operator(
         const SpaceVariants& space, 
-        const arma::Mat<double>& evaluationPoints,
+        const Matrix<double>& evaluationPoints,
         std::complex<double> waveNumber,
         const ParameterList& parameterList){
 
     typedef shared_ptr<const Space<double>> space_t;
 
     space_t my_space = _py_get_space_ptr<double>(space);
-    shared_ptr<arma::Mat<double>> point_ptr(
-            new arma::Mat<double>(evaluationPoints));
+    shared_ptr<Matrix<double>> point_ptr(
+            new Matrix<double>(evaluationPoints));
 
     shared_ptr<PotentialOperator<double,std::complex<double>>> op( 
                 new Helmholtz3dFarFieldSingleLayerPotentialOperator<double>(
@@ -430,15 +431,15 @@ py_helmholtz_single_layer_far_field_discrete_operator(
 static inline shared_ptr<const DiscreteBoundaryOperator<std::complex<double>>> 
 py_helmholtz_double_layer_far_field_discrete_operator(
         const SpaceVariants& space, 
-        const arma::Mat<double>& evaluationPoints,
+        const Matrix<double>& evaluationPoints,
         std::complex<double> waveNumber,
         const ParameterList& parameterList){
 
     typedef shared_ptr<const Space<double>> space_t;
 
     space_t my_space = _py_get_space_ptr<double>(space);
-    shared_ptr<arma::Mat<double>> point_ptr(
-            new arma::Mat<double>(evaluationPoints));
+    shared_ptr<Matrix<double>> point_ptr(
+            new Matrix<double>(evaluationPoints));
 
     shared_ptr<PotentialOperator<double,std::complex<double>>> op( 
                 new Helmholtz3dFarFieldDoubleLayerPotentialOperator<double>(
@@ -451,15 +452,15 @@ py_helmholtz_double_layer_far_field_discrete_operator(
 static inline shared_ptr<const DiscreteBoundaryOperator<std::complex<double>>> 
 py_maxwell_single_layer_far_field_discrete_operator(
         const SpaceVariants& space, 
-        const arma::Mat<double>& evaluationPoints,
+        const Matrix<double>& evaluationPoints,
         std::complex<double> waveNumber,
         const ParameterList& parameterList){
 
     typedef shared_ptr<const Space<double>> space_t;
 
     space_t my_space = _py_get_space_ptr<double>(space);
-    shared_ptr<arma::Mat<double>> point_ptr(
-            new arma::Mat<double>(evaluationPoints));
+    shared_ptr<Matrix<double>> point_ptr(
+            new Matrix<double>(evaluationPoints));
 
     shared_ptr<PotentialOperator<double,std::complex<double>>> op( 
                 new Maxwell3dFarFieldSingleLayerPotentialOperator<double>(
@@ -472,15 +473,15 @@ py_maxwell_single_layer_far_field_discrete_operator(
 static inline shared_ptr<const DiscreteBoundaryOperator<std::complex<double>>> 
 py_maxwell_double_layer_far_field_discrete_operator(
         const SpaceVariants& space, 
-        const arma::Mat<double>& evaluationPoints,
+        const Matrix<double>& evaluationPoints,
         std::complex<double> waveNumber,
         const ParameterList& parameterList){
 
     typedef shared_ptr<const Space<double>> space_t;
 
     space_t my_space = _py_get_space_ptr<double>(space);
-    shared_ptr<arma::Mat<double>> point_ptr(
-            new arma::Mat<double>(evaluationPoints));
+    shared_ptr<Matrix<double>> point_ptr(
+            new Matrix<double>(evaluationPoints));
 
     shared_ptr<PotentialOperator<double,std::complex<double>>> op( 
                 new Maxwell3dFarFieldDoubleLayerPotentialOperator<double>(

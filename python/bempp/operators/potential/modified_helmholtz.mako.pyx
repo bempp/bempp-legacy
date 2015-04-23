@@ -3,9 +3,8 @@ __all__=['single_layer','double_layer']
 from bempp.utils cimport shared_ptr
 from bempp.assembly.discrete_boundary_operator cimport c_DiscreteBoundaryOperator
 from bempp.space.space cimport SpaceVariants
-from bempp.utils.armadillo cimport Mat
 from bempp.utils.parameter_list cimport c_ParameterList, ParameterList
-from bempp.utils.armadillo cimport Mat
+from bempp.utils.eigen cimport np_to_eigen_matrix_float64, Matrix
 from bempp.utils cimport complex_double
 from bempp.assembly.potential_operator cimport PotentialOperator
 from bempp.assembly.discrete_boundary_operator cimport DiscreteBoundaryOperator
@@ -19,13 +18,13 @@ cimport numpy as np
 cdef extern from "bempp/operators/py_operators.hpp" namespace "Bempp":
     cdef shared_ptr[const c_DiscreteBoundaryOperator[complex_double]] py_modified_helmholtz_single_layer_potential_discrete_operator(
                 const SpaceVariants& space,
-                const Mat[double]& evaluationPoints,
+                const Matrix[double]& evaluationPoints,
                 complex_double waveNumber,
                 const c_ParameterList& parameterList) 
 
     cdef shared_ptr[const c_DiscreteBoundaryOperator[complex_double]] py_modified_helmholtz_double_layer_potential_discrete_operator(
                 const SpaceVariants& space,
-                const Mat[double]& evaluationPoints,
+                const Matrix[double]& evaluationPoints,
                 complex_double waveNumber,
                 const c_ParameterList& parameterList) 
 
@@ -43,11 +42,6 @@ def single_layer(Space space,
             raise ValueError("Wrong format for input points")
 
         points = np.require(evaluation_points,"double","F")
-        cdef double[::1,:] point_data = points
-        cdef shared_ptr[Mat[double]] arma_data = shared_ptr[Mat[double]](
-                new Mat[double](&point_data[0,0],
-                evaluation_points.shape[0],evaluation_points.shape[1],
-                False,True))
 
         cdef DiscreteBoundaryOperator op = DiscreteBoundaryOperator()
         cdef complex_double cpp_wave_number = complex_double(np.real(wave_number),
@@ -55,7 +49,7 @@ def single_layer(Space space,
 
         op._impl_complex128_.assign(
              py_modified_helmholtz_single_layer_potential_discrete_operator(
-                 space.impl_,deref(arma_data),
+                 space.impl_,np_to_eigen_matrix_float64(points),
                  cpp_wave_number,deref(parameter_list.impl_)))
         op._dtype = np.dtype('complex128')
 
@@ -75,11 +69,6 @@ def double_layer(Space space,
             raise ValueError("Wrong format for input points")
 
         points = np.require(evaluation_points,"double","F")
-        cdef double[::1,:] point_data = points
-        cdef shared_ptr[Mat[double]] arma_data = shared_ptr[Mat[double]](
-                new Mat[double](&point_data[0,0],
-                evaluation_points.shape[0],evaluation_points.shape[1],
-                False,True))
 
         cdef DiscreteBoundaryOperator op = DiscreteBoundaryOperator()
         cdef complex_double cpp_wave_number = complex_double(np.real(wave_number),
@@ -87,7 +76,7 @@ def double_layer(Space space,
 
         op._impl_complex128_.assign(
              py_modified_helmholtz_double_layer_potential_discrete_operator(
-                 space.impl_,deref(arma_data),
+                 space.impl_,np_to_eigen_matrix_float64(points),
                  cpp_wave_number,deref(parameter_list.impl_)))
         op._dtype = np.dtype('complex128')
 

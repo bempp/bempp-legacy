@@ -24,53 +24,56 @@
 #include "common/armadillo_fwd.hpp"
 #include <boost/type_traits/is_complex.hpp>
 #include <boost/utility/enable_if.hpp>
+#include "common/eigen_support.hpp"
+
+using namespace Bempp;
 
 // Real ValueType
 template <typename ValueType>
 typename boost::disable_if<
 boost::is_complex<ValueType>,
-arma::Col<ValueType>
+Vector<ValueType>
 >::type
 generateRandomVector(int rowCount)
 {
-    return arma::randu<arma::Col<ValueType> >(rowCount);
+    return Vector<ValueType>::Random(rowCount);
 }
 
 // Complex ValueType
 template <typename ValueType>
 typename boost::enable_if<
 boost::is_complex<ValueType>,
-arma::Col<ValueType>
+Vector<ValueType>
 >::type
 generateRandomVector(int rowCount)
 {
-    return arma::randu<arma::Col<ValueType> >(rowCount) +
+    return Vector<ValueType>::Random(rowCount) +
             ValueType(0, 1) *
-            arma::randu<arma::Col<ValueType> >(rowCount);
+            Vector<ValueType>::Random(rowCount);
 }
 
 // Real ValueType
 template <typename ValueType>
 typename boost::disable_if<
 boost::is_complex<ValueType>,
-arma::Mat<ValueType>
+Matrix<ValueType>
 >::type
 generateRandomMatrix(int rowCount, int colCount)
 {
-    return arma::randu<arma::Mat<ValueType> >(rowCount, colCount);
+    return Matrix<ValueType>::Random(rowCount, colCount);
 }
 
 // Complex ValueType
 template <typename ValueType>
 typename boost::enable_if<
 boost::is_complex<ValueType>,
-arma::Mat<ValueType>
+Matrix<ValueType>
 >::type
 generateRandomMatrix(int rowCount, int colCount)
 {
-    return arma::randu<arma::Mat<ValueType> >(rowCount, colCount) +
+    return Matrix<ValueType>::Random(rowCount, colCount) +
             ValueType(0, 1) *
-            arma::randu<arma::Mat<ValueType> >(rowCount, colCount);
+            Matrix<ValueType>::Random(rowCount, colCount);
 }
 
 #endif

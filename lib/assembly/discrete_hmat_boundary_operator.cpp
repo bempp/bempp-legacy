@@ -18,22 +18,23 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#include "../common/common.hpp"
+#include "../common/eigen_support.hpp"
+
 #include "discrete_hmat_boundary_operator.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 #include <boost/numeric/conversion/converter.hpp>
 #include "../hmat/compressed_matrix.hpp"
 #include "../hmat/hmatrix.hpp"
 
+
+
 namespace Bempp {
 
 template <typename ValueType>
 DiscreteHMatBoundaryOperator<ValueType>::DiscreteHMatBoundaryOperator(
     const shared_ptr<hmat::DefaultHMatrixType<ValueType>> &hMatrix)
-    : m_hMatrix(hMatrix),
-      m_domainSpace(Thyra::defaultSpmdVectorSpace<ValueType>(
-          hMatrix->columns())),
-      m_rangeSpace(
-          Thyra::defaultSpmdVectorSpace<ValueType>(hMatrix->rows())) {}
+    : m_hMatrix(hMatrix) {}
 
 template <typename ValueType>
 unsigned int DiscreteHMatBoundaryOperator<ValueType>::rowCount() const {
@@ -59,12 +60,12 @@ DiscreteHMatBoundaryOperator<ValueType>::hMatrix() const
 template <typename ValueType>
 void DiscreteHMatBoundaryOperator<ValueType>::addBlock(
     const std::vector<int> &rows, const std::vector<int> &cols,
-    const ValueType alpha, arma::Mat<ValueType> &block) const {}
+    const ValueType alpha, Matrix<ValueType> &block) const {}
 
 template <typename ValueType>
 void DiscreteHMatBoundaryOperator<ValueType>::applyBuiltInImpl(
-    const TranspositionMode trans, const arma::Col<ValueType> &x_in,
-    arma::Col<ValueType> &y_inout, const ValueType alpha,
+    const TranspositionMode trans, const Eigen::Ref<Vector<ValueType>> &x_in,
+    Eigen::Ref<Vector<ValueType>> y_inout, const ValueType alpha,
     const ValueType beta) const {
 
   hmat::TransposeMode hmatTrans;
@@ -76,26 +77,12 @@ void DiscreteHMatBoundaryOperator<ValueType>::applyBuiltInImpl(
     hmatTrans = hmat::CONJ;
   else
     hmatTrans = hmat::CONJTRANS;
-  m_hMatrix->apply(x_in, y_inout, hmatTrans, alpha, beta);
-}
+  Matrix<ValueType> x_inMat = x_in;
+  Matrix<ValueType> y_inoutMat = y_inout;
 
-template <typename ValueType>
-Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>>
-DiscreteHMatBoundaryOperator<ValueType>::domain() const {
-  return m_domainSpace;
-}
+  m_hMatrix->apply(x_inMat, y_inoutMat, hmatTrans, alpha, beta);
 
-template <typename ValueType>
-Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>>
-DiscreteHMatBoundaryOperator<ValueType>::range() const {
-  return m_rangeSpace;
-}
-
-template <typename ValueType>
-bool DiscreteHMatBoundaryOperator<ValueType>::opSupportedImpl(
-    Thyra::EOpTransp M_trans) const {
-  return (M_trans == Thyra::NOTRANS || M_trans == Thyra::TRANS ||
-          M_trans == Thyra::CONJTRANS);
+  y_inout = y_inoutMat.col(0);
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(DiscreteHMatBoundaryOperator);

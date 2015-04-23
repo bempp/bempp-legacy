@@ -37,7 +37,7 @@
 #include "space/piecewise_constant_scalar_space.hpp"
 
 #include <algorithm>
-#include "common/armadillo_fwd.hpp"
+#include "common/eigen_support.hpp"
 #include <boost/test/unit_test.hpp>
 #include <boost/test/floating_point_comparison.hpp>
 #include <boost/version.hpp>
@@ -114,8 +114,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(interpolated_matches_noniterpolated,
                 "", NO_SYMMETRY,
                 true);
 
-    arma::Mat<RT> matNoninterpolated = opNoninterpolated.weakForm()->asMatrix();
-    arma::Mat<RT> matInterpolated = opInterpolated.weakForm()->asMatrix();
+    Matrix<RT> matNoninterpolated = opNoninterpolated.weakForm()->asMatrix();
+    Matrix<RT> matInterpolated = opInterpolated.weakForm()->asMatrix();
 
     const CT eps = std::numeric_limits<CT>::epsilon();
     BOOST_CHECK(check_arrays_are_close<RT>(

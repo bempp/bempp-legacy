@@ -24,8 +24,8 @@
 #include "../common/common.hpp"
 
 #include "scalar_traits.hpp"
+#include "types.hpp"
 
-#include "../common/armadillo_fwd.hpp"
 #include <vector>
 
 namespace Fiber {
@@ -175,7 +175,7 @@ public:
       const CollectionOf4dArrays<KernelType> &kernels,
       const std::vector<CoordinateType> &testQuadWeights,
       const std::vector<CoordinateType> &trialQuadWeights,
-      arma::Mat<ResultType> &result) const = 0;
+      Matrix<ResultType> &result) const = 0;
 
   /** \brief Evaluate the integral using a non-tensor-product quadrature rule.
    *
@@ -241,7 +241,7 @@ public:
       const CollectionOf3dArrays<BasisFunctionType> &trialTransformations,
       const CollectionOf3dArrays<KernelType> &kernels,
       const std::vector<CoordinateType> &quadWeights,
-      arma::Mat<ResultType> &result) const = 0;
+      Matrix<ResultType> &result) const = 0;
 };
 
 } // namespace Fiber

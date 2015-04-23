@@ -27,6 +27,8 @@
 #include "../common/acc.hpp"
 #include "../common/boost_make_shared_fwd.hpp"
 #include "../common/bounding_box_helpers.hpp"
+#include "../common/eigen_support.hpp"
+
 #include "../fiber/explicit_instantiation.hpp"
 #include "../grid/entity.hpp"
 #include "../grid/entity_iterator.hpp"
@@ -36,7 +38,7 @@
 #include "../grid/mapper.hpp"
 #include "../grid/vtk_writer.hpp"
 
-#include <armadillo>
+
 
 #include <stdexcept>
 #include <iostream>
@@ -261,7 +263,7 @@ void PiecewiseConstantDualGridDiscontinuousScalarSpace<BasisFunctionType>::
   const IndexSet &indexSet = this->gridView().indexSet();
   const int elementCount = this->gridView().entityCount(0);
 
-  std::vector<arma::Mat<CoordinateType>> elementCorners(elementCount);
+  std::vector<Matrix<CoordinateType>> elementCorners(elementCount);
   std::unique_ptr<EntityIterator<0>> it =
       this->gridView().template entityIterator<0>();
   while (!it->finished()) {
@@ -318,19 +320,19 @@ void PiecewiseConstantDualGridDiscontinuousScalarSpace<BasisFunctionType>::
   const IndexSet &indexSet = this->gridView().indexSet();
   int elementCount = this->gridView().entityCount(0);
 
-  arma::Mat<CoordinateType> elementNormals(worldDim, elementCount);
+  Matrix<CoordinateType> elementNormals(worldDim, elementCount);
   std::unique_ptr<EntityIterator<0>> it =
       this->gridView().template entityIterator<0>();
-  arma::Col<CoordinateType> center(gridDim);
+  Vector<CoordinateType> center(gridDim);
   center.fill(0.5);
-  arma::Col<CoordinateType> normal;
+  Matrix<CoordinateType> normal;
   while (!it->finished()) {
     const Entity<0> &e = it->entity();
     int index = indexSet.entityIndex(e);
     e.geometry().getNormals(center, normal);
 
     for (int dim = 0; dim < worldDim; ++dim)
-      elementNormals(dim, index) = normal(dim);
+      elementNormals(dim, index) = normal(dim,0);
     it->next();
   }
 
@@ -380,14 +382,14 @@ void PiecewiseConstantDualGridDiscontinuousScalarSpace<
 
   std::unique_ptr<VtkWriter> vtkWriter = this->gridView().vtkWriter();
   if (dofType == GLOBAL_DOFS) {
-    arma::Row<double> data(idCount);
+    Matrix<double> data(1,idCount);
     for (size_t i = 0; i < idCount; ++i)
-      data(i) = clusterIdsOfDofs[i];
+      data(0,i) = clusterIdsOfDofs[i];
     vtkWriter->addVertexData(data, "ids");
     vtkWriter->write(fileName);
   } else {
-    arma::Mat<double> data(idCount, globalDofCount());
-    data.fill(0.);
+    Matrix<double> data(idCount, globalDofCount());
+    data.setZero();
     size_t row = 0;
     for (size_t id = 0; id < idCount; ++id) {
       bool exists = false;
@@ -401,7 +403,9 @@ void PiecewiseConstantDualGridDiscontinuousScalarSpace<
         }
       }
       if (!exists)
-        data.shed_row(row); // very inefficient, of course
+        // Remove the row
+        eigenRemoveRowFromMatrix(data,row);
+
       else
         ++row;
     }

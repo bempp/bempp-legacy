@@ -22,6 +22,7 @@
 #define bempp_surface_normal_dependent_function_hpp
 
 #include "../common/common.hpp"
+#include "../common/eigen_support.hpp"
 
 #include "../fiber/surface_normal_dependent_function.hpp"
 
@@ -54,9 +55,9 @@ using Fiber::SurfaceNormalDependentFunction;
       // grid given in the argument "normal", and store result in the array
       // "result".
       // All arrays will be preinitialised to correct dimensions.
-      void evaluate(const arma::Col<CoordinateType>& point,
-                    const arma::Col<CoordinateType>& normal,
-                    arma::Col<ValueType>& result) const;
+      void evaluate(const Vector<CoordinateType>& point,
+                    const Vector<CoordinateType>& normal,
+                    Vector<ValueType>& result) const;
   };
   \endcode
 

@@ -54,8 +54,8 @@ namespace Fiber {
       // the array "result"
       // The "point" and "result" arrays will be preinitialised to correct
       // dimensions.
-      void evaluate(const arma::Col<CoordinateType>& point,
-                    arma::Col<ValueType>& result) const;
+      void evaluate(const Vector<CoordinateType>& point,
+                    Vector<ValueType>& result) const;
   };
   \endcode
   */
@@ -79,21 +79,23 @@ public:
   }
 
   virtual void evaluate(const GeometricalData<CoordinateType> &geomData,
-                        arma::Mat<ValueType> &result) const {
-    const arma::Mat<CoordinateType> &points = geomData.globals;
+                        Matrix<ValueType> &result) const {
+    const Matrix<CoordinateType> &points = geomData.globals;
 
 #ifndef NDEBUG
-    if ((int)points.n_rows != worldDimension())
+    if ((int)points.rows() != worldDimension())
       throw std::invalid_argument(
           "SurfaceNormalIndependentFunction::evaluate(): "
           "incompatible world dimension");
 #endif
 
-    const size_t pointCount = points.n_cols;
-    result.set_size(codomainDimension(), pointCount);
+    const size_t pointCount = points.cols();
+    result.resize(codomainDimension(), pointCount);
     for (size_t i = 0; i < pointCount; ++i) {
-      arma::Col<ValueType> activeResultColumn = result.unsafe_col(i);
-      m_functor.evaluate(points.unsafe_col(i), activeResultColumn);
+      Vector<ValueType> resultColumn(result.rows());
+      Vector<CoordinateType> currentPoint = points.col(i);
+      m_functor.evaluate(currentPoint, resultColumn);
+      result.col(i) = resultColumn;
     }
   }
 

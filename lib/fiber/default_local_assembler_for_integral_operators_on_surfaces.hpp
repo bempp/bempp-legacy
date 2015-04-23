@@ -98,13 +98,13 @@ public:
   evaluateLocalWeakForms(CallVariant callVariant,
                          const std::vector<int> &elementIndicesA,
                          int elementIndexB, LocalDofIndex localDofIndexB,
-                         std::vector<arma::Mat<ResultType>> &result,
+                         std::vector<Matrix<ResultType>> &result,
                          CoordinateType nominalDistance = -1.);
 
   virtual void
   evaluateLocalWeakForms(const std::vector<int> &testElementIndices,
                          const std::vector<int> &trialElementIndices,
-                         Fiber::_2dArray<arma::Mat<ResultType>> &result,
+                         Fiber::_2dArray<Matrix<ResultType>> &result,
                          CoordinateType nominalDistance = -1.);
 
   virtual CoordinateType estimateRelativeScale(CoordinateType minDist) const;
@@ -192,7 +192,7 @@ private:
   enum {
     INVALID_INDEX = INT_MAX
   };
-  typedef _2dArray<std::pair<int, arma::Mat<ResultType>>> Cache;
+  typedef _2dArray<std::pair<int, Matrix<ResultType>>> Cache;
   /** \brief Singular integral cache.
    *
    *  This cache stores the preevaluated local weak forms expressed by

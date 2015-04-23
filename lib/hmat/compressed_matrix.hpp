@@ -4,7 +4,7 @@
 #define HMAT_COMPRESSED_MATRIX_HPP
 
 #include "common.hpp"
-#include <armadillo>
+#include "eigen_fwd.hpp"
 
 namespace hmat {
 
@@ -13,15 +13,15 @@ public:
   virtual std::size_t rows() const = 0;
   virtual std::size_t columns() const = 0;
 
-  virtual arma::Mat<ValueType>
-  permuteMatToHMatDofs(const arma::Mat<ValueType> &mat,
+  virtual Matrix<ValueType>
+  permuteMatToHMatDofs(const Matrix<ValueType> &mat,
                        RowColSelector rowOrColumn) const = 0;
 
-  virtual arma::Mat<ValueType>
-  permuteMatToOriginalDofs(const arma::Mat<ValueType> &mat,
+  virtual Matrix<ValueType>
+  permuteMatToOriginalDofs(const Matrix<ValueType> &mat,
                            RowColSelector rowOrColumn) const = 0;
 
-  virtual void apply(const arma::Mat<ValueType> &X, arma::Mat<ValueType> &Y,
+  virtual void apply(const Matrix<ValueType> &X, Matrix<ValueType> &Y,
                      TransposeMode trans, ValueType alpha,
                      ValueType beta) const = 0;
 };

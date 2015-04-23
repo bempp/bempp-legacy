@@ -9,6 +9,7 @@ from space import spaces
 #include "bempp/common/shared_ptr.hpp"
 #include "bempp/space/space.hpp"
 #include "bempp/utils/py_types.hpp"
+#include "bempp/common/eigen_support.hpp"
 #include <boost/variant.hpp>
 #include <type_traits>
 #include <type_traits>
@@ -192,22 +193,22 @@ shared_ptr<const Space<BasisFunctionType>> _py_get_space_ptr(const SpaceVariants
 }
 
 template<typename BasisFunctionType>
-arma::Mat<typename Fiber::ScalarTraits<BasisFunctionType>::RealType> _py_space_get_global_dof_interp_points(
+Matrix<typename Fiber::ScalarTraits<BasisFunctionType>::RealType> _py_space_get_global_dof_interp_points(
         const SpaceVariants& space_variant){
 
     shared_ptr<const Space<BasisFunctionType>> space_ptr = _py_get_space_ptr<BasisFunctionType>(space_variant);
-    arma::Mat<typename Fiber::ScalarTraits<BasisFunctionType>::RealType> result;
+    Matrix<typename Fiber::ScalarTraits<BasisFunctionType>::RealType> result;
     space_ptr->getGlobalDofInterpolationPoints(result);
     return result;
 }
 
 
 template<typename BasisFunctionType>
-arma::Mat<typename Fiber::ScalarTraits<BasisFunctionType>::RealType> _py_space_get_global_dof_normals(
+Matrix<typename Fiber::ScalarTraits<BasisFunctionType>::RealType> _py_space_get_global_dof_normals(
         const SpaceVariants& space_variant){
 
     shared_ptr<const Space<BasisFunctionType>> space_ptr = _py_get_space_ptr<BasisFunctionType>(space_variant);
-    arma::Mat<typename Fiber::ScalarTraits<BasisFunctionType>::RealType> result;
+    Matrix<typename Fiber::ScalarTraits<BasisFunctionType>::RealType> result;
     space_ptr->getNormalsAtGlobalDofInterpolationPoints(result);
     return result;
 }

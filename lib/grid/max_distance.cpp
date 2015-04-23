@@ -21,6 +21,7 @@
 #include "max_distance.hpp"
 
 #include "grid.hpp"
+#include "../common/eigen_support.hpp"
 
 #include <cmath>
 
@@ -32,14 +33,14 @@ double maxDistance(const Grid &grid1, const Grid &grid2) {
     throw std::invalid_argument("maxDistance(): both grids must be "
                                 "embedded in spaces of the same dimension");
 
-  arma::Col<double> lowerBound1, upperBound1;
+  Vector<double> lowerBound1, upperBound1;
   grid1.getBoundingBox(lowerBound1, upperBound1);
-  arma::Col<double> lowerBound2, upperBound2;
+  Vector<double> lowerBound2, upperBound2;
   grid2.getBoundingBox(lowerBound2, upperBound2);
 
   if (dimWorld == 3) {
     const int pointCount = 16; // 2 * 2**dimWorld
-    arma::Mat<double> points(dimWorld, pointCount);
+    Matrix<double> points(dimWorld, pointCount);
     points.col(0) = lowerBound1;
     points.col(1) = lowerBound1;
     points(0, 1) = upperBound1(0);
@@ -72,7 +73,7 @@ double maxDistance(const Grid &grid1, const Grid &grid2) {
     double result = 0.;
     for (int i = 0; i < pointCount; ++i)
       for (int j = i + 1; j < pointCount; ++j) {
-        arma::Col<double> diff = points.col(i) - points.col(j);
+        Vector<double> diff = points.col(i) - points.col(j);
         double dist =
             sqrt(diff(0) * diff(0) + diff(1) * diff(1) + diff(2) * diff(2));
         result = std::max(dist, result);

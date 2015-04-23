@@ -23,7 +23,7 @@
 
 #include "../common/common.hpp"
 
-#include "../common/armadillo_fwd.hpp"
+#include "types.hpp"
 
 namespace Fiber {
 
@@ -39,32 +39,33 @@ public:
 
   // Const accessors
 
-  const arma::Mat<CoordinateType> &vertices() const { return m_vertices; }
+  const Matrix<CoordinateType> &vertices() const { return m_vertices; }
 
-  const arma::Mat<int> &elementCornerIndices() const {
+  const Matrix<int> &elementCornerIndices() const {
     return m_elementCornerIndices;
   }
 
-  const arma::Mat<char> &auxData() const { return m_auxData; }
+  const Matrix<char> &auxData() const { return m_auxData; }
 
   const std::vector<int> &domainIndices() const { return m_domainIndices; }
 
-  int elementCount() const { return m_elementCornerIndices.n_cols; }
+  int elementCount() const { return m_elementCornerIndices.cols(); }
 
   int gridDimension() const { return m_gridDim; }
 
   int worldDimension() const { return m_worldDim; }
 
   /** \brief Indices of the corners of the given element. */
-  arma::Col<int> elementCornerIndices(int elementIndex) const {
+  Vector<int> elementCornerIndices(int elementIndex) const {
     const int n = elementCornerCount(elementIndex);
-    return m_elementCornerIndices(arma::span(0, n - 1),
-                                  arma::span(elementIndex));
+    //return m_elementCornerIndices(arma::span(0, n - 1),
+    //                              arma::span(elementIndex));
+    return m_elementCornerIndices.block(0,elementIndex,n,1);
   }
 
   /** \brief Number of corners of the given element. */
   int elementCornerCount(int elementIndex) const {
-    int n = m_elementCornerIndices.n_rows;
+    int n = m_elementCornerIndices.rows();
     while (m_elementCornerIndices(n - 1, elementIndex) < 0)
       --n;
     return n;
@@ -77,11 +78,11 @@ public:
 
   // Non-const accessors (currently needed for construction)
 
-  arma::Mat<CoordinateType> &vertices() { return m_vertices; }
+  Matrix<CoordinateType> &vertices() { return m_vertices; }
 
-  arma::Mat<int> &elementCornerIndices() { return m_elementCornerIndices; }
+  Matrix<int> &elementCornerIndices() { return m_elementCornerIndices; }
 
-  arma::Mat<char> &auxData() { return m_auxData; }
+  Matrix<char> &auxData() { return m_auxData; }
 
   std::vector<int> &domainIndices() { return m_domainIndices; }
 
@@ -89,24 +90,25 @@ public:
 
   template <typename Geometry>
   void setupGeometry(int elementIndex, Geometry &geometry) const {
-    const int dimGrid = m_vertices.n_rows;
+    const int dimGrid = m_vertices.rows();
     size_t cornerCount = 0;
-    for (; cornerCount < m_elementCornerIndices.n_rows; ++cornerCount)
+    for (; cornerCount < m_elementCornerIndices.rows(); ++cornerCount)
       if (m_elementCornerIndices(cornerCount, elementIndex) < 0)
         break;
-    arma::Mat<CoordinateType> corners(dimGrid, cornerCount);
+    Matrix<CoordinateType> corners(dimGrid, cornerCount);
     for (size_t cornerIndex = 0; cornerIndex < cornerCount; ++cornerIndex)
       corners.col(cornerIndex) =
           m_vertices.col(m_elementCornerIndices(cornerIndex, elementIndex));
-    geometry.setup(corners, m_auxData.unsafe_col(elementIndex));
+    Eigen::Map<Matrix<char>> auxDataMap(const_cast<char*>(m_auxData.col(elementIndex).data()),m_auxData.rows(),1);
+    geometry.setup(corners, auxDataMap);
   }
 
 private:
   int m_gridDim;
   int m_worldDim;
-  arma::Mat<CoordinateType> m_vertices;
-  arma::Mat<int> m_elementCornerIndices;
-  arma::Mat<char> m_auxData;
+  Matrix<CoordinateType> m_vertices;
+  Matrix<int> m_elementCornerIndices;
+  Matrix<char> m_auxData;
   std::vector<int> m_domainIndices;
 };
 

@@ -18,21 +18,16 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "bempp/common/config_trilinos.hpp"
 
 #ifndef bempp_discrete_dense_boundary_operator_hpp
 #define bempp_discrete_dense_boundary_operator_hpp
 
 #include "../common/common.hpp"
+#include "../common/eigen_support.hpp"
 
 #include "discrete_boundary_operator.hpp"
 
 #include "../common/shared_ptr.hpp"
-
-#ifdef WITH_TRILINOS
-#include <Teuchos_RCP.hpp>
-#include <Thyra_SpmdVectorSpaceBase_decl.hpp>
-#endif
 
 namespace Bempp {
 
@@ -46,44 +41,31 @@ public:
    *
    *  Construct a discrete boundary operator represented by the matrix \p mat.
    */
-  explicit DiscreteDenseBoundaryOperator(const arma::Mat<ValueType> &mat);
+  explicit DiscreteDenseBoundaryOperator(const Matrix<ValueType> &mat);
 
   virtual void dump() const;
 
-  virtual arma::Mat<ValueType> asMatrix() const;
+  virtual Matrix<ValueType> asMatrix() const;
 
   virtual unsigned int rowCount() const;
   virtual unsigned int columnCount() const;
 
   virtual void addBlock(const std::vector<int> &rows,
                         const std::vector<int> &cols, const ValueType alpha,
-                        arma::Mat<ValueType> &block) const;
+                        Matrix<ValueType> &block) const;
 
   PyObject* asNumpyObject() const;
 
-#ifdef WITH_TRILINOS
-public:
-  virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>> domain() const;
-  virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>> range() const;
-
-protected:
-  virtual bool opSupportedImpl(Thyra::EOpTransp M_trans) const;
-#endif
-
 private:
   virtual void applyBuiltInImpl(const TranspositionMode trans,
-                                const arma::Col<ValueType> &x_in,
-                                arma::Col<ValueType> &y_inout,
+                                const Eigen::Ref<Vector<ValueType>> &x_in,
+                                Eigen::Ref<Vector<ValueType>> y_inout,
                                 const ValueType alpha,
                                 const ValueType beta) const;
 
 private:
   /** \cond PRIVATE */
-mutable  arma::Mat<ValueType> m_mat;
-#ifdef WITH_TRILINOS
-  Teuchos::RCP<const Thyra::SpmdVectorSpaceBase<ValueType>> m_domainSpace;
-  Teuchos::RCP<const Thyra::SpmdVectorSpaceBase<ValueType>> m_rangeSpace;
-#endif
+mutable  Matrix<ValueType> m_mat;
   /** \endcond */
 };
 
@@ -92,7 +74,7 @@ mutable  arma::Mat<ValueType> m_mat;
  *  wrapping a specified matrix. */
 template <typename ValueType>
 shared_ptr<DiscreteDenseBoundaryOperator<ValueType>>
-discreteDenseBoundaryOperator(const arma::Mat<ValueType> &mat);
+discreteDenseBoundaryOperator(const Matrix<ValueType> &mat);
 
 } // namespace Bempp
 

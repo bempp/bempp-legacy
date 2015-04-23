@@ -66,9 +66,9 @@ public:
   shapeset(const Entity<0> &element) const;
 
   virtual void
-  getGlobalDofInterpolationPoints(arma::Mat<CoordinateType> &points) const;
+  getGlobalDofInterpolationPoints(Matrix<CoordinateType> &points) const;
   virtual void getNormalsAtGlobalDofInterpolationPoints(
-      arma::Mat<CoordinateType> &normals) const;
+      Matrix<CoordinateType> &normals) const;
 
 private:
   /** \cond PRIVATE */

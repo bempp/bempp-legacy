@@ -3,13 +3,15 @@
 #include "assembled_potential_operator.hpp"
 #include "interpolated_function.hpp"
 
+#include "../common/eigen_support.hpp"
+
 namespace Bempp {
 
 template <typename BasisFunctionType, typename ResultType>
 AssembledPotentialOperator<BasisFunctionType, ResultType>
 PotentialOperator<BasisFunctionType, ResultType>::assemble(
     const shared_ptr<const Space<BasisFunctionType>> &space,
-    const shared_ptr<const arma::Mat<CoordinateType>> &evaluationPoints,
+    const shared_ptr<const Matrix<CoordinateType>> &evaluationPoints,
     const ParameterList &parameterList) const {
 
   shared_ptr<Context<BasisFunctionType, ResultType>> context(
@@ -20,10 +22,10 @@ PotentialOperator<BasisFunctionType, ResultType>::assemble(
 }
 
 template <typename BasisFunctionType, typename ResultType>
-arma::Mat<ResultType>
+Matrix<ResultType>
 PotentialOperator<BasisFunctionType, ResultType>::evaluateAtPoints(
     const GridFunction<BasisFunctionType, ResultType> &argument,
-    const arma::Mat<CoordinateType> &evaluationPoints,
+    const Matrix<CoordinateType> &evaluationPoints,
     const ParameterList &parameterList) const {
 
   shared_ptr<Context<BasisFunctionType, ResultType>> context(

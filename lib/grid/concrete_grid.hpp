@@ -26,6 +26,7 @@
 #include "grid_parameters.hpp"
 #include "grid_factory.hpp"
 #include "../common/shared_ptr.hpp"
+#include "../common/eigen_support.hpp"
 
 #include "grid.hpp"
 #include "concrete_domain_index.hpp"
@@ -35,8 +36,6 @@
 #include "concrete_id_set.hpp"
 
 #include <dune/grid/common/gridview.hh>
-
-#include <armadillo>
 
 #include <memory>
 

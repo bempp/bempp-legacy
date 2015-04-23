@@ -229,7 +229,7 @@ std::unique_ptr<LocalAssemblerForPotentialOperators<ResultType>>
 NumericalQuadratureStrategyBase<BasisFunctionType, ResultType, GeometryFactory,
                                 Enable>::
     makeAssemblerForPotentialOperatorsImplRealKernel(
-        const arma::Mat<CoordinateType> &evaluationPoints,
+        const Matrix<CoordinateType> &evaluationPoints,
         const shared_ptr<const GeometryFactory> &geometryFactory,
         const shared_ptr<const RawGridGeometry<CoordinateType>> &rawGeometry,
         const shared_ptr<const std::vector<
@@ -455,7 +455,7 @@ std::unique_ptr<LocalAssemblerForPotentialOperators<ResultType>>
 NumericalQuadratureStrategy<BasisFunctionType, ResultType, GeometryFactory,
                             Enable>::
     makeAssemblerForPotentialOperatorsImplComplexKernel(
-        const arma::Mat<CoordinateType> &evaluationPoints,
+        const Matrix<CoordinateType> &evaluationPoints,
         const shared_ptr<const GeometryFactory> &geometryFactory,
         const shared_ptr<const RawGridGeometry<CoordinateType>> &rawGeometry,
         const shared_ptr<const std::vector<

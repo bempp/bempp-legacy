@@ -3,15 +3,15 @@
 %> 
 
 % for pyvalue in dtypes:
-from bempp.utils.armadillo cimport armadillo_to_np_${pyvalue}, armadillo_col_to_np_${pyvalue}
+from bempp.utils.eigen cimport eigen_vector_to_np_${pyvalue}
+from bempp.utils.eigen cimport np_to_eigen_vector_${pyvalue}
 % endfor
     
 from bempp.space.space cimport Space
-from bempp.utils.armadillo cimport Col
+from bempp.utils cimport Matrix,Vector
 from bempp.utils cimport shared_ptr 
 from bempp.space.space cimport c_Space, _py_get_space_ptr 
 from bempp.utils.parameter_list cimport ParameterList, c_ParameterList 
-from bempp.utils.armadillo cimport Mat
 from bempp.utils cimport catch_exception
 from bempp.utils cimport complex_float,complex_double
 from bempp.utils.enum_types cimport construction_mode
@@ -20,7 +20,6 @@ from cython.operator cimport dereference as deref
 import numpy as np
 cimport numpy as np
 
-np.import_array()
 
 cdef void _fun_interface(object x, object normal, int domain_index, object res, object call_fun):
 
@@ -132,7 +131,7 @@ cdef class GridFunction:
     def __init__(self,Space space,**kwargs):
 
 % for pyvalue,cyvalue in dtypes.items():
-        cdef Col[${cyvalue}]* arma_data_${pyvalue}
+        cdef Vector[${cyvalue}]* eigen_data_${pyvalue}
         cdef ${scalar_cython_type(cyvalue)} [::1] data_view_${pyvalue}
 % endfor
 
@@ -195,16 +194,14 @@ cdef class GridFunction:
 %         if pyresult in compatible_dtypes[pybasis]:
             if (self._basis_type=="${pybasis}") and (self._result_type=="${pyresult}"):
                 num_entries = kwargs['projections'].shape[0]
-                data_view_${pyresult} = np.require(kwargs['projections'],
-                        "${pyresult}","F")
-                arma_data_${pyresult} = new Col[${cyresult}](<${cyresult}*>&data_view_${pyresult}[0],num_entries,True,False)
+                eigen_data_${pyresult} = new Vector[${cyresult}](np_to_eigen_vector_${pyresult}(np.require(kwargs['projections'],"${pyresult}","F")))
 
                 self._impl_${pybasis}_${pyresult}.reset(
                         new c_GridFunction[${cybasis},${cyresult}](deref((<ParameterList>self.parameter_list).impl_),
                         _py_get_space_ptr[${cybasis}](self._space.impl_),
                         _py_get_space_ptr[${cybasis}]((<Space>kwargs['dual_space']).impl_),
-                        deref(arma_data_${pyresult})))
-                del arma_data_${pyresult}
+                        deref(eigen_data_${pyresult})))
+                del eigen_data_${pyresult}
 %         endif
 %     endfor
 % endfor
@@ -221,15 +218,14 @@ cdef class GridFunction:
 %         if pyresult in compatible_dtypes[pybasis]:
             if (self._basis_type=="${pybasis}") and (self._result_type=="${pyresult}"):
                 num_entries = kwargs['coefficients'].shape[0]
-                data_view_${pyresult} = np.require(kwargs['coefficients'],
-                        "${pyresult}","F")
-                arma_data_${pyresult} = new Col[${cyresult}](<${cyresult}*>&data_view_${pyresult}[0],num_entries,True,False)
+                eigen_data_${pyresult} = new Vector[${cyresult}](np_to_eigen_vector_${pyresult}(np.require(kwargs['coefficients'],"${pyresult}","F")))
+
 
                 self._impl_${pybasis}_${pyresult}.reset(
                         new c_GridFunction[${cybasis},${cyresult}](deref((<ParameterList>self.parameter_list).impl_),
                         _py_get_space_ptr[${cybasis}](self._space.impl_),
-                        deref(arma_data_${pyresult})))
-                del arma_data_${pyresult}
+                        deref(eigen_data_${pyresult})))
+                del eigen_data_${pyresult}
 %         endif
 %     endfor
 % endfor
@@ -253,8 +249,8 @@ cdef class GridFunction:
 %     for pyresult,cyresult in dtypes.items():
 %         if pyresult in compatible_dtypes[pybasis]:
     cdef np.ndarray _get_coefficients_${pybasis}_${pyresult}(self):
-        cdef const Col[${cyresult}]* arma_coeffs = &deref(self._impl_${pybasis}_${pyresult}).coefficients()
-        return armadillo_col_to_np_${pyresult}(deref(arma_coeffs))
+        cdef const Vector[${cyresult}]* eigen_coeffs = &deref(self._impl_${pybasis}_${pyresult}).coefficients()
+        return eigen_vector_to_np_${pyresult}(deref(eigen_coeffs))
 %          endif
 %      endfor
 %  endfor
@@ -266,11 +262,7 @@ cdef class GridFunction:
 %         if pyresult in compatible_dtypes[pybasis]:
     cdef void _set_coefficients_${pybasis}_${pyresult}(self, 
             np.ndarray coeffs):
-        cdef np.ndarray[${scalar_cython_type(cyresult)},ndim=1,mode='fortran'] coeffs_converted = np.require(coeffs,"${pyresult}","F")
-        cdef Col[${cyresult}]* arma_coeffs = new Col[${cyresult}](
-                <${cyresult}*>&coeffs_converted[0],coeffs_converted.shape[0],False,True)
-        deref(self._impl_${pybasis}_${pyresult}).setCoefficients((deref(arma_coeffs)))
-        del arma_coeffs
+        deref(self._impl_${pybasis}_${pyresult}).setCoefficients(np_to_eigen_vector_${pyresult}(np.require(coeffs,"${pyresult}","F")))
 %          endif
 %      endfor
 %  endfor
@@ -280,9 +272,9 @@ cdef class GridFunction:
 %     for pyresult,cyresult in dtypes.items():
 %         if pyresult in compatible_dtypes[pybasis]:
     cdef np.ndarray _projections_${pybasis}_${pyresult}(self, Space dual_space):
-        cdef Col[${cyresult}] arma_coeffs = deref(self._impl_${pybasis}_${pyresult}).projections(
+        cdef Vector[${cyresult}] eigen_coeffs = deref(self._impl_${pybasis}_${pyresult}).projections(
                 _py_get_space_ptr[${cybasis}](dual_space.impl_))
-        return armadillo_col_to_np_${pyresult}(arma_coeffs)
+        return eigen_vector_to_np_${pyresult}(eigen_coeffs)
 %          endif
 %      endfor
 %  endfor

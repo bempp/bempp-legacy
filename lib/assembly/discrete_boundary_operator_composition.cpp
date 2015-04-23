@@ -18,10 +18,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "bempp/common/config_trilinos.hpp"
 
 #include "discrete_boundary_operator_composition.hpp"
 #include "../fiber/explicit_instantiation.hpp"
+
+#include "../common/eigen_support.hpp"
 
 namespace Bempp {
 
@@ -38,7 +39,7 @@ DiscreteBoundaryOperatorComposition<ValueType>::
     throw std::invalid_argument("DiscreteBoundaryOperatorComposition::"
                                 "DiscreteBoundaryOperatorComposition(): "
                                 "term dimensions do not match");
-  // TODO: perhaps test for compatibility of Thyra spaces
+
 }
 
 template <typename ValueType>
@@ -55,45 +56,25 @@ DiscreteBoundaryOperatorComposition<ValueType>::columnCount() const {
 template <typename ValueType>
 void DiscreteBoundaryOperatorComposition<ValueType>::addBlock(
     const std::vector<int> &rows, const std::vector<int> &cols,
-    const ValueType alpha, arma::Mat<ValueType> &block) const {
+    const ValueType alpha, Matrix<ValueType> &block) const {
   throw std::runtime_error("DiscreteBoundaryOperatorComposition::"
                            "DiscreteBoundaryOperatorComposition(): "
                            "addBlock: not implemented yet");
 }
 
-#ifdef WITH_TRILINOS
-template <typename ValueType>
-Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>>
-DiscreteBoundaryOperatorComposition<ValueType>::domain() const {
-  return m_inner->domain();
-}
-
-template <typename ValueType>
-Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>>
-DiscreteBoundaryOperatorComposition<ValueType>::range() const {
-  return m_outer->range();
-}
-
-template <typename ValueType>
-bool DiscreteBoundaryOperatorComposition<ValueType>::opSupportedImpl(
-    Thyra::EOpTransp M_trans) const {
-  return (m_outer->opSupported(M_trans) && m_inner->opSupported(M_trans));
-}
-#endif // WITH_TRILINOS
-
 template <typename ValueType>
 void DiscreteBoundaryOperatorComposition<ValueType>::applyBuiltInImpl(
-    const TranspositionMode trans, const arma::Col<ValueType> &x_in,
-    arma::Col<ValueType> &y_inout, const ValueType alpha,
+    const TranspositionMode trans, const Eigen::Ref<Vector<ValueType>> &x_in,
+    Eigen::Ref<Vector<ValueType>> y_inout, const ValueType alpha,
     const ValueType beta) const {
   if (trans == TRANSPOSE || trans == CONJUGATE_TRANSPOSE) {
-    arma::Col<ValueType> tmp(m_outer->columnCount());
-    m_outer->apply(trans, x_in, tmp, alpha, 0.);
-    m_inner->apply(trans, tmp, y_inout, 1., beta);
+    Vector<ValueType> tmp(m_outer->columnCount());
+    m_outer->apply(trans, x_in, Eigen::Ref<Vector<ValueType>>(tmp), alpha, 0.);
+    m_inner->apply(trans, Eigen::Ref<Vector<ValueType>>(tmp), y_inout, 1., beta);
   } else {
-    arma::Col<ValueType> tmp(m_inner->rowCount());
-    m_inner->apply(trans, x_in, tmp, alpha, 0.);
-    m_outer->apply(trans, tmp, y_inout, 1., beta);
+    Vector<ValueType> tmp(m_inner->rowCount());
+    m_inner->apply(trans, x_in, Eigen::Ref<Vector<ValueType>>(tmp), alpha, 0.);
+    m_outer->apply(trans, Eigen::Ref<Vector<ValueType>>(tmp), y_inout, 1., beta);
   }
 }
 

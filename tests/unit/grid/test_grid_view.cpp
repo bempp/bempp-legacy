@@ -19,7 +19,7 @@
 // THE SOFTWARE.
 
 #include "test_grid_view.hpp"
-#include "grid/armadillo_helpers.hpp"
+#include "grid/eigen_helpers.hpp"
 #include "grid/entity.hpp"
 #include "grid/entity_iterator.hpp"
 #include "grid/geometry.hpp"
@@ -120,13 +120,13 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityIterator_second_entity_agrees_with_Dune_
 {
     const int codim = T::value;
 
-    arma::Col<double> elementCenter;
+    Vector<double> elementCenter(3);
     {
         std::unique_ptr<EntityIterator<codim> > it = bemppGridView->entityIterator<codim>();
         it->next();
         const Entity<codim>& e = it->entity();
         const Geometry& geo = e.geometry();
-        geo.getCenter(elementCenter);
+        geo.getCenter(Eigen::Ref<Vector<double>>(elementCenter));
     }
 
     Dune::FieldVector<DuneGrid::ctype, DuneGrid::dimensionworld> duneElementCenter;
@@ -234,14 +234,14 @@ BOOST_AUTO_TEST_CASE(entityCount_is_zero_for_codim_3)
 }
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityCount_agrees_with_Dune_for_codim,
-                                  T, list_0_to_3)
+                                  T, list_0_to_2)
 {
     const int codim = T::value;
     BOOST_CHECK_EQUAL(bemppGridView->entityCount(codim), (size_t) duneGridView.size(codim));
 }
 
 BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityCount_agrees_with_Dune_for_simplex_of_dim,
-                                  T, list_0_to_3)
+                                  T, list_0_to_2)
 {
     const int dim = T::value;
     const GeometryType type(GeometryType::simplex, dim);
@@ -326,13 +326,13 @@ BOOST_AUTO_TEST_CASE_NUM_TEMPLATE(entityIterator_second_entity_agrees_with_Dune_
 {
     const int codim = T::value;
 
-    arma::Col<double> elementCenter;
+    Vector<double> elementCenter(3);
     {
         std::unique_ptr<EntityIterator<codim> > it = bemppGridView->entityIterator<codim>();
         it->next();
         const Entity<codim>& e = it->entity();
         const Geometry& geo = e.geometry();
-        geo.getCenter(elementCenter);
+        geo.getCenter(Eigen::Ref<Vector<double>>(elementCenter));
     }
 
     Dune::FieldVector<DuneGrid::ctype, DuneGrid::dimensionworld> duneElementCenter;

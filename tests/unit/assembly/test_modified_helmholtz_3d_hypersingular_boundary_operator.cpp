@@ -48,7 +48,7 @@
 #include "space/piecewise_constant_scalar_space.hpp"
 
 #include <algorithm>
-#include "common/armadillo_fwd.hpp"
+#include "common/eigen_support.hpp"
 #include <boost/test/unit_test.hpp>
 #include <boost/test/floating_point_comparison.hpp>
 #include <boost/version.hpp>
@@ -110,7 +110,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(works_for_complex_kernel, BasisFunctionType, basis
                 waveNumber);
 
     // Get the matrix repr. of the hypersingular operator
-    arma::Mat<RT> hypMat = hypOp.weakForm()->asMatrix();
+    Matrix<RT> hypMat = hypOp.weakForm()->asMatrix();
 
     // Construct the expected hypersingular operator matrix. For this, we need:
 
@@ -121,8 +121,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(works_for_complex_kernel, BasisFunctionType, basis
     size_t basisDeps = 0, geomDeps = 0;
     functor.addDependencies(basisDeps, geomDeps);
 
-    arma::Mat<CT> points(2, 1);
-    points.fill(0.);
+    Matrix<CT> points(2, 1);
+    points.setZero();
 
     typedef Fiber::PiecewiseLinearContinuousScalarBasis<3, BFT> Basis;
     Basis basis;
@@ -143,11 +143,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(works_for_complex_kernel, BasisFunctionType, basis
     transformations.evaluate(basisData, geomData[1], surfaceCurl[1]);
 
     // * the single-layer potential matrix for constant basis functions
-    arma::Mat<RT> slpMatConstants = slpOpConstants.weakForm()->asMatrix();
+    Matrix<RT> slpMatConstants = slpOpConstants.weakForm()->asMatrix();
     // * the single-layer potential matrix for linear basis functions
-    arma::Mat<RT> slpMatLinears = slpOpLinears.weakForm()->asMatrix();
+    Matrix<RT> slpMatLinears = slpOpLinears.weakForm()->asMatrix();
 
-    arma::Mat<RT> expectedHypMat(6, 6);
+    Matrix<RT> expectedHypMat(6, 6);
     for (size_t testElement = 0; testElement < 2; ++testElement)
         for (size_t trialElement = 0; trialElement < 2; ++trialElement)
             for (size_t r = 0; r < 3; ++r)
@@ -219,7 +219,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(works_for_real_kernel, BasisFunctionType, basis_fu
                 waveNumber);
 
     // Get the matrix repr. of the hypersingular operator
-    arma::Mat<RT> hypMat = hypOp.weakForm()->asMatrix();
+    Matrix<RT> hypMat = hypOp.weakForm()->asMatrix();
 
     // Construct the expected hypersingular operator matrix. For this, we need:
 
@@ -230,8 +230,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(works_for_real_kernel, BasisFunctionType, basis_fu
     size_t basisDeps = 0, geomDeps = 0;
     functor.addDependencies(basisDeps, geomDeps);
 
-    arma::Mat<CT> points(2, 1);
-    points.fill(0.);
+    Matrix<CT> points(2, 1);
+    points.setZero();
 
     typedef Fiber::PiecewiseLinearContinuousScalarBasis<3, BFT> Basis;
     Basis basis;
@@ -252,11 +252,11 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(works_for_real_kernel, BasisFunctionType, basis_fu
     transformations.evaluate(basisData, geomData[1], surfaceCurl[1]);
 
     // * the single-layer potential matrix for constant basis functions
-    arma::Mat<RT> slpMatConstants = slpOpConstants.weakForm()->asMatrix();
+    Matrix<RT> slpMatConstants = slpOpConstants.weakForm()->asMatrix();
     // * the single-layer potential matrix for linear basis functions
-    arma::Mat<RT> slpMatLinears = slpOpLinears.weakForm()->asMatrix();
+    Matrix<RT> slpMatLinears = slpOpLinears.weakForm()->asMatrix();
 
-    arma::Mat<RT> expectedHypMat(6, 6);
+    Matrix<RT> expectedHypMat(6, 6);
     for (size_t testElement = 0; testElement < 2; ++testElement)
         for (size_t trialElement = 0; trialElement < 2; ++trialElement)
             for (size_t r = 0; r < 3; ++r)
@@ -325,8 +325,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(interpolated_matches_noniterpolated,
                 "", NO_SYMMETRY,
                 true);
 
-    arma::Mat<RT> matNoninterpolated = opNoninterpolated.weakForm()->asMatrix();
-    arma::Mat<RT> matInterpolated = opInterpolated.weakForm()->asMatrix();
+    Matrix<RT> matNoninterpolated = opNoninterpolated.weakForm()->asMatrix();
+    Matrix<RT> matInterpolated = opInterpolated.weakForm()->asMatrix();
 
     const CT eps = std::numeric_limits<CT>::epsilon();
     BOOST_CHECK(check_arrays_are_close<RT>(

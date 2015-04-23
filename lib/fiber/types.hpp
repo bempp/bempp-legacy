@@ -22,8 +22,15 @@
 #define fiber_types_hpp
 
 #include "../common/common.hpp"
+#include "../common/eigen_support.hpp"
 
 namespace Fiber {
+
+template <typename T> using Vector = Bempp::Vector<T>;
+template <typename T> using Matrix = Bempp::Matrix<T>;
+template <typename T> using RowVector = Bempp::RowVector<T>;
+
+using Bempp::is_empty;
 
 enum CallVariant {
   TEST_TRIAL = 0,

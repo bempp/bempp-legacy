@@ -23,7 +23,7 @@
 
 #include "../common/common.hpp"
 
-#include "../common/armadillo_fwd.hpp"
+#include "types.hpp"
 #include <cassert>
 #include <iostream>
 #include <boost/tuple/tuple_comparison.hpp>
@@ -102,8 +102,8 @@ struct ElementPairTopology {
 };
 
 inline ElementPairTopology determineElementPairTopologyIn3D(
-    const arma::Col<int> &testElementCornerIndices,
-    const arma::Col<int> &trialElementCornerIndices) {
+    const Vector<int> &testElementCornerIndices,
+    const Vector<int> &trialElementCornerIndices) {
   ElementPairTopology topology;
 
 // Determine number of element corners
@@ -111,10 +111,10 @@ inline ElementPairTopology determineElementPairTopologyIn3D(
   const int MIN_VERTEX_COUNT = 3;
 #endif
   const int MAX_VERTEX_COUNT = 4;
-  topology.testVertexCount = testElementCornerIndices.n_rows;
+  topology.testVertexCount = testElementCornerIndices.rows();
   assert(MIN_VERTEX_COUNT <= topology.testVertexCount &&
          topology.testVertexCount <= MAX_VERTEX_COUNT);
-  topology.trialVertexCount = trialElementCornerIndices.n_rows;
+  topology.trialVertexCount = trialElementCornerIndices.rows();
   assert(MIN_VERTEX_COUNT <= topology.trialVertexCount &&
          topology.trialVertexCount <= MAX_VERTEX_COUNT);
 

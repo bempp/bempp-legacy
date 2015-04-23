@@ -48,7 +48,7 @@
 #include "space/piecewise_constant_scalar_space.hpp"
 
 #include <algorithm>
-#include "common/armadillo_fwd.hpp"
+#include "common/eigen_support.hpp"
 #include <boost/test/unit_test.hpp>
 #include <boost/test/floating_point_comparison.hpp>
 #include <boost/version.hpp>
@@ -100,7 +100,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(works, ValueType, kernel_types)
                 make_shared_from_ref(pwiseLinears));
 
     // Get the matrix repr. of the hypersingular operator
-    arma::Mat<RT> hypMat = hypOp.weakForm()->asMatrix();
+    Matrix<RT> hypMat = hypOp.weakForm()->asMatrix();
 
     // Construct the expected hypersingular operator matrix. For this, we need:
 
@@ -111,8 +111,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(works, ValueType, kernel_types)
     size_t basisDeps = 0, geomDeps = 0;
     functor.addDependencies(basisDeps, geomDeps);
 
-    arma::Mat<CT> points(2, 1);
-    points.fill(0.);
+    Matrix<CT> points(2, 1);
+    points.setZero();
 
     typedef Fiber::PiecewiseLinearContinuousScalarBasis<3, BFT> Basis;
     Basis basis;
@@ -133,9 +133,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(works, ValueType, kernel_types)
     transformations.evaluate(basisData, geomData2, surfaceCurl[1]);
 
     // * the single-layer potential matrix for constant basis functions
-    arma::Mat<RT> slpMat = slpOp.weakForm()->asMatrix();
+    Matrix<RT> slpMat = slpOp.weakForm()->asMatrix();
 
-    arma::Mat<RT> expectedHypMat(6, 6);
+    Matrix<RT> expectedHypMat(6, 6);
     for (size_t testElement = 0; testElement < 2; ++testElement)
         for (size_t trialElement = 0; trialElement < 2; ++trialElement)
             for (size_t r = 0; r < 3; ++r)

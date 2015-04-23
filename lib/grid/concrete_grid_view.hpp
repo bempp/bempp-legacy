@@ -164,16 +164,16 @@ private:
   }
 
   virtual void getRawElementDataDoubleImpl(
-      arma::Mat<double> &vertices, arma::Mat<int> &elementCorners,
-      arma::Mat<char> &auxData, std::vector<int> *domainIndices) const;
+      Matrix<double> &vertices, Matrix<int> &elementCorners,
+      Matrix<char> &auxData, std::vector<int> *domainIndices) const;
   virtual void getRawElementDataFloatImpl(
-      arma::Mat<float> &vertices, arma::Mat<int> &elementCorners,
-      arma::Mat<char> &auxData, std::vector<int> *domainIndices) const;
+      Matrix<float> &vertices, Matrix<int> &elementCorners,
+      Matrix<char> &auxData, std::vector<int> *domainIndices) const;
 
   template <typename CoordinateType>
-  void getRawElementDataImpl(arma::Mat<CoordinateType> &vertices,
-                             arma::Mat<int> &elementCorners,
-                             arma::Mat<char> &auxData,
+  void getRawElementDataImpl(Matrix<CoordinateType> &vertices,
+                             Matrix<int> &elementCorners,
+                             Matrix<char> &auxData,
                              std::vector<int> *domainIndices) const;
 };
 

@@ -5,165 +5,292 @@ from libcpp cimport bool as cbool
 from .byte_conversion import convert_to_bytes
 from libcpp.vector cimport vector
 
+cdef class _AssemblyParameterList:
+
+    def __cinit__(self, ParameterList base):
+        self.base = base
+
+    def __init__(self, ParameterList base):
+        pass
+
+    def __dealloc__(self):
+        # Pointer deallocated by parent class
+        pass
+
+    property boundary_operator_assembly_type:
+
+        def __get__(self):
+
+            cdef char* s = b"options.assembly.boundaryOperatorAssemblyType"
+            return (deref(self.impl_).get_string(s)).decode("UTF-8")
+
+        def __set__(self,object value):
+
+            cdef char* s = b"options.assembly.boundaryOperatorAssemblyType"           
+            cdef string stringVal = convert_to_bytes(value)
+
+            deref(self.impl_).put_string(s,stringVal)
+
+    property potential_operator_assembly_type:
+
+        def __get__(self):
+
+            cdef char* s = b"options.assembly.potentialOperatorAssemblyType"
+            return (deref(self.impl_).get_string(s)).decode("UTF-8")
+
+        def __set__(self,object value):
+
+            cdef char* s = b"options.assembly.potentialOperatorAssemblyType"           
+            cdef string stringVal = convert_to_bytes(value)
+
+            deref(self.impl_).put_string(s,stringVal)
+
+    property enable_singular_integral_caching:
+
+        def __get__(self):
+
+            cdef char* s = b"options.assembly.enableSingularIntegralCaching"
+            return (deref(self.impl_).get_string(s))
+
+        def __set__(self,cbool value):
+
+            cdef char* s = b"options.assembly.enableSingularIntegralCaching"           
+            deref(self.impl_).put_bool(s,value)
+
+cdef class _NearField:
+
+    def __init__(self,_QuadratureParameterList base):
+        pass
+
+    def __cinit__(self,_QuadratureParameterList base):
+        self.base = base
+
+
+    property max_rel_dist:
+        def __get__(self):
+            cdef char* s = b"options.quadrature.near.maxRelDist"
+            return deref(self.impl_).get_double(s)
+        def __set__(self, double value):
+            cdef char* s = b"options.quadrature.near.maxRelDist"
+            deref(self.impl_).put_double(s,value)
+
+    property single_order:
+        def __get__(self):
+            cdef char* s = b"options.quadrature.near.singleOrder"
+            return deref(self.impl_).get_int(s)
+        def __set__(self,int value):
+            cdef char* s = b"options.quadrature.near.singleOrder"
+            deref(self.impl_).put_int(s,value)
+
+    property double_order:
+        def __get__(self):
+            cdef char* s = b"options.quadrature.near.doubleOrder"
+            return deref(self.impl_).get_int(s)
+        def __set__(self,int value):
+            cdef char* s = b"options.quadrature.near.doubleOrder"
+            deref(self.impl_).put_int(s,value)
+
+cdef class _MediumField:
+
+    def __init__(self,_QuadratureParameterList base):
+        pass
+
+    def __cinit__(self,_QuadratureParameterList base):
+        self.base = base
+
+    property max_rel_dist:
+        def __get__(self):
+            cdef char* s = b"options.quadrature.medium.maxRelDist"
+            return deref(self.impl_).get_double(s)
+        def __set__(self, double value):
+            cdef char* s = b"options.quadrature.medium.maxRelDist"
+            deref(self.impl_).put_double(s,value)
+
+    property single_order:
+        def __get__(self):
+            cdef char* s = b"options.quadrature.medium.singleOrder"
+            return deref(self.impl_).get_int(s)
+        def __set__(self,int value):
+            cdef char* s = b"options.quadrature.medium.singleOrder"
+            deref(self.impl_).put_int(s,value)
+
+    property double_order:
+        def __get__(self):
+            cdef char* s = b"options.quadrature.medium.doubleOrder"
+            return deref(self.impl_).get_int(s)
+        def __set__(self,int value):
+            cdef char* s = b"options.quadrature.medium.doubleOrder"
+            deref(self.impl_).put_int(s,value)
+    
+cdef class _FarField:
+
+    def __init__(self,_QuadratureParameterList base):
+        pass
+
+    def __cinit__(self,_QuadratureParameterList base):
+        self.base = base
+
+    property single_order:
+        def __get__(self):
+            cdef char* s = b"options.quadrature.far.singleOrder"
+            return deref(self.impl_).get_int(s)
+        def __set__(self,int value):
+            cdef char* s = b"options.quadrature.far.singleOrder"
+            deref(self.impl_).put_int(s,value)
+
+    property double_order:
+        def __get__(self):
+            cdef char* s = b"options.quadrature.far.doubleOrder"
+            return deref(self.impl_).get_int(s)
+        def __set__(self,int value):
+            cdef char* s = b"options.quadrature.far.doubleOrder"
+            deref(self.impl_).put_int(s,value)
+
+cdef class _QuadratureParameterList:
+
+
+    def __cinit__(self, ParameterList base):
+        self._near = _NearField(self)
+        self._medium = _MediumField(self)
+        self._far = _FarField(self)
+        self.base = base
+
+    def __init__(self, ParameterList base):
+        pass
+
+    def __dealloc__(self):
+        # Pointer deallocated by parent class
+        pass
+
+    property near:
+        def __get__(self):
+            return self._near
+    property medium:
+        def __get__(self):
+            return self._medium
+    property far:
+        def __get__(self):
+            return self._far
+
+    property quadrature_orders_are_relative:
+
+        def __get__(self):
+            cdef char* s = b"options.quadrature.quadratureOrdersAreRelative"
+            return (self.impl_).get_bool(s)
+        def __set__(self, cbool value):
+            cdef char* s = b"options.quadrature.quadratureOrdersAreRelative"
+            (self.impl_).put_bool(s, value)
+    
+    property double_singular:
+        def __get__(self):
+            cdef char* s = b"options.quadrature.doubleSingular"
+            return (self.impl_).get_int(s)
+        def __set__(self,int value):
+            cdef char* s = b"options.quadrature.doubleSingular"
+            (self.impl_).put_int(s,value)
+
+cdef class _HMatParameterList:
+
+    def __cinit__(self, ParameterList base):
+        self.base = base
+
+    def __init__(self, ParameterList base):
+        pass
+
+    property assembly_mode:
+        def __get__(self):
+            cdef char* s = b"options.hmat.hMatAssemblyMode"
+            return deref(self.impl_).get_string(s).decode("UTF-8")
+        def __set__(self,object value):
+            cdef char* s = b"options.hmat.hMatAssemblyMode"
+            deref(self.impl_).put_string(s,convert_to_bytes(value))
+
+    property min_block_size:
+        def __get__(self):
+            cdef char* s = b"options.hmat.minBlockSize"
+            return deref(self.impl_).get_int(s)
+        def __set__(self,int value):
+            cdef char* s = b"options.hmat.minBlockSize"
+            deref(self.impl_).put_int(s,value)
+
+    property max_block_size:
+        def __get__(self):
+            cdef char* s = b"options.hmat.maxBlockSize"
+            return deref(self.impl_).get_int(s)
+        def __set__(self,int value):
+            cdef char* s = b"options.hmat.maxBlockSize"
+            deref(self.impl_).put_int(s,value)
+
+    property eta:
+        def __get__(self):
+            cdef char* s = b"options.hmat.eta"
+            return deref(self.impl_).get_double(s)
+        def __set__(self,double value):
+            cdef char* s = b"options.hmat.eta"
+            deref(self.impl_).put_double(s,value)
+            
+    property eps:
+        def __get__(self):
+            cdef char* s = b"options.hmat.eps"
+            return deref(self.impl_).get_double(s)
+        def __set__(self,double value):
+            cdef char* s = "b:options.hmat.eps"
+            deref(self.impl_).put_double(s,value)
+
+    property max_rank:
+        def __get__(self):
+            cdef char* s = b"options.hmat.maxRank"
+            return deref(self.impl_).get_int(s)
+        def __set__(self,int value):
+            cdef char* s = b"options.hmat.maxRank"
+            deref(self.impl_).put_int(s,value)
+
+    property default_compression_alg:
+        def __get__(self):
+            cdef char* s = b"options.hmat.defaultCompressionAlg"
+            return deref(self.impl_).get_string(s).decode("UTF-8")
+        def __set__(self,object value):
+            cdef char* s = b"options.hmat.defaultCompressionAlg"
+            deref(self.impl_).put_string(s,convert_to_bytes(value))
+
+
+    
+
 cdef class ParameterList:
 
     def __cinit__(self):
         self.impl_ = new c_ParameterList()
-        self.isView_ = False
+        self._assembly = _AssemblyParameterList(self)
+        self._quadrature = _QuadratureParameterList(self)
+        self._hmat = _HMatParameterList(self)
+        (<_AssemblyParameterList>self._assembly).impl_ = self.impl_
+        (<_QuadratureParameterList>self._quadrature).impl_ = self.impl_
+        (<_NearField>self.quadrature.near).impl_ = self.impl_
+        (<_MediumField>self.quadrature.medium).impl_ = self.impl_
+        (<_FarField>self.quadrature.far).impl_ = self.impl_
+        (<_HMatParameterList>self._hmat).impl_ = self.impl_
+
+    def __init__(self):
+        pass
 
     def __dealloc__(self):
-        if not self.isView_: del self.impl_
+        del self.impl_
 
-    def _is_parameter(self, name):
-        s = convert_to_bytes(name)
-        return deref(self.impl_).isParameter(s)
+    property assembly:
 
-    def _type(self, name):
-        s = convert_to_bytes(name)
+        def __get__(self):
+            return self._assembly
 
-        if not self._is_parameter(s):
-            raise KeyError(name)
+    property quadrature:
 
-        if deref(self.impl_).isSublist(s):
-            return 'l'
+        def __get__(self):
+            return self._quadrature
 
-        if deref(self.impl_).isInt(s):
-            return 'i'
+    property hmat:
 
-        if deref(self.impl_).isDouble(s):
-            return 'd'
+        def __get__(self):
+            return self._hmat
 
-        if deref(self.impl_).isString(s):
-            return 's'
-
-    def _set_parameter(self, name, value):
-
-        s = convert_to_bytes(name)
-
-        if isinstance(value,int):
-            deref(self.impl_).setInt(s,value)
-        elif isinstance(value,float):
-            deref(self.impl_).setDouble(s,value)
-        elif isinstance(value,str):
-            deref(self.impl_).setString(s,convert_to_bytes(value))
-        elif isinstance(value,dict):
-            p = ParameterList()
-            p.insert_dict(value)
-            deref(self.impl_).setList(s,deref(p.impl_))
-        else:
-            raise ValueError('value must be one of int, float or string.')
-
-    def _get_parameter(self,name):
-
-        cdef string ret_string
-        s = convert_to_bytes(name)
-
-        if not self._is_parameter(name):
-            raise KeyError(name)
-
-        if self._type(name)=='l':
-            return self._sublist(name)
-        elif self._type(name)=='i':
-            return deref(self.impl_).getInt(s)
-        elif self._type(name)=='d':
-            return deref(self.impl_).getDouble(s)
-        elif self._type(name)=='s':
-            ret_string = deref(self.impl_).getString(s)
-            return ret_string.decode("UTF-8")
-        else:
-            raise ValueError(name)
-
-    def _sublist(self,name):
-        s = convert_to_bytes(name)
-        cdef ParameterList p = ParameterList()
-        del p.impl_
-        p.impl_ = address(deref(self.impl_).sublist(s))
-        p.isView_ = True
-        return p
-
-    def set_name(self, name):
-
-        s = convert_to_bytes(name)
-        deref(self.impl_).setName(s)
-
-    def _remove(self, name):
-
-        s = convert_to_bytes(name)
-        if not self._is_parameter(name):
-            raise ValueError(name)
-        deref(self.impl_).remove(s)
-
-    def insert_dict(self, d):
-
-        for key in d:
-            s = convert_to_bytes(key)
-            if isinstance(d[key],dict):
-                sublist = self._sublist(s)
-                sublist.insert_dict(d[key])
-            else:
-                self._set_parameter(s,d[key])
-
-    @classmethod
-    def from_dict(self,d):
-        p = ParameterList()
-        p.insert_dict(d)
-        return p
-
-    cdef int c_len(self):
-
-        return deref(self.impl_).numParams()
-        
-    def __len__(self):
-        return self.c_len()
-
-    def to_dict(self):
-
-        cdef vector[string] names = parameter_names(deref(self.impl_))
-        d = dict()
-        d = {name.decode("UTF-8"): self._get_parameter(name).to_dict() if self._type(name) == 'l' else self._get_parameter(name) for name in names}
-        return d
-
-    def __getitem__(self,key):
-
-        if not isinstance(key,str):
-            raise TypeError(key)
-
-        if not self._is_parameter(key):
-            raise KeyError(key)
-
-        return self._get_parameter(key)
-
-    def __setitem__(self,key,value):
-
-        if not isinstance(key,str):
-            raise TypeError(key)
-
-        self._set_parameter(key,value)
-
-    def __delitem__(self,key):
-        self._remove(key)
-
-    def __iter__(self):
-
-        cdef vector[string] names = parameter_names(deref(self.impl_))
-
-        for s in names:
-            yield s.decode("UTF-8")
-
-    def __missing__(self,key):
-
-        return key
-
-    def __contains__(self,key):
-
-        return self._is_parameter(key)
-
-    def __str__(self):
-        cdef string s = print_parameters(deref(self.impl_))
-        return s.decode("UTF-8")
-
-
-    
 
 
 

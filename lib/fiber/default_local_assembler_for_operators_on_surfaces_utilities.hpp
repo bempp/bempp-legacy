@@ -24,7 +24,7 @@
 #include "../common/common.hpp"
 
 #include "scalar_traits.hpp"
-#include "../common/armadillo_fwd.hpp"
+#include "types.hpp"
 
 #include <vector>
 
@@ -49,14 +49,14 @@ public:
   static void precalculateElementSizesAndCentersForSingleGrid(
       const RawGridGeometry<CoordinateType> &rawGeometry,
       std::vector<CoordinateType> &elementSizesSquared,
-      arma::Mat<CoordinateType> &elementCenters,
+      Matrix<CoordinateType> &elementCenters,
       CoordinateType &averageElementSize);
 
 private:
   static CoordinateType
   elementSizeSquared(int elementIndex,
                      const RawGridGeometry<CoordinateType> &rawGeometry);
-  static arma::Col<CoordinateType>
+  static Vector<CoordinateType>
   elementCenter(int elementIndex,
                 const RawGridGeometry<CoordinateType> &rawGeometry);
 };

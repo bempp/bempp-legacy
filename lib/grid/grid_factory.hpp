@@ -24,8 +24,9 @@
 #include "../common/common.hpp"
 #include "../common/shared_ptr.hpp"
 #include "grid_parameters.hpp"
+#include "../common/eigen_support.hpp"
+#include <vector>
 
-#include "../common/armadillo_fwd.hpp"
 #include <memory>
 
 namespace Bempp {
@@ -68,10 +69,18 @@ public:
   */
   static shared_ptr<Grid>
   createStructuredGrid(const GridParameters &params,
-                       const arma::Col<double> &lowerLeft,
-                       const arma::Col<double> &upperRight,
-                       const arma::Col<unsigned int> &nElements);
+                       const Vector<double> &lowerLeft,
+                       const Vector<double> &upperRight,
+                       const Vector<int> &nElements);
 
+
+  /** \overload */
+  static shared_ptr<Grid>
+  createStructuredGrid(const GridParameters &params,
+                       const double* lowerLeft,
+                       const double* upperRight,
+                       const int* nElements);
+  
   /** \brief Import grid from a file in Gmsh format.
 
     \param[in] params Parameters of the grid to be constructed.
@@ -130,9 +139,22 @@ public:
    *  \note Currently only grids with triangular topology are supported.
    */
   static shared_ptr<Grid> createGridFromConnectivityArrays(
-      const GridParameters &params, const arma::Mat<double> &vertices,
-      const arma::Mat<int> &elementCorners,
+      const GridParameters &params, const Matrix<double> &vertices,
+      const Matrix<int> &elementCorners,
       const std::vector<int> &domainIndices = std::vector<int>());
+
+  /** \overload */
+  static shared_ptr<Grid> createGridFromConnectivityArrays(
+      const GridParameters &params, const Eigen::Ref<Matrix<double>> &vertices,
+      const Eigen::Ref<Matrix<int>> &elementCorners,
+      const std::vector<int> &domainIndices = std::vector<int>());
+
+  /** \overload */
+  static shared_ptr<Grid> createGridFromConnectivityArrays(
+          const GridParameters &params, const double* vertices,
+          int nvertices, const int* elementCorners, int nelements,
+          const std::vector<int> & domainIndices = std::vector<int>());
+
 };
 
 } // namespace Bempp

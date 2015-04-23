@@ -20,47 +20,39 @@
 
 #include "sparse_inverse.hpp"
 
-#include "../common/armadillo_fwd.hpp"
 #include "../common/boost_make_shared_fwd.hpp"
-
-#include <Epetra_CrsMatrix.h>
-#include <Epetra_LocalMap.h>
-#include <Epetra_SerialComm.h>
+#include "../common/eigen_support.hpp"
 
 namespace Bempp {
 
-shared_ptr<Epetra_CrsMatrix> sparseInverse(const Epetra_CrsMatrix &mat) {
+shared_ptr<RealSparseMatrix> sparseInverse(const RealSparseMatrix &mat) {
   // Note: we assume the matrix mat is symmetric and positive-definite
-  size_t size = mat.NumGlobalCols();
-  if (mat.NumGlobalRows() != size)
+  size_t size = mat.cols();
+  if (mat.rows() != size)
     throw std::invalid_argument("sparseInverse(): matrix must be square");
 
-  int *rowOffsets = 0;
-  int *colIndices = 0;
-  double *values = 0;
-  mat.ExtractCrsDataPointers(rowOffsets, colIndices, values);
+  if (!mat.isCompressed())
+      throw std::invalid_argument("sparseInverse(): matrix must be in compressed form");
 
-  Epetra_SerialComm comm;
-  Epetra_LocalMap rowMap(static_cast<int>(size), 0 /* index_base */, comm);
-  Epetra_LocalMap columnMap(static_cast<int>(size), 0 /* index_base */, comm);
-  shared_ptr<Epetra_CrsMatrix> result = boost::make_shared<Epetra_CrsMatrix>(
-      Copy, rowMap, columnMap, mat.GlobalMaxNumEntries());
+  shared_ptr<RealSparseMatrix> result = boost::make_shared<RealSparseMatrix>(
+              size,size);
 
-  arma::Mat<double> localMat;
-  arma::Mat<double> localInverse;
+  std::vector<Eigen::Triplet<double>> triplets;
+
+  auto outerIndexPtr = mat.outerIndexPtr();
+  auto innerIndexPtr = mat.innerIndexPtr();
+
+  Matrix<double> localInverse;
   std::vector<bool> processed(size, false);
   for (size_t r = 0; r < size; ++r) {
     if (processed[r])
       continue;
-    int localSize = rowOffsets[r + 1] - rowOffsets[r];
-    localMat.set_size(localSize, localSize);
-    localMat.fill(0.);
-    localInverse.set_size(localSize, localSize);
+    int localSize = outerIndexPtr[r + 1] - outerIndexPtr[r];
     for (int s = 0; s < localSize; ++s) {
-      int row = colIndices[rowOffsets[r] + s];
+      int col = innerIndexPtr[outerIndexPtr[r] + s];
       for (int c = 0; c < localSize; ++c) {
-        int col = colIndices[rowOffsets[row] + c];
-        if (col != colIndices[rowOffsets[r] + c])
+        int row = innerIndexPtr[outerIndexPtr[col] + c];
+        if (row != innerIndexPtr[outerIndexPtr[r] + c])
           throw std::invalid_argument(
               "sparseInverse(): matrix is not block-diagonal. "
               "If this error occurs during the assembly of a "
@@ -70,24 +62,16 @@ shared_ptr<Epetra_CrsMatrix> sparseInverse(const Epetra_CrsMatrix &mat) {
               "\"discontinuous\" function space, i.e. with each "
               "of its basis functions living on a single "
               "element only");
-        localMat(s, c) = values[rowOffsets[row] + c];
-      }
+      }      
     }
-    localInverse = arma::inv(localMat);
+    localInverse = Matrix<double>(mat.block(r,r,localSize,localSize)).inverse();
     for (int s = 0; s < localSize; ++s) {
-      int row = colIndices[rowOffsets[r] + s];
-      processed[row] = true;
-#ifndef NDEBUG
-      int errorCode =
-#endif
-          result->InsertGlobalValues(row, localSize /* number of values */,
-                                     localInverse.colptr(s),
-                                     colIndices + rowOffsets[r]);
-      assert(errorCode == 0);
+      processed[r+s] = true;
+      for (int c = 0 ; c < localSize; ++c)
+          triplets.push_back(Eigen::Triplet<double>(r+s,r+c,localInverse(s,c)));
     }
   }
-  result->FillComplete(columnMap, rowMap);
-
+  result->setFromTriplets(triplets.begin(),triplets.end());
   return result;
 }
 

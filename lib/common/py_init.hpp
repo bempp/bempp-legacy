@@ -18,6 +18,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+#ifndef PY_INIT_HPP
+#define PY_INIT_HPP
+
+
 #define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION 
 #include "bempp/common/config_python.hpp"
 #include <Python.h>
@@ -25,9 +29,6 @@
 #include "numpy/arrayobject.h"
 
 #include <iostream>
-
-#ifndef PY_INIT_HPP
-#define PY_INIT_HPP
 
 namespace Bempp {
 

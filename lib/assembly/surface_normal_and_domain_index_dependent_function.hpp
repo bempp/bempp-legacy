@@ -22,6 +22,7 @@
 #define bempp_surface_normal_and_domain_index_dependent_function_hpp
 
 #include "../common/common.hpp"
+#include "../common/eigen_support.hpp"
 
 #include "../fiber/surface_normal_and_domain_index_dependent_function.hpp"
 
@@ -55,10 +56,10 @@ using Fiber::SurfaceNormalAndDomainIndexDependentFunction;
       // domain "domainIndex", with "normal" the local unit normal vector, and
       // store result in the array "result". All arrays will be preinitialised
       // to correct dimensions.
-      void evaluate(const arma::Col<CoordinateType>& point,
-                    const arma::Col<CoordinateType>& normal,
+      void evaluate(const Vector<CoordinateType>& point,
+                    const Vector<CoordinateType>& normal,
                     int domainIndex,
-                    arma::Col<ValueType>& result) const;
+                    Vector<ValueType>& result) const;
   };
   \endcode
 

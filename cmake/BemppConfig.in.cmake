@@ -23,8 +23,6 @@ if(NOT "@CMAKE_PREFIX_PATH@" STREQUAL "")
 endif()
 
 find_package(Boost @Boost_MAJOR_VERSION@.@Boost_MINOR_VERSION@ REQUIRED)
-find_package(Armadillo REQUIRED)
 find_package(TBB REQUIRED)
 find_package(Dune REQUIRED COMPONENTS geometry grid localfunctions)
-find_package(Trilinos)
 find_package(dune-alugrid)

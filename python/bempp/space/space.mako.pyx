@@ -7,7 +7,7 @@ ifloop = lambda x: 'if' if loop.index == 0 else 'elif'
 from bempp.grid.grid cimport Grid
 from cython.operator cimport dereference as deref
 from libcpp cimport bool as cbool
-from bempp.utils.armadillo cimport armadillo_to_np_float32,armadillo_to_np_float64
+from bempp.utils.eigen cimport eigen_matrix_to_np_float32,eigen_matrix_to_np_float64
 
 cdef class Space:
     """ Space of functions defined on a grid
@@ -148,9 +148,9 @@ cdef class ${class_name}(Space):
 % for pybasis,cybasis in dtypes.items():
             if self.dtype=="${pybasis}":
 %     if pybasis in ['float32','complex64']:
-                    return armadillo_to_np_float32(_py_space_get_global_dof_interp_points_${pybasis}(self.impl_))
+                    return eigen_matrix_to_np_float32(_py_space_get_global_dof_interp_points_${pybasis}(self.impl_))
 %     else:
-                    return armadillo_to_np_float64(_py_space_get_global_dof_interp_points_${pybasis}(self.impl_))
+                    return eigen_matrix_to_np_float64(_py_space_get_global_dof_interp_points_${pybasis}(self.impl_))
 %     endif
 % endfor
             raise("Unknown dtype for space")
@@ -164,9 +164,9 @@ cdef class ${class_name}(Space):
 % for pybasis,cybasis in dtypes.items():
             if self.dtype=="${pybasis}":
 %     if pybasis in ['float32','complex64']:
-                    return armadillo_to_np_float32(_py_space_get_global_dof_normals_${pybasis}(self.impl_))
+                    return eigen_matrix_to_np_float32(_py_space_get_global_dof_normals_${pybasis}(self.impl_))
 %     else:
-                    return armadillo_to_np_float64(_py_space_get_global_dof_normals_${pybasis}(self.impl_))
+                    return eigen_matrix_to_np_float64(_py_space_get_global_dof_normals_${pybasis}(self.impl_))
 %     endif
 % endfor
             raise("Unknown dtype for space")

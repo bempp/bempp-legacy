@@ -26,7 +26,7 @@
 #include "../check_arrays_are_close.hpp"
 
 #include <algorithm>
-#include "common/armadillo_fwd.hpp"
+#include "common/eigen_support.hpp"
 #include <boost/test/unit_test.hpp>
 #include <boost/test/floating_point_comparison.hpp>
 #include <boost/version.hpp>
@@ -60,17 +60,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_works_for_points_on_x_axis,
     const int worldDim = 3;
     const int testPointCount = 2, trialPointCount = 3;
     // Note: points lying on x axis only
-    testGeomData.globals.set_size(worldDim, testPointCount);
+    testGeomData.globals.resize(worldDim, testPointCount);
     testGeomData.globals.fill(0.);
     testGeomData.globals(0, 1) = 1.;
 
-    trialGeomData.globals.set_size(worldDim, trialPointCount);
+    trialGeomData.globals.resize(worldDim, trialPointCount);
     trialGeomData.globals.fill(0.);
     trialGeomData.globals(0, 0) = 2.;
     trialGeomData.globals(0, 1) = 3.;
     trialGeomData.globals(0, 2) = 4.;
 
-    trialGeomData.normals.set_size(worldDim, trialPointCount);
+    trialGeomData.normals.resize(worldDim, trialPointCount);
     trialGeomData.normals.fill(0.);
     trialGeomData.normals(0, 0) = 1.;
     trialGeomData.normals(0, 1) = 1.;
@@ -104,17 +104,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_works_for_points_on_y_axis,
     const int worldDim = 3;
     const int testPointCount = 2, trialPointCount = 3;
     // Note: points lying on y axis only
-    testGeomData.globals.set_size(worldDim, testPointCount);
+    testGeomData.globals.resize(worldDim, testPointCount);
     testGeomData.globals.fill(0.);
     testGeomData.globals(1, 1) = 1.;
 
-    trialGeomData.globals.set_size(worldDim, trialPointCount);
+    trialGeomData.globals.resize(worldDim, trialPointCount);
     trialGeomData.globals.fill(0.);
     trialGeomData.globals(1, 0) = 2.;
     trialGeomData.globals(1, 1) = 3.;
     trialGeomData.globals(1, 2) = 4.;
 
-    trialGeomData.normals.set_size(worldDim, trialPointCount);
+    trialGeomData.normals.resize(worldDim, trialPointCount);
     trialGeomData.normals.fill(0.);
     trialGeomData.normals(1, 0) = 1.;
     trialGeomData.normals(1, 1) = 1.;
@@ -151,17 +151,17 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_agrees_with_evaluateAtPointPairs,
     // Collect data with evaluateOnGrid
     GeomData testGeomDataOnGrid, trialGeomDataOnGrid;
 
-    testGeomDataOnGrid.globals.set_size(worldDim, testPointCount);
+    testGeomDataOnGrid.globals.resize(worldDim, testPointCount);
     testGeomDataOnGrid.globals.fill(0.);
     testGeomDataOnGrid.globals(0, 1) = 1.;
 
-    trialGeomDataOnGrid.globals.set_size(worldDim, trialPointCount);
+    trialGeomDataOnGrid.globals.resize(worldDim, trialPointCount);
     trialGeomDataOnGrid.globals.fill(1.);
     trialGeomDataOnGrid.globals(0, 0) = 2.;
     trialGeomDataOnGrid.globals(0, 1) = 3.;
     trialGeomDataOnGrid.globals(0, 2) = 4.;
 
-    trialGeomDataOnGrid.normals.set_size(worldDim, trialPointCount);
+    trialGeomDataOnGrid.normals.resize(worldDim, trialPointCount);
     trialGeomDataOnGrid.normals.fill(0.);
     trialGeomDataOnGrid.normals(1, 0) = 1.;
     trialGeomDataOnGrid.normals(1, 1) = 1.;
@@ -170,7 +170,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_agrees_with_evaluateAtPointPairs,
     Fiber::CollectionOf4dArrays<ValueType> resultOnGrid;
     kernels.evaluateOnGrid(testGeomDataOnGrid, trialGeomDataOnGrid, resultOnGrid);
 
-    arma::Col<ValueType> convertedResultOnGrid(testPointCount * trialPointCount);
+    Vector<ValueType> convertedResultOnGrid(testPointCount * trialPointCount);
     for (int testPoint = 0; testPoint < testPointCount; ++testPoint)
         for (int trialPoint = 0; trialPoint < trialPointCount; ++trialPoint)
             convertedResultOnGrid(testPoint + trialPoint * testPointCount) =
@@ -178,9 +178,9 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_agrees_with_evaluateAtPointPairs,
 
     // Collect data with evaluateAtPointPairs
     GeomData testGeomDataAtPointPairs, trialGeomDataAtPointPairs;
-    testGeomDataAtPointPairs.globals.set_size(worldDim, testPointCount * trialPointCount);
-    trialGeomDataAtPointPairs.globals.set_size(worldDim, testPointCount * trialPointCount);
-    trialGeomDataAtPointPairs.normals.set_size(worldDim, testPointCount * trialPointCount);
+    testGeomDataAtPointPairs.globals.resize(worldDim, testPointCount * trialPointCount);
+    trialGeomDataAtPointPairs.globals.resize(worldDim, testPointCount * trialPointCount);
+    trialGeomDataAtPointPairs.normals.resize(worldDim, testPointCount * trialPointCount);
     for (int testPoint = 0; testPoint < testPointCount; ++testPoint)
         for (int trialPoint = 0; trialPoint < trialPointCount; ++trialPoint) {
             testGeomDataAtPointPairs.globals.col(testPoint + trialPoint * testPointCount) =
@@ -194,7 +194,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluateOnGrid_agrees_with_evaluateAtPointPairs,
     Fiber::CollectionOf3dArrays<ValueType> resultAtPointPairs;
     kernels.evaluateAtPointPairs(testGeomDataAtPointPairs, trialGeomDataAtPointPairs,
                                  resultAtPointPairs);
-    arma::Col<ValueType> convertedResultAtPointPairs(testPointCount * trialPointCount);
+    Vector<ValueType> convertedResultAtPointPairs(testPointCount * trialPointCount);
     for (int point = 0; point < testPointCount * trialPointCount; ++point)
         convertedResultAtPointPairs(point) =
                 resultAtPointPairs[0](0, 0, point);

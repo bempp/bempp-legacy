@@ -19,7 +19,7 @@
 // THE SOFTWARE.
 
 #include "test_entity.hpp"
-#include "grid/armadillo_helpers.hpp"
+#include "grid/eigen_helpers.hpp"
 #include "grid/entity_iterator.hpp"
 #include "grid/geometry.hpp"
 
@@ -59,9 +59,9 @@ BOOST_AUTO_TEST_CASE(elements_are_in_the_z_plane)
 
     typedef double ctype;
     ctype max_abs_z = 0.;
-    arma::Col<ctype> center;
+    Vector<ctype> center(3);
     while(!it->finished()) {
-        it->entity().geometry().getCenter(center);
+        it->entity().geometry().getCenter(Eigen::Ref<Vector<ctype>>(center));
         max_abs_z = std::max(max_abs_z, fabs(center(2)));
         it->next();
     }
@@ -80,9 +80,9 @@ BOOST_AUTO_TEST_CASE(elements_cover_the_unit_square)
     ctype min_y =  1e100;
     ctype max_y = -1e100;
 
-    arma::Col<ctype> center;
+    Vector<ctype> center(3);
     while(!it->finished()) {
-        it->entity().geometry().getCenter(center);
+        it->entity().geometry().getCenter(Eigen::Ref<Vector<double>>(center));
         max_x = std::max(max_x, center(0));
         max_y = std::max(max_y, center(1));
         min_x = std::min(min_x, center(0));
@@ -107,16 +107,21 @@ BOOST_AUTO_TEST_CASE(jacobian_is_constant_everywhere_on_the_second_face)
     const Geometry& geo = ep->entity().geometry();
 
     typedef double ctype;
-    arma::Mat<ctype> local(dimLocal, nPoints);
+    Matrix<ctype> local(dimLocal, nPoints);
     Dune::FieldVector<ctype, dimLocal> duneLocal;
     for (int j = 0; j < nPoints; ++j)
         for (int i = 0; i < dimLocal; ++i)
             local(i,j) = 0.1 * (i + 1) + 0.01 * (j + 1);
 
-    arma::Row<ctype> intElement;
+    RowVector<ctype> intElement;
     geo.getIntegrationElements(local, intElement);
 
-    BOOST_CHECK_SMALL(stddev(intElement), EPSILON);
+    // Compute standard deviation
+    double mean = intElement.mean();
+    RowVector<ctype> diff = (intElement.array()-mean).matrix();
+    double deviation = diff.norm()/std::sqrt(diff.cols());
+
+    BOOST_CHECK_SMALL(deviation, EPSILON);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

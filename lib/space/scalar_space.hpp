@@ -52,7 +52,7 @@ public:
   virtual const CollectionOfShapesetTransformations &basisFunctionValue() const;
 
   virtual void getGlobalDofInterpolationDirections(
-      arma::Mat<CoordinateType> &directions) const;
+      Matrix<CoordinateType> &directions) const;
 
 private:
   struct Impl;

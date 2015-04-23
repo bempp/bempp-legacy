@@ -49,7 +49,7 @@ void DefaultTestKernelTrialIntegral<IntegrandFunctor>::
         const CollectionOf4dArrays<KernelType> &kernelValues,
         const std::vector<CoordinateType> &testQuadWeights,
         const std::vector<CoordinateType> &trialQuadWeights,
-        arma::Mat<ResultType> &result) const {
+        Matrix<ResultType> &result) const {
   // Evaluate constants
 
   const size_t testDofCount = testValues[0].extent(1);
@@ -69,8 +69,8 @@ void DefaultTestKernelTrialIntegral<IntegrandFunctor>::
   for (size_t i = 0; i < trialValues.size(); ++i)
     assert(trialValues[i].extent(2) == trialPointCount);
 
-  assert(result.n_rows == testDofCount);
-  assert(result.n_cols == trialDofCount);
+  assert(result.rows() == testDofCount);
+  assert(result.cols() == trialDofCount);
 
   // Integrate
 
@@ -109,7 +109,7 @@ void DefaultTestKernelTrialIntegral<IntegrandFunctor>::
         const CollectionOf3dArrays<BasisFunctionType> &trialValues,
         const CollectionOf3dArrays<KernelType> &kernelValues,
         const std::vector<CoordinateType> &quadWeights,
-        arma::Mat<ResultType> &result) const {
+        Matrix<ResultType> &result) const {
   // Evaluate constants
 
   const size_t testDofCount = testValues[0].extent(1);

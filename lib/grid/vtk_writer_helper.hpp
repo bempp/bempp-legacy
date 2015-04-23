@@ -22,8 +22,8 @@
 #define bempp_vtk_writer_helper_hpp
 
 #include "../common/common.hpp"
+#include "../common/eigen_support.hpp"
 
-#include "../common/armadillo_fwd.hpp"
 #include <boost/type_traits/is_complex.hpp>
 #include <boost/utility/enable_if.hpp>
 
@@ -34,7 +34,7 @@ namespace Bempp {
 template <typename ResultType>
 typename boost::enable_if<boost::is_complex<ResultType>, void>::type
 exportSingleDataSetToVtk(VtkWriter &vtkWriter,
-                         const arma::Mat<ResultType> &data,
+                         const Matrix<ResultType> &data,
                          VtkWriter::DataType dataType, const char *dataLabel,
                          const char *fileNamesBase, const char *filesPath,
                          VtkWriter::OutputType outputType);
@@ -42,7 +42,7 @@ exportSingleDataSetToVtk(VtkWriter &vtkWriter,
 template <typename ResultType>
 typename boost::disable_if<boost::is_complex<ResultType>, void>::type
 exportSingleDataSetToVtk(VtkWriter &vtkWriter,
-                         const arma::Mat<ResultType> &data,
+                         const Matrix<ResultType> &data,
                          VtkWriter::DataType dataType, const char *dataLabel,
                          const char *fileNamesBase, const char *filesPath,
                          VtkWriter::OutputType outputType);

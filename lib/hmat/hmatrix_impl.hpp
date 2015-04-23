@@ -56,11 +56,11 @@ bool HMatrix<ValueType, N>::isInitialized() const {
 }
 
 template <typename ValueType, int N>
-arma::Mat<ValueType>
-HMatrix<ValueType, N>::permuteMatToHMatDofs(const arma::Mat<ValueType> &mat,
+Matrix<ValueType>
+HMatrix<ValueType, N>::permuteMatToHMatDofs(const Matrix<ValueType> &mat,
                                             RowColSelector rowOrColumn) const {
 
-  arma::Mat<ValueType> permutedDofs(mat.n_rows, mat.n_cols);
+  Matrix<ValueType> permutedDofs(mat.rows(), mat.cols());
 
   shared_ptr<const ClusterTree<N>> clusterTree;
 
@@ -69,13 +69,13 @@ HMatrix<ValueType, N>::permuteMatToHMatDofs(const arma::Mat<ValueType> &mat,
   else
     clusterTree = m_blockClusterTree->columnClusterTree();
 
-  if (clusterTree->numberOfDofs() != mat.n_rows)
+  if (clusterTree->numberOfDofs() != mat.rows())
     throw std::runtime_error("HMatrix::permuteMatToHMatDofs: "
                              "Input matrix has wrong number of rows.");
 
-  for (std::size_t i = 0; i < mat.n_rows; ++i) {
+  for (std::size_t i = 0; i < mat.rows(); ++i) {
     auto permutedIndex = clusterTree->mapOriginalDofToHMatDof(i);
-    for (std::size_t j = 0; j < mat.n_cols; ++j)
+    for (std::size_t j = 0; j < mat.cols(); ++j)
       permutedDofs(permutedIndex, j) = mat(i, j);
   }
 
@@ -83,10 +83,10 @@ HMatrix<ValueType, N>::permuteMatToHMatDofs(const arma::Mat<ValueType> &mat,
 }
 
 template <typename ValueType, int N>
-arma::Mat<ValueType> HMatrix<ValueType, N>::permuteMatToOriginalDofs(
-    const arma::Mat<ValueType> &mat, RowColSelector rowOrColumn) const {
+Matrix<ValueType> HMatrix<ValueType, N>::permuteMatToOriginalDofs(
+    const Matrix<ValueType> &mat, RowColSelector rowOrColumn) const {
 
-  arma::Mat<ValueType> originalDofs(mat.n_rows, mat.n_cols);
+  Matrix<ValueType> originalDofs(mat.rows(), mat.cols());
 
   shared_ptr<const ClusterTree<N>> clusterTree;
 
@@ -95,13 +95,13 @@ arma::Mat<ValueType> HMatrix<ValueType, N>::permuteMatToOriginalDofs(
   else
     clusterTree = m_blockClusterTree->columnClusterTree();
 
-  if (clusterTree->numberOfDofs() != mat.n_rows)
+  if (clusterTree->numberOfDofs() != mat.rows())
     throw std::runtime_error("HMatrix::permuteMatToOriginalDofs: "
                              "Input matrix has wrong number of rows.");
 
-  for (std::size_t i = 0; i < mat.n_rows; ++i) {
+  for (std::size_t i = 0; i < mat.rows(); ++i) {
     auto originalIndex = clusterTree->mapHMatDofToOriginalDof(i);
-    for (std::size_t j = 0; j < mat.n_cols; ++j)
+    for (std::size_t j = 0; j < mat.cols(); ++j)
       originalDofs(originalIndex, j) = mat(i, j);
   }
 
@@ -109,17 +109,17 @@ arma::Mat<ValueType> HMatrix<ValueType, N>::permuteMatToOriginalDofs(
 }
 
 template <typename ValueType, int N>
-void HMatrix<ValueType, N>::apply(const arma::Mat<ValueType> &X,
-                                  arma::Mat<ValueType> &Y, TransposeMode trans,
+void HMatrix<ValueType, N>::apply(const Matrix<ValueType> &X,
+                                  Matrix<ValueType> &Y, TransposeMode trans,
                                   ValueType alpha, ValueType beta) const {
 
   if (beta == ValueType(0))
-    Y.zeros();
+    Y.setZero();
   else
     Y *= beta;
 
-  arma::Mat<ValueType> xPermuted;
-  arma::Mat<ValueType> yPermuted;
+  Matrix<ValueType> xPermuted;
+  Matrix<ValueType> yPermuted;
 
   if (trans == TransposeMode::NOTRANS) {
 
@@ -146,11 +146,13 @@ void HMatrix<ValueType, N>::apply(const arma::Mat<ValueType> &X,
       outputRange = elem.first->data().columnClusterTreeNode->data().indexRange;
     }
 
-    arma::subview<ValueType> xData =
-        xPermuted.rows(inputRange[0], inputRange[1] - 1);
-    arma::subview<ValueType> yData =
-        yPermuted.rows(outputRange[0], outputRange[1] - 1);
+    Matrix<ValueType> xData = xPermuted.block(inputRange[0],0,inputRange[1]-inputRange[0],xData.cols());
+    Matrix<ValueType> yData = yPermuted.block(outputRange[0],0,outputRange[1]-outputRange[0],yData.cols());
+
+
     elem.second->apply(xData, yData, trans, alpha, 1);
+
+    yPermuted.block(outputRange[0],0,outputRange[1]-outputRange[0],yData.cols()) = yData;
   });
 
   Y = this->permuteMatToOriginalDofs(yPermuted, ROW);

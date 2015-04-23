@@ -6,7 +6,8 @@ from space import spaces
 def declare_class(text):
     return 'c_{0} "Bempp::{0}"[BASIS]'.format(text)
 %>
-from bempp.utils.armadillo cimport Mat
+from bempp.utils cimport Matrix
+from bempp.utils.eigen cimport eigen_matrix_to_np_float64
 from libcpp cimport complex as ccomplex, bool as cbool
 from libcpp.string cimport string
 from bempp.utils cimport shared_ptr, complex_float,complex_double
@@ -62,8 +63,8 @@ cdef extern from "bempp/space/py_space_variants.hpp" namespace "Bempp":
 
     cdef shared_ptr[c_Space[BASIS]] _py_get_space_ptr[BASIS](const SpaceVariants& space_variant)
 % for pybasis,cybasis in dtypes.items():
-    cdef Mat[${real_cython_type(cybasis)}] _py_space_get_global_dof_interp_points_${pybasis} "Bempp::_py_space_get_global_dof_interp_points<${cybasis}>"(const SpaceVariants& space_variant)
-    cdef Mat[${real_cython_type(cybasis)}] _py_space_get_global_dof_normals_${pybasis} "Bempp::_py_space_get_global_dof_normals<${cybasis}>"(const SpaceVariants& space_variant)
+    cdef Matrix[${real_cython_type(cybasis)}] _py_space_get_global_dof_interp_points_${pybasis} "Bempp::_py_space_get_global_dof_interp_points<${cybasis}>"(const SpaceVariants& space_variant)
+    cdef Matrix[${real_cython_type(cybasis)}] _py_space_get_global_dof_normals_${pybasis} "Bempp::_py_space_get_global_dof_normals<${cybasis}>"(const SpaceVariants& space_variant)
 % endfor
 
 cdef class Space:

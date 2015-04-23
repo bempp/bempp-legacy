@@ -23,10 +23,10 @@
 
 #include "../common/common.hpp"
 
-#include "../common/armadillo_fwd.hpp"
 #include "../common/deprecated.hpp"
 #include "../common/shared_ptr.hpp"
 #include "../common/types.hpp"
+#include "../common/eigen_support.hpp"
 
 #include "../grid/vtk_writer.hpp"
 #include "../fiber/quadrature_strategy.hpp"
@@ -116,12 +116,12 @@ public:
   GridFunction(
       const shared_ptr<const Context<BasisFunctionType, ResultType>> &context,
       const shared_ptr<const Space<BasisFunctionType>> &space,
-      const arma::Col<ResultType> &coefficients);
+      const Vector<ResultType> &coefficients);
 
   GridFunction(
       const ParameterList& parameterList,
       const shared_ptr<const Space<BasisFunctionType>> &space,
-      const arma::Col<ResultType> &coefficients);
+      const Vector<ResultType> &coefficients);
 
   /** Constructor.
    *
@@ -142,14 +142,14 @@ public:
       const shared_ptr<const Context<BasisFunctionType, ResultType>> &context,
       const shared_ptr<const Space<BasisFunctionType>> &space,
       const shared_ptr<const Space<BasisFunctionType>> &dualSpace,
-      const arma::Col<ResultType> &projections);
+      const Vector<ResultType> &projections);
 
 
   GridFunction(
       const ParameterList& parameterList,
       const shared_ptr<const Space<BasisFunctionType>> &space,
       const shared_ptr<const Space<BasisFunctionType>> &dualSpace,
-      const arma::Col<ResultType> &projections);
+      const Vector<ResultType> &projections);
   
   /** \brief Constructor.
    *
@@ -233,7 +233,7 @@ public:
       const shared_ptr<const Context<BasisFunctionType, ResultType>> &context,
       const shared_ptr<const Space<BasisFunctionType>> &space,
       const shared_ptr<const Space<BasisFunctionType>> &dualSpace,
-      const arma::Col<ResultType> &data, DataType dataType);
+      const Vector<ResultType> &data, DataType dataType);
 
   /** \brief Constructor.
    *
@@ -259,8 +259,8 @@ public:
       const shared_ptr<const Context<BasisFunctionType, ResultType>> &context,
       const shared_ptr<const Space<BasisFunctionType>> &space,
       const shared_ptr<const Space<BasisFunctionType>> &dualSpace,
-      const arma::Col<ResultType> &coefficients,
-      const arma::Col<ResultType> &projections);
+      const Vector<ResultType> &coefficients,
+      const Vector<ResultType> &projections);
 
   // Member functions
 
@@ -314,7 +314,7 @@ public:
    *
    *  An exception is thrown if this function is called on an uninitialized
    *  GridFunction object (one constructed with the default constructor). */
-  const arma::Col<ResultType> &coefficients() const;
+  const Vector<ResultType> &coefficients() const;
 
   /** \brief %Vector of scalar products of this function with the basis
    *  functions of \p dualSpace.
@@ -324,7 +324,7 @@ public:
    *
    *  An exception is thrown if this function is called on an uninitialized
    *  GridFunction object (one constructed with the default constructor). */
-  arma::Col<ResultType> projections(
+  Vector<ResultType> projections(
       const shared_ptr<const Space<BasisFunctionType>> &dualSpace_) const;
 
   /** \brief Reset the expansion coefficients of this function in the basis
@@ -333,7 +333,7 @@ public:
    *  As a side effect, any internally stored vector of the projections of
    *  this grid function on the basis functions of its dual space is marked as
    *  invalid and recalculated on the next call to projections(). */
-  void setCoefficients(const arma::Col<ResultType> &coeffs);
+  void setCoefficients(const Vector<ResultType> &coeffs);
 
   /** \brief Reinitialize the function by specifying the vector of its scalar
    *  products with the basis functions of \p dualSpace.
@@ -342,7 +342,7 @@ public:
    *  GridFunction is expanded. */
   void
   setProjections(const shared_ptr<const Space<BasisFunctionType>> &dualSpace_,
-                 const arma::Col<ResultType> &projects);
+                 const Vector<ResultType> &projects);
 
   /** \brief Return the \f$L^2\f$-norm of the grid function.
    *
@@ -384,10 +384,10 @@ public:
    *  \note The results of calling this function on an uninitialized
    *  GridFunction object are undefined. */
   void evaluateAtSpecialPoints(VtkWriter::DataType dataType,
-                               arma::Mat<ResultType> &result_) const;
+                               Matrix<ResultType> &result_) const;
   void evaluateAtSpecialPoints(VtkWriter::DataType dataType,
-                               arma::Mat<CoordinateType> &points,
-                               arma::Mat<ResultType> &values) const;
+                               Matrix<CoordinateType> &points,
+                               Matrix<ResultType> &values) const;
 
   /** \brief Evaluate function at specific points lying on a given element.
    *
@@ -402,8 +402,8 @@ public:
    *                       of \p function evaluated at the jth point.
    */
   void evaluate(const Entity<0> &element,
-                const arma::Mat<CoordinateType> &local,
-                arma::Mat<ResultType> &values) const;
+                const Matrix<CoordinateType> &local,
+                Matrix<ResultType> &values) const;
 
 // Deprecated functions
 
@@ -419,7 +419,7 @@ public:
    *
    *  \deprecated This function is deprecated; use the variant taking a
    *  shared pointer to the dual space instead. */
-  BEMPP_DEPRECATED arma::Col<ResultType>
+  BEMPP_DEPRECATED Vector<ResultType>
   projections(const Space<BasisFunctionType> &dualSpace_) const;
 #endif
 
@@ -433,7 +433,7 @@ public:
    *
    *  An exception is thrown if this function is called on an uninitialized
    *  GridFunction object (one constructed with the default constructor). */
-  BEMPP_DEPRECATED arma::Col<ResultType> projections() const;
+  BEMPP_DEPRECATED Vector<ResultType> projections() const;
 
 #ifndef SWIG
   /** \brief Reinitialize the function by specifying the vector of its scalar
@@ -448,7 +448,7 @@ public:
    *  as long as this GridFunction object is alive. */
   BEMPP_DEPRECATED void
   setProjections(const Space<BasisFunctionType> &dualSpace_,
-                 const arma::Col<ResultType> &projects);
+                 const Vector<ResultType> &projects);
 #endif
 
   /** \brief Reset the vector of scalar products of this function with the
@@ -458,7 +458,7 @@ public:
    *  purposes. It works only if the dual space was specified during the
    *  construction of the GridFunction. In new code the other overload of
    *  setProjections() should be used. */
-  BEMPP_DEPRECATED void setProjections(const arma::Col<ResultType> &projects);
+  BEMPP_DEPRECATED void setProjections(const Vector<ResultType> &projects);
 
   /** \brief Export this function to a VTK file.
 
@@ -519,12 +519,12 @@ private:
   void initializeFromCoefficients(
       const shared_ptr<const Context<BasisFunctionType, ResultType>> &context,
       const shared_ptr<const Space<BasisFunctionType>> &space,
-      const arma::Col<ResultType> &coefficients);
+      const Vector<ResultType> &coefficients);
   void initializeFromProjections(
       const shared_ptr<const Context<BasisFunctionType, ResultType>> &context,
       const shared_ptr<const Space<BasisFunctionType>> &space,
       const shared_ptr<const Space<BasisFunctionType>> &dualSpace,
-      const arma::Col<ResultType> &projections);
+      const Vector<ResultType> &projections);
   void updateProjectionsFromCoefficients(
       const shared_ptr<const Space<BasisFunctionType>> &dualSpace_) const;
   void updateCoefficientsFromProjections() const;
@@ -534,8 +534,8 @@ private:
   shared_ptr<const Space<BasisFunctionType>> m_space;
   mutable shared_ptr<const Space<BasisFunctionType>>
   m_dualSpace; // the dual space that was used to calculate m_projections
-  mutable shared_ptr<const arma::Col<ResultType>> m_coefficients;
-  mutable shared_ptr<const arma::Col<ResultType>> m_projections;
+  mutable shared_ptr<const Vector<ResultType>> m_coefficients;
+  mutable shared_ptr<const Vector<ResultType>> m_projections;
   bool m_wasInitializedFromCoefficients;
 };
 

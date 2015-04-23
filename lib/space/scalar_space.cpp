@@ -68,8 +68,8 @@ ScalarSpace<BasisFunctionType>::basisFunctionValue() const {
 
 template <typename BasisFunctionType>
 void ScalarSpace<BasisFunctionType>::getGlobalDofInterpolationDirections(
-    arma::Mat<CoordinateType> &directions) const {
-  directions.set_size(1 /* scalar space */, this->globalDofCount());
+    Matrix<CoordinateType> &directions) const {
+  directions.resize(1 /* scalar space */, this->globalDofCount());
   directions.fill(1);
 }
 

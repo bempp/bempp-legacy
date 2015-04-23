@@ -26,6 +26,7 @@
 #include "../common/shared_ptr.hpp"
 #include "accuracy_options.hpp"
 #include "scalar_traits.hpp"
+#include "types.hpp"
 
 namespace Fiber {
 
@@ -88,8 +89,8 @@ private:
 
   std::vector<CoordinateType> m_testElementSizesSquared;
   std::vector<CoordinateType> m_trialElementSizesSquared;
-  arma::Mat<CoordinateType> m_testElementCenters;
-  arma::Mat<CoordinateType> m_trialElementCenters;
+  Matrix<CoordinateType> m_testElementCenters;
+  Matrix<CoordinateType> m_trialElementCenters;
   CoordinateType m_averageElementSize;
   /** \endcond */
 };

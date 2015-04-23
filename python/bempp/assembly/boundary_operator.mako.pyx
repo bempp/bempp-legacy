@@ -22,8 +22,6 @@ from bempp.utils cimport complex_float,complex_double
 import numpy as np
 cimport numpy as np
 
-np.import_array()
-
 cdef class BoundaryOperatorBase:
     """
 
@@ -145,9 +143,9 @@ cdef class GeneralBoundaryOperator(BoundaryOperatorBase):
 
         if self.is_sparse:
             return self._sparse_weak_form()
-        elif self.parameter_list['boundaryOperatorAssemblyType']=='dense':
+        elif self.parameter_list.assembly.boundary_operator_assembly_type == 'dense':
             return self._dense_weak_form()
-        elif self.parameter_list['boundaryOperatorAssemblyType']=='hmat':
+        elif self.parameter_list.assembly.boundary_operator_assembly_type =='hmat':
             return self._hmat_weak_form()
         else:
             return self._default_weak_form()

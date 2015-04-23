@@ -66,7 +66,7 @@ public:
   typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
 
   DefaultLocalAssemblerForPotentialOperatorsOnSurfaces(
-      const arma::Mat<CoordinateType> &points,
+      const Matrix<CoordinateType> &points,
       const shared_ptr<const GeometryFactory> &geometryFactory,
       const shared_ptr<const RawGridGeometry<CoordinateType>> &rawGeometry,
       const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
@@ -88,19 +88,19 @@ public:
   evaluateLocalContributions(const std::vector<int> &pointIndices,
                              int trialElementIndex,
                              LocalDofIndex localTrialDofIndex,
-                             std::vector<arma::Mat<ResultType>> &result,
+                             std::vector<Matrix<ResultType>> &result,
                              CoordinateType nominalDistance = -1.);
 
   virtual void
   evaluateLocalContributions(int pointIndex, int componentIndex,
                              const std::vector<int> &trialElementIndices,
-                             std::vector<arma::Mat<ResultType>> &result,
+                             std::vector<Matrix<ResultType>> &result,
                              CoordinateType nominalDistance = -1.);
 
   virtual void
   evaluateLocalContributions(const std::vector<int> &pointIndices,
                              const std::vector<int> &trialElementIndices,
-                             Fiber::_2dArray<arma::Mat<ResultType>> &result,
+                             Fiber::_2dArray<Matrix<ResultType>> &result,
                              CoordinateType nominalDistance = -1.);
 
   virtual int resultDimension() const;
@@ -129,7 +129,7 @@ private:
   void precalculateElementSizesAndCenters();
 
 private:
-  arma::Mat<CoordinateType> m_points;
+  Matrix<CoordinateType> m_points;
   shared_ptr<const GeometryFactory> m_geometryFactory;
   shared_ptr<const RawGridGeometry<CoordinateType>> m_rawGeometry;
   shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>

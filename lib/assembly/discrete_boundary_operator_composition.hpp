@@ -21,17 +21,13 @@
 #ifndef bempp_discrete_boundary_operator_composition_hpp
 #define bempp_discrete_boundary_operator_composition_hpp
 
-#include "bempp/common/config_trilinos.hpp"
 
 #include "../common/common.hpp"
+#include "../common/eigen_support.hpp"
 
 #include "discrete_boundary_operator.hpp"
 
 #include "../common/shared_ptr.hpp"
-
-#ifdef WITH_TRILINOS
-#include <Teuchos_RCP.hpp>
-#endif
 
 namespace Bempp {
 
@@ -60,21 +56,12 @@ public:
 
   virtual void addBlock(const std::vector<int> &rows,
                         const std::vector<int> &cols, const ValueType alpha,
-                        arma::Mat<ValueType> &block) const;
-
-#ifdef WITH_TRILINOS
-public:
-  virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>> domain() const;
-  virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>> range() const;
-
-protected:
-  virtual bool opSupportedImpl(Thyra::EOpTransp M_trans) const;
-#endif
+                        Matrix<ValueType> &block) const;
 
 private:
   virtual void applyBuiltInImpl(const TranspositionMode trans,
-                                const arma::Col<ValueType> &x_in,
-                                arma::Col<ValueType> &y_inout,
+                                const Eigen::Ref<Vector<ValueType>> &x_in,
+                                Eigen::Ref<Vector<ValueType>> y_inout,
                                 const ValueType alpha,
                                 const ValueType beta) const;
 

@@ -41,8 +41,8 @@
 #include "../grid/mapper.hpp"
 #include "../space/space.hpp"
 
-#include "../common/armadillo_fwd.hpp"
 #include "../common/complex_aux.hpp"
+#include "../common/eigen_support.hpp"
 #include <stdexcept>
 #include <iostream>
 
@@ -74,7 +74,7 @@ public:
             const std::vector<std::vector<BasisFunctionType> >& testLocalDofWeights,
             const std::vector<std::vector<BasisFunctionType> >& trialLocalDofWeights,
             Fiber::LocalAssemblerForIntegralOperators<ResultType>& assembler,
-            arma::Mat<ResultType>& result, MutexType& mutex) :
+            Matrix<ResultType>& result, MutexType& mutex) :
         m_testIndices(testIndices),
         m_testGlobalDofs(testGlobalDofs), m_trialGlobalDofs(trialGlobalDofs),
         m_testLocalDofWeights(testLocalDofWeights),
@@ -84,7 +84,7 @@ public:
 
     void operator() (const tbb::blocked_range<int>& r) const {
         const int testElementCount = m_testIndices.size();
-        std::vector<arma::Mat<ResultType> > localResult;
+        std::vector<Matrix<ResultType> > localResult;
         for (int trialIndex = r.begin(); trialIndex != r.end(); ++trialIndex) {
             // Handle this trial element only if it contributes to any global DOFs.
             bool skipTrialElement = true;
@@ -143,7 +143,7 @@ private:
     // make assembler's internal integrator map mutable)
     typename Fiber::LocalAssemblerForIntegralOperators<ResultType>& m_assembler;
     // mutable OK because write access to this matrix is protected by a mutex
-    arma::Mat<ResultType>& m_result;
+    Matrix<ResultType>& m_result;
 
     // mutex must be mutable because we need to lock and unlock it
     MutexType& m_mutex;
@@ -161,7 +161,7 @@ public:
             const std::vector<std::vector<GlobalDofIndex> >& trialGlobalDofs,
             const std::vector<std::vector<BasisFunctionType> >& trialLocalDofWeights,
             Fiber::LocalAssemblerForPotentialOperators<ResultType>& assembler,
-            arma::Mat<ResultType>& result, MutexType& mutex) :
+            Matrix<ResultType>& result, MutexType& mutex) :
         m_pointIndices(pointIndices),
         m_trialGlobalDofs(trialGlobalDofs),
         m_trialLocalDofWeights(trialLocalDofWeights),
@@ -176,7 +176,7 @@ public:
         const int pointCount = m_pointIndices.size();
         const int componentCount = m_assembler.resultDimension();
 
-        std::vector<arma::Mat<ResultType> > localResult;
+        std::vector<Matrix<ResultType> > localResult;
         for (int trialIndex = r.begin(); trialIndex != r.end(); ++trialIndex) {
             // Handle this trial element only if it contributes to any global DOFs.
             bool skipTrialElement = true;
@@ -226,7 +226,7 @@ private:
     // make assembler's internal integrator map mutable)
     typename Fiber::LocalAssemblerForPotentialOperators<ResultType>& m_assembler;
     // mutable OK because write access to this matrix is protected by a mutex
-    arma::Mat<ResultType>& m_result;
+    Matrix<ResultType>& m_result;
 
     // mutex must be mutable because we need to lock and unlock it
     MutexType& m_mutex;
@@ -304,9 +304,9 @@ assembleDetachedWeakForm(
     }
 
     // Create the operator's matrix
-    arma::Mat<ResultType> result(testSpace.globalDofCount(),
+    Matrix<ResultType> result(testSpace.globalDofCount(),
                                  trialSpace.globalDofCount());
-    result.fill(0.);
+    result.setZero();
 
     typedef DenseWeakFormAssemblerLoopBody<BasisFunctionType, ResultType> Body;
     typename Body::MutexType mutex;
@@ -359,7 +359,7 @@ template <typename BasisFunctionType, typename ResultType>
 std::unique_ptr<DiscreteBoundaryOperator<ResultType> >
 DenseGlobalAssembler<BasisFunctionType, ResultType>::
 assemblePotentialOperator(
-        const arma::Mat<CoordinateType>& points,
+        const Matrix<CoordinateType>& points,
         const Space<BasisFunctionType>& trialSpace,
         LocalAssemblerForPotentialOperators& assembler,
         const EvaluationOptions& options)
@@ -370,7 +370,7 @@ assemblePotentialOperator(
     gatherGlobalDofs(trialSpace, trialGlobalDofs, trialLocalDofWeights);
 
     const int trialElementCount = trialGlobalDofs.size();
-    const int pointCount = points.n_cols;
+    const int pointCount = points.cols();
     const int componentCount = assembler.resultDimension();
 
     // Make a vector of all element indices
@@ -379,9 +379,9 @@ assemblePotentialOperator(
         pointIndices[i] = i;
 
     // Create the operator's matrix
-    arma::Mat<ResultType> result(pointCount * componentCount,
+    Matrix<ResultType> result(pointCount * componentCount,
                                  trialSpace.globalDofCount());
-    result.fill(0.);
+    result.setZero();
 
     typedef DensePotentialOperatorAssemblerLoopBody<BasisFunctionType, ResultType> Body;
     typename Body::MutexType mutex;

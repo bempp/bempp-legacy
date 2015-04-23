@@ -396,7 +396,7 @@ struct TestInDenseMode
 
         BoundaryOperator<BFT, RT> opRef = createOperator(
                     contextRef, pwiseLinears, pwiseLinears, pwiseConstants);
-        arma::Mat<RT> weakFormRef = opRef.weakForm()->asMatrix();
+        Matrix<RT> weakFormRef = opRef.weakForm()->asMatrix();
 
         AssemblyOptions assemblyOptionsTest;
         assemblyOptionsTest.setVerbosityLevel(VerbosityLevel::LOW);
@@ -406,7 +406,7 @@ struct TestInDenseMode
 
         BoundaryOperator<BFT, RT> opTest = createOperator(
                     contextTest, pwiseLinears, pwiseLinears, pwiseConstants);
-        arma::Mat<RT> weakFormTest = opTest.weakForm()->asMatrix();
+        Matrix<RT> weakFormTest = opTest.weakForm()->asMatrix();
 
         BOOST_CHECK(check_arrays_are_close<RT>(
                         weakFormTest, weakFormRef,
@@ -453,7 +453,7 @@ struct TestInAcaMode
 
         BoundaryOperator<BFT, RT> opRef = createOperator(
                     contextRef, pwiseLinears, pwiseLinears, pwiseConstants);
-        arma::Mat<RT> weakFormRef = opRef.weakForm()->asMatrix();
+        Matrix<RT> weakFormRef = opRef.weakForm()->asMatrix();
 
         AssemblyOptions assemblyOptionsTest;
         assemblyOptionsTest.setVerbosityLevel(VerbosityLevel::LOW);
@@ -465,7 +465,7 @@ struct TestInAcaMode
 
         BoundaryOperator<BFT, RT> opTest = createOperator(
                     contextTest, pwiseLinears, pwiseLinears, pwiseConstants);
-        arma::Mat<RT> weakFormTest = opTest.weakForm()->asMatrix();
+        Matrix<RT> weakFormTest = opTest.weakForm()->asMatrix();
 
         BOOST_CHECK(check_arrays_are_close<RT>(
                         weakFormTest, weakFormRef, 2. * acaOptions.eps));

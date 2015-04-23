@@ -22,9 +22,10 @@
 #define fiber_basis_data_hpp
 
 #include "../common/common.hpp"
+#include "../common/eigen_support.hpp"
 
-#include "../common/armadillo_fwd.hpp"
 #include "../common/multidimensional_arrays.hpp"
+
 
 namespace Fiber {
 

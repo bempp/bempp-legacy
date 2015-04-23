@@ -311,7 +311,7 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::
   const IndexSet &indexSet = m_view->indexSet();
   const int elementCount = m_view->entityCount(0);
 
-  std::vector<arma::Mat<CoordinateType>> elementCorners(elementCount);
+  std::vector<Matrix<CoordinateType>> elementCorners(elementCount);
   std::unique_ptr<EntityIterator<0>> it = m_view->entityIterator<0>();
   while (!it->finished()) {
     const Entity<0> &e = it->entity();
@@ -368,18 +368,18 @@ PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::getFlatLocalDofNormals(
   const IndexSet &indexSet = m_view->indexSet();
   int elementCount = m_view->entityCount(0);
 
-  arma::Mat<CoordinateType> elementNormals(worldDim, elementCount);
+  Matrix<CoordinateType> elementNormals(worldDim, elementCount);
   std::unique_ptr<EntityIterator<0>> it = m_view->entityIterator<0>();
-  arma::Col<CoordinateType> center(gridDim);
+  Vector<CoordinateType> center(gridDim);
   center.fill(0.5);
-  arma::Col<CoordinateType> normal;
+  Matrix<CoordinateType> normal;
   while (!it->finished()) {
     const Entity<0> &e = it->entity();
     int index = indexSet.entityIndex(e);
     e.geometry().getNormals(center, normal);
 
     for (int dim = 0; dim < worldDim; ++dim)
-      elementNormals(dim, index) = normal(dim);
+      elementNormals(dim, index) = normal(dim,0);
     it->next();
   }
 
@@ -425,13 +425,13 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::dumpClusterIdsEx(
   std::unique_ptr<GridView> view = this->grid()->leafView();
   std::unique_ptr<VtkWriter> vtkWriter = view->vtkWriter();
   if (dofType == GLOBAL_DOFS) {
-    arma::Row<double> data(idCount);
+    Matrix<double> data(1,idCount);
     for (size_t i = 0; i < idCount; ++i)
-      data(i) = clusterIdsOfDofs[i];
+      data(0,i) = clusterIdsOfDofs[i];
     vtkWriter->addVertexData(data, "ids");
     vtkWriter->write(fileName);
   } else {
-    arma::Mat<double> data(idCount, globalDofCount());
+    Matrix<double> data(idCount, globalDofCount());
     data.fill(0.);
     size_t row = 0;
     for (size_t id = 0; id < idCount; ++id) {
@@ -446,7 +446,7 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::dumpClusterIdsEx(
         }
       }
       if (!exists)
-        data.shed_row(row); // very inefficient, of course
+          eigenRemoveRowFromMatrix(data,row);
       else
         ++row;
     }

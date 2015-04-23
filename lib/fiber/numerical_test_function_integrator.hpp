@@ -22,6 +22,7 @@
 #define fiber_numerical_test_function_integrator_hpp
 
 #include "../common/common.hpp"
+#include "types.hpp"
 
 #include "test_function_integrator.hpp"
 
@@ -44,7 +45,7 @@ public:
   typedef typename Base::CoordinateType CoordinateType;
 
   NumericalTestFunctionIntegrator(
-      const arma::Mat<CoordinateType> &localQuadPoints,
+      const Matrix<CoordinateType> &localQuadPoints,
       const std::vector<CoordinateType> quadWeights,
       const GeometryFactory &geometryFactory,
       const RawGridGeometry<CoordinateType> &rawGeometry,
@@ -55,10 +56,10 @@ public:
 
   virtual void integrate(const std::vector<int> &elementIndices,
                          const Shapeset<BasisFunctionType> &testShapeset,
-                         arma::Mat<ResultType> &result) const;
+                         Matrix<ResultType> &result) const;
 
 private:
-  arma::Mat<CoordinateType> m_localQuadPoints;
+  Matrix<CoordinateType> m_localQuadPoints;
   std::vector<CoordinateType> m_quadWeights;
 
   const GeometryFactory &m_geometryFactory;

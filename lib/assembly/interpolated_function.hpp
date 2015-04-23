@@ -28,7 +28,7 @@
 #include "../grid/vtk_writer.hpp"
 #include "../fiber/scalar_traits.hpp"
 
-#include "../common/armadillo_fwd.hpp"
+#include "../common/eigen_support.hpp"
 
 namespace Bempp {
 
@@ -56,7 +56,7 @@ public:
 
   /** \brief Construct function given its values at vertices of a grid. */
   InterpolatedFunction(const Grid &grid,
-                       const arma::Mat<ValueType> &vertexValues,
+                       const Matrix<ValueType> &vertexValues,
                        InterpolationMethod method = LINEAR);
 
   /** \brief Interpolation grid. */
@@ -67,7 +67,7 @@ public:
   virtual void addGeometricalDependencies(size_t &geomDeps) const;
 
   virtual void evaluate(const Fiber::GeometricalData<CoordinateType> &geomData,
-                        arma::Mat<ValueType> &result) const;
+                        Matrix<ValueType> &result) const;
 
   //    virtual void evaluate(const arma::Mat<ValueType>& global,
   //                          arma::Mat<ValueType>& values) const;
@@ -120,7 +120,7 @@ private:
 
 private:
   const Grid &m_grid;
-  arma::Mat<ValueType> m_vertexValues;
+  Matrix<ValueType> m_vertexValues;
   InterpolationMethod m_method;
 };
 

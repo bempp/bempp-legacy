@@ -109,9 +109,9 @@ public:
                       std::vector<LocalDof> &localDofs) const;
 
   virtual void
-  getGlobalDofInterpolationPoints(arma::Mat<CoordinateType> &points) const;
+  getGlobalDofInterpolationPoints(Matrix<CoordinateType> &points) const;
   virtual void getNormalsAtGlobalDofInterpolationPoints(
-      arma::Mat<CoordinateType> &normals) const;
+      Matrix<CoordinateType> &normals) const;
 
   virtual void
   getGlobalDofPositions(std::vector<Point3D<CoordinateType>> &positions) const;

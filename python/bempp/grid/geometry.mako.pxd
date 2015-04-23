@@ -3,7 +3,7 @@ codims = [('0','codim_zero'),('1','codim_one'),('2','codim_two')]
 %>
 
 from libcpp cimport bool as cbool
-from bempp.utils.armadillo cimport Mat
+from bempp.utils cimport Matrix
 
 cdef extern from "bempp/grid/geometry.hpp" namespace "Bempp":
     cdef cppclass c_Geometry "Bempp::Geometry":
@@ -11,7 +11,7 @@ cdef extern from "bempp/grid/geometry.hpp" namespace "Bempp":
         int dimWorld() const
         cbool affine() const
         int cornerCount() const
-        void getCorners(Mat[double]& c) const
+        void getCorners(Matrix[double]& c) const
 
 % for (codim,codim_template) in codims:
 

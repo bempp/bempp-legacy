@@ -21,7 +21,7 @@
 #ifndef fiber_evaluator_for_integral_operators_hpp
 #define fiber_evaluator_for_integral_operators_hpp
 
-#include "../common/armadillo_fwd.hpp"
+#include "types.hpp"
 #include "scalar_traits.hpp"
 
 #include "../common/common.hpp"
@@ -39,8 +39,8 @@ public:
 
   virtual ~EvaluatorForIntegralOperators() {}
 
-  virtual void evaluate(Region region, const arma::Mat<CoordinateType> &points,
-                        arma::Mat<ResultType> &result) const = 0;
+  virtual void evaluate(Region region, const Matrix<CoordinateType> &points,
+                        Matrix<ResultType> &result) const = 0;
 };
 
 } // namespace Fiber

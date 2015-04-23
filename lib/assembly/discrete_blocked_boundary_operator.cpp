@@ -18,8 +18,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "bempp/common/config_trilinos.hpp"
 #include "bempp/common/config_ahmed.hpp"
+#include "../common/eigen_support.hpp"
+
+#include <iostream>
 
 #include "discrete_blocked_boundary_operator.hpp"
 
@@ -32,9 +34,6 @@
 #include "../fiber/explicit_instantiation.hpp"
 
 #include <numeric>
-#ifdef WITH_TRILINOS
-#include <Thyra_DefaultSpmdVectorSpace_decl.hpp>
-#endif // WITH_TRILINOS
 
 namespace Bempp {
 
@@ -487,12 +486,6 @@ DiscreteBlockedBoundaryOperator<ValueType>::DiscreteBlockedBoundaryOperator(
               toString(rowCounts[row]) + ", " + toString(columnCounts[col]) +
               ")");
       }
-#ifdef WITH_TRILINOS
-  m_domainSpace = Thyra::defaultSpmdVectorSpace<ValueType>(
-      std::accumulate(m_columnCounts.begin(), m_columnCounts.end(), 0));
-  m_rangeSpace = Thyra::defaultSpmdVectorSpace<ValueType>(
-      std::accumulate(m_rowCounts.begin(), m_rowCounts.end(), 0));
-#endif
 }
 
 template <typename ValueType>
@@ -515,7 +508,7 @@ DiscreteBlockedBoundaryOperator<ValueType>::getComponent(int row,
 template <typename ValueType>
 void DiscreteBlockedBoundaryOperator<ValueType>::addBlock(
     const std::vector<int> &rows, const std::vector<int> &cols,
-    const ValueType alpha, arma::Mat<ValueType> &block) const {
+    const ValueType alpha, Matrix<ValueType> &block) const {
   throw std::runtime_error(
       "DiscreteBlockedBoundaryOperator::DiscreteBlockedBoundaryOperator(): "
       "addBlock: not implemented yet");
@@ -784,34 +777,11 @@ DiscreteBlockedBoundaryOperator<ValueType>::asDiscreteAcaBoundaryOperator(
 #endif
 }
 
-#ifdef WITH_TRILINOS
-template <typename ValueType>
-Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>>
-DiscreteBlockedBoundaryOperator<ValueType>::domain() const {
-  return m_domainSpace;
-}
-
-template <typename ValueType>
-Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>>
-DiscreteBlockedBoundaryOperator<ValueType>::range() const {
-  return m_rangeSpace;
-}
-
-template <typename ValueType>
-bool DiscreteBlockedBoundaryOperator<ValueType>::opSupportedImpl(
-    Thyra::EOpTransp M_trans) const {
-  for (size_t col = 0; col < m_blocks.extent(1); ++col)
-    for (size_t row = 0; row < m_blocks.extent(0); ++row)
-      if (m_blocks(row, col) && !m_blocks(row, col)->opSupported(M_trans))
-        return false;
-  return true;
-}
-#endif // WITH_TRILINOS
 
 template <typename ValueType>
 void DiscreteBlockedBoundaryOperator<ValueType>::applyBuiltInImpl(
-    const TranspositionMode trans, const arma::Col<ValueType> &x_in,
-    arma::Col<ValueType> &y_inout, const ValueType alpha,
+    const TranspositionMode trans, const Eigen::Ref<Vector<ValueType>> &x_in,
+    Eigen::Ref<Vector<ValueType>> y_inout, const ValueType alpha,
     const ValueType beta) const {
   bool transpose = (trans == TRANSPOSE || trans == CONJUGATE_TRANSPOSE);
   size_t y_count = transpose ? m_columnCounts.size() : m_rowCounts.size();
@@ -819,8 +789,9 @@ void DiscreteBlockedBoundaryOperator<ValueType>::applyBuiltInImpl(
 
   for (int yi = 0, y_start = 0; yi < y_count; ++yi) {
     size_t y_chunk_size = transpose ? m_columnCounts[yi] : m_rowCounts[yi];
-    arma::Col<ValueType> y_chunk(&y_inout[y_start], y_chunk_size,
-                                 false /* copy_aux_mem */);
+    Matrix<ValueType> y_chunk = y_inout.segment(y_start,y_chunk_size);
+//    arma::Col<ValueType> y_chunk(&y_inout[y_start], y_chunk_size,
+//                                 false /* copy_aux_mem */);
     for (int xi = 0, x_start = 0; xi < x_count; ++xi) {
       size_t x_chunk_size = transpose ? m_rowCounts[xi] : m_columnCounts[xi];
       shared_ptr<const Base> op =
@@ -830,20 +801,26 @@ void DiscreteBlockedBoundaryOperator<ValueType>::applyBuiltInImpl(
       //                                         false /* copy_aux_mem */);
       if (xi == 0) {
         // This branch ensures that the "y += beta * y" part is done
-        if (op)
+        if (op){
           //                    op->apply(trans, x_chunk, y_chunk, alpha, beta);
-          op->apply(trans, x_in.rows(x_start, x_start + x_chunk_size - 1),
+          Matrix<ValueType> x_inChunk = x_in.segment(x_start, x_chunk_size);
+          op->apply(trans, x_inChunk,
                     y_chunk, alpha, beta);
+          y_inout.segment(y_start,y_chunk_size) = y_chunk;
+        }
         else {
           if (beta == static_cast<ValueType>(0.))
-            y_chunk.fill(0.);
+            y_chunk.setZero();
           else
             y_chunk *= beta;
         }
-      } else if (op)
+      } else if (op){
         //                    op->apply(trans, x_chunk, y_chunk, alpha, 1.);
-        op->apply(trans, x_in.rows(x_start, x_start + x_chunk_size - 1),
+        Matrix<ValueType> x_inChunk = x_in.segment(x_start, x_chunk_size);
+        op->apply(trans, x_inChunk,
                   y_chunk, alpha, 1.);
+        y_inout.segment(y_start,y_chunk_size) = y_chunk;
+      }
       x_start += x_chunk_size;
     }
     y_start += y_chunk_size;

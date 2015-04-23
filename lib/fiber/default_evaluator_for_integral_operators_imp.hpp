@@ -35,6 +35,7 @@
 #include "raw_grid_geometry.hpp"
 #include "serial_blas_region.hpp"
 #include "shapeset.hpp"
+#include "types.hpp"
 
 #include <tbb/parallel_for.h>
 #include <tbb/task_scheduler_init.h>
@@ -50,19 +51,19 @@ class EvaluationLoopBody {
 public:
   typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
 
-  EvaluationLoopBody(size_t chunkSize, const arma::Mat<CoordinateType> &points,
+  EvaluationLoopBody(size_t chunkSize, const Matrix<CoordinateType> &points,
                      const GeometricalData<CoordinateType> &trialGeomData,
                      const CollectionOf2dArrays<ResultType> &trialTransfValues,
                      const std::vector<CoordinateType> &weights,
                      const CollectionOfKernels<KernelType> &kernels,
                      const KernelTrialIntegral<BasisFunctionType, KernelType,
                                                ResultType> &integral,
-                     arma::Mat<ResultType> &result)
+                     Matrix<ResultType> &result)
       : m_chunkSize(chunkSize), m_points(points),
         m_trialGeomData(trialGeomData), m_trialTransfValues(trialTransfValues),
         m_weights(weights), m_kernels(kernels), m_integral(integral),
-        m_result(result), m_pointCount(result.n_cols),
-        m_outputComponentCount(result.n_rows) {}
+        m_result(result), m_pointCount(result.cols()),
+        m_outputComponentCount(result.rows()) {}
 
   void operator()(const tbb::blocked_range<size_t> &r) const {
     CollectionOf4dArrays<KernelType> kernelValues;
@@ -70,12 +71,13 @@ public:
     for (size_t i = r.begin(); i < r.end(); ++i) {
       size_t start = m_chunkSize * i;
       size_t end = std::min(start + m_chunkSize, m_pointCount);
-      evalPointGeomData.globals = m_points.cols(start, end - 1 /* inclusive */);
+      evalPointGeomData.globals = m_points.block(0,start,m_points.rows(),end-start);
+      //evalPointGeomData.globals = m_points.cols(start, end - 1 /* inclusive */);
       m_kernels.evaluateOnGrid(evalPointGeomData, m_trialGeomData,
                                kernelValues);
       // View into the current chunk of the "result" array
       _2dArray<ResultType> resultChunk(m_outputComponentCount, end - start,
-                                       m_result.colptr(start));
+                                       m_result.col(start).data());
       m_integral.evaluate(m_trialGeomData, kernelValues, m_trialTransfValues,
                           m_weights, resultChunk);
     }
@@ -83,14 +85,14 @@ public:
 
 private:
   size_t m_chunkSize;
-  const arma::Mat<CoordinateType> &m_points;
+  const Matrix<CoordinateType> &m_points;
   const GeometricalData<CoordinateType> &m_trialGeomData;
   const CollectionOf2dArrays<ResultType> &m_trialTransfValues;
   const std::vector<CoordinateType> &m_weights;
   const CollectionOfKernels<KernelType> &m_kernels;
   const KernelTrialIntegral<BasisFunctionType, KernelType, ResultType> &
   m_integral;
-  arma::Mat<ResultType> &m_result;
+  Matrix<ResultType> &m_result;
   size_t m_pointCount;
   size_t m_outputComponentCount;
 };
@@ -127,9 +129,9 @@ DefaultEvaluatorForIntegralOperators<BasisFunctionType, KernelType, ResultType,
       m_openClHandler(openClHandler),
       m_parallelizationOptions(parallelizationOptions),
       m_quadDescSelector(quadDescSelector), m_quadRuleFamily(quadRuleFamily) {
-  const size_t elementCount = rawGeometry->elementCount();
-  if (!rawGeometry->auxData().is_empty() &&
-      rawGeometry->auxData().n_cols != elementCount)
+const size_t elementCount = rawGeometry->elementCount();
+if (rawGeometry->auxData().rows() > 0 &&
+      rawGeometry->auxData().cols() != elementCount)
     throw std::invalid_argument(
         "DefaultEvaluatorForIntegralOperators::"
         "DefaultEvaluatorForIntegralOperators(): "
@@ -152,13 +154,13 @@ template <typename BasisFunctionType, typename KernelType, typename ResultType,
 void DefaultEvaluatorForIntegralOperators<
     BasisFunctionType, KernelType, ResultType,
     GeometryFactory>::evaluate(Region region,
-                               const arma::Mat<CoordinateType> &points,
-                               arma::Mat<ResultType> &result) const {
-  const size_t pointCount = points.n_cols;
+                               const Matrix<CoordinateType> &points,
+                               Matrix<ResultType> &result) const {
+  const size_t pointCount = points.cols();
   const int outputComponentCount = m_integral->resultDimension();
 
-  result.set_size(outputComponentCount, pointCount);
-  result.fill(0.);
+  result.resize(outputComponentCount, pointCount);
+  result.setZero();
 
   const GeometricalData<CoordinateType> &trialGeomData =
       (region == EvaluatorForIntegralOperators<ResultType>::NEAR_FIELD)
@@ -179,7 +181,7 @@ void DefaultEvaluatorForIntegralOperators<
   // For the time being, we don't take into account the possibly tensorial
   // nature of kernels nor the fact that there may be more than one kernel
   const size_t kernelValuesSizePerEvalPoint =
-      trialGeomData.globals.n_cols * sizeof(KernelType);
+      trialGeomData.globals.cols() * sizeof(KernelType);
   const size_t chunkSize =
       std::max(1ul, 10 * 1024 * 1024 / kernelValuesSizePerEvalPoint);
   const size_t chunkCount = (pointCount + chunkSize - 1) / chunkSize;
@@ -298,9 +300,9 @@ void DefaultEvaluatorForIntegralOperators<BasisFunctionType, KernelType,
         // elementCornerCount = m_rawGeometry->elementCornerCount(e);
         // This implementation prevents a segmentation fault on Macs
         // when compiled with llvm in 64-bit mode with -O2 or -O3
-        const arma::Mat<int> &elementCornerIndices =
+        const Matrix<int> &elementCornerIndices =
             m_rawGeometry->elementCornerIndices();
-        for (size_t i = 0; i < elementCornerIndices.n_rows; ++i)
+        for (size_t i = 0; i < elementCornerIndices.rows(); ++i)
           if (elementCornerIndices(i, e) >= 0)
             elementCornerCount = i + 1;
           else
@@ -313,7 +315,7 @@ void DefaultEvaluatorForIntegralOperators<BasisFunctionType, KernelType,
     SingleQuadratureDescriptor desc =
         m_quadDescSelector->farFieldQuadratureDescriptor(activeShapeset,
                                                          elementCornerCount);
-    arma::Mat<CoordinateType> localQuadPoints;
+    Matrix<CoordinateType> localQuadPoints;
     std::vector<CoordinateType> quadWeights;
     m_quadRuleFamily->fillQuadraturePointsAndWeights(desc, localQuadPoints,
                                                      quadWeights);
@@ -428,11 +430,11 @@ void DefaultEvaluatorForIntegralOperators<BasisFunctionType, KernelType,
 
   // Fill member matrices of trialGeomData
   if (kernelTrialGeomDeps & GLOBALS)
-    trialGeomData.globals.set_size(worldDim, quadPointCount);
+    trialGeomData.globals.resize(worldDim, quadPointCount);
   if (kernelTrialGeomDeps & INTEGRATION_ELEMENTS)
-    trialGeomData.integrationElements.set_size(quadPointCount);
+    trialGeomData.integrationElements.resize(quadPointCount);
   if (kernelTrialGeomDeps & NORMALS)
-    trialGeomData.normals.set_size(worldDim, quadPointCount);
+    trialGeomData.normals.resize(worldDim, quadPointCount);
   if (kernelTrialGeomDeps & JACOBIANS_TRANSPOSED)
     trialGeomData.jacobiansTransposed.set_size(gridDim, worldDim,
                                                quadPointCount);
@@ -454,13 +456,13 @@ void DefaultEvaluatorForIntegralOperators<BasisFunctionType, KernelType,
        startCol += trialTransfValuesPerElement[e][0].extent(1), ++e) {
     int endCol = startCol + trialTransfValuesPerElement[e][0].extent(1) - 1;
     if (kernelTrialGeomDeps & GLOBALS)
-      trialGeomData.globals.cols(startCol, endCol) =
+      trialGeomData.globals.block(0,startCol, trialGeomData.globals.rows(), endCol-startCol+1) =
           geomDataPerElement[e].globals;
     if (kernelTrialGeomDeps & INTEGRATION_ELEMENTS)
-      trialGeomData.integrationElements.cols(startCol, endCol) =
+      trialGeomData.integrationElements.block(0,startCol, 1,endCol-startCol+1) =
           geomDataPerElement[e].integrationElements;
     if (kernelTrialGeomDeps & NORMALS)
-      trialGeomData.normals.cols(startCol, endCol) =
+      trialGeomData.normals.block(0,startCol, trialGeomData.normals.rows(),endCol-startCol+1) =
           geomDataPerElement[e].normals;
     if (kernelTrialGeomDeps & JACOBIANS_TRANSPOSED) {
       const size_t n = trialGeomData.jacobiansTransposed.extent(1);

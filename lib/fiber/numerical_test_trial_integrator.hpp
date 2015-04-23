@@ -45,7 +45,7 @@ public:
       BasisFunctionType, ResultType>::CoordinateType CoordinateType;
 
   NumericalTestTrialIntegrator(
-      const arma::Mat<CoordinateType> &localQuadPoints,
+      const Matrix<CoordinateType> &localQuadPoints,
       const std::vector<CoordinateType> quadWeights,
       const GeometryFactory &geometryFactory,
       const RawGridGeometry<CoordinateType> &rawGeometry,
@@ -59,10 +59,10 @@ public:
   virtual void integrate(const std::vector<int> &elementIndices,
                          const Shapeset<BasisFunctionType> &testShapeset,
                          const Shapeset<BasisFunctionType> &trialShapeset,
-                         arma::Cube<ResultType> &result) const;
+                         std::vector<Matrix<ResultType>> &result) const;
 
 private:
-  arma::Mat<CoordinateType> m_localQuadPoints;
+  Matrix<CoordinateType> m_localQuadPoints;
   std::vector<CoordinateType> m_quadWeights;
 
   const GeometryFactory &m_geometryFactory;

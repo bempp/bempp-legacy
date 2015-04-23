@@ -18,10 +18,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "bempp/common/config_trilinos.hpp"
 
 #include "discrete_dense_boundary_operator.hpp"
 #include "../common/boost_make_shared_fwd.hpp"
+#include "../common/eigen_support.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
 #include "fiber/scalar_traits.hpp"
@@ -30,21 +30,12 @@
 #include <stdexcept>
 #include <array>
 
-#ifdef WITH_TRILINOS
-#include <Thyra_DefaultSpmdVectorSpace_decl.hpp>
-#endif
-
 namespace Bempp {
 
 template <typename ValueType>
 DiscreteDenseBoundaryOperator<ValueType>::DiscreteDenseBoundaryOperator(
-    const arma::Mat<ValueType> &mat)
+    const Matrix<ValueType> &mat)
     : m_mat(mat)
-#ifdef WITH_TRILINOS
-      ,
-      m_domainSpace(Thyra::defaultSpmdVectorSpace<ValueType>(mat.n_cols)),
-      m_rangeSpace(Thyra::defaultSpmdVectorSpace<ValueType>(mat.n_rows))
-#endif
 {
 }
 
@@ -54,26 +45,26 @@ void DiscreteDenseBoundaryOperator<ValueType>::dump() const {
 }
 
 template <typename ValueType>
-arma::Mat<ValueType>
+Matrix<ValueType>
 DiscreteDenseBoundaryOperator<ValueType>::asMatrix() const {
   return m_mat;
 }
 
 template <typename ValueType>
 unsigned int DiscreteDenseBoundaryOperator<ValueType>::rowCount() const {
-  return m_mat.n_rows;
+  return m_mat.rows();
 }
 
 template <typename ValueType>
 unsigned int DiscreteDenseBoundaryOperator<ValueType>::columnCount() const {
-  return m_mat.n_cols;
+  return m_mat.cols();
 }
 
 template <typename ValueType>
 void DiscreteDenseBoundaryOperator<ValueType>::addBlock(
     const std::vector<int> &rows, const std::vector<int> &cols,
-    const ValueType alpha, arma::Mat<ValueType> &block) const {
-  if (block.n_rows != rows.size() || block.n_cols != cols.size())
+    const ValueType alpha, Matrix<ValueType> &block) const {
+  if (block.rows() != rows.size() || block.cols() != cols.size())
     throw std::invalid_argument("DiscreteDenseBoundaryOperator::addBlock(): "
                                 "incorrect block size");
   for (size_t col = 0; col < cols.size(); ++col)
@@ -91,37 +82,16 @@ PyObject* DiscreteDenseBoundaryOperator<ValueType>::asNumpyObject() const {
     gstate = PyGILState_Ensure(); 
     PyObject* out = PyArray_New(&PyArray_Type,nd,dims.data(),
             Fiber::ScalarTraits<ValueType>::NumpyTypeNum,
-            NULL,m_mat.memptr(),0,NPY_ARRAY_F_CONTIGUOUS,NULL);
+            NULL,m_mat.data(),0,NPY_ARRAY_F_CONTIGUOUS,NULL);
     PyGILState_Release(gstate);
     return out;
 
 }
 
-#ifdef WITH_TRILINOS
-template <typename ValueType>
-Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>>
-DiscreteDenseBoundaryOperator<ValueType>::domain() const {
-  return m_domainSpace;
-}
-
-template <typename ValueType>
-Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>>
-DiscreteDenseBoundaryOperator<ValueType>::range() const {
-  return m_rangeSpace;
-}
-
-template <typename ValueType>
-bool DiscreteDenseBoundaryOperator<ValueType>::opSupportedImpl(
-    Thyra::EOpTransp M_trans) const {
-  return (M_trans == Thyra::NOTRANS || M_trans == Thyra::TRANS ||
-          M_trans == Thyra::CONJ || M_trans == Thyra::CONJTRANS);
-}
-#endif // WITH_TRILINOS
-
 template <typename ValueType>
 void DiscreteDenseBoundaryOperator<ValueType>::applyBuiltInImpl(
-    const TranspositionMode trans, const arma::Col<ValueType> &x_in,
-    arma::Col<ValueType> &y_inout, const ValueType alpha,
+    const TranspositionMode trans, const Eigen::Ref<Vector<ValueType>> &x_in,
+    Eigen::Ref<Vector<ValueType>> y_inout, const ValueType alpha,
     const ValueType beta) const {
   if (beta == static_cast<ValueType>(0.))
     y_inout.fill(static_cast<ValueType>(0.));
@@ -133,13 +103,13 @@ void DiscreteDenseBoundaryOperator<ValueType>::applyBuiltInImpl(
     y_inout += alpha * m_mat * x_in;
     break;
   case CONJUGATE:
-    y_inout += alpha * arma::conj(m_mat) * x_in;
+    y_inout += alpha * (m_mat.conjugate()) * x_in;
     break;
   case TRANSPOSE:
-    y_inout += alpha * m_mat.st() * x_in;
+    y_inout += alpha * m_mat.transpose() * x_in;
     break;
   case CONJUGATE_TRANSPOSE:
-    y_inout += alpha * m_mat.t() * x_in;
+    y_inout += alpha * m_mat.adjoint() * x_in;
     break;
   default:
     throw std::invalid_argument(
@@ -150,14 +120,14 @@ void DiscreteDenseBoundaryOperator<ValueType>::applyBuiltInImpl(
 
 template <typename ValueType>
 shared_ptr<DiscreteDenseBoundaryOperator<ValueType>>
-discreteDenseBoundaryOperator(const arma::Mat<ValueType> &mat) {
+discreteDenseBoundaryOperator(const Matrix<ValueType> &mat) {
   typedef DiscreteDenseBoundaryOperator<ValueType> Op;
   return boost::make_shared<Op>(mat);
 }
 
 #define INSTANTIATE_NONMEMBER_CONSTRUCTOR(VALUE)                               \
   template shared_ptr<DiscreteDenseBoundaryOperator<VALUE>>                    \
-  discreteDenseBoundaryOperator(const arma::Mat<VALUE> &)
+  discreteDenseBoundaryOperator(const Matrix<VALUE> &)
 FIBER_ITERATE_OVER_VALUE_TYPES(INSTANTIATE_NONMEMBER_CONSTRUCTOR);
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(DiscreteDenseBoundaryOperator);

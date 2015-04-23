@@ -29,8 +29,8 @@
 
 #include <string>
 #include <vector>
-#include "../common/armadillo_fwd.hpp"
 #include "opencl_options.hpp"
+#include "types.hpp"
 
 #ifdef WITH_OPENCL
 #include "CL/cl.hpp"
@@ -212,8 +212,8 @@ public:
   bool UseOpenCl() const { return false; }
 
   template <typename CoordinateType, typename IndexType>
-  void pushGeometry(const arma::Mat<CoordinateType> &vtx,
-                    const arma::Mat<IndexType> &idx) const {}
+  void pushGeometry(const Matrix<CoordinateType> &vtx,
+                    const Matrix<IndexType> &idx) const {}
 };
 
 #endif // WITH_OPENCL

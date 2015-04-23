@@ -26,6 +26,7 @@
 #include "grid_function.hpp"
 #include "../common/boost_make_shared_fwd.hpp"
 #include "../common/to_string.hpp"
+#include "../common/eigen_support.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 #include "../space/space.hpp"
 
@@ -243,11 +244,11 @@ void BlockedBoundaryOperator<BasisFunctionType, ResultType>::apply(
   size_t xSize = 0;
   for (size_t col = 0; col < columnCount; ++col)
     xSize += m_domains[col]->globalDofCount();
-  arma::Col<ResultType> xVals(xSize);
+  Matrix<ResultType> xVals(xSize,1);
   for (size_t col = 0, start = 0; col < columnCount; ++col) {
-    const arma::Col<ResultType> &chunk = x_in[col].coefficients();
-    size_t chunkSize = chunk.n_rows;
-    xVals.rows(start, start + chunkSize - 1) = chunk;
+    const Vector<ResultType> &chunk = x_in[col].coefficients();
+    size_t chunkSize = chunk.rows();
+    xVals.block(start,0, chunkSize,1 ) = chunk;
     start += chunkSize;
   }
 
@@ -255,23 +256,24 @@ void BlockedBoundaryOperator<BasisFunctionType, ResultType>::apply(
   size_t ySize = 0;
   for (size_t row = 0; row < rowCount; ++row)
     ySize += m_dualsToRanges[row]->globalDofCount();
-  arma::Col<ResultType> yVals(ySize);
+  Matrix<ResultType> yVals(ySize,1);
   for (size_t row = 0, start = 0; row < rowCount; ++row) {
-    arma::Col<ResultType> chunk =
+    Vector<ResultType> chunk =
         y_inout[row].projections(m_dualsToRanges[row]);
-    size_t chunkSize = chunk.n_rows;
-    yVals.rows(start, start + chunkSize - 1) = chunk;
+    size_t chunkSize = chunk.rows();
+    yVals.block(start,0, chunkSize,1 ) = chunk;
     start += chunkSize;
   }
 
   // Apply operator and assign the result to y_inout's projections
+
   weakForm()->apply(trans, xVals, yVals, alpha, beta);
 
   // Assign the result to the grid functions from y_inout
   for (size_t row = 0, start = 0; row < rowCount; ++row) {
     size_t chunkSize = m_dualsToRanges[row]->globalDofCount();
     y_inout[row].setProjections(m_dualsToRanges[row],
-                                yVals.rows(start, start + chunkSize - 1));
+                                yVals.col(0).segment(start,chunkSize));
     start += chunkSize;
   }
 }
@@ -322,8 +324,8 @@ std::vector<GridFunction<BasisFunctionType, ResultType>> operator*(
   std::vector<GF> result(op.rowCount());
   for (size_t i = 0; i < op.rowCount(); ++i) {
     shared_ptr<const Space<BasisFunctionType>> space = op.range(i);
-    arma::Col<ResultType> coefficients(space->globalDofCount());
-    coefficients.fill(0.);
+    Vector<ResultType> coefficients(space->globalDofCount());
+    coefficients.setZero();
     result[i] = GF(funs[0].context(), space, coefficients);
   }
   op.apply(NO_TRANSPOSE, funs, result, 1., 0.);

@@ -19,7 +19,6 @@
 // THE SOFTWARE.
 
 #include "bempp/common/config_ahmed.hpp"
-#include "bempp/common/config_trilinos.hpp"
 
 #include "aca_global_assembler.hpp"
 
@@ -28,11 +27,11 @@
 #include "cluster_construction_helper.hpp"
 #include "context.hpp"
 #include "evaluation_options.hpp"
-#include "index_permutation.hpp"
 #include "discrete_boundary_operator_composition.hpp"
 #include "discrete_sparse_boundary_operator.hpp"
 
-#include "../common/armadillo_fwd.hpp"
+
+#include "../common/eigen_support.hpp"
 #include "../common/auto_timer.hpp"
 #include "../common/boost_shared_array_fwd.hpp"
 #include "../common/chunk_statistics.hpp"
@@ -75,23 +74,6 @@
 #include "weak_form_aca_assembly_helper.hpp"
 #endif
 
-// This is a workaround of the problem of the abs() function being declared
-// both in Epetra and in AHMED. It relies of the implementation detail (!) that
-// in Epetra the declaration of abs is put between #ifndef __IBMCPP__ ...
-// #endif. So it may well break in future versions of Trilinos. The ideal
-// solution would be for AHMED to use namespaces.
-
-// Note: this particular instance of this kludge could be removed --
-// we could move permuteEpetraMatrix() to another file
-#ifndef __IBMCPP__
-#define __IBMCPP__
-#include <Epetra_CrsMatrix.h>
-#include <EpetraExt_MatrixMatrix.h>
-#undef __IBMCPP__
-#else
-#include <Epetra_CrsMatrix.h>
-#include <EpetraExt_MatrixMatrix.h>
-#endif
 
 // #define DUMP_DENSE_BLOCKS // if defined, contents and DOF lists of blocks
 // stored as dense matrices will be printed to the
@@ -851,7 +833,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
 template <typename BasisFunctionType, typename ResultType>
 std::unique_ptr<DiscreteBoundaryOperator<ResultType>>
 AcaGlobalAssembler<BasisFunctionType, ResultType>::assemblePotentialOperator(
-    const arma::Mat<CoordinateType> &points,
+    const Matrix<CoordinateType> &points,
     const Space<BasisFunctionType> &trialSpace,
     const std::vector<LocalAssemblerForPotentialOperators *> &localAssemblers,
     const std::vector<ResultType> &termMultipliers,
@@ -883,7 +865,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assemblePotentialOperator(
     throw std::runtime_error("AcaGlobalAssembler::assemblePotentialOperator(): "
                              "the 'localAssemblers' vector must not be empty");
 
-  const size_t pointCount = points.n_cols;
+  const size_t pointCount = points.cols();
   const int componentCount = localAssemblers[0]->resultDimension();
   const size_t testDofCount = pointCount * componentCount;
   const size_t trialDofCount = indexWithGlobalDofs
@@ -980,7 +962,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assemblePotentialOperator(
 template <typename BasisFunctionType, typename ResultType>
 std::unique_ptr<DiscreteBoundaryOperator<ResultType>>
 AcaGlobalAssembler<BasisFunctionType, ResultType>::assemblePotentialOperator(
-    const arma::Mat<CoordinateType> &points,
+    const Matrix<CoordinateType> &points,
     const Space<BasisFunctionType> &trialSpace,
     LocalAssemblerForPotentialOperators &localAssembler,
     const EvaluationOptions &options) {

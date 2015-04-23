@@ -38,13 +38,13 @@ template <typename BasisFunctionType>
 void SpaceHelper<BasisFunctionType>::
     getGlobalDofInterpolationPoints_defaultImplementation(
         const Space<BasisFunctionType> &space,
-        arma::Mat<CoordinateType> &points) {
+        Matrix<CoordinateType> &points) {
   std::vector<Point3D<CoordinateType>> vPoints;
   space.getGlobalDofPositions(vPoints);
 
   const size_t pointCount = vPoints.size();
   const size_t worldDim = space.worldDimension();
-  points.set_size(worldDim, pointCount);
+  points.resize(worldDim, pointCount);
   for (size_t p = 0; p < pointCount; ++p) {
     points(0, p) = acc(vPoints, p).x;
     if (worldDim > 1)
@@ -58,13 +58,13 @@ template <typename BasisFunctionType>
 void SpaceHelper<BasisFunctionType>::
     getNormalsAtGlobalDofInterpolationPoints_defaultImplementation(
         const Space<BasisFunctionType> &space,
-        arma::Mat<CoordinateType> &normals) {
+        Matrix<CoordinateType> &normals) {
   std::vector<Point3D<CoordinateType>> vNormals;
   space.getGlobalDofNormals(vNormals);
 
   const size_t pointCount = vNormals.size();
   const size_t worldDim = space.worldDimension();
-  normals.set_size(worldDim, pointCount);
+  normals.resize(worldDim, pointCount);
   for (size_t p = 0; p < pointCount; ++p) {
     normals(0, p) = acc(vNormals, p).x;
     if (worldDim > 1)
@@ -83,7 +83,7 @@ SpaceHelper<BasisFunctionType>::getGlobalDofBoundingBoxes_defaultImplementation(
   const IndexSet &indexSet = view.indexSet();
   const int elementCount = view.entityCount(0);
 
-  std::vector<arma::Mat<CoordinateType>> elementCorners(elementCount);
+  std::vector<Matrix<CoordinateType>> elementCorners(elementCount);
   std::unique_ptr<EntityIterator<0>> it = view.entityIterator<0>();
   while (!it->finished()) {
     const Entity<0> &e = it->entity();
@@ -137,20 +137,20 @@ void SpaceHelper<BasisFunctionType>::getGlobalDofNormals_defaultImplementation(
   const IndexSet &indexSet = view.indexSet();
   int elementCount = view.entityCount(0);
 
-  arma::Mat<CoordinateType> elementNormals(worldDim, elementCount);
+  Matrix<CoordinateType> elementNormals(worldDim, elementCount);
   std::unique_ptr<EntityIterator<0>> it = view.entityIterator<0>();
-  arma::Col<CoordinateType> center(gridDim);
+  Vector<CoordinateType> center(gridDim);
   // Note: we assume here that elements are flat and so the position at which
   // the normal is calculated does not matter.
   center.fill(0.5);
-  arma::Col<CoordinateType> normal;
+  Matrix<CoordinateType> normal;
   while (!it->finished()) {
     const Entity<0> &e = it->entity();
     int index = indexSet.entityIndex(e);
     e.geometry().getNormals(center, normal);
 
     for (int dim = 0; dim < worldDim; ++dim)
-      elementNormals(dim, index) = normal(dim);
+      elementNormals(dim, index) = normal(dim,0);
     it->next();
   }
 

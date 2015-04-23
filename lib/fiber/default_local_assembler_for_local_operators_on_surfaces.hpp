@@ -28,8 +28,8 @@
 #include "numerical_quadrature.hpp"
 #include "numerical_test_trial_integrator.hpp"
 #include "shared_ptr.hpp"
+#include "types.hpp"
 
-#include "../common/armadillo_fwd.hpp"
 #include "../common/boost_ptr_map_fwd.hpp"
 #include <cstring>
 #include <iostream>
@@ -76,7 +76,7 @@ public:
 
   virtual void
   evaluateLocalWeakForms(const std::vector<int> &elementIndices,
-                         std::vector<arma::Mat<ResultType>> &result);
+                         std::vector<Matrix<ResultType>> &result);
 
 private:
   /** \cond PRIVATE */

@@ -184,8 +184,8 @@ void UnitScalarSpace<BasisFunctionType>::getGlobalDofPositions(
     std::unique_ptr<EntityIterator<0>> it = m_view->entityIterator<0>();
     while (!it->finished()) {
       const Entity<0> &e = it->entity();
-      arma::Col<CoordinateType> center;
-      e.geometry().getCenter(center);
+      Vector<CoordinateType> center(m_view->dimWorld());
+      e.geometry().getCenter(Eigen::Ref<Vector<CoordinateType>>(center));
 
       positions[0].x += center(0);
       positions[0].y += center(1);
@@ -216,8 +216,8 @@ void UnitScalarSpace<BasisFunctionType>::getFlatLocalDofPositions(
     while (!it->finished()) {
       const Entity<0> &e = it->entity();
       int index = mapper.entityIndex(e);
-      arma::Col<CoordinateType> center;
-      e.geometry().getCenter(center);
+      Vector<CoordinateType> center(m_view->dimWorld());
+      e.geometry().getCenter(Eigen::Ref<Vector<CoordinateType>>(center));
 
       positions[index].x = center(0);
       positions[index].y = center(1);
@@ -248,7 +248,7 @@ void UnitScalarSpace<BasisFunctionType>::getGlobalDofBoundingBoxes(
   bbox.ubound.y = -std::numeric_limits<CoordinateType>::max();
   bbox.ubound.z = -std::numeric_limits<CoordinateType>::max();
 
-  arma::Mat<CoordinateType> corners;
+  Matrix<CoordinateType> corners;
 
   if (gridDim == 1)
     throw NotImplementedError("UnitScalarSpace::getGlobalDofBoundingBoxes(): "
@@ -257,16 +257,16 @@ void UnitScalarSpace<BasisFunctionType>::getGlobalDofBoundingBoxes(
     std::unique_ptr<EntityIterator<0>> it = m_view->entityIterator<0>();
     while (!it->finished()) {
       const Entity<0> &e = it->entity();
-      arma::Col<CoordinateType> center;
+      Vector<CoordinateType> center(m_view->dimWorld());
       const Geometry &geo = e.geometry();
-      geo.getCenter(center);
+      geo.getCenter(Eigen::Ref<Vector<CoordinateType>>(center));
       bbox.reference.x += center(0);
       bbox.reference.y += center(1);
       bbox.reference.z += center(2);
 
       geo.getCorners(corners);
-      assert(corners.n_cols > 0);
-      for (size_t i = 0; i < corners.n_cols; ++i) {
+      assert(corners.cols() > 0);
+      for (size_t i = 0; i < corners.cols(); ++i) {
         bbox.lbound.x = std::min(bbox.lbound.x, corners(0, i));
         bbox.lbound.y = std::min(bbox.lbound.y, corners(1, i));
         bbox.lbound.z = std::min(bbox.lbound.z, corners(2, i));
@@ -307,7 +307,7 @@ void UnitScalarSpace<BasisFunctionType>::getFlatLocalDofBoundingBoxes(
   bboxes.resize(flatLocalDofCount_);
 
   const Mapper &mapper = m_view->elementMapper();
-  arma::Mat<CoordinateType> corners;
+  Matrix<CoordinateType> corners;
 
   if (gridDim == 1)
     throw NotImplementedError(
@@ -318,21 +318,21 @@ void UnitScalarSpace<BasisFunctionType>::getFlatLocalDofBoundingBoxes(
     while (!it->finished()) {
       const Entity<0> &e = it->entity();
       int index = mapper.entityIndex(e);
-      arma::Col<CoordinateType> center;
+      Vector<CoordinateType> center(m_view->dimWorld());
       const Geometry &geo = e.geometry();
-      geo.getCenter(center);
+      geo.getCenter(Eigen::Ref<Vector<CoordinateType>>(center));
       BoundingBox<CoordinateType> &bbox = bboxes[index];
       bbox.reference.x = center(0);
       bbox.reference.y = center(1);
       bbox.reference.z = center(2);
 
       geo.getCorners(corners);
-      assert(corners.n_cols > 0);
+      assert(corners.cols() > 0);
       bbox.lbound.x = corners(0, 0);
       bbox.lbound.y = corners(1, 0);
       bbox.lbound.z = corners(2, 0);
       bbox.ubound = bbox.lbound;
-      for (size_t i = 1; i < corners.n_cols; ++i) {
+      for (size_t i = 1; i < corners.cols(); ++i) {
         bbox.lbound.x = std::min(bbox.lbound.x, corners(0, i));
         bbox.lbound.y = std::min(bbox.lbound.y, corners(1, i));
         bbox.lbound.z = std::min(bbox.lbound.z, corners(2, i));
@@ -385,9 +385,9 @@ void UnitScalarSpace<BasisFunctionType>::dumpClusterIdsEx(
 
   std::unique_ptr<GridView> view = this->grid()->leafView();
   std::unique_ptr<VtkWriter> vtkWriter = view->vtkWriter();
-  arma::Row<double> data(idCount);
+  Matrix<double> data(1,idCount);
   for (size_t i = 0; i < idCount; ++i)
-    data(i) = clusterIdsOfGlobalDofs[i];
+    data(0,i) = clusterIdsOfGlobalDofs[i];
   vtkWriter->addCellData(data, "ids");
   vtkWriter->write(fileName);
 }

@@ -22,25 +22,14 @@
 #define bempp_discrete_inverse_sparse_boundary_operator_hpp
 
 #include "../common/common.hpp"
+#include "../common/eigen_support.hpp"
 
-#include "bempp/common/config_trilinos.hpp"
-
-#ifdef WITH_TRILINOS
 #include "discrete_boundary_operator.hpp"
 
 #include "symmetry.hpp"
 #include "../common/shared_ptr.hpp"
 
 #include <memory>
-
-#include <Teuchos_RCP.hpp>
-#include <Thyra_SpmdVectorSpaceBase_decl.hpp>
-
-/** \cond FORWARD_DECL */
-class Amesos_BaseSolver;
-class Epetra_LinearProblem;
-class Epetra_CrsMatrix;
-/** \endcond */
 
 namespace Bempp {
 
@@ -61,7 +50,7 @@ public:
    *    Symmetry of the matrix. May be any combination of flags defined
    *    in the Symmetry enumeration type. */
   DiscreteInverseSparseBoundaryOperator(
-      const shared_ptr<const Epetra_CrsMatrix> &mat,
+      const shared_ptr<const RealSparseMatrix> &mat,
       int symmetry = NO_SYMMETRY);
   ~DiscreteInverseSparseBoundaryOperator();
 
@@ -70,29 +59,21 @@ public:
 
   virtual void addBlock(const std::vector<int> &rows,
                         const std::vector<int> &cols, const ValueType alpha,
-                        arma::Mat<ValueType> &block) const;
-
-public:
-  virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>> domain() const;
-  virtual Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>> range() const;
-
-protected:
-  virtual bool opSupportedImpl(Thyra::EOpTransp M_trans) const;
+                        Matrix<ValueType> &block) const;
 
 private:
+
   virtual void applyBuiltInImpl(const TranspositionMode trans,
-                                const arma::Col<ValueType> &x_in,
-                                arma::Col<ValueType> &y_inout,
+                                const Eigen::Ref<Vector<ValueType>> &x_in,
+                                Eigen::Ref<Vector<ValueType>> y_inout,
                                 const ValueType alpha,
                                 const ValueType beta) const;
 
 private:
   /** \cond PRIVATE */
-  shared_ptr<const Epetra_CrsMatrix> m_mat;
-  std::unique_ptr<Epetra_LinearProblem> m_problem;
-  Teuchos::RCP<const Thyra::SpmdVectorSpaceBase<ValueType>> m_space;
+  shared_ptr<const RealSparseMatrix> m_mat;
+  std::unique_ptr<Eigen::SparseLU<RealSparseMatrix>> m_solver;
   int m_symmetry;
-  std::unique_ptr<Amesos_BaseSolver> m_solver;
   /** \endcond */
 };
 
@@ -110,7 +91,5 @@ shared_ptr<const DiscreteBoundaryOperator<ValueType>> discreteSparseInverse(
     const shared_ptr<const DiscreteBoundaryOperator<ValueType>> &discreteOp);
 
 } // namespace Bempp
-
-#endif // WITH_TRILINOS
 
 #endif

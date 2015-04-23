@@ -5,7 +5,7 @@
 
 #include "common.hpp"
 #include "block_cluster_tree.hpp"
-#include <armadillo>
+#include "eigen_fwd.hpp"
 
 namespace hmat {
 

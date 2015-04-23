@@ -38,7 +38,7 @@
 #include "grid/mapper.hpp"
 
 #include <algorithm>
-#include "common/armadillo_fwd.hpp"
+#include "common/eigen_support.hpp"
 #include <boost/test/unit_test.hpp>
 #include <boost/test/test_case_template.hpp>
 #include <boost/test/floating_point_comparison.hpp>
@@ -108,9 +108,9 @@ private:
 
         const int dimGrid = 2;
         typedef double ctype;
-        arma::Col<double> lowerLeft(dimGrid);
-        arma::Col<double> upperRight(dimGrid);
-        arma::Col<unsigned int> nElements(dimGrid);
+        Vector<double> lowerLeft(dimGrid);
+        Vector<double> upperRight(dimGrid);
+        Vector<int> nElements(dimGrid);
         lowerLeft.fill(0);
         upperRight.fill(1);
         nElements(0) = N_ELEMENTS_X;
@@ -151,13 +151,13 @@ both_variants_of_evaluateLocalWeakForms_agree_for_callVariant_TEST_TRIAL_and_cac
     for (int i = 0; i < trialIndexCount; ++i)
         trialIndices[i] = i;
 
-    Fiber::_2dArray<arma::Mat<ResultType> > resultVariant2;
+    Fiber::_2dArray<Matrix<ResultType> > resultVariant2;
     mgr.assembler->evaluateLocalWeakForms(testIndices, trialIndices, resultVariant2);
 
     // Gather successive columns
-    Fiber::_2dArray<arma::Mat<ResultType> > resultVariant1(
+    Fiber::_2dArray<Matrix<ResultType> > resultVariant1(
                 testIndexCount, trialIndexCount);
-    std::vector<arma::Mat<ResultType> > colResult;
+    std::vector<Matrix<ResultType> > colResult;
     for (int trialI = 0; trialI < trialIndexCount; ++trialI)
     {
         mgr.assembler->evaluateLocalWeakForms(Fiber::TEST_TRIAL, testIndices,
@@ -205,13 +205,13 @@ both_variants_of_evaluateLocalWeakForms_agree_for_callVariant_TRIAL_TEST_and_cac
     for (int i = 0; i < trialIndexCount; ++i)
         trialIndices[i] = i;
 
-    Fiber::_2dArray<arma::Mat<ResultType> > resultVariant2;
+    Fiber::_2dArray<Matrix<ResultType> > resultVariant2;
     mgr.assembler->evaluateLocalWeakForms(testIndices, trialIndices, resultVariant2);
 
     // Gather successive rows
-    Fiber::_2dArray<arma::Mat<ResultType> > resultVariant1(
+    Fiber::_2dArray<Matrix<ResultType> > resultVariant1(
                 testIndexCount, trialIndexCount);
-    std::vector<arma::Mat<ResultType> > rowResult;
+    std::vector<Matrix<ResultType> > rowResult;
     for (int testI = 0; testI < testIndexCount; ++testI)
     {
         mgr.assembler->evaluateLocalWeakForms(Fiber::TRIAL_TEST, trialIndices,
@@ -257,17 +257,17 @@ evaluateLocalWeakForms_for_ALL_DOFS_and_single_dof_agree_for_callVariant_TEST_TR
 
     int elementIndexB = 2;
 
-    std::vector<arma::Mat<ResultType> > completeResult;
+    std::vector<Matrix<ResultType> > completeResult;
     mgr.assembler->evaluateLocalWeakForms(Fiber::TEST_TRIAL, elementIndicesA,
                                           elementIndexB,
                                           Fiber::ALL_DOFS, completeResult);
-    int elementBDofCount = completeResult[0].n_cols;
+    int elementBDofCount = completeResult[0].cols();
 
     // Gather successive rows
-    std::vector<arma::Mat<ResultType> > resultForSingleDof;
-    std::vector<arma::Mat<ResultType> > expected(elementCount);
+    std::vector<Matrix<ResultType> > resultForSingleDof;
+    std::vector<Matrix<ResultType> > expected(elementCount);
     for (int i = 0; i < elementCount; ++i)
-        expected[i].set_size(completeResult[i].n_rows, completeResult[i].n_cols);
+        expected[i].resize(completeResult[i].rows(), completeResult[i].cols());
 
     for (int dof = 0; dof < elementBDofCount; ++dof)
     {
@@ -314,17 +314,17 @@ evaluateLocalWeakForms_for_ALL_DOFS_and_single_dof_agree_for_callVariant_TRIAL_T
 
     int elementIndexB = 2;
 
-    std::vector<arma::Mat<ResultType> > completeResult;
+    std::vector<Matrix<ResultType> > completeResult;
     mgr.assembler->evaluateLocalWeakForms(Fiber::TRIAL_TEST, elementIndicesA,
                                           elementIndexB,
                                           Fiber::ALL_DOFS, completeResult);
-    int elementBDofCount = completeResult[0].n_rows;
+    int elementBDofCount = completeResult[0].rows();
 
     // Gather successive rows
-    std::vector<arma::Mat<ResultType> > resultForSingleDof;
-    std::vector<arma::Mat<ResultType> > expected(elementCount);
+    std::vector<Matrix<ResultType> > resultForSingleDof;
+    std::vector<Matrix<ResultType> > expected(elementCount);
     for (int i = 0; i < elementCount; ++i)
-        expected[i].set_size(completeResult[i].n_rows, completeResult[i].n_cols);
+        expected[i].resize(completeResult[i].rows(), completeResult[i].cols());
 
     for (int dof = 0; dof < elementBDofCount; ++dof)
     {
@@ -369,8 +369,8 @@ evaluateLocalWeakForms_with_and_without_singular_integral_caching_gives_same_res
     for (int i = 0; i < trialIndexCount; ++i)
         trialIndices[i] = i;
 
-    Fiber::_2dArray<arma::Mat<ResultType> > resultWithCaching;
-    Fiber::_2dArray<arma::Mat<ResultType> > resultWithoutCaching;
+    Fiber::_2dArray<Matrix<ResultType> > resultWithCaching;
+    Fiber::_2dArray<Matrix<ResultType> > resultWithoutCaching;
 
     {
         DefaultLocalAssemblerForIntegralOperatorsOnSurfacesManager<

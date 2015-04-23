@@ -250,14 +250,14 @@ void PiecewiseConstantDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::
 
 template <typename BasisFunctionType>
 void PiecewiseConstantDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::
-    getGlobalDofInterpolationPoints(arma::Mat<CoordinateType> &points) const {
+    getGlobalDofInterpolationPoints(Matrix<CoordinateType> &points) const {
   SpaceHelper<BasisFunctionType>::
       getGlobalDofInterpolationPoints_defaultImplementation(*this, points);
 }
 
 template <typename BasisFunctionType>
 void PiecewiseConstantDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::
-    getNormalsAtGlobalDofInterpolationPoints(arma::Mat<CoordinateType> &normals)
+    getNormalsAtGlobalDofInterpolationPoints(Matrix<CoordinateType> &normals)
     const {
   SpaceHelper<BasisFunctionType>::
       getNormalsAtGlobalDofInterpolationPoints_defaultImplementation(*this,
@@ -322,19 +322,19 @@ void PiecewiseConstantDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::
   const IndexSet &indexSet = this->gridView().indexSet();
   int elementCount = this->gridView().entityCount(0);
 
-  arma::Mat<CoordinateType> elementNormals(worldDim, elementCount);
+  Matrix<CoordinateType> elementNormals(worldDim, elementCount);
   std::unique_ptr<EntityIterator<0>> it =
       this->gridView().template entityIterator<0>();
-  arma::Col<CoordinateType> center(gridDim);
+  Vector<CoordinateType> center(gridDim);
   center.fill(0.5);
-  arma::Col<CoordinateType> normal;
+  Matrix<CoordinateType> normal;
   while (!it->finished()) {
     const Entity<0> &e = it->entity();
     int index = indexSet.entityIndex(e);
     e.geometry().getNormals(center, normal);
 
     for (int dim = 0; dim < worldDim; ++dim)
-      elementNormals(dim, index) = normal(dim);
+      elementNormals(dim, index) = normal(dim,0);
     it->next();
   }
 
@@ -381,9 +381,9 @@ void PiecewiseConstantDiscontinuousScalarSpaceBarycentric<
 
   std::unique_ptr<GridView> view = this->grid()->leafView();
   std::unique_ptr<VtkWriter> vtkWriter = view->vtkWriter();
-  arma::Row<double> data(idCount);
+  Matrix<double> data(1,idCount);
   for (size_t i = 0; i < idCount; ++i)
-    data(i) = clusterIdsOfGlobalDofs[i];
+    data(1,i) = clusterIdsOfGlobalDofs[i];
   vtkWriter->addCellData(data, "ids");
   vtkWriter->write(fileName);
 }

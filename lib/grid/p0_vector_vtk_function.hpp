@@ -71,7 +71,7 @@ public:
   //! evaluate
   virtual double evaluate(int comp, const Entity &e,
                           const Dune::FieldVector<ctype, dim> &xi) const {
-    return v[mapper.map(e) * ncomps_ + comp];
+    return v(mapper.map(e) * ncomps_ + comp);
   }
 
   //! get name

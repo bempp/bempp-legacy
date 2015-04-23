@@ -18,29 +18,17 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "bempp/common/config_trilinos.hpp"
 #include "bempp/common/config_ahmed.hpp"
-#ifdef WITH_TRILINOS
 
 #include "discrete_sparse_boundary_operator.hpp"
 
-#include "ahmed_mblock_array_deleter.hpp"
-#include "discrete_aca_boundary_operator.hpp"
-#include "index_permutation.hpp"
-#include "sparse_to_h_matrix_converter.hpp"
-
 #include "../common/boost_shared_array_fwd.hpp"
+#include "../common/eigen_support.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 #include "../fiber/parallelization_options.hpp"
 
 #include <iostream>
 #include <stdexcept>
-
-#include <Epetra_Map.h>
-#include <Epetra_Vector.h>
-#include <Epetra_CrsMatrix.h>
-#include <Epetra_SerialComm.h>
-#include <Thyra_DefaultSpmdVectorSpace_decl.hpp>
 
 namespace Bempp {
 
@@ -48,150 +36,161 @@ namespace Bempp {
 namespace {
 
 template <typename ValueType>
-void reallyApplyBuiltInImpl(const Epetra_CrsMatrix &mat,
+void reallyApplyBuiltInImpl(const RealSparseMatrix &mat,
                             const TranspositionMode trans,
-                            const arma::Col<ValueType> &x_in,
-                            arma::Col<ValueType> &y_inout,
+                            const Eigen::Ref<Vector<ValueType>> &x_in,
+                            Eigen::Ref<Vector<ValueType>> y_inout,
                             const ValueType alpha, const ValueType beta);
 
 template <>
-void reallyApplyBuiltInImpl<double>(const Epetra_CrsMatrix &mat,
+void reallyApplyBuiltInImpl<double>(const RealSparseMatrix &mat,
                                     const TranspositionMode trans,
-                                    const arma::Col<double> &x_in,
-                                    arma::Col<double> &y_inout,
+                                    const Eigen::Ref<Vector<double>> &x_in,
+                                    Eigen::Ref<Vector<double>> y_inout,
                                     const double alpha, const double beta) {
+  if (beta == 0.)
+      y_inout.setZero();
+
+
   if (trans == TRANSPOSE || trans == CONJUGATE_TRANSPOSE) {
-    assert(mat.NumGlobalRows() == static_cast<int>(x_in.n_rows));
-    assert(mat.NumGlobalCols() == static_cast<int>(y_inout.n_rows));
+    assert(mat.rows() == static_cast<int>(x_in.rows()));
+    assert(mat.cols() == static_cast<int>(y_inout.rows()));
   } else {
-    assert(mat.NumGlobalCols() == static_cast<int>(x_in.n_rows));
-    assert(mat.NumGlobalRows() == static_cast<int>(y_inout.n_rows));
+    assert(mat.cols() == static_cast<int>(x_in.rows()));
+    assert(mat.rows() == static_cast<int>(y_inout.rows()));
   }
 
-  Epetra_Map map_x((int)x_in.n_rows, 0, Epetra_SerialComm());
-  Epetra_Map map_y((int)y_inout.n_rows, 0, Epetra_SerialComm());
-
-  Epetra_Vector vec_x(View, map_x, const_cast<double *>(x_in.memptr()));
-  // vec_temp will store the result of matrix * x_in
-  Epetra_Vector vec_temp(map_y, false /* no need to initialise to zero */);
-
-  mat.Multiply(trans == TRANSPOSE || trans == CONJUGATE_TRANSPOSE, vec_x,
-               vec_temp);
-
-  if (beta == 0.)
-    for (size_t i = 0; i < y_inout.n_rows; ++i)
-      y_inout(i) = alpha * vec_temp[i];
+  if (trans == TRANSPOSE || trans == CONJUGATE_TRANSPOSE)
+      y_inout = alpha*(mat.transpose()*x_in)+beta*y_inout;
   else
-    for (size_t i = 0; i < y_inout.n_rows; ++i)
-      y_inout(i) = alpha * vec_temp[i] + beta * y_inout(i);
+      y_inout = alpha*(mat*x_in)+beta*y_inout;
 }
 
 template <>
-void reallyApplyBuiltInImpl<float>(const Epetra_CrsMatrix &mat,
+void reallyApplyBuiltInImpl<float>(const RealSparseMatrix &mat,
                                    const TranspositionMode trans,
-                                   const arma::Col<float> &x_in,
-                                   arma::Col<float> &y_inout, const float alpha,
+                                   const Eigen::Ref<Vector<float>> &x_in,
+                                   Eigen::Ref<Vector<float>> y_inout, const float alpha,
                                    const float beta) {
   // Copy the float vectors to double vectors
-  arma::Col<double> x_in_double(x_in.n_rows);
-  std::copy(x_in.begin(), x_in.end(), x_in_double.begin());
-  arma::Col<double> y_inout_double(y_inout.n_rows);
-  if (beta != 0.f)
-    std::copy(y_inout.begin(), y_inout.end(), y_inout_double.begin());
+  Vector<double> x_in_double = x_in.cast<double>();
+
+  Vector<double> y_inout_double = y_inout.cast<double>();
 
   // Do the operation on the double vectors
-  reallyApplyBuiltInImpl<double>(mat, trans, x_in_double, y_inout_double, alpha,
+  reallyApplyBuiltInImpl<double>(mat, trans, Eigen::Ref<Vector<double>>(x_in_double), Eigen::Ref<Vector<double>>(y_inout_double), alpha,
                                  beta);
 
   // Copy the result back to the float vector
-  std::copy(y_inout_double.begin(), y_inout_double.end(), y_inout.begin());
+
+  y_inout = y_inout_double.cast<float>();
+
 }
 
 template <>
 void reallyApplyBuiltInImpl<std::complex<float>>(
-    const Epetra_CrsMatrix &mat, const TranspositionMode trans,
-    const arma::Col<std::complex<float>> &x_in,
-    arma::Col<std::complex<float>> &y_inout, const std::complex<float> alpha,
+    const RealSparseMatrix &mat, const TranspositionMode trans,
+    const Eigen::Ref<Vector<std::complex<float>>> &x_in,
+    Eigen::Ref<Vector<std::complex<float>>> y_inout, const std::complex<float> alpha,
     const std::complex<float> beta) {
   // Do the y_inout *= beta part
   const std::complex<float> zero(0.f, 0.f);
   if (beta == zero)
-    y_inout.fill(zero);
+    y_inout.setZero();
   else
     y_inout *= beta;
 
   // Separate the real and imaginary components and store them in
   // double-precision vectors
-  arma::Col<double> x_real(x_in.n_rows);
-  for (size_t i = 0; i < x_in.n_rows; ++i)
-    x_real(i) = x_in(i).real();
-  arma::Col<double> x_imag(x_in.n_rows);
-  for (size_t i = 0; i < x_in.n_rows; ++i)
-    x_imag(i) = x_in(i).imag();
-  arma::Col<double> y_real(y_inout.n_rows);
-  for (size_t i = 0; i < y_inout.n_rows; ++i)
-    y_real(i) = y_inout(i).real();
-  arma::Col<double> y_imag(y_inout.n_rows);
-  for (size_t i = 0; i < y_inout.n_rows; ++i)
-    y_imag(i) = y_inout(i).imag();
+
+  Vector<double> x_real = x_in.real().cast<double>();
+  Vector<double> x_imag = x_in.imag().cast<double>();
+  Vector<double> y_real = y_inout.real().cast<double>();
+  Vector<double> y_imag = y_inout.imag().cast<double>();
+
+//  Vector<double> x_real(x_in.rows());
+//  for (size_t i = 0; i < x_in.rows(); ++i)
+//    x_real(i) = x_in(i).real();
+//  Vector<double> x_imag(x_in.rows());
+//  for (size_t i = 0; i < x_in.rows(); ++i)
+//    x_imag(i) = x_in(i).imag();
+//  Vector<double> y_real(y_inout.rows());
+//  for (size_t i = 0; i < y_inout.rows(); ++i)
+//    y_real(i) = y_inout(i).real();
+//  Vector<double> y_imag(y_inout.rows());
+//  for (size_t i = 0; i < y_inout.rows(); ++i)
+//    y_imag(i) = y_inout(i).imag();
 
   // Do the "+= alpha A x" part (in steps)
-  reallyApplyBuiltInImpl<double>(mat, trans, x_real, y_real, alpha.real(), 1.);
-  reallyApplyBuiltInImpl<double>(mat, trans, x_imag, y_real, -alpha.imag(), 1.);
-  reallyApplyBuiltInImpl<double>(mat, trans, x_real, y_imag, alpha.imag(), 1.);
-  reallyApplyBuiltInImpl<double>(mat, trans, x_imag, y_imag, alpha.real(), 1.);
+  reallyApplyBuiltInImpl<double>(mat, trans, Eigen::Ref<Vector<double>>(x_real), Eigen::Ref<Vector<double>>(y_real), alpha.real(), 1.);
+  reallyApplyBuiltInImpl<double>(mat, trans, Eigen::Ref<Vector<double>>(x_imag), Eigen::Ref<Vector<double>>(y_real), -alpha.imag(), 1.);
+  reallyApplyBuiltInImpl<double>(mat, trans, Eigen::Ref<Vector<double>>(x_real), Eigen::Ref<Vector<double>>(y_imag), alpha.imag(), 1.);
+  reallyApplyBuiltInImpl<double>(mat, trans, Eigen::Ref<Vector<double>>(x_imag), Eigen::Ref<Vector<double>>(y_imag), alpha.real(), 1.);
 
-  // Copy the result back to the complex vector
-  for (size_t i = 0; i < y_inout.n_rows; ++i)
-    y_inout(i) = std::complex<float>(y_real(i), y_imag(i));
+  y_inout.real() = y_real.cast<float>();
+  y_inout.imag() = y_imag.cast<float>();
+
+//  // Copy the result back to the complex vector
+//  for (size_t i = 0; i < y_inout.rows(); ++i)
+//    y_inout(i) = std::complex<float>(y_real(i), y_imag(i));
 }
 
 template <>
 void reallyApplyBuiltInImpl<std::complex<double>>(
-    const Epetra_CrsMatrix &mat, const TranspositionMode trans,
-    const arma::Col<std::complex<double>> &x_in,
-    arma::Col<std::complex<double>> &y_inout, const std::complex<double> alpha,
+    const RealSparseMatrix &mat, const TranspositionMode trans,
+    const Eigen::Ref<Vector<std::complex<double>>> &x_in,
+    Eigen::Ref<Vector<std::complex<double>>> y_inout, const std::complex<double> alpha,
     const std::complex<double> beta) {
   // Do the y_inout *= beta part
-  const std::complex<double> zero(0., 0.);
+  const std::complex<double> zero(0.f, 0.f);
   if (beta == zero)
-    y_inout.fill(zero);
+    y_inout.setZero();
   else
     y_inout *= beta;
 
-  // Separate the real and imaginary components
-  arma::Col<double> x_real(arma::real(x_in));
-  arma::Col<double> x_imag(arma::imag(x_in));
-  arma::Col<double> y_real(arma::real(y_inout));
-  arma::Col<double> y_imag(arma::imag(y_inout));
+  // Separate the real and imaginary components and store them in
+  // double-precision vectors
+
+  Vector<double> x_real = x_in.real();
+  Vector<double> x_imag = x_in.imag();
+  Vector<double> y_real = y_inout.real();
+  Vector<double> y_imag = y_inout.imag();
+
+//  Vector<double> x_real(x_in.rows());
+//  for (size_t i = 0; i < x_in.rows(); ++i)
+//    x_real(i) = x_in(i).real();
+//  Vector<double> x_imag(x_in.rows());
+//  for (size_t i = 0; i < x_in.rows(); ++i)
+//    x_imag(i) = x_in(i).imag();
+//  Vector<double> y_real(y_inout.rows());
+//  for (size_t i = 0; i < y_inout.rows(); ++i)
+//    y_real(i) = y_inout(i).real();
+//  Vector<double> y_imag(y_inout.rows());
+//  for (size_t i = 0; i < y_inout.rows(); ++i)
+//    y_imag(i) = y_inout(i).imag();
 
   // Do the "+= alpha A x" part (in steps)
-  reallyApplyBuiltInImpl<double>(mat, trans, x_real, y_real, alpha.real(), 1.);
-  reallyApplyBuiltInImpl<double>(mat, trans, x_imag, y_real, -alpha.imag(), 1.);
-  reallyApplyBuiltInImpl<double>(mat, trans, x_real, y_imag, alpha.imag(), 1.);
-  reallyApplyBuiltInImpl<double>(mat, trans, x_imag, y_imag, alpha.real(), 1.);
+  reallyApplyBuiltInImpl<double>(mat, trans, Eigen::Ref<Vector<double>>(x_real), Eigen::Ref<Vector<double>>(y_real), alpha.real(), 1.);
+  reallyApplyBuiltInImpl<double>(mat, trans, Eigen::Ref<Vector<double>>(x_imag), Eigen::Ref<Vector<double>>(y_real), -alpha.imag(), 1.);
+  reallyApplyBuiltInImpl<double>(mat, trans, Eigen::Ref<Vector<double>>(x_real), Eigen::Ref<Vector<double>>(y_imag), alpha.imag(), 1.);
+  reallyApplyBuiltInImpl<double>(mat, trans, Eigen::Ref<Vector<double>>(x_imag), Eigen::Ref<Vector<double>>(y_imag), alpha.real(), 1.);
 
-  // Copy the result back to the complex vector
-  for (size_t i = 0; i < y_inout.n_rows; ++i)
-    y_inout(i) = std::complex<double>(y_real(i), y_imag(i));
+  y_inout.real() = y_real;
+  y_inout.imag() = y_imag;
+
+//  // Copy the result back to the complex vector
+//  for (size_t i = 0; i < y_inout.rows(); ++i)
+//    y_inout(i) = std::complex<float>(y_real(i), y_imag(i));
 }
+
 
 } // namespace
 
 template <typename ValueType>
 DiscreteSparseBoundaryOperator<ValueType>::DiscreteSparseBoundaryOperator(
-    const shared_ptr<const Epetra_CrsMatrix> &mat, int symmetry,
-    TranspositionMode trans, const shared_ptr<AhmedBemBlcluster> &blockCluster,
-    const shared_ptr<IndexPermutation> &domainPermutation,
-    const shared_ptr<IndexPermutation> &rangePermutation)
-    : m_mat(mat), m_symmetry(symmetry), m_trans(trans),
-      m_blockCluster(blockCluster), m_domainPermutation(domainPermutation),
-      m_rangePermutation(rangePermutation) {
-  m_domainSpace = Thyra::defaultSpmdVectorSpace<ValueType>(
-      isTransposed() ? m_mat->NumGlobalRows() : m_mat->NumGlobalCols());
-  m_rangeSpace = Thyra::defaultSpmdVectorSpace<ValueType>(
-      isTransposed() ? m_mat->NumGlobalCols() : m_mat->NumGlobalRows());
-}
+    const shared_ptr<const RealSparseMatrix> &mat, int symmetry,
+    TranspositionMode trans)
+    : m_mat(mat), m_symmetry(symmetry), m_trans(trans) {}
 
 template <typename ValueType>
 void DiscreteSparseBoundaryOperator<ValueType>::dump() const {
@@ -202,139 +201,36 @@ void DiscreteSparseBoundaryOperator<ValueType>::dump() const {
 }
 
 template <typename ValueType>
-arma::Mat<ValueType>
+Matrix<ValueType>
 DiscreteSparseBoundaryOperator<ValueType>::asMatrix() const {
-  if (m_mat->Comm().NumProc() != 1)
-    throw std::runtime_error(
-        "DiscreteSparseBoundaryOperator::asMatrix(): "
-        "conversion of distributed matrices to local matrices is unsupported");
 
   bool transposed = isTransposed();
-  const int untransposedRowCount = m_mat->NumGlobalRows();
-  arma::Mat<ValueType> mat(rowCount(), columnCount());
-  mat.fill(0.);
-  for (int row = 0; row < untransposedRowCount; ++row) {
-    int entryCount = 0;
-    double *values = 0;
-    int *indices = 0;
-    int errorCode = m_mat->ExtractMyRowView(row, entryCount, values, indices);
-    if (errorCode != 0)
-      throw std::runtime_error("DiscreteSparseBoundaryOperator::asMatrix(): "
-                               "Epetra_CrsMatrix::ExtractMyRowView()) failed");
-    if (transposed)
-      for (int entry = 0; entry < entryCount; ++entry)
-        mat(indices[entry], row) = values[entry];
-    else
-      for (int entry = 0; entry < entryCount; ++entry)
-        mat(row, indices[entry]) = values[entry];
-  }
-  return mat;
+  if (transposed)
+      return m_mat->transpose().template cast<ValueType>();
+  else
+      return m_mat->cast<ValueType>();
+
 }
 
 template <typename ValueType>
 unsigned int DiscreteSparseBoundaryOperator<ValueType>::rowCount() const {
-  return isTransposed() ? m_mat->NumGlobalCols() : m_mat->NumGlobalRows();
+  return isTransposed() ? m_mat->cols() : m_mat->rows();
 }
 
 template <typename ValueType>
 unsigned int DiscreteSparseBoundaryOperator<ValueType>::columnCount() const {
-  return isTransposed() ? m_mat->NumGlobalRows() : m_mat->NumGlobalCols();
+  return isTransposed() ? m_mat->rows() : m_mat->cols();
 }
 
 template <typename ValueType>
 void DiscreteSparseBoundaryOperator<ValueType>::addBlock(
     const std::vector<int> &rows, const std::vector<int> &cols,
-    const ValueType alpha, arma::Mat<ValueType> &block) const {
-  // indices of entries of the untransposed (stored) matrix
-  bool transposed = isTransposed();
-  const std::vector<int> &untransposedRows = transposed ? cols : rows;
-  const std::vector<int> &untransposedCols = transposed ? rows : cols;
+    const ValueType alpha, Matrix<ValueType> &block) const {
 
-  if (block.n_rows != rows.size() || block.n_cols != cols.size())
-    throw std::invalid_argument("DiscreteSparseBoundaryOperator::addBlock(): "
-                                "incorrect block size");
+    throw std::runtime_error("DiscreteSparseBoundaryOperator::addBlock(): not implemented.");
 
-  int entryCount = 0;
-  double *values = 0;
-  int *indices = 0;
-
-  for (size_t row = 0; row < untransposedRows.size(); ++row) {
-    // Provision for future MPI support.
-    if (m_mat->IndicesAreLocal()) {
-      int errorCode = m_mat->ExtractMyRowView(untransposedRows[row], entryCount,
-                                              values, indices);
-      if (errorCode != 0)
-        throw std::runtime_error(
-            "DiscreteSparseBoundaryOperator::addBlock(): "
-            "Epetra_CrsMatrix::ExtractMyRowView()) failed");
-    } else {
-      int errorCode = m_mat->ExtractGlobalRowView(untransposedRows[row],
-                                                  entryCount, values, indices);
-      if (errorCode != 0)
-        throw std::runtime_error(
-            "DiscreteSparseBoundaryOperator::addBlock(): "
-            "Epetra_CrsMatrix::ExtractGlobalRowView()) failed");
-    }
-
-    for (size_t col = 0; col < untransposedCols.size(); ++col)
-      for (int entry = 0; entry < entryCount; ++entry)
-        if (indices[entry] == cols[col])
-          block(transposed ? col : row, transposed ? row : col) +=
-              alpha * static_cast<ValueType>(values[entry]);
-  }
 }
 
-#ifdef WITH_AHMED
-template <typename ValueType>
-shared_ptr<const DiscreteBoundaryOperator<ValueType>>
-DiscreteSparseBoundaryOperator<ValueType>::asDiscreteAcaBoundaryOperator(
-    double eps, int maximumRank, bool interleave) const {
-  if (eps < 0)
-    eps = 1e-4; // probably isn't really used
-
-  // Note: the maximumRank parameter is ignored in this implementation.
-
-  if (!m_blockCluster || !m_domainPermutation || !m_rangePermutation)
-    throw std::runtime_error("DiscreteSparseBoundaryOperator::"
-                             "asDiscreteAcaBoundaryOperator(): "
-                             "data required for conversion to ACA operator "
-                             "were not provided in the constructor");
-  if (isTransposed())
-    throw std::runtime_error("DiscreteSparseBoundaryOperator::"
-                             "asDiscreteAcaBoundaryOperator(): "
-                             "transposed operators are not supported yet");
-
-  int *rowOffsets = 0;
-  int *colIndices = 0;
-  double *values = 0;
-  m_mat->ExtractCrsDataPointers(rowOffsets, colIndices, values);
-
-  std::vector<unsigned int> domain_o2p = m_domainPermutation->permutedIndices();
-  std::vector<unsigned int> range_o2p = m_rangePermutation->permutedIndices();
-  std::vector<unsigned int> range_p2o(range_o2p.size());
-  for (size_t o = 0; o < range_o2p.size(); ++o) {
-    assert(range_o2p[o] < range_o2p.size());
-    range_p2o[range_o2p[o]] = o;
-  }
-
-  boost::shared_array<AhmedMblock *> mblocks;
-  int trueMaximumRank = 0;
-  SparseToHMatrixConverter<ValueType>::constructHMatrix(
-      rowOffsets, colIndices, values, domain_o2p, range_p2o, eps,
-      m_blockCluster.get(), mblocks, trueMaximumRank);
-
-  // Gather remaining data necessary to create the combined ACA operator
-  const int symmetry = 0;
-  Fiber::ParallelizationOptions parallelOptions; // default options
-
-  shared_ptr<const DiscreteBoundaryOperator<ValueType>> result(
-      new DiscreteAcaBoundaryOperator<ValueType>(
-          rowCount(), columnCount(), eps, trueMaximumRank, symmetry,
-          m_blockCluster, mblocks, *m_domainPermutation, *m_rangePermutation,
-          parallelOptions));
-  return result;
-}
-#endif // WITH_AHMED
 
 template <typename ValueType>
 shared_ptr<const DiscreteSparseBoundaryOperator<ValueType>>
@@ -349,8 +245,8 @@ DiscreteSparseBoundaryOperator<ValueType>::castToSparse(const shared_ptr<
 }
 
 template <typename ValueType>
-shared_ptr<const Epetra_CrsMatrix>
-DiscreteSparseBoundaryOperator<ValueType>::epetraMatrix() const {
+shared_ptr<const RealSparseMatrix>
+DiscreteSparseBoundaryOperator<ValueType>::sparseMatrix() const {
   return m_mat;
 }
 
@@ -361,33 +257,14 @@ DiscreteSparseBoundaryOperator<ValueType>::transpositionMode() const {
 }
 
 template <typename ValueType>
-Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>>
-DiscreteSparseBoundaryOperator<ValueType>::domain() const {
-  return m_domainSpace;
-}
-
-template <typename ValueType>
-Teuchos::RCP<const Thyra::VectorSpaceBase<ValueType>>
-DiscreteSparseBoundaryOperator<ValueType>::range() const {
-  return m_rangeSpace;
-}
-
-template <typename ValueType>
-bool DiscreteSparseBoundaryOperator<ValueType>::opSupportedImpl(
-    Thyra::EOpTransp M_trans) const {
-  return (M_trans == Thyra::NOTRANS || M_trans == Thyra::TRANS ||
-          M_trans == Thyra::CONJ || M_trans == Thyra::CONJTRANS);
-}
-
-template <typename ValueType>
 bool DiscreteSparseBoundaryOperator<ValueType>::isTransposed() const {
   return m_trans & (TRANSPOSE | CONJUGATE_TRANSPOSE);
 }
 
 template <typename ValueType>
 void DiscreteSparseBoundaryOperator<ValueType>::applyBuiltInImpl(
-    const TranspositionMode trans, const arma::Col<ValueType> &x_in,
-    arma::Col<ValueType> &y_inout, const ValueType alpha,
+    const TranspositionMode trans, const Eigen::Ref<Vector<ValueType>> &x_in,
+    Eigen::Ref<Vector<ValueType>> y_inout, const ValueType alpha,
     const ValueType beta) const {
   TranspositionMode realTrans = trans;
   bool transposed = isTransposed();
@@ -415,4 +292,3 @@ FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(DiscreteSparseBoundaryOperator);
 
 } // namespace Bempp
 
-#endif // WITH_TRILINOS

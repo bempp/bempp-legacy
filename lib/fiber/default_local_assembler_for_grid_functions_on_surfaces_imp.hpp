@@ -75,7 +75,7 @@ template <typename BasisFunctionType, typename UserFunctionType,
 void DefaultLocalAssemblerForGridFunctionsOnSurfaces<
     BasisFunctionType, UserFunctionType, ResultType, GeometryFactory>::
     evaluateLocalWeakForms(const std::vector<int> &elementIndices,
-                           std::vector<arma::Col<ResultType>> &result) {
+                           std::vector<Vector<ResultType>> &result) {
   typedef Fiber::Shapeset<BasisFunctionType> Shapeset;
 
   const int elementCount = elementIndices.size();
@@ -118,7 +118,7 @@ void DefaultLocalAssemblerForGridFunctionsOnSurfaces<
         activeElementIndices.push_back(elementIndices[e]);
 
     // Integrate!
-    arma::Mat<ResultType> localResult;
+    Matrix<ResultType> localResult;
     activeIntegrator.integrate(activeElementIndices, activeTestShapeset,
                                localResult);
 
@@ -158,7 +158,7 @@ DefaultLocalAssemblerForGridFunctionsOnSurfaces<
   // std::endl;
 
   // Integrator doesn't exist yet and must be created.
-  arma::Mat<CoordinateType> points;
+  Matrix<CoordinateType> points;
   std::vector<CoordinateType> weights;
   m_quadRuleFamily->fillQuadraturePointsAndWeights(desc, points, weights);
 

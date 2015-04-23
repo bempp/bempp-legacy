@@ -73,7 +73,7 @@ public:
   evaluateLocalWeakForms(CallVariant callVariant,
                          const std::vector<int> &elementIndicesA,
                          int elementIndexB, LocalDofIndex localDofIndexB,
-                         std::vector<arma::Mat<ResultType>> &result,
+                         std::vector<Matrix<ResultType>> &result,
                          CoordinateType nominalDistance = -1.) = 0;
 
   /** \brief Assemble local weak forms.
@@ -93,7 +93,7 @@ public:
   virtual void
   evaluateLocalWeakForms(const std::vector<int> &testElementIndices,
                          const std::vector<int> &trialElementIndices,
-                         Fiber::_2dArray<arma::Mat<ResultType>> &result,
+                         Fiber::_2dArray<Matrix<ResultType>> &result,
                          CoordinateType nominalDistance = -1.) = 0;
 
   /** \brief Estimate how fast the entries in the matrix of

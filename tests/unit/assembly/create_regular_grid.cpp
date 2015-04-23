@@ -20,6 +20,9 @@
 
 #include "create_regular_grid.hpp"
 #include "grid/grid_factory.hpp"
+#include "common/eigen_support.hpp"
+
+using namespace Bempp;
 
 Bempp::shared_ptr<Bempp::Grid> createRegularTriangularGrid(
     int nElementsX, int nElementsY, double maxX, double maxY)
@@ -28,9 +31,9 @@ Bempp::shared_ptr<Bempp::Grid> createRegularTriangularGrid(
     params.topology = Bempp::GridParameters::TRIANGULAR;
 
     const int dimGrid = 2;
-    arma::Col<double> lowerLeft(dimGrid);
-    arma::Col<double> upperRight(dimGrid);
-    arma::Col<unsigned int> nElements(dimGrid);
+    Vector<double> lowerLeft(dimGrid);
+    Vector<double> upperRight(dimGrid);
+    Vector<int> nElements(dimGrid);
     lowerLeft.fill(0);
     upperRight(0) = maxX;
     upperRight(1) = maxY;

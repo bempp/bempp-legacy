@@ -22,6 +22,7 @@
 
 // Keep IDEs happy
 #include "default_local_assembler_for_integral_operators_on_surfaces.hpp"
+#include "types.hpp"
 
 #include "double_quadrature_rule_family.hpp"
 #include "nonseparable_numerical_test_kernel_trial_integrator.hpp"
@@ -50,7 +51,7 @@ public:
       const std::vector<ElementIndexPair> &activeElementPairs,
       const Shapeset<BasisFunctionType> &activeTestShapeset,
       const Shapeset<BasisFunctionType> &activeTrialShapeset,
-      const std::vector<arma::Mat<ResultType> *> &localResult)
+      const std::vector<Matrix<ResultType> *> &localResult)
       : m_activeIntegrator(activeIntegrator),
         m_activeElementPairs(activeElementPairs),
         m_activeTestBasis(activeTestShapeset),
@@ -61,7 +62,7 @@ public:
     // localActiveElementPairs
     std::vector<ElementIndexPair> localActiveElementPairs(
         &m_activeElementPairs[r.begin()], &m_activeElementPairs[r.end()]);
-    std::vector<arma::Mat<ResultType> *> localLocalResult(
+    std::vector<Matrix<ResultType> *> localLocalResult(
         &m_localResult[r.begin()], &m_localResult[r.end()]);
     m_activeIntegrator.integrate(localActiveElementPairs, m_activeTestBasis,
                                  m_activeTrialBasis, localLocalResult);
@@ -72,7 +73,7 @@ private:
   const std::vector<ElementIndexPair> &m_activeElementPairs;
   const Shapeset<BasisFunctionType> &m_activeTestBasis;
   const Shapeset<BasisFunctionType> &m_activeTrialBasis;
-  const std::vector<arma::Mat<ResultType> *> &m_localResult;
+  const std::vector<Matrix<ResultType> *> &m_localResult;
 };
 
 } // namespace
@@ -155,7 +156,7 @@ void DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
     evaluateLocalWeakForms(CallVariant callVariant,
                            const std::vector<int> &elementIndicesA,
                            int elementIndexB, LocalDofIndex localDofIndexB,
-                           std::vector<arma::Mat<ResultType>> &result,
+                           std::vector<Matrix<ResultType>> &result,
                            CoordinateType nominalDistance) {
   typedef Shapeset<BasisFunctionType> Shapeset;
 
@@ -179,7 +180,7 @@ void DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
   std::vector<QuadVariant> quadVariants(elementACount);
   for (int i = 0; i < elementACount; ++i) {
     // Try to find matrix in cache
-    const arma::Mat<ResultType> *cachedLocalWeakForm = 0;
+    const Matrix<ResultType> *cachedLocalWeakForm = 0;
     if (callVariant == TEST_TRIAL) {
       const int testElementIndex = elementIndicesA[i];
       const int trialElementIndex = elementIndexB;
@@ -229,7 +230,7 @@ void DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
 
   std::vector<int> activeElementIndicesA;
   activeElementIndicesA.reserve(elementACount);
-  std::vector<arma::Mat<ResultType> *> activeLocalResults;
+  std::vector<Matrix<ResultType> *> activeLocalResults;
   activeLocalResults.reserve(elementACount);
 
   // Now loop over unique quadrature variants
@@ -271,7 +272,7 @@ void DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
     BasisFunctionType, KernelType, ResultType, GeometryFactory>::
     evaluateLocalWeakForms(const std::vector<int> &testElementIndices,
                            const std::vector<int> &trialElementIndices,
-                           Fiber::_2dArray<arma::Mat<ResultType>> &result,
+                           Fiber::_2dArray<Matrix<ResultType>> &result,
                            CoordinateType nominalDistance) {
   typedef Fiber::Shapeset<BasisFunctionType> Shapeset;
 
@@ -291,7 +292,7 @@ void DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
       const int activeTestElementIndex = testElementIndices[testIndex];
       const int activeTrialElementIndex = trialElementIndices[trialIndex];
       // Try to find matrix in cache
-      const arma::Mat<ResultType> *cachedLocalWeakForm = 0;
+      const Matrix<ResultType> *cachedLocalWeakForm = 0;
       for (size_t n = 0; n < m_cache.extent(0); ++n)
         if (m_cache(n, activeTrialElementIndex).first ==
             activeTestElementIndex) {
@@ -321,7 +322,7 @@ void DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
   QuadVariantSet uniqueQuadVariants(quadVariants.begin(), quadVariants.end());
 
   std::vector<ElementIndexPair> activeElementPairs;
-  std::vector<arma::Mat<ResultType> *> activeLocalResults;
+  std::vector<Matrix<ResultType> *> activeLocalResults;
   activeElementPairs.reserve(testElementCount * trialElementCount);
   activeLocalResults.reserve(testElementCount * trialElementCount);
 
@@ -396,13 +397,13 @@ void DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
 
   const RawGridGeometry<CoordinateType> &rawGeometry = *m_testRawGeometry;
 
-  const arma::Mat<CoordinateType> &vertices = rawGeometry.vertices();
-  const arma::Mat<int> &elementCornerIndices =
+  const Matrix<CoordinateType> &vertices = rawGeometry.vertices();
+  const Matrix<int> &elementCornerIndices =
       rawGeometry.elementCornerIndices();
 
-  const int vertexCount = vertices.n_cols;
-  const int elementCount = elementCornerIndices.n_cols;
-  const int maxCornerCount = elementCornerIndices.n_rows;
+  const int vertexCount = vertices.cols();
+  const int elementCount = elementCornerIndices.cols();
+  const int maxCornerCount = elementCornerIndices.rows();
 
   typedef std::vector<int> ElementIndexVector;
   // ith entry: set of elements sharing vertex number i
@@ -497,7 +498,7 @@ void DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
   QuadVariantSet uniqueQuadVariants(quadVariants.begin(), quadVariants.end());
 
   std::vector<ElementIndexPair> activeElementPairs;
-  std::vector<arma::Mat<ResultType> *> activeLocalResults;
+  std::vector<Matrix<ResultType> *> activeLocalResults;
   activeElementPairs.reserve(elementPairCount);
   activeLocalResults.reserve(elementPairCount);
   // m_cache.rehash(int(elementIndexPairs.size() / m_cache.max_load_factor() +
@@ -597,7 +598,7 @@ DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
       // std::cout << "getIntegrator(" << desc
       //           << "): creating an integrator" << std::endl;
       // Integrator doesn't exist yet and must be created.
-      arma::Mat<CoordinateType> testPoints, trialPoints;
+      Matrix<CoordinateType> testPoints, trialPoints;
       std::vector<CoordinateType> testWeights, trialWeights;
       bool isTensor;
       m_quadRuleFamily->fillQuadraturePointsAndWeights(

@@ -24,7 +24,7 @@
 #include "../check_arrays_are_close.hpp"
 
 #include <algorithm>
-#include "common/armadillo_fwd.hpp"
+#include "common/eigen_support.hpp"
 #include <boost/test/unit_test.hpp>
 #include <boost/test/test_case_template.hpp>
 #include <boost/test/floating_point_comparison.hpp>
@@ -58,7 +58,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_works_for_all_dofs_type1,
     typedef Fiber::LinearScalarShapesetBarycentric<ValueType> Shapeset;
     Shapeset basis(Shapeset::TYPE1);
     typedef typename Shapeset::CoordinateType CoordinateType;
-    arma::Mat<CoordinateType> points(elementDim, pointCount);
+    Matrix<CoordinateType> points(elementDim, pointCount);
     points.fill(0.);
     points(0, 1) = 1.;
     points(1, 2) = 1.;
@@ -95,7 +95,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_values_works_for_all_dofs_type2,
     typedef Fiber::LinearScalarShapesetBarycentric<ValueType> Shapeset;
     Shapeset basis(Shapeset::TYPE2);
     typedef typename Shapeset::CoordinateType CoordinateType;
-    arma::Mat<CoordinateType> points(elementDim, pointCount);
+    Matrix<CoordinateType> points(elementDim, pointCount);
     points.fill(0.);
     points(0, 1) = 1.;
     points(1, 2) = 1.;
@@ -132,7 +132,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(evaluate_derivatives_works_for_all_dofs_type1,
     typedef Fiber::LinearScalarShapesetBarycentric<ValueType> Shapeset;
     typedef typename Shapeset::CoordinateType CoordinateType;
     Shapeset basis(Shapeset::TYPE1);
-    arma::Mat<CoordinateType> points(elementDim, pointCount);
+    Matrix<CoordinateType> points(elementDim, pointCount);
     points.fill(0.);
     points(0, 1) = 1.;
     points(1, 2) = 1.;

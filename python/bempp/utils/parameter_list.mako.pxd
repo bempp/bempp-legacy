@@ -4,39 +4,51 @@ from libcpp cimport bool as cbool
 from libcpp.vector cimport vector
 
 
-cdef extern from "Teuchos_ParameterList.hpp" namespace "Teuchos::ParameterList":
+cdef extern from "bempp/common/types.hpp" namespace "Bempp":
 
-    cdef cppclass c_ParameterList "Teuchos::ParameterList":
+    cdef cppclass c_ParameterList "Bempp::ParameterList":
         c_ParameterList()
-        void dump "print" () const
-        cbool isParameter(const string& name) const
-        cbool isSublist(const string& name) const
+        c_ParameterList& assign "operator="(const c_ParameterList&)
+        void put_bool "put<bool>" (char*, bool)
+        void put_string "put<std::string>" (char*, string)
+        void put_int "put<int>" (char*, int)
+        void put_double "put<double>" (char*, double)
+        string get_string "get<std::string>" (char*)
+        int get_int "get<int>" (char*)
+        double get_double "get<double>" (char*)
+        cbool get_bool "get<bool>" (char*)
 
-        cbool isInt "isType<int>" (const string& name) const
-        cbool isDouble "isType<double>" (const string& name) const
-        cbool isString "isType<std::string>" (const string& name) const
 
-        int& getInt "get<int>" (const string& name) 
-        double& getDouble "get<double>" (const string& name) 
-        string& getString "get<std::string>" (const string& name) 
-        c_ParameterList& sublist(const string& name) 
+cdef class _NearField:
+    cdef c_ParameterList* impl_
+    cdef _QuadratureParameterList base
 
-        c_ParameterList& setName(const string& name)
-        c_ParameterList& setInt "set<int>" (const string& name, const int& value)
-        c_ParameterList& setDouble "set<double>" (const string& name, const double& value)
-        c_ParameterList& setString "set<std::string>" (const string& name, const string& value)
-        c_ParameterList& setList "set<Teuchos::ParameterList>" (const string& name, const c_ParameterList& value)
+cdef class _MediumField:
+    cdef c_ParameterList* impl_
+    cdef _QuadratureParameterList base
 
-        cbool remove(const string& name)
-        c_ParameterList& setParameters(const c_ParameterList& source)
-        int numParams() const
+cdef class _FarField:
+    cdef c_ParameterList* impl_
+    cdef _QuadratureParameterList base
 
-cdef extern from "bempp/utils/py_utils.hpp" namespace "Bempp":
-    int parameter_list_length(const c_ParameterList& parameters)
-    vector[string]  parameter_names(const c_ParameterList& parameters)
-    string print_parameters(const c_ParameterList& parameters)
+cdef class _AssemblyParameterList:
+    cdef c_ParameterList* impl_
+    cdef ParameterList base
+
+cdef class _QuadratureParameterList:
+    cdef c_ParameterList* impl_
+    cdef _NearField  _near
+    cdef _MediumField _medium
+    cdef _FarField _far
+    cdef ParameterList base
+
+cdef class _HMatParameterList:
+    cdef c_ParameterList* impl_
+    cdef ParameterList base
+
 
 cdef class ParameterList:
     cdef c_ParameterList* impl_
-    cdef cbool isView_
-    cdef int c_len(self)
+    cdef _AssemblyParameterList _assembly
+    cdef _QuadratureParameterList _quadrature
+    cdef _HMatParameterList _hmat

@@ -64,7 +64,7 @@ void DefaultTestTrialIntegral<IntegrandFunctor>::evaluate(
     const CollectionOf3dArrays<BasisFunctionType> &testValues,
     const CollectionOf3dArrays<BasisFunctionType> &trialValues,
     const std::vector<CoordinateType> &weights,
-    arma::Mat<ResultType> &result) const {
+    Matrix<ResultType> &result) const {
   const size_t pointCount = weights.size();
   assert(testValues.size() == 1);
   assert(trialValues.size() == 1);

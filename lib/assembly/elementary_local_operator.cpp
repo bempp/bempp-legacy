@@ -19,7 +19,6 @@
 // THE SOFTWARE.
 
 #include "bempp/common/config_ahmed.hpp"
-#include "bempp/common/config_trilinos.hpp"
 
 #include "elementary_local_operator.hpp"
 
@@ -52,6 +51,7 @@
 #include "../space/space.hpp"
 
 #include "../common/boost_make_shared_fwd.hpp"
+#include "../common/eigen_support.hpp"
 #include <boost/type_traits/is_complex.hpp>
 
 #include <tbb/tick_count.h>
@@ -59,97 +59,10 @@
 #include <stdexcept>
 #include <vector>
 
-#ifdef WITH_TRILINOS
-// This is a workaround of the problem of the abs() function being declared
-// both in Epetra and in AHMED. It relies of the implementation detail (!) that
-// in Epetra the declaration of abs is put between #ifndef __IBMCPP__ ...
-// #endif. So it may well break in future versions of Trilinos. The ideal
-// solution would be for AHMED to use namespaces.
-#ifndef __IBMCPP__
-#define __IBMCPP__
-#include <Epetra_FECrsMatrix.h>
-#include <Epetra_LocalMap.h>
-#include <Epetra_SerialComm.h>
-#undef __IBMCPP__
-#else
-#include <Epetra_FECrsMatrix.h>
-#include <Epetra_LocalMap.h>
-#include <Epetra_SerialComm.h>
-#endif
-#endif // WITH_TRILINOS
 
 namespace Bempp {
 
 namespace {
-
-#ifdef WITH_TRILINOS
-// Internal helper functions for Epetra
-template <typename ValueType>
-int epetraSumIntoGlobalValues(Epetra_FECrsMatrix &matrix,
-                              const std::vector<int> &rowIndices,
-                              const std::vector<int> &colIndices,
-                              const arma::Mat<ValueType> &values);
-
-// Specialisation for double -- no intermediate array is needed
-template <>
-inline int epetraSumIntoGlobalValues<double>(Epetra_FECrsMatrix &matrix,
-                                             const std::vector<int> &rowIndices,
-                                             const std::vector<int> &colIndices,
-                                             const arma::Mat<double> &values) {
-  assert(rowIndices.size() == values.n_rows);
-  assert(colIndices.size() == values.n_cols);
-  return matrix.SumIntoGlobalValues(
-      rowIndices.size(), &rowIndices[0], colIndices.size(), &colIndices[0],
-      values.memptr(), Epetra_FECrsMatrix::COLUMN_MAJOR);
-}
-
-// Specialisation for float
-template <>
-inline int epetraSumIntoGlobalValues<float>(Epetra_FECrsMatrix &matrix,
-                                            const std::vector<int> &rowIndices,
-                                            const std::vector<int> &colIndices,
-                                            const arma::Mat<float> &values) {
-  // Convert data from float into double (expected by Epetra)
-  arma::Mat<double> doubleValues(values.n_rows, values.n_cols);
-  std::copy(values.begin(), values.end(), doubleValues.begin());
-  return epetraSumIntoGlobalValues<double>(matrix, rowIndices, colIndices,
-                                           doubleValues);
-}
-
-// Specialisation for std::complex<float>.
-// WARNING: at present only the real part is taken into account!
-// This is sufficient as long as we provide real-valued basis functions only.
-template <>
-inline int epetraSumIntoGlobalValues<std::complex<float>>(
-    Epetra_FECrsMatrix &matrix, const std::vector<int> &rowIndices,
-    const std::vector<int> &colIndices,
-    const arma::Mat<std::complex<float>> &values) {
-  // Extract the real part of "values" into an array of type double
-  arma::Mat<double> doubleValues(values.n_rows, values.n_cols);
-  // Check whether arma::real returns a view or a copy (if the latter,
-  // this assert will fail)
-  for (size_t i = 0; i < values.n_elem; ++i)
-    doubleValues[i] = values[i].real();
-  return epetraSumIntoGlobalValues<double>(matrix, rowIndices, colIndices,
-                                           doubleValues);
-}
-
-// Specialisation for std::complex<double>.
-// WARNING: at present only the real part is taken into account!
-// This is sufficient as long as we provide real-valued basis functions only.
-template <>
-inline int epetraSumIntoGlobalValues<std::complex<double>>(
-    Epetra_FECrsMatrix &matrix, const std::vector<int> &rowIndices,
-    const std::vector<int> &colIndices,
-    const arma::Mat<std::complex<double>> &values) {
-  // Extract the real part of "values" into an array of type double
-  arma::Mat<double> doubleValues(values.n_rows, values.n_cols);
-  for (size_t i = 0; i < values.n_elem; ++i)
-    doubleValues[i] = values[i].real();
-  return epetraSumIntoGlobalValues<double>(matrix, rowIndices, colIndices,
-                                           doubleValues);
-}
-#endif
 
 /** Build a list of lists of global DOF indices corresponding to the local DOFs
  *  on each element of space.grid(). */
@@ -192,6 +105,97 @@ void gatherGlobalDofs(
     it->next();
   }
 }
+
+template <typename ValueType>
+void generateTriplets(RealSparseMatrix &mat, const std::vector<std::vector<GlobalDofIndex>>& testGDofs,
+                            const std::vector<std::vector<GlobalDofIndex>>& trialGDofs,
+                            const std::vector<Matrix<ValueType>> & localResult,
+                            int elementCount, std::vector<Eigen::Triplet<double>> &result);
+
+template <>
+void generateTriplets<double>(RealSparseMatrix &mat, const std::vector<std::vector<GlobalDofIndex>>& testGDofs,
+                            const std::vector<std::vector<GlobalDofIndex>>& trialGDofs,
+                            const std::vector<Matrix<double>> & localResult,
+                            int elementCount, std::vector<Eigen::Triplet<double>> & result){
+
+
+    result.clear();
+    size_t numberOfTriplets = 0;
+
+    for (size_t e = 0; e < elementCount; ++e){
+        numberOfTriplets += localResult[e].rows()*localResult[e].cols();
+    }
+
+    result.reserve(numberOfTriplets);
+
+    for (size_t e = 0; e < elementCount; ++e){
+        assert(testGDofs[e].size() == localResult[e].rows());
+        assert(trialGDofs[e].size() == localResult[e].cols());
+        for (int j = 0; j < localResult[e].cols(); ++j){
+            if (trialGDofs[e][j]<0) continue;
+            for (int i = 0 ; i < localResult[e].rows(); ++i){
+                if (testGDofs[e][i]<0) continue;
+                result.push_back(Eigen::Triplet<double>(testGDofs[e][i],trialGDofs[e][j],localResult[e](i,j)));
+            }
+        }
+    }
+
+
+}
+
+template <>
+void generateTriplets<float>(RealSparseMatrix &mat, const std::vector<std::vector<GlobalDofIndex>>& testGDofs,
+                            const std::vector<std::vector<GlobalDofIndex>>& trialGDofs,
+                            const std::vector<Matrix<float>> & localResult,
+                            int elementCount, std::vector<Eigen::Triplet<double>> &result){
+
+
+    std::vector<Matrix<double>> localResult_tmp;
+    localResult_tmp.reserve(localResult.size());
+    for (int e = 0; e < elementCount; ++e)
+        localResult_tmp.push_back(localResult[e].cast<double>());
+
+    generateTriplets<double>(mat,testGDofs,trialGDofs,localResult_tmp,elementCount,result);
+
+
+}
+
+template <>
+void generateTriplets<std::complex<float>>(RealSparseMatrix &mat, const std::vector<std::vector<GlobalDofIndex>>& testGDofs,
+                            const std::vector<std::vector<GlobalDofIndex>>& trialGDofs,
+                            const std::vector<Matrix<std::complex<float>>> & localResult,
+                            int elementCount, std::vector<Eigen::Triplet<double>> &result){
+
+
+    std::vector<Matrix<double>> localResult_tmp;
+    localResult_tmp.reserve(localResult.size());
+    for (int e = 0; e < elementCount; ++e)
+        localResult_tmp.push_back(localResult[e].real().cast<double>());
+
+    generateTriplets<double>(mat,testGDofs,trialGDofs,localResult_tmp,elementCount,result);
+
+
+}
+
+template <>
+void generateTriplets<std::complex<double>>(RealSparseMatrix &mat, const std::vector<std::vector<GlobalDofIndex>>& testGDofs,
+                            const std::vector<std::vector<GlobalDofIndex>>& trialGDofs,
+                            const std::vector<Matrix<std::complex<double>>> & localResult,
+                            int elementCount, std::vector<Eigen::Triplet<double>> &result){
+
+
+    std::vector<Matrix<double>> localResult_tmp;
+    localResult_tmp.reserve(localResult.size());
+    for (int e = 0; e < elementCount; ++e)
+        localResult_tmp.push_back(localResult[e].real());
+
+    generateTriplets<double>(mat,testGDofs,trialGDofs,localResult_tmp,elementCount,result);
+
+
+}
+
+
+
 
 } // anonymous namespace
 
@@ -240,15 +244,9 @@ ElementaryLocalOperator<BasisFunctionType, ResultType>::
     assembleWeakFormInternalImpl2(
         LocalAssembler &assembler,
         const Context<BasisFunctionType, ResultType> &context) const {
-#ifdef WITH_TRILINOS
-  if (context.assemblyOptions().isSparseStorageOfLocalOperatorsEnabled())
     return shared_ptr<DiscreteBoundaryOperator<ResultType>>(
         assembleWeakFormInSparseMode(assembler, context.assemblyOptions())
             .release());
-#endif
-  return shared_ptr<DiscreteBoundaryOperator<ResultType>>(
-      assembleWeakFormInDenseMode(assembler, context.assemblyOptions())
-          .release());
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -265,13 +263,13 @@ ElementaryLocalOperator<BasisFunctionType, ResultType>::
   std::vector<int> elementIndices(elementCount);
   for (size_t i = 0; i < elementCount; ++i)
     elementIndices[i] = i;
-  std::vector<arma::Mat<ResultType>> localResult;
+  std::vector<Matrix<ResultType>> localResult;
   assembler.evaluateLocalWeakForms(elementIndices, localResult);
 
   // Create the operator's matrix
-  arma::Mat<ResultType> result(testSpace.globalDofCount(),
+  Matrix<ResultType> result(testSpace.globalDofCount(),
                                trialSpace.globalDofCount());
-  result.fill(0.);
+  result.setZero();
 
   // Retrieve global DOFs corresponding to local DOFs on all elements
   std::vector<std::vector<GlobalDofIndex>> testGdofs(elementCount);
@@ -307,7 +305,6 @@ std::unique_ptr<DiscreteBoundaryOperator<ResultType>>
 ElementaryLocalOperator<BasisFunctionType, ResultType>::
     assembleWeakFormInSparseMode(LocalAssembler &assembler,
                                  const AssemblyOptions &options) const {
-#ifdef WITH_TRILINOS
   if (boost::is_complex<BasisFunctionType>::value)
     throw std::runtime_error(
         "ElementaryLocalOperator::assembleWeakFormInSparseMode(): "
@@ -323,7 +320,7 @@ ElementaryLocalOperator<BasisFunctionType, ResultType>::
   std::vector<int> elementIndices(elementCount);
   for (size_t i = 0; i < elementCount; ++i)
     elementIndices[i] = i;
-  std::vector<arma::Mat<ResultType>> localResult;
+  std::vector<Matrix<ResultType>> localResult;
   assembler.evaluateLocalWeakForms(elementIndices, localResult);
 
   // Global DOF indices corresponding to local DOFs on elements
@@ -341,104 +338,23 @@ ElementaryLocalOperator<BasisFunctionType, ResultType>::
         localResult[e](testDof, trialDof) *=
             conj(testLdofWeights[e][testDof]) * trialLdofWeights[e][trialDof];
 
-  // Estimate number of entries in each row
-
-  //    This will be useful when we begin to use MPI
-  //    // Get global DOF indices for which this process is responsible
-  //    const int testGlobalDofCount = testSpace.globalDofCount();
-  //    Epetra_Map rowMap(testGlobalDofCount, 0 /* index-base */, comm);
-  //    std::vector<int> myTestGlobalDofs(rowMap.MyGlobalElements(),
-  //                                      rowMap.MyGlobalElements() +
-  //                                      rowMap.NumMyElements());
-  //    const int myTestGlobalDofCount = myTestGlobalDofs.size();
-
   const int testGlobalDofCount = testSpace.globalDofCount();
   const int trialGlobalDofCount = trialSpace.globalDofCount();
-  arma::Col<int> nonzeroEntryCountEstimates(testGlobalDofCount);
-  nonzeroEntryCountEstimates.fill(0);
 
-  // Upper estimate for the number of global trial DOFs coupled to a given
-  // global test DOF: sum of the local trial DOF counts for each element that
-  // contributes to the global test DOF in question
-  for (size_t e = 0; e < elementCount; ++e)
-    for (size_t testLdof = 0; testLdof < testGdofs[e].size(); ++testLdof) {
-      int testGdof = testGdofs[e][testLdof];
-      if (testGdof >= 0)
-        nonzeroEntryCountEstimates(testGdof) += trialGdofs[e].size();
-    }
+  shared_ptr<RealSparseMatrix> result =
+          boost::make_shared<RealSparseMatrix>(testGlobalDofCount,trialGlobalDofCount);
 
-  Epetra_SerialComm comm; // To be replaced once we begin to use MPI
-  Epetra_LocalMap rowMap(testGlobalDofCount, 0 /* index_base */, comm);
-  Epetra_LocalMap colMap(trialGlobalDofCount, 0 /* index_base */, comm);
-  shared_ptr<Epetra_FECrsMatrix> result =
-      boost::make_shared<Epetra_FECrsMatrix>(
-          Copy, rowMap, colMap, nonzeroEntryCountEstimates.memptr());
 
-  // TODO: make each process responsible for a subset of elements
-  // Find maximum number of local dofs per element
-  size_t maxLdofCount = 0;
-  for (size_t e = 0; e < elementCount; ++e)
-    maxLdofCount =
-        std::max(maxLdofCount, testGdofs[e].size() * trialGdofs[e].size());
-
-  // Initialise sparse matrix with zeros at required positions
-  arma::Col<double> zeros(maxLdofCount);
-  zeros.fill(0.);
-  for (size_t e = 0; e < elementCount; ++e)
-    result->InsertGlobalValues(testGdofs[e].size(), &testGdofs[e][0],
-                               trialGdofs[e].size(), &trialGdofs[e][0],
-                               zeros.memptr());
-  // Add contributions from individual elements
-  for (size_t e = 0; e < elementCount; ++e)
-    epetraSumIntoGlobalValues(*result, testGdofs[e], trialGdofs[e],
-                              localResult[e]);
-  result->GlobalAssemble();
-
-  // If assembly mode is equal to ACA and we have AHMED,
-  // construct the block cluster tree. Otherwise leave it uninitialized.
-  typedef ClusterConstructionHelper<BasisFunctionType> CCH;
-  typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
-  typedef ExtendedBemCluster<AhmedDofType> AhmedBemCluster;
-  typedef bbxbemblcluster<AhmedDofType, AhmedDofType> AhmedBemBlcluster;
-
-  shared_ptr<AhmedBemBlcluster> blockCluster;
-  shared_ptr<IndexPermutation> test_o2pPermutation, test_p2oPermutation;
-  shared_ptr<IndexPermutation> trial_o2pPermutation, trial_p2oPermutation;
-#ifdef WITH_AHMED
-  if (options.assemblyMode() == AssemblyOptions::ACA) {
-    const AcaOptions &acaOptions = options.acaOptions();
-    bool indexWithGlobalDofs = acaOptions.mode != AcaOptions::HYBRID_ASSEMBLY;
-
-    typedef ClusterConstructionHelper<BasisFunctionType> CCH;
-    shared_ptr<AhmedBemCluster> testClusterTree;
-    CCH::constructBemCluster(testSpace, indexWithGlobalDofs, acaOptions,
-                             testClusterTree, test_o2pPermutation,
-                             test_p2oPermutation);
-    // TODO: construct a hermitian H-matrix if possible
-    shared_ptr<AhmedBemCluster> trialClusterTree;
-    CCH::constructBemCluster(trialSpace, indexWithGlobalDofs, acaOptions,
-                             trialClusterTree, trial_o2pPermutation,
-                             trial_p2oPermutation);
-    unsigned int blockCount = 0;
-    bool useStrongAdmissibilityCondition = !indexWithGlobalDofs;
-    blockCluster.reset(CCH::constructBemBlockCluster(
-        acaOptions, false /* hermitian */, *testClusterTree, *trialClusterTree,
-        useStrongAdmissibilityCondition, blockCount).release());
-  }
-#endif
+  std::vector<Eigen::Triplet<double>> triplets;
+  generateTriplets<ResultType>(*result,testGdofs,trialGdofs,localResult,elementCount,triplets);
+  result->setFromTriplets(triplets.begin(),triplets.end());
 
   // Create and return a discrete operator represented by the matrix that
   // has just been calculated
   return std::unique_ptr<DiscreteBoundaryOperator<ResultType>>(
       new DiscreteSparseBoundaryOperator<ResultType>(
-          result, this->symmetry(), NO_TRANSPOSE, blockCluster,
-          trial_o2pPermutation, test_o2pPermutation));
-#else // WITH_TRILINOS
-  throw std::runtime_error(
-      "ElementaryLocalOperator::assembleWeakFormInSparseMode(): "
-      "To enable assembly in sparse mode, recompile BEM++ "
-      "with the symbol WITH_TRILINOS defined.");
-#endif
+          result, this->symmetry(), NO_TRANSPOSE));
+
 }
 
 template <typename BasisFunctionType, typename ResultType>

@@ -19,7 +19,6 @@
 // THE SOFTWARE.
 
 #include "bempp/common/config_ahmed.hpp"
-#include "bempp/common/config_trilinos.hpp"
 
 #include "hmat_global_assembler.hpp"
 
@@ -31,7 +30,6 @@
 #include "weak_form_hmat_assembly_helper.hpp"
 #include "discrete_hmat_boundary_operator.hpp"
 
-#include "../common/armadillo_fwd.hpp"
 #include "../common/auto_timer.hpp"
 #include "../common/chunk_statistics.hpp"
 #include "../common/to_string.hpp"
@@ -62,7 +60,6 @@
 #include <tbb/task_scheduler_init.h>
 #include <tbb/concurrent_queue.h>
 
-#include <Teuchos_ParameterList.hpp>
 
 namespace Bempp {
 
@@ -149,11 +146,11 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
     const Context<BasisFunctionType, ResultType> &context, int symmetry) {
 
   const AssemblyOptions &options = context.assemblyOptions();
-  const auto hMatParameterList =
-      context.globalParameterList().sublist("HMatParameters");
+  const auto parameterList =
+      context.globalParameterList();
   const bool indexWithGlobalDofs =
-      (hMatParameterList.template get<std::string>("HMatAssemblyMode") ==
-       "GlobalAssembly");
+          (parameterList.template get<std::string>("options.hmat.hMatAssemblyMode")
+           == "GlobalAssembly");
   const bool verbosityAtLeastDefault =
       (options.verbosityLevel() >= VerbosityLevel::DEFAULT);
   const bool verbosityAtLeastHigh =
@@ -172,11 +169,9 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
     actualTrialSpace = trialSpacePointer;
   }
 
-  auto minBlockSize =
-      hMatParameterList.template get<unsigned int>("minBlockSize");
-  auto maxBlockSize =
-      hMatParameterList.template get<unsigned int>("maxBlockSize");
-  auto eta = hMatParameterList.template get<double>("eta");
+  auto minBlockSize = parameterList.template get<int>("options.hmat.minBlockSize");
+  auto maxBlockSize = parameterList.template get<int>("options.hmat.maxBlockSize");
+  auto eta = parameterList.template get<int>("options.hmat.eta");
 
   auto blockClusterTree = generateBlockClusterTree(
       *actualTestSpace, *actualTrialSpace, minBlockSize, maxBlockSize, eta);
@@ -185,16 +180,15 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
       *actualTestSpace, *actualTrialSpace, blockClusterTree, localAssemblers,
       sparseTermsToAdd, denseTermMultipliers, sparseTermMultipliers);
 
-  auto defaultCompressionAlg = hMatParameterList.
-      template get<std::string>("defaultCompressionAlg");
+  auto defaultCompressionAlg = parameterList.template get<std::string>("options.hmat.defaultCompressionAlg");
 
   shared_ptr<hmat::DefaultHMatrixType<ResultType>> hMatrix;
 
   if (defaultCompressionAlg=="aca")
   {
 
-    auto eps = hMatParameterList.template get<double>("eps");
-    auto maxRank = hMatParameterList.template get<int>("maxRank");
+    auto eps = parameterList.template get<double>("options.hmat.eta");
+    auto maxRank = parameterList.template get<int>("options.hmat.maxRank");
     hmat::HMatrixAcaCompressor<ResultType, 2> 
         compressor(helper, 1E-3, 30);
     hMatrix.reset(new hmat::DefaultHMatrixType<ResultType>

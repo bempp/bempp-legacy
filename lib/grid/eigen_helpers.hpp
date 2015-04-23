@@ -17,19 +17,21 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-#ifndef bempp_armadillo_helpers_hpp
-#define bempp_armadillo_helpers_hpp
+#ifndef bempp_eigen_helpers_hpp
+#define bempp_eigen_helpers_hpp
 
 #include "../common/common.hpp"
+#include "../common/eigen_support.hpp"
 
-#include "../common/armadillo_fwd.hpp"
 #include <dune/common/fvector.hh>
 
-// Internal implementations for general Armadillo objects
+using namespace Bempp;
+
+// Internal implementations for general Eigen objects
 template <typename M, typename T, int size>
-bool _armadillo_fieldvector_compare(const M &x,
+bool _eigen_fieldvector_compare(const M &x,
                                     const Dune::FieldVector<T, size> &y) {
-  if (x.n_rows != size)
+  if (x.rows() != size)
     return false;
   for (int i = 0; i < size; ++i)
     if (x(i) != y[i])
@@ -38,9 +40,9 @@ bool _armadillo_fieldvector_compare(const M &x,
 }
 
 template <typename M, typename T, int rows, int cols>
-bool _armadillo_fieldmatrix_compare(const M &x,
+bool _eigen_fieldmatrix_compare(const M &x,
                                     const Dune::FieldMatrix<T, rows, cols> &y) {
-  if (x.n_rows != rows || x.n_cols != cols)
+  if (x.rows() != rows || x.cols() != cols)
     return false;
   for (int j = 0; j < cols; ++j)
     for (int i = 0; i < rows; ++i)
@@ -50,37 +52,26 @@ bool _armadillo_fieldmatrix_compare(const M &x,
 }
 
 template <typename T, int size>
-bool operator==(const arma::Col<T> &x, const Dune::FieldVector<T, size> &y) {
-  return _armadillo_fieldvector_compare(x, y);
+bool operator==(const Vector<T> &x, const Dune::FieldVector<T, size> &y) {
+  return _eigen_fieldvector_compare(x, y);
 }
 
 template <typename T, int size>
-bool operator==(const Dune::FieldVector<T, size> &x, const arma::Col<T> &y) {
-  return _armadillo_fieldvector_compare(y, x);
+bool operator==(const Dune::FieldVector<T, size> &x, const Vector<T> &y) {
+  return _eigen_fieldvector_compare(y, x);
 }
 
-template <typename T, int size>
-bool operator==(const arma::subview_col<T> &x,
-                const Dune::FieldVector<T, size> &y) {
-  return _armadillo_fieldvector_compare(x, y);
-}
-
-template <typename T, int size>
-bool operator==(const Dune::FieldVector<T, size> &x,
-                const arma::subview_col<T> &y) {
-  return _armadillo_fieldvector_compare(y, x);
-}
 
 template <typename T, int rows, int cols>
-bool operator==(const arma::Mat<T> &x,
+bool operator==(const Bempp::Matrix<T> &x,
                 const Dune::FieldMatrix<T, rows, cols> &y) {
-  return _armadillo_fieldmatrix_compare(x, y);
+  return _eigen_fieldmatrix_compare(x, y);
 }
 
 template <typename T, int rows, int cols>
 bool operator==(const Dune::FieldMatrix<T, rows, cols> &x,
-                const arma::Mat<T> &y) {
-  return _armadillo_fieldmatrix_compare(y, x);
+                const Bempp::Matrix<T> &y) {
+  return _eigen_fieldmatrix_compare(y, x);
 }
 
 // For BOOST_CHECK_EQUAL to work, we need to copy these comparison operators
@@ -91,38 +82,26 @@ namespace test_tools {
 namespace tt_detail {
 
 template <typename T, int size>
-bool operator==(const ::arma::Col<T> &x,
-                const ::Dune::FieldVector<T, size> &y) {
-  return ::operator==(x, y);
-}
-
-template <typename T, int size>
-bool operator==(const ::Dune::FieldVector<T, size> &x,
-                const ::arma::Col<T> &y) {
-  return ::operator==(x, y);
-}
-
-template <typename T, int size>
-bool operator==(const arma::subview_col<T> &x,
+bool operator==(const Bempp::Vector<T> &x,
                 const Dune::FieldVector<T, size> &y) {
   return ::operator==(x, y);
 }
 
 template <typename T, int size>
 bool operator==(const Dune::FieldVector<T, size> &x,
-                const arma::subview_col<T> &y) {
+                const Bempp::Vector<T> &y) {
   return ::operator==(x, y);
 }
 
 template <typename T, int rows, int cols>
-bool operator==(const arma::Mat<T> &x,
+bool operator==(const Bempp::Matrix<T> &x,
                 const Dune::FieldMatrix<T, rows, cols> &y) {
   return ::operator==(x, y);
 }
 
 template <typename T, int rows, int cols>
 bool operator==(const Dune::FieldMatrix<T, rows, cols> &x,
-                const arma::Mat<T> &y) {
+                const Bempp::Matrix<T> &y) {
   return ::operator==(x, y);
 }
 
