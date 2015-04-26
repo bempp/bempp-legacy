@@ -35,12 +35,19 @@ if (WITH_CUDA)
    find_package(CUDA)
 endif ()
 
+if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  set(BOOST_MIN_VER 1.57)
+elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+  set(BOOST_MIN_VER 1.55) 
+else()
+  message(FATAL_ERROR "Windows installation not supported.")
+endif()
 
 
 list(INSERT CMAKE_LOOKUP_PATH 0 ${PROJECT_SOURCE_DIR}/cmake/lookups)
 # lookup_package(CAIRO REQUIRED)
 lookup_package(Eigen3 REQUIRED)
-lookup_package(Boost 1.57 COMPONENTS unit_test_framework filesystem
+lookup_package(Boost ${BOOST_MIN_VER} COMPONENTS unit_test_framework filesystem
                program_options system thread iostreams REQUIRED)
 lookup_package(TBB REQUIRED)
 lookup_package(Dune REQUIRED COMPONENTS geometry grid localfunctions devel )
@@ -103,7 +110,7 @@ set(BEMPP_INCLUDE_DIRS
    ${PYTHON_INCLUDE_DIR}
    ${NUMPY_INCLUDE_DIRS}
    ${dune-alugrid_INCLUDE_DIRS}
-   ${Eigen3_INCLUDE_DIR}
+   ${EIGEN3_INCLUDE_DIR}
 )
 
 foreach(component Boost TBB)
