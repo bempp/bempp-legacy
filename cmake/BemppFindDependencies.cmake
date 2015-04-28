@@ -109,11 +109,13 @@ set(BEMPP_INCLUDE_DIRS
    ${CAIRO_INCLUDE_DIRS}
    ${PYTHON_INCLUDE_DIR}
    ${NUMPY_INCLUDE_DIRS}
-   ${dune-alugrid_INCLUDE_DIRS}
-   ${EIGEN3_INCLUDE_DIR}
 )
 
-foreach(component Boost TBB)
+if (${dune-alugrid_INCLUDE_DIRS})
+    list(APPEND BEMPP_INCLUDE_DIRS ${dune-alugrid_INCLUDE_DIRS})
+endif()
+
+foreach(component Boost TBB EIGEN3)
     if(${component}_INCLUDE_DIR)
         list(APPEND BEMPP_INCLUDE_DIRS ${${component}_INCLUDE_DIR})
     endif()
