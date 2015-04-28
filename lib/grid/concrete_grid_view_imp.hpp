@@ -82,8 +82,8 @@ void ConcreteGridView<DuneGridView>::getRawElementDataImpl(
   for (DuneElementIterator it = m_dune_gv.template begin<codimElement>();
        it != m_dune_gv.template end<codimElement>(); ++it) {
     size_t index = indexSet.index(*it);
-    const Dune::GenericReferenceElement<ctype, dimGrid> &refElement =
-        Dune::GenericReferenceElements<ctype, dimGrid>::general(it->type());
+    const Dune::ReferenceElement<ctype, dimGrid> &refElement =
+        Dune::ReferenceElements<ctype, dimGrid>::general(it->type());
     const int cornerCount = refElement.size(codimVertex);
     assert(cornerCount <= MAX_CORNER_COUNT);
     for (int i = 0; i < cornerCount; ++i)

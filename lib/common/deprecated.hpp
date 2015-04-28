@@ -29,8 +29,7 @@
  *
  *  Functions and classes marked as BEMPP_DEPRECATED are liable to be removed
  *  in future versions of the library. */
-#if defined(SWIGPYTHON) // we want to wrap deprecated features
-                        // without generating warnings
+#if defined(__llvm__)
 #define BEMPP_DEPRECATED
 #else
 #if defined(__GNUC__)
@@ -47,6 +46,10 @@
 // Should be called like
 // BEMPP_GCC_DIAG_OFF(deprecated)
 // BEMPP_GCC_DIAG_ON(deprecated)
+#if defined(__llvm__)
+#define BEMPP_GCC_DIAG_OFF(x)
+#define BEMPP_GCC_DIAG_ON(x)
+#else
 #if ((__GNUC__ * 100) + __GNUC_MINOR__) >= 402
 #define BEMPP_GCC_DIAG_STR(s) #s
 #define BEMPP_GCC_DIAG_JOINSTR(x, y) BEMPP_GCC_DIAG_STR(x##y)
@@ -69,6 +72,7 @@
 #else
 #define BEMPP_GCC_DIAG_OFF(x)
 #define BEMPP_GCC_DIAG_ON(x)
+#endif
 #endif
 
 #endif // bempp_deprecated_hpp

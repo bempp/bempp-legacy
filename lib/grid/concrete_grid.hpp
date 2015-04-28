@@ -174,7 +174,7 @@ public:
   virtual std::unique_ptr<GridView> leafView() const {
     return std::unique_ptr<GridView>(
         new ConcreteGridView<typename DuneGrid::LeafGridView>(
-            m_dune_grid->leafView(), m_domain_index));
+            m_dune_grid->leafGridView(), m_domain_index));
   }
 
   /** @}

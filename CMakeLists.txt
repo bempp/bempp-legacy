@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.6)
+cmake_minimum_required(VERSION 2.8.12)
 project(Bempp CXX)
 set(Bempp_VERSION 2.9)
 
@@ -20,6 +20,10 @@ set(CMAKE_CXX_FLAGS_RELWITHDEBINFO
     "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -DNDEBUG -O3")
 # set(CMAKE_CXX_FLAGS "-Wall -Wnon-virtual-dtor -Wno-sign-compare")
 
+set(CMAKE_C_FLAGS
+    "${CMAKE_C_FLAGS} -Wno-deprecated")
+set(CMAKE_CXX_FLAGS
+    "${CMAKE_CXX_FLAGS} -Wno-deprecated")
 
 # Tells cmake where to find bem++ specific files
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)

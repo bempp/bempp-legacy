@@ -1,3 +1,6 @@
+# Remove Numpy deprecated warning
+add_definitions(-DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION)
+
 add_subdirectory(unit)
 if (WITH_INTEGRATION_TESTS)
    add_subdirectory(integration)

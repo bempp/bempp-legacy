@@ -65,7 +65,7 @@ public:
 
   /** \brief Type of the reference element.
 
-   The type can be used to access the <tt>Dune::GenericReferenceElement</tt>.
+   The type can be used to access the <tt>Dune::ReferenceElement</tt>.
    */
   virtual GeometryType type() const = 0;
 

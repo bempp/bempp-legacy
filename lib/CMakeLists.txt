@@ -1,3 +1,6 @@
+#Disable Numpy deprecated warning
+add_definitions(-DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION)
+
 #Configure All Option files
 foreach(config_file trilinos ahmed opencl data_types blas_and_lapack python)
     set(filename common/config_${config_file}.hpp)

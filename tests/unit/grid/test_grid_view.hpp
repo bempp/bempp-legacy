@@ -38,7 +38,7 @@ struct TriangularLevel0GridViewManager : public SimpleTriangularGridManager {
 struct TriangularLeafGridViewManager : public SimpleTriangularGridManager {
     TriangularLeafGridViewManager() : SimpleTriangularGridManager(),
         bemppGridView(bemppGrid->leafView()),
-        duneGridView(duneGrid->leafView()) {
+        duneGridView(duneGrid->leafGridView()) {
     }
 
     typedef Bempp::Default2dIn3dDuneGrid::LeafGridView DuneGridView;

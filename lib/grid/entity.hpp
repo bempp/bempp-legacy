@@ -65,7 +65,7 @@ public:
 
   /** \brief Type of the reference element.
 
-   The type can be used to access the Dune::GenericReferenceElement.
+   The type can be used to access the Dune::ReferenceElement.
    */
   virtual GeometryType type() const = 0;
 };
@@ -101,7 +101,7 @@ public:
 
   /** \brief Type of the reference element.
 
-  The type can be used to access the Dune::GenericReferenceElement.
+  The type can be used to access the Dune::ReferenceElement.
    */
   virtual GeometryType type() const = 0;
 
