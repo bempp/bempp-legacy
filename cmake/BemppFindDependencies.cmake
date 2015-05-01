@@ -31,14 +31,11 @@ include(CallPython)
 call_python(PYTHON_HOME "import sys; print(sys.prefix)")
 
 find_package(Sphinx)
-if (WITH_CUDA)
-   find_package(CUDA)
-endif ()
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   set(BOOST_MIN_VER 1.57)
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-  set(BOOST_MIN_VER 1.55) 
+  set(BOOST_MIN_VER 1.54) 
 else()
   message(FATAL_ERROR "Windows installation not supported.")
 endif()
@@ -84,21 +81,10 @@ find_program(mako_SCRIPT mako-render HINTS "${EXTERNAL_ROOT}/python")
 add_to_python_path("${PROJECT_SOURCE_DIR}/python/templates")
 
 
-# Ahmed (optional, used only if WITH_AHMED is set)
-if (WITH_AHMED)
-    set(AHMED_INCLUDE_DIR "" CACHE PATH "Full path to the AHMED include directory")
-    set(AHMED_LIB "" CACHE PATH "Full path to AHMED library")
-endif ()
-
 # Adds fake FC.h file cos dune incorrectly includes it in dune_config.h
 if(NOT EXISTS "${PROJECT_BINARY_DIR}/include/FC.h")
     file(WRITE "${PROJECT_BINARY_DIR}/include/FC.h" "// fake Fortran-C file")
 endif()
-
-if(WITH_FENICS)
-    include(BemppFenicsDependencies)
-endif()
-
 
 
 # Now include all dependency directories once and for all
@@ -106,7 +92,6 @@ set(BEMPP_INCLUDE_DIRS
    "${PROJECT_BINARY_DIR}/include/"
    "${PROJECT_BINARY_DIR}/include/bempp"
    ${dune-common_INCLUDE_DIRS}
-   ${CAIRO_INCLUDE_DIRS}
    ${PYTHON_INCLUDE_DIR}
    ${NUMPY_INCLUDE_DIRS}
 )
@@ -155,10 +140,6 @@ if(EXISTS "${EXTERNAL_ROOT}/share")
         PATTERN "doc" EXCLUDE)
 endif()
 
-if(WITH_OPENCL)
-    find_package(OPENCL REQUIRED)
-    list(APPEND BEMPP_INCLUDE_DIRS ${OPENCL_INCLUDE_DIR})
-endif()
 
 list(REMOVE_DUPLICATES BEMPP_INCLUDE_DIRS)
 include_directories(${BEMPP_INCLUDE_DIRS})

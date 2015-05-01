@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.12)
 project(Bempp CXX)
-set(Bempp_VERSION 2.9)
+set(Bempp_VERSION 2.9.1)
 
 # Set a default build type if none was specified
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)

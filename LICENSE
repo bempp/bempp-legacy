@@ -8,7 +8,7 @@ Armadillo: Mozilla Public License 2.0
 Boost: Boost Software License
 Dune: GPL v2 with runtime exception
 Intel Threading Building Blocks: GPL v2 with runtime exception
-Trilinos: Mixture of BSD and LGPL
+Eigen3: MPL2
 
 The license of the complete BEM++ package including all components
 is GPL v2 due to the inclusion of Alugrid. Other Dune compatible
@@ -135,4 +135,10 @@ Trilinos (www.trilinos.org)
 
 Most of the Trilinos packages use a BSD or a LGPL license. For further details
 see www.trilinos.org
+
+================================
+
+Eigen3 (eigen.tuxfamily.org)
+
+See https://www.mozilla.org/MPL/2.0/ for the full text of the MPL2 license
 

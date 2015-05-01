@@ -12,6 +12,7 @@ class TestP1Coupling(object):
 
         import dolfin
         from bempp.fenics_interface import fenics_to_bempp_trace_data
+        from bempp.fenics_interface import FenicsOperator
 
         mesh = dolfin.UnitCubeMesh(5,5,5)
         V = dolfin.FunctionSpace(mesh,"CG",1)
@@ -21,7 +22,7 @@ class TestP1Coupling(object):
         u = dolfin.TestFunction(V)
         v = dolfin.TrialFunction(V)
         a = dolfin.inner(u,v)*dolfin.ds
-        fenics_mass = dolfin.assemble(a).sparray()
+        fenics_mass = FenicsOperator(a).weak_form()
         actual = trace_matrix*fenics_mass*trace_matrix.transpose()
 
         from bempp.operators.boundary import sparse

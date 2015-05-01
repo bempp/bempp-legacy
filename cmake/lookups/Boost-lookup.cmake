@@ -21,13 +21,6 @@ else()
   )
 endif()
 
-include(PatchScript)
-set(patchdir "${PROJECT_SOURCE_DIR}/cmake/patches/boost")
-create_patch_script(Boost patch_script
-    CMDLINE "-p0"
-    WORKING_DIRECTORY "${EXTERNAL_ROOT}/src/Boost"
-    "${patchdir}/unittests_noncopyable.patch"
-)
 
 file(WRITE "${PROJECT_BINARY_DIR}/CMakeFiles/external/boost_configure.sh"
     "#!${bash_EXECUTABLE}\n"
@@ -51,7 +44,6 @@ ExternalProject_Add(
     URL http://downloads.sourceforge.net/project/boost/boost/1.57.0/boost_1_57_0.tar.bz2
     BUILD_IN_SOURCE 1
     CONFIGURE_COMMAND ./bootstrap.sh
-    #PATCH_COMMAND ${patch_script}
     BUILD_COMMAND ${configure_command}
     INSTALL_COMMAND ./b2 ${toolset} link=shared variant=release --with-test --with-filesystem --with-program_options --with-system --with-thread --with-iostreams
         --prefix=${EXTERNAL_ROOT} install
