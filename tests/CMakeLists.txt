@@ -26,11 +26,11 @@ add_test(NAME configure_test_project
     WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/ExampleProject"
 )
 
-#add_test(NAME build_test_project
-#    COMMAND ${CMAKE_COMMAND} --build .
-#    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/ExampleProject/build"
-#)
-#set_tests_properties(build_test_project PROPERTIES DEPENDS configure_test_project)
-#set_tests_properties(build_test_project configure_test_project
-#    PROPERTIES LABELS "cmake")
+add_test(NAME build_test_project
+    COMMAND ${CMAKE_COMMAND} --build .
+    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/ExampleProject/build"
+)
+set_tests_properties(build_test_project PROPERTIES DEPENDS configure_test_project)
+set_tests_properties(build_test_project configure_test_project
+    PROPERTIES LABELS "cmake")
 set_tests_properties(configure_test_project PROPERTIES LABELS "cmake")

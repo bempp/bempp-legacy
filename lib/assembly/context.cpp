@@ -102,8 +102,7 @@ Context<BasisFunctionType, ResultType>::Context(
                           defaults.get<int>("options.quadrature.medium.singleOrder")),
       parameters.get<int>("options.quadrature.far.singleOrder",
                           defaults.get<int>("options.quadrature.far.singleOrder")),
-      parameters.get<bool>("options.quadrature.quadratureOrdersAreRelative",
-                           defaults.get<bool>("options.quadrature.quadratureOrdersAreRelative")));
+      false);
 
   accuracyOptions.setDoubleRegular(
               parameters.get<double>("options.quadrature.near.maxRelDist",
@@ -116,14 +115,12 @@ Context<BasisFunctionType, ResultType>::Context(
                                   defaults.get<int>("options.quadrature.medium.doubleOrder")),
               parameters.get<int>("options.quadrature.far.doubleOrder",
                                   defaults.get<int>("options.quadrature.far.doubleOrder")),
-              parameters.get<bool>("options.quadrature.quadratureOrdersAreRelative",
-                                   defaults.get<bool>("options.quadrature.quadratureOrdersAreRelative")));
+              false);
 
   accuracyOptions.setDoubleSingular(
       parameters.get<int>("options.quadrature.doubleSingular",
                           defaults.get<int>("options.quadrature.doubleSingular")),
-      parameters.get<bool>("options.quadrature.quadratureOrdersAreRelative",
-                        defaults.get<bool>("options.quadrature.quadratureOrdersAreRelative")));
+      false);
 
   m_quadStrategy.reset(
       new NumericalQuadratureStrategy<BasisFunctionType, ResultType>(

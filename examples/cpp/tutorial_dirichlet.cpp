@@ -18,14 +18,14 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "bempp/assembly/assembly_options.hpp"
 #include "bempp/assembly/boundary_operator.hpp"
-#include "bempp/assembly/context.hpp"
 #include "bempp/assembly/evaluation_options.hpp"
 #include "bempp/assembly/grid_function.hpp"
 #include "bempp/assembly/l2_norm.hpp"
 #include "bempp/assembly/numerical_quadrature_strategy.hpp"
-#include "bempp/assembly/surface_normal_independent_function.hpp"
+#include "bempp/assembly/surface_normal_and_domain_index_dependent_function.hpp"
+#include "bempp/assembly/discrete_boundary_operator.hpp"
+#include "bempp/common/global_parameters.hpp"
 
 #include "bempp/assembly/identity_operator.hpp"
 #include "bempp/assembly/laplace_3d_single_layer_boundary_operator.hpp"
@@ -38,10 +38,9 @@
 #include "bempp/grid/grid.hpp"
 #include "bempp/grid/grid_factory.hpp"
 
-#include "bempp/linalg/default_iterative_solver.hpp"
-
 #include "bempp/space/piecewise_linear_continuous_scalar_space.hpp"
 #include "bempp/space/piecewise_constant_scalar_space.hpp"
+
 
 #include "bempp/common/eigen_support.hpp"
 
@@ -67,8 +66,10 @@ public:
 
     // Evaluate the function at the point "point" and store result in
     // the array "result"
-    inline void evaluate(const Vector<CoordinateType>& point,
-                         Vector<ValueType>& result) const {
+    inline void evaluate(const Eigen::Ref<Bempp::Vector<CoordinateType>>& point,
+                         const Eigen::Ref<Bempp::Vector<ValueType>>& normal,
+                         int domainIndex,
+                         Eigen::Ref<Bempp::Vector<ValueType>> result) const {
         CoordinateType x = point(0), y = point(1), z = point(2);
         CoordinateType r = sqrt(point(0) * point(0) +
                 point(1) * point(1) +
@@ -92,8 +93,10 @@ public:
 
     // Evaluate the function at the point "point" and store result in
     // the array "result"
-    inline void evaluate(const Vector<CoordinateType>& point,
-                         Vector<ValueType>& result) const {
+    inline void evaluate(const Eigen::Ref<Bempp::Vector<CoordinateType>>& point,
+                         const Eigen::Ref<Bempp::Vector<CoordinateType>>& normal,
+                         int domainIndex,
+                         Eigen::Ref<Bempp::Vector<ValueType>> result) const {
         CoordinateType x = point(0), y = point(1), z = point(2);
         CoordinateType r = sqrt(point(0) * point(0) +
                 point(1) * point(1) +
@@ -115,32 +118,14 @@ int main()
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(params, meshFile);
     
-
     // Initialize the spaces
 
     PiecewiseLinearContinuousScalarSpace<BFT> pwiseLinears(grid);
     PiecewiseConstantScalarSpace<BFT> pwiseConstants(grid);
 
-    // Define the quadrature strategy
-
-    AccuracyOptions accuracyOptions;
-    // Increase by 2 the order of quadrature rule used to approximate
-    // integrals of regular functions on pairs on elements
-    accuracyOptions.doubleRegular.setRelativeQuadratureOrder(2);
-    // Increase by 2 the order of quadrature rule used to approximate
-    // integrals of regular functions on single elements
-    accuracyOptions.singleRegular.setRelativeQuadratureOrder(2);
-    NumericalQuadratureStrategy<BFT, RT> quadStrategy(accuracyOptions);
-
-    // Specify the assembly method. We want to use ACA
-
-    AssemblyOptions assemblyOptions;
-    // AcaOptions acaOptions; // Default parameters for ACA
-    // assemblyOptions.switchToAcaMode(acaOptions);
-
-    // Create the assembly context
-
-    Context<BFT, RT> context(make_shared_from_ref(quadStrategy), assemblyOptions);
+    // Define the Context object from default parameters
+    
+    Context<BFT, RT> context(GlobalParameters::parameterList());
 
     // Construct elementary operators
 
@@ -173,89 +158,47 @@ int main()
                 make_shared_from_ref(context),
                 make_shared_from_ref(pwiseLinears),
                 make_shared_from_ref(pwiseLinears),
-                surfaceNormalIndependentFunction(DirichletData()));
+                surfaceNormalAndDomainIndexDependentFunction(DirichletData()));
 
     // Construct the right-hand-side grid function
 
     GridFunction<BFT, RT> rhs = rhsOp * dirichletData;
 
-    // Initialize the solver
+    // Solve the dense system via Eigen
 
-    DefaultIterativeSolver<BFT, RT> solver(slpOp);
-    solver.initializeSolver(defaultGmresParameterList(1e-5));
+    // First get the projections onto the space of piecewise constant functions.
+    Vector<RT> rhsVector = rhs.projections(make_shared_from_ref(pwiseConstants));
 
-    // Solve the equation
+    // Now get the matrix
+    
+    Matrix<RT> mat = slpOp.weakForm()->asMatrix();
 
-    Solution<BFT, RT> solution = solver.solve(rhs);
-    std::cout << solution.solverMessage() << std::endl;
+    // Solve the system via Eigen. We can use the LLT solver since the matrix
+    // in this case is symmetric and positive definite.
+    
+    Vector<RT> solVector = mat.llt().solve(rhsVector);
 
-    // Extract the solution in the form of a grid function
-    // and export it in VTK format
+    // Create a grid function from the result
+    
+    GridFunction<BFT,RT> solFun(make_shared_from_ref(context),
+                                make_shared_from_ref(pwiseConstants),
+                                solVector);
+                                     
+    // Export solution to VTK
 
-    const GridFunction<BFT, RT>& solFun = solution.gridFunction();
     exportToVtk(solFun, VtkWriter::CELL_DATA, "Neumann_data", "solution");
 
     // Compare the numerical and analytical solution on the grid
 
-    // GridFunction<BFT, RT> exactSolFun(
-    //             make_shared_from_ref(context),
-    //             make_shared_from_ref(pwiseConstants),
-    //             make_shared_from_ref(pwiseConstants),
-    //             surfaceNormalIndependentFunction(ExactNeumannData()));
+    GridFunction<BFT, RT> exactSolFun(
+                make_shared_from_ref(context),
+                make_shared_from_ref(pwiseConstants),
+                make_shared_from_ref(pwiseConstants),
+                surfaceNormalAndDomainIndexDependentFunction(ExactNeumannData()));
     CT absoluteError, relativeError;
     estimateL2Error(
-                solFun, surfaceNormalIndependentFunction(ExactNeumannData()),
-                quadStrategy, absoluteError, relativeError);
+                solFun, surfaceNormalAndDomainIndexDependentFunction(ExactNeumannData()),
+                *context.quadStrategy(), absoluteError, relativeError);
     std::cout << "Relative L^2 error: " << relativeError << std::endl;
 
-    // GridFunction<BFT, RT> diff = solFun - exactSolFun;
-    // double relativeError = diff.L2Norm() / exactSolFun.L2Norm();
-    // std::cout << "Relative L^2 error: " << relativeError << std::endl;
-
-    // Prepare to evaluate the solution on an annulus outside the sphere
-
-    // Create potential operators
-
-    Laplace3dSingleLayerPotentialOperator<BFT, RT> slPotOp;
-    Laplace3dDoubleLayerPotentialOperator<BFT, RT> dlPotOp;
-
-    // Construct the array 'evaluationPoints' containing the coordinates
-    // of points where the solution should be evaluated
-
-    const int rCount = 51;
-    const int thetaCount = 361;
-    const CT minTheta = 0., maxTheta = 2. * M_PI;
-    const CT minR = 1., maxR = 2.;
-    const int dimWorld = 3;
-    Matrix<CT> evaluationPoints(dimWorld, rCount * thetaCount);
-    for (int iTheta = 0; iTheta < thetaCount; ++iTheta) {
-        CT theta = minTheta + (maxTheta - minTheta) *
-            iTheta / (thetaCount - 1);
-        for (int iR = 0; iR < rCount; ++iR) {
-            CT r = minR + (maxR - minR) * iR / (rCount - 1);
-            evaluationPoints(0, iR + iTheta * rCount) = r * cos(theta); // x
-            evaluationPoints(1, iR + iTheta * rCount) = r * sin(theta); // y
-            evaluationPoints(2, iR + iTheta * rCount) = 0.;             // z
-        }
-    }
-
-    // Use the Green's representation formula to evaluate the solution
-
-    EvaluationOptions evaluationOptions;
-
-    Matrix<RT> field =
-        -slPotOp.evaluateAtPoints(solFun, evaluationPoints,
-                                  quadStrategy, evaluationOptions) +
-         dlPotOp.evaluateAtPoints(dirichletData, evaluationPoints,
-                                  quadStrategy, evaluationOptions);
-
-    // Export the solution into text file
-
-    std::ofstream out("solution.txt");
-    out << "# x y z u\n";
-    for (int i = 0; i < rCount * thetaCount; ++i)
-        out << evaluationPoints(0, i) << ' '
-            << evaluationPoints(1, i) << ' '
-            << evaluationPoints(2, i) << ' '
-            << field(0, i) << '\n';
 }

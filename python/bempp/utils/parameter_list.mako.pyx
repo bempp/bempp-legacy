@@ -172,15 +172,6 @@ cdef class _QuadratureParameterList:
         def __get__(self):
             return self._far
 
-    property quadrature_orders_are_relative:
-
-        def __get__(self):
-            cdef char* s = b"options.quadrature.quadratureOrdersAreRelative"
-            return (self.impl_).get_bool(s)
-        def __set__(self, cbool value):
-            cdef char* s = b"options.quadrature.quadratureOrdersAreRelative"
-            (self.impl_).put_bool(s, value)
-    
     property double_singular:
         def __get__(self):
             cdef char* s = b"options.quadrature.doubleSingular"

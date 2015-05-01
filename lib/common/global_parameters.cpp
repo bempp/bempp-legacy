@@ -51,33 +51,29 @@ ParameterList GlobalParameters::parameterList() {
   parameters.put("options.assembly.enableSingularIntegralCaching",
           true);
    
-  // Specify whether quadrature options are relative to default.
-  parameters.put("options.quadrature.quadratureOrdersAreRelative",
-         static_cast<bool>(true));
-
   // Order for singular double integrals.
-  parameters.put("options.quadrature.doubleSingular",static_cast<int>(0));
+  parameters.put("options.quadrature.doubleSingular",static_cast<int>(6));
 
   auto createQuadratureOptions = [&parameters](const std::string name,
           double relDist, int singleOrder, int doubleOrder) {
 
 
-      // Relative destance of quadrature point to element.
+      // Relative distance of quadrature point to element.
       parameters.put((std::string("options.quadrature.")+name+std::string(".maxRelDist")).c_str(),
               static_cast<double>(relDist));
 
-      // (Relative) order of single regular integrals.
+      // Order of single regular integrals.
       parameters.put((std::string("options.quadrature.")+name+std::string(".singleOrder")).c_str(),
               static_cast<int>(singleOrder));
 
-      // (Relative) order of double regular integrals.
+      // Order of double regular integrals.
       parameters.put((std::string("options.quadrature.")+name+std::string(".doubleOrder")).c_str(),
               static_cast<int>(doubleOrder));
 
   };
 
-  createQuadratureOptions("near",2,3,3);
-  createQuadratureOptions("medium",4,2,2);
+  createQuadratureOptions("near",2,4,4);
+  createQuadratureOptions("medium",4,3,3);
   createQuadratureOptions("far",std::numeric_limits<double>::infinity(),2,2);
 
   parameters.erase("options.quadrature.far.maxRelDist");
