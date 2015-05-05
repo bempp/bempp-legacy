@@ -27,6 +27,7 @@
 #include "../common/shared_ptr.hpp"
 #include "../common/eigen_support.hpp"
 #include "grid_parameters.hpp"
+#include "entity.hpp"
 
 #include <cstddef> // size_t
 #include <memory>
@@ -112,6 +113,14 @@ public:
    *  coordinate. */
   void getBoundingBox(Vector<double> &lowerBound,
                       Vector<double> &upperBound) const;
+
+  /** \brief Get insertion index of an element. */
+
+  virtual unsigned int elementInsertionIndex(const Entity<0>& element) const;
+
+  /** \brief Get insertion index of a vertex for a 2d in 3d grid */
+
+  virtual unsigned int vertexInsertionIndex(const Entity<2>& vertex) const;
 
 private:
   /** \cond PRIVATE */

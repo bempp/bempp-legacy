@@ -143,7 +143,8 @@ public:
   /** \brief Read-only access to the underlying Dune grid object. */
   const DuneGrid &duneGrid() const { return *m_dune_grid; }
 
-  /** \brief Return the GridFactory used for creation of the grid (if it exists). */
+  /** \brief Return the GridFactory used for creation of the grid (if it exists).
+             If it does not exists an empty pointer is returned. */
 
   const shared_ptr<const Dune::GridFactory<DuneGrid>> factory() const{
       return m_factory;
@@ -245,9 +246,36 @@ public:
       return true;
   }
 
+
+  /** \brief Get insertion index of an element. */
+
+  unsigned int elementInsertionIndex(const Entity<0>& element) const override
+  {
+      typedef ConcreteEntity<0,typename DuneGrid::template Codim<0>::Entity> entity_t;
+      if (!m_factory)
+          throw std::runtime_error(
+                  "ConcreteGrid::elementInsertionIndex():: "
+                  "No Grid Factory defined. Cannot get insertion index.");
+
+      return m_factory->insertionIndex(static_cast<const entity_t&>(element).duneEntity());
+
+  }
+
+  /** \brief Get insertion index of a vertex for a 2d in 3d grid */
+
+  unsigned int vertexInsertionIndex(const Entity<2>& vertex) const override
+  {
+      typedef ConcreteEntity<2,typename DuneGrid::template Codim<2>::Entity> entity_t;
+      if (!m_factory)
+          throw std::runtime_error(
+                  "ConcreteGrid::elementInsertionIndex():: "
+                  "No Grid Factory defined. Cannot get insertion index.");
+
+      return m_factory->insertionIndex(static_cast<const entity_t&>(vertex).duneEntity());
+  }
+
   /** @}
    */
-
 private:
   // Disable copy constructor and assignment operator
   // (unclear what to do with the pointer to the grid)

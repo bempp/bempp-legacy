@@ -170,4 +170,16 @@ std::vector<bool> areInside(const Grid &grid, const Matrix<float> &points) {
   return areInside(grid, pointsDouble);
 }
 
+unsigned int Grid::elementInsertionIndex(const Entity<0>& element) const
+{
+    throw std::runtime_error("Grid::elementInsertionIndex(): "
+                             "method not implemented.");
+}
+
+unsigned int Grid::vertexInsertionIndex(const Entity<2>& vertex) const
+{
+    throw std::runtime_error("Grid::vertexInsertionIndex(): "
+                             "method not implemented.");
+}
+
 } // namespace Bempp
