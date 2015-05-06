@@ -18,7 +18,7 @@ assert_file_included(bempp/config_bempp.hpp          ${BEMPP_INCLUDE_DIRS})
 assert_file_included(bempp/fiber/types.hpp           ${BEMPP_INCLUDE_DIRS})
 assert_file_included(boost/array.hpp                 ${BEMPP_INCLUDE_DIRS})
 assert_file_included(dune/grid/onedgrid.hh           ${BEMPP_INCLUDE_DIRS})
-assert_file_included(dune_config.h                   ${BEMPP_INCLUDE_DIRS})
+assert_file_included(bempp/common/bempp_dune_config.hpp ${BEMPP_INCLUDE_DIRS})
 assert_file_included(tbb/atomic.h                    ${BEMPP_INCLUDE_DIRS})
 
 if(NOT DEFINED BEMPP_PYTHON_INCLUDE_DIRS)

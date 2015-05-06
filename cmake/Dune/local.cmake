@@ -51,14 +51,12 @@ ExternalProject_Add(
     CMAKE_ARGS -C "${EXTERNAL_ROOT}/src/DuneVariables.cmake"
     LOG_DOWNLOAD OFF LOG_CONFIGURE ON LOG_BUILD ON
     INSTALL_COMMAND
-        ${CMAKE_COMMAND} -E copy_if_different
-               ${EXTERNAL_ROOT}/src/dune-bempp-build/config.h
-               ${EXTERNAL_ROOT}/include/dune_config.h
+    /bin/bash -c "cp ${EXTERNAL_ROOT}/src/dune-bempp-build/FC.h ${PROJECT_BINARY_DIR}/include/bempp/common/FC.h && cp ${EXTERNAL_ROOT}/src/dune-bempp-build/config.h ${PROJECT_BINARY_DIR}/include/bempp/common/bempp_dune_config.hpp"
     ${build_args}
 )
 ExternalProject_Add_Step(dune-bempp
     CREATE_PROJECT
-    COMMAND ${DuneProject_PROGRAM} < bempp.dune.input
+    COMMAND /bin/bash -c "DUNE_CONTROL_PATH=${dune-common_PREFIX} ${DuneProject_PROGRAM} < bempp.dune.input"
     WORKING_DIRECTORY ${EXTERNAL_ROOT}/src
     COMMENT Creating fake dune-bempp project
     DEPENDERS configure
