@@ -21,6 +21,23 @@
 #ifndef bempp_common_hpp
 #define bempp_common_hpp
 
+// dune localfunction patch
+#include <complex>
+namespace std {
+  inline std::complex<float> operator/(double const &&a, complex<float> const &b) {
+    return static_cast<float>(a) / b;
+  }
+  inline complex<float> operator*(double const &&a, complex<float> const &b) {
+    return static_cast<float>(a) * b;
+  }
+  inline complex<float> operator*(complex<float> const &b, double const &&a) {
+    return static_cast<float>(a) * b;
+  }
+  inline complex<float> operator-(double const &&a, complex<float> const &b) {
+    return static_cast<float>(a) - b;
+  }
+}
+
 // Needs to be included before Python support
 #include <boost/property_tree/ptree.hpp>
 

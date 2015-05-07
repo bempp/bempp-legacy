@@ -69,7 +69,11 @@ set_target_properties(
     PROPERTIES EXCLUDE_FROM_ALL TRUE
 )
 
-if(NOT TARGET Dune)
+if(TARGET dune-alugrid)
+    # Seems to be pb when both dune-bempp and dune-alugrid are run a the same time.
+    add_dependencies(dune-bempp dune-alugrid)
+    add_dependencies(lookup_dependencies dune-bempp)
+elseif(NOT TARGET Dune)
     add_custom_target(Dune ALL DEPENDS dune-bempp)
     add_dependencies(lookup_dependencies Dune)
 else()

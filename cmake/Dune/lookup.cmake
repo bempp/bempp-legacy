@@ -138,9 +138,6 @@ ExternalProject_Add(dune-localfunctions
     PREFIX ${EXTERNAL_ROOT}
     DEPENDS dune-geometry dune-common dune-grid
     ${localfunctions_ARGUMENTS}
-    PATCH_COMMAND
-        ${CMAKE_COMMAND} -DROOT=${EXTERNAL_ROOT}/src/dune-localfunctions
-            -P ${CURRENT_LOOKUP_DIRECTORY}/patch-localfunctions.cmake
     CMAKE_ARGS -C "${EXTERNAL_ROOT}/src/DuneVariables.cmake"
     LOG_DOWNLOAD ON LOG_CONFIGURE ON LOG_BUILD ON
 )
