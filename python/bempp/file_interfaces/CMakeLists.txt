@@ -1,4 +1,5 @@
-set(makoes __init__.mako.pxd gmsh.mako.pxd gmsh.mako.pyx)
+set(makoes __init__.mako.pxd)
+
 
 mako_files(${makoes}
     OUTPUT_FILES makoed
