@@ -33,7 +33,6 @@
 #include <dune/common/fmatrix.hh>
 #include <dune/common/static_assert.hh>
 #include <dune/grid/common/grid.hh>
-#include <dune/alugrid/2d/alu2dinclude.hh>
 
 #include <memory>
 

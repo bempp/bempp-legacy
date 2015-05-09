@@ -35,7 +35,7 @@ set_target_properties(libbempp PROPERTIES PREFIX "")
 # Add targets that may not yet exist, if they are being built as lookups
 set(imported_targets
     # Dune targets
-    dunecommon dunegeometry dunegrid dunealugrid
+    dunecommon dunegeometry dunegrid 
 )
 unset(library_files)
 foreach(library ${imported_targets})
