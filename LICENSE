@@ -3,17 +3,11 @@ and several support libraries with various licenses.
 The following gives a summary of the licenses of BEM++ and the various components
 
 BEM++ main library: MIT License
-Alugrid: GPL v2
-Armadillo: Mozilla Public License 2.0
+Foamgrid: LGPL v3
 Boost: Boost Software License
 Dune: GPL v2 with runtime exception
 Intel Threading Building Blocks: GPL v2 with runtime exception
 Eigen3: MPL2
-
-The license of the complete BEM++ package including all components
-is GPL v2 due to the inclusion of Alugrid. Other Dune compatible
-grid managers with different license can be enable by editing the file 
-dune.hpp in the lib/grid subdirectory.
 
 In the following we summarize the license text of the various components.
 ===========================================
@@ -47,25 +41,38 @@ and have been relicensed under an MIT license with permission by the authors.
 
 ================================
 
-Alugrid (https://www.dune-project.org/external_libraries/install_alugrid.html)
+Foamgrid (https://users.dune-project.org/projects/dune-foamgrid)
 
-The DUNE-ALUGrid module is licensed under the GNU General
-Public License (GPL) version 2. The full license text can be found 
-in the file COPYING and via http://www.gnu.org/licenses/gpl.html .
+The dune-foamgrid library, headers and test programs are copyrighted free software. You
+can use, modify and/or redistribute it under the terms of either one of the two
+following licenses:
+
+* The GNU Lesser General Public License as published by the Free Software
+  Foundation, either Version 3 of the license or (at your option) any later
+  version. You can find a copy of the GNU Lesser General Public License, Version
+  3, in the files GPL-3 and LGPL-3 or at <http://www.gnu.org/licenses/lgpl-3.0>.
+
+* Version 2 of the GNU General Public License as published by the Free Software
+  Foundation, with the following special exception for linking and compiling
+  against the dune-foamgrid library, the so-called "runtime exception":
+
+    As a special exception, you may use the dune-foamgrid source files as part of a
+    software library or application without restriction.  Specifically, if other
+    files instantiate templates or use macros or inline functions from one or
+    more of the dune-foamgrid source files, or you compile one or more of the dune-foamgrid
+    source files and link them with other files to produce an executable, this
+    does not by itself cause the resulting executable to be covered by the GNU
+    General Public License.  This exception does not however invalidate any
+    other reasons why the executable file might be covered by the GNU General
+    Public License.
+
+  This license is intended to be similar to the GNU Lesser General Public
+  License, Version 2, which by itself isn't suitable for a template library. You
+  can find a copy of the GNU General Public License, Version 2, in the file
+  GPL-2 or at <http://www.gnu.org/licenses/gpl-2.0>.
 
 
 ================================
-
-Armadillo (arma.sourceforge.net)
-
-The Armadillo library can be distributed and/or modified under the terms 
-of the Mozilla Public License 2.0 (MPL). You are free to choose the license 
-for work that uses the Armadillo library (eg. a proprietary application). 
-The MPL does not automatically apply to your programs
-
-
-================================
-
 
 Boost (www.boost.org)
 
@@ -128,13 +135,6 @@ The open-source version of Intel TBB is licensed under GPL v2 with a runtime
 exception. Details can be found at
 
 http://threadingbuildingblocks.org/wiki/index.php?title=Licensing
-
-================================
-
-Trilinos (www.trilinos.org)
-
-Most of the Trilinos packages use a BSD or a LGPL license. For further details
-see www.trilinos.org
 
 ================================
 
