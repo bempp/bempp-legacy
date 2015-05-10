@@ -4,6 +4,7 @@ set(makoes entity.mako.pxd entity.mako.pyx
            entity_iterator.mako.pxd entity_iterator.mako.pyx
            entity_pointer.mako.pxd entity_pointer.mako.pyx
            entity.mako.pxd entity.mako.pyx
+           grid_factory.mako.pyx
            geometry.mako.pxd geometry.mako.pyx
            codim_template.mako.pxd
            py_sphere.mako.hpp)

@@ -7,15 +7,13 @@ mako_files(${makoes}
     TARGETNAME bempp.file_interfaces-mako
 )
 
-
-split_list(sources headers makoed ".*\\.pyx")
-
+set(headers __init__.pxd)
 
 install_python(FILES ${headers} 
                DESTINATION bempp/include/bempp/file_interfaces)
 
 add_python_module(bempp.file_interfaces
-    __init__.py ${sources} 
+    __init__.py ${sources} gmsh.py common.py
     TARGETNAME bempp.file_interfaces
     CPP
     LIBRARIES libbempp
