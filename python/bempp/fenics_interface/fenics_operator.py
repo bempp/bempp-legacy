@@ -1,4 +1,5 @@
 import dolfin as _dolfin
+import numpy as _np
 
 class FenicsOperator(object):
 
@@ -17,8 +18,7 @@ class FenicsOperator(object):
         try:
             sparse_mat = _dolfin.assemble(self._fenics_weak_form).sparray()
         except:
-            sparse_mat = _dolfin.assemble(self._fenics_weak_form)
-
+            sparse_mat = _dolfin.assemble(self._fenics_weak_form).array()
         _dolfin.parameters['linear_algebra_backend'] = backend
 
         return sparse_mat
