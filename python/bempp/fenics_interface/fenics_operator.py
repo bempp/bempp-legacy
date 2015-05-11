@@ -14,8 +14,11 @@ class FenicsOperator(object):
         
         backend = _dolfin.parameters['linear_algebra_backend']
         _dolfin.parameters['linear_algebra_backend'] = 'uBLAS'
+        try:
+            sparse_mat = _dolfin.assemble(self._fenics_weak_form).sparray()
+        except:
+            sparse_mat = _dolfin.assemble(self._fenics_weak_form)
 
-        sparse_mat = _dolfin.assemble(self._fenics_weak_form).sparray()
         _dolfin.parameters['linear_algebra_backend'] = backend
 
         return sparse_mat
