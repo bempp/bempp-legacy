@@ -73,6 +73,14 @@ cdef class Grid:
             raise AttributeError("Incorrect operator")
         return self.impl_.get() == other.impl_.get()
 
+    cpdef unsigned int vertex_insertion_index(self, Entity2 vertex):
+        return deref(self.impl_).vertexInsertionIndex(
+                deref(vertex.impl_))
+
+    cpdef unsigned int element_insertion_index(self, Entity0 element):
+        return deref(self.impl_).elementInsertionIndex(
+                deref(element.impl_))
+
 
     property dim:
         """" Dimension of the grid. """

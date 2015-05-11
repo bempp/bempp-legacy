@@ -8,7 +8,8 @@ __all__=['GmshInterface',
          'GridFunction',
          'global_parameters',
          'BlockedBoundaryOperator',
-         'export']
+         'export',
+         'GridFactory']
 
 # This imports dolfin at the same time as bempp if available to avoid delays
 # at later imports of dolfin
@@ -26,6 +27,7 @@ from bempp.assembly import BlockedBoundaryOperator
 from bempp.space import function_space
 from bempp.file_interfaces.gmsh import GmshInterface
 from bempp.common import global_parameters
+from bempp.grid import GridFactory
 #from bempp.file_interfaces import export
 
 def test():

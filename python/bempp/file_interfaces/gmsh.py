@@ -1,5 +1,5 @@
 import numpy as np
-from .common import FileInterface, Vertex, Element 
+from .common import FileInterfaceImpl, Vertex, Element 
 
 def read_version(s):
     tokens = s.split()
@@ -43,14 +43,12 @@ def read_element(s):
         raise ValueError("Unsupported format for element in string {0}".format(s))
     return Element(index,v0,v1,v2,phys_id)
 
-class GmshInterface(FileInterface):
+class GmshInterface(FileInterfaceImpl):
 
     def __init__(self):
-        from collections import OrderedDict
 
+        super(GmshInterface,self).__init__()
         self._version = None
-        self._vertices = {}
-        self._elements = {}
 
     def write(self, file_name):
         pass
@@ -83,7 +81,7 @@ class GmshInterface(FileInterface):
                     s = f.readline().rstrip()
                     while s!="$EndNodes":
                         vertex = read_vertex(s)
-                        gmsh_interface._vertices[vertex.index] = vertex.data
+                        gmsh_interface.vertices[vertex.index] = vertex.data
                         count += 1
                         s = f.readline().rstrip()
                         if count==number_of_vertices:
@@ -104,7 +102,7 @@ class GmshInterface(FileInterface):
                         element = read_element(s)
                         count += 1
                         if element is not None:
-                            gmsh_interface._elements[element.index] = {'data':element.data, 'domain_index':element.domain_index}
+                            gmsh_interface.elements[element.index] = {'data':element.data, 'domain_index':element.domain_index}
                         s = f.readline().rstrip()
                         if count==number_of_elements:
                             break

@@ -41,6 +41,13 @@ cdef class GridView:
         """Return the number of entities of the given codim."""
         return deref(self.impl_).entityCount(codim)
 
+    cpdef IndexSet index_set(self):
+        """Return the index set associated with this view."""
+        cdef IndexSet index_set = IndexSet.__new__(IndexSet)
+        index_set.impl_ = address(deref(self.impl_).indexSet())
+        index_set._grid_view = self
+        return index_set
+
 % for (codim, codim_template) in codims:
     cpdef EntityIterator${codim} _entity_iterator${codim}(self):
         """Return an entity iterator for entities of codim ${codim}."""

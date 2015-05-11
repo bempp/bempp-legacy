@@ -5,6 +5,7 @@ codims = [('0','codim_zero'),('1','codim_one'),('2','codim_two')]
 from bempp.utils cimport unique_ptr
 from bempp.grid.codim_template cimport codim_zero,codim_one,codim_two
 from bempp.grid.grid cimport Grid
+from bempp.grid.index_set cimport c_IndexSet, IndexSet
 
 from bempp.grid.entity_iterator cimport c_EntityIterator
 from libcpp.vector cimport vector
@@ -23,11 +24,13 @@ cdef extern from "bempp/grid/grid_view.hpp" namespace "Bempp":
         int dim() const
         int dimWorld() const
         size_t entityCount(int codim) const
+        const c_IndexSet& indexSet() const
 
         void getRawElementData(Matrix[double]& vertices,
                                Matrix[int]& elementCorners,
                                Matrix[char]& auxData,
                                vector[int]& domainIndices)
+
                                     
 
 % for (codim,codim_template) in codims:
@@ -44,6 +47,7 @@ cdef class GridView:
     cdef unique_ptr[c_GridView] impl_ 
     cdef Grid _grid
     cpdef size_t entity_count(self,int codim)
+    cpdef IndexSet index_set(self)
     cdef void _compute_raw_element_data(self)
  
 % for (codim,codim_template) in codims:

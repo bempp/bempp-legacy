@@ -23,12 +23,12 @@ cdef class GridFactory(object):
     def __init__(self):
         pass
 
-    def insertVertex(self, vertex):
+    def insert_vertex(self, vertex):
         if self.finalized:
             raise Exception("Grid is already finalized.")
         self._grid_factory.insertVertex(vertex[0],vertex[1],vertex[2])
 
-    def insertElement(self, element, domain_index=0):
+    def insert_element(self, element, domain_index=0):
         if self.finalized:
             raise Exception("Grid is already finalized.")
         self._grid_factory.insertElement(element[0],element[1],element[2],domain_index)

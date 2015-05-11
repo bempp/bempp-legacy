@@ -7,6 +7,7 @@ set(makoes entity.mako.pxd entity.mako.pyx
            grid_factory.mako.pyx
            geometry.mako.pxd geometry.mako.pyx
            codim_template.mako.pxd
+           index_set.mako.pxd index_set.mako.pyx
            py_sphere.mako.hpp)
 
 mako_files(${makoes}
