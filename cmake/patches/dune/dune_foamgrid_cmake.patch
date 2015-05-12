@@ -36,7 +36,7 @@ new file mode 100644
 index 0000000..dfec5e8
 --- /dev/null
 +++ b/dune/foamgrid/foamgrid/CMakeLists.txt
-@@ -0,0 +1,17 @@
+@@ -0,0 +1,18 @@
 +#install headers
 +install(FILES foamgrid.cc
 +              foamgridedge.hh
