@@ -51,7 +51,10 @@ class GmshInterface(FileInterfaceImpl):
         self._version = None
 
     def write(self, file_name):
-        pass
+        with open(file_name,'w') as f:
+            self.write_version(f)
+            self.write_vertices(f)
+            self.write_elements(f)
 
     @classmethod
     def read(cls, file_name):
@@ -111,5 +114,34 @@ class GmshInterface(FileInterfaceImpl):
                     if s!="$EndElements":
                         raise ValueError("Expected $EndElements but got {0}.".format(s))
         return gmsh_interface
+
+    def write_vertices(self, f):
+        n_vertices = len(self.vertices)
+        f.write("$Nodes\n")
+        f.write(str(n_vertices)+"\n")
+        for key in self.vertices:
+            f.write(str(key)+" "+str(self.vertices[key][0])+" "+str(self.vertices[key][1])+" "+str(self.vertices[key][2])+"\n")
+        f.write("$EndNodes\n")
+
+    def write_elements(self, f):
+        n_elements = len(self.elements)
+        f.write("$Elements\n")
+        f.write(str(n_elements)+"\n")
+        for key in self.elements:
+            v0, v1, v2 = self.elements[key]['data']
+            f.write(str(key)+" "+"2"+" "+"2 "+str(self.elements[key]['domain_index'])+" "+"0 "+str(v0)+" "+str(v1)+" "+str(v2)+"\n")
+        f.write("$EndElements\n")
+
+    def write_version(self, f):
+        f.write("$MeshFormat\n")
+        f.write("2.2 0 8\n")
+        f.write("$EndMeshFormat\n")
+
+
+
+
+
+
+
 
 
