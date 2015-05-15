@@ -26,6 +26,14 @@ cdef class Entity${codim}:
         """Return the geometry of the entity"""
         def __get__(self):
             return self._geometry()
+
+%if codim=='0':
+    property domain:
+        """Return the domain index of the entity"""
+        def __get__(self):
+            return deref(self.impl_).domain()
+%endif
+
 % endfor
 
 

@@ -9,6 +9,7 @@ cdef extern from "bempp/grid/entity.hpp" namespace "Bempp":
     cdef cppclass c_Entity "Bempp::Entity"[codim]:
         size_t level() const
         const c_Geometry& geometry() const
+        int domain() # Note: only exists for codim=0
 
 % for (codim,codim_template) in codims:
 

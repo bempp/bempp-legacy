@@ -5,8 +5,11 @@
 % for pyvalue in dtypes:
 from bempp.utils.eigen cimport eigen_vector_to_np_${pyvalue}
 from bempp.utils.eigen cimport np_to_eigen_vector_${pyvalue}
+from bempp.utils.eigen cimport np_to_eigen_matrix_${pyvalue}
+from bempp.utils.eigen cimport eigen_matrix_to_np_${pyvalue}
 % endfor
-    
+
+from bempp.utils.eigen cimport Matrix
 from bempp.space.space cimport Space
 from bempp.utils cimport Matrix,Vector
 from bempp.utils cimport shared_ptr 
@@ -15,6 +18,7 @@ from bempp.utils.parameter_list cimport ParameterList, c_ParameterList
 from bempp.utils cimport catch_exception
 from bempp.utils cimport complex_float,complex_double
 from bempp.utils.enum_types cimport construction_mode
+from bempp.grid.entity cimport Entity0
 from bempp.common import global_parameters
 from cython.operator cimport dereference as deref
 import numpy as np
@@ -268,6 +272,7 @@ cdef class GridFunction:
 %  endfor
 
 
+
 % for pybasis,cybasis in dtypes.items():
 %     for pyresult,cyresult in dtypes.items():
 %         if pyresult in compatible_dtypes[pybasis]:
@@ -278,6 +283,32 @@ cdef class GridFunction:
 %          endif
 %      endfor
 %  endfor
+
+    cdef np.ndarray _evaluate_complex(self, Entity0 element, np.ndarray local_coordinates):
+        cdef Matrix[complex_double] values
+        deref(self._impl_float64_complex128).evaluate(
+                deref(element.impl_),np_to_eigen_matrix_float64(local_coordinates),
+                values)
+        return eigen_matrix_to_np_complex128(values)
+
+    cdef np.ndarray _evaluate_real(self, Entity0 element, np.ndarray local_coordinates):
+        cdef Matrix[double] values
+        deref(self._impl_float64_float64).evaluate(
+                deref(element.impl_),np_to_eigen_matrix_float64(local_coordinates),
+                values)
+        return eigen_matrix_to_np_float64(values)
+
+
+    def evaluate(self, element, local_coordinates):
+
+        if self._basis_type!='float64':
+            raise ValueError("Only basis_type 'float64' is supported.")
+        if self._result_type=='complex128':
+            return self._evaluate_complex(element, local_coordinates)
+        elif self._result_type=='float64':
+            return self._evaluate_real(element, local_coordinates)
+        else:
+            raise ValueError("Result type {0} not supported.".format(str(self._result_type)))
 
 
     def projections(self, Space dual_space):
@@ -306,6 +337,9 @@ cdef class GridFunction:
 %          endif
 %      endfor
 %  endfor
+
+
+
 
     def __add__(self,GridFunction other):
 

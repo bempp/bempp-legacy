@@ -25,6 +25,8 @@
 #include "../common/shared_ptr.hpp"
 #include "grid_parameters.hpp"
 #include "../common/eigen_support.hpp"
+#include <dune/grid/common/gridfactory.hh>
+#include "dune.hpp"
 #include <vector>
 
 #include <memory>
@@ -38,12 +40,30 @@ class Grid;
 /** \ingroup grid
     \brief %Grid factory.
 
-  This class provides static member functions to construct grids on the fly and
-  to import grids from
-  existing files.
+  This class provides an interface to create a Dune grid by successively inserting
+  elements and vertices. It also provides several static member functions to construct
+  grid on the fly and to import grids from existing files.
+ 
   */
 class GridFactory {
 public:
+
+  
+  /** \brief Default Constructor. */
+  GridFactory();
+
+  /** \brief Insert a vertex with coordinates (x,y,z) into the grid. */
+
+  void insertVertex(double x, double y, double z);
+
+  /** \brief Insert an element with nodes v0, v1 and v2 into the grid. */
+
+  void insertElement(unsigned int v0, unsigned int v1, unsigned int v2, int domain_index = 0);
+
+  /** \brief Finalize grid creation and return the grid. */
+
+  shared_ptr<Grid> finalize();
+
   /** \brief Construct a regular structured grid.
 
     \param[in] params     Parameters of the grid to be constructed.
@@ -154,6 +174,12 @@ public:
           const GridParameters &params, const double* vertices,
           int nvertices, const int* elementCorners, int nelements,
           const std::vector<int> & domainIndices = std::vector<int>());
+
+private:
+
+      shared_ptr<Dune::GridFactory<Default2dIn3dDuneGrid>> m_factory;
+      std::vector<int> m_domainIndices;
+
 
 };
 

@@ -8,6 +8,10 @@ from bempp.utils.parameter_list cimport ParameterList, c_ParameterList
 from bempp.utils cimport catch_exception
 from bempp.utils cimport complex_float,complex_double
 from bempp.utils.enum_types cimport ConstructionMode
+from bempp.grid.codim_template cimport codim_zero
+from bempp.grid.entity cimport Entity0, c_Entity
+from bempp.utils.eigen cimport Matrix
+
 cimport numpy as np
 import numpy as np
 
@@ -39,13 +43,19 @@ cdef extern from "bempp/assembly/grid_function.hpp" namespace "Bempp":
 %         if pyresult in compatible_dtypes[pybasis]:
 
         ${real_cython_type(cyresult)} L2Norm_${pybasis}_${pyresult} "Bempp::GridFunction<${cybasis},${cyresult}>::L2Norm"()
+
 %         endif
 %     endfor
 % endfor
 
         const Vector[RESULT]& coefficients() except+catch_exception
         void setCoefficients(const Vector[RESULT]& coeffs) except+catch_exception
-        Vector[RESULT] projections(const shared_ptr[const c_Space[BASIS]] &dualSpace)        
+        Vector[RESULT] projections(const shared_ptr[const c_Space[BASIS]] &dualSpace)
+
+
+        void evaluate(const c_Entity[codim_zero]& element,
+                const Matrix[BASIS]& local,
+                Matrix[RESULT]& values)
 
     
 cdef extern from "bempp/assembly/py_functors.hpp" namespace "Bempp":
@@ -69,6 +79,8 @@ cdef class GridFunction:
     cdef np.ndarray _get_coefficients_${pybasis}_${pyresult}(self)
     cdef void _set_coefficients_${pybasis}_${pyresult}(self,np.ndarray[${scalar_cython_type(cyresult)},ndim=1,mode='fortran'] coeffs)
     cdef np.ndarray _projections_${pybasis}_${pyresult}(self,Space dual_space)
+    cdef np.ndarray _evaluate_complex(self, Entity0 element, np.ndarray local_coordinates)
+    cdef np.ndarray _evaluate_real(self, Entity0 element, np.ndarray local_coordinates)
 %         endif
 %     endfor
 % endfor    

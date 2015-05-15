@@ -36,6 +36,40 @@ namespace Bempp {
 // Default grid typedef
 typedef ConcreteGrid<Default2dIn3dDuneGrid> Default2dIn3dGrid;
 
+GridFactory::GridFactory():
+    m_factory(new Dune::GridFactory<Default2dIn3dDuneGrid>()){}
+
+void GridFactory::insertVertex(double x, double y, double z){
+
+    const int dimWorld = 3;
+    Dune::FieldVector<double, dimWorld> v;
+    v[0] = x;
+    v[1] = y;
+    v[2] = z;
+    m_factory->insertVertex(v);
+
+}
+
+void GridFactory::insertElement(unsigned int v0, unsigned int v1, unsigned int v2, int domain_index){
+
+  const int dimGrid = 2;
+  const GeometryType type(GeometryType::simplex, dimGrid);
+  std::vector<unsigned int> e {v0, v1, v2};
+  m_factory->insertElement(type,e);
+  m_domainIndices.push_back(domain_index);
+  
+}
+
+shared_ptr<Grid> GridFactory::finalize(){
+
+  shared_ptr<Grid> grid;
+  
+  grid.reset(
+        new Default2dIn3dGrid(m_factory,GridParameters::TRIANGULAR,
+                              m_domainIndices));
+  return grid;
+}
+
 shared_ptr<Grid>
 GridFactory::createStructuredGrid(const GridParameters &params,
                                   const Vector<double> &lowerLeft,
