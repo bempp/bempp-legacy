@@ -1,6 +1,44 @@
 import numpy as _np
 
 class FileReader(object):
+    """
+
+    This class represents a generic interface to read data from different
+    file sources. Currently it supports the following types:
+
+    * Gmsh ASCII v2.2 files
+
+    The class creates a grid object from the data and provides maps
+    that translate between the internal BEM++ numbering for elements
+    and vertices and the file numbering.
+
+    All parameters for the constructor are keyword arguments.
+
+    Parameters
+    ----------
+    file_name : string
+        Name of the input file.
+
+    Attributes
+    ----------
+    grid : bempp.Grid
+        Returns a grid object, representing the element and node data
+        in the file.
+    vertex_index_to_file_key_map : list
+        vertex_index_to_file_key_map[i] returns the associated file key
+        of the ith vertex in BEM++.
+    vertex_file_key_to_index_map : dictionary
+        vertex_file_key_to_index_map[key] returns the BEM++ index of the
+        vertex with name 'key' in the file.
+    element_index_to_file_key_map : list
+        element_index_to_file_key_map[i] returns the associated file key
+        of the ith element in BEM++.
+    element_file_key_to_index_map : dictionary
+        element_file_key_to_index_map[key] returns the BEM++ index of the
+        element with name 'key' in the file.
+
+    """
+
 
     def __init__(self,**kwargs):
         import os.path
@@ -92,103 +130,188 @@ class FileReader(object):
 
     grid = property(lambda self: self._grid)
 
+def import_grid(file_name):
+    """
+
+    A simple grid importer. Use this instead of FileReader if
+    information about the numbering of vertices and elements
+    from the grid file needs not be preserved.
+
+    Parameters
+    ----------
+    file_name : string
+       Name of the file from which to read the grid.
+
+    Returns
+    -------
+    grid : bempp.Grid
+        A grid object
+
+    Examples
+    --------
+    To read a Gmsh grid file called 'grid_file.msh' use
+
+    >>> grid = import_grid('grid_file.msh')
+
+    """
+
+    return FileReader(file_name=file_name).grid
+
 
 def export(**kwargs):
+    """
 
-        import os
+    This funtion can export grids and gridfunctions into external file formats.
+    Supported formats are:
 
-        interface = None # Holds the actual FileInterface for the specified data format
-        vertex_index_to_file_key_map = None
-        element_index_to_file_key_map = None
+    * Gmsh ASCII v2.2 files
 
-        if kwargs.has_key('file_name'):
-            fname = kwargs['file_name']
+    The function only takes keyword arguments. 
+
+    Parameters
+    ----------
+    file_name : string
+        Name of the output file.
+    grid : bempp.Grid
+        A grid object to write out
+    grid_function : bempp.GridFunction
+        A gridfunction to write out
+    vertex_index_to_file_key_map :  list
+        (optional) A list that maps BEM++ indices to vertex indices in the file
+    element_index_to_file_key_map : list
+        (optional) A list that maps BEM++ indices to element indices in the file
+    data_type : string
+        (optional) One of 'node', 'element' or 'element_node' and specifies if
+        data in grid functions is associated with nodes, elements or elementwise
+        nodes in the data file. The default behavior is given by the specific
+        file writer for the datatype (e.g. 'element_node' for Gmsh) but can
+        be overridden here.
+    label : string
+        (optional) A string labelling grid function data in the file.
+    transformation : function object
+        (optional) A function object that is applied to the data before
+        writing it out.
+
+    Notes
+    -----
+    * A grid or grid_function object must always be specified.
+    * Depending on the file format an offset of 1 is added to the indices if
+      no index_to_file_key_map is provided. The reason is that some
+      file formats such as Gmsh start counting nodes and elements from 1
+      instead of zero.
+
+    Examples
+    --------
+    To save the grid object 'mygrid' in Gmsh format use
+
+    >>> export(grid=mygrid, file_name='output.msh')
+
+    To save the grid_function object 'gridfun' in Gmsh format
+    with data associated to elements use
+
+    >>> export(grid_function=gridfun, file_name='output.msh', data_type='element')
+
+    To save the real part of a complex grid function in Gmsh format use
+
+    >>> export(grid_function=gridfun, file_name='output.msh', transformation=lambda x: np.real(x))
+
+    """
+
+    import os
+
+    interface = None # Holds the actual FileInterface for the specified data format
+    vertex_index_to_file_key_map = None
+    element_index_to_file_key_map = None
+
+    if kwargs.has_key('file_name'):
+        fname = kwargs['file_name']
+    else:
+        raise ValueError("file_name must be specified.")
+    
+    extension = os.path.splitext(fname)[1].lower()
+
+    if extension=='.msh':
+        from bempp.file_interfaces import gmsh
+        interface = gmsh.GmshInterface()
+    
+    if kwargs.has_key('grid') + kwargs.has_key('grid_function')!= 1:
+        raise ValueError("Exactly one of 'grid' or 'grid_function' must be specified")
+
+    if kwargs.has_key('grid'):
+        grid = kwargs['grid']
+    elif kwargs.has_key('grid_function'):
+        grid = kwargs['grid_function'].grid
+
+    number_of_vertices = grid.leaf_view.entity_count(2)
+    number_of_elements = grid.leaf_view.entity_count(0)
+
+    offset = interface.index_offset
+    if kwargs.has_key('vertex_index_to_file_key_map'):
+        vertex_index_to_file_key_map = kwargs['vertex_index_to_file_key_map']
+    else:
+        vertex_index_to_file_key_map = range(offset,number_of_vertices+offset)
+    if kwargs.has_key('element_index_to_file_key_map'):
+        element_index_to_file_key_map = kwargs['element_index_to_file_key_map']
+    else:
+        element_index_to_file_key_map = range(offset,number_of_elements+offset)
+
+    # Create the vertex and element structure
+
+    from collections import OrderedDict
+
+    vertex_iterator = grid.leaf_view.entity_iterator(2)
+    element_iterator = grid.leaf_view.entity_iterator(0)
+    index_set = grid.leaf_view.index_set()
+
+    vertices = OrderedDict([(vertex_index_to_file_key_map[index_set.entity_index(vertex)],vertex.geometry.corners[:,0])
+        for vertex in vertex_iterator])
+    elements = OrderedDict([(element_index_to_file_key_map[index_set.entity_index(element)],
+        {'data':[element_index_to_file_key_map[index_set.sub_entity_index(element,n,2)] for n in range(3)],
+         'domain_index':element.domain}) for element in element_iterator])
+
+    interface.add_grid_data(vertices,elements)
+
+    # Evaluate data
+
+    if kwargs.has_key('grid_function'):
+        fun = kwargs['grid_function']
+        data_type = kwargs.get('data_type',interface.default_data_type)
+
+        if kwargs.has_key('transformation'):
+            transformation = kwargs['transformation']
         else:
-            raise ValueError("file_name must be specified.")
-        
-        extension = os.path.splitext(fname)[1].lower()
+            transformation = lambda x: x
 
-        if extension=='.msh':
-            from bempp.file_interfaces import gmsh
-            interface = gmsh.GmshInterface()
-        
-        if kwargs.has_key('grid') + kwargs.has_key('grid_function')!= 1:
-            raise ValueError("Exactly one of 'grid' or 'grid_function' must be specified")
-
-        if kwargs.has_key('grid'):
-            grid = kwargs['grid']
-        elif kwargs.has_key('grid_function'):
-            grid = kwargs['grid_function'].grid
-
-        number_of_vertices = grid.leaf_view.entity_count(2)
-        number_of_elements = grid.leaf_view.entity_count(0)
-
-        if kwargs.has_key('vertex_index_to_file_key_map'):
-            vertex_index_to_file_key_map = kwargs['vertex_index_to_file_key_map']
-        else:
-            vertex_index_to_file_key_map = range(number_of_vertices)
-        if kwargs.has_key('element_index_to_file_key_map'):
-            element_index_to_file_key_map = kwargs['element_index_to_file_key_map']
-        else:
-            element_index_to_file_key_map = range(number_of_elements)
-
-        # Create the vertex and element structure
-
-        from collections import OrderedDict
-
-        vertex_iterator = grid.leaf_view.entity_iterator(2)
-        element_iterator = grid.leaf_view.entity_iterator(0)
         index_set = grid.leaf_view.index_set()
 
-        vertices = OrderedDict([(vertex_index_to_file_key_map[index_set.entity_index(vertex)],vertex.geometry.corners[:,0])
-            for vertex in vertex_iterator])
-        elements = OrderedDict([(element_index_to_file_key_map[index_set.entity_index(element)],
-            {'data':[element_index_to_file_key_map[index_set.sub_entity_index(element,n,2)] for n in range(3)],
-             'domain_index':element.domain}) for element in element_iterator])
+        if data_type == 'element_node':
+            local_coordinates = _np.array([[0,1,0],[0,0,1]])
+            data = OrderedDict.fromkeys(element_index_to_file_key_map)
 
-        interface.add_grid_data(vertices,elements)
+            for element in grid.leaf_view.entity_iterator(0):
+                data[element_index_to_file_key_map[index_set.entity_index(element)]] = transformation(
+                        fun.evaluate(element,local_coordinates))
+            interface.add_element_node_data(data,kwargs.get('label','element_node_data'))
+        elif data_type == 'node':
+            local_coordinates = _np.array([[0,1,0],[0,0,1]])
+            data = OrderedDict.fromkeys(vertex_index_to_file_key_map)
+            for element in grid.leaf_view.entity_iterator(0):
+                local_data = transformation(fun.evaluate(element,local_coordinates))
+                for i in range(3):
+                    data[vertex_index_to_file_key_map[index_set.sub_entity_index(element,i,2)]] = local_data[:,i]
+            interface.add_node_data(data,kwargs.get('label','node_data'))
+        elif data_type == 'element':
+            local_coordinates = _np.array([[1./3],[1./3]])
+            data = OrderedDict.fromkeys(element_index_to_file_key_map)
 
-        # Evaluate data
+            for element in grid.leaf_view.entity_iterator(0):
+                data[element_index_to_file_key_map[index_set.entity_index(element)]] = transformation(
+                        fun.evaluate(element,local_coordinates).ravel())
+            interface.add_element_data(data,kwargs.get('label','element_data'))
+        else:
+            raise ValueError("data_type must be one of 'node', 'element', or 'element_node'")
 
-        if kwargs.has_key('grid_function'):
-            fun = kwargs['grid_function']
-            data_type = kwargs.get('data_type',interface.default_data_type)
-
-            if kwargs.has_key('transformation'):
-                transformation = kwargs['transformation']
-            else:
-                transformation = lambda x: x
-
-            index_set = grid.leaf_view.index_set()
-
-            if data_type == 'element_node':
-                local_coordinates = _np.array([[0,1,0],[0,0,1]])
-                data = OrderedDict.fromkeys(element_index_to_file_key_map)
-
-                for element in grid.leaf_view.entity_iterator(0):
-                    data[element_index_to_file_key_map[index_set.entity_index(element)]] = transformation(
-                            fun.evaluate(element,local_coordinates)).ravel()
-                interface.add_data_set(data,'element_node',kwargs.get('label','element_node_data'))
-            elif data_type == 'node':
-                local_coordinates = _np.array([[0,1,0],[0,0,1]])
-                data = OrderedDict.fromkeys(vertex_index_to_file_key_map)
-                for element in grid.leaf_view.entity_iterator(0):
-                    local_data = transformation(fun.evaluate(element,local_coordinates)).ravel()
-                    for i in range(3):
-                        data[vertex_index_to_file_key_map[index_set.sub_entity_index(element,i,2)]] = local_data[i]
-                interface.add_data_set(data,'node',kwargs.get('label','node_data'))
-            elif data_type == 'element':
-                local_coordinates = _np.array([[1./3],[1./3]])
-                data = OrderedDict.fromkeys(element_index_to_file_key_map)
-
-                for element in grid.leaf_view.entity_iterator(0):
-                    data[element_index_to_file_key_map[index_set.entity_index(element)]] = transformation(
-                            fun.evaluate(element,local_coordinates)).ravel()
-                interface.add_data_set(data,'element',kwargs.get('label','element_data'))
-            else:
-                raise ValueError("data_type must be one of 'node', 'element', or 'element_node'")
-
-        interface.write(kwargs['file_name'])
+    interface.write(kwargs['file_name'])
 
 
 class FileInterfaceImpl(object):
@@ -210,8 +333,18 @@ class FileInterfaceImpl(object):
         self.__vertices = vertices
         self.__elements = elements
 
-    def add_data_set(self, data, data_type, label):
+    def add_node_data(self, data, label):
         pass
+
+    def add_element_data(self, data, label):
+        pass
+
+    def add_element_node_data(self, data, label):
+        pass
+
+    @property
+    def index_offset(self):
+        return 1
 
     @property
     def default_data_type(self):

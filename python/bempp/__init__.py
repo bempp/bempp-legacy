@@ -1,7 +1,6 @@
 """ Boundary Element Method package BEM++ """
 
-__all__=['GmshInterface',
-         'grid_from_sphere',
+__all__=['grid_from_sphere',
          'grid_from_element_data',
          'structured_grid',
          'function_space',
@@ -9,7 +8,9 @@ __all__=['GmshInterface',
          'global_parameters',
          'BlockedBoundaryOperator',
          'export',
-         'GridFactory']
+         'GridFactory',
+         'import_grid',
+         'FileReader']
 
 # This imports dolfin at the same time as bempp if available to avoid delays
 # at later imports of dolfin
@@ -25,10 +26,9 @@ from bempp.grid import Grid,grid_from_sphere,grid_from_element_data, structured_
 from bempp.assembly import GridFunction
 from bempp.assembly import BlockedBoundaryOperator
 from bempp.space import function_space
-from bempp.file_interfaces.gmsh import GmshInterface
+from bempp.file_interfaces import FileReader, import_grid, export
 from bempp.common import global_parameters
 from bempp.grid import GridFactory
-#from bempp.file_interfaces import export
 
 def test():
     """ Runs BEM++ python unit tests """

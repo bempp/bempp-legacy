@@ -49,12 +49,21 @@ class GmshInterface(FileInterfaceImpl):
 
         super(GmshInterface,self).__init__()
         self._version = None
+        self._node_data = None
+        self._element_data = None
+        self._element_node_data = None
 
     def write(self, file_name):
         with open(file_name,'w') as f:
             self.write_version(f)
             self.write_vertices(f)
             self.write_elements(f)
+            if self._node_data is not None:
+                self.write_node_data(f)
+            if self._element_data is not None:
+                self.write_element_data(f)
+            if self._element_node_data is not None:
+                self.write_element_node_data(f)
 
     @classmethod
     def read(cls, file_name):
@@ -136,6 +145,79 @@ class GmshInterface(FileInterfaceImpl):
         f.write("$MeshFormat\n")
         f.write("2.2 0 8\n")
         f.write("$EndMeshFormat\n")
+
+    def write_node_data(self, f):
+        label = self._node_data['label']
+        data = self._node_data['data']
+        f.write("$NodeData\n")
+        f.write("1\n")
+        f.write(label+"\n")
+        f.write("1\n")
+        f.write("0\n")
+        f.write("4\n")
+        f.write("0\n"+str(len(data.values()[0]))+"\n"+str(len(data))+"\n"+"0\n")
+        for key in data:
+            f.write(str(key))
+            for val in data[key]:
+                f.write(" "+str(val))
+            f.write("\n")
+        f.write("$EndNodeData\n")
+
+    def add_node_data(self, data, label):
+        self._node_data = {'label':label,'data':data}
+
+    def write_element_data(self, f):
+        label = self._element_data['label']
+        data = self._element_data['data']
+        f.write("$ElementData\n")
+        f.write("1\n")
+        f.write(label+"\n")
+        f.write("1\n")
+        f.write("0\n")
+        f.write("4\n")
+        f.write("0\n"+str(len(data.values()[0]))+"\n"+str(len(data))+"\n"+"0\n")
+        for key in data:
+            f.write(str(key))
+            for val in data[key]:
+                f.write(" "+str(val))
+            f.write("\n")
+        f.write("$EndElementData\n")
+
+    def add_element_data(self, data, label):
+        self._element_data = {'label':label, 'data':data}
+
+    def write_element_node_data(self, f):
+        label = self._element_node_data['label']
+        data = self._element_node_data['data']
+        f.write("$ElementNodeData\n")
+        f.write("1\n")
+        f.write(label+"\n")
+        f.write("1\n")
+        f.write("0\n")
+        f.write("4\n")
+        f.write("0\n"+str(len(data.values()[0][:,0]))+"\n"+str(len(data))+"\n"+"0\n")
+        for key in data:
+            f.write(str(key)+" 3")
+            for i in range(3):
+                for val in data[key][:,i]:
+                    f.write(" "+str(val))
+            f.write("\n")
+        f.write("$EndElementNodeData\n")
+
+    def add_element_node_data(self, data, label):
+        self._element_node_data = {'label':label, 'data':data}
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
