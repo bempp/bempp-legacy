@@ -53,6 +53,9 @@ class GmshInterface(FileInterfaceImpl):
         self._element_data = None
         self._element_node_data = None
 
+    def default_data_type(self):
+        return 'element_node'
+
     def write(self, file_name):
         with open(file_name,'w') as f:
             self.write_version(f)
