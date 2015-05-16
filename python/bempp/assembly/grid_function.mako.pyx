@@ -339,6 +339,15 @@ cdef class GridFunction:
 %  endfor
 
 
+    def plot(self):
+        """
+
+        Plot a grid function using Gmsh.
+
+        """
+
+        from bempp.external.viewers import visualize_with_gmsh
+        visualize_with_gmsh(self)
 
 
     def __add__(self,GridFunction other):

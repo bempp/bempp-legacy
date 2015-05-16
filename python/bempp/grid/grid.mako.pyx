@@ -73,6 +73,17 @@ cdef class Grid:
             raise AttributeError("Incorrect operator")
         return self.impl_.get() == other.impl_.get()
 
+    def plot(self):
+        """
+
+        Plot a grid with Gmsh.
+
+        """
+
+        from bempp.external.viewers import visualize_with_gmsh
+
+        visualize_with_gmsh(self)
+
     cpdef unsigned int vertex_insertion_index(self, Entity2 vertex):
         return deref(self.impl_).vertexInsertionIndex(
                 deref(vertex.impl_))

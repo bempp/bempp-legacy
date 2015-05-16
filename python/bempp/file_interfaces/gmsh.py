@@ -53,6 +53,7 @@ class GmshInterface(FileInterfaceImpl):
         self._element_data = None
         self._element_node_data = None
 
+    @property
     def default_data_type(self):
         return 'element_node'
 
