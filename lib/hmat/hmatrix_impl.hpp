@@ -146,8 +146,8 @@ void HMatrix<ValueType, N>::apply(const Matrix<ValueType> &X,
       outputRange = elem.first->data().columnClusterTreeNode->data().indexRange;
     }
 
-    Matrix<ValueType> xData = xPermuted.block(inputRange[0],0,inputRange[1]-inputRange[0],xData.cols());
-    Matrix<ValueType> yData = yPermuted.block(outputRange[0],0,outputRange[1]-outputRange[0],yData.cols());
+    Matrix<ValueType> xData = xPermuted.block(inputRange[0],0,inputRange[1]-inputRange[0],xPermuted.cols());
+    Matrix<ValueType> yData = yPermuted.block(outputRange[0],0,outputRange[1]-outputRange[0],yPermuted.cols());
 
 
     elem.second->apply(xData, yData, trans, alpha, 1);
