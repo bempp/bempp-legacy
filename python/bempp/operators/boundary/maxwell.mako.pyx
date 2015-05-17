@@ -9,7 +9,7 @@ from cython.operator cimport dereference as deref
 from bempp.utils.byte_conversion import convert_to_bytes
 from bempp.utils.enum_types cimport symmetry_mode
 from bempp.utils cimport complex_float, complex_double, catch_exception
-from bempp.common import global_parameters
+from bempp import global_parameters
 import numpy as np
 cimport numpy as np
 
@@ -37,35 +37,35 @@ cdef extern from "bempp/operators/py_operators.hpp" namespace "Bempp":
 def single_layer(Space domain, Space range, Space dual_to_range,
         object wave_number, 
         object label="", object symmetry="auto_symmetry",
-        object parameter_list=None):
+        object parameters=None):
     """
 
     Return the Maxwell single layer boundary operator.
 
     """
 
-    cdef ParameterList parameters
+    cdef ParameterList local_parameters
     cdef GeneralBoundaryOperator bop
 
     if not len({domain.dtype,range.dtype,dual_to_range.dtype})==1:
         raise ValueError("All spaces must have the same data type")
 
-    if parameter_list is None:
-        parameters = global_parameters()
+    if parameters is None:
+        local_parameters = global_parameters
     else:
-        if not isinstance(parameter_list,ParameterList):
-            raise ValueError("parameter_list must be of type bempp.ParameterList")
-        parameters = parameter_list
+        if not isinstance(parameters,ParameterList):
+            raise ValueError("parameters must be of type bempp.ParameterList")
+        local_parameters = parameters
 
     cdef complex_double c_wave_number = complex_double(
             np.real(wave_number),np.imag(wave_number))
 
     bop = GeneralBoundaryOperator("float64","complex128",
-            parameters)
+            local_parameters)
 
     bop.impl_.assign(
             c_maxwellSingleLayerOperator(
-                deref(parameters.impl_),domain.impl_,
+                deref(local_parameters.impl_),domain.impl_,
                 range.impl_,dual_to_range.impl_,
                 c_wave_number, convert_to_bytes(label),
                 symmetry_mode(convert_to_bytes(symmetry))))
@@ -75,35 +75,35 @@ def single_layer(Space domain, Space range, Space dual_to_range,
 def double_layer(Space domain, Space range, Space dual_to_range,
         object wave_number, 
         object label="", object symmetry="auto_symmetry",
-        object parameter_list=None):
+        object parameters=None):
     """
 
     Return the Maxwell double layer boundary operator.
 
     """
 
-    cdef ParameterList parameters
+    cdef ParameterList local_parameters
     cdef GeneralBoundaryOperator bop
 
     if not len({domain.dtype,range.dtype,dual_to_range.dtype})==1:
         raise ValueError("All spaces must have the same data type")
 
-    if parameter_list is None:
-        parameters = global_parameters()
+    if parameters is None:
+        local_parameters = global_parameters
     else:
-        if not isinstance(parameter_list,ParameterList):
-            raise ValueError("parameter_list must be of type bempp.ParameterList")
-        parameters = parameter_list
+        if not isinstance(parameters,ParameterList):
+            raise ValueError("parameters must be of type bempp.ParameterList")
+        local_parameters = parameters
 
     cdef complex_double c_wave_number = complex_double(
             np.real(wave_number),np.imag(wave_number))
 
     bop = GeneralBoundaryOperator("float64","complex128",
-            parameters)
+            local_parameters)
 
     bop.impl_.assign(
             c_maxwellDoubleLayerOperator(
-                deref(parameters.impl_),domain.impl_,
+                deref(local_parameters.impl_),domain.impl_,
                 range.impl_,dual_to_range.impl_,
                 c_wave_number, convert_to_bytes(label),
                 symmetry_mode(convert_to_bytes(symmetry))))

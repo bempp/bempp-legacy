@@ -1,5 +1,5 @@
 import numpy as np
-from .common import FileInterfaceImpl, Vertex, Element 
+from .general_interface import FileInterfaceImpl, Vertex, Element 
 
 def read_version(s):
     tokens = s.split()

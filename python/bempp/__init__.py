@@ -27,7 +27,6 @@ from bempp.assembly import GridFunction
 from bempp.assembly import BlockedBoundaryOperator
 from bempp.space import function_space
 from bempp.file_interfaces import FileReader, import_grid, export
-from bempp.common import global_parameters
 from bempp.grid import GridFactory
 
 # Check if config directory exists. If not create it.
@@ -50,6 +49,8 @@ def _check_create_init_dir():
 
 config_path, tmp_path = _check_create_init_dir()
 
+# Get the path to Gmsh
+
 def _gmsh_path():
     from .utils import which
 
@@ -61,7 +62,9 @@ def _gmsh_path():
 gmsh_path = _gmsh_path()
 
 
+# Define the global default options
 
+global_parameters = common.global_parameters()
 
 
 def test():

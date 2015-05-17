@@ -10,7 +10,7 @@ from bempp.utils cimport complex_double
 from bempp.utils.eigen cimport np_to_eigen_matrix_float64, Matrix
 from bempp.assembly.potential_operator cimport PotentialOperator
 from bempp.assembly.discrete_boundary_operator cimport DiscreteBoundaryOperator
-from bempp.common import global_parameters
+from bempp import global_parameters
 from bempp.space.space cimport Space
 from cython.operator cimport dereference as deref
 
@@ -33,12 +33,12 @@ cdef extern from "bempp/operators/py_operators.hpp" namespace "Bempp":
 
 def single_layer(Space space,
         np.ndarray evaluation_points, 
-        object wave_number, ParameterList parameter_list=None):
+        object wave_number, ParameterList parameters=None):
 
         cdef int component_count = 3
 
-        if parameter_list is None:
-            parameter_list = global_parameters()
+        if parameters is None:
+            parameters = global_parameters
 
         if not (evaluation_points.ndim==2 and evaluation_points.shape[0]==3):
             raise ValueError("Wrong format for input points")
@@ -52,7 +52,7 @@ def single_layer(Space space,
         op._impl_complex128_.assign(
              py_maxwell_single_layer_potential_discrete_operator(
                  space.impl_,np_to_eigen_matrix_float64(points),
-                 cpp_wave_number,deref(parameter_list.impl_)))
+                 cpp_wave_number,deref(parameters.impl_)))
         op._dtype = np.dtype('complex128')
 
         return PotentialOperator(op,component_count,space,points)
@@ -60,12 +60,12 @@ def single_layer(Space space,
                 
 def double_layer(Space space,
         np.ndarray evaluation_points, 
-        object wave_number, ParameterList parameter_list=None):
+        object wave_number, ParameterList parameters=None):
 
         cdef int component_count = 3
 
-        if parameter_list is None:
-            parameter_list = global_parameters()
+        if parameters is None:
+            parameters = global_parameters
 
         if not (evaluation_points.ndim==2 and evaluation_points.shape[0]==3):
             raise ValueError("Wrong format for input points")
@@ -79,7 +79,7 @@ def double_layer(Space space,
         op._impl_complex128_.assign(
              py_maxwell_double_layer_potential_discrete_operator(
                  space.impl_,np_to_eigen_matrix_float64(points),
-                 cpp_wave_number,deref(parameter_list.impl_)))
+                 cpp_wave_number,deref(parameters.impl_)))
         op._dtype = np.dtype('complex128')
 
         return PotentialOperator(op,component_count,space,points)

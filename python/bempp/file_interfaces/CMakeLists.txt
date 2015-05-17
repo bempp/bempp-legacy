@@ -13,7 +13,7 @@ install_python(FILES ${headers}
                DESTINATION bempp/include/bempp/file_interfaces)
 
 add_python_module(bempp.file_interfaces
-    __init__.py ${sources} gmsh.py common.py
+    __init__.py ${sources} gmsh.py general_interface.py
     TARGETNAME bempp.file_interfaces
     CPP
     LIBRARIES libbempp

@@ -18,7 +18,7 @@ def ${op}(Space domain, Space range, Space dual_to_range,
         object wave_number,
         object label="",
         object symmetry="auto_symmetry",
-        object parameter_list=None):
+        object parameters=None):
     """ 
 
     ${help_text}
@@ -26,7 +26,7 @@ def ${op}(Space domain, Space range, Space dual_to_range,
     """
 
     return _modified_helmholtz.${op}(domain,range,dual_to_range,
-            wave_number/1j,label,symmetry,parameter_list)
+            wave_number/1j,label,symmetry,parameters)
 
 
 % endfor
