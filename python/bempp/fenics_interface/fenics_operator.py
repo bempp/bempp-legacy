@@ -15,10 +15,10 @@ class FenicsOperator(object):
         
         backend = _dolfin.parameters['linear_algebra_backend']
         _dolfin.parameters['linear_algebra_backend'] = 'uBLAS'
-        try:
+        if len(self._fenics_weak_form.arguments())==1:
+            sparse_mat = _dolfin.assemble(self._fenics_weak_form).array()
+        else:
             sparse_mat = _dolfin.assemble(self._fenics_weak_form).sparray()
-        except:
-            raise Exception("Dolfin must be compiled with the uBLAS interface enabled.")
         _dolfin.parameters['linear_algebra_backend'] = backend
 
         return sparse_mat
