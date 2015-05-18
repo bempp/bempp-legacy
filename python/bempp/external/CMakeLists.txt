@@ -7,7 +7,7 @@ mako_files(${makoes}
     TARGETNAME bempp.external-mako
 )
 
-+set(headers ${makoed})
+set(headers ${makoed})
 
 install_python(FILES ${headers} 
                DESTINATION bempp/include/bempp/external)
