@@ -180,6 +180,11 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
       *actualTestSpace, *actualTrialSpace, blockClusterTree, localAssemblers,
       sparseTermsToAdd, denseTermMultipliers, sparseTermMultipliers);
 
+  int maxThreadCount = parameterList.template get<int>(
+          "options.global.maxThreadCount");
+
+  tbb::task_scheduler_init scheduler(maxThreadCount);
+
   auto compressionAlgorithm = parameterList.template get<std::string>("options.hmat.compressionAlgorithm");
 
   shared_ptr<hmat::DefaultHMatrixType<ResultType>> hMatrix;

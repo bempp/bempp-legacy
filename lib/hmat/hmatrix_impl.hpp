@@ -6,6 +6,7 @@
 #include "hmatrix.hpp"
 #include "hmatrix_data.hpp"
 #include "hmatrix_dense_data.hpp"
+#include <tbb/parallel_for_each.h>
 
 #include <algorithm>
 
@@ -40,12 +41,19 @@ void HMatrix<ValueType, N>::initialize(
 
   reset();
 
-  for (auto node : m_blockClusterTree->leafNodes()) {
+  auto leafNodes = m_blockClusterTree->leafNodes();
+
+  // The following can be removed for C++14 compilers that
+  // support polymorphic lambda expressions.
+  typedef decltype(*begin(leafNodes)) node_t;
+
+  tbb::parallel_for_each(begin(leafNodes),end(leafNodes),[&](const node_t& node){
     shared_ptr<HMatrixData<ValueType>> nodeData;
     hMatrixCompressor.compressBlock(*node, nodeData);
     m_hMatrixData[node] = nodeData;
-  }
+  });
 }
+
 template <typename ValueType, int N> void HMatrix<ValueType, N>::reset() {
   m_hMatrixData.clear();
 }

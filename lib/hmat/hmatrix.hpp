@@ -45,8 +45,9 @@ public:
 
 private:
   shared_ptr<BlockClusterTree<N>> m_blockClusterTree;
-  std::unordered_map<shared_ptr<BlockClusterTreeNode<N>>,
-                     shared_ptr<HMatrixData<ValueType>>> m_hMatrixData;
+  tbb::concurrent_unordered_map<shared_ptr<BlockClusterTreeNode<N>>,
+                     shared_ptr<HMatrixData<ValueType>>,
+                     shared_ptr_hash<BlockClusterTreeNode<N>>> m_hMatrixData;
 };
 }
 

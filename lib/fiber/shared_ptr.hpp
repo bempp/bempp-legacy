@@ -23,6 +23,7 @@
 
 #include "../common/common.hpp"
 #include <functional>
+#include <iostream>
 
 #ifdef __INTEL_COMPILER
 #pragma warning(disable : 279 858)
