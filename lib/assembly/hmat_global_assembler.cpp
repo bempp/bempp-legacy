@@ -171,7 +171,7 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
 
   auto minBlockSize = parameterList.template get<int>("options.hmat.minBlockSize");
   auto maxBlockSize = parameterList.template get<int>("options.hmat.maxBlockSize");
-  auto eta = parameterList.template get<int>("options.hmat.eta");
+  auto eta = parameterList.template get<double>("options.hmat.eta");
 
   auto blockClusterTree = generateBlockClusterTree(
       *actualTestSpace, *actualTrialSpace, minBlockSize, maxBlockSize, eta);
@@ -180,11 +180,11 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
       *actualTestSpace, *actualTrialSpace, blockClusterTree, localAssemblers,
       sparseTermsToAdd, denseTermMultipliers, sparseTermMultipliers);
 
-  auto defaultCompressionAlg = parameterList.template get<std::string>("options.hmat.defaultCompressionAlg");
+  auto compressionAlgorithm = parameterList.template get<std::string>("options.hmat.compressionAlgorithm");
 
   shared_ptr<hmat::DefaultHMatrixType<ResultType>> hMatrix;
 
-  if (defaultCompressionAlg=="aca")
+  if (compressionAlgorithm=="aca")
   {
 
     auto eps = parameterList.template get<double>("options.hmat.eta");
@@ -194,7 +194,7 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
     hMatrix.reset(new hmat::DefaultHMatrixType<ResultType>
             (blockClusterTree, compressor));
   }
-  else if (defaultCompressionAlg=="dense")
+  else if (compressionAlgorithm=="dense")
   {
     hmat::HMatrixDenseCompressor<ResultType, 2> compressor(helper);
     hMatrix.reset(new hmat::DefaultHMatrixType<ResultType>
@@ -204,7 +204,8 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
           "HMatGlobalAssember::assembleDetachedWeakForm: "
           "Unknown compression algorithm");
   return std::unique_ptr<DiscreteBoundaryOperator<ResultType>>(
-      new DiscreteHMatBoundaryOperator<ResultType>(hMatrix));
+      static_cast<DiscreteBoundaryOperator<ResultType>*>(
+          new DiscreteHMatBoundaryOperator<ResultType>(hMatrix)));
 
 }
 

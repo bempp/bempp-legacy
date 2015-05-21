@@ -236,12 +236,12 @@ cdef class _HMatParameterList:
             cdef char* s = b"options.hmat.maxRank"
             deref(self.impl_).put_int(s,value)
 
-    property default_compression_alg:
+    property compression_algorithm:
         def __get__(self):
-            cdef char* s = b"options.hmat.defaultCompressionAlg"
+            cdef char* s = b"options.hmat.compressionAlgorithm"
             return deref(self.impl_).get_string(s).decode("UTF-8")
         def __set__(self,object value):
-            cdef char* s = b"options.hmat.defaultCompressionAlg"
+            cdef char* s = b"options.hmat.compressionAlgorithm"
             deref(self.impl_).put_string(s,convert_to_bytes(value))
 
 

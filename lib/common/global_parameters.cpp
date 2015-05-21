@@ -97,7 +97,7 @@ ParameterList GlobalParameters::parameterList() {
   parameters.put("options.hmat.maxRank", static_cast<int>(30));
 
   // Compression algorithm
-  parameters.put("options.hmat.defaultCompressionAlg",std::string("aca"));
+  parameters.put("options.hmat.compressionAlgorithm",std::string("aca"));
 
   return parameters;
 }
