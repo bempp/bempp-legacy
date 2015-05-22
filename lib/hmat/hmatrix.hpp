@@ -21,6 +21,11 @@ template <typename ValueType> using DefaultHMatrixType = HMatrix<ValueType, 2>;
 template <typename ValueType, int N>
 class HMatrix : public CompressedMatrix<ValueType> {
 public:
+
+  typedef tbb::concurrent_unordered_map<shared_ptr<BlockClusterTreeNode<N>>,
+                     shared_ptr<HMatrixData<ValueType>>,
+                     shared_ptr_hash<BlockClusterTreeNode<N>>> ParallelDataContainer;
+
   HMatrix(const shared_ptr<BlockClusterTree<N>> &blockClusterTree);
   HMatrix(const shared_ptr<BlockClusterTree<N>> &blockClusterTree,
           const HMatrixCompressor<ValueType, N> &hMatrixCompressor);
@@ -43,11 +48,14 @@ public:
   permuteMatToOriginalDofs(const Matrix<ValueType> &mat,
                            RowColSelector rowOrColumn) const override;
 
+  shared_ptr<const BlockClusterTree<N>> blockClusterTree() const;
+  shared_ptr<const hmat::HMatrixData<ValueType>> data(
+      shared_ptr<const BlockClusterTreeNode<N>> node) const;
+
+
 private:
   shared_ptr<BlockClusterTree<N>> m_blockClusterTree;
-  tbb::concurrent_unordered_map<shared_ptr<BlockClusterTreeNode<N>>,
-                     shared_ptr<HMatrixData<ValueType>>,
-                     shared_ptr_hash<BlockClusterTreeNode<N>>> m_hMatrixData;
+  ParallelDataContainer m_hMatrixData;
 };
 }
 

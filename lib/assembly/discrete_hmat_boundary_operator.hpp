@@ -42,6 +42,7 @@ public:
 
   shared_ptr<const hmat::DefaultHMatrixType<ValueType>> hMatrix() const;
 
+
   void addBlock(const std::vector<int> &rows, const std::vector<int> &cols,
                 const ValueType alpha, Matrix<ValueType> &block) const
       override;

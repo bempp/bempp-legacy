@@ -57,6 +57,7 @@ DiscreteHMatBoundaryOperator<ValueType>::hMatrix() const
     return m_hMatrix;
 }
 
+
 template <typename ValueType>
 void DiscreteHMatBoundaryOperator<ValueType>::addBlock(
     const std::vector<int> &rows, const std::vector<int> &cols,

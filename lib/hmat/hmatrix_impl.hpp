@@ -64,6 +64,20 @@ bool HMatrix<ValueType, N>::isInitialized() const {
 }
 
 template <typename ValueType, int N>
+shared_ptr<const BlockClusterTree<N>> 
+HMatrix<ValueType, N>::blockClusterTree() const {
+  return this->m_blockClusterTree;
+}
+
+template <typename ValueType, int N>
+shared_ptr<const HMatrixData<ValueType>> 
+HMatrix<ValueType, N>::data(
+    shared_ptr<const BlockClusterTreeNode<N>> node) const {
+  return this->m_hMatrixData[const_pointer_cast<BlockClusterTreeNode<N>>(
+      node)];
+}
+
+template <typename ValueType, int N>
 Matrix<ValueType>
 HMatrix<ValueType, N>::permuteMatToHMatDofs(const Matrix<ValueType> &mat,
                                             RowColSelector rowOrColumn) const {

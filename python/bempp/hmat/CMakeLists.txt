@@ -1,5 +1,6 @@
 mako_files(
-    hmatrix.mako.pxd hmatrix.mako.pyx
+    hmatrix.mako.pxd hmatrix.mako.pyx block_cluster_tree.mako.pxd
+    block_cluster_tree.mako.pyx
     OUTPUT_FILES makoed
     DESTINATION "${PYTHON_BINARY_DIR}/bempp/include/bempp/hmat"
     TARGETNAME bempp.hmat-mako

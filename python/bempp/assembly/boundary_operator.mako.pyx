@@ -6,6 +6,7 @@ from data_types import scalar_cython_type
 from bempp.space.space cimport Space
 from discrete_boundary_operator cimport DiscreteBoundaryOperator
 from discrete_boundary_operator cimport DenseDiscreteBoundaryOperator
+from discrete_boundary_operator cimport HMatDiscreteBoundaryOperator
 from discrete_boundary_operator cimport DiscreteBoundaryOperatorBase
 from discrete_boundary_operator import SparseDiscreteBoundaryOperator
 from discrete_boundary_operator import ZeroDiscreteBoundaryOperator
@@ -189,7 +190,21 @@ cdef class GeneralBoundaryOperator(BoundaryOperatorBase):
 
     def _hmat_weak_form(self):
 
-        return self._default_weak_form()
+        cdef HMatDiscreteBoundaryOperator dbop = HMatDiscreteBoundaryOperator()
+        
+% for pybasis,cybasis in dtypes.items():
+%     for pyresult,cyresult in dtypes.items():
+%         if pyresult in compatible_dtypes[pybasis]:
+
+        if self.basis_type=="${pybasis}" and self.result_type=="${pyresult}":
+            dbop._impl_${pyresult}_.assign(_boundary_operator_variant_weak_form[${cybasis},${cyresult}](self.impl_))
+            dbop._dtype = self.result_type
+            return dbop
+%          endif
+%      endfor
+% endfor
+        raise ValueError("Incompatible basis and result types") 
+
 
     def _default_weak_form(self):
 
