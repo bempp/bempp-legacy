@@ -10,6 +10,9 @@ from bempp.utils.enum_types cimport TranspositionMode
 cimport bempp.utils.enum_types as enums
 from bempp.utils.byte_conversion import convert_to_bytes
 from bempp.utils cimport shared_ptr, static_pointer_cast
+from bempp.hmat.hmatrix cimport c_HMatrix
+from bempp.hmat.block_cluster_tree cimport c_BlockClusterTree
+from bempp.hmat.block_cluster_tree cimport BlockClusterTree
 % for pyvalue in dtypes:
 from bempp.utils.eigen cimport eigen_matrix_to_np_${pyvalue}
 % endfor
@@ -401,6 +404,22 @@ cdef class HMatDiscreteBoundaryOperator(DiscreteBoundaryOperator):
 
     def __dealloc__(self):
         pass
+
+    property block_cluster_tree:
+
+        def __get__(self):
+
+            cdef BlockClusterTree tree = BlockClusterTree()
+
+% for pyvalue, cyvalue in dtypes.items():
+            if self.dtype=="${pyvalue}":
+                tree.impl_.assign(
+                        deref(py_hmatrix_from_discrete_operator[${cyvalue}](self._impl_${pyvalue}_)).blockClusterTree())
+                return tree
+% endfor
+
+        
+
 
 
 cdef class BlockedDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):

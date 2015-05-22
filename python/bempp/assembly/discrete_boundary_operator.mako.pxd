@@ -7,6 +7,7 @@ from bempp.utils.enum_types cimport TranspositionMode
 from bempp.utils cimport shared_ptr
 from bempp.utils cimport catch_exception
 from bempp.utils cimport complex_float,complex_double
+from bempp.hmat.hmatrix cimport c_HMatrix
 cimport numpy as np
 
 
@@ -21,6 +22,7 @@ cdef extern from "bempp/assembly/discrete_boundary_operator.hpp" namespace "Bemp
 
 cdef extern from "bempp/assembly/py_discrete_operator_support.hpp" namespace "Bempp":
     cdef object py_array_from_dense_operator[VALUE](const shared_ptr[const c_DiscreteBoundaryOperator[VALUE]]&)
+    cdef shared_ptr[const c_HMatrix[VALUE]] py_hmatrix_from_discrete_operator[VALUE](const shared_ptr[const c_DiscreteBoundaryOperator[VALUE]]&)
 
 cdef class DiscreteBoundaryOperatorBase:
     cdef object _dtype

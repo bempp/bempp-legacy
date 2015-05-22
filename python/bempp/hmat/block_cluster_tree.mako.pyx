@@ -49,7 +49,6 @@ cdef class BlockClusterTreeNode:
 
         cdef BlockClusterTreeNode result = BlockClusterTreeNode()
         result.impl_.assign(deref(self.impl_).child(i))
-        result._initialize()
         return result
 
     property children:
@@ -61,7 +60,7 @@ cdef class BlockClusterTreeNode:
     property row_cluster_range:
 
         def __get__(self):
-            cdef IndexRange result = IndexRange()
+            cdef IndexRange result = IndexRange(0,0)
 
             result.impl_ = deref(deref(self.impl_).data().rowClusterTreeNode).data().indexRange
             return (result.begin,result.end)
@@ -69,7 +68,7 @@ cdef class BlockClusterTreeNode:
     property column_cluster_range:
 
         def __get__(self):
-            cdef IndexRange result = IndexRange()
+            cdef IndexRange result = IndexRange(0,0)
 
             result.impl_ = deref(deref(self.impl_).data().columnClusterTreeNode).data().indexRange
             return (result.begin,result.end)
@@ -97,7 +96,7 @@ cdef class BlockClusterTree:
         pass
 
     def __init__(self):
-        self.leaf_nodes = None
+        pass
 
     def __dealloc__(self):
         self.impl_.reset()
@@ -113,14 +112,19 @@ cdef class BlockClusterTree:
 
         def __get__(self):
 
-            def return_leafs(node):
+            leafs = []
+
+            def iterate_leafs(node):
                 if node.is_leaf:
-                    yield node
+                    leafs.append(node)
                 else:
                     for child in node.children:
-                        return_leafs(child)
+                        iterate_leafs(child)
 
-            return_leafs(self.root)
+            iterate_leafs(self.root)
+
+            for node in leafs:
+                yield node
 
 
 

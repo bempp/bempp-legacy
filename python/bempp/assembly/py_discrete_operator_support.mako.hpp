@@ -6,6 +6,8 @@
 #include "bempp/space/py_space_variants.hpp"
 #include "bempp/assembly/discrete_sparse_boundary_operator.hpp"
 #include "bempp/assembly/discrete_dense_boundary_operator.hpp"
+#include "bempp/assembly/discrete_hmat_boundary_operator.hpp"
+#include "bempp/hmat/hmatrix.hpp"
 #include "bempp/utils/py_types.hpp"
 #include "fiber/scalar_traits.hpp"
 #include <Python.h>
@@ -104,10 +106,18 @@ PyObject* py_get_sparse_from_discrete_operator(const shared_ptr<const DiscreteBo
 
 
 template <typename ValueType>
-PyObject* py_array_from_dense_operator(const shared_ptr<const DiscreteBoundaryOperator<ValueType>> op){
+PyObject* py_array_from_dense_operator(const shared_ptr<const DiscreteBoundaryOperator<ValueType>>& op){
 
     return (*static_pointer_cast<const DiscreteDenseBoundaryOperator<ValueType>,
             const DiscreteBoundaryOperator<ValueType>>(op)).asNumpyObject();
+}
+
+template <typename ValueType>
+shared_ptr<const hmat::HMatrix<ValueType,2> >
+py_hmatrix_from_discrete_operator(const shared_ptr<const DiscreteBoundaryOperator<ValueType>>& op)
+{
+
+    return static_pointer_cast<const DiscreteHMatBoundaryOperator<ValueType>>(op)->hMatrix();
 }
 
 
