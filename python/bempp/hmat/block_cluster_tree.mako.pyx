@@ -1,6 +1,7 @@
 from cython.operator cimport dereference as deref
 from cython.operator cimport address
 
+from bempp.space.space cimport Space, c_Space, _py_get_space_ptr
 
 cdef class IndexRange:
 
@@ -101,6 +102,41 @@ cdef class BlockClusterTree:
     def __dealloc__(self):
         self.impl_.reset()
 
+    def plot(self):
+
+        from matplotlib import pyplot as plt
+        from matplotlib.patches import Rectangle
+        from matplotlib.collections import PatchCollection
+
+        rows = self.root.shape[0]
+        cols = self.root.shape[1]
+        
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+
+        ax.set_xlim([0,cols])
+        ax.set_ylim([0,rows])
+        ax.set_ylim(ax.get_ylim()[::-1])
+        ax.xaxis.tick_top()
+        ax.yaxis.tick_left()
+
+        for node in self.leaf_nodes:
+            if node.admissible:
+                color = 'green'
+            else:
+                color = 'red'
+            ax.add_patch(Rectangle(
+                    (node.column_cluster_range[0],
+                     node.row_cluster_range[0]),
+                     node.shape[1],
+                     node.shape[0],
+                     color=color))
+
+        plt.show()
+
+
+
+
     property root:
 
         def __get__(self):
@@ -126,6 +162,20 @@ cdef class BlockClusterTree:
             for node in leafs:
                 yield node
 
+
+def generate_block_cluster_tree(Space test_space, Space trial_space, 
+        int min_block_size, 
+        int max_block_size, 
+        double eta):
+
+    cdef BlockClusterTree result = BlockClusterTree()
+    result.impl_.assign(c_generateBlockClusterTree[double](
+        deref(_py_get_space_ptr[double](test_space.impl_)),
+        deref(_py_get_space_ptr[double](trial_space.impl_)),
+        min_block_size,
+        max_block_size,
+        eta))
+    return result
 
 
 

@@ -1,4 +1,5 @@
 from bempp.utils cimport shared_ptr
+from bempp.space.space cimport Space, c_Space
 from libcpp cimport bool as cbool
 from libcpp.vector cimport vector
 
@@ -48,6 +49,11 @@ cdef extern from "bempp/hmat/block_cluster_tree.hpp":
         size_t columns() const
         shared_ptr[const c_BlockClusterTreeNode] root() const
 
+cdef extern from "bempp/assembly/hmat_interface.hpp":
+    cdef shared_ptr[const c_BlockClusterTree] c_generateBlockClusterTree "Bempp::generateBlockClusterTree" [BASIS](
+            const c_Space[BASIS]&,
+            const c_Space[BASIS]&,
+            int, int, double)
 
 cdef class IndexRange:
     cdef c_IndexRangeType impl_
@@ -60,7 +66,6 @@ cdef class BlockClusterTree:
 
 cdef class BoundingBox:
     cdef c_BoundingBox impl_
-
 
 
 

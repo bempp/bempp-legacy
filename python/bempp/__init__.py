@@ -10,7 +10,8 @@ __all__=['grid_from_sphere',
          'export',
          'GridFactory',
          'import_grid',
-         'FileReader']
+         'FileReader',
+         'generate_block_cluster_tree']
 
 # This imports dolfin at the same time as bempp if available to avoid delays
 # at later imports of dolfin
@@ -28,6 +29,7 @@ from bempp.assembly import BlockedBoundaryOperator
 from bempp.space import function_space
 from bempp.file_interfaces import FileReader, import_grid, export
 from bempp.grid import GridFactory
+from bempp.hmat import generate_block_cluster_tree
 
 # Check if config directory exists. If not create it.
 

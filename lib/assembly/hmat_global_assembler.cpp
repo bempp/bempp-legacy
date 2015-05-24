@@ -29,6 +29,7 @@
 #include "discrete_sparse_boundary_operator.hpp"
 #include "weak_form_hmat_assembly_helper.hpp"
 #include "discrete_hmat_boundary_operator.hpp"
+#include "hmat_interface.hpp"
 
 #include "../common/auto_timer.hpp"
 #include "../common/chunk_statistics.hpp"
@@ -49,6 +50,7 @@
 #include "../hmat/hmatrix_dense_compressor.hpp"
 #include "../hmat/hmatrix_aca_compressor.hpp"
 
+
 #include <stdexcept>
 #include <fstream>
 #include <iostream>
@@ -63,75 +65,7 @@
 
 namespace Bempp {
 
-namespace {
 
-template <typename BasisFunctionType>
-class SpaceHMatGeometryInterface : public hmat::GeometryInterface {
-
-public:
-  typedef typename Fiber::ScalarTraits<BasisFunctionType>::RealType
-  CoordinateType;
-  SpaceHMatGeometryInterface(const Space<BasisFunctionType> &space)
-      : m_counter(0) {
-    space.getGlobalDofBoundingBoxes(m_bemppBoundingBoxes);
-  }
-  shared_ptr<const hmat::GeometryDataType> next() override {
-
-    if (m_counter == m_bemppBoundingBoxes.size())
-      return shared_ptr<hmat::GeometryDataType>();
-
-    auto lbound = m_bemppBoundingBoxes[m_counter].lbound;
-    auto ubound = m_bemppBoundingBoxes[m_counter].ubound;
-    auto center = m_bemppBoundingBoxes[m_counter].reference;
-    m_counter++;
-    return shared_ptr<hmat::GeometryDataType>(new hmat::GeometryDataType(
-        hmat::BoundingBox(lbound.x, ubound.x, lbound.y, ubound.y, lbound.z,
-                          ubound.z),
-        std::array<double, 3>({{center.x, center.y, center.z}})));
-  }
-
-  std::size_t numberOfEntities() const override {
-    return m_bemppBoundingBoxes.size();
-  }
-  void reset() override { m_counter = 0; }
-
-private:
-  std::size_t m_counter;
-  std::vector<BoundingBox<CoordinateType>> m_bemppBoundingBoxes;
-};
-
-template <typename BasisFunctionType>
-shared_ptr<hmat::DefaultBlockClusterTreeType>
-generateBlockClusterTree(const Space<BasisFunctionType> &testSpace,
-                         const Space<BasisFunctionType> &trialSpace,
-                         int minBlockSize, int maxBlockSize, double eta) {
-
-  hmat::Geometry testGeometry;
-  hmat::Geometry trialGeometry;
-
-  auto testSpaceGeometryInterface = shared_ptr<hmat::GeometryInterface>(
-      new SpaceHMatGeometryInterface<BasisFunctionType>(testSpace));
-
-  auto trialSpaceGeometryInterface = shared_ptr<hmat::GeometryInterface>(
-      new SpaceHMatGeometryInterface<BasisFunctionType>(trialSpace));
-
-  hmat::fillGeometry(testGeometry, *testSpaceGeometryInterface);
-  hmat::fillGeometry(trialGeometry, *trialSpaceGeometryInterface);
-
-  auto testClusterTree = shared_ptr<hmat::DefaultClusterTreeType>(
-      new hmat::DefaultClusterTreeType(testGeometry, minBlockSize));
-
-  auto trialClusterTree = shared_ptr<hmat::DefaultClusterTreeType>(
-      new hmat::DefaultClusterTreeType(trialGeometry, minBlockSize));
-
-  shared_ptr<hmat::DefaultBlockClusterTreeType> blockClusterTree(
-      new hmat::DefaultBlockClusterTreeType(testClusterTree, trialClusterTree,
-                                            maxBlockSize,
-                                            hmat::StandardAdmissibility(eta)));
-
-  return blockClusterTree;
-}
-} // end anonymous namespace
 template <typename BasisFunctionType, typename ResultType>
 std::unique_ptr<DiscreteBoundaryOperator<ResultType>>
 HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
