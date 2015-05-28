@@ -82,13 +82,16 @@ ParameterList GlobalParameters::parameterList() {
   parameters.put("options.hmat.hMatAssemblyMode", std::string("GlobalAssembly"));
 
   // Specifies the minimum block size below which blocks are assumed to be dense
-  parameters.put("options.hmat.minBlockSize",static_cast<int>(50));
+  parameters.put("options.hmat.minBlockSize",static_cast<int>(20));
 
   // Specifies the maximum size of an admissible block
   parameters.put("options.hmat.maxBlockSize",static_cast<int>(2048));
 
   // Specifies the block separation parameter eta.
   parameters.put("options.hmat.eta",static_cast<double>(1.2));
+
+  // Specifies the type of admissibility function ('strong' or 'weak')
+  parameters.put("options.hmat.admissibility",std::string("weak"));
 
   // Specifies the accuracy of low-rank approximations.
   parameters.put("options.hmat.eps",static_cast<double>(1E-3));

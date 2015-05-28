@@ -244,6 +244,13 @@ cdef class _HMatParameterList:
             cdef char* s = b"options.hmat.compressionAlgorithm"
             deref(self.impl_).put_string(s,convert_to_bytes(value))
 
+    property admissibility:
+        def __get__(self):
+            cdef char* s = b"options.hmat.admissibility"
+            return deref(self.impl_).get_string(s).decode("UTF-8")
+        def __set__(self,object value):
+            cdef char* s = b"options.hmat.admissibility"
+            deref(self.impl_).put_string(s,convert_to_bytes(value))
 
     
 

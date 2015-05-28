@@ -209,18 +209,14 @@ inline const std::array<double, 3> BoundingBox::cornerPoint(int index) const {
   return result;
 }
   
-inline const std::vector<Point> 
-BoundingBox::corners() const {
+inline void BoundingBox::corners(
+    std::vector<Point>& points) const {
 
-  std::vector<Point> result;
-  result.reserve(8);
   for (int i = 0; i < 8; ++i)
   {
     std::array<double,3> corner = cornerPoint(i);
-    result.push_back(Point(corner[0],corner[1],corner[2]));
+    points.push_back(Point(corner[0],corner[1],corner[2]));
   }
-  return result;
-
 }
 
 inline double BoundingBox::distance(const BoundingBox &other) const {

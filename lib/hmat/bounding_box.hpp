@@ -39,7 +39,7 @@ public:
 
   const std::array<double, 3> cornerPoint(int index) const;
   
-  const std::vector<Point> corners() const;
+  void corners(std::vector<Point>& points) const;
 
   int maxDimension() const;
   double diameter() const;

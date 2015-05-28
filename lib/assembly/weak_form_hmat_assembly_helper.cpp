@@ -80,11 +80,10 @@ WeakFormHMatAssemblyHelper<BasisFunctionType, ResultType>::
                                 blockClusterTreeNode) const {
 
   return MagnitudeType(
-          hmat::clusterDistance(
               blockClusterTreeNode.data()
-              .rowClusterTreeNode->data().clusterPoints,
+              .rowClusterTreeNode->data().boundingBox.distance(
               blockClusterTreeNode.data().
-              columnClusterTreeNode->data().clusterPoints));
+              columnClusterTreeNode->data().boundingBox));
 }
 
 template <typename BasisFunctionType, typename ResultType>

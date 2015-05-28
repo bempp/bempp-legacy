@@ -108,7 +108,7 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
   auto eta = parameterList.template get<double>("options.hmat.eta");
 
   auto blockClusterTree = generateBlockClusterTree(
-      *actualTestSpace, *actualTrialSpace, minBlockSize, maxBlockSize, eta);
+      *actualTestSpace, *actualTrialSpace, parameterList);
 
   WeakFormHMatAssemblyHelper<BasisFunctionType, ResultType> helper(
       *actualTestSpace, *actualTrialSpace, blockClusterTree, localAssemblers,

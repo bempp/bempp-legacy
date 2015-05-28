@@ -25,6 +25,7 @@
 #include "../hmat/geometry_data_type.hpp"
 
 #include "../fiber/explicit_instantiation.hpp"
+#include "../common/types.hpp"
 
 namespace Bempp {
 
@@ -71,10 +72,11 @@ template <typename BasisFunctionType>
 shared_ptr<hmat::DefaultBlockClusterTreeType>
 generateBlockClusterTree(const Space<BasisFunctionType> &testSpace,
                          const Space<BasisFunctionType> &trialSpace,
-                         int minBlockSize, int maxBlockSize, double eta) {
+                         const ParameterList& parameterList){
 
   hmat::Geometry testGeometry;
   hmat::Geometry trialGeometry;
+
 
   auto testSpaceGeometryInterface = shared_ptr<hmat::GeometryInterface>(
       new SpaceHMatGeometryInterface<BasisFunctionType>(testSpace));
@@ -85,6 +87,23 @@ generateBlockClusterTree(const Space<BasisFunctionType> &testSpace,
   hmat::fillGeometry(testGeometry, *testSpaceGeometryInterface);
   hmat::fillGeometry(trialGeometry, *trialSpaceGeometryInterface);
 
+  auto admissibility = parameterList.template get<std::string>("options.hmat.admissibility");
+      auto minBlockSize = parameterList.template get<int>("options.hmat.minBlockSize");
+      auto maxBlockSize = parameterList.template get<int>("options.hmat.maxBlockSize");
+
+  hmat::AdmissibilityFunction admissibilityFunction;
+
+  if (admissibility=="strong")
+  {
+      auto eta = parameterList.template get<double>("options.hmat.eta");
+      admissibilityFunction = hmat::StrongAdmissibility(eta);
+  }
+  else if (admissibility=="weak")
+  {
+      admissibilityFunction = hmat::WeakAdmissibility();
+  }
+  else throw std::runtime_error("generateBlockClusterTree(): Unknown admissibility type");
+
   auto testClusterTree = shared_ptr<hmat::DefaultClusterTreeType>(
       new hmat::DefaultClusterTreeType(testGeometry, minBlockSize));
 
@@ -92,9 +111,10 @@ generateBlockClusterTree(const Space<BasisFunctionType> &testSpace,
       new hmat::DefaultClusterTreeType(trialGeometry, minBlockSize));
 
   shared_ptr<hmat::DefaultBlockClusterTreeType> blockClusterTree(
-      new hmat::DefaultBlockClusterTreeType(testClusterTree, trialClusterTree,
-                                            maxBlockSize,
-                                            hmat::StandardAdmissibility(eta)));
+      new hmat::DefaultBlockClusterTreeType(
+          testClusterTree, trialClusterTree,
+          maxBlockSize,
+          admissibilityFunction));
 
   return blockClusterTree;
 }
@@ -104,8 +124,7 @@ generateBlockClusterTree(const Space<BasisFunctionType> &testSpace,
     shared_ptr<hmat::DefaultBlockClusterTreeType>                      \
     generateBlockClusterTree(const Space<VALUE> &testSpace,            \
                              const Space<VALUE> &trialSpace,           \
-                             int minBlockSize, int maxBlockSize,       \
-                             double eta);
+                             const ParameterList &parameterList);
 
 FIBER_ITERATE_OVER_VALUE_TYPES(INSTANTIATE_NONMEMBER_FUNCTION);
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(SpaceHMatGeometryInterface);

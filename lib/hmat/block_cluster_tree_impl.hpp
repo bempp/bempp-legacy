@@ -177,13 +177,13 @@ void BlockClusterTree<N>::initializeBlockClusterTree(
                 rowChild, columnChild,
                 admissibilityFunction(rowClusterData, columnClusterData)),
             N * rowCount + columnCount);
-        //splittingFunction(node->child(N * rowCount + columnCount));
+        splittingFunction(node->child(N * rowCount + columnCount));
       }
     }
-    tbb::parallel_for(tbb::blocked_range<int>(0,N*N),[&splittingFunction,&node](
-          const tbb::blocked_range<int>& range){
-        for (int i = range.begin(); i!=range.end(); ++i)
-          splittingFunction(node->child(i));});
+    //tbb::parallel_for(tbb::blocked_range<int>(0,N*N),[&splittingFunction,&node](
+    //      const tbb::blocked_range<int>& range){
+    //    for (int i = range.begin(); i!=range.end(); ++i)
+    //      splittingFunction(node->child(i));});
   };
 
   bool admissible =
@@ -210,14 +210,14 @@ void getBlockClusterTreeNodeDimensions(
   numberOfColumns = columnClusterRange[1] - columnClusterRange[0];
 }
 
-inline StandardAdmissibility::StandardAdmissibility(double eta) : m_eta(eta) {}
+inline StrongAdmissibility::StrongAdmissibility(double eta) : m_eta(eta) {}
 
-inline bool StandardAdmissibility::operator()(const ClusterTreeNodeData &cluster1,
+inline bool StrongAdmissibility::operator()(const ClusterTreeNodeData &cluster1,
                                               const ClusterTreeNodeData &cluster2) const {
   double diam1 = cluster1.diameter;
   double diam2 = cluster2.diameter;
 
-  double dist = clusterDistance(cluster1.clusterPoints,cluster2.clusterPoints);
+  double dist = cluster1.boundingBox.distance(cluster2.boundingBox);
 
   return std::min(diam1, diam2) < m_eta * dist;
 }
@@ -225,7 +225,7 @@ inline bool StandardAdmissibility::operator()(const ClusterTreeNodeData &cluster
 inline bool WeakAdmissibility::operator()(const ClusterTreeNodeData &cluster1,
                                           const ClusterTreeNodeData &cluster2) const {
 
-  return clusterDistance(cluster1.clusterPoints,cluster2.clusterPoints) > 0;
+  return cluster1.boundingBox.distance(cluster2.boundingBox) > 0;
 }
 }
 #endif

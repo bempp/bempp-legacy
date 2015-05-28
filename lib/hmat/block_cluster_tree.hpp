@@ -72,9 +72,9 @@ void getBlockClusterTreeNodeDimensions(
     std::size_t &numberOfRows, std::size_t &numberOfColumns);
 
 
-class StandardAdmissibility {
+class StrongAdmissibility {
 public:
-  StandardAdmissibility(double eta);
+  StrongAdmissibility(double eta);
 
   bool operator()(const ClusterTreeNodeData &cluster1, const ClusterTreeNodeData &cluster2) const;
 

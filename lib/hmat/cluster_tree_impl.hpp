@@ -5,8 +5,10 @@
 
 #include "common.hpp"
 #include "simple_tree_node.hpp"
+#include "bounding_box.hpp"
 #include "geometry.hpp"
 #include "geometry_data_type.hpp"
+#include "eigen_fwd.hpp"
 
 #include <CGAL/linear_least_squares_fitting_3.h>
 
@@ -18,8 +20,12 @@
 namespace hmat {
 
 inline ClusterTreeNodeData::ClusterTreeNodeData(
-    const IndexRangeType &indexRange, const std::vector<Point> &clusterPoints)
-    : indexRange(indexRange), clusterPoints(clusterPoints), diameter(clusterDiameter(clusterPoints)) {}
+    const IndexRangeType &indexRange, const std::vector<Point> &centerPoints, 
+      const std::vector<Point>& dofBoundingPoints)
+    : indexRange(indexRange) {
+   
+     geometryData(centerPoints, dofBoundingPoints); 
+}
 
 template <int N>
 ClusterTree<N>::ClusterTree(const Geometry &geometry, int minBlockSize)
@@ -28,6 +34,41 @@ ClusterTree<N>::ClusterTree(const Geometry &geometry, int minBlockSize)
 
   splitClusterTreeByGeometry(geometry, m_dofPermutation, minBlockSize);
 }
+
+inline void ClusterTreeNodeData::geometryData(const std::vector<Point>& centerPoints,
+    const std::vector<Point>& dofBoundingPoints)
+{
+
+      Eigen::Matrix<double,3,Eigen::Dynamic> boundingPoints(3,dofBoundingPoints.size());
+      
+      for (int i = 0; i < dofBoundingPoints.size(); ++i)
+      {
+        boundingPoints(0,i) = dofBoundingPoints[i].x();
+        boundingPoints(1,i) = dofBoundingPoints[i].y();
+        boundingPoints(2,i) = dofBoundingPoints[i].z();
+      }
+  
+      linear_least_squares_fitting_3(centerPoints.begin(),
+        centerPoints.end(),mainLine,centroid,CGAL::Dimension_tag<0>());
+
+      // Now compute the bounding box
+      
+      double xmin, xmax, ymin, ymax, zmin, zmax;
+
+      Eigen::Vector3d maxVector = boundingPoints.rowwise().maxCoeff();
+      Eigen::Vector3d minVector = boundingPoints.rowwise().minCoeff();
+
+      xmin = minVector(0); ymin = minVector(1); zmin = minVector(2);
+      xmax = maxVector(0); ymax = maxVector(1); zmax = maxVector(2);
+
+      boundingBox = BoundingBox(xmin,xmax,ymin,ymax,zmin,zmax);
+
+      // Store the diameter
+      
+      diameter = clusterDiameter(dofBoundingPoints);
+
+}
+
 
 template <int N> std::size_t ClusterTree<N>::numberOfDofs() const {
   return (m_root->data().indexRange[1] - m_root->data().indexRange[0]);
@@ -48,13 +89,19 @@ ClusterTree<N>::initializeClusterTree(const Geometry &geometry) {
 
   IndexRangeType indexRange{{0, geometry.size()}};
 
-  std::vector<Point> points;
-  points.reserve(geometry.size());
+  std::vector<Point> centerPoints;
+  centerPoints.reserve(geometry.size());
+  std::vector<Point> dofBoundingPoints;
+  dofBoundingPoints.reserve(8*geometry.size());
 
   for (const auto &geometryData : geometry)
-    points.push_back(geometryData->center);
+  {
+    centerPoints.push_back(geometryData->center);
+    geometryData->boundingBox.corners(dofBoundingPoints);
+  }
 
-  return make_shared<ClusterTreeNode<N>>(ClusterTreeNodeData(indexRange, points));
+  return make_shared<ClusterTreeNode<N>>(ClusterTreeNodeData(indexRange,
+       centerPoints,dofBoundingPoints));
 }
 
 template <int N>
@@ -97,25 +144,25 @@ ClusterTree<2>::splitClusterTreeByGeometry(const Geometry &geometry,
       Line line;
       Point centroid;
 
-      const std::vector<Point>& clusterPoints = clusterTreeNode->data().clusterPoints;
-
-      linear_least_squares_fitting_3(clusterPoints.begin(),
-        clusterPoints.end(),line,centroid,CGAL::Dimension_tag<0>());
-      
-      auto plane = line.perpendicular_plane(centroid);
+      auto plane = clusterTreeNode->data().mainLine.perpendicular_plane(
+          clusterTreeNode->data().centroid);
       std::vector<Point> firstPointSet;
       std::vector<Point> secondPointSet;
+      std::vector<Point> firstBoundingPointSet;
+      std::vector<Point> secondBoundingPointSet;
 
       for (auto index: indexSet)
        if (plane.oriented_side(geometry[index]->center)==CGAL::ON_POSITIVE_SIDE)
        {
          firstIndexSet.push_back(index);
          firstPointSet.push_back(geometry[index]->center);
+         geometry[index]->boundingBox.corners(firstBoundingPointSet);
        }
      else
        {
          secondIndexSet.push_back(index);
-         secondPointSet.push_back(geometry[index]->center); 
+         secondPointSet.push_back(geometry[index]->center);
+         geometry[index]->boundingBox.corners(secondBoundingPointSet); 
        }
 
       if (firstIndexSet.size()==0) throw std::runtime_error(
@@ -132,9 +179,11 @@ ClusterTree<2>::splitClusterTreeByGeometry(const Geometry &geometry,
       newRangeFirst[1] = newRangeSecond[0] = newRangeFirst[0] + pivot;
 
       clusterTreeNode->addChild(
-          ClusterTreeNodeData(newRangeFirst, firstPointSet), 0);
+          ClusterTreeNodeData(newRangeFirst, firstPointSet,
+            firstBoundingPointSet), 0);
       clusterTreeNode->addChild(
-          ClusterTreeNodeData(newRangeSecond, secondPointSet), 1);
+          ClusterTreeNodeData(newRangeSecond, secondPointSet,
+            secondBoundingPointSet), 1);
       splittingFun(clusterTreeNode->child(0), firstIndexSet);
       splittingFun(clusterTreeNode->child(1), secondIndexSet);
 
@@ -147,6 +196,7 @@ ClusterTree<2>::splitClusterTreeByGeometry(const Geometry &geometry,
         ++originalIndexCount;
       }
     }
+
   };
   splittingFun(m_root, fillIndexRange(0, geometry.size()));
   std::cout << "Cluster tree generated." << std::endl;

@@ -5,6 +5,7 @@
 
 #include "common.hpp"
 #include <CGAL/Polytope_distance_d.h>
+#include <CGAL/Gmpzf.h>
 #include <CGAL/Polyhedron_3.h>
 #include <CGAL/Polytope_distance_d_traits_3.h>
 #include <CGAL/Min_sphere_of_spheres_d.h>
@@ -20,15 +21,16 @@ inline IndexSetType fillIndexRange(std::size_t start, std::size_t stop) {
   return result;
 }
 
-inline double clusterDistance(const std::vector<Point>& points1,
+inline double obbDistance(const std::vector<Point>& points1,
     const std::vector<Point>& points2)
 {
-  typedef CGAL::Polytope_distance_d_traits_3<CgalKernel, CGAL::MP_Float, double> Traits;
+  typedef CGAL::Polytope_distance_d_traits_3<CgalKernel, CGAL::Gmpzf, double> Traits;
   typedef CGAL::Polytope_distance_d<Traits> Polytope_distance;
 
   Polytope_distance pd(begin(points1),end(points1),begin(points2),end(points2));
 
   return std::sqrt(CGAL::to_double (pd.squared_distance_numerator()) / CGAL::to_double (pd.squared_distance_denominator()));
+  //return std::sqrt(pd.squared_distance());
 }
 
 inline double clusterDiameter(const std::vector<Point>& points)

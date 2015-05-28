@@ -13,11 +13,17 @@ namespace hmat {
 struct ClusterTreeNodeData {
 
   ClusterTreeNodeData(const IndexRangeType &indexRange,
-                      const std::vector<Point>& clusterPoints);
+                      const std::vector<Point>& centerPoints,
+                      const std::vector<Point>& dofBoundingPoints);
+
+  void geometryData(const std::vector<Point>& centerPoints,
+      const std::vector<Point>& dofBoundingPoints);
 
   IndexRangeType indexRange;
-  std::vector<Point> clusterPoints;
+  BoundingBox boundingBox;
   double diameter;
+  Point centroid;
+  Line mainLine;
 };
 
 template <int N> using ClusterTreeNode = SimpleTreeNode<ClusterTreeNodeData, N>;

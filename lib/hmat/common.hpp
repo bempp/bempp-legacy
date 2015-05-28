@@ -35,7 +35,7 @@ enum TransposeMode {
 
 IndexSetType fillIndexRange(std::size_t start, std::size_t stop);
 
-double clusterDistance(const std::vector<Point>& points1,
+double obbDistance(const std::vector<Point>& points1,
     const std::vector<Point>& points2);
 
 double clusterDiameter(const std::vector<Point>& points);

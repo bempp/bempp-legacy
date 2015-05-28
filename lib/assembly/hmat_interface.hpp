@@ -69,7 +69,7 @@ template <typename BasisFunctionType>
 shared_ptr<hmat::DefaultBlockClusterTreeType>
 generateBlockClusterTree(const Space<BasisFunctionType> &testSpace,
                          const Space<BasisFunctionType> &trialSpace,
-                         int minBlockSize, int maxBlockSize, double eta); 
+                         const ParameterList& parameterList);
 
 }
 
