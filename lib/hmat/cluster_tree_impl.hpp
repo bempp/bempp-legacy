@@ -5,9 +5,10 @@
 
 #include "common.hpp"
 #include "simple_tree_node.hpp"
-#include "bounding_box.hpp"
 #include "geometry.hpp"
 #include "geometry_data_type.hpp"
+
+#include <CGAL/linear_least_squares_fitting_3.h>
 
 #include "cluster_tree.hpp"
 
@@ -17,8 +18,8 @@
 namespace hmat {
 
 inline ClusterTreeNodeData::ClusterTreeNodeData(
-    const IndexRangeType &indexRange, const BoundingBox &boundingBox)
-    : indexRange(indexRange), boundingBox(boundingBox) {}
+    const IndexRangeType &indexRange, const std::vector<Point> &clusterPoints)
+    : indexRange(indexRange), clusterPoints(clusterPoints), diameter(clusterDiameter(clusterPoints)) {}
 
 template <int N>
 ClusterTree<N>::ClusterTree(const Geometry &geometry, int minBlockSize)
@@ -47,12 +48,13 @@ ClusterTree<N>::initializeClusterTree(const Geometry &geometry) {
 
   IndexRangeType indexRange{{0, geometry.size()}};
 
-  BoundingBox b;
+  std::vector<Point> points;
+  points.reserve(geometry.size());
 
   for (const auto &geometryData : geometry)
-    b.merge(geometryData->boundingBox);
+    points.push_back(geometryData->center);
 
-  return make_shared<ClusterTreeNode<N>>(ClusterTreeNodeData(indexRange, b));
+  return make_shared<ClusterTreeNode<N>>(ClusterTreeNodeData(indexRange, points));
 }
 
 template <int N>
@@ -90,38 +92,37 @@ ClusterTree<2>::splitClusterTreeByGeometry(const Geometry &geometry,
       IndexSetType firstIndexSet;
       IndexSetType secondIndexSet;
 
-      // Figure out the right dim
+      // Approximate the points in the cluster with a line.
+      
+      Line line;
+      Point centroid;
 
-      assert(clusterTreeNode->data().boundingBox.diameter() != 0);
+      const std::vector<Point>& clusterPoints = clusterTreeNode->data().clusterPoints;
 
-      auto dim = clusterTreeNode->data().boundingBox.maxDimension();
+      linear_least_squares_fitting_3(clusterPoints.begin(),
+        clusterPoints.end(),line,centroid,CGAL::Dimension_tag<0>());
+      
+      auto plane = line.perpendicular_plane(centroid);
+      std::vector<Point> firstPointSet;
+      std::vector<Point> secondPointSet;
 
-      auto bounds = clusterTreeNode->data().boundingBox.bounds();
-      auto boxes = clusterTreeNode->data().boundingBox.divide(dim, .5);
+      for (auto index: indexSet)
+       if (plane.oriented_side(geometry[index]->center)==CGAL::ON_POSITIVE_SIDE)
+       {
+         firstIndexSet.push_back(index);
+         firstPointSet.push_back(geometry[index]->center);
+       }
+     else
+       {
+         secondIndexSet.push_back(index);
+         secondPointSet.push_back(geometry[index]->center); 
+       }
 
-      auto firstBoundingBox = boxes.first;
-      auto secondBoundingBox = boxes.second;
+      if (firstIndexSet.size()==0) throw std::runtime_error(
+          "hmat::splitClusterTreeByGeometry(): First index set is zero.");
 
-      auto ubound = firstBoundingBox.bounds()[2 * dim + 1];
-
-      for (auto index : indexSet) {
-        auto centerValue = geometry[index]->center[dim];
-        if (centerValue < ubound)
-          firstIndexSet.push_back(index);
-        else
-          secondIndexSet.push_back(index);
-      }
-
-      if (secondIndexSet.size() == 0) {
-        clusterTreeNode->data().boundingBox = firstBoundingBox;
-        splittingFun(clusterTreeNode, indexSet);
-        return;
-      }
-      if (firstIndexSet.size() == 0) {
-        clusterTreeNode->data().boundingBox = secondBoundingBox;
-        splittingFun(clusterTreeNode, indexSet);
-        return;
-      }
+      if (secondIndexSet.size()==0) throw std::runtime_error(
+          "hmat::splitClusterTreeByGeometry(): Second index set is zero.");
 
       auto pivot = firstIndexSet.size();
 
@@ -131,23 +132,14 @@ ClusterTree<2>::splitClusterTreeByGeometry(const Geometry &geometry,
       newRangeFirst[1] = newRangeSecond[0] = newRangeFirst[0] + pivot;
 
       clusterTreeNode->addChild(
-          ClusterTreeNodeData(newRangeFirst, firstBoundingBox), 0);
+          ClusterTreeNodeData(newRangeFirst, firstPointSet), 0);
       clusterTreeNode->addChild(
-          ClusterTreeNodeData(newRangeSecond, secondBoundingBox), 1);
+          ClusterTreeNodeData(newRangeSecond, secondPointSet), 1);
       splittingFun(clusterTreeNode->child(0), firstIndexSet);
       splittingFun(clusterTreeNode->child(1), secondIndexSet);
 
-      clusterTreeNode->data().boundingBox =
-          clusterTreeNode->child(0)->data().boundingBox;
-      clusterTreeNode->data().boundingBox.merge(
-          clusterTreeNode->child(1)->data().boundingBox);
     } else {
 
-      BoundingBox b;
-      for (const auto &elem : indexSet)
-        b.merge(geometry[elem]->boundingBox);
-
-      clusterTreeNode->data().boundingBox = b;
       int originalIndexCount = 0;
       const auto &indexRange = clusterTreeNode->data().indexRange;
       for (int hMatDof = indexRange[0]; hMatDof < indexRange[1]; ++hMatDof) {
@@ -157,6 +149,7 @@ ClusterTree<2>::splitClusterTreeByGeometry(const Geometry &geometry,
     }
   };
   splittingFun(m_root, fillIndexRange(0, geometry.size()));
+  std::cout << "Cluster tree generated." << std::endl;
 }
 
 template <int N>

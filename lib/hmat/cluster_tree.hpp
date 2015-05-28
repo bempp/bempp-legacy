@@ -5,7 +5,6 @@
 
 #include "common.hpp"
 #include "simple_tree_node.hpp"
-#include "bounding_box.hpp"
 #include "geometry.hpp"
 #include "dof_permutation.hpp"
 
@@ -14,10 +13,11 @@ namespace hmat {
 struct ClusterTreeNodeData {
 
   ClusterTreeNodeData(const IndexRangeType &indexRange,
-                      const BoundingBox &boundingBox);
+                      const std::vector<Point>& clusterPoints);
 
   IndexRangeType indexRange;
-  BoundingBox boundingBox;
+  std::vector<Point> clusterPoints;
+  double diameter;
 };
 
 template <int N> using ClusterTreeNode = SimpleTreeNode<ClusterTreeNodeData, N>;

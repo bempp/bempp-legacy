@@ -102,8 +102,48 @@ cdef class BlockClusterTree:
     def __dealloc__(self):
         self.impl_.reset()
 
-    def plot(self):
+#    def plot(self,file_name = 'block_cluster_tree.png', display = True, width = 2000, height= 2000,
+#            delete=True):
+#
+#        from PyQt4 import QtGui
+#
+#        rows = self.root.shape[0]
+#        cols = self.root.shape[1]
+#
+#        row_scale = (1.*height)/rows
+#        col_scale = (1.*width)/cols
+#
+#        img = QtGui.QImage(width, height,QtGui.QImage.Format_RGB32)
+#        qp = QtGui.QPainter(img)
+#        color = QtGui.QColor()
+#
+#        qp.setPen(QtGui.QColor(0,0,0))
+#        for node in self.leaf_nodes:
+#            if node.admissible:
+#                qp.setBrush(QtGui.QColor(0,255,0))
+#            else:
+#                qp.setBrush(QtGui.QColor(255,0,0))
+#            qp.drawRect(node.column_cluster_range[0]*col_scale,
+#                        node.row_cluster_range[0]*row_scale,
+#                        node.shape[1]*col_scale,
+#                        node.shape[0]*row_scale)
+#
+#        qp.end()
+#        img.save(file_name)
+#        
+#        if display:
+#            from matplotlib import image as mpimage
+#            from matplotlib import pyplot as plt
+#
+#            img = mpimage.imread(file_name)
+#            plt.imshow(img,extent=[0,cols,rows,0])
+#            plt.show()
+#            if delete:
+#                import os
+#                os.remove(file_name)
 
+    def plot(self):
+    
         from matplotlib import pyplot as plt
         from matplotlib.patches import Rectangle
         from matplotlib.collections import PatchCollection
@@ -112,7 +152,7 @@ cdef class BlockClusterTree:
         cols = self.root.shape[1]
         
         fig = plt.figure()
-        ax = fig.add_subplot(111)
+        ax = fig.add_subplot(111, rasterized=True)
 
         ax.set_xlim([0,cols])
         ax.set_ylim([0,rows])
@@ -130,12 +170,9 @@ cdef class BlockClusterTree:
                      node.row_cluster_range[0]),
                      node.shape[1],
                      node.shape[0],
-                     color=color))
+                     fc=color,ec='black'))
 
         plt.show()
-
-
-
 
     property root:
 

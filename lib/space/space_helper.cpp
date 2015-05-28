@@ -163,8 +163,10 @@ void SpaceHelper<BasisFunctionType>::getGlobalDofNormals_defaultImplementation(
         normals[g].x += elementNormals(0, acc(ldofs, l).entityIndex);
         normals[g].y += elementNormals(1, acc(ldofs, l).entityIndex);
       }
-      normals[g].x /= ldofs.size();
-      normals[g].y /= ldofs.size();
+      double len = std::sqrt(normals[g].x*normals[g].x*
+                             normals[g].y*normals[g].y);
+      normals[g].x /= len;
+      normals[g].y /= len;
     }
   else // gridDim == 2
     for (size_t g = 0; g < globalDofCount_; ++g) {
@@ -177,9 +179,12 @@ void SpaceHelper<BasisFunctionType>::getGlobalDofNormals_defaultImplementation(
         normals[g].y += elementNormals(1, acc(ldofs, l).entityIndex);
         normals[g].z += elementNormals(2, acc(ldofs, l).entityIndex);
       }
-      normals[g].x /= ldofs.size();
-      normals[g].y /= ldofs.size();
-      normals[g].z /= ldofs.size();
+      double len = std::sqrt(normals[g].x*normals[g].x+
+                             normals[g].y*normals[g].y+
+                             normals[g].z*normals[g].z);
+      normals[g].x /= len;
+      normals[g].y /= len;
+      normals[g].z /= len;
     }
 }
 

@@ -166,14 +166,6 @@ cdef class DiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
 
 % endfor
 
-% for pyvalue,cyvalue in dtypes.items():
-
-        if self.dtype == "${pyvalue}":
-            self._apply_${pyvalue}(transposition_mode(convert_to_bytes(transpose)),
-                    x,y,alpha,beta)
-            return None
-% endfor
-
 
     def matvec(self,np.ndarray x):
 

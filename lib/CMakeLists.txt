@@ -1,5 +1,7 @@
 #Disable Numpy deprecated warning
 add_definitions(-DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION)
+# Make CGAL Thread safe
+add_definitions(-DCGAL_HAS_THREADS)
 
 #Configure All Option files
 foreach(config_file trilinos ahmed opencl data_types blas_and_lapack python)
@@ -44,6 +46,12 @@ foreach(library ${imported_targets})
     endif()
 endforeach()
 
+# Link with CGAL
+target_link_libraries(libbempp ${CGAL_LIBRARY} ${CGAL_Core_LIBRARY} ${CGAL_3RD_PARTY_LIBRARIES}
+    ${GMP_LIBRARIES} ${MPFR_LIBRARIES})
+
+
+
 if (TBB_LIBRARY)
 	target_link_libraries(libbempp optimized ${TBB_LIBRARY} ${TBB_MALLOC_LIBRARY})
 endif()
@@ -71,8 +79,6 @@ target_link_libraries(libbempp ${ZLIB_LIBRARIES})
 if (WITH_CUDA)
    include(FindCUDA)
 endif ()
-
-
 
 # Install library
 install(TARGETS libbempp

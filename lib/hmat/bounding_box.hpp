@@ -3,6 +3,7 @@
 
 #include "common.hpp"
 #include <array>
+#include <vector>
 #include <iostream>
 
 namespace hmat {
@@ -37,6 +38,8 @@ public:
   const std::array<double, 6> &bounds() const;
 
   const std::array<double, 3> cornerPoint(int index) const;
+  
+  const std::vector<Point> corners() const;
 
   int maxDimension() const;
   double diameter() const;

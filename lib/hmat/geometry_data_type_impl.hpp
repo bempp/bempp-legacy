@@ -11,7 +11,8 @@ inline GeometryDataType::GeometryDataType() : boundingBox(), center() {}
 
 inline GeometryDataType::GeometryDataType(const BoundingBox &boundingBox,
                                           const std::array<double, 3> &center)
-    : boundingBox(boundingBox), center(center) {}
+    : boundingBox(boundingBox), center(center[0],center[1],center[2]) {}
+
 }
 
 #endif

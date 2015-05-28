@@ -18,7 +18,7 @@ struct GeometryDataType {
                    const std::array<double, 3> &center);
 
   BoundingBox boundingBox;
-  std::array<double, 3> center;
+  Point center;
 };
 }
 

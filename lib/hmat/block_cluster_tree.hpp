@@ -11,7 +11,7 @@
 
 namespace hmat {
 
-typedef std::function<bool(const BoundingBox &, const BoundingBox &)>
+typedef std::function<bool(const ClusterTreeNodeData &, const ClusterTreeNodeData &)>
 AdmissibilityFunction;
 
 template <int N> struct BlockClusterTreeNodeData {
@@ -71,11 +71,12 @@ void getBlockClusterTreeNodeDimensions(
     IndexRangeType &rowClusterRange, IndexRangeType &columnClusterRange,
     std::size_t &numberOfRows, std::size_t &numberOfColumns);
 
+
 class StandardAdmissibility {
 public:
   StandardAdmissibility(double eta);
 
-  bool operator()(const BoundingBox &box1, const BoundingBox &box2) const;
+  bool operator()(const ClusterTreeNodeData &cluster1, const ClusterTreeNodeData &cluster2) const;
 
 private:
   double m_eta;
@@ -83,7 +84,7 @@ private:
 
 class WeakAdmissibility {
 public:
-  bool operator()(const BoundingBox &box1, const BoundingBox &box2) const;
+  bool operator()(const ClusterTreeNodeData &cluster1, const ClusterTreeNodeData &cluster2) const;
 };
 
 typedef BlockClusterTree<2> DefaultBlockClusterTreeType;

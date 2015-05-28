@@ -4,6 +4,9 @@
 #define HMAT_BLOCK_CLUSTER_TREE_IMPL_HPP
 
 #include "block_cluster_tree.hpp"
+#include <tbb/parallel_for.h>
+#include <tbb/blocked_range.h>
+
 //#include "cairo/cairo.h"
 //#include "cairo/cairo-pdf.h"
 
@@ -169,25 +172,28 @@ void BlockClusterTree<N>::initializeBlockClusterTree(
       auto rowChild = nodeData.rowClusterTreeNode->child(rowCount);
       for (int columnCount = 0; columnCount < N; ++columnCount) {
         auto columnChild = nodeData.columnClusterTreeNode->child(columnCount);
-        auto rowBoundingBox = rowClusterData.boundingBox;
-        auto columnBoundingBox = columnClusterData.boundingBox;
         node->addChild(
             BlockClusterTreeNodeData<N>(
                 rowChild, columnChild,
-                admissibilityFunction(rowBoundingBox, columnBoundingBox)),
+                admissibilityFunction(rowClusterData, columnClusterData)),
             N * rowCount + columnCount);
-        splittingFunction(node->child(N * rowCount + columnCount));
+        //splittingFunction(node->child(N * rowCount + columnCount));
       }
     }
+    tbb::parallel_for(tbb::blocked_range<int>(0,N*N),[&splittingFunction,&node](
+          const tbb::blocked_range<int>& range){
+        for (int i = range.begin(); i!=range.end(); ++i)
+          splittingFunction(node->child(i));});
   };
 
   bool admissible =
-      admissibilityFunction(m_rowClusterTree->root()->data().boundingBox,
-                            m_columnClusterTree->root()->data().boundingBox);
+      admissibilityFunction(m_rowClusterTree->root()->data(),
+                            m_columnClusterTree->root()->data());
   m_root = shared_ptr<BlockClusterTreeNode<N>>(
       new BlockClusterTreeNode<N>(BlockClusterTreeNodeData<N>(
           m_rowClusterTree->root(), m_columnClusterTree->root(), admissible)));
   splittingFunction(m_root);
+  std::cout << "BlockClusterTree generated." << std::endl;
 }
 
 template <int N>
@@ -206,20 +212,20 @@ void getBlockClusterTreeNodeDimensions(
 
 inline StandardAdmissibility::StandardAdmissibility(double eta) : m_eta(eta) {}
 
-inline bool StandardAdmissibility::operator()(const BoundingBox &box1,
-                                              const BoundingBox &box2) const {
-  double diam1 = box1.diameter();
-  double diam2 = box2.diameter();
+inline bool StandardAdmissibility::operator()(const ClusterTreeNodeData &cluster1,
+                                              const ClusterTreeNodeData &cluster2) const {
+  double diam1 = cluster1.diameter;
+  double diam2 = cluster2.diameter;
 
-  double dist = box1.distance(box2);
+  double dist = clusterDistance(cluster1.clusterPoints,cluster2.clusterPoints);
 
   return std::min(diam1, diam2) < m_eta * dist;
 }
 
-inline bool WeakAdmissibility::operator()(const BoundingBox &box1,
-                                          const BoundingBox &box2) const {
+inline bool WeakAdmissibility::operator()(const ClusterTreeNodeData &cluster1,
+                                          const ClusterTreeNodeData &cluster2) const {
 
-  return box1.distance(box2) > 0;
+  return clusterDistance(cluster1.clusterPoints,cluster2.clusterPoints) > 0;
 }
 }
 #endif
