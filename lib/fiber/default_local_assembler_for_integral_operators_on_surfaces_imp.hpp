@@ -31,7 +31,6 @@
 #include "serial_blas_region.hpp"
 
 #include <tbb/parallel_for.h>
-#include <tbb/task_scheduler_init.h>
 
 #include "../common/auto_timer.hpp"
 
@@ -504,15 +503,6 @@ void DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
   // m_cache.rehash(int(elementIndexPairs.size() / m_cache.max_load_factor() +
   // 1));
 
-  int maxThreadCount = 1;
-  if (!m_parallelizationOptions.isOpenClEnabled()) {
-    if (m_parallelizationOptions.maxThreadCount() ==
-        ParallelizationOptions::AUTO)
-      maxThreadCount = tbb::task_scheduler_init::automatic;
-    else
-      maxThreadCount = m_parallelizationOptions.maxThreadCount();
-  }
-  tbb::task_scheduler_init scheduler(maxThreadCount);
 
   // Now loop over unique quadrature variants
   for (typename QuadVariantSet::const_iterator it = uniqueQuadVariants.begin();

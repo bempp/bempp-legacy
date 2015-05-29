@@ -48,7 +48,6 @@
 
 #include <tbb/parallel_for.h>
 #include <tbb/spin_mutex.h>
-#include <tbb/task_scheduler_init.h>
 //#include <tbb/tick_count.h>
 
 namespace Bempp
@@ -311,16 +310,6 @@ assembleDetachedWeakForm(
     typedef DenseWeakFormAssemblerLoopBody<BasisFunctionType, ResultType> Body;
     typename Body::MutexType mutex;
 
-    const ParallelizationOptions& parallelOptions =
-            options.parallelizationOptions();
-    int maxThreadCount = 1;
-    if (!parallelOptions.isOpenClEnabled()) {
-        if (parallelOptions.maxThreadCount() == ParallelizationOptions::AUTO)
-            maxThreadCount = tbb::task_scheduler_init::automatic;
-        else
-            maxThreadCount = parallelOptions.maxThreadCount();
-    }
-    tbb::task_scheduler_init scheduler(maxThreadCount);
     {
         Fiber::SerialBlasRegion region;
         tbb::parallel_for(tbb::blocked_range<int>(0, trialElementCount),
@@ -386,16 +375,6 @@ assemblePotentialOperator(
     typedef DensePotentialOperatorAssemblerLoopBody<BasisFunctionType, ResultType> Body;
     typename Body::MutexType mutex;
 
-    const ParallelizationOptions& parallelOptions =
-            options.parallelizationOptions();
-    int maxThreadCount = 1;
-    if (!parallelOptions.isOpenClEnabled()) {
-        if (parallelOptions.maxThreadCount() == ParallelizationOptions::AUTO)
-            maxThreadCount = tbb::task_scheduler_init::automatic;
-        else
-            maxThreadCount = parallelOptions.maxThreadCount();
-    }
-    tbb::task_scheduler_init scheduler(maxThreadCount);
     {
         Fiber::SerialBlasRegion region;
         tbb::parallel_for(tbb::blocked_range<int>(0, trialElementCount),

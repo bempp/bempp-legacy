@@ -125,7 +125,10 @@ int main()
 
     // Define the Context object from default parameters
     
-    Context<BFT, RT> context(GlobalParameters::parameterList());
+    auto parameters = GlobalParameters::parameterList();
+    parameters.put("options.assembly.boundaryOperatorAssemblyType",std::string("hmat"));
+    
+    Context<BFT, RT> context(parameters);
 
     // Construct elementary operators
 
@@ -135,70 +138,6 @@ int main()
                 make_shared_from_ref(pwiseConstants),
                 make_shared_from_ref(pwiseLinears),
                 make_shared_from_ref(pwiseConstants));
-    BoundaryOperator<BFT, RT> dlpOp =
-            laplace3dDoubleLayerBoundaryOperator<BFT, RT>(
-                make_shared_from_ref(context),
-                make_shared_from_ref(pwiseLinears),
-                make_shared_from_ref(pwiseLinears),
-                make_shared_from_ref(pwiseConstants));
-    BoundaryOperator<BFT, RT> idOp =
-            identityOperator<BFT, RT>(
-                make_shared_from_ref(context),
-                make_shared_from_ref(pwiseLinears),
-                make_shared_from_ref(pwiseLinears),
-                make_shared_from_ref(pwiseConstants));
 
-    // Form the right-hand side sum
-
-    BoundaryOperator<BFT, RT> rhsOp = -0.5 * idOp + dlpOp;
-
-    // Construct the grid function representing the (input) Dirichlet data
-
-    GridFunction<BFT, RT> dirichletData(
-                make_shared_from_ref(context),
-                make_shared_from_ref(pwiseLinears),
-                make_shared_from_ref(pwiseLinears),
-                surfaceNormalAndDomainIndexDependentFunction(DirichletData()));
-
-    // Construct the right-hand-side grid function
-
-    GridFunction<BFT, RT> rhs = rhsOp * dirichletData;
-
-    // Solve the dense system via Eigen
-
-    // First get the projections onto the space of piecewise constant functions.
-    Vector<RT> rhsVector = rhs.projections(make_shared_from_ref(pwiseConstants));
-
-    // Now get the matrix
-    
-    Matrix<RT> mat = slpOp.weakForm()->asMatrix();
-
-    // Solve the system via Eigen. We can use the LLT solver since the matrix
-    // in this case is symmetric and positive definite.
-    
-    Vector<RT> solVector = mat.llt().solve(rhsVector);
-
-    // Create a grid function from the result
-    
-    GridFunction<BFT,RT> solFun(make_shared_from_ref(context),
-                                make_shared_from_ref(pwiseConstants),
-                                solVector);
-                                     
-    // Export solution to VTK
-
-    exportToVtk(solFun, VtkWriter::CELL_DATA, "Neumann_data", "solution");
-
-    // Compare the numerical and analytical solution on the grid
-
-    GridFunction<BFT, RT> exactSolFun(
-                make_shared_from_ref(context),
-                make_shared_from_ref(pwiseConstants),
-                make_shared_from_ref(pwiseConstants),
-                surfaceNormalAndDomainIndexDependentFunction(ExactNeumannData()));
-    CT absoluteError, relativeError;
-    estimateL2Error(
-                solFun, surfaceNormalAndDomainIndexDependentFunction(ExactNeumannData()),
-                *context.quadStrategy(), absoluteError, relativeError);
-    std::cout << "Relative L^2 error: " << relativeError << std::endl;
-
+    auto weak_form = slpOp.weakForm();
 }

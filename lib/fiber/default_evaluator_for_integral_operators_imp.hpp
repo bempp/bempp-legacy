@@ -38,7 +38,6 @@
 #include "types.hpp"
 
 #include <tbb/parallel_for.h>
-#include <tbb/task_scheduler_init.h>
 
 #include <assert.h>
 
@@ -186,15 +185,6 @@ void DefaultEvaluatorForIntegralOperators<
       std::max(1ul, 10 * 1024 * 1024 / kernelValuesSizePerEvalPoint);
   const size_t chunkCount = (pointCount + chunkSize - 1) / chunkSize;
 
-  int maxThreadCount = 1;
-  if (!m_parallelizationOptions.isOpenClEnabled()) {
-    if (m_parallelizationOptions.maxThreadCount() ==
-        ParallelizationOptions::AUTO)
-      maxThreadCount = tbb::task_scheduler_init::automatic;
-    else
-      maxThreadCount = m_parallelizationOptions.maxThreadCount();
-  }
-  tbb::task_scheduler_init scheduler(maxThreadCount);
   typedef EvaluationLoopBody<BasisFunctionType, KernelType, ResultType> Body;
   {
     Fiber::SerialBlasRegion region;

@@ -59,7 +59,6 @@
 
 #include <tbb/atomic.h>
 #include <tbb/parallel_for.h>
-#include <tbb/task_scheduler_init.h>
 #include <tbb/concurrent_queue.h>
 
 
@@ -113,11 +112,6 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
   WeakFormHMatAssemblyHelper<BasisFunctionType, ResultType> helper(
       *actualTestSpace, *actualTrialSpace, blockClusterTree, localAssemblers,
       sparseTermsToAdd, denseTermMultipliers, sparseTermMultipliers);
-
-  int maxThreadCount = parameterList.template get<int>(
-          "options.global.maxThreadCount");
-
-  tbb::task_scheduler_init scheduler(maxThreadCount);
 
   auto compressionAlgorithm = parameterList.template get<std::string>("options.hmat.compressionAlgorithm");
 

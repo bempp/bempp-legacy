@@ -30,7 +30,4 @@ EigenInit::EigenInit() {
 
 }
 
-EigenInit EigenInit::m_singleton;
-
-
 }

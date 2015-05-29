@@ -46,13 +46,13 @@ template <typename ValueType>
 typename ScalarTraits<ValueType>::RealType
 HMatrixLowRankData<ValueType>::frobeniusNorm() const {
 
-  auto aHa = m_A.t() * m_A;
+  auto aHa = m_A.adjoint() * m_A;
 
   Matrix<ValueType> result(1, 1);
 
   for (int i = 0; i < m_B.cols(); ++i) {
     auto col = m_B.col(i);
-    result += col.adjoint * aHa * col;
+    result += col.adjoint() * aHa * col;
   }
 
   return std::sqrt(std::real(result(0, 0)));
@@ -72,7 +72,7 @@ void HMatrixLowRankData<ValueType>::apply(const Matrix<ValueType> &X,
                                           ValueType beta) const {
 
   if (beta == ValueType(0))
-    Y.zeros();
+    Y.setZero();
   if (alpha == ValueType(0)) {
     Y = beta * Y;
     return;
