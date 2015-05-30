@@ -1,6 +1,7 @@
 mako_files(
     hmatrix.mako.pxd hmatrix.mako.pyx block_cluster_tree.mako.pxd
-    block_cluster_tree.mako.pyx
+    block_cluster_tree.mako.pyx hmatrix_data.mako.pxd 
+    hmatrix_data.mako.pyx py_hmat_support.mako.hpp
     OUTPUT_FILES makoed
     DESTINATION "${PYTHON_BINARY_DIR}/bempp/include/bempp/hmat"
     TARGETNAME bempp.hmat-mako
@@ -18,7 +19,7 @@ install_python(FILES ${headers} DESTINATION bempp/include/bempp/hmat)
 add_dependencies(cython-headers bempp.hmat-mako)
 
 add_python_module(bempp.hmat
-    ${sources} __init__.py 
+    ${sources} __init__.py inspection.py
     TARGETNAME bempp.hmat
     CPP
     LIBRARIES libbempp

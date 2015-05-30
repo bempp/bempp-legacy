@@ -25,7 +25,14 @@ cdef extern from "bempp/io/gmsh.hpp":
         element "Bempp::GmshPostData::ELEMENT"
         element_node "Bempp::GmshPostData::ELEMENT_NODE"
 
+cdef extern from "bempp/hmat/common.hpp":
+    cdef enum HMatBlockType "hmat::DataBlockType":
+        dense "hmat::DataBlockType::DENSE"
+        low_rank_ab "hmat::DataBlockType::LOW_RANK_AB"
+
+
 cdef SymmetryMode symmetry_mode(string name)
 cdef TranspositionMode transposition_mode(string name)
 cdef ConstructionMode construction_mode(string name)
 cdef GmshPostDataType gmsh_post_data_type(string name)
+cdef HMatBlockType hmat_block_type(string name)

@@ -13,6 +13,12 @@ from bempp.utils cimport shared_ptr, static_pointer_cast
 from bempp.hmat.hmatrix cimport c_HMatrix
 from bempp.hmat.block_cluster_tree cimport c_BlockClusterTree
 from bempp.hmat.block_cluster_tree cimport BlockClusterTree
+from bempp.hmat.block_cluster_tree cimport BlockClusterTreeNode
+from bempp.hmat.hmatrix_data cimport HMatrixData
+from bempp.hmat.hmatrix_data cimport down_cast_to_low_rank_data
+from bempp.hmat.hmatrix_data cimport down_cast_to_dense_data
+from bempp.utils.enum_types cimport dense, low_rank_ab
+
 % for pyvalue in dtypes:
 from bempp.utils.eigen cimport eigen_matrix_to_np_${pyvalue}
 % endfor
@@ -397,6 +403,32 @@ cdef class HMatDiscreteBoundaryOperator(DiscreteBoundaryOperator):
     def __dealloc__(self):
         pass
 
+    def data(self, BlockClusterTreeNode node):
+        cdef HMatrixData data = HMatrixData()
+
+        try:
+            if not (self.dtype=='float64' or self.dtype=='complex128'):
+                raise ValueError("Unsupported dtype")
+
+            if self.dtype=='float64':
+                data.impl_float64_.assign(
+                        deref(py_hmatrix_from_discrete_operator[double](self._impl_float64_)).data(node.impl_))
+            else: 
+                data.impl_complex128_.assign(
+                        deref(py_hmatrix_from_discrete_operator[complex_double](self._impl_complex128_)).data(node.impl_))
+        except:
+            raise Exception("Could not obtain data associated with this block cluster node.")
+
+        data._dtype = self.dtype
+
+        if data.block_type=='dense':
+            return down_cast_to_dense_data(data)
+        elif data.block_type=='low_rank_ab':
+            return down_cast_to_low_rank_data(data)
+        else:
+            raise Exception("Unsupported data block type.")
+
+
     property block_cluster_tree:
 
         def __get__(self):
@@ -410,7 +442,15 @@ cdef class HMatDiscreteBoundaryOperator(DiscreteBoundaryOperator):
                 return tree
 % endfor
 
-        
+    property statistics:
+
+        def __get__(self):
+            from bempp.hmat.inspection import compression_statistics
+
+            if self._statistics is None: 
+                self._statistics = compression_statistics(self)
+
+            return self._statistics
 
 
 

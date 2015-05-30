@@ -18,6 +18,7 @@ using boost::make_shared;
 using boost::enable_shared_from_this;
 using boost::weak_ptr;
 using boost::const_pointer_cast;
+using boost::static_pointer_cast;
 
 template <typename T> struct shared_ptr_hash {
 

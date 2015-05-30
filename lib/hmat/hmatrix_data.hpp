@@ -5,6 +5,9 @@
 
 #include "common.hpp"
 #include "scalar_traits.hpp"
+#include "eigen_fwd.hpp"
+
+#include <vector>
 
 namespace hmat {
 
@@ -21,6 +24,8 @@ public:
   virtual typename ScalarTraits<ValueType>::RealType frobeniusNorm() const = 0;
 
   virtual double memSizeKb() const = 0;
+
+  virtual DataBlockType type() const = 0;
 };
 }
 

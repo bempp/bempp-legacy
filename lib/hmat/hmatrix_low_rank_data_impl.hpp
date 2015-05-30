@@ -66,6 +66,13 @@ double HMatrixLowRankData<ValueType>::memSizeKb() const {
 }
 
 template <typename ValueType>
+DataBlockType HMatrixLowRankData<ValueType>::type() const {
+
+  return LOW_RANK_AB;
+
+}
+
+template <typename ValueType>
 void HMatrixLowRankData<ValueType>::apply(const Matrix<ValueType> &X,
                                           Matrix<ValueType> &Y,
                                           TransposeMode trans, ValueType alpha,

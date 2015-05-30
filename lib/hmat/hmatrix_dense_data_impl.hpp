@@ -56,6 +56,13 @@ template <typename ValueType> int HMatrixDenseData<ValueType>::rank() const {
 }
 
 template <typename ValueType>
+DataBlockType HMatrixDenseData<ValueType>::type() const {
+
+  return DENSE;
+
+}
+
+template <typename ValueType>
 typename ScalarTraits<ValueType>::RealType
 HMatrixDenseData<ValueType>::frobeniusNorm() const {
   return m_A.norm();

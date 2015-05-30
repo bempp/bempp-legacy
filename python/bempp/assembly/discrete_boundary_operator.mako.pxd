@@ -46,5 +46,5 @@ cdef class DenseDiscreteBoundaryOperator(DiscreteBoundaryOperator):
     cdef object _init_array_view(self)
 
 cdef class HMatDiscreteBoundaryOperator(DiscreteBoundaryOperator):
-    pass
+    cdef object _statistics
 

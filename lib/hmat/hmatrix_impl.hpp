@@ -73,8 +73,8 @@ template <typename ValueType, int N>
 shared_ptr<const HMatrixData<ValueType>> 
 HMatrix<ValueType, N>::data(
     shared_ptr<const BlockClusterTreeNode<N>> node) const {
-  return this->m_hMatrixData[const_pointer_cast<BlockClusterTreeNode<N>>(
-      node)];
+  return this->m_hMatrixData.at(const_pointer_cast<BlockClusterTreeNode<N>>(
+      node));
 }
 
 template <typename ValueType, int N>

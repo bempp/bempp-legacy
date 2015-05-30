@@ -27,6 +27,8 @@ public:
 
   double memSizeKb() const override;
 
+  DataBlockType type() const override;
+
 private:
   Matrix<ValueType> m_A;
 };

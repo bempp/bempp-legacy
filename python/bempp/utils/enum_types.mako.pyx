@@ -62,3 +62,16 @@ cdef GmshPostDataType gmsh_post_data_type(string name):
         raise ValueError("Unsupported gmsh type")
 
     return res
+
+cdef HMatBlockType hmat_block_type(string name):
+
+    cdef HMatBlockType res
+
+    if name==string(b'dense'):
+        res = dense 
+    elif name==string(b'low_rank_ab'):
+        res = low_rank_ab 
+    else:
+        raise ValueError("Unsupported block type")
+
+    return res

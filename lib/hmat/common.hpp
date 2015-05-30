@@ -33,6 +33,13 @@ enum TransposeMode {
   CONJTRANS
 };
 
+enum DataBlockType {
+
+  DENSE,
+  LOW_RANK_AB
+
+};
+
 IndexSetType fillIndexRange(std::size_t start, std::size_t stop);
 
 double obbDistance(const std::vector<Point>& points1,
