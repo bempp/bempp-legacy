@@ -120,10 +120,10 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
   if (compressionAlgorithm=="aca")
   {
 
-    auto eps = parameterList.template get<double>("options.hmat.eta");
+    auto eps = parameterList.template get<double>("options.hmat.eps");
     auto maxRank = parameterList.template get<int>("options.hmat.maxRank");
     hmat::HMatrixAcaCompressor<ResultType, 2> 
-        compressor(helper, 1E-3, 30);
+        compressor(helper, eps, maxRank);
     hMatrix.reset(new hmat::DefaultHMatrixType<ResultType>
             (blockClusterTree, compressor));
   }

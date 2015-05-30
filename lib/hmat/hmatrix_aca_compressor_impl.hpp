@@ -74,6 +74,9 @@ void HMatrixAcaCompressor<ValueType, N>::compressBlock(
     evaluateMatMinusLowRank(blockClusterTreeNode, rowIndexRange,
                             columnIndexRange, newRow, A, B);
 
+    if (isnan(newRow))
+      throw std::runtime_error("Nan in newRow");
+
     std::ptrdiff_t maxRowInd;
     std::ptrdiff_t maxColInd;
 
@@ -82,7 +85,7 @@ void HMatrixAcaCompressor<ValueType, N>::compressBlock(
 
     auto val = newRow.cwiseAbs().maxCoeff(&maxRowInd,&maxColInd);
 
-    if (val < 1E-12) continue;
+    if (val < 1E-14) continue;
 
     auto pivot = newRow(0, maxColInd);
 
@@ -98,14 +101,17 @@ void HMatrixAcaCompressor<ValueType, N>::compressBlock(
     evaluateMatMinusLowRank(blockClusterTreeNode, rowIndexRange,
                             columnIndexRange, newCol, A, B);
 
+    if (isnan(newCol))
+      throw std::runtime_error("Nan in newCol");
+
     auto frobeniousNorm = hMatrixData->frobeniusNorm();
 
 
     if (rankCount == A.cols()) {
       Matrix<ValueType> Atmp(A);
       Matrix<ValueType> Btmp(B);
-      A.resize(A.rows(),A.cols()+m_resizeThreshold);
-      B.resize(B.rows()+m_resizeThreshold,B.cols());
+      A.resize(numberOfRows,A.cols()+m_resizeThreshold);
+      B.resize(B.rows()+m_resizeThreshold,numberOfColumns);
       A.setZero();
       B.setZero();
       A.leftCols(Atmp.cols()) = Atmp;
@@ -121,14 +127,15 @@ void HMatrixAcaCompressor<ValueType, N>::compressBlock(
     if (newCol.norm() * newRow.norm() < m_eps * frobeniousNorm)
       break;
   }
+  //if (isnan(A) || isnan(B))
+  //  throw std::runtime_error("NaN detected before end of compress.");
+
   if (A.cols() - rankCount > 0) {
       A = A.block(0,0,A.rows(),rankCount).eval();
       B = B.block(0,0,rankCount,B.cols()).eval();
   }
-  if (!((A-A).array() == (A-A).array()).all() ||
-       ((B-B).array() == (B-B).array()).all()) {
-    throw std::runtime_error("NaN detected.");
-  } 
+  if (isnan(A) || isnan(B))
+    throw std::runtime_error("NaN detected at end of compress.");
 
 
 }
@@ -162,8 +169,15 @@ void HMatrixAcaCompressor<ValueType, N>::evaluateMatMinusLowRank(
   auto colStart = columnIndexRange[0] - columnClusterRange[0];
   auto colEnd = columnIndexRange[1] - columnClusterRange[0];
 
-  data = data - A.block(rowStart, 0, rowEnd - rowStart, A.cols()) *
-                    B.block(0, colStart, colEnd - colStart, B.rows());
+  int aCols = A.cols();
+  int bRows = B.rows();
+
+  //Matrix<ValueType> aBlock = A.block(rowStart,0,rowEnd-rowStart,aCols);
+  //Matrix<ValueType> bBlock = B.block(0,colStart,bRows,colEnd-colStart);
+
+  //Matrix<ValueType> term = aBlock*bBlock;
+
+  data -= A.block(rowStart,0,rowEnd-rowStart,aCols)*B.block(0,colStart,bRows,colEnd-colStart);
 }
 
 template <typename ValueType, int N>

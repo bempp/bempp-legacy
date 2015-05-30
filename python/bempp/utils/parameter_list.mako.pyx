@@ -225,7 +225,7 @@ cdef class _HMatParameterList:
             cdef char* s = b"options.hmat.eps"
             return deref(self.impl_).get_double(s)
         def __set__(self,double value):
-            cdef char* s = "b:options.hmat.eps"
+            cdef char* s = b"options.hmat.eps"
             deref(self.impl_).put_double(s,value)
 
     property max_rank:
