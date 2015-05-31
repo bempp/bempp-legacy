@@ -73,8 +73,8 @@ DataBlockType HMatrixLowRankData<ValueType>::type() const {
 }
 
 template <typename ValueType>
-void HMatrixLowRankData<ValueType>::apply(const Matrix<ValueType> &X,
-                                          Matrix<ValueType> &Y,
+void HMatrixLowRankData<ValueType>::apply(const Eigen::Ref<Matrix<ValueType>>& X,
+                                          Eigen::Ref<Matrix<ValueType>> Y,
                                           TransposeMode trans, ValueType alpha,
                                           ValueType beta) const {
 

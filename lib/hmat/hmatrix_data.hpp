@@ -13,7 +13,7 @@ namespace hmat {
 
 template <typename ValueType> class HMatrixData {
 public:
-  virtual void apply(const Matrix<ValueType> &X, Matrix<ValueType> &Y,
+  virtual void apply(const Eigen::Ref<Matrix<ValueType>> &X, Eigen::Ref<Matrix<ValueType>> Y,
                      TransposeMode trans, ValueType alpha,
                      ValueType beta) const = 0;
 

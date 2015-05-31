@@ -78,12 +78,12 @@ void DiscreteHMatBoundaryOperator<ValueType>::applyBuiltInImpl(
     hmatTrans = hmat::CONJ;
   else
     hmatTrans = hmat::CONJTRANS;
-  Matrix<ValueType> x_inMat = x_in;
-  Matrix<ValueType> y_inoutMat = y_inout;
+  Eigen::Ref<Matrix<ValueType>> x_inMat = x_in;
+  Eigen::Ref<Matrix<ValueType>> y_inoutMat = y_inout;
 
   m_hMatrix->apply(x_inMat, y_inoutMat, hmatTrans, alpha, beta);
 
-  y_inout = y_inoutMat.col(0);
+  //y_inout = y_inoutMat.col(0);
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(DiscreteHMatBoundaryOperator);

@@ -7,6 +7,7 @@
 #include "hmatrix_data.hpp"
 #include "hmatrix_dense_data.hpp"
 #include <tbb/parallel_for_each.h>
+#include <tbb/task_group.h>
 
 #include <algorithm>
 
@@ -41,17 +42,40 @@ void HMatrix<ValueType, N>::initialize(
 
   reset();
 
-  auto leafNodes = m_blockClusterTree->leafNodes();
+  typedef decltype(m_blockClusterTree->root()) node_t;
+  
+  std::function<void(const node_t& node)> compressFun = 
+   [&](const node_t& node){
+    if (node->isLeaf())
+    {
+     shared_ptr<HMatrixData<ValueType>> nodeData;
+     hMatrixCompressor.compressBlock(*node, nodeData);
+     m_hMatrixData[node] = nodeData;
+    }
+    else 
+    {
+      tbb::task_group g;
+      g.run([&]{compressFun(node->child(0));});
+      g.run([&]{compressFun(node->child(1));});
+      g.run([&]{compressFun(node->child(2));});
+      g.run([&]{compressFun(node->child(3));});
+      g.wait();
+    }
+  };
+            
+
+  compressFun(m_blockClusterTree->root());
+
 
   // The following can be removed for C++14 compilers that
   // support polymorphic lambda expressions.
-  typedef decltype(*begin(leafNodes)) node_t;
+  //typedef decltype(*begin(leafNodes)) node_t;
 
-  tbb::parallel_for_each(begin(leafNodes),end(leafNodes),[&](const node_t& node){
-    shared_ptr<HMatrixData<ValueType>> nodeData;
-    hMatrixCompressor.compressBlock(*node, nodeData);
-    m_hMatrixData[node] = nodeData;
-  });
+  //tbb::parallel_for_each(begin(leafNodes),end(leafNodes),[&](const node_t& node){
+  //  shared_ptr<HMatrixData<ValueType>> nodeData;
+  //  hMatrixCompressor.compressBlock(*node, nodeData);
+  //  m_hMatrixData[node] = nodeData;
+  //});
 }
 
 template <typename ValueType, int N> void HMatrix<ValueType, N>::reset() {
@@ -131,14 +155,16 @@ Matrix<ValueType> HMatrix<ValueType, N>::permuteMatToOriginalDofs(
 }
 
 template <typename ValueType, int N>
-void HMatrix<ValueType, N>::apply(const Matrix<ValueType> &X,
-                                  Matrix<ValueType> &Y, TransposeMode trans,
+void HMatrix<ValueType, N>::apply(const Eigen::Ref<Matrix<ValueType>>& X,
+                                  Eigen::Ref<Matrix<ValueType>> Y, TransposeMode trans,
                                   ValueType alpha, ValueType beta) const {
 
   if (beta == ValueType(0))
     Y.setZero();
   else
     Y *= beta;
+
+  typedef decltype(m_blockClusterTree->root()) node_t;
 
   Matrix<ValueType> xPermuted;
   Matrix<ValueType> yPermuted;
@@ -151,6 +177,26 @@ void HMatrix<ValueType, N>::apply(const Matrix<ValueType> &X,
     xPermuted = permuteMatToHMatDofs(X, ROW);
     yPermuted = permuteMatToHMatDofs(Y, COL);
   }
+
+
+  std::function<void(const node_t&, const Eigen::Ref<Matrix<ValueType>>&,
+      Eigen::Ref<Matrix<ValueType>>)> applyFun = [&](
+        const node_t& node, const Eigen::Ref<Matrix<ValueType>>& x_in,
+        Eigen::Ref<Matrix<ValueType>> y_inout)
+      {
+        if (node->isLeaf())
+        {
+          m_hMatrixData[node]->apply(x_in,y_inout,trans,alpha,1.0);
+        }
+        else
+        {
+
+
+
+      };
+
+    
+
 
   std::for_each(begin(m_hMatrixData), end(m_hMatrixData),
                 [trans, alpha, beta, &xPermuted, &yPermuted, this](

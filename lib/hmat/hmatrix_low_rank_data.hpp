@@ -13,7 +13,7 @@ template <typename ValueType>
 class HMatrixLowRankData : public HMatrixData<ValueType> {
 
 public:
-  void apply(const Matrix<ValueType> &X, Matrix<ValueType> &Y,
+  void apply(const Eigen::Ref<Matrix<ValueType>> &X, Eigen::Ref<Matrix<ValueType>> Y,
              TransposeMode trans, ValueType alpha, ValueType beta) const
       override;
 

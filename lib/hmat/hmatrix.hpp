@@ -19,7 +19,7 @@ template <typename ValueType, int N> class HMatrix;
 template <typename ValueType> using DefaultHMatrixType = HMatrix<ValueType, 2>;
 
 template <typename ValueType, int N>
-class HMatrix : public CompressedMatrix<ValueType> {
+class HMatrix { 
 public:
 
   typedef tbb::concurrent_unordered_map<shared_ptr<BlockClusterTreeNode<N>>,
@@ -30,23 +30,21 @@ public:
   HMatrix(const shared_ptr<BlockClusterTree<N>> &blockClusterTree,
           const HMatrixCompressor<ValueType, N> &hMatrixCompressor);
 
-  std::size_t rows() const override;
-  std::size_t columns() const override;
+  std::size_t rows() const;
+  std::size_t columns() const;
 
   void initialize(const HMatrixCompressor<ValueType, N> &hMatrixCompressor);
   bool isInitialized() const;
   void reset();
 
-  void apply(const Matrix<ValueType> &X, Matrix<ValueType> &Y,
-             TransposeMode trans, ValueType alpha, ValueType beta) const
-      override;
+  void apply(const Eigen::Ref<Matrix<ValueType>> &X, Eigen::Ref<Matrix<ValueType>> Y,
+             TransposeMode trans, ValueType alpha, ValueType beta) const;
 
   Matrix<ValueType> permuteMatToHMatDofs(const Matrix<ValueType> &mat,
-                                            RowColSelector rowOrColumn) const
-      override;
+                                            RowColSelector rowOrColumn) const;
   Matrix<ValueType>
   permuteMatToOriginalDofs(const Matrix<ValueType> &mat,
-                           RowColSelector rowOrColumn) const override;
+                           RowColSelector rowOrColumn) const;
 
   shared_ptr<const BlockClusterTree<N>> blockClusterTree() const;
   shared_ptr<const hmat::HMatrixData<ValueType>> data(
