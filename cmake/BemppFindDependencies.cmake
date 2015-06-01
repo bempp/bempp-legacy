@@ -99,8 +99,7 @@ set(BEMPP_INCLUDE_DIRS
    ${PYTHON_INCLUDE_DIR}
    ${NUMPY_INCLUDE_DIRS}
 )
-
-if (${dune-foamgrid_INCLUDE_DIRS})
+if (dune-foamgrid_INCLUDE_DIRS)
     list(APPEND BEMPP_INCLUDE_DIRS ${dune-foamgrid_INCLUDE_DIRS})
 endif()
 
