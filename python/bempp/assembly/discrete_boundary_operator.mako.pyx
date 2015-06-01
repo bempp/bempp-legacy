@@ -7,6 +7,7 @@ from bempp.utils.enum_types cimport transposition_mode
 from bempp.utils cimport complex_float,complex_double
 from cython.operator cimport dereference as deref
 from bempp.utils.enum_types cimport TranspositionMode
+from bempp.utils.enum_types cimport transposition_mode
 cimport bempp.utils.enum_types as enums
 from bempp.utils.byte_conversion import convert_to_bytes
 from bempp.utils cimport shared_ptr, static_pointer_cast
@@ -98,10 +99,15 @@ cdef class ZeroDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
     def __init__(self,int M, int N):
         self._shape = (M,N)
         self._dtype = np.dtype('float64')
+        self.transpose_mode = enums.no_transpose
 
     property shape:
         def __get__(self):
-            return self._shape
+            if (self.transpose_mode==enums.no_transpose or
+                    self.transpose_mode==enums.conjugate):
+                return self._shape
+            else:
+                return (self._shape[1],self._shape[0])
 
     def as_matrix(self):
 
@@ -117,11 +123,23 @@ cdef class ZeroDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
             x = x.reshape((-1,1))
             is_reshaped=True
 
-        cdef np.ndarray result = np.zeros((self.shape[0],x.shape[1]),
-                dtype=x.dtype)
+        cdef np.ndarray result = np.zeros((self.shape[0],x.shape[1]),dtype=x.dtype)
         if is_reshaped:
             result = result.ravel()
         return result
+
+    def transpose(self):
+
+        return ZeroDiscreteBoundaryOperator(self.shape[1],self.shape[0])
+
+    def conjugate(self):
+
+        return ZeroDiscreteBoundaryOperator(self.shape[0],self.shape[1])
+
+    def conjugate_transpose(self):
+
+        return self.transpose()
+
 
 
 
@@ -131,7 +149,7 @@ cdef class DiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
         pass
 
     def __init__(self):
-        pass
+        self.transpose_mode = enums.no_transpose
 
     def __dealloc__(self):
 
@@ -149,7 +167,11 @@ cdef class DiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
             if self.dtype=="${pyvalue}":
                 rows = deref(self._impl_${pyvalue}_).rowCount()
                 cols = deref(self._impl_${pyvalue}_).columnCount()
-                return (rows,cols)
+                if (self.transpose_mode==enums.no_transpose or
+                        self.transpose_mode==enums.conjugate):
+                    return (rows,cols)
+                else:
+                    return (cols,rows)
 % endfor
             raise ValueError("Unknown value type")
     
@@ -168,7 +190,16 @@ cdef class DiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
     cdef np.ndarray _as_matrix_${pyvalue}(self):
 
         cdef Matrix[${cyvalue}] mat_data = deref(self._impl_${pyvalue}_).asMatrix()
-        return eigen_matrix_to_np_${pyvalue}(mat_data)
+        if (self.transpose_mode==enums.no_transpose):
+            return eigen_matrix_to_np_${pyvalue}(mat_data)
+        if (self.transpose_mode==enums.conjugate):
+            return np.conjugate(eigen_matrix_to_np_${pyvalue}(mat_data))
+        if (self.transpose_mode==enums.transpose):
+            return np.transpose(eigen_matrix_to_np_${pyvalue}(mat_data))
+        if (self.transpose_mode==enums.conjugate_transpose):
+            return np.conjugate(
+                    np.transpose(eigen_matrix_to_np_${pyvalue}(mat_data)))
+
 
 % endfor
 
@@ -199,15 +230,38 @@ cdef class DiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
             raise ValueError("Wrong dimensions.")
 
         if self.dtype=='float64':
-            y = deref(self._impl_float64_).apply(enums.no_transpose,x_in)
+            y = deref(self._impl_float64_).apply(self.transpose_mode,x_in)
         elif self.dtype=='complex128':
-            y = deref(self._impl_complex128_).apply(enums.no_transpose,x_in)
+            y = deref(self._impl_complex128_).apply(self.transpose_mode,x_in)
         else:
             raise NotImplementedError("Data type not supported.")
 
         if is_reshaped:
             y = y.ravel()
         return y
+
+    def _op_with_new_mode(self,mode):
+
+        cdef DiscreteBoundaryOperator res = DiscreteBoundaryOperator()
+        res._dtype = self.dtype
+        if self.dtype=='float64':
+            res._impl_float64_.assign(self._impl_float64_)
+        elif self.dtype=='complex128':
+            res._impl_complex128_.assign(self._impl_complex128_)
+        else:
+            raise NotImplementedError("Data type not supported.")
+        res.transpose_mode = transposition_mode(mode)
+        return res
+
+    def transpose(self):
+        return self._op_with_new_mode('transpose')
+    
+    def conjugate(self):
+        return self._op_with_new_mode('conjugate')
+
+    def conjugate_transpose(self):
+        return self._op_with_new_mode('conjugate_transpose')
+
         
 cdef class _ScaledDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
     cdef DiscreteBoundaryOperatorBase _op
@@ -234,6 +288,18 @@ cdef class _ScaledDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
     def matvec(self,np.ndarray x):
 
         return self._alpha*(self._op*x)
+
+    def transpose(self):
+
+        return _ScaledDiscreteBoundaryOperator(self._op.transpose(),self._alpha)
+
+    def conjugate(self):
+
+        return _ScaledDiscreteBoundaryOperator(self._op.conjugate(),self._alpha)
+
+    def conjugate_transpose(self):
+
+        return _ScaledDiscreteBoundaryOperator(self._op.conjugate_transpose(),self._alpha)
 
 cdef class _SumDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
 
@@ -266,6 +332,17 @@ cdef class _SumDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
 
         return self._op1*x+self._op2*x
 
+    def transpose(self):
+
+        return _SumDiscreteBoundaryOperator(self._op1.transpose(),self._op2.transpose())
+
+    def conjugate(self):
+
+        return _SumDiscreteBoundaryOperator(self._op1.conjugate(),self._op2.conjugate())
+
+    def conjugate_transpose(self):
+
+        return _SumDiscreteBoundaryOperator(self._op1.conjugate_transpose(),self._op2.conjugate_transpose())
 
 cdef class _ProductDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
 
@@ -296,6 +373,19 @@ cdef class _ProductDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
         def __get__(self):
             return (self._op1.shape[0],self._op2.shape[1])
 
+    def transpose(self):
+
+        return _ProductDiscreteBoundaryOperator(self._op2.transpose(),self._op1.transpose())
+
+    def conjugate(self):
+
+        return _ProductDiscreteBoundaryOperator(self._op1.conjugate(),self._op2.conjugate())
+
+    def conjugate_transpose(self):
+
+        return _ProductDiscreteBoundaryOperator(self._op2.conjugate_transpose(),self._op1.conjugate_transpose())
+
+
 cdef class SparseDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
 
     def __cinit__(self,op):
@@ -303,6 +393,7 @@ cdef class SparseDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
 
     def __init__(self,op):
         from scipy.sparse import csc_matrix
+        self.transpose_mode = enums.no_transpose
 
         if not isinstance(op,csc_matrix):
             raise ValueError("op must be of type scipy.sparse.csc.csc_matrix")
@@ -312,11 +403,11 @@ cdef class SparseDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
 
     def as_matrix(self):
 
-        return self._op.todense()
+        return self.spars_operator.to_dense()
 
     def matvec(self,x):
 
-        return self._op*x
+        return self.sparse_operator*x
 
     def __add__(self,DiscreteBoundaryOperatorBase other):
 
@@ -352,53 +443,49 @@ cdef class SparseDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
         """ The SciPy sparse matrix representation of the operator """
 
         def __get__(self):
-            return self._op
+            if self.transpose_mode==enums.no_transpose:
+                return self._op
+            if self.transpose_mode==enums.conjugate:
+                return self._op.conjugate()
+            if self.transpose_mode==enums.conjugate_tranpose:
+                return self._op.conjugate().transpose()
+            if self.transpose_mode==enums.transpose:
+                return self._op.transpose()
 
     property shape:
 
         def __get__(self):
-            return self._op.shape
+            if (self.transpose_mode==enums.no_transpose or
+                    self.transpose_mode==enums.conjugate_transpose):
+                return self._op.shape
+            else:
+                return (self._op.shape[1],self._op.shape[0])
 
     property dtype:
         def __get__(self):
             return self._op.dtype
 
-cdef class DenseDiscreteBoundaryOperator(DiscreteBoundaryOperator):
+    def transpose(self):
 
-    def __cinit__(self):
-        pass
+        return SparseDiscreteBoundaryOperator(self._op.transpose())
 
-    def __init__(self):
-        self._array_view = None
+    def conjugate(self):
 
-    def __dealloc__(self):
-        pass
+        return SparseDiscreteBoundaryOperator(self._op.conjugate())
 
-    cdef object _init_array_view(self):
-        """ Initialize the view on the dense operator via a Numpy Array """
-        if self._array_view is not None:
-            return
-% for pyvalue,cyvalue in dtypes.items():
-        if self.dtype=="${pyvalue}":
-            self._array_view = py_array_from_dense_operator[${cyvalue}](self._impl_${pyvalue}_)
-            return
-% endfor
+    def conjugate_transpose(self):
 
-        raise ValueError("Unknown data type")
+        return SparseDiscreteBoundaryOperator(self._op.conjugate().transpose())
 
-    property numpy_view:
-
-        def __get__(self):
-            self._init_array_view()
-            return self._array_view[:]
-
+        
 cdef class HMatDiscreteBoundaryOperator(DiscreteBoundaryOperator):
 
     def __cinit__(self):
         pass
 
     def __init__(self):
-        pass
+        self.transpose_mode = enums.no_transpose
+        
 
     def __dealloc__(self):
         pass
@@ -460,7 +547,18 @@ cdef class HMatDiscreteBoundaryOperator(DiscreteBoundaryOperator):
             else:
                 return deref(py_hmatrix_from_discrete_operator[complex_double](self._impl_complex128_)).frobeniusNorm()
  
+    def _op_with_new_mode(self,mode):
 
+        cdef HMatDiscreteBoundaryOperator res = HMatDiscreteBoundaryOperator()
+        res._dtype = self.dtype
+        if self.dtype=='float64':
+            res._impl_float64_.assign(self._impl_float64_)
+        elif self.dtype=='complex128':
+            res._impl_complex128_.assign(self._impl_complex128_)
+        else:
+            raise NotImplementedError("Data type not supported.")
+        res.transpose_mode = transposition_mode(mode)
+        return res
 
 cdef class BlockedDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
 

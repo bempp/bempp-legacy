@@ -121,10 +121,6 @@ HMatrix<ValueType, N>::permuteMatToHMatDofs(const Eigen::Ref<Matrix<ValueType>> 
   else
     clusterTree = m_blockClusterTree->columnClusterTree();
 
-  if (clusterTree->numberOfDofs() != mat.rows())
-    throw std::runtime_error("HMatrix::permuteMatToHMatDofs: "
-                             "Input matrix has wrong number of rows.");
-
   for (std::size_t i = 0; i < mat.rows(); ++i) {
     auto permutedIndex = clusterTree->mapOriginalDofToHMatDof(i);
     for (std::size_t j = 0; j < mat.cols(); ++j)
@@ -146,10 +142,6 @@ Matrix<ValueType> HMatrix<ValueType, N>::permuteMatToOriginalDofs(
     clusterTree = m_blockClusterTree->rowClusterTree();
   else
     clusterTree = m_blockClusterTree->columnClusterTree();
-
-  if (clusterTree->numberOfDofs() != mat.rows())
-    throw std::runtime_error("HMatrix::permuteMatToOriginalDofs: "
-                             "Input matrix has wrong number of rows.");
 
   for (std::size_t i = 0; i < mat.rows(); ++i) {
     auto originalIndex = clusterTree->mapHMatDofToOriginalDof(i);
@@ -173,6 +165,7 @@ void HMatrix<ValueType, N>::apply(const Eigen::Ref<Matrix<ValueType>>& X,
   Matrix<ValueType> xPermuted;
   Matrix<ValueType> yPermuted;
 
+
   if (trans == TransposeMode::NOTRANS || trans == TransposeMode::CONJ) {
 
     xPermuted = alpha*permuteMatToHMatDofs(X, COL);
@@ -185,11 +178,12 @@ void HMatrix<ValueType, N>::apply(const Eigen::Ref<Matrix<ValueType>>& X,
   apply_impl(this->m_blockClusterTree->root(),Eigen::Ref<Matrix<ValueType>>(xPermuted), 
       Eigen::Ref<Matrix<ValueType>>(yPermuted), trans);
 
-  if (trans == TransposeMode::NOTRANS || TransposeMode::CONJ)
+
+  if (trans == TransposeMode::NOTRANS || trans == TransposeMode::CONJ)
     Y = this->permuteMatToOriginalDofs(yPermuted, ROW);
   else
     Y = this->permuteMatToOriginalDofs(yPermuted, COL);
-
+  
 
     
 
@@ -251,14 +245,29 @@ void HMatrix<ValueType, N>::apply_impl(const shared_ptr<BlockClusterTreeNode<N>>
     
     tbb::task_group g;
 
-    g.run([&]{
-        this->apply_impl(child0,xData1,yData1,trans);
-        this->apply_impl(child1,xData2,yData1,trans);
-        });
-    g.run_and_wait([&]{
-        this->apply_impl(child2,xData1,yData2,trans);
-        this->apply_impl(child3,xData2,yData2,trans);
-        });
+    if (trans == TransposeMode::NOTRANS || trans == TransposeMode::CONJ) 
+    {
+
+      g.run([&]{
+          this->apply_impl(child0,xData1,yData1,trans);
+          this->apply_impl(child1,xData2,yData1,trans);
+          });
+      g.run_and_wait([&]{
+          this->apply_impl(child2,xData1,yData2,trans);
+          this->apply_impl(child3,xData2,yData2,trans);
+          });
+    }
+    else
+    {
+      g.run([&]{
+          this->apply_impl(child0,xData1,yData1,trans);
+          this->apply_impl(child2,xData2,yData1,trans);
+          });
+      g.run_and_wait([&]{
+          this->apply_impl(child1,xData1,yData2,trans);
+          this->apply_impl(child3,xData2,yData2,trans);
+          });
+    }
   }
 
 //  std::for_each(begin(m_hMatrixData), end(m_hMatrixData),

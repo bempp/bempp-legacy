@@ -26,6 +26,7 @@ cdef extern from "bempp/assembly/py_discrete_operator_support.hpp" namespace "Be
 
 cdef class DiscreteBoundaryOperatorBase:
     cdef object _dtype
+    cdef TranspositionMode transpose_mode
 
 cdef class DiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
 
@@ -40,11 +41,7 @@ cdef class DiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
 cdef class SparseDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
     cdef object _op
 
-cdef class DenseDiscreteBoundaryOperator(DiscreteBoundaryOperator):
-    cdef object _array_view
-    
-    cdef object _init_array_view(self)
-
 cdef class HMatDiscreteBoundaryOperator(DiscreteBoundaryOperator):
     cdef object _statistics
+    
 
