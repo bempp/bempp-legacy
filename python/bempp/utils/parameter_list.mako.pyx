@@ -252,6 +252,21 @@ cdef class _HMatParameterList:
             cdef char* s = b"options.hmat.admissibility"
             deref(self.impl_).put_string(s,convert_to_bytes(value))
 
+    property coarsening:
+        def __get__(self):
+            cdef char* s = b"options.hmat.coarsening"
+            return deref(self.impl_).get_bool(s)
+        def __set__(self,object value):
+            cdef char* s = b"options.hmat.coarsening"
+            deref(self.impl_).put_bool(s,value)
+
+    property coarsening_accuracy:
+        def __get__(self):
+            cdef char* s = b"options.hmat.coarsening_accuracy"
+            return deref(self.impl_).get_double(s)
+        def __set__(self,object value):
+            cdef char* s = b"options.hmat.coarsening_accuracy"
+            deref(self.impl_).put_double(s,value)
     
 
 cdef class ParameterList:

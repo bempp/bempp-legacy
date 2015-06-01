@@ -115,6 +115,9 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
 
   auto compressionAlgorithm = parameterList.template get<std::string>("options.hmat.compressionAlgorithm");
 
+  auto coarsening = parameterList.template get<bool>("options.hmat.coarsening");
+  auto coarsening_accuracy = parameterList.template get<double>("options.hmat.coarsening_accuracy");
+
   shared_ptr<hmat::DefaultHMatrixType<ResultType>> hMatrix;
 
   if (compressionAlgorithm=="aca")
@@ -125,7 +128,7 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
     hmat::HMatrixAcaCompressor<ResultType, 2> 
         compressor(helper, eps, maxRank);
     hMatrix.reset(new hmat::DefaultHMatrixType<ResultType>
-            (blockClusterTree, compressor));
+            (blockClusterTree, compressor, coarsening, coarsening_accuracy));
   }
   else if (compressionAlgorithm=="dense")
   {

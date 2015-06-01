@@ -21,9 +21,10 @@ HMatrix<ValueType, N>::HMatrix(
 template <typename ValueType, int N>
 HMatrix<ValueType, N>::HMatrix(
     const shared_ptr<BlockClusterTree<N>> &blockClusterTree,
-    const HMatrixCompressor<ValueType, N> &hMatrixCompressor)
+    const HMatrixCompressor<ValueType, N> &hMatrixCompressor,
+    bool coarsening, double coarsening_accuracy)
     : HMatrix<ValueType, N>(blockClusterTree) {
-  initialize(hMatrixCompressor);
+  initialize(hMatrixCompressor, coarsening, coarsening_accuracy);
 }
 
 template <typename ValueType, int N>
@@ -37,8 +38,14 @@ std::size_t HMatrix<ValueType, N>::columns() const {
 }
 
 template <typename ValueType, int N>
+double HMatrix<ValueType, N>::frobeniusNorm() const {
+  return frobeniusNorm_impl(m_blockClusterTree->root());
+}
+
+template <typename ValueType, int N>
 void HMatrix<ValueType, N>::initialize(
-    const HMatrixCompressor<ValueType, N> &hMatrixCompressor) {
+    const HMatrixCompressor<ValueType, N> &hMatrixCompressor,
+    bool coarsening, double coarsening_accuracy) {
 
   reset();
 
@@ -282,6 +289,33 @@ void HMatrix<ValueType, N>::apply_impl(const shared_ptr<BlockClusterTreeNode<N>>
 //    //yPermuted.block(outputRange[0],0,outputRange[1]-outputRange[0],yData.cols()) = yData;
 //  });
 }
+
+template <typename ValueType, int N>
+double HMatrix<ValueType, N>::frobeniusNorm_impl(const shared_ptr<BlockClusterTreeNode<N>>& node) const {
+
+
+   if (node->isLeaf()) return m_hMatrixData.at(node)->frobeniusNorm();
+
+   double result = 0;
+
+   tbb::task_group g;
+
+   double res0;
+   double res1;
+   double res2;
+   double res3;
+
+   g.run([&]{res0 = frobeniusNorm_impl(node->child(0));});
+   g.run([&]{res1 = frobeniusNorm_impl(node->child(1));});
+   g.run([&]{res2 = frobeniusNorm_impl(node->child(2));});
+   g.run_and_wait([&]{res3= frobeniusNorm_impl(node->child(3));});
+    
+   result = std::sqrt(res0*res0+res1*res1+res2*res2+res3*res3);
+
+   return result;
+
+}
+
 
 }
 

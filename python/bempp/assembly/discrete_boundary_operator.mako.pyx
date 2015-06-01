@@ -452,6 +452,14 @@ cdef class HMatDiscreteBoundaryOperator(DiscreteBoundaryOperator):
 
             return self._statistics
 
+    property frobenius_norm:
+
+        def __get__(self):
+            if self.dtype=='float64':
+                return deref(py_hmatrix_from_discrete_operator[double](self._impl_float64_)).frobeniusNorm()
+            else:
+                return deref(py_hmatrix_from_discrete_operator[complex_double](self._impl_complex128_)).frobeniusNorm()
+ 
 
 
 cdef class BlockedDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):

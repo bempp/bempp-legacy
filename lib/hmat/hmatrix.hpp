@@ -28,12 +28,17 @@ public:
 
   HMatrix(const shared_ptr<BlockClusterTree<N>> &blockClusterTree);
   HMatrix(const shared_ptr<BlockClusterTree<N>> &blockClusterTree,
-          const HMatrixCompressor<ValueType, N> &hMatrixCompressor);
+          const HMatrixCompressor<ValueType, N> &hMatrixCompressor,
+	  bool coarsening=false, double coarsening_accuracy=0);
 
   std::size_t rows() const;
   std::size_t columns() const;
 
-  void initialize(const HMatrixCompressor<ValueType, N> &hMatrixCompressor);
+  double frobeniusNorm() const;
+  
+
+  void initialize(const HMatrixCompressor<ValueType, N> &hMatrixCompressor,
+                  bool coarsening=false, double coarsening_accuracy=0);
   bool isInitialized() const;
   void reset();
 
@@ -57,6 +62,8 @@ private:
   void apply_impl(const shared_ptr<BlockClusterTreeNode<N>>& node,
       const Eigen::Ref<Matrix<ValueType>> &X, Eigen::Ref<Matrix<ValueType>> Y,
       TransposeMode trans) const;
+
+  double frobeniusNorm_impl(const shared_ptr<BlockClusterTreeNode<N>>& node) const;
 
   shared_ptr<BlockClusterTree<N>> m_blockClusterTree;
   ParallelDataContainer m_hMatrixData;
