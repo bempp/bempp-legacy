@@ -58,8 +58,7 @@ void HMatrix<ValueType, N>::initialize(
       g.run([&]{compressFun(node->child(0));});
       g.run([&]{compressFun(node->child(1));});
       g.run([&]{compressFun(node->child(2));});
-      g.run([&]{compressFun(node->child(3));});
-      g.wait();
+      g.run_and_wait([&]{compressFun(node->child(3));});
     }
   };
             
@@ -103,7 +102,7 @@ HMatrix<ValueType, N>::data(
 
 template <typename ValueType, int N>
 Matrix<ValueType>
-HMatrix<ValueType, N>::permuteMatToHMatDofs(const Matrix<ValueType> &mat,
+HMatrix<ValueType, N>::permuteMatToHMatDofs(const Eigen::Ref<Matrix<ValueType>> &mat,
                                             RowColSelector rowOrColumn) const {
 
   Matrix<ValueType> permutedDofs(mat.rows(), mat.cols());
@@ -130,7 +129,7 @@ HMatrix<ValueType, N>::permuteMatToHMatDofs(const Matrix<ValueType> &mat,
 
 template <typename ValueType, int N>
 Matrix<ValueType> HMatrix<ValueType, N>::permuteMatToOriginalDofs(
-    const Matrix<ValueType> &mat, RowColSelector rowOrColumn) const {
+    const Eigen::Ref<Matrix<ValueType>> &mat, RowColSelector rowOrColumn) const {
 
   Matrix<ValueType> originalDofs(mat.rows(), mat.cols());
 
@@ -164,67 +163,126 @@ void HMatrix<ValueType, N>::apply(const Eigen::Ref<Matrix<ValueType>>& X,
   else
     Y *= beta;
 
-  typedef decltype(m_blockClusterTree->root()) node_t;
-
   Matrix<ValueType> xPermuted;
   Matrix<ValueType> yPermuted;
 
-  if (trans == TransposeMode::NOTRANS) {
+  if (trans == TransposeMode::NOTRANS || trans == TransposeMode::CONJ) {
 
-    xPermuted = permuteMatToHMatDofs(X, COL);
+    xPermuted = alpha*permuteMatToHMatDofs(X, COL);
     yPermuted = permuteMatToHMatDofs(Y, ROW);
   } else {
-    xPermuted = permuteMatToHMatDofs(X, ROW);
+    xPermuted = alpha*permuteMatToHMatDofs(X, ROW);
     yPermuted = permuteMatToHMatDofs(Y, COL);
   }
 
+  apply_impl(this->m_blockClusterTree->root(),Eigen::Ref<Matrix<ValueType>>(xPermuted), 
+      Eigen::Ref<Matrix<ValueType>>(yPermuted), trans);
 
-  std::function<void(const node_t&, const Eigen::Ref<Matrix<ValueType>>&,
-      Eigen::Ref<Matrix<ValueType>>)> applyFun = [&](
-        const node_t& node, const Eigen::Ref<Matrix<ValueType>>& x_in,
-        Eigen::Ref<Matrix<ValueType>> y_inout)
-      {
-        if (node->isLeaf())
-        {
-          m_hMatrixData[node]->apply(x_in,y_inout,trans,alpha,1.0);
-        }
-        else
-        {
+  if (trans == TransposeMode::NOTRANS || TransposeMode::CONJ)
+    Y = this->permuteMatToOriginalDofs(yPermuted, ROW);
+  else
+    Y = this->permuteMatToOriginalDofs(yPermuted, COL);
 
-
-
-      };
 
     
 
+  // Y = this->permuteMatToOriginalDofs(yPermuted, ROW);
+}
 
-  std::for_each(begin(m_hMatrixData), end(m_hMatrixData),
-                [trans, alpha, beta, &xPermuted, &yPermuted, this](
-                    const std::pair<shared_ptr<BlockClusterTreeNode<N>>,
-                                    shared_ptr<HMatrixData<ValueType>>>
-                        elem) {
 
-    IndexRangeType inputRange;
-    IndexRangeType outputRange;
-    if (trans == TransposeMode::NOTRANS) {
-      inputRange = elem.first->data().columnClusterTreeNode->data().indexRange;
-      outputRange = elem.first->data().rowClusterTreeNode->data().indexRange;
-    } else {
-      inputRange = elem.first->data().rowClusterTreeNode->data().indexRange;
-      outputRange = elem.first->data().columnClusterTreeNode->data().indexRange;
+template <typename ValueType, int N>
+void HMatrix<ValueType, N>::apply_impl(const shared_ptr<BlockClusterTreeNode<N>>& node,
+      const Eigen::Ref<Matrix<ValueType>> &X, Eigen::Ref<Matrix<ValueType>> Y,
+      TransposeMode trans) const
+{
+
+  if (node->isLeaf()){
+    this->m_hMatrixData.at(node)->apply(X,Y,trans,1,1);
+  }
+  else
+  {
+
+   auto child0= node->child(0);
+   auto child1= node->child(1);
+   auto child2= node->child(2);
+   auto child3= node->child(3);
+
+   IndexRangeType childRowRange = child0->data().rowClusterTreeNode->data().indexRange;
+   IndexRangeType childColRange = child0->data().columnClusterTreeNode->data().indexRange;
+
+   int rowSplit = childRowRange[1]-childRowRange[0];
+   int colSplit = childColRange[1]-childColRange[0];
+
+   IndexRangeType inputRange;
+   IndexRangeType outputRange;
+
+   int x_size = X.rows();
+   int y_size = Y.rows();
+   
+    // Ugly hack since Eigen::Ref constructor does not like const objects
+    Eigen::Ref<Matrix<ValueType>> x_no_const = const_cast<Eigen::Ref<Matrix<ValueType>>&>(X);
+
+    int x_split;
+    int y_split;
+
+    if (trans == TransposeMode::NOTRANS || trans == TransposeMode::CONJ) 
+    {
+      x_split = colSplit;
+      y_split = rowSplit;
+    } 
+    else 
+    {
+      x_split = rowSplit;
+      y_split = colSplit;
     }
 
-    Matrix<ValueType> xData = xPermuted.block(inputRange[0],0,inputRange[1]-inputRange[0],xPermuted.cols());
-    Matrix<ValueType> yData = yPermuted.block(outputRange[0],0,outputRange[1]-outputRange[0],yPermuted.cols());
+    Eigen::Ref<Matrix<ValueType>> xData1(x_no_const.topRows(x_split));
+    Eigen::Ref<Matrix<ValueType>> xData2(x_no_const.bottomRows(X.rows()-x_split));
 
+    Eigen::Ref<Matrix<ValueType>> yData1(Y.topRows(y_split));
+    Eigen::Ref<Matrix<ValueType>> yData2(Y.bottomRows(Y.rows()-y_split));
+    
+    tbb::task_group g;
 
-    elem.second->apply(xData, yData, trans, alpha, 1);
+    g.run([&]{
+        this->apply_impl(child0,xData1,yData1,trans);
+        this->apply_impl(child1,xData2,yData1,trans);
+        });
+    g.run_and_wait([&]{
+        this->apply_impl(child2,xData1,yData2,trans);
+        this->apply_impl(child3,xData2,yData2,trans);
+        });
+  }
 
-    yPermuted.block(outputRange[0],0,outputRange[1]-outputRange[0],yData.cols()) = yData;
-  });
-
-  Y = this->permuteMatToOriginalDofs(yPermuted, ROW);
+//  std::for_each(begin(m_hMatrixData), end(m_hMatrixData),
+//                [trans, &X, &Y, this](
+//                    const std::pair<shared_ptr<BlockClusterTreeNode<N>>,
+//                                    shared_ptr<HMatrixData<ValueType>>>
+//                        elem) {
+//  
+//   IndexRangeType inputRange;
+//   IndexRangeType outputRange;
+//    if (trans == TransposeMode::NOTRANS) {
+//      inputRange = elem.first->data().columnClusterTreeNode->data().indexRange;
+//      outputRange = elem.first->data().rowClusterTreeNode->data().indexRange;
+//    } else {
+//      inputRange = elem.first->data().rowClusterTreeNode->data().indexRange;
+//      outputRange = elem.first->data().columnClusterTreeNode->data().indexRange;
+//    }
+//
+//    // Ugly hack since Eigen::Ref constructor does not like const objects
+//    Eigen::Ref<Matrix<ValueType>> x_no_const = const_cast<Eigen::Ref<Matrix<ValueType>>&>(X);
+//
+//    Eigen::Ref<Matrix<ValueType>> xData(x_no_const.block(inputRange[0],0,inputRange[1]-inputRange[0],X.cols()));
+//    Eigen::Ref<Matrix<ValueType>> yData(Y.block(outputRange[0],0,outputRange[1]-outputRange[0],Y.cols()));
+//  
+// 
+//    elem.second->apply(xData, yData, trans, 1, 1);
+//  
+//    //yPermuted.block(outputRange[0],0,outputRange[1]-outputRange[0],yData.cols()) = yData;
+//  });
 }
+
 }
 
 #endif

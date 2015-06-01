@@ -40,10 +40,11 @@ public:
   void apply(const Eigen::Ref<Matrix<ValueType>> &X, Eigen::Ref<Matrix<ValueType>> Y,
              TransposeMode trans, ValueType alpha, ValueType beta) const;
 
-  Matrix<ValueType> permuteMatToHMatDofs(const Matrix<ValueType> &mat,
+
+  Matrix<ValueType> permuteMatToHMatDofs(const Eigen::Ref<Matrix<ValueType>> &mat,
                                             RowColSelector rowOrColumn) const;
   Matrix<ValueType>
-  permuteMatToOriginalDofs(const Matrix<ValueType> &mat,
+  permuteMatToOriginalDofs(const Eigen::Ref<Matrix<ValueType>> &mat,
                            RowColSelector rowOrColumn) const;
 
   shared_ptr<const BlockClusterTree<N>> blockClusterTree() const;
@@ -52,6 +53,11 @@ public:
 
 
 private:
+
+  void apply_impl(const shared_ptr<BlockClusterTreeNode<N>>& node,
+      const Eigen::Ref<Matrix<ValueType>> &X, Eigen::Ref<Matrix<ValueType>> Y,
+      TransposeMode trans) const;
+
   shared_ptr<BlockClusterTree<N>> m_blockClusterTree;
   ParallelDataContainer m_hMatrixData;
 };
