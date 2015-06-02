@@ -567,6 +567,15 @@ cdef class HMatDiscreteBoundaryOperator(DiscreteBoundaryOperator):
             else:
                 return deref(py_hmatrix_from_discrete_operator[complex_double](self._impl_complex128_)).memSizeKb()
 
+    property compression_rate:
+
+        def __get__(self):
+            if self.dtype=='float64':
+               return self.mem_size_kb/(64./(8*1024)*self.shape[0]*self.shape[1])
+            else:
+               return self.mem_size_kb/(128./(8*1024)*self.shape[0]*self.shape[1])
+
+
 cdef class BlockedDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
 
     cdef np.ndarray _row_dimensions

@@ -19,7 +19,7 @@ install_python(FILES ${headers} DESTINATION bempp/include/bempp/hmat)
 add_dependencies(cython-headers bempp.hmat-mako)
 
 add_python_module(bempp.hmat
-    ${sources} __init__.py inspection.py
+    ${sources} __init__.py 
     TARGETNAME bempp.hmat
     CPP
     LIBRARIES libbempp
