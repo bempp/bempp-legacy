@@ -8,6 +8,7 @@ from bempp.utils cimport complex_float,complex_double
 from cython.operator cimport dereference as deref
 from bempp.utils.enum_types cimport TranspositionMode
 from bempp.utils.enum_types cimport transposition_mode
+from bempp.utils.enum_types cimport compute_transpose_mode
 cimport bempp.utils.enum_types as enums
 from bempp.utils.byte_conversion import convert_to_bytes
 from bempp.utils cimport shared_ptr, static_pointer_cast
@@ -99,15 +100,10 @@ cdef class ZeroDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
     def __init__(self,int M, int N):
         self._shape = (M,N)
         self._dtype = np.dtype('float64')
-        self.transpose_mode = enums.no_transpose
 
     property shape:
         def __get__(self):
-            if (self.transpose_mode==enums.no_transpose or
-                    self.transpose_mode==enums.conjugate):
                 return self._shape
-            else:
-                return (self._shape[1],self._shape[0])
 
     def as_matrix(self):
 
@@ -146,10 +142,10 @@ cdef class ZeroDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
 cdef class DiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
 
     def __cinit__(self):
-        pass
+        self.transpose_mode = enums.no_transpose
 
     def __init__(self):
-        self.transpose_mode = enums.no_transpose
+        pass
 
     def __dealloc__(self):
 
@@ -250,7 +246,8 @@ cdef class DiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
             res._impl_complex128_.assign(self._impl_complex128_)
         else:
             raise NotImplementedError("Data type not supported.")
-        res.transpose_mode = transposition_mode(mode)
+        res.transpose_mode = compute_transpose_mode(
+                self.transpose_mode,transposition_mode(mode))
         return res
 
     def transpose(self):
@@ -393,7 +390,6 @@ cdef class SparseDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
 
     def __init__(self,op):
         from scipy.sparse import csc_matrix
-        self.transpose_mode = enums.no_transpose
 
         if not isinstance(op,csc_matrix):
             raise ValueError("op must be of type scipy.sparse.csc.csc_matrix")
@@ -443,23 +439,12 @@ cdef class SparseDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
         """ The SciPy sparse matrix representation of the operator """
 
         def __get__(self):
-            if self.transpose_mode==enums.no_transpose:
                 return self._op
-            if self.transpose_mode==enums.conjugate:
-                return self._op.conjugate()
-            if self.transpose_mode==enums.conjugate_tranpose:
-                return self._op.conjugate().transpose()
-            if self.transpose_mode==enums.transpose:
-                return self._op.transpose()
 
     property shape:
 
         def __get__(self):
-            if (self.transpose_mode==enums.no_transpose or
-                    self.transpose_mode==enums.conjugate_transpose):
                 return self._op.shape
-            else:
-                return (self._op.shape[1],self._op.shape[0])
 
     property dtype:
         def __get__(self):
@@ -484,7 +469,7 @@ cdef class HMatDiscreteBoundaryOperator(DiscreteBoundaryOperator):
         pass
 
     def __init__(self):
-        self.transpose_mode = enums.no_transpose
+        pass
         
 
     def __dealloc__(self):
@@ -515,6 +500,27 @@ cdef class HMatDiscreteBoundaryOperator(DiscreteBoundaryOperator):
         else:
             raise Exception("Unsupported data block type.")
 
+    def frobenius_norm(self):
+
+        if self.dtype=='float64':
+            return deref(py_hmatrix_from_discrete_operator[double](self._impl_float64_)).frobeniusNorm()
+        else:
+            return deref(py_hmatrix_from_discrete_operator[complex_double](self._impl_complex128_)).frobeniusNorm()
+
+
+    def _op_with_new_mode(self,mode):
+
+        cdef HMatDiscreteBoundaryOperator res = HMatDiscreteBoundaryOperator()
+        res._dtype = self.dtype
+        if self.dtype=='float64':
+            res._impl_float64_.assign(self._impl_float64_)
+        elif self.dtype=='complex128':
+            res._impl_complex128_.assign(self._impl_complex128_)
+        else:
+            raise NotImplementedError("Data type not supported.")
+        res.transpose_mode = compute_transpose_mode(
+                self.transpose_mode,transposition_mode(mode))
+        return res
 
     property block_cluster_tree:
 
@@ -529,36 +535,37 @@ cdef class HMatDiscreteBoundaryOperator(DiscreteBoundaryOperator):
                 return tree
 % endfor
 
-    property statistics:
-
-        def __get__(self):
-            from bempp.hmat.inspection import compression_statistics
-
-            if self._statistics is None: 
-                self._statistics = compression_statistics(self)
-
-            return self._statistics
-
-    property frobenius_norm:
+    property number_of_dense_blocks:
 
         def __get__(self):
             if self.dtype=='float64':
-                return deref(py_hmatrix_from_discrete_operator[double](self._impl_float64_)).frobeniusNorm()
+                return deref(py_hmatrix_from_discrete_operator[double](self._impl_float64_)).numberOfDenseBlocks()
             else:
-                return deref(py_hmatrix_from_discrete_operator[complex_double](self._impl_complex128_)).frobeniusNorm()
- 
-    def _op_with_new_mode(self,mode):
+                return deref(py_hmatrix_from_discrete_operator[complex_double](self._impl_complex128_)).numberOfDenseBlocks()
 
-        cdef HMatDiscreteBoundaryOperator res = HMatDiscreteBoundaryOperator()
-        res._dtype = self.dtype
-        if self.dtype=='float64':
-            res._impl_float64_.assign(self._impl_float64_)
-        elif self.dtype=='complex128':
-            res._impl_complex128_.assign(self._impl_complex128_)
-        else:
-            raise NotImplementedError("Data type not supported.")
-        res.transpose_mode = transposition_mode(mode)
-        return res
+    property number_of_low_rank_blocks:
+
+        def __get__(self):
+            if self.dtype=='float64':
+                return deref(py_hmatrix_from_discrete_operator[double](self._impl_float64_)).numberOfLowRankBlocks()
+            else:
+                return deref(py_hmatrix_from_discrete_operator[complex_double](self._impl_complex128_)).numberOfLowRankBlocks()
+
+    property number_of_blocks:
+
+        def __get__(self):
+            if self.dtype=='float64':
+                return deref(py_hmatrix_from_discrete_operator[double](self._impl_float64_)).numberOfBlocks()
+            else:
+                return deref(py_hmatrix_from_discrete_operator[complex_double](self._impl_complex128_)).numberOfBlocks()
+
+    property mem_size_kb:
+
+        def __get__(self):
+            if self.dtype=='float64':
+                return deref(py_hmatrix_from_discrete_operator[double](self._impl_float64_)).memSizeKb()
+            else:
+                return deref(py_hmatrix_from_discrete_operator[complex_double](self._impl_complex128_)).memSizeKb()
 
 cdef class BlockedDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
 

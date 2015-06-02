@@ -36,3 +36,6 @@ cdef TranspositionMode transposition_mode(string name)
 cdef ConstructionMode construction_mode(string name)
 cdef GmshPostDataType gmsh_post_data_type(string name)
 cdef HMatBlockType hmat_block_type(string name)
+cdef TranspositionMode compute_transpose_mode(
+        TranspositionMode current_mode,
+        TranspositionMode input_mode)

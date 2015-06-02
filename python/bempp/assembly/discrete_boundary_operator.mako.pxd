@@ -26,9 +26,9 @@ cdef extern from "bempp/assembly/py_discrete_operator_support.hpp" namespace "Be
 
 cdef class DiscreteBoundaryOperatorBase:
     cdef object _dtype
-    cdef TranspositionMode transpose_mode
 
 cdef class DiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
+    cdef TranspositionMode transpose_mode
 
 % for pybasis, cybasis in dtypes.items():
     cdef shared_ptr[const c_DiscreteBoundaryOperator[${cybasis}]] _impl_${pybasis}_

@@ -16,7 +16,10 @@ namespace hmat {
 template <typename ValueType, int N>
 HMatrix<ValueType, N>::HMatrix(
     const shared_ptr<BlockClusterTree<N>> &blockClusterTree)
-    : m_blockClusterTree(blockClusterTree) {}
+    : m_blockClusterTree(blockClusterTree),
+      m_numberOfDenseBlocks(0),
+      m_numberOfLowRankBlocks(0),
+      m_memSizeKb(0.0) {}
 
 template <typename ValueType, int N>
 HMatrix<ValueType, N>::HMatrix(
@@ -40,6 +43,26 @@ std::size_t HMatrix<ValueType, N>::columns() const {
 template <typename ValueType, int N>
 double HMatrix<ValueType, N>::frobeniusNorm() const {
   return frobeniusNorm_impl(m_blockClusterTree->root());
+}
+
+template <typename ValueType, int N>
+int HMatrix<ValueType, N>::numberOfDenseBlocks() const {
+  return m_numberOfDenseBlocks;
+}
+
+template <typename ValueType, int N>
+int HMatrix<ValueType, N>::numberOfLowRankBlocks() const {
+  return m_numberOfLowRankBlocks;
+}
+
+template <typename ValueType, int N>
+int HMatrix<ValueType, N>::numberOfBlocks() const {
+  return m_numberOfLowRankBlocks+m_numberOfDenseBlocks;
+}
+
+template <typename ValueType, int N>
+double HMatrix<ValueType, N>::memSizeKb() const {
+  return m_memSizeKb;
 }
 
 template <typename ValueType, int N>
@@ -68,9 +91,18 @@ void HMatrix<ValueType, N>::initialize(
       g.run_and_wait([&]{compressFun(node->child(3));});
     }
   };
-            
+    
 
   compressFun(m_blockClusterTree->root());
+
+  for (auto& elem: m_hMatrixData){
+     if (!elem.second) continue;
+     if (elem.second->type()==DENSE)
+       m_numberOfDenseBlocks++;
+     else
+       m_numberOfLowRankBlocks++;
+     m_memSizeKb+=elem.second->memSizeKb();
+  }
 
 
   // The following can be removed for C++14 compilers that
@@ -305,9 +337,10 @@ double HMatrix<ValueType, N>::frobeniusNorm_impl(const shared_ptr<BlockClusterTr
 
    if (node->isLeaf()) return m_hMatrixData.at(node)->frobeniusNorm();
 
-   double result = 0;
 
    tbb::task_group g;
+
+   double result = 0;
 
    double res0;
    double res1;

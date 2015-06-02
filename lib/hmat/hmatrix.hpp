@@ -9,7 +9,9 @@
 #include "data_accessor.hpp"
 #include "compressed_matrix.hpp"
 #include "eigen_fwd.hpp"
+
 #include <unordered_map>
+
 
 namespace hmat {
 
@@ -56,6 +58,11 @@ public:
   shared_ptr<const hmat::HMatrixData<ValueType>> data(
       shared_ptr<const BlockClusterTreeNode<N>> node) const;
 
+  int numberOfDenseBlocks() const;
+  int numberOfLowRankBlocks() const;
+  int numberOfBlocks() const;
+
+  double memSizeKb() const;
 
 private:
 
@@ -67,6 +74,10 @@ private:
 
   shared_ptr<BlockClusterTree<N>> m_blockClusterTree;
   ParallelDataContainer m_hMatrixData;
+
+  int m_numberOfDenseBlocks;
+  int m_numberOfLowRankBlocks;
+  int m_memSizeKb;
 };
 }
 

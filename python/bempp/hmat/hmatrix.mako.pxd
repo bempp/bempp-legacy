@@ -17,6 +17,10 @@ cdef extern from "bempp/hmat/hmatrix.hpp":
         shared_ptr[const c_BlockClusterTree] blockClusterTree() const
         shared_ptr[const c_HMatrixData[T]] data(shared_ptr[const c_BlockClusterTreeNode]&) except+catch_exception
         double frobeniusNorm() const
+        int numberOfDenseBlocks() const
+        int numberOfLowRankBlocks() const
+        int numberOfBlocks() const
+        double memSizeKb();
 
 
 
