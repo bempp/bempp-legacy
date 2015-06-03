@@ -51,9 +51,8 @@ ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
     : Base(domain, range, dualToRange, label, symmetry) {}
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
-bool
-ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::isLocal()
-    const {
+bool ElementaryIntegralOperator<BasisFunctionType, KernelType,
+                                ResultType>::isLocal() const {
   return false;
 }
 
@@ -90,8 +89,8 @@ ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 shared_ptr<DiscreteBoundaryOperator<ResultType>>
 ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
-    assembleWeakFormImpl(const Context<BasisFunctionType, ResultType> &context)
-    const {
+    assembleWeakFormImpl(
+        const Context<BasisFunctionType, ResultType> &context) const {
   bool verbose =
       (context.assemblyOptions().verbosityLevel() >= VerbosityLevel::DEFAULT);
   if (verbose)

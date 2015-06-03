@@ -5,10 +5,8 @@
  * \note Definition of reference triangle: v = {{0,0,0},{1,0,0},{0,1,0}}
  * \note z-coordinates of all input points must be 0
  */
-void devExpressionEvaluate (const ValueType *basisData,
-	              ValueType *result,
-		      int n)
-{
-    for (int i = 0; i < n; i++)
-	result[i] = basisData[i];
+void devExpressionEvaluate(const ValueType *basisData, ValueType *result,
+                           int n) {
+  for (int i = 0; i < n; i++)
+    result[i] = basisData[i];
 }

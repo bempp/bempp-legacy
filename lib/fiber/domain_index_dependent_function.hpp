@@ -90,8 +90,9 @@ public:
     const size_t pointCount = points.cols();
     result.resize(codomainDimension(), pointCount);
     for (size_t i = 0; i < pointCount; ++i) {
-      Eigen::Map<Vector<ValueType>> activeResultColumn(result.col(i).data(),result.rows());
-      //Vector<ValueType> activeResultColumn = result.unsafe_col(i);
+      Eigen::Map<Vector<ValueType>> activeResultColumn(result.col(i).data(),
+                                                       result.rows());
+      // Vector<ValueType> activeResultColumn = result.unsafe_col(i);
       m_functor.evaluate(points.col(i), geomData.domainIndex,
                          activeResultColumn);
     }

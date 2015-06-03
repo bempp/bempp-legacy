@@ -54,7 +54,7 @@ class P1VectorVTKFunction : public Dune::VTKFunction<GV> {
   typedef Dune::VTKFunction<GV> Base;
   //! Mapper for vertices
   typedef Dune::MultipleCodimMultipleGeomTypeMapper<GV, Dune::MCMGVertexLayout>
-  Mapper;
+      Mapper;
 
   //! store a reference to the vector
   const V &v;
@@ -81,8 +81,7 @@ public:
     Dune::GeometryType gt = e.type();
     for (int i = 0; i < e.template count<dim>(); ++i) {
       Dune::FieldVector<ctype, dim> local =
-          Dune::ReferenceElements<ctype, dim>::general(gt)
-              .position(i, dim);
+          Dune::ReferenceElements<ctype, dim>::general(gt).position(i, dim);
       local -= xi;
       if (local.infinity_norm() < min) {
         min = local.infinity_norm();

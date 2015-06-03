@@ -46,7 +46,7 @@ DefaultQuadratureDescriptorSelectorFactory<BasisFunctionType>::
         const shared_ptr<const std::vector<
             const Shapeset<BasisFunctionType> *>> &testShapesets) const {
   typedef DefaultQuadratureDescriptorSelectorForGridFunctions<BasisFunctionType>
-  Selector;
+      Selector;
   return boost::make_shared<Selector>(rawGeometry, testShapesets,
                                       m_accuracyOptions);
 }

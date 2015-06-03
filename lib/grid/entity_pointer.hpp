@@ -43,9 +43,7 @@ public:
   virtual ~EntityPointer() {}
 
   /** \brief Entity codimension */
-  enum {
-    codimension = codim
-  };
+  enum { codimension = codim };
 
   /** \brief Read-only access to the underlying entity */
   virtual const Entity<codim> &entity() const = 0;

@@ -69,7 +69,7 @@ public:
   /** \brief Type of the appropriate instantiation of
    * Fiber::CollectionOfShapesetTransformations. */
   typedef Fiber::CollectionOfShapesetTransformations<CoordinateType>
-  CollectionOfShapesetTransformations;
+      CollectionOfShapesetTransformations;
   /** \brief Type of the appropriate instantiation of
    *Fiber::CollectionOfBasisTransformations.
    *
@@ -77,11 +77,11 @@ public:
    *CollectionOfShapesetTransformations
    *  instead. */
   typedef Fiber::CollectionOfShapesetTransformations<CoordinateType>
-  CollectionOfBasisTransformations;
+      CollectionOfBasisTransformations;
   /** \brief Type of the appropriate instantiation of Fiber::TestTrialIntegral.
    */
   typedef Fiber::TestTrialIntegral<BasisFunctionType, ResultType>
-  TestTrialIntegral;
+      TestTrialIntegral;
 
   /** \copydoc AbstractBoundaryOperator::AbstractBoundaryOperator */
   ElementaryLocalOperator(
@@ -95,8 +95,8 @@ public:
 
 protected:
   virtual shared_ptr<DiscreteBoundaryOperator<ResultType_>>
-  assembleWeakFormImpl(const Context<BasisFunctionType, ResultType> &context)
-      const;
+  assembleWeakFormImpl(
+      const Context<BasisFunctionType, ResultType> &context) const;
 
 private:
   /** \brief Type of the appropriate instantiation of

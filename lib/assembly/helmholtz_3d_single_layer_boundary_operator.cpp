@@ -61,9 +61,10 @@ helmholtz3dSingleLayerBoundaryOperator(
 
   shared_ptr<const Context<
       BasisFunctionType, typename ScalarTraits<BasisFunctionType>::ComplexType>>
-  context(new Context<BasisFunctionType,
+      context(
+          new Context<BasisFunctionType,
                       typename ScalarTraits<BasisFunctionType>::ComplexType>(
-      parameterList));
+              parameterList));
 
   return helmholtz3dSingleLayerBoundaryOperator(
       context, domain, range, dualToRange, waveNumber, label, symmetry,
@@ -73,8 +74,7 @@ helmholtz3dSingleLayerBoundaryOperator(
 #define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS)                               \
   template BoundaryOperator<BASIS, ScalarTraits<BASIS>::ComplexType>           \
   helmholtz3dSingleLayerBoundaryOperator(                                      \
-      const ParameterList&,                                                    \
-      const shared_ptr<const Space<BASIS>> &,                                  \
+      const ParameterList &, const shared_ptr<const Space<BASIS>> &,           \
       const shared_ptr<const Space<BASIS>> &,                                  \
       const shared_ptr<const Space<BASIS>> &,                                  \
       ScalarTraits<BASIS>::ComplexType, const std::string &, int, bool, int);  \

@@ -65,7 +65,7 @@ private:
   const GeometryFactory &m_geometryFactory;
   const RawGridGeometry<CoordinateType> &m_rawGeometry;
   const CollectionOfShapesetTransformations<CoordinateType> &
-  m_testTransformations;
+      m_testTransformations;
   const Function<UserFunctionType> &m_function;
 
   const OpenClHandler &m_openClHandler;

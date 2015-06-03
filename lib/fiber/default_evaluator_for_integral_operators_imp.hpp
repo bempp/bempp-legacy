@@ -70,8 +70,10 @@ public:
     for (size_t i = r.begin(); i < r.end(); ++i) {
       size_t start = m_chunkSize * i;
       size_t end = std::min(start + m_chunkSize, m_pointCount);
-      evalPointGeomData.globals = m_points.block(0,start,m_points.rows(),end-start);
-      //evalPointGeomData.globals = m_points.cols(start, end - 1 /* inclusive */);
+      evalPointGeomData.globals =
+          m_points.block(0, start, m_points.rows(), end - start);
+      // evalPointGeomData.globals = m_points.cols(start, end - 1 /* inclusive
+      // */);
       m_kernels.evaluateOnGrid(evalPointGeomData, m_trialGeomData,
                                kernelValues);
       // View into the current chunk of the "result" array
@@ -90,7 +92,7 @@ private:
   const std::vector<CoordinateType> &m_weights;
   const CollectionOfKernels<KernelType> &m_kernels;
   const KernelTrialIntegral<BasisFunctionType, KernelType, ResultType> &
-  m_integral;
+      m_integral;
   Matrix<ResultType> &m_result;
   size_t m_pointCount;
   size_t m_outputComponentCount;
@@ -128,8 +130,8 @@ DefaultEvaluatorForIntegralOperators<BasisFunctionType, KernelType, ResultType,
       m_openClHandler(openClHandler),
       m_parallelizationOptions(parallelizationOptions),
       m_quadDescSelector(quadDescSelector), m_quadRuleFamily(quadRuleFamily) {
-const size_t elementCount = rawGeometry->elementCount();
-if (rawGeometry->auxData().rows() > 0 &&
+  const size_t elementCount = rawGeometry->elementCount();
+  if (rawGeometry->auxData().rows() > 0 &&
       rawGeometry->auxData().cols() != elementCount)
     throw std::invalid_argument(
         "DefaultEvaluatorForIntegralOperators::"
@@ -393,8 +395,8 @@ void DefaultEvaluatorForIntegralOperators<BasisFunctionType, KernelType,
       for (int transf = 0; transf < transformationCount; ++transf) {
         const size_t dimCount = trialValues[transf].extent(0);
         assert(trialValues[transf].extent(2) == localQuadPointCount);
-        trialTransfValuesPerElement[e][transf]
-            .set_size(dimCount, localQuadPointCount);
+        trialTransfValuesPerElement[e][transf].set_size(dimCount,
+                                                        localQuadPointCount);
         for (size_t point = 0; point < localQuadPointCount; ++point)
           for (size_t dim = 0; dim < dimCount; ++dim)
             trialTransfValuesPerElement[e][transf](dim, point) =
@@ -446,13 +448,16 @@ void DefaultEvaluatorForIntegralOperators<BasisFunctionType, KernelType,
        startCol += trialTransfValuesPerElement[e][0].extent(1), ++e) {
     int endCol = startCol + trialTransfValuesPerElement[e][0].extent(1) - 1;
     if (kernelTrialGeomDeps & GLOBALS)
-      trialGeomData.globals.block(0,startCol, trialGeomData.globals.rows(), endCol-startCol+1) =
+      trialGeomData.globals.block(0, startCol, trialGeomData.globals.rows(),
+                                  endCol - startCol + 1) =
           geomDataPerElement[e].globals;
     if (kernelTrialGeomDeps & INTEGRATION_ELEMENTS)
-      trialGeomData.integrationElements.block(0,startCol, 1,endCol-startCol+1) =
+      trialGeomData.integrationElements.block(0, startCol, 1,
+                                              endCol - startCol + 1) =
           geomDataPerElement[e].integrationElements;
     if (kernelTrialGeomDeps & NORMALS)
-      trialGeomData.normals.block(0,startCol, trialGeomData.normals.rows(),endCol-startCol+1) =
+      trialGeomData.normals.block(0, startCol, trialGeomData.normals.rows(),
+                                  endCol - startCol + 1) =
           geomDataPerElement[e].normals;
     if (kernelTrialGeomDeps & JACOBIANS_TRANSPOSED) {
       const size_t n = trialGeomData.jacobiansTransposed.extent(1);
@@ -470,8 +475,8 @@ void DefaultEvaluatorForIntegralOperators<BasisFunctionType, KernelType,
         for (int c = 0; c < n; ++c)
           for (int r = 0; r < n; ++r)
             trialGeomData.jacobianInversesTransposed(r, c, col) =
-                geomDataPerElement[e]
-                    .jacobianInversesTransposed(r, c, col - startCol);
+                geomDataPerElement[e].jacobianInversesTransposed(
+                    r, c, col - startCol);
     }
     if (kernelTrialGeomDeps & DOMAIN_INDEX) {
       trialGeomData.domainIndex = geomDataPerElement[e].domainIndex;

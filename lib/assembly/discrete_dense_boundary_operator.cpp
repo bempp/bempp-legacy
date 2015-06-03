@@ -18,7 +18,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-
 #include "discrete_dense_boundary_operator.hpp"
 #include "../common/boost_make_shared_fwd.hpp"
 #include "../common/eigen_support.hpp"
@@ -35,9 +34,7 @@ namespace Bempp {
 template <typename ValueType>
 DiscreteDenseBoundaryOperator<ValueType>::DiscreteDenseBoundaryOperator(
     const Matrix<ValueType> &mat)
-    : m_mat(mat)
-{
-}
+    : m_mat(mat) {}
 
 template <typename ValueType>
 void DiscreteDenseBoundaryOperator<ValueType>::dump() const {
@@ -45,8 +42,7 @@ void DiscreteDenseBoundaryOperator<ValueType>::dump() const {
 }
 
 template <typename ValueType>
-Matrix<ValueType>
-DiscreteDenseBoundaryOperator<ValueType>::asMatrix() const {
+Matrix<ValueType> DiscreteDenseBoundaryOperator<ValueType>::asMatrix() const {
   return m_mat;
 }
 
@@ -73,19 +69,19 @@ void DiscreteDenseBoundaryOperator<ValueType>::addBlock(
 }
 
 template <typename ValueType>
-PyObject* DiscreteDenseBoundaryOperator<ValueType>::asNumpyObject() const {
+PyObject *DiscreteDenseBoundaryOperator<ValueType>::asNumpyObject() const {
 
-    int nd = 2;
-    std::array<npy_intp,2> dims {this->rowCount(),this->columnCount()};
+  int nd = 2;
+  std::array<npy_intp, 2> dims{this->rowCount(), this->columnCount()};
 
-    PyGILState_STATE gstate;
-    gstate = PyGILState_Ensure(); 
-    PyObject* out = PyArray_New(&PyArray_Type,nd,dims.data(),
-            Fiber::ScalarTraits<ValueType>::NumpyTypeNum,
-            NULL,m_mat.data(),0,NPY_ARRAY_F_CONTIGUOUS,NULL);
-    PyGILState_Release(gstate);
-    return out;
-
+  PyGILState_STATE gstate;
+  gstate = PyGILState_Ensure();
+  PyObject *out =
+      PyArray_New(&PyArray_Type, nd, dims.data(),
+                  Fiber::ScalarTraits<ValueType>::NumpyTypeNum, NULL,
+                  m_mat.data(), 0, NPY_ARRAY_F_CONTIGUOUS, NULL);
+  PyGILState_Release(gstate);
+  return out;
 }
 
 template <typename ValueType>

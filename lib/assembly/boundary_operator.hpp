@@ -68,7 +68,6 @@ public:
   /** \brief Construct an uninitialized BoundaryOperator. */
   BoundaryOperator();
 
-
   /** \brief Destructor. */
   virtual ~BoundaryOperator();
 
@@ -201,13 +200,13 @@ private:
   /** \cond PRIVATE */
   shared_ptr<const Context<BasisFunctionType, ResultType>> m_context;
   shared_ptr<const AbstractBoundaryOperator<BasisFunctionType, ResultType>>
-  m_abstractOp;
+      m_abstractOp;
   bool m_holdWeakForm;
   typedef shared_ptr<const DiscreteBoundaryOperator<ResultType>>
-  ConstWeakFormContainer;
+      ConstWeakFormContainer;
   mutable shared_ptr<ConstWeakFormContainer> m_weakFormContainer;
   typedef boost::weak_ptr<const DiscreteBoundaryOperator<ResultType>>
-  WeakConstWeakFormContainer;
+      WeakConstWeakFormContainer;
   mutable shared_ptr<WeakConstWeakFormContainer> m_weakWeakFormContainer;
   /** \endcond */
 };

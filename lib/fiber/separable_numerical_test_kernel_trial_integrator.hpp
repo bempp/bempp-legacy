@@ -48,7 +48,7 @@ class SeparableNumericalTestKernelTrialIntegrator
                                        ResultType> {
 public:
   typedef TestKernelTrialIntegrator<BasisFunctionType, KernelType, ResultType>
-  Base;
+      Base;
   typedef typename Base::CoordinateType CoordinateType;
   typedef typename Base::ElementIndexPair ElementIndexPair;
 
@@ -72,18 +72,18 @@ public:
 
   virtual ~SeparableNumericalTestKernelTrialIntegrator();
 
-  virtual void
-  integrate(CallVariant callVariant, const std::vector<int> &elementIndicesA,
-            int elementIndexB, const Shapeset<BasisFunctionType> &basisA,
-            const Shapeset<BasisFunctionType> &basisB,
-            LocalDofIndex localDofIndexB,
-            const std::vector<Matrix<ResultType> *> &result) const;
+  virtual void integrate(CallVariant callVariant,
+                         const std::vector<int> &elementIndicesA,
+                         int elementIndexB,
+                         const Shapeset<BasisFunctionType> &basisA,
+                         const Shapeset<BasisFunctionType> &basisB,
+                         LocalDofIndex localDofIndexB,
+                         const std::vector<Matrix<ResultType> *> &result) const;
 
-  virtual void
-  integrate(const std::vector<ElementIndexPair> &elementIndexPairs,
-            const Shapeset<BasisFunctionType> &testShapeset,
-            const Shapeset<BasisFunctionType> &trialShapeset,
-            const std::vector<Matrix<ResultType> *> &result) const;
+  virtual void integrate(const std::vector<ElementIndexPair> &elementIndexPairs,
+                         const Shapeset<BasisFunctionType> &testShapeset,
+                         const Shapeset<BasisFunctionType> &trialShapeset,
+                         const std::vector<Matrix<ResultType> *> &result) const;
 
 private:
   void integrateCpu(CallVariant callVariant,
@@ -134,12 +134,12 @@ private:
   const RawGridGeometry<CoordinateType> &m_trialRawGeometry;
 
   const CollectionOfShapesetTransformations<CoordinateType> &
-  m_testTransformations;
+      m_testTransformations;
   const CollectionOfKernels<KernelType> &m_kernels;
   const CollectionOfShapesetTransformations<CoordinateType> &
-  m_trialTransformations;
+      m_trialTransformations;
   const TestKernelTrialIntegral<BasisFunctionType, KernelType, ResultType> &
-  m_integral;
+      m_integral;
 
   const OpenClHandler &m_openClHandler;
   bool m_cacheGeometricalData;
@@ -147,7 +147,7 @@ private:
   std::vector<GeometricalData<CoordinateType>> m_cachedTestGeomData;
   std::vector<GeometricalData<CoordinateType>> m_cachedTrialGeomData;
   mutable tbb::enumerable_thread_specific<GeometricalData<CoordinateType>>
-  m_testGeomData, m_trialGeomData;
+      m_testGeomData, m_trialGeomData;
 
 #ifdef WITH_OPENCL
   cl::Buffer *clTestQuadPoints;

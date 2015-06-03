@@ -54,9 +54,8 @@ AbstractBoundaryOperatorComposition<BasisFunctionType, ResultType>::
 }
 
 template <typename BasisFunctionType, typename ResultType>
-bool
-AbstractBoundaryOperatorComposition<BasisFunctionType, ResultType>::isLocal()
-    const {
+bool AbstractBoundaryOperatorComposition<BasisFunctionType,
+                                         ResultType>::isLocal() const {
   return (m_outer.abstractOperator()->isLocal() &&
           m_inner.abstractOperator()->isLocal());
 }
@@ -64,35 +63,34 @@ AbstractBoundaryOperatorComposition<BasisFunctionType, ResultType>::isLocal()
 template <typename BasisFunctionType, typename ResultType>
 shared_ptr<DiscreteBoundaryOperator<ResultType>>
 AbstractBoundaryOperatorComposition<BasisFunctionType, ResultType>::
-    assembleWeakFormImpl(const Context<BasisFunctionType, ResultType> &context)
-    const {
+    assembleWeakFormImpl(
+        const Context<BasisFunctionType, ResultType> &context) const {
 
   throw std::runtime_error("AbstractBoundaryOperatorComposition disabled");
-/*
+  /*
 
-  typedef BoundaryOperator<BasisFunctionType, ResultType> BoundaryOp;
-  typedef DiscreteBoundaryOperator<ResultType> DiscreteLinOp;
+    typedef BoundaryOperator<BasisFunctionType, ResultType> BoundaryOp;
+    typedef DiscreteBoundaryOperator<ResultType> DiscreteLinOp;
 
-  shared_ptr<const DiscreteLinOp> discreteOuter = m_outer.weakForm();
-  shared_ptr<const DiscreteLinOp> discreteInner = m_inner.weakForm();
+    shared_ptr<const DiscreteLinOp> discreteOuter = m_outer.weakForm();
+    shared_ptr<const DiscreteLinOp> discreteInner = m_inner.weakForm();
 
-  // Calculate the (pseudo)inverse mass matrix
-  BoundaryOp id = identityOperator(
-      // We don't need a persistent shared_ptr since identityOperator
-      // will go out of scope at the end of this function anyway.
-      // All we need is a weak form.
-      make_shared_from_ref(context), m_inner.range(), m_inner.range(),
-      m_inner.dualToRange());
-  BoundaryOp pinvId = pseudoinverse(id, m_inner.dualToRange());
-  // Dual space not important here. Could be anything.
+    // Calculate the (pseudo)inverse mass matrix
+    BoundaryOp id = identityOperator(
+        // We don't need a persistent shared_ptr since identityOperator
+        // will go out of scope at the end of this function anyway.
+        // All we need is a weak form.
+        make_shared_from_ref(context), m_inner.range(), m_inner.range(),
+        m_inner.dualToRange());
+    BoundaryOp pinvId = pseudoinverse(id, m_inner.dualToRange());
+    // Dual space not important here. Could be anything.
 
-  shared_ptr<const DiscreteLinOp> temp =
-      boost::make_shared<DiscreteBoundaryOperatorComposition<ResultType>>(
-          pinvId.weakForm(), discreteInner);
-  return boost::make_shared<DiscreteBoundaryOperatorComposition<ResultType>>(
-      discreteOuter, temp);
-*/
-
+    shared_ptr<const DiscreteLinOp> temp =
+        boost::make_shared<DiscreteBoundaryOperatorComposition<ResultType>>(
+            pinvId.weakForm(), discreteInner);
+    return boost::make_shared<DiscreteBoundaryOperatorComposition<ResultType>>(
+        discreteOuter, temp);
+  */
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(

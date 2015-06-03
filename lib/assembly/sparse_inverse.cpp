@@ -32,10 +32,11 @@ shared_ptr<RealSparseMatrix> sparseInverse(const RealSparseMatrix &mat) {
     throw std::invalid_argument("sparseInverse(): matrix must be square");
 
   if (!mat.isCompressed())
-      throw std::invalid_argument("sparseInverse(): matrix must be in compressed form");
+    throw std::invalid_argument(
+        "sparseInverse(): matrix must be in compressed form");
 
-  shared_ptr<RealSparseMatrix> result = boost::make_shared<RealSparseMatrix>(
-              size,size);
+  shared_ptr<RealSparseMatrix> result =
+      boost::make_shared<RealSparseMatrix>(size, size);
 
   std::vector<Eigen::Triplet<double>> triplets;
 
@@ -62,16 +63,18 @@ shared_ptr<RealSparseMatrix> sparseInverse(const RealSparseMatrix &mat) {
               "\"discontinuous\" function space, i.e. with each "
               "of its basis functions living on a single "
               "element only");
-      }      
+      }
     }
-    localInverse = Matrix<double>(mat.block(r,r,localSize,localSize)).inverse();
+    localInverse =
+        Matrix<double>(mat.block(r, r, localSize, localSize)).inverse();
     for (int s = 0; s < localSize; ++s) {
-      processed[r+s] = true;
-      for (int c = 0 ; c < localSize; ++c)
-          triplets.push_back(Eigen::Triplet<double>(r+s,r+c,localInverse(s,c)));
+      processed[r + s] = true;
+      for (int c = 0; c < localSize; ++c)
+        triplets.push_back(
+            Eigen::Triplet<double>(r + s, r + c, localInverse(s, c)));
     }
   }
-  result->setFromTriplets(triplets.begin(),triplets.end());
+  result->setFromTriplets(triplets.begin(), triplets.end());
   return result;
 }
 

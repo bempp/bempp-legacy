@@ -26,7 +26,6 @@
 #include "scalar_traits.hpp"
 #include "types.hpp"
 
-
 namespace Fiber {
 
 /** \cond FORWARD_DECL */

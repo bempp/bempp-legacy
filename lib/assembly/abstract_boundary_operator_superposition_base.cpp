@@ -63,10 +63,10 @@ void decomposeBoundaryOperatorRecursively(
   typedef AbstractBoundaryOperator<BasisFunctionType, ResultType> AOp;
   typedef AbstractBoundaryOperatorSum<BasisFunctionType, ResultType> AOpSum;
   typedef ElementaryIntegralOperatorBase<BasisFunctionType, ResultType>
-  ElemIntegralOp;
+      ElemIntegralOp;
 
   typedef ScaledAbstractBoundaryOperator<BasisFunctionType, ResultType>
-  ScaledAOp;
+      ScaledAOp;
 
   shared_ptr<const AOp> abstractOp = op.abstractOperator();
   if (shared_ptr<const AOpSum> concreteOp =
@@ -152,8 +152,8 @@ AbstractBoundaryOperatorSuperpositionBase<BasisFunctionType_, ResultType_>::
 template <typename BasisFunctionType_, typename ResultType_>
 shared_ptr<DiscreteBoundaryOperator<ResultType_>>
 AbstractBoundaryOperatorSuperpositionBase<BasisFunctionType_, ResultType_>::
-    assembleWeakFormImpl(const Context<BasisFunctionType, ResultType> &context)
-    const {
+    assembleWeakFormImpl(
+        const Context<BasisFunctionType, ResultType> &context) const {
   typedef BoundaryOperator<BasisFunctionType, ResultType> Op;
   typedef DiscreteBoundaryOperator<ResultType> DiscreteOp;
   typedef DiscreteBoundaryOperatorSum<ResultType> DiscreteOpSum;
@@ -314,7 +314,7 @@ AbstractBoundaryOperatorSuperpositionBase<BasisFunctionType_, ResultType_>::
   typedef DiscreteBoundaryOperator<ResultType> DiscreteOp;
   typedef DiscreteBoundaryOperatorSum<ResultType> DiscreteOpSum;
   typedef ElementaryIntegralOperatorBase<BasisFunctionType, ResultType>
-  ElemIntegralOp;
+      ElemIntegralOp;
   size_t opCount = ops.size();
   assert(opWeights.size() == opCount);
 
@@ -354,7 +354,7 @@ AbstractBoundaryOperatorSuperpositionBase<BasisFunctionType_, ResultType_>::
     // Collect data used in the construction of all assemblers
     typedef Fiber::RawGridGeometry<CoordinateType> RawGridGeometry;
     typedef std::vector<const Fiber::Shapeset<BasisFunctionType> *>
-    ShapesetPtrVector;
+        ShapesetPtrVector;
 
     shared_ptr<RawGridGeometry> testRawGeometry, trialRawGeometry;
     shared_ptr<GeometryFactory> testGeometryFactory, trialGeometryFactory;

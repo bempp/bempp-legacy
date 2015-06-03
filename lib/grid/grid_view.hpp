@@ -123,12 +123,10 @@ public:
   */
 
   /** \overload */
-  void getRawElementData(Matrix<float> &vertices,
-                         Matrix<int> &elementCorners,
+  void getRawElementData(Matrix<float> &vertices, Matrix<int> &elementCorners,
                          Matrix<char> &auxData) const;
   /** \overload */
-  void getRawElementData(Matrix<double> &vertices,
-                         Matrix<int> &elementCorners,
+  void getRawElementData(Matrix<double> &vertices, Matrix<int> &elementCorners,
                          Matrix<char> &auxData) const;
 
   /** \brief Get raw data describing the geometry of all codim-0 entities
@@ -137,13 +135,11 @@ public:
     This overload takes an additional argument, \p domainIndices, which on
     output contains indices of the grid domains to which the corresponding
     elements from \p elementCorners belong. */
-  void getRawElementData(Matrix<double> &vertices,
-                         Matrix<int> &elementCorners,
+  void getRawElementData(Matrix<double> &vertices, Matrix<int> &elementCorners,
                          Matrix<char> &auxData,
                          std::vector<int> &domainIndices) const;
   /** \overload */
-  void getRawElementData(Matrix<float> &vertices,
-                         Matrix<int> &elementCorners,
+  void getRawElementData(Matrix<float> &vertices, Matrix<int> &elementCorners,
                          Matrix<char> &auxData,
                          std::vector<int> &domainIndices) const;
 
@@ -173,9 +169,10 @@ private:
   virtual void getRawElementDataDoubleImpl(
       Matrix<double> &vertices, Matrix<int> &elementCorners,
       Matrix<char> &auxData, std::vector<int> *domainIndices) const = 0;
-  virtual void getRawElementDataFloatImpl(
-      Matrix<float> &vertices, Matrix<int> &elementCorners,
-      Matrix<char> &auxData, std::vector<int> *domainIndices) const = 0;
+  virtual void
+  getRawElementDataFloatImpl(Matrix<float> &vertices,
+                             Matrix<int> &elementCorners, Matrix<char> &auxData,
+                             std::vector<int> *domainIndices) const = 0;
 
   /** \brief Iterator over entities of codimension 0 contained in this view. */
   virtual std::unique_ptr<EntityIterator<0>> entityCodim0Iterator() const = 0;

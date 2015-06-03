@@ -38,8 +38,6 @@
 #include "../grid/mapper.hpp"
 #include "../grid/vtk_writer.hpp"
 
-
-
 #include <stdexcept>
 #include <iostream>
 
@@ -112,8 +110,8 @@ void PiecewiseConstantDualGridDiscontinuousScalarSpace<
 template <typename BasisFunctionType>
 shared_ptr<const Space<BasisFunctionType>>
 PiecewiseConstantDualGridDiscontinuousScalarSpace<BasisFunctionType>::
-    discontinuousSpace(const shared_ptr<const Space<BasisFunctionType>> &self)
-    const {
+    discontinuousSpace(
+        const shared_ptr<const Space<BasisFunctionType>> &self) const {
   if (self.get() != this)
     throw std::invalid_argument("PiecewiseConstantDualGridDiscontinuousScalarSp"
                                 "ace::discontinuousSpace(): "
@@ -135,8 +133,8 @@ bool PiecewiseConstantDualGridDiscontinuousScalarSpace<
 template <typename BasisFunctionType>
 shared_ptr<const Space<BasisFunctionType>>
 PiecewiseConstantDualGridDiscontinuousScalarSpace<BasisFunctionType>::
-    barycentricSpace(const shared_ptr<const Space<BasisFunctionType>> &self)
-    const {
+    barycentricSpace(
+        const shared_ptr<const Space<BasisFunctionType>> &self) const {
 
   if (self.get() != this)
     throw std::invalid_argument("PiecewiseConstantDualGridDiscontinuousScalarSp"
@@ -224,8 +222,8 @@ void PiecewiseConstantDualGridDiscontinuousScalarSpace<BasisFunctionType>::
 
 template <typename BasisFunctionType>
 void PiecewiseConstantDualGridDiscontinuousScalarSpace<BasisFunctionType>::
-    getGlobalDofPositions(std::vector<Point3D<CoordinateType>> &positions)
-    const {
+    getGlobalDofPositions(
+        std::vector<Point3D<CoordinateType>> &positions) const {
   std::vector<BoundingBox<CoordinateType>> bboxes;
   getGlobalDofBoundingBoxes(bboxes);
 
@@ -236,8 +234,8 @@ void PiecewiseConstantDualGridDiscontinuousScalarSpace<BasisFunctionType>::
 
 template <typename BasisFunctionType>
 void PiecewiseConstantDualGridDiscontinuousScalarSpace<BasisFunctionType>::
-    getFlatLocalDofPositions(std::vector<Point3D<CoordinateType>> &positions)
-    const {
+    getFlatLocalDofPositions(
+        std::vector<Point3D<CoordinateType>> &positions) const {
   std::vector<BoundingBox<CoordinateType>> bboxes;
   getFlatLocalDofBoundingBoxes(bboxes);
 
@@ -248,8 +246,8 @@ void PiecewiseConstantDualGridDiscontinuousScalarSpace<BasisFunctionType>::
 
 template <typename BasisFunctionType>
 void PiecewiseConstantDualGridDiscontinuousScalarSpace<BasisFunctionType>::
-    getGlobalDofBoundingBoxes(std::vector<BoundingBox<CoordinateType>> &bboxes)
-    const {
+    getGlobalDofBoundingBoxes(
+        std::vector<BoundingBox<CoordinateType>> &bboxes) const {
   SpaceHelper<BasisFunctionType>::
       getGlobalDofBoundingBoxes_defaultImplementation(
           this->gridView(), m_global2localDofs, bboxes);
@@ -311,8 +309,8 @@ void PiecewiseConstantDualGridDiscontinuousScalarSpace<BasisFunctionType>::
 
 template <typename BasisFunctionType>
 void PiecewiseConstantDualGridDiscontinuousScalarSpace<BasisFunctionType>::
-    getFlatLocalDofNormals(std::vector<Point3D<CoordinateType>> &normals)
-    const {
+    getFlatLocalDofNormals(
+        std::vector<Point3D<CoordinateType>> &normals) const {
   const int gridDim = this->domainDimension();
   const int worldDim = this->grid()->dimWorld();
   normals.resize(m_flatLocal2localDofs.size());
@@ -332,7 +330,7 @@ void PiecewiseConstantDualGridDiscontinuousScalarSpace<BasisFunctionType>::
     e.geometry().getNormals(center, normal);
 
     for (int dim = 0; dim < worldDim; ++dim)
-      elementNormals(dim, index) = normal(dim,0);
+      elementNormals(dim, index) = normal(dim, 0);
     it->next();
   }
 
@@ -382,9 +380,9 @@ void PiecewiseConstantDualGridDiscontinuousScalarSpace<
 
   std::unique_ptr<VtkWriter> vtkWriter = this->gridView().vtkWriter();
   if (dofType == GLOBAL_DOFS) {
-    Matrix<double> data(1,idCount);
+    Matrix<double> data(1, idCount);
     for (size_t i = 0; i < idCount; ++i)
-      data(0,i) = clusterIdsOfDofs[i];
+      data(0, i) = clusterIdsOfDofs[i];
     vtkWriter->addVertexData(data, "ids");
     vtkWriter->write(fileName);
   } else {
@@ -404,7 +402,7 @@ void PiecewiseConstantDualGridDiscontinuousScalarSpace<
       }
       if (!exists)
         // Remove the row
-        eigenRemoveRowFromMatrix(data,row);
+        eigenRemoveRowFromMatrix(data, row);
 
       else
         ++row;

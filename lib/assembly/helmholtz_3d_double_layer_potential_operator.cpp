@@ -38,7 +38,7 @@ template <typename BasisFunctionType>
 struct Helmholtz3dDoubleLayerPotentialOperatorImpl {
   typedef Helmholtz3dDoubleLayerPotentialOperatorImpl<BasisFunctionType> This;
   typedef Helmholtz3dPotentialOperatorBase<This, BasisFunctionType>
-  PotentialOperatorBase;
+      PotentialOperatorBase;
   typedef typename PotentialOperatorBase::KernelType KernelType;
   typedef typename PotentialOperatorBase::ResultType ResultType;
   typedef typename PotentialOperatorBase::CoordinateType CoordinateType;
@@ -46,7 +46,7 @@ struct Helmholtz3dDoubleLayerPotentialOperatorImpl {
   typedef Fiber::ModifiedHelmholtz3dDoubleLayerPotentialKernelFunctor<
       KernelType> KernelFunctor;
   typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
-  TransformationFunctor;
+      TransformationFunctor;
   typedef Fiber::SimpleScalarKernelTrialIntegrandFunctor<
       BasisFunctionType, KernelType, ResultType> IntegrandFunctor;
 
@@ -57,7 +57,7 @@ struct Helmholtz3dDoubleLayerPotentialOperatorImpl {
 
   Fiber::DefaultCollectionOfKernels<KernelFunctor> kernels;
   Fiber::DefaultCollectionOfBasisTransformations<TransformationFunctor>
-  transformations;
+      transformations;
   Fiber::DefaultKernelTrialIntegral<IntegrandFunctor> integral;
 };
 /** \endcond */

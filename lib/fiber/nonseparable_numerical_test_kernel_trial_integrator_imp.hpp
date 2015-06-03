@@ -148,12 +148,15 @@ NonseparableNumericalTestKernelTrialIntegrator<
 template <typename BasisFunctionType, typename KernelType, typename ResultType,
           typename GeometryFactory>
 void NonseparableNumericalTestKernelTrialIntegrator<
-    BasisFunctionType, KernelType, ResultType, GeometryFactory>::
-    integrate(CallVariant callVariant, const std::vector<int> &elementIndicesA,
-              int elementIndexB, const Shapeset<BasisFunctionType> &basisA,
-              const Shapeset<BasisFunctionType> &basisB,
-              LocalDofIndex localDofIndexB,
-              const std::vector<Matrix<ResultType> *> &result) const {
+    BasisFunctionType, KernelType, ResultType,
+    GeometryFactory>::integrate(CallVariant callVariant,
+                                const std::vector<int> &elementIndicesA,
+                                int elementIndexB,
+                                const Shapeset<BasisFunctionType> &basisA,
+                                const Shapeset<BasisFunctionType> &basisB,
+                                LocalDofIndex localDofIndexB,
+                                const std::vector<Matrix<ResultType> *> &result)
+    const {
   const int pointCount = m_quadWeights.size();
   const int elementACount = elementIndicesA.size();
 

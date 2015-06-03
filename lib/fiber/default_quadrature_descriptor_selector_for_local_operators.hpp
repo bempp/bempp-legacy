@@ -62,9 +62,9 @@ private:
 
   shared_ptr<const RawGridGeometry<CoordinateType>> m_rawGeometry;
   shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
-  m_testShapesets;
+      m_testShapesets;
   shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
-  m_trialShapesets;
+      m_trialShapesets;
   AccuracyOptionsEx m_accuracyOptions;
   /** \endcond */
 };

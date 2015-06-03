@@ -42,9 +42,7 @@ inline void Geometry::setup(const Matrix<float> &corners,
   setupImpl(cornersDouble, auxData);
 }
 
-inline void Geometry::getCorners(Matrix<double> &c) const {
-  getCornersImpl(c);
-}
+inline void Geometry::getCorners(Matrix<double> &c) const { getCornersImpl(c); }
 
 inline void Geometry::getCorners(Matrix<float> &c) const {
   Matrix<double> cDouble;
@@ -92,8 +90,8 @@ Geometry::getIntegrationElements(const Matrix<float> &local,
   convertMat(local, localDouble);
   getIntegrationElementsImpl(localDouble, int_elementDouble);
   int_element.resize(int_elementDouble.cols());
-  for (int i = 0; i < int_elementDouble.cols();++i)
-      int_element(i) = int_elementDouble(i);
+  for (int i = 0; i < int_elementDouble.cols(); ++i)
+    int_element(i) = int_elementDouble(i);
 }
 
 inline void Geometry::getCenter(Eigen::Ref<Vector<double>> c) const {
@@ -102,17 +100,16 @@ inline void Geometry::getCenter(Eigen::Ref<Vector<double>> c) const {
 
 inline void Geometry::getCenter(Eigen::Ref<Vector<float>> c) const {
 
-    Vector<double> cDouble;
-    cDouble.resize(c.rows());
-    getCenterImpl(cDouble);
-    for (int i = 0; i < c.rows(); ++i)
-        c(i) = cDouble(i);
-
+  Vector<double> cDouble;
+  cDouble.resize(c.rows());
+  getCenterImpl(cDouble);
+  for (int i = 0; i < c.rows(); ++i)
+    c(i) = cDouble(i);
 }
 
-inline void
-Geometry::getJacobiansTransposed(const Matrix<double> &local,
-                                 std::vector<Matrix<double>> &jacobian_t) const {
+inline void Geometry::getJacobiansTransposed(
+    const Matrix<double> &local,
+    std::vector<Matrix<double>> &jacobian_t) const {
   const size_t n = local.cols();
   const size_t mdim = dim();
   const size_t cdim = dimWorld();
@@ -128,13 +125,13 @@ Geometry::getJacobiansTransposed(const Matrix<float> &local,
   convertMat(local, localDouble);
   getJacobiansTransposedImpl(localDouble, jacobian_tDouble);
   jacobian_t.resize(jacobian_tDouble.size());
-  for (int i = 0; i<jacobian_t.size();++i){
-      jacobian_t[i].resize(jacobian_tDouble[i].rows(),jacobian_tDouble[i].cols());
-      for (int j = 0; j < jacobian_tDouble[i].cols();++j)
-          for (int k = 0; k < jacobian_tDouble[i].rows();++k)
-              jacobian_t[i](k,j) = static_cast<float>(jacobian_tDouble[i](k,j));
+  for (int i = 0; i < jacobian_t.size(); ++i) {
+    jacobian_t[i].resize(jacobian_tDouble[i].rows(),
+                         jacobian_tDouble[i].cols());
+    for (int j = 0; j < jacobian_tDouble[i].cols(); ++j)
+      for (int k = 0; k < jacobian_tDouble[i].rows(); ++k)
+        jacobian_t[i](k, j) = static_cast<float>(jacobian_tDouble[i](k, j));
   }
-
 }
 
 inline void
@@ -154,24 +151,27 @@ Geometry::getJacobiansTransposed(const Matrix<float> &local,
 }
 
 inline void Geometry::getJacobianInversesTransposed(
-    const Matrix<double> &local, std::vector<Matrix<double>> &jacobian_inv_t) const {
+    const Matrix<double> &local,
+    std::vector<Matrix<double>> &jacobian_inv_t) const {
   getJacobianInversesTransposedImpl(local, jacobian_inv_t);
 }
 
 inline void Geometry::getJacobianInversesTransposed(
-    const Matrix<float> &local, std::vector<Matrix<float>> &jacobian_inv_t) const {
+    const Matrix<float> &local,
+    std::vector<Matrix<float>> &jacobian_inv_t) const {
   Matrix<double> localDouble;
   std::vector<Matrix<double>> jacobian_inv_tDouble;
   convertMat(local, localDouble);
   getJacobianInversesTransposed(localDouble, jacobian_inv_tDouble);
   jacobian_inv_t.resize(jacobian_inv_tDouble.size());
-  for (int i = 0; i<jacobian_inv_t.size();++i){
-      jacobian_inv_t[i].resize(jacobian_inv_tDouble[i].rows(),jacobian_inv_tDouble[i].cols());
-      for (int j = 0; j < jacobian_inv_tDouble[i].cols();++j)
-          for (int k = 0; k < jacobian_inv_tDouble[i].rows();++k)
-              jacobian_inv_t[i](k,j) = static_cast<float>(jacobian_inv_tDouble[i](k,j));
+  for (int i = 0; i < jacobian_inv_t.size(); ++i) {
+    jacobian_inv_t[i].resize(jacobian_inv_tDouble[i].rows(),
+                             jacobian_inv_tDouble[i].cols());
+    for (int j = 0; j < jacobian_inv_tDouble[i].cols(); ++j)
+      for (int k = 0; k < jacobian_inv_tDouble[i].rows(); ++k)
+        jacobian_inv_t[i](k, j) =
+            static_cast<float>(jacobian_inv_tDouble[i](k, j));
   }
-
 }
 
 inline void Geometry::getJacobianInversesTransposed(
@@ -181,8 +181,7 @@ inline void Geometry::getJacobianInversesTransposed(
 }
 
 inline void Geometry::getJacobianInversesTransposed(
-    const Matrix<float> &local,
-    Fiber::_3dArray<float> &jacobian_inv_t) const {
+    const Matrix<float> &local, Fiber::_3dArray<float> &jacobian_inv_t) const {
   Matrix<double> localDouble;
   Fiber::_3dArray<double> jacobian_inv_tDouble;
   convertMat(local, localDouble);
@@ -225,26 +224,24 @@ inline void Geometry::getData(size_t what, const Matrix<float> &local,
 template <typename T1, typename T2>
 void Geometry::convertMat(const Matrix<T1> &in, Matrix<T2> &out) const {
   out.resize(in.rows(), in.cols());
-  for (int j = 0; j < in.cols();++j )
-      for (int i = 0 ; i < in.rows(); ++i)
-          out(i,j) = in(i,j);
+  for (int j = 0; j < in.cols(); ++j)
+    for (int i = 0; i < in.rows(); ++i)
+      out(i, j) = in(i, j);
 }
 
 template <typename T1, typename T2>
 void Geometry::convertMat(const Vector<T1> &in, Vector<T2> &out) const {
   out.resize(in.rows());
-  for (int j = 0; j < in.rows();++j )
-      out(j) = in(j);
+  for (int j = 0; j < in.rows(); ++j)
+    out(j) = in(j);
 }
 
 template <typename T1, typename T2>
 void Geometry::convertMat(const RowVector<T1> &in, RowVector<T2> &out) const {
   out.resize(in.cols());
-  for (int j = 0; j < in.cols();++j )
-      out(j) = in(j);
+  for (int j = 0; j < in.cols(); ++j)
+    out(j) = in(j);
 }
-
-
 
 template <typename T1, typename T2>
 void Geometry::convertCube(const Fiber::_3dArray<T1> &in,

@@ -53,10 +53,9 @@ public:
   \param[in] fwdOp  Operator represented internally as a H-matrix.
   \param[in] delta  Requested approximation accuracy (M. Bebendorf recommends
                     delta = 0.1). */
-  AcaApproximateLuInverse(const DiscreteAcaBoundaryOperator<ValueType> &fwdOp,
-                          MagnitudeType delta,
-                          VerbosityLevel::Level verbosityLevel =
-                              VerbosityLevel::DEFAULT);
+  AcaApproximateLuInverse(
+      const DiscreteAcaBoundaryOperator<ValueType> &fwdOp, MagnitudeType delta,
+      VerbosityLevel::Level verbosityLevel = VerbosityLevel::DEFAULT);
 
   virtual ~AcaApproximateLuInverse();
 

@@ -24,7 +24,7 @@ inline IndexSetType sortIndexSet(const IndexSetType &indexSet,
 
   IndexSetType sortedIndexSet(indexSet);
 
-  auto sortFun = [&geometry, dim ](int elem1, int elem2)->bool {
+  auto sortFun = [&geometry, dim](int elem1, int elem2) -> bool {
 
     return (geometry[elem1]->center[dim] < geometry[elem2]->center[dim]);
   };

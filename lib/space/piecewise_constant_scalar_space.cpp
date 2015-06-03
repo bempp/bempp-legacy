@@ -123,7 +123,7 @@ PiecewiseConstantScalarSpace<BasisFunctionType>::barycentricSpace(
   if (!m_barycentricSpace) {
     tbb::mutex::scoped_lock lock(m_barycentricSpaceMutex);
     typedef PiecewiseConstantScalarSpaceBarycentric<BasisFunctionType>
-    BarycentricSpace;
+        BarycentricSpace;
     if (!m_barycentricSpace)
       m_barycentricSpace.reset(new BarycentricSpace(this->grid(), m_segment));
   }
@@ -216,16 +216,17 @@ void PiecewiseConstantScalarSpace<BasisFunctionType>::flatLocal2localDofs(
 }
 
 template <typename BasisFunctionType>
-void PiecewiseConstantScalarSpace<BasisFunctionType>::
-    getGlobalDofInterpolationPoints(Matrix<CoordinateType> &points) const {
+void PiecewiseConstantScalarSpace<
+    BasisFunctionType>::getGlobalDofInterpolationPoints(Matrix<CoordinateType> &
+                                                            points) const {
   SpaceHelper<BasisFunctionType>::
       getGlobalDofInterpolationPoints_defaultImplementation(*this, points);
 }
 
 template <typename BasisFunctionType>
 void PiecewiseConstantScalarSpace<BasisFunctionType>::
-    getNormalsAtGlobalDofInterpolationPoints(Matrix<CoordinateType> &normals)
-    const {
+    getNormalsAtGlobalDofInterpolationPoints(
+        Matrix<CoordinateType> &normals) const {
   SpaceHelper<BasisFunctionType>::
       getNormalsAtGlobalDofInterpolationPoints_defaultImplementation(*this,
                                                                      normals);
@@ -262,8 +263,9 @@ void PiecewiseConstantScalarSpace<BasisFunctionType>::getGlobalDofBoundingBoxes(
     int index = indexSet.entityIndex(e);
     const Geometry &geo = e.geometry();
     geo.getCorners(acc(elementCorners, index));
-    acc(elementCenters,index).resize(m_view->dimWorld());
-    Eigen::Ref<Vector<CoordinateType>> elementCenterRef(acc(elementCenters,index));
+    acc(elementCenters, index).resize(m_view->dimWorld());
+    Eigen::Ref<Vector<CoordinateType>> elementCenterRef(
+        acc(elementCenters, index));
     geo.getCenter(elementCenterRef);
     it->next();
   }
@@ -342,9 +344,9 @@ void PiecewiseConstantScalarSpace<BasisFunctionType>::dumpClusterIdsEx(
 
   std::unique_ptr<GridView> view = this->grid()->leafView();
   std::unique_ptr<VtkWriter> vtkWriter = view->vtkWriter();
-  Matrix<double> data(1,idCount);
+  Matrix<double> data(1, idCount);
   for (size_t i = 0; i < idCount; ++i)
-    data(0,i) = clusterIdsOfGlobalDofs[i];
+    data(0, i) = clusterIdsOfGlobalDofs[i];
   vtkWriter->addCellData(data, "ids");
   vtkWriter->write(fileName);
 }

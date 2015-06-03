@@ -98,11 +98,9 @@ public:
     \param[out] global Matrix whose \f$i\f$th column contains the
       global coordinates of \f$x_i\f$, i.e. \f$g(x_i)\f$.
   */
-  void local2global(const Matrix<double> &local,
-                    Matrix<double> &global) const;
+  void local2global(const Matrix<double> &local, Matrix<double> &global) const;
   /** \overload */
-  void local2global(const Matrix<float> &local,
-                    Matrix<float> &global) const;
+  void local2global(const Matrix<float> &local, Matrix<float> &global) const;
 
   /** \brief Convert global (physical) to local (logical) coordinates.
 
@@ -115,11 +113,9 @@ public:
     Maybe the docstring should say that we convert some sort of *projection*
     of global to local.
   */
-  void global2local(const Matrix<double> &global,
-                    Matrix<double> &local) const;
+  void global2local(const Matrix<double> &global, Matrix<double> &local) const;
   /** \overload */
-  void global2local(const Matrix<float> &global,
-                    Matrix<float> &local) const;
+  void global2local(const Matrix<float> &global, Matrix<float> &local) const;
 
   /** \brief Get the factor appearing in the integral transformation formula
     at specified points.
@@ -223,11 +219,13 @@ public:
    *        This means that it is inverse for all tangential vectors in
    *        \f$g(x)\f$ while mapping all normal vectors to zero.
    */
-  void getJacobianInversesTransposed(const Matrix<double> &local,
-                                     std::vector<Matrix<double>> &jacobian_inv_t) const;
+  void getJacobianInversesTransposed(
+      const Matrix<double> &local,
+      std::vector<Matrix<double>> &jacobian_inv_t) const;
   /** \overload */
-  void getJacobianInversesTransposed(const Matrix<float> &local,
-                                     std::vector<Matrix<float>> &jacobian_inv_t) const;
+  void getJacobianInversesTransposed(
+      const Matrix<float> &local,
+      std::vector<Matrix<float>> &jacobian_inv_t) const;
   /** \overload */
   void
   getJacobianInversesTransposed(const Matrix<double> &local,
@@ -248,11 +246,9 @@ public:
    *    Matrix whose \f$i\f$th column containts components of a unit vector
    *    normal to the entity at \f$x_i\f$.
    */
-  void getNormals(const Matrix<double> &local,
-                  Matrix<double> &normal) const;
+  void getNormals(const Matrix<double> &local, Matrix<double> &normal) const;
   /** \overload */
-  void getNormals(const Matrix<float> &local,
-                  Matrix<float> &normal) const;
+  void getNormals(const Matrix<float> &local, Matrix<float> &normal) const;
 
   /** \brief Get several types of geometrical data.
    *
@@ -312,12 +308,14 @@ private:
   template <typename T1, typename T2>
   void convertMat(const RowVector<T1> &in, RowVector<T2> &out) const;
   template <typename T1, typename T2>
-  void convertCube(const std::vector<Matrix<T1>> &in,std::vector<Matrix<T2>> &out) const;
+  void convertCube(const std::vector<Matrix<T1>> &in,
+                   std::vector<Matrix<T2>> &out) const;
   template <typename T1, typename T2>
   void convertCube(const Fiber::_3dArray<T1> &in,
                    Fiber::_3dArray<T2> &out) const;
   template <typename T1, typename T2>
-  void convertCube(const Fiber::_3dArray<T1> &in, std::vector<Matrix<T2>> &out) const;
+  void convertCube(const Fiber::_3dArray<T1> &in,
+                   std::vector<Matrix<T2>> &out) const;
 };
 
 } // namespace Bempp

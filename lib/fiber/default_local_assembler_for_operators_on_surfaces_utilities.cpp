@@ -106,8 +106,7 @@ DefaultLocalAssemblerForOperatorsOnSurfacesUtilities<
   const Matrix<CoordinateType> &vertices = rawGeometry.vertices();
   const int maxCornerCount = cornerIndices.rows();
   // each element has at least one corner
-  Vector<CoordinateType> center(
-      vertices.col(cornerIndices(0, elementIndex)));
+  Vector<CoordinateType> center(vertices.col(cornerIndices(0, elementIndex)));
   int i = 1;
   for (; i < maxCornerCount; ++i) {
     int cornerIndex = cornerIndices(i, elementIndex);

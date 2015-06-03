@@ -56,9 +56,7 @@ struct LocalDof {
 
 /** \ingroup weak_form_assembly_internal
  *  \brief Point in a three-dimensional space. */
-template <typename ValueType> struct Point3D {
-  ValueType x, y, z;
-};
+template <typename ValueType> struct Point3D { ValueType x, y, z; };
 
 } // namespace Bempp
 

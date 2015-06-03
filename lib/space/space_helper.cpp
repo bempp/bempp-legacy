@@ -37,8 +37,7 @@ namespace Bempp {
 template <typename BasisFunctionType>
 void SpaceHelper<BasisFunctionType>::
     getGlobalDofInterpolationPoints_defaultImplementation(
-        const Space<BasisFunctionType> &space,
-        Matrix<CoordinateType> &points) {
+        const Space<BasisFunctionType> &space, Matrix<CoordinateType> &points) {
   std::vector<Point3D<CoordinateType>> vPoints;
   space.getGlobalDofPositions(vPoints);
 
@@ -150,7 +149,7 @@ void SpaceHelper<BasisFunctionType>::getGlobalDofNormals_defaultImplementation(
     e.geometry().getNormals(center, normal);
 
     for (int dim = 0; dim < worldDim; ++dim)
-      elementNormals(dim, index) = normal(dim,0);
+      elementNormals(dim, index) = normal(dim, 0);
     it->next();
   }
 
@@ -163,8 +162,8 @@ void SpaceHelper<BasisFunctionType>::getGlobalDofNormals_defaultImplementation(
         normals[g].x += elementNormals(0, acc(ldofs, l).entityIndex);
         normals[g].y += elementNormals(1, acc(ldofs, l).entityIndex);
       }
-      double len = std::sqrt(normals[g].x*normals[g].x*
-                             normals[g].y*normals[g].y);
+      double len =
+          std::sqrt(normals[g].x * normals[g].x * normals[g].y * normals[g].y);
       normals[g].x /= len;
       normals[g].y /= len;
     }
@@ -179,9 +178,9 @@ void SpaceHelper<BasisFunctionType>::getGlobalDofNormals_defaultImplementation(
         normals[g].y += elementNormals(1, acc(ldofs, l).entityIndex);
         normals[g].z += elementNormals(2, acc(ldofs, l).entityIndex);
       }
-      double len = std::sqrt(normals[g].x*normals[g].x+
-                             normals[g].y*normals[g].y+
-                             normals[g].z*normals[g].z);
+      double len =
+          std::sqrt(normals[g].x * normals[g].x + normals[g].y * normals[g].y +
+                    normals[g].z * normals[g].z);
       normals[g].x /= len;
       normals[g].y /= len;
       normals[g].z /= len;

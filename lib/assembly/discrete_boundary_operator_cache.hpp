@@ -39,9 +39,9 @@ public:
    *  stored in cache (if the operator \p op is cacheable) and returned to
    *  the caller. */
   BEMPP_DEPRECATED shared_ptr<const DiscreteBoundaryOperator<ResultType>>
-  getWeakForm(const Context<BasisFunctionType, ResultType> &context,
-              const AbstractBoundaryOperator<BasisFunctionType, ResultType> &op)
-      const;
+  getWeakForm(
+      const Context<BasisFunctionType, ResultType> &context,
+      const AbstractBoundaryOperator<BasisFunctionType, ResultType> &op) const;
 
   /** \brief Return list of discrete operators currently stored in cache.
    *

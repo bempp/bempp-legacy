@@ -107,12 +107,11 @@ helmholtz3dAdjointDoubleLayerBoundaryOperator(
     bool useInterpolation = false,
     int interpPtsPerWavelength = DEFAULT_HELMHOLTZ_INTERPOLATION_DENSITY);
 
-
 template <typename BasisFunctionType>
 BoundaryOperator<BasisFunctionType,
                  typename ScalarTraits<BasisFunctionType>::ComplexType>
 helmholtz3dAdjointDoubleLayerBoundaryOperator(
-    const ParameterList& parameterList,
+    const ParameterList &parameterList,
     const shared_ptr<const Space<BasisFunctionType>> &domain,
     const shared_ptr<const Space<BasisFunctionType>> &range,
     const shared_ptr<const Space<BasisFunctionType>> &dualToRange,

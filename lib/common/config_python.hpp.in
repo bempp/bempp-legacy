@@ -3,10 +3,10 @@
 #define CONFIG_PYTHON_HPP
 
 #include <Python.h>
-#if PY_MAJOR_VERSION>=3
-const wchar_t* PYTHON_HOME_NAME = L"@PYTHON_HOME@";
+#if PY_MAJOR_VERSION >= 3
+const wchar_t *PYTHON_HOME_NAME = L"@PYTHON_HOME@";
 #else
-const char* PYTHON_HOME_NAME = "@PYTHON_HOME@";
+const char *PYTHON_HOME_NAME = "@PYTHON_HOME@";
 #endif
 
 #endif

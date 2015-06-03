@@ -69,9 +69,8 @@ public:
   virtual ~DefaultLocalAssemblerForGridFunctionsOnSurfaces();
 
 public:
-  virtual void
-  evaluateLocalWeakForms(const std::vector<int> &elementIndices,
-                         std::vector<Vector<ResultType>> &result);
+  virtual void evaluateLocalWeakForms(const std::vector<int> &elementIndices,
+                                      std::vector<Vector<ResultType>> &result);
 
 private:
   typedef TestFunctionIntegrator<BasisFunctionType, ResultType> Integrator;
@@ -88,13 +87,13 @@ private:
   shared_ptr<const GeometryFactory> m_geometryFactory;
   shared_ptr<const RawGridGeometry<CoordinateType>> m_rawGeometry;
   shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
-  m_testShapesets;
+      m_testShapesets;
   shared_ptr<const CollectionOfShapesetTransformations<CoordinateType>>
-  m_testTransformations;
+      m_testTransformations;
   shared_ptr<const Function<UserFunctionType>> m_function;
   shared_ptr<const OpenClHandler> m_openClHandler;
   shared_ptr<const QuadratureDescriptorSelectorForGridFunctions<CoordinateType>>
-  m_quadDescSelector;
+      m_quadDescSelector;
   shared_ptr<const SingleQuadratureRuleFamily<CoordinateType>> m_quadRuleFamily;
 
   IntegratorMap m_testFunctionIntegrators;

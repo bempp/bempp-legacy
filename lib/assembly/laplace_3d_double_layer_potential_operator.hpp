@@ -72,7 +72,7 @@ public:
   /** \copydoc Laplace3dPotentialOperatorBase::CollectionOfBasisTransformations
    */
   typedef typename Base::CollectionOfBasisTransformations
-  CollectionOfBasisTransformations;
+      CollectionOfBasisTransformations;
   /** \copydoc Laplace3dPotentialOperatorBase::CollectionOfKernels */
   typedef typename Base::CollectionOfKernels CollectionOfKernels;
   /** \copydoc Laplace3dPotentialOperatorBase::KernelTrialIntegral */

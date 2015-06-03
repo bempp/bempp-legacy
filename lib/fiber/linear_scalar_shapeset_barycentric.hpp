@@ -31,10 +31,7 @@ template <typename ValueType>
 class LinearScalarShapesetBarycentric : public Basis<ValueType> {
 public:
   typedef typename Basis<ValueType>::CoordinateType CoordinateType;
-  enum BasisType {
-    TYPE1,
-    TYPE2
-  };
+  enum BasisType { TYPE1, TYPE2 };
 
 public:
   LinearScalarShapesetBarycentric(BasisType type) : m_type(type) {}

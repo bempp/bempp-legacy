@@ -59,7 +59,6 @@ template <typename ValueType>
 DataBlockType HMatrixDenseData<ValueType>::type() const {
 
   return DENSE;
-
 }
 
 template <typename ValueType>

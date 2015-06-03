@@ -59,7 +59,7 @@ public:
   /** \brief Type of the appropriate instantiation of
    * Fiber::LocalAssemblerForOperators. */
   typedef typename Fiber::LocalAssemblerForIntegralOperators<ResultType>
-  LocalAssembler;
+      LocalAssembler;
 
   /** \copydoc AbstractBoundaryOperator::AbstractBoundaryOperator */
   AbstractBoundaryOperatorSuperpositionBase(
@@ -70,8 +70,8 @@ public:
 
 protected:
   virtual shared_ptr<DiscreteBoundaryOperator<ResultType_>>
-  assembleWeakFormImpl(const Context<BasisFunctionType, ResultType> &context)
-      const;
+  assembleWeakFormImpl(
+      const Context<BasisFunctionType, ResultType> &context) const;
 
 private:
   shared_ptr<DiscreteBoundaryOperator<ResultType_>>

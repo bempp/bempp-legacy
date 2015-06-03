@@ -1,6 +1,6 @@
 #Disable Numpy deprecated warning
 add_definitions(-DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION)
-# Make CGAL Thread safe
+#Make CGAL Thread safe
 add_definitions(-DCGAL_HAS_THREADS)
 
 #Configure All Option files
@@ -13,7 +13,7 @@ endforeach()
 configure_file(${PROJECT_SOURCE_DIR}/lib/config_bempp.in.hpp
     ${PROJECT_BINARY_DIR}/include/bempp/config_bempp.hpp)
 
-# Find all source and header files
+#Find all source and header files
 file(GLOB_RECURSE LIB_SOURCES *.cpp)
 file(GLOB_RECURSE LIB_HEADERS *.hpp)
 file(GLOB COMMON_HEADERS ${PROJECT_BINARY_DIR}/include/bempp/common/*.hpp)

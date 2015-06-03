@@ -18,7 +18,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-
 #ifndef bempp_discrete_boundary_operator_hpp
 #define bempp_discrete_boundary_operator_hpp
 
@@ -30,7 +29,6 @@
 #include "boost/enable_shared_from_this.hpp"
 
 #include <vector>
-
 
 #include <boost/mpl/set.hpp>
 #include <boost/mpl/has_key.hpp>
@@ -60,9 +58,8 @@ namespace Bempp {
  *    double, <tt>std::complex<float></tt> and <tt>std::complex<double></tt>.
  */
 template <typename ValueType>
-class DiscreteBoundaryOperator
-    : public boost::enable_shared_from_this<DiscreteBoundaryOperator<ValueType>>
-      {
+class DiscreteBoundaryOperator : public boost::enable_shared_from_this<
+                                     DiscreteBoundaryOperator<ValueType>> {
 public:
   /** \brief Destructor. */
   virtual ~DiscreteBoundaryOperator() {}
@@ -101,13 +98,13 @@ public:
              const ValueType beta) const;
 
   /** \overload */
-  void apply(const TranspositionMode trans, const Eigen::Ref<Vector<ValueType>> &x_in,
+  void apply(const TranspositionMode trans,
+             const Eigen::Ref<Vector<ValueType>> &x_in,
              Eigen::Ref<Vector<ValueType>> y_inout, const ValueType alpha,
              const ValueType beta) const;
 
   /** \overload */
-  PyObject* apply(const TranspositionMode trans, const PyObject* x_in) const;
-
+  PyObject *apply(const TranspositionMode trans, const PyObject *x_in) const;
 
   /** \brief Return a representation that can be cast to a
    *  DiscreteAcaBoundaryOperator

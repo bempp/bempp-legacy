@@ -45,7 +45,7 @@ struct LagrangeScalarBasisTraits<3, CoordinateType, ValueType,
                                  polynomialOrder> {
 public:
   typedef Dune::Pk2DLocalBasis<CoordinateType, ValueType, polynomialOrder>
-  DuneShapeset;
+      DuneShapeset;
   typedef DuneShapeset DuneBasis;
 };
 

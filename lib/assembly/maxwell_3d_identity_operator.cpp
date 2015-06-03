@@ -88,13 +88,12 @@ BoundaryOperator<BasisFunctionType, ResultType> maxwell3dIdentityOperator(
 
 template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType> maxwell3dIdentityOperator(
-    const ParameterList& parameterList,
+    const ParameterList &parameterList,
     const shared_ptr<const Space<BasisFunctionType>> &domain,
     const shared_ptr<const Space<BasisFunctionType>> &range,
     const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
     const std::string &label, int symmetry) {
   typedef Maxwell3dIdentityOperator<BasisFunctionType, ResultType> Id;
-
 
   shared_ptr<const Context<BasisFunctionType, ResultType>> context(
       new Context<BasisFunctionType, ResultType>(parameterList));
@@ -106,7 +105,7 @@ BoundaryOperator<BasisFunctionType, ResultType> maxwell3dIdentityOperator(
 
 #define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS, RESULT)                       \
   template BoundaryOperator<BASIS, RESULT> maxwell3dIdentityOperator(          \
-      const ParameterList& parameterList,                                      \
+      const ParameterList &parameterList,                                      \
       const shared_ptr<const Space<BASIS>> &,                                  \
       const shared_ptr<const Space<BASIS>> &,                                  \
       const shared_ptr<const Space<BASIS>> &, const std::string &, int);       \

@@ -30,8 +30,8 @@ BlockClusterTree<N>::BlockClusterTree(
   initializeBlockClusterTree(admissibilityFunction, maxBlockSize);
 }
 
-//template <int N>
-//void BlockClusterTree<N>::writeToPdfFile(const std::string &fname,
+// template <int N>
+// void BlockClusterTree<N>::writeToPdfFile(const std::string &fname,
 //                                         double widthInPoints,
 //                                         double heightInPoints) const {
 //
@@ -51,7 +51,8 @@ BlockClusterTree<N>::BlockClusterTree(
 //    if (node->isLeaf()) {
 //
 //      auto rowIndexRange = nodeData.rowClusterTreeNode->data().indexRange;
-//      auto columnIndexRange = nodeData.columnClusterTreeNode->data().indexRange;
+//      auto columnIndexRange =
+//      nodeData.columnClusterTreeNode->data().indexRange;
 //
 //      auto rowDiameter = rowIndexRange[1] - rowIndexRange[0];
 //      auto columnDiameter = columnIndexRange[1] - columnIndexRange[0];
@@ -129,7 +130,7 @@ void BlockClusterTree<N>::initializeBlockClusterTree(
     const AdmissibilityFunction &admissibilityFunction, int maxBlockSize) {
 
   std::function<void(const shared_ptr<BlockClusterTreeNode<N>> &)>
-  splittingFunction;
+      splittingFunction;
 
   splittingFunction =
       [this, &admissibilityFunction, &splittingFunction, &maxBlockSize](
@@ -180,15 +181,14 @@ void BlockClusterTree<N>::initializeBlockClusterTree(
         splittingFunction(node->child(N * rowCount + columnCount));
       }
     }
-    //tbb::parallel_for(tbb::blocked_range<int>(0,N*N),[&splittingFunction,&node](
+    // tbb::parallel_for(tbb::blocked_range<int>(0,N*N),[&splittingFunction,&node](
     //      const tbb::blocked_range<int>& range){
     //    for (int i = range.begin(); i!=range.end(); ++i)
     //      splittingFunction(node->child(i));});
   };
 
-  bool admissible =
-      admissibilityFunction(m_rowClusterTree->root()->data(),
-                            m_columnClusterTree->root()->data());
+  bool admissible = admissibilityFunction(m_rowClusterTree->root()->data(),
+                                          m_columnClusterTree->root()->data());
   m_root = shared_ptr<BlockClusterTreeNode<N>>(
       new BlockClusterTreeNode<N>(BlockClusterTreeNodeData<N>(
           m_rowClusterTree->root(), m_columnClusterTree->root(), admissible)));
@@ -212,8 +212,9 @@ void getBlockClusterTreeNodeDimensions(
 
 inline StrongAdmissibility::StrongAdmissibility(double eta) : m_eta(eta) {}
 
-inline bool StrongAdmissibility::operator()(const ClusterTreeNodeData &cluster1,
-                                              const ClusterTreeNodeData &cluster2) const {
+inline bool StrongAdmissibility::
+operator()(const ClusterTreeNodeData &cluster1,
+           const ClusterTreeNodeData &cluster2) const {
   double diam1 = cluster1.diameter;
   double diam2 = cluster2.diameter;
 
@@ -222,8 +223,9 @@ inline bool StrongAdmissibility::operator()(const ClusterTreeNodeData &cluster1,
   return std::min(diam1, diam2) < m_eta * dist;
 }
 
-inline bool WeakAdmissibility::operator()(const ClusterTreeNodeData &cluster1,
-                                          const ClusterTreeNodeData &cluster2) const {
+inline bool WeakAdmissibility::
+operator()(const ClusterTreeNodeData &cluster1,
+           const ClusterTreeNodeData &cluster2) const {
 
   return cluster1.boundingBox.distance(cluster2.boundingBox) > 0;
 }

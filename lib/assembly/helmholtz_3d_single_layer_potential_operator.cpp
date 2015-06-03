@@ -38,7 +38,7 @@ template <typename BasisFunctionType>
 struct Helmholtz3dSingleLayerPotentialOperatorImpl {
   typedef Helmholtz3dSingleLayerPotentialOperatorImpl<BasisFunctionType> This;
   typedef Helmholtz3dPotentialOperatorBase<This, BasisFunctionType>
-  PotentialOperatorBase;
+      PotentialOperatorBase;
   typedef typename PotentialOperatorBase::KernelType KernelType;
   typedef typename PotentialOperatorBase::ResultType ResultType;
   typedef typename PotentialOperatorBase::CoordinateType CoordinateType;
@@ -46,7 +46,7 @@ struct Helmholtz3dSingleLayerPotentialOperatorImpl {
   typedef Fiber::ModifiedHelmholtz3dSingleLayerPotentialKernelFunctor<
       KernelType> KernelFunctor;
   typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
-  TransformationFunctor;
+      TransformationFunctor;
   typedef Fiber::SimpleScalarKernelTrialIntegrandFunctor<
       BasisFunctionType, KernelType, ResultType> IntegrandFunctor;
 
@@ -57,7 +57,7 @@ struct Helmholtz3dSingleLayerPotentialOperatorImpl {
 
   Fiber::DefaultCollectionOfKernels<KernelFunctor> kernels;
   Fiber::DefaultCollectionOfBasisTransformations<TransformationFunctor>
-  transformations;
+      transformations;
   Fiber::DefaultKernelTrialIntegral<IntegrandFunctor> integral;
 };
 /** \endcond */

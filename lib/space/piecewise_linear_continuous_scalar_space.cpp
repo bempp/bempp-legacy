@@ -85,7 +85,7 @@ PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::discontinuousSpace(
   if (!m_discontinuousSpace) {
     tbb::mutex::scoped_lock lock(m_discontinuousSpaceMutex);
     typedef PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>
-    DiscontinuousSpace;
+        DiscontinuousSpace;
     if (!m_discontinuousSpace)
       m_discontinuousSpace.reset(
           new DiscontinuousSpace(this->grid(), m_segment, m_strictlyOnSegment));
@@ -101,7 +101,7 @@ PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::barycentricSpace(
   if (!m_barycentricSpace) {
     tbb::mutex::scoped_lock lock(m_barycentricSpaceMutex);
     typedef PiecewiseLinearContinuousScalarSpaceBarycentric<BasisFunctionType>
-    BarycentricSpace;
+        BarycentricSpace;
     if (!m_barycentricSpace)
       m_barycentricSpace.reset(
           new BarycentricSpace(this->grid(), m_segment, m_strictlyOnSegment));
@@ -284,8 +284,8 @@ PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::getGlobalDofPositions(
 
 template <typename BasisFunctionType>
 void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::
-    getFlatLocalDofPositions(std::vector<Point3D<CoordinateType>> &positions)
-    const {
+    getFlatLocalDofPositions(
+        std::vector<Point3D<CoordinateType>> &positions) const {
   std::vector<BoundingBox<CoordinateType>> bboxes;
   getFlatLocalDofBoundingBoxes(bboxes);
 
@@ -296,8 +296,8 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::
 
 template <typename BasisFunctionType>
 void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::
-    getGlobalDofBoundingBoxes(std::vector<BoundingBox<CoordinateType>> &bboxes)
-    const {
+    getGlobalDofBoundingBoxes(
+        std::vector<BoundingBox<CoordinateType>> &bboxes) const {
   SpaceHelper<BasisFunctionType>::
       getGlobalDofBoundingBoxes_defaultImplementation(
           this->gridView(), m_global2localDofs, bboxes);
@@ -379,7 +379,7 @@ PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::getFlatLocalDofNormals(
     e.geometry().getNormals(center, normal);
 
     for (int dim = 0; dim < worldDim; ++dim)
-      elementNormals(dim, index) = normal(dim,0);
+      elementNormals(dim, index) = normal(dim, 0);
     it->next();
   }
 
@@ -425,9 +425,9 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::dumpClusterIdsEx(
   std::unique_ptr<GridView> view = this->grid()->leafView();
   std::unique_ptr<VtkWriter> vtkWriter = view->vtkWriter();
   if (dofType == GLOBAL_DOFS) {
-    Matrix<double> data(1,idCount);
+    Matrix<double> data(1, idCount);
     for (size_t i = 0; i < idCount; ++i)
-      data(0,i) = clusterIdsOfDofs[i];
+      data(0, i) = clusterIdsOfDofs[i];
     vtkWriter->addVertexData(data, "ids");
     vtkWriter->write(fileName);
   } else {
@@ -446,7 +446,7 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::dumpClusterIdsEx(
         }
       }
       if (!exists)
-          eigenRemoveRowFromMatrix(data,row);
+        eigenRemoveRowFromMatrix(data, row);
       else
         ++row;
     }

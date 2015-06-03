@@ -58,8 +58,8 @@ PiecewiseConstantDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::
 template <typename BasisFunctionType>
 shared_ptr<const Space<BasisFunctionType>>
 PiecewiseConstantDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::
-    discontinuousSpace(const shared_ptr<const Space<BasisFunctionType>> &self)
-    const {
+    discontinuousSpace(
+        const shared_ptr<const Space<BasisFunctionType>> &self) const {
   if (self.get() != this)
     throw std::invalid_argument("PiecewiseConstantDiscontinuousScalarSpaceBaryc"
                                 "entric::discontinuousSpace(): "
@@ -118,8 +118,8 @@ bool PiecewiseConstantDiscontinuousScalarSpaceBarycentric<
 template <typename BasisFunctionType>
 shared_ptr<const Space<BasisFunctionType>>
 PiecewiseConstantDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::
-    barycentricSpace(const shared_ptr<const Space<BasisFunctionType>> &self)
-    const {
+    barycentricSpace(
+        const shared_ptr<const Space<BasisFunctionType>> &self) const {
 
   if (self.get() != this)
     throw std::invalid_argument("PiecewiseConstantDiscontinuousScalarSpaceBaryc"
@@ -249,16 +249,17 @@ void PiecewiseConstantDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::
 }
 
 template <typename BasisFunctionType>
-void PiecewiseConstantDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::
-    getGlobalDofInterpolationPoints(Matrix<CoordinateType> &points) const {
+void PiecewiseConstantDiscontinuousScalarSpaceBarycentric<
+    BasisFunctionType>::getGlobalDofInterpolationPoints(Matrix<CoordinateType> &
+                                                            points) const {
   SpaceHelper<BasisFunctionType>::
       getGlobalDofInterpolationPoints_defaultImplementation(*this, points);
 }
 
 template <typename BasisFunctionType>
 void PiecewiseConstantDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::
-    getNormalsAtGlobalDofInterpolationPoints(Matrix<CoordinateType> &normals)
-    const {
+    getNormalsAtGlobalDofInterpolationPoints(
+        Matrix<CoordinateType> &normals) const {
   SpaceHelper<BasisFunctionType>::
       getNormalsAtGlobalDofInterpolationPoints_defaultImplementation(*this,
                                                                      normals);
@@ -266,8 +267,8 @@ void PiecewiseConstantDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::
 
 template <typename BasisFunctionType>
 void PiecewiseConstantDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::
-    getGlobalDofPositions(std::vector<Point3D<CoordinateType>> &positions)
-    const {
+    getGlobalDofPositions(
+        std::vector<Point3D<CoordinateType>> &positions) const {
   std::vector<BoundingBox<CoordinateType>> bboxes;
   getGlobalDofBoundingBoxes(bboxes);
 
@@ -278,8 +279,8 @@ void PiecewiseConstantDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::
 
 template <typename BasisFunctionType>
 void PiecewiseConstantDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::
-    getFlatLocalDofPositions(std::vector<Point3D<CoordinateType>> &positions)
-    const {
+    getFlatLocalDofPositions(
+        std::vector<Point3D<CoordinateType>> &positions) const {
   std::vector<BoundingBox<CoordinateType>> bboxes;
   getFlatLocalDofBoundingBoxes(bboxes);
 
@@ -290,8 +291,8 @@ void PiecewiseConstantDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::
 
 template <typename BasisFunctionType>
 void PiecewiseConstantDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::
-    getGlobalDofBoundingBoxes(std::vector<BoundingBox<CoordinateType>> &bboxes)
-    const {
+    getGlobalDofBoundingBoxes(
+        std::vector<BoundingBox<CoordinateType>> &bboxes) const {
   SpaceHelper<BasisFunctionType>::
       getGlobalDofBoundingBoxes_defaultImplementation(
           this->gridView(), m_global2localDofs, bboxes);
@@ -313,8 +314,8 @@ void PiecewiseConstantDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::
 
 template <typename BasisFunctionType>
 void PiecewiseConstantDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::
-    getFlatLocalDofNormals(std::vector<Point3D<CoordinateType>> &normals)
-    const {
+    getFlatLocalDofNormals(
+        std::vector<Point3D<CoordinateType>> &normals) const {
   const int gridDim = this->domainDimension();
   const int worldDim = this->grid()->dimWorld();
   normals.resize(m_flatLocal2localDofs.size());
@@ -334,7 +335,7 @@ void PiecewiseConstantDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::
     e.geometry().getNormals(center, normal);
 
     for (int dim = 0; dim < worldDim; ++dim)
-      elementNormals(dim, index) = normal(dim,0);
+      elementNormals(dim, index) = normal(dim, 0);
     it->next();
   }
 
@@ -381,9 +382,9 @@ void PiecewiseConstantDiscontinuousScalarSpaceBarycentric<
 
   std::unique_ptr<GridView> view = this->grid()->leafView();
   std::unique_ptr<VtkWriter> vtkWriter = view->vtkWriter();
-  Matrix<double> data(1,idCount);
+  Matrix<double> data(1, idCount);
   for (size_t i = 0; i < idCount; ++i)
-    data(1,i) = clusterIdsOfGlobalDofs[i];
+    data(1, i) = clusterIdsOfGlobalDofs[i];
   vtkWriter->addCellData(data, "ids");
   vtkWriter->write(fileName);
 }

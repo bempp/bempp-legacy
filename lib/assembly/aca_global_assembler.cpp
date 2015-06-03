@@ -30,7 +30,6 @@
 #include "discrete_boundary_operator_composition.hpp"
 #include "discrete_sparse_boundary_operator.hpp"
 
-
 #include "../common/eigen_support.hpp"
 #include "../common/auto_timer.hpp"
 #include "../common/boost_shared_array_fwd.hpp"
@@ -73,7 +72,6 @@
 #include "scattered_range.hpp"
 #include "weak_form_aca_assembly_helper.hpp"
 #endif
-
 
 // #define DUMP_DENSE_BLOCKS // if defined, contents and DOF lists of blocks
 // stored as dense matrices will be printed to the
@@ -429,7 +427,7 @@ std::unique_ptr<DiscreteAcaBoundaryOperator<ResultType>> assembleAcaOperator(
   std::vector<ChunkStatistics> chunkStats(leafClusterCount);
 
   typedef AcaAssemblerLoopBody<BasisFunctionType, ResultType, AcaAssemblyHelper>
-  Body;
+      Body;
   typename Body::LeafClusterIndexQueue leafClusterIndexQueue;
   for (size_t i = 0; i < leafClusterCount; ++i)
     leafClusterIndexQueue.push(i);
@@ -700,16 +698,19 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
       // functions one gets faster assembly (although *slightly* higher memory
       // consumption) with the strong admissibility condition
       (testSpace.isDiscontinuous() && trialSpace.isDiscontinuous());
-  shared_ptr<AhmedBemBlcluster> blclusterTree(CCH::constructBemBlockCluster(
-      acaOptions, symmetric, *testClusterTree, *trialClusterTree,
-      useStrongAdmissibilityCondition, blockCount).release());
+  shared_ptr<AhmedBemBlcluster> blclusterTree(
+      CCH::constructBemBlockCluster(
+          acaOptions, symmetric, *testClusterTree, *trialClusterTree,
+          useStrongAdmissibilityCondition, blockCount).release());
   shared_ptr<AhmedBemBlcluster> localBlclusterTree = blclusterTree;
   if (!indexWithGlobalDofs &&
       (!testSpace.isDiscontinuous() || !trialSpace.isDiscontinuous())) {
     unsigned int localBlockCount = 0;
     localBlclusterTree.reset(CCH::constructBemBlockCluster(
-        acaOptions, symmetric, *testLocalClusterTree, *trialLocalClusterTree,
-        useStrongAdmissibilityCondition, localBlockCount).release());
+                                 acaOptions, symmetric, *testLocalClusterTree,
+                                 *trialLocalClusterTree,
+                                 useStrongAdmissibilityCondition,
+                                 localBlockCount).release());
     CCH::truncateBemBlockCluster(localBlclusterTree.get(), blclusterTree.get());
     if (localBlclusterTree->nleaves() != blclusterTree->nleaves())
       throw std::runtime_error(
@@ -733,7 +734,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
 #endif // DUMP_DENSE_BLOCKS
 
   typedef WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>
-  AcaAssemblyHelper;
+      AcaAssemblyHelper;
 
   // Construct assembly helpers
 
@@ -902,9 +903,11 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assemblePotentialOperator(
 
   unsigned int blockCount = 0;
   bool useStrongAdmissibilityCondition = !indexWithGlobalDofs;
-  shared_ptr<AhmedBemBlcluster> bemBlclusterTree(CCH::constructBemBlockCluster(
-      acaOptions, false /* symmetric */, *testClusterTree, *trialClusterTree,
-      useStrongAdmissibilityCondition, blockCount).release());
+  shared_ptr<AhmedBemBlcluster> bemBlclusterTree(
+      CCH::constructBemBlockCluster(acaOptions, false /* symmetric */,
+                                    *testClusterTree, *trialClusterTree,
+                                    useStrongAdmissibilityCondition,
+                                    blockCount).release());
 
   if (verbosityAtLeastHigh)
     std::cout << "Mblock count: " << blockCount << std::endl;
@@ -913,7 +916,7 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assemblePotentialOperator(
   std::vector<unsigned int> p2oTrialDofs =
       trial_p2oPermutation->permutedIndices();
   typedef PotentialOperatorAcaAssemblyHelper<BasisFunctionType, ResultType>
-  AcaAssemblyHelper;
+      AcaAssemblyHelper;
   AcaAssemblyHelper helper(points, trialSpace, p2oPoints, p2oTrialDofs,
                            localAssemblers, termMultipliers, options);
 

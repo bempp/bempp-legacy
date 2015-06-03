@@ -47,7 +47,6 @@ helmholtz3dHypersingularBoundaryOperator(
       label, symmetry, useInterpolation, interpPtsPerWavelength);
 }
 
-
 template <typename BasisFunctionType>
 BoundaryOperator<BasisFunctionType,
                  typename ScalarTraits<BasisFunctionType>::ComplexType>
@@ -62,9 +61,10 @@ helmholtz3dHypersingularBoundaryOperator(
 
   shared_ptr<const Context<
       BasisFunctionType, typename ScalarTraits<BasisFunctionType>::ComplexType>>
-  context(new Context<BasisFunctionType,
+      context(
+          new Context<BasisFunctionType,
                       typename ScalarTraits<BasisFunctionType>::ComplexType>(
-      parameterList));
+              parameterList));
 
   return helmholtz3dHypersingularBoundaryOperator(
       context, domain, range, dualToRange, waveNumber, label, symmetry,
@@ -74,8 +74,7 @@ helmholtz3dHypersingularBoundaryOperator(
 #define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS)                               \
   template BoundaryOperator<BASIS, ScalarTraits<BASIS>::ComplexType>           \
   helmholtz3dHypersingularBoundaryOperator(                                    \
-      const ParameterList&,                                                    \
-      const shared_ptr<const Space<BASIS>> &,                                  \
+      const ParameterList &, const shared_ptr<const Space<BASIS>> &,           \
       const shared_ptr<const Space<BASIS>> &,                                  \
       const shared_ptr<const Space<BASIS>> &,                                  \
       ScalarTraits<BASIS>::ComplexType, const std::string &, int, bool, int);  \

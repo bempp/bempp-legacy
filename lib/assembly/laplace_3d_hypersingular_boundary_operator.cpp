@@ -119,9 +119,9 @@ laplace3dSyntheticHypersingularBoundaryOperator(
   }
 
   std::vector<BoundaryOperator<BasisFunctionType, ResultType>>
-  trialCurlComponents;
+      trialCurlComponents;
   std::vector<BoundaryOperator<BasisFunctionType, ResultType>>
-  testCurlComponents;
+      testCurlComponents;
   testCurlComponents.resize(3);
   for (size_t i = 0; i < dimWorld; ++i)
     testCurlComponents[i] = BoundaryOperator<BasisFunctionType, ResultType>(
@@ -171,15 +171,15 @@ laplace3dHypersingularBoundaryOperator(
   typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
 
   typedef Fiber::Laplace3dSingleLayerPotentialKernelFunctor<KernelType>
-  KernelFunctor;
+      KernelFunctor;
   typedef Fiber::SurfaceCurl3dFunctor<CoordinateType> TransformationFunctor;
   typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctorExt<
       BasisFunctionType, KernelType, ResultType, 3> IntegrandFunctor;
 
   typedef Fiber::Laplace3dHypersingularOffDiagonalKernelFunctor<KernelType>
-  OffDiagonalKernelFunctor;
+      OffDiagonalKernelFunctor;
   typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
-  OffDiagonalTransformationFunctor;
+      OffDiagonalTransformationFunctor;
   typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctorExt<
       BasisFunctionType, KernelType, ResultType, 1> OffDiagonalIntegrandFunctor;
 
@@ -213,29 +213,23 @@ laplace3dHypersingularBoundaryOperator(
 template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType>
 laplace3dHypersingularBoundaryOperator(
-    const ParameterList& parameterList,
+    const ParameterList &parameterList,
     const shared_ptr<const Space<BasisFunctionType>> &domain,
     const shared_ptr<const Space<BasisFunctionType>> &range,
     const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
     const std::string &label, int symmetry,
-    const BoundaryOperator<BasisFunctionType, ResultType> &externalSlp){
-
+    const BoundaryOperator<BasisFunctionType, ResultType> &externalSlp) {
 
   shared_ptr<const Context<BasisFunctionType, ResultType>> context(
       new Context<BasisFunctionType, ResultType>(parameterList));
-  return laplace3dHypersingularBoundaryOperator(context, domain, range,
-                                              dualToRange, label, symmetry,
-                                              externalSlp);
-
-
+  return laplace3dHypersingularBoundaryOperator(
+      context, domain, range, dualToRange, label, symmetry, externalSlp);
 }
-
 
 #define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS, RESULT)                       \
   template BoundaryOperator<BASIS, RESULT>                                     \
   laplace3dHypersingularBoundaryOperator(                                      \
-      const ParameterList&,                                                    \
-      const shared_ptr<const Space<BASIS>> &,                                  \
+      const ParameterList &, const shared_ptr<const Space<BASIS>> &,           \
       const shared_ptr<const Space<BASIS>> &,                                  \
       const shared_ptr<const Space<BASIS>> &, const std::string &, int,        \
       const BoundaryOperator<BASIS, RESULT> &);                                \

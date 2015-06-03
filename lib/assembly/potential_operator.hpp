@@ -129,8 +129,7 @@ public:
   std::unique_ptr<InterpolatedFunction<ResultType>>
   evaluateOnGrid(const GridFunction<BasisFunctionType, ResultType> &argument,
                  const Grid &evaluationGrid,
-                 const ParameterList& parameterList) const;
-
+                 const ParameterList &parameterList) const;
 
   /** \brief Evaluate the potential of a given charge distribution at
    *  prescribed points.
@@ -171,7 +170,7 @@ public:
   virtual Matrix<ResultType>
   evaluateAtPoints(const GridFunction<BasisFunctionType, ResultType> &argument,
                    const Matrix<CoordinateType> &evaluationPoints,
-                   const ParameterList& parameterList) const;
+                   const ParameterList &parameterList) const;
 
   /** \brief Create and return an AssembledPotentialOperator object.
    *
@@ -203,12 +202,10 @@ public:
            const QuadratureStrategy &quadStrategy,
            const EvaluationOptions &options) const = 0;
 
-
   virtual AssembledPotentialOperator<BasisFunctionType, ResultType>
   assemble(const shared_ptr<const Space<BasisFunctionType>> &space,
            const shared_ptr<const Matrix<CoordinateType>> &evaluationPoints,
-           const ParameterList& parameterList) const;
-
+           const ParameterList &parameterList) const;
 
   /** \brief Number of components of the values of the potential.
    *

@@ -45,7 +45,7 @@ class DefaultQuadratureDescriptorSelectorForPotentialOperators
     : public QuadratureDescriptorSelectorForPotentialOperators<
           BasisFunctionType> {
   typedef QuadratureDescriptorSelectorForPotentialOperators<BasisFunctionType>
-  Base;
+      Base;
 
 public:
   typedef typename Base::CoordinateType CoordinateType;
@@ -80,7 +80,7 @@ private:
 
   shared_ptr<const RawGridGeometry<CoordinateType>> m_rawGeometry;
   shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
-  m_trialShapesets;
+      m_trialShapesets;
   AccuracyOptionsEx m_accuracyOptions;
 
   std::vector<CoordinateType> m_elementSizesSquared;

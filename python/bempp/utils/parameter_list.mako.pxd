@@ -9,7 +9,7 @@ cdef extern from "bempp/common/types.hpp" namespace "Bempp":
     cdef cppclass c_ParameterList "Bempp::ParameterList":
         c_ParameterList()
         c_ParameterList& assign "operator="(const c_ParameterList&)
-        void put_bool "put<bool>" (char*, bool)
+        void put_bool "put<bool>" (char*, cbool)
         void put_string "put<std::string>" (char*, string)
         void put_int "put<int>" (char*, int)
         void put_double "put<double>" (char*, double)

@@ -62,12 +62,10 @@ public:
   all point-element pairs for the purposes of selecting the quadrature method.
   Otherwise the interelement distance is calculated separately for each
   point-element pair. */
-  virtual void
-  evaluateLocalContributions(const std::vector<int> &pointIndices,
-                             int trialElementIndex,
-                             LocalDofIndex localTrialDofIndex,
-                             std::vector<Matrix<ResultType>> &result,
-                             CoordinateType nominalDistance = -1.) = 0;
+  virtual void evaluateLocalContributions(
+      const std::vector<int> &pointIndices, int trialElementIndex,
+      LocalDofIndex localTrialDofIndex, std::vector<Matrix<ResultType>> &result,
+      CoordinateType nominalDistance = -1.) = 0;
 
   /** \brief Assemble local contributions.
 

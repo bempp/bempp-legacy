@@ -48,7 +48,7 @@ class NonseparableNumericalTestKernelTrialIntegrator
                                        ResultType> {
 public:
   typedef TestKernelTrialIntegrator<BasisFunctionType, KernelType, ResultType>
-  Base;
+      Base;
   typedef typename Base::CoordinateType CoordinateType;
   typedef typename Base::ElementIndexPair ElementIndexPair;
 
@@ -70,24 +70,21 @@ public:
       const OpenClHandler &openClHandler);
   virtual ~NonseparableNumericalTestKernelTrialIntegrator();
 
-  virtual void
-  integrate(CallVariant callVariant, const std::vector<int> &elementIndicesA,
-            int elementIndexB, const Shapeset<BasisFunctionType> &basisA,
-            const Shapeset<BasisFunctionType> &basisB,
-            LocalDofIndex localDofIndexB,
-            const std::vector<Matrix<ResultType> *> &result) const;
+  virtual void integrate(CallVariant callVariant,
+                         const std::vector<int> &elementIndicesA,
+                         int elementIndexB,
+                         const Shapeset<BasisFunctionType> &basisA,
+                         const Shapeset<BasisFunctionType> &basisB,
+                         LocalDofIndex localDofIndexB,
+                         const std::vector<Matrix<ResultType> *> &result) const;
 
-  virtual void
-  integrate(const std::vector<ElementIndexPair> &elementIndexPairs,
-            const Shapeset<BasisFunctionType> &testShapeset,
-            const Shapeset<BasisFunctionType> &trialShapeset,
-            const std::vector<Matrix<ResultType> *> &result) const;
+  virtual void integrate(const std::vector<ElementIndexPair> &elementIndexPairs,
+                         const Shapeset<BasisFunctionType> &testShapeset,
+                         const Shapeset<BasisFunctionType> &trialShapeset,
+                         const std::vector<Matrix<ResultType> *> &result) const;
 
 private:
-  enum ElementType {
-    TEST,
-    TRIAL
-  };
+  enum ElementType { TEST, TRIAL };
 
   const BasisData<BasisFunctionType> &
   basisData(ElementType type,
@@ -103,16 +100,16 @@ private:
   const RawGridGeometry<CoordinateType> &m_trialRawGeometry;
 
   const CollectionOfShapesetTransformations<CoordinateType> &
-  m_testTransformations;
+      m_testTransformations;
   const CollectionOfKernels<KernelType> &m_kernels;
   const CollectionOfShapesetTransformations<CoordinateType> &
-  m_trialTransformations;
+      m_trialTransformations;
   const TestKernelTrialIntegral<BasisFunctionType, KernelType, ResultType> &
-  m_integral;
+      m_integral;
 
   typedef tbb::concurrent_unordered_map<const Shapeset<BasisFunctionType> *,
                                         BasisData<BasisFunctionType> *>
-  BasisDataCache;
+      BasisDataCache;
   mutable BasisDataCache m_cachedTestBasisData;
   mutable BasisDataCache m_cachedTrialBasisData;
 
@@ -121,7 +118,7 @@ private:
   // GeometricalData
   // is very time-consuming due to the presence of arma::Cube objects.
   mutable tbb::enumerable_thread_specific<GeometricalData<CoordinateType>>
-  m_testGeomData, m_trialGeomData;
+      m_testGeomData, m_trialGeomData;
 };
 
 } // namespace Fiber

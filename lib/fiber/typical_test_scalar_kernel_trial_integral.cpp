@@ -41,10 +41,10 @@ namespace {
 
 template <typename BasisFunctionType, typename Derived>
 void setToProduct(const Eigen::MatrixBase<Derived> &source,
-                  BasisFunctionType weight, Eigen::MatrixBase<Derived>& result) {
+                  BasisFunctionType weight,
+                  Eigen::MatrixBase<Derived> &result) {
   result = weight * source.adjoint();
 }
-
 
 template <typename BasisFunctionType, typename ResultType>
 void outOfPlaceMultiplyByWeightsAndConjugateTransposeDimAndDofDimensions(
@@ -67,14 +67,14 @@ void outOfPlaceMultiplyByWeightsAndConjugateTransposeDimAndDofDimensions(
 
   for (size_t point = 0; point < pointCount; ++point) {
     Eigen::Map<Matrix<BasisFunctionType>> origMat(
-                const_cast<BasisFunctionType*>(sourceSliceStart),transDim,dofCount);
-    Eigen::Map<Matrix<ResultType>> transposedMat(
-                destSliceStart,dofCount,transDim);
+        const_cast<BasisFunctionType *>(sourceSliceStart), transDim, dofCount);
+    Eigen::Map<Matrix<ResultType>> transposedMat(destSliceStart, dofCount,
+                                                 transDim);
 
     const CoordinateType weight =
         geomData.integrationElements(point) * quadWeights[point];
     // we take the complex conjugate here
-    transposedMat = (weight*origMat.adjoint()).template cast<ResultType>();
+    transposedMat = (weight * origMat.adjoint()).template cast<ResultType>();
     sourceSliceStart += sliceSize;
     destSliceStart += sliceSize;
   }
@@ -97,10 +97,10 @@ void outOfPlaceMultiplyByWeightsAndConjugateTransposeDimAndDofDimensions(
   ResultType *destSliceStart = &tmp[0];
 
   for (size_t point = 0; point < pointCount; ++point) {
-      Eigen::Map<Matrix<BasisFunctionType>> origMat(
-                  const_cast<BasisFunctionType*>(sourceSliceStart),transDim,dofCount);
-      Eigen::Map<Matrix<BasisFunctionType>> transposedMat(
-                  destSliceStart,dofCount,transDim);
+    Eigen::Map<Matrix<BasisFunctionType>> origMat(
+        const_cast<BasisFunctionType *>(sourceSliceStart), transDim, dofCount);
+    Eigen::Map<Matrix<BasisFunctionType>> transposedMat(destSliceStart,
+                                                        dofCount, transDim);
 
     const KernelType weight = weights[point];
     // we take the complex conjugate here
@@ -126,10 +126,10 @@ void outOfPlaceConjugateTransposeDimAndDofDimensions(
   ResultType *destSliceStart = &tmp[0];
 
   for (size_t point = 0; point < pointCount; ++point) {
-      Eigen::Map<Matrix<BasisFunctionType>> origMat(
-                  const_cast<BasisFunctionType*>(sourceSliceStart),transDim,dofCount);
-      Eigen::Map<Matrix<BasisFunctionType>> transposedMat(
-                  destSliceStart,dofCount,transDim);
+    Eigen::Map<Matrix<BasisFunctionType>> origMat(
+        const_cast<BasisFunctionType *>(sourceSliceStart), transDim, dofCount);
+    Eigen::Map<Matrix<BasisFunctionType>> transposedMat(destSliceStart,
+                                                        dofCount, transDim);
 
     // we take the complex conjugate here
     transposedMat = origMat.adjoint();
@@ -189,7 +189,7 @@ void evaluateWithNontensorQuadratureRuleStandardImpl(
   std::vector<KernelType, tbb::scalable_allocator<KernelType>> products(
       pointCount);
   std::vector<BasisFunctionType, tbb::scalable_allocator<BasisFunctionType>>
-  tmpTest, tmpTrial;
+      tmpTest, tmpTrial;
 
   for (size_t transIndex = 0; transIndex < transCount; ++transIndex) {
     const size_t transDim = testValues[transIndex].extent(0);
@@ -209,14 +209,15 @@ void evaluateWithNontensorQuadratureRuleStandardImpl(
         trialValues[transIndex], products, tmpTrial);
 
     Eigen::Map<Matrix<BasisFunctionType>> matTest(&tmpTest[0], testDofCount,
-                                         pointCount * transDim);
+                                                  pointCount * transDim);
     Eigen::Map<Matrix<BasisFunctionType>> matTrial(&tmpTrial[0], trialDofCount,
-                                          pointCount * transDim);
+                                                   pointCount * transDim);
 
-    Eigen::Map<Matrix<ResultType>> resultMatrix(result.data(),result.rows(),result.cols());
+    Eigen::Map<Matrix<ResultType>> resultMatrix(result.data(), result.rows(),
+                                                result.cols());
 
     // this removes the complex conjugate from matTrial
-    resultMatrix += (matTest*matTrial.adjoint()).template cast<ResultType>();
+    resultMatrix += (matTest * matTrial.adjoint()).template cast<ResultType>();
   }
 }
 
@@ -236,7 +237,7 @@ void evaluateWithTensorQuadratureRuleImpl(
     Matrix<ResultType> &result) {
   typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
   typedef typename Coercion<BasisFunctionType, ResultType>::Type
-  IntermediateType;
+      IntermediateType;
 
   // Evaluate constants and assert that array dimensions are correct
   const size_t transCount = testValues.size();
@@ -285,18 +286,20 @@ void evaluateWithTensorQuadratureRuleImpl(
     const size_t kernelIndex = kernelValues.size() == 1 ? 0 : transIndex;
 
     Eigen::Map<Matrix<KernelType>> matKernel(
-                const_cast<KernelType*>(kernelValues[kernelIndex].begin()),
-                testPointCount, trialPointCount);
+        const_cast<KernelType *>(kernelValues[kernelIndex].begin()),
+        testPointCount, trialPointCount);
 
     if (testDofCount >= trialDofCount) {
       // TmpIntermediate = Kernel * Trial
       outOfPlaceMultiplyByWeightsAndConjugateTransposeDimAndDofDimensions(
           trialValues[transIndex], trialGeomData, trialQuadWeights,
           tmpReordered);
-      Eigen::Map<Matrix<ResultType>> matTrial(&tmpReordered[0],trialDofCount*transDim,trialPointCount);
+      Eigen::Map<Matrix<ResultType>> matTrial(
+          &tmpReordered[0], trialDofCount * transDim, trialPointCount);
       tmpIntermediate.resize(matTrial.rows() * matKernel.rows());
 
-      Eigen::Map<Matrix<ResultType>> matTmp(&tmpIntermediate[0], trialDofCount*transDim, testPointCount);
+      Eigen::Map<Matrix<ResultType>> matTmp(
+          &tmpIntermediate[0], trialDofCount * transDim, testPointCount);
 
       matTmp = matTrial * matKernel.adjoint();
       matTmp.resize(trialDofCount, transDim * testPointCount);
@@ -305,14 +308,14 @@ void evaluateWithTensorQuadratureRuleImpl(
       outOfPlaceMultiplyByWeightsAndConjugateTransposeDimAndDofDimensions(
           testValues[transIndex], testGeomData, testQuadWeights, tmpReordered);
       Eigen::Map<Matrix<ResultType>> matTest(&tmpReordered[0], testDofCount,
-              transDim*testPointCount);
+                                             transDim * testPointCount);
       result += matTest * matTmp.adjoint();
     } else { // testDofCount < trialDofCount
       // TmpIntermediate = Test * Kernel
       outOfPlaceMultiplyByWeightsAndConjugateTransposeDimAndDofDimensions(
           testValues[transIndex], testGeomData, testQuadWeights, tmpReordered);
-      Eigen::Map<Matrix<ResultType>> matTest(&tmpReordered[0], testDofCount * transDim,
-                                    testPointCount);
+      Eigen::Map<Matrix<ResultType>> matTest(
+          &tmpReordered[0], testDofCount * transDim, testPointCount);
       tmpIntermediate.resize(matTest.rows() * matKernel.cols());
 
       Eigen::Map<Matrix<IntermediateType>> matTmp(
@@ -325,7 +328,7 @@ void evaluateWithTensorQuadratureRuleImpl(
           trialValues[transIndex], trialGeomData, trialQuadWeights,
           tmpReordered);
       Eigen::Map<Matrix<ResultType>> matTrial(&tmpReordered[0], trialDofCount,
-                                     transDim * trialPointCount);
+                                              transDim * trialPointCount);
       result += matTmp * matTrial.adjoint();
     }
   }
@@ -418,9 +421,9 @@ void TypicalTestScalarKernelTrialIntegral<CoordinateType,
 
   // Allocate memory for temporary arrays
   std::vector<CoordinateType, tbb::scalable_allocator<CoordinateType>>
-  productsReal(pointCount);
+      productsReal(pointCount);
   std::vector<CoordinateType, tbb::scalable_allocator<CoordinateType>>
-  productsImag(pointCount);
+      productsImag(pointCount);
   std::vector<CoordinateType, tbb::scalable_allocator<CoordinateType>> tmpTest;
   std::vector<CoordinateType, tbb::scalable_allocator<CoordinateType>> tmpTrial;
   Matrix<CoordinateType> matResultReal(testDofCount, trialDofCount);
@@ -445,14 +448,14 @@ void TypicalTestScalarKernelTrialIntegral<CoordinateType,
     outOfPlaceConjugateTransposeDimAndDofDimensions(testValues[transIndex],
                                                     tmpTest);
     Eigen::Map<Matrix<BasisFunctionType>> matTest(&tmpTest[0], testDofCount,
-                                         pointCount * transDim);
+                                                  pointCount * transDim);
 
     // Process the real part of the kernel
     outOfPlaceMultiplyByWeightsAndConjugateTransposeDimAndDofDimensions(
         trialValues[transIndex], productsReal, tmpTrial);
     {
-      Eigen::Map<Matrix<BasisFunctionType>> matTrial(&tmpTrial[0], trialDofCount,
-                                            pointCount * transDim);
+      Eigen::Map<Matrix<BasisFunctionType>> matTrial(
+          &tmpTrial[0], trialDofCount, pointCount * transDim);
       if (transIndex == 0)
         matResultReal = matTest * matTrial.adjoint();
       else
@@ -463,15 +466,15 @@ void TypicalTestScalarKernelTrialIntegral<CoordinateType,
     outOfPlaceMultiplyByWeightsAndConjugateTransposeDimAndDofDimensions(
         trialValues[transIndex], productsImag, tmpTrial);
     {
-      Eigen::Map<Matrix<BasisFunctionType>> matTrial(&tmpTrial[0], trialDofCount,
-                                            pointCount * transDim);
+      Eigen::Map<Matrix<BasisFunctionType>> matTrial(
+          &tmpTrial[0], trialDofCount, pointCount * transDim);
       if (transIndex == 0)
         matResultImag = matTest * matTrial.adjoint();
       else
         matResultImag += matTest * matTrial.adjoint();
     }
   }
-  result.resize(matResultReal.rows(),matResultReal.cols());
+  result.resize(matResultReal.rows(), matResultReal.cols());
   result.real() = matResultReal;
   result.imag() = matResultImag;
 }

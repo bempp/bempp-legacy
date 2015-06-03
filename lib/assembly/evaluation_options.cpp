@@ -29,8 +29,8 @@ EvaluationOptions::EvaluationOptions()
 EvaluationOptions::EvaluationOptions(const ParameterList &parameters)
     : m_parameterList(parameters) {
 
-  std::string assemblyType =
-      parameters.get<std::string>("options.assembly.potentialOperatorAssemblyType");
+  std::string assemblyType = parameters.get<std::string>(
+      "options.assembly.potentialOperatorAssemblyType");
   int maxThreadCount = parameters.get<int>("options.global.maxThreadCount");
   int verbosityLevel = parameters.get<int>("options.global.verbosityLevel");
 

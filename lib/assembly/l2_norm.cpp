@@ -125,8 +125,8 @@ public:
     // (t - k)* . (t - k)
     result[0] = 0.;
     for (size_t i = 0; i < componentCount; ++i) {
-      result[0] += conj(trialValues[0](i) - kernelValues[0](i, 0)) *
-                   (trialValues[0](i) - kernelValues[0](i, 0));
+      result[0] += conj(trialValues[0](i)-kernelValues[0](i, 0)) *
+                   (trialValues[0](i)-kernelValues[0](i, 0));
     }
   }
 };
@@ -141,10 +141,10 @@ makeEvaluator(const GridFunction<BasisFunctionType, ResultType> &gridFunction,
   // Collect the standard set of data necessary for construction of
   // evaluators and assemblers
   typedef typename Fiber::ScalarTraits<BasisFunctionType>::RealType
-  CoordinateType;
+      CoordinateType;
   typedef Fiber::RawGridGeometry<CoordinateType> RawGridGeometry;
   typedef std::vector<const Fiber::Shapeset<BasisFunctionType> *>
-  ShapesetPtrVector;
+      ShapesetPtrVector;
   typedef std::vector<std::vector<ResultType>> CoefficientsVector;
   typedef LocalAssemblerConstructionHelper Helper;
 
@@ -167,12 +167,13 @@ makeEvaluator(const GridFunction<BasisFunctionType, ResultType> &gridFunction,
       boost::make_shared<CoefficientsVector>(elementCount);
 
   std::unique_ptr<EntityIterator<0>> it = view.entityIterator<0>();
-  const Mapper& mapper = view.elementMapper();
-  while (!it->finished()){
-      const Entity<0>& element = it->entity();
-      const int elementIndex = mapper.entityIndex(element);
-        gridFunction.getLocalCoefficients(element, (*localCoefficients)[elementIndex]);
-        it->next();
+  const Mapper &mapper = view.elementMapper();
+  while (!it->finished()) {
+    const Entity<0> &element = it->entity();
+    const int elementIndex = mapper.entityIndex(element);
+    gridFunction.getLocalCoefficients(element,
+                                      (*localCoefficients)[elementIndex]);
+    it->next();
   }
 
   // Construct kernels collection
@@ -183,7 +184,7 @@ makeEvaluator(const GridFunction<BasisFunctionType, ResultType> &gridFunction,
 
   // Construct trial function transformations collection
   const Fiber::CollectionOfShapesetTransformations<CoordinateType> &
-  trialTransformations = space.basisFunctionValue();
+      trialTransformations = space.basisFunctionValue();
 
   // Construct integral
   typedef L2NormOfDifferenceIntegrandFunctor<BasisFunctionType, ResultType,
@@ -216,7 +217,7 @@ typename ScalarTraits<BasisFunctionType>::RealType L2NormOfDifference(
       makeEvaluator(gridFunction, refFunction, quadStrategy, options);
 
   typedef typename Fiber::ScalarTraits<BasisFunctionType>::RealType
-  MagnitudeType;
+      MagnitudeType;
   typedef MagnitudeType CoordinateType;
   Matrix<CoordinateType> evaluationPoints(1, 1);
   evaluationPoints(0, 0) = 0.;
@@ -241,7 +242,7 @@ estimateL2Error(const GridFunction<BasisFunctionType, ResultType> &gridFunction,
                 typename ScalarTraits<BasisFunctionType>::RealType &absError,
                 typename ScalarTraits<BasisFunctionType>::RealType &relError) {
   typedef typename Fiber::ScalarTraits<BasisFunctionType>::RealType
-  MagnitudeType;
+      MagnitudeType;
   absError =
       L2NormOfDifference(gridFunction, refFunction, quadStrategy, options);
   MagnitudeType refNorm =

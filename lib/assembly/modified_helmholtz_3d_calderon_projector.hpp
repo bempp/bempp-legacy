@@ -51,11 +51,10 @@ modifiedHelmholtz3dInteriorCalderonProjector(
     bool useInterpolation = false,
     int interpPtsPerWavelength = DEFAULT_HELMHOLTZ_INTERPOLATION_DENSITY);
 
-
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 BlockedBoundaryOperator<BasisFunctionType, ResultType>
 modifiedHelmholtz3dExteriorCalderonProjector(
-    const ParameterList& parameterList,
+    const ParameterList &parameterList,
     const shared_ptr<const Space<BasisFunctionType>> &hminusSpace,
     const shared_ptr<const Space<BasisFunctionType>> &hplusSpace,
     KernelType waveNumber, const std::string &label = "",
@@ -65,7 +64,7 @@ modifiedHelmholtz3dExteriorCalderonProjector(
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 BlockedBoundaryOperator<BasisFunctionType, ResultType>
 modifiedHelmholtz3dInteriorCalderonProjector(
-    const ParameterList& parameterList,
+    const ParameterList &parameterList,
     const shared_ptr<const Context<BasisFunctionType, ResultType>> &context,
     const shared_ptr<const Space<BasisFunctionType>> &hminusSpace,
     const shared_ptr<const Space<BasisFunctionType>> &hplusSpace,

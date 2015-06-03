@@ -18,7 +18,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-
 #include "hmat_interface.hpp"
 
 #include "../hmat/block_cluster_tree.hpp"
@@ -31,52 +30,47 @@ namespace Bempp {
 
 template <typename BasisFunctionType>
 SpaceHMatGeometryInterface<BasisFunctionType>::SpaceHMatGeometryInterface(
-        const Space<BasisFunctionType>& space) :
-    m_counter(0) {
-    space.getGlobalDofBoundingBoxes(m_bemppBoundingBoxes);
-    }
-    
+    const Space<BasisFunctionType> &space)
+    : m_counter(0) {
+  space.getGlobalDofBoundingBoxes(m_bemppBoundingBoxes);
+}
+
 template <typename BasisFunctionType>
-shared_ptr<const hmat::GeometryDataType> 
-SpaceHMatGeometryInterface<BasisFunctionType>::next() 
-{
+shared_ptr<const hmat::GeometryDataType>
+SpaceHMatGeometryInterface<BasisFunctionType>::next() {
 
-    if (m_counter == m_bemppBoundingBoxes.size())
-      return shared_ptr<hmat::GeometryDataType>();
+  if (m_counter == m_bemppBoundingBoxes.size())
+    return shared_ptr<hmat::GeometryDataType>();
 
-    auto lbound = m_bemppBoundingBoxes[m_counter].lbound;
-    auto ubound = m_bemppBoundingBoxes[m_counter].ubound;
-    auto center = m_bemppBoundingBoxes[m_counter].reference;
-    m_counter++;
-    return shared_ptr<hmat::GeometryDataType>(new hmat::GeometryDataType(
-        hmat::BoundingBox(lbound.x, ubound.x, lbound.y, ubound.y, lbound.z,
-                          ubound.z),
-        std::array<double, 3>({{center.x, center.y, center.z}})));
+  auto lbound = m_bemppBoundingBoxes[m_counter].lbound;
+  auto ubound = m_bemppBoundingBoxes[m_counter].ubound;
+  auto center = m_bemppBoundingBoxes[m_counter].reference;
+  m_counter++;
+  return shared_ptr<hmat::GeometryDataType>(new hmat::GeometryDataType(
+      hmat::BoundingBox(lbound.x, ubound.x, lbound.y, ubound.y, lbound.z,
+                        ubound.z),
+      std::array<double, 3>({{center.x, center.y, center.z}})));
 }
 
-template<typename BasisFunctionType>
-std::size_t 
-SpaceHMatGeometryInterface<BasisFunctionType>::numberOfEntities() const
-{
-    return m_bemppBoundingBoxes.size();
+template <typename BasisFunctionType>
+std::size_t
+SpaceHMatGeometryInterface<BasisFunctionType>::numberOfEntities() const {
+  return m_bemppBoundingBoxes.size();
 }
 
-template<typename BasisFunctionType>
-void SpaceHMatGeometryInterface<BasisFunctionType>::reset() 
-{ 
-    m_counter = 0; 
+template <typename BasisFunctionType>
+void SpaceHMatGeometryInterface<BasisFunctionType>::reset() {
+  m_counter = 0;
 }
-
 
 template <typename BasisFunctionType>
 shared_ptr<hmat::DefaultBlockClusterTreeType>
 generateBlockClusterTree(const Space<BasisFunctionType> &testSpace,
                          const Space<BasisFunctionType> &trialSpace,
-                         const ParameterList& parameterList){
+                         const ParameterList &parameterList) {
 
   hmat::Geometry testGeometry;
   hmat::Geometry trialGeometry;
-
 
   auto testSpaceGeometryInterface = shared_ptr<hmat::GeometryInterface>(
       new SpaceHMatGeometryInterface<BasisFunctionType>(testSpace));
@@ -87,22 +81,23 @@ generateBlockClusterTree(const Space<BasisFunctionType> &testSpace,
   hmat::fillGeometry(testGeometry, *testSpaceGeometryInterface);
   hmat::fillGeometry(trialGeometry, *trialSpaceGeometryInterface);
 
-  auto admissibility = parameterList.template get<std::string>("options.hmat.admissibility");
-      auto minBlockSize = parameterList.template get<int>("options.hmat.minBlockSize");
-      auto maxBlockSize = parameterList.template get<int>("options.hmat.maxBlockSize");
+  auto admissibility =
+      parameterList.template get<std::string>("options.hmat.admissibility");
+  auto minBlockSize =
+      parameterList.template get<int>("options.hmat.minBlockSize");
+  auto maxBlockSize =
+      parameterList.template get<int>("options.hmat.maxBlockSize");
 
   hmat::AdmissibilityFunction admissibilityFunction;
 
-  if (admissibility=="strong")
-  {
-      auto eta = parameterList.template get<double>("options.hmat.eta");
-      admissibilityFunction = hmat::StrongAdmissibility(eta);
-  }
-  else if (admissibility=="weak")
-  {
-      admissibilityFunction = hmat::WeakAdmissibility();
-  }
-  else throw std::runtime_error("generateBlockClusterTree(): Unknown admissibility type");
+  if (admissibility == "strong") {
+    auto eta = parameterList.template get<double>("options.hmat.eta");
+    admissibilityFunction = hmat::StrongAdmissibility(eta);
+  } else if (admissibility == "weak") {
+    admissibilityFunction = hmat::WeakAdmissibility();
+  } else
+    throw std::runtime_error(
+        "generateBlockClusterTree(): Unknown admissibility type");
 
   auto testClusterTree = shared_ptr<hmat::DefaultClusterTreeType>(
       new hmat::DefaultClusterTreeType(testGeometry, minBlockSize));
@@ -111,22 +106,19 @@ generateBlockClusterTree(const Space<BasisFunctionType> &testSpace,
       new hmat::DefaultClusterTreeType(trialGeometry, minBlockSize));
 
   shared_ptr<hmat::DefaultBlockClusterTreeType> blockClusterTree(
-      new hmat::DefaultBlockClusterTreeType(
-          testClusterTree, trialClusterTree,
-          maxBlockSize,
-          admissibilityFunction));
+      new hmat::DefaultBlockClusterTreeType(testClusterTree, trialClusterTree,
+                                            maxBlockSize,
+                                            admissibilityFunction));
 
   return blockClusterTree;
 }
 
-#define INSTANTIATE_NONMEMBER_FUNCTION(VALUE)                          \
-    template                                                           \
-    shared_ptr<hmat::DefaultBlockClusterTreeType>                      \
-    generateBlockClusterTree(const Space<VALUE> &testSpace,            \
-                             const Space<VALUE> &trialSpace,           \
-                             const ParameterList &parameterList);
+#define INSTANTIATE_NONMEMBER_FUNCTION(VALUE)                                  \
+  template shared_ptr<hmat::DefaultBlockClusterTreeType>                       \
+  generateBlockClusterTree(const Space<VALUE> &testSpace,                      \
+                           const Space<VALUE> &trialSpace,                     \
+                           const ParameterList &parameterList);
 
 FIBER_ITERATE_OVER_VALUE_TYPES(INSTANTIATE_NONMEMBER_FUNCTION);
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(SpaceHMatGeometryInterface);
-
 }

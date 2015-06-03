@@ -48,7 +48,6 @@ class ConcreteEntity : public Entity<codim> {
                      "ConcreteEntity: codimension mismatch");
 
 private:
-  
   const DuneEntity *m_dune_entity;
   /** \internal Entity geometry. Updated on demand (on calling
    * geometry()), hence declared as mutable. */

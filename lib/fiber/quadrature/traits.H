@@ -1,6 +1,6 @@
 // Copyright (C) 2009-2010 Matthias Messner, Michael Messner, Franz
 // Rammerstorfer, Peter Urthaler
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
@@ -21,26 +21,25 @@
 
 // Note: This file is originally part of the HyENA project
 // (http://portal.tugraz.at/portal/page/portal/Files/i2610/files/Forschung/Software/HyENA/html/index.html)
-// and has been relicensed with permission by the HyENA authors. This does not affect the license of any
+// and has been relicensed with permission by the HyENA authors. This does not
+// affect the license of any
 // other part of HyENA.
 
 /**
  * @file   traits.H
  * @ingroup traits
  *
- * If you want to include all Hyena traits at once, you can do: 
+ * If you want to include all Hyena traits at once, you can do:
  * \code
  * #include "common/traits.H"
  * \endcode
- *     
+ *
  * @author Rf
  * @date   created:     09.12.09
  *         last change: 09.12.09
  */
 #ifndef traits_h
 #define traits_h
-
-
 
 //#include "common/pdetraits.H"
 #include "shapetraits.H"
@@ -50,6 +49,5 @@
 //#include "common/singularitytraits.H"
 //#include "common/doftraits.H"
 //#include "triatraits.H"
-
 
 #endif

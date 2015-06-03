@@ -50,13 +50,10 @@ class InterpolatedFunction : public Function<ValueType> {
 public:
   typedef typename Fiber::ScalarTraits<ValueType>::RealType CoordinateType;
 
-  enum InterpolationMethod {
-    LINEAR
-  };
+  enum InterpolationMethod { LINEAR };
 
   /** \brief Construct function given its values at vertices of a grid. */
-  InterpolatedFunction(const Grid &grid,
-                       const Matrix<ValueType> &vertexValues,
+  InterpolatedFunction(const Grid &grid, const Matrix<ValueType> &vertexValues,
                        InterpolationMethod method = LINEAR);
 
   /** \brief Interpolation grid. */

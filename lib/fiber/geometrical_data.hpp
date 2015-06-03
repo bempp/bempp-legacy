@@ -112,7 +112,7 @@ public:
     GeometricalData<CoordinateType> result;
     if (!is_empty(m_geomData.globals))
       result.globals = m_geomData.globals.col(m_point);
-    if (!is_empty(m_geomData.integrationElements)){
+    if (!is_empty(m_geomData.integrationElements)) {
       result.integrationElements.resize(1);
       result.integrationElements(0) = m_geomData.integrationElements(m_point);
     }

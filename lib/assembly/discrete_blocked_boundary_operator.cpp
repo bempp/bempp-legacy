@@ -131,7 +131,7 @@ void copySonsAdjustingIndices(const blcluster *source, blcluster *dest,
   assert(source);
   assert(dest);
   typedef typename DiscreteAcaBoundaryOperator<ValueType>::AhmedBemBlcluster
-  AhmedBemBlcluster;
+      AhmedBemBlcluster;
 
   unsigned int sonCount = source->getns();
   if (sonCount > 0) {
@@ -165,8 +165,7 @@ void copySonsAdjustingIndices(const blcluster *source, blcluster *dest,
           destSons[i] = destSon.release();
         }
       dest->setsons(source->getnrs(), source->getncs(), &destSons[0]);
-    }
-    catch (...) {
+    } catch (...) {
       for (unsigned int i = 0; i < sonCount; ++i)
         delete destSons[i];
       throw; // rethrow
@@ -390,10 +389,7 @@ void getUniformSonSizes(
   }
 }
 
-enum SpaceType {
-  DOMAIN_SPACE,
-  RANGE_SPACE
-};
+enum SpaceType { DOMAIN_SPACE, RANGE_SPACE };
 
 template <typename ValueType>
 std::vector<unsigned int> overall_o2p(
@@ -594,8 +590,7 @@ void DiscreteBlockedBoundaryOperator<ValueType>::mergeHMatrices(
       }
       result->setsons(rowSonCount, colSonCount, &branches[0]);
       checkConsistency(result);
-    }
-    catch (...) {
+    } catch (...) {
       for (size_t i = 0; i < branches.size(); ++i)
         delete branches[i];
       throw; // rethrow exception
@@ -654,8 +649,7 @@ void DiscreteBlockedBoundaryOperator<ValueType>::mergeHMatrices(
       }
       result->setsons(rowBlockCount, colBlockCount, &branches[0]);
       checkConsistency(result);
-    }
-    catch (...) {
+    } catch (...) {
       for (size_t i = 0; i < branches.size(); ++i)
         delete branches[i];
       throw; // rethrow exception
@@ -686,8 +680,9 @@ DiscreteBlockedBoundaryOperator<ValueType>::asDiscreteAcaBoundaryOperator(
   for (size_t col = 0; col < colBlockCount; ++col)
     for (size_t row = 0; row < rowBlockCount; ++row)
       if (m_blocks(row, col))
-        acaBlocks(row, col) = boost::shared_dynamic_cast<const AcaOp>(m_blocks(
-            row, col)->asDiscreteAcaBoundaryOperator(eps, maximumRank));
+        acaBlocks(row, col) = boost::shared_dynamic_cast<const AcaOp>(
+            m_blocks(row, col)
+                ->asDiscreteAcaBoundaryOperator(eps, maximumRank));
   // else: perhaps create a new "empty" aca operator
 
   Fiber::_2dArray<const blcluster *> blockClusters(rowBlockCount,
@@ -777,7 +772,6 @@ DiscreteBlockedBoundaryOperator<ValueType>::asDiscreteAcaBoundaryOperator(
 #endif
 }
 
-
 template <typename ValueType>
 void DiscreteBlockedBoundaryOperator<ValueType>::applyBuiltInImpl(
     const TranspositionMode trans, const Eigen::Ref<Vector<ValueType>> &x_in,
@@ -789,9 +783,9 @@ void DiscreteBlockedBoundaryOperator<ValueType>::applyBuiltInImpl(
 
   for (int yi = 0, y_start = 0; yi < y_count; ++yi) {
     size_t y_chunk_size = transpose ? m_columnCounts[yi] : m_rowCounts[yi];
-    Matrix<ValueType> y_chunk = y_inout.segment(y_start,y_chunk_size);
-//    arma::Col<ValueType> y_chunk(&y_inout[y_start], y_chunk_size,
-//                                 false /* copy_aux_mem */);
+    Matrix<ValueType> y_chunk = y_inout.segment(y_start, y_chunk_size);
+    //    arma::Col<ValueType> y_chunk(&y_inout[y_start], y_chunk_size,
+    //                                 false /* copy_aux_mem */);
     for (int xi = 0, x_start = 0; xi < x_count; ++xi) {
       size_t x_chunk_size = transpose ? m_rowCounts[xi] : m_columnCounts[xi];
       shared_ptr<const Base> op =
@@ -801,25 +795,22 @@ void DiscreteBlockedBoundaryOperator<ValueType>::applyBuiltInImpl(
       //                                         false /* copy_aux_mem */);
       if (xi == 0) {
         // This branch ensures that the "y += beta * y" part is done
-        if (op){
+        if (op) {
           //                    op->apply(trans, x_chunk, y_chunk, alpha, beta);
           Matrix<ValueType> x_inChunk = x_in.segment(x_start, x_chunk_size);
-          op->apply(trans, x_inChunk,
-                    y_chunk, alpha, beta);
-          y_inout.segment(y_start,y_chunk_size) = y_chunk;
-        }
-        else {
+          op->apply(trans, x_inChunk, y_chunk, alpha, beta);
+          y_inout.segment(y_start, y_chunk_size) = y_chunk;
+        } else {
           if (beta == static_cast<ValueType>(0.))
             y_chunk.setZero();
           else
             y_chunk *= beta;
         }
-      } else if (op){
+      } else if (op) {
         //                    op->apply(trans, x_chunk, y_chunk, alpha, 1.);
         Matrix<ValueType> x_inChunk = x_in.segment(x_start, x_chunk_size);
-        op->apply(trans, x_inChunk,
-                  y_chunk, alpha, 1.);
-        y_inout.segment(y_start,y_chunk_size) = y_chunk;
+        op->apply(trans, x_inChunk, y_chunk, alpha, 1.);
+        y_inout.segment(y_start, y_chunk_size) = y_chunk;
       }
       x_start += x_chunk_size;
     }

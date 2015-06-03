@@ -21,7 +21,6 @@
 #ifndef bempp_discrete_boundary_operator_composition_hpp
 #define bempp_discrete_boundary_operator_composition_hpp
 
-
 #include "../common/common.hpp"
 #include "../common/eigen_support.hpp"
 

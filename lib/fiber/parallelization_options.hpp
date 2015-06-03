@@ -30,9 +30,7 @@ namespace Fiber {
 /** \brief Parallel operation settings. */
 class ParallelizationOptions {
 public:
-  enum {
-    AUTO = -1
-  };
+  enum { AUTO = -1 };
 
   /** \brief Constructor. */
   ParallelizationOptions();

@@ -18,7 +18,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-
 #ifndef bempp_transposed_discrete_boundary_operator_hpp
 #define bempp_transposed_discrete_boundary_operator_hpp
 

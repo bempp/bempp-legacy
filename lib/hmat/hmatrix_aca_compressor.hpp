@@ -19,16 +19,17 @@ public:
                        double eps, unsigned int maxRank,
                        unsigned int resizeThreshold = 10);
 
-  void compressBlock(const BlockClusterTreeNode<N> &blockClusterTreeNode,
-                     shared_ptr<HMatrixData<ValueType>> &hMatrixData) const
-      override;
+  void
+  compressBlock(const BlockClusterTreeNode<N> &blockClusterTreeNode,
+                shared_ptr<HMatrixData<ValueType>> &hMatrixData) const override;
 
 private:
-  void evaluateMatMinusLowRank(
-      const BlockClusterTreeNode<N> &blockClusterTreeNode,
-      const IndexRangeType &rowIndexRange,
-      const IndexRangeType &columnIndexRange, Matrix<ValueType> &data,
-      const Matrix<ValueType> &A, const Matrix<ValueType> &B) const;
+  void
+  evaluateMatMinusLowRank(const BlockClusterTreeNode<N> &blockClusterTreeNode,
+                          const IndexRangeType &rowIndexRange,
+                          const IndexRangeType &columnIndexRange,
+                          Matrix<ValueType> &data, const Matrix<ValueType> &A,
+                          const Matrix<ValueType> &B) const;
 
   static std::size_t randomIndex(const IndexRangeType &range,
                                  std::set<std::size_t> &previousIndices);

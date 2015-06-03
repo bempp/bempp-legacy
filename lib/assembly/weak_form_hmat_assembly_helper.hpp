@@ -35,8 +35,6 @@
 #include <tbb/concurrent_unordered_map.h>
 #include <vector>
 
-
-
 namespace Fiber {
 
 /** \cond FORWARD_DECL */
@@ -86,14 +84,14 @@ public:
   // /** \brief Return the number of entries in the matrix that have been
   //  *  accessed so far. */
   // size_t accessedEntryCount() const;
- 
+
   // /** \brief Reset the number of entries in the matrix that have been
   //  *  accessed so far. */
   // void resetAccessedEntryCount();
 
 private:
-    MagnitudeType estimateMinimumDistance(
-        const hmat::DefaultBlockClusterTreeNodeType &blockClusterTreeNode) const;
+  MagnitudeType estimateMinimumDistance(
+      const hmat::DefaultBlockClusterTreeNodeType &blockClusterTreeNode) const;
 
 private:
   /** \cond PRIVATE */
@@ -112,7 +110,8 @@ private:
 
   typedef tbb::concurrent_unordered_map<
       shared_ptr<const hmat::DefaultBlockClusterTreeNodeType>, CoordinateType,
-      std::hash<shared_ptr<const hmat::DefaultBlockClusterTreeNodeType>>> DistanceMap;
+      std::hash<shared_ptr<const hmat::DefaultBlockClusterTreeNodeType>>>
+      DistanceMap;
   mutable DistanceMap m_distancesCache;
 
   /** \endcond */

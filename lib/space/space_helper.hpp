@@ -43,8 +43,7 @@ public:
       const Space<BasisFunctionType> &space, Matrix<CoordinateType> &points);
 
   static void getNormalsAtGlobalDofInterpolationPoints_defaultImplementation(
-      const Space<BasisFunctionType> &space,
-      Matrix<CoordinateType> &normals);
+      const Space<BasisFunctionType> &space, Matrix<CoordinateType> &normals);
 
   static void getGlobalDofBoundingBoxes_defaultImplementation(
       const GridView &view,

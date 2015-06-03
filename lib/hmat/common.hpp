@@ -21,17 +21,9 @@ typedef CgalKernel::Point_3 Point;
 typedef CgalKernel::Line_3 Line;
 typedef CgalKernel::Plane_3 Plane;
 
-enum RowColSelector {
-  ROW,
-  COL
-};
+enum RowColSelector { ROW, COL };
 
-enum TransposeMode {
-  NOTRANS,
-  TRANS,
-  CONJ,
-  CONJTRANS
-};
+enum TransposeMode { NOTRANS, TRANS, CONJ, CONJTRANS };
 
 enum DataBlockType {
 
@@ -42,13 +34,12 @@ enum DataBlockType {
 
 IndexSetType fillIndexRange(std::size_t start, std::size_t stop);
 
-double obbDistance(const std::vector<Point>& points1,
-    const std::vector<Point>& points2);
+double obbDistance(const std::vector<Point> &points1,
+                   const std::vector<Point> &points2);
 
-double clusterDiameter(const std::vector<Point>& points);
+double clusterDiameter(const std::vector<Point> &points);
 
-std::vector<Point> convex_hull(const std::vector<Point>& points);
-
+std::vector<Point> convex_hull(const std::vector<Point> &points);
 }
 
 #include "common_impl.hpp"

@@ -22,13 +22,10 @@ using boost::static_pointer_cast;
 
 template <typename T> struct shared_ptr_hash {
 
-  std::size_t operator()(const shared_ptr<T>& key) const {
+  std::size_t operator()(const shared_ptr<T> &key) const {
     return tbb::tbb_hasher(key.get());
-
   }
 };
-
 }
-
 
 #endif

@@ -30,7 +30,6 @@ void HMatrixAcaCompressor<ValueType, N>::compressBlock(
   std::size_t numberOfRows;
   std::size_t numberOfColumns;
 
-
   getBlockClusterTreeNodeDimensions(blockClusterTreeNode, rowClusterRange,
                                     columnClusterRange, numberOfRows,
                                     numberOfColumns);
@@ -58,7 +57,6 @@ void HMatrixAcaCompressor<ValueType, N>::compressBlock(
 
   std::size_t rankCount = 0;
 
-
   for (int i = 0; i < iterationLimit; ++i) {
 
     std::size_t row = randomIndex(rowClusterRange, previousRowIndices);
@@ -80,12 +78,13 @@ void HMatrixAcaCompressor<ValueType, N>::compressBlock(
     std::ptrdiff_t maxRowInd;
     std::ptrdiff_t maxColInd;
 
-    //Matrix<typename ScalarTraits<ValueType>::RealType> absMat =
+    // Matrix<typename ScalarTraits<ValueType>::RealType> absMat =
     //    newRow.cwiseAbs();
 
-    auto val = newRow.cwiseAbs().maxCoeff(&maxRowInd,&maxColInd);
+    auto val = newRow.cwiseAbs().maxCoeff(&maxRowInd, &maxColInd);
 
-    if (val < 1E-14) continue;
+    if (val < 1E-14)
+      continue;
 
     auto pivot = newRow(0, maxColInd);
 
@@ -95,8 +94,8 @@ void HMatrixAcaCompressor<ValueType, N>::compressBlock(
 
     maxColInd += columnClusterRange[0]; // Map back to original variables
     rowIndexRange = rowClusterRange;
-    columnIndexRange = {{boost::numeric_cast<std::size_t>(maxColInd), boost::numeric_cast<std::size_t>(maxColInd) + 1}};
-    
+    columnIndexRange = {{boost::numeric_cast<std::size_t>(maxColInd),
+                         boost::numeric_cast<std::size_t>(maxColInd) + 1}};
 
     evaluateMatMinusLowRank(blockClusterTreeNode, rowIndexRange,
                             columnIndexRange, newCol, A, B);
@@ -106,12 +105,11 @@ void HMatrixAcaCompressor<ValueType, N>::compressBlock(
 
     auto frobeniousNorm = hMatrixData->frobeniusNorm();
 
-
     if (rankCount == A.cols()) {
       Matrix<ValueType> Atmp(A);
       Matrix<ValueType> Btmp(B);
-      A.resize(numberOfRows,A.cols()+m_resizeThreshold);
-      B.resize(B.rows()+m_resizeThreshold,numberOfColumns);
+      A.resize(numberOfRows, A.cols() + m_resizeThreshold);
+      B.resize(B.rows() + m_resizeThreshold, numberOfColumns);
       A.setZero();
       B.setZero();
       A.leftCols(Atmp.cols()) = Atmp;
@@ -121,23 +119,20 @@ void HMatrixAcaCompressor<ValueType, N>::compressBlock(
     A.col(rankCount) = newCol;
     B.row(rankCount) = newRow;
 
-
     rankCount++;
 
     if (newCol.norm() * newRow.norm() < m_eps * frobeniousNorm)
       break;
   }
-  //if (isnan(A) || isnan(B))
+  // if (isnan(A) || isnan(B))
   //  throw std::runtime_error("NaN detected before end of compress.");
 
   if (A.cols() - rankCount > 0) {
-      A = A.block(0,0,A.rows(),rankCount).eval();
-      B = B.block(0,0,rankCount,B.cols()).eval();
+    A = A.block(0, 0, A.rows(), rankCount).eval();
+    B = B.block(0, 0, rankCount, B.cols()).eval();
   }
   if (isnan(A) || isnan(B))
     throw std::runtime_error("NaN detected at end of compress.");
-
-
 }
 
 template <typename ValueType, int N>
@@ -172,12 +167,13 @@ void HMatrixAcaCompressor<ValueType, N>::evaluateMatMinusLowRank(
   int aCols = A.cols();
   int bRows = B.rows();
 
-  //Matrix<ValueType> aBlock = A.block(rowStart,0,rowEnd-rowStart,aCols);
-  //Matrix<ValueType> bBlock = B.block(0,colStart,bRows,colEnd-colStart);
+  // Matrix<ValueType> aBlock = A.block(rowStart,0,rowEnd-rowStart,aCols);
+  // Matrix<ValueType> bBlock = B.block(0,colStart,bRows,colEnd-colStart);
 
-  //Matrix<ValueType> term = aBlock*bBlock;
+  // Matrix<ValueType> term = aBlock*bBlock;
 
-  data -= A.block(rowStart,0,rowEnd-rowStart,aCols)*B.block(0,colStart,bRows,colEnd-colStart);
+  data -= A.block(rowStart, 0, rowEnd - rowStart, aCols) *
+          B.block(0, colStart, bRows, colEnd - colStart);
 }
 
 template <typename ValueType, int N>

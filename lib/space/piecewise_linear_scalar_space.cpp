@@ -102,8 +102,8 @@ PiecewiseLinearScalarSpace<BasisFunctionType>::getGlobalDofInterpolationPoints(
 
 template <typename BasisFunctionType>
 void PiecewiseLinearScalarSpace<BasisFunctionType>::
-    getNormalsAtGlobalDofInterpolationPoints(Matrix<CoordinateType> &normals)
-    const {
+    getNormalsAtGlobalDofInterpolationPoints(
+        Matrix<CoordinateType> &normals) const {
   SpaceHelper<BasisFunctionType>::
       getNormalsAtGlobalDofInterpolationPoints_defaultImplementation(*this,
                                                                      normals);

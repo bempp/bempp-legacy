@@ -38,7 +38,7 @@ template <int codim> class Entity;
   */
 class Mapper {
 public:
-  virtual ~Mapper() {};
+  virtual ~Mapper(){};
 
   /** \brief Total number of entities in the entity set managed by the mapper.
    */

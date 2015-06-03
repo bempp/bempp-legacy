@@ -112,7 +112,6 @@ public:
   asDiscreteAcaBoundaryOperator(double eps = -1, int maximumRank = -1,
                                 bool interleave = false) const;
 
-
 private:
   virtual void applyBuiltInImpl(const TranspositionMode trans,
                                 const Eigen::Ref<Vector<ValueType>> &x_in,

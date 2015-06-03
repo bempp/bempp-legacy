@@ -31,7 +31,7 @@ namespace Bempp {
 /** \ingroup grid_internal
  *  \brief Default Dune grid implementation used to represent 2D grids
  *  embedded in 3D space. */
-typedef Dune::FoamGrid<2,3> Default2dIn3dDuneGrid;
+typedef Dune::FoamGrid<2, 3> Default2dIn3dDuneGrid;
 
 /** \ingroup grid
     \brief Identifier of geometry type. */
@@ -39,8 +39,8 @@ typedef Dune::GeometryType GeometryType;
 
 /** \ingroup grid
     \brief Geometry data structure */
-template<int dim> using DuneGeometry = Dune::MultiLinearGeometry<double,dim,3>; 
-    
+template <int dim>
+using DuneGeometry = Dune::MultiLinearGeometry<double, dim, 3>;
 
 } // namespace Bempp
 

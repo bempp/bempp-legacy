@@ -87,8 +87,8 @@ bool AdjointAbstractBoundaryOperator<BasisFunctionType, ResultType>::isLocal()
 template <typename BasisFunctionType, typename ResultType>
 shared_ptr<DiscreteBoundaryOperator<ResultType>>
 AdjointAbstractBoundaryOperator<BasisFunctionType, ResultType>::
-    assembleWeakFormImpl(const Context<BasisFunctionType, ResultType> &context)
-    const {
+    assembleWeakFormImpl(
+        const Context<BasisFunctionType, ResultType> &context) const {
   return shared_ptr<DiscreteBoundaryOperator<ResultType>>(
       new TransposedDiscreteBoundaryOperator<ResultType>(
           TRANSPOSE, m_operator.weakForm()));

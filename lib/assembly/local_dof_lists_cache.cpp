@@ -106,7 +106,7 @@ void LocalDofListsCache<BasisFunctionType>::findLocalDofs(
 
   // map of pairs (local dof index, array index) to local dof weights
   typedef std::map<pair<LocalDofIndex, int>, BasisFunctionType>
-  LocalDofWeightMap;
+      LocalDofWeightMap;
   typedef std::map<EntityIndex, LocalDofWeightMap> LocalDofMap;
 
   // Temporary map: entityIndex -> set(localDofIndex, arrayIndex)
@@ -127,9 +127,9 @@ void LocalDofListsCache<BasisFunctionType>::findLocalDofs(
       const vector<BasisFunctionType> &currentLocalDofWeights =
           localDofWeights[arrayIndex];
       for (size_t j = 0; j < currentLocalDofs.size(); ++j)
-        requiredLocalDofs[currentLocalDofs[j].entityIndex]
-                         [make_pair(currentLocalDofs[j].dofIndex, arrayIndex)] =
-                             currentLocalDofWeights[j];
+        requiredLocalDofs[currentLocalDofs[j].entityIndex][make_pair(
+            currentLocalDofs[j].dofIndex, arrayIndex)] =
+            currentLocalDofWeights[j];
     }
   } else {
     vector<LocalDof> localDofs;
@@ -137,8 +137,8 @@ void LocalDofListsCache<BasisFunctionType>::findLocalDofs(
 
     for (int arrayIndex = 0; arrayIndex < indexCount; ++arrayIndex) {
       const LocalDof &currentLocalDof = localDofs[arrayIndex];
-      requiredLocalDofs[currentLocalDof.entityIndex]
-                       [make_pair(currentLocalDof.dofIndex, arrayIndex)] = 1.;
+      requiredLocalDofs[currentLocalDof.entityIndex][make_pair(
+          currentLocalDof.dofIndex, arrayIndex)] = 1.;
     }
   }
 

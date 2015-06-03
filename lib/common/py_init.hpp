@@ -21,8 +21,7 @@
 #ifndef PY_INIT_HPP
 #define PY_INIT_HPP
 
-
-#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION 
+#define NPY_NO_DEPRECATED_API NPY_1_7_API_VERSION
 #include "bempp/common/config_python.hpp"
 #include <Python.h>
 #define PY_ARRAY_UNIQUE_SYMBOL bempp_ARRAY_API

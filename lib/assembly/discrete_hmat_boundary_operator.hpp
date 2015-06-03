@@ -42,19 +42,17 @@ public:
 
   shared_ptr<const hmat::DefaultHMatrixType<ValueType>> hMatrix() const;
 
-
   void addBlock(const std::vector<int> &rows, const std::vector<int> &cols,
-                const ValueType alpha, Matrix<ValueType> &block) const
-      override;
+                const ValueType alpha, Matrix<ValueType> &block) const override;
 
 private:
   void applyBuiltInImpl(const TranspositionMode trans,
                         const Eigen::Ref<Vector<ValueType>> &x_in,
-                        Eigen::Ref<Vector<ValueType>> y_inout, const ValueType alpha,
+                        Eigen::Ref<Vector<ValueType>> y_inout,
+                        const ValueType alpha,
                         const ValueType beta) const override;
 
   shared_ptr<hmat::DefaultHMatrixType<ValueType>> m_hMatrix;
-
 };
 }
 

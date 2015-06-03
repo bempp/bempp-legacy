@@ -34,14 +34,15 @@ inline void DofPermutation::addDofIndexPair(std::size_t originalDofIndex,
   m_hMatDofToOriginalDofMap[hMatDofIndex] = originalDofIndex;
 }
 
-inline const std::vector<std::size_t>& DofPermutation::hMatDofToOriginalDofMap() const {
+inline const std::vector<std::size_t> &
+DofPermutation::hMatDofToOriginalDofMap() const {
   return m_hMatDofToOriginalDofMap;
 }
 
-inline const std::vector<std::size_t>& DofPermutation::originalDofToHMatDofMap() const {
+inline const std::vector<std::size_t> &
+DofPermutation::originalDofToHMatDofMap() const {
   return m_originalDofToHMatDofMap;
 }
-
 }
 
 #endif

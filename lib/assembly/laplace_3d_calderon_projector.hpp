@@ -47,7 +47,7 @@ laplace3dInteriorCalderonProjector(
 template <typename BasisFunctionType, typename ResultType>
 BlockedBoundaryOperator<BasisFunctionType, ResultType>
 laplace3dExteriorCalderonProjector(
-    const ParameterList& parameterList,
+    const ParameterList &parameterList,
     const shared_ptr<const Space<BasisFunctionType>> &hminusSpace,
     const shared_ptr<const Space<BasisFunctionType>> &hplusSpace,
     const std::string &label = "");
@@ -55,11 +55,10 @@ laplace3dExteriorCalderonProjector(
 template <typename BasisFunctionType, typename ResultType>
 BlockedBoundaryOperator<BasisFunctionType, ResultType>
 laplace3dInteriorCalderonProjector(
-    const ParameterList& parameterList,
+    const ParameterList &parameterList,
     const shared_ptr<const Space<BasisFunctionType>> &hminusSpace,
     const shared_ptr<const Space<BasisFunctionType>> &hplusSpace,
     const std::string &label = "");
-
 
 } // namespace Bempp
 

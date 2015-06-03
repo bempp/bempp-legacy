@@ -385,9 +385,9 @@ void UnitScalarSpace<BasisFunctionType>::dumpClusterIdsEx(
 
   std::unique_ptr<GridView> view = this->grid()->leafView();
   std::unique_ptr<VtkWriter> vtkWriter = view->vtkWriter();
-  Matrix<double> data(1,idCount);
+  Matrix<double> data(1, idCount);
   for (size_t i = 0; i < idCount; ++i)
-    data(0,i) = clusterIdsOfGlobalDofs[i];
+    data(0, i) = clusterIdsOfGlobalDofs[i];
   vtkWriter->addCellData(data, "ids");
   vtkWriter->write(fileName);
 }

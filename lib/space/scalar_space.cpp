@@ -29,12 +29,12 @@ namespace Bempp {
 template <typename BasisFunctionType>
 struct ScalarSpace<BasisFunctionType>::Impl {
   typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
-  TransformationFunctor;
+      TransformationFunctor;
 
   Impl() : transformations(TransformationFunctor()) {}
 
   Fiber::DefaultCollectionOfShapesetTransformations<TransformationFunctor>
-  transformations;
+      transformations;
 };
 /** \endcond */
 

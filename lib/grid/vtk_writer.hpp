@@ -55,10 +55,7 @@ public:
   };
 
   /** \brief Dataset type. */
-  enum DataType {
-    CELL_DATA,
-    VERTEX_DATA
-  };
+  enum DataType { CELL_DATA, VERTEX_DATA };
 
   /** \brief Destructor */
   virtual ~VtkWriter() {}

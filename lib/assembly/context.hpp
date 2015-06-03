@@ -49,7 +49,7 @@ public:
    *    New parameter structure that will supersede the other option objects. */
   Context(const shared_ptr<const QuadratureStrategy> &quadStrategy,
           const AssemblyOptions &assemblyOptions,
-          const ParameterList& globalParameterList =
+          const ParameterList &globalParameterList =
               GlobalParameters::parameterList());
 
   /** \brief Constructor */
@@ -59,7 +59,7 @@ public:
    *
    *  \param[in] globalParameterList
    *     Parameter list that contains the BEM++ options. */
-  explicit Context(const ParameterList& globalParameterList);
+  explicit Context(const ParameterList &globalParameterList);
 
   /** \brief Return the discrete weak form of the specified abstract operator.
    *

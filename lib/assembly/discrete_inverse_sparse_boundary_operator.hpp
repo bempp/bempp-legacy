@@ -62,7 +62,6 @@ public:
                         Matrix<ValueType> &block) const;
 
 private:
-
   virtual void applyBuiltInImpl(const TranspositionMode trans,
                                 const Eigen::Ref<Vector<ValueType>> &x_in,
                                 Eigen::Ref<Vector<ValueType>> y_inout,

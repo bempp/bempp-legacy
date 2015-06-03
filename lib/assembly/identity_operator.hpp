@@ -92,10 +92,10 @@ public:
   typedef typename Base::QuadratureStrategy QuadratureStrategy;
   /** \copydoc ElementaryLocalOperator::CollectionOfShapesetTransformations */
   typedef typename Base::CollectionOfShapesetTransformations
-  CollectionOfShapesetTransformations;
+      CollectionOfShapesetTransformations;
   /** \copydoc ElementaryLocalOperator::CollectionOfBasisTransformations */
   typedef typename Base::CollectionOfBasisTransformations
-  CollectionOfBasisTransformations;
+      CollectionOfBasisTransformations;
   /** \copydoc ElementaryLocalOperator::TestTrialIntegral */
   typedef typename Base::TestTrialIntegral TestTrialIntegral;
 
@@ -186,12 +186,12 @@ BoundaryOperator<BasisFunctionType, ResultType> identityOperator(
     const std::string &label = "", int symmetry = AUTO_SYMMETRY);
 
 template <typename BasisFunctionType, typename ResultType>
-BoundaryOperator<BasisFunctionType, ResultType> identityOperator(
-    const ParameterList& parameterList,
-    const shared_ptr<const Space<BasisFunctionType>> &domain,
-    const shared_ptr<const Space<BasisFunctionType>> &range,
-    const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
-    const std::string &label = "", int symmetry = AUTO_SYMMETRY);
+BoundaryOperator<BasisFunctionType, ResultType>
+identityOperator(const ParameterList &parameterList,
+                 const shared_ptr<const Space<BasisFunctionType>> &domain,
+                 const shared_ptr<const Space<BasisFunctionType>> &range,
+                 const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
+                 const std::string &label = "", int symmetry = AUTO_SYMMETRY);
 
 } // namespace Bempp
 

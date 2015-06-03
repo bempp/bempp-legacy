@@ -60,11 +60,7 @@ template <typename BasisFunctionType, typename ResultType> class Context;
 
 using Fiber::Function;
 
-
-  enum ConstructionMode {
-    APPROXIMATE = 0,
-    INTERPOLATE = 1
-  };
+enum ConstructionMode { APPROXIMATE = 0, INTERPOLATE = 1 };
 
 /** \ingroup assembly_functions
  *  \brief Function defined on a grid.
@@ -85,10 +81,7 @@ public:
   typedef typename Fiber::ScalarTraits<ResultType>::RealType CoordinateType;
   typedef typename Fiber::ScalarTraits<ResultType>::RealType MagnitudeType;
 
-  enum DataType {
-    COEFFICIENTS,
-    PROJECTIONS
-  };
+  enum DataType { COEFFICIENTS, PROJECTIONS };
 
   typedef Bempp::ConstructionMode ConstructionMode;
 
@@ -118,10 +111,9 @@ public:
       const shared_ptr<const Space<BasisFunctionType>> &space,
       const Vector<ResultType> &coefficients);
 
-  GridFunction(
-      const ParameterList& parameterList,
-      const shared_ptr<const Space<BasisFunctionType>> &space,
-      const Vector<ResultType> &coefficients);
+  GridFunction(const ParameterList &parameterList,
+               const shared_ptr<const Space<BasisFunctionType>> &space,
+               const Vector<ResultType> &coefficients);
 
   /** Constructor.
    *
@@ -144,13 +136,11 @@ public:
       const shared_ptr<const Space<BasisFunctionType>> &dualSpace,
       const Vector<ResultType> &projections);
 
+  GridFunction(const ParameterList &parameterList,
+               const shared_ptr<const Space<BasisFunctionType>> &space,
+               const shared_ptr<const Space<BasisFunctionType>> &dualSpace,
+               const Vector<ResultType> &projections);
 
-  GridFunction(
-      const ParameterList& parameterList,
-      const shared_ptr<const Space<BasisFunctionType>> &space,
-      const shared_ptr<const Space<BasisFunctionType>> &dualSpace,
-      const Vector<ResultType> &projections);
-  
   /** \brief Constructor.
    *
    *  \param[in] context      Assembly context from which a quadrature
@@ -190,13 +180,11 @@ public:
       const Function<ResultType> &function,
       ConstructionMode mode = APPROXIMATE);
 
-
-  GridFunction(
-      const ParameterList& parameterList,
-      const shared_ptr<const Space<BasisFunctionType>> &space,
-      const shared_ptr<const Space<BasisFunctionType>> &dualSpace,
-      const Function<ResultType> &function,
-      ConstructionMode mode = APPROXIMATE);
+  GridFunction(const ParameterList &parameterList,
+               const shared_ptr<const Space<BasisFunctionType>> &space,
+               const shared_ptr<const Space<BasisFunctionType>> &dualSpace,
+               const Function<ResultType> &function,
+               ConstructionMode mode = APPROXIMATE);
 
   // Deprecated constructors
 
@@ -401,8 +389,7 @@ public:
    *  \param[in] values    A 2D array whose (i,j)th element is the ith component
    *                       of \p function evaluated at the jth point.
    */
-  void evaluate(const Entity<0> &element,
-                const Matrix<CoordinateType> &local,
+  void evaluate(const Entity<0> &element, const Matrix<CoordinateType> &local,
                 Matrix<ResultType> &values) const;
 
 // Deprecated functions
@@ -533,7 +520,7 @@ private:
   shared_ptr<const Context<BasisFunctionType, ResultType>> m_context;
   shared_ptr<const Space<BasisFunctionType>> m_space;
   mutable shared_ptr<const Space<BasisFunctionType>>
-  m_dualSpace; // the dual space that was used to calculate m_projections
+      m_dualSpace; // the dual space that was used to calculate m_projections
   mutable shared_ptr<const Vector<ResultType>> m_coefficients;
   mutable shared_ptr<const Vector<ResultType>> m_projections;
   bool m_wasInitializedFromCoefficients;

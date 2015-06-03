@@ -12,9 +12,9 @@ namespace hmat {
 template <typename ValueType>
 class HMatrixDenseData : public HMatrixData<ValueType> {
 public:
-  void apply(const Eigen::Ref<Matrix<ValueType>> &X, Eigen::Ref<Matrix<ValueType>> Y,
-             TransposeMode trans, ValueType alpha, ValueType beta) const
-      override;
+  void apply(const Eigen::Ref<Matrix<ValueType>> &X,
+             Eigen::Ref<Matrix<ValueType>> Y, TransposeMode trans,
+             ValueType alpha, ValueType beta) const override;
 
   const Matrix<ValueType> &A() const;
   Matrix<ValueType> &A();

@@ -50,7 +50,6 @@
 #include "../hmat/hmatrix_dense_compressor.hpp"
 #include "../hmat/hmatrix_aca_compressor.hpp"
 
-
 #include <stdexcept>
 #include <fstream>
 #include <iostream>
@@ -61,9 +60,7 @@
 #include <tbb/parallel_for.h>
 #include <tbb/concurrent_queue.h>
 
-
 namespace Bempp {
-
 
 template <typename BasisFunctionType, typename ResultType>
 std::unique_ptr<DiscreteBoundaryOperator<ResultType>>
@@ -79,11 +76,10 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
     const Context<BasisFunctionType, ResultType> &context, int symmetry) {
 
   const AssemblyOptions &options = context.assemblyOptions();
-  const auto parameterList =
-      context.globalParameterList();
+  const auto parameterList = context.globalParameterList();
   const bool indexWithGlobalDofs =
-          (parameterList.template get<std::string>("options.hmat.hMatAssemblyMode")
-           == "GlobalAssembly");
+      (parameterList.template get<std::string>(
+           "options.hmat.hMatAssemblyMode") == "GlobalAssembly");
   const bool verbosityAtLeastDefault =
       (options.verbosityLevel() >= VerbosityLevel::DEFAULT);
   const bool verbosityAtLeastHigh =
@@ -102,8 +98,10 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
     actualTrialSpace = trialSpacePointer;
   }
 
-  auto minBlockSize = parameterList.template get<int>("options.hmat.minBlockSize");
-  auto maxBlockSize = parameterList.template get<int>("options.hmat.maxBlockSize");
+  auto minBlockSize =
+      parameterList.template get<int>("options.hmat.minBlockSize");
+  auto maxBlockSize =
+      parameterList.template get<int>("options.hmat.maxBlockSize");
   auto eta = parameterList.template get<double>("options.hmat.eta");
 
   auto blockClusterTree = generateBlockClusterTree(
@@ -113,36 +111,33 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
       *actualTestSpace, *actualTrialSpace, blockClusterTree, localAssemblers,
       sparseTermsToAdd, denseTermMultipliers, sparseTermMultipliers);
 
-  auto compressionAlgorithm = parameterList.template get<std::string>("options.hmat.compressionAlgorithm");
+  auto compressionAlgorithm = parameterList.template get<std::string>(
+      "options.hmat.compressionAlgorithm");
 
+  auto maxRank = parameterList.template get<int>("options.hmat.maxRank");
+  auto eps = parameterList.template get<double>("options.hmat.eps");
   auto coarsening = parameterList.template get<bool>("options.hmat.coarsening");
-  auto coarsening_accuracy = parameterList.template get<double>("options.hmat.coarsening_accuracy");
+  auto coarsening_accuracy =
+      parameterList.template get<double>("options.hmat.coarsening_accuracy");
+  if (coarsening_accuracy==0) coarsening_accuracy = eps;
 
   shared_ptr<hmat::DefaultHMatrixType<ResultType>> hMatrix;
 
-  if (compressionAlgorithm=="aca")
-  {
+  if (compressionAlgorithm == "aca") {
 
-    auto eps = parameterList.template get<double>("options.hmat.eps");
-    auto maxRank = parameterList.template get<int>("options.hmat.maxRank");
-    hmat::HMatrixAcaCompressor<ResultType, 2> 
-        compressor(helper, eps, maxRank);
-    hMatrix.reset(new hmat::DefaultHMatrixType<ResultType>
-            (blockClusterTree, compressor, coarsening, coarsening_accuracy));
-  }
-  else if (compressionAlgorithm=="dense")
-  {
+    hmat::HMatrixAcaCompressor<ResultType, 2> compressor(helper, eps, maxRank);
+    hMatrix.reset(new hmat::DefaultHMatrixType<ResultType>(
+        blockClusterTree, compressor, coarsening, coarsening_accuracy));
+  } else if (compressionAlgorithm == "dense") {
     hmat::HMatrixDenseCompressor<ResultType, 2> compressor(helper);
-    hMatrix.reset(new hmat::DefaultHMatrixType<ResultType>
-            (blockClusterTree,compressor));
-  }
-  else throw std::runtime_error(
-          "HMatGlobalAssember::assembleDetachedWeakForm: "
-          "Unknown compression algorithm");
+    hMatrix.reset(
+        new hmat::DefaultHMatrixType<ResultType>(blockClusterTree, compressor));
+  } else
+    throw std::runtime_error("HMatGlobalAssember::assembleDetachedWeakForm: "
+                             "Unknown compression algorithm");
   return std::unique_ptr<DiscreteBoundaryOperator<ResultType>>(
-      static_cast<DiscreteBoundaryOperator<ResultType>*>(
+      static_cast<DiscreteBoundaryOperator<ResultType> *>(
           new DiscreteHMatBoundaryOperator<ResultType>(hMatrix)));
-
 }
 
 template <typename BasisFunctionType, typename ResultType>

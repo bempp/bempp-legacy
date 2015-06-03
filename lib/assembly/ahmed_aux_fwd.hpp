@@ -55,13 +55,9 @@ template <typename T> class ExtendedBemCluster;
 // representation is the same as that of the complex type provided by
 // STL.
 
-template <typename T> struct AhmedTypeTraits {
-  typedef T Type;
-};
+template <typename T> struct AhmedTypeTraits { typedef T Type; };
 
-template <> struct AhmedTypeTraits<std::complex<float>> {
-  typedef scomp Type;
-};
+template <> struct AhmedTypeTraits<std::complex<float>> { typedef scomp Type; };
 
 template <> struct AhmedTypeTraits<std::complex<double>> {
   typedef dcomp Type;

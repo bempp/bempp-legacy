@@ -112,7 +112,7 @@ public:
   /** \brief Type of the appropriate instantiation of
    * Fiber::CollectionOfShapesetTransformations. */
   typedef Fiber::CollectionOfShapesetTransformations<CoordinateType>
-  CollectionOfShapesetTransformations;
+      CollectionOfShapesetTransformations;
   /** \brief Type of the appropriate instantiation of
    *Fiber::CollectionOfBasisTransformations.
    *
@@ -120,14 +120,14 @@ public:
    *CollectionOfShapesetTransformations
    *  instead. */
   typedef Fiber::CollectionOfShapesetTransformations<CoordinateType>
-  CollectionOfBasisTransformations;
+      CollectionOfBasisTransformations;
   /** \brief Type of the appropriate instantiation of
    *  Fiber::CollectionOfKernels. */
   typedef Fiber::CollectionOfKernels<KernelType> CollectionOfKernels;
   /** \brief Type of the appropriate instantiation of
    *  Fiber::KernelTrialIntegral. */
   typedef Fiber::KernelTrialIntegral<BasisFunctionType, KernelType, ResultType>
-  KernelTrialIntegral;
+      KernelTrialIntegral;
 
   virtual std::unique_ptr<InterpolatedFunction<ResultType_>>
   evaluateOnGrid(const GridFunction<BasisFunctionType, ResultType> &argument,

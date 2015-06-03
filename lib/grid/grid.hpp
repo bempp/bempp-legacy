@@ -116,11 +116,11 @@ public:
 
   /** \brief Get insertion index of an element. */
 
-  virtual unsigned int elementInsertionIndex(const Entity<0>& element) const;
+  virtual unsigned int elementInsertionIndex(const Entity<0> &element) const;
 
   /** \brief Get insertion index of a vertex for a 2d in 3d grid */
 
-  virtual unsigned int vertexInsertionIndex(const Entity<2>& vertex) const;
+  virtual unsigned int vertexInsertionIndex(const Entity<2> &vertex) const;
 
 private:
   /** \cond PRIVATE */

@@ -85,8 +85,7 @@ private:
   }
 
   template <typename ValueType>
-  void addCellDataImpl(const Matrix<ValueType> &data,
-                       const std::string &name) {
+  void addCellDataImpl(const Matrix<ValueType> &data, const std::string &name) {
     const size_t ncomp = data.rows();
     if (ncomp < 1)
       return; // empty matrix

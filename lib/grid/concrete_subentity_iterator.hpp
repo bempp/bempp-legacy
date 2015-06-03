@@ -46,7 +46,7 @@ class ConcreteSubentityIterator : public EntityIterator<codimSub> {
 public:
   /** \brief Type of the Dune entity pointer corresponding to \p DuneEntity. */
   typedef typename DuneEntity::template Codim<codimSub>::EntityPointer
-  DuneSubentityPointer;
+      DuneSubentityPointer;
   /** \brief Type of the appropriate subentity of \p DuneEntity. */
   typedef typename DuneSubentityPointer::Entity DuneSubentity;
 
@@ -54,7 +54,7 @@ private:
   const DuneEntity *m_dune_entity;
   DuneSubentityPointer m_dune_subentity_ptr;
   ConcreteEntity<ConcreteSubentityIterator::codimension, DuneSubentity>
-  m_subentity;
+      m_subentity;
   const DomainIndex &m_domain_index;
   int m_cur_n;
 

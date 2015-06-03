@@ -37,13 +37,11 @@ class DefaultDoubleQuadratureRuleFamily
 public:
   virtual ~DefaultDoubleQuadratureRuleFamily() {}
 
-  virtual void
-  fillQuadraturePointsAndWeights(const DoubleQuadratureDescriptor &desc,
-                                 Matrix<CoordinateType> &testPoints,
-                                 Matrix<CoordinateType> &trialPoints,
-                                 std::vector<CoordinateType> &testWeights,
-                                 std::vector<CoordinateType> &trialWeights,
-                                 bool &isTensor) const;
+  virtual void fillQuadraturePointsAndWeights(
+      const DoubleQuadratureDescriptor &desc,
+      Matrix<CoordinateType> &testPoints, Matrix<CoordinateType> &trialPoints,
+      std::vector<CoordinateType> &testWeights,
+      std::vector<CoordinateType> &trialWeights, bool &isTensor) const;
 };
 
 } // namespace Fiber

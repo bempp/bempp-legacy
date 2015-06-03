@@ -51,7 +51,7 @@ syntheticNonhypersingularIntegralOperator(
 
   typedef Fiber::ScalarFunctionValueFunctor<CoordinateType> ValueFunctor;
   typedef Fiber::SimpleTestTrialIntegrandFunctor<BasisFunctionType, ResultType>
-  IntegrandFunctor;
+      IntegrandFunctor;
 
   typedef GeneralElementaryLocalOperator<BasisFunctionType, ResultType> LocalOp;
   typedef SyntheticIntegralOperator<BasisFunctionType, ResultType> SyntheticOp;
