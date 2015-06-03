@@ -13,6 +13,7 @@
 
 namespace hmat {
 
+
 template <typename ValueType, int N>
 HMatrix<ValueType, N>::HMatrix(
     const shared_ptr<BlockClusterTree<N>> &blockClusterTree)
@@ -90,6 +91,91 @@ void HMatrix<ValueType, N>::initialize(
       g.run([&]{compressFun(node->child(2));});
       g.run_and_wait([&]{compressFun(node->child(3));});
     }
+
+
+    // Check if coarsening is possible
+    
+    bool children_are_leafs = true;
+    bool children_are_admissible = true;
+
+    for (int i = 0; i < 4; ++i){
+      children_are_leafs = node->child(i)->isLeaf() && children_are_leafs;
+      children_are_admissible = node->child(i)->admissible() && children_are_admissible;
+    }
+    
+    bool start_coarsen = coarsening && children_are_leafs && children_are_admissible;
+
+    if (start_coarsen){
+
+      // get max rank of children
+      
+      int rank = 0;
+      for (int i =0; i < 4; ++i)
+        rank = std::max(rank,node->child(i)->data().rank());
+
+      int p = 4;
+      int k = rank+p;
+
+      bool accept = false;
+
+      IndexRangeType rowIndexRange = node->data().rowClusterTree->data().indexRange;
+      IndexRangeType colIndexRange = node->data().columnClusterTree->data().indexRange;
+      int rows = rowIndexRange[1]-rowIndexRange[0];
+      int cols = colIndexrange[1]-colIndexRange[0];
+
+      double norm = frobeniusNorm_impl(node);
+
+      int count = 0;
+      while (!accept) {
+        if (k>cols || count > 1) break;
+
+        Matrix<ValueType> Z = Matrix<ValueType>::Random(cols,k);
+        Matrix<ValueType> V = Matrix<ValueType>::Zero(rows,k);
+
+        apply_impl(node,Eigen::Ref<Matrix<ValueType>>(Z),Eigen::Ref<Matrix<ValueType>>(V),
+            NOTRANS);
+        Eigen::HouseholderQR qr(V);
+        Matrix<ValueType> Q = qr.householderQ();
+        Matrix<ValueType> B(cols,k);
+        apply_impl(node,Eigen::Ref<Matrix<ValueType>>(Q),Eigen::Ref<Matrix<ValueType>>(B),
+            CONJTRANS);
+        Eigen::JacobiSVD svd(B);
+        auto singularValues = svd.singularValues();
+        singularValues *= 1./norm;
+        int index;
+        for (index = 0; index != singularValues.rows(); ++index)
+          if (singularValues(index)<coarsening_accuracy) break;
+
+        if (index!=singularValues.rows()){
+          // Create node and get out of loop
+          
+
+          
+
+          
+        }
+
+
+
+        
+
+
+
+        
+
+        
+
+
+
+      } 
+
+      
+
+
+
+
+    }
+
   };
     
 
@@ -103,7 +189,6 @@ void HMatrix<ValueType, N>::initialize(
        m_numberOfLowRankBlocks++;
      m_memSizeKb+=elem.second->memSizeKb();
   }
-
 
   // The following can be removed for C++14 compilers that
   // support polymorphic lambda expressions.
