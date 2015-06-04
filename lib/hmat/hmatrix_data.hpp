@@ -25,6 +25,8 @@ public:
 
   virtual double memSizeKb() const = 0;
 
+  virtual int numberOfElements() const = 0;
+
   virtual DataBlockType type() const = 0;
 };
 }

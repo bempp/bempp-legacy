@@ -34,17 +34,22 @@
 #include "../fiber/basis.hpp"
 #include "../fiber/collection_of_basis_transformations.hpp"
 #include "../fiber/scalar_traits.hpp"
+#include "../common/global_parameters.hpp"
+#include "../hmat/cluster_tree.hpp"
+
 
 #include <vector>
 
-namespace Fiber {
 
 /** \cond FORWARD_DECL */
+namespace Fiber {
 template <typename ValueType> class BasisData;
 template <typename CoordinateType> class GeometricalData;
+} // namespace Fiber
+
+
 /** \endcond */
 
-} // namespace Fiber
 
 namespace Bempp {
 
@@ -597,6 +602,14 @@ public:
   dumpClusterIdsEx(const char *fileName,
                    const std::vector<unsigned int> &clusterIdsOfGlobalDofs,
                    DofType dofType) const;
+
+  
+  /** \brief Initialize the cluster tree associated with this space. */
+  void initializeClusterTree(const ParameterList& parameterList);
+
+  /** \brief Return the cluster tree associated with this space. */
+  shared_ptr<const hmat::DefaultClusterTreeType> clusterTree() const;
+
   /** @} */
 private:
   /** \cond PRIVATE */
@@ -604,6 +617,7 @@ private:
   shared_ptr<GeometryFactory> m_elementGeometryFactory;
   unsigned int m_level;
   std::unique_ptr<GridView> m_view;
+  shared_ptr<const hmat::DefaultClusterTreeType> m_clusterTree;
   /** \endcond */
 };
 

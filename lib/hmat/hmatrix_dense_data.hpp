@@ -27,6 +27,8 @@ public:
 
   double memSizeKb() const override;
 
+  int numberOfElements() const override;
+
   DataBlockType type() const override;
 
 private:

@@ -81,6 +81,13 @@ DataBlockType HMatrixLowRankData<ValueType>::type() const {
 }
 
 template <typename ValueType>
+int HMatrixLowRankData<ValueType>::numberOfElements() const {
+
+  return rank()*(rows()+cols());
+
+}
+
+template <typename ValueType>
 void HMatrixLowRankData<ValueType>::apply(
     const Eigen::Ref<Matrix<ValueType>> &X, Eigen::Ref<Matrix<ValueType>> Y,
     TransposeMode trans, ValueType alpha, ValueType beta) const {

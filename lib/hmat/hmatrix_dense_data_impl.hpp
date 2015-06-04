@@ -62,6 +62,13 @@ DataBlockType HMatrixDenseData<ValueType>::type() const {
 }
 
 template <typename ValueType>
+int HMatrixDenseData<ValueType>::numberOfElements() const {
+
+  return m_A.cols()*m_A.rows();
+
+}
+
+template <typename ValueType>
 typename ScalarTraits<ValueType>::RealType
 HMatrixDenseData<ValueType>::frobeniusNorm() const {
   return m_A.norm();

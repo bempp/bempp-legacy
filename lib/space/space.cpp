@@ -36,6 +36,10 @@
 #include "../grid/mapper.hpp"
 #include "../grid/geometry_factory.hpp"
 
+#include "../hmat/geometry_data_type.hpp"
+#include "../hmat/geometry.hpp"
+#include "../assembly/hmat_interface.hpp"
+
 namespace Bempp {
 
 namespace {
@@ -225,6 +229,36 @@ void Space<BasisFunctionType>::global2localDofs(
 }
 
 template <typename BasisFunctionType>
+void Space<BasisFunctionType>::initializeClusterTree(
+        const ParameterList& parameterList)
+{
+   if (m_clusterTree)
+      throw std::runtime_error("Space::initializeClusterTree(): "
+                               "ClusterTree is already initialized.");
+
+   hmat::Geometry geometry;
+
+   auto interface = shared_ptr<hmat::GeometryInterface>(
+           new SpaceHMatGeometryInterface<BasisFunctionType>(*this));
+   hmat::fillGeometry(geometry,*interface);
+
+
+   auto minBlockSize =
+       parameterList.template get<int>("options.hmat.minBlockSize");
+    m_clusterTree.reset(new hmat::DefaultClusterTreeType(
+                geometry,minBlockSize));
+    
+
+}
+
+template <typename BasisFunctionType>
+shared_ptr<const hmat::DefaultClusterTreeType> 
+Space<BasisFunctionType>::clusterTree() const{
+
+    return m_clusterTree;
+}
+
+template <typename BasisFunctionType>
 void getAllShapesets(
     const Space<BasisFunctionType> &space,
     std::vector<const Fiber::Shapeset<BasisFunctionType> *> &shapesets) {
@@ -271,6 +305,7 @@ int maximumShapesetOrder(const Space<BasisFunctionType> &space) {
   return maxOrder;
 }
 
+
 template <typename BasisFunctionType, typename ResultType>
 shared_ptr<DiscreteSparseBoundaryOperator<ResultType>>
 constructOperatorMappingGlobalToFlatLocalDofs(
@@ -289,6 +324,7 @@ constructOperatorMappingFlatLocalToGlobalDofs(
   return boost::make_shared<DiscreteSparseBoundaryOperator<ResultType>>(
       mat, NO_SYMMETRY, TRANSPOSE);
 }
+
 
 BEMPP_GCC_DIAG_OFF(deprecated - declarations);
 

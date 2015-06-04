@@ -109,7 +109,7 @@ class TestHMatBoundaryOperator(object):
         actual = hmat_laplace_single_layer_weak_form*random_vector
 
         if hmat_compression_parameters.hmat.compression_algorithm == 'aca':
-            assert np.linalg.norm(expected-actual)/np.linalg.norm(expected)< ACA_ACCURACY
+            assert np.linalg.norm(expected-actual)/np.linalg.norm(expected)< 2*ACA_ACCURACY
         elif hmat_compression_parameters.hmat.compression_algorithm == 'dense':
             assert np.linalg.norm(expected-actual)/np.linalg.norm(expected)<1E-15
 

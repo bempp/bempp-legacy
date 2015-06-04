@@ -24,6 +24,14 @@ struct CompareSharedPtrsToConstAbstractBoundaryOperatorIds {
     return *a == *b;
   }
 };
+struct AbstractBoundaryOperatorIdHash {
+
+    std::size_t operator()(const shared_ptr<const AbstractBoundaryOperatorId>& key) const
+    {
+        return tbb::tbb_hasher(key.get());
+    }
+
+};
 
 } // namespace
 
@@ -33,7 +41,7 @@ struct DiscreteBoundaryOperatorCache<BasisFunctionType, ResultType>::Impl {
   typedef tbb::concurrent_unordered_map<
       shared_ptr<const AbstractBoundaryOperatorId>,
       boost::weak_ptr<const DiscreteBoundaryOperator<ResultType>>,
-      tbb::tbb_hash<shared_ptr<const AbstractBoundaryOperatorId>>,
+      AbstractBoundaryOperatorIdHash,
       CompareSharedPtrsToConstAbstractBoundaryOperatorIds>
       DiscreteBoundaryOperatorMap;
 

@@ -396,7 +396,7 @@ bool HMatrix<ValueType, N>::coarsen_impl(
   int storage = 0;
   for (int i = 0; i < 4; ++i) {
     auto data = m_hMatrixData.at(node->child(i));
-    storage += data->rank() * (data->rows() + data->cols());
+    storage += data->numberOfElements();
   }
 
   int maxk = 1 + std::trunc((1.0 * storage) / (rows + cols));
