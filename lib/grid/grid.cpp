@@ -75,8 +75,10 @@ void Grid::getBoundingBox(Vector<double> &lowerBound,
   Matrix<char> auxData;       // unused
   view->getRawElementData(vertices, elementCorners, auxData);
 
-  m_lowerBound = lowerBound = vertices.rowwise().minCoeff(); // min. value in each row
-  m_upperBound = upperBound = vertices.rowwise().maxCoeff(); // max. value in each row
+  m_lowerBound = lowerBound =
+      vertices.rowwise().minCoeff(); // min. value in each row
+  m_upperBound = upperBound =
+      vertices.rowwise().maxCoeff(); // max. value in each row
 }
 
 std::vector<bool> areInside(const Grid &grid, const Matrix<double> &points) {
@@ -151,10 +153,10 @@ std::vector<bool> areInside(const Grid &grid, const Matrix<double> &points) {
     for (size_t tri = 0; tri < triangleCount; ++tri)
       if (points(0, pt) >= xMins(tri) && points(0, pt) <= xMaxs(tri) &&
           points(1, pt) >= yMins(tri) && points(1, pt) <= yMaxs(tri))
-        if (zRayIntersectsTriangle(points.col(pt).data(), triangles[tri].col(0).data(),
-                                   triangles[tri].col(1).data(),
-                                   triangles[tri].col(2).data(),
-                                   intersection.col(0).data()) > 0.)
+        if (zRayIntersectsTriangle(
+                points.col(pt).data(), triangles[tri].col(0).data(),
+                triangles[tri].col(1).data(), triangles[tri].col(2).data(),
+                intersection.col(0).data()) > 0.)
           if (isNew(intersection, intersections))
             intersections.push_back(intersection);
     result[pt] = intersections.size();
@@ -170,16 +172,14 @@ std::vector<bool> areInside(const Grid &grid, const Matrix<float> &points) {
   return areInside(grid, pointsDouble);
 }
 
-unsigned int Grid::elementInsertionIndex(const Entity<0>& element) const
-{
-    throw std::runtime_error("Grid::elementInsertionIndex(): "
-                             "method not implemented.");
+unsigned int Grid::elementInsertionIndex(const Entity<0> &element) const {
+  throw std::runtime_error("Grid::elementInsertionIndex(): "
+                           "method not implemented.");
 }
 
-unsigned int Grid::vertexInsertionIndex(const Entity<2>& vertex) const
-{
-    throw std::runtime_error("Grid::vertexInsertionIndex(): "
-                             "method not implemented.");
+unsigned int Grid::vertexInsertionIndex(const Entity<2> &vertex) const {
+  throw std::runtime_error("Grid::vertexInsertionIndex(): "
+                           "method not implemented.");
 }
 
 } // namespace Bempp

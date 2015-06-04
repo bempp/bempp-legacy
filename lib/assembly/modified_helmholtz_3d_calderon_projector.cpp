@@ -134,52 +134,47 @@ modifiedHelmholtz3dInteriorCalderonProjector(
   return BlockedBoundaryOperator<BasisFunctionType, ResultType>(structure);
 }
 
-
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 BlockedBoundaryOperator<BasisFunctionType, ResultType>
 modifiedHelmholtz3dExteriorCalderonProjector(
-    const ParameterList& parameterList,
+    const ParameterList &parameterList,
     const shared_ptr<const Space<BasisFunctionType>> &hminusSpace,
     const shared_ptr<const Space<BasisFunctionType>> &hplusSpace,
     KernelType waveNumber, const std::string &label, bool useInterpolation,
     int interpPtsPerWavelength) {
 
-    shared_ptr<const Context<BasisFunctionType,ResultType>> context(
-            new Context<BasisFunctionType,ResultType>(parameterList));
-    return modifiedHelmholtz3dExteriorCalderonProjector(
-            context,hminusSpace,hplusSpace,waveNumber,label,useInterpolation,
-            interpPtsPerWavelength);
+  shared_ptr<const Context<BasisFunctionType, ResultType>> context(
+      new Context<BasisFunctionType, ResultType>(parameterList));
+  return modifiedHelmholtz3dExteriorCalderonProjector(
+      context, hminusSpace, hplusSpace, waveNumber, label, useInterpolation,
+      interpPtsPerWavelength);
 }
-
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 BlockedBoundaryOperator<BasisFunctionType, ResultType>
 modifiedHelmholtz3dInteriorCalderonProjector(
-    const ParameterList& parameterList,
+    const ParameterList &parameterList,
     const shared_ptr<const Space<BasisFunctionType>> &hminusSpace,
     const shared_ptr<const Space<BasisFunctionType>> &hplusSpace,
     KernelType waveNumber, const std::string &label, bool useInterpolation,
     int interpPtsPerWavelength) {
 
-    shared_ptr<const Context<BasisFunctionType,ResultType>> context(
-            new Context<BasisFunctionType,ResultType>(parameterList));
-    return modifiedHelmholtz3dInteriorCalderonProjector(
-            context,hminusSpace,hplusSpace,waveNumber,label,useInterpolation,
-            interpPtsPerWavelength);
+  shared_ptr<const Context<BasisFunctionType, ResultType>> context(
+      new Context<BasisFunctionType, ResultType>(parameterList));
+  return modifiedHelmholtz3dInteriorCalderonProjector(
+      context, hminusSpace, hplusSpace, waveNumber, label, useInterpolation,
+      interpPtsPerWavelength);
 }
-
 
 #define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS, KERNEL, RESULT)               \
   template BlockedBoundaryOperator<BASIS, RESULT>                              \
   modifiedHelmholtz3dExteriorCalderonProjector(                                \
-      const ParameterList&,                                                    \
-      const shared_ptr<const Space<BASIS>> &,                                  \
+      const ParameterList &, const shared_ptr<const Space<BASIS>> &,           \
       const shared_ptr<const Space<BASIS>> &, KERNEL, const std::string &,     \
       bool, int);                                                              \
   template BlockedBoundaryOperator<BASIS, RESULT>                              \
   modifiedHelmholtz3dInteriorCalderonProjector(                                \
-      const ParameterList&,                                                    \
-      const shared_ptr<const Space<BASIS>> &,                                  \
+      const ParameterList &, const shared_ptr<const Space<BASIS>> &,           \
       const shared_ptr<const Space<BASIS>> &, KERNEL, const std::string &,     \
       bool, int);                                                              \
   template BlockedBoundaryOperator<BASIS, RESULT>                              \

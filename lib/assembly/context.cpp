@@ -44,9 +44,8 @@ Context<BasisFunctionType, ResultType>::Context(
 }
 
 template <typename BasisFunctionType, typename ResultType>
-Context<BasisFunctionType, ResultType>::Context() :
-    Context(GlobalParameters::parameterList()){}
-
+Context<BasisFunctionType, ResultType>::Context()
+    : Context(GlobalParameters::parameterList()) {}
 
 template <typename BasisFunctionType, typename ResultType>
 Context<BasisFunctionType, ResultType>::Context(
@@ -55,9 +54,10 @@ Context<BasisFunctionType, ResultType>::Context(
   ParameterList parameters(globalParameterList);
   auto defaults = GlobalParameters::parameterList();
 
-  std::string assemblyType =
-      parameters.get<std::string>("options.assembly.boundaryOperatorAssemblyType",
-                                  defaults.get<std::string>("options.assembly.boundaryOperatorAssemblyType"));
+  std::string assemblyType = parameters.get<std::string>(
+      "options.assembly.boundaryOperatorAssemblyType",
+      defaults.get<std::string>(
+          "options.assembly.boundaryOperatorAssemblyType"));
   if (assemblyType == "hmat")
     m_assemblyOptions.switchToHMatMode();
   else if (assemblyType == "dense")
@@ -67,11 +67,13 @@ Context<BasisFunctionType, ResultType>::Context(
         "Context::Context(): boundaryOperatorAssemblyType has "
         "unsupported value.");
 
-  m_assemblyOptions.setMaxThreadCount(parameters.get<int>("options.global.maxThreadCount",
-                                                          defaults.get<int>("options.global.maxThreadCount")));
+  m_assemblyOptions.setMaxThreadCount(
+      parameters.get<int>("options.global.maxThreadCount",
+                          defaults.get<int>("options.global.maxThreadCount")));
 
-  int verbosityLevel = parameters.get<int>("options.global.verbosityLevel",
-                                           defaults.get<int>("options.global.verbosityLevel"));
+  int verbosityLevel =
+      parameters.get<int>("options.global.verbosityLevel",
+                          defaults.get<int>("options.global.verbosityLevel"));
 
   if (verbosityLevel == -5)
     m_assemblyOptions.setVerbosityLevel(VerbosityLevel::LOW);
@@ -83,43 +85,54 @@ Context<BasisFunctionType, ResultType>::Context(
     throw std::runtime_error(
         "Context::Context(): verbosityLevel has unsupported value");
 
-  m_assemblyOptions.enableSingularIntegralCaching(
-      parameters.get<bool>("options.assembly.enableSingularIntegralCaching",
-                           defaults.get<bool>("options.assembly.enableSingularIntegralCaching")));
+  m_assemblyOptions.enableSingularIntegralCaching(parameters.get<bool>(
+      "options.assembly.enableSingularIntegralCaching",
+      defaults.get<bool>("options.assembly.enableSingularIntegralCaching")));
 
   m_assemblyOptions.enableBlasInQuadrature(AssemblyOptions::AUTO);
 
   Fiber::AccuracyOptionsEx accuracyOptions;
 
   accuracyOptions.setSingleRegular(
-      parameters.get<double>("options.quadrature.near.maxRelDist",
-                             defaults.get<double>("options.quadrature.near.maxRelDist")),
-      parameters.get<int>("options.quadrature.near.singleOrder",
-                          defaults.get<int>("options.quadrature.near.singleOrder")),
-      parameters.get<double>("options.quadrature.medium.maxRelDist",
-                             defaults.get<double>("options.quadrature.medium.maxRelDist")),
-      parameters.get<int>("options.quadrature.medium.singleOrder",
-                          defaults.get<int>("options.quadrature.medium.singleOrder")),
-      parameters.get<int>("options.quadrature.far.singleOrder",
-                          defaults.get<int>("options.quadrature.far.singleOrder")),
+      parameters.get<double>(
+          "options.quadrature.near.maxRelDist",
+          defaults.get<double>("options.quadrature.near.maxRelDist")),
+      parameters.get<int>(
+          "options.quadrature.near.singleOrder",
+          defaults.get<int>("options.quadrature.near.singleOrder")),
+      parameters.get<double>(
+          "options.quadrature.medium.maxRelDist",
+          defaults.get<double>("options.quadrature.medium.maxRelDist")),
+      parameters.get<int>(
+          "options.quadrature.medium.singleOrder",
+          defaults.get<int>("options.quadrature.medium.singleOrder")),
+      parameters.get<int>(
+          "options.quadrature.far.singleOrder",
+          defaults.get<int>("options.quadrature.far.singleOrder")),
       false);
 
   accuracyOptions.setDoubleRegular(
-              parameters.get<double>("options.quadrature.near.maxRelDist",
-                                     defaults.get<double>("options.quadrature.near.maxRelDist")),
-              parameters.get<int>("options.quadrature.near.doubleOrder",
-                                  defaults.get<int>("options.quadrature.near.doubleOrder")),
-              parameters.get<double>("options.quadrature.medium.maxRelDist",
-                                     defaults.get<double>("options.quadrature.medium.maxRelDist")),
-              parameters.get<int>("options.quadrature.medium.doubleOrder",
-                                  defaults.get<int>("options.quadrature.medium.doubleOrder")),
-              parameters.get<int>("options.quadrature.far.doubleOrder",
-                                  defaults.get<int>("options.quadrature.far.doubleOrder")),
-              false);
+      parameters.get<double>(
+          "options.quadrature.near.maxRelDist",
+          defaults.get<double>("options.quadrature.near.maxRelDist")),
+      parameters.get<int>(
+          "options.quadrature.near.doubleOrder",
+          defaults.get<int>("options.quadrature.near.doubleOrder")),
+      parameters.get<double>(
+          "options.quadrature.medium.maxRelDist",
+          defaults.get<double>("options.quadrature.medium.maxRelDist")),
+      parameters.get<int>(
+          "options.quadrature.medium.doubleOrder",
+          defaults.get<int>("options.quadrature.medium.doubleOrder")),
+      parameters.get<int>(
+          "options.quadrature.far.doubleOrder",
+          defaults.get<int>("options.quadrature.far.doubleOrder")),
+      false);
 
   accuracyOptions.setDoubleSingular(
-      parameters.get<int>("options.quadrature.doubleSingular",
-                          defaults.get<int>("options.quadrature.doubleSingular")),
+      parameters.get<int>(
+          "options.quadrature.doubleSingular",
+          defaults.get<int>("options.quadrature.doubleSingular")),
       false);
 
   m_quadStrategy.reset(

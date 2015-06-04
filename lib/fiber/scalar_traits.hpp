@@ -51,25 +51,25 @@ template <typename T> struct ScalarTraits {
 template <> struct ScalarTraits<float> {
   typedef float RealType;
   typedef std::complex<float> ComplexType;
-  enum {NumpyTypeNum = 11 };
+  enum { NumpyTypeNum = 11 };
 };
 
 template <> struct ScalarTraits<double> {
   typedef double RealType;
   typedef std::complex<double> ComplexType;
-  enum {NumpyTypeNum = 12 };
+  enum { NumpyTypeNum = 12 };
 };
 
 template <> struct ScalarTraits<std::complex<float>> {
   typedef float RealType;
   typedef std::complex<float> ComplexType;
-  enum {NumpyTypeNum = 14 };
+  enum { NumpyTypeNum = 14 };
 };
 
 template <> struct ScalarTraits<std::complex<double>> {
   typedef double RealType;
   typedef std::complex<double> ComplexType;
-  enum {NumpyTypeNum = 15 };
+  enum { NumpyTypeNum = 15 };
 };
 
 /** \brief "Larger" of the types U and V. */
@@ -79,13 +79,9 @@ template <typename U, typename V> struct Coercion {
   // double or std::complex<float> and double). BEM++ does not support this.
 };
 
-template <> struct Coercion<float, float> {
-  typedef float Type;
-};
+template <> struct Coercion<float, float> { typedef float Type; };
 
-template <> struct Coercion<double, double> {
-  typedef double Type;
-};
+template <> struct Coercion<double, double> { typedef double Type; };
 
 template <> struct Coercion<std::complex<float>, std::complex<float>> {
   typedef std::complex<float> Type;

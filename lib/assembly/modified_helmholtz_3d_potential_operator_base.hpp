@@ -64,10 +64,10 @@ public:
   /** \copydoc ElementaryPotentialOperator::CollectionOfShapesetTransformations
    */
   typedef typename Base::CollectionOfShapesetTransformations
-  CollectionOfShapesetTransformations;
+      CollectionOfShapesetTransformations;
   /** \copydoc ElementaryPotentialOperator::CollectionOfBasisTransformations */
   typedef typename Base::CollectionOfBasisTransformations
-  CollectionOfBasisTransformations;
+      CollectionOfBasisTransformations;
   /** \copydoc ElementaryPotentialOperator::CollectionOfKernels */
   typedef typename Base::CollectionOfKernels CollectionOfKernels;
   /** \copydoc ElementaryPotentialOperator::KernelTrialIntegral */

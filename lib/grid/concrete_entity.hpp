@@ -69,7 +69,7 @@ ConcreteEntity<0, DuneEntity>::sonIterator(int maxlevel) const {
   typedef typename DuneEntity::HierarchicIterator DuneIterator;
   typedef typename DuneEntity::EntityPointer DuneEntityPointer;
   typedef ConcreteRangeEntityIterator<DuneIterator, DuneEntityPointer>
-  ConcIterator;
+      ConcIterator;
   return std::unique_ptr<EntityIterator<0>>(
       new ConcIterator(m_dune_entity->hbegin(maxlevel),
                        m_dune_entity->hend(maxlevel), m_domain_index));

@@ -89,7 +89,7 @@ public:
   /** \copydoc
    * Helmholtz3dPotentialOperatorBase::CollectionOfBasisTransformations */
   typedef typename Base::CollectionOfBasisTransformations
-  CollectionOfBasisTransformations;
+      CollectionOfBasisTransformations;
   /** \copydoc Helmholtz3dPotentialOperatorBase::CollectionOfKernels */
   typedef typename Base::CollectionOfKernels CollectionOfKernels;
   /** \copydoc Helmholtz3dPotentialOperatorBase::KernelTrialIntegral */

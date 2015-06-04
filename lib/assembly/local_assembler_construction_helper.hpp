@@ -63,7 +63,7 @@ struct LocalAssemblerConstructionHelper {
       shared_ptr<std::vector<const Fiber::Shapeset<BasisFunctionType> *>> &
           shapesets) {
     typedef std::vector<const Fiber::Shapeset<BasisFunctionType> *>
-    ShapesetPtrVector;
+        ShapesetPtrVector;
     shapesets = boost::make_shared<ShapesetPtrVector>();
     getAllShapesets(space, *shapesets);
   }

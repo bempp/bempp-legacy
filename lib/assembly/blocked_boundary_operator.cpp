@@ -181,8 +181,8 @@ BlockedBoundaryOperator<BasisFunctionType, ResultType>::weakForm() const {
 
 template <typename BasisFunctionType, typename ResultType>
 shared_ptr<const Space<BasisFunctionType>>
-BlockedBoundaryOperator<BasisFunctionType, ResultType>::domain(size_t column)
-    const {
+BlockedBoundaryOperator<BasisFunctionType, ResultType>::domain(
+    size_t column) const {
   if (column >= m_domains.size())
     throw std::out_of_range(
         "BlockedBoundaryOperator::domain(): invalid column");
@@ -191,8 +191,8 @@ BlockedBoundaryOperator<BasisFunctionType, ResultType>::domain(size_t column)
 
 template <typename BasisFunctionType, typename ResultType>
 shared_ptr<const Space<BasisFunctionType>>
-BlockedBoundaryOperator<BasisFunctionType, ResultType>::range(size_t row)
-    const {
+BlockedBoundaryOperator<BasisFunctionType, ResultType>::range(
+    size_t row) const {
   if (row >= m_ranges.size())
     throw std::out_of_range("BlockedBoundaryOperator::range(): invalid row");
   return m_ranges[row];
@@ -200,8 +200,8 @@ BlockedBoundaryOperator<BasisFunctionType, ResultType>::range(size_t row)
 
 template <typename BasisFunctionType, typename ResultType>
 shared_ptr<const Space<BasisFunctionType>>
-BlockedBoundaryOperator<BasisFunctionType, ResultType>::dualToRange(size_t row)
-    const {
+BlockedBoundaryOperator<BasisFunctionType, ResultType>::dualToRange(
+    size_t row) const {
   if (row >= m_dualsToRanges.size())
     throw std::out_of_range(
         "BlockedBoundaryOperator::dualToRange(): invalid row");
@@ -244,11 +244,11 @@ void BlockedBoundaryOperator<BasisFunctionType, ResultType>::apply(
   size_t xSize = 0;
   for (size_t col = 0; col < columnCount; ++col)
     xSize += m_domains[col]->globalDofCount();
-  Matrix<ResultType> xVals(xSize,1);
+  Matrix<ResultType> xVals(xSize, 1);
   for (size_t col = 0, start = 0; col < columnCount; ++col) {
     const Vector<ResultType> &chunk = x_in[col].coefficients();
     size_t chunkSize = chunk.rows();
-    xVals.block(start,0, chunkSize,1 ) = chunk;
+    xVals.block(start, 0, chunkSize, 1) = chunk;
     start += chunkSize;
   }
 
@@ -256,12 +256,11 @@ void BlockedBoundaryOperator<BasisFunctionType, ResultType>::apply(
   size_t ySize = 0;
   for (size_t row = 0; row < rowCount; ++row)
     ySize += m_dualsToRanges[row]->globalDofCount();
-  Matrix<ResultType> yVals(ySize,1);
+  Matrix<ResultType> yVals(ySize, 1);
   for (size_t row = 0, start = 0; row < rowCount; ++row) {
-    Vector<ResultType> chunk =
-        y_inout[row].projections(m_dualsToRanges[row]);
+    Vector<ResultType> chunk = y_inout[row].projections(m_dualsToRanges[row]);
     size_t chunkSize = chunk.rows();
-    yVals.block(start,0, chunkSize,1 ) = chunk;
+    yVals.block(start, 0, chunkSize, 1) = chunk;
     start += chunkSize;
   }
 
@@ -273,7 +272,7 @@ void BlockedBoundaryOperator<BasisFunctionType, ResultType>::apply(
   for (size_t row = 0, start = 0; row < rowCount; ++row) {
     size_t chunkSize = m_dualsToRanges[row]->globalDofCount();
     y_inout[row].setProjections(m_dualsToRanges[row],
-                                yVals.col(0).segment(start,chunkSize));
+                                yVals.col(0).segment(start, chunkSize));
     start += chunkSize;
   }
 }

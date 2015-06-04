@@ -129,9 +129,9 @@ template <class GridType> class BemppStructuredGridFactory {
       // scale the multiindex to obtain a world position
       FieldVector<double, dimworld> pos(0);
       for (int j = 0; j < dim; j++)
-        pos[j] = fullLowerLeft[j] + index[j] *
-                                        (fullUpperRight[j] - fullLowerLeft[j]) /
-                                        (vertices[j] - 1);
+        pos[j] = fullLowerLeft[j] +
+                 index[j] * (fullUpperRight[j] - fullLowerLeft[j]) /
+                     (vertices[j] - 1);
 
       factory.insertVertex(pos);
     }

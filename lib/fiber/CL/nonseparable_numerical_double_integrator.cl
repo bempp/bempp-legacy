@@ -29,68 +29,61 @@
  *   - devMapPoint(const Point3 *vtx,const Point3 *refpt,Point3 *pt)
  *   - devKerneval(const Point3 *pt1, const Point3 *pt2)
  */
-__kernel void clIntegratePairs (
-    __global const Point3 *g_meshvtx,
-    int nmeshvtx,
-    __global const Triangle *g_meshels,
-    int nmeshels,
-    __global const int *g_tri1,
-    __global const int *g_tri2,
-    int geometryPairCount,
-    __global const Point3 *g_refpt1,
-    __global const Point3 *g_refpt2,
-    __global const FLOAT *g_weight,
-    int nquad,
-    __global const FLOAT *g_basisf,
-    __global FLOAT *g_val
-    )
-{
-    int i, j, qpt;
-    int pairIndex = get_global_id(0);
-    if (pairIndex >= geometryPairCount) return;
+__kernel void
+clIntegratePairs(__global const Point3 *g_meshvtx, int nmeshvtx,
+                 __global const Triangle *g_meshels, int nmeshels,
+                 __global const int *g_tri1, __global const int *g_tri2,
+                 int geometryPairCount, __global const Point3 *g_refpt1,
+                 __global const Point3 *g_refpt2,
+                 __global const FLOAT *g_weight, int nquad,
+                 __global const FLOAT *g_basisf, __global FLOAT *g_val) {
+  int i, j, qpt;
+  int pairIndex = get_global_id(0);
+  if (pairIndex >= geometryPairCount)
+    return;
 
-    Point3 vtx1[3];  // vertices of first triangle
-    Point3 vtx2[3];  // vertices of second triangle
-    Point3 refpt1, refpt2; // quadrature points on reference element
-    Point3 pt1, pt2;       // mapped quadrature points
+  Point3 vtx1[3];        // vertices of first triangle
+  Point3 vtx2[3];        // vertices of second triangle
+  Point3 refpt1, refpt2; // quadrature points on reference element
+  Point3 pt1, pt2;       // mapped quadrature points
 
-    int tri1 = g_tri1[pairIndex]; // index of first triangle
-    int tri2 = g_tri2[pairIndex]; // index of second triangle
+  int tri1 = g_tri1[pairIndex]; // index of first triangle
+  int tri2 = g_tri2[pairIndex]; // index of second triangle
 
-    // copy vertices from the global list
-    for (i = 0; i < 3; i++) {
-        vtx1[i] = g_meshvtx[g_meshels[tri1].idx[i]];
-	vtx2[i] = g_meshvtx[g_meshels[tri2].idx[i]];
-    }
+  // copy vertices from the global list
+  for (i = 0; i < 3; i++) {
+    vtx1[i] = g_meshvtx[g_meshels[tri1].idx[i]];
+    vtx2[i] = g_meshvtx[g_meshels[tri2].idx[i]];
+  }
 
-    // basis function mapper
-    FLOAT d1 = devDetJac (vtx1);
-    FLOAT d2 = devDetJac (vtx2);
-    FLOAT d12 = d1*d2;
-    FLOAT val[3*3];
-    FLOAT kval;
+  // basis function mapper
+  FLOAT d1 = devDetJac(vtx1);
+  FLOAT d2 = devDetJac(vtx2);
+  FLOAT d12 = d1 * d2;
+  FLOAT val[3 * 3];
+  FLOAT kval;
 
-    for (i = 0; i < 9; i++)
-        val[i] = (FLOAT)0;
+  for (i = 0; i < 9; i++)
+    val[i] = (FLOAT)0;
 
-    for (qpt = 0; qpt < nquad; qpt++) {
-        refpt1 = g_refpt1[qpt];
-	refpt2 = g_refpt2[qpt];
+  for (qpt = 0; qpt < nquad; qpt++) {
+    refpt1 = g_refpt1[qpt];
+    refpt2 = g_refpt2[qpt];
 
-	// map points from reference to global coordinates
-	devMapPoint (vtx1, &refpt1, &pt1);
-	devMapPoint (vtx2, &refpt2, &pt2);
+    // map points from reference to global coordinates
+    devMapPoint(vtx1, &refpt1, &pt1);
+    devMapPoint(vtx2, &refpt2, &pt2);
 
-	// evaluate kernel
-	kval = devKerneval (&pt1, &pt2) * d12 * g_weight[qpt];
+    // evaluate kernel
+    kval = devKerneval(&pt1, &pt2) * d12 * g_weight[qpt];
 
-	// fill the local matrix
-	for (i = 0; i < 3; i++)
-	    for (j = 0; j < 3; j++)
-	        val[j + i*3] += kval * g_basisf[j + i*3 + qpt*9];
-    }
+    // fill the local matrix
+    for (i = 0; i < 3; i++)
+      for (j = 0; j < 3; j++)
+        val[j + i * 3] += kval * g_basisf[j + i * 3 + qpt * 9];
+  }
 
-    // copy results back to global matrix
-    for (i = 0; i < 9; i++)
-        g_val[pairIndex*9 + i] = val[i];
+  // copy results back to global matrix
+  for (i = 0; i < 9; i++)
+    g_val[pairIndex * 9 + i] = val[i];
 }

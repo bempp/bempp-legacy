@@ -42,15 +42,13 @@ using Fiber::VerbosityLevel;
  */
 class EvaluationOptions {
 public:
-  enum {
-    AUTO = -1
-  };
+  enum { AUTO = -1 };
 
   /** \brief Constructor. */
   EvaluationOptions();
 
   /** \brief Constructor. */
-  EvaluationOptions(const ParameterList& parameters);
+  EvaluationOptions(const ParameterList &parameters);
 
   /** @name Evaluation mode
     @{ */
@@ -63,7 +61,7 @@ public:
        (ACA). */
     ACA,
     /** \brief Assemble hierarchical matrices using HMat. */
-    HMAT    
+    HMAT
   };
 
   /** \brief Use dense-matrix representations of elementary potential operators.
@@ -173,7 +171,6 @@ public:
   VerbosityLevel::Level verbosityLevel() const;
 
   /** @} */
-
 
 private:
   /** \cond */

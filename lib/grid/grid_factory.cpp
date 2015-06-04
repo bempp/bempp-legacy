@@ -36,45 +36,41 @@ namespace Bempp {
 // Default grid typedef
 typedef ConcreteGrid<Default2dIn3dDuneGrid> Default2dIn3dGrid;
 
-GridFactory::GridFactory():
-    m_factory(new Dune::GridFactory<Default2dIn3dDuneGrid>()){}
+GridFactory::GridFactory()
+    : m_factory(new Dune::GridFactory<Default2dIn3dDuneGrid>()) {}
 
-void GridFactory::insertVertex(double x, double y, double z){
+void GridFactory::insertVertex(double x, double y, double z) {
 
-    const int dimWorld = 3;
-    Dune::FieldVector<double, dimWorld> v;
-    v[0] = x;
-    v[1] = y;
-    v[2] = z;
-    m_factory->insertVertex(v);
-
+  const int dimWorld = 3;
+  Dune::FieldVector<double, dimWorld> v;
+  v[0] = x;
+  v[1] = y;
+  v[2] = z;
+  m_factory->insertVertex(v);
 }
 
-void GridFactory::insertElement(unsigned int v0, unsigned int v1, unsigned int v2, int domain_index){
+void GridFactory::insertElement(unsigned int v0, unsigned int v1,
+                                unsigned int v2, int domain_index) {
 
   const int dimGrid = 2;
   const GeometryType type(GeometryType::simplex, dimGrid);
-  std::vector<unsigned int> e {v0, v1, v2};
-  m_factory->insertElement(type,e);
+  std::vector<unsigned int> e{v0, v1, v2};
+  m_factory->insertElement(type, e);
   m_domainIndices.push_back(domain_index);
-  
 }
 
-shared_ptr<Grid> GridFactory::finalize(){
+shared_ptr<Grid> GridFactory::finalize() {
 
   shared_ptr<Grid> grid;
-  
-  grid.reset(
-        new Default2dIn3dGrid(m_factory,GridParameters::TRIANGULAR,
-                              m_domainIndices));
+
+  grid.reset(new Default2dIn3dGrid(m_factory, GridParameters::TRIANGULAR,
+                                   m_domainIndices));
   return grid;
 }
 
-shared_ptr<Grid>
-GridFactory::createStructuredGrid(const GridParameters &params,
-                                  const Vector<double> &lowerLeft,
-                                  const Vector<double> &upperRight,
-                                  const Vector<int> &nElements) {
+shared_ptr<Grid> GridFactory::createStructuredGrid(
+    const GridParameters &params, const Vector<double> &lowerLeft,
+    const Vector<double> &upperRight, const Vector<int> &nElements) {
   // TODO: Support quadrilateral and linear grids
 
   // Check arguments
@@ -133,31 +129,29 @@ shared_ptr<Grid> GridFactory::importGmshGrid(const GridParameters &params,
     return shared_ptr<Grid>(new Default2dIn3dGrid(
         duneGrid, params.topology, elementIndex2PhysicalEntity,
         true)); // true -> owns Dune grid
-  }
-  else
+  } else
     throw std::invalid_argument("GridFactory::importGmshGrid(): "
                                 "unsupported grid topology");
 }
 
-shared_ptr<Grid>
-GridFactory::createStructuredGrid(const GridParameters &params,
-                       const double* lowerLeft,
-                       const double* upperRight,
-                       const int* nElements){
+shared_ptr<Grid> GridFactory::createStructuredGrid(const GridParameters &params,
+                                                   const double *lowerLeft,
+                                                   const double *upperRight,
+                                                   const int *nElements) {
 
-    Vector<double> v_lowerLeft(2);
-    Vector<double> v_upperRight(2);
+  Vector<double> v_lowerLeft(2);
+  Vector<double> v_upperRight(2);
 
-    Vector<int> v_nElements(2);
+  Vector<int> v_nElements(2);
 
-    for (int i = 0; i < 2; ++i){
-        v_lowerLeft(i) = lowerLeft[i];
-        v_upperRight(i) = upperRight[i];
-        v_nElements(i) = nElements[i];
-    }
+  for (int i = 0; i < 2; ++i) {
+    v_lowerLeft(i) = lowerLeft[i];
+    v_upperRight(i) = upperRight[i];
+    v_nElements(i) = nElements[i];
+  }
 
-    return GridFactory::createStructuredGrid(params,v_lowerLeft,v_upperRight,v_nElements);
-
+  return GridFactory::createStructuredGrid(params, v_lowerLeft, v_upperRight,
+                                           v_nElements);
 }
 
 shared_ptr<Grid>
@@ -174,8 +168,7 @@ GridFactory::importGmshGrid(const GridParameters &params,
     return shared_ptr<Grid>(new Default2dIn3dGrid(
         duneGrid, params.topology, elementIndex2PhysicalEntity,
         true)); // true -> owns Dune grid
-  }
-  else
+  } else
     throw std::invalid_argument("GridFactory::importGmshGrid(): "
                                 "unsupported grid topology");
 }
@@ -203,7 +196,7 @@ shared_ptr<Grid> GridFactory::createGridFromConnectivityArrays(
         "elements as 'elementCorners' has columns");
 
   shared_ptr<Dune::GridFactory<Default2dIn3dDuneGrid>> factory(
-         new Dune::GridFactory<Default2dIn3dDuneGrid>());
+      new Dune::GridFactory<Default2dIn3dDuneGrid>());
 
   for (size_t i = 0; i < vertices.cols(); ++i) {
     Dune::FieldVector<double, dimWorld> v;
@@ -230,43 +223,36 @@ shared_ptr<Grid> GridFactory::createGridFromConnectivityArrays(
   }
   shared_ptr<Grid> result;
   if (domainIndices.empty())
-    result.reset(new Default2dIn3dGrid(factory,
-                                       GridParameters::TRIANGULAR));
+    result.reset(new Default2dIn3dGrid(factory, GridParameters::TRIANGULAR));
   else
-    result.reset(
-        new Default2dIn3dGrid(factory,GridParameters::TRIANGULAR,
-                              domainIndices));
+    result.reset(new Default2dIn3dGrid(factory, GridParameters::TRIANGULAR,
+                                       domainIndices));
   return result;
 }
 
+shared_ptr<Grid> GridFactory::createGridFromConnectivityArrays(
+    const GridParameters &params, const Matrix<double> &vertices,
+    const Matrix<int> &elementCorners, const std::vector<int> &domainIndices) {
 
-shared_ptr<Grid> 
-GridFactory::createGridFromConnectivityArrays(
-      const GridParameters &params, const Matrix<double> &vertices,
-      const Matrix<int> &elementCorners,
-      const std::vector<int> &domainIndices){
-
-    return GridFactory::createGridFromConnectivityArrays(
-            params, Eigen::Ref<Matrix<double>>(const_cast<Matrix<double>&>(vertices)),
-            Eigen::Ref<Matrix<int>>(const_cast<Matrix<int>&>(elementCorners)),
-            domainIndices);
+  return GridFactory::createGridFromConnectivityArrays(
+      params,
+      Eigen::Ref<Matrix<double>>(const_cast<Matrix<double> &>(vertices)),
+      Eigen::Ref<Matrix<int>>(const_cast<Matrix<int> &>(elementCorners)),
+      domainIndices);
 }
 
-shared_ptr<Grid> 
-GridFactory::createGridFromConnectivityArrays(
-      const GridParameters &params, const double* vertices,
-      int nvertices, const int* elementCorners,
-      int nelements,
-      const std::vector<int> & domainIndices){
+shared_ptr<Grid> GridFactory::createGridFromConnectivityArrays(
+    const GridParameters &params, const double *vertices, int nvertices,
+    const int *elementCorners, int nelements,
+    const std::vector<int> &domainIndices) {
 
-    Eigen::Map<Matrix<double>> matVertices(const_cast<double*>(vertices),3,nvertices);
-    Eigen::Map<Matrix<int>> matElements(const_cast<int*>(elementCorners),3,nelements);
-    return GridFactory::createGridFromConnectivityArrays(
-            params,
-            Eigen::Ref<Matrix<double>>(matVertices),
-            Eigen::Ref<Matrix<int>>(matElements),
-            domainIndices);
+  Eigen::Map<Matrix<double>> matVertices(const_cast<double *>(vertices), 3,
+                                         nvertices);
+  Eigen::Map<Matrix<int>> matElements(const_cast<int *>(elementCorners), 3,
+                                      nelements);
+  return GridFactory::createGridFromConnectivityArrays(
+      params, Eigen::Ref<Matrix<double>>(matVertices),
+      Eigen::Ref<Matrix<int>>(matElements), domainIndices);
 }
-
 
 } // namespace Bempp

@@ -70,12 +70,12 @@ public:
 
   virtual const Mapper &elementMapper() const { return m_element_mapper; }
 
-  virtual size_t entityCount(int codim) const { 
-      
-      if (DuneGridView::dimension-codim<0)
-          return 0;
-      else
-        return m_dune_gv.size(codim); 
+  virtual size_t entityCount(int codim) const {
+
+    if (DuneGridView::dimension - codim < 0)
+      return 0;
+    else
+      return m_dune_gv.size(codim);
   }
 
   virtual size_t entityCount(const GeometryType &type) const {
@@ -153,9 +153,9 @@ private:
   entityCodimNIterator() const {
     typedef typename DuneGridView::template Codim<codim>::Iterator DuneIterator;
     typedef typename DuneGridView::template Codim<codim>::EntityPointer
-    DuneEntityPointer;
+        DuneEntityPointer;
     typedef ConcreteRangeEntityIterator<DuneIterator, DuneEntityPointer>
-    ConcIterator;
+        ConcIterator;
     typedef typename DuneGridView::Grid::LevelGridView DuneLevelGridView;
 
     return std::unique_ptr<EntityIterator<codim>>(
@@ -166,14 +166,14 @@ private:
   virtual void getRawElementDataDoubleImpl(
       Matrix<double> &vertices, Matrix<int> &elementCorners,
       Matrix<char> &auxData, std::vector<int> *domainIndices) const;
-  virtual void getRawElementDataFloatImpl(
-      Matrix<float> &vertices, Matrix<int> &elementCorners,
-      Matrix<char> &auxData, std::vector<int> *domainIndices) const;
+  virtual void
+  getRawElementDataFloatImpl(Matrix<float> &vertices,
+                             Matrix<int> &elementCorners, Matrix<char> &auxData,
+                             std::vector<int> *domainIndices) const;
 
   template <typename CoordinateType>
   void getRawElementDataImpl(Matrix<CoordinateType> &vertices,
-                             Matrix<int> &elementCorners,
-                             Matrix<char> &auxData,
+                             Matrix<int> &elementCorners, Matrix<char> &auxData,
                              std::vector<int> *domainIndices) const;
 };
 

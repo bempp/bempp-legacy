@@ -133,7 +133,7 @@ calculateProjections(const Context<BasisFunctionType, ResultType> &context,
   typedef typename Fiber::ScalarTraits<ResultType>::RealType CoordinateType;
   typedef Fiber::RawGridGeometry<CoordinateType> RawGridGeometry;
   typedef std::vector<const Fiber::Shapeset<BasisFunctionType> *>
-  ShapesetPtrVector;
+      ShapesetPtrVector;
   typedef LocalAssemblerConstructionHelper Helper;
 
   shared_ptr<RawGridGeometry> rawGeometry;
@@ -148,7 +148,7 @@ calculateProjections(const Context<BasisFunctionType, ResultType> &context,
 
   // Get reference to the test shapeset transformation
   const Fiber::CollectionOfShapesetTransformations<CoordinateType> &
-  testTransformations = dualSpace.basisFunctionValue();
+      testTransformations = dualSpace.basisFunctionValue();
 
   typedef Fiber::LocalAssemblerForGridFunctions<ResultType> LocalAssembler;
   std::unique_ptr<LocalAssembler> assembler =
@@ -164,7 +164,7 @@ calculateProjections(const Context<BasisFunctionType, ResultType> &context,
  * space. */
 template <typename BasisFunctionType, typename ResultType>
 Vector<ResultType> interpolate(const Function<ResultType> &globalFunction,
-                                  const Space<BasisFunctionType> &space) {
+                               const Space<BasisFunctionType> &space) {
   size_t deps = 0;
   globalFunction.addGeometricalDependencies(deps);
   if (deps & ~(Fiber::GLOBALS | Fiber::NORMALS))
@@ -215,15 +215,14 @@ GridFunction<BasisFunctionType, ResultType>::GridFunction(
   initializeFromCoefficients(context, space, coefficients);
 }
 
-
 template <typename BasisFunctionType, typename ResultType>
 GridFunction<BasisFunctionType, ResultType>::GridFunction(
-    const ParameterList& parameterList,
+    const ParameterList &parameterList,
     const shared_ptr<const Space<BasisFunctionType>> &space,
     const Vector<ResultType> &coefficients) {
 
   shared_ptr<const Context<BasisFunctionType, ResultType>> context(
-          new Context<BasisFunctionType,ResultType>(parameterList));
+      new Context<BasisFunctionType, ResultType>(parameterList));
   initializeFromCoefficients(context, space, coefficients);
 }
 
@@ -240,29 +239,27 @@ GridFunction<BasisFunctionType, ResultType>::GridFunction(
 
 template <typename BasisFunctionType, typename ResultType>
 GridFunction<BasisFunctionType, ResultType>::GridFunction(
-    const ParameterList& parameterList,
+    const ParameterList &parameterList,
     const shared_ptr<const Space<BasisFunctionType>> &space,
     const shared_ptr<const Space<BasisFunctionType>> &dualSpace,
     const Vector<ResultType> &projections) {
 
   shared_ptr<const Context<BasisFunctionType, ResultType>> context(
-          new Context<BasisFunctionType,ResultType>(parameterList));
+      new Context<BasisFunctionType, ResultType>(parameterList));
 
   initializeFromProjections(context, space, dualSpace, projections);
   m_dualSpace = dualSpace;
 }
 
-
 template <typename BasisFunctionType, typename ResultType>
 GridFunction<BasisFunctionType, ResultType>::GridFunction(
-    const ParameterList& parameterList,
+    const ParameterList &parameterList,
     const shared_ptr<const Space<BasisFunctionType>> &space,
     const shared_ptr<const Space<BasisFunctionType>> &dualSpace,
     const Function<ResultType> &function, ConstructionMode mode)
     : m_context(shared_ptr<const Context<BasisFunctionType, ResultType>>(
-          new Context<BasisFunctionType,ResultType>(parameterList))),
-    m_space(space), m_dualSpace(dualSpace)
-    {
+          new Context<BasisFunctionType, ResultType>(parameterList))),
+      m_space(space), m_dualSpace(dualSpace) {
 
   if (!m_context)
     throw std::invalid_argument(
@@ -300,15 +297,12 @@ GridFunction<BasisFunctionType, ResultType>::GridFunction(
         "GridFunction::GridFunction(): "
         "space and dualSpace must be defined on the same grid");
 
-
-  if (mode == APPROXIMATE){
+  if (mode == APPROXIMATE) {
     setProjections(m_dualSpace,
                    *calculateProjections(*m_context, function, *m_dualSpace));
-  }
-  else // mode == INTERPOLATE
+  } else // mode == INTERPOLATE
     setCoefficients(interpolate(function, *m_space));
-
-    }
+}
 
 template <typename BasisFunctionType, typename ResultType>
 GridFunction<BasisFunctionType, ResultType>::GridFunction(
@@ -354,11 +348,10 @@ GridFunction<BasisFunctionType, ResultType>::GridFunction(
         "GridFunction::GridFunction(): "
         "space and dualSpace must be defined on the same grid");
 
-  if (mode == APPROXIMATE){
+  if (mode == APPROXIMATE) {
     setProjections(m_dualSpace,
                    *calculateProjections(*context, function, *m_dualSpace));
-  }
-  else // mode == INTERPOLATE
+  } else // mode == INTERPOLATE
     setCoefficients(interpolate(function, *m_space));
 }
 
@@ -494,9 +487,8 @@ bool GridFunction<BasisFunctionType, ResultType>::isInitialized() const {
 }
 
 template <typename BasisFunctionType, typename ResultType>
-bool
-GridFunction<BasisFunctionType, ResultType>::wasInitializedFromCoefficients()
-    const {
+bool GridFunction<BasisFunctionType,
+                  ResultType>::wasInitializedFromCoefficients() const {
   return m_wasInitializedFromCoefficients;
 }
 
@@ -687,7 +679,7 @@ GridFunction<BasisFunctionType, ResultType>::updateProjectionsFromCoefficients(
   BoundaryOp id = identityOperator(m_context, m_space, m_space, dualSpace_);
 
   shared_ptr<Vector<ResultType>> newProjections(
-              new Vector<ResultType>(dualSpace_->globalDofCount()));
+      new Vector<ResultType>(dualSpace_->globalDofCount()));
   id.weakForm()->apply(NO_TRANSPOSE, *m_coefficients, *newProjections,
                        static_cast<ResultType>(1.),
                        static_cast<ResultType>(0.));
@@ -696,9 +688,8 @@ GridFunction<BasisFunctionType, ResultType>::updateProjectionsFromCoefficients(
 }
 
 template <typename BasisFunctionType, typename ResultType>
-void
-GridFunction<BasisFunctionType, ResultType>::updateCoefficientsFromProjections()
-    const {
+void GridFunction<BasisFunctionType,
+                  ResultType>::updateCoefficientsFromProjections() const {
   // This should have been checked beforehand, this is after all a private
   // function. So omit these checks in release mode.
   assert(isInitialized());
@@ -731,7 +722,7 @@ GridFunction<BasisFunctionType, ResultType>::L2Norm() const {
   typedef BoundaryOperator<BasisFunctionType, ResultType> BoundaryOp;
 
   // Get the vector of coefficients
-  const Vector<ResultType>& coeffs = coefficients();
+  const Vector<ResultType> &coeffs = coefficients();
 
   // Calculate the mass matrix
   BoundaryOp id = identityOperator(m_context, m_space, m_space, m_space);
@@ -751,8 +742,8 @@ GridFunction<BasisFunctionType, ResultType>::L2Norm() const {
 // Redundant, in fact -- can be obtained directly from Space
 template <typename BasisFunctionType, typename ResultType>
 const Fiber::Shapeset<BasisFunctionType> &
-GridFunction<BasisFunctionType, ResultType>::shapeset(const Entity<0> &element)
-    const {
+GridFunction<BasisFunctionType, ResultType>::shapeset(
+    const Entity<0> &element) const {
   BOOST_ASSERT_MSG(m_space, "GridFunction::shapeset() must not be "
                             "called on an uninitialized GridFunction object");
   return m_space->shapeset(element);
@@ -816,8 +807,8 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
   const size_t elementCount = view.entityCount(elementCodim);
   const size_t vertexCount = view.entityCount(vertexCodim);
 
-  values.resize(nComponents, dataType == VtkWriter::CELL_DATA ? elementCount
-                                                                : vertexCount);
+  values.resize(nComponents,
+                dataType == VtkWriter::CELL_DATA ? elementCount : vertexCount);
   values.setZero();
   points.resize(worldDim, values.cols());
 
@@ -844,14 +835,14 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
   // For each element, get its shapeset and corner count (this is sufficient
   // to identify its geometry) as well as its local coefficients
   typedef std::pair<const Fiber::Shapeset<BasisFunctionType> *, int>
-  ShapesetAndCornerCount;
+      ShapesetAndCornerCount;
   typedef std::vector<ShapesetAndCornerCount> ShapesetAndCornerCountVector;
   ShapesetAndCornerCountVector basesAndCornerCounts(elementCount);
   std::vector<std::vector<ResultType>> localCoefficients(elementCount);
   {
     const Mapper &mapper = view.elementMapper();
     std::unique_ptr<EntityIterator<0>> it = view.entityIterator<0>();
-    while (!it->finished()){
+    while (!it->finished()) {
       const Entity<0> &element = it->entity();
       const int elementIndex = mapper.entityIndex(element);
       basesAndCornerCounts[elementIndex] =
@@ -871,13 +862,13 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
   // Find out which geometrical data need to be calculated, in addition
   // to those needed by the kernel
   const Fiber::CollectionOfShapesetTransformations<CoordinateType> &
-  transformations = m_space->basisFunctionValue();
+      transformations = m_space->basisFunctionValue();
   assert(nComponents == transformations.resultDimension(0));
   transformations.addDependencies(basisDeps, geomDeps);
 
   // Loop over unique combinations of basis and element corner count
   typedef typename ShapesetAndCornerCountSet::const_iterator
-  BasisAndCornerCountSetConstIt;
+      BasisAndCornerCountSetConstIt;
   for (BasisAndCornerCountSetConstIt it =
            uniqueShapesetsAndCornerCounts.begin();
        it != uniqueShapesetsAndCornerCounts.end(); ++it) {
@@ -1035,7 +1026,7 @@ void GridFunction<BasisFunctionType, ResultType>::evaluate(
   size_t basisDeps = 0, geomDeps = 0;
   // Find out which geometrical data need to be calculated,
   const Fiber::CollectionOfShapesetTransformations<CoordinateType> &
-  transformations = m_space->basisFunctionValue();
+      transformations = m_space->basisFunctionValue();
   assert(transformations.transformationCount() == 1);
   assert(nComponents == transformations.resultDimension(0));
   transformations.addDependencies(basisDeps, geomDeps);
@@ -1132,8 +1123,8 @@ BEMPP_GCC_DIAG_OFF(deprecated - declarations);
 // Redundant, in fact -- can be obtained directly from Space
 template <typename BasisFunctionType, typename ResultType>
 const Fiber::Basis<BasisFunctionType> &
-GridFunction<BasisFunctionType, ResultType>::basis(const Entity<0> &element)
-    const {
+GridFunction<BasisFunctionType, ResultType>::basis(
+    const Entity<0> &element) const {
   BOOST_ASSERT_MSG(m_space, "GridFunction::basis() must not be "
                             "called on an uninitialized GridFunction object");
   return m_space->basis(element);

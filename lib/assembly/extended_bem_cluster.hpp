@@ -35,9 +35,7 @@ namespace Bempp {
 template <typename T> class ExtendedBemCluster : public bbxbemcluster<T> {
 private:
   typedef bbxbemcluster<T> Base;
-  enum {
-    Dim = 3
-  }; // in future we might make this configurable
+  enum { Dim = 3 }; // in future we might make this configurable
 
   // xminmax (inherited from cluster_bbx) is the bounding box of the
   // *reference points* of DOFs. In contrast, extMinmax is the bounding box
@@ -50,10 +48,10 @@ protected:
 
 public:
   // cluster with entries k <= i < l
-  ExtendedBemCluster(T *dofs, unsigned *op_perm, unsigned k, unsigned l,
-                     unsigned int maximumBlockSize =
-                         std::numeric_limits<unsigned int>::max(),
-                     bool strongAdmissibility = false)
+  ExtendedBemCluster(
+      T *dofs, unsigned *op_perm, unsigned k, unsigned l,
+      unsigned int maximumBlockSize = std::numeric_limits<unsigned int>::max(),
+      bool strongAdmissibility = false)
       : Base(dofs, k, l), m_maximumBlockSize(maximumBlockSize),
         m_strongAdmissibility(strongAdmissibility) {
 

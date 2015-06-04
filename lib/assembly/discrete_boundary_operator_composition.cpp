@@ -18,7 +18,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-
 #include "discrete_boundary_operator_composition.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
@@ -39,7 +38,6 @@ DiscreteBoundaryOperatorComposition<ValueType>::
     throw std::invalid_argument("DiscreteBoundaryOperatorComposition::"
                                 "DiscreteBoundaryOperatorComposition(): "
                                 "term dimensions do not match");
-
 }
 
 template <typename ValueType>
@@ -70,11 +68,13 @@ void DiscreteBoundaryOperatorComposition<ValueType>::applyBuiltInImpl(
   if (trans == TRANSPOSE || trans == CONJUGATE_TRANSPOSE) {
     Vector<ValueType> tmp(m_outer->columnCount());
     m_outer->apply(trans, x_in, Eigen::Ref<Vector<ValueType>>(tmp), alpha, 0.);
-    m_inner->apply(trans, Eigen::Ref<Vector<ValueType>>(tmp), y_inout, 1., beta);
+    m_inner->apply(trans, Eigen::Ref<Vector<ValueType>>(tmp), y_inout, 1.,
+                   beta);
   } else {
     Vector<ValueType> tmp(m_inner->rowCount());
     m_inner->apply(trans, x_in, Eigen::Ref<Vector<ValueType>>(tmp), alpha, 0.);
-    m_outer->apply(trans, Eigen::Ref<Vector<ValueType>>(tmp), y_inout, 1., beta);
+    m_outer->apply(trans, Eigen::Ref<Vector<ValueType>>(tmp), y_inout, 1.,
+                   beta);
   }
 }
 

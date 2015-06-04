@@ -49,7 +49,7 @@ class P0VectorVTKFunction : public Dune::VTKFunction<GV> {
   typedef Dune::VTKFunction<GV> Base;
   //! Mapper for elements
   typedef Dune::MultipleCodimMultipleGeomTypeMapper<GV, Dune::MCMGElementLayout>
-  Mapper;
+      Mapper;
 
   //! store a reference to the vector
   const V &v;

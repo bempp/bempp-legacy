@@ -69,10 +69,10 @@ public:
   /** \copydoc ElementaryIntegralOperator::CollectionOfShapesetTransformations
    */
   typedef typename Base::CollectionOfShapesetTransformations
-  CollectionOfShapesetTransformations;
+      CollectionOfShapesetTransformations;
   /** \copydoc ElementaryIntegralOperator::CollectionOfBasisTransformations */
   typedef typename Base::CollectionOfBasisTransformations
-  CollectionOfBasisTransformations;
+      CollectionOfBasisTransformations;
   /** \copydoc ElementaryIntegralOperator::TestTrialIntegral */
   typedef typename Base::TestTrialIntegral TestTrialIntegral;
 

@@ -33,21 +33,19 @@
 
 namespace hmat {
 
-    /** \cond FORWARD_DECL */
-    class GeometryDataType;
+/** \cond FORWARD_DECL */
+class GeometryDataType;
 }
-
 
 namespace Bempp {
 
-
-/** \brief This class provides between HMat and the grid. 
+/** \brief This class provides between HMat and the grid.
  */
 template <typename BasisFunctionType>
 class SpaceHMatGeometryInterface : public hmat::GeometryInterface {
 public:
   typedef typename Fiber::ScalarTraits<BasisFunctionType>::RealType
-  CoordinateType;
+      CoordinateType;
 
   /** \brief Constructor */
   SpaceHMatGeometryInterface(const Space<BasisFunctionType> &space);
@@ -69,8 +67,7 @@ template <typename BasisFunctionType>
 shared_ptr<hmat::DefaultBlockClusterTreeType>
 generateBlockClusterTree(const Space<BasisFunctionType> &testSpace,
                          const Space<BasisFunctionType> &trialSpace,
-                         const ParameterList& parameterList);
-
+                         const ParameterList &parameterList);
 }
 
-#endif 
+#endif

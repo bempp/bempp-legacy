@@ -52,7 +52,7 @@ struct RaviartThomas0VectorSpace<BasisFunctionType>::Impl {
   Impl() : transformations(TransformationFunctor()) {}
 
   Fiber::DefaultCollectionOfShapesetTransformations<TransformationFunctor>
-  transformations;
+      transformations;
 };
 /** \endcond */
 
@@ -107,7 +107,7 @@ RaviartThomas0VectorSpace<BasisFunctionType>::discontinuousSpace(
   if (!m_discontinuousSpace) {
     tbb::mutex::scoped_lock lock(m_discontinuousSpaceMutex);
     typedef PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>
-    DiscontinuousSpace;
+        DiscontinuousSpace;
     if (!m_discontinuousSpace)
       m_discontinuousSpace.reset(new DiscontinuousSpace(this->grid()));
   }
@@ -138,8 +138,8 @@ int RaviartThomas0VectorSpace<BasisFunctionType>::codomainDimension() const {
 
 template <typename BasisFunctionType>
 const Fiber::Shapeset<BasisFunctionType> &
-RaviartThomas0VectorSpace<BasisFunctionType>::shapeset(const Entity<0> &element)
-    const {
+RaviartThomas0VectorSpace<BasisFunctionType>::shapeset(
+    const Entity<0> &element) const {
   switch (elementVariant(element)) {
   case 3:
     return m_triangleShapeset;
@@ -542,7 +542,7 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::getGlobalDofNormals(
     e.geometry().getNormals(center, normal);
 
     for (int dim = 0; dim < worldDim; ++dim)
-      elementNormals(dim, index) = normal(dim,0);
+      elementNormals(dim, index) = normal(dim, 0);
     it->next();
   }
 
@@ -582,7 +582,7 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::getFlatLocalDofNormals(
     e.geometry().getNormals(center, normal);
 
     for (int dim = 0; dim < worldDim; ++dim)
-      elementNormals(dim, index) = center(dim,0);
+      elementNormals(dim, index) = center(dim, 0);
     it->next();
   }
 

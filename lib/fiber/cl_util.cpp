@@ -88,7 +88,8 @@ const char *oclErrorString(cl_int error) {
       "CL_INVALID_GLOBAL_OFFSET",         "CL_INVALID_EVENT_WAIT_LIST",
       "CL_INVALID_EVENT",                 "CL_INVALID_OPERATION",
       "CL_INVALID_GL_OBJECT",             "CL_INVALID_BUFFER_SIZE",
-      "CL_INVALID_MIP_LEVEL",             "CL_INVALID_GLOBAL_WORK_SIZE", };
+      "CL_INVALID_MIP_LEVEL",             "CL_INVALID_GLOBAL_WORK_SIZE",
+  };
 
   const int errorCount = sizeof(errorString) / sizeof(errorString[0]);
 

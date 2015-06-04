@@ -84,12 +84,10 @@ public:
           quadRuleFamily);
   virtual ~DefaultLocalAssemblerForPotentialOperatorsOnSurfaces();
 
-  virtual void
-  evaluateLocalContributions(const std::vector<int> &pointIndices,
-                             int trialElementIndex,
-                             LocalDofIndex localTrialDofIndex,
-                             std::vector<Matrix<ResultType>> &result,
-                             CoordinateType nominalDistance = -1.);
+  virtual void evaluateLocalContributions(
+      const std::vector<int> &pointIndices, int trialElementIndex,
+      LocalDofIndex localTrialDofIndex, std::vector<Matrix<ResultType>> &result,
+      CoordinateType nominalDistance = -1.);
 
   virtual void
   evaluateLocalContributions(int pointIndex, int componentIndex,
@@ -110,7 +108,7 @@ public:
 private:
   /** \cond PRIVATE */
   typedef KernelTrialIntegrator<BasisFunctionType, KernelType, ResultType>
-  Integrator;
+      Integrator;
   typedef DefaultLocalAssemblerForOperatorsOnSurfacesUtilities<
       BasisFunctionType> Utilities;
 
@@ -133,10 +131,10 @@ private:
   shared_ptr<const GeometryFactory> m_geometryFactory;
   shared_ptr<const RawGridGeometry<CoordinateType>> m_rawGeometry;
   shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
-  m_trialShapesets;
+      m_trialShapesets;
   shared_ptr<const CollectionOfKernels<KernelType>> m_kernels;
   shared_ptr<const CollectionOfShapesetTransformations<CoordinateType>>
-  m_trialTransformations;
+      m_trialTransformations;
   shared_ptr<const KernelTrialIntegral<BasisFunctionType, KernelType,
                                        ResultType>> m_integral;
   ParallelizationOptions m_parallelizationOptions;
@@ -149,9 +147,7 @@ private:
                                         Integrator *> IntegratorMap;
   IntegratorMap m_kernelTrialIntegrators;
 
-  enum {
-    INVALID_INDEX = INT_MAX
-  };
+  enum { INVALID_INDEX = INT_MAX };
   /** \endcond */
 };
 

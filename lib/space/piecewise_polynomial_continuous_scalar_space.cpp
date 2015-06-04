@@ -61,7 +61,7 @@ PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::spaceIsCompatible(
     const Space<BasisFunctionType> &other) const {
 
   typedef PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>
-  thisSpaceType;
+      thisSpaceType;
 
   if (other.grid().get() != this->grid().get())
     return false;
@@ -197,7 +197,7 @@ PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::discontinuousSpace(
   if (!m_discontinuousSpace) {
     tbb::mutex::scoped_lock lock(m_discontinuousSpaceMutex);
     typedef PiecewisePolynomialDiscontinuousScalarSpace<BasisFunctionType>
-    DiscontinuousSpace;
+        DiscontinuousSpace;
     if (!m_discontinuousSpace)
       m_discontinuousSpace.reset(
           new DiscontinuousSpace(this->grid(), m_polynomialOrder, m_segment));
@@ -635,8 +635,8 @@ void PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::
 
 template <typename BasisFunctionType>
 void PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::
-    getGlobalDofPositions(std::vector<Point3D<CoordinateType>> &positions)
-    const {
+    getGlobalDofPositions(
+        std::vector<Point3D<CoordinateType>> &positions) const {
   positions.resize(m_globalDofBoundingBoxes.size());
   for (size_t i = 0; i < m_globalDofBoundingBoxes.size(); ++i)
     acc(positions, i) = acc(m_globalDofBoundingBoxes, i).reference;
@@ -644,16 +644,16 @@ void PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::
 
 template <typename BasisFunctionType>
 void PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::
-    getFlatLocalDofPositions(std::vector<Point3D<CoordinateType>> &positions)
-    const {
+    getFlatLocalDofPositions(
+        std::vector<Point3D<CoordinateType>> &positions) const {
   throw std::runtime_error("PiecewisePolynomialContinuousScalarSpace::"
                            "getFlatLocalDofPositions(): not implemented yet");
 }
 
 template <typename BasisFunctionType>
 void PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::
-    getGlobalDofBoundingBoxes(std::vector<BoundingBox<CoordinateType>> &bboxes)
-    const {
+    getGlobalDofBoundingBoxes(
+        std::vector<BoundingBox<CoordinateType>> &bboxes) const {
   bboxes = m_globalDofBoundingBoxes;
 }
 
@@ -675,8 +675,8 @@ void PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::
 
 template <typename BasisFunctionType>
 void PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::
-    getFlatLocalDofNormals(std::vector<Point3D<CoordinateType>> &normals)
-    const {
+    getFlatLocalDofNormals(
+        std::vector<Point3D<CoordinateType>> &normals) const {
   throw std::runtime_error("PiecewisePolynomialContinuousScalarSpace::"
                            "getFlatLocalDofNormals(): not implemented yet");
 }

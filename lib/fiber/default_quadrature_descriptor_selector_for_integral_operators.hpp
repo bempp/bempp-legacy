@@ -65,10 +65,7 @@ private:
   typedef DefaultLocalAssemblerForOperatorsOnSurfacesUtilities<
       BasisFunctionType> Utilities;
 
-  enum ElementType {
-    TEST,
-    TRIAL
-  };
+  enum ElementType { TEST, TRIAL };
 
   bool testAndTrialGridsAreIdentical() const;
   void precalculateElementSizesAndCenters();
@@ -82,9 +79,9 @@ private:
   shared_ptr<const RawGridGeometry<CoordinateType>> m_testRawGeometry;
   shared_ptr<const RawGridGeometry<CoordinateType>> m_trialRawGeometry;
   shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
-  m_testShapesets;
+      m_testShapesets;
   shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
-  m_trialShapesets;
+      m_trialShapesets;
   AccuracyOptionsEx m_accuracyOptions;
 
   std::vector<CoordinateType> m_testElementSizesSquared;

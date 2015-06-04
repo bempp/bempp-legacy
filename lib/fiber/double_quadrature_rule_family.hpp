@@ -73,13 +73,11 @@ public:
    *  \param[out] isTensor
    *    If set to \c true, the returned quadrature rule is a
    *    tensor-product rule, otherwise it is not. */
-  virtual void
-  fillQuadraturePointsAndWeights(const DoubleQuadratureDescriptor &desc,
-                                 Matrix<CoordinateType> &testPoints,
-                                 Matrix<CoordinateType> &trialPoints,
-                                 std::vector<CoordinateType> &testWeights,
-                                 std::vector<CoordinateType> &trialWeights,
-                                 bool &isTensor) const = 0;
+  virtual void fillQuadraturePointsAndWeights(
+      const DoubleQuadratureDescriptor &desc,
+      Matrix<CoordinateType> &testPoints, Matrix<CoordinateType> &trialPoints,
+      std::vector<CoordinateType> &testWeights,
+      std::vector<CoordinateType> &trialWeights, bool &isTensor) const = 0;
 };
 
 } // namespace Fiber

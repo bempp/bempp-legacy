@@ -304,26 +304,26 @@ void AccuracyOptionsEx::setDoubleRegular(
 }
 
 namespace {
-    namespace implementation {
-        void setRegular(AccuracyOptionsEx::t_range& member,
-                const AccuracyOptionsEx::t_range& input)
-        {
-            member = input;
-            std::sort(member.begin(), member.end(), LessOrEqual());
-            std::unique(member.begin(), member.end(), Equal());
-            member.back().first = std::numeric_limits<double>::infinity();
-        }
-    }
+namespace implementation {
+void setRegular(AccuracyOptionsEx::t_range &member,
+                const AccuracyOptionsEx::t_range &input) {
+  member = input;
+  std::sort(member.begin(), member.end(), LessOrEqual());
+  std::unique(member.begin(), member.end(), Equal());
+  member.back().first = std::numeric_limits<double>::infinity();
+}
+}
 }
 
-void AccuracyOptionsEx::setDoubleRegular(const t_range& input)
-    { implementation::setRegular(m_doubleRegular, input); }
-void AccuracyOptionsEx::setSingleRegular(const t_range& input)
-    { implementation::setRegular(m_singleRegular, input); }
+void AccuracyOptionsEx::setDoubleRegular(const t_range &input) {
+  implementation::setRegular(m_doubleRegular, input);
+}
+void AccuracyOptionsEx::setSingleRegular(const t_range &input) {
+  implementation::setRegular(m_singleRegular, input);
+}
 
-const QuadratureOptions& AccuracyOptionsEx::doubleSingular() const
-{
-    return m_doubleSingular;
+const QuadratureOptions &AccuracyOptionsEx::doubleSingular() const {
+  return m_doubleSingular;
 }
 
 void AccuracyOptionsEx::setDoubleSingular(int accuracyOrder,

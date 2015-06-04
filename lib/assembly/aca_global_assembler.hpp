@@ -62,12 +62,12 @@ class AcaGlobalAssembler {
 public:
   typedef DiscreteBoundaryOperator<ResultType> DiscreteBndOp;
   typedef Fiber::LocalAssemblerForIntegralOperators<ResultType>
-  LocalAssemblerForIntegralOperators;
+      LocalAssemblerForIntegralOperators;
   typedef LocalAssemblerForIntegralOperators
-  LocalAssemblerForBoundaryOperators;                        // deprecated
+      LocalAssemblerForBoundaryOperators;                    // deprecated
   typedef LocalAssemblerForBoundaryOperators LocalAssembler; // deprecated
   typedef Fiber::LocalAssemblerForPotentialOperators<ResultType>
-  LocalAssemblerForPotentialOperators;
+      LocalAssemblerForPotentialOperators;
 
   static std::unique_ptr<DiscreteBndOp> assembleDetachedWeakForm(
       const Space<BasisFunctionType> &testSpace,

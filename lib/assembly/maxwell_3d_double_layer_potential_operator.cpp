@@ -38,13 +38,13 @@ template <typename BasisFunctionType>
 struct Maxwell3dDoubleLayerPotentialOperatorImpl {
   typedef Maxwell3dDoubleLayerPotentialOperatorImpl<BasisFunctionType> This;
   typedef Helmholtz3dPotentialOperatorBase<This, BasisFunctionType>
-  PotentialOperatorBase;
+      PotentialOperatorBase;
   typedef typename PotentialOperatorBase::KernelType KernelType;
   typedef typename PotentialOperatorBase::ResultType ResultType;
   typedef typename PotentialOperatorBase::CoordinateType CoordinateType;
 
   typedef Fiber::ModifiedMaxwell3dDoubleLayerOperatorsKernelFunctor<KernelType>
-  KernelFunctor;
+      KernelFunctor;
   typedef Fiber::HdivFunctionValueFunctor<CoordinateType> TransformationFunctor;
   typedef Fiber::ModifiedMaxwell3dDoubleLayerPotentialOperatorIntegrandFunctor<
       BasisFunctionType, KernelType, ResultType> IntegrandFunctor;
@@ -56,7 +56,7 @@ struct Maxwell3dDoubleLayerPotentialOperatorImpl {
 
   Fiber::DefaultCollectionOfKernels<KernelFunctor> kernels;
   Fiber::DefaultCollectionOfBasisTransformations<TransformationFunctor>
-  transformations;
+      transformations;
   Fiber::DefaultKernelTrialIntegral<IntegrandFunctor> integral;
 };
 /** \endcond */

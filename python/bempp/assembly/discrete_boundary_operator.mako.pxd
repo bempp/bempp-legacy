@@ -28,6 +28,7 @@ cdef class DiscreteBoundaryOperatorBase:
     cdef object _dtype
 
 cdef class DiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
+    cdef TranspositionMode transpose_mode
 
 % for pybasis, cybasis in dtypes.items():
     cdef shared_ptr[const c_DiscreteBoundaryOperator[${cybasis}]] _impl_${pybasis}_
@@ -40,11 +41,7 @@ cdef class DiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
 cdef class SparseDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
     cdef object _op
 
-cdef class DenseDiscreteBoundaryOperator(DiscreteBoundaryOperator):
-    cdef object _array_view
-    
-    cdef object _init_array_view(self)
-
 cdef class HMatDiscreteBoundaryOperator(DiscreteBoundaryOperator):
     cdef object _statistics
+    
 

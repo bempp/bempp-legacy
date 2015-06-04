@@ -74,9 +74,8 @@ public:
       const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType>> &
           quadRuleFamily);
 
-  virtual void
-  evaluateLocalWeakForms(const std::vector<int> &elementIndices,
-                         std::vector<Matrix<ResultType>> &result);
+  virtual void evaluateLocalWeakForms(const std::vector<int> &elementIndices,
+                                      std::vector<Matrix<ResultType>> &result);
 
 private:
   /** \cond PRIVATE */
@@ -89,7 +88,7 @@ private:
 private:
   typedef boost::ptr_map<SingleQuadratureDescriptor,
                          TestTrialIntegrator<BasisFunctionType, ResultType>>
-  IntegratorMap;
+      IntegratorMap;
   typedef DefaultLocalAssemblerForOperatorsOnSurfacesUtilities<
       BasisFunctionType> Utilities;
 
@@ -97,13 +96,13 @@ private:
   shared_ptr<const GeometryFactory> m_geometryFactory;
   shared_ptr<const RawGridGeometry<CoordinateType>> m_rawGeometry;
   shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
-  m_testShapesets;
+      m_testShapesets;
   shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
-  m_trialShapesets;
+      m_trialShapesets;
   shared_ptr<const CollectionOfShapesetTransformations<CoordinateType>>
-  m_testTransformations;
+      m_testTransformations;
   shared_ptr<const CollectionOfShapesetTransformations<CoordinateType>>
-  m_trialTransformations;
+      m_trialTransformations;
   shared_ptr<const TestTrialIntegral<BasisFunctionType, ResultType>> m_integral;
   shared_ptr<const OpenClHandler> m_openClHandler;
   shared_ptr<const QuadratureDescriptorSelectorForLocalOperators<

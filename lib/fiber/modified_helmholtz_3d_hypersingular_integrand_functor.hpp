@@ -64,14 +64,14 @@ public:
   // loops could be optimised away by the compiler.
   template <template <typename T> class CollectionOf2dSlicesOfConstNdArrays>
   ResultType BEMPP_DEPRECATED
-  evaluate(const ConstGeometricalDataSlice<CoordinateType> &testGeomData,
-           const ConstGeometricalDataSlice<CoordinateType> &trialGeomData,
-           const CollectionOf1dSlicesOfConst3dArrays<BasisFunctionType> &
-               testTransfValues,
-           const CollectionOf1dSlicesOfConst3dArrays<BasisFunctionType> &
-               trialTransfValues,
-           const CollectionOf2dSlicesOfConstNdArrays<KernelType> &kernelValues)
-      const {
+      evaluate(const ConstGeometricalDataSlice<CoordinateType> &testGeomData,
+               const ConstGeometricalDataSlice<CoordinateType> &trialGeomData,
+               const CollectionOf1dSlicesOfConst3dArrays<BasisFunctionType> &
+                   testTransfValues,
+               const CollectionOf1dSlicesOfConst3dArrays<BasisFunctionType> &
+                   trialTransfValues,
+               const CollectionOf2dSlicesOfConstNdArrays<KernelType> &
+                   kernelValues) const {
     const int dimWorld = 3;
 
     // Assert that there is at least one scalar-valued kernel

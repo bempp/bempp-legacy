@@ -121,9 +121,9 @@ inline T &_4dArray<T>::operator()(size_t index0, size_t index1, size_t index2,
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
   check_indices(index0, index1, index2, index3);
 #endif
-  return m_storage
-      [index0 + m_extents[0] * index1 + m_extents[0] * m_extents[1] * index2 +
-       m_extents[0] * m_extents[1] * m_extents[2] * index3];
+  return m_storage[index0 + m_extents[0] * index1 +
+                   m_extents[0] * m_extents[1] * index2 +
+                   m_extents[0] * m_extents[1] * m_extents[2] * index3];
 }
 
 template <typename T>
@@ -132,9 +132,9 @@ inline const T &_4dArray<T>::operator()(size_t index0, size_t index1,
 #ifdef FIBER_CHECK_ARRAY_BOUNDS
   check_indices(index0, index1, index2, index3);
 #endif
-  return m_storage
-      [index0 + m_extents[0] * index1 + m_extents[0] * m_extents[1] * index2 +
-       m_extents[0] * m_extents[1] * m_extents[2] * index3];
+  return m_storage[index0 + m_extents[0] * index1 +
+                   m_extents[0] * m_extents[1] * index2 +
+                   m_extents[0] * m_extents[1] * m_extents[2] * index3];
 }
 
 template <typename T>

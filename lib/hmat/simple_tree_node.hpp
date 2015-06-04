@@ -21,6 +21,8 @@ public:
   T &data();
 
   void addChild(const T &child, int i);
+  void removeChildren();
+
   void addSubTree(shared_ptr<SimpleTreeNode<T, N>> &subTree, int i);
 
   bool isLeaf() const;

@@ -122,8 +122,8 @@ public:
 
 protected:
   virtual shared_ptr<DiscreteBoundaryOperator<ResultType_>>
-  assembleWeakFormImpl(const Context<BasisFunctionType, ResultType> &context)
-      const;
+  assembleWeakFormImpl(
+      const Context<BasisFunctionType, ResultType> &context) const;
 
   shared_ptr<DiscreteBoundaryOperator<ResultType_>>
   reallyAssembleWeakForm() const;

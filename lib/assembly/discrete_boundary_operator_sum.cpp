@@ -18,7 +18,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-
 #include "discrete_boundary_operator_sum.hpp"
 #include "discrete_aca_boundary_operator.hpp"
 #include "../fiber/explicit_instantiation.hpp"
@@ -97,7 +96,6 @@ void DiscreteBoundaryOperatorSum<ValueType>::applyBuiltInImpl(
   m_term1->apply(trans, x_in, y_inout, alpha, beta);
   m_term2->apply(trans, x_in, y_inout, alpha,
                  1. /* "+ beta * y_inout" has already been done */);
-
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(DiscreteBoundaryOperatorSum);

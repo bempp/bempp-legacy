@@ -5,7 +5,6 @@ from data_types import scalar_cython_type
 %>
 from bempp.space.space cimport Space
 from discrete_boundary_operator cimport DiscreteBoundaryOperator
-from discrete_boundary_operator cimport DenseDiscreteBoundaryOperator
 from discrete_boundary_operator cimport HMatDiscreteBoundaryOperator
 from discrete_boundary_operator cimport DiscreteBoundaryOperatorBase
 from discrete_boundary_operator import SparseDiscreteBoundaryOperator
@@ -144,8 +143,6 @@ cdef class GeneralBoundaryOperator(BoundaryOperatorBase):
 
         if self.is_sparse:
             return self._sparse_weak_form()
-        elif self.parameter_list.assembly.boundary_operator_assembly_type == 'dense':
-            return self._dense_weak_form()
         elif self.parameter_list.assembly.boundary_operator_assembly_type =='hmat':
             return self._hmat_weak_form()
         else:
@@ -170,23 +167,6 @@ cdef class GeneralBoundaryOperator(BoundaryOperatorBase):
             raise ValueError("Unknown data type")
 
         return SparseDiscreteBoundaryOperator(res)
-
-    def _dense_weak_form(self):
-
-        cdef DenseDiscreteBoundaryOperator dbop = DenseDiscreteBoundaryOperator()
-        
-% for pybasis,cybasis in dtypes.items():
-%     for pyresult,cyresult in dtypes.items():
-%         if pyresult in compatible_dtypes[pybasis]:
-
-        if self.basis_type=="${pybasis}" and self.result_type=="${pyresult}":
-            dbop._impl_${pyresult}_.assign(_boundary_operator_variant_weak_form[${cybasis},${cyresult}](self.impl_))
-            dbop._dtype = self.result_type
-            return dbop
-%          endif
-%      endfor
-% endfor
-        raise ValueError("Incompatible basis and result types") 
 
     def _hmat_weak_form(self):
 

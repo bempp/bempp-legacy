@@ -36,7 +36,6 @@
 #include "../grid/mapper.hpp"
 #include "../grid/geometry_factory.hpp"
 
-
 namespace Bempp {
 
 namespace {
@@ -101,14 +100,15 @@ shared_ptr<RealSparseMatrix> constructGlobalToFlatLocalDofsMappingSparseMatrix(
   const size_t rowCount = space.flatLocalDofCount();
   const size_t columnCount = space.globalDofCount();
 
-  shared_ptr<RealSparseMatrix> result = boost::make_shared<RealSparseMatrix>(rowCount,columnCount);
+  shared_ptr<RealSparseMatrix> result =
+      boost::make_shared<RealSparseMatrix>(rowCount, columnCount);
 
   std::vector<Eigen::Triplet<double>> triplets;
   triplets.reserve(entryCount);
 
   for (size_t i = 0; i < entryCount; ++i)
-      triplets.push_back(Eigen::Triplet<double>(rows[i],cols[i],values[i]));
-  result->setFromTriplets(triplets.begin(),triplets.end());
+    triplets.push_back(Eigen::Triplet<double>(rows[i], cols[i], values[i]));
+  result->setFromTriplets(triplets.begin(), triplets.end());
 
   return result;
 }
@@ -220,8 +220,8 @@ void Space<BasisFunctionType>::global2localDofs(
   global2localDofs(globalDofs, localDofs);
   localDofWeights.resize(localDofs.size());
   for (size_t igdof = 0; igdof < localDofs.size(); ++igdof)
-    localDofWeights[igdof]
-        .resize(localDofs[igdof].size(), static_cast<BasisFunctionType>(1.));
+    localDofWeights[igdof].resize(localDofs[igdof].size(),
+                                  static_cast<BasisFunctionType>(1.));
 }
 
 template <typename BasisFunctionType>

@@ -139,11 +139,10 @@ modifiedHelmholtz3dHypersingularBoundaryOperator(
     const BoundaryOperator<BasisFunctionType, ResultType> &externalSlp =
         BoundaryOperator<BasisFunctionType, ResultType>());
 
-
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType>
 modifiedHelmholtz3dHypersingularBoundaryOperator(
-    const ParameterList& parameterList,
+    const ParameterList &parameterList,
     const shared_ptr<const Space<BasisFunctionType>> &domain,
     const shared_ptr<const Space<BasisFunctionType>> &range,
     const shared_ptr<const Space<BasisFunctionType>> &dualToRange,

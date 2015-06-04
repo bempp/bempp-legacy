@@ -296,12 +296,10 @@ modifiedHelmholtz3dHypersingularBoundaryOperator(
   return BoundaryOperator<BasisFunctionType, ResultType>(context, newOp);
 }
 
-
-
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType>
 modifiedHelmholtz3dHypersingularBoundaryOperator(
-    const ParameterList& parameterList,
+    const ParameterList &parameterList,
     const shared_ptr<const Space<BasisFunctionType>> &domain,
     const shared_ptr<const Space<BasisFunctionType>> &range,
     const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
@@ -309,11 +307,11 @@ modifiedHelmholtz3dHypersingularBoundaryOperator(
     bool useInterpolation, int interpPtsPerWavelength,
     const BoundaryOperator<BasisFunctionType, ResultType> &externalSlp) {
 
-    shared_ptr<const Context<BasisFunctionType,ResultType>> context(
-            new Context<BasisFunctionType,ResultType>(parameterList));
-    return modifiedHelmholtz3dHypersingularBoundaryOperator(
-            context,domain,range,dualToRange,waveNumber,label,symmetry,
-            useInterpolation,interpPtsPerWavelength,externalSlp);
+  shared_ptr<const Context<BasisFunctionType, ResultType>> context(
+      new Context<BasisFunctionType, ResultType>(parameterList));
+  return modifiedHelmholtz3dHypersingularBoundaryOperator(
+      context, domain, range, dualToRange, waveNumber, label, symmetry,
+      useInterpolation, interpPtsPerWavelength, externalSlp);
 }
 
 #define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS, KERNEL, RESULT)               \

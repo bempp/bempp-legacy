@@ -18,7 +18,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-
 #include "synthetic_integral_operator.hpp"
 #include "../common/eigen_support.hpp"
 
@@ -33,7 +32,6 @@
 #include "../common/boost_make_shared_fwd.hpp"
 #include "../common/shared_ptr.hpp"
 #include "../fiber/explicit_instantiation.hpp"
-
 
 #include <boost/make_shared.hpp>
 #include <tbb/tick_count.h>
@@ -69,7 +67,7 @@ coalesceTestOperators(
     if (op) {
       shared_ptr<const RealSparseMatrix> opMat = op->sparseMatrix();
       shared_ptr<RealSparseMatrix> composition(
-                  new RealSparseMatrix(*opMat*(*idInverse)));
+          new RealSparseMatrix(*opMat * (*idInverse)));
       result[i].reset(new SparseOp(composition));
     } else
       throw std::runtime_error(
@@ -98,7 +96,7 @@ coalesceTrialOperators(
     if (op) {
       shared_ptr<const RealSparseMatrix> opMat = op->sparseMatrix();
       shared_ptr<RealSparseMatrix> composition(
-          new RealSparseMatrix(*idInverse*(*opMat)));
+          new RealSparseMatrix(*idInverse * (*opMat)));
       result[i].reset(new SparseOp(composition));
     } else
       throw std::runtime_error(

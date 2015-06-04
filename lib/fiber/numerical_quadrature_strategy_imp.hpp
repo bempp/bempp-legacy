@@ -76,7 +76,7 @@ NumericalQuadratureStrategyBase<BasisFunctionType, ResultType, GeometryFactory,
             CoordinateType>> &trialTransformations,
         const shared_ptr<const OpenClHandler> &openClHandler) const {
   typedef Fiber::SimpleTestTrialIntegrandFunctor<BasisFunctionType, ResultType>
-  IntegrandFunctor;
+      IntegrandFunctor;
   shared_ptr<TestTrialIntegral<BasisFunctionType, ResultType>> integral(
       new Fiber::DefaultTestTrialIntegral<IntegrandFunctor>(
           IntegrandFunctor()));
@@ -106,14 +106,14 @@ NumericalQuadratureStrategyBase<BasisFunctionType, ResultType, GeometryFactory,
         const shared_ptr<const OpenClHandler> &openClHandler) const {
   typedef DefaultLocalAssemblerForLocalOperatorsOnSurfaces<
       BasisFunctionType, ResultType, GeometryFactory>
-  LocalAssemblerForLocalOperators_;
+      LocalAssemblerForLocalOperators_;
   return std::unique_ptr<LocalAssemblerForLocalOperators<ResultType>>(
       new LocalAssemblerForLocalOperators_(
           geometryFactory, rawGeometry, testShapesets, trialShapesets,
           testTransformations, trialTransformations, integral, openClHandler,
           this->quadratureDescriptorSelectorFactory()
               ->makeQuadratureDescriptorSelectorForLocalOperators(
-                    rawGeometry, testShapesets, trialShapesets),
+                  rawGeometry, testShapesets, trialShapesets),
           this->singleQuadratureRuleFamily()));
 }
 
@@ -147,7 +147,7 @@ NumericalQuadratureStrategyBase<BasisFunctionType, ResultType, GeometryFactory,
   typedef CoordinateType KernelType;
   typedef DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
       BasisFunctionType, KernelType, ResultType, GeometryFactory>
-  LocalAssemblerForIntegralOperators_;
+      LocalAssemblerForIntegralOperators_;
   return std::unique_ptr<LocalAssemblerForIntegralOperators<ResultType>>(
       new LocalAssemblerForIntegralOperators_(
           testGeometryFactory, trialGeometryFactory, testRawGeometry,
@@ -156,8 +156,8 @@ NumericalQuadratureStrategyBase<BasisFunctionType, ResultType, GeometryFactory,
           parallelizationOptions, verbosityLevel, cacheSingularIntegrals,
           this->quadratureDescriptorSelectorFactory()
               ->makeQuadratureDescriptorSelectorForIntegralOperators(
-                    testRawGeometry, trialRawGeometry, testShapesets,
-                    trialShapesets),
+                  testRawGeometry, trialRawGeometry, testShapesets,
+                  trialShapesets),
           this->doubleQuadratureRuleFamily()));
 }
 
@@ -178,7 +178,7 @@ NumericalQuadratureStrategyBase<BasisFunctionType, ResultType, GeometryFactory,
   typedef CoordinateType UserFunctionType;
   typedef DefaultLocalAssemblerForGridFunctionsOnSurfaces<
       BasisFunctionType, UserFunctionType, ResultType, GeometryFactory>
-  LocalAssemblerForGridFunctions_;
+      LocalAssemblerForGridFunctions_;
   return std::unique_ptr<LocalAssemblerForGridFunctions<ResultType>>(
       new LocalAssemblerForGridFunctions_(
           geometryFactory, rawGeometry, testShapesets, testTransformations,
@@ -211,7 +211,7 @@ NumericalQuadratureStrategyBase<BasisFunctionType, ResultType, GeometryFactory,
   typedef CoordinateType KernelType;
   typedef DefaultEvaluatorForIntegralOperators<BasisFunctionType, KernelType,
                                                ResultType, GeometryFactory>
-  EvaluatorForIntegralOperators_;
+      EvaluatorForIntegralOperators_;
   return std::unique_ptr<EvaluatorForIntegralOperators<ResultType>>(
       new EvaluatorForIntegralOperators_(
           geometryFactory, rawGeometry, trialShapesets, kernels,
@@ -219,7 +219,7 @@ NumericalQuadratureStrategyBase<BasisFunctionType, ResultType, GeometryFactory,
           openClHandler, parallelizationOptions,
           this->quadratureDescriptorSelectorFactory()
               ->makeQuadratureDescriptorSelectorForPotentialOperators(
-                    rawGeometry, trialShapesets),
+                  rawGeometry, trialShapesets),
           this->singleQuadratureRuleFamily()));
 }
 
@@ -245,7 +245,7 @@ NumericalQuadratureStrategyBase<BasisFunctionType, ResultType, GeometryFactory,
   typedef CoordinateType KernelType;
   typedef DefaultLocalAssemblerForPotentialOperatorsOnSurfaces<
       BasisFunctionType, KernelType, ResultType, GeometryFactory>
-  LocalAssemblerForPotentialOperators_;
+      LocalAssemblerForPotentialOperators_;
   return std::unique_ptr<LocalAssemblerForPotentialOperators<ResultType>>(
       new LocalAssemblerForPotentialOperators_(
           evaluationPoints, geometryFactory, rawGeometry, trialShapesets,
@@ -253,7 +253,7 @@ NumericalQuadratureStrategyBase<BasisFunctionType, ResultType, GeometryFactory,
           verbosityLevel,
           this->quadratureDescriptorSelectorFactory()
               ->makeQuadratureDescriptorSelectorForPotentialOperators(
-                    rawGeometry, trialShapesets),
+                  rawGeometry, trialShapesets),
           this->singleQuadratureRuleFamily()));
 }
 
@@ -373,7 +373,7 @@ NumericalQuadratureStrategy<BasisFunctionType, ResultType, GeometryFactory,
   typedef ResultType KernelType;
   typedef DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
       BasisFunctionType, KernelType, ResultType, GeometryFactory>
-  LocalAssemblerForIntegralOperators_;
+      LocalAssemblerForIntegralOperators_;
   return std::unique_ptr<LocalAssemblerForIntegralOperators<ResultType>>(
       new LocalAssemblerForIntegralOperators_(
           testGeometryFactory, trialGeometryFactory, testRawGeometry,
@@ -382,8 +382,8 @@ NumericalQuadratureStrategy<BasisFunctionType, ResultType, GeometryFactory,
           parallelizationOptions, verbosityLevel, cacheSingularIntegrals,
           this->quadratureDescriptorSelectorFactory()
               ->makeQuadratureDescriptorSelectorForIntegralOperators(
-                    testRawGeometry, trialRawGeometry, testShapesets,
-                    trialShapesets),
+                  testRawGeometry, trialRawGeometry, testShapesets,
+                  trialShapesets),
           this->doubleQuadratureRuleFamily()));
 }
 
@@ -404,7 +404,7 @@ NumericalQuadratureStrategy<BasisFunctionType, ResultType, GeometryFactory,
   typedef ResultType UserFunctionType;
   typedef DefaultLocalAssemblerForGridFunctionsOnSurfaces<
       BasisFunctionType, UserFunctionType, ResultType, GeometryFactory>
-  LocalAssemblerForGridFunctions_;
+      LocalAssemblerForGridFunctions_;
   return std::unique_ptr<LocalAssemblerForGridFunctions<ResultType>>(
       new LocalAssemblerForGridFunctions_(
           geometryFactory, rawGeometry, testShapesets, testTransformations,
@@ -437,7 +437,7 @@ NumericalQuadratureStrategy<BasisFunctionType, ResultType, GeometryFactory,
   typedef ResultType KernelType;
   typedef DefaultEvaluatorForIntegralOperators<BasisFunctionType, KernelType,
                                                ResultType, GeometryFactory>
-  EvaluatorForIntegralOperators_;
+      EvaluatorForIntegralOperators_;
   return std::unique_ptr<EvaluatorForIntegralOperators<ResultType>>(
       new EvaluatorForIntegralOperators_(
           geometryFactory, rawGeometry, trialShapesets, kernels,
@@ -445,7 +445,7 @@ NumericalQuadratureStrategy<BasisFunctionType, ResultType, GeometryFactory,
           openClHandler, parallelizationOptions,
           this->quadratureDescriptorSelectorFactory()
               ->makeQuadratureDescriptorSelectorForPotentialOperators(
-                    rawGeometry, trialShapesets),
+                  rawGeometry, trialShapesets),
           this->singleQuadratureRuleFamily()));
 }
 
@@ -471,7 +471,7 @@ NumericalQuadratureStrategy<BasisFunctionType, ResultType, GeometryFactory,
   typedef ResultType KernelType;
   typedef DefaultLocalAssemblerForPotentialOperatorsOnSurfaces<
       BasisFunctionType, KernelType, ResultType, GeometryFactory>
-  LocalAssemblerForPotentialOperators_;
+      LocalAssemblerForPotentialOperators_;
   return std::unique_ptr<LocalAssemblerForPotentialOperators<ResultType>>(
       new LocalAssemblerForPotentialOperators_(
           evaluationPoints, geometryFactory, rawGeometry, trialShapesets,
@@ -479,7 +479,7 @@ NumericalQuadratureStrategy<BasisFunctionType, ResultType, GeometryFactory,
           verbosityLevel,
           this->quadratureDescriptorSelectorFactory()
               ->makeQuadratureDescriptorSelectorForPotentialOperators(
-                    rawGeometry, trialShapesets),
+                  rawGeometry, trialShapesets),
           this->singleQuadratureRuleFamily()));
 }
 

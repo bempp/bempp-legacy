@@ -41,11 +41,7 @@ using Fiber::VerbosityLevel;
  */
 class AssemblyOptions {
 public:
-  enum Value {
-    AUTO = -1,
-    NO = 0,
-    YES = 1
-  };
+  enum Value { AUTO = -1, NO = 0, YES = 1 };
 
   AssemblyOptions();
 

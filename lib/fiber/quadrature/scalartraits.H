@@ -1,6 +1,6 @@
 // Copyright (C) 2009-2010 Matthias Messner, Michael Messner, Franz
 // Rammerstorfer, Peter Urthaler
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
@@ -21,7 +21,8 @@
 
 // Note: This file is originally part of the HyENA project
 // (http://portal.tugraz.at/portal/page/portal/Files/i2610/files/Forschung/Software/HyENA/html/index.html)
-// and has been relicensed with permission by the HyENA authors. This does not affect the license of any
+// and has been relicensed with permission by the HyENA authors. This does not
+// affect the license of any
 // other part of HyENA.
 
 /**
@@ -30,7 +31,7 @@
  *
  * every type exept specialisations isn't a scalar-type!
  * The @p ScalarTraits return true if the type @p T is a scalar.
- * Feel free to add your type!  
+ * Feel free to add your type!
  *
  * @tparam T type
  *
@@ -41,39 +42,33 @@
 #ifndef scalartraits_h
 #define scalartraits_h
 
-
-
 // system includes
 #include <complex>
 #include <cmath>
 
-
-
 // base struct
-template<typename T> struct ScalarTraits
-{	enum{is_scalar = false}; };
+template <typename T> struct ScalarTraits {
+  enum { is_scalar = false };
+};
 
-template<> 
-struct ScalarTraits<int>
-{	enum{is_scalar = true}; };
+template <> struct ScalarTraits<int> {
+  enum { is_scalar = true };
+};
 
-template<> 
-struct ScalarTraits<float>
-{	enum{is_scalar = true}; };
+template <> struct ScalarTraits<float> {
+  enum { is_scalar = true };
+};
 
-template<> 
-struct ScalarTraits<double>
-{	enum{is_scalar = true}; };
+template <> struct ScalarTraits<double> {
+  enum { is_scalar = true };
+};
 
-template<> 
-struct ScalarTraits<std::complex<float> >
-{	enum{is_scalar = true}; };
+template <> struct ScalarTraits<std::complex<float>> {
+  enum { is_scalar = true };
+};
 
-template<> 
-struct ScalarTraits<std::complex<double> >
-{	enum{is_scalar = true}; };
-
-
+template <> struct ScalarTraits<std::complex<double>> {
+  enum { is_scalar = true };
+};
 
 #endif // include guard
-

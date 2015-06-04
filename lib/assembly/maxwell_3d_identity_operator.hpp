@@ -85,7 +85,7 @@ public:
   typedef typename Base::QuadratureStrategy QuadratureStrategy;
   /** \copydoc ElementaryLocalOperator::CollectionOfBasisTransformations */
   typedef typename Base::CollectionOfBasisTransformations
-  CollectionOfBasisTransformations;
+      CollectionOfBasisTransformations;
   /** \copydoc ElementaryLocalOperator::TestTrialIntegral */
   typedef typename Base::TestTrialIntegral TestTrialIntegral;
 
@@ -158,7 +158,7 @@ BoundaryOperator<BasisFunctionType, ResultType> maxwell3dIdentityOperator(
 
 template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType> maxwell3dIdentityOperator(
-    const ParameterList& parameterList,
+    const ParameterList &parameterList,
     const shared_ptr<const Space<BasisFunctionType>> &domain,
     const shared_ptr<const Space<BasisFunctionType>> &range,
     const shared_ptr<const Space<BasisFunctionType>> &dualToRange,

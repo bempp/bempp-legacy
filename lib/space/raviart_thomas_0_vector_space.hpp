@@ -53,9 +53,9 @@ public:
   typedef typename Space<BasisFunctionType>::CoordinateType CoordinateType;
   typedef typename Space<BasisFunctionType>::ComplexType ComplexType;
   typedef typename Base::CollectionOfShapesetTransformations
-  CollectionOfShapesetTransformations;
+      CollectionOfShapesetTransformations;
   typedef typename Base::CollectionOfBasisTransformations
-  CollectionOfBasisTransformations;
+      CollectionOfBasisTransformations;
 
   explicit RaviartThomas0VectorSpace(const shared_ptr<const Grid> &grid,
                                      bool putDofsOnBoundaries = false);

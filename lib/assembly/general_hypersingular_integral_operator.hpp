@@ -82,10 +82,10 @@ public:
   /** \copydoc ElementaryIntegralOperator::CollectionOfShapesetTransformations
    */
   typedef typename Base::CollectionOfShapesetTransformations
-  CollectionOfShapesetTransformations;
+      CollectionOfShapesetTransformations;
   /** \copydoc ElementaryIntegralOperator::CollectionOfBasisTransformations */
   typedef typename Base::CollectionOfBasisTransformations
-  CollectionOfBasisTransformations;
+      CollectionOfBasisTransformations;
   /** \copydoc ElementaryIntegralOperator::CollectionOfKernels */
   typedef typename Base::CollectionOfKernels CollectionOfKernels;
   /** \copydoc ElementaryIntegralOperator::TestKernelTrialIntegral */
@@ -244,9 +244,9 @@ private:
   shared_ptr<TestKernelTrialIntegral> m_integral;
   shared_ptr<CollectionOfKernels> m_offDiagonalKernels;
   shared_ptr<CollectionOfShapesetTransformations>
-  m_offDiagonalTestTransformations;
+      m_offDiagonalTestTransformations;
   shared_ptr<CollectionOfShapesetTransformations>
-  m_offDiagonalTrialTransformations;
+      m_offDiagonalTrialTransformations;
   shared_ptr<TestKernelTrialIntegral> m_offDiagonalIntegral;
   /** \endcond */
 };

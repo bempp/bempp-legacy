@@ -157,9 +157,10 @@ DefaultLocalAssemblerForLocalOperatorsOnSurfaces<
   typedef NumericalTestTrialIntegrator<BasisFunctionType, ResultType,
                                        GeometryFactory> Integrator;
   std::unique_ptr<TestTrialIntegrator<BasisFunctionType, ResultType>>
-  integrator(new Integrator(points, weights, *m_geometryFactory, *m_rawGeometry,
-                            *m_testTransformations, *m_trialTransformations,
-                            *m_integral, *m_openClHandler));
+      integrator(new Integrator(points, weights, *m_geometryFactory,
+                                *m_rawGeometry, *m_testTransformations,
+                                *m_trialTransformations, *m_integral,
+                                *m_openClHandler));
 
   SingleQuadratureDescriptor key(desc);
   return *m_testTrialIntegrators.insert(key, integrator.release())

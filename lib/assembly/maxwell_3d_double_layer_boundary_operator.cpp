@@ -64,7 +64,7 @@ maxwell3dDoubleLayerBoundaryOperator(
                        "maxwell3dDoubleLayerBoundaryOperator()");
 
   typedef Fiber::ModifiedMaxwell3dDoubleLayerOperatorsKernelFunctor<KernelType>
-  KernelFunctor;
+      KernelFunctor;
   typedef Fiber::ModifiedMaxwell3dDoubleLayerOperatorsKernelInterpolatedFunctor<
       KernelType> KernelInterpolatedFunctor;
   typedef Fiber::HdivFunctionValueFunctor<CoordinateType> TransformationFunctor;
@@ -97,31 +97,29 @@ template <typename BasisFunctionType>
 BoundaryOperator<BasisFunctionType,
                  typename ScalarTraits<BasisFunctionType>::ComplexType>
 maxwell3dDoubleLayerBoundaryOperator(
-    const ParameterList& parameterList,
+    const ParameterList &parameterList,
     const shared_ptr<const Space<BasisFunctionType>> &domain,
     const shared_ptr<const Space<BasisFunctionType>> &range,
     const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
     typename ScalarTraits<BasisFunctionType>::ComplexType waveNumber,
-    const std::string &label, int symmetry,
-    bool useInterpolation,
-    int interpPtsPerWavelength){
+    const std::string &label, int symmetry, bool useInterpolation,
+    int interpPtsPerWavelength) {
 
-  shared_ptr<const Context<BasisFunctionType, 
-    typename ScalarTraits<BasisFunctionType>::ComplexType>> context(
-      new Context<BasisFunctionType, 
-        typename ScalarTraits<BasisFunctionType>::ComplexType>(parameterList));
-  return maxwell3dDoubleLayerBoundaryOperator
-      (context, domain, range, dualToRange, waveNumber, label, symmetry,
-       useInterpolation,interpPtsPerWavelength);
-
-
+  shared_ptr<const Context<
+      BasisFunctionType, typename ScalarTraits<BasisFunctionType>::ComplexType>>
+      context(
+          new Context<BasisFunctionType,
+                      typename ScalarTraits<BasisFunctionType>::ComplexType>(
+              parameterList));
+  return maxwell3dDoubleLayerBoundaryOperator(
+      context, domain, range, dualToRange, waveNumber, label, symmetry,
+      useInterpolation, interpPtsPerWavelength);
 }
 
 #define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS)                               \
   template BoundaryOperator<BASIS, ScalarTraits<BASIS>::ComplexType>           \
   maxwell3dDoubleLayerBoundaryOperator(                                        \
-      const ParameterList&,                                                    \
-      const shared_ptr<const Space<BASIS>> &,                                  \
+      const ParameterList &, const shared_ptr<const Space<BASIS>> &,           \
       const shared_ptr<const Space<BASIS>> &,                                  \
       const shared_ptr<const Space<BASIS>> &,                                  \
       ScalarTraits<BASIS>::ComplexType, const std::string &, int, bool, int);  \

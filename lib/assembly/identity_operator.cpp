@@ -150,8 +150,7 @@ identityOperator(const ParameterList &parameterList,
 
 #define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS, RESULT)                       \
   template BoundaryOperator<BASIS, RESULT> identityOperator(                   \
-      const ParameterList&,                                                    \
-      const shared_ptr<const Space<BASIS>> &,                                  \
+      const ParameterList &, const shared_ptr<const Space<BASIS>> &,           \
       const shared_ptr<const Space<BASIS>> &,                                  \
       const shared_ptr<const Space<BASIS>> &, const std::string &, int);       \
   template BoundaryOperator<BASIS, RESULT> identityOperator(                   \

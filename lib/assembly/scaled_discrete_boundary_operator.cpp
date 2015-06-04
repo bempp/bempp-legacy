@@ -18,8 +18,7 @@ ScaledDiscreteBoundaryOperator<ValueType>::ScaledDiscreteBoundaryOperator(
 }
 
 template <typename ValueType>
-Matrix<ValueType>
-ScaledDiscreteBoundaryOperator<ValueType>::asMatrix() const {
+Matrix<ValueType> ScaledDiscreteBoundaryOperator<ValueType>::asMatrix() const {
   return m_multiplier * m_operator->asMatrix();
 }
 

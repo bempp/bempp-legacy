@@ -35,7 +35,7 @@ class ElementaryRegularIntegralOperator
     : public ElementaryIntegralOperator<BasisFunctionType, KernelType,
                                         ResultType> {
   typedef ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>
-  Base;
+      Base;
 
 public:
   /** \copydoc ElementaryIntegralOperator::BasisFunctionType */
@@ -48,11 +48,11 @@ public:
   typedef typename Base::CoordinateType CoordinateType;
   /** \copydoc ElementaryIntegralOperator::CollectionOfBasisTransformations */
   typedef typename Base::CollectionOfBasisTransformations
-  CollectionOfBasisTransformations;
+      CollectionOfBasisTransformations;
   /** \copydoc ElementaryIntegralOperator::CollectionOfShapesetTransformations
    */
   typedef typename Base::CollectionOfShapesetTransformations
-  CollectionOfShapesetTransformations;
+      CollectionOfShapesetTransformations;
   /** \copydoc ElementaryIntegralOperator::CollectionOfKernels */
   typedef typename Base::CollectionOfKernels CollectionOfKernels;
   /** \copydoc ElementaryIntegralOperator::TestKernelTrialIntegral */

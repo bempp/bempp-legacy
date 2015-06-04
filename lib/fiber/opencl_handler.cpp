@@ -61,8 +61,7 @@ OpenClHandler::OpenClHandler(const OpenClOptions &options) {
 
   try {
     queue = cl::CommandQueue(context, devices[0 /*deviceUsed*/], 0, &err);
-  }
-  catch (cl::Error er) {
+  } catch (cl::Error er) {
     printf("ERROR: %s(%d)\n", er.what(), er.err());
   }
 }
@@ -113,15 +112,13 @@ void OpenClHandler::loadProgramFromString(std::string strSource) {
   try {
     cl::Program::Sources source(1, std::make_pair(strSource.c_str(), pl));
     program = cl::Program(context, source);
-  }
-  catch (cl::Error er) {
+  } catch (cl::Error er) {
     printf("ERROR: %s(%s)\n", er.what(), oclErrorString(er.err()));
   }
 
   try {
     program.build(devices);
-  }
-  catch (cl::Error er) {
+  } catch (cl::Error er) {
     printf("program.build: %s\n", oclErrorString(er.err()));
   }
 
@@ -140,8 +137,8 @@ void OpenClHandler::loadProgramFromString(std::string strSource) {
   std::cout << "x11" << std::endl;
 }
 
-void OpenClHandler::loadProgramFromStringArray(cl::Program::Sources strSources)
-    const {
+void OpenClHandler::loadProgramFromStringArray(
+    cl::Program::Sources strSources) const {
   CALLECHO();
 
   int i, nStr = strSources.size();
@@ -167,15 +164,13 @@ void OpenClHandler::loadProgramFromStringArray(cl::Program::Sources strSources)
 
   try {
     program = cl::Program(context, strSources);
-  }
-  catch (cl::Error er) {
+  } catch (cl::Error er) {
     printf("ERROR: %s(%s)\n", er.what(), oclErrorString(er.err()));
   }
 
   try {
     program.build(devices);
-  }
-  catch (cl::Error er) {
+  } catch (cl::Error er) {
     printf("program.build: %s\n", oclErrorString(er.err()));
   }
 
@@ -199,8 +194,7 @@ cl::Kernel &OpenClHandler::setKernel(const char *kernelName) const {
   cl_int err;
   try {
     kernel = cl::Kernel(program, kernelName, &err);
-  }
-  catch (cl::Error er) {
+  } catch (cl::Error er) {
     printf("ERROR: %s(%d)\n", er.what(), er.err());
   }
   return kernel;
@@ -250,8 +244,7 @@ void OpenClHandler::pushGeometry(const arma::Mat<CoordinateType> &vtx,
                              vtx.memptr(), NULL, &event);
     queue.enqueueWriteBuffer(meshgeom.cl_elbuf, CL_TRUE, 0, idxbuf_size,
                              idx.memptr(), NULL, &event);
-  }
-  catch (cl::Error er) {
+  } catch (cl::Error er) {
     printf("Push mesh geometry: %s\n", oclErrorString(er.err()));
   }
   queue.finish();

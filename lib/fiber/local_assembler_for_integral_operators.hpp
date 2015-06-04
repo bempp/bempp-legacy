@@ -69,12 +69,12 @@ public:
   all element pairs for the purposes of selecting the quadrature method.
   Otherwise the interelement distance is calculated separately for each
   element pair. */
-  virtual void
-  evaluateLocalWeakForms(CallVariant callVariant,
-                         const std::vector<int> &elementIndicesA,
-                         int elementIndexB, LocalDofIndex localDofIndexB,
-                         std::vector<Matrix<ResultType>> &result,
-                         CoordinateType nominalDistance = -1.) = 0;
+  virtual void evaluateLocalWeakForms(CallVariant callVariant,
+                                      const std::vector<int> &elementIndicesA,
+                                      int elementIndexB,
+                                      LocalDofIndex localDofIndexB,
+                                      std::vector<Matrix<ResultType>> &result,
+                                      CoordinateType nominalDistance = -1.) = 0;
 
   /** \brief Assemble local weak forms.
 

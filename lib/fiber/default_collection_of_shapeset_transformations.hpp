@@ -79,7 +79,7 @@ class DefaultCollectionOfShapesetTransformations
     : public CollectionOfBasisTransformations<
           typename Functor::CoordinateType> {
   typedef CollectionOfBasisTransformations<typename Functor::CoordinateType>
-  Base;
+      Base;
 
 public:
   typedef typename Base::CoordinateType CoordinateType;

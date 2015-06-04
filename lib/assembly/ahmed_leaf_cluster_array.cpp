@@ -51,8 +51,7 @@ AhmedLeafClusterArray::AhmedLeafClusterArray(blcluster *clusterTree)
   blcluster **leafClusters = 0;
   try {
     gen_BlSequence(clusterTree, leafClusters);
-  }
-  catch (...) {
+  } catch (...) {
     delete[] leafClusters;
     throw; // rethrow the exception
   }

@@ -229,17 +229,16 @@ void BlockCoalescer<ValueType>::coalesceLowRankBlock(unsigned index) {
           throw std::runtime_error("BlockCoalescer::coalesceDenseBlock(): "
                                    "block is not independent");
         for (int k = 0; k < rank; ++k)
-          V[n + k * colCount] +=
-              trialValues[trialDof] *
-              decomposedData
-                  [rank * decomposedRowCount + j + k * decomposedColCount];
+          V[n + k * colCount] += trialValues[trialDof] *
+                                 decomposedData[rank * decomposedRowCount + j +
+                                                k * decomposedColCount];
       }
     }
   } else
     V = decomposedData + rank * decomposedRowCount;
 
-  m_blocks[index]
-      ->cpyLrM_cmpr(rank, U, rowCount, V, colCount, m_acaOptions.eps, rank);
+  m_blocks[index]->cpyLrM_cmpr(rank, U, rowCount, V, colCount, m_acaOptions.eps,
+                               rank);
   delete m_decomposedBlocks[index];
   m_decomposedBlocks[index] = 0;
 }

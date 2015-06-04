@@ -59,7 +59,6 @@
 #include <stdexcept>
 #include <vector>
 
-
 namespace Bempp {
 
 namespace {
@@ -107,95 +106,96 @@ void gatherGlobalDofs(
 }
 
 template <typename ValueType>
-void generateTriplets(RealSparseMatrix &mat, const std::vector<std::vector<GlobalDofIndex>>& testGDofs,
-                            const std::vector<std::vector<GlobalDofIndex>>& trialGDofs,
-                            const std::vector<Matrix<ValueType>> & localResult,
-                            int elementCount, std::vector<Eigen::Triplet<double>> &result);
+void
+generateTriplets(RealSparseMatrix &mat,
+                 const std::vector<std::vector<GlobalDofIndex>> &testGDofs,
+                 const std::vector<std::vector<GlobalDofIndex>> &trialGDofs,
+                 const std::vector<Matrix<ValueType>> &localResult,
+                 int elementCount, std::vector<Eigen::Triplet<double>> &result);
 
 template <>
-void generateTriplets<double>(RealSparseMatrix &mat, const std::vector<std::vector<GlobalDofIndex>>& testGDofs,
-                            const std::vector<std::vector<GlobalDofIndex>>& trialGDofs,
-                            const std::vector<Matrix<double>> & localResult,
-                            int elementCount, std::vector<Eigen::Triplet<double>> & result){
+void generateTriplets<double>(
+    RealSparseMatrix &mat,
+    const std::vector<std::vector<GlobalDofIndex>> &testGDofs,
+    const std::vector<std::vector<GlobalDofIndex>> &trialGDofs,
+    const std::vector<Matrix<double>> &localResult, int elementCount,
+    std::vector<Eigen::Triplet<double>> &result) {
 
+  result.clear();
+  size_t numberOfTriplets = 0;
 
-    result.clear();
-    size_t numberOfTriplets = 0;
+  for (size_t e = 0; e < elementCount; ++e) {
+    numberOfTriplets += localResult[e].rows() * localResult[e].cols();
+  }
 
-    for (size_t e = 0; e < elementCount; ++e){
-        numberOfTriplets += localResult[e].rows()*localResult[e].cols();
+  result.reserve(numberOfTriplets);
+
+  for (size_t e = 0; e < elementCount; ++e) {
+    assert(testGDofs[e].size() == localResult[e].rows());
+    assert(trialGDofs[e].size() == localResult[e].cols());
+    for (int j = 0; j < localResult[e].cols(); ++j) {
+      if (trialGDofs[e][j] < 0)
+        continue;
+      for (int i = 0; i < localResult[e].rows(); ++i) {
+        if (testGDofs[e][i] < 0)
+          continue;
+        result.push_back(Eigen::Triplet<double>(
+            testGDofs[e][i], trialGDofs[e][j], localResult[e](i, j)));
+      }
     }
-
-    result.reserve(numberOfTriplets);
-
-    for (size_t e = 0; e < elementCount; ++e){
-        assert(testGDofs[e].size() == localResult[e].rows());
-        assert(trialGDofs[e].size() == localResult[e].cols());
-        for (int j = 0; j < localResult[e].cols(); ++j){
-            if (trialGDofs[e][j]<0) continue;
-            for (int i = 0 ; i < localResult[e].rows(); ++i){
-                if (testGDofs[e][i]<0) continue;
-                result.push_back(Eigen::Triplet<double>(testGDofs[e][i],trialGDofs[e][j],localResult[e](i,j)));
-            }
-        }
-    }
-
-
+  }
 }
 
 template <>
-void generateTriplets<float>(RealSparseMatrix &mat, const std::vector<std::vector<GlobalDofIndex>>& testGDofs,
-                            const std::vector<std::vector<GlobalDofIndex>>& trialGDofs,
-                            const std::vector<Matrix<float>> & localResult,
-                            int elementCount, std::vector<Eigen::Triplet<double>> &result){
+void generateTriplets<float>(
+    RealSparseMatrix &mat,
+    const std::vector<std::vector<GlobalDofIndex>> &testGDofs,
+    const std::vector<std::vector<GlobalDofIndex>> &trialGDofs,
+    const std::vector<Matrix<float>> &localResult, int elementCount,
+    std::vector<Eigen::Triplet<double>> &result) {
 
+  std::vector<Matrix<double>> localResult_tmp;
+  localResult_tmp.reserve(localResult.size());
+  for (int e = 0; e < elementCount; ++e)
+    localResult_tmp.push_back(localResult[e].cast<double>());
 
-    std::vector<Matrix<double>> localResult_tmp;
-    localResult_tmp.reserve(localResult.size());
-    for (int e = 0; e < elementCount; ++e)
-        localResult_tmp.push_back(localResult[e].cast<double>());
-
-    generateTriplets<double>(mat,testGDofs,trialGDofs,localResult_tmp,elementCount,result);
-
-
+  generateTriplets<double>(mat, testGDofs, trialGDofs, localResult_tmp,
+                           elementCount, result);
 }
 
 template <>
-void generateTriplets<std::complex<float>>(RealSparseMatrix &mat, const std::vector<std::vector<GlobalDofIndex>>& testGDofs,
-                            const std::vector<std::vector<GlobalDofIndex>>& trialGDofs,
-                            const std::vector<Matrix<std::complex<float>>> & localResult,
-                            int elementCount, std::vector<Eigen::Triplet<double>> &result){
+void generateTriplets<std::complex<float>>(
+    RealSparseMatrix &mat,
+    const std::vector<std::vector<GlobalDofIndex>> &testGDofs,
+    const std::vector<std::vector<GlobalDofIndex>> &trialGDofs,
+    const std::vector<Matrix<std::complex<float>>> &localResult,
+    int elementCount, std::vector<Eigen::Triplet<double>> &result) {
 
+  std::vector<Matrix<double>> localResult_tmp;
+  localResult_tmp.reserve(localResult.size());
+  for (int e = 0; e < elementCount; ++e)
+    localResult_tmp.push_back(localResult[e].real().cast<double>());
 
-    std::vector<Matrix<double>> localResult_tmp;
-    localResult_tmp.reserve(localResult.size());
-    for (int e = 0; e < elementCount; ++e)
-        localResult_tmp.push_back(localResult[e].real().cast<double>());
-
-    generateTriplets<double>(mat,testGDofs,trialGDofs,localResult_tmp,elementCount,result);
-
-
+  generateTriplets<double>(mat, testGDofs, trialGDofs, localResult_tmp,
+                           elementCount, result);
 }
 
 template <>
-void generateTriplets<std::complex<double>>(RealSparseMatrix &mat, const std::vector<std::vector<GlobalDofIndex>>& testGDofs,
-                            const std::vector<std::vector<GlobalDofIndex>>& trialGDofs,
-                            const std::vector<Matrix<std::complex<double>>> & localResult,
-                            int elementCount, std::vector<Eigen::Triplet<double>> &result){
+void generateTriplets<std::complex<double>>(
+    RealSparseMatrix &mat,
+    const std::vector<std::vector<GlobalDofIndex>> &testGDofs,
+    const std::vector<std::vector<GlobalDofIndex>> &trialGDofs,
+    const std::vector<Matrix<std::complex<double>>> &localResult,
+    int elementCount, std::vector<Eigen::Triplet<double>> &result) {
 
+  std::vector<Matrix<double>> localResult_tmp;
+  localResult_tmp.reserve(localResult.size());
+  for (int e = 0; e < elementCount; ++e)
+    localResult_tmp.push_back(localResult[e].real());
 
-    std::vector<Matrix<double>> localResult_tmp;
-    localResult_tmp.reserve(localResult.size());
-    for (int e = 0; e < elementCount; ++e)
-        localResult_tmp.push_back(localResult[e].real());
-
-    generateTriplets<double>(mat,testGDofs,trialGDofs,localResult_tmp,elementCount,result);
-
-
+  generateTriplets<double>(mat, testGDofs, trialGDofs, localResult_tmp,
+                           elementCount, result);
 }
-
-
-
 
 } // anonymous namespace
 
@@ -244,9 +244,9 @@ ElementaryLocalOperator<BasisFunctionType, ResultType>::
     assembleWeakFormInternalImpl2(
         LocalAssembler &assembler,
         const Context<BasisFunctionType, ResultType> &context) const {
-    return shared_ptr<DiscreteBoundaryOperator<ResultType>>(
-        assembleWeakFormInSparseMode(assembler, context.assemblyOptions())
-            .release());
+  return shared_ptr<DiscreteBoundaryOperator<ResultType>>(
+      assembleWeakFormInSparseMode(assembler, context.assemblyOptions())
+          .release());
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -268,7 +268,7 @@ ElementaryLocalOperator<BasisFunctionType, ResultType>::
 
   // Create the operator's matrix
   Matrix<ResultType> result(testSpace.globalDofCount(),
-                               trialSpace.globalDofCount());
+                            trialSpace.globalDofCount());
   result.setZero();
 
   // Retrieve global DOFs corresponding to local DOFs on all elements
@@ -341,20 +341,19 @@ ElementaryLocalOperator<BasisFunctionType, ResultType>::
   const int testGlobalDofCount = testSpace.globalDofCount();
   const int trialGlobalDofCount = trialSpace.globalDofCount();
 
-  shared_ptr<RealSparseMatrix> result =
-          boost::make_shared<RealSparseMatrix>(testGlobalDofCount,trialGlobalDofCount);
-
+  shared_ptr<RealSparseMatrix> result = boost::make_shared<RealSparseMatrix>(
+      testGlobalDofCount, trialGlobalDofCount);
 
   std::vector<Eigen::Triplet<double>> triplets;
-  generateTriplets<ResultType>(*result,testGdofs,trialGdofs,localResult,elementCount,triplets);
-  result->setFromTriplets(triplets.begin(),triplets.end());
+  generateTriplets<ResultType>(*result, testGdofs, trialGdofs, localResult,
+                               elementCount, triplets);
+  result->setFromTriplets(triplets.begin(), triplets.end());
 
   // Create and return a discrete operator represented by the matrix that
   // has just been calculated
   return std::unique_ptr<DiscreteBoundaryOperator<ResultType>>(
-      new DiscreteSparseBoundaryOperator<ResultType>(
-          result, this->symmetry(), NO_TRANSPOSE));
-
+      new DiscreteSparseBoundaryOperator<ResultType>(result, this->symmetry(),
+                                                     NO_TRANSPOSE));
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -365,7 +364,7 @@ ElementaryLocalOperator<BasisFunctionType, ResultType>::makeAssembler(
     const AssemblyOptions &options) const {
   typedef Fiber::RawGridGeometry<CoordinateType> RawGridGeometry;
   typedef std::vector<const Fiber::Shapeset<BasisFunctionType> *>
-  ShapesetPtrVector;
+      ShapesetPtrVector;
 
   const bool verbose = (options.verbosityLevel() >= VerbosityLevel::DEFAULT);
 

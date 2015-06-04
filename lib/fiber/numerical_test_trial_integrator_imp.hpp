@@ -96,7 +96,7 @@ NumericalTestTrialIntegrator<BasisFunctionType, ResultType, GeometryFactory>::
 
   CollectionOf3dArrays<BasisFunctionType> testValues, trialValues;
 
-  //result.set_size(testDofCount, trialDofCount, elementCount);
+  // result.set_size(testDofCount, trialDofCount, elementCount);
   result.resize(elementCount);
 
   testShapeset.evaluate(testBasisDeps, m_localQuadPoints, ALL_DOFS,

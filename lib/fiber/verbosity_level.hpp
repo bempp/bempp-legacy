@@ -27,11 +27,7 @@ namespace Fiber {
 
 /** \brief Verbosity level. */
 struct VerbosityLevel {
-  enum Level {
-    DEFAULT = 0,
-    HIGH = 5,
-    LOW = -5
-  };
+  enum Level { DEFAULT = 0, HIGH = 5, LOW = -5 };
 };
 
 } // namespace Fiber

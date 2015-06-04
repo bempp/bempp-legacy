@@ -273,7 +273,7 @@ template <typename BasisFunctionType, typename ResultType,
 class QuadratureStrategy : public QuadratureStrategyBase<
                                BasisFunctionType, ResultType, GeometryFactory> {
   typedef QuadratureStrategyBase<BasisFunctionType, ResultType, GeometryFactory>
-  Base;
+      Base;
 
 public:
   typedef typename Base::CoordinateType CoordinateType;
@@ -448,11 +448,11 @@ template <typename BasisFunctionType, typename ResultType,
 class QuadratureStrategy<
     BasisFunctionType, ResultType, GeometryFactory,
     typename boost::enable_if<boost::is_same<
-        ResultType, typename ScalarTraits<ResultType>::RealType>>::
-        type> : public QuadratureStrategyBase<BasisFunctionType, ResultType,
-                                              GeometryFactory> {
+        ResultType, typename ScalarTraits<ResultType>::RealType>>::type>
+    : public QuadratureStrategyBase<BasisFunctionType, ResultType,
+                                    GeometryFactory> {
   typedef QuadratureStrategyBase<BasisFunctionType, ResultType, GeometryFactory>
-  Base;
+      Base;
 
 public:
   typedef typename Base::CoordinateType CoordinateType;

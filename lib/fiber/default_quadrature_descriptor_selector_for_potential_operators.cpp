@@ -96,8 +96,7 @@ DefaultQuadratureDescriptorSelectorForPotentialOperators<BasisFunctionType>::
     pointElementDistanceSquared(const Vector<CoordinateType> &point,
                                 int trialElementIndex) const {
   // TODO: optimize
-  Vector<CoordinateType> diff =
-      point - m_elementCenters.col(trialElementIndex);
+  Vector<CoordinateType> diff = point - m_elementCenters.col(trialElementIndex);
   return diff.squaredNorm();
 }
 

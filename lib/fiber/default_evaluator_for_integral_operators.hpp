@@ -89,20 +89,20 @@ private:
   const shared_ptr<const GeometryFactory> m_geometryFactory;
   const shared_ptr<const RawGridGeometry<CoordinateType>> m_rawGeometry;
   const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
-  m_trialShapesets;
+      m_trialShapesets;
   const shared_ptr<const CollectionOfKernels<KernelType>> m_kernels;
   const shared_ptr<const CollectionOfShapesetTransformations<CoordinateType>>
-  m_trialTransformations;
+      m_trialTransformations;
   const shared_ptr<const KernelTrialIntegral<BasisFunctionType, KernelType,
                                              ResultType>> m_integral;
   const shared_ptr<const std::vector<std::vector<ResultType>>>
-  m_argumentLocalCoefficients;
+      m_argumentLocalCoefficients;
   const shared_ptr<const OpenClHandler> m_openClHandler;
   const ParallelizationOptions m_parallelizationOptions;
   const shared_ptr<const QuadratureDescriptorSelectorForPotentialOperators<
       BasisFunctionType>> m_quadDescSelector;
   const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType>>
-  m_quadRuleFamily;
+      m_quadRuleFamily;
 
   Fiber::GeometricalData<CoordinateType> m_nearFieldTrialGeomData;
   Fiber::GeometricalData<CoordinateType> m_farFieldTrialGeomData;

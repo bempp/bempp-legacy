@@ -251,7 +251,7 @@ void DefaultLocalAssemblerForPotentialOperatorsOnSurfaces<
 
   typedef typename KernelTrialIntegrator<BasisFunctionType, KernelType,
                                          ResultType>::PointElementIndexPair
-  PointElementIndexPair;
+      PointElementIndexPair;
   std::vector<PointElementIndexPair> activePointElementPairs;
   std::vector<Matrix<ResultType> *> activeLocalResults;
   activePointElementPairs.reserve(pointCount * trialElementCount);
@@ -307,8 +307,9 @@ DefaultLocalAssemblerForPotentialOperatorsOnSurfaces<
     BasisFunctionType, KernelType, ResultType,
     GeometryFactory>::selectIntegrator(int pointIndex, int trialElementIndex,
                                        CoordinateType nominalDistance) {
-  const Eigen::Map<Vector<CoordinateType>> pointCoords(m_points.col(pointIndex).data(),m_points.rows());
-      //m_points.unsafe_col(pointIndex);
+  const Eigen::Map<Vector<CoordinateType>> pointCoords(
+      m_points.col(pointIndex).data(), m_points.rows());
+  // m_points.unsafe_col(pointIndex);
   SingleQuadratureDescriptor desc = m_quadDescSelector->quadratureDescriptor(
       pointCoords, trialElementIndex, nominalDistance);
   return getIntegrator(desc);

@@ -95,7 +95,7 @@ private:
 
   typedef tbb::concurrent_unordered_map<
       std::pair<int, int>, const LocalDofLists<BasisFunctionType> *>
-  LocalDofListsMap;
+      LocalDofListsMap;
   LocalDofListsMap m_map;
   /** \endcond */
 };

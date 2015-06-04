@@ -9,6 +9,14 @@
 namespace hmat {
 
 template <typename ValueType>
+HMatrixLowRankData<ValueType>::HMatrixLowRankData() {}
+
+template <typename ValueType>
+HMatrixLowRankData<ValueType>::HMatrixLowRankData(
+  const Matrix<ValueType>& A, const Matrix<ValueType>& B):
+  m_A(A), m_B(B) {}
+  
+template <typename ValueType>
 const Matrix<ValueType> &HMatrixLowRankData<ValueType>::A() const {
   return m_A;
 }
@@ -49,6 +57,7 @@ HMatrixLowRankData<ValueType>::frobeniusNorm() const {
   auto aHa = m_A.adjoint() * m_A;
 
   Matrix<ValueType> result(1, 1);
+  result.setZero();
 
   for (int i = 0; i < m_B.cols(); ++i) {
     auto col = m_B.col(i);
@@ -69,14 +78,12 @@ template <typename ValueType>
 DataBlockType HMatrixLowRankData<ValueType>::type() const {
 
   return LOW_RANK_AB;
-
 }
 
 template <typename ValueType>
-void HMatrixLowRankData<ValueType>::apply(const Matrix<ValueType> &X,
-                                          Matrix<ValueType> &Y,
-                                          TransposeMode trans, ValueType alpha,
-                                          ValueType beta) const {
+void HMatrixLowRankData<ValueType>::apply(
+    const Eigen::Ref<Matrix<ValueType>> &X, Eigen::Ref<Matrix<ValueType>> Y,
+    TransposeMode trans, ValueType alpha, ValueType beta) const {
 
   if (beta == ValueType(0))
     Y.setZero();
@@ -90,7 +97,7 @@ void HMatrixLowRankData<ValueType>::apply(const Matrix<ValueType> &X,
   else if (trans == TransposeMode::TRANS)
     Y = alpha * m_B.transpose() * (m_A.transpose() * X) + beta * Y;
   else if (trans == TransposeMode::CONJ)
-    Y = alpha * m_A.conjugate() * (m_B.conjugate()* X) + beta * Y;
+    Y = alpha * m_A.conjugate() * (m_B.conjugate() * X) + beta * Y;
   else
     Y = alpha * m_B.adjoint() * (m_A.adjoint() * X) + beta * Y;
 }

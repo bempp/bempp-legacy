@@ -50,8 +50,5 @@ PotentialOperator<BasisFunctionType, ResultType>::evaluateOnGrid(
                               EvaluationOptions(parameterList));
 }
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(
-        PotentialOperator);
-
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(PotentialOperator);
 }
-

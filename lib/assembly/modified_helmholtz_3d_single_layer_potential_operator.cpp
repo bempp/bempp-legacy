@@ -37,9 +37,9 @@ namespace Bempp {
 template <typename BasisFunctionType>
 struct ModifiedHelmholtz3dSingleLayerPotentialOperatorImpl {
   typedef ModifiedHelmholtz3dSingleLayerPotentialOperatorImpl<BasisFunctionType>
-  This;
+      This;
   typedef ModifiedHelmholtz3dPotentialOperatorBase<This, BasisFunctionType>
-  PotentialOperatorBase;
+      PotentialOperatorBase;
   typedef typename PotentialOperatorBase::KernelType KernelType;
   typedef typename PotentialOperatorBase::ResultType ResultType;
   typedef typename PotentialOperatorBase::CoordinateType CoordinateType;
@@ -47,7 +47,7 @@ struct ModifiedHelmholtz3dSingleLayerPotentialOperatorImpl {
   typedef Fiber::ModifiedHelmholtz3dSingleLayerPotentialKernelFunctor<
       KernelType> KernelFunctor;
   typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
-  TransformationFunctor;
+      TransformationFunctor;
   typedef Fiber::SimpleScalarKernelTrialIntegrandFunctor<
       BasisFunctionType, KernelType, ResultType> IntegrandFunctor;
 
@@ -58,7 +58,7 @@ struct ModifiedHelmholtz3dSingleLayerPotentialOperatorImpl {
 
   Fiber::DefaultCollectionOfKernels<KernelFunctor> kernels;
   Fiber::DefaultCollectionOfBasisTransformations<TransformationFunctor>
-  transformations;
+      transformations;
   Fiber::DefaultKernelTrialIntegral<IntegrandFunctor> integral;
 };
 /** \endcond */

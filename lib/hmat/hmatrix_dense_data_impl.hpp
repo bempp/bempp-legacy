@@ -11,8 +11,8 @@
 namespace hmat {
 
 template <typename ValueType>
-void HMatrixDenseData<ValueType>::apply(const Matrix<ValueType> &X,
-                                        Matrix<ValueType> &Y,
+void HMatrixDenseData<ValueType>::apply(const Eigen::Ref<Matrix<ValueType>> &X,
+                                        Eigen::Ref<Matrix<ValueType>> Y,
                                         TransposeMode trans, ValueType alpha,
                                         ValueType beta) const {
 
@@ -59,7 +59,6 @@ template <typename ValueType>
 DataBlockType HMatrixDenseData<ValueType>::type() const {
 
   return DENSE;
-
 }
 
 template <typename ValueType>

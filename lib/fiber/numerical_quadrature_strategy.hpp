@@ -202,11 +202,11 @@ protected:
 
 private:
   shared_ptr<const QuadratureDescriptorSelectorFactory<BasisFunctionType>>
-  m_quadratureDescriptorSelectorFactory;
+      m_quadratureDescriptorSelectorFactory;
   shared_ptr<const SingleQuadratureRuleFamily<CoordinateType>>
-  m_singleQuadratureRuleFamily;
+      m_singleQuadratureRuleFamily;
   shared_ptr<const DoubleQuadratureRuleFamily<CoordinateType>>
-  m_doubleQuadratureRuleFamily;
+      m_doubleQuadratureRuleFamily;
 };
 
 // Complex ResultType
@@ -387,17 +387,11 @@ template <typename BasisFunctionType, typename ResultType,
 class NumericalQuadratureStrategy<
     BasisFunctionType, ResultType, GeometryFactory,
     typename boost::enable_if<boost::is_same<
-        ResultType, typename ScalarTraits<ResultType>::RealType>>::
-        type> : public NumericalQuadratureStrategyBase<BasisFunctionType,
-                                                       ResultType,
-                                                       GeometryFactory,
-                                                       typename boost::enable_if<
-                                                           boost::is_same<
-                                                               ResultType,
-                                                               typename ScalarTraits<
-                                                                   ResultType>::
-                                                                   RealType>>::
-                                                           type> {
+        ResultType, typename ScalarTraits<ResultType>::RealType>>::type>
+    : public NumericalQuadratureStrategyBase<
+          BasisFunctionType, ResultType, GeometryFactory,
+          typename boost::enable_if<boost::is_same<
+              ResultType, typename ScalarTraits<ResultType>::RealType>>::type> {
   typedef typename boost::enable_if<boost::is_same<
       ResultType, typename ScalarTraits<ResultType>::RealType>>::type Enable;
   typedef NumericalQuadratureStrategyBase<BasisFunctionType, ResultType,

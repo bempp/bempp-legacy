@@ -30,7 +30,7 @@ using namespace Bempp;
 // Internal implementations for general Eigen objects
 template <typename M, typename T, int size>
 bool _eigen_fieldvector_compare(const M &x,
-                                    const Dune::FieldVector<T, size> &y) {
+                                const Dune::FieldVector<T, size> &y) {
   if (x.rows() != size)
     return false;
   for (int i = 0; i < size; ++i)
@@ -41,7 +41,7 @@ bool _eigen_fieldvector_compare(const M &x,
 
 template <typename M, typename T, int rows, int cols>
 bool _eigen_fieldmatrix_compare(const M &x,
-                                    const Dune::FieldMatrix<T, rows, cols> &y) {
+                                const Dune::FieldMatrix<T, rows, cols> &y) {
   if (x.rows() != rows || x.cols() != cols)
     return false;
   for (int j = 0; j < cols; ++j)
@@ -60,7 +60,6 @@ template <typename T, int size>
 bool operator==(const Dune::FieldVector<T, size> &x, const Vector<T> &y) {
   return _eigen_fieldvector_compare(y, x);
 }
-
 
 template <typename T, int rows, int cols>
 bool operator==(const Bempp::Matrix<T> &x,

@@ -39,18 +39,17 @@ helmholtz3dExteriorCalderonProjector(
     int interpPtsPerWavelength) {
 
   typedef typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType
-  ComplexType;
+      ComplexType;
   return modifiedHelmholtz3dExteriorCalderonProjector(
       context, hminusSpace, hplusSpace, waveNumber / ComplexType(0, 1), label,
       useInterpolation, interpPtsPerWavelength);
 }
 
-
 template <typename BasisFunctionType>
 BlockedBoundaryOperator<BasisFunctionType, typename Fiber::ScalarTraits<
                                                BasisFunctionType>::ComplexType>
 helmholtz3dExteriorCalderonProjector(
-    const ParameterList& parameterList,
+    const ParameterList &parameterList,
     const shared_ptr<const Space<BasisFunctionType>> &hminusSpace,
     const shared_ptr<const Space<BasisFunctionType>> &hplusSpace,
     typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType waveNumber,
@@ -58,14 +57,15 @@ helmholtz3dExteriorCalderonProjector(
     int interpPtsPerWavelength) {
 
   typedef typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType
-  ComplexType;
-
+      ComplexType;
 
   shared_ptr<const Context<
-      BasisFunctionType, typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType>>
-  context(new Context<BasisFunctionType,
-                      typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType>(
-      parameterList));
+      BasisFunctionType,
+      typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType>>
+      context(new Context<
+          BasisFunctionType,
+          typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType>(
+          parameterList));
 
   return modifiedHelmholtz3dExteriorCalderonProjector(
       context, hminusSpace, hplusSpace, waveNumber / ComplexType(0, 1), label,
@@ -86,18 +86,17 @@ helmholtz3dInteriorCalderonProjector(
     int interpPtsPerWavelength) {
 
   typedef typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType
-  ComplexType;
+      ComplexType;
   return modifiedHelmholtz3dInteriorCalderonProjector(
       context, hminusSpace, hplusSpace, waveNumber / ComplexType(0, 1), label,
       useInterpolation, interpPtsPerWavelength);
 }
 
-
 template <typename BasisFunctionType>
 BlockedBoundaryOperator<BasisFunctionType, typename Fiber::ScalarTraits<
                                                BasisFunctionType>::ComplexType>
 helmholtz3dInteriorCalderonProjector(
-    const ParameterList& parameterList,
+    const ParameterList &parameterList,
     const shared_ptr<const Space<BasisFunctionType>> &hminusSpace,
     const shared_ptr<const Space<BasisFunctionType>> &hplusSpace,
     typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType waveNumber,
@@ -105,35 +104,33 @@ helmholtz3dInteriorCalderonProjector(
     int interpPtsPerWavelength) {
 
   typedef typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType
-  ComplexType;
+      ComplexType;
 
   shared_ptr<const Context<
       BasisFunctionType,
       typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType>>
-  context(new Context<BasisFunctionType,
-                      typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType>(
-      parameterList));
+      context(new Context<
+          BasisFunctionType,
+          typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType>(
+          parameterList));
 
   return modifiedHelmholtz3dInteriorCalderonProjector(
       context, hminusSpace, hplusSpace, waveNumber / ComplexType(0, 1), label,
       useInterpolation, interpPtsPerWavelength);
 }
 
-
 #define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS)                               \
   template BlockedBoundaryOperator<                                            \
       BASIS, typename Fiber::ScalarTraits<BASIS>::ComplexType>                 \
   helmholtz3dExteriorCalderonProjector(                                        \
-      const ParameterList&,                                                    \
-      const shared_ptr<const Space<BASIS>> &,                                  \
+      const ParameterList &, const shared_ptr<const Space<BASIS>> &,           \
       const shared_ptr<const Space<BASIS>> &,                                  \
       typename Fiber::ScalarTraits<BASIS>::ComplexType, const std::string &,   \
       bool, int);                                                              \
   template BlockedBoundaryOperator<                                            \
       BASIS, typename Fiber::ScalarTraits<BASIS>::ComplexType>                 \
   helmholtz3dInteriorCalderonProjector(                                        \
-      const ParameterList&,                                                    \
-      const shared_ptr<const Space<BASIS>> &,                                  \
+      const ParameterList &, const shared_ptr<const Space<BASIS>> &,           \
       const shared_ptr<const Space<BASIS>> &,                                  \
       typename Fiber::ScalarTraits<BASIS>::ComplexType, const std::string &,   \
       bool, int);                                                              \

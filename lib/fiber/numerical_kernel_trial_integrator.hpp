@@ -57,17 +57,16 @@ public:
       const KernelTrialIntegral<BasisFunctionType, KernelType, ResultType> &
           integral);
 
-  virtual void
-  integrate(const std::vector<int> &pointIndices, int trialElementIndex,
-            const Shapeset<BasisFunctionType> &trialShapeset,
-            LocalDofIndex localTrialDofIndex,
-            const std::vector<Matrix<ResultType> *> &result) const;
+  virtual void integrate(const std::vector<int> &pointIndices,
+                         int trialElementIndex,
+                         const Shapeset<BasisFunctionType> &trialShapeset,
+                         LocalDofIndex localTrialDofIndex,
+                         const std::vector<Matrix<ResultType> *> &result) const;
 
-  virtual void
-  integrate(int pointIndex, int componentIndex,
-            const std::vector<int> &trialElementIndices,
-            const Shapeset<BasisFunctionType> &trialShapeset,
-            const std::vector<Matrix<ResultType> *> &result) const;
+  virtual void integrate(int pointIndex, int componentIndex,
+                         const std::vector<int> &trialElementIndices,
+                         const Shapeset<BasisFunctionType> &trialShapeset,
+                         const std::vector<Matrix<ResultType> *> &result) const;
 
   virtual void
   integrate(const std::vector<PointElementIndexPair> &pointElementIndexPairs,
@@ -86,9 +85,9 @@ private:
 
   const CollectionOfKernels<KernelType> &m_kernels;
   const CollectionOfShapesetTransformations<CoordinateType> &
-  m_trialTransformations;
+      m_trialTransformations;
   const KernelTrialIntegral<BasisFunctionType, KernelType, ResultType> &
-  m_integral;
+      m_integral;
   /** \endcond */
 };
 

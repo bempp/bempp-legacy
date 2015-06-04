@@ -167,9 +167,11 @@ inline void remapPointsSharedEdge(int sharedVertex0, int sharedVertex1,
   // of member template functions is possible
   BOOST_STATIC_ASSERT(SHAPE == TRIANGLE || SHAPE == QUADRANGLE);
   if (SHAPE == TRIANGLE)
-    remapPointsSharedEdgeTriangle<ValueType>(sharedVertex0, sharedVertex1, points);
+    remapPointsSharedEdgeTriangle<ValueType>(sharedVertex0, sharedVertex1,
+                                             points);
   else
-    remapPointsSharedEdgeQuadrilateral<ValueType>(sharedVertex0, sharedVertex1, points);
+    remapPointsSharedEdgeQuadrilateral<ValueType>(sharedVertex0, sharedVertex1,
+                                                  points);
 }
 
 template <ELEMENT_SHAPE SHAPE, SING_INT SINGULARITY, typename ValueType>

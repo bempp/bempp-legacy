@@ -18,7 +18,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-
 #ifndef bempp_discrete_dense_boundary_operator_hpp
 #define bempp_discrete_dense_boundary_operator_hpp
 
@@ -54,7 +53,7 @@ public:
                         const std::vector<int> &cols, const ValueType alpha,
                         Matrix<ValueType> &block) const;
 
-  PyObject* asNumpyObject() const;
+  PyObject *asNumpyObject() const;
 
 private:
   virtual void applyBuiltInImpl(const TranspositionMode trans,
@@ -65,7 +64,7 @@ private:
 
 private:
   /** \cond PRIVATE */
-mutable  Matrix<ValueType> m_mat;
+  mutable Matrix<ValueType> m_mat;
   /** \endcond */
 };
 

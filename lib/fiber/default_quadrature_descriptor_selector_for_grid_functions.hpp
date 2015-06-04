@@ -62,7 +62,7 @@ private:
 
   shared_ptr<const RawGridGeometry<CoordinateType>> m_rawGeometry;
   shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
-  m_testShapesets;
+      m_testShapesets;
   QuadratureOptions m_quadratureOptions;
   /** \endcond */
 };

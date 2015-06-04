@@ -1074,7 +1074,6 @@ void GmshData::resetDataSets() {
 
 GmshIo::GmshIo(const shared_ptr<const Grid> &grid) : m_grid(grid) {
 
-    
   if (!m_grid)
     throw std::runtime_error("GmshIo(): Grid is not initialized.");
 
@@ -1128,19 +1127,14 @@ GmshIo::GmshIo(const shared_ptr<const Grid> &grid) : m_grid(grid) {
   }
 }
 
-GmshIo::GmshIo(GmshData gmshData) : m_gmshData(gmshData) {
-
-    grid();
-
-}
+GmshIo::GmshIo(GmshData gmshData) : m_gmshData(gmshData) { grid(); }
 
 GmshIo::GmshIo(std::string fileName, int physicalEntity)
-    : m_gmshData(GmshData::read(fileName, 2, physicalEntity)) 
+    : m_gmshData(GmshData::read(fileName, 2, physicalEntity))
 
 {
 
-    grid();
-
+  grid();
 }
 
 shared_ptr<const Grid> GmshIo::grid() const {

@@ -37,7 +37,6 @@
 #include "../grid/mapper.hpp"
 #include "../grid/vtk_writer.hpp"
 
-
 #include <stdexcept>
 #include <iostream>
 
@@ -272,8 +271,8 @@ PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::getGlobalDofPositions(
 
 template <typename BasisFunctionType>
 void PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::
-    getFlatLocalDofPositions(std::vector<Point3D<CoordinateType>> &positions)
-    const {
+    getFlatLocalDofPositions(
+        std::vector<Point3D<CoordinateType>> &positions) const {
   std::vector<BoundingBox<CoordinateType>> bboxes;
   getFlatLocalDofBoundingBoxes(bboxes);
 
@@ -284,8 +283,8 @@ void PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::
 
 template <typename BasisFunctionType>
 void PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::
-    getGlobalDofBoundingBoxes(std::vector<BoundingBox<CoordinateType>> &bboxes)
-    const {
+    getGlobalDofBoundingBoxes(
+        std::vector<BoundingBox<CoordinateType>> &bboxes) const {
   SpaceHelper<BasisFunctionType>::
       getGlobalDofBoundingBoxes_defaultImplementation(
           this->gridView(), m_global2localDofs, bboxes);
@@ -369,7 +368,7 @@ PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::getFlatLocalDofNormals(
     e.geometry().getNormals(center, normal);
 
     for (int dim = 0; dim < worldDim; ++dim)
-      elementNormals(dim, index) = normal(dim,0);
+      elementNormals(dim, index) = normal(dim, 0);
     it->next();
   }
 
@@ -416,9 +415,9 @@ void PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::dumpClusterIdsEx(
 
   std::unique_ptr<VtkWriter> vtkWriter = this->gridView().vtkWriter();
   if (dofType == GLOBAL_DOFS) {
-    Matrix<double> data(1,idCount);
+    Matrix<double> data(1, idCount);
     for (size_t i = 0; i < idCount; ++i)
-      data(0,i) = clusterIdsOfDofs[i];
+      data(0, i) = clusterIdsOfDofs[i];
     vtkWriter->addVertexData(data, "ids");
     vtkWriter->write(fileName);
   } else {
@@ -437,7 +436,7 @@ void PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::dumpClusterIdsEx(
         }
       }
       if (!exists)
-        eigenRemoveRowFromMatrix(data,row);
+        eigenRemoveRowFromMatrix(data, row);
       else
         ++row;
     }

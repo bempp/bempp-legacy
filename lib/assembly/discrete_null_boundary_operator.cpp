@@ -18,7 +18,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-
 #include "discrete_null_boundary_operator.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
@@ -32,11 +31,7 @@ namespace Bempp {
 template <typename ValueType>
 DiscreteNullBoundaryOperator<ValueType>::DiscreteNullBoundaryOperator(
     size_t rowCount_, size_t columnCount_)
-    :
-      m_rowCount(rowCount_),
-      m_columnCount(columnCount_)
-{
-}
+    : m_rowCount(rowCount_), m_columnCount(columnCount_) {}
 
 template <typename ValueType>
 void DiscreteNullBoundaryOperator<ValueType>::dump() const {

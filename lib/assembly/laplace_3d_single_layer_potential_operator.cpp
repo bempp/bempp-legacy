@@ -39,14 +39,14 @@ struct Laplace3dSingleLayerPotentialOperatorImpl {
   typedef Laplace3dSingleLayerPotentialOperatorImpl<BasisFunctionType,
                                                     ResultType> This;
   typedef Laplace3dPotentialOperatorBase<This, BasisFunctionType, ResultType>
-  PotentialOperatorBase;
+      PotentialOperatorBase;
   typedef typename PotentialOperatorBase::KernelType KernelType;
   typedef typename PotentialOperatorBase::CoordinateType CoordinateType;
 
   typedef Fiber::Laplace3dSingleLayerPotentialKernelFunctor<KernelType>
-  KernelFunctor;
+      KernelFunctor;
   typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
-  TransformationFunctor;
+      TransformationFunctor;
   typedef Fiber::SimpleScalarKernelTrialIntegrandFunctor<
       BasisFunctionType, KernelType, ResultType> IntegrandFunctor;
 
@@ -56,7 +56,7 @@ struct Laplace3dSingleLayerPotentialOperatorImpl {
 
   Fiber::DefaultCollectionOfKernels<KernelFunctor> kernels;
   Fiber::DefaultCollectionOfBasisTransformations<TransformationFunctor>
-  transformations;
+      transformations;
   Fiber::DefaultKernelTrialIntegral<IntegrandFunctor> integral;
 };
 /** \endcond */

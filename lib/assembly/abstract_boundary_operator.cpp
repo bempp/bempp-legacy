@@ -75,7 +75,7 @@ AbstractBoundaryOperator<BasisFunctionType, ResultType>::
   }
   if (m_range->grid() != m_dualToRange->grid())
     if (!m_range->grid()->isBarycentricRepresentationOf(
-             *m_dualToRange->grid()) &&
+            *m_dualToRange->grid()) &&
         !m_dualToRange->grid()->isBarycentricRepresentationOf(*m_range->grid()))
       throw std::invalid_argument(
           "AbstractBoundaryOperator::AbstractBoundaryOperator(): "

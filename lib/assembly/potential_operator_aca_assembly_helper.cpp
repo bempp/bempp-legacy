@@ -103,7 +103,7 @@ PotentialOperatorAcaAssemblyHelper<
                                                             const cluster *c2)
     const {
   typedef typename Fiber::ScalarTraits<BasisFunctionType>::RealType
-  CoordinateType;
+      CoordinateType;
   typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
   typedef ExtendedBemCluster<AhmedDofType> AhmedBemCluster;
 
@@ -133,7 +133,7 @@ void PotentialOperatorAcaAssemblyHelper<BasisFunctionType, ResultType>::cmpbl(
     m_accessedEntryCount += n1 * n2;
 
   typedef typename Fiber::ScalarTraits<BasisFunctionType>::RealType
-  CoordinateType;
+      CoordinateType;
   typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
   typedef ExtendedBemCluster<AhmedDofType> AhmedBemCluster;
 
@@ -306,7 +306,7 @@ PotentialOperatorAcaAssemblyHelper<BasisFunctionType, ResultType>::scale(
     const cluster *c2) const {
   //    return m_options.acaOptions().scaling;
   typedef typename Fiber::ScalarTraits<BasisFunctionType>::RealType
-  CoordinateType;
+      CoordinateType;
   typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
   typedef ExtendedBemCluster<AhmedDofType> AhmedBemCluster;
 

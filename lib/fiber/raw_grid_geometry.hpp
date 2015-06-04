@@ -58,9 +58,9 @@ public:
   /** \brief Indices of the corners of the given element. */
   Vector<int> elementCornerIndices(int elementIndex) const {
     const int n = elementCornerCount(elementIndex);
-    //return m_elementCornerIndices(arma::span(0, n - 1),
+    // return m_elementCornerIndices(arma::span(0, n - 1),
     //                              arma::span(elementIndex));
-    return m_elementCornerIndices.block(0,elementIndex,n,1);
+    return m_elementCornerIndices.block(0, elementIndex, n, 1);
   }
 
   /** \brief Number of corners of the given element. */
@@ -99,7 +99,9 @@ public:
     for (size_t cornerIndex = 0; cornerIndex < cornerCount; ++cornerIndex)
       corners.col(cornerIndex) =
           m_vertices.col(m_elementCornerIndices(cornerIndex, elementIndex));
-    Eigen::Map<Matrix<char>> auxDataMap(const_cast<char*>(m_auxData.col(elementIndex).data()),m_auxData.rows(),1);
+    Eigen::Map<Matrix<char>> auxDataMap(
+        const_cast<char *>(m_auxData.col(elementIndex).data()),
+        m_auxData.rows(), 1);
     geometry.setup(corners, auxDataMap);
   }
 

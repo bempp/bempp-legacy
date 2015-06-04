@@ -66,7 +66,7 @@ HypersingularIntegralOperator<
                                 const AssemblyOptions &options) const {
   typedef Fiber::RawGridGeometry<CoordinateType> RawGridGeometry;
   typedef std::vector<const Fiber::Shapeset<BasisFunctionType> *>
-  ShapesetPtrVector;
+      ShapesetPtrVector;
 
   const bool verbose = (options.verbosityLevel() >= VerbosityLevel::DEFAULT);
 
@@ -154,8 +154,8 @@ HypersingularIntegralOperator<BasisFunctionType, KernelType, ResultType>::
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 shared_ptr<DiscreteBoundaryOperator<ResultType>>
 HypersingularIntegralOperator<BasisFunctionType, KernelType, ResultType>::
-    assembleWeakFormImpl(const Context<BasisFunctionType, ResultType> &context)
-    const {
+    assembleWeakFormImpl(
+        const Context<BasisFunctionType, ResultType> &context) const {
   bool verbose =
       (context.assemblyOptions().verbosityLevel() >= VerbosityLevel::DEFAULT);
   if (verbose)

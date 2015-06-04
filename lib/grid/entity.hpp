@@ -45,9 +45,7 @@ public:
   virtual ~Entity() {}
 
   /** \brief %Entity codimension. */
-  enum {
-    codimension = codim
-  };
+  enum { codimension = codim };
 
   /** \brief %Entity level. */
   virtual size_t level() const = 0;
@@ -78,9 +76,7 @@ public:
   virtual ~Entity() {}
 
   /** \brief %Entity codimension. */
-  enum {
-    codimension = 0
-  };
+  enum { codimension = 0 };
 
   /** @name Methods shared by entities of all codimensions
   @{ */

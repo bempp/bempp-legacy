@@ -32,10 +32,7 @@ template <typename ResultType> class EvaluatorForIntegralOperators {
 public:
   typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
 
-  enum Region {
-    NEAR_FIELD,
-    FAR_FIELD
-  };
+  enum Region { NEAR_FIELD, FAR_FIELD };
 
   virtual ~EvaluatorForIntegralOperators() {}
 

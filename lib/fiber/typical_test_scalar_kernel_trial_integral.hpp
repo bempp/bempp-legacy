@@ -36,7 +36,7 @@ class TypicalTestScalarKernelTrialIntegralBase
     : public TestKernelTrialIntegral<BasisFunctionType_, KernelType_,
                                      ResultType_> {
   typedef TestKernelTrialIntegral<BasisFunctionType_, KernelType_, ResultType_>
-  Base;
+      Base;
 
 public:
   typedef typename Base::CoordinateType CoordinateType;
@@ -80,11 +80,10 @@ private:
 };
 
 template <typename BasisFunctionType_, typename ResultType_>
-class TypicalTestScalarKernelTrialIntegral<
-    BasisFunctionType_, BasisFunctionType_,
-    ResultType_> : public TypicalTestScalarKernelTrialIntegralBase<BasisFunctionType_,
-                                                                   BasisFunctionType_,
-                                                                   ResultType_> {
+class TypicalTestScalarKernelTrialIntegral<BasisFunctionType_,
+                                           BasisFunctionType_, ResultType_>
+    : public TypicalTestScalarKernelTrialIntegralBase<
+          BasisFunctionType_, BasisFunctionType_, ResultType_> {
   typedef TypicalTestScalarKernelTrialIntegralBase<
       BasisFunctionType_, BasisFunctionType_, ResultType_> Base;
 
@@ -117,14 +116,12 @@ public:
 };
 
 template <typename CoordinateType_>
-class TypicalTestScalarKernelTrialIntegral<
-    CoordinateType_, std::complex<CoordinateType_>,
-    std::complex<
-        CoordinateType_>> : public TypicalTestScalarKernelTrialIntegralBase<CoordinateType_,
-                                                                            std::complex<
-                                                                                CoordinateType_>,
-                                                                            std::complex<
-                                                                                CoordinateType_>> {
+class TypicalTestScalarKernelTrialIntegral<CoordinateType_,
+                                           std::complex<CoordinateType_>,
+                                           std::complex<CoordinateType_>>
+    : public TypicalTestScalarKernelTrialIntegralBase<
+          CoordinateType_, std::complex<CoordinateType_>,
+          std::complex<CoordinateType_>> {
   typedef TypicalTestScalarKernelTrialIntegralBase<
       CoordinateType_, std::complex<CoordinateType_>,
       std::complex<CoordinateType_>> Base;
@@ -158,15 +155,12 @@ public:
 };
 
 template <typename CoordinateType_>
-class TypicalTestScalarKernelTrialIntegral<
-    std::complex<CoordinateType_>, CoordinateType_,
-    std::complex<
-        CoordinateType_>> : public TypicalTestScalarKernelTrialIntegralBase<std::
-                                                                                complex<
-                                                                                    CoordinateType_>,
-                                                                            CoordinateType_,
-                                                                            std::complex<
-                                                                                CoordinateType_>> {
+class TypicalTestScalarKernelTrialIntegral<std::complex<CoordinateType_>,
+                                           CoordinateType_,
+                                           std::complex<CoordinateType_>>
+    : public TypicalTestScalarKernelTrialIntegralBase<
+          std::complex<CoordinateType_>, CoordinateType_,
+          std::complex<CoordinateType_>> {
   typedef TypicalTestScalarKernelTrialIntegralBase<
       std::complex<CoordinateType_>, CoordinateType_,
       std::complex<CoordinateType_>> Base;

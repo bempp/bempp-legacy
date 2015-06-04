@@ -39,12 +39,7 @@ struct ElementPairTopology {
         trialSharedVertex1(-1) {}
 
   /** \brief Location of one element with respect to the other. */
-  enum Type {
-    Disjoint,
-    SharedVertex,
-    SharedEdge,
-    Coincident
-  };
+  enum Type { Disjoint, SharedVertex, SharedEdge, Coincident };
   /** \brief Location of one element with respect to the other. */
   Type type;
   /** \brief Number of vertices of the test element. */
@@ -101,9 +96,9 @@ struct ElementPairTopology {
   }
 };
 
-inline ElementPairTopology determineElementPairTopologyIn3D(
-    const Vector<int> &testElementCornerIndices,
-    const Vector<int> &trialElementCornerIndices) {
+inline ElementPairTopology
+determineElementPairTopologyIn3D(const Vector<int> &testElementCornerIndices,
+                                 const Vector<int> &trialElementCornerIndices) {
   ElementPairTopology topology;
 
 // Determine number of element corners

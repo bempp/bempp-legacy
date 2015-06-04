@@ -58,7 +58,7 @@
 #if ((__GNUC__ * 100) + __GNUC_MINOR__) >= 406
 #define BEMPP_GCC_DIAG_OFF(x)                                                  \
   BEMPP_GCC_DIAG_PRAGMA(push)                                                  \
-      BEMPP_GCC_DIAG_PRAGMA(ignored BEMPP_GCC_DIAG_JOINSTR(-W, x))
+  BEMPP_GCC_DIAG_PRAGMA(ignored BEMPP_GCC_DIAG_JOINSTR(-W, x))
 #define BEMPP_GCC_DIAG_ON(x) BEMPP_GCC_DIAG_PRAGMA(pop)
 #else
 #define BEMPP_GCC_DIAG_OFF(x)                                                  \

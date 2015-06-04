@@ -35,7 +35,7 @@ void AhmedMblockArrayDeleter::operator()(mblock<ValueType> **blocks) const {
 
 #define INSTANTIATE_OPERATOR_CALL(RESULT)                                      \
   template void AhmedMblockArrayDeleter::operator()(                           \
-      mblock<AhmedTypeTraits<RESULT>::Type> **blocks) const
+      mblock<AhmedTypeTraits<RESULT>::Type> * *blocks) const
 
 FIBER_ITERATE_OVER_VALUE_TYPES(INSTANTIATE_OPERATOR_CALL);
 

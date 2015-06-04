@@ -84,7 +84,8 @@ ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
       const Entity<vertexCodim> &vertex = it->entity();
       const Geometry &geo = vertex.geometry();
       const int vertexIndex = evalIndexSet.entityIndex(vertex);
-      //Eigen::Map<Vector<CoordinateType>> activeCol(evalPoints.col(vertexIndex).data(),evalPoints.rows());
+      // Eigen::Map<Vector<CoordinateType>>
+      // activeCol(evalPoints.col(vertexIndex).data(),evalPoints.rows());
       Eigen::Ref<Vector<CoordinateType>> activeCol(evalPoints.col(vertexIndex));
       geo.getCenter(activeCol);
       it->next();
@@ -148,11 +149,10 @@ ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 AssembledPotentialOperator<BasisFunctionType, ResultType>
 ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
-    assemble(
-        const shared_ptr<const Space<BasisFunctionType>> &space,
-        const shared_ptr<const Matrix<CoordinateType>> &evaluationPoints,
-        const QuadratureStrategy &quadStrategy,
-        const EvaluationOptions &options) const {
+    assemble(const shared_ptr<const Space<BasisFunctionType>> &space,
+             const shared_ptr<const Matrix<CoordinateType>> &evaluationPoints,
+             const QuadratureStrategy &quadStrategy,
+             const EvaluationOptions &options) const {
   if (!space)
     throw std::invalid_argument("ElementaryPotentialOperator::assemble(): "
                                 "the shared pointer 'space' must not be null");
@@ -190,7 +190,7 @@ ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
   // evaluators and assemblers
   typedef Fiber::RawGridGeometry<CoordinateType> RawGridGeometry;
   typedef std::vector<const Fiber::Shapeset<BasisFunctionType> *>
-  ShapesetPtrVector;
+      ShapesetPtrVector;
   typedef std::vector<std::vector<ResultType>> CoefficientsVector;
   typedef LocalAssemblerConstructionHelper Helper;
 
@@ -213,13 +213,13 @@ ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
   shared_ptr<CoefficientsVector> localCoefficients =
       boost::make_shared<CoefficientsVector>(elementCount);
 
-  const Mapper& mapper = view.elementMapper();
+  const Mapper &mapper = view.elementMapper();
   std::unique_ptr<EntityIterator<0>> it = view.entityIterator<0>();
-  while (!it->finished()){
-      const Entity<0>& element = it->entity();
-      const int elementIndex = mapper.entityIndex(element);
-      argument.getLocalCoefficients(element, (*localCoefficients)[elementIndex]);
-      it->next();
+  while (!it->finished()) {
+    const Entity<0> &element = it->entity();
+    const int elementIndex = mapper.entityIndex(element);
+    argument.getLocalCoefficients(element, (*localCoefficients)[elementIndex]);
+    it->next();
   }
 
   // Now create the evaluator
@@ -233,16 +233,17 @@ ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 std::unique_ptr<typename ElementaryPotentialOperator<
     BasisFunctionType, KernelType, ResultType>::LocalAssembler>
-ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
-    makeAssembler(const Space<BasisFunctionType> &space,
-                  const Matrix<CoordinateType> &evaluationPoints,
-                  const QuadratureStrategy &quadStrategy,
-                  const EvaluationOptions &options) const {
+ElementaryPotentialOperator<
+    BasisFunctionType, KernelType,
+    ResultType>::makeAssembler(const Space<BasisFunctionType> &space,
+                               const Matrix<CoordinateType> &evaluationPoints,
+                               const QuadratureStrategy &quadStrategy,
+                               const EvaluationOptions &options) const {
   // Collect the standard set of data necessary for construction of
   // assemblers
   typedef Fiber::RawGridGeometry<CoordinateType> RawGridGeometry;
   typedef std::vector<const Fiber::Shapeset<BasisFunctionType> *>
-  ShapesetPtrVector;
+      ShapesetPtrVector;
   typedef std::vector<std::vector<ResultType>> CoefficientsVector;
   typedef LocalAssemblerConstructionHelper Helper;
 
@@ -292,13 +293,13 @@ ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 std::unique_ptr<DiscreteBoundaryOperator<ResultType>>
 ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
-    assembleOperatorInDenseMode(
-        const Space<BasisFunctionType> &space,
-        const Matrix<CoordinateType> &evaluationPoints,
-        LocalAssembler &assembler, const EvaluationOptions &options) const {
+    assembleOperatorInDenseMode(const Space<BasisFunctionType> &space,
+                                const Matrix<CoordinateType> &evaluationPoints,
+                                LocalAssembler &assembler,
+                                const EvaluationOptions &options) const {
 
-    return DenseGlobalAssembler<BasisFunctionType, ResultType>::assemblePotentialOperator(
-            evaluationPoints, space, assembler, options);
+  return DenseGlobalAssembler<BasisFunctionType, ResultType>::
+      assemblePotentialOperator(evaluationPoints, space, assembler, options);
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>

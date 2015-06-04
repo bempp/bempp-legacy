@@ -38,9 +38,9 @@ class ScalarSpace : public Space<BasisFunctionType> {
 public:
   typedef typename Base::CoordinateType CoordinateType;
   typedef typename Base::CollectionOfShapesetTransformations
-  CollectionOfShapesetTransformations;
+      CollectionOfShapesetTransformations;
   typedef typename Base::CollectionOfBasisTransformations
-  CollectionOfBasisTransformations;
+      CollectionOfBasisTransformations;
 
   explicit ScalarSpace(const shared_ptr<const Grid> &grid);
   /** \brief Copy constructor. */
@@ -51,8 +51,8 @@ public:
 
   virtual const CollectionOfShapesetTransformations &basisFunctionValue() const;
 
-  virtual void getGlobalDofInterpolationDirections(
-      Matrix<CoordinateType> &directions) const;
+  virtual void
+  getGlobalDofInterpolationDirections(Matrix<CoordinateType> &directions) const;
 
 private:
   struct Impl;

@@ -1,6 +1,6 @@
 // Copyright (C) 2009-2010 Matthias Messner, Michael Messner, Franz
 // Rammerstorfer, Peter Urthaler
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
@@ -21,10 +21,11 @@
 
 // Note: This file is originally part of the HyENA project
 // (http://portal.tugraz.at/portal/page/portal/Files/i2610/files/Forschung/Software/HyENA/html/index.html)
-// and has been relicensed with permission by the HyENA authors. This does not affect the license of any
+// and has been relicensed with permission by the HyENA authors. This does not
+// affect the license of any
 // other part of HyENA.
 
-//file: enumerators.H
+// file: enumerators.H
 //--------------------------------------------------------------------------
 #ifndef enumerators_h
 #define enumerators_h
@@ -35,27 +36,26 @@
 //--------------------------------------------------------------------------
 
 /** Enumerator for element shapes */
-enum ELEMENT_SHAPE{
-    /* 1 */ NO_SHAPE,       //!< element shape not (yet) set
-    /* 1 */ LINE,           //!< line element
-	/* 2 */ TRIANGLE,       //!< triangle element
-    /* 3 */ QUADRANGLE      //!< quadrangle element
+enum ELEMENT_SHAPE {
+  /* 1 */ NO_SHAPE,  //!< element shape not (yet) set
+  /* 1 */ LINE,      //!< line element
+  /* 2 */ TRIANGLE,  //!< triangle element
+  /* 3 */ QUADRANGLE //!< quadrangle element
 };
-
 
 /** Enumerator describing the Type of Singular Integration */
 enum SING_INT {
-	/* 0 */ NO_SING_INT,    //!< singularity type is not set yet
-	/* 1 */ REGULAR,        //!< Regular integration
-	/* 2 */ COINCIDENT,     //!< coincident
-	/* 3 */ EDGE_ADJACENT,  //!< edge adjacent
-	/* 4 */ VRTX_ADJACENT  //!< vertex adjacent
+  /* 0 */ NO_SING_INT,   //!< singularity type is not set yet
+  /* 1 */ REGULAR,       //!< Regular integration
+  /* 2 */ COINCIDENT,    //!< coincident
+  /* 3 */ EDGE_ADJACENT, //!< edge adjacent
+  /* 4 */ VRTX_ADJACENT  //!< vertex adjacent
 };
 
 /** Enumerator for quadrature rule */
 enum QUADRATURE_RULE {
-	/* 0 */ NO_RULE,          //!< Quadrature Rule not (yet) set
-    /* 1 */ GAUSS             //!<
+  /* 0 */ NO_RULE, //!< Quadrature Rule not (yet) set
+  /* 1 */ GAUSS    //!<
 };
 
 #endif // enumerators_h

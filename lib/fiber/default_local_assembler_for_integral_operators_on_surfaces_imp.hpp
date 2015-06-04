@@ -42,7 +42,7 @@ template <typename BasisFunctionType, typename KernelType, typename ResultType>
 class SingularIntegralCalculatorLoopBody {
 public:
   typedef TestKernelTrialIntegrator<BasisFunctionType, KernelType, ResultType>
-  Integrator;
+      Integrator;
   typedef typename Integrator::ElementIndexPair ElementIndexPair;
 
   SingularIntegralCalculatorLoopBody(
@@ -397,8 +397,7 @@ void DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
   const RawGridGeometry<CoordinateType> &rawGeometry = *m_testRawGeometry;
 
   const Matrix<CoordinateType> &vertices = rawGeometry.vertices();
-  const Matrix<int> &elementCornerIndices =
-      rawGeometry.elementCornerIndices();
+  const Matrix<int> &elementCornerIndices = rawGeometry.elementCornerIndices();
 
   const int vertexCount = vertices.cols();
   const int elementCount = elementCornerIndices.cols();
@@ -503,7 +502,6 @@ void DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
   // m_cache.rehash(int(elementIndexPairs.size() / m_cache.max_load_factor() +
   // 1));
 
-
   // Now loop over unique quadrature variants
   for (typename QuadVariantSet::const_iterator it = uniqueQuadVariants.begin();
        it != uniqueQuadVariants.end(); ++it) {
@@ -597,7 +595,7 @@ DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
       if (isTensor) {
         typedef SeparableNumericalTestKernelTrialIntegrator<
             BasisFunctionType, KernelType, ResultType, GeometryFactory>
-        ConcreteIntegrator;
+            ConcreteIntegrator;
         integrator = new ConcreteIntegrator(
             testPoints, trialPoints, testWeights, trialWeights,
             *m_testGeometryFactory, *m_trialGeometryFactory, *m_testRawGeometry,
@@ -606,7 +604,7 @@ DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
       } else {
         typedef NonseparableNumericalTestKernelTrialIntegrator<
             BasisFunctionType, KernelType, ResultType, GeometryFactory>
-        ConcreteIntegrator;
+            ConcreteIntegrator;
         integrator = new ConcreteIntegrator(
             testPoints, trialPoints, testWeights, *m_testGeometryFactory,
             *m_trialGeometryFactory, *m_testRawGeometry, *m_trialRawGeometry,

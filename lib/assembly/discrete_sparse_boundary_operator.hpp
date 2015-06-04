@@ -58,14 +58,14 @@ public:
    *  \param[in] trans
    *    If different from NO_TRANSPOSE, the discrete operator will represent
    *    a transposed and/or complex-conjugated matrix \p mat. */
-  DiscreteSparseBoundaryOperator(
-      const shared_ptr<const RealSparseMatrix> &mat, int symmetry = NO_SYMMETRY,
-      TranspositionMode trans = NO_TRANSPOSE);
+  DiscreteSparseBoundaryOperator(const shared_ptr<const RealSparseMatrix> &mat,
+                                 int symmetry = NO_SYMMETRY,
+                                 TranspositionMode trans = NO_TRANSPOSE);
+
 private:
   DiscreteSparseBoundaryOperator();
 
 public:
-
   virtual void dump() const;
 
   virtual Matrix<ValueType> asMatrix() const;
@@ -86,7 +86,6 @@ public:
   castToSparse(const shared_ptr<const DiscreteBoundaryOperator<ValueType>> &
                    discreteOperator);
 
-
   /** \brief Return a shared pointer to the sparse matrix stored within
    *  this operator.
    *
@@ -105,7 +104,6 @@ public:
   /** \brief Return the symmetry type of the sparse matrix */
   inline int symmetryMode() const { return m_symmetry; }
 
-
 private:
   /** \cond PRIVATE */
   virtual void applyBuiltInImpl(const TranspositionMode trans,
@@ -118,7 +116,7 @@ private:
   /** \endcond */
 
 private:
-/** \cond PRIVATE */
+  /** \cond PRIVATE */
   shared_ptr<const RealSparseMatrix> m_mat;
   int m_symmetry;
   TranspositionMode m_trans;

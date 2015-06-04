@@ -14,12 +14,12 @@
 namespace hmat {
 template <typename T, int N>
 SimpleTreeNode<T, N>::SimpleTreeNode(const T &data)
-    : m_root(shared_ptr<SimpleTreeNode<T, N>>()), m_data(data) {};
+    : m_root(shared_ptr<SimpleTreeNode<T, N>>()), m_data(data){};
 
 template <typename T, int N>
 SimpleTreeNode<T, N>::SimpleTreeNode(
     const shared_ptr<SimpleTreeNode<T, N>> &root, const T &data)
-    : m_root(root), m_data(data) {};
+    : m_root(root), m_data(data){};
 
 template <typename T, int N>
 const shared_ptr<const SimpleTreeNode<T, N>>
@@ -60,6 +60,14 @@ void SimpleTreeNode<T, N>::addChild(const T &data, int i) {
 }
 
 template <typename T, int N>
+void SimpleTreeNode<T, N>::removeChildren() {
+
+  for (auto& child: m_children)
+    child.reset();
+
+}
+
+template <typename T, int N>
 void SimpleTreeNode<T, N>::addSubTree(shared_ptr<SimpleTreeNode<T, N>> &subTree,
                                       int i) {
 
@@ -94,6 +102,7 @@ SimpleTreeNode<T, N>::leafNodes() const {
   };
 
   getLeafsImpl(*this);
+  return leafVector;
 }
 
 template <typename T, int N>

@@ -33,7 +33,6 @@ namespace Bempp {
 
 struct GlobalParameters {
 
-
   /** \brief Return a global parameter list. */
   static ParameterList parameterList();
 };

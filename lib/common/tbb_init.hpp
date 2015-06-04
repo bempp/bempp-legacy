@@ -6,19 +6,16 @@
 namespace Bempp {
 
 class TbbInit {
-    
+
 private:
+  TbbInit();
+  TbbInit(int number_of_processes);
+  TbbInit(const TbbInit &other);
+  const TbbInit &operator=(const TbbInit &other);
 
-    TbbInit();
-    TbbInit(int number_of_processes);
-    TbbInit(const TbbInit & other);
-    const TbbInit &operator=(const TbbInit &other);
+  static TbbInit m_singleton;
 
-    static TbbInit m_singleton;
-
-    tbb::task_scheduler_init m_task_scheduler;
-
-
+  tbb::task_scheduler_init m_task_scheduler;
 };
 }
 

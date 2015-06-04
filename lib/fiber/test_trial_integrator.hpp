@@ -26,7 +26,6 @@
 #include "scalar_traits.hpp"
 #include "types.hpp"
 
-
 #include <vector>
 
 namespace Fiber {

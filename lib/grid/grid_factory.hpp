@@ -40,15 +40,15 @@ class Grid;
 /** \ingroup grid
     \brief %Grid factory.
 
-  This class provides an interface to create a Dune grid by successively inserting
-  elements and vertices. It also provides several static member functions to construct
+  This class provides an interface to create a Dune grid by successively
+  inserting
+  elements and vertices. It also provides several static member functions to
+  construct
   grid on the fly and to import grids from existing files.
- 
+
   */
 class GridFactory {
 public:
-
-  
   /** \brief Default Constructor. */
   GridFactory();
 
@@ -58,7 +58,8 @@ public:
 
   /** \brief Insert an element with nodes v0, v1 and v2 into the grid. */
 
-  void insertElement(unsigned int v0, unsigned int v1, unsigned int v2, int domain_index = 0);
+  void insertElement(unsigned int v0, unsigned int v1, unsigned int v2,
+                     int domain_index = 0);
 
   /** \brief Finalize grid creation and return the grid. */
 
@@ -87,20 +88,17 @@ public:
 
     \note Currently only grids with triangular topology are supported.
   */
-  static shared_ptr<Grid>
-  createStructuredGrid(const GridParameters &params,
-                       const Vector<double> &lowerLeft,
-                       const Vector<double> &upperRight,
-                       const Vector<int> &nElements);
-
+  static shared_ptr<Grid> createStructuredGrid(const GridParameters &params,
+                                               const Vector<double> &lowerLeft,
+                                               const Vector<double> &upperRight,
+                                               const Vector<int> &nElements);
 
   /** \overload */
-  static shared_ptr<Grid>
-  createStructuredGrid(const GridParameters &params,
-                       const double* lowerLeft,
-                       const double* upperRight,
-                       const int* nElements);
-  
+  static shared_ptr<Grid> createStructuredGrid(const GridParameters &params,
+                                               const double *lowerLeft,
+                                               const double *upperRight,
+                                               const int *nElements);
+
   /** \brief Import grid from a file in Gmsh format.
 
     \param[in] params Parameters of the grid to be constructed.
@@ -171,16 +169,13 @@ public:
 
   /** \overload */
   static shared_ptr<Grid> createGridFromConnectivityArrays(
-          const GridParameters &params, const double* vertices,
-          int nvertices, const int* elementCorners, int nelements,
-          const std::vector<int> & domainIndices = std::vector<int>());
+      const GridParameters &params, const double *vertices, int nvertices,
+      const int *elementCorners, int nelements,
+      const std::vector<int> &domainIndices = std::vector<int>());
 
 private:
-
-      shared_ptr<Dune::GridFactory<Default2dIn3dDuneGrid>> m_factory;
-      std::vector<int> m_domainIndices;
-
-
+  shared_ptr<Dune::GridFactory<Default2dIn3dDuneGrid>> m_factory;
+  std::vector<int> m_domainIndices;
 };
 
 } // namespace Bempp

@@ -30,14 +30,12 @@
 
 #include "../common/eigen_support.hpp"
 
-
 #include "../assembly/discrete_inverse_sparse_boundary_operator.hpp"
 #include "../assembly/discrete_sparse_boundary_operator.hpp"
 #include "../assembly/discrete_boundary_operator_composition.hpp"
 
 #include <boost/make_shared.hpp>
 #include <tbb/tick_count.h>
-
 
 namespace Bempp {
 
@@ -99,9 +97,8 @@ AbstractBoundaryOperatorPseudoinverse<BasisFunctionType, ResultType>::
           BasisFunctionType, ResultType>>(operatorToInvert)) {}
 
 template <typename BasisFunctionType, typename ResultType>
-bool
-AbstractBoundaryOperatorPseudoinverse<BasisFunctionType, ResultType>::isLocal()
-    const {
+bool AbstractBoundaryOperatorPseudoinverse<BasisFunctionType,
+                                           ResultType>::isLocal() const {
   return m_operator.abstractOperator()->isLocal();
 }
 
@@ -115,8 +112,8 @@ AbstractBoundaryOperatorPseudoinverse<BasisFunctionType, ResultType>::id()
 template <typename BasisFunctionType, typename ResultType>
 shared_ptr<DiscreteBoundaryOperator<ResultType>>
 AbstractBoundaryOperatorPseudoinverse<BasisFunctionType, ResultType>::
-    assembleWeakFormImpl(const Context<BasisFunctionType, ResultType> &context)
-    const {
+    assembleWeakFormImpl(
+        const Context<BasisFunctionType, ResultType> &context) const {
   bool verbose =
       (context.assemblyOptions().verbosityLevel() >= VerbosityLevel::DEFAULT);
   shared_ptr<const DiscreteBoundaryOperator<ResultType>> wrappedDiscreteOp =
@@ -162,7 +159,7 @@ AbstractBoundaryOperatorPseudoinverse<BasisFunctionType, ResultType>::
   typedef DiscreteBoundaryOperator<ResultType> DiscreteOp;
   typedef DiscreteSparseBoundaryOperator<ResultType> DiscreteSparseOp;
   typedef DiscreteInverseSparseBoundaryOperator<ResultType>
-  DiscreteInverseSparseOp;
+      DiscreteInverseSparseOp;
 
   shared_ptr<const RealSparseMatrix> matrix = wrappedDiscreteOp->sparseMatrix();
 
@@ -184,8 +181,8 @@ AbstractBoundaryOperatorPseudoinverse<BasisFunctionType, ResultType>::
     if (rowCount > colCount) {
       // Tall matrix (overdetermined least-square problem);
       // construct (M^H M)^{-1} M^H
-        productMatrix.reset(
-                    new RealSparseMatrix(matrix->transpose().eval()*(*matrix)));
+      productMatrix.reset(
+          new RealSparseMatrix(matrix->transpose().eval() * (*matrix)));
 
       shared_ptr<DiscreteOp> productInverseOp =
           boost::make_shared<DiscreteInverseSparseOp>(productMatrix, HERMITIAN);
@@ -198,7 +195,7 @@ AbstractBoundaryOperatorPseudoinverse<BasisFunctionType, ResultType>::
       // construct M^H (M M^H)^{-1}
 
       productMatrix.reset(
-                    new RealSparseMatrix((*matrix)*(matrix->transpose().eval())));
+          new RealSparseMatrix((*matrix) * (matrix->transpose().eval())));
       shared_ptr<DiscreteOp> productInverseOp =
           boost::make_shared<DiscreteInverseSparseOp>(productMatrix, HERMITIAN);
       return boost::make_shared<
@@ -220,8 +217,8 @@ AbstractBoundaryOperatorPseudoinverse<BasisFunctionType, ResultType>::
   if (wrappedDiscreteOp->rowCount() == wrappedDiscreteOp->columnCount())
     // TODO: store an LU decomposition instead of the inverse matrix.
     return shared_ptr<DiscreteBoundaryOperator<ResultType>>(
-           new DiscreteDenseLinOp(
-                             (wrappedDiscreteOp->asMatrix()).inverse().eval() ));
+        new DiscreteDenseLinOp(
+            (wrappedDiscreteOp->asMatrix()).inverse().eval()));
   else
     // compute and store pseudoinverse
     return boost::make_shared<DiscreteDenseLinOp>(
@@ -232,7 +229,7 @@ template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType> pseudoinverse(
     const BoundaryOperator<BasisFunctionType, ResultType> &boundaryOp) {
   typedef AbstractBoundaryOperatorPseudoinverse<BasisFunctionType, ResultType>
-  Pinv;
+      Pinv;
   return BoundaryOperator<BasisFunctionType, ResultType>(
       boundaryOp.context(), boost::make_shared<Pinv>(boundaryOp));
 }
@@ -242,7 +239,7 @@ BoundaryOperator<BasisFunctionType, ResultType>
 pseudoinverse(const BoundaryOperator<BasisFunctionType, ResultType> &boundaryOp,
               const shared_ptr<const Space<BasisFunctionType>> &dualToRange) {
   typedef AbstractBoundaryOperatorPseudoinverse<BasisFunctionType, ResultType>
-  Pinv;
+      Pinv;
   return BoundaryOperator<BasisFunctionType, ResultType>(
       boundaryOp.context(), boost::make_shared<Pinv>(boundaryOp, dualToRange));
 }
@@ -259,22 +256,20 @@ AbstractBoundaryOperatorPseudoinverseId<BasisFunctionType, ResultType>::
     : m_operatorToInvertId(operatorToInvert.abstractOperator()->id()) {}
 
 template <typename BasisFunctionType, typename ResultType>
-size_t
-AbstractBoundaryOperatorPseudoinverseId<BasisFunctionType, ResultType>::hash()
-    const {
+size_t AbstractBoundaryOperatorPseudoinverseId<BasisFunctionType,
+                                               ResultType>::hash() const {
   typedef AbstractBoundaryOperatorPseudoinverse<BasisFunctionType, ResultType>
-  OperatorType;
+      OperatorType;
   size_t result = tbb::tbb_hasher(typeid(OperatorType).name());
   tbb_hash_combine(result, m_operatorToInvertId->hash());
   return result;
 }
 
 template <typename BasisFunctionType, typename ResultType>
-void
-AbstractBoundaryOperatorPseudoinverseId<BasisFunctionType, ResultType>::dump()
-    const {
+void AbstractBoundaryOperatorPseudoinverseId<BasisFunctionType,
+                                             ResultType>::dump() const {
   typedef AbstractBoundaryOperatorPseudoinverse<BasisFunctionType, ResultType>
-  OperatorType;
+      OperatorType;
   std::cout << typeid(OperatorType).name() << " ";
   m_operatorToInvertId->dump();
 }

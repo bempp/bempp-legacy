@@ -1,6 +1,6 @@
 // Copyright (C) 2009-2010 Matthias Messner, Michael Messner, Franz
 // Rammerstorfer, Peter Urthaler
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
@@ -21,7 +21,8 @@
 
 // Note: This file is originally part of the HyENA project
 // (http://portal.tugraz.at/portal/page/portal/Files/i2610/files/Forschung/Software/HyENA/html/index.html)
-// and has been relicensed with permission by the HyENA authors. This does not affect the license of any
+// and has been relicensed with permission by the HyENA authors. This does not
+// affect the license of any
 // other part of HyENA.
 
 /**
@@ -41,43 +42,35 @@
 #ifndef singularitytraits_h
 #define singularitytraits_h
 
-
-
 // own include
 #include "enumerators.H"
 #include "shapetraits.H"
 
+template <ELEMENT_SHAPE SHAPE, SING_INT SINGULARITY> struct SingularityTraits;
 
-
-template <ELEMENT_SHAPE SHAPE, SING_INT SINGULARITY>
-struct SingularityTraits;
-
-
-template<ELEMENT_SHAPE SHAPE> struct SingularityTraits<SHAPE, REGULAR>
-{
-	enum {num_gal_regions = ShapeTraits<SHAPE>::gal_re_regions};
+template <ELEMENT_SHAPE SHAPE> struct SingularityTraits<SHAPE, REGULAR> {
+  enum { num_gal_regions = ShapeTraits<SHAPE>::gal_re_regions };
 };
 
-
-template<ELEMENT_SHAPE SHAPE> struct SingularityTraits<SHAPE, VRTX_ADJACENT>
-{
-	enum {num_col_regions = ShapeTraits<SHAPE>::col_va_regions,
-				num_gal_regions = ShapeTraits<SHAPE>::gal_va_regions};
+template <ELEMENT_SHAPE SHAPE> struct SingularityTraits<SHAPE, VRTX_ADJACENT> {
+  enum {
+    num_col_regions = ShapeTraits<SHAPE>::col_va_regions,
+    num_gal_regions = ShapeTraits<SHAPE>::gal_va_regions
+  };
 };
 
-template<ELEMENT_SHAPE SHAPE> struct SingularityTraits<SHAPE, EDGE_ADJACENT>
-{
-	enum {num_col_regions = ShapeTraits<SHAPE>::col_ea_regions,
-				num_gal_regions = ShapeTraits<SHAPE>::gal_ea_regions};
+template <ELEMENT_SHAPE SHAPE> struct SingularityTraits<SHAPE, EDGE_ADJACENT> {
+  enum {
+    num_col_regions = ShapeTraits<SHAPE>::col_ea_regions,
+    num_gal_regions = ShapeTraits<SHAPE>::gal_ea_regions
+  };
 };
 
-template<ELEMENT_SHAPE SHAPE> struct SingularityTraits<SHAPE, COINCIDENT>
-{
-	enum {num_col_regions = ShapeTraits<SHAPE>::col_co_regions,
-				num_gal_regions = ShapeTraits<SHAPE>::gal_co_regions};
-};  
-
-
-
+template <ELEMENT_SHAPE SHAPE> struct SingularityTraits<SHAPE, COINCIDENT> {
+  enum {
+    num_col_regions = ShapeTraits<SHAPE>::col_co_regions,
+    num_gal_regions = ShapeTraits<SHAPE>::gal_co_regions
+  };
+};
 
 #endif

@@ -73,16 +73,16 @@ WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::
           m_testSpace, m_p2oTestDofs, m_indexWithGlobalDofs)),
       m_trialDofListsCache(new LocalDofListsCache<BasisFunctionType>(
           m_trialSpace, m_p2oTrialDofs, m_indexWithGlobalDofs))
-      //,
-      //    m_trialDofListsCache(&testSpace == &trialSpace &&
-      //                         std::equal(p2oTestDofs.begin(),
-      // p2oTestDofs.end(),
-      //                                    p2oTrialDofs.begin()) ?
-      //                             m_testDofListsCache :
-      //                             boost::make_shared<LocalDofListsCache<BasisFunctionType>
-      // >(
-      //                                 m_trialSpace, m_p2oTrialDofs,
-      // m_indexWithGlobalDofs))
+//,
+//    m_trialDofListsCache(&testSpace == &trialSpace &&
+//                         std::equal(p2oTestDofs.begin(),
+// p2oTestDofs.end(),
+//                                    p2oTrialDofs.begin()) ?
+//                             m_testDofListsCache :
+//                             boost::make_shared<LocalDofListsCache<BasisFunctionType>
+// >(
+//                                 m_trialSpace, m_p2oTrialDofs,
+// m_indexWithGlobalDofs))
 {
   if (!m_indexWithGlobalDofs && !m_sparseTermsToAdd.empty())
     throw std::invalid_argument(
@@ -109,7 +109,7 @@ WeakFormAcaAssemblyHelper<
                                                             const cluster *c2)
     const {
   typedef typename Fiber::ScalarTraits<BasisFunctionType>::RealType
-  CoordinateType;
+      CoordinateType;
   typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
   typedef ExtendedBemCluster<AhmedDofType> AhmedBemCluster;
 
@@ -374,7 +374,7 @@ WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::scale(
     unsigned b1, unsigned n1, unsigned b2, unsigned n2, const cluster *c1,
     const cluster *c2) const {
   typedef typename Fiber::ScalarTraits<BasisFunctionType>::RealType
-  CoordinateType;
+      CoordinateType;
   typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
   typedef ExtendedBemCluster<AhmedDofType> AhmedBemCluster;
 
@@ -413,9 +413,8 @@ WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::relativeScale(
 }
 
 template <typename BasisFunctionType, typename ResultType>
-size_t
-WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::accessedEntryCount()
-    const {
+size_t WeakFormAcaAssemblyHelper<BasisFunctionType,
+                                 ResultType>::accessedEntryCount() const {
   return m_accessedEntryCount;
 }
 

@@ -85,7 +85,7 @@ public:
 private:
   /** \cond PRIVATE */
   ModifiedHelmholtz3dSingleLayerPotentialKernelInterpolatedFunctor<ValueType>
-  m_slpKernel;
+      m_slpKernel;
   /** \endcond */
 };
 

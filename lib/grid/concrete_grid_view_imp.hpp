@@ -35,8 +35,8 @@ void ConcreteGridView<DuneGridView>::getRawElementDataDoubleImpl(
 
 template <typename DuneGridView>
 void ConcreteGridView<DuneGridView>::getRawElementDataFloatImpl(
-    Matrix<float> &vertices, Matrix<int> &elementCorners,
-    Matrix<char> &auxData, std::vector<int> *domainIndices) const {
+    Matrix<float> &vertices, Matrix<int> &elementCorners, Matrix<char> &auxData,
+    std::vector<int> *domainIndices) const {
   getRawElementDataImpl(vertices, elementCorners, auxData, domainIndices);
 }
 
@@ -54,13 +54,13 @@ void ConcreteGridView<DuneGridView>::getRawElementDataImpl(
   typedef Dune::LeafMultipleCodimMultipleGeomTypeMapper<
       DuneGrid, Dune::MCMGElementLayout> DuneElementMapper;
   typedef typename DuneGridView::template Codim<codimVertex>::Iterator
-  DuneVertexIterator;
+      DuneVertexIterator;
   typedef typename DuneGridView::template Codim<codimElement>::Iterator
-  DuneElementIterator;
+      DuneElementIterator;
   typedef typename DuneGridView::template Codim<codimVertex>::Geometry
-  DuneVertexGeometry;
+      DuneVertexGeometry;
   typedef typename DuneGridView::template Codim<codimElement>::Geometry
-  DuneElementGeometry;
+      DuneElementGeometry;
   typedef typename DuneGrid::ctype ctype;
 
   const DuneIndexSet &indexSet = m_dune_gv.indexSet();

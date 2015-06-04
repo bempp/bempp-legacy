@@ -224,8 +224,8 @@ PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::flatLocal2localDofs(
 
 template <typename BasisFunctionType>
 void PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::
-    getGlobalDofPositions(std::vector<Point3D<CoordinateType>> &positions)
-    const {
+    getGlobalDofPositions(
+        std::vector<Point3D<CoordinateType>> &positions) const {
   std::vector<BoundingBox<CoordinateType>> bboxes;
   getGlobalDofBoundingBoxes(bboxes);
 
@@ -236,15 +236,15 @@ void PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::
 
 template <typename BasisFunctionType>
 void PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::
-    getFlatLocalDofPositions(std::vector<Point3D<CoordinateType>> &positions)
-    const {
+    getFlatLocalDofPositions(
+        std::vector<Point3D<CoordinateType>> &positions) const {
   getGlobalDofPositions(positions);
 }
 
 template <typename BasisFunctionType>
 void PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::
-    getGlobalDofBoundingBoxes(std::vector<BoundingBox<CoordinateType>> &bboxes)
-    const {
+    getGlobalDofBoundingBoxes(
+        std::vector<BoundingBox<CoordinateType>> &bboxes) const {
   SpaceHelper<BasisFunctionType>::
       getGlobalDofBoundingBoxes_defaultImplementation(
           *m_view, m_global2localDofs, bboxes);
@@ -267,8 +267,8 @@ PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::getGlobalDofNormals(
 
 template <typename BasisFunctionType>
 void PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::
-    getFlatLocalDofNormals(std::vector<Point3D<CoordinateType>> &normals)
-    const {
+    getFlatLocalDofNormals(
+        std::vector<Point3D<CoordinateType>> &normals) const {
   getGlobalDofNormals(normals);
 }
 
@@ -311,7 +311,7 @@ PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::dumpClusterIdsEx(
       }
     }
     if (!exists)
-      eigenRemoveRowFromMatrix(data,row); // very inefficient, of course
+      eigenRemoveRowFromMatrix(data, row); // very inefficient, of course
     else
       ++row;
   }

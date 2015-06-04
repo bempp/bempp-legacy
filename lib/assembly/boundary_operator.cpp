@@ -37,7 +37,7 @@ BoundaryOperator<BasisFunctionType, ResultType>::BoundaryOperator()
     : m_holdWeakForm(true) {}
 
 template <typename BasisFunctionType, typename ResultType>
-BoundaryOperator<BasisFunctionType, ResultType>::~BoundaryOperator(){}
+BoundaryOperator<BasisFunctionType, ResultType>::~BoundaryOperator() {}
 
 template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType>::BoundaryOperator(
@@ -238,7 +238,7 @@ typename boost::enable_if<
 operator*(const BoundaryOperator<BasisFunctionType, ResultType> &op,
           const ScalarType &scalar) {
   typedef ScaledAbstractBoundaryOperator<BasisFunctionType, ResultType>
-  ScaledOp;
+      ScaledOp;
   if (!op.isInitialized())
     throw std::invalid_argument("operator*(): "
                                 "boundary operator is uninitialized");
@@ -295,7 +295,7 @@ BoundaryOperator<BasisFunctionType, ResultType>
 operator*(const BoundaryOperator<BasisFunctionType, ResultType> &op1,
           const BoundaryOperator<BasisFunctionType, ResultType> &op2) {
   typedef AbstractBoundaryOperatorComposition<BasisFunctionType, ResultType>
-  Composition;
+      Composition;
   if (!op1.isInitialized())
     throw std::invalid_argument("operator*(): operand 1 is uninitialized");
   if (!op2.isInitialized())
@@ -308,7 +308,7 @@ template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType>
 adjoint(const BoundaryOperator<BasisFunctionType, ResultType> &op) {
   typedef AdjointAbstractBoundaryOperator<BasisFunctionType, ResultType>
-  Adjoint;
+      Adjoint;
   return BoundaryOperator<BasisFunctionType, ResultType>(
       op.context(), boost::make_shared<Adjoint>(op));
 }
@@ -318,7 +318,7 @@ BoundaryOperator<BasisFunctionType, ResultType>
 adjoint(const BoundaryOperator<BasisFunctionType, ResultType> &op,
         const shared_ptr<const Space<BasisFunctionType>> &range) {
   typedef AdjointAbstractBoundaryOperator<BasisFunctionType, ResultType>
-  Adjoint;
+      Adjoint;
   return BoundaryOperator<BasisFunctionType, ResultType>(
       op.context(), boost::make_shared<Adjoint>(op, range));
 }

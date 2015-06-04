@@ -618,9 +618,9 @@ acaOperatorSum(const shared_ptr<const DiscreteBoundaryOperator<ValueType>> &op1,
                                 "both operands must be identical");
 
   typedef typename DiscreteAcaBoundaryOperator<ValueType>::AhmedBemBlcluster
-  AhmedBemBlcluster;
+      AhmedBemBlcluster;
   typedef typename DiscreteAcaBoundaryOperator<ValueType>::AhmedMblock
-  AhmedMblock;
+      AhmedMblock;
 
   shared_ptr<const AhmedBemBlcluster> sumBlockCluster = acaOp1->blockCluster();
   blcluster *nonConstSumBlockCluster =
@@ -650,9 +650,9 @@ shared_ptr<const DiscreteBoundaryOperator<ValueType>> scaledAcaOperator(
                                 "operand must not be null");
 
   typedef typename DiscreteAcaBoundaryOperator<ValueType>::AhmedBemBlcluster
-  AhmedBemBlcluster;
+      AhmedBemBlcluster;
   typedef typename DiscreteAcaBoundaryOperator<ValueType>::AhmedMblock
-  AhmedMblock;
+      AhmedMblock;
 
   typedef typename AhmedTypeTraits<ValueType>::Type AhmedValueType;
   const AhmedValueType ahmedMultiplier = ahmedCast(multiplier);

@@ -62,7 +62,7 @@ public:
   typedef typename Base::CoordinateType CoordinateType;
   /** \copydoc ElementaryPotentialOperator::CollectionOfBasisTransformations */
   typedef typename Base::CollectionOfBasisTransformations
-  CollectionOfBasisTransformations;
+      CollectionOfBasisTransformations;
   /** \copydoc ElementaryPotentialOperator::CollectionOfKernels */
   typedef typename Base::CollectionOfKernels CollectionOfKernels;
   /** \copydoc ElementaryPotentialOperator::KernelTrialIntegral */

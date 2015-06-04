@@ -45,12 +45,11 @@ helmholtz3dExteriorCalderonProjector(
     const std::string &label = "", bool useInterpolation = false,
     int interpPtsPerWavelength = DEFAULT_HELMHOLTZ_INTERPOLATION_DENSITY);
 
-
 template <typename BasisFunctionType>
 BlockedBoundaryOperator<BasisFunctionType, typename Fiber::ScalarTraits<
                                                BasisFunctionType>::ComplexType>
 helmholtz3dExteriorCalderonProjector(
-    const ParameterList& parameterList,
+    const ParameterList &parameterList,
     const shared_ptr<const Space<BasisFunctionType>> &hminusSpace,
     const shared_ptr<const Space<BasisFunctionType>> &hplusSpace,
     typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType waveNumber,
@@ -70,18 +69,16 @@ helmholtz3dInteriorCalderonProjector(
     const std::string &label = "", bool useInterpolation = false,
     int interpPtsPerWavelength = DEFAULT_HELMHOLTZ_INTERPOLATION_DENSITY);
 
-
 template <typename BasisFunctionType>
 BlockedBoundaryOperator<BasisFunctionType, typename Fiber::ScalarTraits<
                                                BasisFunctionType>::ComplexType>
 helmholtz3dInteriorCalderonProjector(
-    const ParameterList& parameterList,
+    const ParameterList &parameterList,
     const shared_ptr<const Space<BasisFunctionType>> &hminusSpace,
     const shared_ptr<const Space<BasisFunctionType>> &hplusSpace,
     typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType waveNumber,
     const std::string &label = "", bool useInterpolation = false,
     int interpPtsPerWavelength = DEFAULT_HELMHOLTZ_INTERPOLATION_DENSITY);
-
 
 } // Bempp
 

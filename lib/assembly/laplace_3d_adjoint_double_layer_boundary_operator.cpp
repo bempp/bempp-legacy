@@ -54,9 +54,9 @@ laplace3dAdjointDoubleLayerBoundaryOperator(
   typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
 
   typedef Fiber::Laplace3dAdjointDoubleLayerPotentialKernelFunctor<KernelType>
-  KernelFunctor;
+      KernelFunctor;
   typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
-  TransformationFunctor;
+      TransformationFunctor;
   typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctorExt<
       BasisFunctionType, KernelType, ResultType, 1> IntegrandFunctor;
 
@@ -77,7 +77,6 @@ laplace3dAdjointDoubleLayerBoundaryOperator(
   return BoundaryOperator<BasisFunctionType, ResultType>(context, newOp);
 }
 
-
 template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType>
 laplace3dAdjointDoubleLayerBoundaryOperator(
@@ -85,23 +84,18 @@ laplace3dAdjointDoubleLayerBoundaryOperator(
     const shared_ptr<const Space<BasisFunctionType>> &domain,
     const shared_ptr<const Space<BasisFunctionType>> &range,
     const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
-    const std::string &label, int symmetry){
-
+    const std::string &label, int symmetry) {
 
   shared_ptr<const Context<BasisFunctionType, ResultType>> context(
       new Context<BasisFunctionType, ResultType>(parameterList));
-  return laplace3dAdjointDoubleLayerBoundaryOperator(context, domain, range,
-                                              dualToRange, label, symmetry);
-
-
+  return laplace3dAdjointDoubleLayerBoundaryOperator(
+      context, domain, range, dualToRange, label, symmetry);
 }
-
 
 #define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS, RESULT)                       \
   template BoundaryOperator<BASIS, RESULT>                                     \
   laplace3dAdjointDoubleLayerBoundaryOperator(                                 \
-      const ParameterList&,                                                    \
-      const shared_ptr<const Space<BASIS>> &,                                  \
+      const ParameterList &, const shared_ptr<const Space<BASIS>> &,           \
       const shared_ptr<const Space<BASIS>> &,                                  \
       const shared_ptr<const Space<BASIS>> &, const std::string &, int);       \
   template BoundaryOperator<BASIS, RESULT>                                     \

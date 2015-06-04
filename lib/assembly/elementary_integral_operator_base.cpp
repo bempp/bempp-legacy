@@ -83,7 +83,7 @@ ElementaryIntegralOperatorBase<BasisFunctionType, ResultType>::makeAssembler(
     const AssemblyOptions &options) const {
   typedef Fiber::RawGridGeometry<CoordinateType> RawGridGeometry;
   typedef std::vector<const Fiber::Shapeset<BasisFunctionType> *>
-  ShapesetPtrVector;
+      ShapesetPtrVector;
 
   const bool verbose = (options.verbosityLevel() >= VerbosityLevel::DEFAULT);
 

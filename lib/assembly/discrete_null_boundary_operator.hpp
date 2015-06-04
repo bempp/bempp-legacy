@@ -26,7 +26,6 @@
 
 #include "discrete_boundary_operator.hpp"
 
-
 namespace Bempp {
 
 /** \ingroup discrete_boundary_operators
@@ -60,7 +59,7 @@ private:
                                 const ValueType beta) const;
 
 private:
-/** \cond PRIVATE */
+  /** \cond PRIVATE */
   size_t m_rowCount, m_columnCount;
   /** \endcond */
 };

@@ -18,9 +18,9 @@ namespace Bempp {
 namespace {
 
 struct CompareSharedPtrsToConstAbstractBoundaryOperatorIds {
-  bool operator()(const shared_ptr<const Bempp::AbstractBoundaryOperatorId> &a,
-                  const shared_ptr<const Bempp::AbstractBoundaryOperatorId> &b)
-      const {
+  bool operator()(
+      const shared_ptr<const Bempp::AbstractBoundaryOperatorId> &a,
+      const shared_ptr<const Bempp::AbstractBoundaryOperatorId> &b) const {
     return *a == *b;
   }
 };
@@ -35,7 +35,7 @@ struct DiscreteBoundaryOperatorCache<BasisFunctionType, ResultType>::Impl {
       boost::weak_ptr<const DiscreteBoundaryOperator<ResultType>>,
       tbb::tbb_hash<shared_ptr<const AbstractBoundaryOperatorId>>,
       CompareSharedPtrsToConstAbstractBoundaryOperatorIds>
-  DiscreteBoundaryOperatorMap;
+      DiscreteBoundaryOperatorMap;
 
   mutable DiscreteBoundaryOperatorMap discreteOps;
 };
@@ -109,7 +109,7 @@ DiscreteBoundaryOperatorCache<BasisFunctionType, ResultType>::aliveOperators()
   typedef DiscreteBoundaryOperator<ResultType> DiscreteOp;
   std::vector<shared_ptr<const DiscreteOp>> result;
   typedef typename Impl::DiscreteBoundaryOperatorMap::const_iterator
-  const_iterator;
+      const_iterator;
   for (const_iterator it = m_impl->discreteOps.begin();
        it != m_impl->discreteOps.begin(); ++it) {
     if (shared_ptr<const DiscreteOp> cachedDiscreteOp = it->second.lock()) {

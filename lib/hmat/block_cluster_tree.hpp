@@ -11,8 +11,8 @@
 
 namespace hmat {
 
-typedef std::function<bool(const ClusterTreeNodeData &, const ClusterTreeNodeData &)>
-AdmissibilityFunction;
+typedef std::function<bool(const ClusterTreeNodeData &,
+                           const ClusterTreeNodeData &)> AdmissibilityFunction;
 
 template <int N> struct BlockClusterTreeNodeData {
 
@@ -27,12 +27,12 @@ template <int N> struct BlockClusterTreeNodeData {
   bool admissible;
 };
 
-template <int N >
-using BlockClusterTreeNode = SimpleTreeNode<BlockClusterTreeNodeData<N>, N *N>;
+template <int N>
+using BlockClusterTreeNode = SimpleTreeNode<BlockClusterTreeNodeData<N>, N * N>;
 
 typedef BlockClusterTreeNode<2> DefaultBlockClusterTreeNodeType;
 
-template <int N > class BlockClusterTree {
+template <int N> class BlockClusterTree {
 
 public:
   BlockClusterTree(const shared_ptr<const ClusterTree<N>> &rowClusterTree,
@@ -40,8 +40,8 @@ public:
                    int maxBlockSize,
                    const AdmissibilityFunction &admissibilityFunction);
 
-//  void writeToPdfFile(const std::string &fname, double widthInPoints,
-//                      double heightInPoints) const;
+  //  void writeToPdfFile(const std::string &fname, double widthInPoints,
+  //                      double heightInPoints) const;
 
   std::size_t rows() const;
   std::size_t columns() const;
@@ -56,8 +56,9 @@ public:
   std::vector<shared_ptr<BlockClusterTreeNode<N>>> leafNodes();
 
 private:
-  void initializeBlockClusterTree(
-      const AdmissibilityFunction &admissibilityFunction, int maxBlockSize);
+  void
+  initializeBlockClusterTree(const AdmissibilityFunction &admissibilityFunction,
+                             int maxBlockSize);
 
   shared_ptr<const ClusterTree<N>> m_rowClusterTree;
   shared_ptr<const ClusterTree<N>> m_columnClusterTree;
@@ -71,12 +72,12 @@ void getBlockClusterTreeNodeDimensions(
     IndexRangeType &rowClusterRange, IndexRangeType &columnClusterRange,
     std::size_t &numberOfRows, std::size_t &numberOfColumns);
 
-
 class StrongAdmissibility {
 public:
   StrongAdmissibility(double eta);
 
-  bool operator()(const ClusterTreeNodeData &cluster1, const ClusterTreeNodeData &cluster2) const;
+  bool operator()(const ClusterTreeNodeData &cluster1,
+                  const ClusterTreeNodeData &cluster2) const;
 
 private:
   double m_eta;
@@ -84,11 +85,11 @@ private:
 
 class WeakAdmissibility {
 public:
-  bool operator()(const ClusterTreeNodeData &cluster1, const ClusterTreeNodeData &cluster2) const;
+  bool operator()(const ClusterTreeNodeData &cluster1,
+                  const ClusterTreeNodeData &cluster2) const;
 };
 
 typedef BlockClusterTree<2> DefaultBlockClusterTreeType;
-
 }
 #include "block_cluster_tree_impl.hpp"
 

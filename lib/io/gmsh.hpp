@@ -40,21 +40,13 @@ template <typename BasisFunctionType, typename ResultType> class GridFunction;
 
 struct GmshPostData {
 
-  enum Type {
-    NODE,
-    ELEMENT,
-    ELEMENT_NODE
-  };
+  enum Type { NODE, ELEMENT, ELEMENT_NODE };
 };
 
 class GmshData {
 
 public:
-  enum GmshPostDataType {
-    NODE,
-    ELEMENT,
-    ELEMENT_NODE
-  };
+  enum GmshPostDataType { NODE, ELEMENT, ELEMENT_NODE };
 
   GmshData();
   int numberOfNodes() const;
@@ -315,18 +307,18 @@ GridFunction<BasisFunctionType, ResultType> gridFunctionFromGmsh(
     int index = 0);
 
 template <typename BasisFunctionType, typename ResultType>
-void exportToGmsh(GridFunction<BasisFunctionType, ResultType> gridFunction,
-                  const char *dataLabel, GmshIo &gmshIo,
-                  GmshPostData::Type gmshPostDataType =
-                      GmshPostData::ELEMENT_NODE,
-                  std::string complexMode = "real");
+void
+exportToGmsh(GridFunction<BasisFunctionType, ResultType> gridFunction,
+             const char *dataLabel, GmshIo &gmshIo,
+             GmshPostData::Type gmshPostDataType = GmshPostData::ELEMENT_NODE,
+             std::string complexMode = "real");
 
 template <typename BasisFunctionType, typename ResultType>
-void exportToGmsh(GridFunction<BasisFunctionType, ResultType> gridFunction,
-                  const char *dataLabel, const char *fileName,
-                  GmshPostData::Type gmshPostDataType =
-                      GmshPostData::ELEMENT_NODE,
-                  std::string complexMode = "real");
+void
+exportToGmsh(GridFunction<BasisFunctionType, ResultType> gridFunction,
+             const char *dataLabel, const char *fileName,
+             GmshPostData::Type gmshPostDataType = GmshPostData::ELEMENT_NODE,
+             std::string complexMode = "real");
 
 } // namespace
 #endif

@@ -94,12 +94,12 @@ public:
   virtual ~DefaultLocalAssemblerForIntegralOperatorsOnSurfaces();
 
 public:
-  virtual void
-  evaluateLocalWeakForms(CallVariant callVariant,
-                         const std::vector<int> &elementIndicesA,
-                         int elementIndexB, LocalDofIndex localDofIndexB,
-                         std::vector<Matrix<ResultType>> &result,
-                         CoordinateType nominalDistance = -1.);
+  virtual void evaluateLocalWeakForms(CallVariant callVariant,
+                                      const std::vector<int> &elementIndicesA,
+                                      int elementIndexB,
+                                      LocalDofIndex localDofIndexB,
+                                      std::vector<Matrix<ResultType>> &result,
+                                      CoordinateType nominalDistance = -1.);
 
   virtual void
   evaluateLocalWeakForms(const std::vector<int> &testElementIndices,
@@ -112,7 +112,7 @@ public:
 private:
   /** \cond PRIVATE */
   typedef TestKernelTrialIntegrator<BasisFunctionType, KernelType, ResultType>
-  Integrator;
+      Integrator;
   typedef typename Integrator::ElementIndexPair ElementIndexPair;
   typedef DefaultLocalAssemblerForOperatorsOnSurfacesUtilities<
       BasisFunctionType> Utilities;
@@ -136,7 +136,7 @@ private:
    *  element index (first member) */
   typedef alternative_less<typename ElementIndexPair::first_type,
                            typename ElementIndexPair::second_type>
-  ElementIndexPairCompare;
+      ElementIndexPairCompare;
 
   /** \brief Set of element index pairs.
    *
@@ -147,7 +147,7 @@ private:
    *  indexed with trial element index, and this sorting mode makes it easier
    *  to construct such cache. */
   typedef std::set<ElementIndexPair, ElementIndexPairCompare>
-  ElementIndexPairSet;
+      ElementIndexPairSet;
 
   bool testAndTrialGridsAreIdentical() const;
 
@@ -167,14 +167,14 @@ private:
   shared_ptr<const RawGridGeometry<CoordinateType>> m_testRawGeometry;
   shared_ptr<const RawGridGeometry<CoordinateType>> m_trialRawGeometry;
   shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
-  m_testShapesets;
+      m_testShapesets;
   shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
-  m_trialShapesets;
+      m_trialShapesets;
   shared_ptr<const CollectionOfShapesetTransformations<CoordinateType>>
-  m_testTransformations;
+      m_testTransformations;
   shared_ptr<const CollectionOfKernels<KernelType>> m_kernels;
   shared_ptr<const CollectionOfShapesetTransformations<CoordinateType>>
-  m_trialTransformations;
+      m_trialTransformations;
   shared_ptr<const TestKernelTrialIntegral<BasisFunctionType, KernelType,
                                            ResultType>> m_integral;
   shared_ptr<const OpenClHandler> m_openClHandler;
@@ -189,9 +189,7 @@ private:
   IntegratorMap m_testKernelTrialIntegrators;
   mutable tbb::mutex m_integratorCreationMutex;
 
-  enum {
-    INVALID_INDEX = INT_MAX
-  };
+  enum { INVALID_INDEX = INT_MAX };
   typedef _2dArray<std::pair<int, Matrix<ResultType>>> Cache;
   /** \brief Singular integral cache.
    *

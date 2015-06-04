@@ -26,13 +26,9 @@
 
 #include "../common/multidimensional_arrays.hpp"
 
-
 namespace Fiber {
 
-enum BasisDataType {
-  VALUES = 0x0001,
-  DERIVATIVES = 0x0002
-};
+enum BasisDataType { VALUES = 0x0001, DERIVATIVES = 0x0002 };
 
 /** \cond FORWARD_DECL */
 template <typename ValueType> class ConstBasisDataSlice;

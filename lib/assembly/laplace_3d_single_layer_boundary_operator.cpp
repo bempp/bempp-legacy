@@ -60,9 +60,9 @@ laplace3dSingleLayerBoundaryOperator(
   typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
 
   typedef Fiber::Laplace3dSingleLayerPotentialKernelFunctor<KernelType>
-  KernelFunctor;
+      KernelFunctor;
   typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
-  TransformationFunctor;
+      TransformationFunctor;
   typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctorExt<
       BasisFunctionType, KernelType, ResultType, 1> IntegrandFunctor;
   typedef GeneralElementarySingularIntegralOperator<BasisFunctionType,
@@ -106,8 +106,7 @@ laplace3dSingleLayerBoundaryOperator(
       const shared_ptr<const Space<BASIS>> &, const std::string &, int);       \
   template BoundaryOperator<BASIS, RESULT>                                     \
   laplace3dSingleLayerBoundaryOperator(                                        \
-      const ParameterList&,                                                    \
-      const shared_ptr<const Space<BASIS>> &,                                  \
+      const ParameterList &, const shared_ptr<const Space<BASIS>> &,           \
       const shared_ptr<const Space<BASIS>> &,                                  \
       const shared_ptr<const Space<BASIS>> &, const std::string &, int)
 FIBER_ITERATE_OVER_BASIS_AND_RESULT_TYPES(INSTANTIATE_NONMEMBER_CONSTRUCTOR);

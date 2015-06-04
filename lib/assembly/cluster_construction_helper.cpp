@@ -187,8 +187,7 @@ ClusterConstructionHelper<BasisFunctionType>::constructBemBlockCluster(
     if (trialStrongAdm != useStrongAdmissibilityCondition)
       trialCluster.useStrongAdmissibilityCondition(trialStrongAdm);
     return blockCluster;
-  }
-  catch (...) {
+  } catch (...) {
     // Restore original admissibility condition
     if (testStrongAdm != useStrongAdmissibilityCondition)
       testCluster.useStrongAdmissibilityCondition(testStrongAdm);

@@ -64,7 +64,7 @@ public:
    * ModifiedHelmholtz3dPotentialOperatorBase::CollectionOfBasisTransformations
    */
   typedef typename Base::CollectionOfBasisTransformations
-  CollectionOfBasisTransformations;
+      CollectionOfBasisTransformations;
   /** \copydoc ModifiedHelmholtz3dPotentialOperatorBase::CollectionOfKernels */
   typedef typename Base::CollectionOfKernels CollectionOfKernels;
   /** \copydoc ModifiedHelmholtz3dPotentialOperatorBase::KernelTrialIntegral */

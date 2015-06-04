@@ -68,9 +68,9 @@ private:
   const GeometryFactory &m_geometryFactory;
   const RawGridGeometry<CoordinateType> &m_rawGeometry;
   const CollectionOfShapesetTransformations<CoordinateType> &
-  m_testTransformations;
+      m_testTransformations;
   const CollectionOfShapesetTransformations<CoordinateType> &
-  m_trialTransformations;
+      m_trialTransformations;
   const TestTrialIntegral<BasisFunctionType, ResultType> &m_integral;
 
   const OpenClHandler &m_openClHandler;

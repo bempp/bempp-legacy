@@ -37,9 +37,9 @@ namespace Bempp {
 template <typename BasisFunctionType>
 struct Maxwell3dFarFieldSingleLayerPotentialOperatorImpl {
   typedef Maxwell3dFarFieldSingleLayerPotentialOperatorImpl<BasisFunctionType>
-  This;
+      This;
   typedef Helmholtz3dPotentialOperatorBase<This, BasisFunctionType>
-  PotentialOperatorBase;
+      PotentialOperatorBase;
   typedef typename PotentialOperatorBase::KernelType KernelType;
   typedef typename PotentialOperatorBase::ResultType ResultType;
   typedef typename PotentialOperatorBase::CoordinateType CoordinateType;
@@ -59,7 +59,7 @@ struct Maxwell3dFarFieldSingleLayerPotentialOperatorImpl {
 
   Fiber::DefaultCollectionOfKernels<KernelFunctor> kernels;
   Fiber::DefaultCollectionOfBasisTransformations<TransformationFunctor>
-  transformations;
+      transformations;
   Fiber::DefaultKernelTrialIntegral<IntegrandFunctor> integral;
 };
 /** \endcond */

@@ -13,11 +13,11 @@ namespace hmat {
 struct ClusterTreeNodeData {
 
   ClusterTreeNodeData(const IndexRangeType &indexRange,
-                      const std::vector<Point>& centerPoints,
-                      const std::vector<Point>& dofBoundingPoints);
+                      const std::vector<Point> &centerPoints,
+                      const std::vector<Point> &dofBoundingPoints);
 
-  void geometryData(const std::vector<Point>& centerPoints,
-      const std::vector<Point>& dofBoundingPoints);
+  void geometryData(const std::vector<Point> &centerPoints,
+                    const std::vector<Point> &dofBoundingPoints);
 
   IndexRangeType indexRange;
   BoundingBox boundingBox;

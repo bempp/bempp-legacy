@@ -29,8 +29,7 @@ namespace Bempp {
 
 template <typename ResultType>
 typename boost::enable_if<boost::is_complex<ResultType>, void>::type
-exportSingleDataSetToVtk(VtkWriter &vtkWriter,
-                         const Matrix<ResultType> &data,
+exportSingleDataSetToVtk(VtkWriter &vtkWriter, const Matrix<ResultType> &data,
                          VtkWriter::DataType dataType, const char *dataLabel,
                          const char *fileNamesBase, const char *filesPath,
                          VtkWriter::OutputType outputType) {
@@ -57,8 +56,7 @@ exportSingleDataSetToVtk(VtkWriter &vtkWriter,
 
 template <typename ResultType>
 typename boost::disable_if<boost::is_complex<ResultType>, void>::type
-exportSingleDataSetToVtk(VtkWriter &vtkWriter,
-                         const Matrix<ResultType> &data,
+exportSingleDataSetToVtk(VtkWriter &vtkWriter, const Matrix<ResultType> &data,
                          VtkWriter::DataType dataType, const char *dataLabel,
                          const char *fileNamesBase, const char *filesPath,
                          VtkWriter::OutputType outputType) {
@@ -80,12 +78,13 @@ exportSingleDataSetToVtk(VtkWriter &vtkWriter, const Matrix<float> &data,
                          VtkWriter::OutputType outputType);
 
 #if defined(ENABLE_COMPLEX_KERNELS) || defined(ENABLE_COMPLEX_BASIS_FUNCTIONS)
-template void
-exportSingleDataSetToVtk(VtkWriter &vtkWriter,
-                         const Matrix<std::complex<float>> &data,
-                         VtkWriter::DataType dataType, const char *dataLabel,
-                         const char *fileNamesBase, const char *filesPath,
-                         VtkWriter::OutputType outputType);
+template void exportSingleDataSetToVtk(VtkWriter &vtkWriter,
+                                       const Matrix<std::complex<float>> &data,
+                                       VtkWriter::DataType dataType,
+                                       const char *dataLabel,
+                                       const char *fileNamesBase,
+                                       const char *filesPath,
+                                       VtkWriter::OutputType outputType);
 #endif
 
 #endif
@@ -98,12 +97,13 @@ exportSingleDataSetToVtk(VtkWriter &vtkWriter, const Matrix<double> &data,
                          VtkWriter::OutputType outputType);
 
 #if defined(ENABLE_COMPLEX_KERNELS) || defined(ENABLE_COMPLEX_BASIS_FUNCTIONS)
-template void
-exportSingleDataSetToVtk(VtkWriter &vtkWriter,
-                         const Matrix<std::complex<double>> &data,
-                         VtkWriter::DataType dataType, const char *dataLabel,
-                         const char *fileNamesBase, const char *filesPath,
-                         VtkWriter::OutputType outputType);
+template void exportSingleDataSetToVtk(VtkWriter &vtkWriter,
+                                       const Matrix<std::complex<double>> &data,
+                                       VtkWriter::DataType dataType,
+                                       const char *dataLabel,
+                                       const char *fileNamesBase,
+                                       const char *filesPath,
+                                       VtkWriter::OutputType outputType);
 #endif
 
 #endif
