@@ -52,23 +52,26 @@ ParameterList GlobalParameters::parameterList() {
   // Order for singular double integrals.
   parameters.put("options.quadrature.doubleSingular", static_cast<int>(6));
 
-  auto createQuadratureOptions =
-      [&parameters](const std::string name, double relDist, int singleOrder,
-                    int doubleOrder) {
+  auto createQuadratureOptions = [&parameters](const std::string name,
+                                               double relDist, int singleOrder,
+                                               int doubleOrder) {
 
     // Relative distance of quadrature point to element.
-    parameters.put((std::string("options.quadrature.") + name +
-                    std::string(".maxRelDist")).c_str(),
-                   static_cast<double>(relDist));
+    parameters.put(
+        (std::string("options.quadrature.") + name + std::string(".maxRelDist"))
+            .c_str(),
+        static_cast<double>(relDist));
 
     // Order of single regular integrals.
     parameters.put((std::string("options.quadrature.") + name +
-                    std::string(".singleOrder")).c_str(),
+                    std::string(".singleOrder"))
+                       .c_str(),
                    static_cast<int>(singleOrder));
 
     // Order of double regular integrals.
     parameters.put((std::string("options.quadrature.") + name +
-                    std::string(".doubleOrder")).c_str(),
+                    std::string(".doubleOrder"))
+                       .c_str(),
                    static_cast<int>(doubleOrder));
 
   };

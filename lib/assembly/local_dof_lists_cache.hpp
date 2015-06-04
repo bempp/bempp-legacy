@@ -69,23 +69,23 @@ public:
                                                          int indexCount);
 
 private:
-  void findLocalDofs(
-      int start, int indexCount,
-      std::vector<typename LocalDofLists<BasisFunctionType>::DofIndex> &
-          originalIndices,
-      std::vector<int> &elementIndices,
-      std::vector<std::vector<LocalDofIndex>> &localDofIndices,
-      std::vector<std::vector<BasisFunctionType>> &localDofWeights,
-      std::vector<std::vector<int>> &arrayIndices) const;
+  void
+  findLocalDofs(int start, int indexCount,
+                std::vector<typename LocalDofLists<BasisFunctionType>::DofIndex>
+                    &originalIndices,
+                std::vector<int> &elementIndices,
+                std::vector<std::vector<LocalDofIndex>> &localDofIndices,
+                std::vector<std::vector<BasisFunctionType>> &localDofWeights,
+                std::vector<std::vector<int>> &arrayIndices) const;
 
-  void findLocalDofs(
-      int index,
-      std::vector<typename LocalDofLists<BasisFunctionType>::DofIndex> &
-          originalIndices,
-      std::vector<int> &elementIndices,
-      std::vector<std::vector<LocalDofIndex>> &localDofIndices,
-      std::vector<std::vector<BasisFunctionType>> &localDofWeights,
-      std::vector<std::vector<int>> &arrayIndices) const;
+  void
+  findLocalDofs(int index,
+                std::vector<typename LocalDofLists<BasisFunctionType>::DofIndex>
+                    &originalIndices,
+                std::vector<int> &elementIndices,
+                std::vector<std::vector<LocalDofIndex>> &localDofIndices,
+                std::vector<std::vector<BasisFunctionType>> &localDofWeights,
+                std::vector<std::vector<int>> &arrayIndices) const;
 
 private:
   /** \cond PRIVATE */

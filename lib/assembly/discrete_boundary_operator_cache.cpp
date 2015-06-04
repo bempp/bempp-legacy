@@ -108,8 +108,8 @@ DiscreteBoundaryOperatorCache<BasisFunctionType, ResultType>::aliveOperators()
     const {
   typedef DiscreteBoundaryOperator<ResultType> DiscreteOp;
   std::vector<shared_ptr<const DiscreteOp>> result;
-  typedef typename Impl::DiscreteBoundaryOperatorMap::const_iterator
-      const_iterator;
+  typedef
+      typename Impl::DiscreteBoundaryOperatorMap::const_iterator const_iterator;
   for (const_iterator it = m_impl->discreteOps.begin();
        it != m_impl->discreteOps.begin(); ++it) {
     if (shared_ptr<const DiscreteOp> cachedDiscreteOp = it->second.lock()) {

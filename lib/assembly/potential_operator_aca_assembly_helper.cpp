@@ -98,12 +98,10 @@ PotentialOperatorAcaAssemblyHelper<BasisFunctionType, ResultType>::
 template <typename BasisFunctionType, typename ResultType>
 typename PotentialOperatorAcaAssemblyHelper<BasisFunctionType,
                                             ResultType>::MagnitudeType
-PotentialOperatorAcaAssemblyHelper<
-    BasisFunctionType, ResultType>::estimateMinimumDistance(const cluster *c1,
-                                                            const cluster *c2)
-    const {
-  typedef typename Fiber::ScalarTraits<BasisFunctionType>::RealType
-      CoordinateType;
+PotentialOperatorAcaAssemblyHelper<BasisFunctionType, ResultType>::
+    estimateMinimumDistance(const cluster *c1, const cluster *c2) const {
+  typedef
+      typename Fiber::ScalarTraits<BasisFunctionType>::RealType CoordinateType;
   typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
   typedef ExtendedBemCluster<AhmedDofType> AhmedBemCluster;
 
@@ -132,8 +130,8 @@ void PotentialOperatorAcaAssemblyHelper<BasisFunctionType, ResultType>::cmpbl(
   if (countAccessedEntries)
     m_accessedEntryCount += n1 * n2;
 
-  typedef typename Fiber::ScalarTraits<BasisFunctionType>::RealType
-      CoordinateType;
+  typedef
+      typename Fiber::ScalarTraits<BasisFunctionType>::RealType CoordinateType;
   typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
   typedef ExtendedBemCluster<AhmedDofType> AhmedBemCluster;
 
@@ -280,10 +278,11 @@ void PotentialOperatorAcaAssemblyHelper<BasisFunctionType, ResultType>::cmpbl(
 }
 
 template <typename BasisFunctionType, typename ResultType>
-void
-PotentialOperatorAcaAssemblyHelper<BasisFunctionType, ResultType>::cmpblsym(
-    unsigned b1, unsigned n1, AhmedResultType *ahmedData, const cluster *c1,
-    bool countAccessedEntries) const {
+void PotentialOperatorAcaAssemblyHelper<
+    BasisFunctionType, ResultType>::cmpblsym(unsigned b1, unsigned n1,
+                                             AhmedResultType *ahmedData,
+                                             const cluster *c1,
+                                             bool countAccessedEntries) const {
   if (countAccessedEntries)
     m_accessedEntryCount += n1 * n1;
 
@@ -305,8 +304,8 @@ PotentialOperatorAcaAssemblyHelper<BasisFunctionType, ResultType>::scale(
     unsigned b1, unsigned n1, unsigned b2, unsigned n2, const cluster *c1,
     const cluster *c2) const {
   //    return m_options.acaOptions().scaling;
-  typedef typename Fiber::ScalarTraits<BasisFunctionType>::RealType
-      CoordinateType;
+  typedef
+      typename Fiber::ScalarTraits<BasisFunctionType>::RealType CoordinateType;
   typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
   typedef ExtendedBemCluster<AhmedDofType> AhmedBemCluster;
 
@@ -348,8 +347,9 @@ PotentialOperatorAcaAssemblyHelper<
 }
 
 template <typename BasisFunctionType, typename ResultType>
-size_t PotentialOperatorAcaAssemblyHelper<
-    BasisFunctionType, ResultType>::accessedEntryCount() const {
+size_t
+PotentialOperatorAcaAssemblyHelper<BasisFunctionType,
+                                   ResultType>::accessedEntryCount() const {
   return m_accessedEntryCount;
 }
 

@@ -106,12 +106,12 @@ void gatherGlobalDofs(
 }
 
 template <typename ValueType>
-void
-generateTriplets(RealSparseMatrix &mat,
-                 const std::vector<std::vector<GlobalDofIndex>> &testGDofs,
-                 const std::vector<std::vector<GlobalDofIndex>> &trialGDofs,
-                 const std::vector<Matrix<ValueType>> &localResult,
-                 int elementCount, std::vector<Eigen::Triplet<double>> &result);
+void generateTriplets(
+    RealSparseMatrix &mat,
+    const std::vector<std::vector<GlobalDofIndex>> &testGDofs,
+    const std::vector<std::vector<GlobalDofIndex>> &trialGDofs,
+    const std::vector<Matrix<ValueType>> &localResult, int elementCount,
+    std::vector<Eigen::Triplet<double>> &result);
 
 template <>
 void generateTriplets<double>(

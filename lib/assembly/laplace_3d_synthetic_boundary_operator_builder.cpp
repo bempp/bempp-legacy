@@ -34,9 +34,9 @@ namespace Bempp {
 template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType>
 laplace3dSyntheticBoundaryOperator(
-    BoundaryOperator<BasisFunctionType, ResultType>(*constructor)(
-        const shared_ptr<
-            const Context<BasisFunctionType, ResultType>> & /*context*/,
+    BoundaryOperator<BasisFunctionType, ResultType> (*constructor)(
+        const shared_ptr<const Context<BasisFunctionType, ResultType>>
+            & /*context*/,
         const shared_ptr<const Space<BasisFunctionType>> & /*domain*/,
         const shared_ptr<const Space<BasisFunctionType>> & /*range*/,
         const shared_ptr<const Space<BasisFunctionType>> & /*dualToRange*/,
@@ -93,7 +93,7 @@ laplace3dSyntheticBoundaryOperator(
 
 #define INSTANTIATE_FUNCTION(BASIS, RESULT)                                    \
   template BoundaryOperator<BASIS, RESULT> laplace3dSyntheticBoundaryOperator( \
-      BoundaryOperator<BASIS, RESULT>(*)(                                      \
+      BoundaryOperator<BASIS, RESULT> (*)(                                     \
           const shared_ptr<const Context<BASIS, RESULT>> & /*context*/,        \
           const shared_ptr<const Space<BASIS>> & /*domain*/,                   \
           const shared_ptr<const Space<BASIS>> & /*range*/,                    \

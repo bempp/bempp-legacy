@@ -172,10 +172,10 @@ public:
       const TrialTransformationsFunctor &trialTransformationsFunctor,
       const IntegrandFunctor &integrandFunctor,
       const OffDiagonalKernelFunctor &offDiagonalKernelFunctor,
-      const OffDiagonalTestTransformationsFunctor &
-          offDiagonalTestTransformationsFunctor,
-      const OffDiagonalTrialTransformationsFunctor &
-          offDiagonalTrialTransformationsFunctor,
+      const OffDiagonalTestTransformationsFunctor
+          &offDiagonalTestTransformationsFunctor,
+      const OffDiagonalTrialTransformationsFunctor
+          &offDiagonalTrialTransformationsFunctor,
       const OffDiagonalIntegrandFunctor &offDiagonalIntegrandFunctor);
 
   /** \overload
@@ -201,10 +201,10 @@ public:
       const shared_ptr<Fiber::TestKernelTrialIntegral<
           BasisFunctionType_, KernelType_, ResultType_>> &integral,
       const OffDiagonalKernelFunctor &offDiagonalKernelFunctor,
-      const OffDiagonalTestTransformationsFunctor &
-          offDiagonalTestTransformationsFunctor,
-      const OffDiagonalTrialTransformationsFunctor &
-          offDiagonalTrialTransformationsFunctor,
+      const OffDiagonalTestTransformationsFunctor
+          &offDiagonalTestTransformationsFunctor,
+      const OffDiagonalTrialTransformationsFunctor
+          &offDiagonalTrialTransformationsFunctor,
       const shared_ptr<Fiber::TestKernelTrialIntegral<
           BasisFunctionType_, KernelType_, ResultType_>> &offDiagonalIntegral);
 

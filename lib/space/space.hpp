@@ -81,11 +81,11 @@ public:
   /** \brief Instantiation type **/
   typedef BASISFUNCTIONTYPE BasisFunctionType;
   /** \brief Type used to represent coordinates. */
-  typedef typename Fiber::ScalarTraits<BasisFunctionType>::RealType
-      CoordinateType;
+  typedef
+      typename Fiber::ScalarTraits<BasisFunctionType>::RealType CoordinateType;
   /** \brief Equivalent to std::complex<CoordinateType>. */
-  typedef typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType
-      ComplexType;
+  typedef
+      typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType ComplexType;
   /** \brief Appropriate instantiation of
    * Fiber::CollectionOfShapesetTransformations. */
   typedef Fiber::CollectionOfShapesetTransformations<CoordinateType>
@@ -634,8 +634,8 @@ void getAllShapesets(
  *  \deprecated This function is deprecated. Use getAllShapesets() instead. */
 template <typename BasisFunctionType>
 void BEMPP_DEPRECATED
-    getAllBases(const Space<BasisFunctionType> &space,
-                std::vector<const Fiber::Basis<BasisFunctionType> *> &bases);
+getAllBases(const Space<BasisFunctionType> &space,
+            std::vector<const Fiber::Basis<BasisFunctionType> *> &bases);
 
 /** \relates Space
  *  \brief Return the maximum polynomial order of the shapesets

@@ -41,34 +41,34 @@ public:
       QuadratureDescriptorSelectorForGridFunctions<CoordinateType>>
   makeQuadratureDescriptorSelectorForGridFunctions(
       const shared_ptr<const RawGridGeometry<CoordinateType>> &rawGeometry,
-      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
-          testShapesets) const;
+      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
+          &testShapesets) const;
 
   virtual shared_ptr<
       QuadratureDescriptorSelectorForIntegralOperators<CoordinateType>>
   makeQuadratureDescriptorSelectorForIntegralOperators(
       const shared_ptr<const RawGridGeometry<CoordinateType>> &testRawGeometry,
       const shared_ptr<const RawGridGeometry<CoordinateType>> &trialRawGeometry,
-      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
-          testShapesets,
-      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
-          trialShapesets) const;
+      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
+          &testShapesets,
+      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
+          &trialShapesets) const;
 
   virtual shared_ptr<
       QuadratureDescriptorSelectorForLocalOperators<CoordinateType>>
   makeQuadratureDescriptorSelectorForLocalOperators(
       const shared_ptr<const RawGridGeometry<CoordinateType>> &rawGeometry,
-      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
-          testShapesets,
-      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
-          trialShapesets) const;
+      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
+          &testShapesets,
+      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
+          &trialShapesets) const;
 
   virtual shared_ptr<
       QuadratureDescriptorSelectorForPotentialOperators<BasisFunctionType>>
   makeQuadratureDescriptorSelectorForPotentialOperators(
       const shared_ptr<const RawGridGeometry<CoordinateType>> &rawGeometry,
-      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
-          trialShapesets) const;
+      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
+          &trialShapesets) const;
 
 private:
   AccuracyOptionsEx m_accuracyOptions;

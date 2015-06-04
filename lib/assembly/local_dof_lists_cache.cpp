@@ -87,8 +87,8 @@ LocalDofListsCache<BasisFunctionType>::get(int start, int indexCount) {
 template <typename BasisFunctionType>
 void LocalDofListsCache<BasisFunctionType>::findLocalDofs(
     int start, int indexCount,
-    std::vector<typename LocalDofLists<BasisFunctionType>::DofIndex> &
-        originalIndices,
+    std::vector<typename LocalDofLists<BasisFunctionType>::DofIndex>
+        &originalIndices,
     std::vector<int> &elementIndices,
     std::vector<std::vector<LocalDofIndex>> &localDofIndices,
     std::vector<std::vector<BasisFunctionType>> &localDofWeights,
@@ -174,9 +174,8 @@ void LocalDofListsCache<BasisFunctionType>::findLocalDofs(
 
 template <typename BasisFunctionType>
 void LocalDofListsCache<BasisFunctionType>::findLocalDofs(
-    int index,
-    std::vector<typename LocalDofLists<BasisFunctionType>::DofIndex> &
-        originalIndices,
+    int index, std::vector<typename LocalDofLists<BasisFunctionType>::DofIndex>
+                   &originalIndices,
     std::vector<int> &elementIndices,
     std::vector<std::vector<LocalDofIndex>> &localDofIndices,
     std::vector<std::vector<BasisFunctionType>> &localDofWeights,

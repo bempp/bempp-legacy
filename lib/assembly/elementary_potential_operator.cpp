@@ -233,12 +233,11 @@ ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 std::unique_ptr<typename ElementaryPotentialOperator<
     BasisFunctionType, KernelType, ResultType>::LocalAssembler>
-ElementaryPotentialOperator<
-    BasisFunctionType, KernelType,
-    ResultType>::makeAssembler(const Space<BasisFunctionType> &space,
-                               const Matrix<CoordinateType> &evaluationPoints,
-                               const QuadratureStrategy &quadStrategy,
-                               const EvaluationOptions &options) const {
+ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
+    makeAssembler(const Space<BasisFunctionType> &space,
+                  const Matrix<CoordinateType> &evaluationPoints,
+                  const QuadratureStrategy &quadStrategy,
+                  const EvaluationOptions &options) const {
   // Collect the standard set of data necessary for construction of
   // assemblers
   typedef Fiber::RawGridGeometry<CoordinateType> RawGridGeometry;

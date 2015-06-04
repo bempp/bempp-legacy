@@ -246,8 +246,8 @@ void save_arma_matrix(const arma::Mat<std::complex<T>> &a,
 
 template <typename ValueType>
 void dumpDenseBlocks(
-    typename DiscreteAcaBoundaryOperator<ValueType>::AhmedBemBlcluster *
-        clusterTree,
+    typename DiscreteAcaBoundaryOperator<ValueType>::AhmedBemBlcluster
+        *clusterTree,
     typename DiscreteAcaBoundaryOperator<ValueType>::AhmedMblockArray &blocks,
     const std::vector<unsigned int> &p2oRows,
     const std::vector<unsigned int> &p2oCols,
@@ -570,8 +570,8 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
     const Space<BasisFunctionType> &testSpace,
     const Space<BasisFunctionType> &trialSpace,
     const std::vector<LocalAssemblerForIntegralOperators *> &localAssemblers,
-    const std::vector<LocalAssemblerForIntegralOperators *> &
-        localAssemblersForAdmissibleBlocks,
+    const std::vector<LocalAssemblerForIntegralOperators *>
+        &localAssemblersForAdmissibleBlocks,
     const std::vector<const DiscreteBndOp *> &sparseTermsToAdd,
     const std::vector<ResultType> &denseTermMultipliers,
     const std::vector<ResultType> &sparseTermMultipliers,
@@ -699,9 +699,10 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
       // consumption) with the strong admissibility condition
       (testSpace.isDiscontinuous() && trialSpace.isDiscontinuous());
   shared_ptr<AhmedBemBlcluster> blclusterTree(
-      CCH::constructBemBlockCluster(
-          acaOptions, symmetric, *testClusterTree, *trialClusterTree,
-          useStrongAdmissibilityCondition, blockCount).release());
+      CCH::constructBemBlockCluster(acaOptions, symmetric, *testClusterTree,
+                                    *trialClusterTree,
+                                    useStrongAdmissibilityCondition, blockCount)
+          .release());
   shared_ptr<AhmedBemBlcluster> localBlclusterTree = blclusterTree;
   if (!indexWithGlobalDofs &&
       (!testSpace.isDiscontinuous() || !trialSpace.isDiscontinuous())) {
@@ -710,7 +711,8 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
                                  acaOptions, symmetric, *testLocalClusterTree,
                                  *trialLocalClusterTree,
                                  useStrongAdmissibilityCondition,
-                                 localBlockCount).release());
+                                 localBlockCount)
+                                 .release());
     CCH::truncateBemBlockCluster(localBlclusterTree.get(), blclusterTree.get());
     if (localBlclusterTree->nleaves() != blclusterTree->nleaves())
       throw std::runtime_error(
@@ -768,15 +770,17 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
   if (!indexWithGlobalDofs) {
     typedef DiscreteSparseBoundaryOperator<ResultType> SparseOp;
     if (!testSpace.isDiscontinuous()) {
-      shared_ptr<SparseOp> op = constructOperatorMappingGlobalToFlatLocalDofs<
-          BasisFunctionType, ResultType>(testSpace);
+      shared_ptr<SparseOp> op =
+          constructOperatorMappingGlobalToFlatLocalDofs<BasisFunctionType,
+                                                        ResultType>(testSpace);
       testGlobalToLocal = op->epetraMatrix();
       testGlobalToLocal = permuteEpetraCrsMatrix(
           *testGlobalToLocal, *test_p2oPermutation, *testLocal_o2pPermutation);
     }
     if (!trialSpace.isDiscontinuous()) {
-      shared_ptr<SparseOp> op = constructOperatorMappingGlobalToFlatLocalDofs<
-          BasisFunctionType, ResultType>(trialSpace);
+      shared_ptr<SparseOp> op =
+          constructOperatorMappingGlobalToFlatLocalDofs<BasisFunctionType,
+                                                        ResultType>(trialSpace);
       trialGlobalToLocal = op->epetraMatrix();
       trialGlobalToLocal =
           permuteEpetraCrsMatrix(*trialGlobalToLocal, *trial_p2oPermutation,
@@ -906,8 +910,8 @@ AcaGlobalAssembler<BasisFunctionType, ResultType>::assemblePotentialOperator(
   shared_ptr<AhmedBemBlcluster> bemBlclusterTree(
       CCH::constructBemBlockCluster(acaOptions, false /* symmetric */,
                                     *testClusterTree, *trialClusterTree,
-                                    useStrongAdmissibilityCondition,
-                                    blockCount).release());
+                                    useStrongAdmissibilityCondition, blockCount)
+          .release());
 
   if (verbosityAtLeastHigh)
     std::cout << "Mblock count: " << blockCount << std::endl;

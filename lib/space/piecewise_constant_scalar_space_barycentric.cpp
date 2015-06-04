@@ -71,23 +71,20 @@ PiecewiseConstantScalarSpaceBarycentric<BasisFunctionType>::discontinuousSpace(
 }
 
 template <typename BasisFunctionType>
-bool
-PiecewiseConstantScalarSpaceBarycentric<BasisFunctionType>::isDiscontinuous()
-    const {
+bool PiecewiseConstantScalarSpaceBarycentric<
+    BasisFunctionType>::isDiscontinuous() const {
   return false;
 }
 
 template <typename BasisFunctionType>
-int
-PiecewiseConstantScalarSpaceBarycentric<BasisFunctionType>::domainDimension()
-    const {
+int PiecewiseConstantScalarSpaceBarycentric<
+    BasisFunctionType>::domainDimension() const {
   return this->grid()->dim();
 }
 
 template <typename BasisFunctionType>
-int
-PiecewiseConstantScalarSpaceBarycentric<BasisFunctionType>::codomainDimension()
-    const {
+int PiecewiseConstantScalarSpaceBarycentric<
+    BasisFunctionType>::codomainDimension() const {
   return 1;
 }
 
@@ -112,9 +109,9 @@ PiecewiseConstantScalarSpaceBarycentric<BasisFunctionType>::elementVariant(
 }
 
 template <typename BasisFunctionType>
-bool
-PiecewiseConstantScalarSpaceBarycentric<BasisFunctionType>::spaceIsCompatible(
-    const Space<BasisFunctionType> &other) const {
+bool PiecewiseConstantScalarSpaceBarycentric<
+    BasisFunctionType>::spaceIsCompatible(const Space<BasisFunctionType> &other)
+    const {
 
   if (other.grid().get() == this->grid().get()) {
     return (other.spaceIdentifier() == this->spaceIdentifier());
@@ -141,9 +138,9 @@ PiecewiseConstantScalarSpaceBarycentric<BasisFunctionType>::barycentricSpace(
 }
 
 template <typename BasisFunctionType>
-void
-PiecewiseConstantScalarSpaceBarycentric<BasisFunctionType>::setElementVariant(
-    const Entity<0> &element, ElementVariant variant) {
+void PiecewiseConstantScalarSpaceBarycentric<
+    BasisFunctionType>::setElementVariant(const Entity<0> &element,
+                                          ElementVariant variant) {
   if (variant != elementVariant(element))
     // for this space, the element variants are unmodifiable,
     throw std::runtime_error("PiecewiseConstantScalarSpaceBarycentric::"
@@ -241,29 +238,26 @@ void PiecewiseConstantScalarSpaceBarycentric<BasisFunctionType>::getGlobalDofs(
 }
 
 template <typename BasisFunctionType>
-void
-PiecewiseConstantScalarSpaceBarycentric<BasisFunctionType>::global2localDofs(
-    const std::vector<GlobalDofIndex> &globalDofs,
-    std::vector<std::vector<LocalDof>> &localDofs) const {
+void PiecewiseConstantScalarSpaceBarycentric<BasisFunctionType>::
+    global2localDofs(const std::vector<GlobalDofIndex> &globalDofs,
+                     std::vector<std::vector<LocalDof>> &localDofs) const {
   localDofs.resize(globalDofs.size());
   for (size_t i = 0; i < globalDofs.size(); ++i)
     localDofs[i] = m_global2localDofs[globalDofs[i]];
 }
 
 template <typename BasisFunctionType>
-void
-PiecewiseConstantScalarSpaceBarycentric<BasisFunctionType>::flatLocal2localDofs(
-    const std::vector<FlatLocalDofIndex> &flatLocalDofs,
-    std::vector<LocalDof> &localDofs) const {
+void PiecewiseConstantScalarSpaceBarycentric<BasisFunctionType>::
+    flatLocal2localDofs(const std::vector<FlatLocalDofIndex> &flatLocalDofs,
+                        std::vector<LocalDof> &localDofs) const {
   localDofs.resize(flatLocalDofs.size());
   for (size_t i = 0; i < flatLocalDofs.size(); ++i)
     localDofs[i] = m_flatLocal2localDofs[flatLocalDofs[i]];
 }
 
 template <typename BasisFunctionType>
-void PiecewiseConstantScalarSpaceBarycentric<
-    BasisFunctionType>::getGlobalDofInterpolationPoints(Matrix<CoordinateType> &
-                                                            points) const {
+void PiecewiseConstantScalarSpaceBarycentric<BasisFunctionType>::
+    getGlobalDofInterpolationPoints(Matrix<CoordinateType> &points) const {
   SpaceHelper<BasisFunctionType>::
       getGlobalDofInterpolationPoints_defaultImplementation(*this, points);
 }
@@ -318,9 +312,8 @@ void PiecewiseConstantScalarSpaceBarycentric<BasisFunctionType>::
 }
 
 template <typename BasisFunctionType>
-void
-PiecewiseConstantScalarSpaceBarycentric<BasisFunctionType>::getGlobalDofNormals(
-    std::vector<Point3D<CoordinateType>> &normals) const {
+void PiecewiseConstantScalarSpaceBarycentric<BasisFunctionType>::
+    getGlobalDofNormals(std::vector<Point3D<CoordinateType>> &normals) const {
   SpaceHelper<BasisFunctionType>::getGlobalDofNormals_defaultImplementation(
       this->gridView(), m_global2localDofs, normals);
 }
@@ -376,11 +369,10 @@ void PiecewiseConstantScalarSpaceBarycentric<BasisFunctionType>::dumpClusterIds(
 }
 
 template <typename BasisFunctionType>
-void
-PiecewiseConstantScalarSpaceBarycentric<BasisFunctionType>::dumpClusterIdsEx(
-    const char *fileName,
-    const std::vector<unsigned int> &clusterIdsOfGlobalDofs,
-    DofType dofType) const {
+void PiecewiseConstantScalarSpaceBarycentric<BasisFunctionType>::
+    dumpClusterIdsEx(const char *fileName,
+                     const std::vector<unsigned int> &clusterIdsOfGlobalDofs,
+                     DofType dofType) const {
   if (dofType != GLOBAL_DOFS && dofType != FLAT_LOCAL_DOFS)
     throw std::invalid_argument("PiecewiseConstantScalarSpaceBarycentric::"
                                 "dumpClusterIds(): invalid DOF type");

@@ -34,9 +34,9 @@ namespace Bempp {
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType>
 modifiedHelmholtz3dSyntheticBoundaryOperator(
-    BoundaryOperator<BasisFunctionType, ResultType>(*constructor)(
-        const shared_ptr<
-            const Context<BasisFunctionType, ResultType>> & /*context*/,
+    BoundaryOperator<BasisFunctionType, ResultType> (*constructor)(
+        const shared_ptr<const Context<BasisFunctionType, ResultType>>
+            & /*context*/,
         const shared_ptr<const Space<BasisFunctionType>> & /*domain*/,
         const shared_ptr<const Space<BasisFunctionType>> & /*range*/,
         const shared_ptr<const Space<BasisFunctionType>> & /*dualToRange*/,
@@ -96,7 +96,7 @@ modifiedHelmholtz3dSyntheticBoundaryOperator(
 #define INSTANTIATE_FUNCTION(BASIS, KERNEL, RESULT)                            \
   template BoundaryOperator<BASIS, RESULT>                                     \
   modifiedHelmholtz3dSyntheticBoundaryOperator(                                \
-      BoundaryOperator<BASIS, RESULT>(*)(                                      \
+      BoundaryOperator<BASIS, RESULT> (*)(                                     \
           const shared_ptr<const Context<BASIS, RESULT>> & /*context*/,        \
           const shared_ptr<const Space<BASIS>> & /*domain*/,                   \
           const shared_ptr<const Space<BASIS>> & /*range*/,                    \

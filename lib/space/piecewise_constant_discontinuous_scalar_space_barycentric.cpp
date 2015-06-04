@@ -249,9 +249,8 @@ void PiecewiseConstantDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::
 }
 
 template <typename BasisFunctionType>
-void PiecewiseConstantDiscontinuousScalarSpaceBarycentric<
-    BasisFunctionType>::getGlobalDofInterpolationPoints(Matrix<CoordinateType> &
-                                                            points) const {
+void PiecewiseConstantDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::
+    getGlobalDofInterpolationPoints(Matrix<CoordinateType> &points) const {
   SpaceHelper<BasisFunctionType>::
       getGlobalDofInterpolationPoints_defaultImplementation(*this, points);
 }
@@ -356,19 +355,17 @@ void PiecewiseConstantDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::
 }
 
 template <typename BasisFunctionType>
-void PiecewiseConstantDiscontinuousScalarSpaceBarycentric<
-    BasisFunctionType>::dumpClusterIds(const char *fileName,
-                                       const std::vector<unsigned int> &
-                                           clusterIdsOfDofs) const {
+void PiecewiseConstantDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::
+    dumpClusterIds(const char *fileName,
+                   const std::vector<unsigned int> &clusterIdsOfDofs) const {
   dumpClusterIdsEx(fileName, clusterIdsOfDofs, GLOBAL_DOFS);
 }
 
 template <typename BasisFunctionType>
-void PiecewiseConstantDiscontinuousScalarSpaceBarycentric<
-    BasisFunctionType>::dumpClusterIdsEx(const char *fileName,
-                                         const std::vector<unsigned int> &
-                                             clusterIdsOfGlobalDofs,
-                                         DofType dofType) const {
+void PiecewiseConstantDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::
+    dumpClusterIdsEx(const char *fileName,
+                     const std::vector<unsigned int> &clusterIdsOfGlobalDofs,
+                     DofType dofType) const {
   if (dofType != GLOBAL_DOFS && dofType != FLAT_LOCAL_DOFS)
     throw std::invalid_argument(
         "PiecewiseConstantDiscontinuousScalarSpaceBarycentric::"

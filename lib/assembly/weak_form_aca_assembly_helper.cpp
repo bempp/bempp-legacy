@@ -104,12 +104,10 @@ WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::
 
 template <typename BasisFunctionType, typename ResultType>
 typename WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::MagnitudeType
-WeakFormAcaAssemblyHelper<
-    BasisFunctionType, ResultType>::estimateMinimumDistance(const cluster *c1,
-                                                            const cluster *c2)
-    const {
-  typedef typename Fiber::ScalarTraits<BasisFunctionType>::RealType
-      CoordinateType;
+WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::
+    estimateMinimumDistance(const cluster *c1, const cluster *c2) const {
+  typedef
+      typename Fiber::ScalarTraits<BasisFunctionType>::RealType CoordinateType;
   typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
   typedef ExtendedBemCluster<AhmedDofType> AhmedBemCluster;
 
@@ -373,8 +371,8 @@ typename WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::MagnitudeType
 WeakFormAcaAssemblyHelper<BasisFunctionType, ResultType>::scale(
     unsigned b1, unsigned n1, unsigned b2, unsigned n2, const cluster *c1,
     const cluster *c2) const {
-  typedef typename Fiber::ScalarTraits<BasisFunctionType>::RealType
-      CoordinateType;
+  typedef
+      typename Fiber::ScalarTraits<BasisFunctionType>::RealType CoordinateType;
   typedef AhmedDofWrapper<CoordinateType> AhmedDofType;
   typedef ExtendedBemCluster<AhmedDofType> AhmedBemCluster;
 

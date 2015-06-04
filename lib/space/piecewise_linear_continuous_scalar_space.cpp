@@ -261,19 +261,18 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::global2localDofs(
 }
 
 template <typename BasisFunctionType>
-void
-PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::flatLocal2localDofs(
-    const std::vector<FlatLocalDofIndex> &flatLocalDofs,
-    std::vector<LocalDof> &localDofs) const {
+void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::
+    flatLocal2localDofs(const std::vector<FlatLocalDofIndex> &flatLocalDofs,
+                        std::vector<LocalDof> &localDofs) const {
   localDofs.resize(flatLocalDofs.size());
   for (size_t i = 0; i < flatLocalDofs.size(); ++i)
     localDofs[i] = m_flatLocal2localDofs[flatLocalDofs[i]];
 }
 
 template <typename BasisFunctionType>
-void
-PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::getGlobalDofPositions(
-    std::vector<Point3D<CoordinateType>> &positions) const {
+void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::
+    getGlobalDofPositions(
+        std::vector<Point3D<CoordinateType>> &positions) const {
   std::vector<BoundingBox<CoordinateType>> bboxes;
   getGlobalDofBoundingBoxes(bboxes);
 
@@ -350,17 +349,16 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::
 }
 
 template <typename BasisFunctionType>
-void
-PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::getGlobalDofNormals(
-    std::vector<Point3D<CoordinateType>> &normals) const {
+void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::
+    getGlobalDofNormals(std::vector<Point3D<CoordinateType>> &normals) const {
   SpaceHelper<BasisFunctionType>::getGlobalDofNormals_defaultImplementation(
       *m_view, m_global2localDofs, normals);
 }
 
 template <typename BasisFunctionType>
-void
-PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::getFlatLocalDofNormals(
-    std::vector<Point3D<CoordinateType>> &normals) const {
+void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::
+    getFlatLocalDofNormals(
+        std::vector<Point3D<CoordinateType>> &normals) const {
   const int gridDim = this->domainDimension();
   const int worldDim = this->grid()->dimWorld();
   normals.resize(m_flatLocal2localDofs.size());

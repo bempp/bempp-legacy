@@ -179,10 +179,10 @@ private:
       const QuadratureStrategy &quadStrategy,
       const shared_ptr<const GeometryFactory> &testGeometryFactory,
       const shared_ptr<const GeometryFactory> &trialGeometryFactory,
-      const shared_ptr<const Fiber::RawGridGeometry<CoordinateType>> &
-          testRawGeometry,
-      const shared_ptr<const Fiber::RawGridGeometry<CoordinateType>> &
-          trialRawGeometry,
+      const shared_ptr<const Fiber::RawGridGeometry<CoordinateType>>
+          &testRawGeometry,
+      const shared_ptr<const Fiber::RawGridGeometry<CoordinateType>>
+          &trialRawGeometry,
       const shared_ptr<const std::vector<
           const Fiber::Shapeset<BasisFunctionType> *>> &testShapesets,
       const shared_ptr<const std::vector<

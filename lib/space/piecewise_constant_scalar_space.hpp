@@ -44,8 +44,8 @@ class GridView;
 template <typename BasisFunctionType>
 class PiecewiseConstantScalarSpace : public ScalarSpace<BasisFunctionType> {
 public:
-  typedef typename ScalarSpace<BasisFunctionType>::CoordinateType
-      CoordinateType;
+  typedef
+      typename ScalarSpace<BasisFunctionType>::CoordinateType CoordinateType;
 
   /** \brief Constructor.
    *

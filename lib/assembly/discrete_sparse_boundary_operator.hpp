@@ -83,8 +83,8 @@ public:
    *  If the object referenced by \p discreteOperator is not in fact a
    *  DiscreteSparseBoundaryOperator, a std::bad_cast exception is thrown. */
   static shared_ptr<const DiscreteSparseBoundaryOperator<ValueType>>
-  castToSparse(const shared_ptr<const DiscreteBoundaryOperator<ValueType>> &
-                   discreteOperator);
+  castToSparse(const shared_ptr<const DiscreteBoundaryOperator<ValueType>>
+                   &discreteOperator);
 
   /** \brief Return a shared pointer to the sparse matrix stored within
    *  this operator.

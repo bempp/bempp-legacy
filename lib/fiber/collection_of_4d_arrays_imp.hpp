@@ -159,8 +159,8 @@ inline size_t CollectionOf3dSlicesOf4dArrays<T>::size() const {
 
 template <typename T>
 inline CollectionOf3dSlicesOfConst4dArrays<
-    T>::CollectionOf3dSlicesOfConst4dArrays(const CollectionOf4dArrays<T> &
-                                                collection,
+    T>::CollectionOf3dSlicesOfConst4dArrays(const CollectionOf4dArrays<T>
+                                                &collection,
                                             size_t index3)
     : m_collection(collection), m_index3(index3) {}
 
@@ -209,8 +209,8 @@ inline size_t CollectionOf2dSlicesOf4dArrays<T>::size() const {
 
 template <typename T>
 inline CollectionOf2dSlicesOfConst4dArrays<
-    T>::CollectionOf2dSlicesOfConst4dArrays(const CollectionOf4dArrays<T> &
-                                                collection,
+    T>::CollectionOf2dSlicesOfConst4dArrays(const CollectionOf4dArrays<T>
+                                                &collection,
                                             size_t index2, size_t index3)
     : m_collection(collection), m_index2(index2), m_index3(index3) {}
 
@@ -263,8 +263,8 @@ inline size_t CollectionOf1dSlicesOf4dArrays<T>::size() const {
 
 template <typename T>
 inline CollectionOf1dSlicesOfConst4dArrays<
-    T>::CollectionOf1dSlicesOfConst4dArrays(const CollectionOf4dArrays<T> &
-                                                collection,
+    T>::CollectionOf1dSlicesOfConst4dArrays(const CollectionOf4dArrays<T>
+                                                &collection,
                                             size_t index1, size_t index2,
                                             size_t index3)
     : m_collection(collection), m_index1(index1), m_index2(index2),

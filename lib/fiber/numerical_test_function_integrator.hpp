@@ -49,8 +49,8 @@ public:
       const std::vector<CoordinateType> quadWeights,
       const GeometryFactory &geometryFactory,
       const RawGridGeometry<CoordinateType> &rawGeometry,
-      const CollectionOfShapesetTransformations<CoordinateType> &
-          testTransformations,
+      const CollectionOfShapesetTransformations<CoordinateType>
+          &testTransformations,
       const Function<UserFunctionType> &function,
       const OpenClHandler &openClHandler);
 
@@ -64,8 +64,8 @@ private:
 
   const GeometryFactory &m_geometryFactory;
   const RawGridGeometry<CoordinateType> &m_rawGeometry;
-  const CollectionOfShapesetTransformations<CoordinateType> &
-      m_testTransformations;
+  const CollectionOfShapesetTransformations<CoordinateType>
+      &m_testTransformations;
   const Function<UserFunctionType> &m_function;
 
   const OpenClHandler &m_openClHandler;

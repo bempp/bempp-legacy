@@ -626,11 +626,11 @@ operator/(const GridFunction<BasisFunctionType, ResultType> &g1,
   \note An exception is thrown if this function is called on an
     uninitialized GridFunction object. */
 template <typename BasisFunctionType, typename ResultType>
-void
-exportToVtk(const GridFunction<BasisFunctionType, ResultType> &gridFunction,
-            VtkWriter::DataType dataType, const char *dataLabel,
-            const char *fileNamesBase, const char *filesPath = 0,
-            VtkWriter::OutputType type = VtkWriter::ASCII);
+void exportToVtk(
+    const GridFunction<BasisFunctionType, ResultType> &gridFunction,
+    VtkWriter::DataType dataType, const char *dataLabel,
+    const char *fileNamesBase, const char *filesPath = 0,
+    VtkWriter::OutputType type = VtkWriter::ASCII);
 
 ///** \relates GridFunction
 //  \brief Export this function to a Gmsh (.msh) file.

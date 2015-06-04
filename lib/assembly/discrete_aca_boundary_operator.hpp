@@ -342,8 +342,8 @@ public:
    *  If the object referenced by \p discreteOperator is not in fact a
    *  DiscreteAcaBoundaryOperator, a std::bad_cast exception is thrown. */
   static shared_ptr<const DiscreteAcaBoundaryOperator<ValueType>>
-  castToAca(const shared_ptr<const DiscreteBoundaryOperator<ValueType>> &
-                discreteOperator);
+  castToAca(const shared_ptr<const DiscreteBoundaryOperator<ValueType>>
+                &discreteOperator);
 
   /** \brief Return the upper bound for the rank of low-rank mblocks
    *  specified during H-matrix construction. */

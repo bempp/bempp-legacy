@@ -86,13 +86,13 @@ private:
   shared_ptr<DiscreteBoundaryOperator<ResultType_>>
   assembleWeakFormForSparseOperator(
       const Context<BasisFunctionType, ResultType> &context,
-      const shared_ptr<const DiscreteSparseBoundaryOperator<ResultType>> &
-          wrappedDiscreteOp) const;
+      const shared_ptr<const DiscreteSparseBoundaryOperator<ResultType>>
+          &wrappedDiscreteOp) const;
   shared_ptr<DiscreteBoundaryOperator<ResultType_>>
   assembleWeakFormForDenseOperator(
       const Context<BasisFunctionType, ResultType> &context,
-      const shared_ptr<const DiscreteDenseBoundaryOperator<ResultType>> &
-          wrappedDiscreteOp) const;
+      const shared_ptr<const DiscreteDenseBoundaryOperator<ResultType>>
+          &wrappedDiscreteOp) const;
 
 private:
   BoundaryOperator<BasisFunctionType, ResultType> m_operator;

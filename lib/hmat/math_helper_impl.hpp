@@ -12,13 +12,14 @@ void computeLowRankApproximation(const Matrix<ValueType> &mat, double threshold,
                                  Matrix<ValueType> &U, Matrix<ValueType> &S,
                                  Matrix<ValueType> &V) {
   if (!mat.allFinite())
-      std::cout << "mat is infinite" << std::endl;
-  Eigen::JacobiSVD<Matrix<ValueType>> svd(mat, Eigen::ComputeThinU | Eigen::ComputeThinV);
+    std::cout << "mat is infinite" << std::endl;
+  Eigen::JacobiSVD<Matrix<ValueType>> svd(mat, Eigen::ComputeThinU |
+                                                   Eigen::ComputeThinV);
   // Get the index that is lower than the threshold
   svd.setThreshold(threshold);
   auto rank = svd.rank();
-  if (rank==0) 
-      rank = 1;
+  if (rank == 0)
+    rank = 1;
 
   if (rank > maxRank) {
     success = false;
@@ -31,7 +32,6 @@ void computeLowRankApproximation(const Matrix<ValueType> &mat, double threshold,
     V = svd.matrixV().leftCols(rank);
     S = svd.singularValues().template cast<ValueType>().head(rank).asDiagonal();
 
-
     success = true;
 
   } else
@@ -39,8 +39,8 @@ void computeLowRankApproximation(const Matrix<ValueType> &mat, double threshold,
 }
 
 template <typename ValueType>
-void compressQB(Matrix<ValueType> &Q, Matrix<ValueType> &B, double threshold, int maxRank,
-                bool &success) {
+void compressQB(Matrix<ValueType> &Q, Matrix<ValueType> &B, double threshold,
+                int maxRank, bool &success) {
 
   Matrix<ValueType> U, S, V;
 
@@ -52,18 +52,20 @@ void compressQB(Matrix<ValueType> &Q, Matrix<ValueType> &B, double threshold, in
 }
 
 template <typename ValueType>
-void randomizedLowRankApproximation(const matApply_t<ValueType> &applyFun, 
+void randomizedLowRankApproximation(const matApply_t<ValueType> &applyFun,
                                     int rows, int cols, double threshold,
-                                    int maxRank, int sampleDimension, 
+                                    int maxRank, int sampleDimension,
                                     bool &success, Matrix<ValueType> &A,
                                     Matrix<ValueType> &B) {
 
-  int actual_sample_size = std::min(rows,sampleDimension);
-  Matrix<ValueType> identity = Matrix<ValueType>::Identity(rows,actual_sample_size);
+  int actual_sample_size = std::min(rows, sampleDimension);
+  Matrix<ValueType> identity =
+      Matrix<ValueType>::Identity(rows, actual_sample_size);
   Matrix<ValueType> Z = Matrix<ValueType>::Random(cols, actual_sample_size);
-  Eigen::HouseholderQR<Matrix<ValueType>> qr(applyFun(Eigen::Ref<Matrix<ValueType>>(Z), NOTRANS));
-  A = qr.householderQ()*identity;
-  B = applyFun(Eigen::Ref<Matrix<ValueType>>(A),CONJTRANS).adjoint();
+  Eigen::HouseholderQR<Matrix<ValueType>> qr(
+      applyFun(Eigen::Ref<Matrix<ValueType>>(Z), NOTRANS));
+  A = qr.householderQ() * identity;
+  B = applyFun(Eigen::Ref<Matrix<ValueType>>(A), CONJTRANS).adjoint();
   compressQB(A, B, threshold, maxRank, success);
 }
 }

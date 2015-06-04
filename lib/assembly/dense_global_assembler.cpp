@@ -231,10 +231,10 @@ private:
 /** Build a list of lists of global DOF indices corresponding to the local DOFs
  *  on each element of space.grid(). */
 template <typename BasisFunctionType>
-void
-gatherGlobalDofs(const Space<BasisFunctionType> &space,
-                 std::vector<std::vector<GlobalDofIndex>> &globalDofs,
-                 std::vector<std::vector<BasisFunctionType>> &localDofWeights) {
+void gatherGlobalDofs(
+    const Space<BasisFunctionType> &space,
+    std::vector<std::vector<GlobalDofIndex>> &globalDofs,
+    std::vector<std::vector<BasisFunctionType>> &localDofWeights) {
   // Get the grid's view so that we can iterate over elements
   const GridView &view = space.gridView();
   const int elementCount = view.entityCount(0);

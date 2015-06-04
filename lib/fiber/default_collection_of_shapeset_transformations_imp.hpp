@@ -35,8 +35,8 @@ int DefaultCollectionOfShapesetTransformations<Functor>::transformationCount()
 }
 
 template <typename Functor>
-int
-DefaultCollectionOfShapesetTransformations<Functor>::argumentDimension() const {
+int DefaultCollectionOfShapesetTransformations<Functor>::argumentDimension()
+    const {
   return m_functor.argumentDimension();
 }
 

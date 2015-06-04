@@ -8,8 +8,8 @@
 namespace hmat {
 
 template <typename ValueType>
-using matApply_t = std::function<
-    Matrix<ValueType>(const Eigen::Ref<Matrix<ValueType>> &, const TransposeMode trans)>;
+using matApply_t = std::function<Matrix<ValueType>(
+    const Eigen::Ref<Matrix<ValueType>> &, const TransposeMode trans)>;
 
 template <typename ValueType>
 void computeLowRankApproximation(const Matrix<ValueType> &mat, double threshold,
@@ -22,7 +22,7 @@ void compressQB(Matrix<ValueType> &Q, Matrix<ValueType> &B, double threshold,
                 int maxRank, bool &success);
 
 template <typename ValueType>
-void randomizedLowRankApproximation(const matApply_t<ValueType> &applyFun, 
+void randomizedLowRankApproximation(const matApply_t<ValueType> &applyFun,
                                     int rows, int cols, double threshold,
                                     int maxRank, int sampleDimension,
                                     bool &success, Matrix<ValueType> &A,

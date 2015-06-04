@@ -144,11 +144,11 @@ public:
    *  transposes or Hermitian transposes of \f$U_\alpha\f$.
    */
   SyntheticIntegralOperator(
-      const std::vector<BoundaryOperator<BasisFunctionType, ResultType>> &
-          testLocalOps,
+      const std::vector<BoundaryOperator<BasisFunctionType, ResultType>>
+          &testLocalOps,
       const BoundaryOperator<BasisFunctionType, ResultType> &integralOp,
-      const std::vector<BoundaryOperator<BasisFunctionType, ResultType>> &
-          trialLocalOps,
+      const std::vector<BoundaryOperator<BasisFunctionType, ResultType>>
+          &trialLocalOps,
       const std::string &label = "", int syntheseSymmetry = NO_SYMMETRY);
 
   virtual bool isLocal() const;

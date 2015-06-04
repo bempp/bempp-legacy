@@ -153,10 +153,10 @@ void AbstractBoundaryOperator<BasisFunctionType, ResultType>::
         shared_ptr<Fiber::RawGridGeometry<CoordinateType>> &trialRawGeometry,
         shared_ptr<GeometryFactory> &testGeometryFactory,
         shared_ptr<GeometryFactory> &trialGeometryFactory,
-        shared_ptr<std::vector<const Fiber::Shapeset<BasisFunctionType> *>> &
-            testShapesets,
-        shared_ptr<std::vector<const Fiber::Shapeset<BasisFunctionType> *>> &
-            trialShapesets,
+        shared_ptr<std::vector<const Fiber::Shapeset<BasisFunctionType> *>>
+            &testShapesets,
+        shared_ptr<std::vector<const Fiber::Shapeset<BasisFunctionType> *>>
+            &trialShapesets,
         shared_ptr<Fiber::OpenClHandler> &openClHandler,
         bool &cacheSingularIntegrals) const {
   collectOptionsIndependentDataForAssemblerConstruction(
@@ -174,10 +174,10 @@ void AbstractBoundaryOperator<BasisFunctionType, ResultType>::
         shared_ptr<Fiber::RawGridGeometry<CoordinateType>> &trialRawGeometry,
         shared_ptr<GeometryFactory> &testGeometryFactory,
         shared_ptr<GeometryFactory> &trialGeometryFactory,
-        shared_ptr<std::vector<const Fiber::Shapeset<BasisFunctionType> *>> &
-            testShapesets,
-        shared_ptr<std::vector<const Fiber::Shapeset<BasisFunctionType> *>> &
-            trialShapesets) const {
+        shared_ptr<std::vector<const Fiber::Shapeset<BasisFunctionType> *>>
+            &testShapesets,
+        shared_ptr<std::vector<const Fiber::Shapeset<BasisFunctionType> *>>
+            &trialShapesets) const {
   typedef LocalAssemblerConstructionHelper Helper;
 
   // Collect grid data
@@ -200,10 +200,10 @@ template <typename BasisFunctionType, typename ResultType>
 void AbstractBoundaryOperator<BasisFunctionType, ResultType>::
     collectOptionsDependentDataForAssemblerConstruction(
         const AssemblyOptions &options,
-        const shared_ptr<Fiber::RawGridGeometry<CoordinateType>> &
-            testRawGeometry,
-        const shared_ptr<Fiber::RawGridGeometry<CoordinateType>> &
-            trialRawGeometry,
+        const shared_ptr<Fiber::RawGridGeometry<CoordinateType>>
+            &testRawGeometry,
+        const shared_ptr<Fiber::RawGridGeometry<CoordinateType>>
+            &trialRawGeometry,
         shared_ptr<Fiber::OpenClHandler> &openClHandler,
         bool &cacheSingularIntegrals) const {
   typedef LocalAssemblerConstructionHelper Helper;

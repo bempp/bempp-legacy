@@ -44,8 +44,8 @@ template <typename BasisFunctionType>
 class PiecewiseConstantDiscontinuousScalarSpaceBarycentric
     : public ScalarSpace<BasisFunctionType> {
 public:
-  typedef typename ScalarSpace<BasisFunctionType>::CoordinateType
-      CoordinateType;
+  typedef
+      typename ScalarSpace<BasisFunctionType>::CoordinateType CoordinateType;
 
   /** \brief Constructor.
    *

@@ -136,56 +136,57 @@ void BlockClusterTree<N>::initializeBlockClusterTree(
       [this, &admissibilityFunction, &splittingFunction, &maxBlockSize](
           const shared_ptr<BlockClusterTreeNode<N>> &node) {
 
-    auto nodeData = node->data();
+        auto nodeData = node->data();
 
-    // Adjust admissibility condition to only accept blocks smaller than
-    // maxBlockSize
+        // Adjust admissibility condition to only accept blocks smaller than
+        // maxBlockSize
 
-    auto rowClusterTreeNodeIndexRange =
-        nodeData.rowClusterTreeNode->data().indexRange;
-    auto columnClusterTreeNodeIndexRange =
-        nodeData.columnClusterTreeNode->data().indexRange;
-    auto rowBlockSize =
-        rowClusterTreeNodeIndexRange[1] - rowClusterTreeNodeIndexRange[0];
-    auto columnBlockSize =
-        columnClusterTreeNodeIndexRange[1] - columnClusterTreeNodeIndexRange[0];
+        auto rowClusterTreeNodeIndexRange =
+            nodeData.rowClusterTreeNode->data().indexRange;
+        auto columnClusterTreeNodeIndexRange =
+            nodeData.columnClusterTreeNode->data().indexRange;
+        auto rowBlockSize =
+            rowClusterTreeNodeIndexRange[1] - rowClusterTreeNodeIndexRange[0];
+        auto columnBlockSize = columnClusterTreeNodeIndexRange[1] -
+                               columnClusterTreeNodeIndexRange[0];
 
-    if (columnBlockSize > maxBlockSize || rowBlockSize > maxBlockSize)
-      nodeData.admissible = false;
+        if (columnBlockSize > maxBlockSize || rowBlockSize > maxBlockSize)
+          nodeData.admissible = false;
 
-    // If admissible do not refine further
+        // If admissible do not refine further
 
-    if (nodeData.admissible)
-      return;
+        if (nodeData.admissible)
+          return;
 
-    auto rowClusterData = nodeData.rowClusterTreeNode->data();
-    auto columnClusterData = nodeData.columnClusterTreeNode->data();
+        auto rowClusterData = nodeData.rowClusterTreeNode->data();
+        auto columnClusterData = nodeData.columnClusterTreeNode->data();
 
-    // If row or column cluster is leaf do not refine further
+        // If row or column cluster is leaf do not refine further
 
-    if (nodeData.rowClusterTreeNode->isLeaf() ||
-        nodeData.columnClusterTreeNode->isLeaf())
-      return;
+        if (nodeData.rowClusterTreeNode->isLeaf() ||
+            nodeData.columnClusterTreeNode->isLeaf())
+          return;
 
-    // Create the block clusters
+        // Create the block clusters
 
-    for (int rowCount = 0; rowCount < N; ++rowCount) {
-      auto rowChild = nodeData.rowClusterTreeNode->child(rowCount);
-      for (int columnCount = 0; columnCount < N; ++columnCount) {
-        auto columnChild = nodeData.columnClusterTreeNode->child(columnCount);
-        node->addChild(
-            BlockClusterTreeNodeData<N>(
-                rowChild, columnChild,
-                admissibilityFunction(rowClusterData, columnClusterData)),
-            N * rowCount + columnCount);
-        splittingFunction(node->child(N * rowCount + columnCount));
-      }
-    }
-    // tbb::parallel_for(tbb::blocked_range<int>(0,N*N),[&splittingFunction,&node](
-    //      const tbb::blocked_range<int>& range){
-    //    for (int i = range.begin(); i!=range.end(); ++i)
-    //      splittingFunction(node->child(i));});
-  };
+        for (int rowCount = 0; rowCount < N; ++rowCount) {
+          auto rowChild = nodeData.rowClusterTreeNode->child(rowCount);
+          for (int columnCount = 0; columnCount < N; ++columnCount) {
+            auto columnChild =
+                nodeData.columnClusterTreeNode->child(columnCount);
+            node->addChild(
+                BlockClusterTreeNodeData<N>(
+                    rowChild, columnChild,
+                    admissibilityFunction(rowClusterData, columnClusterData)),
+                N * rowCount + columnCount);
+            splittingFunction(node->child(N * rowCount + columnCount));
+          }
+        }
+        // tbb::parallel_for(tbb::blocked_range<int>(0,N*N),[&splittingFunction,&node](
+        //      const tbb::blocked_range<int>& range){
+        //    for (int i = range.begin(); i!=range.end(); ++i)
+        //      splittingFunction(node->child(i));});
+      };
 
   bool admissible = admissibilityFunction(m_rowClusterTree->root()->data(),
                                           m_columnClusterTree->root()->data());

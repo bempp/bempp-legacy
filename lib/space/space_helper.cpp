@@ -74,11 +74,11 @@ void SpaceHelper<BasisFunctionType>::
 }
 
 template <typename BasisFunctionType>
-void
-SpaceHelper<BasisFunctionType>::getGlobalDofBoundingBoxes_defaultImplementation(
-    const GridView &view,
-    const std::vector<std::vector<LocalDof>> &global2localDofs,
-    std::vector<BoundingBox<CoordinateType>> &bboxes) {
+void SpaceHelper<BasisFunctionType>::
+    getGlobalDofBoundingBoxes_defaultImplementation(
+        const GridView &view,
+        const std::vector<std::vector<LocalDof>> &global2localDofs,
+        std::vector<BoundingBox<CoordinateType>> &bboxes) {
   const IndexSet &indexSet = view.indexSet();
   const int elementCount = view.entityCount(0);
 

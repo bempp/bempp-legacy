@@ -73,8 +73,8 @@ public:
       const Space<BasisFunctionType> &testSpace,
       const Space<BasisFunctionType> &trialSpace,
       const std::vector<LocalAssemblerForIntegralOperators *> &localAssemblers,
-      const std::vector<LocalAssemblerForIntegralOperators *> &
-          localAssemblersForAdmissibleBlocks,
+      const std::vector<LocalAssemblerForIntegralOperators *>
+          &localAssemblersForAdmissibleBlocks,
       const std::vector<const DiscreteBndOp *> &sparseTermsToAdd,
       const std::vector<ResultType> &denseTermMultipliers,
       const std::vector<ResultType> &sparseTermMultipliers,

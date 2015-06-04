@@ -45,10 +45,10 @@ template <typename ValueType> class BlockCoalescer {
 
 public:
   BlockCoalescer(blcluster *blclustersRoot, blcluster *decomposedBlclustersRoot,
-                 const shared_ptr<const Epetra_CrsMatrix> &
-                     permutedTestGlobalToFlatLocalMap,
-                 const shared_ptr<const Epetra_CrsMatrix> &
-                     permutedTrialGlobalToFlatLocalMap,
+                 const shared_ptr<const Epetra_CrsMatrix>
+                     &permutedTestGlobalToFlatLocalMap,
+                 const shared_ptr<const Epetra_CrsMatrix>
+                     &permutedTrialGlobalToFlatLocalMap,
                  const boost::shared_array<AhmedMblock *> &blocks,
                  const boost::shared_array<AhmedMblock *> &decomposedBlocks,
                  const AcaOptions &acaOptions);

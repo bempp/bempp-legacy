@@ -52,10 +52,10 @@ public:
       const GeometryFactory &geometryFactory,
       const RawGridGeometry<CoordinateType> &rawGeometry,
       const CollectionOfKernels<KernelType> &kernels,
-      const CollectionOfShapesetTransformations<CoordinateType> &
-          trialTransformations,
-      const KernelTrialIntegral<BasisFunctionType, KernelType, ResultType> &
-          integral);
+      const CollectionOfShapesetTransformations<CoordinateType>
+          &trialTransformations,
+      const KernelTrialIntegral<BasisFunctionType, KernelType, ResultType>
+          &integral);
 
   virtual void integrate(const std::vector<int> &pointIndices,
                          int trialElementIndex,
@@ -84,10 +84,10 @@ private:
   const RawGridGeometry<CoordinateType> &m_rawGeometry;
 
   const CollectionOfKernels<KernelType> &m_kernels;
-  const CollectionOfShapesetTransformations<CoordinateType> &
-      m_trialTransformations;
-  const KernelTrialIntegral<BasisFunctionType, KernelType, ResultType> &
-      m_integral;
+  const CollectionOfShapesetTransformations<CoordinateType>
+      &m_trialTransformations;
+  const KernelTrialIntegral<BasisFunctionType, KernelType, ResultType>
+      &m_integral;
   /** \endcond */
 };
 

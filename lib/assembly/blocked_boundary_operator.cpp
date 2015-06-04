@@ -143,8 +143,9 @@ BlockedBoundaryOperator<BasisFunctionType, ResultType>::columnCount() const {
 }
 
 template <typename BasisFunctionType, typename ResultType>
-size_t BlockedBoundaryOperator<
-    BasisFunctionType, ResultType>::totalGlobalDofCountInDomains() const {
+size_t
+BlockedBoundaryOperator<BasisFunctionType,
+                        ResultType>::totalGlobalDofCountInDomains() const {
   size_t sum = 0;
   for (size_t i = 0; i < m_domains.size(); ++i)
     sum += m_domains[i]->globalDofCount();
@@ -152,8 +153,9 @@ size_t BlockedBoundaryOperator<
 }
 
 template <typename BasisFunctionType, typename ResultType>
-size_t BlockedBoundaryOperator<
-    BasisFunctionType, ResultType>::totalGlobalDofCountInRanges() const {
+size_t
+BlockedBoundaryOperator<BasisFunctionType,
+                        ResultType>::totalGlobalDofCountInRanges() const {
   size_t sum = 0;
   for (size_t i = 0; i < m_ranges.size(); ++i)
     sum += m_ranges[i]->globalDofCount();

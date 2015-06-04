@@ -619,8 +619,8 @@ acaOperatorSum(const shared_ptr<const DiscreteBoundaryOperator<ValueType>> &op1,
 
   typedef typename DiscreteAcaBoundaryOperator<ValueType>::AhmedBemBlcluster
       AhmedBemBlcluster;
-  typedef typename DiscreteAcaBoundaryOperator<ValueType>::AhmedMblock
-      AhmedMblock;
+  typedef
+      typename DiscreteAcaBoundaryOperator<ValueType>::AhmedMblock AhmedMblock;
 
   shared_ptr<const AhmedBemBlcluster> sumBlockCluster = acaOp1->blockCluster();
   blcluster *nonConstSumBlockCluster =
@@ -651,8 +651,8 @@ shared_ptr<const DiscreteBoundaryOperator<ValueType>> scaledAcaOperator(
 
   typedef typename DiscreteAcaBoundaryOperator<ValueType>::AhmedBemBlcluster
       AhmedBemBlcluster;
-  typedef typename DiscreteAcaBoundaryOperator<ValueType>::AhmedMblock
-      AhmedMblock;
+  typedef
+      typename DiscreteAcaBoundaryOperator<ValueType>::AhmedMblock AhmedMblock;
 
   typedef typename AhmedTypeTraits<ValueType>::Type AhmedValueType;
   const AhmedValueType ahmedMultiplier = ahmedCast(multiplier);

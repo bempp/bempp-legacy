@@ -43,10 +43,10 @@ ConcreteEntity<0, DuneEntity>::subEntityCodimNIterator() const {
 
 template <typename DuneEntity>
 template <int codimSub>
-inline typename boost::enable_if_c<
-    (codimSub <= DuneEntity::dimension),
-    std::unique_ptr<EntityIterator<codimSub>>>::type
-ConcreteEntity<0, DuneEntity>::subEntityCodimNIterator() const {
+inline
+    typename boost::enable_if_c<(codimSub <= DuneEntity::dimension),
+                                std::unique_ptr<EntityIterator<codimSub>>>::type
+    ConcreteEntity<0, DuneEntity>::subEntityCodimNIterator() const {
   typedef ConcreteSubentityIterator<DuneEntity, codimSub> ConcIterator;
   return std::unique_ptr<EntityIterator<codimSub>>(
       new ConcIterator(m_dune_entity, m_domain_index));

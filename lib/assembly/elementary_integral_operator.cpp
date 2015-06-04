@@ -64,10 +64,10 @@ ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
         const QuadratureStrategy &quadStrategy,
         const shared_ptr<const GeometryFactory> &testGeometryFactory,
         const shared_ptr<const GeometryFactory> &trialGeometryFactory,
-        const shared_ptr<const Fiber::RawGridGeometry<CoordinateType>> &
-            testRawGeometry,
-        const shared_ptr<const Fiber::RawGridGeometry<CoordinateType>> &
-            trialRawGeometry,
+        const shared_ptr<const Fiber::RawGridGeometry<CoordinateType>>
+            &testRawGeometry,
+        const shared_ptr<const Fiber::RawGridGeometry<CoordinateType>>
+            &trialRawGeometry,
         const shared_ptr<const std::vector<
             const Fiber::Shapeset<BasisFunctionType> *>> &testShapesets,
         const shared_ptr<const std::vector<
@@ -163,11 +163,9 @@ ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
   const Space<BasisFunctionType> &trialSpace = *this->domain();
 
   // TODO: replace second assembler with assembler for admissible blocks
-  return AcaGlobalAssembler<
-      BasisFunctionType,
-      ResultType>::assembleDetachedWeakForm(testSpace, trialSpace, assembler,
-                                            assembler, context,
-                                            this->symmetry() & SYMMETRIC);
+  return AcaGlobalAssembler<BasisFunctionType, ResultType>::
+      assembleDetachedWeakForm(testSpace, trialSpace, assembler, assembler,
+                               context, this->symmetry() & SYMMETRIC);
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
@@ -178,11 +176,9 @@ ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
         const Context<BasisFunctionType, ResultType> &context) const {
   const Space<BasisFunctionType> &testSpace = *this->dualToRange();
   const Space<BasisFunctionType> &trialSpace = *this->domain();
-  return HMatGlobalAssembler<
-      BasisFunctionType,
-      ResultType>::assembleDetachedWeakForm(testSpace, trialSpace, assembler,
-                                            assembler, context,
-                                            this->symmetry() & SYMMETRIC);
+  return HMatGlobalAssembler<BasisFunctionType, ResultType>::
+      assembleDetachedWeakForm(testSpace, trialSpace, assembler, assembler,
+                               context, this->symmetry() & SYMMETRIC);
 }
 
 /** \endcond */

@@ -44,10 +44,10 @@ NumericalTestTrialIntegrator<BasisFunctionType, ResultType, GeometryFactory>::
         const std::vector<CoordinateType> quadWeights,
         const GeometryFactory &geometryFactory,
         const RawGridGeometry<CoordinateType> &rawGeometry,
-        const CollectionOfShapesetTransformations<CoordinateType> &
-            testTransformations,
-        const CollectionOfShapesetTransformations<CoordinateType> &
-            trialTransformations,
+        const CollectionOfShapesetTransformations<CoordinateType>
+            &testTransformations,
+        const CollectionOfShapesetTransformations<CoordinateType>
+            &trialTransformations,
         const TestTrialIntegral<BasisFunctionType, ResultType> &integral,
         const OpenClHandler &openClHandler)
     : m_localQuadPoints(localQuadPoints), m_quadWeights(quadWeights),
@@ -63,8 +63,8 @@ NumericalTestTrialIntegrator<BasisFunctionType, ResultType, GeometryFactory>::
 
 template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory>
-void
-NumericalTestTrialIntegrator<BasisFunctionType, ResultType, GeometryFactory>::
+void NumericalTestTrialIntegrator<BasisFunctionType, ResultType,
+                                  GeometryFactory>::
     integrate(const std::vector<int> &elementIndices,
               const Shapeset<BasisFunctionType> &testShapeset,
               const Shapeset<BasisFunctionType> &trialShapeset,

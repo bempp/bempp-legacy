@@ -98,10 +98,9 @@ DefaultLocalAssemblerForOperatorsOnSurfacesUtilities<BasisFunctionType>::
 template <typename BasisFunctionType>
 inline Vector<typename DefaultLocalAssemblerForOperatorsOnSurfacesUtilities<
     BasisFunctionType>::CoordinateType>
-DefaultLocalAssemblerForOperatorsOnSurfacesUtilities<
-    BasisFunctionType>::elementCenter(int elementIndex,
-                                      const RawGridGeometry<CoordinateType> &
-                                          rawGeometry) {
+DefaultLocalAssemblerForOperatorsOnSurfacesUtilities<BasisFunctionType>::
+    elementCenter(int elementIndex,
+                  const RawGridGeometry<CoordinateType> &rawGeometry) {
   const Matrix<int> &cornerIndices = rawGeometry.elementCornerIndices();
   const Matrix<CoordinateType> &vertices = rawGeometry.vertices();
   const int maxCornerCount = cornerIndices.rows();

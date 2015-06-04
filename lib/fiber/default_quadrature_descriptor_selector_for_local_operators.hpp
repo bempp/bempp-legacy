@@ -46,10 +46,10 @@ public:
   /** \note: \p accuracyOptions is currently unused. */
   DefaultQuadratureDescriptorSelectorForLocalOperators(
       const shared_ptr<const RawGridGeometry<CoordinateType>> &rawGeometry,
-      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
-          testShapesets,
-      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
-          trialShapesets,
+      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
+          &testShapesets,
+      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
+          &trialShapesets,
       const AccuracyOptionsEx &accuracyOptions);
 
   virtual SingleQuadratureDescriptor

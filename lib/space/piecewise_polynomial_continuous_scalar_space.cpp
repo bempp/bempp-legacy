@@ -56,9 +56,9 @@ PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::
 }
 
 template <typename BasisFunctionType>
-bool
-PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::spaceIsCompatible(
-    const Space<BasisFunctionType> &other) const {
+bool PiecewisePolynomialContinuousScalarSpace<
+    BasisFunctionType>::spaceIsCompatible(const Space<BasisFunctionType> &other)
+    const {
 
   typedef PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>
       thisSpaceType;
@@ -139,16 +139,14 @@ PiecewisePolynomialContinuousScalarSpace<
     BasisFunctionType>::~PiecewisePolynomialContinuousScalarSpace() {}
 
 template <typename BasisFunctionType>
-int
-PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::domainDimension()
-    const {
+int PiecewisePolynomialContinuousScalarSpace<
+    BasisFunctionType>::domainDimension() const {
   return this->grid()->dim();
 }
 
 template <typename BasisFunctionType>
-int
-PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::codomainDimension()
-    const {
+int PiecewisePolynomialContinuousScalarSpace<
+    BasisFunctionType>::codomainDimension() const {
   return 1;
 }
 
@@ -181,9 +179,9 @@ PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::elementVariant(
 }
 
 template <typename BasisFunctionType>
-void
-PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::setElementVariant(
-    const Entity<0> &element, ElementVariant variant) {
+void PiecewisePolynomialContinuousScalarSpace<
+    BasisFunctionType>::setElementVariant(const Entity<0> &element,
+                                          ElementVariant variant) {
   if (variant != elementVariant(element))
     // for this space, the element variants are unmodifiable,
     throw std::runtime_error("PiecewisePolynomialContinuousScalarSpace::"
@@ -206,15 +204,14 @@ PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::discontinuousSpace(
 }
 
 template <typename BasisFunctionType>
-bool
-PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::isDiscontinuous()
-    const {
+bool PiecewisePolynomialContinuousScalarSpace<
+    BasisFunctionType>::isDiscontinuous() const {
   return false;
 }
 
 template <typename BasisFunctionType>
-void
-PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::assignDofsImpl() {
+void PiecewisePolynomialContinuousScalarSpace<
+    BasisFunctionType>::assignDofsImpl() {
   // TODO: refactor this function, it's way too long!
 
   // In addition to DOF assignment, this function also precalculates bounding
@@ -615,10 +612,9 @@ void PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::getGlobalDofs(
 }
 
 template <typename BasisFunctionType>
-void
-PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::global2localDofs(
-    const std::vector<GlobalDofIndex> &globalDofs,
-    std::vector<std::vector<LocalDof>> &localDofs) const {
+void PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::
+    global2localDofs(const std::vector<GlobalDofIndex> &globalDofs,
+                     std::vector<std::vector<LocalDof>> &localDofs) const {
   localDofs.resize(globalDofs.size());
   for (size_t i = 0; i < globalDofs.size(); ++i)
     localDofs[i] = m_global2localDofs[globalDofs[i]];
@@ -682,18 +678,17 @@ void PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::
 }
 
 template <typename BasisFunctionType>
-void
-PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::dumpClusterIds(
-    const char *fileName,
-    const std::vector<unsigned int> &clusterIdsOfDofs) const {
+void PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::
+    dumpClusterIds(const char *fileName,
+                   const std::vector<unsigned int> &clusterIdsOfDofs) const {
   dumpClusterIdsEx(fileName, clusterIdsOfDofs, GLOBAL_DOFS);
 }
 
 template <typename BasisFunctionType>
-void
-PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::dumpClusterIdsEx(
-    const char *fileName, const std::vector<unsigned int> &clusterIdsOfDofs,
-    DofType dofType) const {
+void PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::
+    dumpClusterIdsEx(const char *fileName,
+                     const std::vector<unsigned int> &clusterIdsOfDofs,
+                     DofType dofType) const {
   throw std::runtime_error("PiecewisePolynomialContinuousScalarSpace::"
                            "dumpClusterIdsEx(): not implemented yet");
 }

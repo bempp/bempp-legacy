@@ -43,8 +43,8 @@ class GridView;
 template <typename BasisFunctionType>
 class UnitScalarSpace : public ScalarSpace<BasisFunctionType> {
 public:
-  typedef typename ScalarSpace<BasisFunctionType>::CoordinateType
-      CoordinateType;
+  typedef
+      typename ScalarSpace<BasisFunctionType>::CoordinateType CoordinateType;
 
   explicit UnitScalarSpace(const shared_ptr<const Grid> &grid);
 

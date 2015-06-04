@@ -62,9 +62,8 @@ struct Maxwell3dDoubleLayerPotentialOperatorImpl {
 /** \endcond */
 
 template <typename BasisFunctionType>
-Maxwell3dDoubleLayerPotentialOperator<
-    BasisFunctionType>::Maxwell3dDoubleLayerPotentialOperator(KernelType
-                                                                  waveNumber)
+Maxwell3dDoubleLayerPotentialOperator<BasisFunctionType>::
+    Maxwell3dDoubleLayerPotentialOperator(KernelType waveNumber)
     : Base(waveNumber) {}
 
 template <typename BasisFunctionType>

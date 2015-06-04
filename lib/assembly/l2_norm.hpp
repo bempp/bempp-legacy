@@ -86,14 +86,14 @@ typename ScalarTraits<BasisFunctionType>::RealType L2NormOfDifference(
  *  to ensure that this function produces results with sufficient accuracy.
  */
 template <typename BasisFunctionType, typename ResultType>
-void
-estimateL2Error(const GridFunction<BasisFunctionType, ResultType> &gridFunction,
-                const Fiber::Function<ResultType> &refFunction,
-                const Fiber::QuadratureStrategy<BasisFunctionType, ResultType,
-                                                GeometryFactory> &quadStrategy,
-                const EvaluationOptions &options,
-                typename ScalarTraits<BasisFunctionType>::RealType &absError,
-                typename ScalarTraits<BasisFunctionType>::RealType &relError);
+void estimateL2Error(
+    const GridFunction<BasisFunctionType, ResultType> &gridFunction,
+    const Fiber::Function<ResultType> &refFunction,
+    const Fiber::QuadratureStrategy<BasisFunctionType, ResultType,
+                                    GeometryFactory> &quadStrategy,
+    const EvaluationOptions &options,
+    typename ScalarTraits<BasisFunctionType>::RealType &absError,
+    typename ScalarTraits<BasisFunctionType>::RealType &relError);
 
 /** \relates GridFunction
  *  \brief Calculate the absolute and relative \f$L^2\f$ errors of a solution.
@@ -102,13 +102,13 @@ estimateL2Error(const GridFunction<BasisFunctionType, ResultType> &gridFunction,
  *  equivalent to the six-parameter version with \p options set to
  *  <tt>EvaluationOptions()</tt>. */
 template <typename BasisFunctionType, typename ResultType>
-void
-estimateL2Error(const GridFunction<BasisFunctionType, ResultType> &gridFunction,
-                const Fiber::Function<ResultType> &refFunction,
-                const Fiber::QuadratureStrategy<BasisFunctionType, ResultType,
-                                                GeometryFactory> &quadStrategy,
-                typename ScalarTraits<BasisFunctionType>::RealType &absError,
-                typename ScalarTraits<BasisFunctionType>::RealType &relError);
+void estimateL2Error(
+    const GridFunction<BasisFunctionType, ResultType> &gridFunction,
+    const Fiber::Function<ResultType> &refFunction,
+    const Fiber::QuadratureStrategy<BasisFunctionType, ResultType,
+                                    GeometryFactory> &quadStrategy,
+    typename ScalarTraits<BasisFunctionType>::RealType &absError,
+    typename ScalarTraits<BasisFunctionType>::RealType &relError);
 
 } // namespace Bempp
 

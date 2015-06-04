@@ -60,8 +60,8 @@ struct LocalAssemblerConstructionHelper {
   template <typename BasisFunctionType>
   static void collectShapesets(
       const Space<BasisFunctionType> &space,
-      shared_ptr<std::vector<const Fiber::Shapeset<BasisFunctionType> *>> &
-          shapesets) {
+      shared_ptr<std::vector<const Fiber::Shapeset<BasisFunctionType> *>>
+          &shapesets) {
     typedef std::vector<const Fiber::Shapeset<BasisFunctionType> *>
         ShapesetPtrVector;
     shapesets = boost::make_shared<ShapesetPtrVector>();
@@ -85,8 +85,8 @@ struct LocalAssemblerConstructionHelper {
   static void makeOpenClHandler(
       const OpenClOptions &openClOptions,
       const shared_ptr<Fiber::RawGridGeometry<CoordinateType>> &testRawGeometry,
-      const shared_ptr<Fiber::RawGridGeometry<CoordinateType>> &
-          trialRawGeometry,
+      const shared_ptr<Fiber::RawGridGeometry<CoordinateType>>
+          &trialRawGeometry,
       shared_ptr<Fiber::OpenClHandler> &openClHandler) {
     openClHandler = boost::make_shared<Fiber::OpenClHandler>(openClOptions);
     if (openClHandler->UseOpenCl()) {

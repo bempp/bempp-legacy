@@ -84,14 +84,14 @@ DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
     DefaultLocalAssemblerForIntegralOperatorsOnSurfaces(
         const shared_ptr<const GeometryFactory> &testGeometryFactory,
         const shared_ptr<const GeometryFactory> &trialGeometryFactory,
-        const shared_ptr<const RawGridGeometry<CoordinateType>> &
-            testRawGeometry,
-        const shared_ptr<const RawGridGeometry<CoordinateType>> &
-            trialRawGeometry,
-        const shared_ptr<const std::vector<
-            const Shapeset<BasisFunctionType> *>> &testShapesets,
-        const shared_ptr<const std::vector<
-            const Shapeset<BasisFunctionType> *>> &trialShapesets,
+        const shared_ptr<const RawGridGeometry<CoordinateType>>
+            &testRawGeometry,
+        const shared_ptr<const RawGridGeometry<CoordinateType>>
+            &trialRawGeometry,
+        const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
+            &testShapesets,
+        const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
+            &trialShapesets,
         const shared_ptr<const CollectionOfShapesetTransformations<
             CoordinateType>> &testTransformations,
         const shared_ptr<const CollectionOfKernels<KernelType>> &kernels,
@@ -104,8 +104,8 @@ DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
         VerbosityLevel::Level verbosityLevel, bool cacheSingularIntegrals,
         const shared_ptr<const QuadratureDescriptorSelectorForIntegralOperators<
             CoordinateType>> &quadDescSelector,
-        const shared_ptr<const DoubleQuadratureRuleFamily<CoordinateType>> &
-            quadRuleFamily)
+        const shared_ptr<const DoubleQuadratureRuleFamily<CoordinateType>>
+            &quadRuleFamily)
     : m_testGeometryFactory(testGeometryFactory),
       m_trialGeometryFactory(trialGeometryFactory),
       m_testRawGeometry(testRawGeometry), m_trialRawGeometry(trialRawGeometry),
@@ -430,8 +430,8 @@ template <typename BasisFunctionType, typename KernelType, typename ResultType,
           typename GeometryFactory>
 void DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
     BasisFunctionType, KernelType, ResultType,
-    GeometryFactory>::cacheLocalWeakForms(const ElementIndexPairSet &
-                                              elementIndexPairs) {
+    GeometryFactory>::cacheLocalWeakForms(const ElementIndexPairSet
+                                              &elementIndexPairs) {
   tbb::tick_count start = tbb::tick_count::now();
 
   if (elementIndexPairs.empty())
@@ -447,7 +447,8 @@ void DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
   size_t maxNeighbourCount = 0;
   for (typename ElementIndexPairSet::const_iterator it =
            elementIndexPairs.begin();
-       it != elementIndexPairs.end(); /* nothing */) {
+       it != elementIndexPairs.end();
+       /* nothing */) {
     int curTrialElementIndex = it->second;
     size_t neighbourCount = 1;
     for (++it;

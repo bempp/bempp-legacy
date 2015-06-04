@@ -60,13 +60,13 @@ public:
       const GeometryFactory &trialGgeometryFactory,
       const RawGridGeometry<CoordinateType> &testRawGeometry,
       const RawGridGeometry<CoordinateType> &trialRawGeometry,
-      const CollectionOfShapesetTransformations<CoordinateType> &
-          testTransformations,
+      const CollectionOfShapesetTransformations<CoordinateType>
+          &testTransformations,
       const CollectionOfKernels<KernelType> &kernel,
-      const CollectionOfShapesetTransformations<CoordinateType> &
-          trialTransformations,
-      const TestKernelTrialIntegral<BasisFunctionType, KernelType, ResultType> &
-          integral,
+      const CollectionOfShapesetTransformations<CoordinateType>
+          &trialTransformations,
+      const TestKernelTrialIntegral<BasisFunctionType, KernelType, ResultType>
+          &integral,
       const OpenClHandler &openClHandler);
   virtual ~NonseparableNumericalTestKernelTrialIntegrator();
 
@@ -99,13 +99,13 @@ private:
   const RawGridGeometry<CoordinateType> &m_testRawGeometry;
   const RawGridGeometry<CoordinateType> &m_trialRawGeometry;
 
-  const CollectionOfShapesetTransformations<CoordinateType> &
-      m_testTransformations;
+  const CollectionOfShapesetTransformations<CoordinateType>
+      &m_testTransformations;
   const CollectionOfKernels<KernelType> &m_kernels;
-  const CollectionOfShapesetTransformations<CoordinateType> &
-      m_trialTransformations;
-  const TestKernelTrialIntegral<BasisFunctionType, KernelType, ResultType> &
-      m_integral;
+  const CollectionOfShapesetTransformations<CoordinateType>
+      &m_trialTransformations;
+  const TestKernelTrialIntegral<BasisFunctionType, KernelType, ResultType>
+      &m_integral;
 
   typedef tbb::concurrent_unordered_map<const Shapeset<BasisFunctionType> *,
                                         BasisData<BasisFunctionType> *>

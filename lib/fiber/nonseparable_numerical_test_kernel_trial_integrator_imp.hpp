@@ -56,13 +56,13 @@ NonseparableNumericalTestKernelTrialIntegrator<BasisFunctionType, KernelType,
         const GeometryFactory &trialGeometryFactory,
         const RawGridGeometry<CoordinateType> &testRawGeometry,
         const RawGridGeometry<CoordinateType> &trialRawGeometry,
-        const CollectionOfShapesetTransformations<CoordinateType> &
-            testTransformations,
+        const CollectionOfShapesetTransformations<CoordinateType>
+            &testTransformations,
         const CollectionOfKernels<KernelType> &kernels,
-        const CollectionOfShapesetTransformations<CoordinateType> &
-            trialTransformations,
-        const TestKernelTrialIntegral<BasisFunctionType, KernelType,
-                                      ResultType> &integral,
+        const CollectionOfShapesetTransformations<CoordinateType>
+            &trialTransformations,
+        const TestKernelTrialIntegral<BasisFunctionType, KernelType, ResultType>
+            &integral,
         const OpenClHandler &openClHandler)
     : m_localTestQuadPoints(localTestQuadPoints),
       m_localTrialQuadPoints(localTrialQuadPoints), m_quadWeights(quadWeights),

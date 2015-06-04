@@ -15,7 +15,7 @@ class HMatrixLowRankData : public HMatrixData<ValueType> {
 public:
   HMatrixLowRankData();
 
-  HMatrixLowRankData(const Matrix<ValueType>& A, const Matrix<ValueType>& B);
+  HMatrixLowRankData(const Matrix<ValueType> &A, const Matrix<ValueType> &B);
 
   void apply(const Eigen::Ref<Matrix<ValueType>> &X,
              Eigen::Ref<Matrix<ValueType>> Y, TransposeMode trans,

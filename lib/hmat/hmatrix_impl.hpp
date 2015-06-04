@@ -76,30 +76,31 @@ void HMatrix<ValueType, N>::initialize(
 
   std::function<void(const node_t &node)> compressFun =
       [&](const node_t &node) {
-    if (node->isLeaf()) {
-      shared_ptr<HMatrixData<ValueType>> nodeData;
-      hMatrixCompressor.compressBlock(*node, nodeData);
-      m_hMatrixData[node] = nodeData;
-    } else {
-      tbb::task_group g;
-      g.run([&] { compressFun(node->child(0)); });
-      g.run([&] { compressFun(node->child(1)); });
-      g.run([&] { compressFun(node->child(2)); });
-      g.run_and_wait([&] { compressFun(node->child(3)); });
+        if (node->isLeaf()) {
+          shared_ptr<HMatrixData<ValueType>> nodeData;
+          hMatrixCompressor.compressBlock(*node, nodeData);
+          m_hMatrixData[node] = nodeData;
+        } else {
+          tbb::task_group g;
+          g.run([&] { compressFun(node->child(0)); });
+          g.run([&] { compressFun(node->child(1)); });
+          g.run([&] { compressFun(node->child(2)); });
+          g.run_and_wait([&] { compressFun(node->child(3)); });
 
-      // Now do a coarsen step
-      if (coarsening)
-        coarsen_impl(node,coarsening_accuracy);
-    }
+          // Now do a coarsen step
+          if (coarsening)
+            coarsen_impl(node, coarsening_accuracy);
+        }
 
-  };
+      };
 
   // Start the compression
   compressFun(m_blockClusterTree->root());
 
   // Delete keys that are not needed after coarsening
   for (auto &elem : m_hMatrixData)
-    if (!elem.second) m_hMatrixData.unsafe_erase(elem.first);
+    if (!elem.second)
+      m_hMatrixData.unsafe_erase(elem.first);
 
   // Compute statistics
 
@@ -366,89 +367,85 @@ double HMatrix<ValueType, N>::frobeniusNorm_impl(
 }
 
 template <typename ValueType, int N>
-bool HMatrix<ValueType, N>::coarsen_impl(const shared_ptr<BlockClusterTreeNode<N>> &node,
-                                         double coarsen_accuracy)
-{
+bool HMatrix<ValueType, N>::coarsen_impl(
+    const shared_ptr<BlockClusterTreeNode<N>> &node, double coarsen_accuracy) {
 
   // Exit if children are not leafs or not all admissible
 
   bool isLeaf = true;
-  for (int i = 0; i < 4; ++i){
-    if (!node->child(i)->isLeaf()) isLeaf = false;
+  for (int i = 0; i < 4; ++i) {
+    if (!node->child(i)->isLeaf())
+      isLeaf = false;
   }
 
-  if (!isLeaf ){
+  if (!isLeaf) {
     return false;
   }
 
   // Get dimensions of current block
 
-  IndexRangeType rowIndexRange = node->data().rowClusterTreeNode->data().indexRange;
-  IndexRangeType columnIndexRange = node->data().columnClusterTreeNode->data().indexRange;
-  int rows = rowIndexRange[1]-rowIndexRange[0];
-  int cols = columnIndexRange[1]-columnIndexRange[0];
+  IndexRangeType rowIndexRange =
+      node->data().rowClusterTreeNode->data().indexRange;
+  IndexRangeType columnIndexRange =
+      node->data().columnClusterTreeNode->data().indexRange;
+  int rows = rowIndexRange[1] - rowIndexRange[0];
+  int cols = columnIndexRange[1] - columnIndexRange[0];
 
   // Compute maximum possible rank for coarsening
 
   int storage = 0;
-  for (int i = 0; i < 4 ; ++i){
+  for (int i = 0; i < 4; ++i) {
     auto data = m_hMatrixData.at(node->child(i));
-    storage += data->rank()*(data->rows()+data->cols());
+    storage += data->rank() * (data->rows() + data->cols());
   }
 
-  int maxk = 1+std::trunc((1.0*storage)/(rows+cols));
+  int maxk = 1 + std::trunc((1.0 * storage) / (rows + cols));
 
   // Now coarsen the current node
 
   bool success;
   Matrix<ValueType> A;
   Matrix<ValueType> B;
-  
-  int p = 4; // Oversampling parameter (k+p) random cols are used to determine range space.
 
-  matApply_t<ValueType> fun = [this,node,rows,cols](const Eigen::Ref<Matrix<ValueType>>& mat, TransposeMode trans){
+  int p = 4; // Oversampling parameter (k+p) random cols are used to determine
+             // range space.
 
-    Matrix<ValueType> result = Matrix<ValueType>::Zero(rows,mat.cols());
-    if (trans==NOTRANS)
-      result = Matrix<ValueType>::Zero(rows,mat.cols());
+  matApply_t<ValueType> fun = [this, node, rows, cols](
+      const Eigen::Ref<Matrix<ValueType>> &mat, TransposeMode trans) {
+
+    Matrix<ValueType> result = Matrix<ValueType>::Zero(rows, mat.cols());
+    if (trans == NOTRANS)
+      result = Matrix<ValueType>::Zero(rows, mat.cols());
     else
-      result = Matrix<ValueType>::Zero(cols,mat.cols());
+      result = Matrix<ValueType>::Zero(cols, mat.cols());
 
-    apply_impl(node,mat,
-               Eigen::Ref<Matrix<ValueType>>(result),
-               trans);
+    apply_impl(node, mat, Eigen::Ref<Matrix<ValueType>>(result), trans);
     return result;
   };
 
+  randomizedLowRankApproximation(fun, rows, cols, coarsen_accuracy, maxk,
+                                 maxk + p, success, A, B);
 
-
-  randomizedLowRankApproximation(fun,rows, cols, coarsen_accuracy,maxk,maxk+p,
-                                 success, A, B);
-
-
-  if (success){
+  if (success) {
     // Remove data associated with children
-    for (int i = 0;i < 4;++i)
+    for (int i = 0; i < 4; ++i)
       m_hMatrixData.at(node->child(i)).reset();
 
     // Remove children from block cluster tree
 
     node->removeChildren();
-    
+
     // Add new data block and set node to admissible
 
     shared_ptr<HMatrixData<ValueType>> nodeData(
-      new HMatrixLowRankData<ValueType>(A,B));
-    m_hMatrixData[node]=nodeData;
+        new HMatrixLowRankData<ValueType>(A, B));
+    m_hMatrixData[node] = nodeData;
     node->data().admissible = true;
     return true;
-  }
-  else{
+  } else {
     return false;
-  }    
-    
-} 
-
+  }
+}
 }
 
 #endif

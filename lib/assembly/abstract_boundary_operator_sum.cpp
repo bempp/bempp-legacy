@@ -60,8 +60,8 @@ AbstractBoundaryOperatorSum<BasisFunctionType_, ResultType_>::
 }
 
 template <typename BasisFunctionType, typename ResultType>
-bool
-AbstractBoundaryOperatorSum<BasisFunctionType, ResultType>::isLocal() const {
+bool AbstractBoundaryOperatorSum<BasisFunctionType, ResultType>::isLocal()
+    const {
   return (m_term1.abstractOperator()->isLocal() &&
           m_term2.abstractOperator()->isLocal());
 }

@@ -63,9 +63,8 @@ struct Helmholtz3dSingleLayerPotentialOperatorImpl {
 /** \endcond */
 
 template <typename BasisFunctionType>
-Helmholtz3dSingleLayerPotentialOperator<
-    BasisFunctionType>::Helmholtz3dSingleLayerPotentialOperator(KernelType
-                                                                    waveNumber)
+Helmholtz3dSingleLayerPotentialOperator<BasisFunctionType>::
+    Helmholtz3dSingleLayerPotentialOperator(KernelType waveNumber)
     : Base(waveNumber) {}
 
 template <typename BasisFunctionType>

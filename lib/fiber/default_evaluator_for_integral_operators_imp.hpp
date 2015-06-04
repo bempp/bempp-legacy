@@ -91,8 +91,8 @@ private:
   const CollectionOf2dArrays<ResultType> &m_trialTransfValues;
   const std::vector<CoordinateType> &m_weights;
   const CollectionOfKernels<KernelType> &m_kernels;
-  const KernelTrialIntegral<BasisFunctionType, KernelType, ResultType> &
-      m_integral;
+  const KernelTrialIntegral<BasisFunctionType, KernelType, ResultType>
+      &m_integral;
   Matrix<ResultType> &m_result;
   size_t m_pointCount;
   size_t m_outputComponentCount;
@@ -107,22 +107,22 @@ DefaultEvaluatorForIntegralOperators<BasisFunctionType, KernelType, ResultType,
     DefaultEvaluatorForIntegralOperators(
         const shared_ptr<const GeometryFactory> &geometryFactory,
         const shared_ptr<const RawGridGeometry<CoordinateType>> &rawGeometry,
-        const shared_ptr<const std::vector<
-            const Shapeset<BasisFunctionType> *>> &trialShapesets,
+        const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
+            &trialShapesets,
         const shared_ptr<const CollectionOfKernels<KernelType>> &kernels,
         const shared_ptr<const CollectionOfShapesetTransformations<
             CoordinateType>> &trialTransformations,
         const shared_ptr<const KernelTrialIntegral<
             BasisFunctionType, KernelType, ResultType>> &integral,
-        const shared_ptr<const std::vector<std::vector<ResultType>>> &
-            argumentLocalCoefficients,
+        const shared_ptr<const std::vector<std::vector<ResultType>>>
+            &argumentLocalCoefficients,
         const shared_ptr<const OpenClHandler> &openClHandler,
         const ParallelizationOptions &parallelizationOptions,
         const shared_ptr<
             const QuadratureDescriptorSelectorForPotentialOperators<
                 BasisFunctionType>> &quadDescSelector,
-        const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType>> &
-            quadRuleFamily)
+        const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType>>
+            &quadRuleFamily)
     : m_geometryFactory(geometryFactory), m_rawGeometry(rawGeometry),
       m_trialShapesets(trialShapesets), m_kernels(kernels),
       m_trialTransformations(trialTransformations), m_integral(integral),
@@ -217,9 +217,9 @@ void DefaultEvaluatorForIntegralOperators<
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType,
           typename GeometryFactory>
-void
-DefaultEvaluatorForIntegralOperators<BasisFunctionType, KernelType, ResultType,
-                                     GeometryFactory>::cacheTrialData() {
+void DefaultEvaluatorForIntegralOperators<BasisFunctionType, KernelType,
+                                          ResultType,
+                                          GeometryFactory>::cacheTrialData() {
   size_t testGeomDeps = 0, trialGeomDeps = 0;
   m_kernels->addGeometricalDependencies(testGeomDeps, trialGeomDeps);
   if (testGeomDeps != 0 && testGeomDeps != GLOBALS)

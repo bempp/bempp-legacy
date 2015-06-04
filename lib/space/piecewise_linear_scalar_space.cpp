@@ -93,9 +93,8 @@ void PiecewiseLinearScalarSpace<BasisFunctionType>::setElementVariant(
 }
 
 template <typename BasisFunctionType>
-void
-PiecewiseLinearScalarSpace<BasisFunctionType>::getGlobalDofInterpolationPoints(
-    Matrix<CoordinateType> &points) const {
+void PiecewiseLinearScalarSpace<BasisFunctionType>::
+    getGlobalDofInterpolationPoints(Matrix<CoordinateType> &points) const {
   SpaceHelper<BasisFunctionType>::
       getGlobalDofInterpolationPoints_defaultImplementation(*this, points);
 }

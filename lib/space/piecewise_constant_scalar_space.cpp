@@ -216,9 +216,8 @@ void PiecewiseConstantScalarSpace<BasisFunctionType>::flatLocal2localDofs(
 }
 
 template <typename BasisFunctionType>
-void PiecewiseConstantScalarSpace<
-    BasisFunctionType>::getGlobalDofInterpolationPoints(Matrix<CoordinateType> &
-                                                            points) const {
+void PiecewiseConstantScalarSpace<BasisFunctionType>::
+    getGlobalDofInterpolationPoints(Matrix<CoordinateType> &points) const {
   SpaceHelper<BasisFunctionType>::
       getGlobalDofInterpolationPoints_defaultImplementation(*this, points);
 }
@@ -301,9 +300,9 @@ void PiecewiseConstantScalarSpace<BasisFunctionType>::getGlobalDofBoundingBoxes(
 }
 
 template <typename BasisFunctionType>
-void
-PiecewiseConstantScalarSpace<BasisFunctionType>::getFlatLocalDofBoundingBoxes(
-    std::vector<BoundingBox<CoordinateType>> &bboxes) const {
+void PiecewiseConstantScalarSpace<BasisFunctionType>::
+    getFlatLocalDofBoundingBoxes(
+        std::vector<BoundingBox<CoordinateType>> &bboxes) const {
   getGlobalDofBoundingBoxes(bboxes);
 }
 

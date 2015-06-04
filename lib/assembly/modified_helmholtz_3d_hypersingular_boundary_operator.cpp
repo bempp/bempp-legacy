@@ -114,12 +114,13 @@ modifiedHelmholtz3dSyntheticHypersingularBoundaryOperator(
   BoundaryOperator<BasisFunctionType, ResultType> slp;
   if (!externalSlp.isInitialized()) {
 
-    slp = modifiedHelmholtz3dSingleLayerBoundaryOperator<
-        BasisFunctionType, KernelType, ResultType>(
-        internalContext, internalTrialSpace,
-        internalTestSpace /* or whatever */, internalTestSpace, waveNumber,
-        "(" + label + ")_internal_SLP", internalSymmetry, useInterpolation,
-        interpPtsPerWavelength);
+    slp =
+        modifiedHelmholtz3dSingleLayerBoundaryOperator<BasisFunctionType,
+                                                       KernelType, ResultType>(
+            internalContext, internalTrialSpace,
+            internalTestSpace /* or whatever */, internalTestSpace, waveNumber,
+            "(" + label + ")_internal_SLP", internalSymmetry, useInterpolation,
+            interpPtsPerWavelength);
   } else {
 
     slp = externalSlp;

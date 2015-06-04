@@ -60,10 +60,9 @@ std::pair<shared_ptr<typename HypersingularIntegralOperator<
               BasisFunctionType, KernelType, ResultType>::LocalAssembler>,
           shared_ptr<typename HypersingularIntegralOperator<
               BasisFunctionType, KernelType, ResultType>::LocalAssembler>>
-HypersingularIntegralOperator<
-    BasisFunctionType, KernelType,
-    ResultType>::makeAssemblers(const QuadratureStrategy &quadStrategy,
-                                const AssemblyOptions &options) const {
+HypersingularIntegralOperator<BasisFunctionType, KernelType, ResultType>::
+    makeAssemblers(const QuadratureStrategy &quadStrategy,
+                   const AssemblyOptions &options) const {
   typedef Fiber::RawGridGeometry<CoordinateType> RawGridGeometry;
   typedef std::vector<const Fiber::Shapeset<BasisFunctionType> *>
       ShapesetPtrVector;
@@ -106,10 +105,10 @@ HypersingularIntegralOperator<BasisFunctionType, KernelType, ResultType>::
         const QuadratureStrategy &quadStrategy,
         const shared_ptr<const GeometryFactory> &testGeometryFactory,
         const shared_ptr<const GeometryFactory> &trialGeometryFactory,
-        const shared_ptr<const Fiber::RawGridGeometry<CoordinateType>> &
-            testRawGeometry,
-        const shared_ptr<const Fiber::RawGridGeometry<CoordinateType>> &
-            trialRawGeometry,
+        const shared_ptr<const Fiber::RawGridGeometry<CoordinateType>>
+            &testRawGeometry,
+        const shared_ptr<const Fiber::RawGridGeometry<CoordinateType>>
+            &trialRawGeometry,
         const shared_ptr<const std::vector<
             const Fiber::Shapeset<BasisFunctionType> *>> &testShapesets,
         const shared_ptr<const std::vector<
@@ -124,28 +123,29 @@ HypersingularIntegralOperator<BasisFunctionType, KernelType, ResultType>::
   // H-matrix blocks in "disassembled mode"
   result.first.reset(
       quadStrategy.makeAssemblerForIntegralOperators(
-                       testGeometryFactory, trialGeometryFactory,
-                       testRawGeometry, trialRawGeometry, testShapesets,
-                       trialShapesets,
-                       make_shared_from_ref(testTransformations()),
-                       make_shared_from_ref(kernels()),
-                       make_shared_from_ref(trialTransformations()),
-                       make_shared_from_ref(integral()), openClHandler,
-                       parallelizationOptions, verbosityLevel,
-                       cacheSingularIntegrals).release());
+                      testGeometryFactory, trialGeometryFactory,
+                      testRawGeometry, trialRawGeometry, testShapesets,
+                      trialShapesets,
+                      make_shared_from_ref(testTransformations()),
+                      make_shared_from_ref(kernels()),
+                      make_shared_from_ref(trialTransformations()),
+                      make_shared_from_ref(integral()), openClHandler,
+                      parallelizationOptions, verbosityLevel,
+                      cacheSingularIntegrals)
+          .release());
   if (makeSeparateOffDiagonalAssembler)
     result.second.reset(
         quadStrategy.makeAssemblerForIntegralOperators(
-                         testGeometryFactory, trialGeometryFactory,
-                         testRawGeometry, trialRawGeometry, testShapesets,
-                         trialShapesets,
-                         make_shared_from_ref(offDiagonalTestTransformations()),
-                         make_shared_from_ref(offDiagonalKernels()),
-                         make_shared_from_ref(
-                             offDiagonalTrialTransformations()),
-                         make_shared_from_ref(offDiagonalIntegral()),
-                         openClHandler, parallelizationOptions, verbosityLevel,
-                         false /*cacheSingularIntegrals*/).release());
+                        testGeometryFactory, trialGeometryFactory,
+                        testRawGeometry, trialRawGeometry, testShapesets,
+                        trialShapesets,
+                        make_shared_from_ref(offDiagonalTestTransformations()),
+                        make_shared_from_ref(offDiagonalKernels()),
+                        make_shared_from_ref(offDiagonalTrialTransformations()),
+                        make_shared_from_ref(offDiagonalIntegral()),
+                        openClHandler, parallelizationOptions, verbosityLevel,
+                        false /*cacheSingularIntegrals*/)
+            .release());
   else
     result.second = result.first;
   return result;
@@ -188,7 +188,8 @@ HypersingularIntegralOperator<BasisFunctionType, KernelType, ResultType>::
   case AssemblyOptions::ACA:
     return shared_ptr<DiscreteBoundaryOperator<ResultType>>(
         assembleWeakFormInAcaMode(standardAssembler, offDiagonalAssembler,
-                                  context).release());
+                                  context)
+            .release());
   default:
     throw std::runtime_error(
         "HypersingularIntegralOperator::assembleWeakFormInternalImpl(): "
@@ -225,12 +226,10 @@ HypersingularIntegralOperator<BasisFunctionType, KernelType, ResultType>::
   const Space<BasisFunctionType> &testSpace = *this->dualToRange();
   const Space<BasisFunctionType> &trialSpace = *this->domain();
 
-  return AcaGlobalAssembler<
-      BasisFunctionType,
-      ResultType>::assembleDetachedWeakForm(testSpace, trialSpace,
-                                            standardAssembler,
-                                            offDiagonalAssembler, context,
-                                            this->symmetry() & SYMMETRIC);
+  return AcaGlobalAssembler<BasisFunctionType, ResultType>::
+      assembleDetachedWeakForm(testSpace, trialSpace, standardAssembler,
+                               offDiagonalAssembler, context,
+                               this->symmetry() & SYMMETRIC);
 }
 /** \endcond */
 

@@ -540,19 +540,17 @@ void PiecewiseLinearDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::
 }
 
 template <typename BasisFunctionType>
-void PiecewiseLinearDiscontinuousScalarSpaceBarycentric<
-    BasisFunctionType>::dumpClusterIds(const char *fileName,
-                                       const std::vector<unsigned int> &
-                                           clusterIdsOfDofs) const {
+void PiecewiseLinearDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::
+    dumpClusterIds(const char *fileName,
+                   const std::vector<unsigned int> &clusterIdsOfDofs) const {
   dumpClusterIdsEx(fileName, clusterIdsOfDofs, GLOBAL_DOFS);
 }
 
 template <typename BasisFunctionType>
-void PiecewiseLinearDiscontinuousScalarSpaceBarycentric<
-    BasisFunctionType>::dumpClusterIdsEx(const char *fileName,
-                                         const std::vector<unsigned int> &
-                                             clusterIdsOfDofs,
-                                         DofType dofType) const {
+void PiecewiseLinearDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::
+    dumpClusterIdsEx(const char *fileName,
+                     const std::vector<unsigned int> &clusterIdsOfDofs,
+                     DofType dofType) const {
   // Note: this will probably only work for spaces on full grids
   // (not on segments)
 

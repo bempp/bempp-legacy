@@ -64,8 +64,8 @@ ScaledAbstractBoundaryOperator<BasisFunctionType, ResultType>::
       m_multiplier(multiplier_), m_multiplicand(multiplicand_) {}
 
 template <typename BasisFunctionType, typename ResultType>
-bool
-ScaledAbstractBoundaryOperator<BasisFunctionType, ResultType>::isLocal() const {
+bool ScaledAbstractBoundaryOperator<BasisFunctionType, ResultType>::isLocal()
+    const {
   return m_multiplicand.abstractOperator()->isLocal();
 }
 

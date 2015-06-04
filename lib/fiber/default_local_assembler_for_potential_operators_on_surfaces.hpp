@@ -69,8 +69,8 @@ public:
       const Matrix<CoordinateType> &points,
       const shared_ptr<const GeometryFactory> &geometryFactory,
       const shared_ptr<const RawGridGeometry<CoordinateType>> &rawGeometry,
-      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
-          trialShapesets,
+      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
+          &trialShapesets,
       const shared_ptr<const CollectionOfKernels<KernelType>> &kernels,
       const shared_ptr<const CollectionOfShapesetTransformations<
           CoordinateType>> &trialTransformations,
@@ -80,8 +80,8 @@ public:
       VerbosityLevel::Level verbosityLevel,
       const shared_ptr<const QuadratureDescriptorSelectorForPotentialOperators<
           BasisFunctionType>> &quadDescSelector,
-      const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType>> &
-          quadRuleFamily);
+      const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType>>
+          &quadRuleFamily);
   virtual ~DefaultLocalAssemblerForPotentialOperatorsOnSurfaces();
 
   virtual void evaluateLocalContributions(

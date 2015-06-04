@@ -41,18 +41,19 @@ template <typename BasisFunctionType, typename ResultType,
 class NumericalTestTrialIntegrator
     : public TestTrialIntegrator<BasisFunctionType, ResultType> {
 public:
-  typedef typename TestTrialIntegrator<
-      BasisFunctionType, ResultType>::CoordinateType CoordinateType;
+  typedef
+      typename TestTrialIntegrator<BasisFunctionType,
+                                   ResultType>::CoordinateType CoordinateType;
 
   NumericalTestTrialIntegrator(
       const Matrix<CoordinateType> &localQuadPoints,
       const std::vector<CoordinateType> quadWeights,
       const GeometryFactory &geometryFactory,
       const RawGridGeometry<CoordinateType> &rawGeometry,
-      const CollectionOfShapesetTransformations<CoordinateType> &
-          testTransformations,
-      const CollectionOfShapesetTransformations<CoordinateType> &
-          trialTransformations,
+      const CollectionOfShapesetTransformations<CoordinateType>
+          &testTransformations,
+      const CollectionOfShapesetTransformations<CoordinateType>
+          &trialTransformations,
       const TestTrialIntegral<BasisFunctionType, ResultType> &integral,
       const OpenClHandler &openClHandler);
 
@@ -67,10 +68,10 @@ private:
 
   const GeometryFactory &m_geometryFactory;
   const RawGridGeometry<CoordinateType> &m_rawGeometry;
-  const CollectionOfShapesetTransformations<CoordinateType> &
-      m_testTransformations;
-  const CollectionOfShapesetTransformations<CoordinateType> &
-      m_trialTransformations;
+  const CollectionOfShapesetTransformations<CoordinateType>
+      &m_testTransformations;
+  const CollectionOfShapesetTransformations<CoordinateType>
+      &m_trialTransformations;
   const TestTrialIntegral<BasisFunctionType, ResultType> &m_integral;
 
   const OpenClHandler &m_openClHandler;

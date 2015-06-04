@@ -59,21 +59,21 @@ public:
   DefaultEvaluatorForIntegralOperators(
       const shared_ptr<const GeometryFactory> &geometryFactory,
       const shared_ptr<const RawGridGeometry<CoordinateType>> &rawGeometry,
-      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
-          trialShapesets,
+      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
+          &trialShapesets,
       const shared_ptr<const CollectionOfKernels<KernelType>> &kernels,
       const shared_ptr<const CollectionOfShapesetTransformations<
           CoordinateType>> &trialTransformations,
       const shared_ptr<const KernelTrialIntegral<BasisFunctionType, KernelType,
                                                  ResultType>> &integral,
-      const shared_ptr<const std::vector<std::vector<ResultType>>> &
-          argumentLocalCoefficients,
+      const shared_ptr<const std::vector<std::vector<ResultType>>>
+          &argumentLocalCoefficients,
       const shared_ptr<const OpenClHandler> &openClHandler,
       const ParallelizationOptions &parallelizationOptions,
       const shared_ptr<const QuadratureDescriptorSelectorForPotentialOperators<
           BasisFunctionType>> &quadDescSelector,
-      const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType>> &
-          quadRuleFamily);
+      const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType>>
+          &quadRuleFamily);
 
   virtual void evaluate(Region region, const Matrix<CoordinateType> &points,
                         Matrix<ResultType> &result) const;

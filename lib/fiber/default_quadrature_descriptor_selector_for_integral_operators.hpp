@@ -50,10 +50,10 @@ public:
   DefaultQuadratureDescriptorSelectorForIntegralOperators(
       const shared_ptr<const RawGridGeometry<CoordinateType>> &testRawGeometry,
       const shared_ptr<const RawGridGeometry<CoordinateType>> &trialRawGeometry,
-      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
-          testShapesets,
-      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
-          trialShapesets,
+      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
+          &testShapesets,
+      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
+          &trialShapesets,
       const AccuracyOptionsEx &accuracyOptions);
 
   virtual DoubleQuadratureDescriptor

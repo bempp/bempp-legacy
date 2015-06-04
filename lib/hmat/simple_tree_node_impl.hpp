@@ -59,12 +59,10 @@ void SimpleTreeNode<T, N>::addChild(const T &data, int i) {
       make_shared<SimpleTreeNode<T, N>>(this->shared_from_this(), data);
 }
 
-template <typename T, int N>
-void SimpleTreeNode<T, N>::removeChildren() {
+template <typename T, int N> void SimpleTreeNode<T, N>::removeChildren() {
 
-  for (auto& child: m_children)
+  for (auto &child : m_children)
     child.reset();
-
 }
 
 template <typename T, int N>

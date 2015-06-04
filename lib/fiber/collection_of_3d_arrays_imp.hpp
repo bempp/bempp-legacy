@@ -146,8 +146,8 @@ inline size_t CollectionOf2dSlicesOf3dArrays<T>::size() const {
 
 template <typename T>
 inline CollectionOf2dSlicesOfConst3dArrays<
-    T>::CollectionOf2dSlicesOfConst3dArrays(const CollectionOf3dArrays<T> &
-                                                collection,
+    T>::CollectionOf2dSlicesOfConst3dArrays(const CollectionOf3dArrays<T>
+                                                &collection,
                                             size_t index2)
     : m_collection(collection), m_index2(index2) {}
 
@@ -196,8 +196,8 @@ inline size_t CollectionOf1dSlicesOf3dArrays<T>::size() const {
 
 template <typename T>
 inline CollectionOf1dSlicesOfConst3dArrays<
-    T>::CollectionOf1dSlicesOfConst3dArrays(const CollectionOf3dArrays<T> &
-                                                collection,
+    T>::CollectionOf1dSlicesOfConst3dArrays(const CollectionOf3dArrays<T>
+                                                &collection,
                                             size_t index1, size_t index2)
     : m_collection(collection), m_index1(index1), m_index2(index2) {}
 

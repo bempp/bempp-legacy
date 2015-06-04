@@ -43,8 +43,8 @@ shared_ptr<QuadratureDescriptorSelectorForGridFunctions<
 DefaultQuadratureDescriptorSelectorFactory<BasisFunctionType>::
     makeQuadratureDescriptorSelectorForGridFunctions(
         const shared_ptr<const RawGridGeometry<CoordinateType>> &rawGeometry,
-        const shared_ptr<const std::vector<
-            const Shapeset<BasisFunctionType> *>> &testShapesets) const {
+        const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
+            &testShapesets) const {
   typedef DefaultQuadratureDescriptorSelectorForGridFunctions<BasisFunctionType>
       Selector;
   return boost::make_shared<Selector>(rawGeometry, testShapesets,
@@ -57,14 +57,14 @@ shared_ptr<QuadratureDescriptorSelectorForIntegralOperators<
         BasisFunctionType>::CoordinateType>>
 DefaultQuadratureDescriptorSelectorFactory<BasisFunctionType>::
     makeQuadratureDescriptorSelectorForIntegralOperators(
-        const shared_ptr<const RawGridGeometry<CoordinateType>> &
-            testRawGeometry,
-        const shared_ptr<const RawGridGeometry<CoordinateType>> &
-            trialRawGeometry,
-        const shared_ptr<const std::vector<
-            const Shapeset<BasisFunctionType> *>> &testShapesets,
-        const shared_ptr<const std::vector<
-            const Shapeset<BasisFunctionType> *>> &trialShapesets) const {
+        const shared_ptr<const RawGridGeometry<CoordinateType>>
+            &testRawGeometry,
+        const shared_ptr<const RawGridGeometry<CoordinateType>>
+            &trialRawGeometry,
+        const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
+            &testShapesets,
+        const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
+            &trialShapesets) const {
   typedef DefaultQuadratureDescriptorSelectorForIntegralOperators<
       BasisFunctionType> Selector;
   return boost::make_shared<Selector>(testRawGeometry, trialRawGeometry,
@@ -79,10 +79,10 @@ shared_ptr<QuadratureDescriptorSelectorForLocalOperators<
 DefaultQuadratureDescriptorSelectorFactory<BasisFunctionType>::
     makeQuadratureDescriptorSelectorForLocalOperators(
         const shared_ptr<const RawGridGeometry<CoordinateType>> &rawGeometry,
-        const shared_ptr<const std::vector<
-            const Shapeset<BasisFunctionType> *>> &testShapesets,
-        const shared_ptr<const std::vector<
-            const Shapeset<BasisFunctionType> *>> &trialShapesets) const {
+        const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
+            &testShapesets,
+        const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
+            &trialShapesets) const {
   typedef DefaultQuadratureDescriptorSelectorForLocalOperators<
       BasisFunctionType> Selector;
   return boost::make_shared<Selector>(rawGeometry, testShapesets,
@@ -94,8 +94,8 @@ shared_ptr<QuadratureDescriptorSelectorForPotentialOperators<BasisFunctionType>>
 DefaultQuadratureDescriptorSelectorFactory<BasisFunctionType>::
     makeQuadratureDescriptorSelectorForPotentialOperators(
         const shared_ptr<const RawGridGeometry<CoordinateType>> &rawGeometry,
-        const shared_ptr<const std::vector<
-            const Shapeset<BasisFunctionType> *>> &trialShapesets) const {
+        const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
+            &trialShapesets) const {
   typedef DefaultQuadratureDescriptorSelectorForPotentialOperators<
       BasisFunctionType> Selector;
   return boost::make_shared<Selector>(rawGeometry, trialShapesets,

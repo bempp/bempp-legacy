@@ -80,8 +80,8 @@ helmholtz3dHypersingularBoundaryOperator(
       ScalarTraits<BASIS>::ComplexType, const std::string &, int, bool, int);  \
   template BoundaryOperator<BASIS, ScalarTraits<BASIS>::ComplexType>           \
   helmholtz3dHypersingularBoundaryOperator(                                    \
-      const shared_ptr<                                                        \
-          const Context<BASIS, ScalarTraits<BASIS>::ComplexType>> &,           \
+      const shared_ptr<const Context<BASIS, ScalarTraits<BASIS>::ComplexType>> \
+          &,                                                                   \
       const shared_ptr<const Space<BASIS>> &,                                  \
       const shared_ptr<const Space<BASIS>> &,                                  \
       const shared_ptr<const Space<BASIS>> &,                                  \

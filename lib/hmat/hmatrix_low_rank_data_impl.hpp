@@ -12,10 +12,10 @@ template <typename ValueType>
 HMatrixLowRankData<ValueType>::HMatrixLowRankData() {}
 
 template <typename ValueType>
-HMatrixLowRankData<ValueType>::HMatrixLowRankData(
-  const Matrix<ValueType>& A, const Matrix<ValueType>& B):
-  m_A(A), m_B(B) {}
-  
+HMatrixLowRankData<ValueType>::HMatrixLowRankData(const Matrix<ValueType> &A,
+                                                  const Matrix<ValueType> &B)
+    : m_A(A), m_B(B) {}
+
 template <typename ValueType>
 const Matrix<ValueType> &HMatrixLowRankData<ValueType>::A() const {
   return m_A;

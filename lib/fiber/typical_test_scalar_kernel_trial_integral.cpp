@@ -49,10 +49,10 @@ void setToProduct(const Eigen::MatrixBase<Derived> &source,
 template <typename BasisFunctionType, typename ResultType>
 void outOfPlaceMultiplyByWeightsAndConjugateTransposeDimAndDofDimensions(
     const _3dArray<BasisFunctionType> &values,
-    const GeometricalData<typename ScalarTraits<BasisFunctionType>::RealType> &
-        geomData,
-    const std::vector<typename ScalarTraits<BasisFunctionType>::RealType> &
-        quadWeights,
+    const GeometricalData<typename ScalarTraits<BasisFunctionType>::RealType>
+        &geomData,
+    const std::vector<typename ScalarTraits<BasisFunctionType>::RealType>
+        &quadWeights,
     std::vector<ResultType, tbb::scalable_allocator<ResultType>> &tmp) {
   typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
 
@@ -147,10 +147,10 @@ inline void addABt(const Eigen::MatrixBase<Derived> &A,
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 void evaluateWithNontensorQuadratureRuleStandardImpl(
-    const GeometricalData<typename ScalarTraits<ResultType>::RealType> &
-        testGeomData,
-    const GeometricalData<typename ScalarTraits<ResultType>::RealType> &
-        trialGeomData,
+    const GeometricalData<typename ScalarTraits<ResultType>::RealType>
+        &testGeomData,
+    const GeometricalData<typename ScalarTraits<ResultType>::RealType>
+        &trialGeomData,
     const CollectionOf3dArrays<BasisFunctionType> &testValues,
     const CollectionOf3dArrays<BasisFunctionType> &trialValues,
     const CollectionOf3dArrays<KernelType> &kernelValues,
@@ -223,21 +223,21 @@ void evaluateWithNontensorQuadratureRuleStandardImpl(
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 void evaluateWithTensorQuadratureRuleImpl(
-    const GeometricalData<typename ScalarTraits<ResultType>::RealType> &
-        testGeomData,
-    const GeometricalData<typename ScalarTraits<ResultType>::RealType> &
-        trialGeomData,
+    const GeometricalData<typename ScalarTraits<ResultType>::RealType>
+        &testGeomData,
+    const GeometricalData<typename ScalarTraits<ResultType>::RealType>
+        &trialGeomData,
     const CollectionOf3dArrays<BasisFunctionType> &testValues,
     const CollectionOf3dArrays<BasisFunctionType> &trialValues,
     const CollectionOf4dArrays<KernelType> &kernelValues,
-    const std::vector<typename ScalarTraits<ResultType>::RealType> &
-        testQuadWeights,
-    const std::vector<typename ScalarTraits<ResultType>::RealType> &
-        trialQuadWeights,
+    const std::vector<typename ScalarTraits<ResultType>::RealType>
+        &testQuadWeights,
+    const std::vector<typename ScalarTraits<ResultType>::RealType>
+        &trialQuadWeights,
     Matrix<ResultType> &result) {
   typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
-  typedef typename Coercion<BasisFunctionType, ResultType>::Type
-      IntermediateType;
+  typedef
+      typename Coercion<BasisFunctionType, ResultType>::Type IntermediateType;
 
   // Evaluate constants and assert that array dimensions are correct
   const size_t transCount = testValues.size();
@@ -500,8 +500,9 @@ template <typename CoordinateType>
 TypicalTestScalarKernelTrialIntegral<
     std::complex<CoordinateType>, CoordinateType,
     std::complex<CoordinateType>>::TypicalTestScalarKernelTrialIntegral()
-    : m_standardIntegral(TestScalarKernelTrialIntegrandFunctor<
-          BasisFunctionType, KernelType, ResultType>()) {}
+    : m_standardIntegral(
+          TestScalarKernelTrialIntegrandFunctor<BasisFunctionType, KernelType,
+                                                ResultType>()) {}
 
 template <typename CoordinateType>
 void TypicalTestScalarKernelTrialIntegral<std::complex<CoordinateType>,

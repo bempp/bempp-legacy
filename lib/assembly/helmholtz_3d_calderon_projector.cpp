@@ -38,8 +38,8 @@ helmholtz3dExteriorCalderonProjector(
     const std::string &label, bool useInterpolation,
     int interpPtsPerWavelength) {
 
-  typedef typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType
-      ComplexType;
+  typedef
+      typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType ComplexType;
   return modifiedHelmholtz3dExteriorCalderonProjector(
       context, hminusSpace, hplusSpace, waveNumber / ComplexType(0, 1), label,
       useInterpolation, interpPtsPerWavelength);
@@ -56,8 +56,8 @@ helmholtz3dExteriorCalderonProjector(
     const std::string &label, bool useInterpolation,
     int interpPtsPerWavelength) {
 
-  typedef typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType
-      ComplexType;
+  typedef
+      typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType ComplexType;
 
   shared_ptr<const Context<
       BasisFunctionType,
@@ -85,8 +85,8 @@ helmholtz3dInteriorCalderonProjector(
     const std::string &label, bool useInterpolation,
     int interpPtsPerWavelength) {
 
-  typedef typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType
-      ComplexType;
+  typedef
+      typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType ComplexType;
   return modifiedHelmholtz3dInteriorCalderonProjector(
       context, hminusSpace, hplusSpace, waveNumber / ComplexType(0, 1), label,
       useInterpolation, interpPtsPerWavelength);
@@ -103,8 +103,8 @@ helmholtz3dInteriorCalderonProjector(
     const std::string &label, bool useInterpolation,
     int interpPtsPerWavelength) {
 
-  typedef typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType
-      ComplexType;
+  typedef
+      typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType ComplexType;
 
   shared_ptr<const Context<
       BasisFunctionType,

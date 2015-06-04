@@ -47,8 +47,8 @@ void decomposeBoundaryOperatorRecursively(
     const BoundaryOperator<BasisFunctionType, ResultType> &op,
     ResultType weight,
     std::vector<BoundaryOperator<BasisFunctionType, ResultType>> &joinableOps,
-    std::vector<BoundaryOperator<BasisFunctionType, ResultType>> &
-        nonjoinableOps,
+    std::vector<BoundaryOperator<BasisFunctionType, ResultType>>
+        &nonjoinableOps,
     std::vector<ResultType> &joinableOpWeights,
     std::vector<ResultType> &nonjoinableOpWeights) {
   // It would be possible to replace this function, and its stack of dynamic
@@ -125,8 +125,8 @@ template <typename BasisFunctionType, typename ResultType>
 void decomposeBoundaryOperator(
     const BoundaryOperator<BasisFunctionType, ResultType> &op,
     std::vector<BoundaryOperator<BasisFunctionType, ResultType>> &joinableOps,
-    std::vector<BoundaryOperator<BasisFunctionType, ResultType>> &
-        nonjoinableOps,
+    std::vector<BoundaryOperator<BasisFunctionType, ResultType>>
+        &nonjoinableOps,
     std::vector<ResultType> &joinableOpWeights,
     std::vector<ResultType> &nonjoinableOpWeights) {
   joinableOps.clear();
@@ -419,7 +419,8 @@ AbstractBoundaryOperatorSuperpositionBase<BasisFunctionType_, ResultType_>::
                 sparseTermMultipliers, context, // We're using here the
                                                 // options (esp. ACA options)
                                                 // of the superposition operator
-                false /* no symmetry, for the moment */).release());
+                false /* no symmetry, for the moment */)
+                .release());
     tbb::tick_count end = tbb::tick_count::now();
     if (verbose)
       std::cout << "Assembly of the weak form of operator '" << label

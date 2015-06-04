@@ -147,8 +147,8 @@ calculateProjections(const Context<BasisFunctionType, ResultType> &context,
   Helper::collectShapesets(dualSpace, testShapesets);
 
   // Get reference to the test shapeset transformation
-  const Fiber::CollectionOfShapesetTransformations<CoordinateType> &
-      testTransformations = dualSpace.basisFunctionValue();
+  const Fiber::CollectionOfShapesetTransformations<CoordinateType>
+      &testTransformations = dualSpace.basisFunctionValue();
 
   typedef Fiber::LocalAssemblerForGridFunctions<ResultType> LocalAssembler;
   std::unique_ptr<LocalAssembler> assembler =
@@ -665,9 +665,9 @@ void GridFunction<BasisFunctionType, ResultType>::setProjections(
 }
 
 template <typename BasisFunctionType, typename ResultType>
-void
-GridFunction<BasisFunctionType, ResultType>::updateProjectionsFromCoefficients(
-    const shared_ptr<const Space<BasisFunctionType>> &dualSpace_) const {
+void GridFunction<BasisFunctionType, ResultType>::
+    updateProjectionsFromCoefficients(
+        const shared_ptr<const Space<BasisFunctionType>> &dualSpace_) const {
   // This should have been checked beforehand, this is after all a private
   // function. So omit these checks in release mode.
   assert(isInitialized());
@@ -861,8 +861,8 @@ void GridFunction<BasisFunctionType, ResultType>::evaluateAtSpecialPoints(
   size_t basisDeps = 0, geomDeps = Fiber::GLOBALS;
   // Find out which geometrical data need to be calculated, in addition
   // to those needed by the kernel
-  const Fiber::CollectionOfShapesetTransformations<CoordinateType> &
-      transformations = m_space->basisFunctionValue();
+  const Fiber::CollectionOfShapesetTransformations<CoordinateType>
+      &transformations = m_space->basisFunctionValue();
   assert(nComponents == transformations.resultDimension(0));
   transformations.addDependencies(basisDeps, geomDeps);
 
@@ -1025,8 +1025,8 @@ void GridFunction<BasisFunctionType, ResultType>::evaluate(
   // Find out which basis data need to be calculated
   size_t basisDeps = 0, geomDeps = 0;
   // Find out which geometrical data need to be calculated,
-  const Fiber::CollectionOfShapesetTransformations<CoordinateType> &
-      transformations = m_space->basisFunctionValue();
+  const Fiber::CollectionOfShapesetTransformations<CoordinateType>
+      &transformations = m_space->basisFunctionValue();
   assert(transformations.transformationCount() == 1);
   assert(nComponents == transformations.resultDimension(0));
   transformations.addDependencies(basisDeps, geomDeps);
@@ -1099,11 +1099,11 @@ operator/(const GridFunction<BasisFunctionType, ResultType> &g1,
 }
 
 template <typename BasisFunctionType, typename ResultType>
-void
-exportToVtk(const GridFunction<BasisFunctionType, ResultType> &gridFunction,
-            VtkWriter::DataType dataType, const char *dataLabel,
-            const char *fileNamesBase, const char *filesPath,
-            VtkWriter::OutputType outputType) {
+void exportToVtk(
+    const GridFunction<BasisFunctionType, ResultType> &gridFunction,
+    VtkWriter::DataType dataType, const char *dataLabel,
+    const char *fileNamesBase, const char *filesPath,
+    VtkWriter::OutputType outputType) {
   shared_ptr<const Space<BasisFunctionType>> space = gridFunction.space();
   if (!space)
     throw std::runtime_error("exportToVtk(): gridFunction must not be "

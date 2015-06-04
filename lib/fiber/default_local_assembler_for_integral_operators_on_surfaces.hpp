@@ -73,10 +73,10 @@ public:
       const shared_ptr<const GeometryFactory> &trialGeometryFactory,
       const shared_ptr<const RawGridGeometry<CoordinateType>> &testRawGeometry,
       const shared_ptr<const RawGridGeometry<CoordinateType>> &trialRawGeometry,
-      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
-          testShapesets,
-      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
-          trialShapesets,
+      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
+          &testShapesets,
+      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
+          &trialShapesets,
       const shared_ptr<const CollectionOfShapesetTransformations<
           CoordinateType>> &testTransformations,
       const shared_ptr<const CollectionOfKernels<KernelType>> &kernel,
@@ -89,8 +89,8 @@ public:
       VerbosityLevel::Level verbosityLevel, bool cacheSingularIntegrals,
       const shared_ptr<const QuadratureDescriptorSelectorForIntegralOperators<
           CoordinateType>> &quadDescSelector,
-      const shared_ptr<const DoubleQuadratureRuleFamily<CoordinateType>> &
-          quadRuleFamily);
+      const shared_ptr<const DoubleQuadratureRuleFamily<CoordinateType>>
+          &quadRuleFamily);
   virtual ~DefaultLocalAssemblerForIntegralOperatorsOnSurfaces();
 
 public:

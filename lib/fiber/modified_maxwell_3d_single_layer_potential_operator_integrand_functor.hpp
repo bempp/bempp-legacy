@@ -53,8 +53,8 @@ public:
   void evaluate(
       const ConstGeometricalDataSlice<CoordinateType> & /* trialGeomData */,
       const CollectionOf2dSlicesOfConst4dArrays<KernelType> &kernelValues,
-      const CollectionOf1dSlicesOfConstNdArrays<TrialValueType> &
-          weightedTransformedTrialValues,
+      const CollectionOf1dSlicesOfConstNdArrays<TrialValueType>
+          &weightedTransformedTrialValues,
       std::vector<ResultType> &result) const {
     const int dimWorld = 3;
 
@@ -68,8 +68,9 @@ public:
     // Assert that there are at least two test and trial transformations
     // (function value and surface div) of correct dimensions
     assert(weightedTransformedTrialValues.size() >= 2);
-    typedef typename CollectionOf1dSlicesOfConstNdArrays<
-        TrialValueType>::ConstSlice _1dSliceOfConstNdArray;
+    typedef
+        typename CollectionOf1dSlicesOfConstNdArrays<TrialValueType>::ConstSlice
+            _1dSliceOfConstNdArray;
 
     _1dSliceOfConstNdArray trialValues = weightedTransformedTrialValues[0];
     _1dSliceOfConstNdArray trialSurfaceDivs = weightedTransformedTrialValues[1];

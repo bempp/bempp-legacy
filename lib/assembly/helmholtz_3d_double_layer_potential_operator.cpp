@@ -63,9 +63,8 @@ struct Helmholtz3dDoubleLayerPotentialOperatorImpl {
 /** \endcond */
 
 template <typename BasisFunctionType>
-Helmholtz3dDoubleLayerPotentialOperator<
-    BasisFunctionType>::Helmholtz3dDoubleLayerPotentialOperator(KernelType
-                                                                    waveNumber)
+Helmholtz3dDoubleLayerPotentialOperator<BasisFunctionType>::
+    Helmholtz3dDoubleLayerPotentialOperator(KernelType waveNumber)
     : Base(waveNumber) {}
 
 template <typename BasisFunctionType>

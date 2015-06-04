@@ -221,9 +221,9 @@ void GmshData::addElementData(int dataSetIndex, int element,
   elementDataSet.elementIndices.push_back(element);
   elementDataSet.values.push_back(values);
 }
-void
-GmshData::addElementNodeData(int dataSetIndex, int element,
-                             const std::vector<std::vector<double>> &values) {
+void GmshData::addElementNodeData(
+    int dataSetIndex, int element,
+    const std::vector<std::vector<double>> &values) {
 
   ElementNodeDataSet &elementNodeDataSet =
       *m_elementNodeDataSets.at(dataSetIndex);
@@ -388,12 +388,11 @@ void GmshData::getElementDataSet(int index,
     throw std::runtime_error(
         "Gmsh::getElementDataSet(): Index does not exist.");
 }
-void
-GmshData::getElementDataSet(int index, std::vector<std::string> &stringTags,
-                            std::vector<double> &realTags,
-                            int &numberOfFieldComponents,
-                            std::vector<int> &elementIndices,
-                            std::vector<std::vector<double>> &values) const {
+void GmshData::getElementDataSet(
+    int index, std::vector<std::string> &stringTags,
+    std::vector<double> &realTags, int &numberOfFieldComponents,
+    std::vector<int> &elementIndices,
+    std::vector<std::vector<double>> &values) const {
 
   int timeStep;
   int partition;

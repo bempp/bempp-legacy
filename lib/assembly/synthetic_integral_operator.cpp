@@ -51,8 +51,8 @@ template <typename T> const T &vectorFirstElement(const std::vector<T> &v) {
 template <typename ResultType>
 std::vector<shared_ptr<const DiscreteBoundaryOperator<ResultType>>>
 coalesceTestOperators(
-    const std::vector<shared_ptr<const DiscreteBoundaryOperator<ResultType>>> &
-        discreteLocalOps,
+    const std::vector<shared_ptr<const DiscreteBoundaryOperator<ResultType>>>
+        &discreteLocalOps,
     const shared_ptr<const RealSparseMatrix> &idInverse) {
   typedef DiscreteBoundaryOperator<ResultType> DiscreteOp;
   typedef DiscreteSparseBoundaryOperator<ResultType> SparseOp;
@@ -80,8 +80,8 @@ coalesceTestOperators(
 template <typename ResultType>
 std::vector<shared_ptr<const DiscreteBoundaryOperator<ResultType>>>
 coalesceTrialOperators(
-    const std::vector<shared_ptr<const DiscreteBoundaryOperator<ResultType>>> &
-        discreteLocalOps,
+    const std::vector<shared_ptr<const DiscreteBoundaryOperator<ResultType>>>
+        &discreteLocalOps,
     const shared_ptr<const RealSparseMatrix> &idInverse) {
   typedef DiscreteBoundaryOperator<ResultType> DiscreteOp;
   typedef DiscreteSparseBoundaryOperator<ResultType> SparseOp;
@@ -109,8 +109,8 @@ coalesceTrialOperators(
 template <typename ResultType>
 std::vector<shared_ptr<const DiscreteBoundaryOperator<ResultType>>>
 transposeTestOperators(
-    const std::vector<shared_ptr<const DiscreteBoundaryOperator<ResultType>>> &
-        discreteLocalOps,
+    const std::vector<shared_ptr<const DiscreteBoundaryOperator<ResultType>>>
+        &discreteLocalOps,
     bool hermitian) {
   typedef DiscreteBoundaryOperator<ResultType> DiscreteOp;
   typedef DiscreteSparseBoundaryOperator<ResultType> SparseOp;
@@ -139,11 +139,11 @@ transposeTestOperators(
 
 template <typename BasisFunctionType, typename ResultType>
 shared_ptr<const Space<BasisFunctionType>> determineDomain(
-    const std::vector<BoundaryOperator<BasisFunctionType, ResultType>> &
-        testLocalOps,
+    const std::vector<BoundaryOperator<BasisFunctionType, ResultType>>
+        &testLocalOps,
     const BoundaryOperator<BasisFunctionType, ResultType> &integralOp,
-    const std::vector<BoundaryOperator<BasisFunctionType, ResultType>> &
-        trialLocalOps,
+    const std::vector<BoundaryOperator<BasisFunctionType, ResultType>>
+        &trialLocalOps,
     int symmetry) {
   if (trialLocalOps.empty())
     if (testLocalOps.empty())
@@ -162,8 +162,8 @@ shared_ptr<const Space<BasisFunctionType>> determineDomain(
 
 template <typename BasisFunctionType, typename ResultType>
 shared_ptr<const Space<BasisFunctionType>> determineRange(
-    const std::vector<BoundaryOperator<BasisFunctionType, ResultType>> &
-        testLocalOps,
+    const std::vector<BoundaryOperator<BasisFunctionType, ResultType>>
+        &testLocalOps,
     const BoundaryOperator<BasisFunctionType, ResultType> &integralOp) {
   if (testLocalOps.empty())
     return integralOp.range();
@@ -173,8 +173,8 @@ shared_ptr<const Space<BasisFunctionType>> determineRange(
 
 template <typename BasisFunctionType, typename ResultType>
 shared_ptr<const Space<BasisFunctionType>> determineDualToRange(
-    const std::vector<BoundaryOperator<BasisFunctionType, ResultType>> &
-        testLocalOps,
+    const std::vector<BoundaryOperator<BasisFunctionType, ResultType>>
+        &testLocalOps,
     const BoundaryOperator<BasisFunctionType, ResultType> &integralOp) {
   if (testLocalOps.empty())
     return integralOp.dualToRange();
@@ -187,11 +187,11 @@ shared_ptr<const Space<BasisFunctionType>> determineDualToRange(
 template <typename BasisFunctionType, typename ResultType>
 SyntheticIntegralOperator<BasisFunctionType, ResultType>::
     SyntheticIntegralOperator(
-        const std::vector<BoundaryOperator<BasisFunctionType, ResultType>> &
-            testLocalOps,
+        const std::vector<BoundaryOperator<BasisFunctionType, ResultType>>
+            &testLocalOps,
         const BoundaryOperator<BasisFunctionType, ResultType> &integralOp,
-        const std::vector<BoundaryOperator<BasisFunctionType, ResultType>> &
-            trialLocalOps,
+        const std::vector<BoundaryOperator<BasisFunctionType, ResultType>>
+            &trialLocalOps,
         const std::string &label, int syntheseSymmetry)
     : Base(determineDomain(testLocalOps, integralOp, trialLocalOps,
                            syntheseSymmetry),
@@ -429,8 +429,8 @@ template <typename BasisFunctionType, typename ResultType>
 void SyntheticIntegralOperator<BasisFunctionType, ResultType>::
     getContextsForInternalAndAuxiliaryOperators(
         const shared_ptr<const Context<BasisFunctionType, ResultType>> &context,
-        shared_ptr<const Context<BasisFunctionType, ResultType>> &
-            internalContext,
+        shared_ptr<const Context<BasisFunctionType, ResultType>>
+            &internalContext,
         shared_ptr<const Context<BasisFunctionType, ResultType>> &auxContext) {
   typedef Context<BasisFunctionType, ResultType> Ctx;
   AssemblyOptions assemblyOptions = context->assemblyOptions();

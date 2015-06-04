@@ -76,9 +76,9 @@ void PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::initialize(
 }
 
 template <typename BasisFunctionType>
-bool
-PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::spaceIsCompatible(
-    const Space<BasisFunctionType> &other) const {
+bool PiecewiseLinearDiscontinuousScalarSpace<
+    BasisFunctionType>::spaceIsCompatible(const Space<BasisFunctionType> &other)
+    const {
 
   if (other.grid().get() == this->grid().get()) {
     return (other.spaceIdentifier() == this->spaceIdentifier());
@@ -114,9 +114,8 @@ PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::barycentricSpace(
 }
 
 template <typename BasisFunctionType>
-bool
-PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::isDiscontinuous()
-    const {
+bool PiecewiseLinearDiscontinuousScalarSpace<
+    BasisFunctionType>::isDiscontinuous() const {
   return true;
 }
 
@@ -201,10 +200,9 @@ void PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::getGlobalDofs(
 }
 
 template <typename BasisFunctionType>
-void
-PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::global2localDofs(
-    const std::vector<GlobalDofIndex> &globalDofs,
-    std::vector<std::vector<LocalDof>> &localDofs) const {
+void PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::
+    global2localDofs(const std::vector<GlobalDofIndex> &globalDofs,
+                     std::vector<std::vector<LocalDof>> &localDofs) const {
   localDofs.resize(globalDofs.size());
   for (size_t i = 0; i < globalDofs.size(); ++i) {
     localDofs[i] = m_global2localDofs[globalDofs[i]];
@@ -213,10 +211,9 @@ PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::global2localDofs(
 }
 
 template <typename BasisFunctionType>
-void
-PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::flatLocal2localDofs(
-    const std::vector<FlatLocalDofIndex> &flatLocalDofs,
-    std::vector<LocalDof> &localDofs) const {
+void PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::
+    flatLocal2localDofs(const std::vector<FlatLocalDofIndex> &flatLocalDofs,
+                        std::vector<LocalDof> &localDofs) const {
   localDofs.resize(flatLocalDofs.size());
   for (size_t i = 0; i < flatLocalDofs.size(); ++i)
     localDofs[i] = m_flatLocal2localDofs[flatLocalDofs[i]];
@@ -258,9 +255,8 @@ void PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::
 }
 
 template <typename BasisFunctionType>
-void
-PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::getGlobalDofNormals(
-    std::vector<Point3D<CoordinateType>> &normals) const {
+void PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::
+    getGlobalDofNormals(std::vector<Point3D<CoordinateType>> &normals) const {
   SpaceHelper<BasisFunctionType>::getGlobalDofNormals_defaultImplementation(
       *m_view, m_global2localDofs, normals);
 }
@@ -280,10 +276,10 @@ void PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::dumpClusterIds(
 }
 
 template <typename BasisFunctionType>
-void
-PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::dumpClusterIdsEx(
-    const char *fileName, const std::vector<unsigned int> &clusterIdsOfDofs,
-    DofType dofType) const {
+void PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::
+    dumpClusterIdsEx(const char *fileName,
+                     const std::vector<unsigned int> &clusterIdsOfDofs,
+                     DofType dofType) const {
   if (dofType != GLOBAL_DOFS && dofType != FLAT_LOCAL_DOFS)
     throw std::invalid_argument("PiecewiseLinearDiscontinuousScalarSpace::"
                                 "dumpClusterIds(): invalid DOF type");

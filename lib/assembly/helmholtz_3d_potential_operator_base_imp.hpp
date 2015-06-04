@@ -36,9 +36,8 @@ inline typename Impl::KernelType waveNumberImpl(const Impl &impl) {
 } // namespace
 
 template <typename Impl, typename BasisFunctionType>
-Helmholtz3dPotentialOperatorBase<
-    Impl,
-    BasisFunctionType>::Helmholtz3dPotentialOperatorBase(KernelType waveNumber)
+Helmholtz3dPotentialOperatorBase<Impl, BasisFunctionType>::
+    Helmholtz3dPotentialOperatorBase(KernelType waveNumber)
     : m_impl(new Impl(waveNumber)) {}
 
 template <typename Impl, typename BasisFunctionType>

@@ -154,8 +154,8 @@ shared_ptr<DiscreteBoundaryOperator<ResultType>>
 AbstractBoundaryOperatorPseudoinverse<BasisFunctionType, ResultType>::
     assembleWeakFormForSparseOperator(
         const Context<BasisFunctionType, ResultType> &context,
-        const shared_ptr<const DiscreteSparseBoundaryOperator<ResultType>> &
-            wrappedDiscreteOp) const {
+        const shared_ptr<const DiscreteSparseBoundaryOperator<ResultType>>
+            &wrappedDiscreteOp) const {
   typedef DiscreteBoundaryOperator<ResultType> DiscreteOp;
   typedef DiscreteSparseBoundaryOperator<ResultType> DiscreteSparseOp;
   typedef DiscreteInverseSparseBoundaryOperator<ResultType>
@@ -210,8 +210,8 @@ shared_ptr<DiscreteBoundaryOperator<ResultType>>
 AbstractBoundaryOperatorPseudoinverse<BasisFunctionType, ResultType>::
     assembleWeakFormForDenseOperator(
         const Context<BasisFunctionType, ResultType> &context,
-        const shared_ptr<const DiscreteDenseBoundaryOperator<ResultType>> &
-            wrappedDiscreteOp) const {
+        const shared_ptr<const DiscreteDenseBoundaryOperator<ResultType>>
+            &wrappedDiscreteOp) const {
   typedef DiscreteDenseBoundaryOperator<ResultType> DiscreteDenseLinOp;
 
   if (wrappedDiscreteOp->rowCount() == wrappedDiscreteOp->columnCount())
@@ -275,9 +275,8 @@ void AbstractBoundaryOperatorPseudoinverseId<BasisFunctionType,
 }
 
 template <typename BasisFunctionType, typename ResultType>
-bool
-AbstractBoundaryOperatorPseudoinverseId<BasisFunctionType, ResultType>::isEqual(
-    const AbstractBoundaryOperatorId &other) const {
+bool AbstractBoundaryOperatorPseudoinverseId<BasisFunctionType, ResultType>::
+    isEqual(const AbstractBoundaryOperatorId &other) const {
   // dynamic_cast won't suffice since we want to make sure both objects
   // are of exactly the same type (dynamic_cast would succeed for a subclass)
   if (typeid(other) == typeid(*this)) {

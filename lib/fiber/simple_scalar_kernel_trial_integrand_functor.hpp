@@ -54,8 +54,8 @@ public:
   void evaluate(
       const ConstGeometricalDataSlice<CoordinateType> & /* trialGeomData */,
       const CollectionOf2dSlicesOfConst4dArrays<KernelType> &kernelValues,
-      const CollectionOf1dSlicesOfConstNdArrays<TrialValueType> &
-          weightedTransformedTrialValues,
+      const CollectionOf1dSlicesOfConstNdArrays<TrialValueType>
+          &weightedTransformedTrialValues,
       std::vector<ResultType> &value) const {
     // Assert that there is at least one scalar-valued kernel
     assert(kernelValues.size() >= 1);

@@ -44,8 +44,8 @@ namespace Bempp {
 template <typename BasisFunctionType>
 class SpaceHMatGeometryInterface : public hmat::GeometryInterface {
 public:
-  typedef typename Fiber::ScalarTraits<BasisFunctionType>::RealType
-      CoordinateType;
+  typedef
+      typename Fiber::ScalarTraits<BasisFunctionType>::RealType CoordinateType;
 
   /** \brief Constructor */
   SpaceHMatGeometryInterface(const Space<BasisFunctionType> &space);

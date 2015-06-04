@@ -39,10 +39,10 @@ template <typename BasisFunctionType, typename ResultType>
 NumericalQuadratureStrategy<BasisFunctionType, ResultType>::
     NumericalQuadratureStrategy(
         const AccuracyOptionsEx &accuracyOptions,
-        const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType>> &
-            singleQuadratureRuleFamily,
-        const shared_ptr<const DoubleQuadratureRuleFamily<CoordinateType>> &
-            doubleQuadratureRuleFamily)
+        const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType>>
+            &singleQuadratureRuleFamily,
+        const shared_ptr<const DoubleQuadratureRuleFamily<CoordinateType>>
+            &doubleQuadratureRuleFamily)
     : Base(accuracyOptions, singleQuadratureRuleFamily,
            doubleQuadratureRuleFamily) {}
 
@@ -51,10 +51,10 @@ NumericalQuadratureStrategy<BasisFunctionType, ResultType>::
     NumericalQuadratureStrategy(
         const shared_ptr<const QuadratureDescriptorSelectorFactory<
             BasisFunctionType>> &quadratureDescriptorSelectorFactory,
-        const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType>> &
-            singleQuadratureRuleFamily,
-        const shared_ptr<const DoubleQuadratureRuleFamily<CoordinateType>> &
-            doubleQuadratureRuleFamily)
+        const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType>>
+            &singleQuadratureRuleFamily,
+        const shared_ptr<const DoubleQuadratureRuleFamily<CoordinateType>>
+            &doubleQuadratureRuleFamily)
     : Base(quadratureDescriptorSelectorFactory, singleQuadratureRuleFamily,
            doubleQuadratureRuleFamily) {}
 

@@ -68,8 +68,8 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
     const Space<BasisFunctionType> &testSpace,
     const Space<BasisFunctionType> &trialSpace,
     const std::vector<LocalAssemblerForIntegralOperators *> &localAssemblers,
-    const std::vector<LocalAssemblerForIntegralOperators *> &
-        localAssemblersForAdmissibleBlocks,
+    const std::vector<LocalAssemblerForIntegralOperators *>
+        &localAssemblersForAdmissibleBlocks,
     const std::vector<const DiscreteBndOp *> &sparseTermsToAdd,
     const std::vector<ResultType> &denseTermMultipliers,
     const std::vector<ResultType> &sparseTermMultipliers,
@@ -119,7 +119,8 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
   auto coarsening = parameterList.template get<bool>("options.hmat.coarsening");
   auto coarsening_accuracy =
       parameterList.template get<double>("options.hmat.coarsening_accuracy");
-  if (coarsening_accuracy==0) coarsening_accuracy = eps;
+  if (coarsening_accuracy == 0)
+    coarsening_accuracy = eps;
 
   shared_ptr<hmat::DefaultHMatrixType<ResultType>> hMatrix;
 

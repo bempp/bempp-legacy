@@ -32,10 +32,10 @@ template <typename BasisFunctionType>
 DefaultQuadratureDescriptorSelectorForLocalOperators<BasisFunctionType>::
     DefaultQuadratureDescriptorSelectorForLocalOperators(
         const shared_ptr<const RawGridGeometry<CoordinateType>> &rawGeometry,
-        const shared_ptr<const std::vector<
-            const Shapeset<BasisFunctionType> *>> &testShapesets,
-        const shared_ptr<const std::vector<
-            const Shapeset<BasisFunctionType> *>> &trialShapesets,
+        const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
+            &testShapesets,
+        const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
+            &trialShapesets,
         const AccuracyOptionsEx &accuracyOptions)
     : m_rawGeometry(rawGeometry), m_testShapesets(testShapesets),
       m_trialShapesets(trialShapesets), m_accuracyOptions(accuracyOptions) {

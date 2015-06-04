@@ -74,8 +74,8 @@ public:
       QuadratureDescriptorSelectorForGridFunctions<CoordinateType>>
   makeQuadratureDescriptorSelectorForGridFunctions(
       const shared_ptr<const RawGridGeometry<CoordinateType>> &rawGeometry,
-      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
-          testShapesets) const = 0;
+      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
+          &testShapesets) const = 0;
 
   /** \brief Create a quadrature descriptor selector used during
    *  the discretization of the weak form of boundary integral operators.
@@ -90,10 +90,10 @@ public:
   makeQuadratureDescriptorSelectorForIntegralOperators(
       const shared_ptr<const RawGridGeometry<CoordinateType>> &testRawGeometry,
       const shared_ptr<const RawGridGeometry<CoordinateType>> &trialRawGeometry,
-      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
-          testShapesets,
-      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
-          trialShapesets) const = 0;
+      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
+          &testShapesets,
+      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
+          &trialShapesets) const = 0;
 
   /** \brief Create a quadrature descriptor selector used during
    *  the discretization of the weak form of local boundary operators.
@@ -107,10 +107,10 @@ public:
       QuadratureDescriptorSelectorForLocalOperators<CoordinateType>>
   makeQuadratureDescriptorSelectorForLocalOperators(
       const shared_ptr<const RawGridGeometry<CoordinateType>> &rawGeometry,
-      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
-          testShapesets,
-      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
-          trialShapesets) const = 0;
+      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
+          &testShapesets,
+      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
+          &trialShapesets) const = 0;
 
   /** \brief Create a quadrature descriptor selector used during
    *  the evaluation of potentials.
@@ -123,8 +123,8 @@ public:
       QuadratureDescriptorSelectorForPotentialOperators<BasisFunctionType>>
   makeQuadratureDescriptorSelectorForPotentialOperators(
       const shared_ptr<const RawGridGeometry<CoordinateType>> &rawGeometry,
-      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>> &
-          trialShapesets) const = 0;
+      const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
+          &trialShapesets) const = 0;
 };
 
 } // namespace Fiber

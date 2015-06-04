@@ -60,13 +60,13 @@ SeparableNumericalTestKernelTrialIntegrator<BasisFunctionType, KernelType,
         const GeometryFactory &trialGeometryFactory,
         const RawGridGeometry<CoordinateType> &testRawGeometry,
         const RawGridGeometry<CoordinateType> &trialRawGeometry,
-        const CollectionOfShapesetTransformations<CoordinateType> &
-            testTransformations,
+        const CollectionOfShapesetTransformations<CoordinateType>
+            &testTransformations,
         const CollectionOfKernels<KernelType> &kernels,
-        const CollectionOfShapesetTransformations<CoordinateType> &
-            trialTransformations,
-        const TestKernelTrialIntegral<BasisFunctionType, KernelType,
-                                      ResultType> &integral,
+        const CollectionOfShapesetTransformations<CoordinateType>
+            &trialTransformations,
+        const TestKernelTrialIntegral<BasisFunctionType, KernelType, ResultType>
+            &integral,
         const OpenClHandler &openClHandler, bool cacheGeometricalData)
     : m_localTestQuadPoints(localTestQuadPoints),
       m_localTrialQuadPoints(localTrialQuadPoints),
@@ -166,16 +166,13 @@ void SeparableNumericalTestKernelTrialIntegrator<BasisFunctionType, KernelType,
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType,
           typename GeometryFactory>
-void SeparableNumericalTestKernelTrialIntegrator<
-    BasisFunctionType, KernelType, ResultType,
-    GeometryFactory>::integrate(CallVariant callVariant,
-                                const std::vector<int> &elementIndicesA,
-                                int elementIndexB,
-                                const Shapeset<BasisFunctionType> &basisA,
-                                const Shapeset<BasisFunctionType> &basisB,
-                                LocalDofIndex localDofIndexB,
-                                const std::vector<Matrix<ResultType> *> &result)
-    const {
+void SeparableNumericalTestKernelTrialIntegrator<BasisFunctionType, KernelType,
+                                                 ResultType, GeometryFactory>::
+    integrate(CallVariant callVariant, const std::vector<int> &elementIndicesA,
+              int elementIndexB, const Shapeset<BasisFunctionType> &basisA,
+              const Shapeset<BasisFunctionType> &basisB,
+              LocalDofIndex localDofIndexB,
+              const std::vector<Matrix<ResultType> *> &result) const {
   if (m_openClHandler.UseOpenCl()) {
     integrateCl(callVariant, elementIndicesA, elementIndexB, basisA, basisB,
                 localDofIndexB, result);

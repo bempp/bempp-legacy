@@ -38,21 +38,21 @@ DefaultLocalAssemblerForLocalOperatorsOnSurfaces<BasisFunctionType, ResultType,
     DefaultLocalAssemblerForLocalOperatorsOnSurfaces(
         const shared_ptr<const GeometryFactory> &geometryFactory,
         const shared_ptr<const RawGridGeometry<CoordinateType>> &rawGeometry,
-        const shared_ptr<const std::vector<
-            const Shapeset<BasisFunctionType> *>> &testShapesets,
-        const shared_ptr<const std::vector<
-            const Shapeset<BasisFunctionType> *>> &trialShapesets,
+        const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
+            &testShapesets,
+        const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
+            &trialShapesets,
         const shared_ptr<const CollectionOfShapesetTransformations<
             CoordinateType>> &testTransformations,
         const shared_ptr<const CollectionOfShapesetTransformations<
             CoordinateType>> &trialTransformations,
-        const shared_ptr<
-            const TestTrialIntegral<BasisFunctionType, ResultType>> &integral,
+        const shared_ptr<const TestTrialIntegral<BasisFunctionType, ResultType>>
+            &integral,
         const shared_ptr<const OpenClHandler> &openClHandler,
         const shared_ptr<const QuadratureDescriptorSelectorForLocalOperators<
             CoordinateType>> &quadDescSelector,
-        const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType>> &
-            quadRuleFamily)
+        const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType>>
+            &quadRuleFamily)
     : m_geometryFactory(geometryFactory), m_rawGeometry(rawGeometry),
       m_testShapesets(testShapesets), m_trialShapesets(trialShapesets),
       m_testTransformations(testTransformations),

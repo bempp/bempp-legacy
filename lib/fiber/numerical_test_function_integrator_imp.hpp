@@ -46,8 +46,8 @@ NumericalTestFunctionIntegrator<BasisFunctionType, UserFunctionType, ResultType,
         const std::vector<CoordinateType> quadWeights,
         const GeometryFactory &geometryFactory,
         const RawGridGeometry<CoordinateType> &rawGeometry,
-        const CollectionOfShapesetTransformations<CoordinateType> &
-            testTransformations,
+        const CollectionOfShapesetTransformations<CoordinateType>
+            &testTransformations,
         const Function<UserFunctionType> &function,
         const OpenClHandler &openClHandler)
     : m_localQuadPoints(localQuadPoints), m_quadWeights(quadWeights),

@@ -49,10 +49,10 @@ public:
   ResultType
   evaluate(const ConstGeometricalDataSlice<CoordinateType> &testGeomData,
            const ConstGeometricalDataSlice<CoordinateType> &trialGeomData,
-           const CollectionOf1dSlicesOfConst3dArrays<BasisFunctionType> &
-               testTransfValues,
-           const CollectionOf1dSlicesOfConst3dArrays<BasisFunctionType> &
-               trialTransfValues,
+           const CollectionOf1dSlicesOfConst3dArrays<BasisFunctionType>
+               &testTransfValues,
+           const CollectionOf1dSlicesOfConst3dArrays<BasisFunctionType>
+               &trialTransfValues,
            const CollectionOf2dSlicesOfConstNdArrays<KernelType> &kernelValues)
       const {
     const int dimWorld = 3;

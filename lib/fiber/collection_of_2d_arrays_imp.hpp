@@ -153,8 +153,8 @@ inline size_t CollectionOf1dSlicesOf2dArrays<T>::size() const {
 
 template <typename T>
 inline CollectionOf1dSlicesOfConst2dArrays<
-    T>::CollectionOf1dSlicesOfConst2dArrays(const CollectionOf2dArrays<T> &
-                                                collection,
+    T>::CollectionOf1dSlicesOfConst2dArrays(const CollectionOf2dArrays<T>
+                                                &collection,
                                             size_t index1)
     : m_collection(collection), m_index1(index1) {}
 

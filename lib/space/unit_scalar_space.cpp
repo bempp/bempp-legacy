@@ -91,9 +91,8 @@ bool UnitScalarSpace<BasisFunctionType>::spaceIsCompatible(
 }
 
 template <typename BasisFunctionType>
-void
-UnitScalarSpace<BasisFunctionType>::setElementVariant(const Entity<0> &element,
-                                                      ElementVariant variant) {
+void UnitScalarSpace<BasisFunctionType>::setElementVariant(
+    const Entity<0> &element, ElementVariant variant) {
   if (variant != elementVariant(element))
     // for this space, the element variants are unmodifiable,
     throw std::runtime_error("UnitScalarSpace::"

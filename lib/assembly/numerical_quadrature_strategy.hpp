@@ -184,10 +184,10 @@ public:
    * options and custom quadrature rule families. */
   NumericalQuadratureStrategy(
       const AccuracyOptionsEx &accuracyOptions,
-      const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType>> &
-          singleQuadratureRuleFamily,
-      const shared_ptr<const DoubleQuadratureRuleFamily<CoordinateType>> &
-          doubleQuadratureRuleFamily);
+      const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType>>
+          &singleQuadratureRuleFamily,
+      const shared_ptr<const DoubleQuadratureRuleFamily<CoordinateType>>
+          &doubleQuadratureRuleFamily);
 
   /** \brief Construct a numerical quadrature strategy.
    *
@@ -197,10 +197,10 @@ public:
   NumericalQuadratureStrategy(
       const shared_ptr<const QuadratureDescriptorSelectorFactory<
           BasisFunctionType>> &quadratureDescriptorSelectorFactory,
-      const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType>> &
-          singleQuadratureRuleFamily,
-      const shared_ptr<const DoubleQuadratureRuleFamily<CoordinateType>> &
-          doubleQuadratureRuleFamily);
+      const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType>>
+          &singleQuadratureRuleFamily,
+      const shared_ptr<const DoubleQuadratureRuleFamily<CoordinateType>>
+          &doubleQuadratureRuleFamily);
 };
 
 } // namespace Bempp

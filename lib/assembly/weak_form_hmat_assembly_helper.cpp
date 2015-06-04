@@ -76,8 +76,8 @@ template <typename BasisFunctionType, typename ResultType>
 typename WeakFormHMatAssemblyHelper<BasisFunctionType,
                                     ResultType>::MagnitudeType
 WeakFormHMatAssemblyHelper<BasisFunctionType, ResultType>::
-    estimateMinimumDistance(const hmat::DefaultBlockClusterTreeNodeType &
-                                blockClusterTreeNode) const {
+    estimateMinimumDistance(const hmat::DefaultBlockClusterTreeNodeType
+                                &blockClusterTreeNode) const {
 
   return MagnitudeType(
       blockClusterTreeNode.data()
@@ -88,12 +88,12 @@ WeakFormHMatAssemblyHelper<BasisFunctionType, ResultType>::
 }
 
 template <typename BasisFunctionType, typename ResultType>
-void
-WeakFormHMatAssemblyHelper<BasisFunctionType, ResultType>::computeMatrixBlock(
-    const hmat::IndexRangeType &testIndexRange,
-    const hmat::IndexRangeType &trialIndexRange,
-    const hmat::DefaultBlockClusterTreeNodeType &blockClusterTreeNode,
-    Matrix<ResultType> &data) const {
+void WeakFormHMatAssemblyHelper<BasisFunctionType, ResultType>::
+    computeMatrixBlock(
+        const hmat::IndexRangeType &testIndexRange,
+        const hmat::IndexRangeType &trialIndexRange,
+        const hmat::DefaultBlockClusterTreeNodeType &blockClusterTreeNode,
+        Matrix<ResultType> &data) const {
 
   auto numberOfTestIndices = testIndexRange[1] - testIndexRange[0];
   auto numberOfTrialIndices = trialIndexRange[1] - trialIndexRange[0];

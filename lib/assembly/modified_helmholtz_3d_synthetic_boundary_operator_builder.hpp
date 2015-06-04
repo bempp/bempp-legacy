@@ -16,9 +16,9 @@ template <typename BasisFunctionType, typename ResultType> class Context;
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType>
 modifiedHelmholtz3dSyntheticBoundaryOperator(
-    BoundaryOperator<BasisFunctionType, ResultType>(*constructor)(
-        const shared_ptr<
-            const Context<BasisFunctionType, ResultType>> & /*context*/,
+    BoundaryOperator<BasisFunctionType, ResultType> (*constructor)(
+        const shared_ptr<const Context<BasisFunctionType, ResultType>>
+            & /*context*/,
         const shared_ptr<const Space<BasisFunctionType>> & /*domain*/,
         const shared_ptr<const Space<BasisFunctionType>> & /*range*/,
         const shared_ptr<const Space<BasisFunctionType>> & /*dualToRange*/,

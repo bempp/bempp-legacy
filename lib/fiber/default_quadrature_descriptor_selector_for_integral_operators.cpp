@@ -32,14 +32,14 @@ namespace Fiber {
 template <typename BasisFunctionType>
 DefaultQuadratureDescriptorSelectorForIntegralOperators<BasisFunctionType>::
     DefaultQuadratureDescriptorSelectorForIntegralOperators(
-        const shared_ptr<const RawGridGeometry<CoordinateType>> &
-            testRawGeometry,
-        const shared_ptr<const RawGridGeometry<CoordinateType>> &
-            trialRawGeometry,
-        const shared_ptr<const std::vector<
-            const Shapeset<BasisFunctionType> *>> &testShapesets,
-        const shared_ptr<const std::vector<
-            const Shapeset<BasisFunctionType> *>> &trialShapesets,
+        const shared_ptr<const RawGridGeometry<CoordinateType>>
+            &testRawGeometry,
+        const shared_ptr<const RawGridGeometry<CoordinateType>>
+            &trialRawGeometry,
+        const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
+            &testShapesets,
+        const shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
+            &trialShapesets,
         const AccuracyOptionsEx &accuracyOptions)
     : m_testRawGeometry(testRawGeometry), m_trialRawGeometry(trialRawGeometry),
       m_testShapesets(testShapesets), m_trialShapesets(trialShapesets),
@@ -80,11 +80,9 @@ void DefaultQuadratureDescriptorSelectorForIntegralOperators<
 
 template <typename BasisFunctionType>
 DoubleQuadratureDescriptor
-DefaultQuadratureDescriptorSelectorForIntegralOperators<
-    BasisFunctionType>::quadratureDescriptor(int testElementIndex,
-                                             int trialElementIndex,
-                                             CoordinateType nominalDistance)
-    const {
+DefaultQuadratureDescriptorSelectorForIntegralOperators<BasisFunctionType>::
+    quadratureDescriptor(int testElementIndex, int trialElementIndex,
+                         CoordinateType nominalDistance) const {
   DoubleQuadratureDescriptor desc;
 
   // Get corner indices of the specified elements

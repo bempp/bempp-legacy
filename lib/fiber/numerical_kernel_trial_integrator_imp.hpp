@@ -51,10 +51,10 @@ NumericalKernelTrialIntegrator<BasisFunctionType, KernelType, ResultType,
         const GeometryFactory &geometryFactory,
         const RawGridGeometry<CoordinateType> &rawGeometry,
         const CollectionOfKernels<KernelType> &kernels,
-        const CollectionOfShapesetTransformations<CoordinateType> &
-            trialTransformations,
-        const KernelTrialIntegral<BasisFunctionType, KernelType, ResultType> &
-            integral)
+        const CollectionOfShapesetTransformations<CoordinateType>
+            &trialTransformations,
+        const KernelTrialIntegral<BasisFunctionType, KernelType, ResultType>
+            &integral)
     : m_localQuadPoints(localQuadPoints), m_quadWeights(quadWeights),
       m_points(points), m_geometryFactory(geometryFactory),
       m_rawGeometry(rawGeometry), m_kernels(kernels),

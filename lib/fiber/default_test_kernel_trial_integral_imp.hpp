@@ -30,9 +30,9 @@
 namespace Fiber {
 
 template <typename IntegrandFunctor>
-void
-DefaultTestKernelTrialIntegral<IntegrandFunctor>::addGeometricalDependencies(
-    size_t &testGeomDeps, size_t &trialGeomDeps) const {
+void DefaultTestKernelTrialIntegral<
+    IntegrandFunctor>::addGeometricalDependencies(size_t &testGeomDeps,
+                                                  size_t &trialGeomDeps) const {
   testGeomDeps |= INTEGRATION_ELEMENTS;
   trialGeomDeps |= INTEGRATION_ELEMENTS;
 
