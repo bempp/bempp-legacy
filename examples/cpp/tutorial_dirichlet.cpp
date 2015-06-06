@@ -113,7 +113,7 @@ int main()
 
     // Load mesh
 
-    const char* meshFile = "/home/betcke/development/bempp/meshes/sphere-h-0.025.msh";
+    const char* meshFile = "/Users/betcke/development/bempp/meshes/sphere-h-0.05.msh";
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(params, meshFile);

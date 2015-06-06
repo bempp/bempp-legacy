@@ -16,28 +16,19 @@ template <typename ValueType, int N>
 class HMatrixAcaCompressor : public HMatrixCompressor<ValueType, N> {
 public:
   HMatrixAcaCompressor(const DataAccessor<ValueType, N> &dataAccessor,
-                       double eps, unsigned int maxRank,
-                       unsigned int resizeThreshold = 1);
+                       double eps, unsigned int maxRank);
 
   void
   compressBlock(const BlockClusterTreeNode<N> &blockClusterTreeNode,
                 shared_ptr<HMatrixData<ValueType>> &hMatrixData) const override;
 
 private:
-  void
-  evaluateMatMinusLowRank(const BlockClusterTreeNode<N> &blockClusterTreeNode,
-                          const IndexRangeType &rowIndexRange,
-                          const IndexRangeType &columnIndexRange,
-                          Matrix<ValueType> &data, const Matrix<ValueType> &A,
-                          const Matrix<ValueType> &B, int rank) const;
-
   static std::size_t randomIndex(const IndexRangeType &range,
                                  std::set<std::size_t> &previousIndices);
 
   const DataAccessor<ValueType, N> &m_dataAccessor;
   double m_eps;
   unsigned int m_maxRank;
-  unsigned int m_resizeThreshold;
   HMatrixDenseCompressor<ValueType, N> m_hMatrixDenseCompressor;
 };
 }

@@ -212,14 +212,22 @@ public:
     const size_t n = local.cols();
     int_element.resize(n);
 
-    /* TODO: Optimise (get rid of data copying). */
+    // Compute a single integration element
+    
     typename DuneGeometry<dim_>::LocalCoordinate l;
-    for (size_t j = 0; j < n; ++j) {
-      for (int i = 0; i < mdim; ++i)
-        l[i] = local(i, j);
-      double ie = m_dune_geometry->integrationElement(l);
-      int_element(j) = ie;
-    }
+    l[0] = 1./3; l[1] = 1./3;
+    double ie = m_dune_geometry->integrationElement(l);
+    for (int i = 0; i < n; ++i)
+        int_element(i) = ie;
+
+    /* TODO: Optimise (get rid of data copying). */
+    //typename DuneGeometry<dim_>::LocalCoordinate l;
+    //for (size_t j = 0; j < n; ++j) {
+    //  for (int i = 0; i < mdim; ++i)
+    //    l[i] = local(i, j);
+    //  double ie = m_dune_geometry->integrationElement(l);
+    //  int_element(j) = ie;
+    //}
   }
 
   virtual double volume() const { return m_dune_geometry->volume(); }
