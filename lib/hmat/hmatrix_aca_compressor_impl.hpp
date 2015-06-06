@@ -70,7 +70,7 @@ void HMatrixAcaCompressor<ValueType, N>::compressBlock(
     IndexRangeType columnIndexRange = columnClusterRange;
 
     evaluateMatMinusLowRank(blockClusterTreeNode, rowIndexRange,
-                            columnIndexRange, newRow, A, B);
+                          columnIndexRange, newRow, A, B, rankCount);
 
     if (isnan(newRow))
       throw std::runtime_error("Nan in newRow");
@@ -88,7 +88,7 @@ void HMatrixAcaCompressor<ValueType, N>::compressBlock(
 
     auto pivot = newRow(0, maxColInd);
 
-    newRow = newRow / (pivot);
+    newRow /= pivot;
 
     // Now evaluate column
 
@@ -98,7 +98,7 @@ void HMatrixAcaCompressor<ValueType, N>::compressBlock(
                          boost::numeric_cast<std::size_t>(maxColInd) + 1}};
 
     evaluateMatMinusLowRank(blockClusterTreeNode, rowIndexRange,
-                            columnIndexRange, newCol, A, B);
+                          columnIndexRange, newCol, A, B, rankCount);
 
     if (isnan(newCol))
       throw std::runtime_error("Nan in newCol");
@@ -106,14 +106,21 @@ void HMatrixAcaCompressor<ValueType, N>::compressBlock(
     auto frobeniousNorm = hMatrixData->frobeniusNorm();
 
     if (rankCount == A.cols()) {
-      Matrix<ValueType> Atmp(A);
-      Matrix<ValueType> Btmp(B);
-      A.resize(numberOfRows, A.cols() + m_resizeThreshold);
-      B.resize(B.rows() + m_resizeThreshold, numberOfColumns);
-      A.setZero();
-      B.setZero();
-      A.leftCols(Atmp.cols()) = Atmp;
-      B.topRows(Btmp.rows()) = Btmp;
+      Matrix<ValueType> Atmp(A.rows(),A.cols()+m_resizeThreshold);
+      Matrix<ValueType> Btmp(B.rows()+m_resizeThreshold,B.cols());
+      Atmp.leftCols(A.cols()) = A;
+      Btmp.topRows(B.rows()) = B;
+      A.swap(Atmp);
+      B.swap(Btmp);
+      A.rightCols(m_resizeThreshold).setZero();
+      B.bottomRows(m_resizeThreshold).setZero();
+
+      //A.resize(numberOfRows, A.cols() + m_resizeThreshold);
+      //B.resize(B.rows() + m_resizeThreshold, numberOfColumns);
+      //A.setZero();
+      //B.setZero();
+      //A.leftCols(Atmp.cols()) = Atmp;
+      //B.topRows(Btmp.rows()) = Btmp;
     }
 
     A.col(rankCount) = newCol;
@@ -131,8 +138,6 @@ void HMatrixAcaCompressor<ValueType, N>::compressBlock(
     A = A.block(0, 0, A.rows(), rankCount).eval();
     B = B.block(0, 0, rankCount, B.cols()).eval();
   }
-  if (isnan(A) || isnan(B))
-    throw std::runtime_error("NaN detected at end of compress.");
 }
 
 template <typename ValueType, int N>
@@ -148,11 +153,11 @@ void HMatrixAcaCompressor<ValueType, N>::evaluateMatMinusLowRank(
     const BlockClusterTreeNode<N> &blockClusterTreeNode,
     const IndexRangeType &rowIndexRange, const IndexRangeType &columnIndexRange,
     Matrix<ValueType> &data, const Matrix<ValueType> &A,
-    const Matrix<ValueType> &B) const {
+    const Matrix<ValueType> &B, int rank) const {
 
-  auto rowClusterRange =
+  const auto& rowClusterRange =
       blockClusterTreeNode.data().rowClusterTreeNode->data().indexRange;
-  auto columnClusterRange =
+  const auto& columnClusterRange =
       blockClusterTreeNode.data().columnClusterTreeNode->data().indexRange;
 
   m_dataAccessor.computeMatrixBlock(rowIndexRange, columnIndexRange,
@@ -164,16 +169,9 @@ void HMatrixAcaCompressor<ValueType, N>::evaluateMatMinusLowRank(
   auto colStart = columnIndexRange[0] - columnClusterRange[0];
   auto colEnd = columnIndexRange[1] - columnClusterRange[0];
 
-  int aCols = A.cols();
-  int bRows = B.rows();
+  data -= A.block(rowStart, 0, rowEnd - rowStart, A.cols()) *
+         B.block(0, colStart, B.rows(), colEnd - colStart);
 
-  // Matrix<ValueType> aBlock = A.block(rowStart,0,rowEnd-rowStart,aCols);
-  // Matrix<ValueType> bBlock = B.block(0,colStart,bRows,colEnd-colStart);
-
-  // Matrix<ValueType> term = aBlock*bBlock;
-
-  data -= A.block(rowStart, 0, rowEnd - rowStart, aCols) *
-          B.block(0, colStart, bRows, colEnd - colStart);
 }
 
 template <typename ValueType, int N>

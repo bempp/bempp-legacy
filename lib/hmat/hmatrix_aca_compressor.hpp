@@ -17,7 +17,7 @@ class HMatrixAcaCompressor : public HMatrixCompressor<ValueType, N> {
 public:
   HMatrixAcaCompressor(const DataAccessor<ValueType, N> &dataAccessor,
                        double eps, unsigned int maxRank,
-                       unsigned int resizeThreshold = 10);
+                       unsigned int resizeThreshold = 1);
 
   void
   compressBlock(const BlockClusterTreeNode<N> &blockClusterTreeNode,
@@ -29,7 +29,7 @@ private:
                           const IndexRangeType &rowIndexRange,
                           const IndexRangeType &columnIndexRange,
                           Matrix<ValueType> &data, const Matrix<ValueType> &A,
-                          const Matrix<ValueType> &B) const;
+                          const Matrix<ValueType> &B, int rank) const;
 
   static std::size_t randomIndex(const IndexRangeType &range,
                                  std::set<std::size_t> &previousIndices);
