@@ -57,6 +57,7 @@ void HMatrixAcaCompressor<ValueType, N>::compressBlock(
 
   std::size_t rankCount = 0;
 
+
   for (int i = 0; i < iterationLimit; ++i) {
 
     std::size_t row = randomIndex(rowClusterRange, previousRowIndices);
@@ -71,9 +72,6 @@ void HMatrixAcaCompressor<ValueType, N>::compressBlock(
 
     evaluateMatMinusLowRank(blockClusterTreeNode, rowIndexRange,
                           columnIndexRange, newRow, A, B, rankCount);
-
-    if (isnan(newRow))
-      throw std::runtime_error("Nan in newRow");
 
     std::ptrdiff_t maxRowInd;
     std::ptrdiff_t maxColInd;
@@ -100,9 +98,6 @@ void HMatrixAcaCompressor<ValueType, N>::compressBlock(
     evaluateMatMinusLowRank(blockClusterTreeNode, rowIndexRange,
                           columnIndexRange, newCol, A, B, rankCount);
 
-    if (isnan(newCol))
-      throw std::runtime_error("Nan in newCol");
-
     auto frobeniousNorm = hMatrixData->frobeniusNorm();
 
     if (rankCount == A.cols()) {
@@ -128,8 +123,11 @@ void HMatrixAcaCompressor<ValueType, N>::compressBlock(
 
     rankCount++;
 
-    if (newCol.norm() * newRow.norm() < m_eps * frobeniousNorm)
+    if (newCol.norm() * newRow.norm() < m_eps * frobeniousNorm){
+      //std::cout << rankCount << std::endl;
       break;
+    }
+
   }
   // if (isnan(A) || isnan(B))
   //  throw std::runtime_error("NaN detected before end of compress.");
