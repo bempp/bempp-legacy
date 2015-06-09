@@ -1,6 +1,6 @@
 
-#ifndef CONFIG_PYTHON_HPP
-#define CONFIG_PYTHON_HPP
+#ifndef BEMPP_CONFIG_PYTHON_HPP
+#define BEMPP_CONFIG_PYTHON_HPP
 
 #include <Python.h>
 #if PY_MAJOR_VERSION >= 3

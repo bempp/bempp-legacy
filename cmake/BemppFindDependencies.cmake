@@ -52,7 +52,11 @@ lookup_package(Boost ${BOOST_MIN_VER} COMPONENTS unit_test_framework filesystem
                program_options system thread iostreams REQUIRED)
 lookup_package(TBB REQUIRED)
 lookup_package(Dune REQUIRED COMPONENTS geometry grid localfunctions devel )
-lookup_package(dune-foamgrid REQUIRED)
+if (WITH_ALUGRID)
+    lookup_package(dune-alugrid REQUIRED)
+else()
+    lookup_package(dune-foamgrid REQUIRED)
+endif()
 include("${PROJECT_SOURCE_DIR}/cmake/Dune/local.cmake")
 
 # Using cmake_policy does not seem to work here.
@@ -98,10 +102,9 @@ set(BEMPP_INCLUDE_DIRS
    ${dune-common_INCLUDE_DIRS}
    ${PYTHON_INCLUDE_DIR}
    ${NUMPY_INCLUDE_DIRS}
+   ${dune-alugrid_INCLUDE_DIRS}
+   ${dune-foamgrid_INCLUDE_DIRS}
 )
-if (dune-foamgrid_INCLUDE_DIRS)
-    list(APPEND BEMPP_INCLUDE_DIRS ${dune-foamgrid_INCLUDE_DIRS})
-endif()
 
 foreach(component Boost TBB EIGEN3)
     if(${component}_INCLUDE_DIR)

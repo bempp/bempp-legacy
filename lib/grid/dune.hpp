@@ -22,16 +22,24 @@
 #define bempp_dune_hpp
 
 #include "../common/common.hpp"
+#include "bempp/common/config_grid_manager.hpp"
 
 #include <memory>
-#include <dune/foamgrid/foamgrid.hh>
 #include <dune/geometry/multilineargeometry.hh>
 
+#ifdef WITH_ALUGRID
+#include <dune/alugrid/grid.hh>
 namespace Bempp {
-/** \ingroup grid_internal
- *  \brief Default Dune grid implementation used to represent 2D grids
- *  embedded in 3D space. */
-typedef Dune::FoamGrid<2, 3> Default2dIn3dDuneGrid;
+    typedef Dune::ALUGrid<2,3,Dune::simplex,Dune::conforming> Default2dIn3dDuneGrid;
+}
+#else
+#include <dune/foamgrid/foamgrid.hh>
+namespace Bempp {
+    typedef Dune::FoamGrid<2, 3> Default2dIn3dDuneGrid;
+}
+#endif
+
+namespace Bempp {
 
 /** \ingroup grid
     \brief Identifier of geometry type. */

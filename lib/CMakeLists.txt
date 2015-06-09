@@ -4,7 +4,7 @@ add_definitions(-DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION)
 add_definitions(-DCGAL_HAS_THREADS)
 
 #Configure All Option files
-foreach(config_file trilinos ahmed opencl data_types blas_and_lapack python)
+foreach(config_file trilinos ahmed opencl data_types blas_and_lapack python grid_manager)
     set(filename common/config_${config_file}.hpp)
     configure_file(${filename}.in
         ${PROJECT_BINARY_DIR}/include/bempp/${filename}
@@ -39,6 +39,11 @@ set(imported_targets
     # Dune targets
     dunecommon dunegeometry dunegrid 
 )
+if (WITH_ALUGRID)
+    list(APPEND imported_targets dunealugrid)
+endif()
+
+
 unset(library_files)
 foreach(library ${imported_targets})
     if(TARGET ${library})
