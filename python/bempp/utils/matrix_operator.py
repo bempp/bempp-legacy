@@ -3,12 +3,11 @@ from bempp.assembly.discrete_boundary_operator import DiscreteBoundaryOperatorBa
 class MatrixOperator(DiscreteBoundaryOperatorBase):
     def __init__(self,matrix):
         self._matrix = matrix
-        self._dtype = self._matrix.dtype
 
     def transpose(self):
         return MatrixOperator(self._matrix.transpose())
 
-    def as_matrix(self):
+    def get_matrix(self):
         return self._matrix
 
     def matmat(self,x):
@@ -20,5 +19,10 @@ class MatrixOperator(DiscreteBoundaryOperatorBase):
     def get_shape(self):
         return self._matrix.shape
 
+    def get_dtype(self):
+        return self._matrix.dtype
+    
+    dtype = property(get_dtype)
+    matrix = property(get_matrix)
     shape = property(get_shape)
     T = property(transpose)
