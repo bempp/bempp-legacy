@@ -213,6 +213,13 @@ Matrix<typename Fiber::ScalarTraits<BasisFunctionType>::RealType> _py_space_get_
     return result;
 }
 
+template <typename BasisFunctionType>
+void _py_space_get_global_dofs(const SpaceVariants& space_variant, const Entity<0>& element, std::vector<int>& global_dofs, std::vector<BasisFunctionType>& local_dof_weights){
+
+    shared_ptr<const Space<BasisFunctionType>> space_ptr = _py_get_space_ptr<BasisFunctionType>(space_variant);
+    space_ptr->getGlobalDofs(element, global_dofs,local_dof_weights);
+}
+
 #   undef BEMPP_EXPLICIT_CONSTRUCTOR
 
 }

@@ -72,6 +72,24 @@ cdef class Space:
             return self._order
 
 
+    def get_global_dofs(self,Entity0 element):
+
+        cdef vector[int] global_dofs_vec
+        cdef vector[double] local_dof_weights_vec
+        if self.dtype=='float64':
+            _py_space_get_global_dofs_float64(self.impl_,deref(element.impl_),global_dofs_vec,local_dof_weights_vec)
+        else:
+            raise ValueError("Unsupported dtype.")
+        global_dofs = []
+        local_dof_weights = []
+        #for i in range(global_dofs_vec.size()):
+        #    global_dofs.append(global_dofs_vec[i])
+        #for i in range(local_dof_weights_vec):
+        #    local_dof_weights.append(local_dof_weights_vec[i])
+        #return (global_dofs,local_dof_weights)
+        return (global_dofs_vec,local_dof_weights_vec) 
+        
+           
 
                 
 

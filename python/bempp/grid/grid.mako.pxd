@@ -32,3 +32,7 @@ cdef class Grid:
     cdef GridView _grid_view
     cpdef unsigned int vertex_insertion_index(self,Entity2 vertex)
     cpdef unsigned int element_insertion_index(self,Entity0 element)
+
+
+
+cdef Grid mark_and_refine(Grid grid, object index_list)

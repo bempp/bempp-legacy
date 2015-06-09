@@ -10,14 +10,19 @@ from bempp.utils cimport Matrix
 from bempp.utils.eigen cimport eigen_matrix_to_np_float64
 from libcpp cimport complex as ccomplex, bool as cbool
 from libcpp.string cimport string
+from libcpp.vector cimport vector
 from bempp.utils cimport shared_ptr, complex_float,complex_double
 from bempp.grid.grid cimport Grid, c_Grid
+from bempp.grid.entity cimport Entity0, c_Entity
+from bempp.grid.codim_template cimport codim_zero
 
 cdef extern from "bempp/space/py_space_variants.hpp":
     cdef cppclass c_Space "Bempp::Space" [BASIS]:
         c_Space(const shared_ptr[c_Grid]&)
         c_Space(const c_Space[BASIS]&)
         shared_ptr[const c_Grid] grid() const
+        
+
 
 
 # Declares complex type explicitly.
@@ -65,6 +70,7 @@ cdef extern from "bempp/space/py_space_variants.hpp" namespace "Bempp":
 % for pybasis,cybasis in dtypes.items():
     cdef Matrix[${real_cython_type(cybasis)}] _py_space_get_global_dof_interp_points_${pybasis} "Bempp::_py_space_get_global_dof_interp_points<${cybasis}>"(const SpaceVariants& space_variant)
     cdef Matrix[${real_cython_type(cybasis)}] _py_space_get_global_dof_normals_${pybasis} "Bempp::_py_space_get_global_dof_normals<${cybasis}>"(const SpaceVariants& space_variant)
+    cdef void _py_space_get_global_dofs_${pybasis} "Bempp::_py_space_get_global_dofs<${cybasis}>"(const SpaceVariants& space_variant, const c_Entity[codim_zero]&, vector[int]&, vector[${cybasis}]&)
 % endfor
 
 cdef class Space:

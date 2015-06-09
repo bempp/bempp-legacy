@@ -92,6 +92,13 @@ cdef class Grid:
         return deref(self.impl_).elementInsertionIndex(
                 deref(element.impl_))
 
+    def clone(self):
+        """ Create a new grid from a copy of the current grid. """
+
+        vertices = self.leaf_view.vertices
+        elements = self.leaf_view.elements
+        domain_indices = self.leaf_view.domain_indices
+        return grid_from_element_data(vertices, elements, domain_indices)
 
     property dim:
         """" Dimension of the grid. """
@@ -332,6 +339,8 @@ def grid_from_sphere(int n, double radius=1.0, object origin = [0,0,0]):
     return grid_from_element_data(nodes,elements)
 
 
+cdef Grid mark_and_refine(Grid grid, object index_list):
+    pass
 
 
         

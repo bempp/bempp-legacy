@@ -44,4 +44,9 @@ cdef class Geometry${codim}:
         """ Dimension of the space containing the entity. """
         def __get__(self):
             return self.impl_.dimWorld()
+
+    property volume:
+        """ Return volume of the entity. """
+        def __get__(self):
+            return self.impl_.volume()
 % endfor

@@ -12,6 +12,7 @@ cdef extern from "bempp/grid/geometry.hpp" namespace "Bempp":
         cbool affine() const
         int cornerCount() const
         void getCorners(Matrix[double]& c) const
+        double volume() const
 
 % for (codim,codim_template) in codims:
 
