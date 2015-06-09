@@ -215,7 +215,7 @@ public:
     // Compute a single integration element
     
     typename DuneGeometry<dim_>::LocalCoordinate l;
-    l[0] = 1./3; l[1] = 1./3;
+    for (int i = 0; i < mdim; ++i) l[i] = 0;
     double ie = m_dune_geometry->integrationElement(l);
     for (int i = 0; i < n; ++i)
         int_element(i) = ie;
