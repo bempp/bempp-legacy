@@ -399,7 +399,7 @@ cdef class SparseDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
 
     def as_matrix(self):
 
-        return self.sparse_operator.to_dense()
+        return self.sparse_operator.todense()
 
     def matvec(self,x):
 
