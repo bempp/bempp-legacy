@@ -17,7 +17,7 @@ install_python(FILES ${headers}
                DESTINATION bempp/include/bempp/utils)
 
 add_python_module(bempp.utils
-    __init__.py data_types.py which.py
+    __init__.py data_types.py which.py matrix_operator.py
     blocked_linear_operator.py byte_conversion.py ${sources} 
     TARGETNAME bempp.utils
     CPP

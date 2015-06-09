@@ -5,6 +5,9 @@ class MatrixOperator(DiscreteBoundaryOperatorBase):
         self._matrix = matrix
         self._dtype = self._matrix.dtype
 
+    def transpose(self):
+        return MatrixOperator(self._matrix.transpose())
+
     def as_matrix(self):
         return self._matrix
 
@@ -18,3 +21,4 @@ class MatrixOperator(DiscreteBoundaryOperatorBase):
         return self._matrix.shape
 
     shape = property(get_shape)
+    T = property(transpose)
