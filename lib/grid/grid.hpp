@@ -122,6 +122,30 @@ public:
 
   virtual unsigned int vertexInsertionIndex(const Entity<2> &vertex) const;
 
+  /** \brief Mark element for refinement. */
+
+  virtual bool mark(int refCount, const Entity<0>& element) = 0;
+
+  /** \brief Return mark status of element. */
+  
+  virtual int getMark(const Entity<0>& element) const = 0;
+
+  /** \brief Pre-Adaption step */
+
+  virtual bool preAdapt() = 0;
+
+  /** \brief Refine mesh */
+
+  virtual bool adapt() = 0;
+
+  /** \brief Clean up after refinement */
+
+  virtual void postAdapt() = 0;
+
+  /** \brief Refine all elements refCount times. */
+
+  virtual void globalRefine(int refCount) = 0;
+
 private:
   /** \cond PRIVATE */
   mutable Vector<double> m_lowerBound, m_upperBound;

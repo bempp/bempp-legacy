@@ -2,7 +2,7 @@
 from data_types import dtypes,scalar_cython_type
 %>
 
-from bempp.utils.shared_ptr cimport shared_ptr, static_pointer_cast
+from bempp.utils.shared_ptr cimport shared_ptr, static_pointer_cast, const_pointer_cast, reverse_const_pointer_cast
 from bempp.utils.unique_ptr cimport unique_ptr
 
 from bempp.utils.parameter_list cimport ParameterList

@@ -11,6 +11,7 @@
 #include <sstream>
 #include <complex>
 #include "bempp/common/eigen_support.hpp"
+#include "bempp/common/shared_ptr.hpp"
 
 namespace Bempp {
     inline static void catch_exception() {
@@ -69,6 +70,19 @@ namespace Bempp {
         return res;
 
     }
+
+    template <typename T>
+    shared_ptr<T> py_const_pointer_cast(const shared_ptr<const T>& p){
+        return const_pointer_cast<T>(p);
+
+    }
+
+    template <typename T>
+    shared_ptr<const T> py_reverse_const_pointer_cast(const shared_ptr<T>& p){
+        return p;
+
+    }
+    
 }
 #endif
 

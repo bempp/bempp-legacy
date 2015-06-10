@@ -7,6 +7,7 @@ from libcpp.vector cimport vector
 from bempp.utils cimport catch_exception
 from bempp.utils cimport unique_ptr
 from bempp.utils cimport Vector
+from bempp.grid.entity cimport Entity0
 from bempp.grid.grid_view cimport c_GridView, GridView
 from bempp.grid.grid_view cimport _grid_view_from_unique_ptr
 import numpy as _np
@@ -99,6 +100,11 @@ cdef class Grid:
         elements = self.leaf_view.elements
         domain_indices = self.leaf_view.domain_indices
         return grid_from_element_data(vertices, elements, domain_indices)
+
+    def get_mark(self, Entity0 e):
+        """ Return the mark status of a given element. """
+
+        return deref(self.impl_).getMark(deref(e.impl_))
 
     property dim:
         """" Dimension of the grid. """
@@ -339,8 +345,7 @@ def grid_from_sphere(int n, double radius=1.0, object origin = [0,0,0]):
     return grid_from_element_data(nodes,elements)
 
 
-cdef Grid mark_and_refine(Grid grid, object index_list):
-    pass
+
 
 
         

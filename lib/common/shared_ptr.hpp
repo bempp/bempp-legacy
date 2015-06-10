@@ -31,6 +31,7 @@ using Fiber::make_shared_from_const_ref;
 using Fiber::null_deleter;
 using Fiber::dynamic_pointer_cast;
 using Fiber::static_pointer_cast;
+using Fiber::const_pointer_cast;
 
 } // namespace Bempp
 

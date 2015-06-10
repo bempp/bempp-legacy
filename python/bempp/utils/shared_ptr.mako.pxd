@@ -13,3 +13,7 @@ cdef extern from "<boost/shared_ptr.hpp>" namespace "boost":
         void reset()
 
     shared_ptr[T] static_pointer_cast[T,U](const shared_ptr[U]&)
+
+cdef extern from "bempp/utils/py_utils.hpp" namespace "Bempp":
+    cdef shared_ptr[T] const_pointer_cast "Bempp::py_const_pointer_cast"[T](shared_ptr[const T])
+    cdef shared_ptr[const T] reverse_const_pointer_cast "Bempp::py_reverse_const_pointer_cast"[T](shared_ptr[T])

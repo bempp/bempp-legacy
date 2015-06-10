@@ -261,7 +261,7 @@ public:
         static_cast<const entity_t &>(element).duneEntity());
   }
 
-  /** \brief Get insertion index of a vertex for a 2d in 3d grid */
+  /** \brief Get insertion index of a vertex for a 2d in 3d grid. */
 
   unsigned int vertexInsertionIndex(const Entity<2> &vertex) const override {
     typedef ConcreteEntity<2, typename DuneGrid::template Codim<2>::Entity>
@@ -274,6 +274,60 @@ public:
     return m_factory->insertionIndex(
         static_cast<const entity_t &>(vertex).duneEntity());
   }
+
+  /** \brief Pre-Adaption step */
+
+  bool preAdapt() override {
+
+    return m_dune_grid->preAdapt();
+
+}
+
+  /** \brief Mark element for refinement. */
+
+  bool mark(int refCount, const Entity<0>& element) override {
+    typedef ConcreteEntity<0, typename DuneGrid::template Codim<0>::Entity>
+        entity_t;
+
+    return m_dune_grid->mark(refCount, 
+        static_cast<const entity_t&>(element).duneEntity());        
+
+  }
+
+  /** \brief Refine mesh */
+
+  bool adapt() override {
+
+    return m_dune_grid->adapt();
+
+}
+
+  /** \brief Clean up after refinement */
+
+  void postAdapt() override {
+
+    m_dune_grid->postAdapt();
+
+}
+
+ /** \brief Refine all elements refCount times */
+
+  void globalRefine(int refCount) override {
+
+    m_dune_grid->globalRefine(refCount);
+
+}
+
+
+  /** \brief Return mark status of element. */
+  
+  int getMark(const Entity<0>& element) const override {
+    typedef ConcreteEntity<0, typename DuneGrid::template Codim<0>::Entity>
+        entity_t;
+
+    return m_dune_grid->getMark(static_cast<const entity_t&>(element).duneEntity());
+
+}
 
   /** @}
    */
