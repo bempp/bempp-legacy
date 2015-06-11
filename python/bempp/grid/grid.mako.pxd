@@ -37,7 +37,11 @@ cdef class Grid:
     ## Holds pointer to C++ implementation
     cdef shared_ptr[const c_Grid] impl_
     cdef GridView _grid_view
+    cdef object _insertion_index_to_element
+    cdef object _insertion_index_to_vertex
     cpdef unsigned int vertex_insertion_index(self,Entity2 vertex)
     cpdef unsigned int element_insertion_index(self,Entity0 element)
+    cpdef Entity0 element_from_insertion_index(self, int index)
+    cpdef Entity2 vertex_from_insertion_index(self, int index)
 
 

@@ -92,6 +92,28 @@ cdef class Grid:
     cpdef unsigned int element_insertion_index(self, Entity0 element):
         return deref(self.impl_).elementInsertionIndex(
                 deref(element.impl_))
+    
+    cpdef Entity0 element_from_insertion_index(self, int index):
+
+        if self._insertion_index_to_element is None:
+            self._insertion_index_to_element = {}
+            for element in self.leaf_view.entity_iterator(0):
+                index = self.element_insertion_index(element)
+                self._insertion_index_to_element[index] = element
+
+        return self._insertion_index_to_element[index]
+
+    cpdef Entity2 vertex_from_insertion_index(self, int index):
+
+        if self._insertion_index_to_vertex is None:
+            self._insertion_index_to_vertex = {}
+            for vertex in self.leaf_view.entity_iterator(2):
+                index = self.vertex_insertion_index(vertex)
+                self._insertion_index_to_vertex[index] = vertex 
+
+        return self._insertion_index_to_vertex[index]
+
+
 
     def clone(self):
         """ Create a new grid from a copy of the current grid. """
