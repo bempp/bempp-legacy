@@ -40,11 +40,6 @@ else()
   message(FATAL_ERROR "Windows installation not supported.")
 endif()
 
-find_package(CGAL COMPONENTS Core REQUIRED)
-include_directories ( ${CGAL_INCLUDE_DIRS})
-include_directories ( SYSTEM ${CGAL_3RD_PARTY_INCLUDE_DIRS} )
-add_definitions     ( ${CGAL_3RD_PARTY_DEFINITIONS}  ${CGAL_DEFINITIONS}  )
-
 list(INSERT CMAKE_LOOKUP_PATH 0 ${PROJECT_SOURCE_DIR}/cmake/lookups)
 # lookup_package(CAIRO REQUIRED)
 lookup_package(Eigen3 REQUIRED)

@@ -31,4 +31,3 @@ else()
     find_package(dune-foamgrid REQUIRED)
 endif()
 
-find_package(CGAL COMPONENTS Core REQUIRED)
