@@ -19,20 +19,7 @@ inline void fillGeometry(Geometry &geometry,
     geometry.push_back(it);
 }
 
-inline IndexSetType sortIndexSet(const IndexSetType &indexSet,
-                                 const Geometry &geometry, int dim) {
 
-  IndexSetType sortedIndexSet(indexSet);
-
-  auto sortFun = [&geometry, dim](int elem1, int elem2) -> bool {
-
-    return (geometry[elem1]->center[dim] < geometry[elem2]->center[dim]);
-  };
-
-  std::sort(begin(sortedIndexSet), end(sortedIndexSet), sortFun);
-
-  return sortedIndexSet;
-}
 }
 
 #endif

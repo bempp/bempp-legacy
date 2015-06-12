@@ -10,8 +10,6 @@
 #include "geometry_data_type.hpp"
 #include "eigen_fwd.hpp"
 
-#include <CGAL/linear_least_squares_fitting_3.h>
-
 #include "cluster_tree.hpp"
 
 #include <functional>
@@ -39,6 +37,25 @@ inline void
 ClusterTreeNodeData::geometryData(const std::vector<Point> &centerPoints,
                                   const std::vector<Point> &dofBoundingPoints) {
 
+
+  // Compute the centroid 
+  
+  centroid = Eigen::Vector3d::Zero();
+
+  for (const auto& p: centerPoints){
+    
+    centroid(0) += p.x();
+    centroid(1) += p.y();
+    centroid(2) += p.z();
+
+  }
+
+  centroid /= centerPoints.size();
+
+  // Now compute the main direction of the cluster
+
+
+
   Eigen::Matrix<double, 3, Eigen::Dynamic> boundingPoints(
       3, dofBoundingPoints.size());
 
@@ -48,8 +65,17 @@ ClusterTreeNodeData::geometryData(const std::vector<Point> &centerPoints,
     boundingPoints(2, i) = dofBoundingPoints[i].z();
   }
 
-  linear_least_squares_fitting_3(centerPoints.begin(), centerPoints.end(),
-                                 mainLine, centroid, CGAL::Dimension_tag<0>());
+  auto shiftedBoundingPoints = boundingPoints.colwise()-centroid;
+
+  Eigen::Matrix3d covarianceMatrix(Eigen::Matrix3d::Zero());
+
+  for (int i = 0; i < boundingPoints.cols(); ++i)
+    covarianceMatrix += shiftedBoundingPoints.col(i)*
+      shiftedBoundingPoints.col(i).transpose();
+
+  Eigen::SelfAdjointEigenSolver<Eigen::Matrix3d> es(covarianceMatrix);
+  mainDirection = es.eigenvectors().col(2);
+  mainDirection /= mainDirection.norm();
 
   // Now compute the bounding box
 
@@ -67,9 +93,11 @@ ClusterTreeNodeData::geometryData(const std::vector<Point> &centerPoints,
 
   boundingBox = BoundingBox(xmin, xmax, ymin, ymax, zmin, zmax);
 
-  // Store the diameter
+  // Compute the diameter
 
-  diameter = clusterDiameter(dofBoundingPoints);
+  auto projections = shiftedBoundingPoints.transpose()*mainDirection;
+
+  diameter = projections.maxCoeff()-projections.minCoeff();
 }
 
 template <int N> std::size_t ClusterTree<N>::numberOfDofs() const {
@@ -143,19 +171,22 @@ ClusterTree<2>::splitClusterTreeByGeometry(const Geometry &geometry,
 
       // Approximate the points in the cluster with a line.
 
-      Line line;
-      Point centroid;
-
-      auto plane = clusterTreeNode->data().mainLine.perpendicular_plane(
-          clusterTreeNode->data().centroid);
       std::vector<Point> firstPointSet;
       std::vector<Point> secondPointSet;
       std::vector<Point> firstBoundingPointSet;
       std::vector<Point> secondBoundingPointSet;
 
-      for (auto index : indexSet)
-        if (plane.oriented_side(geometry[index]->center) ==
-            CGAL::ON_POSITIVE_SIDE) {
+      for (auto index : indexSet){
+
+        Eigen::Vector3d shiftedCenter = -1.*clusterTreeNode->data().centroid;
+        shiftedCenter(0) += geometry[index]->center.x();
+        shiftedCenter(1) += geometry[index]->center.y();
+        shiftedCenter(2) += geometry[index]->center.z();
+
+        double orientation = shiftedCenter.transpose()*
+          clusterTreeNode->data().mainDirection;
+
+        if (orientation>0) {
           firstIndexSet.push_back(index);
           firstPointSet.push_back(geometry[index]->center);
           geometry[index]->boundingBox.corners(firstBoundingPointSet);
@@ -164,6 +195,8 @@ ClusterTree<2>::splitClusterTreeByGeometry(const Geometry &geometry,
           secondPointSet.push_back(geometry[index]->center);
           geometry[index]->boundingBox.corners(secondBoundingPointSet);
         }
+
+      }
 
       if (firstIndexSet.size() == 0)
         throw std::runtime_error(

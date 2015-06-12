@@ -7,6 +7,7 @@
 #include "simple_tree_node.hpp"
 #include "geometry.hpp"
 #include "dof_permutation.hpp"
+#include "eigen_fwd.hpp"
 
 namespace hmat {
 
@@ -22,8 +23,8 @@ struct ClusterTreeNodeData {
   IndexRangeType indexRange;
   BoundingBox boundingBox;
   double diameter;
-  Point centroid;
-  Line mainLine;
+  Eigen::Vector3d centroid;
+  Eigen::Vector3d mainDirection;
 };
 
 template <int N> using ClusterTreeNode = SimpleTreeNode<ClusterTreeNodeData, N>;
