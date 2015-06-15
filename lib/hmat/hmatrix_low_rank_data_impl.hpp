@@ -54,6 +54,8 @@ template <typename ValueType>
 typename ScalarTraits<ValueType>::RealType
 HMatrixLowRankData<ValueType>::frobeniusNorm() const {
 
+  if (rank()==0) return 0;
+
   auto aHa = m_A.adjoint() * m_A;
 
   Matrix<ValueType> result(1, 1);
@@ -94,7 +96,7 @@ void HMatrixLowRankData<ValueType>::apply(
 
   if (beta == ValueType(0))
     Y.setZero();
-  if (alpha == ValueType(0)) {
+  if (alpha == ValueType(0)|| rank() == 0) {
     Y = beta * Y;
     return;
   }

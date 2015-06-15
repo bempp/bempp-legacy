@@ -1,5 +1,5 @@
-#ifndef math_helper_hpp
-#define math_helper_hpp
+#ifndef HMAT_MATH_HELPER_HPP
+#define HMAT_MATH_HELPER_HPP
 
 #include "common.hpp"
 #include "eigen_fwd.hpp"

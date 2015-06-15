@@ -1,5 +1,5 @@
-#ifndef eigen_fwd_hpp
-#define eigen_fwd_hpp
+#ifndef HMAT_EIGEN_FWD_HPP
+#define HMAT_EIGEN_FWD_HPP
 
 #include <Eigen/Dense>
 

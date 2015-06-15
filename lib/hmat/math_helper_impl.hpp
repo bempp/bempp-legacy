@@ -1,5 +1,5 @@
-#ifndef math_helper_impl_hpp
-#define math_helper_impl_hpp
+#ifndef HMAT_MATH_HELPER_IMPL_HPP
+#define HMAT_MATH_HELPER_IMPL_HPP
 
 #include "math_helper.hpp"
 #include <limits>
