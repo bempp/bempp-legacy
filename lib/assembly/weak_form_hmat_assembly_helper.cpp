@@ -88,6 +88,15 @@ WeakFormHMatAssemblyHelper<BasisFunctionType, ResultType>::
 }
 
 template <typename BasisFunctionType, typename ResultType>
+double WeakFormHMatAssemblyHelper<BasisFunctionType, ResultType>::scale(
+        const hmat::DefaultBlockClusterTreeNodeType& node) const
+{
+
+    return 1.0;
+}
+
+
+template <typename BasisFunctionType, typename ResultType>
 void WeakFormHMatAssemblyHelper<BasisFunctionType, ResultType>::
     computeMatrixBlock(
         const hmat::IndexRangeType &testIndexRange,
