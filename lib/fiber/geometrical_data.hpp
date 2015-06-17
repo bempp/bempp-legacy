@@ -68,9 +68,8 @@ public:
   }
 
   int dimWorld() const {
-    int result = std::max(globals.rows(), normals.rows());
-    assert(result > 0);
-    return result;
+    const int dim = 3;
+    return dim;
   }
 
   ConstGeometricalDataSlice<CoordinateType> const_slice(int point) const {
