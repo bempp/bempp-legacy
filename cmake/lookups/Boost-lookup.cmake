@@ -32,10 +32,11 @@ create_patch_script(Boost patch_script
 file(WRITE "${PROJECT_BINARY_DIR}/CMakeFiles/external/boost_configure.sh"
     "#!${bash_EXECUTABLE}\n"
     "userjam=\"${EXTERNAL_ROOT}/src/user-config.jam\"\n"
+    "[ -e $userjam ] && cp $userjam tools/build/src\n"
     "[ -e $userjam ] && cp $userjam tools/build/v2\n"
     "\n"
     "./b2 ${toolset} variant=release link=shared --with-test --with-filesystem --with-program_options --with-system --with-thread --with-iostreams\\\n"
-    "    cxxflags=\"${CMAKE_CXX_FLAGS}\"\n"
+    "    cxxflags=\"${CMAKE_CXX_FLAGS}\" --debug-configuration --verbose\n"
 )
 set(configure_command "${EXTERNAL_ROOT}/src/boost_configure.sh")
 file(COPY "${PROJECT_BINARY_DIR}/CMakeFiles/external/boost_configure.sh"
