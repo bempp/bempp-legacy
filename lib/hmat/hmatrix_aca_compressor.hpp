@@ -25,22 +25,25 @@ public:
   enum class ModeType { ROW, COL };
   enum class CrossStatusType { SUCCESS, ZERO };
   enum class AcaStatusType { SUCCESS, ZERO_TERMINATION, RANK_LIMIT_REACHED };
+  enum class AcaAlgorithmState { NORMAL, ROW_TRIAL, COLUMN_TRIAL };
 
 private:
   static std::size_t randomIndex(const IndexRangeType &range,
                                  std::set<std::size_t> &previousIndices);
 
-  CrossStatusType computeCross(
-      const BlockClusterTreeNode<N> &blockClusterTreeNode,
-      const Matrix<ValueType> &A, const Matrix<ValueType> &B,
-      std::size_t &nextPivot, Matrix<ValueType> &origRow,
-      Matrix<ValueType> &origCol, Matrix<ValueType> &row,
-      Matrix<ValueType> &col, std::vector<std::size_t> &rowApproxCounter,
-      std::vector<std::size_t> &colApproxCounter, std::vector<double> &rowNorms,
-      std::vector<double> &colNorms, ModeType mode, double zeroTol) const;
+  CrossStatusType
+  computeCross(const BlockClusterTreeNode<N> &blockClusterTreeNode,
+               const Matrix<ValueType> &A, const Matrix<ValueType> &B,
+               std::size_t &nextPivot, Matrix<ValueType> &origRow,
+               Matrix<ValueType> &origCol, Matrix<ValueType> &row,
+               Matrix<ValueType> &col,
+               std::vector<std::size_t> &rowApproxCounter,
+               std::vector<std::size_t> &colApproxCounter, ModeType mode,
+               double zeroTol) const;
 
-  bool selectPivotWithMinNorm2(const std::vector<double> &norm2,
-                               const std::vector<int> &apprx_times, int &pivot);
+  bool selectMinPivot(const Matrix<ValueType> &vec,
+                      const std::vector<int> &approximationCount, int &pivot,
+                      ModeType modus);
 
   double updateLowRankBlocksAndNorm(const Matrix<ValueType> &newRow,
                                     const Matrix<ValueType> &newCol,
@@ -55,9 +58,9 @@ private:
                     Matrix<ValueType> &B, std::size_t maxIterations,
                     std::vector<size_t> &rowApproxCounter,
                     std::vector<size_t> &colApproxCounter,
-                    std::vector<double> &rowNorms,
-                    std::vector<double> &colNorms, double &blockNorm,
-                    double eps, double zeroTol, ModeType mode) const;
+                    Matrix<ValueType> &origRow, Matrix<ValueType> &origCol,
+                    double &blockNorm, double eps, double zeroTol,
+                    ModeType mode) const;
 
   const DataAccessor<ValueType, N> &m_dataAccessor;
   double m_eps;
