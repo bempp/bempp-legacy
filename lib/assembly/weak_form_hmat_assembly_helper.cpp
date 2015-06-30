@@ -62,12 +62,12 @@ WeakFormHMatAssemblyHelper<BasisFunctionType, ResultType>::
   for (size_t i = 0; i < assemblers.size(); ++i)
     if (!assemblers[i])
       throw std::invalid_argument(
-          "WeakFormAcaAssemblyHelper::WeakFormAcaAssemblyHelper(): "
+          "WeakFormAcaAssemblyHelper::WeakFormHMatAssemblyHelper(): "
           "no elements of the 'assemblers' vector may be null");
   for (size_t i = 0; i < sparseTermsToAdd.size(); ++i)
     if (!sparseTermsToAdd[i])
       throw std::invalid_argument(
-          "WeakFormAcaAssemblyHelper::WeakFormAcaAssemblyHelper(): "
+          "WeakFormAcaAssemblyHelper::WeakFormHMatAssemblyHelper(): "
           "no elements of the 'sparseTermsToAdd' vector may be null");
   m_accessedEntryCount = 0;
 }
@@ -79,22 +79,26 @@ WeakFormHMatAssemblyHelper<BasisFunctionType, ResultType>::
     estimateMinimumDistance(const hmat::DefaultBlockClusterTreeNodeType
                                 &blockClusterTreeNode) const {
 
-  return MagnitudeType(
-      blockClusterTreeNode.data()
-          .rowClusterTreeNode->data()
-          .boundingBox.distance(blockClusterTreeNode.data()
-                                    .columnClusterTreeNode->data()
-                                    .boundingBox));
+  MagnitudeType dist =
+      MagnitudeType(blockClusterTreeNode.data()
+                        .rowClusterTreeNode->data()
+                        .boundingBox.distance(blockClusterTreeNode.data()
+                                                  .columnClusterTreeNode->data()
+                                                  .boundingBox));
+  return dist;
 }
 
 template <typename BasisFunctionType, typename ResultType>
 double WeakFormHMatAssemblyHelper<BasisFunctionType, ResultType>::scale(
-        const hmat::DefaultBlockClusterTreeNodeType& node) const
-{
+    const hmat::DefaultBlockClusterTreeNodeType &blockClusterTreeNode) const {
 
-    return 1.0;
+  MagnitudeType result = 0;
+  MagnitudeType dist = this->estimateMinimumDistance(blockClusterTreeNode);
+
+  for (size_t nTerm = 0; nTerm < m_assemblers.size(); ++nTerm)
+    result = std::max(result, m_assemblers[nTerm]->estimateRelativeScale(dist));
+  return static_cast<double>(result);
 }
-
 
 template <typename BasisFunctionType, typename ResultType>
 void WeakFormHMatAssemblyHelper<BasisFunctionType, ResultType>::

@@ -30,26 +30,28 @@ def getGmshFile():
     Gmsh .msh file that will be generated.
 
     """
-    import os, tempfile
-    geo, geo_name = tempfile.mkstemp(suffix='.geo',dir=bempp.tmp_path, text=True)
-    geo_file = os.fdopen(geo,"w")
+    import os
+    import tempfile
+    geo, geo_name = tempfile.mkstemp(
+        suffix='.geo', dir=bempp.tmp_path, text=True)
+    geo_file = os.fdopen(geo, "w")
     msh_name = os.path.splitext(geo_name)[0]+".msh"
-    return (geo_file,geo_name,msh_name)
+    return (geo_file, geo_name, msh_name)
+
 
 def __generate_grid_from_gmsh_string(gmsh_string):
     """Return a grid from a string containing a gmsh mesh"""
 
-    import os, tempfile
-    handle,fname = tempfile.mkstemp(suffix='.msh',dir=bempp.tmp_path, text=True)
-    with os.fdopen(handle,"w") as f:
+    import os
+    import tempfile
+    handle, fname = tempfile.mkstemp(
+        suffix='.msh', dir=bempp.tmp_path, text=True)
+    with os.fdopen(handle, "w") as f:
         f.write(gmsh_string)
     grid = bempp.import_grid(fname)
     os.remove(fname)
     return grid
-    
 
-
-    
 
 def __generate_grid_from_geo_string(geo_string):
     """Helper routine that implements the grid generation
@@ -60,14 +62,15 @@ def __generate_grid_from_geo_string(geo_string):
 
     def msh_from_string(geo_string):
         gmsh_command = bempp.gmsh_path
-        f,geo_name,msh_name = getGmshFile()
+        f, geo_name, msh_name = getGmshFile()
         f.write(geo_string)
         f.close()
 
-        fnull = open(os.devnull,'w')
+        fnull = open(os.devnull, 'w')
         cmd = gmsh_command+" -2 "+geo_name
         try:
-            subprocess.check_call(cmd,shell=True,stdout=fnull,stderr=fnull)
+            subprocess.check_call(
+                cmd, shell=True, stdout=fnull, stderr=fnull)
         except:
             print "The following command failed: "+cmd
             fnull.close()
@@ -75,19 +78,20 @@ def __generate_grid_from_geo_string(geo_string):
         os.remove(geo_name)
         fnull.close()
         return msh_name
-        
 
     msh_name = msh_from_string(geo_string)
     grid = bempp.import_grid(msh_name)
     os.remove(msh_name)
     return grid
 
-def ellipsoid(r1=1,r2=1,r3=1,origin=(0,0,0),h=0.1):
+
+def ellipsoid(r1=1, r2=1, r3=1, origin=(0, 0, 0), h=0.1):
     """
     Return a sphere grid.
 
     """
-    import subprocess,os
+    import subprocess
+    import os
 
     sphere_stub = """
     Point(1) = {orig0,orig1,orig2,cl};
@@ -130,21 +134,24 @@ def ellipsoid(r1=1,r2=1,r3=1,origin=(0,0,0),h=0.1):
     Mesh.Algorithm = 6;
     """
 
-    sphere_geometry = ("r1 = "+str(r1)+";\n"+
-            "r2 = "+str(r2)+";\n"+
-            "r3 = "+str(r3)+";\n"+
-            "orig0 = "+str(origin[0])+";\n"+
-            "orig1 = "+str(origin[1])+";\n"+
-            "orig2 = "+str(origin[2])+";\n"+
+    sphere_geometry = (
+            "r1 = "+str(r1)+";\n" +
+            "r2 = "+str(r2)+";\n" +
+            "r3 = "+str(r3)+";\n" +
+            "orig0 = "+str(origin[0])+";\n" +
+            "orig1 = "+str(origin[1])+";\n" +
+            "orig2 = "+str(origin[2])+";\n" +
             "cl = "+str(h)+";\n"+sphere_stub)
 
     return __generate_grid_from_geo_string(sphere_geometry)
 
-def sphere(r=1, origin=(0,0,0), h=0.1):
 
-    return ellipsoid(origin=origin,h=h)
-        
-def cube(length=1,origin=(0,0,0),h=0.1):
+def sphere(r=1, origin=(0, 0, 0), h=0.1):
+
+    return ellipsoid(origin=origin, h=h)
+
+
+def cube(length=1, origin=(0, 0, 0), h=0.1):
 
     cube_stub = """
     Point(1) = {orig0,orig1,orig2,cl};
@@ -190,10 +197,11 @@ def cube(length=1,origin=(0,0,0),h=0.1):
     Mesh.Algorithm = 6;
     """
 
-    cube_geometry = ("l = "+str(length)+";\n"+
-            "orig0 = "+str(origin[0])+";\n"+
-            "orig1 = "+str(origin[1])+";\n"+
-            "orig2 = "+str(origin[2])+";\n"+
+    cube_geometry = (
+            "l = "+str(length)+";\n" +
+            "orig0 = "+str(origin[0])+";\n" +
+            "orig1 = "+str(origin[1])+";\n" +
+            "orig2 = "+str(origin[2])+";\n" +
             "cl = "+str(h)+";\n"+cube_stub)
 
     return __generate_grid_from_geo_string(cube_geometry)
@@ -205,9 +213,6 @@ def almond():
 
     """
     return __generate_grid_from_gmsh_string(_almond_mesh)
-
-     
-
 
 
 _almond_mesh = """
@@ -15601,5 +15606,3 @@ $Elements
 10252 2 2 0 1 5127 1281 5128
 $EndElements
 """
-
-
