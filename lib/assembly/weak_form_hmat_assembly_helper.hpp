@@ -81,6 +81,9 @@ public:
       const hmat::DefaultBlockClusterTreeNodeType &blockClusterTreeNode,
       Matrix<ResultType> &data) const override;
 
+  double scale(
+          const hmat::DefaultBlockClusterTreeNodeType& node) const override;
+
   // /** \brief Return the number of entries in the matrix that have been
   //  *  accessed so far. */
   // size_t accessedEntryCount() const;

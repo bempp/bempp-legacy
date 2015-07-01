@@ -58,7 +58,7 @@ def _gmsh_path():
 
     gmsh_path = which("gmsh")
     if gmsh_path is None:
-        print("Could not find Gmsh. Interactive plotting not available.")
+        print("Could not find Gmsh. Interactive plotting and shapes module not available.")
     return gmsh_path
 
 gmsh_path = _gmsh_path()
