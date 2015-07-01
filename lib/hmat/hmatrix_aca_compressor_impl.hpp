@@ -18,8 +18,9 @@ namespace hmat {
 
 template <typename ValueType, int N>
 bool HMatrixAcaCompressor<ValueType, N>::selectMinPivot(
-    const Matrix<ValueType> &vec, const std::vector<int> &approximationCount,
-    int &pivot, ModeType modus) {
+    const Matrix<ValueType> &vec,
+    const std::vector<std::size_t> &approximationCount, std::size_t &pivot,
+    ModeType modus) const {
 
   int n = std::max(vec.rows(), vec.cols());
   pivot = n;
@@ -95,7 +96,7 @@ HMatrixAcaCompressor<ValueType, N>::computeCross(
     row /= pivotValue;
 
     // Find next pivot, make sure that current rowIndex
-    // won't be taken.
+    // is associated with zero for the search.
     ValueType tmp = 0;
     std::swap(tmp, col(rowIndex - rowClusterRange[0], 0));
     col.cwiseAbs().maxCoeff(&maxRowInd, &maxColInd);
@@ -130,7 +131,7 @@ HMatrixAcaCompressor<ValueType, N>::computeCross(
     col /= pivotValue;
 
     // Find next pivot, make sure that current columnIndex
-    // won't be taken.
+    // is associated with zero for the search.
     ValueType tmp = 0;
     std::swap(tmp, row(0, columnIndex - columnClusterRange[0]));
     row.cwiseAbs().maxCoeff(&maxRowInd, &maxColInd);
@@ -216,33 +217,97 @@ void HMatrixAcaCompressor<ValueType, N>::compressBlock(
   std::vector<size_t> colApproxCounter(numberOfColumns);
 
   double blockNorm = 0;
-  std::size_t iterationLimit =
-      std::min(static_cast<std::size_t>(m_maxRank),
-               std::min(numberOfRows, numberOfColumns));
+  std::size_t maxIterations = std::min(static_cast<std::size_t>(m_maxRank),
+                                       std::min(numberOfRows, numberOfColumns));
 
   bool finished = false;
-  AcaAlgorithmState state = AcaAlgorithmState::NORMAL;
+  AcaAlgorithmStateType state = AcaAlgorithmStateType::START;
   AcaStatusType acaStatus;
   std::size_t nextPivot = 0;
   ModeType mode = ModeType::ROW;
 
-  while (!finished) {
-    if (state == AcaAlgorithmState::NORMAL) {
-      // First run the ACA
-      acaStatus = aca(blockClusterTreeNode, nextPivot, A, B, iterationLimit,
-                      rowApproxCounter, colApproxCounter, origRow, origCol,
-                      blockNorm, m_eps, 1E-15, mode);
-      state = AcaAlgorithmState::ROW_TRIAL;
-    }
-    if (state == AcaAlgorithmState::ROW_TRIAL) {
-      if (selectMinPivot(origRow, colApproxCounter, nextPivot, ModeType::ROW)) {
-        state = AcaAlgorithmState::NORMAL;
-        mode = ModeType::COL;
-      } else
-        state = AcaAlgorithmState::COLUMN_TRIAL;
-    }
+  bool rowTrialPassed = false;
+  bool columnTrialPassed = false;
 
-    // Find column pivot from last row
+  // Count how often row or column trial has been executed
+  std::size_t rowTrialCount = 0;
+  std::size_t columnTrialCount = 0;
+
+  // constants for maximum row and column trial counts
+
+  const std::size_t MAX_ROW_TRIAL_COUNT = 1;
+  const std::size_t MAX_COLUMN_TRIAL_COUNT = 1;
+
+  bool rowModeZeroTermination = false;
+  bool columnModeZeroTermination = false;
+
+  while (!finished) {
+    // First run the ACA
+    acaStatus = aca(blockClusterTreeNode, nextPivot, A, B, maxIterations,
+                    rowApproxCounter, colApproxCounter, origRow, origCol,
+                    blockNorm, m_eps, 1E-15, mode);
+    // Now test the status for different cases
+    if (acaStatus == AcaStatusType::RANK_LIMIT_REACHED) {
+      finished = true; // Approximation does not work. So just stop.
+    }
+    // The next should only happen if we are in ROW_TRIAL or COLUMN_TRIAL mode
+    if (acaStatus == AcaStatusType::CONVERGED_WITHOUT_ITERATION) {
+      if (state == AcaAlgorithmStateType::START)
+        state = AcaAlgorithmStateType::ROW_TRIAL;
+      else if (state == AcaAlgorithmStateType::ROW_TRIAL) {
+        rowTrialPassed = true;
+        state = AcaAlgorithmStateType::COLUMN_TRIAL;
+      } else if (state == AcaAlgorithmStateType::COLUMN_TRIAL) {
+        columnTrialPassed = true;
+        state = AcaAlgorithmStateType::ROW_TRIAL;
+      }
+      // If both, the row trial and column trial are passed, finish.
+      if (rowTrialPassed && columnTrialPassed)
+        finished = true;
+    }
+    // The next is the normal case after running ACA
+    if (acaStatus == AcaStatusType::CONVERGED_AFTER_ITERATION ||
+        acaStatus == AcaStatusType::ZERO_TERMINATION_AFTER_ITERATION) {
+      // Have to rexecute row trial and column trial
+      rowTrialPassed = false;
+      columnTrialPassed = false;
+      rowModeZeroTermination = false;
+      columnModeZeroTermination = false;
+      // Choose which trial to go into
+      state = (mode == ModeType::ROW) ? AcaAlgorithmStateType::ROW_TRIAL
+                                      : AcaAlgorithmStateType::COLUMN_TRIAL;
+    }
+    if (acaStatus == AcaStatusType::ZERO_TERMINATION_WITHOUT_ITERATION) {
+      if (mode == ModeType::ROW) {
+        rowModeZeroTermination = true;
+        state = AcaAlgorithmStateType::ROW_TRIAL;
+      } else {
+        columnModeZeroTermination = true;
+        state = AcaAlgorithmStateType::COLUMN_TRIAL;
+      }
+      if (rowModeZeroTermination && columnModeZeroTermination)
+        finished = true;
+    }
+    if (!finished && state == AcaAlgorithmStateType::ROW_TRIAL) {
+      if ((rowTrialCount < MAX_ROW_TRIAL_COUNT) &&
+          selectMinPivot(origRow, colApproxCounter, nextPivot, ModeType::ROW)) {
+        mode = ModeType::COL;
+        rowTrialCount++;
+      } else {
+        // All columns have been approximated
+        finished = true;
+      }
+    }
+    if (!finished && state == AcaAlgorithmStateType::COLUMN_TRIAL) {
+      if ((columnTrialCount < MAX_COLUMN_TRIAL_COUNT) &&
+          selectMinPivot(origCol, rowApproxCounter, nextPivot, ModeType::COL)) {
+        mode = ModeType::ROW;
+        columnTrialCount++;
+      } else {
+        // All columns have been approximated
+        finished = true;
+      }
+    }
   }
   static_cast<HMatrixLowRankData<ValueType> *>(hMatrixData.get())->A().swap(A);
   static_cast<HMatrixLowRankData<ValueType> *>(hMatrixData.get())->B().swap(B);
@@ -252,7 +317,7 @@ template <typename ValueType, int N>
 typename HMatrixAcaCompressor<ValueType, N>::AcaStatusType
 HMatrixAcaCompressor<ValueType, N>::aca(
     const BlockClusterTreeNode<N> &blockClusterTreeNode, std::size_t startPivot,
-    Matrix<ValueType> &A, Matrix<ValueType> &B, std::size_t maxIterations,
+    Matrix<ValueType> &A, Matrix<ValueType> &B, std::size_t &maxIterations,
     std::vector<size_t> &rowApproxCounter,
     std::vector<size_t> &colApproxCounter, Matrix<ValueType> &origRow,
     Matrix<ValueType> &origCol, double &blockNorm, double eps, double zeroTol,
@@ -269,25 +334,34 @@ HMatrixAcaCompressor<ValueType, N>::aca(
 
   bool converged = false;
   std::size_t nextPivot = startPivot;
-  std::size_t rankCount = 0;
+  std::size_t iterationCount = 0;
 
   CrossStatusType crossStatus;
   Matrix<ValueType> row, col;
 
-  while (!converged && rankCount < maxIterations) {
+  while (maxIterations > 0) {
     crossStatus = computeCross(blockClusterTreeNode, A, B, nextPivot, origRow,
                                origCol, row, col, rowApproxCounter,
                                colApproxCounter, mode, zeroTol);
     if (crossStatus == CrossStatusType::ZERO)
-      return AcaStatusType::ZERO_TERMINATION;
-
-    blockNorm = updateLowRankBlocksAndNorm(row, col, A, B, blockNorm);
+      return (iterationCount == 0)
+                 ? AcaStatusType::ZERO_TERMINATION_WITHOUT_ITERATION
+                 : AcaStatusType::CONVERGED_AFTER_ITERATION;
     converged = checkConvergence(row, col, eps * blockNorm);
-    rankCount++;
+    if (converged)
+      break;
+    else {
+      blockNorm = updateLowRankBlocksAndNorm(row, col, A, B, blockNorm);
+      maxIterations--; // Putting it here implies that cross computation for
+                       // convergence testing does not count towards the max
+                       // number of iterations.
+    }
+    iterationCount++;
   }
 
   if (converged)
-    return AcaStatusType::SUCCESS;
+    return (iterationCount == 0) ? AcaStatusType::CONVERGED_WITHOUT_ITERATION
+                                 : AcaStatusType::CONVERGED_AFTER_ITERATION;
   else
     return AcaStatusType::RANK_LIMIT_REACHED;
 }
