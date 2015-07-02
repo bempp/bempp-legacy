@@ -21,7 +21,12 @@ class MatrixOperator(DiscreteBoundaryOperatorBase):
 
     def get_dtype(self):
         return self._matrix.dtype
-    
+
+    def as_matrix(self):
+        try:
+            return self._matrix.todense()
+        except AttributeError:
+            return self._matrix    
     dtype = property(get_dtype)
     matrix = property(get_matrix)
     shape = property(get_shape)

@@ -19,6 +19,3 @@ class FenicsOperator(object):
         _dolfin.parameters['linear_algebra_backend'] = backend
 
         return sparse_mat
-
-
-
