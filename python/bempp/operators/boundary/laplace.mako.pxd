@@ -1,5 +1,5 @@
 from bempp.utils cimport catch_exception, complex_float, complex_double
-from bempp.assembly.boundary_operator cimport BoundaryOpVariants
+from bempp.assembly.boundary_operator cimport BoundaryOpVariants, _py_get_boundary_operator, c_BoundaryOperator
 from bempp.utils.parameter_list cimport c_ParameterList, ParameterList
 from bempp.space.space cimport SpaceVariants,Space
 from bempp.utils cimport shared_ptr
@@ -32,7 +32,8 @@ cdef extern from "bempp/operators/py_operators.hpp" namespace "Bempp":
             const SpaceVariants&,
             const SpaceVariants&,
             const string&,
-            int) except+catch_exception
+            int,
+            const c_BoundaryOperator[BASIS,RESULT]&) except+catch_exception
 
 cdef extern from "bempp/operators/py_operators.hpp" namespace "Bempp":
     BoundaryOpVariants c_laplace3dAdjointDoubleLayerBoundaryOperator[BASIS,RESULT](

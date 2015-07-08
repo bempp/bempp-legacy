@@ -433,18 +433,12 @@ void SyntheticIntegralOperator<BasisFunctionType, ResultType>::
             &internalContext,
         shared_ptr<const Context<BasisFunctionType, ResultType>> &auxContext) {
   typedef Context<BasisFunctionType, ResultType> Ctx;
-  AssemblyOptions assemblyOptions = context->assemblyOptions();
-  AcaOptions acaOptions = assemblyOptions.acaOptions();
-  acaOptions.mode = AcaOptions::GLOBAL_ASSEMBLY;
-  if (assemblyOptions.assemblyMode() == AssemblyOptions::ACA)
-    assemblyOptions.switchToAcaMode(acaOptions);
-  internalContext.reset(new Ctx(context->quadStrategy(), assemblyOptions));
-  auxContext = internalContext;
-  if (assemblyOptions.verbosityLevel() < VerbosityLevel::HIGH) {
-    // Suppress timing messages from auxiliary operators
-    assemblyOptions.setVerbosityLevel(VerbosityLevel::LOW);
-    auxContext.reset(new Ctx(context->quadStrategy(), assemblyOptions));
-  }
+  ParameterList parameters(context->globalParameterList());
+  parameters.put("options.hmat.hMatAssemblyMode",
+                 std::string("GlobalAssembly"));
+  internalContext.reset(new Ctx(parameters));
+  parameters.put("options.global.verbosityLevel", static_cast<int>(-5));
+  auxContext.reset(new Ctx(parameters));
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(

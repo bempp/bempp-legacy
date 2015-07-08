@@ -161,9 +161,8 @@ laplace3dHypersingularBoundaryOperator(
     const std::string &label, int symmetry,
     const BoundaryOperator<BasisFunctionType, ResultType> &externalSlp) {
   const AssemblyOptions &assemblyOptions = context->assemblyOptions();
-  if ((assemblyOptions.assemblyMode() == AssemblyOptions::ACA &&
-       assemblyOptions.acaOptions().mode == AcaOptions::LOCAL_ASSEMBLY) ||
-      (externalSlp.isInitialized()))
+  if (assemblyOptions.assemblyMode() == AssemblyOptions::HMAT ||
+      externalSlp.isInitialized())
     return laplace3dSyntheticHypersingularBoundaryOperator(
         context, domain, range, dualToRange, label, symmetry, externalSlp);
 

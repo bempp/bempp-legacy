@@ -52,6 +52,8 @@ op_types = ['3dSingleLayerBoundaryOperator',
 
 namespace Bempp {
 
+
+
 template <typename BasisFunctionType, typename ResultType>
 BoundaryOpVariants c_identityOperator(
         const ParameterList& parameterList,

@@ -47,6 +47,8 @@ cdef extern from "bempp/assembly/py_boundary_operator_variants.hpp" namespace "B
 
     cdef shared_ptr[c_DiscreteBoundaryOperator[ResultType]] _boundary_operator_variant_weak_form "Bempp::boundary_op_variant_weak_form" [BasisFunctionType,ResultType] (const BoundaryOpVariants& variant)
 
+    cdef c_BoundaryOperator[BASIS, RESULT] _py_get_boundary_operator[BASIS,RESULT](const BoundaryOpVariants&);
+
 cdef extern from "bempp/assembly/py_discrete_operator_support.hpp" namespace "Bempp":
     cdef object py_get_sparse_from_discrete_operator[VALUE](shared_ptr[c_DiscreteBoundaryOperator[VALUE]])
 

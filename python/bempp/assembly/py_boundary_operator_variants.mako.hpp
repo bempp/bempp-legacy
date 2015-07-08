@@ -138,6 +138,8 @@ class BoundaryOpVariants {
     };
 % endfor
 
+template <typename BasisFunctionType, typename ResultType>
+friend const BoundaryOperator<BasisFunctionType,ResultType> _py_get_boundary_operator(const BoundaryOpVariants& variant);
 
     public:
         BoundaryOpVariants() {}
@@ -195,6 +197,13 @@ class BoundaryOpVariants {
         t_variant operator_;
 };
 #   undef BEMPP_EXPLICIT_CONSTRUCTOR
+
+template <typename BasisFunctionType, typename ResultType>
+BoundaryOperator<BasisFunctionType,ResultType> _py_get_boundary_operator(const BoundaryOpVariants& variant)
+{
+
+  return boost::get<BoundaryOperator<BasisFunctionType,ResultType>>(variant.operator_);
+}
 
 template<typename BasisFunctionType,typename ResultType>
 shared_ptr<const DiscreteBoundaryOperator<ResultType>> 
