@@ -189,8 +189,8 @@ AbstractBoundaryOperatorSuperpositionBase<BasisFunctionType_, ResultType_>::
   if (context.assemblyOptions().assemblyMode() == AssemblyOptions::DENSE)
     result = assembleJointOperatorWeakFormInDenseMode(
         joinableOps, joinableOpWeights, verbose);
-  else if (context.assemblyOptions().assemblyMode() == AssemblyOptions::ACA)
-    result = assembleJointOperatorWeakFormInAcaMode(context, joinableOps,
+  else if (context.assemblyOptions().assemblyMode() == AssemblyOptions::HMAT)
+    result = assembleJointOperatorWeakFormInHMatMode(context, joinableOps,
                                                     joinableOpWeights);
   else
     throw std::invalid_argument(
@@ -306,7 +306,7 @@ AbstractBoundaryOperatorSuperpositionBase<BasisFunctionType, ResultType>::
 template <typename BasisFunctionType_, typename ResultType_>
 shared_ptr<DiscreteBoundaryOperator<ResultType_>>
 AbstractBoundaryOperatorSuperpositionBase<BasisFunctionType_, ResultType_>::
-    assembleJointOperatorWeakFormInAcaMode(
+    assembleJointOperatorWeakFormInHMatMode(
         const Context<BasisFunctionType, ResultType> &context,
         std::vector<BoundaryOperator<BasisFunctionType, ResultType>> &ops,
         std::vector<ResultType> &opWeights) const {

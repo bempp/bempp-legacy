@@ -79,7 +79,7 @@ private:
       std::vector<BoundaryOperator<BasisFunctionType, ResultType>> &ops,
       std::vector<ResultType> &opWeights, bool verbose) const;
   shared_ptr<DiscreteBoundaryOperator<ResultType_>>
-  assembleJointOperatorWeakFormInAcaMode(
+  assembleJointOperatorWeakFormInHMatMode(
       const Context<BasisFunctionType, ResultType> &context,
       std::vector<BoundaryOperator<BasisFunctionType, ResultType>> &ops,
       std::vector<ResultType> &opWeights) const;
