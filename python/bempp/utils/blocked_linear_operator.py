@@ -46,7 +46,6 @@ class BlockedLinearOperator(object):
     ndims = property(get_ndims)
 
 
-
 class BlockedDiscreteLinearOperator(object):
 
     def __init__(self,m,n):
@@ -157,6 +156,14 @@ class BlockedDiscreteLinearOperator(object):
 
         return (self._m,self._n)
 
+    def get_row_dimensions(self):
+        return self._rows
+
+    def get_column_dimensions(self):
+        return self._columns
+
     shape = property(get_shape)
     dtype = property(get_dtype)
     ndims = property(get_ndims)
+    row_dimensions = property(get_row_dimensions)
+    column_dimensions = property(get_column_dimensions)

@@ -9,7 +9,7 @@ def gmres(A, b, tol=1E-5, restart=None, maxiter=None, M=None, callback=None):
     soln,info = scipy.sparse.linalg.gmres(A, b, tol=tol, restart=restart, maxiter=maxiter, M=M, callback=callback)
     output = []
     curr = 0
-    for column_size in A._cols:
+    for column_size in A.column_dimensions:
         prev = curr
         curr += column_size
         output.append(soln[prev:curr])
@@ -25,7 +25,7 @@ def cg(A, b, tol=1E-5, maxiter=None, M=None, callback=None):
     soln,info = scipy.sparse.linalg.cg(A, b, tol=tol, restart=restart, maxiter=maxiter, M=M, callback=callback)
     output = []
     curr = 0
-    for column_size in A._cols:
+    for column_size in A.column_dimensions:
         prev = curr
         curr += column_size
         output.append(soln[prev:curr])
