@@ -103,4 +103,7 @@ file(WRITE ${PROJECT_BINARY_DIR}/bin/ibempp "${PROJECT_BINARY_DIR}/localpython.s
 execute_process(COMMAND chmod +x ${PROJECT_BINARY_DIR}/bin/bempp)
 execute_process(COMMAND chmod +x ${PROJECT_BINARY_DIR}/bin/ibempp)
 
+# Prepare the debian build script
+configure_file(${PROJECT_SOURCE_DIR}/create_debian_package.sh.in ${PROJECT_BINARY_DIR}/create_debian_package.sh)
+
 

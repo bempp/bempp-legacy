@@ -1,0 +1,14 @@
+cd ${PROJECT_BINARY_DIR}
+rm -rf python-bempp
+mkdir python-bempp
+mkdir python-bempp/lib
+mkdir python-bempp/share
+mkdir python-bempp/DEBIAN
+echo "Package: python-bempp \nVersion: 2.9.1\nSection: base\nPriority: optional\nArchitecture: all\nMaintainer: Timo Betcke <timo.betcke@gmail.com>\nDescription: The BEM++ boundary element library" >> python-bempp/DEBIAN/control
+
+
+cd python_package
+find . -name '*.py' | cpio -pdm ../python-bempp/lib/python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}/site-packages
+cp ../lib/libbempp* ../python-bempp/lib/
+
+
