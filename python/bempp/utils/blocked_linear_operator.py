@@ -160,7 +160,7 @@ class BlockedDiscreteLinearOperator(object):
         return self._rows
 
     def get_column_dimensions(self):
-        return self._columns
+        return self._cols
 
     shape = property(get_shape)
     dtype = property(get_dtype)
