@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 2.8.12)
 project(Bempp CXX)
-set(Bempp_VERSION 2.9.1)
+
+# Get version string
+string(TIMESTAMP date_string %y-%m-%d)
+
+set(Bempp_VERSION 2.9.1-nightly-${date_string})
 
 # Set a default build type if none was specified
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -106,4 +110,5 @@ execute_process(COMMAND chmod +x ${PROJECT_BINARY_DIR}/bin/ibempp)
 # Prepare the debian build script
 configure_file(${PROJECT_SOURCE_DIR}/create_debian_package.sh.in ${PROJECT_BINARY_DIR}/create_debian_package.sh)
 
+add_custom_target(debian sh ${PROJECT_BINARY_DIR}/create_debian_package.sh DEPENDS bempp)
 

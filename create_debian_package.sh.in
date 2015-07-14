@@ -1,14 +1,27 @@
+#!/bin/sh
 cd ${PROJECT_BINARY_DIR}
-rm -rf python-bempp
-mkdir python-bempp
-mkdir python-bempp/lib
-mkdir python-bempp/share
-mkdir python-bempp/DEBIAN
-echo "Package: python-bempp \nVersion: 2.9.1\nSection: base\nPriority: optional\nArchitecture: all\nMaintainer: Timo Betcke <timo.betcke@gmail.com>\nDescription: The BEM++ boundary element library" >> python-bempp/DEBIAN/control
+git_branch=$(git branch | sed -n -e 's/^\* \(.*\)/\1/p')
+package_name=
+master_branch=master
+if [ "$git_branch" = "$master_branch" ]; then
+    package_name=python-bempp
+else
+    package_name=python-bempp-nightly
+fi
+echo "Creating package $package_name"
+
+rm -rf $package_name
+mkdir  $package_name
+mkdir -p $package_name/usr/lib
+mkdir $package_name/share
+mkdir $package_name/DEBIAN
+echo "Package: $package_name\nVersion: ${Bempp_VERSION}\nSection: base\nPriority: optional\nArchitecture: amd64\nDepends: libtbb2, libstdc++6\nLicense: mit\nRecommends: gmsh\nMaintainer: Timo Betcke <timo.betcke@gmail.com>\nDescription: The BEM++ boundary element library" >> $package_name/DEBIAN/control
 
 
 cd python_package
-find . -name '*.py' | cpio -pdm ../python-bempp/lib/python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}/site-packages
-cp ../lib/libbempp* ../python-bempp/lib/
+find . -name '*.py' -o -name '*.so' | cpio -pdm ../$package_name/usr/lib/python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}/dist-packages
+cp ../lib/libbempp* ../$package_name/usr/lib/
+cd ..
+fakeroot dpkg-deb -b ./$package_name
 
 
