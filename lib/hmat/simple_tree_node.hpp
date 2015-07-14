@@ -30,6 +30,8 @@ public:
   const std::vector<shared_ptr<const SimpleTreeNode<T, N>>> leafNodes() const;
   const std::vector<shared_ptr<SimpleTreeNode<T, N>>> leafNodes();
 
+  std::size_t numberOfLeafs() const;
+
 private:
   std::array<shared_ptr<SimpleTreeNode<T, N>>, N> m_children;
   weak_ptr<SimpleTreeNode<T, N>> m_root;
