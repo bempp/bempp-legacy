@@ -113,7 +113,11 @@ ParameterList GlobalParameters::parameterList() {
 
   // Accuracy for coarsening
   // 0: Use same as options.hmat.eps
-  parameters.put("options.hmat.coarsening_accuracy", static_cast<double>(0));
+  parameters.put("options.hmat.coarseningAccuracy", static_cast<double>(0));
+
+  // Wavenumber for high frequency admissibility
+  // Default: 1
+  parameters.put("options.hmat.waveNumber", static_cast<double>(1));
 
   return parameters;
 }

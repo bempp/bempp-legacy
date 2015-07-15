@@ -95,6 +95,9 @@ generateBlockClusterTree(const Space<BasisFunctionType> &testSpace,
     admissibilityFunction = hmat::StrongAdmissibility(eta);
   } else if (admissibility == "weak") {
     admissibilityFunction = hmat::WeakAdmissibility();
+  } else if (admissibility == "high_freq") {
+    auto waveNumber = parameterList.template get<double>("options.hmat.waveNumber");
+    admissibilityFunction = hmat::HighFrequencyAdmissibility(waveNumber);
   } else
     throw std::runtime_error(
         "generateBlockClusterTree(): Unknown admissibility type");

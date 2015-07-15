@@ -90,7 +90,19 @@ public:
 };
 
 typedef BlockClusterTree<2> DefaultBlockClusterTreeType;
+
+class HighFrequencyAdmissibility {
+public:
+  HighFrequencyAdmissibility(double k);
+
+  bool operator()(const ClusterTreeNodeData &cluster1,
+                  const ClusterTreeNodeData &cluster2) const;
+private:
+  double m_k;
+
+};
 }
+
 #include "block_cluster_tree_impl.hpp"
 
 #endif

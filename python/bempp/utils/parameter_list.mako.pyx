@@ -262,12 +262,19 @@ cdef class _HMatParameterList:
 
     property coarsening_accuracy:
         def __get__(self):
-            cdef char* s = b"options.hmat.coarsening_accuracy"
+            cdef char* s = b"options.hmat.coarseningAccuracy"
             return deref(self.impl_).get_double(s)
         def __set__(self,object value):
-            cdef char* s = b"options.hmat.coarsening_accuracy"
+            cdef char* s = b"options.hmat.coarseningAccuracy"
             deref(self.impl_).put_double(s,value)
     
+    property wave_number:
+        def __get__(self):
+            cdef char* s = b"options.hmat.waveNumber"
+            return deref(self.impl_).get_double(s)
+        def __set__(self,object value):
+            cdef char* s = b"options.hmat.waveNumber"
+            deref(self.impl_).put_double(s,value)
 
 cdef class ParameterList:
 

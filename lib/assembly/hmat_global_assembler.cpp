@@ -118,7 +118,7 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
   auto eps = parameterList.template get<double>("options.hmat.eps");
   auto coarsening = parameterList.template get<bool>("options.hmat.coarsening");
   auto coarsening_accuracy =
-      parameterList.template get<double>("options.hmat.coarsening_accuracy");
+      parameterList.template get<double>("options.hmat.coarseningAccuracy");
   if (coarsening_accuracy == 0)
     coarsening_accuracy = eps;
 
