@@ -10,6 +10,7 @@ __all__=['grid_from_sphere',
          'export',
          'GridFactory',
          'import_grid',
+         'operators',
          'FileReader',
          'generate_block_cluster_tree']
 
@@ -23,13 +24,6 @@ except:
 else:
     have_dolfin = True
 
-from bempp.grid import Grid,grid_from_sphere,grid_from_element_data, structured_grid
-from bempp.assembly import GridFunction
-from bempp.assembly import BlockedBoundaryOperator
-from bempp.space import function_space
-from bempp.file_interfaces import FileReader, import_grid, export
-from bempp.grid import GridFactory
-from bempp.hmat import generate_block_cluster_tree
 
 # Check if config directory exists. If not create it.
 
@@ -66,8 +60,19 @@ gmsh_path = _gmsh_path()
 
 # Define the global default options
 
-global_parameters = common.global_parameters()
+from .common import global_parameters as __global_parameters
+global_parameters = __global_parameters()
 
+# Now all the module imports
+
+from bempp.grid import Grid,grid_from_sphere,grid_from_element_data, structured_grid
+from bempp.assembly import GridFunction
+from bempp.assembly import BlockedBoundaryOperator
+from bempp.space import function_space
+from bempp.file_interfaces import FileReader, import_grid, export
+from bempp.grid import GridFactory
+from bempp.hmat import generate_block_cluster_tree
+from bempp import operators
 
 def test():
     """ Runs BEM++ python unit tests """

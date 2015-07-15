@@ -462,6 +462,66 @@ cdef class SparseDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
 
         return SparseDiscreteBoundaryOperator(self._op.conjugate().transpose())
 
+cdef class InverseSparseDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
+
+    def __cinit__(self,op):
+        pass
+
+    def __init__(self,op):
+
+        from .sparse_solve import SparseSolve
+
+        self._op = op
+        self._dtype = self._op.dtype
+        self._solve_fun = SparseSolve(op).solve
+
+    def as_matrix(self):
+
+        return self*np.eye(self.shape[1],self.shape[1])
+
+    def matvec(self,x):
+
+        if self.dtype=='float64' and np.iscomplexobj(x):
+            return self*np.real(x)+1j*(self*np.imag(x))
+
+        res = np.zeros((self.shape[0],x.shape[1]),dtype='float64')
+        for i in range(x.shape[1]):
+            res[:,i] = self._solve_fun(x[:,i])
+        return res
+
+    def __add__(self,DiscreteBoundaryOperatorBase other):
+
+        return super(InverseSparseDiscreteBoundaryOperator,self).__add__(other)
+
+    def __neg__(self):
+
+        return super(InverseSparseDiscreteBoundaryOperator,self).__neg__()
+
+    def __sub__(self,other):
+
+        return super(InverseSparseDiscreteBoundaryOperator,self).__sub__(other)
+
+
+    property shape:
+
+        def __get__(self):
+                return (self._op.shape[1],self._op.shape[0])
+
+    property dtype:
+        def __get__(self):
+            return self._op.dtype
+
+    def transpose(self):
+
+        return InverseSparseDiscreteBoundaryOperator(self._op.transpose())
+
+    def conjugate(self):
+
+        return InverseSparseDiscreteBoundaryOperator(self._op.conjugate())
+
+    def conjugate_transpose(self):
+
+        return InverseSparseDiscreteBoundaryOperator(self._op.conjugate().transpose())
         
 cdef class HMatDiscreteBoundaryOperator(DiscreteBoundaryOperator):
 

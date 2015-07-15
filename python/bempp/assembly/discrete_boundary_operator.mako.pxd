@@ -41,6 +41,10 @@ cdef class DiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
 cdef class SparseDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
     cdef object _op
 
+cdef class InverseSparseDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
+    cdef object _op
+    cdef object _solve_fun
+
 cdef class HMatDiscreteBoundaryOperator(DiscreteBoundaryOperator):
     cdef object _statistics
     

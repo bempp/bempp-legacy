@@ -19,7 +19,7 @@ install_python(FILES ${headers} DESTINATION bempp/include/bempp/assembly)
 add_dependencies(cython-headers bempp.assembly-mako)
 
 add_python_module(bempp.assembly
-    ${sources} __init__.py 
+    ${sources} __init__.py sparse_solve.py
     TARGETNAME bempp.assembly
     CPP
     LIBRARIES libbempp

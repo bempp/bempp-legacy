@@ -148,6 +148,9 @@ cdef class GeneralBoundaryOperator(BoundaryOperatorBase):
         else:
             return self._default_weak_form()
 
+    def strong_form(self):
+
+        pass
 
     def _sparse_weak_form(self):
 
