@@ -162,6 +162,20 @@ class BlockedDiscreteLinearOperator(object):
     def get_column_dimensions(self):
         return self._cols
 
+    def as_matrix(self):
+        if not self._fill_complete():
+            raise ValueError("Not all rows or columns contain operators.")
+        rows = []
+        for i in range(self._m):
+            row = []
+            for j in range(self._n):
+                if self[i,j] is None:
+                    row.append(_np.zeros((self._rows[i],self._cols[j])))
+                else:
+                    row.append(self[i,j].as_matrix())
+            rows.append(_np.hstack(row))
+        return _np.vstack(rows)
+
     shape = property(get_shape)
     dtype = property(get_dtype)
     ndims = property(get_ndims)
