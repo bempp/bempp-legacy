@@ -33,7 +33,7 @@ bool HMatrixAcaCompressor<ValueType, N>::selectMinPivot(
     else
       row = i;
     if (approximationCount[i] == 0 && std::abs(vec(row, col)) < minVal) {
-      minVal = std::abs(vec(col, row));
+      minVal = std::abs(vec(row, col));
       pivot = i;
     }
   }
