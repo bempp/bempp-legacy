@@ -293,7 +293,7 @@ class TestInverseSparseDiscreteBoundary(object):
 
     def test_inverse_of_square_matrix(self):
         
-        from bempp.assembly.discrete_boundary_operator import InverseSparseDiscreteBoundaryOperator
+        from bempp import InverseSparseDiscreteBoundaryOperator
         grid = grid_from_sphere(3)
         space = function_space(grid,"P",1)
         sparse_op = operators.boundary.sparse.identity(space,space,space).weak_form()
@@ -304,7 +304,7 @@ class TestInverseSparseDiscreteBoundary(object):
 
     def test_inverse_of_thin_rectangular_matrix(self):
 
-        from bempp.assembly.discrete_boundary_operator import InverseSparseDiscreteBoundaryOperator
+        from bempp import InverseSparseDiscreteBoundaryOperator
         grid = grid_from_sphere(3)
         trial_space= function_space(grid,"P",1)
         test_space = function_space(grid,"P",2)
@@ -317,7 +317,7 @@ class TestInverseSparseDiscreteBoundary(object):
 
     def test_inverse_of_thick_rectangular_matrix(self):
 
-        from bempp.assembly.discrete_boundary_operator import InverseSparseDiscreteBoundaryOperator
+        from bempp import InverseSparseDiscreteBoundaryOperator
         grid = grid_from_sphere(3)
         trial_space= function_space(grid,"P",2)
         test_space = function_space(grid,"P",1)

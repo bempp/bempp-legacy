@@ -12,7 +12,8 @@ __all__=['grid_from_sphere',
          'import_grid',
          'operators',
          'FileReader',
-         'generate_block_cluster_tree']
+         'generate_block_cluster_tree',
+         'InverseSparseDiscreteBoundaryOperator']
 
 # This imports dolfin at the same time as bempp if available to avoid delays
 # at later imports of dolfin
@@ -67,7 +68,7 @@ global_parameters = __global_parameters()
 
 from bempp.grid import Grid,grid_from_sphere,grid_from_element_data, structured_grid
 from bempp.assembly import GridFunction
-from bempp.assembly import BlockedBoundaryOperator
+from bempp.assembly import BlockedBoundaryOperator, InverseSparseDiscreteBoundaryOperator
 from bempp.space import function_space
 from bempp.file_interfaces import FileReader, import_grid, export
 from bempp.grid import GridFactory

@@ -1,6 +1,9 @@
-__all__ = ['BoundaryOperatorBase','GridFunction','BlockedBoundaryOperator']
-from .boundary_operator import BoundaryOperatorBase,BlockedBoundaryOperator
+__all__ = ['GridFunction',
+            'BlockedBoundaryOperator',
+            'InverseSparseDiscreteBoundaryOperator']
+from .boundary_operator import BlockedBoundaryOperator
 from .grid_function import GridFunction
+from .discrete_boundary_operator import InverseSparseDiscreteBoundaryOperator
 
 __doc__="""
 This package defines the basic BEM++ objects to assemble boundary operators,
