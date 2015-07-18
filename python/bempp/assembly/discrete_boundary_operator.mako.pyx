@@ -401,7 +401,7 @@ cdef class SparseDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
 
         return self.sparse_operator.todense()
 
-    def matvec(self,x):
+    def matvec(self,np.ndarray x):
 
         return self.sparse_operator*x
 
@@ -470,16 +470,23 @@ cdef class InverseSparseDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
     def __init__(self,op):
 
         from .sparse_solve import SparseSolve
+        from scipy.sparse import csc_matrix
 
-        self._op = op
+        if isinstance(op,SparseDiscreteBoundaryOperator):
+            self._op = op.sparse_operator
+        elif isinstance(op,csc_matrix):
+            self._op = op
+        else:
+            raise ValueError("op must be either of type SparseDiscreteBoundaryOperator or of type csc_matrix.")
+
         self._dtype = self._op.dtype
-        self._solve_fun = SparseSolve(op).solve
+        self._solve_fun = SparseSolve(self._op).solve
 
     def as_matrix(self):
 
         return self*np.eye(self.shape[1],self.shape[1])
 
-    def matvec(self,x):
+    def matvec(self,np.ndarray x):
 
         if self.dtype=='float64' and np.iscomplexobj(x):
             return self*np.real(x)+1j*(self*np.imag(x))

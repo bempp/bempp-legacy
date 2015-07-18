@@ -2,7 +2,7 @@
 cmake_minimum_required(VERSION 2.8)
 project(tut_test CXX)
 
-find_package(Bempp @Bempp_VERSION@ EXACT REQUIRED)
+find_package(Bempp REQUIRED)
 
 # Tests that find_package(Bempp) declares what we think it should
 # Delete the next few lines if using this as BEM++ project template

@@ -8,7 +8,6 @@ class SparseSolve(object):
         from scipy.sparse.linalg import splu
 
         self.op = op
-
         if not isinstance(op,csc_matrix):
             raise ValueError("op must be of type scipy.sparse.csc.csc_matrix")
 

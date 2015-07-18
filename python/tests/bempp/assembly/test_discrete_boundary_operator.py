@@ -5,6 +5,7 @@ from bempp.operators.boundary.laplace import single_layer as laplace_slp
 from bempp.operators.boundary.helmholtz import single_layer as helmholtz_slp
 from bempp.assembly.discrete_boundary_operator import ZeroDiscreteBoundaryOperator
 from bempp.assembly.discrete_boundary_operator import BlockedDiscreteBoundaryOperator
+from bempp import operators
 
 import numpy as np
 
@@ -287,3 +288,50 @@ class TestBlockedDiscreteBoundaryOperator(object):
         expected = op.as_matrix()
 
         assert np.linalg.norm(actual-expected)<_eps
+
+class TestInverseSparseDiscreteBoundary(object):
+
+    def test_inverse_of_square_matrix(self):
+        
+        from bempp.assembly.discrete_boundary_operator import InverseSparseDiscreteBoundaryOperator
+        grid = grid_from_sphere(3)
+        space = function_space(grid,"P",1)
+        sparse_op = operators.boundary.sparse.identity(space,space,space).weak_form()
+        inverse_operator = InverseSparseDiscreteBoundaryOperator(sparse_op)
+        actual = inverse_operator*sparse_op.sparse_operator.todense()
+        expected = np.eye(*sparse_op.shape)
+        assert np.linalg.norm(actual-expected)<_eps
+
+    def test_inverse_of_thin_rectangular_matrix(self):
+
+        from bempp.assembly.discrete_boundary_operator import InverseSparseDiscreteBoundaryOperator
+        grid = grid_from_sphere(3)
+        trial_space= function_space(grid,"P",1)
+        test_space = function_space(grid,"P",2)
+        sparse_op = operators.boundary.sparse.identity(trial_space,trial_space,test_space).weak_form()
+        print(sparse_op.shape)
+        inverse_operator = InverseSparseDiscreteBoundaryOperator(sparse_op)
+        actual = inverse_operator*sparse_op.sparse_operator.todense()
+        expected = np.eye(*(inverse_operator.shape[0],sparse_op.shape[1]))
+        assert np.linalg.norm(actual-expected)<_eps
+
+    def test_inverse_of_thick_rectangular_matrix(self):
+
+        from bempp.assembly.discrete_boundary_operator import InverseSparseDiscreteBoundaryOperator
+        grid = grid_from_sphere(3)
+        trial_space= function_space(grid,"P",2)
+        test_space = function_space(grid,"P",1)
+        sparse_op = operators.boundary.sparse.identity(trial_space,trial_space,test_space).weak_form()
+        print(sparse_op.shape)
+        inverse_operator = InverseSparseDiscreteBoundaryOperator(sparse_op)
+        actual = sparse_op*inverse_operator.as_matrix()
+        expected = np.eye(*(sparse_op.shape[0],inverse_operator.shape[1]))
+        assert np.linalg.norm(actual-expected)<_eps
+
+
+
+
+
+        
+
+
