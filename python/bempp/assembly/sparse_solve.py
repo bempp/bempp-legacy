@@ -7,7 +7,7 @@ class SparseSolve(object):
         from scipy.sparse import csc_matrix
         from scipy.sparse.linalg import splu
 
-        self.op = op
+        self._op = op
         if not isinstance(op,csc_matrix):
             raise ValueError("op must be of type scipy.sparse.csc.csc_matrix")
 
@@ -30,11 +30,17 @@ class SparseSolve(object):
 
     def solve(self,x):
 
-        # Ugly hack as Cython passes x as compiled ndarray
-        # Need standard ndarray as otherwise the squeeze
-        # function does not return 1-d array.
-        vec = np.array(x).squeeze()
+        from bempp.utils.data_types import combined_type
 
-        return self._solve_fun(vec)
+        # Need self._op.shape[1] as that's right dimension for the inverse
+        res = np.zeros((self._op.shape[1],x.shape[1]),combined_type(x.dtype,self._op.dtype))
+        for i in range(x.shape[1]):
+            # Ugly hack as Cython passes x as compiled ndarray
+            # Need standard ndarray as otherwise the squeeze
+            # function does not return 1-d array.
+            vec = np.array(x[:,i]).squeeze()
+            res[:,i] = self._solve_fun(vec)
+
+        return res
 
         

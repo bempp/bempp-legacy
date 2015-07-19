@@ -113,7 +113,7 @@ cdef class ZeroDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
 
         cdef bool is_reshaped=False
         if not x.shape[0]==self.shape[1]:
-            return ValueError("Wrong dimensions.")
+            raise ValueError("Wrong dimensions.")
 
         if x.ndim==1:
             x = x.reshape((-1,1))
@@ -488,12 +488,24 @@ cdef class InverseSparseDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
 
     def matvec(self,np.ndarray x):
 
+        cdef bool is_reshaped=False
+
+        if x.ndim==1:
+            x = x.reshape((-1,1))
+            is_reshaped=True
+
+        if not x.shape[0]==self.shape[1]:
+            raise ValueError("Wrong dimensions.")
+
         if self.dtype=='float64' and np.iscomplexobj(x):
             return self*np.real(x)+1j*(self*np.imag(x))
 
-        res = np.zeros((self.shape[0],x.shape[1]),dtype='float64')
-        for i in range(x.shape[1]):
-            res[:,i] = self._solve_fun(x[:,i])
+
+        res = self._solve_fun(x)
+
+        if is_reshaped:
+            res = res.ravel()
+
         return res
 
     def __add__(self,DiscreteBoundaryOperatorBase other):

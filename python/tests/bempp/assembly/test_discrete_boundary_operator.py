@@ -309,7 +309,6 @@ class TestInverseSparseDiscreteBoundary(object):
         trial_space= function_space(grid,"P",1)
         test_space = function_space(grid,"P",2)
         sparse_op = operators.boundary.sparse.identity(trial_space,trial_space,test_space).weak_form()
-        print(sparse_op.shape)
         inverse_operator = InverseSparseDiscreteBoundaryOperator(sparse_op)
         actual = inverse_operator*sparse_op.sparse_operator.todense()
         expected = np.eye(*(inverse_operator.shape[0],sparse_op.shape[1]))
@@ -322,12 +321,24 @@ class TestInverseSparseDiscreteBoundary(object):
         trial_space= function_space(grid,"P",2)
         test_space = function_space(grid,"P",1)
         sparse_op = operators.boundary.sparse.identity(trial_space,trial_space,test_space).weak_form()
-        print(sparse_op.shape)
         inverse_operator = InverseSparseDiscreteBoundaryOperator(sparse_op)
         actual = sparse_op*inverse_operator.as_matrix()
         expected = np.eye(*(sparse_op.shape[0],inverse_operator.shape[1]))
         assert np.linalg.norm(actual-expected)<_eps
 
+    def test_multiple_with_one_dimensional_vector(self):
+
+        from bempp import InverseSparseDiscreteBoundaryOperator
+        grid = grid_from_sphere(3)
+        trial_space= function_space(grid,"P",1)
+        test_space = function_space(grid,"P",2)
+        sparse_op = operators.boundary.sparse.identity(trial_space,trial_space,test_space).weak_form()
+        inverse_operator = InverseSparseDiscreteBoundaryOperator(sparse_op)
+        x = np.zeros(inverse_operator.shape[1],dtype='float64')
+        x[0] = 1
+        res = inverse_operator*x
+        assert res.ndim == 1
+        assert len(res) == inverse_operator.shape[0]
 
 
 
