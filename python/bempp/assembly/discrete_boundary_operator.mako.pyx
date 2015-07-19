@@ -464,10 +464,11 @@ cdef class SparseDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
 
 cdef class InverseSparseDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
 
-    def __cinit__(self,op):
+    def __cinit__(self,op, use_lsmr=False, atol=1E-6, btol=1E-6, 
+            conlim=1E8, maxiter=None, show=False):
         pass
 
-    def __init__(self,op):
+    def __init__(self,op, use_lsmr=False, atol=1E-6, btol=1E-6, conlim=1E8, maxiter=None, show=False):
 
         from .sparse_solve import SparseSolve
         from scipy.sparse import csc_matrix
@@ -480,7 +481,7 @@ cdef class InverseSparseDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
             raise ValueError("op must be either of type SparseDiscreteBoundaryOperator or of type csc_matrix.")
 
         self._dtype = self._op.dtype
-        self._solve_fun = SparseSolve(self._op).solve
+        self._solve_fun = SparseSolve(self._op, use_lsmr, atol, btol, conlim, maxiter, show).solve
 
     def as_matrix(self):
 
