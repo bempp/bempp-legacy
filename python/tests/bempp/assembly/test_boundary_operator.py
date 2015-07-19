@@ -10,6 +10,8 @@ from bempp.assembly.boundary_operator import _ScaledBoundaryOperator
 from bempp.assembly.boundary_operator import BlockedBoundaryOperator
 from bempp import GridFunction
 
+import bempp
+
 
 import numpy as np
 
@@ -165,6 +167,32 @@ class TestBlockedBoundaryOperator:
 
         assert np.linalg.norm(expected-actual)<_eps
 
+class TestProductBoundaryOperator(object):
+
+    def test_product_weak_form_agrees_with_product_of_weak_forms(self):
+
+        grid = bempp.grid_from_sphere(3)
+        space = bempp.function_space(grid,"P",1)
+        slp = bempp.operators.boundary.laplace.single_layer(space,space,space)
+        hyp = bempp.operators.boundary.laplace.single_layer(space,space,space)
+        op = slp*hyp
+        actual = op.weak_form().as_matrix()
+        expected = hyp.weak_form().as_matrix()*slp.strong_form().as_matrix()
+        assert np.linalg.norm(actual-expected)<_eps
+
+    def test_apply_grid_function(self):
+
+        grid = bempp.grid_from_sphere(3)
+        space = bempp.function_space(grid,"P",1)
+        slp = bempp.operators.boundary.laplace.single_layer(space,space,space)
+        hyp = bempp.operators.boundary.laplace.single_layer(space,space,space)
+        op = slp*hyp
+
+        g = GridFunction(slp.domain,coefficients=np.ones(slp.domain.global_dof_count))
+        expected = hyp*(slp*g)
+        actual = op*g
+
+        assert np.linalg.norm(expected.coefficients-actual.coefficients)<_eps
 
 
 

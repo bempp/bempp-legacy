@@ -7,6 +7,7 @@ __all__=['grid_from_sphere',
          'GridFunction',
          'global_parameters',
          'BlockedBoundaryOperator',
+         'ZeroBoundaryOperator',
          'export',
          'GridFactory',
          'import_grid',
@@ -68,7 +69,7 @@ global_parameters = __global_parameters()
 
 from bempp.grid import Grid,grid_from_sphere,grid_from_element_data, structured_grid
 from bempp.assembly import GridFunction
-from bempp.assembly import BlockedBoundaryOperator, InverseSparseDiscreteBoundaryOperator
+from bempp.assembly import BlockedBoundaryOperator, InverseSparseDiscreteBoundaryOperator, ZeroBoundaryOperator
 from bempp.space import function_space
 from bempp.file_interfaces import FileReader, import_grid, export
 from bempp.grid import GridFactory

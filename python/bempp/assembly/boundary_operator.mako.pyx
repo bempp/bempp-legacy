@@ -80,6 +80,9 @@ cdef class BoundaryOperatorBase:
         if np.isscalar(x):
             return _ScaledBoundaryOperator(self,x)
 
+        if isinstance(x,BoundaryOperatorBase):
+            return _ProductBoundaryOperator(self,x)
+
         if isinstance(x,GridFunction):
             return self._apply_grid_function(x)
 
@@ -109,8 +112,29 @@ cdef class BoundaryOperatorBase:
 
         raise NotImplementedError("Method not implemented")
 
+    def strong_form(self, use_lsmr=False, atol=1E-6, btol=1E-6,
+            conlim=1E8, maxiter=None, show=False):
+
+        if self._strong_form is not None:
+            return self._strong_form
+
+        from bempp.operators.boundary.sparse import identity
+        from bempp import InverseSparseDiscreteBoundaryOperator
+
+        # In the next definition range is not important, can be anything
+        inverse_mass = InverseSparseDiscreteBoundaryOperator(
+                identity(
+                    self.range,self.range,self.dual_to_range).
+                weak_form(), use_lsmr, atol, btol, conlim, maxiter, show)
+
+        self._strong_form = inverse_mass*self.weak_form()
+
+        return self._strong_form
+
     def _apply_grid_function(self,GridFunction g):
-        raise NotImplementedError("Method not implemented")
+
+        return GridFunction(self.range,
+                coefficients=self.strong_form()*g.coefficients)
 
 cdef class GeneralBoundaryOperator(BoundaryOperatorBase):
     """ Holds a reference to a boundary operator """
@@ -133,11 +157,10 @@ cdef class GeneralBoundaryOperator(BoundaryOperatorBase):
         if not(self.domain.is_compatible(g.space)):
             raise ValueError("Spaces do not match")
 
-        op_w =  self.weak_form()
+        op_s =  self.strong_form()
         coeffs = g.coefficients
-        result_projections = (op_w*coeffs)
-        return GridFunction(self.range,dual_space=self.dual_to_range,
-                projections=result_projections,parameter_list=g.parameter_list)
+        result = (op_s*coeffs)
+        return GridFunction(self.range,coefficients=coeffs)
 
     def weak_form(self):
 
@@ -148,9 +171,6 @@ cdef class GeneralBoundaryOperator(BoundaryOperatorBase):
         else:
             return self._default_weak_form()
 
-    def strong_form(self):
-
-        pass
 
     def _sparse_weak_form(self):
 
@@ -241,8 +261,6 @@ cdef class _ScaledBoundaryOperator(BoundaryOperatorBase):
         self._result_type = combined_type(np.dtype(type(self._alpha)),op.result_type)
         self._op = op
 
-
-
     def weak_form(self):
         return self._alpha*self._op.weak_form()
 
@@ -312,6 +330,49 @@ cdef class _SumBoundaryOperator(BoundaryOperatorBase):
         def __get__(self):
             return self._op1.dual_to_range
 
+cdef class _ProductBoundaryOperator(BoundaryOperatorBase):
+    cdef BoundaryOperatorBase _op1
+    cdef BoundaryOperatorBase _op2
+
+    def __cinit__(self,BoundaryOperatorBase op1, BoundaryOperatorBase op2):
+        pass
+
+
+    def __init__(self,BoundaryOperatorBase op1, BoundaryOperatorBase op2):
+
+        self._basis_type = op2._basis_type
+        self._result_type = op1._result_type
+
+        if not (op1.domain.is_compatible(op2.range)):
+            raise ValueError("Incompatible Spaces")
+
+        self._op1 = op1
+        self._op2 = op2
+
+
+    def weak_form(self):
+
+        return self._op1.weak_form()*self._op2.strong_form()
+
+    def _apply_grid_function(self, GridFunction g):
+
+        return self._op1*(self._op2*g)
+
+    property domain:
+
+        def __get__(self):
+            return self._op2.domain
+
+    property range:
+
+        def __get__(self):
+            return self._op1.range
+
+    property dual_to_range:
+
+        def __get__(self):
+            return self._op1.dual_to_range
+
 cdef class ZeroBoundaryOperator(BoundaryOperatorBase): 
 
     cdef Space _domain
@@ -366,12 +427,13 @@ cdef class ZeroBoundaryOperator(BoundaryOperatorBase):
 
         """
 
-        return ZeroDiscreteBoundaryOperator(self._domain.global_dof_count,
-                self._dual_to_range.global_dof_count)
+        return ZeroDiscreteBoundaryOperator(
+                self._dual_to_range.global_dof_count,
+                self._domain.global_dof_count)
 
     def _apply_grid_function(self,GridFunction g):
-        return GridFunction(self._domain,
-                coefficients=np.zeros(self._domain.global_dof_count,
+        return GridFunction(self._range,
+                coefficients=np.zeros(self._range.global_dof_count,
                     dtype='float64'))
 
 cdef class BlockedBoundaryOperator:

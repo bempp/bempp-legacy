@@ -499,10 +499,9 @@ cdef class InverseSparseDiscreteBoundaryOperator(DiscreteBoundaryOperatorBase):
             raise ValueError("Wrong dimensions.")
 
         if self.dtype=='float64' and np.iscomplexobj(x):
-            return self*np.real(x)+1j*(self*np.imag(x))
-
-
-        res = self._solve_fun(x)
+            res =  self*np.real(x)+1j*(self*np.imag(x))
+        else:
+            res = self._solve_fun(x)
 
         if is_reshaped:
             res = res.ravel()

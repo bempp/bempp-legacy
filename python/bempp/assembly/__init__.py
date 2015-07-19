@@ -1,7 +1,12 @@
 __all__ = ['GridFunction',
             'BlockedBoundaryOperator',
-            'InverseSparseDiscreteBoundaryOperator']
+            'InverseSparseDiscreteBoundaryOperator',
+            'ZeroBoundaryOperator',
+            'BoundaryOperatorBase']
+
 from .boundary_operator import BlockedBoundaryOperator
+from .boundary_operator import ZeroBoundaryOperator
+from .boundary_operator import BoundaryOperatorBase
 from .grid_function import GridFunction
 from .discrete_boundary_operator import InverseSparseDiscreteBoundaryOperator
 
