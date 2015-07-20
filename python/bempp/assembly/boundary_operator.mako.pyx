@@ -112,11 +112,17 @@ cdef class BoundaryOperatorBase:
 
         raise NotImplementedError("Method not implemented")
 
-    def strong_form(self, use_lsmr=False, atol=1E-6, btol=1E-6,
-            conlim=1E8, maxiter=None, show=False):
+    def strong_form(self):
 
         if self._strong_form is not None:
             return self._strong_form
+
+        self.initialize_strong_form()
+        return self._strong_form
+
+
+    def initialize_strong_form(self, use_lsmr=False, atol=1E-6, btol=1E-6,
+            conlim=1E8, maxiter=None, show=False):
 
         from bempp.operators.boundary.sparse import identity
         from bempp import InverseSparseDiscreteBoundaryOperator
@@ -128,8 +134,6 @@ cdef class BoundaryOperatorBase:
                 weak_form(), use_lsmr, atol, btol, conlim, maxiter, show)
 
         self._strong_form = inverse_mass*self.weak_form()
-
-        return self._strong_form
 
     def _apply_grid_function(self,GridFunction g):
 
