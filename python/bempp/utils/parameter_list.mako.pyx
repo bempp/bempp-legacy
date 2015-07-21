@@ -276,6 +276,14 @@ cdef class _HMatParameterList:
             cdef char* s = b"options.hmat.waveNumber"
             deref(self.impl_).put_double(s,value)
 
+    property high_frequency_threshold:
+        def __get__(self):
+            cdef char* s = b"options.hmat.highFrequencyThreshold"
+            return deref(self.impl_).get_double(s)
+        def __set__(self,object value):
+            cdef char* s = b"options.hmat.highFrequencyThreshold"
+            deref(self.impl_).put_double(s,value)
+
 cdef class ParameterList:
 
     def __cinit__(self):

@@ -119,6 +119,10 @@ ParameterList GlobalParameters::parameterList() {
   // Default: 1
   parameters.put("options.hmat.waveNumber", static_cast<double>(1));
 
+  // Threshold for high frequency admissibility
+  // Default: 1
+  parameters.put("options.hmat.highFrequencyThreshold", static_cast<double>(1));
+
   return parameters;
 }
 }

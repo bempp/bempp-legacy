@@ -231,7 +231,8 @@ operator()(const ClusterTreeNodeData &cluster1,
   return cluster1.boundingBox.distance(cluster2.boundingBox) > 0;
 }
 
-inline HighFrequencyAdmissibility::HighFrequencyAdmissibility(double k): m_k(k){}
+inline HighFrequencyAdmissibility::HighFrequencyAdmissibility(
+  double k, double threshold): m_k(k), m_threshold(threshold) {}
 
 inline bool HighFrequencyAdmissibility::
 operator()(const ClusterTreeNodeData &cluster1,
@@ -240,7 +241,7 @@ operator()(const ClusterTreeNodeData &cluster1,
   double dist = cluster1.boundingBox.distance(cluster2.boundingBox);
   double diam1 = cluster1.diameter;
   double diam2 = cluster2.diameter;
-  return m_k*diam1*diam2/dist < 10; 
+  return m_k*diam1*diam2/dist < m_threshold; 
 }
 
 }

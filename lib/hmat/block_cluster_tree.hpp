@@ -93,12 +93,13 @@ typedef BlockClusterTree<2> DefaultBlockClusterTreeType;
 
 class HighFrequencyAdmissibility {
 public:
-  HighFrequencyAdmissibility(double k);
+  HighFrequencyAdmissibility(double k, double threshold);
 
   bool operator()(const ClusterTreeNodeData &cluster1,
                   const ClusterTreeNodeData &cluster2) const;
 private:
   double m_k;
+  double m_threshold;
 
 };
 }
