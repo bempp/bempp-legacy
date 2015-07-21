@@ -40,17 +40,37 @@
 
 namespace Bempp {
 
+
 template <typename BasisFunctionType>
-PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::
-    PiecewiseLinearDiscontinuousScalarSpace(const shared_ptr<const Grid> &grid)
+PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::PiecewiseLinearDiscontinuousScalarSpace(
+        const shared_ptr<const Grid>& grid): AdaptiveSpace<BasisFunctionType>(grid)
+{
+
+    this->initialize();
+
+}
+
+template <typename BasisFunctionType>
+shared_ptr<Space<BasisFunctionType>> 
+PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::createNewSpace(const shared_ptr<const Grid>& grid)
+{
+    return shared_ptr<Space<BasisFunctionType>>(
+            new PiecewiseLinearDiscontinuousScalarSpaceImpl<BasisFunctionType>(grid));
+
+}
+
+
+template <typename BasisFunctionType>
+PiecewiseLinearDiscontinuousScalarSpaceImpl<BasisFunctionType>::
+    PiecewiseLinearDiscontinuousScalarSpaceImpl(const shared_ptr<const Grid> &grid)
     : PiecewiseLinearScalarSpace<BasisFunctionType>(grid),
       m_segment(GridSegment::wholeGrid(*grid)), m_strictlyOnSegment(false) {
   initialize(m_segment, m_strictlyOnSegment);
 }
 
 template <typename BasisFunctionType>
-PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::
-    PiecewiseLinearDiscontinuousScalarSpace(const shared_ptr<const Grid> &grid,
+PiecewiseLinearDiscontinuousScalarSpaceImpl<BasisFunctionType>::
+    PiecewiseLinearDiscontinuousScalarSpaceImpl(const shared_ptr<const Grid> &grid,
                                             const GridSegment &segment,
                                             bool strictlyOnSegment)
     : PiecewiseLinearScalarSpace<BasisFunctionType>(grid), m_segment(segment),
@@ -59,24 +79,24 @@ PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::
 }
 
 template <typename BasisFunctionType>
-PiecewiseLinearDiscontinuousScalarSpace<
-    BasisFunctionType>::~PiecewiseLinearDiscontinuousScalarSpace() {}
+PiecewiseLinearDiscontinuousScalarSpaceImpl<
+    BasisFunctionType>::~PiecewiseLinearDiscontinuousScalarSpaceImpl() {}
 
 template <typename BasisFunctionType>
-void PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::initialize(
+void PiecewiseLinearDiscontinuousScalarSpaceImpl<BasisFunctionType>::initialize(
     const GridSegment &segment, bool strictlyOnSegment) {
   const int gridDim = this->grid()->dim();
   if (gridDim != 1 && gridDim != 2)
     throw std::invalid_argument(
-        "PiecewiseLinearDiscontinuousScalarSpace::"
-        "PiecewiseLinearDiscontinuousScalarSpace(): "
+        "PiecewiseLinearDiscontinuousScalarSpaceImpl::"
+        "PiecewiseLinearDiscontinuousScalarSpaceImpl(): "
         "only 1- and 2-dimensional grids are supported");
   m_view = this->grid()->leafView();
   assignDofsImpl(segment, strictlyOnSegment);
 }
 
 template <typename BasisFunctionType>
-bool PiecewiseLinearDiscontinuousScalarSpace<
+bool PiecewiseLinearDiscontinuousScalarSpaceImpl<
     BasisFunctionType>::spaceIsCompatible(const Space<BasisFunctionType> &other)
     const {
 
@@ -88,18 +108,18 @@ bool PiecewiseLinearDiscontinuousScalarSpace<
 
 template <typename BasisFunctionType>
 shared_ptr<const Space<BasisFunctionType>>
-PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::discontinuousSpace(
+PiecewiseLinearDiscontinuousScalarSpaceImpl<BasisFunctionType>::discontinuousSpace(
     const shared_ptr<const Space<BasisFunctionType>> &self) const {
   if (self.get() != this)
     throw std::invalid_argument(
-        "PiecewiseLinearDiscontinuousScalarSpace::discontinuousSpace(): "
+        "PiecewiseLinearDiscontinuousScalarSpaceImpl::discontinuousSpace(): "
         "argument should be a shared pointer to *this");
   return self;
 }
 
 template <typename BasisFunctionType>
 shared_ptr<const Space<BasisFunctionType>>
-PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::barycentricSpace(
+PiecewiseLinearDiscontinuousScalarSpaceImpl<BasisFunctionType>::barycentricSpace(
     const shared_ptr<const Space<BasisFunctionType>> &self) const {
 
   if (!m_barycentricSpace) {
@@ -114,13 +134,13 @@ PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::barycentricSpace(
 }
 
 template <typename BasisFunctionType>
-bool PiecewiseLinearDiscontinuousScalarSpace<
+bool PiecewiseLinearDiscontinuousScalarSpaceImpl<
     BasisFunctionType>::isDiscontinuous() const {
   return true;
 }
 
 template <typename BasisFunctionType>
-void PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::assignDofsImpl(
+void PiecewiseLinearDiscontinuousScalarSpaceImpl<BasisFunctionType>::assignDofsImpl(
     const GridSegment &segment, bool strictlyOnSegment) {
   const int gridDim = this->domainDimension();
 
@@ -179,20 +199,20 @@ void PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::assignDofsImpl(
 
 template <typename BasisFunctionType>
 size_t
-PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::globalDofCount()
+PiecewiseLinearDiscontinuousScalarSpaceImpl<BasisFunctionType>::globalDofCount()
     const {
   return m_global2localDofs.size();
 }
 
 template <typename BasisFunctionType>
 size_t
-PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::flatLocalDofCount()
+PiecewiseLinearDiscontinuousScalarSpaceImpl<BasisFunctionType>::flatLocalDofCount()
     const {
   return globalDofCount();
 }
 
 template <typename BasisFunctionType>
-void PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::getGlobalDofs(
+void PiecewiseLinearDiscontinuousScalarSpaceImpl<BasisFunctionType>::getGlobalDofs(
     const Entity<0> &element, std::vector<GlobalDofIndex> &dofs) const {
   const Mapper &mapper = m_view->elementMapper();
   EntityIndex index = mapper.entityIndex(element);
@@ -200,7 +220,7 @@ void PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::getGlobalDofs(
 }
 
 template <typename BasisFunctionType>
-void PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::
+void PiecewiseLinearDiscontinuousScalarSpaceImpl<BasisFunctionType>::
     global2localDofs(const std::vector<GlobalDofIndex> &globalDofs,
                      std::vector<std::vector<LocalDof>> &localDofs) const {
   localDofs.resize(globalDofs.size());
@@ -211,7 +231,7 @@ void PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::
 }
 
 template <typename BasisFunctionType>
-void PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::
+void PiecewiseLinearDiscontinuousScalarSpaceImpl<BasisFunctionType>::
     flatLocal2localDofs(const std::vector<FlatLocalDofIndex> &flatLocalDofs,
                         std::vector<LocalDof> &localDofs) const {
   localDofs.resize(flatLocalDofs.size());
@@ -220,7 +240,7 @@ void PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::
 }
 
 template <typename BasisFunctionType>
-void PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::
+void PiecewiseLinearDiscontinuousScalarSpaceImpl<BasisFunctionType>::
     getGlobalDofPositions(
         std::vector<Point3D<CoordinateType>> &positions) const {
   std::vector<BoundingBox<CoordinateType>> bboxes;
@@ -232,14 +252,14 @@ void PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::
 }
 
 template <typename BasisFunctionType>
-void PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::
+void PiecewiseLinearDiscontinuousScalarSpaceImpl<BasisFunctionType>::
     getFlatLocalDofPositions(
         std::vector<Point3D<CoordinateType>> &positions) const {
   getGlobalDofPositions(positions);
 }
 
 template <typename BasisFunctionType>
-void PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::
+void PiecewiseLinearDiscontinuousScalarSpaceImpl<BasisFunctionType>::
     getGlobalDofBoundingBoxes(
         std::vector<BoundingBox<CoordinateType>> &bboxes) const {
   SpaceHelper<BasisFunctionType>::
@@ -248,45 +268,45 @@ void PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::
 }
 
 template <typename BasisFunctionType>
-void PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::
+void PiecewiseLinearDiscontinuousScalarSpaceImpl<BasisFunctionType>::
     getFlatLocalDofBoundingBoxes(
         std::vector<BoundingBox<CoordinateType>> &bboxes) const {
   getGlobalDofBoundingBoxes(bboxes);
 }
 
 template <typename BasisFunctionType>
-void PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::
+void PiecewiseLinearDiscontinuousScalarSpaceImpl<BasisFunctionType>::
     getGlobalDofNormals(std::vector<Point3D<CoordinateType>> &normals) const {
   SpaceHelper<BasisFunctionType>::getGlobalDofNormals_defaultImplementation(
       *m_view, m_global2localDofs, normals);
 }
 
 template <typename BasisFunctionType>
-void PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::
+void PiecewiseLinearDiscontinuousScalarSpaceImpl<BasisFunctionType>::
     getFlatLocalDofNormals(
         std::vector<Point3D<CoordinateType>> &normals) const {
   getGlobalDofNormals(normals);
 }
 
 template <typename BasisFunctionType>
-void PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::dumpClusterIds(
+void PiecewiseLinearDiscontinuousScalarSpaceImpl<BasisFunctionType>::dumpClusterIds(
     const char *fileName,
     const std::vector<unsigned int> &clusterIdsOfDofs) const {
   dumpClusterIdsEx(fileName, clusterIdsOfDofs, GLOBAL_DOFS);
 }
 
 template <typename BasisFunctionType>
-void PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::
+void PiecewiseLinearDiscontinuousScalarSpaceImpl<BasisFunctionType>::
     dumpClusterIdsEx(const char *fileName,
                      const std::vector<unsigned int> &clusterIdsOfDofs,
                      DofType dofType) const {
   if (dofType != GLOBAL_DOFS && dofType != FLAT_LOCAL_DOFS)
-    throw std::invalid_argument("PiecewiseLinearDiscontinuousScalarSpace::"
+    throw std::invalid_argument("PiecewiseLinearDiscontinuousScalarSpaceImpl::"
                                 "dumpClusterIds(): invalid DOF type");
   const size_t idCount = clusterIdsOfDofs.size();
   if ((dofType == GLOBAL_DOFS && idCount != globalDofCount()) ||
       (dofType == FLAT_LOCAL_DOFS && idCount != flatLocalDofCount()))
-    throw std::invalid_argument("PiecewiseLinearDiscontinuousScalarSpace::"
+    throw std::invalid_argument("PiecewiseLinearDiscontinuousScalarSpaceImpl::"
                                 "dumpClusterIds(): incorrect dimension");
 
   std::unique_ptr<GridView> view = this->grid()->leafView();
@@ -318,5 +338,7 @@ void PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>::
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(
     PiecewiseLinearDiscontinuousScalarSpace);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(
+    PiecewiseLinearDiscontinuousScalarSpaceImpl);
 
 } // namespace Bempp

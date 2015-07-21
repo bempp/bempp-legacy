@@ -29,6 +29,7 @@
 #include "../grid/grid_view.hpp"
 #include "../common/types.hpp"
 #include "../fiber/piecewise_linear_continuous_scalar_basis.hpp"
+#include "adaptive_space.hpp"
 
 #include <map>
 #include <memory>
@@ -44,7 +45,21 @@ template <typename ValueType> class DiscreteBoundaryOperator;
 /** \ingroup space
  *  \brief Space of continuous, piecewise linear scalar functions. */
 template <typename BasisFunctionType>
-class PiecewiseLinearContinuousScalarSpace
+class PiecewiseLinearContinuousScalarSpace : public AdaptiveSpace<BasisFunctionType> {
+public:
+
+    PiecewiseLinearContinuousScalarSpace(const shared_ptr<const Grid>& grid);
+
+private:
+
+   shared_ptr<Space<BasisFunctionType>> createNewSpace(
+           const shared_ptr<const Grid>& grid) override;
+    
+};
+
+
+template <typename BasisFunctionType>
+class PiecewiseLinearContinuousScalarSpaceImpl
     : public PiecewiseLinearScalarSpace<BasisFunctionType> {
 public:
   typedef typename Space<BasisFunctionType>::CoordinateType CoordinateType;
@@ -57,7 +72,7 @@ public:
    *
    *  An exception is thrown if \p grid is a null pointer.
    */
-  explicit PiecewiseLinearContinuousScalarSpace(
+  explicit PiecewiseLinearContinuousScalarSpaceImpl(
       const shared_ptr<const Grid> &grid);
 
   /** \brief Constructor.
@@ -74,10 +89,10 @@ public:
    *
    *  An exception is thrown if \p grid is a null pointer.
    */
-  PiecewiseLinearContinuousScalarSpace(const shared_ptr<const Grid> &grid,
+  PiecewiseLinearContinuousScalarSpaceImpl(const shared_ptr<const Grid> &grid,
                                        const GridSegment &segment,
                                        bool strictlyOnSegment = false);
-  virtual ~PiecewiseLinearContinuousScalarSpace();
+  virtual ~PiecewiseLinearContinuousScalarSpaceImpl();
 
   virtual shared_ptr<const Space<BasisFunctionType>> discontinuousSpace(
       const shared_ptr<const Space<BasisFunctionType>> &self) const;

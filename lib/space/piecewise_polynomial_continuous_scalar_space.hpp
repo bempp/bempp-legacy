@@ -24,6 +24,7 @@
 #include "../common/common.hpp"
 #include "../common/types.hpp"
 #include "../grid/grid_segment.hpp"
+#include "adaptive_space.hpp"
 
 #include "scalar_space.hpp"
 
@@ -41,7 +42,25 @@ template <typename CoordinateType> struct BoundingBox;
 /** \ingroup space
  *  \brief Space of continuous, piecewise polynomial scalar functions. */
 template <typename BasisFunctionType>
-class PiecewisePolynomialContinuousScalarSpace
+class PiecewisePolynomialContinuousScalarSpace : public AdaptiveSpace<BasisFunctionType> {
+public:
+
+    PiecewisePolynomialContinuousScalarSpace(const shared_ptr<const Grid>& grid,
+            int polynomialOrder);
+
+private:
+
+   shared_ptr<Space<BasisFunctionType>> createNewSpace(
+           const shared_ptr<const Grid>& grid) override;
+
+   int m_polynomialOrder;
+    
+};
+
+
+
+template <typename BasisFunctionType>
+class PiecewisePolynomialContinuousScalarSpaceImpl
     : public ScalarSpace<BasisFunctionType> {
 public:
   typedef typename Space<BasisFunctionType>::CoordinateType CoordinateType;
@@ -52,7 +71,7 @@ public:
    *  Construct a space of continuous functions whose restrictions to
    *  elements of the grid \p grid will be polynomials of order at most \p
    *  polynomialOrder. */
-  PiecewisePolynomialContinuousScalarSpace(const shared_ptr<const Grid> &grid,
+  PiecewisePolynomialContinuousScalarSpaceImpl(const shared_ptr<const Grid> &grid,
                                            int polynomialOrder);
 
   /** \brief Constructor.
@@ -72,11 +91,11 @@ public:
    *
    *  An exception is thrown if \p grid is a null pointer.
    */
-  PiecewisePolynomialContinuousScalarSpace(const shared_ptr<const Grid> &grid,
+  PiecewisePolynomialContinuousScalarSpaceImpl(const shared_ptr<const Grid> &grid,
                                            int polynomialOrder,
                                            const GridSegment &segment,
                                            bool strictlyOnSegment = false);
-  virtual ~PiecewisePolynomialContinuousScalarSpace();
+  virtual ~PiecewisePolynomialContinuousScalarSpaceImpl();
 
   virtual int domainDimension() const;
   virtual int codomainDimension() const;

@@ -177,6 +177,7 @@ private:
     int m_level;
     shared_ptr<const Grid> m_grid;
     shared_ptr<Space<BasisFunctionType>> m_space;
+
 };
 
 }

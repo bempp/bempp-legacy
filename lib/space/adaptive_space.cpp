@@ -81,7 +81,7 @@ template <typename BasisFunctionType_>
 const GridView & AdaptiveSpace<BasisFunctionType_>::gridView() const
 {
 
-    return *m_grid->leafView();
+    return currentSpace().gridView();
 
 }
 

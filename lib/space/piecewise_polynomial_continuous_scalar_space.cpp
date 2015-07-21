@@ -45,9 +45,30 @@
 
 namespace Bempp {
 
+
 template <typename BasisFunctionType>
-PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::
-    PiecewisePolynomialContinuousScalarSpace(const shared_ptr<const Grid> &grid,
+PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::PiecewisePolynomialContinuousScalarSpace(
+        const shared_ptr<const Grid>& grid, int polynomialOrder): AdaptiveSpace<BasisFunctionType>(grid), 
+    m_polynomialOrder(polynomialOrder)
+{
+
+    this->initialize();
+
+}
+
+template <typename BasisFunctionType>
+shared_ptr<Space<BasisFunctionType>> 
+PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::createNewSpace(const shared_ptr<const Grid>& grid)
+{
+    return shared_ptr<Space<BasisFunctionType>>(
+            new PiecewisePolynomialContinuousScalarSpaceImpl<BasisFunctionType>(grid,m_polynomialOrder));
+
+}
+
+
+template <typename BasisFunctionType>
+PiecewisePolynomialContinuousScalarSpaceImpl<BasisFunctionType>::
+    PiecewisePolynomialContinuousScalarSpaceImpl(const shared_ptr<const Grid> &grid,
                                              int polynomialOrder)
     : ScalarSpace<BasisFunctionType>(grid), m_polynomialOrder(polynomialOrder),
       m_segment(GridSegment::wholeGrid(*grid)), m_strictlyOnSegment(false),
@@ -56,11 +77,11 @@ PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::
 }
 
 template <typename BasisFunctionType>
-bool PiecewisePolynomialContinuousScalarSpace<
+bool PiecewisePolynomialContinuousScalarSpaceImpl<
     BasisFunctionType>::spaceIsCompatible(const Space<BasisFunctionType> &other)
     const {
 
-  typedef PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>
+  typedef PiecewisePolynomialContinuousScalarSpaceImpl<BasisFunctionType>
       thisSpaceType;
 
   if (other.grid().get() != this->grid().get())
@@ -78,8 +99,8 @@ bool PiecewisePolynomialContinuousScalarSpace<
 }
 
 template <typename BasisFunctionType>
-PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::
-    PiecewisePolynomialContinuousScalarSpace(const shared_ptr<const Grid> &grid,
+PiecewisePolynomialContinuousScalarSpaceImpl<BasisFunctionType>::
+    PiecewisePolynomialContinuousScalarSpaceImpl(const shared_ptr<const Grid> &grid,
                                              int polynomialOrder,
                                              const GridSegment &segment,
                                              bool strictlyOnSegment)
@@ -90,11 +111,11 @@ PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::
 }
 
 template <typename BasisFunctionType>
-void PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::initialize() {
+void PiecewisePolynomialContinuousScalarSpaceImpl<BasisFunctionType>::initialize() {
   const int gridDim = this->grid()->dim();
   if (gridDim != 2)
-    throw std::invalid_argument("PiecewisePolynomialContinuousScalarSpace::"
-                                "PiecewisePolynomialContinuousScalarSpace(): "
+    throw std::invalid_argument("PiecewisePolynomialContinuousScalarSpaceImpl::"
+                                "PiecewisePolynomialContinuousScalarSpaceImpl(): "
                                 "2-dimensional grids are supported");
   m_view = this->grid()->leafView();
   if (m_polynomialOrder == 1)
@@ -128,42 +149,42 @@ void PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::initialize() {
     m_triangleShapeset.reset(
         new Fiber::LagrangeScalarShapeset<3, BasisFunctionType, 10>());
   else
-    throw std::invalid_argument("PiecewisePolynomialContinuousScalarSpace::"
-                                "PiecewisePolynomialContinuousScalarSpace(): "
+    throw std::invalid_argument("PiecewisePolynomialContinuousScalarSpaceImpl::"
+                                "PiecewisePolynomialContinuousScalarSpaceImpl(): "
                                 "polynomialOrder must be >= 1 and <= 10");
   assignDofsImpl();
 }
 
 template <typename BasisFunctionType>
-PiecewisePolynomialContinuousScalarSpace<
-    BasisFunctionType>::~PiecewisePolynomialContinuousScalarSpace() {}
+PiecewisePolynomialContinuousScalarSpaceImpl<
+    BasisFunctionType>::~PiecewisePolynomialContinuousScalarSpaceImpl() {}
 
 template <typename BasisFunctionType>
-int PiecewisePolynomialContinuousScalarSpace<
+int PiecewisePolynomialContinuousScalarSpaceImpl<
     BasisFunctionType>::domainDimension() const {
   return this->grid()->dim();
 }
 
 template <typename BasisFunctionType>
-int PiecewisePolynomialContinuousScalarSpace<
+int PiecewisePolynomialContinuousScalarSpaceImpl<
     BasisFunctionType>::codomainDimension() const {
   return 1;
 }
 
 template <typename BasisFunctionType>
 const Fiber::Shapeset<BasisFunctionType> &
-PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::shapeset(
+PiecewisePolynomialContinuousScalarSpaceImpl<BasisFunctionType>::shapeset(
     const Entity<0> &element) const {
   if (elementVariant(element) == 3)
     return *m_triangleShapeset;
   throw std::logic_error(
-      "PiecewisePolynomialContinuousScalarSpace::shapeset(): "
+      "PiecewisePolynomialContinuousScalarSpaceImpl::shapeset(): "
       "invalid element variant, this shouldn't happen!");
 }
 
 template <typename BasisFunctionType>
 ElementVariant
-PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::elementVariant(
+PiecewisePolynomialContinuousScalarSpaceImpl<BasisFunctionType>::elementVariant(
     const Entity<0> &element) const {
   GeometryType type = element.type();
   if (type.isLine())
@@ -173,24 +194,24 @@ PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::elementVariant(
   else if (type.isQuadrilateral())
     return 4;
   else
-    throw std::runtime_error("PiecewisePolynomialContinuousScalarSpace::"
+    throw std::runtime_error("PiecewisePolynomialContinuousScalarSpaceImpl::"
                              "elementVariant(): invalid geometry type, "
                              "this shouldn't happen!");
 }
 
 template <typename BasisFunctionType>
-void PiecewisePolynomialContinuousScalarSpace<
+void PiecewisePolynomialContinuousScalarSpaceImpl<
     BasisFunctionType>::setElementVariant(const Entity<0> &element,
                                           ElementVariant variant) {
   if (variant != elementVariant(element))
     // for this space, the element variants are unmodifiable,
-    throw std::runtime_error("PiecewisePolynomialContinuousScalarSpace::"
+    throw std::runtime_error("PiecewisePolynomialContinuousScalarSpaceImpl::"
                              "setElementVariant(): invalid variant");
 }
 
 template <typename BasisFunctionType>
 shared_ptr<const Space<BasisFunctionType>>
-PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::discontinuousSpace(
+PiecewisePolynomialContinuousScalarSpaceImpl<BasisFunctionType>::discontinuousSpace(
     const shared_ptr<const Space<BasisFunctionType>> &self) const {
   if (!m_discontinuousSpace) {
     tbb::mutex::scoped_lock lock(m_discontinuousSpaceMutex);
@@ -204,13 +225,13 @@ PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::discontinuousSpace(
 }
 
 template <typename BasisFunctionType>
-bool PiecewisePolynomialContinuousScalarSpace<
+bool PiecewisePolynomialContinuousScalarSpaceImpl<
     BasisFunctionType>::isDiscontinuous() const {
   return false;
 }
 
 template <typename BasisFunctionType>
-void PiecewisePolynomialContinuousScalarSpace<
+void PiecewisePolynomialContinuousScalarSpaceImpl<
     BasisFunctionType>::assignDofsImpl() {
   // TODO: refactor this function, it's way too long!
 
@@ -222,7 +243,7 @@ void PiecewisePolynomialContinuousScalarSpace<
     return;
   const int gridDim = this->domainDimension();
   if (gridDim != 2)
-    throw std::runtime_error("PiecewisePolynomialContinuousScalarSpace::"
+    throw std::runtime_error("PiecewisePolynomialContinuousScalarSpaceImpl::"
                              "assignDofsImpl(): only 2-dimensional grids "
                              "are supported at present");
   const int vertexCodim = gridDim;
@@ -275,7 +296,7 @@ void PiecewisePolynomialContinuousScalarSpace<
     EntityIndex elementIndex = indexSet.entityIndex(element);
     int vertexCount = element.template subEntityCount<2>();
     if (vertexCount != 3 && vertexCount != 4)
-      throw std::runtime_error("PiecewisePolynomialContinuousScalarSpace::"
+      throw std::runtime_error("PiecewisePolynomialContinuousScalarSpaceImpl::"
                                "assignDofsImpl(): elements must be "
                                "triangular or quadrilateral");
     if (m_segment.contains(0, elementIndex)) {
@@ -561,7 +582,7 @@ void PiecewisePolynomialContinuousScalarSpace<
       for (size_t i = 0; i < ldofAccessCounts.size(); ++i)
         assert(acc(ldofAccessCounts, i) == 1);
     } else
-      throw std::runtime_error("PiecewisePolynomialContinuousScalarSpace::"
+      throw std::runtime_error("PiecewisePolynomialContinuousScalarSpaceImpl::"
                                "assignDofsImpl(): quadrilateral elements "
                                "are not supported yet");
 
@@ -591,20 +612,20 @@ void PiecewisePolynomialContinuousScalarSpace<
 
 template <typename BasisFunctionType>
 size_t
-PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::globalDofCount()
+PiecewisePolynomialContinuousScalarSpaceImpl<BasisFunctionType>::globalDofCount()
     const {
   return m_global2localDofs.size();
 }
 
 template <typename BasisFunctionType>
 size_t
-PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::flatLocalDofCount()
+PiecewisePolynomialContinuousScalarSpaceImpl<BasisFunctionType>::flatLocalDofCount()
     const {
   return m_flatLocalDofCount;
 }
 
 template <typename BasisFunctionType>
-void PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::getGlobalDofs(
+void PiecewisePolynomialContinuousScalarSpaceImpl<BasisFunctionType>::getGlobalDofs(
     const Entity<0> &element, std::vector<GlobalDofIndex> &dofs) const {
   const Mapper &mapper = m_view->elementMapper();
   EntityIndex index = mapper.entityIndex(element);
@@ -612,7 +633,7 @@ void PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::getGlobalDofs(
 }
 
 template <typename BasisFunctionType>
-void PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::
+void PiecewisePolynomialContinuousScalarSpaceImpl<BasisFunctionType>::
     global2localDofs(const std::vector<GlobalDofIndex> &globalDofs,
                      std::vector<std::vector<LocalDof>> &localDofs) const {
   localDofs.resize(globalDofs.size());
@@ -621,7 +642,7 @@ void PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::
 }
 
 template <typename BasisFunctionType>
-void PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::
+void PiecewisePolynomialContinuousScalarSpaceImpl<BasisFunctionType>::
     flatLocal2localDofs(const std::vector<FlatLocalDofIndex> &flatLocalDofs,
                         std::vector<LocalDof> &localDofs) const {
   localDofs.resize(flatLocalDofs.size());
@@ -630,7 +651,7 @@ void PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::
 }
 
 template <typename BasisFunctionType>
-void PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::
+void PiecewisePolynomialContinuousScalarSpaceImpl<BasisFunctionType>::
     getGlobalDofPositions(
         std::vector<Point3D<CoordinateType>> &positions) const {
   positions.resize(m_globalDofBoundingBoxes.size());
@@ -639,61 +660,63 @@ void PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::
 }
 
 template <typename BasisFunctionType>
-void PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::
+void PiecewisePolynomialContinuousScalarSpaceImpl<BasisFunctionType>::
     getFlatLocalDofPositions(
         std::vector<Point3D<CoordinateType>> &positions) const {
-  throw std::runtime_error("PiecewisePolynomialContinuousScalarSpace::"
+  throw std::runtime_error("PiecewisePolynomialContinuousScalarSpaceImpl::"
                            "getFlatLocalDofPositions(): not implemented yet");
 }
 
 template <typename BasisFunctionType>
-void PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::
+void PiecewisePolynomialContinuousScalarSpaceImpl<BasisFunctionType>::
     getGlobalDofBoundingBoxes(
         std::vector<BoundingBox<CoordinateType>> &bboxes) const {
   bboxes = m_globalDofBoundingBoxes;
 }
 
 template <typename BasisFunctionType>
-void PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::
+void PiecewisePolynomialContinuousScalarSpaceImpl<BasisFunctionType>::
     getFlatLocalDofBoundingBoxes(
         std::vector<BoundingBox<CoordinateType>> &bboxes) const {
   throw std::runtime_error(
-      "PiecewisePolynomialContinuousScalarSpace::"
+      "PiecewisePolynomialContinuousScalarSpaceImpl::"
       "getFlatLocalDofBoundingBoxes(): not implemented yet");
 }
 
 template <typename BasisFunctionType>
-void PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::
+void PiecewisePolynomialContinuousScalarSpaceImpl<BasisFunctionType>::
     getGlobalDofNormals(std::vector<Point3D<CoordinateType>> &normals) const {
   SpaceHelper<BasisFunctionType>::getGlobalDofNormals_defaultImplementation(
       *m_view, m_global2localDofs, normals);
 }
 
 template <typename BasisFunctionType>
-void PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::
+void PiecewisePolynomialContinuousScalarSpaceImpl<BasisFunctionType>::
     getFlatLocalDofNormals(
         std::vector<Point3D<CoordinateType>> &normals) const {
-  throw std::runtime_error("PiecewisePolynomialContinuousScalarSpace::"
+  throw std::runtime_error("PiecewisePolynomialContinuousScalarSpaceImpl::"
                            "getFlatLocalDofNormals(): not implemented yet");
 }
 
 template <typename BasisFunctionType>
-void PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::
+void PiecewisePolynomialContinuousScalarSpaceImpl<BasisFunctionType>::
     dumpClusterIds(const char *fileName,
                    const std::vector<unsigned int> &clusterIdsOfDofs) const {
   dumpClusterIdsEx(fileName, clusterIdsOfDofs, GLOBAL_DOFS);
 }
 
 template <typename BasisFunctionType>
-void PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::
+void PiecewisePolynomialContinuousScalarSpaceImpl<BasisFunctionType>::
     dumpClusterIdsEx(const char *fileName,
                      const std::vector<unsigned int> &clusterIdsOfDofs,
                      DofType dofType) const {
-  throw std::runtime_error("PiecewisePolynomialContinuousScalarSpace::"
+  throw std::runtime_error("PiecewisePolynomialContinuousScalarSpaceImpl::"
                            "dumpClusterIdsEx(): not implemented yet");
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(
     PiecewisePolynomialContinuousScalarSpace);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(
+    PiecewisePolynomialContinuousScalarSpaceImpl);
 
 } // namespace Bempp

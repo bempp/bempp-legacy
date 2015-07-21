@@ -74,6 +74,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(global2local_matches_local2global_, ResultType, re
     global2local_matches_local2global<BFT>(*space);
 }
 
+/*
 BOOST_AUTO_TEST_CASE_TEMPLATE(local2global_matches_global2local_for_segment, ResultType, result_types)
 {
     typedef ResultType RT;
@@ -83,7 +84,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(local2global_matches_global2local_for_segment, Res
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../meshes/sphere-h-0.1.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.1.msh", false );
 
     GridSegment segment = gridSegmentWithPositiveX(*grid);
     shared_ptr<Space<BFT> > space(
@@ -101,7 +102,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(global2local_matches_local2global_for_segment, Res
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../meshes/sphere-h-0.1.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.1.msh", false );
 
     GridSegment segment = gridSegmentWithPositiveX(*grid);
     shared_ptr<Space<BFT> > space(
@@ -119,12 +120,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(local2global_matches_global2local_for_segment_with
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../meshes/sphere-h-0.1.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.1.msh", false );
 
     GridSegment segment = gridSegmentWithPositiveX(*grid);
     shared_ptr<Space<BFT> > space(
         (new PiecewiseLinearDiscontinuousScalarSpace<BFT>(
-             grid, segment, true /* strictlyOnSegment */)));
+             grid, segment, true )));
 
     local2global_matches_global2local<BFT>(*space);
 }
@@ -138,12 +139,12 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(global2local_matches_local2global_for_segment_with
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../meshes/sphere-h-0.1.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.1.msh", false );
 
     GridSegment segment = gridSegmentWithPositiveX(*grid);
     shared_ptr<Space<BFT> > space(
         (new PiecewiseLinearDiscontinuousScalarSpace<BFT>(
-             grid, segment, true /* strictlyOnSegment */)));
+             grid, segment, true )));
 
     global2local_matches_local2global<BFT>(*space);
 }
@@ -157,7 +158,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(complement_is_really_a_complement_, ResultType, re
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../meshes/sphere-h-0.4.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.4.msh", false );
 
     shared_ptr<Space<BFT> > space(
         (new PiecewiseLinearDiscontinuousScalarSpace<BFT>(grid)));
@@ -181,7 +182,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(complement_is_really_a_complement_, ResultType, re
 //     GridParameters params;
 //     params.topology = GridParameters::TRIANGULAR;
 //     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-//         params, "../../meshes/sphere-h-0.4.msh", false /* verbose */);
+//         params, "../../meshes/sphere-h-0.4.msh", false );
 
 //     shared_ptr<Space<BFT> > space(
 //         (new PiecewiseLinearDiscontinuousScalarSpace<BFT>(grid)));
@@ -218,5 +219,6 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(complement_is_really_a_complement_, ResultType, re
 //     BOOST_CHECK(check_arrays_are_close<RT>(total.coefficients(), ones,
 //                                            100. * std::numeric_limits<CT>::epsilon()));
 // }
+*/
 
 BOOST_AUTO_TEST_SUITE_END()
