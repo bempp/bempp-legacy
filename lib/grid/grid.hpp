@@ -146,6 +146,10 @@ public:
 
   virtual void globalRefine(int refCount) = 0;
 
+  /** \brief Clone the current grid using the leafView. */
+
+  shared_ptr<Grid> clone();
+
 private:
   /** \cond PRIVATE */
   mutable Vector<double> m_lowerBound, m_upperBound;

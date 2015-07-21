@@ -24,6 +24,8 @@
 #include "geometry.hpp"
 #include "grid_view.hpp"
 #include "ray_triangle_intersection.hpp"
+#include "grid_factory.hpp"
+#include "../grid/grid_parameters.hpp"
 
 #include "../common/not_implemented_error.hpp"
 
@@ -181,5 +183,25 @@ unsigned int Grid::vertexInsertionIndex(const Entity<2> &vertex) const {
   throw std::runtime_error("Grid::vertexInsertionIndex(): "
                            "method not implemented.");
 }
+
+shared_ptr<Grid> Grid::clone()
+{
+
+    auto view = leafView();
+    
+    Matrix<double> vertices;
+    Matrix<int> elementCorners;
+    Matrix<char> auxData;
+    std::vector<int> domainIndices;
+
+    GridParameters parameters;
+    parameters.topology = topology();
+    view->getRawElementData(vertices,elementCorners,
+            auxData,domainIndices);
+
+    return GridFactory::createGridFromConnectivityArrays(
+            parameters, vertices, elementCorners, domainIndices);
+
+} 
 
 } // namespace Bempp

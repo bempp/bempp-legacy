@@ -182,7 +182,7 @@ public:
 
   /** \brief Shared pointer to the grid on which the functions from this space
    *  are defined. */
-  shared_ptr<const Grid> grid() const { return m_grid; }
+  virtual shared_ptr<const Grid> grid() const { return m_grid; }
 
   /** \brief Reference to the shapeset attached to the specified element.
    *
@@ -224,9 +224,6 @@ public:
   virtual shared_ptr<const Space<BasisFunctionType>> barycentricSpace(
       const shared_ptr<const Space<BasisFunctionType>> &self) const;
 
-  /** \brief Return the grid level of the current space */
-  unsigned int level() const { return m_level; }
-
   /** \brief Return the underlying grid dimension */
   int gridDimension() const;
 
@@ -234,7 +231,7 @@ public:
   int worldDimension() const;
 
   /** \brief Return the grid view of the current space */
-  const GridView &gridView() const;
+  virtual const GridView &gridView() const;
 
   /** \brief Transformation mapping shape functions to basis functions.
    *
@@ -605,17 +602,16 @@ public:
 
   
   /** \brief Initialize the cluster tree associated with this space. */
-  void initializeClusterTree(const ParameterList& parameterList);
+  virtual void initializeClusterTree(const ParameterList& parameterList);
 
   /** \brief Return the cluster tree associated with this space. */
-  shared_ptr<const hmat::DefaultClusterTreeType> clusterTree() const;
+  virtual shared_ptr<const hmat::DefaultClusterTreeType> clusterTree() const;
 
   /** @} */
 private:
   /** \cond PRIVATE */
   shared_ptr<const Grid> m_grid;
   shared_ptr<GeometryFactory> m_elementGeometryFactory;
-  unsigned int m_level;
   std::unique_ptr<GridView> m_view;
   shared_ptr<const hmat::DefaultClusterTreeType> m_clusterTree;
   /** \endcond */

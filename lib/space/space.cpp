@@ -133,14 +133,14 @@ template <typename BasisFunctionType>
 Space<BasisFunctionType>::Space(const Space<BasisFunctionType> &other)
     : m_grid(other.m_grid),
       m_elementGeometryFactory(other.m_elementGeometryFactory),
-      m_view(other.m_grid->levelView(other.m_level)) {}
+      m_view(other.m_grid->leafView()) {}
 template <typename BasisFunctionType> Space<BasisFunctionType>::~Space() {}
 
 template <typename BasisFunctionType>
 Space<BasisFunctionType> &Space<BasisFunctionType>::
 operator=(const Space<BasisFunctionType> &other) {
   m_grid = other.m_grid;
-  m_view = m_grid->levelView(m_level);
+  m_view = m_grid->leafView();
   m_elementGeometryFactory = other.m_elementGeometryFactory;
   return *this;
 }
