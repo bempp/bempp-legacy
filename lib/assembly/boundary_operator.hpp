@@ -130,8 +130,9 @@ public:
    *  abstract boundary operator.
    *
    *  An exception is thrown if this function is called on an uninitialized
-   *  BoundaryOperator. */
-  shared_ptr<const DiscreteBoundaryOperator<ResultType>> weakForm() const;
+   *  BoundaryOperator. If update is set to true then the weak form
+   *  is recomputed.*/
+  shared_ptr<const DiscreteBoundaryOperator<ResultType>> weakForm(bool update=false) const;
 
   /** \brief Return a shared pointer to the domain of the encapsulated
    *  abstract boundary operator.

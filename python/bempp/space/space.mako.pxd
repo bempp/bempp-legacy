@@ -56,6 +56,7 @@ cdef extern from "bempp/space/py_space_variants.hpp" namespace "Bempp":
         SpaceVariants()
         void set[T](const shared_ptr[T] &_in)
         void set[T](const shared_ptr[const T] &_in)
+        void assign "operator=" (const SpaceVariants other)
         # void reset[T](const shared_ptr[T] &_in)
         string dtype() const
         shared_ptr[const c_Grid] grid() const
@@ -77,6 +78,8 @@ cdef class Space:
     cdef:
         SpaceVariants impl_
         unsigned int _order
+        object _type_string
+        Grid _grid
     cpdef cbool is_compatible(self, Space other)
 
 # Now we define derived types for each space.

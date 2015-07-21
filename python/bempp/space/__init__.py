@@ -48,21 +48,21 @@ def function_space(grid, kind, order):
         if not (order>=1 and order <=10):
             raise ValueError("Order must be between 1 and 10")
         if (order==1):
-            s = space.PiecewiseLinearContinuousScalarSpace(grid,order)
+            s = space.PiecewiseLinearContinuousScalarSpace(grid,order,kind)
         else:
-            s = space.PiecewisePolynomialContinuousScalarSpace(grid,order)
+            s = space.PiecewisePolynomialContinuousScalarSpace(grid,order,kind)
     elif kind=="DP":
         if not (order>=0 and order <=10):
             raise ValueError("Order must be between 0 and 10")
         if (order==0):
-            s = space.PiecewiseConstantScalarSpace(grid,order)
+            s = space.PiecewiseConstantScalarSpace(grid,order,kind)
         else:
-            s = space.PiecewisePolynomialDiscontinuousScalarSpace(grid,order)
+            s = space.PiecewisePolynomialDiscontinuousScalarSpace(grid,order,kind)
 
     elif kind=="RT":
         if order!=0:
             raise ValueError("Only 0 order Raviart-Thomas spaces are implemented.")
-        s = space.RaviartThomas0VectorSpace(grid,order)
+        s = space.RaviartThomas0VectorSpace(grid,order,kind)
     else:
         raise ValueError("Unknown kind")
 

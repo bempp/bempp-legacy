@@ -46,7 +46,7 @@ class GridSegment {
 public:
   /** \brief Return a GridSegment representing the whole grid \p grid at
       a given level (level = -1 for leafView). */
-  static GridSegment wholeGrid(const Grid &grid, int level = 0);
+  static GridSegment wholeGrid(const Grid &grid, int level = -1);
 
   /** \brief Return a GridSegment representing an open domain of a grid.
    *

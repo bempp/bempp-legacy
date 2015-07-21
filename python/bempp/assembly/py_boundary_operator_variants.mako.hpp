@@ -210,8 +210,9 @@ shared_ptr<const DiscreteBoundaryOperator<ResultType>>
 boundary_op_variant_weak_form(const BoundaryOpVariants& variant)
 {
 
+    // Always return a newly computed weak form. Caching done in Python
     return boost::get<BoundaryOperator<BasisFunctionType,ResultType>>(
-            variant.operator_).weakForm();
+            variant.operator_).weakForm(true);
 }
 
 

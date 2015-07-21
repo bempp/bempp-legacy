@@ -45,7 +45,6 @@ cdef class GridView:
     cdef np.ndarray _elements
     cdef vector[int] _domain_indices
     cdef unique_ptr[c_GridView] impl_ 
-    cdef Grid _grid
     cpdef size_t entity_count(self,int codim)
     cpdef IndexSet index_set(self)
     cdef void _compute_raw_element_data(self)

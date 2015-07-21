@@ -110,7 +110,15 @@ cdef class BoundaryOperatorBase:
 
         """
 
-        raise NotImplementedError("Method not implemented")
+        if self._weak_form is None:
+            self._weak_form = self._weak_form_impl()
+
+        return self._weak_form
+
+    def update(self):
+
+        self._weak_form = None
+        self._strong_form = None
 
     def strong_form(self):
 
@@ -166,7 +174,7 @@ cdef class GeneralBoundaryOperator(BoundaryOperatorBase):
         result = (op_s*coeffs)
         return GridFunction(self.range,coefficients=coeffs)
 
-    def weak_form(self):
+    def _weak_form_impl(self):
 
         if self.is_sparse:
             return self._sparse_weak_form()
@@ -265,7 +273,7 @@ cdef class _ScaledBoundaryOperator(BoundaryOperatorBase):
         self._result_type = combined_type(np.dtype(type(self._alpha)),op.result_type)
         self._op = op
 
-    def weak_form(self):
+    def _weak_form_impl(self):
         return self._alpha*self._op.weak_form()
 
     def _apply_grid_function(self,GridFunction g):
@@ -311,7 +319,7 @@ cdef class _SumBoundaryOperator(BoundaryOperatorBase):
         self._op2 = op2
 
 
-    def weak_form(self):
+    def _weak_form_impl(self):
 
         return self._op1.weak_form()+self._op2.weak_form()
 
@@ -354,7 +362,7 @@ cdef class _ProductBoundaryOperator(BoundaryOperatorBase):
         self._op2 = op2
 
 
-    def weak_form(self):
+    def _weak_form_impl(self):
 
         return self._op1.weak_form()*self._op2.strong_form()
 
@@ -417,7 +425,7 @@ cdef class ZeroBoundaryOperator(BoundaryOperatorBase):
         def __get__(self):
             return self._dual_to_range
 
-    def weak_form(self):
+    def _weak_form_impl(self):
         """
 
         This method returns an assembled representation
@@ -448,6 +456,7 @@ cdef class BlockedBoundaryOperator:
     cdef object _range_spaces
     cdef object _domain_spaces
     cdef object _dual_to_range_spaces
+    cdef object _weak_form
 
     def __cinit__(self,M,N):
         pass
@@ -539,6 +548,13 @@ cdef class BlockedBoundaryOperator:
             self._dual_to_range_spaces[i] = op.dual_to_range
 
     def weak_form(self):
+
+        if self._weak_form is None:
+            self._weak_form = self._weak_form_impl()
+
+        return self._weak_form
+
+    def _weak_form_impl(self):
 
         from bempp.assembly.discrete_boundary_operator import BlockedDiscreteBoundaryOperator
         

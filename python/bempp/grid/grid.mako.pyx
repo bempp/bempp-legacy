@@ -27,14 +27,14 @@ cdef extern from "<array>" namespace "std":
 
 cdef extern from "bempp/grid/grid_factory.hpp" namespace "Bempp":
 
-    shared_ptr[const c_Grid] cart_grid "Bempp::GridFactory::createStructuredGrid"(
+    shared_ptr[c_Grid] cart_grid "Bempp::GridFactory::createStructuredGrid"(
             const GridParameters& params,
             const double* lowerLeft,
             const double*  upperRight,
             const int* nElements
     ) except +catch_exception
 
-    shared_ptr[const c_Grid] connect_grid \
+    shared_ptr[c_Grid] connect_grid \
             "Bempp::GridFactory::createGridFromConnectivityArrays"(
             const GridParameters& params,
             const double* vertices,
@@ -61,13 +61,13 @@ cdef class Grid:
 
 
     def __cinit__(self):
-        self.impl_.reset(<const c_Grid*>NULL)
+        self.impl_.reset(<c_Grid*>NULL)
 
     def __init__(self):
         pass
 
     def __dealloc__(self):
-        self.impl_.reset(<const c_Grid*>NULL)
+        self.impl_.reset(<c_Grid*>NULL)
 
     def __richcmp__(Grid self, Grid other not None, int op):
         if op != 2:
@@ -113,8 +113,6 @@ cdef class Grid:
 
         return self._insertion_index_to_vertex[index]
 
-
-
     def clone(self):
         """ Create a new grid from a copy of the current grid. """
 
@@ -127,6 +125,27 @@ cdef class Grid:
         """ Return the mark status of a given element. """
 
         return deref(self.impl_).getMark(deref(e.impl_))
+    
+    def mark(self, Entity0 element, modus='refine'):
+        cdef int ref_count
+
+        if modus == 'refine':
+            ref_count = 1
+        elif modus == 'coarsen':
+            ref_count = -1
+        return deref(self.impl_).mark(ref_count, deref(element.impl_))
+
+    def refine(self):
+        
+        deref(self.impl_).preAdapt()
+        deref(self.impl_).adapt()
+        deref(self.impl_).postAdapt()
+        self._grid_view = None
+
+    def global_refine(self, int ref_count):
+
+        deref(self.impl_).globalRefine(ref_count)
+        self._grid_view = None
 
     property dim:
         """" Dimension of the grid. """
@@ -185,7 +204,6 @@ cdef class Grid:
 
             cdef unique_ptr[c_GridView] view = deref(self.impl_).leafView()
             cdef GridView grid_view = _grid_view_from_unique_ptr(view)
-            grid_view._grid = self
             self._grid_view = grid_view
             return grid_view
 

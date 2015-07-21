@@ -4,19 +4,28 @@ from data_types import dtypes, real_cython_type
 from space import spaces
 ifloop = lambda x: 'if' if loop.index == 0 else 'elif'
 %>
-from bempp.grid.grid cimport Grid
+from bempp.grid.grid cimport Grid, c_Grid
 from cython.operator cimport dereference as deref
 from libcpp cimport bool as cbool
 from bempp.utils.eigen cimport eigen_matrix_to_np_float32,eigen_matrix_to_np_float64
+from bempp.utils.shared_ptr cimport const_pointer_cast
 
 cdef class Space:
     """ Space of functions defined on a grid
 
         The exact space depends on the input.
     """
-    def __init__(self, Grid grid not None, unsigned int order):
+    def __init__(self, Grid grid not None, unsigned int order, object type_string):
         super(Space, self).__init__()
         self._order = order
+        self._type_string = type_string
+        self._grid = grid
+
+    def update(self):
+
+        from bempp import function_space
+        cdef Space tmp_space = function_space(self._grid,self._type_string,self._order)
+        self.impl_.assign(tmp_space.impl_)
 
     property dtype:
         """ Type of the basis functions in this space. """
@@ -33,7 +42,7 @@ cdef class Space:
         """ The underlyign grid for the space. """
         def __get__(self):
             cdef Grid result = Grid.__new__(Grid)
-            result.impl_ = self.impl_.grid()
+            result.impl_ = const_pointer_cast[c_Grid](self.impl_.grid())
             return result
 
     property domain_dimension:
@@ -132,10 +141,10 @@ cdef class ${class_name}(Space):
         -----
         A space instance should always be created using the function 'bempp.function_space'.
     """
-    def __init__(self, Grid grid not None, order):
+    def __init__(self, Grid grid not None, order, object type_string):
 
         from numpy import dtype as np_dtype
-        super(${class_name}, self).__init__(grid,order)
+        super(${class_name}, self).__init__(grid,order,type_string)
 
         dtype = 'float64'
         if dtype not in ${list(dtypes.keys())}:
@@ -233,9 +242,9 @@ cdef class RaviartThomas0VectorSpace(Space):
         A space instance should always be created using the function 'bempp.function_space'.
     """
 
-    def __init__(self, Grid grid not None, order):
+    def __init__(self, Grid grid not None, order, object type_string):
 
-        super(RaviartThomas0VectorSpace,self).__init__(grid,order)
+        super(RaviartThomas0VectorSpace,self).__init__(grid,order, type_string)
         self.impl_.set( shared_ptr[c_Space[double]](
             <c_Space[double]*>new c_RaviartThomas0VectorSpace(grid.impl_)))
 

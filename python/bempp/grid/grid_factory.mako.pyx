@@ -9,7 +9,7 @@ cdef extern from "bempp/grid/grid_factory.hpp" namespace "Bempp":
         c_GridFactory()
         void insertVertex(double x, double y, double z) except +catch_exception
         void insertElement(unsigned int v0, unsigned int v1, unsigned int v2, int domain_index) except +catch_exception
-        shared_ptr[const c_Grid] finalize() except +catch_exception
+        shared_ptr[c_Grid] finalize() except +catch_exception
 
 
 cdef class GridFactory(object):

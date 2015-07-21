@@ -56,6 +56,7 @@ cdef class BoundaryOperatorBase:
     cdef object _basis_type
     cdef object _result_type
     cdef object _strong_form
+    cdef object _weak_form
 
 cdef class GeneralBoundaryOperator(BoundaryOperatorBase):
     cdef BoundaryOpVariants impl_

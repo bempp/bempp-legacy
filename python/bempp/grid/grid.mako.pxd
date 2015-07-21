@@ -1,10 +1,15 @@
+
+
 from bempp.utils cimport shared_ptr,unique_ptr
 from bempp.utils cimport Vector
-from bempp.grid.grid_view cimport c_GridView, GridView
 from bempp.grid.entity cimport Entity0, Entity2
 from bempp.grid.entity cimport c_Entity
 from bempp.grid.codim_template cimport codim_zero,codim_one,codim_two
 from libcpp cimport bool as cbool
+
+
+from bempp.grid.grid_view cimport c_GridView, GridView
+
 
 cdef extern from "bempp/grid/grid.hpp" namespace "Bempp" nogil:
     cdef cppclass c_Grid "Bempp::Grid":
@@ -35,7 +40,7 @@ cdef extern from "bempp/grid/grid.hpp" namespace "Bempp" nogil:
 
 cdef class Grid:
     ## Holds pointer to C++ implementation
-    cdef shared_ptr[const c_Grid] impl_
+    cdef shared_ptr[c_Grid] impl_
     cdef GridView _grid_view
     cdef object _insertion_index_to_element
     cdef object _insertion_index_to_vertex
@@ -43,5 +48,5 @@ cdef class Grid:
     cpdef unsigned int element_insertion_index(self,Entity0 element)
     cpdef Entity0 element_from_insertion_index(self, int index)
     cpdef Entity2 vertex_from_insertion_index(self, int index)
-
+            
 

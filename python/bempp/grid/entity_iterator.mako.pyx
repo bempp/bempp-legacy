@@ -12,12 +12,22 @@ from libcpp cimport bool as cbool
 from bempp.grid.entity cimport c_Entity
 from bempp.grid.entity_pointer cimport c_EntityPointer
 
+
 % for (codim,codim_template) in codims:
 
 from bempp.grid.entity cimport Entity${codim}
 from bempp.grid.entity_pointer cimport EntityPointer${codim}
 
 cdef class EntityIterator${codim}:
+
+    def __cinit__(self):
+        pass
+
+    def __init__(self):
+        pass
+
+    def __deallocate__(self):
+        self.impl_.reset()
 
     cdef cbool finished(self):
         return deref(self.impl_).finished()

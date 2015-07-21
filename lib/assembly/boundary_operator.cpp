@@ -92,7 +92,7 @@ BoundaryOperator<BasisFunctionType, ResultType>::context() const {
 
 template <typename BasisFunctionType, typename ResultType>
 shared_ptr<const DiscreteBoundaryOperator<ResultType>>
-BoundaryOperator<BasisFunctionType, ResultType>::weakForm() const {
+BoundaryOperator<BasisFunctionType, ResultType>::weakForm(bool update) const {
   if (!isInitialized())
     throw std::runtime_error(
         "BoundaryOperator::weakForm(): attempted to retrieve the "
@@ -103,7 +103,7 @@ BoundaryOperator<BasisFunctionType, ResultType>::weakForm() const {
                                    // (which may be null, though)
   typedef DiscreteBoundaryOperator<ResultType> DiscreteOp;
   shared_ptr<const DiscreteOp> discreteOp = m_weakWeakFormContainer->lock();
-  if (!discreteOp) {
+  if (!discreteOp || update) {
     discreteOp = m_abstractOp->assembleWeakForm(*m_context);
     assert(discreteOp);
     *m_weakWeakFormContainer = discreteOp;
