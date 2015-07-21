@@ -28,6 +28,7 @@
 #include "scalar_space.hpp"
 #include "../common/types.hpp"
 #include "../fiber/constant_scalar_shapeset.hpp"
+#include "adaptive_space.hpp"
 
 #include <map>
 #include <memory>
@@ -42,7 +43,22 @@ class GridView;
 /** \ingroup space
  *  \brief Space of piecewise constant scalar functions. */
 template <typename BasisFunctionType>
-class PiecewiseConstantScalarSpace : public ScalarSpace<BasisFunctionType> {
+class PiecewiseConstantScalarSpace : public AdaptiveSpace<BasisFunctionType> {
+public:
+
+    PiecewiseConstantScalarSpace(const shared_ptr<const Grid>& grid);
+
+private:
+
+   shared_ptr<Space<BasisFunctionType>> createNewSpace(
+           const shared_ptr<const Grid>& grid) override;
+    
+};
+
+
+
+template <typename BasisFunctionType>
+class PiecewiseConstantScalarSpaceImpl : public ScalarSpace<BasisFunctionType> {
 public:
   typedef
       typename ScalarSpace<BasisFunctionType>::CoordinateType CoordinateType;
@@ -54,7 +70,7 @@ public:
    *
    *  An exception is thrown if \p grid is a null pointer.
    */
-  explicit PiecewiseConstantScalarSpace(const shared_ptr<const Grid> &grid);
+  explicit PiecewiseConstantScalarSpaceImpl(const shared_ptr<const Grid> &grid);
 
   /** \brief Constructor.
    *
@@ -63,7 +79,7 @@ public:
    *
    *  An exception is thrown if \p grid is a null pointer.
    */
-  PiecewiseConstantScalarSpace(const shared_ptr<const Grid> &grid,
+  PiecewiseConstantScalarSpaceImpl(const shared_ptr<const Grid> &grid,
                                const GridSegment &segment);
 
   virtual shared_ptr<const Space<BasisFunctionType>> discontinuousSpace(

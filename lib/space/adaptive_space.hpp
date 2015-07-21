@@ -51,7 +51,7 @@ public:
   typedef Fiber::CollectionOfBasisTransformations<CoordinateType>
       CollectionOfBasisTransformations;
 
-  AdaptiveSpace(const shared_ptr<Grid>& grid);
+  AdaptiveSpace(const shared_ptr<const Grid>& grid);
 
   AdaptiveSpace(const AdaptiveSpace& other);
 
@@ -156,28 +156,27 @@ public:
 
   void initializeClusterTree(const ParameterList& parameterList) override;
 
-  /** \brief Mark an element for refinement. */
-  void mark(int refcount, const Entity<0>& element);
-
   /** \brief Adaptively refine the space. */
   void update();
 
   /** \brief Return the current refinement level. */
   int currentLevel();
 
+protected:
+  void initialize();
+
+
 private:
 
 
-  void initialize();
-  virtual shared_ptr<Space<BasisFunctionType_>> createNewSpace(const Grid& grid) = 0;
+  virtual shared_ptr<Space<BasisFunctionType_>> createNewSpace(const shared_ptr<const Grid>& grid) = 0;
 
   const Space<BasisFunctionType_>& currentSpace() const;
   Space<BasisFunctionType_>& currentSpace();
     
     int m_level;
-    shared_ptr<Grid> m_grid;
-    std::vector<shared_ptr<const Grid>> m_flatGrids;
-    std::vector<shared_ptr<Space<BasisFunctionType>>> m_spaces;
+    shared_ptr<const Grid> m_grid;
+    shared_ptr<Space<BasisFunctionType>> m_space;
 };
 
 }

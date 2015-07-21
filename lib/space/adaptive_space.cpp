@@ -26,7 +26,7 @@
 namespace Bempp {
 
 template <typename BasisFunctionType_>
-AdaptiveSpace<BasisFunctionType_>::AdaptiveSpace(const shared_ptr<Grid>& grid):
+AdaptiveSpace<BasisFunctionType_>::AdaptiveSpace(const shared_ptr<const Grid>& grid):
     Space<BasisFunctionType_>(grid), m_grid(grid), m_level(0) {
     }
 
@@ -34,14 +34,13 @@ template <typename BasisFunctionType_>
 void AdaptiveSpace<BasisFunctionType_>::initialize()
 {
 
-    m_flatGrids.push_back(m_grid->clone());
-    m_spaces.push_back(createNewSpace(*m_flatGrids[0]));
+    m_space = createNewSpace(m_grid);
 
 }
 
 template <typename BasisFunctionType_>
 AdaptiveSpace<BasisFunctionType_>::AdaptiveSpace(const AdaptiveSpace<BasisFunctionType_>& other): 
-    Space<BasisFunctionType>(other), m_grid(other.m_grid), m_level(other.m_level), m_flatGrids(other.m_flatGrids), m_spaces(other.m_spaces) 
+    Space<BasisFunctionType>(other), m_grid(other.m_grid), m_level(other.m_level), m_space(other.m_space)
 {
 }
 
@@ -74,7 +73,7 @@ template <typename BasisFunctionType_>
 shared_ptr<const Grid> AdaptiveSpace<BasisFunctionType_>::grid() const
 {
 
-    return m_flatGrids[m_level];
+    return m_grid;
 
 }
 
@@ -82,7 +81,7 @@ template <typename BasisFunctionType_>
 const GridView & AdaptiveSpace<BasisFunctionType_>::gridView() const
 {
 
-    return *m_flatGrids[m_level]->leafView();
+    return *m_grid->leafView();
 
 }
 
@@ -345,23 +344,10 @@ void AdaptiveSpace<BasisFunctionType_>::initializeClusterTree(const ParameterLis
 }
 
 template <typename BasisFunctionType_>
-void AdaptiveSpace<BasisFunctionType_>::mark(int refcount, const Entity<0>& element)
-{
-
-    m_grid->mark(refcount,element);
-
-}
-
-template <typename BasisFunctionType_>
 void AdaptiveSpace<BasisFunctionType_>::update()
 {
 
-   m_grid->preAdapt();
-   m_grid->adapt();
-   m_grid->postAdapt();
-   auto grid = m_grid->clone();
-   m_flatGrids.push_back(grid);
-   m_spaces.push_back(createNewSpace(*grid));
+   m_space = createNewSpace(m_grid);
    m_level++;
 
 }
@@ -378,7 +364,7 @@ template <typename BasisFunctionType_>
 const Space<BasisFunctionType_>& AdaptiveSpace<BasisFunctionType_>::currentSpace() const
 {
 
-    return *m_spaces[m_level];
+    return *m_space;
 
 }
 
@@ -386,7 +372,7 @@ template <typename BasisFunctionType_>
 Space<BasisFunctionType_>& AdaptiveSpace<BasisFunctionType_>::currentSpace()
 {
 
-   return *m_spaces[m_level];
+   return *m_space;
 
 }
 

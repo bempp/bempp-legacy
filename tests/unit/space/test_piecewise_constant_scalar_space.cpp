@@ -73,7 +73,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(global2local_matches_local2global_, ResultType, re
 
     global2local_matches_local2global<BFT>(*space);
 }
-
+/*
 BOOST_AUTO_TEST_CASE_TEMPLATE(local2global_matches_global2local_for_segment, ResultType, result_types)
 {
     typedef ResultType RT;
@@ -83,7 +83,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(local2global_matches_global2local_for_segment, Res
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../meshes/sphere-h-0.1.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.1.msh", false );
 
     GridSegment segment = gridSegmentWithPositiveX(*grid);
     shared_ptr<Space<BFT> > space(
@@ -91,6 +91,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(local2global_matches_global2local_for_segment, Res
 
     local2global_matches_global2local<BFT>(*space);
 }
+
 
 BOOST_AUTO_TEST_CASE_TEMPLATE(global2local_matches_local2global_for_segment, ResultType, result_types)
 {
@@ -101,7 +102,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(global2local_matches_local2global_for_segment, Res
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../meshes/sphere-h-0.1.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.1.msh", false );
 
     GridSegment segment = gridSegmentWithPositiveX(*grid);
     shared_ptr<Space<BFT> > space(
@@ -119,7 +120,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(complement_is_really_a_complement_, ResultType, re
     GridParameters params;
     params.topology = GridParameters::TRIANGULAR;
     shared_ptr<Grid> grid = GridFactory::importGmshGrid(
-        params, "../../meshes/sphere-h-0.4.msh", false /* verbose */);
+        params, "../../meshes/sphere-h-0.4.msh", false );
 
     shared_ptr<Space<BFT> > space(
         (new PiecewiseConstantScalarSpace<BFT>(grid)));
@@ -132,5 +133,5 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(complement_is_really_a_complement_, ResultType, re
 
     complement_is_really_a_complement(space, space1, space2);
 }
-
+*/
 BOOST_AUTO_TEST_SUITE_END()
