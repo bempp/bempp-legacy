@@ -164,7 +164,7 @@ cdef class GeneralBoundaryOperator(BoundaryOperatorBase):
         op_s =  self.strong_form()
         coeffs = g.coefficients
         result = (op_s*coeffs)
-        return GridFunction(self.range,coefficients=coeffs)
+        return GridFunction(self.range,coefficients=result)
 
     def weak_form(self):
 
