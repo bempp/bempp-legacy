@@ -81,7 +81,7 @@ bool PiecewisePolynomialContinuousScalarSpaceImpl<
     BasisFunctionType>::spaceIsCompatible(const Space<BasisFunctionType> &other)
     const {
 
-  typedef PiecewisePolynomialContinuousScalarSpaceImpl<BasisFunctionType>
+  typedef PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>
       thisSpaceType;
 
   if (other.grid().get() != this->grid().get())

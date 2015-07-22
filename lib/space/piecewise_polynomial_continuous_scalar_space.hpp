@@ -39,23 +39,6 @@ class GridView;
 template <typename CoordinateType> struct BoundingBox;
 /** \endcond */
 
-/** \ingroup space
- *  \brief Space of continuous, piecewise polynomial scalar functions. */
-template <typename BasisFunctionType>
-class PiecewisePolynomialContinuousScalarSpace : public AdaptiveSpace<BasisFunctionType> {
-public:
-
-    PiecewisePolynomialContinuousScalarSpace(const shared_ptr<const Grid>& grid,
-            int polynomialOrder);
-
-private:
-
-   shared_ptr<Space<BasisFunctionType>> createNewSpace(
-           const shared_ptr<const Grid>& grid) override;
-
-   int m_polynomialOrder;
-    
-};
 
 
 
@@ -178,6 +161,28 @@ private:
   mutable shared_ptr<Space<BasisFunctionType>> m_discontinuousSpace;
   mutable tbb::mutex m_discontinuousSpaceMutex;
   /** \endcond */
+};
+
+
+/** \ingroup space
+ *  \brief Space of continuous, piecewise polynomial scalar functions. */
+template <typename BasisFunctionType>
+class PiecewisePolynomialContinuousScalarSpace : public AdaptiveSpace<BasisFunctionType> {
+private:
+    // Needed to access the m_polynomialOrder attribute in spaceIsCompatible
+    friend class PiecewisePolynomialContinuousScalarSpaceImpl<BasisFunctionType>;
+public:
+
+    PiecewisePolynomialContinuousScalarSpace(const shared_ptr<const Grid>& grid,
+            int polynomialOrder);
+
+private:
+
+   shared_ptr<Space<BasisFunctionType>> createNewSpace(
+           const shared_ptr<const Grid>& grid) override;
+
+   int m_polynomialOrder;
+    
 };
 
 } // namespace Bempp
