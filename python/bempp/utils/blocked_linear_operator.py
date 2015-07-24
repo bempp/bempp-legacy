@@ -53,8 +53,8 @@ class BlockedDiscreteLinearOperator(object):
         self._m = m
         self._n = n
         self._operators = _np.empty((m,n),dtype=_np.object)
-        self._rows = _np.zeros(m)
-        self._cols = _np.zeros(n)
+        self._rows = _np.zeros(m, dtype=int)
+        self._cols = _np.zeros(n, dtype=int)
 
     def __getitem__(self,key):
 
