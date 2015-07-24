@@ -107,7 +107,7 @@ class BlockedDiscreteLinearOperator(object):
                         local_res[:] += (self._operators[i,j]*_np.real(local_x)+
                                 1j*self._operators[i,j]*_np.imag(local_x))
                     else:
-                        local_res[:] += self._operators[i,j]*local_x
+                        local_res[:] += self._operators[i,j].dot(local_x)
                 col_dim +=self._cols[j]
             row_dim += self._rows[i]
         return res
