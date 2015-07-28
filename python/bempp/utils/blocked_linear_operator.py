@@ -53,8 +53,8 @@ class BlockedDiscreteLinearOperator(object):
         self._m = m
         self._n = n
         self._operators = _np.empty((m,n),dtype=_np.object)
-        self._rows = _np.zeros(m)
-        self._cols = _np.zeros(n)
+        self._rows = _np.zeros(m, dtype=int)
+        self._cols = _np.zeros(n, dtype=int)
 
     def __getitem__(self,key):
 
@@ -107,7 +107,7 @@ class BlockedDiscreteLinearOperator(object):
                         local_res[:] += (self._operators[i,j]*_np.real(local_x)+
                                 1j*self._operators[i,j]*_np.imag(local_x))
                     else:
-                        local_res[:] += self._operators[i,j]*local_x
+                        local_res[:] += self._operators[i,j].dot(local_x)
                 col_dim +=self._cols[j]
             row_dim += self._rows[i]
         return res
