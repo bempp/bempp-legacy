@@ -198,6 +198,13 @@ void Space<BasisFunctionType>::getGlobalDofs(
 }
 
 template <typename BasisFunctionType>
+void Space<BasisFunctionType>::update()
+{
+    throw std::runtime_error("Space::update(): Not implemented.");
+
+}
+
+template <typename BasisFunctionType>
 void Space<BasisFunctionType>::getGlobalDofs(
     const Entity<0> &element, std::vector<GlobalDofIndex> &dofs,
     std::vector<BasisFunctionType> &localDofWeights) const {

@@ -33,11 +33,14 @@
 #include <memory>
 #include <vector>
 #include <tbb/mutex.h>
+#include <boost/signals2/signal.hpp>
+#include <functional>
 
 namespace Bempp {
 
 /** \cond FORWARD_DECL */
 template <int codim> class Entity;
+template <typename BasisFunctionType> class Space;
 class GeometryFactory;
 class GridView;
 class IdSet;
@@ -146,9 +149,18 @@ public:
 
   virtual void globalRefine(int refCount) = 0;
 
+  /** \brief Signal grid change to registered objects */
+  void signalGridUpdate() const;
+
+  /** \brief Connect entity to be notified when grid updates */
+  boost::signals2::connection connect(const std::function<void()>& f) const;
+
+
 private:
   /** \cond PRIVATE */
   mutable Vector<double> m_lowerBound, m_upperBound;
+
+  mutable boost::signals2::signal<void()> gridUpdateSignal;
   /** \endcond */
 };
 

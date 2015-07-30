@@ -307,6 +307,9 @@ public:
    */
   BEMPP_DEPRECATED bool dofsAssigned() const;
 
+  /** \brief Update the space when the grid changes */
+  virtual void update();
+
   /** \brief Total number of local degrees of freedom on all elements. */
   virtual size_t flatLocalDofCount() const = 0;
 

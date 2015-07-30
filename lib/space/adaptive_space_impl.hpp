@@ -19,6 +19,7 @@
 // THE SOFTWARE.
 
 #include "adaptive_space.hpp"
+#include <boost/bind.hpp>
 
 namespace Bempp {
 
@@ -39,11 +40,18 @@ AdaptiveSpace<BasisFunctionType_,SpaceType>::AdaptiveSpace(const shared_ptr<cons
     }
 
 template <typename BasisFunctionType_, typename SpaceType>
+AdaptiveSpace<BasisFunctionType_,SpaceType>::~AdaptiveSpace()
+{
+    m_connection.disconnect();
+}
+
+template <typename BasisFunctionType_, typename SpaceType>
 void AdaptiveSpace<BasisFunctionType_,SpaceType>::initialize()
 {
 
     m_space = shared_ptr<Space<BasisFunctionType_>>(new SpaceType(m_grid, 
             m_gridSegmentFactory.update()));
+    m_connection = m_grid->connect(boost::bind(&Space<BasisFunctionType>::update,this));
 
 }
 

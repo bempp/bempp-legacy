@@ -61,6 +61,8 @@ public:
 
   AdaptiveSpace(const AdaptiveSpace& other);
 
+  ~AdaptiveSpace() override;
+
   shared_ptr<const Space<BasisFunctionType>> discontinuousSpace(
       const shared_ptr<const Space<BasisFunctionType>> &self) const override;
 
@@ -163,7 +165,7 @@ public:
   void initializeClusterTree(const ParameterList& parameterList) override;
 
   /** \brief Adaptively refine the space. */
-  void update();
+  void update() override;
 
   /** \brief Return the current refinement level. */
   int currentLevel();
@@ -178,6 +180,7 @@ private:
   Space<BasisFunctionType_>& currentSpace();
     
 
+  boost::signals2::connection m_connection;
   AdaptiveGridSegmentFactory m_gridSegmentFactory;
   int m_level;
   shared_ptr<const Grid> m_grid;
