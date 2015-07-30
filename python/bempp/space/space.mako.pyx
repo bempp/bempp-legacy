@@ -9,12 +9,48 @@ from cython.operator cimport dereference as deref
 from libcpp cimport bool as cbool
 from bempp.utils.eigen cimport eigen_matrix_to_np_float32,eigen_matrix_to_np_float64
 
+
+
 cdef class Space:
     """ Space of functions defined on a grid
 
-        The exact space depends on the input.
+        Attributes
+        ----------
+
+        grid : Grid
+            Grid over which to discretize the space.
+
+        dtype : numpy.dtype
+            Type of the basis functions in this space.
+
+        codomain_dimension : int
+            Number of components of values of functions in this space.
+
+        domain_dimension : int
+            Dimension of the domain on which the space is defined.
+
+        global_dof_count : int
+            Number of global degrees of freedom.
+
+        flat_local_dof_count : int
+            Total number of local degrees of freedom.
+
+        global_dof_interpolation_points : np.ndarray 
+            (3xN) matrix of global interpolation points for the space,
+            where each column is the coordinate of an interpolation point.
+
+        global_dof_interpolation_points : np.ndarray
+            (3xN) matrix of normal directions associated with the interpolation points.
+
+        order : int
+            Order of the polynomial degre of the space. 
+
+        Notes
+        -----
+        A space instance should always be created using the function 'bempp.function_space'.
+
     """
-    def __init__(self, Grid grid not None, unsigned int order):
+    def __init__(self, unsigned int order):
         super(Space, self).__init__()
         self._order = order
 
@@ -90,73 +126,6 @@ cdef class Space:
         return (global_dofs_vec,local_dof_weights_vec) 
         
            
-
-                
-
-% for class_name, description in spaces.items():
-cdef class ${class_name}(Space):
-    """ ${description['doc']}
-
-        Attributes
-        ----------
-
-        grid : Grid
-            Grid over which to discretize the space.
-
-        dtype : numpy.dtype
-            Type of the basis functions in this space.
-
-        codomain_dimension : int
-            Number of components of values of functions in this space.
-
-        domain_dimension : int
-            Dimension of the domain on which the space is defined.
-
-        global_dof_count : int
-            Number of global degrees of freedom.
-
-        flat_local_dof_count : int
-            Total number of local degrees of freedom.
-
-        global_dof_interpolation_points : np.ndarray 
-            (3xN) matrix of global interpolation points for the space,
-            where each column is the coordinate of an interpolation point.
-
-        global_dof_interpolation_points : np.ndarray
-            (3xN) matrix of normal directions associated with the interpolation points.
-
-        order : int
-            Order of the polynomial degre of the space. 
-
-        Notes
-        -----
-        A space instance should always be created using the function 'bempp.function_space'.
-    """
-    def __init__(self, Grid grid not None, order):
-
-        from numpy import dtype as np_dtype
-        super(${class_name}, self).__init__(grid,order)
-
-        dtype = 'float64'
-        if dtype not in ${list(dtypes.keys())}:
-                raise TypeError("Unexpected basis type")
-%    for pytype, cytype in dtypes.items():
-        if dtype == "${pytype}":
-%       if description['implementation'] == 'grid_only':
-            self.impl_.set( shared_ptr[c_Space[${cytype}]](
-                <c_Space[${cytype}]*>
-                new ${'c_' + class_name}[${cytype}](grid.impl_)
-            ))
-%       elif description['implementation'] == 'polynomial':
-            self.impl_.set( shared_ptr[c_Space[${cytype}]](
-                <c_Space[${cytype}]*> new ${'c_' + class_name}[${cytype}](
-                    grid.impl_, <int> self.order
-                )
-            ))
-%       endif
-%    endfor
-
-
     property global_dof_interpolation_points:
         """ (3xN) matrix of global interpolation points for the space, where each column is the
             coordinate of an interpolation points. """
@@ -190,52 +159,93 @@ cdef class ${class_name}(Space):
             raise("Unknown dtype for space")
 
 
-% endfor
+def function_space(Grid grid, kind, order, domains=None, cbool closed=True):
+    """ 
 
+    Return a space defined over a given grid.
 
+    Parameters
+    ----------
+    grid : bempp.Grid
+        The grid object over which the space is defined.
 
-cdef class RaviartThomas0VectorSpace(Space):
-    """ Raviart Thomas Basis functions of order 0
+    kind : string
+        The type of space. Currently, the following types
+        are supported:
+        "P" : Continuous and piecewise polynomial functions.
+        "DP" : Discontinuous and elementwise polynomial functions.
 
-        Attributes
-        ----------
+    order : int
+        The order of the space, e.g. 0 for piecewise const, 1 for
+        piecewise linear functions.
 
-        grid : Grid
-            Grid over which to discretize the space.
+    domains : list
+        List of integers specifying a list of physical entities
+        of subdomains that should be included in the space.
 
-        dtype : numpy.dtype
-            Type of the basis functions in this space.
+    closed : bool
+        Specifies whether the space is defined on a closed
+        or open subspace.
 
-        codomain_dimension : int
-            Number of components of values of functions in this space.
+    Notes
+    -----
+    The most frequent used types are the space of piecewise constant
+    functions (kind="DP", order=0) and the space of continuous,
+    piecewise linear functions (kind="P", order=1).
 
-        domain_dimension : int
-            Dimension of the domain on which the space is defined.
+    This is a factory function that initializes a space object. To 
+    see a detailed help for space objects see the documentation
+    of the instantiated object.
 
-        global_dof_count : int
-            Number of global degrees of freedom.
+    Examples
+    --------
+    To initialize a space of piecewise constant functions use
 
-        flat_local_dof_count : int
-            Total number of local degrees of freedom.
+    >>> space = function_space(grid,"DP",0)
 
-        global_dof_interpolation_points : np.ndarray 
-            (3xN) matrix of global interpolation points for the space,
-            where each column is the coordinate of an interpolation point.
+    To initialize a space of continuous, piecewise linear functions, use
 
-        global_dof_interpolation_points : np.ndarray
-            (3xN) matrix of normal directions associated with the interpolation points.
+    >>> space = function_space(grid,"P",1)
 
-        order : int
-            Order of the polynomial degre of the space. 
-
-        Notes
-        -----
-        A space instance should always be created using the function 'bempp.function_space'.
     """
 
-    def __init__(self, Grid grid not None, order):
+    cdef Space s = Space(order)
+    if kind=="P":
+        if not (order>=1 and order <=10):
+            raise ValueError("Order must be between 1 and 10")
+        if (order==1):
+            if domains is None:
+                s.impl_.set(shared_ptr[c_Space[double]](adaptivePiecewiseLinearContinuousScalarSpace[double](grid.impl_)))
+            else:
+                s.impl_.set(shared_ptr[c_Space[double]](adaptivePiecewiseLinearContinuousScalarSpace[double](grid.impl_, domains, closed)))
+        else:
+            if domains is None:
+                s.impl_.set(shared_ptr[c_Space[double]](adaptivePiecewisePolynomialContinuousScalarSpace[double](grid.impl_, order)))
+            else:
+                s.impl_.set(shared_ptr[c_Space[double]](adaptivePiecewisePolynomialContinuousScalarSpace[double](grid.impl_, order, domains, closed)))
+    elif kind=="DP":
+        if not (order>=0 and order <=10):
+            raise ValueError("Order must be between 0 and 10")
+        if (order==0):
+            if domains is None:
+                s.impl_.set(shared_ptr[c_Space[double]](adaptivePiecewiseConstantScalarSpace[double](grid.impl_)))
+            else:
+                s.impl_.set(shared_ptr[c_Space[double]](adaptivePiecewiseConstantScalarSpace[double](grid.impl_, domains, closed)))
+        else:
+            if domains is None:
+                s.impl_.set(shared_ptr[c_Space[double]](adaptivePiecewisePolynomialDiscontinuousScalarSpace[double](grid.impl_, order)))
+            else:
+                s.impl_.set(shared_ptr[c_Space[double]](adaptivePiecewisePolynomialDiscontinuousScalarSpace[double](grid.impl_, order, domains, closed)))
+    elif kind=="RT":
+        if order!=0:
+            raise ValueError("Only 0 order Raviart-Thomas spaces are implemented.")
+        if domains is None:
+            s.impl_.set(shared_ptr[c_Space[double]](adaptiveRaviartThomas0VectorSpace[double](grid.impl_)))
+        else:
+            s.impl_.set(shared_ptr[c_Space[double]](adaptiveRaviartThomas0VectorSpace[double](grid.impl_, domains, closed)))
+    else:
+        raise ValueError("Unknown kind")
 
-        super(RaviartThomas0VectorSpace,self).__init__(grid,order)
-        self.impl_.set( shared_ptr[c_Space[double]](
-            <c_Space[double]*>new c_RaviartThomas0VectorSpace(grid.impl_)))
+    return s
+
 
