@@ -25,6 +25,8 @@
 #include "space.hpp"
 #include "../common/shared_ptr.hpp"
 #include "../grid/grid_segment.hpp"
+#include "../grid/grid_view.hpp"
+#include "../grid/grid.hpp"
 #include <vector>
 
 namespace Bempp {
@@ -34,7 +36,7 @@ namespace Bempp {
  *
  *  This class provides a wrapper to implement a hierarchy of
  *  adaptive function spaces. */
-template <typename BasisFunctionType_> 
+template <typename BasisFunctionType_, typename SpaceType> 
 class AdaptiveSpace : public Space<BasisFunctionType_> {
 public:
 
@@ -167,13 +169,10 @@ public:
   int currentLevel();
 
 protected:
-  void initialize();
 
 
 private:
-
-
-  virtual shared_ptr<Space<BasisFunctionType_>> createNewSpace(const shared_ptr<const Grid>& grid, const GridSegment& segment) = 0;
+  void initialize();
 
   const Space<BasisFunctionType_>& currentSpace() const;
   Space<BasisFunctionType_>& currentSpace();
@@ -187,5 +186,7 @@ private:
 };
 
 }
+
+#include "adaptive_space_impl.hpp"
 
 #endif
