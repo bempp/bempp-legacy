@@ -291,4 +291,37 @@ GridSegment gridSegmentWithPositiveX(const Grid &grid, int level) {
                      excludedEntities[2], excludedEntities[3]);
 }
 
+AdaptiveGridSegmentFactory::AdaptiveGridSegmentFactory(
+        const shared_ptr<const Grid>& grid):
+    m_grid(grid), m_whole_grid(true)
+{}
+
+AdaptiveGridSegmentFactory::AdaptiveGridSegmentFactory(
+        const shared_ptr<const Grid>& grid, int domain,
+        bool closed):
+    AdaptiveGridSegmentFactory(grid, std::vector<int>({domain}),
+            closed)
+{}
+
+AdaptiveGridSegmentFactory::AdaptiveGridSegmentFactory(
+        const shared_ptr<const Grid>& grid, const std::vector<int>& domains,
+        bool closed):
+    m_grid(grid), m_whole_grid(false),
+    m_domains(domains), m_closed(closed)
+{}
+
+GridSegment AdaptiveGridSegmentFactory::update() const
+{
+
+    if (m_whole_grid)
+        return GridSegment::wholeGrid(*m_grid, -1);
+
+    return (m_closed) ? 
+        GridSegment::closedDomain(*m_grid, m_domains, -1) :
+        GridSegment::openDomain(*m_grid, m_domains, -1);
+}
+
+
+
+
 } // namespace Bempp

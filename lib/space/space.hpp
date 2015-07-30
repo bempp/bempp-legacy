@@ -182,7 +182,7 @@ public:
 
   /** \brief Shared pointer to the grid on which the functions from this space
    *  are defined. */
-  shared_ptr<const Grid> grid() const { return m_grid; }
+  virtual shared_ptr<const Grid> grid() const { return m_grid; }
 
   /** \brief Reference to the shapeset attached to the specified element.
    *
@@ -225,16 +225,16 @@ public:
       const shared_ptr<const Space<BasisFunctionType>> &self) const;
 
   /** \brief Return the grid level of the current space */
-  unsigned int level() const { return m_level; }
+  virtual unsigned int level() const { return m_level; }
 
   /** \brief Return the underlying grid dimension */
-  int gridDimension() const;
+  virtual int gridDimension() const;
 
   /** \brief Return the underlying world dimension */
-  int worldDimension() const;
+  virtual int worldDimension() const;
 
   /** \brief Return the grid view of the current space */
-  const GridView &gridView() const;
+  virtual const GridView &gridView() const;
 
   /** \brief Transformation mapping shape functions to basis functions.
    *
@@ -281,7 +281,7 @@ public:
 
   /** \brief Return the GeometryFactory associated with the mesh. */
 
-  shared_ptr<GeometryFactory> elementGeometryFactory() const {
+  virtual shared_ptr<GeometryFactory> elementGeometryFactory() const {
     return m_elementGeometryFactory;
   }
 
@@ -605,10 +605,10 @@ public:
 
   
   /** \brief Initialize the cluster tree associated with this space. */
-  void initializeClusterTree(const ParameterList& parameterList);
+  virtual void initializeClusterTree(const ParameterList& parameterList);
 
   /** \brief Return the cluster tree associated with this space. */
-  shared_ptr<const hmat::DefaultClusterTreeType> clusterTree() const;
+  virtual shared_ptr<const hmat::DefaultClusterTreeType> clusterTree() const;
 
   /** @} */
 private:
