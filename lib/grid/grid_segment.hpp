@@ -55,12 +55,20 @@ public:
    *  index corresponds to the <it>physical entity index</it> in Gmsh files.*/
   static GridSegment openDomain(const Grid &grid, int domain, int level = 0);
 
+  /** \brief Overload to specify multiple domains. */
+  static GridSegment openDomain(const Grid &grid, 
+          const std::vector<int>& domains, int level = 0);
+
   /** \brief Return a GridSegment representing a closed domain of a grid.
    *
    *  This function returns a GridSegment representing the domain with index
    *  \p domain of the grid \p grid, including its boundary. The domain
    *  index corresponds to the <it>physical entity index</it> in Gmsh files.*/
   static GridSegment closedDomain(const Grid &grid, int domain, int level = 0);
+
+  /** \brief Overload to specify multiple domains. */
+  static GridSegment closedDomain(const Grid &grid, 
+          const std::vector<int>& domains, int level = 0);
 
   /** \brief Constructor.
    *
