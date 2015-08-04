@@ -365,7 +365,8 @@ void AdaptiveSpace<BasisFunctionType_,SpaceType>::update()
 {
 
    m_space = shared_ptr<Space<BasisFunctionType_>>(new SpaceType(m_grid, m_gridSegmentFactory.update()));
-   m_level = m_grid->maxLevel(); 
+   m_level = m_grid->maxLevel();
+   this->sendUpdateSignal(); 
 
 }
 

@@ -150,7 +150,7 @@ public:
   virtual void globalRefine(int refCount) = 0;
 
   /** \brief Signal grid change to registered objects */
-  void signalGridUpdate() const;
+  void sendUpdateSignal() const;
 
   /** \brief Connect entity to be notified when grid updates */
   boost::signals2::connection connect(const std::function<void()>& f) const;

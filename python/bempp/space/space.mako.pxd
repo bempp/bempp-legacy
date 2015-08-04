@@ -13,6 +13,7 @@ from libcpp cimport complex as ccomplex, bool as cbool
 from libcpp.string cimport string
 from libcpp.vector cimport vector
 from bempp.utils cimport shared_ptr, complex_float,complex_double
+from bempp.utils.signal_slot_interface cimport Connection, SlotInterface
 from bempp.grid.grid cimport Grid, c_Grid
 from bempp.grid.entity cimport Entity0, c_Entity
 from bempp.grid.codim_template cimport codim_zero
@@ -22,6 +23,7 @@ cdef extern from "bempp/space/py_space_variants.hpp":
         c_Space(const shared_ptr[c_Grid]&)
         c_Space(const c_Space[BASIS]&)
         shared_ptr[const c_Grid] grid() const
+
         
 # Declares complex type explicitly.
 # Cython 0.20 will fail if templates are nested more than three-deep,
@@ -59,6 +61,7 @@ cdef extern from "bempp/space/py_space_variants.hpp" namespace "Bempp":
         int domainDimension() const
         unsigned long globalDofCount() const
         unsigned long flatLocalDofCount() const 
+        Connection connect(const SlotInterface&) const
 
     cdef shared_ptr[c_Space[BASIS]] _py_get_space_ptr[BASIS](const SpaceVariants& space_variant)
 % for pybasis,cybasis in dtypes.items():

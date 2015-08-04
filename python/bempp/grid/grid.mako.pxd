@@ -4,6 +4,7 @@ from bempp.grid.grid_view cimport c_GridView, GridView
 from bempp.grid.entity cimport Entity0, Entity2
 from bempp.grid.entity cimport c_Entity
 from bempp.grid.codim_template cimport codim_zero,codim_one,codim_two
+from bempp.grid.id_set cimport c_IdSet
 from libcpp cimport bool as cbool
 
 cdef extern from "bempp/grid/grid.hpp" namespace "Bempp" nogil:
@@ -20,8 +21,10 @@ cdef extern from "bempp/grid/grid.hpp" namespace "Bempp" nogil:
         cbool adapt()
         cbool preAdapt()
         void postAdapt()
+        void sendUpdateSignal() const
         void globalRefine(int refCount)
         int getMark(const c_Entity[codim_zero]&)
+        c_IdSet& globalIdSet() const
 
     cdef enum Topology "Bempp::GridParameters::Topology":
         LINEAR "Bempp::GridParameters::LINEAR"
@@ -35,7 +38,7 @@ cdef extern from "bempp/grid/grid.hpp" namespace "Bempp" nogil:
 
 cdef class Grid:
     ## Holds pointer to C++ implementation
-    cdef shared_ptr[const c_Grid] impl_
+    cdef shared_ptr[c_Grid] impl_
     cdef GridView _grid_view
     cdef object _insertion_index_to_element
     cdef object _insertion_index_to_vertex

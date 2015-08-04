@@ -236,6 +236,22 @@ void Space<BasisFunctionType>::global2localDofs(
 }
 
 template <typename BasisFunctionType>
+boost::signals2::connection Space<BasisFunctionType>::connect(const std::function<void()>& f) const
+{
+
+    return m_spaceUpdateSignal.connect(f);
+
+}
+
+template <typename BasisFunctionType>
+void Space<BasisFunctionType>::sendUpdateSignal() const
+{
+
+    m_spaceUpdateSignal();
+
+}
+
+template <typename BasisFunctionType>
 void Space<BasisFunctionType>::initializeClusterTree(
         const ParameterList& parameterList)
 {

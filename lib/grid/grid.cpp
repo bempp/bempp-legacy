@@ -53,7 +53,7 @@ bool isNew(Vector<double> &intersection,
 
 } // namespace
 
-void Grid::signalGridUpdate() const
+void Grid::sendUpdateSignal() const
 {
 
     gridUpdateSignal();

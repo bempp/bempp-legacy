@@ -36,6 +36,7 @@
 #include "../fiber/scalar_traits.hpp"
 #include "../common/global_parameters.hpp"
 #include "../hmat/cluster_tree.hpp"
+#include <boost/signals2/signal.hpp>
 
 
 #include <vector>
@@ -554,6 +555,27 @@ public:
   }
 
   /** @}
+      @name H-Matrix support
+      @} */
+  
+  /** \brief Initialize the cluster tree associated with this space. */
+  virtual void initializeClusterTree(const ParameterList& parameterList);
+
+  /** \brief Return the cluster tree associated with this space. */
+  virtual shared_ptr<const hmat::DefaultClusterTreeType> clusterTree() const;
+
+  /** @} */
+
+  /** @} 
+      @name Signal Handling
+      @} */
+
+  /** \brief Connect objects that need to be notified when a space is updated. */
+  virtual boost::signals2::connection connect(const std::function<void()>& f) const;
+
+  /** @} */
+
+  /** @}
       @name Debugging
       @} */
 
@@ -606,14 +628,12 @@ public:
                    const std::vector<unsigned int> &clusterIdsOfGlobalDofs,
                    DofType dofType) const;
 
-  
-  /** \brief Initialize the cluster tree associated with this space. */
-  virtual void initializeClusterTree(const ParameterList& parameterList);
-
-  /** \brief Return the cluster tree associated with this space. */
-  virtual shared_ptr<const hmat::DefaultClusterTreeType> clusterTree() const;
-
   /** @} */
+
+protected:
+
+  void sendUpdateSignal() const;
+
 private:
   /** \cond PRIVATE */
   shared_ptr<const Grid> m_grid;
@@ -621,6 +641,8 @@ private:
   unsigned int m_level;
   std::unique_ptr<GridView> m_view;
   shared_ptr<const hmat::DefaultClusterTreeType> m_clusterTree;
+
+  mutable boost::signals2::signal<void()> m_spaceUpdateSignal;
   /** \endcond */
 };
 

@@ -7,6 +7,7 @@ ifloop = lambda x: 'if' if loop.index == 0 else 'elif'
 from bempp.grid.grid cimport Grid
 from cython.operator cimport dereference as deref
 from libcpp cimport bool as cbool
+from bempp.utils.shared_ptr cimport const_pointer_cast
 from bempp.utils.eigen cimport eigen_matrix_to_np_float32,eigen_matrix_to_np_float64
 
 
@@ -69,7 +70,7 @@ cdef class Space:
         """ The underlyign grid for the space. """
         def __get__(self):
             cdef Grid result = Grid.__new__(Grid)
-            result.impl_ = self.impl_.grid()
+            result.impl_ = const_pointer_cast[c_Grid](self.impl_.grid())
             return result
 
     property domain_dimension:
