@@ -1,7 +1,8 @@
 set(makoes py_types.mako.hpp py_utils.mako.hpp
     parameter_list.mako.pxd parameter_list.mako.pyx
     __init__.mako.pxd eigen.mako.pxd eigen.mako.pyx shared_ptr.mako.pxd
-    unique_ptr.mako.pxd enum_types.mako.pxd enum_types.mako.pyx)
+    unique_ptr.mako.pxd enum_types.mako.pxd enum_types.mako.pyx
+    signal_slot_interface.mako.pxd)
 
 mako_files(${makoes}
     OUTPUT_FILES makoed

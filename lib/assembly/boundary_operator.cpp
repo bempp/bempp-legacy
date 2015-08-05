@@ -29,6 +29,7 @@
 #include "scaled_abstract_boundary_operator.hpp"
 #include "../common/boost_make_shared_fwd.hpp"
 #include "../fiber/explicit_instantiation.hpp"
+#include <boost/bind.hpp>
 
 namespace Bempp {
 
@@ -37,7 +38,47 @@ BoundaryOperator<BasisFunctionType, ResultType>::BoundaryOperator()
     : m_holdWeakForm(true) {}
 
 template <typename BasisFunctionType, typename ResultType>
-BoundaryOperator<BasisFunctionType, ResultType>::~BoundaryOperator() {}
+BoundaryOperator<BasisFunctionType, ResultType>::~BoundaryOperator() {
+
+    if (isInitialized()) disconnect();
+
+}
+
+template <typename BasisFunctionType, typename ResultType>
+BoundaryOperator<BasisFunctionType, ResultType>::BoundaryOperator(
+        const BoundaryOperator<BasisFunctionType,ResultType>& other):
+    m_context(other.m_context), m_abstractOp(other.m_abstractOp),
+    m_holdWeakForm(other.m_holdWeakForm), 
+    m_weakFormContainer(other.m_weakFormContainer),
+    m_weakWeakFormContainer(other.m_weakWeakFormContainer)
+
+{
+    if (m_abstractOp)
+        connect();
+
+}
+
+template <typename BasisFunctionType, typename ResultType>
+BoundaryOperator<BasisFunctionType, ResultType>&
+BoundaryOperator<BasisFunctionType,ResultType>::
+operator=(const BoundaryOperator<BasisFunctionType, ResultType>&
+        other)
+{
+
+    if (isInitialized())
+        disconnect();
+
+    m_context = other.m_context;
+    m_abstractOp = other.m_abstractOp;
+    m_holdWeakForm = other.m_holdWeakForm;
+    m_weakFormContainer = other.m_weakFormContainer;
+    m_weakWeakFormContainer = other.m_weakWeakFormContainer;
+
+    connect();
+
+    return *this;
+
+}
 
 template <typename BasisFunctionType, typename ResultType>
 BoundaryOperator<BasisFunctionType, ResultType>::BoundaryOperator(
@@ -59,10 +100,18 @@ void BoundaryOperator<BasisFunctionType, ResultType>::initialize(
   if (!abstractOp)
     throw std::invalid_argument("BoundaryOperator::BoundaryOperator(): "
                                 "abstractOp must not be null");
+
+  if (isInitialized()) 
+  {
+      uninitialize();
+  }
+
   m_context = context;
   m_abstractOp = abstractOp;
   m_weakFormContainer.reset(new ConstWeakFormContainer);
   m_weakWeakFormContainer.reset(new WeakConstWeakFormContainer);
+  connect();
+
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -71,6 +120,16 @@ void BoundaryOperator<BasisFunctionType, ResultType>::uninitialize() {
   m_abstractOp.reset();
   m_weakFormContainer.reset();
   m_weakWeakFormContainer.reset();
+  disconnect();
+}
+
+template <typename BasisFunctionType, typename ResultType>
+void BoundaryOperator<BasisFunctionType, ResultType>::reset() {
+
+  if (isInitialized()){
+    m_weakFormContainer.reset(new ConstWeakFormContainer);
+    m_weakWeakFormContainer.reset(new WeakConstWeakFormContainer);
+  }
 }
 
 template <typename BasisFunctionType, typename ResultType>
@@ -157,6 +216,26 @@ void BoundaryOperator<BasisFunctionType, ResultType>::holdWeakForm(bool value) {
     m_weakFormContainer->reset();
   }
   m_holdWeakForm = value;
+}
+
+template <typename BasisFunctionType, typename ResultType>
+void BoundaryOperator<BasisFunctionType, ResultType>::connect()
+{
+
+  m_domain_connection = m_abstractOp->domain()->connect(
+          boost::bind(&BoundaryOperator<BasisFunctionType,ResultType>::reset,this));
+  m_dual_to_range_connection = m_abstractOp->domain()->connect(
+          boost::bind(&BoundaryOperator<BasisFunctionType,ResultType>::reset,this));
+
+}
+
+template <typename BasisFunctionType, typename ResultType>
+void BoundaryOperator<BasisFunctionType, ResultType>::disconnect()
+{
+
+    m_domain_connection.disconnect();
+    m_dual_to_range_connection.disconnect();
+
 }
 
 template <typename BasisFunctionType, typename ResultType>

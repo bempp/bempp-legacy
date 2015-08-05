@@ -10,6 +10,7 @@ from bempp.utils cimport Vector
 from bempp.grid.entity cimport Entity0
 from bempp.grid.grid_view cimport c_GridView, GridView
 from bempp.grid.grid_view cimport _grid_view_from_unique_ptr
+from bempp.grid.id_set cimport IdSet
 import numpy as _np
 cimport numpy as _np
 cimport cython
@@ -27,14 +28,14 @@ cdef extern from "<array>" namespace "std":
 
 cdef extern from "bempp/grid/grid_factory.hpp" namespace "Bempp":
 
-    shared_ptr[const c_Grid] cart_grid "Bempp::GridFactory::createStructuredGrid"(
+    shared_ptr[c_Grid] cart_grid "Bempp::GridFactory::createStructuredGrid"(
             const GridParameters& params,
             const double* lowerLeft,
             const double*  upperRight,
             const int* nElements
     ) except +catch_exception
 
-    shared_ptr[const c_Grid] connect_grid \
+    shared_ptr[c_Grid] connect_grid \
             "Bempp::GridFactory::createGridFromConnectivityArrays"(
             const GridParameters& params,
             const double* vertices,
@@ -61,13 +62,13 @@ cdef class Grid:
 
 
     def __cinit__(self):
-        self.impl_.reset(<const c_Grid*>NULL)
+        self.impl_.reset()
 
     def __init__(self):
         pass
 
     def __dealloc__(self):
-        self.impl_.reset(<const c_Grid*>NULL)
+        self.impl_.reset()
 
     def __richcmp__(Grid self, Grid other not None, int op):
         if op != 2:
@@ -127,6 +128,25 @@ cdef class Grid:
         """ Return the mark status of a given element. """
 
         return deref(self.impl_).getMark(deref(e.impl_))
+
+    def mark(self, Entity0 e, int refcount = 1):
+        """ Mark an element for refinement. """
+
+        deref(self.impl_).mark(refcount, deref(e.impl_))
+
+    def refine(self):
+        """ Refine grid. """
+
+        deref(self.impl_).preAdapt()
+        deref(self.impl_).adapt()
+        deref(self.impl_).postAdapt()
+        deref(self.impl_).sendUpdateSignal()
+
+    def global_refine(self, int refcount = 1):
+        """ Refine all elements. """
+
+        deref(self.impl_).globalRefine(refcount)
+        deref(self.impl_).sendUpdateSignal()
 
     property dim:
         """" Dimension of the grid. """
@@ -188,6 +208,15 @@ cdef class Grid:
             grid_view._grid = self
             self._grid_view = grid_view
             return grid_view
+
+    property id_set:
+        def __get__(self):
+            """Return an Id set for the grid"""
+
+            cdef IdSet id_set = IdSet()
+            id_set.impl_ = &(deref(self.impl_).globalIdSet())
+            id_set._grid = self
+            return id_set
 
 
 def grid_from_element_data(vertices, elements, domain_indices=[]):
