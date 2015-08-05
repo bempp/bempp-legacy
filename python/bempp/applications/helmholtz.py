@@ -96,7 +96,7 @@ class SoundHardPlaneWaveScattering(object):
                         .5*self._id - self._double_layer - self._osrc * self._hypersingular)
             else:
                 self._burton_miller_operator = (
-                        .5*self._id - self._double_layer - 1./(1j*self._wavenumber) * self._hypersingular)
+                        .5*self._id - self._double_layer - (1j/self._wavenumber) * self._hypersingular)
 
     def _compute_rhs(self):
 
@@ -116,7 +116,7 @@ class SoundHardPlaneWaveScattering(object):
         if self._coupling == 'osrc':
             return -g1+self._osrc*g2
         else:
-            return -g1-1./(1j*self._wavenumber)*g2
+            return -g1+(1j/self._wavenumber)*g2
 
 
     def compute(self, tol = 1E-5, maxiter = 200):
