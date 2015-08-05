@@ -26,6 +26,7 @@ cdef extern from "bempp/grid/grid.hpp" namespace "Bempp" nogil:
         int getMark(const c_Entity[codim_zero]&)
         c_IdSet& globalIdSet() const
 
+
     cdef enum Topology "Bempp::GridParameters::Topology":
         LINEAR "Bempp::GridParameters::LINEAR"
         TRIANGULAR "Bempp::GridParameters::TRIANGULAR"

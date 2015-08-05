@@ -22,6 +22,7 @@
 #define bempp_adaptive_space_hpp
 
 #include "../common/common.hpp"
+#include "../common/eigen_support.hpp"
 #include "space.hpp"
 #include "../common/shared_ptr.hpp"
 #include "../grid/grid_segment.hpp"
