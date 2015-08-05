@@ -117,7 +117,7 @@ ParameterList GlobalParameters::parameterList() {
 
   // Number of levels for matvec parallelisation
   // The total number of tasks is 4^matVecParallelLevels
-  parameters.put("options.hmat.matVecParallelLevels", static_cast<int>(3));
+  parameters.put("options.hmat.matVecParallelLevels", static_cast<int>(5));
 
   return parameters;
 }

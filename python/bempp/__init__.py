@@ -13,6 +13,7 @@ __all__=['grid_from_sphere',
          'import_grid',
          'operators',
          'shapes',
+         'applications',
          'FileReader',
          'generate_block_cluster_tree',
          'InverseSparseDiscreteBoundaryOperator']
@@ -77,6 +78,7 @@ from bempp.grid import GridFactory
 from bempp.hmat import generate_block_cluster_tree
 from bempp import operators
 from bempp import shapes
+from bempp import applications
 
 def test():
     """ Runs BEM++ python unit tests """

@@ -73,7 +73,7 @@ shared_ptr<const Space<BasisFunctionType_>> AdaptiveSpace<BasisFunctionType_,Spa
       const shared_ptr<const Space<BasisFunctionType_>> &self) const
 {
 
-    return currentSpace().discontinuousSpace(self);
+    return currentSpace().discontinuousSpace(m_space);
 
 }
 

@@ -210,3 +210,11 @@ def _pade_coeffs(n, theta):
     ajt = np.exp(-1j * theta / 2.0) * aj / ( (1 + bj * (np.exp(-1j*theta) - 1))**2 )
     bjt = np.exp(-1j * theta) * bj / (1 + bj * (np.exp(-1j*theta) - 1))
     return C0t, ajt, bjt
+
+
+
+
+
+        
+
+
