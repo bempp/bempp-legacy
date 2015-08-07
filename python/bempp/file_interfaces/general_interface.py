@@ -56,7 +56,7 @@ class FileReader(object):
         self._element_indices_to_file = None
         self._file_to_element_indices = OrderedDict()
 
-        if kwargs.has_key('file_name'):
+        if 'file_name' in kwargs:
             fname = kwargs['file_name']
             extension = os.path.splitext(fname)[1].lower()
 
@@ -367,8 +367,3 @@ class Element(object):
         self.index = index
         self.data = [v0, v1, v2]
         self.domain_index = domain_index
-
-
-
-
-
