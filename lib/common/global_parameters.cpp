@@ -37,7 +37,7 @@ ParameterList GlobalParameters::parameterList() {
   // Default assembly type for boundary operators. Allowed values are
   // "dense" and "hmat".
   parameters.put("options.assembly.boundaryOperatorAssemblyType",
-                 std::string("dense"));
+                 std::string("hmat"));
 
   // Default assembly type for potential oeprators.
   // Allowed values are "dense" and "hmat".
