@@ -39,6 +39,7 @@ def ${pyname}(Space domain, Space range, Space dual_to_range,
 
     cdef ParameterList local_parameters
     cdef GeneralBoundaryOperator bop 
+    
 
     if not len({domain.dtype,range.dtype,dual_to_range.dtype})==1:
         raise ValueError("All spaces must have the same data type")
@@ -55,6 +56,12 @@ def ${pyname}(Space domain, Space range, Space dual_to_range,
     basis_type = domain.dtype
     bop = GeneralBoundaryOperator(basis_type,result_type,
             local_parameters)
+
+% if pyname=='hypersingular':
+    bop.operator_type = 'synthetic'
+% else:
+    bop.operator_type = 'standard'
+% endif
 
     bop.impl_.assign(
             ${c_name}[double,double](

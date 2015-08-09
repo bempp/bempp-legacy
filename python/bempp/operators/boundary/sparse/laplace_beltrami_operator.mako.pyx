@@ -38,6 +38,7 @@ def laplace_beltrami(Space domain, Space range, Space dual_to_range,
 
     bop = GeneralBoundaryOperator(basis_type,result_type,
             local_parameters,True)
+    bop.operator_type = 'standard'
 
     bop.impl_.assign(c_laplaceBeltramiOperator[double,double](
         deref(local_parameters.impl_),domain.impl_,range.impl_,

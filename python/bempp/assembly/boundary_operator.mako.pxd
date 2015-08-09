@@ -61,6 +61,7 @@ cdef class GeneralBoundaryOperator(BoundaryOperatorBase):
     cdef BoundaryOpVariants impl_
     cdef ParameterList _parameters
     cdef cbool _is_sparse
+    cdef object operator_type
 
 cdef class DenseBoundaryOperator(GeneralBoundaryOperator):
     pass
