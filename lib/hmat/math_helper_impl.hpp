@@ -61,9 +61,10 @@ void randomizedLowRankApproximation(const matApply_t<ValueType> &applyFun,
   Matrix<ValueType> identity =
       Matrix<ValueType>::Identity(rows, actual_sample_size);
   Matrix<ValueType> Z = Matrix<ValueType>::Random(cols, actual_sample_size);
-  Eigen::HouseholderQR<Matrix<ValueType>> qr(
-      applyFun(Eigen::Ref<Matrix<ValueType>>(Z), NOTRANS));
-  A = qr.householderQ() * identity;
+
+  A = applyFun(Eigen::Ref<Matrix<ValueType>>(Z),NOTRANS).
+      colPivHouseholderQr().householderQ()*identity;
+
   B = applyFun(Eigen::Ref<Matrix<ValueType>>(A), CONJTRANS).adjoint();
   compressQB(A, B, threshold, maxRank, success);
 }
