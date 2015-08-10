@@ -79,7 +79,7 @@ cdef class GridFunction:
     projections : np.ndarray
         A 1-dimensional array with the projections of the GridFunction
         onto a dual space (optional).
-    parameter_list : bempp.ParameterList
+    parameters : bempp.ParameterList
         A ParameterList object used for the assembly of
         the GridFunction (optional).
 
@@ -139,8 +139,8 @@ cdef class GridFunction:
         cdef ${scalar_cython_type(cyvalue)} [::1] data_view_${pyvalue}
 % endfor
 
-        if 'parameter_list' in kwargs:
-            self._parameter_list = kwargs['parameter_list']
+        if 'parameters' in kwargs:
+            self._parameter_list = kwargs['parameters']
         else:
             import bempp
             self._parameter_list = bempp.global_parameters
@@ -174,7 +174,7 @@ cdef class GridFunction:
 %         if pyresult in compatible_dtypes[pybasis]:
             if (self._basis_type=="${pybasis}") and (self._result_type=="${pyresult}"):
                 self._impl_${pybasis}_${pyresult}.reset(
-                        new c_GridFunction[${cybasis},${cyresult}](deref((<ParameterList>self.parameter_list).impl_),
+                        new c_GridFunction[${cybasis},${cyresult}](deref((<ParameterList>self._parameter_list).impl_),
                         _py_get_space_ptr[${cybasis}](self._space.impl_),
                         _py_get_space_ptr[${cybasis}]((<Space>dual_space).impl_),
                         deref(_py_surface_normal_dependent_function_${pyresult}(_fun_interface,kwargs['fun'],3,
