@@ -392,6 +392,17 @@ ElementaryLocalOperator<BasisFunctionType, ResultType>::makeAssembler(
       make_shared_from_ref(integral()), openClHandler);
 }
 
+template <typename BasisFunctionType, typename ResultType>
+std::unique_ptr<typename ElementaryLocalOperator<BasisFunctionType,
+                                                 ResultType>::LocalAssembler>
+ElementaryLocalOperator<BasisFunctionType, ResultType>::makeAssembler(
+        const ParameterList& parameterList) const
+{
+    Context<BasisFunctionType, ResultType> context(parameterList);
+    return this->makeAssembler(*context.quadStrategy(),context.assemblyOptions());
+
+}
+
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(ElementaryLocalOperator);
 
 } // namespace Bempp

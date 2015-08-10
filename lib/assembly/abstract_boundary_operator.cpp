@@ -21,6 +21,7 @@
 #include "abstract_boundary_operator.hpp"
 #include "discrete_boundary_operator.hpp"
 #include "local_assembler_construction_helper.hpp"
+#include "context.hpp"
 
 #include "../common/to_string.hpp"
 #include "../fiber/explicit_instantiation.hpp"
@@ -114,6 +115,14 @@ shared_ptr<DiscreteBoundaryOperator<ResultType>>
 AbstractBoundaryOperator<BasisFunctionType, ResultType>::assembleWeakForm(
     const Context<BasisFunctionType, ResultType> &context) const {
   return this->assembleWeakFormImpl(context);
+}
+
+template <typename BasisFunctionType, typename ResultType>
+shared_ptr<DiscreteBoundaryOperator<ResultType>>
+AbstractBoundaryOperator<BasisFunctionType, ResultType>::assembleWeakForm(const ParameterList& parameterList) const
+{
+    Context<BasisFunctionType, ResultType> context(parameterList);
+    return this->assembleWeakForm(context);
 }
 
 template <typename BasisFunctionType, typename ResultType>
