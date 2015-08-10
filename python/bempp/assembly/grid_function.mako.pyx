@@ -142,7 +142,8 @@ cdef class GridFunction:
         if 'parameter_list' in kwargs:
             self._parameter_list = kwargs['parameter_list']
         else:
-            self._parameter_list = global_parameters()
+            import bempp
+            self._parameter_list = bempp.global_parameters
 
         global _fun
 
