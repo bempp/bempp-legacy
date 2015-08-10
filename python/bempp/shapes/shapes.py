@@ -72,7 +72,7 @@ def __generate_grid_from_geo_string(geo_string):
             subprocess.check_call(
                 cmd, shell=True, stdout=fnull, stderr=fnull)
         except:
-            print "The following command failed: "+cmd
+            print("The following command failed: "+cmd)
             fnull.close()
             raise
         os.remove(geo_name)
