@@ -35,6 +35,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 # Download and installs the cookoff in the build tree
 # From here on we can use cookoff recipes
 include(LookUp-GreatCMakeCookOff)
+include(utils)
 
 # These are the original flags given by the user when compiling Bempp
 set(ORIGINAL_CXX_FLAGS "${CMAKE_CXX_FLAGS}")

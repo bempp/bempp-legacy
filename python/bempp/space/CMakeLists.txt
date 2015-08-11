@@ -1,14 +1,12 @@
-set(makoes space.mako.pxd space.mako.pyx py_space_variants.mako.hpp __init__.mako.pxd)
-mako_files(${makoes}
-    OUTPUT_FILES makoed
-    DEPENDS "${PROJECT_SOURCE_DIR}/python/mako/space.py"
+copy_files_on_change(space.pxd space.pyx __init__.pxd
+    OUTPUT_FILES copied
     DESTINATION "${PYTHON_BINARY_DIR}/bempp/include/bempp/space"
-    TARGETNAME bempp.space-mako
+    TARGETNAME bempp.space-copied
 )
 
-split_list(sources headers makoed ".*\\.pyx")
+split_list(sources headers copied ".*\\.pyx")
 install_python(FILES ${headers} DESTINATION bempp/include/bempp/space)
-add_dependencies(cython-headers bempp.space-mako)
+add_dependencies(cython-headers bempp.space-copied)
 
 add_python_module(bempp.space __init__.py ${sources} CPP LIBRARIES libbempp)
 add_dependencies(bempp.space cython-headers)

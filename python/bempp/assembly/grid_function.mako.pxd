@@ -3,7 +3,7 @@
     
 from bempp.utils cimport Vector
 from bempp.utils cimport shared_ptr 
-from bempp.space.space cimport c_Space, _py_get_space_ptr,Space
+from bempp.space.space cimport c_Space, Space
 from bempp.utils.parameter_list cimport ParameterList, c_ParameterList 
 from bempp.utils cimport catch_exception
 from bempp.utils cimport complex_float,complex_double

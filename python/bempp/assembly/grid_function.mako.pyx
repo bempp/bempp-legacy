@@ -13,7 +13,7 @@ from bempp.utils.eigen cimport Matrix
 from bempp.space.space cimport Space
 from bempp.utils cimport Matrix,Vector
 from bempp.utils cimport shared_ptr 
-from bempp.space.space cimport c_Space, _py_get_space_ptr 
+from bempp.space.space cimport c_Space
 from bempp.utils.parameter_list cimport ParameterList, c_ParameterList 
 from bempp.utils cimport catch_exception
 from bempp.utils cimport complex_float,complex_double
@@ -169,14 +169,14 @@ cdef class GridFunction:
             if 'approximation_mode' in kwargs:
                 approx_mode = kwargs['approximation_mode'].encode("UTF-8")
 
-% for pybasis,cybasis in dtypes.items():
+% for pybasis,cybasis in [('float64','double')]:
 %     for pyresult,cyresult in dtypes.items():
 %         if pyresult in compatible_dtypes[pybasis]:
             if (self._basis_type=="${pybasis}") and (self._result_type=="${pyresult}"):
                 self._impl_${pybasis}_${pyresult}.reset(
                         new c_GridFunction[${cybasis},${cyresult}](deref((<ParameterList>self._parameter_list).impl_),
-                        _py_get_space_ptr[${cybasis}](self._space.impl_),
-                        _py_get_space_ptr[${cybasis}]((<Space>dual_space).impl_),
+                        self._space.impl_,
+                        (<Space>dual_space).impl_,
                         deref(_py_surface_normal_dependent_function_${pyresult}(_fun_interface,kwargs['fun'],3,
                             self._space.codomain_dimension)),
                         construction_mode(approx_mode)))
@@ -194,7 +194,7 @@ cdef class GridFunction:
             if 'dual_space' not in kwargs:
                 raise ValueError('Need to specify dual space')
 
-% for pybasis,cybasis in dtypes.items():
+% for pybasis,cybasis in [('float64','double')]:
 %     for pyresult,cyresult in dtypes.items():
 %         if pyresult in compatible_dtypes[pybasis]:
             if (self._basis_type=="${pybasis}") and (self._result_type=="${pyresult}"):
@@ -203,8 +203,8 @@ cdef class GridFunction:
 
                 self._impl_${pybasis}_${pyresult}.reset(
                         new c_GridFunction[${cybasis},${cyresult}](deref((<ParameterList>self.parameter_list).impl_),
-                        _py_get_space_ptr[${cybasis}](self._space.impl_),
-                        _py_get_space_ptr[${cybasis}]((<Space>kwargs['dual_space']).impl_),
+                        self._space.impl_,
+                        <Space>kwargs['dual_space'].impl_,
                         deref(eigen_data_${pyresult})))
                 del eigen_data_${pyresult}
 %         endif
@@ -228,7 +228,7 @@ cdef class GridFunction:
 
                 self._impl_${pybasis}_${pyresult}.reset(
                         new c_GridFunction[${cybasis},${cyresult}](deref((<ParameterList>self.parameter_list).impl_),
-                        _py_get_space_ptr[${cybasis}](self._space.impl_),
+                        self._space.impl_,
                         deref(eigen_data_${pyresult})))
                 del eigen_data_${pyresult}
 %         endif
@@ -279,7 +279,7 @@ cdef class GridFunction:
 %         if pyresult in compatible_dtypes[pybasis]:
     cdef np.ndarray _projections_${pybasis}_${pyresult}(self, Space dual_space):
         cdef Vector[${cyresult}] eigen_coeffs = deref(self._impl_${pybasis}_${pyresult}).projections(
-                _py_get_space_ptr[${cybasis}](dual_space.impl_))
+                dual_space.impl_)
         return eigen_vector_to_np_${pyresult}(eigen_coeffs)
 %          endif
 %      endfor

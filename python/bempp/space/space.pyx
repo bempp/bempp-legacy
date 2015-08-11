@@ -1,16 +1,7 @@
-""" Wrappers for all types of C++ spaces """
-<%
-from data_types import dtypes, real_cython_type
-from space import spaces
-ifloop = lambda x: 'if' if loop.index == 0 else 'elif'
-%>
-from bempp.grid.grid cimport Grid
 from cython.operator cimport dereference as deref
-from libcpp cimport bool as cbool
+from bempp.utils cimport Matrix
+from bempp.utils.shared_ptr cimport reverse_const_pointer_cast
 from bempp.utils.shared_ptr cimport const_pointer_cast
-from bempp.utils.eigen cimport eigen_matrix_to_np_float32,eigen_matrix_to_np_float64
-
-
 
 cdef class Space:
     """ Space of functions defined on a grid
@@ -51,56 +42,58 @@ cdef class Space:
         A space instance should always be created using the function 'bempp.function_space'.
 
     """
+
+
+    def __cinit__(self, unsigned int order):
+        pass
+
     def __init__(self, unsigned int order):
         super(Space, self).__init__()
         self._order = order
+
+    def __dealloc__(self):
+        self.impl_.reset()
 
     property dtype:
         """ Type of the basis functions in this space. """
         def __get__(self):
             from numpy import dtype
-            return dtype(self.impl_.dtype());
+            return dtype('float64');
 
     property codomain_dimension:
         """ Number of components of values of functions in this space (e.g. 1 for scalar functions). """
         def __get__(self):
-            return self.impl_.codomainDimension()
+            return deref(self.impl_).codomainDimension()
 
     property grid:
         """ The underlyign grid for the space. """
         def __get__(self):
             cdef Grid result = Grid.__new__(Grid)
-            result.impl_ = const_pointer_cast[c_Grid](self.impl_.grid())
+            result.impl_ = const_pointer_cast[c_Grid](deref(self.impl_).grid())
             return result
 
     property domain_dimension:
         """ Dimension of the domain on which the space is defined (default 2). """
 
         def __get__(self):
-            return self.impl_.domainDimension()
+            return deref(self.impl_).domainDimension()
 
     property global_dof_count:
         """ Number of global degrees of freedom. """
 
         def __get__(self):
-            return self.impl_.globalDofCount()
+            return deref(self.impl_).globalDofCount()
 
     property flat_local_dof_count:
         """ Total number of local degrees of freedom. """
 
         def __get__(self):
-            return self.impl_.flatLocalDofCount()
+            return deref(self.impl_).flatLocalDofCount()
 
-    cpdef cbool is_compatible(self,Space other):
-        """ s.is_compatible(other_space)
+    def is_compatible(self,Space other):
+        """ Test if both spaces have the same global degrees of freedom. """
 
-            Test if both spaces have the same global degrees of freedom.
-
-        """
-
-
-        if not (self.dtype==other.dtype): return False
-        return self.impl_.isCompatible(other.impl_)
+        return deref(self.impl_).spaceIsCompatible(deref(other.impl_))
 
     property order:
         """ The order of the basis functions. """
@@ -113,17 +106,7 @@ cdef class Space:
 
         cdef vector[int] global_dofs_vec
         cdef vector[double] local_dof_weights_vec
-        if self.dtype=='float64':
-            _py_space_get_global_dofs_float64(self.impl_,deref(element.impl_),global_dofs_vec,local_dof_weights_vec)
-        else:
-            raise ValueError("Unsupported dtype.")
-        global_dofs = []
-        local_dof_weights = []
-        #for i in range(global_dofs_vec.size()):
-        #    global_dofs.append(global_dofs_vec[i])
-        #for i in range(local_dof_weights_vec):
-        #    local_dof_weights.append(local_dof_weights_vec[i])
-        #return (global_dofs,local_dof_weights)
+        deref(self.impl_).getGlobalDofs(deref(element.impl_),global_dofs_vec, local_dof_weights_vec)
         return (global_dofs_vec,local_dof_weights_vec) 
         
            
@@ -132,33 +115,17 @@ cdef class Space:
             coordinate of an interpolation points. """
 
         def __get__(self):
-
-% for pybasis,cybasis in dtypes.items():
-            if self.dtype=="${pybasis}":
-%     if pybasis in ['float32','complex64']:
-                    return eigen_matrix_to_np_float32(_py_space_get_global_dof_interp_points_${pybasis}(self.impl_))
-%     else:
-                    return eigen_matrix_to_np_float64(_py_space_get_global_dof_interp_points_${pybasis}(self.impl_))
-%     endif
-% endfor
-            raise("Unknown dtype for space")
-
+            cdef Matrix[double] data
+            deref(self.impl_).getGlobalDofInterpolationPoints(data)
+            return eigen_matrix_to_np_float64(data)
 
     property global_dof_normals:
         """ (3xN) matrix of normal directions associated with the interpolation points. """
 
         def __get__(self):
-
-% for pybasis,cybasis in dtypes.items():
-            if self.dtype=="${pybasis}":
-%     if pybasis in ['float32','complex64']:
-                    return eigen_matrix_to_np_float32(_py_space_get_global_dof_normals_${pybasis}(self.impl_))
-%     else:
-                    return eigen_matrix_to_np_float64(_py_space_get_global_dof_normals_${pybasis}(self.impl_))
-%     endif
-% endfor
-            raise("Unknown dtype for space")
-
+            cdef Matrix[double] data
+            deref(self.impl_).getNormalsAtGlobalDofInterpolationPoints(data)
+            return eigen_matrix_to_np_float64(data)
 
 def function_space(Grid grid, kind, order, domains=None, cbool closed=True):
     """ 
@@ -216,34 +183,44 @@ def function_space(Grid grid, kind, order, domains=None, cbool closed=True):
             raise ValueError("Order must be between 1 and 10")
         if (order==1):
             if domains is None:
-                s.impl_.set(shared_ptr[c_Space[double]](adaptivePiecewiseLinearContinuousScalarSpace[double](grid.impl_)))
+                s.impl_.assign(reverse_const_pointer_cast(
+                        shared_ptr[c_Space[double]](adaptivePiecewiseLinearContinuousScalarSpace[double](grid.impl_))))
             else:
-                s.impl_.set(shared_ptr[c_Space[double]](adaptivePiecewiseLinearContinuousScalarSpace[double](grid.impl_, domains, closed)))
+                s.impl_.assign(reverse_const_pointer_cast(
+                        shared_ptr[c_Space[double]](adaptivePiecewiseLinearContinuousScalarSpace[double](grid.impl_, domains, closed))))
         else:
             if domains is None:
-                s.impl_.set(shared_ptr[c_Space[double]](adaptivePiecewisePolynomialContinuousScalarSpace[double](grid.impl_, order)))
+                s.impl_.assign(reverse_const_pointer_cast(
+                        shared_ptr[c_Space[double]](adaptivePiecewisePolynomialContinuousScalarSpace[double](grid.impl_, order))))
             else:
-                s.impl_.set(shared_ptr[c_Space[double]](adaptivePiecewisePolynomialContinuousScalarSpace[double](grid.impl_, order, domains, closed)))
+                s.impl_.assign(reverse_const_pointer_cast(
+                        shared_ptr[c_Space[double]](adaptivePiecewisePolynomialContinuousScalarSpace[double](grid.impl_, order, domains, closed))))
     elif kind=="DP":
         if not (order>=0 and order <=10):
             raise ValueError("Order must be between 0 and 10")
         if (order==0):
             if domains is None:
-                s.impl_.set(shared_ptr[c_Space[double]](adaptivePiecewiseConstantScalarSpace[double](grid.impl_)))
+                s.impl_.assign(reverse_const_pointer_cast(
+                        shared_ptr[c_Space[double]](adaptivePiecewiseConstantScalarSpace[double](grid.impl_))))
             else:
-                s.impl_.set(shared_ptr[c_Space[double]](adaptivePiecewiseConstantScalarSpace[double](grid.impl_, domains, closed)))
+                s.impl_.assign(reverse_const_pointer_cast(
+                        shared_ptr[c_Space[double]](adaptivePiecewiseConstantScalarSpace[double](grid.impl_, domains, closed))))
         else:
             if domains is None:
-                s.impl_.set(shared_ptr[c_Space[double]](adaptivePiecewisePolynomialDiscontinuousScalarSpace[double](grid.impl_, order)))
+                s.impl_.assign(reverse_const_pointer_cast(
+                        shared_ptr[c_Space[double]](adaptivePiecewisePolynomialDiscontinuousScalarSpace[double](grid.impl_, order))))
             else:
-                s.impl_.set(shared_ptr[c_Space[double]](adaptivePiecewisePolynomialDiscontinuousScalarSpace[double](grid.impl_, order, domains, closed)))
+                s.impl_.assign(reverse_const_pointer_cast(
+                        shared_ptr[c_Space[double]](adaptivePiecewisePolynomialDiscontinuousScalarSpace[double](grid.impl_, order, domains, closed))))
     elif kind=="RT":
         if order!=0:
             raise ValueError("Only 0 order Raviart-Thomas spaces are implemented.")
         if domains is None:
-            s.impl_.set(shared_ptr[c_Space[double]](adaptiveRaviartThomas0VectorSpace[double](grid.impl_)))
+            s.impl_.assign(reverse_const_pointer_cast(
+                    shared_ptr[c_Space[double]](adaptiveRaviartThomas0VectorSpace[double](grid.impl_))))
         else:
-            s.impl_.set(shared_ptr[c_Space[double]](adaptiveRaviartThomas0VectorSpace[double](grid.impl_, domains, closed)))
+            s.impl_.assign(reverse_const_pointer_cast(
+                    shared_ptr[c_Space[double]](adaptiveRaviartThomas0VectorSpace[double](grid.impl_, domains, closed))))
     else:
         raise ValueError("Unknown kind")
 

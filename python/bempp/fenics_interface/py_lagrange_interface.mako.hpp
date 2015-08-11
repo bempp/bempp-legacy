@@ -6,14 +6,13 @@
 #include "bempp/common/shared_ptr.hpp"
 #include "bempp/grid/grid.hpp"
 #include "bempp/grid/concrete_grid.hpp"
+#include "bempp/space/space.hpp"
 
 
 namespace Bempp {
 
    static inline PyObject* _py_p1_vertex_map(
-           const SpaceVariants& spaceVariant){
-
-       const Space<double>& space = *(_py_get_space_ptr<double>(spaceVariant));
+           const Space& space){
 
        auto grid = space.grid();
        auto view = grid->leafView();

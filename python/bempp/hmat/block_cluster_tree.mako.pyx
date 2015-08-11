@@ -1,7 +1,7 @@
 from cython.operator cimport dereference as deref
 from cython.operator cimport address
 
-from bempp.space.space cimport Space, c_Space, _py_get_space_ptr
+from bempp.space.space cimport Space, c_Space
 from bempp.utils.parameter_list cimport ParameterList 
 
 cdef class IndexRange:
@@ -215,8 +215,8 @@ def generate_block_cluster_tree(Space test_space, Space trial_space,
         parameters = global_parameters
 
     result.impl_.assign(c_generateBlockClusterTree[double](
-        deref(_py_get_space_ptr[double](test_space.impl_)),
-        deref(_py_get_space_ptr[double](trial_space.impl_)),
+        deref(test_space.impl_),
+        deref(trial_space.impl_),
         deref(parameters.impl_)))
     return result
 

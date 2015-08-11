@@ -1,17 +1,17 @@
-set(makoes py_types.mako.hpp py_utils.mako.hpp
-    parameter_list.mako.pxd parameter_list.mako.pyx
-    __init__.mako.pxd eigen.mako.pxd eigen.mako.pyx shared_ptr.mako.pxd
-    unique_ptr.mako.pxd enum_types.mako.pxd enum_types.mako.pyx
-    signal_slot_interface.mako.pxd)
+set(copy_files py_types.hpp py_utils.hpp
+    parameter_list.pxd parameter_list.pyx
+    __init__.pxd eigen.pxd eigen.pyx shared_ptr.pxd
+    unique_ptr.pxd enum_types.pxd enum_types.pyx
+    signal_slot_interface.pxd)
 
-mako_files(${makoes}
-    OUTPUT_FILES makoed
+copy_files_on_change(${copy_files}
+    OUTPUT_FILES copied
     DESTINATION "${PYTHON_BINARY_DIR}/bempp/include/bempp/utils/"
-    TARGETNAME bempp.utils-mako
+    TARGETNAME bempp.utils-copied
 )
 
 
-split_list(sources headers makoed ".*\\.pyx")
+split_list(sources headers copied ".*\\.pyx")
 
 
 install_python(FILES ${headers} 
@@ -25,5 +25,5 @@ add_python_module(bempp.utils
     LIBRARIES libbempp
 )
 
-add_dependencies(cython-headers bempp.utils-mako)
+add_dependencies(cython-headers bempp.utils-copied)
 add_dependencies(bempp.utils cython-headers)
