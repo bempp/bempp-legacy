@@ -55,12 +55,13 @@ cdef extern from "bempp/assembly/py_discrete_operator_support.hpp" namespace "Be
 cdef class BoundaryOperatorBase:
     cdef object _basis_type
     cdef object _result_type
-    cdef object _strong_form
+    cdef object _map_to_domain
 
 cdef class GeneralBoundaryOperator(BoundaryOperatorBase):
     cdef BoundaryOpVariants impl_
     cdef ParameterList _parameters
     cdef cbool _is_sparse
+    cdef object operator_type
 
 cdef class DenseBoundaryOperator(GeneralBoundaryOperator):
     pass

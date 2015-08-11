@@ -24,6 +24,7 @@
 #include "piecewise_linear_continuous_scalar_space_barycentric.hpp"
 
 #include "space_helper.hpp"
+#include "adaptive_space.hpp"
 
 #include "../assembly/discrete_boundary_operator.hpp"
 
@@ -454,6 +455,47 @@ void PiecewiseLinearContinuousScalarSpace<BasisFunctionType>::dumpClusterIdsEx(
   }
 }
 
+template <typename BasisFunctionType>
+shared_ptr<Space<BasisFunctionType>> adaptivePiecewiseLinearContinuousScalarSpace(const shared_ptr<const Grid>& grid)
+{
+
+    return shared_ptr<Space<BasisFunctionType>>(
+            new AdaptiveSpace<BasisFunctionType, PiecewiseLinearContinuousScalarSpace<BasisFunctionType>>(grid));
+
+}
+
+template <typename BasisFunctionType>
+shared_ptr<Space<BasisFunctionType>> adaptivePiecewiseLinearContinuousScalarSpace(const shared_ptr<const Grid>& grid,
+        const std::vector<int>& domains, bool open)
+{
+
+    return shared_ptr<Space<BasisFunctionType>>(
+            new AdaptiveSpace<BasisFunctionType, PiecewiseLinearContinuousScalarSpace<BasisFunctionType>>(grid, domains, open));
+
+}
+
+template <typename BasisFunctionType>
+shared_ptr<Space<BasisFunctionType>> adaptivePiecewiseLinearContinuousScalarSpace(const shared_ptr<const Grid>& grid,
+        int domain, bool open)
+{
+    
+    return shared_ptr<Space<BasisFunctionType>>(
+            new AdaptiveSpace<BasisFunctionType, PiecewiseLinearContinuousScalarSpace<BasisFunctionType>>(grid,
+                std::vector<int>({domain}),open));
+}
+
+#define INSTANTIATE_FREE_FUNCTIONS(BASIS)   \
+    template shared_ptr<Space<BASIS>> adaptivePiecewiseLinearContinuousScalarSpace<BASIS>( \
+            const shared_ptr<const Grid>&); \
+    template shared_ptr<Space<BASIS>> adaptivePiecewiseLinearContinuousScalarSpace<BASIS>( \
+            const shared_ptr<const Grid>&, \
+            const std::vector<int>&, bool); \
+    template shared_ptr<Space<BASIS>> adaptivePiecewiseLinearContinuousScalarSpace<BASIS>( \
+            const shared_ptr<const Grid>&, \
+            int, bool) 
+
+
+FIBER_ITERATE_OVER_BASIS_TYPES(INSTANTIATE_FREE_FUNCTIONS);
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(
     PiecewiseLinearContinuousScalarSpace);
 

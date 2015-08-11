@@ -114,14 +114,14 @@ cdef class BoundaryOperatorBase:
 
     def strong_form(self):
 
-        if self._strong_form is not None:
-            return self._strong_form
+        if self._map_to_domain is not None:
+            return self._map_to_domain*self.weak_form()
 
-        self.initialize_strong_form()
-        return self._strong_form
+        self.initialize_map_to_domain()
+        return self._map_to_domain*self.weak_form()
 
 
-    def initialize_strong_form(self, use_lsmr=False, atol=1E-6, btol=1E-6,
+    def initialize_map_to_domain(self, use_lsmr=False, atol=1E-6, btol=1E-6,
             conlim=1E8, maxiter=None, show=False):
 
         from bempp.operators.boundary.sparse import identity
@@ -133,7 +133,7 @@ cdef class BoundaryOperatorBase:
                     self.range,self.range,self.dual_to_range).
                 weak_form(), use_lsmr, atol, btol, conlim, maxiter, show)
 
-        self._strong_form = inverse_mass*self.weak_form()
+        self._map_to_domain = inverse_mass
 
     def _apply_grid_function(self,GridFunction g):
 
@@ -157,20 +157,12 @@ cdef class GeneralBoundaryOperator(BoundaryOperatorBase):
             ParameterList parameters, object is_sparse=False):
         pass
 
-    def _apply_grid_function(self,GridFunction g):
-        if not(self.domain.is_compatible(g.space)):
-            raise ValueError("Spaces do not match")
-
-        op_s =  self.strong_form()
-        coeffs = g.coefficients
-        result = (op_s*coeffs)
-        return GridFunction(self.range,coefficients=result)
-
     def weak_form(self):
 
         if self.is_sparse:
             return self._sparse_weak_form()
-        elif self.parameter_list.assembly.boundary_operator_assembly_type =='hmat':
+        elif (self.parameter_list.assembly.boundary_operator_assembly_type =='hmat'
+                and self.operator_type=='standard'):
             return self._hmat_weak_form()
         else:
             return self._default_weak_form()

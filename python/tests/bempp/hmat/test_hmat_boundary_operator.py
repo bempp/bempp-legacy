@@ -6,6 +6,8 @@ import numpy as np
 
 ACA_ACCURACY = 1E-3
 
+
+
 class TestHMatBoundaryOperator(object):
 
 
@@ -27,6 +29,7 @@ class TestHMatBoundaryOperator(object):
     def dense_operator_parameters(self):
 
         parameters = bempp.common.global_parameters()
+        parameters.assembly.boundary_operator_assembly_type = 'dense'
         parameters.quadrature.near.double_order = 4
         parameters.quadrature.medium.double_order = 4
         parameters.quadrature.far.double_order = 4

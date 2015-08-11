@@ -5,7 +5,6 @@ codims = [('0','codim_zero'),('1','codim_one'),('2','codim_two')]
 from bempp.utils cimport unique_ptr
 from bempp.grid.codim_template cimport codim_zero,codim_one,codim_two
 
-
 from bempp.grid.entity cimport c_Entity
 
 cdef extern from "bempp/grid/entity_pointer.hpp" namespace "Bempp":

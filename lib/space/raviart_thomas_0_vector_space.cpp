@@ -19,6 +19,7 @@
 // THE SOFTWARE.
 
 #include "raviart_thomas_0_vector_space.hpp"
+#include "adaptive_space.hpp"
 
 #include "piecewise_linear_discontinuous_scalar_space.hpp"
 #include "space_helper.hpp"
@@ -613,6 +614,50 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::dumpClusterIdsEx(
   throw std::runtime_error("RaviartThomas0VectorSpace::"
                            "dumpClusterIdsEx(): Not implemented yet");
 }
+
+template <typename BasisFunctionType>
+shared_ptr<Space<BasisFunctionType>>
+adaptiveRaviartThomas0VectorSpace(const shared_ptr<const Grid> &grid) {
+
+  return shared_ptr<Space<BasisFunctionType>>(
+      new AdaptiveSpace<BasisFunctionType,
+                        RaviartThomas0VectorSpace<BasisFunctionType>>(grid));
+}
+
+template <typename BasisFunctionType>
+shared_ptr<Space<BasisFunctionType>>
+adaptiveRaviartThomas0VectorSpace(const shared_ptr<const Grid> &grid,
+                                     const std::vector<int> &domains,
+                                     bool open) {
+
+  return shared_ptr<Space<BasisFunctionType>>(
+      new AdaptiveSpace<BasisFunctionType,
+                        RaviartThomas0VectorSpace<BasisFunctionType>>(
+          grid, domains, open));
+}
+
+template <typename BasisFunctionType>
+shared_ptr<Space<BasisFunctionType>>
+adaptiveRaviartThomas0VectorSpace(const shared_ptr<const Grid> &grid,
+                                     int domain, bool open) {
+
+  return shared_ptr<Space<BasisFunctionType>>(
+      new AdaptiveSpace<BasisFunctionType,
+                        RaviartThomas0VectorSpace<BasisFunctionType>>(
+          grid, std::vector<int>({domain}), open));
+}
+
+#define INSTANTIATE_FREE_FUNCTIONS(BASIS)                                      \
+  template shared_ptr<Space<BASIS>>                                            \
+  adaptiveRaviartThomas0VectorSpace<BASIS>(const shared_ptr<const Grid> &); \
+  template shared_ptr<Space<BASIS>>                                            \
+  adaptiveRaviartThomas0VectorSpace<BASIS>(const shared_ptr<const Grid> &,  \
+                                              const std::vector<int> &, bool); \
+  template shared_ptr<Space<BASIS>>                                            \
+  adaptiveRaviartThomas0VectorSpace<BASIS>(const shared_ptr<const Grid> &,  \
+                                              int, bool)
+
+FIBER_ITERATE_OVER_BASIS_TYPES(INSTANTIATE_FREE_FUNCTIONS);
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(RaviartThomas0VectorSpace);
 

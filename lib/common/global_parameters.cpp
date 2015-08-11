@@ -37,7 +37,7 @@ ParameterList GlobalParameters::parameterList() {
   // Default assembly type for boundary operators. Allowed values are
   // "dense" and "hmat".
   parameters.put("options.assembly.boundaryOperatorAssemblyType",
-                 std::string("dense"));
+                 std::string("hmat"));
 
   // Default assembly type for potential oeprators.
   // Allowed values are "dense" and "hmat".
@@ -113,7 +113,11 @@ ParameterList GlobalParameters::parameterList() {
 
   // Accuracy for coarsening
   // 0: Use same as options.hmat.eps
-  parameters.put("options.hmat.coarsening_accuracy", static_cast<double>(0));
+  parameters.put("options.hmat.coarseningAccuracy", static_cast<double>(0));
+
+  // Number of levels for matvec parallelisation
+  // The total number of tasks is 4^matVecParallelLevels
+  parameters.put("options.hmat.matVecParallelLevels", static_cast<int>(5));
 
   return parameters;
 }

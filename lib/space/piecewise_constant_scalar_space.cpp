@@ -35,6 +35,7 @@
 #include "../grid/grid_view.hpp"
 #include "../grid/mapper.hpp"
 #include "../grid/vtk_writer.hpp"
+#include "adaptive_space.hpp"
 
 namespace Bempp {
 
@@ -350,6 +351,47 @@ void PiecewiseConstantScalarSpace<BasisFunctionType>::dumpClusterIdsEx(
   vtkWriter->write(fileName);
 }
 
+template <typename BasisFunctionType>
+shared_ptr<Space<BasisFunctionType>> adaptivePiecewiseConstantScalarSpace(const shared_ptr<const Grid>& grid)
+{
+
+    return shared_ptr<Space<BasisFunctionType>>(
+            new AdaptiveSpace<BasisFunctionType, PiecewiseConstantScalarSpace<BasisFunctionType>>(grid));
+
+}
+
+template <typename BasisFunctionType>
+shared_ptr<Space<BasisFunctionType>> adaptivePiecewiseConstantScalarSpace(const shared_ptr<const Grid>& grid,
+        const std::vector<int>& domains, bool open)
+{
+
+    return shared_ptr<Space<BasisFunctionType>>(
+            new AdaptiveSpace<BasisFunctionType, PiecewiseConstantScalarSpace<BasisFunctionType>>(grid, domains, open));
+
+}
+
+template <typename BasisFunctionType>
+shared_ptr<Space<BasisFunctionType>> adaptivePiecewiseConstantScalarSpace(const shared_ptr<const Grid>& grid,
+        int domain, bool open)
+{
+    
+    return shared_ptr<Space<BasisFunctionType>>(
+            new AdaptiveSpace<BasisFunctionType, PiecewiseConstantScalarSpace<BasisFunctionType>>(grid,
+                std::vector<int>({domain}),open));
+}
+
+#define INSTANTIATE_FREE_FUNCTIONS(BASIS)   \
+    template shared_ptr<Space<BASIS>> adaptivePiecewiseConstantScalarSpace<BASIS>( \
+            const shared_ptr<const Grid>&); \
+    template shared_ptr<Space<BASIS>> adaptivePiecewiseConstantScalarSpace<BASIS>( \
+            const shared_ptr<const Grid>&, \
+            const std::vector<int>&, bool); \
+    template shared_ptr<Space<BASIS>> adaptivePiecewiseConstantScalarSpace<BASIS>( \
+            const shared_ptr<const Grid>&, \
+            int, bool) 
+
+
+FIBER_ITERATE_OVER_BASIS_TYPES(INSTANTIATE_FREE_FUNCTIONS);
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(PiecewiseConstantScalarSpace);
 
 } // namespace Bempp

@@ -260,14 +260,21 @@ cdef class _HMatParameterList:
             cdef char* s = b"options.hmat.coarsening"
             deref(self.impl_).put_bool(s,value)
 
-    property coarsening_accuracy:
+    property coarseningAccuracy:
         def __get__(self):
-            cdef char* s = b"options.hmat.coarsening_accuracy"
+            cdef char* s = b"options.hmat.coarseningAccuracy"
             return deref(self.impl_).get_double(s)
         def __set__(self,object value):
-            cdef char* s = b"options.hmat.coarsening_accuracy"
+            cdef char* s = b"options.hmat.coarseningAccuracy"
             deref(self.impl_).put_double(s,value)
     
+    property mat_vec_parallel_levels:
+        def __get__(self):
+            cdef char* s = b"options.hmat.matVecParallelLevels"
+            return deref(self.impl_).get_int(s)
+        def __set__(self,int value):
+            cdef char* s = b"options.hmat.matVecParallelLevels"
+            deref(self.impl_).put_int(s,value)
 
 cdef class ParameterList:
 

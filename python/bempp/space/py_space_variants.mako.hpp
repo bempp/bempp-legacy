@@ -10,6 +10,8 @@ from space import spaces
 #include "bempp/space/space.hpp"
 #include "bempp/utils/py_types.hpp"
 #include "bempp/common/eigen_support.hpp"
+#include <boost/signals2/signal.hpp>
+#include <functional>
 #include <boost/variant.hpp>
 #include <type_traits>
 #include <type_traits>
@@ -66,6 +68,13 @@ class SpaceVariants {
         template<typename T> size_t operator()(shared_ptr<T> const &_in) const { return _in->flatLocalDofCount();}
     };
 
+    struct Connect : public boost::static_visitor<boost::signals2::connection> {
+        Connect(const std::function<void()>& f) : boost::static_visitor<boost::signals2::connection>(),
+         m_f(f){};
+        template <typename T> boost::signals2::connection operator()(shared_ptr<T> const &_in) 
+            const { return _in->connect(m_f);}
+        const std::function<void()>& m_f;
+    };
 
     struct IsCompatible : public boost::static_visitor<bool> {
         BEMPP_EXPLICIT_CONSTRUCTOR(IsCompatible, bool);
@@ -167,6 +176,10 @@ class SpaceVariants {
 
         size_t flatLocalDofCount() const {
             return boost::apply_visitor(SpaceVariants::GetFlatLocalDofCount(),space_);
+        }
+
+        boost::signals2::connection connect(const std::function<void()>& f) const {
+            return boost::apply_visitor(SpaceVariants::Connect(f),space_);
         }
 
         t_variant & variants() { return space_; }

@@ -86,9 +86,9 @@ class _OsrcDtn(BoundaryOperatorBase):
         term = ZeroBoundaryOperator(space, space, space).weak_form()
 
         for i in range(self._npade):
-            term = term + (alpha[i]/(dk**2) * stiff * 
+            term = term - (alpha[i]/(dk**2) * stiff * 
                     InverseSparseDiscreteBoundaryOperator(
-                        mass + beta[i]/(dk**2) * stiff))
+                        mass - beta[i]/(dk**2) * stiff))
         result = 1j*self._wave_number*(c0*mass + term * mass)
 
         self._weak_form = result
@@ -162,11 +162,11 @@ class _OsrcNtd(BoundaryOperatorBase):
         term = ZeroBoundaryOperator(space, space, space).weak_form()
 
         for i in range(self._npade):
-            term = term + (alpha[i]/(dk**2) * stiff * 
+            term = term - (alpha[i]/(dk**2) * stiff * 
                     InverseSparseDiscreteBoundaryOperator(
-                        mass + beta[i]/(dk**2) * stiff))
+                        mass - beta[i]/(dk**2) * stiff))
         result = 1./(1j*self._wave_number)*(
-                mass * InverseSparseDiscreteBoundaryOperator(mass+1./(dk**2)*stiff)*(c0*mass + term * mass))
+                mass * InverseSparseDiscreteBoundaryOperator(mass-1./(dk**2)*stiff)*(c0*mass + term * mass))
 
         self._weak_form = result
         
@@ -210,3 +210,11 @@ def _pade_coeffs(n, theta):
     ajt = np.exp(-1j * theta / 2.0) * aj / ( (1 + bj * (np.exp(-1j*theta) - 1))**2 )
     bjt = np.exp(-1j * theta) * bj / (1 + bj * (np.exp(-1j*theta) - 1))
     return C0t, ajt, bjt
+
+
+
+
+
+        
+
+

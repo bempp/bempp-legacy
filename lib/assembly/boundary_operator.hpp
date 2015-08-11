@@ -29,8 +29,10 @@
 #include <boost/mpl/has_key.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/weak_ptr.hpp>
+#include <boost/signals2/signal.hpp>
 #include <string>
 #include <iostream>
+
 
 #include <complex>
 
@@ -89,6 +91,14 @@ public:
       const shared_ptr<const AbstractBoundaryOperator<BasisFunctionType,
                                                       ResultType>> &abstractOp);
 
+  /** \brief Copy constructor. */
+  BoundaryOperator(
+          const BoundaryOperator<BasisFunctionType, ResultType>& other);
+
+  /** \brief Assignment operator. */
+  BoundaryOperator<BasisFunctionType, ResultType>& operator=(
+          const BoundaryOperator<BasisFunctionType, ResultType>& other);
+
   /** \brief Initialize or reinitialize a BoundaryOperator.
    *
    *  \param[in] context
@@ -113,6 +123,9 @@ public:
    *  This function resets the internal shared pointers to the abstract
    *  boundary operator and its weak form to NULL. */
   void uninitialize();
+
+  /** \brief Reset the stored weak form. */
+  void reset();
 
   /** \brief Return true if the BoundaryOperator has been initialized, false
    *  otherwise. */
@@ -198,6 +211,10 @@ public:
 
 private:
   /** \cond PRIVATE */
+
+  void connect();
+  void disconnect();
+
   shared_ptr<const Context<BasisFunctionType, ResultType>> m_context;
   shared_ptr<const AbstractBoundaryOperator<BasisFunctionType, ResultType>>
       m_abstractOp;
@@ -208,6 +225,8 @@ private:
   typedef boost::weak_ptr<const DiscreteBoundaryOperator<ResultType>>
       WeakConstWeakFormContainer;
   mutable shared_ptr<WeakConstWeakFormContainer> m_weakWeakFormContainer;
+  boost::signals2::connection m_domain_connection;
+  boost::signals2::connection m_dual_to_range_connection;
   /** \endcond */
 };
 

@@ -12,6 +12,9 @@ from bempp import GridFunction
 
 import bempp
 
+# Needed for these unit tests
+bempp.global_parameters.assembly.boundary_operator_assembly_type = 'dense'
+
 
 import numpy as np
 

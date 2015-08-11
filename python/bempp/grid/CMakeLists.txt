@@ -8,7 +8,9 @@ set(makoes entity.mako.pxd entity.mako.pyx
            geometry.mako.pxd geometry.mako.pyx
            codim_template.mako.pxd
            index_set.mako.pxd index_set.mako.pyx
-           py_sphere.mako.hpp refinement.mako.pyx)
+           py_sphere.mako.hpp 
+           py_entity_helper.mako.hpp
+           id_set.mako.pxd id_set.mako.pyx)
 
 mako_files(${makoes}
            OUTPUT_FILES makoed

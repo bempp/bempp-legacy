@@ -40,6 +40,11 @@ def ${pyname}(Space domain, Space range, Space dual_to_range,
 
     cdef ParameterList local_parameters
     cdef GeneralBoundaryOperator bop 
+% if pyname=='hypersingular':
+    cdef object operator_type = 'synthetic'
+% else:
+    cdef object operator_type = 'standard'
+% endif
 
 % for pyresult,cyresult in dtypes.items():
     cdef ${scalar_cython_type(cyresult)} cy_wave_number_${pyresult}
@@ -76,6 +81,12 @@ def ${pyname}(Space domain, Space range, Space dual_to_range,
         c_wave_number_${pyresult} = deref(<${cyresult}*>&cy_wave_number_${pyresult})
         bop = GeneralBoundaryOperator(basis_type,result_type,
                 local_parameters)
+
+% if pyname=='hypersingular':
+        bop.operator_type = 'synthetic'
+% else:
+        bop.operator_type = 'standard'
+% endif
 
         bop.impl_.assign(
             ${c_name}[${cybasis},${cyresult}](

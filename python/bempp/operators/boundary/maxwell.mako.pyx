@@ -62,6 +62,7 @@ def single_layer(Space domain, Space range, Space dual_to_range,
 
     bop = GeneralBoundaryOperator("float64","complex128",
             local_parameters)
+    bop.operator_type = 'synthetic'
 
     bop.impl_.assign(
             c_maxwellSingleLayerOperator(
@@ -100,6 +101,7 @@ def double_layer(Space domain, Space range, Space dual_to_range,
 
     bop = GeneralBoundaryOperator("float64","complex128",
             local_parameters)
+    bop.operator_type = 'synthetic'
 
     bop.impl_.assign(
             c_maxwellDoubleLayerOperator(

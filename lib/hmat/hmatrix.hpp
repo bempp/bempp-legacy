@@ -25,9 +25,11 @@ public:
       shared_ptr<BlockClusterTreeNode<N>>, shared_ptr<HMatrixData<ValueType>>,
       shared_ptr_hash<BlockClusterTreeNode<N>>> ParallelDataContainer;
 
-  HMatrix(const shared_ptr<BlockClusterTree<N>> &blockClusterTree);
+  HMatrix(const shared_ptr<BlockClusterTree<N>> &blockClusterTree,
+      int applyParallelLevels = 3);
   HMatrix(const shared_ptr<BlockClusterTree<N>> &blockClusterTree,
           const HMatrixCompressor<ValueType, N> &hMatrixCompressor,
+          int applyParallelLevels = 3,
           bool coarsening = false, double coarsening_accuracy = 0);
 
   std::size_t rows() const;
@@ -62,7 +64,11 @@ public:
   double memSizeKb() const;
 
 private:
-  void apply_impl(const shared_ptr<BlockClusterTreeNode<N>> &node,
+  void apply_impl_parallel(const shared_ptr<BlockClusterTreeNode<N>> &node,
+                  const Eigen::Ref<Matrix<ValueType>> &X,
+                  Eigen::Ref<Matrix<ValueType>> Y, TransposeMode trans, int levelCount) const;
+
+  void apply_impl_serial(const shared_ptr<BlockClusterTreeNode<N>> &node,
                   const Eigen::Ref<Matrix<ValueType>> &X,
                   Eigen::Ref<Matrix<ValueType>> Y, TransposeMode trans) const;
 
@@ -78,6 +84,7 @@ private:
   int m_numberOfDenseBlocks;
   int m_numberOfLowRankBlocks;
   int m_memSizeKb;
+  int m_applyParallelLevels;
 };
 }
 

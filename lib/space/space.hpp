@@ -36,6 +36,7 @@
 #include "../fiber/scalar_traits.hpp"
 #include "../common/global_parameters.hpp"
 #include "../hmat/cluster_tree.hpp"
+#include <boost/signals2/signal.hpp>
 
 
 #include <vector>
@@ -182,7 +183,7 @@ public:
 
   /** \brief Shared pointer to the grid on which the functions from this space
    *  are defined. */
-  shared_ptr<const Grid> grid() const { return m_grid; }
+  virtual shared_ptr<const Grid> grid() const { return m_grid; }
 
   /** \brief Reference to the shapeset attached to the specified element.
    *
@@ -225,16 +226,16 @@ public:
       const shared_ptr<const Space<BasisFunctionType>> &self) const;
 
   /** \brief Return the grid level of the current space */
-  unsigned int level() const { return m_level; }
+  virtual unsigned int level() const { return m_level; }
 
   /** \brief Return the underlying grid dimension */
-  int gridDimension() const;
+  virtual int gridDimension() const;
 
   /** \brief Return the underlying world dimension */
-  int worldDimension() const;
+  virtual int worldDimension() const;
 
   /** \brief Return the grid view of the current space */
-  const GridView &gridView() const;
+  virtual const GridView &gridView() const;
 
   /** \brief Transformation mapping shape functions to basis functions.
    *
@@ -281,7 +282,7 @@ public:
 
   /** \brief Return the GeometryFactory associated with the mesh. */
 
-  shared_ptr<GeometryFactory> elementGeometryFactory() const {
+  virtual shared_ptr<GeometryFactory> elementGeometryFactory() const {
     return m_elementGeometryFactory;
   }
 
@@ -306,6 +307,9 @@ public:
    *  constructor, this function always returns true.
    */
   BEMPP_DEPRECATED bool dofsAssigned() const;
+
+  /** \brief Update the space when the grid changes */
+  virtual void update();
 
   /** \brief Total number of local degrees of freedom on all elements. */
   virtual size_t flatLocalDofCount() const = 0;
@@ -551,6 +555,27 @@ public:
   }
 
   /** @}
+      @name H-Matrix support
+      @} */
+  
+  /** \brief Initialize the cluster tree associated with this space. */
+  virtual void initializeClusterTree(const ParameterList& parameterList);
+
+  /** \brief Return the cluster tree associated with this space. */
+  virtual shared_ptr<const hmat::DefaultClusterTreeType> clusterTree() const;
+
+  /** @} */
+
+  /** @} 
+      @name Signal Handling
+      @} */
+
+  /** \brief Connect objects that need to be notified when a space is updated. */
+  virtual boost::signals2::connection connect(const std::function<void()>& f) const;
+
+  /** @} */
+
+  /** @}
       @name Debugging
       @} */
 
@@ -603,14 +628,12 @@ public:
                    const std::vector<unsigned int> &clusterIdsOfGlobalDofs,
                    DofType dofType) const;
 
-  
-  /** \brief Initialize the cluster tree associated with this space. */
-  void initializeClusterTree(const ParameterList& parameterList);
-
-  /** \brief Return the cluster tree associated with this space. */
-  shared_ptr<const hmat::DefaultClusterTreeType> clusterTree() const;
-
   /** @} */
+
+protected:
+
+  void sendUpdateSignal() const;
+
 private:
   /** \cond PRIVATE */
   shared_ptr<const Grid> m_grid;
@@ -618,6 +641,8 @@ private:
   unsigned int m_level;
   std::unique_ptr<GridView> m_view;
   shared_ptr<const hmat::DefaultClusterTreeType> m_clusterTree;
+
+  mutable boost::signals2::signal<void()> m_spaceUpdateSignal;
   /** \endcond */
 };
 
