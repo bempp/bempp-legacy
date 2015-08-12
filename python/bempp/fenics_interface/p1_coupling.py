@@ -1,5 +1,5 @@
 
-def p1_dof_to_vertex_matrix(space):
+def p1_dof_to_vertex_matrix(space): # NOTE: function not used!?
 
     import numpy as np
 
