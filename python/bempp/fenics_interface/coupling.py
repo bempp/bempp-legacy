@@ -16,7 +16,7 @@ def generic_pn_trace(fenics_space):
 
     import dolfin
     from .coupling import fenics_space_info
-    from bempp import function_space, grid_from_element_data, GridFunction
+    from bempp import function_space, grid_from_element_data, GridFunction, global_parameters
     import numpy as np
 
     family,degree = fenics_space_info(fenics_space)
@@ -36,6 +36,9 @@ def generic_pn_trace(fenics_space):
 
     # Now compute the mapping from BEM++ dofs to FEniCS dofs
     from scipy.sparse import coo_matrix
+    single_order_orig = global_parameters.quadrature.far.single_order
+    global_parameters.quadrature.far.single_order = 5 # TODO: use interplolation order accoriding to target space order
+
     def FenicsData(x, n, domain_index, result):
         value = np.empty(1)
         u_FEM.eval(value, x)
@@ -46,12 +49,14 @@ def generic_pn_trace(fenics_space):
     u_FEM.vector()[:] = np.arange(N)
     u_BEM = GridFunction(space, dual_space=space,fun=FenicsData)
     FEM2BEM = np.rint(u_BEM.coefficients).astype(np.int64)
-    if max(abs(FEM2BEM-u_BEM.coefficients)) > 0.01:
+    if max(abs(FEM2BEM-u_BEM.coefficients)) > 0.1:
         raise ValueError("interpolation from FEM to BEM space too inaccurate.")
     NB = len(FEM2BEM)
     trace_matrix = coo_matrix((
         np.ones(NB),(np.arange(NB),FEM2BEM)),
         shape=(NB,N),dtype='float64').tocsc()
+
+    global_parameters.quadrature.far.single_order = single_order_orig
 
     # Now return everything
     return (space,trace_matrix)
