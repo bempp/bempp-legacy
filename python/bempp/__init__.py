@@ -38,10 +38,19 @@ def _check_create_init_dir():
 
     home = expanduser("~")
     config_path = join(home,".bempp")
-    tmp_path = join(config_path,"tmp")
 
-    if not isdir(config_path):
-        mkdir(config_path)
+    try:
+        if not isdir(config_path):
+            mkdir(config_path)
+    except OSError: # Read only file system try a tmp dir
+        import tempfile
+        import warnings
+        warnings.warn("Could not create BEM++ config dir."
+            "Falling back to a temorary dir."
+            "Your config will not be stored")
+        config_path = tempfile.mkdtemp()
+
+    tmp_path = join(config_path,"tmp")
     if not isdir(tmp_path):
         mkdir(tmp_path)
 

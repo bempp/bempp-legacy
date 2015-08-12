@@ -224,7 +224,7 @@ bool
 AdaptiveSpace<BasisFunctionType_,SpaceType>::spaceIsCompatible(const Space<BasisFunctionType> &other) const
 {
 
-    return currentSpace().spaceIsCompatible(other);
+    return this->globalDofCount()==other.globalDofCount();
 
 }
 

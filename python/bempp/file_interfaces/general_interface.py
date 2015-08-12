@@ -223,7 +223,7 @@ def export(**kwargs):
     vertex_index_to_file_key_map = None
     element_index_to_file_key_map = None
 
-    if kwargs.has_key('file_name'):
+    if 'file_name' in kwargs:
         fname = kwargs['file_name']
     else:
         raise ValueError("file_name must be specified.")
@@ -234,23 +234,23 @@ def export(**kwargs):
         from bempp.file_interfaces import gmsh
         interface = gmsh.GmshInterface()
     
-    if kwargs.has_key('grid') + kwargs.has_key('grid_function')!= 1:
+    if int('grid' in kwargs) + int('grid_function' in kwargs) != 1:
         raise ValueError("Exactly one of 'grid' or 'grid_function' must be specified")
 
-    if kwargs.has_key('grid'):
+    if 'grid' in kwargs:
         grid = kwargs['grid']
-    elif kwargs.has_key('grid_function'):
+    elif 'grid_function' in kwargs:
         grid = kwargs['grid_function'].grid
 
     number_of_vertices = grid.leaf_view.entity_count(2)
     number_of_elements = grid.leaf_view.entity_count(0)
 
     offset = interface.index_offset
-    if kwargs.has_key('vertex_index_to_file_key_map'):
+    if 'vertex_index_to_file_key_map' in kwargs:
         vertex_index_to_file_key_map = kwargs['vertex_index_to_file_key_map']
     else:
         vertex_index_to_file_key_map = range(offset,number_of_vertices+offset)
-    if kwargs.has_key('element_index_to_file_key_map'):
+    if 'element_index_to_file_key_map' in kwargs:
         element_index_to_file_key_map = kwargs['element_index_to_file_key_map']
     else:
         element_index_to_file_key_map = range(offset,number_of_elements+offset)
@@ -273,11 +273,11 @@ def export(**kwargs):
 
     # Evaluate data
 
-    if kwargs.has_key('grid_function'):
+    if 'grid_function' in kwargs:
         fun = kwargs['grid_function']
         data_type = kwargs.get('data_type',interface.default_data_type)
 
-        if kwargs.has_key('transformation'):
+        if 'transformation' in kwargs:
             transformation = kwargs['transformation']
         else:
             transformation = lambda x: x
