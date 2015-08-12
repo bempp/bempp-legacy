@@ -84,11 +84,15 @@ class BlockedDiscreteLinearOperator(object):
 
     def matvec(self, x):
 
-        from .data_types import combined_type
-
         if x.ndim==1:
-            x_new = _np.expand_dims(x,1)
-            return self.matvec(x_new).ravel()
+          x_new = _np.expand_dims(x,1)
+          return self.matmat(x_new).ravel()
+        else:
+          return self.matmat(x)
+
+    def matmat(self,x):
+
+        from .data_types import combined_type
 
         if not self._fill_complete():
             raise ValueError("Not all rows or columns contain operators.")
@@ -111,10 +115,6 @@ class BlockedDiscreteLinearOperator(object):
                 col_dim +=self._cols[j]
             row_dim += self._rows[i]
         return res
-
-    def matmat(self,x):
-
-        return self.matvec(x)
 
     def __mul__(self,x):
 
