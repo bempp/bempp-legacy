@@ -1,2 +1,2 @@
-from bempp_ext.utils.parameter_list import ParameterList
 from bempp_ext.common.global_parameters import global_parameters
+

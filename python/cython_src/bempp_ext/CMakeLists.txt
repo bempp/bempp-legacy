@@ -44,6 +44,7 @@ add_subdirectory(grid)
 add_subdirectory(space)
 add_subdirectory(assembly)
 add_subdirectory(operators)
+add_subdirectory(common)
 
 #add_subdirectory(common)
 #add_subdirectory(utils)

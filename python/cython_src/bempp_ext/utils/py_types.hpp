@@ -4,7 +4,7 @@
 #include<complex>
 
 namespace {
-    typedef std::complex<double> complex_double
+    typedef std::complex<double> complex_double;
 
     template <typename T> struct NumpyType {
     };

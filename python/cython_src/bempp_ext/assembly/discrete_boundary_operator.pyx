@@ -8,7 +8,7 @@ import numpy as np
 cimport numpy as np
 
 
-cdef class DiscreteBoundaryOperatorRealExt:
+cdef class RealDiscreteBoundaryOperator:
 
     def __cinit__(self):
         self.transpose_mode = enums.no_transpose
@@ -95,8 +95,31 @@ cdef class DiscreteBoundaryOperatorRealExt:
 
         return y
 
+    def transpose(self):
 
-cdef class DiscreteBoundaryOperatorComplexExt:
+        cdef RealDiscreteBoundaryOperator op = RealDiscreteBoundaryOperator()
+        op.impl_ = self.impl_
+        op.transpose_mode = enums.compute_transpose_mode(self.transpose_mode,
+                                                          enums.transpose)
+        return op
+
+    def adjoint(self):
+
+        cdef RealDiscreteBoundaryOperator op = RealDiscreteBoundaryOperator()
+        op.impl_ = self.impl_
+        op.transpose_mode = enums.compute_transpose_mode(self.transpose_mode,
+                                                          enums.adjoint)
+        return op
+
+    def conjugate(self):
+
+        cdef RealDiscreteBoundaryOperator op = RealDiscreteBoundaryOperator()
+        op.impl_ = self.impl_
+        op.transpose_mode = enums.compute_transpose_mode(self.transpose_mode,
+                                                          enums.conjugate)
+        return op
+
+cdef class ComplexDiscreteBoundaryOperator:
 
     def __cinit__(self):
         self.transpose_mode = enums.no_transpose
@@ -179,3 +202,44 @@ cdef class DiscreteBoundaryOperatorComplexExt:
             y = y.ravel()
 
         return y
+
+    def transpose(self):
+
+        cdef ComplexDiscreteBoundaryOperator op = ComplexDiscreteBoundaryOperator()
+        op.impl_ = self.impl_
+        op.transpose_mode = enums.compute_transpose_mode(self.transpose_mode,
+                                                          enums.transpose)
+        return op
+
+    def adjoint(self):
+
+        cdef ComplexDiscreteBoundaryOperator op = ComplexDiscreteBoundaryOperator()
+        op.impl_ = self.impl_
+        op.transpose_mode = enums.compute_transpose_mode(self.transpose_mode,
+                                                          enums.adjoint)
+        return op
+
+    def conjugate(self):
+
+        cdef ComplexDiscreteBoundaryOperator op = ComplexDiscreteBoundaryOperator()
+        op.impl_ = self.impl_
+        op.transpose_mode = enums.compute_transpose_mode(self.transpose_mode,
+                                                          enums.conjugate)
+        return op
+
+def convert_to_sparse(RealDiscreteBoundaryOperator op):
+    """Convert sparse discrete boundary operator to CSC matrix."""
+    return c_convert_to_sparse(op.impl_)
+
+def convert_to_dense(op):
+    """Convert dense discrete boundary operator to numpy array."""
+    
+    if isinstance(op, RealDiscreteBoundaryOperator):
+        return c_convert_to_dense_double((<RealDiscreteBoundaryOperator>op).impl_)
+    elif isinstance(op, ComplexDiscreteBoundaryOperator):
+        return c_convert_to_dense_complex((<ComplexDiscreteBoundaryOperator>op).impl_)
+    else:
+        raise ValueError("Type not supported.")
+
+
+

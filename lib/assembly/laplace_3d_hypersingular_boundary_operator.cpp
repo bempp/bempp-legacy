@@ -161,10 +161,11 @@ laplace3dHypersingularBoundaryOperator(
     const std::string &label, int symmetry,
     const BoundaryOperator<BasisFunctionType, ResultType> &externalSlp) {
   const AssemblyOptions &assemblyOptions = context->assemblyOptions();
-  if (assemblyOptions.assemblyMode() == AssemblyOptions::HMAT ||
-      externalSlp.isInitialized())
-    return laplace3dSyntheticHypersingularBoundaryOperator(
-        context, domain, range, dualToRange, label, symmetry, externalSlp);
+  //  Synthetic Operator assembly moved to Python
+//  if (assemblyOptions.assemblyMode() == AssemblyOptions::HMAT ||
+//      externalSlp.isInitialized())
+//    return laplace3dSyntheticHypersingularBoundaryOperator(
+//        context, domain, range, dualToRange, label, symmetry, externalSlp);
 
   typedef typename ScalarTraits<BasisFunctionType>::RealType KernelType;
   typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;

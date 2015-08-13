@@ -34,9 +34,6 @@ cdef class Space:
         global_dof_interpolation_points : np.ndarray
             (3xN) matrix of normal directions associated with the interpolation points.
 
-        order : int
-            Order of the polynomial degre of the space. 
-
         Notes
         -----
         A space instance should always be created using the function 'bempp.function_space'.
@@ -44,12 +41,11 @@ cdef class Space:
     """
 
 
-    def __cinit__(self, unsigned int order):
+    def __cinit__(self):
         pass
 
-    def __init__(self, unsigned int order):
+    def __init__(self):
         super(Space, self).__init__()
-        self._order = order
 
     def __dealloc__(self):
         self.impl_.reset()
@@ -94,12 +90,6 @@ cdef class Space:
         """ Test if both spaces have the same global degrees of freedom. """
 
         return deref(self.impl_).spaceIsCompatible(deref(other.impl_))
-
-    property order:
-        """ The order of the basis functions. """
-
-        def __get__(self):
-            return self._order
 
 
     def get_global_dofs(self,Entity0 element):
@@ -177,7 +167,7 @@ def function_space(Grid grid, kind, order, domains=None, cbool closed=True):
 
     """
 
-    cdef Space s = Space(order)
+    cdef Space s = Space()
     if kind=="P":
         if not (order>=1 and order <=10):
             raise ValueError("Order must be between 1 and 10")

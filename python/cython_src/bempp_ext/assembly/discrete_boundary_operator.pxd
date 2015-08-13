@@ -13,10 +13,19 @@ cdef extern from "bempp/assembly/discrete_boundary_operator.hpp" namespace "Bemp
         unsigned int rowCount() const
         unsigned int columnCount() const
 
-cdef class DiscreteBoundaryOperatorRealExt:
+cdef class RealDiscreteBoundaryOperator:
     cdef shared_ptr[c_DiscreteBoundaryOperator[double]] impl_
     cdef TranspositionMode transpose_mode
 
-cdef class DiscreteBoundaryOperatorComplexExt:
+cdef class ComplexDiscreteBoundaryOperator:
     cdef shared_ptr[c_DiscreteBoundaryOperator[complex_double]] impl_
     cdef TranspositionMode transpose_mode
+
+cdef extern from "bempp_ext/assembly/discrete_operator_conversion.hpp" namespace "Bempp":
+    cdef object c_convert_to_sparse "Bempp::py_get_sparse_from_discrete_operator<double>"(const shared_ptr[c_DiscreteBoundaryOperator[double]]&)
+    cdef object c_convert_to_dense_double "Bempp::py_array_from_dense_operator<double>"(const shared_ptr[c_DiscreteBoundaryOperator[double]]&)
+    cdef object c_convert_to_dense_complex "Bempp::py_array_from_dense_operator<std::complex<double> >"(const shared_ptr[c_DiscreteBoundaryOperator[complex_double]]&)
+
+
+
+

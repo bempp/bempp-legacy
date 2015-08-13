@@ -1,5 +1,9 @@
 from cython.operator cimport dereference as deref
+from .discrete_boundary_operator cimport RealDiscreteBoundaryOperator
+from .discrete_boundary_operator cimport ComplexDiscreteBoundaryOperator
 from bempp_ext.utils.parameter_list cimport ParameterList
+from bempp_ext.space.space cimport Space
+
 
 cdef class Assembler:
     pass
@@ -13,17 +17,7 @@ cdef class ComplexIntegralOperatorLocalAssembler(Assembler):
 cdef class LocalOperatorAssembler(Assembler):
     pass
 
-cdef class ElementaryBoundaryOperator:
-
-    def make_assembler(ParameterList parameter_list):
-
-        raise NotImplementedError("Method not implemented")
-
-    def assemble_weak_form(ParameterList parameter_list):
-
-        raise NotImplementedError("Method not implemented")
-
-cdef class RealElementaryIntegralOperator(ElementaryBoundaryOperator):
+cdef class RealElementaryIntegralOperator:
 
     def __cinit__(self):
         pass
@@ -39,7 +33,30 @@ cdef class RealElementaryIntegralOperator(ElementaryBoundaryOperator):
         assembler.impl_ = deref(self.impl_).makeAssembler(deref(parameters.impl_))
         return assembler
 
-cdef class ComplexElementaryIntegralOperator(ElementaryBoundaryOperator):
+    def assemble_weak_form(self, ParameterList parameters):
+        cdef RealDiscreteBoundaryOperator op = RealDiscreteBoundaryOperator()
+        op.impl_ = deref(self.impl_).assembleWeakForm(deref(parameters.impl_))
+        return op
+
+    property domain:
+        def __get__(self):
+            cdef Space space = Space()
+            space.impl_ = deref(self.impl_).domain()
+            return space
+
+    property range:
+        def __get__(self):
+            cdef Space space = Space()
+            space.impl_ = deref(self.impl_).range()
+            return space
+
+    property dual_to_range:
+        def __get__(self):
+            cdef Space space = Space()
+            space.impl_ = deref(self.impl_).dualToRange()
+            return space
+
+cdef class ComplexElementaryIntegralOperator:
 
     def __cinit__(self):
         pass
@@ -55,7 +72,30 @@ cdef class ComplexElementaryIntegralOperator(ElementaryBoundaryOperator):
         assembler.impl_ = deref(self.impl_).makeAssembler(deref(parameters.impl_))
         return assembler
 
-cdef class ElementaryLocalOperator(ElementaryBoundaryOperator):
+    def assemble_weak_form(self, ParameterList parameters):
+        cdef ComplexDiscreteBoundaryOperator op = ComplexDiscreteBoundaryOperator()
+        op.impl_ = deref(self.impl_).assembleWeakForm(deref(parameters.impl_))
+        return op
+
+    property domain:
+        def __get__(self):
+            cdef Space space = Space()
+            space.impl_ = deref(self.impl_).domain()
+            return space
+
+    property range:
+        def __get__(self):
+            cdef Space space = Space()
+            space.impl_ = deref(self.impl_).range()
+            return space
+
+    property dual_to_range:
+        def __get__(self):
+            cdef Space space = Space()
+            space.impl_ = deref(self.impl_).dualToRange()
+            return space
+
+cdef class ElementaryLocalOperator:
 
     def __cinit__(self):
         pass
@@ -70,5 +110,27 @@ cdef class ElementaryLocalOperator(ElementaryBoundaryOperator):
         cdef LocalOperatorLocalAssembler assembler = LocalOperatorLocalAssembler()
         assembler.impl_ = deref(self.impl_).makeAssembler(deref(parameters.impl_))
         return assembler
+
+    def assemble_weak_form(self, ParameterList parameters):
+        cdef RealDiscreteBoundaryOperator op = RealDiscreteBoundaryOperator()
+        op.impl_ = deref(self.impl_).assembleWeakForm(deref(parameters.impl_))
+        return op
         
+    property domain:
+        def __get__(self):
+            cdef Space space = Space()
+            space.impl_ = deref(self.impl_).domain()
+            return space
+
+    property range:
+        def __get__(self):
+            cdef Space space = Space()
+            space.impl_ = deref(self.impl_).range()
+            return space
+
+    property dual_to_range:
+        def __get__(self):
+            cdef Space space = Space()
+            space.impl_ = deref(self.impl_).dualToRange()
+            return space
 

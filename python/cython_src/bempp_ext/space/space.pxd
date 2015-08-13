@@ -30,7 +30,6 @@ cdef extern from "bempp/space/space.hpp":
 cdef class Space:
     cdef:
         shared_ptr[const c_Space[double]] impl_
-        unsigned int _order
 
 # Define all possible spaces
 

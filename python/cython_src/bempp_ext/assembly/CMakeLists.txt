@@ -1,5 +1,6 @@
 set(headers abstract_boundary_operator.pxd 
             discrete_boundary_operator.pxd
+            discrete_operator_conversion.hpp
             __init__.pxd
             )
 
