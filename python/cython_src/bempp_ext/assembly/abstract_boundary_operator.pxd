@@ -2,7 +2,7 @@ from bempp_ext.utils cimport unique_ptr
 from bempp_ext.utils cimport shared_ptr
 from bempp_ext.utils cimport complex_double
 from bempp_ext.utils cimport c_ParameterList
-from bempp.assembly.discrete_boundary_operator cimport c_DiscreteBoundaryOperator
+from .discrete_boundary_operator cimport c_DiscreteBoundaryOperator
 
 cdef extern from "bempp/fiber/local_assembler_for_integral_operators.hpp" namespace "Fiber":
     cdef cppclass c_LocalAssemblerForIntegralOperators "Fiber::LocalAssemblerForIntegralOperators"[T]:

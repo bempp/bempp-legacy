@@ -1,5 +1,5 @@
 from cython.operator cimport dereference as deref
-from bempp.utils.parameter_list cimport ParameterList
+from bempp_ext.utils.parameter_list cimport ParameterList
 
 cdef class Assembler:
     pass

@@ -13,10 +13,10 @@ cdef extern from "bempp/assembly/discrete_boundary_operator.hpp" namespace "Bemp
         unsigned int rowCount() const
         unsigned int columnCount() const
 
-cdef DiscreteBoundaryOperatorRealImpl:
+cdef class DiscreteBoundaryOperatorRealExt:
     cdef shared_ptr[c_DiscreteBoundaryOperator[double]] impl_
     cdef TranspositionMode transpose_mode
 
-cdef DiscreteBoundaryOperatorComplexImpl:
-    cdef shared_ptr[c_DiscreteBoundaryOperator[copmlex[double]] impl_
+cdef class DiscreteBoundaryOperatorComplexExt:
+    cdef shared_ptr[c_DiscreteBoundaryOperator[complex_double]] impl_
     cdef TranspositionMode transpose_mode

@@ -1,7 +1,14 @@
-import numpy as _np
-cimport numpy as _np
+from bempp_ext.utils cimport eigen_matrix_to_np_float64
+from bempp_ext.utils cimport eigen_matrix_to_np_complex128
+from bempp_ext.utils cimport enum_types as enums
+from libcpp cimport bool as cbool
+from cython.operator cimport dereference as deref
 
-cdef DiscreteBoundaryOperatorRealImpl:
+import numpy as np
+cimport numpy as np
+
+
+cdef class DiscreteBoundaryOperatorRealExt:
 
     def __cinit__(self):
         self.transpose_mode = enums.no_transpose
@@ -10,7 +17,7 @@ cdef DiscreteBoundaryOperatorRealImpl:
         pass
 
     def __dealloc__(self):
-        impl_.reset()
+        self.impl_.reset()
 
     property dtype:
         def __get__(self):
@@ -44,17 +51,17 @@ cdef DiscreteBoundaryOperatorRealImpl:
             else:
                 return (cols,rows)
 
-        def as_matrix(self):
-            cdef Matrix[double] mat_data = deref(self.impl_).asMatrix()
-            if (self.transpose_mode==enums.no_transpose):
-                return eigen_matrix_to_np_float64(mat_data)
-            if (self.transpose_mode==enums.conjugate):
-                return np.conjugate(eigen_matrix_to_np_float64(mat_data))
-            if (self.transpose_mode==enums.transpose):
-                return np.transpose(eigen_matrix_to_np_float64(mat_data))
-            if (self.transpose_mode==enums.conjugate_transpose):
-                return np.conjugate(
-                        np.transpose(eigen_matrix_to_np_float64(mat_data)))
+    def as_matrix(self):
+        cdef Matrix[double] mat_data = deref(self.impl_).asMatrix()
+        if (self.transpose_mode==enums.no_transpose):
+            return eigen_matrix_to_np_float64(mat_data)
+        if (self.transpose_mode==enums.conjugate):
+            return np.conjugate(eigen_matrix_to_np_float64(mat_data))
+        if (self.transpose_mode==enums.transpose):
+            return np.transpose(eigen_matrix_to_np_float64(mat_data))
+        if (self.transpose_mode==enums.conjugate_transpose):
+            return np.conjugate(
+                    np.transpose(eigen_matrix_to_np_float64(mat_data)))
 
     def matvec(self,np.ndarray x):
 
@@ -67,7 +74,7 @@ cdef DiscreteBoundaryOperatorRealImpl:
         cdef int rows = self.shape[0]
         cdef int cols = self.shape[1]
 
-        cdef bool is_reshaped = False
+        cdef cbool is_reshaped = False
 
         if (x.ndim==1):
             x_in = x.reshape((-1,1),order='F').astype(self.dtype,
@@ -89,7 +96,7 @@ cdef DiscreteBoundaryOperatorRealImpl:
         return y
 
 
-cdef DiscreteBoundaryOperatorComplexImpl:
+cdef class DiscreteBoundaryOperatorComplexExt:
 
     def __cinit__(self):
         self.transpose_mode = enums.no_transpose
@@ -98,7 +105,7 @@ cdef DiscreteBoundaryOperatorComplexImpl:
         pass
 
     def __dealloc__(self):
-        impl_.reset()
+        self.impl_.reset()
 
     property dtype:
         def __get__(self):
@@ -132,17 +139,17 @@ cdef DiscreteBoundaryOperatorComplexImpl:
             else:
                 return (cols,rows)
 
-        def as_matrix(self):
-            cdef Matrix[complex_double] mat_data = deref(self.impl_).asMatrix()
-            if (self.transpose_mode==enums.no_transpose):
-                return eigen_matrix_to_np_complex128(mat_data)
-            if (self.transpose_mode==enums.conjugate):
-                return np.conjugate(eigen_matrix_to_np_complex128(mat_data))
-            if (self.transpose_mode==enums.transpose):
-                return np.transpose(eigen_matrix_to_np_complex128(mat_data))
-            if (self.transpose_mode==enums.conjugate_transpose):
-                return np.conjugate(
-                        np.transpose(eigen_matrix_to_np_complex128(mat_data)))
+    def as_matrix(self):
+        cdef Matrix[complex_double] mat_data = deref(self.impl_).asMatrix()
+        if (self.transpose_mode==enums.no_transpose):
+            return eigen_matrix_to_np_complex128(mat_data)
+        if (self.transpose_mode==enums.conjugate):
+            return np.conjugate(eigen_matrix_to_np_complex128(mat_data))
+        if (self.transpose_mode==enums.transpose):
+            return np.transpose(eigen_matrix_to_np_complex128(mat_data))
+        if (self.transpose_mode==enums.conjugate_transpose):
+            return np.conjugate(
+                    np.transpose(eigen_matrix_to_np_complex128(mat_data)))
 
     def matvec(self,np.ndarray x):
 
@@ -152,7 +159,7 @@ cdef DiscreteBoundaryOperatorComplexImpl:
         cdef int rows = self.shape[0]
         cdef int cols = self.shape[1]
 
-        cdef bool is_reshaped = False
+        cdef cbool is_reshaped = False
 
         if (x.ndim==1):
             x_in = x.reshape((-1,1),order='F').astype(self.dtype,

@@ -42,6 +42,8 @@ install_python(FILES "${CMAKE_CURRENT_BINARY_DIR}/config.py" DESTINATION bempp_e
 add_subdirectory(utils)
 add_subdirectory(grid)
 add_subdirectory(space)
+add_subdirectory(assembly)
+add_subdirectory(operators)
 
 #add_subdirectory(common)
 #add_subdirectory(utils)
