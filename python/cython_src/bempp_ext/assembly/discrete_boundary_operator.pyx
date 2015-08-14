@@ -95,6 +95,9 @@ cdef class RealDiscreteBoundaryOperator:
 
         return y
 
+    def matmat(self, np.ndarray x):
+        return self.matvec(x)
+
     def transpose(self):
 
         cdef RealDiscreteBoundaryOperator op = RealDiscreteBoundaryOperator()
@@ -202,6 +205,9 @@ cdef class ComplexDiscreteBoundaryOperator:
             y = y.ravel()
 
         return y
+
+    def matmat(self, np.ndarray x):
+        return self.matvec(x)
 
     def transpose(self):
 
