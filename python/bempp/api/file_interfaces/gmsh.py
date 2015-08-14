@@ -210,4 +210,3 @@ class GmshInterface(FileInterfaceImpl):
 
     def add_element_node_data(self, data, label):
         self._element_node_data = {'label':label, 'data':data}
-
