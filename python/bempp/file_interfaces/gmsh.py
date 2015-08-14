@@ -159,7 +159,7 @@ class GmshInterface(FileInterfaceImpl):
         f.write("1\n")
         f.write("0\n")
         f.write("4\n")
-        f.write("0\n"+str(len(data.values()[0]))+"\n"+str(len(data))+"\n"+"0\n")
+        f.write("0\n"+str(len(list(data.values())[0]))+"\n"+str(len(data))+"\n"+"0\n")
         for key in data:
             f.write(str(key))
             for val in data[key]:
@@ -179,7 +179,7 @@ class GmshInterface(FileInterfaceImpl):
         f.write("1\n")
         f.write("0\n")
         f.write("4\n")
-        f.write("0\n"+str(len(data.values()[0]))+"\n"+str(len(data))+"\n"+"0\n")
+        f.write("0\n"+str(len(list(data.values())[0]))+"\n"+str(len(data))+"\n"+"0\n")
         for key in data:
             f.write(str(key))
             for val in data[key]:
@@ -199,7 +199,7 @@ class GmshInterface(FileInterfaceImpl):
         f.write("1\n")
         f.write("0\n")
         f.write("4\n")
-        f.write("0\n"+str(len(data.values()[0][:,0]))+"\n"+str(len(data))+"\n"+"0\n")
+        f.write("0\n"+str(len(list(data.values())[0][:,0]))+"\n"+str(len(data))+"\n"+"0\n")
         for key in data:
             f.write(str(key)+" 3")
             for i in range(3):
@@ -210,24 +210,3 @@ class GmshInterface(FileInterfaceImpl):
 
     def add_element_node_data(self, data, label):
         self._element_node_data = {'label':label, 'data':data}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
