@@ -1,6 +1,5 @@
 """This modules contains the data structures for assembled boundary operators."""
 
-
 class DiscreteBoundaryOperator(object):
     """The base class for discretized boundary operators."""
 
@@ -142,4 +141,48 @@ class SparseDiscreteBoundaryOperator(DiscreteBoundaryOperator):
         """Return the conjugate of the discrete operator."""
         return SparseDiscreteBoundaryOperator(self._impl.conjugate())
 
+    @property
+    def sparse_operator(self):
+        return self._impl
+
+class InverseSparseDiscreteBoundaryOperator(DiscreteBoundaryOperator):
+    """Apply the (pseudo-)inverse of a sparse operator."""
+
+    def __init__(self, operator):
+
+        from scipy.sparse import csc_matrix
+        from scipy.sparse.linalg import splu
+        from scipy.sparse.linalg import LinearOperator
+
+        if isinstance(operator, SparseDiscreteBoundaryOperator):
+            mat = operator.sparse_operator
+        elif isinstance(operator, csc_matrix):
+            mat = operator
+        else:
+            raise ValueError("op must be either of type " +
+                             "SparseDiscreteBoundaryOperator or of type csc_matrix.")
+
+        solve_fun = None
+        shape = (mat.shape[1], mat.shape[0])
+
+        if mat.shape[0] == mat.shape[1]:
+            # Square matrix case
+            solver = splu(mat)
+            solve_fun = solver.solve
+        elif mat.shape[0] > mat.shape[1]:
+            # Thin matrix case
+
+            mat_hermitian = mat.conjugate().transpose()
+            solver = splu((mat_hermitian*mat).tocsc())
+            solve_fun = lambda x: solver.solve(mat_hermitian*x)
+        else:
+            # Thick matrix case
+
+            mat_hermitian = mat.conjugate().transpose()
+            solver = splu((mat*mat_hermitian).tocsc())
+            solve_fun = lambda x: mat_hermitian*solver.solve(x)
+
+        super(InverseSparseDiscreteBoundaryOperator, self).__init(\
+                LinearOperator(shape, solve_fun, rmatvec=None,
+                               matmat=solve_fun, dtype=mat.dtype))
 

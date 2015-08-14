@@ -196,12 +196,13 @@ modifiedHelmholtz3dHypersingularBoundaryOperator(
     bool useInterpolation, int interpPtsPerWavelength,
     const BoundaryOperator<BasisFunctionType, ResultType> &externalSlp) {
   const AssemblyOptions &assemblyOptions = context->assemblyOptions();
+/*
   if (assemblyOptions.assemblyMode() == AssemblyOptions::HMAT ||
       externalSlp.isInitialized())
     return modifiedHelmholtz3dSyntheticHypersingularBoundaryOperator(
         context, domain, range, dualToRange, waveNumber, label, symmetry,
         useInterpolation, interpPtsPerWavelength, externalSlp);
-
+*/
   typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
 
   typedef Fiber::ModifiedHelmholtz3dHypersingularKernelFunctor<KernelType>

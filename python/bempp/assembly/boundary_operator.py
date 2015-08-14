@@ -92,7 +92,10 @@ class LocalBoundaryOperator(BoundaryOperator):
         self._impl = abstract_operator
 
     def _weak_form_impl(self, parameters):
-        return self._impl.assemble_weak_form(parameters)
+        from bempp_ext.assembly.discrete_boundary_operator import convert_to_sparse
+        from bempp.assembly.discrete_boundary_operator import SparseDiscreteBoundaryOperator
+        return SparseDiscreteBoundaryOperator(\
+                convert_to_sparse(self._impl.assemble_weak_form(parameters)))
 
 
 

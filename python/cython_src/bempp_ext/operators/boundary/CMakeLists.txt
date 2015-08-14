@@ -14,7 +14,10 @@ install_python(FILES ${headers}
 add_dependencies(cython-headers bempp_ext.operators.boundary-copied)
 
 add_python_module(bempp_ext.operators.boundary __init__.py
-                  laplace.pyx 
+                  laplace.pyx
+                  sparse.pyx
+                  modified_helmholtz.pyx
+                  maxwell.pyx
                   CPP LIBRARIES libbempp)
 
 add_dependencies(bempp_ext.operators.boundary cython-headers)
