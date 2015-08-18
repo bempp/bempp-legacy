@@ -30,7 +30,7 @@ cdef class EntityPointer0:
 cdef class EntityPointer1:
 
     cpdef Entity1 _entity(self):
-        cpdef Entity1 e = Entity0()
+        cpdef Entity1 e = Entity1()
         e.impl_ = address(deref(self.impl_).entity())
         e._entity_pointer = self
         return e
@@ -51,7 +51,7 @@ cdef class EntityPointer1:
 cdef class EntityPointer2:
 
     cpdef Entity2 _entity(self):
-        cpdef Entity2 e = Entity0()
+        cpdef Entity2 e = Entity2()
         e.impl_ = address(deref(self.impl_).entity())
         e._entity_pointer = self
         return e

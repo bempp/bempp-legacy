@@ -58,7 +58,7 @@ cdef class Entity1:
         return deref(self.impl_).level()
 
     cpdef Geometry1 _geometry(self):
-        cdef Geometry1 g = Geometry0()
+        cdef Geometry1 g = Geometry1()
         g.impl_= address(deref(self.impl_).geometry())
         g._entity = self
         return g
@@ -75,7 +75,7 @@ cdef class Entity2:
         return deref(self.impl_).level()
 
     cpdef Geometry2 _geometry(self):
-        cdef Geometry2 g = Geometry0()
+        cdef Geometry2 g = Geometry2()
         g.impl_= address(deref(self.impl_).geometry())
         g._entity = self
         return g

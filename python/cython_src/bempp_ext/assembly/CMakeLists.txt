@@ -1,6 +1,7 @@
 set(headers abstract_boundary_operator.pxd 
             discrete_boundary_operator.pxd
             discrete_operator_conversion.hpp
+            function_projector.hpp
             __init__.pxd
             )
 
@@ -17,6 +18,7 @@ add_dependencies(cython-headers bempp_ext.assembly-copied)
 add_python_module(bempp_ext.assembly __init__.py
                   abstract_boundary_operator.pyx
                   discrete_boundary_operator.pyx 
+                  function_projector.pyx
                   CPP LIBRARIES libbempp)
 
 add_dependencies(bempp_ext.assembly cython-headers)

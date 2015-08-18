@@ -3,6 +3,7 @@
 from .discrete_boundary_operator import GeneralNonlocalDiscreteBoundaryOperator
 from .discrete_boundary_operator import DenseDiscreteBoundaryOperator
 from .discrete_boundary_operator import SparseDiscreteBoundaryOperator
+from .discrete_boundary_operator import InverseSparseDiscreteBoundaryOperator
 from .boundary_operator import LocalBoundaryOperator
 from .boundary_operator import ElementaryBoundaryOperator
 

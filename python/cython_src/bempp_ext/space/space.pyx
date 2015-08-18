@@ -2,6 +2,14 @@ from cython.operator cimport dereference as deref
 from bempp_ext.utils cimport Matrix
 from bempp_ext.utils.shared_ptr cimport reverse_const_pointer_cast
 from bempp_ext.utils.shared_ptr cimport const_pointer_cast
+from bempp_ext.utils cimport eigen_matrix_to_np_float64
+from bempp_ext.utils cimport eigen_matrix_to_np_complex128
+from bempp_ext.utils cimport np_to_eigen_matrix_float64
+from bempp_ext.utils cimport np_to_eigen_matrix_complex128
+from bempp_ext.utils cimport np_to_eigen_vector_float64
+from bempp_ext.utils cimport np_to_eigen_vector_complex128
+from libcpp.vector cimport vector
+
 
 cdef class Space:
     """ Space of functions defined on a grid
@@ -99,6 +107,26 @@ cdef class Space:
         deref(self.impl_).getGlobalDofs(deref(element.impl_),global_dofs_vec, local_dof_weights_vec)
         return (global_dofs_vec,local_dof_weights_vec) 
         
+    def evaluate_local_basis(self, Entity0 element, object local_coordinates, object local_coefficients):
+        """Evaluate local basis functions on a given element."""
+
+        import numpy as np
+
+        if np.isreal(local_coefficients).all():
+            coeffs_real = local_coefficients
+            return eigen_matrix_to_np_float64(
+                    c_evaluateLocalBasis[double](deref(self.impl_), deref(element.impl_), 
+                                                np_to_eigen_matrix_float64(local_coordinates),
+                                                np_to_eigen_vector_float64(local_coefficients)))
+        else:
+            coeffs_complex = local_coefficients
+            return eigen_matrix_to_np_complex128(
+                    c_evaluateLocalBasis[complex_double](deref(self.impl_), deref(element.impl_), 
+                                                        np_to_eigen_matrix_float64(local_coordinates),
+                                                        np_to_eigen_vector_complex128(local_coefficients)))
+
+
+
            
     property global_dof_interpolation_points:
         """ (3xN) matrix of global interpolation points for the space, where each column is the

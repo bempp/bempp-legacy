@@ -74,12 +74,16 @@ global_parameters = __global_parameters() # pylint: disable=C0103
 # Now all the module imports
 
 from bempp.grid import Grid, grid_from_sphere, grid_from_element_data, structured_grid
+from bempp.grid import GridFactory
 from bempp.space import function_space
 from bempp import operators
 
 
 def test():
     """ Runs BEM++ python unit tests """
-    from pytest import main
+    import unittest
     from os.path import dirname
-    main(dirname(__file__))
+    loader = unittest.TestLoader()
+    suite = loader.discover(dirname(__file__))
+    test_runner = unittest.TextTestRunner(verbosity=2)
+    test_runner.run(suite)

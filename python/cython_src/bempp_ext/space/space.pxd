@@ -1,4 +1,4 @@
-from bempp_ext.utils cimport Matrix
+from bempp_ext.utils cimport Matrix, Vector
 from bempp_ext.utils cimport eigen_matrix_to_np_float64
 from bempp_ext.utils cimport catch_exception
 from bempp_ext.utils cimport shared_ptr, complex_double
@@ -30,6 +30,10 @@ cdef extern from "bempp/space/space.hpp":
 cdef class Space:
     cdef:
         shared_ptr[const c_Space[double]] impl_
+
+cdef extern from "bempp_ext/space/local_evaluator.hpp" namespace "Bempp":
+    cdef Matrix[T] c_evaluateLocalBasis "Bempp::evaluateLocalBasis"[T](const c_Space[double]&,
+            const c_Entity[codim_zero]&, const Matrix[double]&, const Vector[T]&) except +catch_exception
 
 # Define all possible spaces
 

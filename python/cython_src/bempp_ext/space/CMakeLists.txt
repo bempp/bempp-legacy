@@ -1,4 +1,4 @@
-set(headers space.pxd __init__.pxd)
+set(headers space.pxd __init__.pxd local_evaluator.hpp)
 
 copy_files_on_change(${headers}
     OUTPUT_FILES copied
