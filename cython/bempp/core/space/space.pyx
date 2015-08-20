@@ -212,5 +212,3 @@ def function_space(Grid grid, kind, order, domains=None, cbool closed=True):
         raise ValueError("Unknown kind")
 
     return s
-
-
