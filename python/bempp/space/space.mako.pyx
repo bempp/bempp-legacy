@@ -40,7 +40,7 @@ cdef class Space:
             (3xN) matrix of global interpolation points for the space,
             where each column is the coordinate of an interpolation point.
 
-        global_dof_interpolation_points : np.ndarray
+        global_dof_interpolation_normals : np.ndarray
             (3xN) matrix of normal directions associated with the interpolation points.
 
         order : int
@@ -248,5 +248,3 @@ def function_space(Grid grid, kind, order, domains=None, cbool closed=True):
         raise ValueError("Unknown kind")
 
     return s
-
-
