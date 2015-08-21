@@ -72,9 +72,18 @@ cdef class Grid:
         self.impl_.reset()
 
     def __richcmp__(Grid self, Grid other not None, int op):
-        if op != 2:
+        if op != Py_EQ:
             raise AttributeError("Incorrect operator")
-        return self.impl_.get() == other.impl_.get()
+        veq = _np.array_equal(self.leaf_view.vertices,other.leaf_view.vertices)
+        eeq = _np.array_equal(self.leaf_view.elements,other.leaf_view.elements)
+        dieq = _np.array_equal(self.leaf_view.domain_indices,
+                           other.leaf_view.domain_indices)
+        beq = _np.array_equal(self.bounding_box, other.bounding_box)
+        dweq = self.dim_world == other.dim_world
+        deq = self.dim == other.dim
+        teq = self.topology == other.topology
+        result = veq and eeq and dieq and beq and dweq and deq and teq
+        return result
 
     def plot(self):
         """
