@@ -218,6 +218,40 @@ cdef class Grid:
             id_set._grid = self
             return id_set
 
+    def __getstate__(self):
+        state = dict()
+        state['vertices'] = self.leaf_view.vertices
+        state['elements'] = self.leaf_view.elements
+        state['domain_indices'] = self.leaf_view.domain_indices
+        return state
+
+    def __setstate__(self, state):
+        from numpy import require
+        vertices = state['vertices'],
+        elements = state['elements'],
+        domain_indices = state['domain_indices']
+        # for whatever reason this is a 1 touple of the ndarray
+        # so take the element out of it
+        vertices = vertices[0]
+        elements = elements[0]
+
+        cdef:
+            GridParameters parameters
+            double[::1, :] vert_ptr \
+                    = require(vertices, "double", 'F')
+            int[::1, :] corners_ptr = require(elements, "intc", 'F')
+            vector[int] indices
+            Grid grid = Grid.__new__(Grid)
+        for index in domain_indices:
+            indices.push_back(int(index))
+        parameters.topology = TRIANGULAR
+        try:
+            self.impl_ = connect_grid(parameters, &vert_ptr[0,0],
+                    vert_ptr.shape[1], &corners_ptr[0,0],
+                    corners_ptr.shape[1], indices)
+        except:
+            raise
+
 
 def grid_from_element_data(vertices, elements, domain_indices=[]):
     """
