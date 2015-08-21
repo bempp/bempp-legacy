@@ -13,6 +13,7 @@ from bempp.grid.grid_view cimport _grid_view_from_unique_ptr
 from bempp.grid.id_set cimport IdSet
 import numpy as _np
 cimport numpy as _np
+from cpython.object cimport Py_EQ
 cimport cython
 
 
@@ -235,23 +236,16 @@ cdef class Grid:
         vertices = vertices[0]
         elements = elements[0]
 
-        cdef:
-            GridParameters parameters
-            double[::1, :] vert_ptr \
-                    = require(vertices, "double", 'F')
-            int[::1, :] corners_ptr = require(elements, "intc", 'F')
-            vector[int] indices
-            Grid grid = Grid.__new__(Grid)
-        for index in domain_indices:
-            indices.push_back(int(index))
-        parameters.topology = TRIANGULAR
-        try:
-            self.impl_ = connect_grid(parameters, &vert_ptr[0,0],
-                    vert_ptr.shape[1], &corners_ptr[0,0],
-                    corners_ptr.shape[1], indices)
-        except:
-            raise
+        __grid_from_element_data(self, vertices, elements, domain_indices)
 
+
+    def __richcmp__(self, other, int op):
+        if op == Py_EQ:
+            veq = _np.array_equal(self.leaf_view.vertices,other.leaf_view.vertices)
+            eeq = _np.array_equal(self.leaf_view.elements,other.leaf_view.elements)
+            dieq = _np.array_equal(self.leaf_view.domain_indices,
+                               other.leaf_view.domain_indices)
+            return veq and eeq and dieq
 
 def grid_from_element_data(vertices, elements, domain_indices=[]):
     """
@@ -287,7 +281,11 @@ def grid_from_element_data(vertices, elements, domain_indices=[]):
     >>> grid = grid_from_element_data(vertices,elements)
 
     """
+    cdef:
+        Grid grid = Grid.__new__(Grid)
+    __grid_from_element_data(grid, vertices, elements, domain_indices)
 
+def __grid_from_element_data(Grid grid, vertices, elements, domain_indices=[]):
 
     from numpy import require
     cdef:
@@ -296,7 +294,6 @@ def grid_from_element_data(vertices, elements, domain_indices=[]):
                 = require(vertices, "double", 'F')
         int[::1, :] corners_ptr = require(elements, "intc", 'F')
         vector[int] indices
-        Grid grid = Grid.__new__(Grid)
     for index in domain_indices:
         indices.push_back(int(index))
     parameters.topology = TRIANGULAR
