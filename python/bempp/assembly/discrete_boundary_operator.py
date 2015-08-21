@@ -1,7 +1,7 @@
 """This modules contains the data structures for assembled boundary operators."""
 
-from scipy.sparse.linalg import LinearOperator as _LinearOperator
-from scipy.sparse.linalg.interface import MatrixLinearOperator as _MatrixLinearOperator
+from bempp.utils.linear_operator import LinearOperator as _LinearOperator
+from bempp.utils.linear_operator import MatrixLinearOperator as _MatrixLinearOperator
 import numpy as _np
 
 
@@ -11,8 +11,7 @@ class GeneralNonlocalDiscreteBoundaryOperator(_LinearOperator):
 
     def __init__(self, impl):
 
-        super(GeneralNonlocalDiscreteBoundaryOperator, self).__init__(\
-                impl.dtype, impl.shape)
+        super(GeneralNonlocalDiscreteBoundaryOperator, self).__init__(shape=impl.shape, dtype=impl.dtype)
 
         self._impl = impl
 
@@ -82,7 +81,7 @@ class SparseDiscreteBoundaryOperator(_LinearOperator):
 
     def __init__(self, impl):
 
-        super(SparseDiscreteBoundaryOperator, self).__init__(impl.dtype, impl.shape)
+        super(SparseDiscreteBoundaryOperator, self).__init__(dtype=impl.dtype, shape=impl.shape)
 
         self._impl = impl
 
@@ -142,15 +141,6 @@ class SparseDiscreteBoundaryOperator(_LinearOperator):
         """Return the underlying Scipy sparse matrix."""
         return self._impl
 
-    @property
-    def shape(self):
-        """Return shape of the operator."""
-        return self._impl.shape
-
-    @property
-    def dtype(self):
-        """Return the type of the operator."""
-        return self._impl.dtype
 
 class InverseSparseDiscreteBoundaryOperator(_LinearOperator):
     """Apply the (pseudo-)inverse of a sparse operator."""
@@ -168,7 +158,8 @@ class InverseSparseDiscreteBoundaryOperator(_LinearOperator):
                 mat = operator
             else:
                 raise ValueError("op must be either of type " +
-                                 "SparseDiscreteBoundaryOperator or of type csc_matrix.")
+                                 "SparseDiscreteBoundaryOperator or of type csc_matrix. Actual type: " +
+                                 str(type(operator)))
 
             from scipy.sparse.linalg import splu
             self._solve_fun = None
@@ -219,7 +210,7 @@ class InverseSparseDiscreteBoundaryOperator(_LinearOperator):
         self._solver = InverseSparseDiscreteBoundaryOperator._Solver(operator)
 
         super(InverseSparseDiscreteBoundaryOperator, self).__init__(\
-                self._solver.dtype, self._solver.shape)
+                dtype=self._solver.dtype, shape=self._solver.shape)
 
     def _matvec(self, vec): #pylint: disable=method-hidden
         """Implemententation of matvec."""

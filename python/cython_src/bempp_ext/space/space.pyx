@@ -99,6 +99,18 @@ cdef class Space:
 
         return deref(self.impl_).spaceIsCompatible(deref(other.impl_))
 
+    def __richcmp__(Space self, Space other, int op):
+        """Comparison operator."""
+
+        if op == 2:
+            return self.is_identical(other)
+        elif op == 3:
+            return not self.is_identical(other)
+        else:
+            return NotImplemented
+
+    def is_identical(self, Space other):
+        return self.impl_.get() == other.impl_.get()
 
     def get_global_dofs(self,Entity0 element):
 

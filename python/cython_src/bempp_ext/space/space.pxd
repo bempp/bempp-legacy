@@ -15,8 +15,8 @@ cdef extern from "bempp/space/space.hpp":
         c_Space(const shared_ptr[c_Grid]&)
         c_Space(const c_Space[BASIS]&)
         shared_ptr[const c_Grid] grid() const
-        cbool spaceIsCompatible(const c_Space&)
-        cbool is_same "isSame"(const c_Space&)
+        cbool spaceIsCompatible(const c_Space[BASIS]&)
+        cbool is_same "isSame"(const c_Space[BASIS]&)
         int codomainDimension() const
         int domainDimension() const
         unsigned long globalDofCount() const

@@ -1,23 +1,23 @@
 """ Boundary Element Method package BEM++ """
 from __future__ import print_function
 
-__all__=['grid_from_sphere',
-         'grid_from_element_data',
-         'structured_grid',
-         'function_space',
-         'GridFunction',
-         'global_parameters',
-         'BlockedBoundaryOperator',
-         'ZeroBoundaryOperator',
-         'export',
-         'GridFactory',
-         'import_grid',
-         'operators',
-         'shapes',
-         'applications',
-         'FileReader',
-         'generate_block_cluster_tree',
-         'InverseSparseDiscreteBoundaryOperator']
+__all__ = ['grid_from_sphere',
+           'grid_from_element_data',
+           'structured_grid',
+           'function_space',
+           'GridFunction',
+           'global_parameters',
+           'BlockedBoundaryOperator',
+           'ZeroBoundaryOperator',
+           'export',
+           'GridFactory',
+           'import_grid',
+           'operators',
+           'shapes',
+           'applications',
+           'FileReader',
+           'generate_block_cluster_tree',
+           'InverseSparseDiscreteBoundaryOperator']
 
 
 # This imports dolfin at the same time as bempp if available to avoid delays
@@ -26,9 +26,9 @@ __all__=['grid_from_sphere',
 try:
     import dolfin
 except ImportError:
-    have_dolfin = False # pylint: disable=C0103
+    have_dolfin = False  # pylint: disable=C0103
 else:
-    have_dolfin = True # pylint: disable=C0103
+    have_dolfin = True  # pylint: disable=C0103
 
 
 # Check if config directory exists. If not create it.
@@ -47,9 +47,10 @@ def _check_create_init_dir():
     if not isdir(tmpath):
         mkdir(tmpath)
 
-    return (confpath, tmpath)
+    return confpath, tmpath
 
-config_path, tmp_path = _check_create_init_dir() # pylint: disable=C0103
+
+config_path, tmp_path = _check_create_init_dir()  # pylint: disable=C0103
 
 
 # Get the path to Gmsh
@@ -63,13 +64,15 @@ def _gmsh_path():
         print("Could not find Gmsh. Interactive plotting and shapes module not available.")
     return gmp
 
-gmsh_path = _gmsh_path() # pylint: disable=C0103
+
+gmsh_path = _gmsh_path()  # pylint: disable=C0103
 
 
 # Define the global default options
 
-from .common import global_parameters as __global_parameters
-global_parameters = __global_parameters() # pylint: disable=C0103
+from bempp.common import global_parameters as __global_parameters
+
+global_parameters = __global_parameters()  # pylint: disable=C0103
 
 # Now all the module imports
 
