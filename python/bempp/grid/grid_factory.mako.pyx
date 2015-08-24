@@ -40,10 +40,3 @@ cdef class GridFactory(object):
         grid.impl_ = self._grid_factory.finalize()
         return grid
 
-
-
-    
-
-
-
-
