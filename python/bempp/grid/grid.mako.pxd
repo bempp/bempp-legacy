@@ -47,5 +47,4 @@ cdef class Grid:
     cpdef unsigned int element_insertion_index(self,Entity0 element)
     cpdef Entity0 element_from_insertion_index(self, int index)
     cpdef Entity2 vertex_from_insertion_index(self, int index)
-
-
+    cpdef Grid make_barycentric_grid(self)

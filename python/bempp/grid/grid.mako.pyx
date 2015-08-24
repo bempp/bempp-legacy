@@ -114,7 +114,46 @@ cdef class Grid:
 
         return self._insertion_index_to_vertex[index]
 
+    cpdef Grid make_barycentric_grid(self):
+        from bempp import GridFactory as _GridFactory
 
+        gf = _GridFactory()
+
+        v_n = self.leaf_view.entity_count(2)
+        for vertex in self.leaf_view.entity_iterator(2):
+            gf.insert_vertex(vertex.geometry.corners.transpose()[0])
+
+        e_n = self.leaf_view.entity_count(1)
+        for edge in self.leaf_view.entity_iterator(1):
+            gf.insert_vertex([(edge.geometry.corners[i][0]+edge.geometry.corners[i][1])/2 for i in range(3)])
+
+        f_n = self.leaf_view.entity_count(0)
+        for face in self.leaf_view.entity_iterator(0):
+            gf.insert_vertex([(face.geometry.corners[i][0]+face.geometry.corners[i][1]+face.geometry.corners[i][2])/3 for i in range(3)])
+
+        i_s = self.leaf_view.index_set()
+
+        f = 0
+        for element in self.leaf_view.entity_iterator(0):
+            v0 = i_s.sub_entity_index(element, 0, 2)
+            v1 = i_s.sub_entity_index(element, 1, 2)
+            v2 = i_s.sub_entity_index(element, 2, 2)
+            e0 = v_n + i_s.sub_entity_index(element, 0, 1)
+            e1 = v_n + i_s.sub_entity_index(element, 1, 1)
+            e2 = v_n + i_s.sub_entity_index(element, 2, 1)
+            f0 = v_n + e_n + f
+            f += 1
+
+            gf.insert_element([v0, f0, e1])
+            gf.insert_element([v0, e0, f0])
+            gf.insert_element([v1, f0, e0])
+            gf.insert_element([v1, e2, f0])
+            gf.insert_element([v2, f0, e2])
+            gf.insert_element([v2, e1, f0])
+
+        grid = gf.finalize()
+
+        return grid
 
     def clone(self):
         """ Create a new grid from a copy of the current grid. """
@@ -395,8 +434,3 @@ def grid_from_sphere(int n, double radius=1.0, object origin = [0,0,0]):
 
     return grid_from_element_data(nodes,elements)
 
-
-
-
-
-        
