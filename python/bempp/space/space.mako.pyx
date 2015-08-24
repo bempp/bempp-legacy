@@ -51,9 +51,12 @@ cdef class Space:
         A space instance should always be created using the function 'bempp.function_space'.
 
     """
-    def __init__(self, unsigned int order):
+    def __init__(self, unsigned int order, str kind, domains=None, cbool closed=True):
         super(Space, self).__init__()
         self._order = order
+        self._kind = kind
+        self._domains = domains
+        self._closed = closed
 
     property dtype:
         """ Type of the basis functions in this space. """
@@ -108,6 +111,26 @@ cdef class Space:
         def __get__(self):
             return self._order
 
+    property kind:
+        """ The type of space. """
+
+        def __get__(self):
+            return self._kind
+
+    property closed:
+        """ Specifies whether the space is defined on a closed
+        or open subspace. """
+
+        def __get__(self):
+            return self._closed
+
+    property domains:
+        """ List of integers specifying a list of physical entities
+        of subdomains that should be included in the space. None
+        is all domains. """
+
+        def __get__(self):
+            return self._domains
 
     def get_global_dofs(self,Entity0 element):
 
@@ -160,6 +183,28 @@ cdef class Space:
             raise("Unknown dtype for space")
 
 
+    def __getstate__(self):
+        state = dict()
+        state['grid'] = 'grid'
+        state['kind'] =  self.kind
+        state['order'] = self.order
+        state['domains'] = self.domains
+        state['closed'] = self.closed
+
+        return state
+
+    def __setstate__(self, state):
+        self._kind = state['kind']
+        self._order = state['order']
+        self._domains = state['domains']
+        self._closed = state['closed']
+        import __main__
+        cdef:
+            Grid grid = __main__.grid
+        __function_space(self, grid, state['kind'], state['order'],
+                         state['domains'], state['closed'])
+
+
 def function_space(Grid grid, kind, order, domains=None, cbool closed=True):
     """ 
 
@@ -182,7 +227,8 @@ def function_space(Grid grid, kind, order, domains=None, cbool closed=True):
 
     domains : list
         List of integers specifying a list of physical entities
-        of subdomains that should be included in the space.
+        of subdomains that should be included in the space. None
+        is all domains.
 
     closed : bool
         Specifies whether the space is defined on a closed
@@ -210,7 +256,15 @@ def function_space(Grid grid, kind, order, domains=None, cbool closed=True):
 
     """
 
-    cdef Space s = Space(order)
+    cdef Space s = Space(order, kind)
+    __function_space(s, grid, kind, order, domains, closed)
+    return s
+
+
+def __function_space(Space s, Grid grid, kind, order, domains=None, cbool closed=True):
+    """
+        helper function for function_space and unpickleing of spaces.
+    """
     if kind=="P":
         if not (order>=1 and order <=10):
             raise ValueError("Order must be between 1 and 10")

@@ -74,6 +74,9 @@ cdef class Space:
     cdef:
         SpaceVariants impl_
         unsigned int _order
+        str _kind
+        list _domains
+        cbool _closed
     cpdef cbool is_compatible(self, Space other)
 
 # Define all possible spaces
@@ -96,4 +99,3 @@ cdef extern from "bempp/space/piecewise_polynomial_discontinuous_scalar_space.hp
 cdef extern from "bempp/space/raviart_thomas_0_vector_space.hpp" namespace "Bempp":
     cdef shared_ptr[c_Space[T]] adaptiveRaviartThomas0VectorSpace[T](const shared_ptr[c_Grid]& grid)
     cdef shared_ptr[c_Space[T]] adaptiveRaviartThomas0VectorSpace[T](const shared_ptr[c_Grid]& grid, vector[int] domains, cbool closed)
-
