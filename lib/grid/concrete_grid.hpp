@@ -203,39 +203,112 @@ public:
 
   /** \brief Return a barycentrically refined grid based on the LeafView */
   virtual shared_ptr<Grid> barycentricGrid() const {
-
-    /*
-
-  if (!m_barycentricGrid.get()) {
-    tbb::mutex::scoped_lock lock(m_barycentricSpaceMutex);
     if (!m_barycentricGrid.get()) {
+      tbb::mutex::scoped_lock lock(m_barycentricSpaceMutex);
+      if (!m_barycentricGrid.get()) {
 
-      arma::Mat<double> vertices;
-      arma::Mat<int> elementCorners;
-      arma::Mat<char> auxData;
-      std::vector<int> domainIndices;
+        Matrix<double> vertices;
+        Matrix<int> elementCorners;
+        Matrix<char> auxData;
+        std::vector<int> domainIndices;
 
-      std::unique_ptr<GridView> view = this->leafView();
+        std::unique_ptr<GridView> view = this->leafView();
 
-      view->getRawElementData(vertices, elementCorners, auxData,
-                              domainIndices);
+        view->getRawElementData(vertices, elementCorners, auxData,
+                                domainIndices);
+        GridParameters params;
+        params.topology = GridParameters::TRIANGULAR;
 
-      GridParameters params;
-      params.topology = GridParameters::TRIANGULAR;
-      shared_ptr<Grid> newGrid =
-          GridFactory::createGridFromConnectivityArrays(
-              params, vertices, elementCorners, domainIndices);
-      shared_ptr<ConcreteGrid<DuneGrid>> concreteGrid =
-          dynamic_pointer_cast<ConcreteGrid<DuneGrid>>(newGrid);
-      (concreteGrid->duneGrid()).globalBarycentricRefine(1);
+        Matrix<double> barycentricVertices;
+        Matrix<int> barycentricElementCorners;
+        Matrix<char> barycetricAuxData;
+        std::vector<int> barycentricDomainIndices;
 
-      m_barycentricGrid = newGrid;
+        size_t ent0Count=view->entityCount(0); // faces
+        size_t ent1Count=view->entityCount(1); // edges
+        size_t ent2Count=view->entityCount(2); // vertices
+
+        barycentricVertices.conservativeResize(3,ent2Count+ent1Count+ent0Count);
+
+        {
+            int i=0;
+            for (std::unique_ptr<EntityIterator<2>> it = view->entityIterator<2>();!it->finished();it->next()){
+                const Entity<2> &entity = it->entity();
+                Matrix<double> corners;
+                entity.geometry().getCorners(corners);
+                for(int j=0;j!=3;++j){
+                    barycentricVertices(j,i) = corners(j,0);
+                }
+                ++i;
+            }
+
+            for (std::unique_ptr<EntityIterator<1>> it = view->entityIterator<1>();!it->finished();it->next()){
+                const Entity<1> &entity = it->entity();
+                Matrix<double> corners;
+                entity.geometry().getCorners(corners);
+                for(int j=0;j!=3;++j){
+                    barycentricVertices(j,i) = (corners(j,0)+corners(j,1))/2;
+                }
+                ++i;
+            }
+
+            for (std::unique_ptr<EntityIterator<0>> it = view->entityIterator<0>();!it->finished();it->next()){
+                const Entity<0> &entity = it->entity();
+                Matrix<double> corners;
+                entity.geometry().getCorners(corners);
+                for(int j=0;j!=3;++j){
+                    barycentricVertices(j,i) = (corners(j,0)+corners(j,1)+corners(j,2))/3;
+                    }
+                ++i;
+            }
+        }
+
+        barycentricElementCorners.conservativeResize(3,6*ent0Count);
+        {
+        const IndexSet &index=view->indexSet();
+        std::unique_ptr<EntityIterator<0>> it = view->entityIterator<0>();
+        int i=0;
+        while (!it->finished()){
+            const Entity<0> &entity = it->entity();
+
+            barycentricElementCorners(0,6*i)=elementCorners(0,i);
+            barycentricElementCorners(1,6*i)=ent2Count+ent1Count+i;
+            barycentricElementCorners(2,6*i)=ent2Count+index.subEntityIndex(entity,1,1);
+
+            barycentricElementCorners(0,6*i+1)=elementCorners(0,i);
+            barycentricElementCorners(1,6*i+1)=ent2Count+index.subEntityIndex(entity,0,1);
+            barycentricElementCorners(2,6*i+1)=ent2Count+ent1Count+i;
+
+            barycentricElementCorners(0,6*i+2)=elementCorners(1,i);
+            barycentricElementCorners(1,6*i+2)=ent2Count+ent1Count+i;
+            barycentricElementCorners(2,6*i+2)=ent2Count+index.subEntityIndex(entity,0,1);
+
+            barycentricElementCorners(0,6*i+3)=elementCorners(1,i);
+            barycentricElementCorners(1,6*i+3)=ent2Count+index.subEntityIndex(entity,2,1);
+            barycentricElementCorners(2,6*i+3)=ent2Count+ent1Count+i;
+
+            barycentricElementCorners(0,6*i+4)=elementCorners(2,i);
+            barycentricElementCorners(1,6*i+4)=ent2Count+ent1Count+i;
+            barycentricElementCorners(2,6*i+4)=ent2Count+index.subEntityIndex(entity,2,1);
+
+            barycentricElementCorners(0,6*i+5)=elementCorners(2,i);
+            barycentricElementCorners(1,6*i+5)=ent2Count+index.subEntityIndex(entity,1,1);
+            barycentricElementCorners(2,6*i+5)=ent2Count+ent1Count+i;
+            ++i;
+            it->next();
+        }
+        }
+
+        shared_ptr<Grid> newGrid =
+            GridFactory::createGridFromConnectivityArrays(
+                params, barycentricVertices, barycentricElementCorners, barycentricDomainIndices);
+        shared_ptr<ConcreteGrid<DuneGrid>> concreteGrid =
+            dynamic_pointer_cast<ConcreteGrid<DuneGrid>>(newGrid);
+
+        m_barycentricGrid = newGrid;
+      }
     }
-  }
-  return m_barycentricGrid;
-  */
-    throw std::runtime_error("Barycentric Grid not implemented.");
-    return shared_ptr<Grid>();
+    return m_barycentricGrid;
   }
 
   /** \brief Return \p true if a barycentric refinement of this grid has

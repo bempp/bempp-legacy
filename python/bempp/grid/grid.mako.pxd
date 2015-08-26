@@ -13,6 +13,7 @@ cdef extern from "bempp/grid/grid.hpp" namespace "Bempp" nogil:
         int dimWorld() const
         int maxLevel() const
         int topology() const
+        shared_ptr[c_Grid] barycentricGrid()
         unique_ptr[c_GridView] leafView() const
         void getBoundingBox(const Vector[double]&, const Vector[double]&) const
         unsigned int vertexInsertionIndex(const c_Entity[codim_two]&) const
@@ -47,4 +48,4 @@ cdef class Grid:
     cpdef unsigned int element_insertion_index(self,Entity0 element)
     cpdef Entity0 element_from_insertion_index(self, int index)
     cpdef Entity2 vertex_from_insertion_index(self, int index)
-    cpdef Grid make_barycentric_grid(self)
+    cpdef Grid barycentric_grid(self)
