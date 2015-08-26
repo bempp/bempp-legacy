@@ -221,7 +221,6 @@ public:
 
         Matrix<double> barycentricVertices;
         Matrix<int> barycentricElementCorners;
-        Matrix<char> barycetricAuxData;
         std::vector<int> barycentricDomainIndices;
 
         size_t ent0Count=view->entityCount(0); // faces
