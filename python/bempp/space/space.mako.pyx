@@ -51,12 +51,14 @@ cdef class Space:
         A space instance should always be created using the function 'bempp.function_space'.
 
     """
-    def __init__(self, unsigned int order, str kind, domains=None, cbool closed=True):
+    def __init__(self, unsigned int order, str kind, domains=None,
+                 cbool closed=True, gridname=None):
         super(Space, self).__init__()
         self._order = order
         self._kind = kind
         self._domains = domains
         self._closed = closed
+        self._gridname = gridname
 
     property dtype:
         """ Type of the basis functions in this space. """
@@ -132,6 +134,13 @@ cdef class Space:
         def __get__(self):
             return self._domains
 
+    property gridname:
+        """ Name of the variable that holds the grid used to create the space.
+        This is only used to serialize the space with a reference to the grid"""
+
+        def __get__(self):
+            return self._gridname
+
     def get_global_dofs(self,Entity0 element):
 
         cdef vector[int] global_dofs_vec
@@ -185,7 +194,10 @@ cdef class Space:
 
     def __getstate__(self):
         state = dict()
-        state['grid'] = 'grid'
+        if self.gridname == 'none':
+            raise NameError('Cannot serialize Space without gridname. Please '
+            'specify gridname when constructing the Space')
+        state['gridname'] = self.gridname
         state['kind'] =  self.kind
         state['order'] = self.order
         state['domains'] = self.domains
@@ -194,18 +206,24 @@ cdef class Space:
         return state
 
     def __setstate__(self, state):
+        import __main__
+        if not state['gridname'] in __main__.__dict__.keys():
+            raise NameError("Could not find grid with name {gridname}. "
+                "Did you remember to push it before pushing the "
+                "space?".format(gridname=state['gridname']))
         self._kind = state['kind']
         self._order = state['order']
         self._domains = state['domains']
         self._closed = state['closed']
-        import __main__
+        self._gridname = state['gridname']
         cdef:
-            Grid grid = __main__.grid
+            Grid grid = __main__.__dict__[self.gridname]
         __function_space(self, grid, state['kind'], state['order'],
                          state['domains'], state['closed'])
 
 
-def function_space(Grid grid, kind, order, domains=None, cbool closed=True):
+def function_space(Grid grid, kind, order, domains=None, cbool closed=True,
+                   gridname='none'):
     """ 
 
     Return a space defined over a given grid.
@@ -234,6 +252,10 @@ def function_space(Grid grid, kind, order, domains=None, cbool closed=True):
         Specifies whether the space is defined on a closed
         or open subspace.
 
+    gridname: str
+        name of the variable used to hold the grid. Used only for IPython
+        serialization. This is ugly and should be changed.
+
     Notes
     -----
     The most frequent used types are the space of piecewise constant
@@ -256,7 +278,7 @@ def function_space(Grid grid, kind, order, domains=None, cbool closed=True):
 
     """
 
-    cdef Space s = Space(order, kind)
+    cdef Space s = Space(order, kind, domains, closed, gridname)
     __function_space(s, grid, kind, order, domains, closed)
     return s
 
