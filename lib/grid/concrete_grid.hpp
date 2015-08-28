@@ -201,7 +201,7 @@ public:
   @name Refinement
   @{ */
 
-  /** \brief Return a barycentrically refined grid based on the LeafView */
+  /** \brief Return a barycentrically refined grid based */
   virtual shared_ptr<Grid> barycentricGrid() const {
     if (!m_barycentricGrid.get()) {
       tbb::mutex::scoped_lock lock(m_barycentricSpaceMutex);
