@@ -270,27 +270,27 @@ public:
         while (!it->finished()){
             const Entity<0> &entity = it->entity();
 
-            barycentricElementCorners(0,6*i)=elementCorners(0,i);
+            barycentricElementCorners(0,6*i)=index.subEntityIndex(entity,0,2);
             barycentricElementCorners(1,6*i)=ent2Count+ent1Count+i;
             barycentricElementCorners(2,6*i)=ent2Count+index.subEntityIndex(entity,1,1);
 
-            barycentricElementCorners(0,6*i+1)=elementCorners(0,i);
+            barycentricElementCorners(0,6*i+1)=index.subEntityIndex(entity,0,2);
             barycentricElementCorners(1,6*i+1)=ent2Count+index.subEntityIndex(entity,0,1);
             barycentricElementCorners(2,6*i+1)=ent2Count+ent1Count+i;
 
-            barycentricElementCorners(0,6*i+2)=elementCorners(1,i);
+            barycentricElementCorners(0,6*i+2)=index.subEntityIndex(entity,1,2);
             barycentricElementCorners(1,6*i+2)=ent2Count+ent1Count+i;
             barycentricElementCorners(2,6*i+2)=ent2Count+index.subEntityIndex(entity,0,1);
 
-            barycentricElementCorners(0,6*i+3)=elementCorners(1,i);
+            barycentricElementCorners(0,6*i+3)=index.subEntityIndex(entity,1,2);
             barycentricElementCorners(1,6*i+3)=ent2Count+index.subEntityIndex(entity,2,1);
             barycentricElementCorners(2,6*i+3)=ent2Count+ent1Count+i;
 
-            barycentricElementCorners(0,6*i+4)=elementCorners(2,i);
+            barycentricElementCorners(0,6*i+4)=index.subEntityIndex(entity,2,2);
             barycentricElementCorners(1,6*i+4)=ent2Count+ent1Count+i;
             barycentricElementCorners(2,6*i+4)=ent2Count+index.subEntityIndex(entity,2,1);
 
-            barycentricElementCorners(0,6*i+5)=elementCorners(2,i);
+            barycentricElementCorners(0,6*i+5)=index.subEntityIndex(entity,2,2);
             barycentricElementCorners(1,6*i+5)=ent2Count+index.subEntityIndex(entity,1,1);
             barycentricElementCorners(2,6*i+5)=ent2Count+ent1Count+i;
             ++i;
