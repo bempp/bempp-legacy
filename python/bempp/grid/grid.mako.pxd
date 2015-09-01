@@ -16,6 +16,7 @@ cdef extern from "bempp/grid/grid.hpp" namespace "Bempp" nogil:
         shared_ptr[c_Grid] barycentricGrid()
         unique_ptr[c_GridView] leafView() const
         void getBoundingBox(const Vector[double]&, const Vector[double]&) const
+        cbool isBarycentricRepresentationOf(const c_Grid&)
         unsigned int vertexInsertionIndex(const c_Entity[codim_two]&) const
         unsigned int elementInsertionIndex(const c_Entity[codim_zero]&) const
         cbool mark(int refCount, const c_Entity[codim_zero]&)

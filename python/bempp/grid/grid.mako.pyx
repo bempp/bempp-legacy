@@ -153,6 +153,9 @@ cdef class Grid:
         deref(self.impl_).globalRefine(refcount)
         deref(self.impl_).sendUpdateSignal()
 
+    def is_barycentric_representation_of(self, Grid other):
+        return deref(self.impl_).isBarycentricRepresentationOf(deref(other.impl_))
+
     property dim:
         """" Dimension of the grid. """
         def __get__(self):
