@@ -18,7 +18,8 @@ def single_layer(domain, range_, dual_to_range,
 
     return ElementaryBoundaryOperator(\
             single_layer_ext(parameters, domain, range_, dual_to_range,
-                             wave_number, label, symmetry))
+                             wave_number, label, symmetry),
+            parameters=parameters)
 
 
 def double_layer(domain, range_, dual_to_range,
@@ -36,5 +37,6 @@ def double_layer(domain, range_, dual_to_range,
 
     return ElementaryBoundaryOperator(\
             double_layer_ext(parameters, domain, range_, dual_to_range,
-                             wave_number, label, symmetry))
+                             wave_number, label, symmetry),
+            parameters=parameters)
 

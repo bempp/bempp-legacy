@@ -110,6 +110,9 @@ class GridFunction(object):
         self._space = space
         self._parameters = parameters
 
+        if coefficients is not None:
+            self.coefficients = coefficients
+
         if fun is not None:
             from bempp_ext.assembly.function_projector import calculate_projection
 
@@ -119,12 +122,6 @@ class GridFunction(object):
                 proj_space = self.space
 
             projections = calculate_projection(parameters, fun, proj_space)
-
-            self._coefficients = self._coefficients_from_projections(\
-                    projections, dual_space)
-
-        if coefficients is not None:
-            self.coefficients = coefficients
 
         if projections is not None:
             np_proj = 1.0 * np.asarray(projections).squeeze()
@@ -210,9 +207,6 @@ class GridFunction(object):
 
         import numpy as np
 
-        if not isinstance(self, GridFunction):
-            return alpha*self
-
         if np.isscalar(alpha):
             return GridFunction(self.space,
                                 coefficients=alpha * self.coefficients,
@@ -220,6 +214,18 @@ class GridFunction(object):
         else:
             raise NotImplementedError(\
                     "Cannot multiply Gridfunction with object of type "+str(type(alpha)))
+
+    def __rmul__(self, alpha):
+
+        import numpy as np
+
+        if np.isscalar(alpha):
+            return GridFunction(self.space,
+                                coefficients=alpha * self.coefficients,
+                                parameters=self.parameters)
+        else:
+            raise NotImplementedError( \
+                "Cannot multiply Gridfunction with object of type "+str(type(alpha)))
 
 
     def __div__(self, alpha):
@@ -260,6 +266,7 @@ class GridFunction(object):
     @coefficients.setter
     def coefficients(self, value):
         """Set the coefficients of the grid function."""
+        import numpy as np
         np_coeffs = 1.0 * np.asarray(value).squeeze()
         if np_coeffs.ndim > 1:
             raise ValueError("'coefficients' must be a 1-d array.")
@@ -269,6 +276,11 @@ class GridFunction(object):
     def component_count(self):
         """Return the number of components of the grid function values."""
         return self.space.codomainDimension
+
+    @property
+    def dtype(self):
+        """Return the dtype."""
+        return self._coefficients.dtype
 
 
 

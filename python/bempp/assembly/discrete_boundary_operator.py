@@ -56,7 +56,7 @@ class DenseDiscreteBoundaryOperator(_MatrixLinearOperator): # pylint: disable=to
     def dot(self, other):
 
         if isinstance(other, DenseDiscreteBoundaryOperator):
-            return DenseDiscreteBoundaryOperator(self.A * other) #pylint: disable=no-member
+            return DenseDiscreteBoundaryOperator(self.A.dot(other.A)) #pylint: disable=no-member
 
         if _np.isscalar(other):
             return DenseDiscreteBoundaryOperator(self.A * other)
@@ -89,13 +89,13 @@ class SparseDiscreteBoundaryOperator(_LinearOperator):
         """Multiply the operator with a numpy vector or matrix x."""
 
         if self.dtype == 'float64' and _np.iscomplexobj(vec):
-            return self._impl * _np.real(vec) + 1j * self._impl * _np.imag(vec)
+            return self._impl * _np.real(vec) + 1j * (self._impl * _np.imag(vec))
 
         return self._impl * vec
 
     def _matmat(self, mat):
         """Multiply operator with the dense numpy matrix mat."""
-        return self.matvec(mat)
+        return self._matvec(mat)
 
     def _transpose(self):
         """Return the transpose of the discrete operator."""
@@ -122,7 +122,7 @@ class SparseDiscreteBoundaryOperator(_LinearOperator):
     def dot(self, other):
 
         if isinstance(other, SparseDiscreteBoundaryOperator):
-            return SparseDiscreteBoundaryOperator(self.sparse_operator * other)
+            return SparseDiscreteBoundaryOperator(self.sparse_operator * other.sparse_operator)
 
         if _np.isscalar(other):
             return SparseDiscreteBoundaryOperator(self.sparse_operator * other)
@@ -188,7 +188,7 @@ class InverseSparseDiscreteBoundaryOperator(_LinearOperator):
             if self._dtype == 'float64' and _np.iscomplexobj(vec):
                 return self.solve(_np.real(vec))+1j*self.solve(_np.imag(vec))
 
-            result = self._solve(vec.squeeze())
+            result = self._solve_fun(vec.squeeze())
 
             if vec.ndim > 1:
                 return result.reshape(self.shape[0], 1)

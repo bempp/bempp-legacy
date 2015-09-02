@@ -79,6 +79,10 @@ global_parameters = __global_parameters()  # pylint: disable=C0103
 from bempp.grid import Grid, grid_from_sphere, grid_from_element_data, structured_grid
 from bempp.grid import GridFactory
 from bempp.space import function_space
+from bempp.assembly import GridFunction
+from bempp.assembly import InverseSparseDiscreteBoundaryOperator
+from bempp import shapes
+from bempp.file_interfaces import import_grid
 from bempp import operators
 
 

@@ -17,7 +17,8 @@ def identity(domain, range_, dual_to_range,
 
     return LocalBoundaryOperator(\
             identity_ext(parameters, domain, range_,
-                         dual_to_range, label, symmetry))
+                         dual_to_range, label, symmetry),
+            parameters=parameters)
 
 def maxwell_identity(domain, range_, dual_to_range,
                      label='', symmetry='no_symmetry',
@@ -33,7 +34,8 @@ def maxwell_identity(domain, range_, dual_to_range,
 
     return LocalBoundaryOperator(\
             maxwell_identity_ext(parameters, domain, range_,
-                                 dual_to_range, label, symmetry))
+                                 dual_to_range, label, symmetry),
+            parameters=parameters)
 
 def laplace_beltrami(domain, range_, dual_to_range,
                      label='', symmetry='no_symmetry',
@@ -49,6 +51,7 @@ def laplace_beltrami(domain, range_, dual_to_range,
 
     return LocalBoundaryOperator(\
             laplace_beltrami_ext(parameters, domain, range_,
-                                 dual_to_range, label, symmetry))
+                                 dual_to_range, label, symmetry),
+            parameters=parameters)
 
 

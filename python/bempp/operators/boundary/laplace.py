@@ -1,4 +1,4 @@
-#pylint: disable-msg=too-many-arguments
+# pylint: disable-msg=too-many-arguments
 
 """Definition of the Laplace boundary operators."""
 
@@ -16,8 +16,9 @@ def single_layer(domain, range_, dual_to_range,
         parameters = bempp.global_parameters
 
     return ElementaryBoundaryOperator( \
-            single_layer_ext(parameters, domain, range_,
-                             dual_to_range, label, symmetry))
+        single_layer_ext(parameters, domain, range_,
+                         dual_to_range, label, symmetry),
+        parameters=parameters)
 
 
 def double_layer(domain, range_, dual_to_range,
@@ -31,8 +32,11 @@ def double_layer(domain, range_, dual_to_range,
     if parameters is None:
         parameters = bempp.global_parameters
 
-    return double_layer_ext(parameters, domain, range_,
-                            dual_to_range, label, symmetry)
+    return ElementaryBoundaryOperator( \
+        double_layer_ext(parameters, domain, range_,
+                         dual_to_range, label, symmetry),
+        parameters=parameters)
+
 
 def adjoint_double_layer(domain, range_, dual_to_range,
                          label='', symmetry='no_symmetry',
@@ -45,8 +49,11 @@ def adjoint_double_layer(domain, range_, dual_to_range,
     if parameters is None:
         parameters = bempp.global_parameters
 
-    return adjoint_double_layer_ext(parameters, domain, range_,
-                                    dual_to_range, label, symmetry)
+    return ElementaryBoundaryOperator( \
+        adjoint_double_layer_ext(parameters, domain, range_,
+                                 dual_to_range, label, symmetry),
+        parameters=parameters)
+
 
 def hypersingular(domain, range_, dual_to_range,
                   label='', symmetry='no_symmetry',
@@ -59,5 +66,7 @@ def hypersingular(domain, range_, dual_to_range,
     if parameters is None:
         parameters = bempp.global_parameters
 
-    return hypersingular_ext(parameters, domain, range_,
-                             dual_to_range, label, symmetry)
+    return ElementaryBoundaryOperator( \
+        hypersingular_ext(parameters, domain, range_,
+                          dual_to_range, label, symmetry),
+        parameters=parameters)

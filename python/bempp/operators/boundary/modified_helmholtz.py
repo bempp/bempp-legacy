@@ -18,7 +18,8 @@ def single_layer(domain, range_, dual_to_range,
 
     return ElementaryBoundaryOperator( \
             single_layer_ext(parameters, domain, range_,
-                             dual_to_range, wave_number, label, symmetry))
+                             dual_to_range, wave_number, label, symmetry),
+            parameters=parameters)
 
 
 def double_layer(domain, range_, dual_to_range,
@@ -36,7 +37,8 @@ def double_layer(domain, range_, dual_to_range,
 
     return ElementaryBoundaryOperator( \
             double_layer_ext(parameters, domain, range_,
-                             dual_to_range, wave_number, label, symmetry))
+                             dual_to_range, wave_number, label, symmetry),
+            parameters=parameters)
 
 def adjoint_double_layer(domain, range_, dual_to_range,
                          wave_number,
@@ -53,7 +55,8 @@ def adjoint_double_layer(domain, range_, dual_to_range,
 
     return ElementaryBoundaryOperator( \
             adjoint_double_layer_ext(parameters, domain, range_,
-                                     dual_to_range, wave_number, label, symmetry))
+                                     dual_to_range, wave_number, label, symmetry),
+            parameters=parameters)
 
 def hypersingular(domain, range_, dual_to_range,
                   wave_number,
@@ -70,4 +73,5 @@ def hypersingular(domain, range_, dual_to_range,
 
     return ElementaryBoundaryOperator( \
             hypersingular_ext(parameters, domain, range_,
-                              dual_to_range, wave_number, label, symmetry))
+                              dual_to_range, wave_number, label, symmetry),
+            parameters=parameters)
