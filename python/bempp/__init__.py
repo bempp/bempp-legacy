@@ -7,16 +7,10 @@ __all__ = ['grid_from_sphere',
            'function_space',
            'GridFunction',
            'global_parameters',
-           'BlockedBoundaryOperator',
-           'ZeroBoundaryOperator',
-           'export',
            'GridFactory',
            'import_grid',
            'operators',
            'shapes',
-           'applications',
-           'FileReader',
-           'generate_block_cluster_tree',
            'InverseSparseDiscreteBoundaryOperator']
 
 
@@ -26,9 +20,9 @@ __all__ = ['grid_from_sphere',
 try:
     import dolfin
 except ImportError:
-    have_dolfin = False  # pylint: disable=C0103
+    HAVE_DOLFIN = False
 else:
-    have_dolfin = True  # pylint: disable=C0103
+    HAVE_DOLFIN = True
 
 
 # Check if config directory exists. If not create it.
@@ -50,7 +44,7 @@ def _check_create_init_dir():
     return confpath, tmpath
 
 
-config_path, tmp_path = _check_create_init_dir()  # pylint: disable=C0103
+CONFIG_PATH, TMP_PATH = _check_create_init_dir()
 
 
 # Get the path to Gmsh
@@ -65,18 +59,19 @@ def _gmsh_path():
     return gmp
 
 
-gmsh_path = _gmsh_path()  # pylint: disable=C0103
+GMSH_PATH = _gmsh_path()
 
 
 # Define the global default options
 
 from bempp.common import global_parameters as __global_parameters
 
-global_parameters = __global_parameters()  # pylint: disable=C0103
+
+global_parameters = __global_parameters()
 
 # Now all the module imports
 
-from bempp.grid import Grid, grid_from_sphere, grid_from_element_data, structured_grid
+from bempp.grid import grid_from_sphere, grid_from_element_data, structured_grid
 from bempp.grid import GridFactory
 from bempp.space import function_space
 from bempp.assembly import GridFunction

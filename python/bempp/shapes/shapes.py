@@ -33,7 +33,7 @@ def getGmshFile():
     import os
     import tempfile
     geo, geo_name = tempfile.mkstemp(
-        suffix='.geo', dir=bempp.tmp_path, text=True)
+        suffix='.geo', dir=bempp.TMP_PATH, text=True)
     geo_file = os.fdopen(geo, "w")
     msh_name = os.path.splitext(geo_name)[0]+".msh"
     return (geo_file, geo_name, msh_name)
@@ -45,7 +45,7 @@ def __generate_grid_from_gmsh_string(gmsh_string):
     import os
     import tempfile
     handle, fname = tempfile.mkstemp(
-        suffix='.msh', dir=bempp.tmp_path, text=True)
+        suffix='.msh', dir=bempp.TMP_PATH, text=True)
     with os.fdopen(handle, "w") as f:
         f.write(gmsh_string)
     grid = bempp.import_grid(fname)
@@ -61,7 +61,7 @@ def __generate_grid_from_geo_string(geo_string):
     import subprocess
 
     def msh_from_string(geo_string):
-        gmsh_command = bempp.gmsh_path
+        gmsh_command = bempp.GMSH_PATH
         f, geo_name, msh_name = getGmshFile()
         f.write(geo_string)
         f.close()

@@ -57,7 +57,7 @@ class BoundaryOperator(object):
         elif isinstance(other, BoundaryOperator):
             return _ProductBoundaryOperator(self, other)
         else:
-            return NotImplemented
+            raise NotImplemented
 
     def __rmul__(self, other):
 
@@ -66,7 +66,7 @@ class BoundaryOperator(object):
         if np.isscalar(other):
             return _ScaledBoundaryOperator(self, other)
         else:
-            return NotImplemented
+            raise NotImplemented
 
     def strong_form(self):
         """Return a discrete operator  that maps into the domain space."""
@@ -74,15 +74,30 @@ class BoundaryOperator(object):
         if self._domain_map is None:
             from bempp.operators.boundary.sparse import identity
             from bempp.assembly import InverseSparseDiscreteBoundaryOperator
-            self._domain_map = InverseSparseDiscreteBoundaryOperator(\
-                    identity(self.domain, self.domain, self.dual_to_range).weak_form())
+
+            self._domain_map = InverseSparseDiscreteBoundaryOperator( \
+                identity(self.domain, self.domain, self.dual_to_range).weak_form())
 
         return self._domain_map * self._weak_form_impl()
 
     def _weak_form_impl(self):
         """Returns a weak form. Needs to be implemented by subclasses."""
 
-        raise NotImplementedError("Method not implemented.")
+        raise NotImplemented
+
+
+class ZeroBoundaryOperator(BoundaryOperator):
+    """A boundary operator that represents a zero operator."""
+
+    def __init__(self, domain, range_, dual_to_range):
+        super(ZeroBoundaryOperator, self).__init__(domain, range_, dual_to_range)
+
+    def _weak_form_impl(self):
+
+        from .discrete_boundary_operator import ZeroDiscreteBoundaryOperator
+
+        return ZeroDiscreteBoundaryOperator(self.dual_to_range.global_dof_count,
+                                            self.domain.global_dof_count)
 
 
 class ElementaryBoundaryOperator(BoundaryOperator):
@@ -95,6 +110,7 @@ class ElementaryBoundaryOperator(BoundaryOperator):
 
         if parameters is None:
             from bempp import global_parameters
+
             self._parameters = global_parameters
         else:
             self._parameters = parameters
@@ -105,13 +121,15 @@ class ElementaryBoundaryOperator(BoundaryOperator):
         if self._parameters.assembly.boundary_operator_assembly_type == 'dense':
             from bempp.assembly.discrete_boundary_operator import \
                 DenseDiscreteBoundaryOperator
+
             return DenseDiscreteBoundaryOperator( \
-                    self._impl.assemble_weak_form(self._parameters).as_matrix())
+                self._impl.assemble_weak_form(self._parameters).as_matrix())
         else:
             from bempp.assembly.discrete_boundary_operator import \
-                    GeneralNonlocalDiscreteBoundaryOperator
+                GeneralNonlocalDiscreteBoundaryOperator
+
             return GeneralNonlocalDiscreteBoundaryOperator( \
-                    self._impl.assemble_weak_form(self._parameters))
+                self._impl.assemble_weak_form(self._parameters))
 
 
 class LocalBoundaryOperator(BoundaryOperator):
@@ -124,6 +142,7 @@ class LocalBoundaryOperator(BoundaryOperator):
 
         if parameters is None:
             from bempp import global_parameters
+
             self._parameters = global_parameters
         else:
             self._parameters = parameters
@@ -133,28 +152,27 @@ class LocalBoundaryOperator(BoundaryOperator):
     def _weak_form_impl(self):
         from bempp_ext.assembly.discrete_boundary_operator import convert_to_sparse
         from bempp.assembly.discrete_boundary_operator import SparseDiscreteBoundaryOperator
-        return SparseDiscreteBoundaryOperator(\
-                convert_to_sparse(self._impl.assemble_weak_form(self._parameters)))
+
+        return SparseDiscreteBoundaryOperator( \
+            convert_to_sparse(self._impl.assemble_weak_form(self._parameters)))
 
 
 class _SumBoundaryOperator(BoundaryOperator):
     """Return the sum of two boundary operators."""
 
     def __init__(self, op1, op2):
-
         if (op1.domain != op2.domain or
-                op1.range != op2.range or
-                op1.dual_to_range != op2.dual_to_range):
+                    op1.range != op2.range or
+                    op1.dual_to_range != op2.dual_to_range):
             raise ValueError("Spaces not compatible.")
 
-        super(_SumBoundaryOperator, self).__init__(\
-                op1.domain, op1.range, op1.dual_to_range)
+        super(_SumBoundaryOperator, self).__init__( \
+            op1.domain, op1.range, op1.dual_to_range)
 
         self._op1 = op1
         self._op2 = op2
 
     def _weak_form_impl(self):
-
         return self._op1.weak_form() + self._op2.weak_form()
 
 
@@ -162,15 +180,13 @@ class _ScaledBoundaryOperator(BoundaryOperator):
     """Scale a boundary operator."""
 
     def __init__(self, op, alpha):
-
-        super(_ScaledBoundaryOperator, self).__init__(\
-                op.domain, op.range, op.dual_to_range)
+        super(_ScaledBoundaryOperator, self).__init__( \
+            op.domain, op.range, op.dual_to_range)
 
         self._op = op
         self._alpha = alpha
 
     def _weak_form_impl(self):
-
         return self._op.weak_form() * self._alpha
 
 
@@ -178,21 +194,15 @@ class _ProductBoundaryOperator(BoundaryOperator):
     """Multiply two boundary operators."""
 
     def __init__(self, op1, op2):
-
         if op2.range != op1.domain:
             raise ValueError("Range space of second operator must be identical to " +
                              "domain space of first operator.")
 
-        super(_ProductBoundaryOperator, self).__init__(\
-                op2.domain, op1.range, op1.dual_to_range)
+        super(_ProductBoundaryOperator, self).__init__( \
+            op2.domain, op1.range, op1.dual_to_range)
 
         self._op1 = op1
         self._op2 = op2
 
     def _weak_form_impl(self):
-
         return self._op1.weak_form() * self._op2.strong_form()
-
-
-
-

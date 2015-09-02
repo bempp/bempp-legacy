@@ -257,6 +257,32 @@ class TestInverseSparseDiscreteBoundaryOperator(TestCase):
 
         self.assertAlmostEqual(np.linalg.norm(expected - actual), 0)
 
+class TestZeroDiscreteBoundaryOperator(TestCase):
+
+    def setUp(self):
+
+        from bempp.assembly.discrete_boundary_operator import ZeroDiscreteBoundaryOperator
+
+        self._M = 10
+        self._N = 5
+        self._op = ZeroDiscreteBoundaryOperator(self._M, self._N)
+
+    def test_shape(self):
+
+        self.assertEqual(self._op.shape, (self._M, self._N))
+
+    def test_multiply_with_vector(self):
+
+        import numpy as np
+        x = np.ones((self._N, 1), dtype='float64')
+        res = self._op * x
+        self.assertEqual(res.shape, (self._M, 1), "Multiply with array with ndim = 2.")
+
+        res = self._op * x.squeeze()
+        self.assertEqual(res.shape, (self._M, ), "Multiply with array with ndim = 1.")
+
+
+
 
 if __name__ == "__main__":
     from unittest import main

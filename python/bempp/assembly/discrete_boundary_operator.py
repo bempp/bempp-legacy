@@ -217,3 +217,16 @@ class InverseSparseDiscreteBoundaryOperator(_LinearOperator):
 
         return self._solver.solve(vec)
 
+class ZeroDiscreteBoundaryOperator(_LinearOperator):
+    """A discrete operator that represents a zero operator."""
+
+    def __init__(self, rows, columns):
+
+        super(ZeroDiscreteBoundaryOperator, self).__init__(dtype=_np.dtype('float64'),
+                                                           shape=(rows, columns))
+    def _matvec(self, x):
+
+        if x.ndim > 1:
+            return _np.zeros((self.shape[0], x.shape[1]), dtype='float64')
+        else:
+            return _np.zeros(self.shape[0], dtype='float64')
