@@ -18,3 +18,4 @@ add_dependencies(bempp_ext.operators cython-headers)
 
 add_subdirectory(boundary)
 add_subdirectory(potential)
+add_subdirectory(far_field)

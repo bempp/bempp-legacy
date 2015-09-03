@@ -1,21 +1,22 @@
-mako_files(helmholtz.mako.pyx maxwell.mako.pyx
-    __init__.mako.pxd
-    OUTPUT_FILES makoed
-    DESTINATION "${PYTHON_BINARY_DIR}/bempp/include/bempp/operators/far_field"
-    TARGETNAME bempp.operators.far_field-mako
+set(headers __init__.pxd
+    py_far_field_operators.hpp
+    )
+            
+
+copy_files_on_change(${headers}
+    OUTPUT_FILES copied
+    DESTINATION "${PYTHON_BINARY_DIR}/bempp_ext/include/bempp_ext/operators/far_field"
+    TARGETNAME bempp_ext.operators.far_field-copied
 )
 
-split_list(sources headers makoed ".*\\.pyx")
+install_python(FILES ${headers}
+    DESTINATION bempp_ext/include/bempp_ext/operators/far_field)
+add_dependencies(cython-headers bempp_ext.operators.far_field-copied)
 
-install_python(FILES ${headers} DESTINATION bempp/include/bempp/operators/far_field)
+add_python_module(bempp_ext.operators.far_field __init__.py
+                  helmholtz.pyx
+                  maxwell.pyx
+                  CPP LIBRARIES libbempp)
 
-add_python_module(bempp.operators.far_field
-    __init__.py ${sources}
-    TARGETNAME bempp.operators.far_field
-    CPP
-    LIBRARIES libbempp
-)
-add_dependencies(cython-headers bempp.operators.far_field-mako)
-add_dependencies(bempp.operators.far_field cython-headers)
-add_dependencies(bempp.operators.far_field bempp.operators)
-
+add_dependencies(bempp_ext.operators.far_field bempp_ext.assembly)
+add_dependencies(bempp_ext.operators.far_field cython-headers)
