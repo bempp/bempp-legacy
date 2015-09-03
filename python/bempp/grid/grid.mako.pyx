@@ -293,6 +293,7 @@ def grid_from_element_data(vertices, elements, domain_indices=[]):
     cdef:
         Grid grid = Grid.__new__(Grid)
     __grid_from_element_data(grid, vertices, elements, domain_indices)
+    return grid
 
 def __grid_from_element_data(Grid grid, vertices, elements, domain_indices=[]):
 
