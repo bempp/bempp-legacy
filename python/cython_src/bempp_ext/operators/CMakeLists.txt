@@ -17,3 +17,4 @@ add_python_module(bempp_ext.operators __init__.py
 add_dependencies(bempp_ext.operators cython-headers)
 
 add_subdirectory(boundary)
+add_subdirectory(potential)

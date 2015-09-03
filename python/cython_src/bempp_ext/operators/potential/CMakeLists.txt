@@ -1,21 +1,23 @@
-mako_files(laplace.mako.pyx modified_helmholtz.mako.pyx helmholtz.mako.pyx maxwell.mako.pyx
-    __init__.mako.pxd
-    OUTPUT_FILES makoed
-    DESTINATION "${PYTHON_BINARY_DIR}/bempp/include/bempp/operators/potential"
-    TARGETNAME bempp.operators.potential-mako
+set(headers __init__.pxd
+    py_potential_operators.hpp
+    )
+            
+
+copy_files_on_change(${headers}
+    OUTPUT_FILES copied
+    DESTINATION "${PYTHON_BINARY_DIR}/bempp_ext/include/bempp_ext/operators/potential"
+    TARGETNAME bempp_ext.operators.potential-copied
 )
 
-split_list(sources headers makoed ".*\\.pyx")
+install_python(FILES ${headers}
+    DESTINATION bempp_ext/include/bempp_ext/operators/potential)
+add_dependencies(cython-headers bempp_ext.operators.potential-copied)
 
-install_python(FILES ${headers} DESTINATION bempp/include/bempp/operators/potential)
+add_python_module(bempp_ext.operators.potential __init__.py
+                  laplace.pyx
+                  modified_helmholtz.pyx
+                  maxwell.pyx
+                  CPP LIBRARIES libbempp)
 
-add_python_module(bempp.operators.potential
-    __init__.py ${sources}
-    TARGETNAME bempp.operators.potential
-    CPP
-    LIBRARIES libbempp
-)
-add_dependencies(cython-headers bempp.operators.potential-mako)
-add_dependencies(bempp.operators.potential cython-headers)
-add_dependencies(bempp.operators.potential bempp.operators)
-
+add_dependencies(bempp_ext.operators.potential bempp_ext.assembly)
+add_dependencies(bempp_ext.operators.potential cython-headers)

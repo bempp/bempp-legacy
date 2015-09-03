@@ -11,7 +11,8 @@ __all__ = ['grid_from_sphere',
            'import_grid',
            'operators',
            'shapes',
-           'InverseSparseDiscreteBoundaryOperator']
+           'InverseSparseDiscreteBoundaryOperator',
+           'ZeroBoundaryOperator']
 
 
 # This imports dolfin at the same time as bempp if available to avoid delays
@@ -76,6 +77,7 @@ from bempp.grid import GridFactory
 from bempp.space import function_space
 from bempp.assembly import GridFunction
 from bempp.assembly import InverseSparseDiscreteBoundaryOperator
+from bempp.assembly import ZeroBoundaryOperator
 from bempp import shapes
 from bempp.file_interfaces import import_grid
 from bempp import operators

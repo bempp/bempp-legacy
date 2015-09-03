@@ -68,6 +68,14 @@ class BoundaryOperator(object):
         else:
             raise NotImplemented
 
+    def __neg__(self):
+
+        return self.__mul__(-1.0)
+
+    def __sub__(self, other):
+
+        return self.__add__(-other)
+
     def strong_form(self):
         """Return a discrete operator  that maps into the domain space."""
 
@@ -98,6 +106,23 @@ class ZeroBoundaryOperator(BoundaryOperator):
 
         return ZeroDiscreteBoundaryOperator(self.dual_to_range.global_dof_count,
                                             self.domain.global_dof_count)
+
+    def __iadd__(self, other):
+        if (self.domain != other.domain or
+                    self.range != other.range or
+                    self.dual_to_range != other.dual_to_range):
+            raise ValueError("Spaces not compatible.")
+
+        return other
+
+    def __isub__(self, other):
+        if (self.domain != other.domain or
+                    self.range != other.range or
+                    self.dual_to_range != other.dual_to_range):
+            raise ValueError("Spaces not compatible.")
+
+        return -other
+
 
 
 class ElementaryBoundaryOperator(BoundaryOperator):
