@@ -10,7 +10,7 @@ class TestGeneralNonlocalDiscreteBoundaryOperator(TestCase):
         parameters = bempp.common.global_parameters()
         parameters.assembly.boundary_operator_assembly_type = 'hmat'
         self._parameters = parameters
-        grid = bempp.grid_from_sphere(3)
+        grid = bempp.shapes.regular_sphere(3)
         space = bempp.function_space(grid, "DP", 0)
         self._operator_real = bempp.operators.boundary.laplace.single_layer(space, space, space,
                                                                             parameters=parameters).weak_form()
@@ -57,7 +57,7 @@ class TestDenseDiscreteBoundaryOperator(TestCase):
         parameters = bempp.common.global_parameters()
         parameters.assembly.boundary_operator_assembly_type = 'dense'
         self._parameters = parameters
-        grid = bempp.grid_from_sphere(3)
+        grid = bempp.shapes.regular_sphere(3)
         space = bempp.function_space(grid, "DP", 0)
         self._operator_real = bempp.operators.boundary.laplace.single_layer(space, space, space,
                                                                             parameters=parameters).weak_form()
@@ -139,7 +139,7 @@ class TestSparseDiscreteBoundaryOperator(TestCase):
     def setUp(self):
         import bempp
 
-        grid = bempp.grid_from_sphere(3)
+        grid = bempp.shapes.regular_sphere(3)
         space = bempp.function_space(grid, "DP", 0)
         self._operator = bempp.operators.boundary.sparse.identity(space, space, space).weak_form()
         self._space = space

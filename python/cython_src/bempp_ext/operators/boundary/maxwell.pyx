@@ -39,7 +39,7 @@ def _convert_to_bytes(s):
     return res
 
 
-def single_layer_ext(
+def electric_field_ext(
         ParameterList parameters,
         Space domain,
         Space range,
@@ -54,7 +54,7 @@ def single_layer_ext(
         _convert_to_bytes(label), symmetry_mode(symmetry)))
     return op
 
-def double_layer_ext(
+def magnetic_field_ext(
         ParameterList parameters,
         Space domain,
         Space range,

@@ -1,8 +1,7 @@
 """ Boundary Element Method package BEM++ """
 from __future__ import print_function
 
-__all__ = ['grid_from_sphere',
-           'grid_from_element_data',
+__all__ = ['grid_from_element_data',
            'structured_grid',
            'function_space',
            'GridFunction',
@@ -72,7 +71,7 @@ global_parameters = __global_parameters()
 
 # Now all the module imports
 
-from bempp.grid import grid_from_sphere, grid_from_element_data, structured_grid
+from bempp.grid import grid_from_element_data, structured_grid
 from bempp.grid import GridFactory
 from bempp.space import function_space
 from bempp.assembly import GridFunction

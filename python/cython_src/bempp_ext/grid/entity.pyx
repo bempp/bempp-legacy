@@ -3,12 +3,16 @@ from cython cimport address
 from bempp_ext.utils cimport unique_ptr
 from bempp_ext.grid.codim_template cimport codim_zero,codim_one,codim_two
 from bempp_ext.grid.entity_pointer cimport c_EntityPointer, EntityPointer0
+from bempp_ext.grid.entity_iterator cimport EntityIterator1, EntityIterator2
+from bempp_ext.grid.entity_iterator cimport c_EntityIterator
 from bempp_ext.grid.geometry cimport Geometry0
 from bempp_ext.grid.geometry cimport Geometry1
 from bempp_ext.grid.geometry cimport Geometry2
 
 cdef extern from "bempp_ext/grid/py_entity_helper.hpp" namespace "Bempp":
     cdef unique_ptr[c_EntityPointer[codim_zero]] py_get_father_from_entity(const c_Entity[codim_zero]&)
+    cdef unique_ptr[c_EntityIterator[ITERATOR_CODIM]] py_get_entity_iterator_from_entity[ITERATOR_CODIM, ENTITY_CODIM]\
+        (const c_Entity[ENTITY_CODIM])
 
 cdef class Entity0:
 
@@ -20,6 +24,28 @@ cdef class Entity0:
         g.impl_= address(deref(self.impl_).geometry())
         g._entity = self
         return g
+
+    def sub_entity_iterator(self, int codim):
+
+        cdef EntityIterator1 it1 = EntityIterator1
+        cdef EntityIterator2 it2 = EntityIterator2
+
+        cdef unique_ptr[c_EntityIterator[codim_one]] ptr1
+        cdef unique_ptr[c_EntityIterator[codim_two]] ptr2
+
+
+        if codim == 1:
+            ptr1 = py_get_entity_iterator_from_entity[codim_one, codim_zero](deref(self.impl_))
+            it1.impl_.swap(ptr1)
+            return it1
+        elif codim == 2:
+            ptr2 = py_get_entity_iterator_from_entity[codim_two, codim_zero](deref(self.impl_))
+            it2.impl_.swap(ptr2)
+            return it2
+        else:
+            raise ValueError("Wrong codimension.")
+
+
 
     property geometry:
         """Return the geometry of the entity"""

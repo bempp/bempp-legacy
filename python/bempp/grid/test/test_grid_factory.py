@@ -8,10 +8,10 @@ class TestGridFactory(unittest.TestCase):
     """Unit Tests for the GridFactory."""
 
     def setUp(self):
-        from bempp import grid_from_sphere
+        from bempp.shapes import regular_sphere
         from bempp import GridFactory
 
-        sphere = grid_from_sphere(3)
+        sphere = regular_sphere(3)
 
         self.vertices = sphere.leaf_view.vertices
         self.elements = sphere.leaf_view.elements

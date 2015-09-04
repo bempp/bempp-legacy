@@ -5,7 +5,7 @@ class TestBoundaryOperator(TestCase):
     def setUp(self):
         import bempp
 
-        grid = bempp.grid_from_sphere(2)
+        grid = bempp.shapes.regular_sphere(2)
         self.domain = bempp.function_space(grid, "DP", 0)
         self.range_ = bempp.function_space(grid, "DP", 1)
         self.dual_to_range = bempp.function_space(grid, "DP", 2)

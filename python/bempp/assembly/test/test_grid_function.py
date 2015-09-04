@@ -8,7 +8,7 @@ class TestGridFunction(TestCase):
     """Test class for the GridFunction object."""
 
     def setUp(self):
-        grid = bempp.grid_from_sphere(3)
+        grid = bempp.shapes.regular_sphere(3)
         self._space = bempp.function_space(grid, "P", 1)
 
     def test_initialize_from_coefficients(self):

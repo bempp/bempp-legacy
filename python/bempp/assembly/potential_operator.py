@@ -33,6 +33,8 @@ class PotentialOperator:
             self.space, self.evaluation_points)
 
     def __mul__(self, obj):
+        import numpy as np
+        from bempp import GridFunction
 
         if not isinstance(self, PotentialOperator):
             return obj * self
@@ -60,7 +62,7 @@ class PotentialOperator:
 
     @property
     def component_count(self):
-        return self.component_count
+        return self._component_count
 
     @property
     def evaluation_points(self):

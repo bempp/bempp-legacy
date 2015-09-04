@@ -10,7 +10,6 @@ cdef extern from "bempp/grid/entity.hpp" namespace "Bempp":
         int domain() # Note: only exists for codim=0
         cbool isLeaf() const # Note: only exists for codim=0
         cbool hasFather() const # Note: only exists for codim=0
-        
 
 from bempp_ext.grid.entity_pointer cimport EntityPointer0
 from bempp_ext.grid.entity_pointer cimport EntityPointer1

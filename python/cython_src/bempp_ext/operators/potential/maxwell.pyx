@@ -28,7 +28,7 @@ cdef extern from "bempp_ext/operators/potential/py_potential_operators.hpp" name
                 const c_ParameterList& parameterList) except +catch_exception
 
 
-def single_layer(Space space not None,
+def electric_field_ext(Space space not None,
         _np.ndarray evaluation_points not None, 
         double complex wave_number,
         ParameterList parameters not None):
@@ -48,7 +48,7 @@ def single_layer(Space space not None,
         return op
 
                 
-def double_layer(Space space not None,
+def magnetic_field_ext(Space space not None,
         _np.ndarray evaluation_points not None, 
         double complex wave_number,
         ParameterList parameters not None):

@@ -28,7 +28,7 @@ cdef extern from "bempp_ext/operators/far_field/py_far_field_operators.hpp" name
                 const c_ParameterList& parameterList) except +catch_exception
 
 
-def single_layer(Space space not None,
+def single_layer_ext(Space space not None,
         _np.ndarray evaluation_points not None, 
         double complex wave_number,
         ParameterList parameters not None):
@@ -48,7 +48,7 @@ def single_layer(Space space not None,
         return op
 
                 
-def double_layer(Space space not None,
+def double_layer_ext(Space space not None,
         _np.ndarray evaluation_points not None, 
         double complex wave_number,
         ParameterList parameters not None):

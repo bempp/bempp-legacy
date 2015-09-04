@@ -24,7 +24,7 @@ cdef extern from "bempp_ext/operators/potential/py_potential_operators.hpp" name
                 const c_ParameterList& parameterList) except +catch_exception
 
 
-def single_layer(Space space not None,
+def single_layer_ext(Space space not None,
         _np.ndarray evaluation_points not None, ParameterList parameters not None):
 
         if not (evaluation_points.ndim==2 and evaluation_points.shape[0]==3):
@@ -40,7 +40,7 @@ def single_layer(Space space not None,
         return op
 
                 
-def double_layer(Space space not None,
+def double_layer_ext(Space space not None,
         _np.ndarray evaluation_points not None, ParameterList parameters not None):
 
         if not (evaluation_points.ndim==2 and evaluation_points.shape[0]==3):

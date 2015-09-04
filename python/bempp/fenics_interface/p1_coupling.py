@@ -6,8 +6,22 @@ def p1_dof_to_vertex_matrix(space):
     from ._lagrange_coupling import p1_vertex_map
     from scipy.sparse import coo_matrix
     vertex_to_dof_map =  p1_vertex_map(space)
-    vertex_indices = np.arange(space.global_dof_count)
-    data = np.ones(space.global_dof_count)
+
+    grid = space.grid
+    vertex_count = space.global_dof_count
+
+    vertex_to_dof_map = np.zeros(vertex_count, dtype=np.int)
+
+    # First create a map from indices to dofs
+
+    index_set = grid.leaf_view.index_set()
+    for element in grid.leaf_view.entity_iterator(0):
+        global_dofs = space.get_global_dofs(element)[0]
+        for ind, v in enumerate(element.sub_entity_iterator(2)):
+            vertex_to_dof_map[grid.vertex_insertion_index(v)] = global_dofs[ind]
+
+    vertex_indices = np.arange(vertex_count)
+    data = np.ones(vertex_count)
     return coo_matrix((data,(vertex_indices,vertex_to_dof_map)),dtype='float64').tocsc()
     
 def p1_trace(fenics_space):

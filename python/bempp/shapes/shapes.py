@@ -22,7 +22,7 @@ import numpy as np
 import bempp
 
 
-def getGmshFile():
+def get_gmsh_file():
     """
     Return a 3-tuple (geo_file,geo_name,msh_name), where
     geo_file is a file descriptor to an empty .geo file, geo_name is
@@ -32,10 +32,11 @@ def getGmshFile():
     """
     import os
     import tempfile
+
     geo, geo_name = tempfile.mkstemp(
         suffix='.geo', dir=bempp.TMP_PATH, text=True)
     geo_file = os.fdopen(geo, "w")
-    msh_name = os.path.splitext(geo_name)[0]+".msh"
+    msh_name = os.path.splitext(geo_name)[0] + ".msh"
     return (geo_file, geo_name, msh_name)
 
 
@@ -44,6 +45,7 @@ def __generate_grid_from_gmsh_string(gmsh_string):
 
     import os
     import tempfile
+
     handle, fname = tempfile.mkstemp(
         suffix='.msh', dir=bempp.TMP_PATH, text=True)
     with os.fdopen(handle, "w") as f:
@@ -62,17 +64,17 @@ def __generate_grid_from_geo_string(geo_string):
 
     def msh_from_string(geo_string):
         gmsh_command = bempp.GMSH_PATH
-        f, geo_name, msh_name = getGmshFile()
+        f, geo_name, msh_name = get_gmsh_file()
         f.write(geo_string)
         f.close()
 
         fnull = open(os.devnull, 'w')
-        cmd = gmsh_command+" -2 "+geo_name
+        cmd = gmsh_command + " -2 " + geo_name
         try:
             subprocess.check_call(
                 cmd, shell=True, stdout=fnull, stderr=fnull)
         except:
-            print "The following command failed: "+cmd
+            print "The following command failed: " + cmd
             fnull.close()
             raise
         os.remove(geo_name)
@@ -84,12 +86,16 @@ def __generate_grid_from_geo_string(geo_string):
     os.remove(msh_name)
     return grid
 
+def regular_sphere(n):
+    """Return a regular sphere."""
+
+    from bempp_ext.grid import grid_from_sphere
+
+    return grid_from_sphere(n)
+
 
 def ellipsoid(r1=1, r2=1, r3=1, origin=(0, 0, 0), h=0.1):
-    """
-    Return a sphere grid.
-
-    """
+    """Return an ellipsoid grid. """
     import subprocess
     import os
 
@@ -135,24 +141,22 @@ def ellipsoid(r1=1, r2=1, r3=1, origin=(0, 0, 0), h=0.1):
     """
 
     sphere_geometry = (
-            "r1 = "+str(r1)+";\n" +
-            "r2 = "+str(r2)+";\n" +
-            "r3 = "+str(r3)+";\n" +
-            "orig0 = "+str(origin[0])+";\n" +
-            "orig1 = "+str(origin[1])+";\n" +
-            "orig2 = "+str(origin[2])+";\n" +
-            "cl = "+str(h)+";\n"+sphere_stub)
+        "r1 = " + str(r1) + ";\n" +
+        "r2 = " + str(r2) + ";\n" +
+        "r3 = " + str(r3) + ";\n" +
+        "orig0 = " + str(origin[0]) + ";\n" +
+        "orig1 = " + str(origin[1]) + ";\n" +
+        "orig2 = " + str(origin[2]) + ";\n" +
+        "cl = " + str(h) + ";\n" + sphere_stub)
 
     return __generate_grid_from_geo_string(sphere_geometry)
 
 
 def sphere(r=1, origin=(0, 0, 0), h=0.1):
-
     return ellipsoid(origin=origin, h=h)
 
 
 def cube(length=1, origin=(0, 0, 0), h=0.1):
-
     cube_stub = """
     Point(1) = {orig0,orig1,orig2,cl};
     Point(2) = {orig0+l,orig1,orig2,cl};
@@ -198,11 +202,11 @@ def cube(length=1, origin=(0, 0, 0), h=0.1):
     """
 
     cube_geometry = (
-            "l = "+str(length)+";\n" +
-            "orig0 = "+str(origin[0])+";\n" +
-            "orig1 = "+str(origin[1])+";\n" +
-            "orig2 = "+str(origin[2])+";\n" +
-            "cl = "+str(h)+";\n"+cube_stub)
+        "l = " + str(length) + ";\n" +
+        "orig0 = " + str(origin[0]) + ";\n" +
+        "orig1 = " + str(origin[1]) + ";\n" +
+        "orig2 = " + str(origin[2]) + ";\n" +
+        "cl = " + str(h) + ";\n" + cube_stub)
 
     return __generate_grid_from_geo_string(cube_geometry)
 
