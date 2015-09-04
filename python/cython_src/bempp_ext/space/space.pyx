@@ -112,12 +112,15 @@ cdef class Space:
     def is_identical(self, Space other):
         return self.impl_.get() == other.impl_.get()
 
-    def get_global_dofs(self,Entity0 element):
+    def get_global_dofs(self,Entity0 element, dof_weights=False):
 
         cdef vector[int] global_dofs_vec
         cdef vector[double] local_dof_weights_vec
-        deref(self.impl_).getGlobalDofs(deref(element.impl_),global_dofs_vec, local_dof_weights_vec)
-        return (global_dofs_vec,local_dof_weights_vec) 
+        deref(self.impl_).getGlobalDofs(deref(element.impl_), global_dofs_vec, local_dof_weights_vec)
+        if dof_weights:
+            return global_dofs_vec,local_dof_weights_vec
+        else:
+            return global_dofs_vec
         
     def evaluate_local_basis(self, Entity0 element, object local_coordinates, object local_coefficients):
         """Evaluate local basis functions on a given element."""

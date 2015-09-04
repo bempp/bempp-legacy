@@ -27,8 +27,8 @@ cdef class Entity0:
 
     def sub_entity_iterator(self, int codim):
 
-        cdef EntityIterator1 it1 = EntityIterator1
-        cdef EntityIterator2 it2 = EntityIterator2
+        cdef EntityIterator1 it1 = EntityIterator1()
+        cdef EntityIterator2 it2 = EntityIterator2()
 
         cdef unique_ptr[c_EntityIterator[codim_one]] ptr1
         cdef unique_ptr[c_EntityIterator[codim_two]] ptr2
