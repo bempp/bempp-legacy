@@ -93,6 +93,16 @@ class BoundaryOperator(object):
 
         raise NotImplemented
 
+    def transpose(self, range_):
+        """Return the transpose of a boundary operator."""
+
+        return _TransposeBoundaryOperator(self, range_)
+
+    def adjoint(self, range_):
+        """Return the adjoint of a boundary operator."""
+
+        return _AdjointBoundaryOperator(self, range_)
+
 
 class ZeroBoundaryOperator(BoundaryOperator):
     """A boundary operator that represents a zero operator."""
@@ -122,7 +132,6 @@ class ZeroBoundaryOperator(BoundaryOperator):
             raise ValueError("Spaces not compatible.")
 
         return -other
-
 
 
 class ElementaryBoundaryOperator(BoundaryOperator):
@@ -231,3 +240,95 @@ class _ProductBoundaryOperator(BoundaryOperator):
 
     def _weak_form_impl(self):
         return self._op1.weak_form() * self._op2.strong_form()
+
+
+class _TransposeBoundaryOperator(BoundaryOperator):
+    """Return the transpose of a boundary operator."""
+
+    def __init__(self, op, range_):
+        super(_TransposeBoundaryOperator, self).__init__( \
+            op.dual_to_range, range_, op.domain)
+
+        self._op = op
+
+    def _weak_form_impl(self):
+        return self._op.weak_form().transpose()
+
+
+class _AdjointBoundaryOperator(BoundaryOperator):
+    """Return the adjoint of a boundary operator."""
+
+    def __init__(self, op, range_):
+        super(_AdjointBoundaryOperator, self).__init__( \
+            op.dual_to_range, range_, op.domain)
+
+        self._op = op
+
+    def _weak_form_impl(self):
+        return self._op.weak_form().adjoint()
+
+
+class CompoundBoundaryOperator(BoundaryOperator):
+    """Create a compound boundary operator."""
+
+    def __init__(self, test_local_ops, kernel_op, trial_local_ops,
+                 parameters=None):
+
+        if len(test_local_ops) != len(trial_local_ops):
+            raise ValueError("There must be the same number of test and trial operators.")
+
+        number_of_ops = len(test_local_ops)
+
+        range_ = test_local_ops[0].range
+        dual_to_range = test_local_ops[0].dual_to_range
+        domain = trial_local_ops[0].domain
+        test_domain = test_local_ops[0].domain
+        trial_dual_to_range = trial_local_ops[0].dual_to_range
+
+        for i in range(number_of_ops):
+            if (test_local_ops[i].range != range_ | |
+                test_local_ops[i].dual_to_range != dual_to_range | |
+                trial_local_ops[i].domain != domain | |
+                test_domain != test_local_ops[i].domain | |
+                trial_dual_to_range != trial_local_ops[i].dual_to_range):
+                raise ValueError("Incompatible spaces.")
+
+        if parameters is None:
+            from bempp import global_parameters
+
+            self._parameters = bempp.global_parameters
+        else:
+            self._parameters = parameters
+
+        super(CompoundBoundaryOperator, self).__init__( \
+            domain, range_, dual_to_range)
+
+        self._test_local_ops = test_local_ops
+        self._trial_local_ops = trial_local_ops
+        self._kernel_op = kernel_op
+        self._number_of_ops = len(test_local_ops)
+
+    def _weak_form_impl(self):
+
+        from bempp.operators.boundary.sparse import identity
+
+        from .discrete_boundary_operator import ZeroDiscreteBoundaryOperator
+        from .discrete_boundary_operator import InverseSparseDiscreteBoundaryOperator
+
+        discrete_op = ZeroDiscreteBoundaryOperator(self.dual_to_range.global_dof_count,
+                                                   self.domain.global_dof_count)
+
+        # For the following two operators the range does not matter
+        test_inverse = InverseSparseDiscreteBoundaryOperator((self._test_local_ops[0].domain, self._kernel_op.domain,
+                                                              self._kernel_op.dual_to_range,
+                                                              parameters = self._parameters).weak_form())
+        trial_inverse = InverseSparseDiscreteBoundaryOperator((self._kernel_op.domain, self._kernel_op.domain,
+                                                               self._trial_local_ops.dual_to_range,
+                                                               parameters = self._parameters).weak_form())
+
+        kernel_discrete_op = self._kernel_op.weak_form()
+        for i in range(self._number_of_ops):
+            discrete_op += (self._test_local_ops[i].weak_form() * test_inverse * kernel_discrete_op *
+                            trial_inverse * self._trial_local_ops[i].weak_form())
+        return discrete_op
+    

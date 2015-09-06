@@ -8,6 +8,7 @@ __all__ = ['grid_from_element_data',
            'global_parameters',
            'GridFactory',
            'import_grid',
+           'export'
            'operators',
            'shapes',
            'InverseSparseDiscreteBoundaryOperator',
@@ -79,6 +80,7 @@ from bempp.assembly import InverseSparseDiscreteBoundaryOperator
 from bempp.assembly import ZeroBoundaryOperator
 from bempp import shapes
 from bempp.file_interfaces import import_grid
+from bempp.file_interfaces import export
 from bempp import operators
 
 

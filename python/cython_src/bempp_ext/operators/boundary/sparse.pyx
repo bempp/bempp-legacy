@@ -27,6 +27,12 @@ cdef extern from "bempp_ext/operators/boundary/py_boundary_operators.hpp" namesp
             shared_ptr[const c_Space[double]]&,
             shared_ptr[const c_Space[double]]&,
             string label, SymmetryMode symmetry)
+    shared_ptr[const c_ElementaryLocalOperator] curl_value_local_operator(
+            shared_ptr[const c_Space[double]]&,
+            shared_ptr[const c_Space[double]]&,
+            shared_ptr[const c_Space[double]]&,
+            int component)
+
 
 def _convert_to_bytes(s):
     res = s
@@ -75,4 +81,12 @@ def laplace_beltrami_ext(
     op.impl_.assign(laplace_beltrami_operator(
         deref(parameters.impl_),domain.impl_, range.impl_, dual_to_range.impl_,
         _convert_to_bytes(label), symmetry_mode(symmetry)))
+    return op
+
+def curl_value_ext(Space domain, Space range, Space dual_to_range,
+                                  int component):
+
+    cdef ElementaryLocalOperator op = ElementaryLocalOperator()
+    op.impl_.assign(curl_value_local_operator(domain.impl_, range.impl_, dual_to_range.impl_,
+                    component))
     return op
