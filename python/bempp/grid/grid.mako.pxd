@@ -1,5 +1,6 @@
 from bempp.utils cimport shared_ptr,unique_ptr
-from bempp.utils cimport Vector
+from bempp.utils cimport Vector,Matrix
+from bempp.utils.eigen cimport eigen_matrix_to_np_int
 from bempp.grid.grid_view cimport c_GridView, GridView
 from bempp.grid.entity cimport Entity0, Entity2
 from bempp.grid.entity cimport c_Entity
@@ -14,6 +15,7 @@ cdef extern from "bempp/grid/grid.hpp" namespace "Bempp" nogil:
         int maxLevel() const
         int topology() const
         shared_ptr[c_Grid] barycentricGrid()
+        Matrix[int] barycentricSonMap()
         unique_ptr[c_GridView] leafView() const
         void getBoundingBox(const Vector[double]&, const Vector[double]&) const
         cbool isBarycentricRepresentationOf(const c_Grid&)

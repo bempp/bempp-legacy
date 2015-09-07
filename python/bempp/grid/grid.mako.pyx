@@ -6,7 +6,8 @@ from libcpp cimport bool as cbool
 from libcpp.vector cimport vector
 from bempp.utils cimport catch_exception
 from bempp.utils cimport unique_ptr
-from bempp.utils cimport Vector
+from bempp.utils cimport Vector,Matrix
+from bempp.utils.eigen cimport eigen_matrix_to_np_int
 from bempp.grid.entity cimport Entity0
 from bempp.grid.grid_view cimport c_GridView, GridView
 from bempp.grid.grid_view cimport _grid_view_from_unique_ptr
@@ -115,11 +116,21 @@ cdef class Grid:
         return self._insertion_index_to_vertex[index]
 
     cpdef Grid barycentric_grid(self):
-        """Return an barycentric refinement of the grid"""
-
+        """Return a barycentric refinement of the grid"""
         cdef Grid bary_grid = Grid()
         bary_grid.impl_ = deref(self.impl_).barycentricGrid()
         return bary_grid
+
+    def barycentric_son_map(self):
+        """Return the son map of the barycentric refinement of the grid"""
+        cdef Matrix[int] c
+        c = deref(self.impl_).barycentricSonMap()
+        cdef _np.ndarray res
+        res = eigen_matrix_to_np_int(c)  
+        return res
+
+    def barycentric_pair(self):
+        return (self.barycentric_grid(),self.barycentric_son_map())
 
     def clone(self):
         """ Create a new grid from a copy of the current grid. """

@@ -201,8 +201,9 @@ public:
   @name Refinement
   @{ */
 
-  /** \brief Return a barycentrically refined grid based */
-  virtual shared_ptr<Grid> barycentricGrid() const {
+  /** \brief Return a barycentrically refined grid based on the Leaf View and its son map */
+  // 
+  virtual std::pair<shared_ptr<Grid>,Matrix<int>> barycentricGridSonPair() const {
     if (!m_barycentricGrid.get()) {
       tbb::mutex::scoped_lock lock(m_barycentricSpaceMutex);
       if (!m_barycentricGrid.get()) {
@@ -223,9 +224,9 @@ public:
         Matrix<int> barycentricElementCorners;
         std::vector<int> barycentricDomainIndices;
 
-        size_t ent0Count=view->entityCount(0); // faces
-        size_t ent1Count=view->entityCount(1); // edges
-        size_t ent2Count=view->entityCount(2); // vertices
+        const size_t ent0Count=view->entityCount(0); // faces
+        const size_t ent1Count=view->entityCount(1); // edges
+        const size_t ent2Count=view->entityCount(2); // vertices
 
         barycentricVertices.conservativeResize(3,ent2Count+ent1Count+ent0Count);
 
@@ -263,39 +264,49 @@ public:
         }
 
         barycentricElementCorners.conservativeResize(3,6*ent0Count);
-        {
+        Matrix<int> tempSonMap;
+        tempSonMap.conservativeResize(6*ent0Count,2);
         const IndexSet &index=view->indexSet();
-        std::unique_ptr<EntityIterator<0>> it = view->entityIterator<0>();
-        int i=0;
-        while (!it->finished()){
+        for(std::unique_ptr<EntityIterator<0>> it = view->entityIterator<0>();!it->finished();it->next()){
             const Entity<0> &entity = it->entity();
+            const int ent0Number = index.subEntityIndex(entity,0,0);
 
-            barycentricElementCorners(0,6*i)=index.subEntityIndex(entity,0,2);
-            barycentricElementCorners(1,6*i)=ent2Count+ent1Count+i;
-            barycentricElementCorners(2,6*i)=ent2Count+index.subEntityIndex(entity,1,1);
+            barycentricElementCorners(0,6*ent0Number)=index.subEntityIndex(entity,0,2);
+            barycentricElementCorners(1,6*ent0Number)=ent2Count+ent1Count+ent0Number;
+            barycentricElementCorners(2,6*ent0Number)=ent2Count+index.subEntityIndex(entity,1,1);
 
-            barycentricElementCorners(0,6*i+1)=index.subEntityIndex(entity,0,2);
-            barycentricElementCorners(1,6*i+1)=ent2Count+index.subEntityIndex(entity,0,1);
-            barycentricElementCorners(2,6*i+1)=ent2Count+ent1Count+i;
+            barycentricElementCorners(0,6*ent0Number+1)=index.subEntityIndex(entity,0,2);
+            barycentricElementCorners(1,6*ent0Number+1)=ent2Count+index.subEntityIndex(entity,0,1);
+            barycentricElementCorners(2,6*ent0Number+1)=ent2Count+ent1Count+ent0Number;
 
-            barycentricElementCorners(0,6*i+2)=index.subEntityIndex(entity,1,2);
-            barycentricElementCorners(1,6*i+2)=ent2Count+ent1Count+i;
-            barycentricElementCorners(2,6*i+2)=ent2Count+index.subEntityIndex(entity,0,1);
+            barycentricElementCorners(0,6*ent0Number+2)=index.subEntityIndex(entity,1,2);
+            barycentricElementCorners(1,6*ent0Number+2)=ent2Count+ent1Count+ent0Number;
+            barycentricElementCorners(2,6*ent0Number+2)=ent2Count+index.subEntityIndex(entity,0,1);
 
-            barycentricElementCorners(0,6*i+3)=index.subEntityIndex(entity,1,2);
-            barycentricElementCorners(1,6*i+3)=ent2Count+index.subEntityIndex(entity,2,1);
-            barycentricElementCorners(2,6*i+3)=ent2Count+ent1Count+i;
+            barycentricElementCorners(0,6*ent0Number+3)=index.subEntityIndex(entity,1,2);
+            barycentricElementCorners(1,6*ent0Number+3)=ent2Count+index.subEntityIndex(entity,2,1);
+            barycentricElementCorners(2,6*ent0Number+3)=ent2Count+ent1Count+ent0Number;
 
-            barycentricElementCorners(0,6*i+4)=index.subEntityIndex(entity,2,2);
-            barycentricElementCorners(1,6*i+4)=ent2Count+ent1Count+i;
-            barycentricElementCorners(2,6*i+4)=ent2Count+index.subEntityIndex(entity,2,1);
+            barycentricElementCorners(0,6*ent0Number+4)=index.subEntityIndex(entity,2,2);
+            barycentricElementCorners(1,6*ent0Number+4)=ent2Count+ent1Count+ent0Number;
+            barycentricElementCorners(2,6*ent0Number+4)=ent2Count+index.subEntityIndex(entity,2,1);
 
-            barycentricElementCorners(0,6*i+5)=index.subEntityIndex(entity,2,2);
-            barycentricElementCorners(1,6*i+5)=ent2Count+index.subEntityIndex(entity,1,1);
-            barycentricElementCorners(2,6*i+5)=ent2Count+ent1Count+i;
-            ++i;
-            it->next();
-        }
+            barycentricElementCorners(0,6*ent0Number+5)=index.subEntityIndex(entity,2,2);
+            barycentricElementCorners(1,6*ent0Number+5)=ent2Count+index.subEntityIndex(entity,1,1);
+            barycentricElementCorners(2,6*ent0Number+5)=ent2Count+ent1Count+ent0Number;
+
+            tempSonMap(6*ent0Number,0) = ent0Number;
+            tempSonMap(6*ent0Number+1,0) = ent0Number;
+            tempSonMap(6*ent0Number+2,0) = ent0Number;
+            tempSonMap(6*ent0Number+3,0) = ent0Number;
+            tempSonMap(6*ent0Number+4,0) = ent0Number;
+            tempSonMap(6*ent0Number+5,0) = ent0Number;
+            tempSonMap(6*ent0Number,1) = 0;
+            tempSonMap(6*ent0Number+1,1) = 1;
+            tempSonMap(6*ent0Number+2,1) = 2;
+            tempSonMap(6*ent0Number+3,1) = 3;
+            tempSonMap(6*ent0Number+4,1) = 4;
+            tempSonMap(6*ent0Number+5,1) = 5;
         }
 
         shared_ptr<Grid> newGrid =
@@ -305,9 +316,35 @@ public:
             dynamic_pointer_cast<ConcreteGrid<DuneGrid>>(newGrid);
 
         m_barycentricGrid = newGrid;
+
+
+        m_barycentricSonMap.conservativeResize(ent0Count,6);
+
+        std::unique_ptr<GridView> baryView = m_barycentricGrid->leafView();
+        const IndexSet &baryIndex=baryView->indexSet();
+        int dummy = 0;
+        for (std::unique_ptr<EntityIterator<0>> it = baryView->entityIterator<0>();!it->finished();it->next()){
+            const Entity<0> &entity = it->entity();
+            int ent0Number = baryIndex.subEntityIndex(entity,0,0);
+            int insInd = m_barycentricGrid->elementInsertionIndex(entity);
+            m_barycentricSonMap(tempSonMap(insInd,0),tempSonMap(insInd,1)) = ent0Number;
+        }
+
       }
     }
-    return m_barycentricGrid;
+    return std::pair<shared_ptr<Grid>,Matrix<int>> (m_barycentricGrid,m_barycentricSonMap);
+  }
+
+  /** \brief Return a barycentrically refined grid based on the Leaf View */
+  virtual shared_ptr<Grid> barycentricGrid() const {
+    std::pair<shared_ptr<Grid>,Matrix<int>> baryPair = this->barycentricGridSonPair();
+    return std::get<0>(baryPair);
+  }
+
+  /** \brief Return the son map for the barycentrically refined grid */
+  virtual Matrix<int> barycentricSonMap() const {
+    std::pair<shared_ptr<Grid>,Matrix<int>> baryPair = this->barycentricGridSonPair();
+    return std::get<1>(baryPair);
   }
 
   /** \brief Return \p true if a barycentric refinement of this grid has
@@ -408,6 +445,7 @@ private:
   // (unclear what to do with the pointer to the grid)
   ConcreteGrid(const ConcreteGrid &);
   ConcreteGrid &operator=(const ConcreteGrid &);
+  mutable Matrix<int> m_barycentricSonMap;
   mutable shared_ptr<Grid> m_barycentricGrid;
   mutable tbb::mutex m_barycentricSpaceMutex;
 };

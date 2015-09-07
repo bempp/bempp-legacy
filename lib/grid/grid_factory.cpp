@@ -177,6 +177,7 @@ shared_ptr<Grid> GridFactory::createGridFromConnectivityArrays(
     const GridParameters &params, const Eigen::Ref<Matrix<double>> &vertices,
     const Eigen::Ref<Matrix<int>> &elementCorners,
     const std::vector<int> &domainIndices) {
+
   const int dimGrid = 2, dimWorld = 3;
   if (params.topology != GridParameters::TRIANGULAR)
     throw std::invalid_argument("createGridFromConnectivityArrays(): "
@@ -195,8 +196,7 @@ shared_ptr<Grid> GridFactory::createGridFromConnectivityArrays(
         "'domainIndices' must either be empty or contain as many "
         "elements as 'elementCorners' has columns");
 
-  shared_ptr<Dune::GridFactory<Default2dIn3dDuneGrid>> factory(
-      new Dune::GridFactory<Default2dIn3dDuneGrid>());
+  shared_ptr<Dune::GridFactory<Default2dIn3dDuneGrid>> factory(new Dune::GridFactory<Default2dIn3dDuneGrid>());
 
   for (size_t i = 0; i < vertices.cols(); ++i) {
     Dune::FieldVector<double, dimWorld> v;

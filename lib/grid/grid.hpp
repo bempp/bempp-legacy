@@ -95,8 +95,14 @@ public:
   @name Others
   @{ */
 
+  /** \brief Return a barycentrically refined grid based on the LeafView and the son map */
+  virtual std::pair<shared_ptr<Grid>,Matrix<int>> barycentricGridSonPair() const = 0;
+
   /** \brief Return a barycentrically refined grid based on the LeafView */
   virtual shared_ptr<Grid> barycentricGrid() const = 0;
+
+  /** \brief Return the son map for the barycentrically refined grid */
+  virtual Matrix<int> barycentricSonMap() const = 0;
 
   /** \brief Return \p true if a barycentric refinement of this grid has
    *  been created. */
