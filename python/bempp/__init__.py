@@ -1,7 +1,8 @@
 """ Boundary Element Method package BEM++ """
 from __future__ import print_function
 
-__all__ = ['grid_from_element_data',
+__all__ = ['as_matrix',
+           'grid_from_element_data',
            'structured_grid',
            'function_space',
            'GridFunction',
@@ -78,6 +79,7 @@ from bempp.space import function_space
 from bempp.assembly import GridFunction
 from bempp.assembly import InverseSparseDiscreteBoundaryOperator
 from bempp.assembly import ZeroBoundaryOperator
+from bempp.assembly import as_matrix
 from bempp import shapes
 from bempp.file_interfaces import import_grid
 from bempp.file_interfaces import export

@@ -230,3 +230,10 @@ class ZeroDiscreteBoundaryOperator(_LinearOperator):
             return _np.zeros((self.shape[0], x.shape[1]), dtype='float64')
         else:
             return _np.zeros(self.shape[0], dtype='float64')
+
+def as_matrix(operator):
+    """Return a representation of a discrete linear operator as a dense numpy matrix."""
+
+    from numpy import eye
+    cols = operator.shape[1]
+    return operator * eye(cols, cols)

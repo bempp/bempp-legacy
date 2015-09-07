@@ -47,14 +47,15 @@ def adjoint_double_layer(domain, range_, dual_to_range,
 def hypersingular(domain, range_, dual_to_range,
                   wave_number,
                   label='', symmetry='no_symmetry',
-                  parameters=None):
+                  parameters=None,
+                  use_slp=False):
     """Return the hypersingular boundary operator."""
 
     from .modified_helmholtz import hypersingular as hyp
 
     return hyp(domain, range_, dual_to_range,
                wave_number / (1j), label, symmetry,
-               parameters)
+               use_slp=use_slp, parameters=parameters)
 
 
 def osrc_dtn(space, wave_number, npade=2, theta=_np.pi / 3,

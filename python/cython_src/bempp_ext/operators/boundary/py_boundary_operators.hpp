@@ -21,10 +21,13 @@
 #include "bempp/assembly/modified_helmholtz_3d_double_layer_boundary_operator.hpp"
 #include "bempp/assembly/modified_helmholtz_3d_adjoint_double_layer_boundary_operator.hpp"
 #include "bempp/assembly/modified_helmholtz_3d_hypersingular_boundary_operator.hpp"
+#include "bempp/fiber/hdiv_function_value_functor.hpp"
 #include "bempp/fiber/surface_curl_3d_functor.hpp"
+#include "bempp/fiber/scalar_function_value_times_normal_functor.hpp"
 #include "bempp/fiber/scalar_function_value_functor.hpp"
-#include "bempp/fiber/simple_test_scalar_kernel_trial_integrand_functor.hpp"
+#include "bempp/fiber/simple_test_trial_integrand_functor.hpp"
 #include "bempp/fiber/single_component_test_trial_integrand_functor.hpp"
+#include "bempp/fiber/surface_div_3d_functor.hpp"
 
 namespace Bempp {
 
@@ -235,6 +238,61 @@ curl_value_local_operator(const shared_ptr<const Space<double>> &domain,
       new LocalOp(domain, range, dualToRange, "", NO_SYMMETRY, CurlFunctor(),
                   ValueFunctor(), IntegrandFunctor(component, 0)));
 }
+
+inline shared_ptr<const ElementaryLocalOperator<double, double>>
+value_times_normal_local_operator(const shared_ptr<const Space<double>> &domain,
+                          const shared_ptr<const Space<double>> &range,
+                          const shared_ptr<const Space<double>> &dualToRange,
+                          int component) {
+
+  typedef Fiber::ScalarFunctionValueFunctor<double> ValueFunctor;
+  typedef Fiber::ScalarFunctionValueTimesNormalFunctor<double>
+      ValueTimesNormalFunctor;
+  typedef Fiber::SingleComponentTestTrialIntegrandFunctor<double, double>
+      IntegrandFunctor;
+
+  typedef GeneralElementaryLocalOperator<double, double> LocalOp;
+
+  return shared_ptr<const ElementaryLocalOperator<double, double>>(
+      new LocalOp(domain, range, dualToRange, "", NO_SYMMETRY, ValueTimesNormalFunctor(),
+                  ValueFunctor(), IntegrandFunctor(component, 0)));
+}
+
+inline shared_ptr<const ElementaryLocalOperator<double, double>>
+vector_value_times_scalar_local_operator(const shared_ptr<const Space<double>> &domain,
+                          const shared_ptr<const Space<double>> &range,
+                          const shared_ptr<const Space<double>> &dualToRange,
+                          int component) {
+
+  typedef Fiber::HdivFunctionValueFunctor<double> VectorValueFunctor;
+  typedef Fiber::ScalarFunctionValueFunctor<double> ScalarValueFunctor;
+  typedef Fiber::SingleComponentTestTrialIntegrandFunctor<double, double>
+      IntegrandFunctor;
+
+  typedef GeneralElementaryLocalOperator<double, double> LocalOp;
+
+  return shared_ptr<const ElementaryLocalOperator<double, double>>(
+      new LocalOp(domain, range, dualToRange, "", NO_SYMMETRY, VectorValueFunctor(),
+                  ScalarValueFunctor(), IntegrandFunctor(component, 0)));
+}
+
+inline shared_ptr<const ElementaryLocalOperator<double, double>>
+div_times_scalar_local_operator(const shared_ptr<const Space<double>> &domain,
+                          const shared_ptr<const Space<double>> &range,
+                          const shared_ptr<const Space<double>> &dualToRange) {
+
+  typedef Fiber::SurfaceDiv3dFunctor<double> DivFunctor;
+  typedef Fiber::ScalarFunctionValueFunctor<double> ScalarValueFunctor;
+  typedef Fiber::SimpleTestTrialIntegrandFunctor<double, double>
+      IntegrandFunctor;
+
+  typedef GeneralElementaryLocalOperator<double, double> LocalOp;
+
+  return shared_ptr<const ElementaryLocalOperator<double, double>>(
+      new LocalOp(domain, range, dualToRange, "", NO_SYMMETRY, DivFunctor(),
+                  ScalarValueFunctor(), IntegrandFunctor()));
+}
+
 }
 
 #endif

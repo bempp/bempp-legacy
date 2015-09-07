@@ -94,6 +94,20 @@ cdef class Space:
         def __get__(self):
             return deref(self.impl_).flatLocalDofCount()
 
+    property discontinuous_space:
+        """Return the associated discontinuous scalar space."""
+
+        def __get__(self):
+            cdef Space space = Space()
+            space.impl_.assign(deref(self.impl_).discontinuousSpace(self.impl_))
+            return space
+
+    property is_discontinuous:
+        """Return true of basis functions are scalar and only extend over a single element."""
+
+        def __get__(self):
+            return deref(self.impl_).isDiscontinuous()
+
     def is_compatible(self,Space other):
         """ Test if both spaces have the same global degrees of freedom. """
 

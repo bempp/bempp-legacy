@@ -274,6 +274,8 @@ class CompoundBoundaryOperator(BoundaryOperator):
     def __init__(self, test_local_ops, kernel_op, trial_local_ops,
                  parameters=None):
 
+        import bempp
+
         if len(test_local_ops) != len(trial_local_ops):
             raise ValueError("There must be the same number of test and trial operators.")
 
@@ -286,11 +288,11 @@ class CompoundBoundaryOperator(BoundaryOperator):
         trial_dual_to_range = trial_local_ops[0].dual_to_range
 
         for i in range(number_of_ops):
-            if (test_local_ops[i].range != range_ | |
-                test_local_ops[i].dual_to_range != dual_to_range | |
-                trial_local_ops[i].domain != domain | |
-                test_domain != test_local_ops[i].domain | |
-                trial_dual_to_range != trial_local_ops[i].dual_to_range):
+            if (test_local_ops[i].range != range_ or
+                        test_local_ops[i].dual_to_range != dual_to_range or
+                        trial_local_ops[i].domain != domain or
+                        test_domain != test_local_ops[i].domain or
+                        trial_dual_to_range != trial_local_ops[i].dual_to_range):
                 raise ValueError("Incompatible spaces.")
 
         if parameters is None:
@@ -300,8 +302,7 @@ class CompoundBoundaryOperator(BoundaryOperator):
         else:
             self._parameters = parameters
 
-        super(CompoundBoundaryOperator, self).__init__( \
-            domain, range_, dual_to_range)
+        super(CompoundBoundaryOperator, self).__init__(domain, range_, dual_to_range)
 
         self._test_local_ops = test_local_ops
         self._trial_local_ops = trial_local_ops
@@ -318,17 +319,16 @@ class CompoundBoundaryOperator(BoundaryOperator):
         discrete_op = ZeroDiscreteBoundaryOperator(self.dual_to_range.global_dof_count,
                                                    self.domain.global_dof_count)
 
-        # For the following two operators the range does not matter
-        test_inverse = InverseSparseDiscreteBoundaryOperator((self._test_local_ops[0].domain, self._kernel_op.domain,
-                                                              self._kernel_op.dual_to_range,
-                                                              parameters = self._parameters).weak_form())
-        trial_inverse = InverseSparseDiscreteBoundaryOperator((self._kernel_op.domain, self._kernel_op.domain,
-                                                               self._trial_local_ops.dual_to_range,
-                                                               parameters = self._parameters).weak_form())
+        test_inverse = InverseSparseDiscreteBoundaryOperator(
+            identity(self._test_local_ops[0].domain, self._kernel_op.domain,
+                     self._kernel_op.dual_to_range,
+                     parameters=self._parameters).weak_form())
+        trial_inverse = InverseSparseDiscreteBoundaryOperator(identity(self._kernel_op.domain, self._kernel_op.domain,
+                                                                       self._trial_local_ops[0].dual_to_range,
+                                                                       parameters=self._parameters).weak_form())
 
         kernel_discrete_op = self._kernel_op.weak_form()
         for i in range(self._number_of_ops):
             discrete_op += (self._test_local_ops[i].weak_form() * test_inverse * kernel_discrete_op *
                             trial_inverse * self._trial_local_ops[i].weak_form())
         return discrete_op
-    

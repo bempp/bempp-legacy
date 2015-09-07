@@ -17,6 +17,7 @@ cdef extern from "bempp/space/space.hpp":
         shared_ptr[const c_Grid] grid() const
         cbool spaceIsCompatible(const c_Space[BASIS]&)
         cbool is_same "isSame"(const c_Space[BASIS]&)
+        cbool isDiscontinuous()
         int codomainDimension() const
         int domainDimension() const
         unsigned long globalDofCount() const
@@ -25,6 +26,7 @@ cdef extern from "bempp/space/space.hpp":
         void getGlobalDofInterpolationPoints(Matrix[double]& points) const 
         void getNormalsAtGlobalDofInterpolationPoints(Matrix[double]& normals) const
         void getGlobalDofs(const c_Entity[codim_zero]&, vector[int]&, vector[double]&) const
+        shared_ptr[const c_Space[BASIS]] discontinuousSpace(const shared_ptr[const c_Space[BASIS]]) const
 
 
 cdef class Space:

@@ -32,6 +32,21 @@ cdef extern from "bempp_ext/operators/boundary/py_boundary_operators.hpp" namesp
             shared_ptr[const c_Space[double]]&,
             shared_ptr[const c_Space[double]]&,
             int component)
+    shared_ptr[const c_ElementaryLocalOperator] value_times_normal_local_operator(
+            shared_ptr[const c_Space[double]]&,
+            shared_ptr[const c_Space[double]]&,
+            shared_ptr[const c_Space[double]]&,
+            int component)
+    shared_ptr[const c_ElementaryLocalOperator] vector_value_times_scalar_local_operator(
+            shared_ptr[const c_Space[double]]&,
+            shared_ptr[const c_Space[double]]&,
+            shared_ptr[const c_Space[double]]&,
+            int component)
+    shared_ptr[const c_ElementaryLocalOperator] div_times_scalar_local_operator(
+            shared_ptr[const c_Space[double]]&,
+            shared_ptr[const c_Space[double]]&,
+            shared_ptr[const c_Space[double]]&)
+
 
 
 def _convert_to_bytes(s):
@@ -89,4 +104,26 @@ def curl_value_ext(Space domain, Space range, Space dual_to_range,
     cdef ElementaryLocalOperator op = ElementaryLocalOperator()
     op.impl_.assign(curl_value_local_operator(domain.impl_, range.impl_, dual_to_range.impl_,
                     component))
+    return op
+
+def value_times_normal_ext(Space domain, Space range, Space dual_to_range,
+                           int component):
+
+    cdef ElementaryLocalOperator op = ElementaryLocalOperator()
+    op.impl_.assign(value_times_normal_local_operator(domain.impl_, range.impl_, dual_to_range.impl_,
+                    component))
+    return op
+
+def vector_value_times_scalar_ext(Space domain, Space range, Space dual_to_range,
+                           int component):
+
+    cdef ElementaryLocalOperator op = ElementaryLocalOperator()
+    op.impl_.assign(vector_value_times_scalar_local_operator(domain.impl_, range.impl_, dual_to_range.impl_,
+                                                      component))
+    return op
+
+def div_times_scalar_ext(Space domain, Space range, Space dual_to_range):
+
+    cdef ElementaryLocalOperator op = ElementaryLocalOperator()
+    op.impl_.assign(div_times_scalar_local_operator(domain.impl_, range.impl_, dual_to_range.impl_))
     return op
