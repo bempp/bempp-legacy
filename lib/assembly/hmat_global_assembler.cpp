@@ -77,26 +77,14 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
 
   const AssemblyOptions &options = context.assemblyOptions();
   const auto parameterList = context.globalParameterList();
-  const bool indexWithGlobalDofs =
-      (parameterList.template get<std::string>(
-           "options.hmat.hMatAssemblyMode") == "GlobalAssembly");
-  const bool verbosityAtLeastDefault =
-      (options.verbosityLevel() >= VerbosityLevel::DEFAULT);
-  const bool verbosityAtLeastHigh =
-      (options.verbosityLevel() >= VerbosityLevel::HIGH);
 
   auto testSpacePointer = Fiber::make_shared_from_const_ref(testSpace);
   auto trialSpacePointer = Fiber::make_shared_from_const_ref(trialSpace);
 
   shared_ptr<const Space<BasisFunctionType>> actualTestSpace;
   shared_ptr<const Space<BasisFunctionType>> actualTrialSpace;
-  if (!indexWithGlobalDofs) {
-    actualTestSpace = testSpacePointer->discontinuousSpace(testSpacePointer);
-    actualTrialSpace = trialSpacePointer->discontinuousSpace(trialSpacePointer);
-  } else {
-    actualTestSpace = testSpacePointer;
-    actualTrialSpace = trialSpacePointer;
-  }
+  actualTestSpace = testSpacePointer;
+  actualTrialSpace = trialSpacePointer;
 
   auto minBlockSize =
       parameterList.template get<int>("options.hmat.minBlockSize");

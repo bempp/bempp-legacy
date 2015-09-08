@@ -93,14 +93,10 @@ ElementaryIntegralOperatorBase<BasisFunctionType, ResultType>::makeAssembler(
   shared_ptr<ShapesetPtrVector> testShapesets, trialShapesets;
   bool cacheSingularIntegrals;
 
-  if (verbose)
-    std::cout << "Collecting data for assembler construction..." << std::endl;
   this->collectDataForAssemblerConstruction(
       options, testRawGeometry, trialRawGeometry, testGeometryFactory,
       trialGeometryFactory, testShapesets, trialShapesets, openClHandler,
       cacheSingularIntegrals);
-  if (verbose)
-    std::cout << "Data collection finished." << std::endl;
 
   return makeAssemblerImpl(quadStrategy, testGeometryFactory,
                            trialGeometryFactory, testRawGeometry,

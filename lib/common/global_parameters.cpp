@@ -32,7 +32,7 @@ ParameterList GlobalParameters::parameterList() {
 
   // Default Verbosity of BEM++. Supported values are
   // -5 (low verbosity), 0 (default), 5 (high verbosity)
-  parameters.put("options.global.verbosityLevel", static_cast<int>(0));
+  parameters.put("options.global.verbosityLevel", static_cast<int>(5));
 
   // Default assembly type for boundary operators. Allowed values are
   // "dense" and "hmat".
@@ -81,11 +81,6 @@ ParameterList GlobalParameters::parameterList() {
   createQuadratureOptions("far", std::numeric_limits<double>::infinity(), 2, 2);
 
   parameters.erase("options.quadrature.far.maxRelDist");
-
-  // Specifies assembly mode. Allowed values are GlobalAssembly and
-  // LocalAssembly.
-  parameters.put("options.hmat.hMatAssemblyMode",
-                 std::string("GlobalAssembly"));
 
   // Specifies the minimum block size below which blocks are assumed to be dense
   parameters.put("options.hmat.minBlockSize", static_cast<int>(20));

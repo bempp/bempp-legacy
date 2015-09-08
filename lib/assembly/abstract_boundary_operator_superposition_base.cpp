@@ -346,8 +346,6 @@ AbstractBoundaryOperatorSuperpositionBase<BasisFunctionType_, ResultType_>::
                    nonlocalOps[i].label() + ") + ";
       label = label.substr(0, label.size() - 3); // remove the trailing plus
 
-      std::cout << "Assembling the weak form of operator '" << label << "'..."
-                << std::endl;
     }
     tbb::tick_count start = tbb::tick_count::now();
 
@@ -360,13 +358,9 @@ AbstractBoundaryOperatorSuperpositionBase<BasisFunctionType_, ResultType_>::
     shared_ptr<GeometryFactory> testGeometryFactory, trialGeometryFactory;
     shared_ptr<ShapesetPtrVector> testShapesets, trialShapesets;
 
-    if (verbose)
-      std::cout << "Collecting data for assembler construction..." << std::endl;
     this->collectOptionsIndependentDataForAssemblerConstruction(
         testRawGeometry, trialRawGeometry, testGeometryFactory,
         trialGeometryFactory, testShapesets, trialShapesets);
-    if (verbose)
-      std::cout << "Data collection finished." << std::endl;
 
     // Construct assemblers and determine overall symmetry
     boost::ptr_vector<LocalAssembler> assemblersForNonlocalTerms;

@@ -236,7 +236,6 @@ ClusterTree<2>::splitClusterTreeByGeometry(const Geometry &geometry,
 
   };
   splittingFun(m_root, fillIndexRange(0, geometry.size()));
-  std::cout << "Cluster tree generated." << std::endl;
 }
 
 template <int N>

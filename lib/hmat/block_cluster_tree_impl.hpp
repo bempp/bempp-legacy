@@ -194,7 +194,6 @@ void BlockClusterTree<N>::initializeBlockClusterTree(
       new BlockClusterTreeNode<N>(BlockClusterTreeNodeData<N>(
           m_rowClusterTree->root(), m_columnClusterTree->root(), admissible)));
   splittingFunction(m_root);
-  std::cout << "BlockClusterTree generated." << std::endl;
 }
 
 template <int N>
