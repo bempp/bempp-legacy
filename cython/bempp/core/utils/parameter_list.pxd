@@ -18,20 +18,9 @@ cdef extern from "bempp/common/types.hpp" namespace "Bempp":
         double get_double "get<double>" (char*)
         cbool get_bool "get<bool>" (char*)
 
-cdef extern from "<iostream>" namespace "std":
-    cdef cppclass ostream:
-        ostream& write(const char*, int) except +
-
-# obviously std::ios_base isn't a namespace, but this lets
-# Cython generate the connect C++ code
-cdef extern from "<iostream>" namespace "std::ios_base":
-    cdef cppclass open_mode:
-        pass
-    cdef open_mode text
-
 cdef extern from "<sstream>" namespace "std":
-    cdef cppclass ostringstream(ostream):
-        # constructors
+
+    cdef cppclass ostringstream:
         ostringstream() except +
         string str()
         void str(string)
