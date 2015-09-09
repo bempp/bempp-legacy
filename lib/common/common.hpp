@@ -41,6 +41,7 @@ inline complex<float> operator-(double const &&a, complex<float> const &b) {
 
 // Needs to be included before Python support
 #include <boost/property_tree/ptree.hpp>
+#include <boost/property_tree/json_parser.hpp>
 
 #ifdef __INTEL_COMPILER
 #pragma warning(disable : 279 186 858 262 1011 654 597)

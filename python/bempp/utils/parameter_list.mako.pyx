@@ -280,6 +280,7 @@ cdef class ParameterList:
 
     def __cinit__(self):
         self.impl_ = new c_ParameterList()
+        self.outputter_ = new ostringstream()
         self._assembly = _AssemblyParameterList(self)
         self._quadrature = _QuadratureParameterList(self)
         self._hmat = _HMatParameterList(self)
@@ -295,6 +296,7 @@ cdef class ParameterList:
 
     def __dealloc__(self):
         del self.impl_
+        del self.outputter_
 
     property assembly:
 
@@ -311,13 +313,9 @@ cdef class ParameterList:
         def __get__(self):
             return self._hmat
 
+    def write_state(self):
+        write_file("test.json", deref(self.impl_))
 
-
-
-
-        
-
-        
-
-
-
+    def write_string(self)
+        write_stream(deref(self.outputter_), deref(self.impl_))
+        print(deref(self.outputter_)).str())
