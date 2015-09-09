@@ -18,6 +18,29 @@ cdef extern from "bempp/common/types.hpp" namespace "Bempp":
         double get_double "get<double>" (char*)
         cbool get_bool "get<bool>" (char*)
 
+cdef extern from "<iostream>" namespace "std":
+    cdef cppclass ostream:
+        ostream& write(const char*, int) except +
+
+# obviously std::ios_base isn't a namespace, but this lets
+# Cython generate the connect C++ code
+cdef extern from "<iostream>" namespace "std::ios_base":
+    cdef cppclass open_mode:
+        pass
+    cdef open_mode text
+
+cdef extern from "<sstream>" namespace "std":
+    cdef cppclass ostringstream(ostream):
+        # constructors
+        ostringstream() except +
+        string str()
+
+cdef extern from "bempp/common/common.hpp" namespace "boost::property_tree::json_parser":
+
+    void write_file "write_json" (string, c_ParameterList)
+    void write_stream "write_json"(ostringstream, c_ParameterList)
+
+
 
 cdef class _NearField:
     cdef c_ParameterList* impl_
@@ -49,6 +72,7 @@ cdef class _HMatParameterList:
 
 cdef class ParameterList:
     cdef c_ParameterList* impl_
+    cdef ostringstream* outputter_
     cdef _AssemblyParameterList _assembly
     cdef _QuadratureParameterList _quadrature
     cdef _HMatParameterList _hmat
