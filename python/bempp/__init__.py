@@ -1,31 +1,21 @@
 """ Boundary Element Method package BEM++ """
 from __future__ import print_function
 
-__all__ = ['as_matrix',
-           'grid_from_element_data',
-           'structured_grid',
-           'function_space',
-           'GridFunction',
-           'global_parameters',
-           'GridFactory',
-           'import_grid',
-           'export'
-           'operators',
-           'shapes',
-           'InverseSparseDiscreteBoundaryOperator',
-           'ZeroBoundaryOperator']
-
-
 # This imports dolfin at the same time as bempp if available to avoid delays
 # at later imports of dolfin
 
 try:
-    import dolfin
+    import dolfin as _
 except ImportError:
     HAVE_DOLFIN = False
 else:
     HAVE_DOLFIN = True
 
+# Initialize logger
+
+from bempp.utils.logging import _init_logger
+
+LOGGER = _init_logger()
 
 # Check if config directory exists. If not create it.
 
@@ -84,6 +74,11 @@ from bempp import shapes
 from bempp.file_interfaces import import_grid
 from bempp.file_interfaces import export
 from bempp import operators
+
+from bempp.utils.logging import DEBUG, INFO, WARNING, ERROR, CRITICAL
+from bempp.utils.logging import enable_console_logging
+from bempp.utils.logging import enable_file_logging
+from bempp.utils.logging import set_logging_level
 
 
 def test():

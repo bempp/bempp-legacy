@@ -7,46 +7,46 @@ import numpy as _np
 
 def single_layer(domain, range_, dual_to_range,
                  wave_number,
-                 label='', symmetry='no_symmetry',
+                 label="SLP", symmetry='no_symmetry',
                  parameters=None):
     """Return the single-layer boundary operator."""
 
     from .modified_helmholtz import single_layer as sl
 
     return sl(domain, range_, dual_to_range,
-              wave_number / (1j), label, symmetry,
+              wave_number / (1j), "", symmetry,
               parameters)
 
 
 def double_layer(domain, range_, dual_to_range,
                  wave_number,
-                 label='', symmetry='no_symmetry',
+                 label="DLP", symmetry='no_symmetry',
                  parameters=None):
     """Return the double-layer boundary operator."""
 
     from .modified_helmholtz import double_layer as dl
 
     return dl(domain, range_, dual_to_range,
-              wave_number / (1j), label, symmetry,
+              wave_number / (1j), "", symmetry,
               parameters)
 
 
 def adjoint_double_layer(domain, range_, dual_to_range,
                          wave_number,
-                         label='', symmetry='no_symmetry',
+                         label="ADJ_DLP", symmetry='no_symmetry',
                          parameters=None):
     """Return the adjoint double-layer boundary operator."""
 
     from .modified_helmholtz import adjoint_double_layer as adl
 
     return adl(domain, range_, dual_to_range,
-               wave_number / (1j), label, symmetry,
+               wave_number / (1j), "", symmetry,
                parameters)
 
 
 def hypersingular(domain, range_, dual_to_range,
                   wave_number,
-                  label='', symmetry='no_symmetry',
+                  label="HYP", symmetry='no_symmetry',
                   parameters=None,
                   use_slp=False):
     """Return the hypersingular boundary operator."""
@@ -54,20 +54,20 @@ def hypersingular(domain, range_, dual_to_range,
     from .modified_helmholtz import hypersingular as hyp
 
     return hyp(domain, range_, dual_to_range,
-               wave_number / (1j), label, symmetry,
+               wave_number / (1j), "", symmetry,
                use_slp=use_slp, parameters=parameters)
 
 
 def osrc_dtn(space, wave_number, npade=2, theta=_np.pi / 3,
-             parameters=None):
+             parameters=None, label="osrc_dtn"):
     """Return the OSRC approximation to the DtN map."""
-    return _OsrcDtn(space, wave_number, npade, theta)
+    return _OsrcDtn(space, wave_number, npade, theta, label=label)
 
 
 class _OsrcDtn(_BoundaryOperator):
     def __init__(self, space, wave_number, npade=2, theta=_np.pi / 3.,
-                 parameters=None):
-        super(_OsrcDtn, self).__init__(space, space, space)
+                 parameters=None, label="osrc_dtn"):
+        super(_OsrcDtn, self).__init__(space, space, space, label=label)
 
         self._space = space
         self._wave_number = wave_number
@@ -112,15 +112,15 @@ class _OsrcDtn(_BoundaryOperator):
         return result
 
 
-def osrc_ntd(space, wave_number, npade=2, theta=_np.pi / 3, parameters=None):
+def osrc_ntd(space, wave_number, npade=2, theta=_np.pi / 3, parameters=None, label="osrc_ntd"):
     """Return the OSRC approximation to the NtD map."""
-    return _OsrcNtd(space, wave_number, npade, theta)
+    return _OsrcNtd(space, wave_number, npade, theta, label=label)
 
 
 class _OsrcNtd(_BoundaryOperator):
     def __init__(self, space, wave_number, npade=2, theta=_np.pi / 3.,
-                 parameters=None):
-        super(_OsrcNtd, self).__init__(space, space, space)
+                 parameters=None, label="osrc_ntd"):
+        super(_OsrcNtd, self).__init__(space, space, space, label=label)
 
         self._space = space
         self._wave_number = wave_number

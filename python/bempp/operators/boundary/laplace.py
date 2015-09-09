@@ -4,7 +4,7 @@
 
 
 def single_layer(domain, range_, dual_to_range,
-                 label='', symmetry='no_symmetry',
+                 label="SLP", symmetry='no_symmetry',
                  parameters=None):
     """Return the single-layer boundary operator."""
 
@@ -17,12 +17,12 @@ def single_layer(domain, range_, dual_to_range,
 
     return ElementaryBoundaryOperator( \
         single_layer_ext(parameters, domain, range_,
-                         dual_to_range, label, symmetry),
-        parameters=parameters)
+                         dual_to_range, "", symmetry),
+        parameters=parameters, label=label)
 
 
 def double_layer(domain, range_, dual_to_range,
-                 label='', symmetry='no_symmetry',
+                 label="DLP", symmetry='no_symmetry',
                  parameters=None):
     """Return the double-layer boundary operator."""
 
@@ -36,12 +36,12 @@ def double_layer(domain, range_, dual_to_range,
 
     return ElementaryBoundaryOperator( \
         double_layer_ext(parameters, domain, range_,
-                         dual_to_range, label, symmetry),
-        parameters=parameters)
+                         dual_to_range, "", symmetry),
+        parameters=parameters, label=label)
 
 
 def adjoint_double_layer(domain, range_, dual_to_range,
-                         label='', symmetry='no_symmetry',
+                         label="ADJ_DLP", symmetry='no_symmetry',
                          parameters=None):
     """Return the adjoint double-layer boundary operator."""
 
@@ -55,12 +55,12 @@ def adjoint_double_layer(domain, range_, dual_to_range,
 
     return ElementaryBoundaryOperator( \
         adjoint_double_layer_ext(parameters, domain, range_,
-                                 dual_to_range, label, symmetry),
-        parameters=parameters)
+                                 dual_to_range, "", symmetry),
+        parameters=parameters, label=label)
 
 
 def hypersingular(domain, range_, dual_to_range,
-                  label='', symmetry='no_symmetry',
+                  label="HYP", symmetry='no_symmetry',
                   parameters=None, use_slp=False):
     """Return the hypersingular boundary operator."""
 
@@ -82,7 +82,7 @@ def hypersingular(domain, range_, dual_to_range,
         return ElementaryBoundaryOperator( \
             hypersingular_ext(parameters, domain, range_,
                               dual_to_range, label, symmetry),
-            parameters=parameters)
+            parameters=parameters, label="")
     else:
         if not isinstance(use_slp, BoundaryOperator):
             new_domain = domain.discontinuous_space
@@ -117,6 +117,6 @@ def hypersingular(domain, range_, dual_to_range,
             test_local_ops.append(test_local_op)
             trial_local_ops.append(test_local_op.transpose(range_)) # Range parameter arbitrary
 
-        return CompoundBoundaryOperator(test_local_ops, slp, trial_local_ops)
+        return CompoundBoundaryOperator(test_local_ops, slp, trial_local_ops, label=label)
 
 

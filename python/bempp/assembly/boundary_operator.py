@@ -3,18 +3,31 @@
 """
 
 
+def _start_assembly_message(domain, dual_to_range, assembly_type, label):
+    """Create a coherent logger message for operator assembly start."""
+
+    return "Operator: {2}. START ASSEMBLY. Dimensions: ({0},{1}). Assembly Type: {3}".format(
+        domain.global_dof_count, dual_to_range.global_dof_count, label, assembly_type)
+
+def _end_essembly_message(label, assembly_time):
+    """Create a coherent logger message for operator assembly end."""
+
+    return "Operator: {1}. FINISHED ASSEMBLY. Time: {0} seconds".format(assembly_time, label)
+
+
 class BoundaryOperator(object):
     """A basic object describing operators acting on boundaries.
 
     """
 
-    def __init__(self, domain, range_, dual_to_range):
+    def __init__(self, domain, range_, dual_to_range, label=""):
 
         self._domain = domain
         self._range = range_
         self._dual_to_range = dual_to_range
         self._weak_form = None
         self._domain_map = None
+        self._label = label
 
     @property
     def domain(self):
@@ -30,6 +43,11 @@ class BoundaryOperator(object):
     def dual_to_range(self):
         """Return the test space."""
         return self._dual_to_range
+
+    @property
+    def label(self):
+        """Return the label of the operator."""
+        return self._label
 
     def weak_form(self, recompute=False):
         """Return the discretised weak form."""
@@ -137,10 +155,11 @@ class ZeroBoundaryOperator(BoundaryOperator):
 class ElementaryBoundaryOperator(BoundaryOperator):
     """Concrete implementation for elementary integral operators."""
 
-    def __init__(self, abstract_operator, parameters=None):
+    def __init__(self, abstract_operator, parameters=None, label=""):
         super(ElementaryBoundaryOperator, self).__init__(abstract_operator.domain,
                                                          abstract_operator.range,
-                                                         abstract_operator.dual_to_range)
+                                                         abstract_operator.dual_to_range,
+                                                         label=label)
 
         if parameters is None:
             from bempp import global_parameters
@@ -152,27 +171,47 @@ class ElementaryBoundaryOperator(BoundaryOperator):
         self._impl = abstract_operator
 
     def _weak_form_impl(self):
+        import bempp
+        import time
+
         if self._parameters.assembly.boundary_operator_assembly_type == 'dense':
             from bempp.assembly.discrete_boundary_operator import \
                 DenseDiscreteBoundaryOperator
 
-            return DenseDiscreteBoundaryOperator( \
+            bempp.LOGGER.info(_start_assembly_message(self.domain, self.dual_to_range, 'dense', self.label))
+            start_time = time.time()
+
+            discrete_operator =  DenseDiscreteBoundaryOperator( \
                 self._impl.assemble_weak_form(self._parameters).as_matrix())
+
+            end_time = time.time()
+            bempp.LOGGER.info(_end_essembly_message(self.label, end_time-start_time))
+
         else:
             from bempp.assembly.discrete_boundary_operator import \
                 GeneralNonlocalDiscreteBoundaryOperator
 
-            return GeneralNonlocalDiscreteBoundaryOperator( \
+            bempp.LOGGER.info(_start_assembly_message(self.domain, self.dual_to_range, 'hmat', self.label))
+            start_time = time.time()
+
+            discrete_operator =  GeneralNonlocalDiscreteBoundaryOperator( \
                 self._impl.assemble_weak_form(self._parameters))
+
+            end_time = time.time()
+
+            bempp.LOGGER.info(_end_essembly_message(self.label, end_time-start_time))
+
+        return discrete_operator
 
 
 class LocalBoundaryOperator(BoundaryOperator):
     """Concrete implementation for local (sparse) boundary operators."""
 
-    def __init__(self, abstract_operator, parameters=None):
+    def __init__(self, abstract_operator, parameters=None, label=""):
         super(LocalBoundaryOperator, self).__init__(abstract_operator.domain,
                                                     abstract_operator.range,
-                                                    abstract_operator.dual_to_range)
+                                                    abstract_operator.dual_to_range,
+                                                    label=label)
 
         if parameters is None:
             from bempp import global_parameters
@@ -187,8 +226,20 @@ class LocalBoundaryOperator(BoundaryOperator):
         from bempp_ext.assembly.discrete_boundary_operator import convert_to_sparse
         from bempp.assembly.discrete_boundary_operator import SparseDiscreteBoundaryOperator
 
-        return SparseDiscreteBoundaryOperator( \
+        import bempp
+        import time
+
+        bempp.LOGGER.info(_start_assembly_message(self.domain, self.dual_to_range, 'sparse', self.label))
+        start_time = time.time()
+
+        discrete_operator = SparseDiscreteBoundaryOperator( \
             convert_to_sparse(self._impl.assemble_weak_form(self._parameters)))
+
+        end_time = time.time()
+
+        bempp.LOGGER.info(_end_essembly_message(self.label, end_time - start_time))
+
+        return discrete_operator
 
 
 class _SumBoundaryOperator(BoundaryOperator):
@@ -201,7 +252,7 @@ class _SumBoundaryOperator(BoundaryOperator):
             raise ValueError("Spaces not compatible.")
 
         super(_SumBoundaryOperator, self).__init__( \
-            op1.domain, op1.range, op1.dual_to_range)
+            op1.domain, op1.range, op1.dual_to_range, label="(" + op1.label + " + " + op2.label + ")")
 
         self._op1 = op1
         self._op2 = op2
@@ -215,7 +266,7 @@ class _ScaledBoundaryOperator(BoundaryOperator):
 
     def __init__(self, op, alpha):
         super(_ScaledBoundaryOperator, self).__init__( \
-            op.domain, op.range, op.dual_to_range)
+            op.domain, op.range, op.dual_to_range, label=str(alpha) + " * " + op.label)
 
         self._op = op
         self._alpha = alpha
@@ -233,7 +284,7 @@ class _ProductBoundaryOperator(BoundaryOperator):
                              "domain space of first operator.")
 
         super(_ProductBoundaryOperator, self).__init__( \
-            op2.domain, op1.range, op1.dual_to_range)
+            op2.domain, op1.range, op1.dual_to_range, label=op1.label + " * " + op2.label)
 
         self._op1 = op1
         self._op2 = op2
@@ -247,7 +298,7 @@ class _TransposeBoundaryOperator(BoundaryOperator):
 
     def __init__(self, op, range_):
         super(_TransposeBoundaryOperator, self).__init__( \
-            op.dual_to_range, range_, op.domain)
+            op.dual_to_range, range_, op.domain, label=op.label + ".T")
 
         self._op = op
 
@@ -260,7 +311,7 @@ class _AdjointBoundaryOperator(BoundaryOperator):
 
     def __init__(self, op, range_):
         super(_AdjointBoundaryOperator, self).__init__( \
-            op.dual_to_range, range_, op.domain)
+            op.dual_to_range, range_, op.domain, label=op.label + ".H")
 
         self._op = op
 
@@ -272,7 +323,7 @@ class CompoundBoundaryOperator(BoundaryOperator):
     """Create a compound boundary operator."""
 
     def __init__(self, test_local_ops, kernel_op, trial_local_ops,
-                 parameters=None):
+                 parameters=None, label=""):
 
         import bempp
 
@@ -302,7 +353,7 @@ class CompoundBoundaryOperator(BoundaryOperator):
         else:
             self._parameters = parameters
 
-        super(CompoundBoundaryOperator, self).__init__(domain, range_, dual_to_range)
+        super(CompoundBoundaryOperator, self).__init__(domain, range_, dual_to_range, label=label)
 
         self._test_local_ops = test_local_ops
         self._trial_local_ops = trial_local_ops

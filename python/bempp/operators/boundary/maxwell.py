@@ -3,9 +3,9 @@
 """Definition of the Maxwell boundary operators."""
 
 
-def electric_field(domain, range_, dual_to_range,
+def electric_field(space,
                    wave_number,
-                   label='', symmetry='no_symmetry',
+                   label="EFIE", symmetry='no_symmetry',
                    parameters=None, use_slp=False):
     """Return the electric field boundary operator."""
 
@@ -18,22 +18,16 @@ def electric_field(domain, range_, dual_to_range,
     if parameters is None:
         parameters = bempp.global_parameters
 
-    if domain != dual_to_range and use_slp:
-        print("Compound assembly based on slp operator requires 'domain' and 'dual_to_range' space to be identical." +
-              " Switching to standard assembly.")
-        use_slp = False
-
     if not use_slp:
         return ElementaryBoundaryOperator( \
-            electric_field_ext(parameters, domain, range_, dual_to_range,
-                               wave_number, label, symmetry),
+            electric_field_ext(parameters, space, space, space,
+                               wave_number, "", symmetry),
             parameters=parameters)
     else:
         if not isinstance(use_slp, BoundaryOperator):
 
-            new_domain = domain.discontinuous_space
-            new_dual_to_range = dual_to_range.discontinuous_space
-            slp = bempp.operators.boundary.helmholtz.single_layer(new_domain, range_, new_dual_to_range, wave_number,
+            new_space = space.discontinuous_space
+            slp = bempp.operators.boundary.helmholtz.single_layer(new_space, new_space, new_space, wave_number,
                                                                   parameters=parameters)
         else:
             slp = use_slp
@@ -62,27 +56,27 @@ def electric_field(domain, range_, dual_to_range,
         for index in range(3):
             # Definition of range_ does not matter in next operator
             test_local_op = LocalBoundaryOperator(
-                vector_value_times_scalar_ext(slp.dual_to_range, range_, dual_to_range, index))
+                vector_value_times_scalar_ext(slp.dual_to_range, space, space, index))
             test_local_ops.append(test_local_op)
-            trial_local_ops.append(test_local_op.transpose(range_))  # Range parameter arbitrary
+            trial_local_ops.append(test_local_op.transpose(space))  # Range parameter arbitrary
 
-        term1 = CompoundBoundaryOperator(test_local_ops, kappa * slp, trial_local_ops)
+        term1 = CompoundBoundaryOperator(test_local_ops, kappa * slp, trial_local_ops, label=label+"_term1")
 
         test_local_ops = []
         trial_local_ops = []
 
-        div_op = LocalBoundaryOperator(div_times_scalar_ext(slp.dual_to_range, range_, dual_to_range))
-        div_op_transpose = div_op.transpose(range_) # Range space does not matter
+        div_op = LocalBoundaryOperator(div_times_scalar_ext(slp.dual_to_range, space, space))
+        div_op_transpose = div_op.transpose(space) # Range space does not matter
 
         term2 = CompoundBoundaryOperator([div_op], (1. / kappa) * slp,
-                                         [div_op_transpose])
+                                         [div_op_transpose], label=label+"_term2")
 
         return term1 + term2
 
 
-def magnetic_field(domain, range_, dual_to_range,
+def magnetic_field(space,
                    wave_number,
-                   label='', symmetry='no_symmetry',
+                   label="MFIE", symmetry='no_symmetry',
                    parameters=None):
     """Return the magnetic field boundary operator."""
 
@@ -94,6 +88,6 @@ def magnetic_field(domain, range_, dual_to_range,
         parameters = bempp.global_parameters
 
     return ElementaryBoundaryOperator( \
-        magnetic_field_ext(parameters, domain, range_, dual_to_range,
-                           wave_number, label, symmetry),
-        parameters=parameters)
+        magnetic_field_ext(parameters, space, space, space,
+                           wave_number, "", symmetry),
+        parameters=parameters, label=label)

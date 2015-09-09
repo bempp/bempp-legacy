@@ -4,7 +4,7 @@
 
 
 def identity(domain, range_, dual_to_range,
-             label='', symmetry='no_symmetry',
+             label="IDENTITY", symmetry='no_symmetry',
              parameters=None):
     """Return the identity operator."""
 
@@ -17,11 +17,11 @@ def identity(domain, range_, dual_to_range,
 
     return LocalBoundaryOperator(\
             identity_ext(parameters, domain, range_,
-                         dual_to_range, label, symmetry),
-            parameters=parameters)
+                         dual_to_range, "", symmetry),
+            parameters=parameters, label=label)
 
 def maxwell_identity(domain, range_, dual_to_range,
-                     label='', symmetry='no_symmetry',
+                     label="MAXWELL_IDENTITY", symmetry='no_symmetry',
                      parameters=None):
     """Return the Maxwell identity operator."""
 
@@ -34,11 +34,11 @@ def maxwell_identity(domain, range_, dual_to_range,
 
     return LocalBoundaryOperator(\
             maxwell_identity_ext(parameters, domain, range_,
-                                 dual_to_range, label, symmetry),
-            parameters=parameters)
+                                 dual_to_range, "", symmetry),
+            parameters=parameters, label=label)
 
 def laplace_beltrami(domain, range_, dual_to_range,
-                     label='', symmetry='no_symmetry',
+                     label="LAPLACE_BELTRAMI", symmetry='no_symmetry',
                      parameters=None):
     """Return the Laplace-Beltrami operator."""
 
@@ -51,7 +51,7 @@ def laplace_beltrami(domain, range_, dual_to_range,
 
     return LocalBoundaryOperator(\
             laplace_beltrami_ext(parameters, domain, range_,
-                                 dual_to_range, label, symmetry),
-            parameters=parameters)
+                                 dual_to_range, "", symmetry),
+            parameters=parameters, label=label)
 
 

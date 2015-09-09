@@ -1,11 +1,11 @@
-#pylint: disable-msg=too-many-arguments
+# pylint: disable-msg=too-many-arguments
 
 """Definition of the modified Helmholtz boundary operators."""
 
 
 def single_layer(domain, range_, dual_to_range,
                  wave_number,
-                 label='', symmetry='no_symmetry',
+                 label="SLP", symmetry='no_symmetry',
                  parameters=None):
     """Return the single-layer boundary operator."""
 
@@ -17,14 +17,14 @@ def single_layer(domain, range_, dual_to_range,
         parameters = bempp.global_parameters
 
     return ElementaryBoundaryOperator( \
-            single_layer_ext(parameters, domain, range_,
-                             dual_to_range, wave_number, label, symmetry),
-            parameters=parameters)
+        single_layer_ext(parameters, domain, range_,
+                         dual_to_range, wave_number, "", symmetry),
+        parameters=parameters, label=label)
 
 
 def double_layer(domain, range_, dual_to_range,
                  wave_number,
-                 label='', symmetry='no_symmetry',
+                 label="DLP", symmetry='no_symmetry',
                  parameters=None):
     """Return the double-layer boundary operator."""
 
@@ -36,13 +36,14 @@ def double_layer(domain, range_, dual_to_range,
         parameters = bempp.global_parameters
 
     return ElementaryBoundaryOperator( \
-            double_layer_ext(parameters, domain, range_,
-                             dual_to_range, wave_number, label, symmetry),
-            parameters=parameters)
+        double_layer_ext(parameters, domain, range_,
+                         dual_to_range, wave_number, "", symmetry),
+        parameters=parameters, label=label)
+
 
 def adjoint_double_layer(domain, range_, dual_to_range,
                          wave_number,
-                         label='', symmetry='no_symmetry',
+                         label="ADJ_DLP", symmetry='no_symmetry',
                          parameters=None):
     """Return the adjoint double-layer boundary operator."""
 
@@ -54,13 +55,13 @@ def adjoint_double_layer(domain, range_, dual_to_range,
         parameters = bempp.global_parameters
 
     return ElementaryBoundaryOperator( \
-            adjoint_double_layer_ext(parameters, domain, range_,
-                                     dual_to_range, wave_number, label, symmetry),
-            parameters=parameters)
+        adjoint_double_layer_ext(parameters, domain, range_,
+                                 dual_to_range, wave_number, "", symmetry),
+        parameters=parameters, label=label)
 
 
 def hypersingular(domain, range_, dual_to_range, wave_number,
-                  label='', symmetry='no_symmetry',
+                  label="HYP", symmetry='no_symmetry',
                   parameters=None, use_slp=False):
     """Return the hypersingular boundary operator."""
 
@@ -81,8 +82,8 @@ def hypersingular(domain, range_, dual_to_range, wave_number,
     if not use_slp:
         return ElementaryBoundaryOperator( \
             hypersingular_ext(parameters, domain, range_,
-                              dual_to_range, wave_number, label, symmetry),
-            parameters=parameters)
+                              dual_to_range, wave_number, "", symmetry),
+            parameters=parameters, label=label)
     else:
 
         if not isinstance(use_slp, BoundaryOperator):
@@ -117,21 +118,21 @@ def hypersingular(domain, range_, dual_to_range, wave_number,
             # Definition of range_ does not matter in next operator
             test_local_op = LocalBoundaryOperator(curl_value_ext(slp.dual_to_range, range_, dual_to_range, index))
             test_local_ops.append(test_local_op)
-            trial_local_ops.append(test_local_op.transpose(range_)) # Range parameter arbitrary
+            trial_local_ops.append(test_local_op.transpose(range_))  # Range parameter arbitrary
 
-        term1 = CompoundBoundaryOperator(test_local_ops, slp, trial_local_ops)
+        term1 = CompoundBoundaryOperator(test_local_ops, slp, trial_local_ops, label=label + "_term1")
 
         test_local_ops = []
         trial_local_ops = []
 
         for index in range(3):
             # Definition of range_ does not matter in next operator
-            test_local_op = LocalBoundaryOperator(value_times_normal_ext(slp.dual_to_range, range_, dual_to_range, index))
+            test_local_op = LocalBoundaryOperator(
+                value_times_normal_ext(slp.dual_to_range, range_, dual_to_range, index))
             test_local_ops.append(test_local_op)
-            trial_local_ops.append(test_local_op.transpose(range_)) # Range parameter arbitrary
+            trial_local_ops.append(test_local_op.transpose(range_))  # Range parameter arbitrary
 
-        term2 = (wave_number * wave_number) * CompoundBoundaryOperator(test_local_ops, slp, trial_local_ops)
+        term2 = (wave_number * wave_number) * CompoundBoundaryOperator(test_local_ops, slp, trial_local_ops,
+                                                                       label=label + "_term2")
 
         return term1 + term2
-
-

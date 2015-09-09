@@ -3,6 +3,7 @@ import bempp
 
 WAVE_NUMBER = 1
 
+
 class TestMaxwell(TestCase):
     """Test cases for Maxwell operators."""
 
@@ -17,12 +18,12 @@ class TestMaxwell(TestCase):
         parameters = bempp.common.global_parameters()
         parameters.assembly.boundary_operator_assembly_type = 'dense'
 
-        standard_efie = electric_field(self._space, self._space, self._space,
-                                               WAVE_NUMBER,
-                                               parameters=parameters).weak_form()
-        compound_efie = electric_field(self._space, self._space, self._space,
-                                               WAVE_NUMBER,
-                                               parameters=parameters, use_slp=True).weak_form()
+        standard_efie = electric_field(self._space,
+                                       WAVE_NUMBER,
+                                       parameters=parameters).weak_form()
+        compound_efie = electric_field(self._space,
+                                       WAVE_NUMBER,
+                                       parameters=parameters, use_slp=True).weak_form()
 
         mat1 = bempp.as_matrix(standard_efie)
         mat2 = bempp.as_matrix(compound_efie)
