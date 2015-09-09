@@ -316,6 +316,11 @@ cdef class ParameterList:
     def write_state(self):
         write_file("test.json", deref(self.impl_))
 
-    def write_string(self)
-        write_stream(deref(self.outputter_), deref(self.impl_))
-        print(deref(self.outputter_)).str())
+    def get_string(self):
+        self._serialize()
+        return deref(self.outputter_).str()
+
+    def _serialize(self):
+        deref(self.outputter_).str("");
+        deref(self.outputter_).clear();
+        write_stream(deref(self.outputter_), deref(self.impl_), False)

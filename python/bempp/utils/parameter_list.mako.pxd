@@ -34,11 +34,13 @@ cdef extern from "<sstream>" namespace "std":
         # constructors
         ostringstream() except +
         string str()
+        void str(string)
+        void clear()
 
 cdef extern from "bempp/common/common.hpp" namespace "boost::property_tree::json_parser":
 
     void write_file "write_json" (string, c_ParameterList)
-    void write_stream "write_json"(ostringstream, c_ParameterList)
+    void write_stream "write_json"(ostringstream, c_ParameterList, cbool)
 
 
 
