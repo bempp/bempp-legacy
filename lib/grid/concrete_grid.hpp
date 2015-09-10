@@ -309,14 +309,14 @@ public:
             tempSonMap(6*ent0Number+5,1) = 5;
         }
 
-        shared_ptr<Grid> newGrid =
+
+        shared_ptr<Grid> newGrid = 
             GridFactory::createGridFromConnectivityArrays(
                 params, barycentricVertices, barycentricElementCorners, barycentricDomainIndices);
         shared_ptr<ConcreteGrid<DuneGrid>> concreteGrid =
             dynamic_pointer_cast<ConcreteGrid<DuneGrid>>(newGrid);
 
         m_barycentricGrid = newGrid;
-
 
         m_barycentricSonMap.conservativeResize(ent0Count,6);
 
@@ -390,7 +390,7 @@ public:
 
     return m_dune_grid->preAdapt();
 
-}
+  }
 
   /** \brief Mark element for refinement. */
 
@@ -409,7 +409,7 @@ public:
 
     return m_dune_grid->adapt();
 
-}
+  }
 
   /** \brief Clean up after refinement */
 
@@ -417,7 +417,7 @@ public:
 
     m_dune_grid->postAdapt();
 
-}
+  }
 
  /** \brief Refine all elements refCount times */
 
@@ -425,8 +425,7 @@ public:
 
     m_dune_grid->globalRefine(refCount);
 
-}
-
+  }
 
   /** \brief Return mark status of element. */
   

@@ -150,26 +150,40 @@ bool PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::isDiscontinuous()
 template <typename BasisFunctionType>
 void PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::assignDofsImpl() {
 
+  ///////////////////////////////////////
+ ///////////////////////////////////////
+//////////// DEAR ME //////////////////
+///////// PLEASE FINISH WRITING //////
+/////// THIS FUNCTION ///////////////
+////////////////////////////////////
+///////////////////////////////////
+
+  //coarseGrid = original grid
+  //baryGrid = barycentric grid
+
+  const std::pair<shared_ptr<Grid>,Matrix<int>> baryPair = this->grid()->barycentricGridSonPair();
+  const shared_ptr<Grid> baryGrid = std::get<0>(baryPair);
+  const Matrix<int> barySonMap = std::get<1>(baryPair);
   const int gridDim = this->domainDimension();
-
-  const Mapper &elementMapper = this->gridView().elementMapper();
-  std::unique_ptr<GridView> coarseView = this->grid()->levelView(0);
-
-  const IndexSet &indexSetCoarseGrid = coarseView->indexSet();
-
+  //const Mapper &elementMapper = this->gridView().elementMapper();
+  //THIS WORKS: std::unique_ptr<GridView> coarseView = this->grid()->levelView(0);
+  std::unique_ptr<GridView> coarseView = this->grid()->leafView();
+  const IndexSet &index = coarseView->indexSet();
   int elementCount = this->gridView().entityCount(0);
-
-  int vertexCountCoarseGrid = coarseView->entityCount(gridDim);
-
+  int vertexCountCoarseGrid = this->gridView().entityCount(gridDim);
   // Assign gdofs to grid vertices (choosing only those that belong to
   // the selected grid segment)
   std::vector<int> globalDofIndices(vertexCountCoarseGrid, 0);
   int globalDofCount_ = 0;
-
   for (int vertexIndex = 0; vertexIndex < vertexCountCoarseGrid; ++vertexIndex)
     acc(globalDofIndices, vertexIndex) = globalDofCount_++;
-
+  int flatLocalDofCount_ = 0;
   // (Re)initialise DOF maps
+  /*
+  std::vector<std::vector<GlobalDofIndex>> m_local2globalDofs;
+  std::vector<std::vector<LocalDof>> m_global2localDofs;
+  std::vector<LocalDof> m_flatLocal2localDofs;
+  */
   m_local2globalDofs.clear();
   m_local2globalDofs.resize(elementCount);
   m_global2localDofs.clear();
@@ -177,9 +191,26 @@ void PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::assignDofsImpl() {
   // TODO: consider calling reserve(x) for each element of m_global2localDofs
   // with x being the typical number of elements adjacent to a vertex in a
   // grid of dimension gridDim
+  for(std::unique_ptr<EntityIterator<0>> it = coarseView->entityIterator<0>();!it->finished();it->next()){
+    const Entity<0> &entity = it->entity();
+    const int ent0Number = index.subEntityIndex(entity,0,0);
+    for(int i=0;i!=6;++i){
+        EntityIndex sonIndex = barySonMap(ent0Number,i);
+        std::vector<GlobalDofIndex> &globalDof = acc(m_local2globalDofs, sonIndex);
 
+        EntityIndex vertexIndex = index.subEntityIndex(entity, i / 2, gridDim);
+        GlobalDofIndex globalDofIndex;
+        globalDofIndex = acc(globalDofIndices, vertexIndex);
+        globalDof.push_back(globalDofIndex);
+        if (globalDofIndex >= 0) {
+          acc(m_global2localDofs, globalDofIndex).push_back(LocalDof(sonIndex, 0));
+          ++flatLocalDofCount_;
+        }
+    }
+  }
+/*
   // Iterate over elements of the coarse grid
-  std::unique_ptr<EntityIterator<0>> it = coarseView->entityIterator<0>();
+  std::unique_ptr<EntityIterator<0>> it = this->grid()->entityIterator<0>();
   int flatLocalDofCount_ = 0;
   while (!it->finished()) {
     const Entity<0> &element = it->entity();
@@ -212,7 +243,7 @@ void PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::assignDofsImpl() {
   }
 
   // Initialize the container mapping the flat local dof indices to
-  // local dof indices
+  // local dof indices*/
   SpaceHelper<BasisFunctionType>::initializeLocal2FlatLocalDofMap(
       flatLocalDofCount_, m_local2globalDofs, m_flatLocal2localDofs);
 }
