@@ -1,4 +1,5 @@
-set(headers abstract_boundary_operator.pxd 
+set(headers assembler.pxd
+            abstract_boundary_operator.pxd 
             discrete_boundary_operator.pxd
             discrete_operator_conversion.hpp
             function_projector.hpp
@@ -16,6 +17,7 @@ install_python(FILES ${headers}
 add_dependencies(cython-headers bempp_ext.assembly-copied)
 
 add_python_module(bempp_ext.assembly __init__.py
+                  assembler.pyx
                   abstract_boundary_operator.pyx
                   discrete_boundary_operator.pyx 
                   function_projector.pyx

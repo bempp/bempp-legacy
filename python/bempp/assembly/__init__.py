@@ -9,6 +9,7 @@ from .boundary_operator import LocalBoundaryOperator
 from .boundary_operator import ElementaryBoundaryOperator
 from .boundary_operator import ZeroBoundaryOperator
 from .grid_function import GridFunction
+from .assembler import assemble_dense_block
 
 
 

@@ -9,7 +9,8 @@ def _start_assembly_message(domain, dual_to_range, assembly_type, label):
     return "Operator: {2}. START ASSEMBLY. Dimensions: ({0},{1}). Assembly Type: {3}".format(
         domain.global_dof_count, dual_to_range.global_dof_count, label, assembly_type)
 
-def _end_essembly_message(label, assembly_time):
+
+def _end_assembly_message(label, assembly_time):
     """Create a coherent logger message for operator assembly end."""
 
     return "Operator: {1}. FINISHED ASSEMBLY. Time: {0} seconds".format(assembly_time, label)
@@ -170,6 +171,19 @@ class ElementaryBoundaryOperator(BoundaryOperator):
 
         self._impl = abstract_operator
 
+    @property
+    def parameters(self):
+        """Return the parameters of the operator."""
+        return self._parameters
+
+    def local_assembler(self, parameters=None):
+        """Return the local assembler"""
+
+        if parameters is None:
+            parameters = self.parameters
+
+        return self._impl.make_local_assembler(parameters)
+
     def _weak_form_impl(self):
         import bempp
         import time
@@ -181,11 +195,11 @@ class ElementaryBoundaryOperator(BoundaryOperator):
             bempp.LOGGER.info(_start_assembly_message(self.domain, self.dual_to_range, 'dense', self.label))
             start_time = time.time()
 
-            discrete_operator =  DenseDiscreteBoundaryOperator( \
+            discrete_operator = DenseDiscreteBoundaryOperator( \
                 self._impl.assemble_weak_form(self._parameters).as_matrix())
 
             end_time = time.time()
-            bempp.LOGGER.info(_end_essembly_message(self.label, end_time-start_time))
+            bempp.LOGGER.info(_end_assembly_message(self.label, end_time - start_time))
 
         else:
             from bempp.assembly.discrete_boundary_operator import \
@@ -194,12 +208,12 @@ class ElementaryBoundaryOperator(BoundaryOperator):
             bempp.LOGGER.info(_start_assembly_message(self.domain, self.dual_to_range, 'hmat', self.label))
             start_time = time.time()
 
-            discrete_operator =  GeneralNonlocalDiscreteBoundaryOperator( \
+            discrete_operator = GeneralNonlocalDiscreteBoundaryOperator( \
                 self._impl.assemble_weak_form(self._parameters))
 
             end_time = time.time()
 
-            bempp.LOGGER.info(_end_essembly_message(self.label, end_time-start_time))
+            bempp.LOGGER.info(_end_assembly_message(self.label, end_time - start_time))
 
         return discrete_operator
 
@@ -222,6 +236,20 @@ class LocalBoundaryOperator(BoundaryOperator):
 
         self._impl = abstract_operator
 
+    @property
+    def parameters(self):
+        """Return the parameters of the operator."""
+
+        return self._parameters
+
+    def local_assembler(self, parameters=None):
+        """Return the local assembler"""
+
+        if parameters is None:
+            parameters = self.parameters
+
+        return self._impl.make_local_assembler(parameters)
+
     def _weak_form_impl(self):
         from bempp_ext.assembly.discrete_boundary_operator import convert_to_sparse
         from bempp.assembly.discrete_boundary_operator import SparseDiscreteBoundaryOperator
@@ -237,7 +265,7 @@ class LocalBoundaryOperator(BoundaryOperator):
 
         end_time = time.time()
 
-        bempp.LOGGER.info(_end_essembly_message(self.label, end_time - start_time))
+        bempp.LOGGER.info(_end_assembly_message(self.label, end_time - start_time))
 
         return discrete_operator
 

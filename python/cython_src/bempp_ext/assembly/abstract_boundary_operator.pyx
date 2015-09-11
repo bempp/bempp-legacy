@@ -3,19 +3,13 @@ from .discrete_boundary_operator cimport RealDiscreteBoundaryOperator
 from .discrete_boundary_operator cimport ComplexDiscreteBoundaryOperator
 from bempp_ext.utils.parameter_list cimport ParameterList
 from bempp_ext.space.space cimport Space
+from .assembler cimport c_LocalAssemblerForIntegralOperators
+from .assembler cimport c_LocalAssemblerForLocalOperators
+from .assembler cimport RealIntegralOperatorLocalAssembler
+from .assembler cimport ComplexIntegralOperatorLocalAssembler
+from .assembler cimport LocalOperatorLocalAssembler
 
 
-cdef class Assembler:
-    pass
-
-cdef class RealIntegralOperatorLocalAssembler(Assembler):
-    pass
-
-cdef class ComplexIntegralOperatorLocalAssembler(Assembler):
-    pass
-
-cdef class LocalOperatorAssembler(Assembler):
-    pass
 
 cdef class RealElementaryIntegralOperator:
 
@@ -28,7 +22,7 @@ cdef class RealElementaryIntegralOperator:
     def __dealloc__(self):
         self.impl_.reset()
 
-    def make_assembler(self, ParameterList parameters):
+    def make_local_assembler(self, ParameterList parameters):
         cdef RealIntegralOperatorLocalAssembler assembler = RealIntegralOperatorLocalAssembler()
         assembler.impl_ = deref(self.impl_).makeAssembler(deref(parameters.impl_))
         return assembler
@@ -67,7 +61,7 @@ cdef class ComplexElementaryIntegralOperator:
     def __dealloc__(self):
         self.impl_.reset()
 
-    def make_assembler(self, ParameterList parameters):
+    def make_local_assembler(self, ParameterList parameters):
         cdef ComplexIntegralOperatorLocalAssembler assembler = ComplexIntegralOperatorLocalAssembler()
         assembler.impl_ = deref(self.impl_).makeAssembler(deref(parameters.impl_))
         return assembler
@@ -106,7 +100,7 @@ cdef class ElementaryLocalOperator:
     def __dealloc__(self):
         self.impl_.reset()
 
-    def make_assembler(self, ParameterList parameters):
+    def make_local_assembler(self, ParameterList parameters):
         cdef LocalOperatorLocalAssembler assembler = LocalOperatorLocalAssembler()
         assembler.impl_ = deref(self.impl_).makeAssembler(deref(parameters.impl_))
         return assembler

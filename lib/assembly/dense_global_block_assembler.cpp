@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "dense_global_assembler.hpp"
+#include "dense_global_block_assembler.hpp"
 
 #include "../fiber/explicit_instantiation.hpp"
 
@@ -51,6 +51,7 @@
 //#include <tbb/tick_count.h>
 
 #include <unordered_map>
+#include <utility>
 
 namespace Bempp {
 
@@ -78,6 +79,7 @@ public:
       Fiber::LocalAssemblerForIntegralOperators<ResultType> &assembler,
       Matrix<ResultType> &result, MutexType &mutex)
       : m_rowStart(rowStart), m_colStart(colStart),
+        m_testIndices(testIndices),
         m_testGlobalDofs(testGlobalDofs), m_trialGlobalDofs(trialGlobalDofs),
         m_testLocalDofWeights(testLocalDofWeights),
         m_trialLocalDofWeights(trialLocalDofWeights), m_assembler(assembler),
@@ -98,7 +100,7 @@ public:
     {
       MutexType::scoped_lock lock(m_mutex);
       int count = 0;
-      for (const auto &testPair : testGlobalDofs) {
+      for (const auto &testPair : m_testGlobalDofs) {
         int testElementIndex = testPair.first;
         const std::vector<GlobalDofIndex> &testElementDofs = testPair.second;
         const std::vector<BasisFunctionType> &testElementWeights =
@@ -113,9 +115,9 @@ public:
             if (testGlobalDof < 0)
               continue;
 
-            result(testGlobalDof - rowStart, trialGlobalDof - colStart) +=
+            m_result(testGlobalDof - m_rowStart, trialGlobalDof - m_colStart) +=
                 conj(testElementWeights[testDof]) *
-                trialElementWeights[trialElementIndex][trialDof] *
+                trialElementWeights[trialDof] *
                 localResult[count](testDof, trialDof);
           }
         }
@@ -144,6 +146,7 @@ private:
   MutexType &m_mutex;
 };
 
+template <typename BasisFunctionType>
 void gatherElementInformation(
     int start, int end, const Space<BasisFunctionType> &space,
     std::unordered_map<int, std::vector<GlobalDofIndex>> &indexMap,
@@ -154,17 +157,18 @@ void gatherElementInformation(
     globalDofs.push_back(i);
 
   std::vector<std::vector<LocalDof>> global2localDofs;
-  space.global2localDofs(globalDofs, global2localDofs);
+  std::vector<std::vector<BasisFunctionType>> weights; // Not needed
+  space.global2localDofs(globalDofs, global2localDofs, weights);
 
-  ReverseElementMapper reverseMapper = view.reverseElementMapper();
+  const ReverseElementMapper& reverseMapper = gridView->reverseElementMapper();
 
   for (const auto &localDofs : global2localDofs)
     for (const auto &localDof : localDofs) {
-      int elementIndex = localDof.first if (!indexMap.count(elementIndex)) {
-        const Entity<0> &element =
-            reverseMapper.entityPointer(elementIndex).entity();
-        indexMap[elementIndex] = std::vector<GlobalDofIndex>;
-        dofWeights[elementIndex] = std::vector<BasisFunctionType>;
+      int elementIndex = localDof.entityIndex;
+      if (!indexMap.count(elementIndex)) {
+        const auto& element = reverseMapper.entityPointer(elementIndex).entity();
+        indexMap[elementIndex] = std::vector<GlobalDofIndex>();
+        dofWeights[elementIndex] = std::vector<BasisFunctionType>();
         space.getGlobalDofs(element, indexMap.at(elementIndex),
                             dofWeights.at(elementIndex));
         for (auto &dof : indexMap.at(elementIndex))
@@ -177,18 +181,19 @@ void gatherElementInformation(
 } // namespace
 
 template <typename BasisFunctionType, typename ResultType>
-shared_ptr<DiscreteBoundaryOperator<ResultType>>
-assembleWeakForm(int colStart, int colEnd, int rowStart, int rowEnd,
-                 const Space<BasisFunctionType> &testSpace,
-                 const Space<BasisFunctionType> &trialSpace,
-                 LocalAssemblerForIntegralOperators &assembler,
-                 const ParameterList &parameterList) {
+shared_ptr<const DiscreteBoundaryOperator<ResultType>>
+assembleDenseBlock(
+    int rowStart, int rowEnd, int colStart, int colEnd,
+    const Space<BasisFunctionType> &testSpace,
+    const Space<BasisFunctionType> &trialSpace,
+    Fiber::LocalAssemblerForIntegralOperators<ResultType>& assembler,
+    const ParameterList &parameterList) {
 
   int numberOfRows = rowEnd - rowStart;
   int numberOfColumns = colEnd - colStart;
 
-  if (colEnd >= trialSpace.globalDofCount() ||
-      rowEnd >= testSpace.globalDofCount() || colStart < 0 || rowStart < 0)
+  if (colEnd > trialSpace.globalDofCount() ||
+      rowEnd > testSpace.globalDofCount() || colStart < 0 || rowStart < 0)
     throw std::runtime_error("DenseGlobalBlockAssember::assembleWeakForm(): "
                              "Indices out of bounds");
 
@@ -199,9 +204,9 @@ assembleWeakForm(int colStart, int colEnd, int rowStart, int rowEnd,
   Matrix<ResultType> result(numberOfRows, numberOfColumns);
   result.setZero();
 
-  std::unordered_map < int, std::vector<GlobalDofIndex> trialIndexMap,
+  std::unordered_map<int, std::vector<GlobalDofIndex>> trialIndexMap,
       testIndexMap;
-  std::unordered_map < int, std::vector<BasisFunctionType> trialDofWeights,
+  std::unordered_map<int, std::vector<BasisFunctionType>> trialDofWeights,
       testDofWeights;
 
   gatherElementInformation(colStart, colEnd, trialSpace, trialIndexMap,
@@ -211,8 +216,8 @@ assembleWeakForm(int colStart, int colEnd, int rowStart, int rowEnd,
 
   std::vector<int> testIndices;
   testIndices.reserve(testIndexMap.size());
-  for (const auto& p: testIndexMap)
-      testIndices.push_back(p.first);
+  for (const auto &p : testIndexMap)
+    testIndices.push_back(p.first);
 
   typedef DenseWeakFormAssemblerLoopBody<BasisFunctionType, ResultType> Body;
   typename Body::MutexType mutex;
@@ -220,9 +225,9 @@ assembleWeakForm(int colStart, int colEnd, int rowStart, int rowEnd,
   {
     Fiber::SerialBlasRegion region;
     tbb::parallel_for_each(trialIndexMap.begin(), trialIndexMap.end(),
-                      Body(rowStart, colStart, testIndices, testIndexMap, trialIndexMap,
-                           testDofWeights, trialDofWeights, assembler,
-                           result, mutex));
+                           Body(rowStart, colStart, testIndices, testIndexMap,
+                                trialIndexMap, testDofWeights, trialDofWeights,
+                                assembler, result, mutex));
   }
 
   // Create and return a discrete operator represented by the matrix that
@@ -231,7 +236,13 @@ assembleWeakForm(int colStart, int colEnd, int rowStart, int rowEnd,
       new DiscreteDenseBoundaryOperator<ResultType>(result));
 }
 
+#define INSTANTIATE_FREE_FUNCTIONS(BASIS, RESULT) \
+    template shared_ptr<const DiscreteBoundaryOperator<RESULT>>  \
+    assembleDenseBlock(int, int, int, int, \
+            const Space<BASIS>&, const Space<BASIS>&, \
+            Fiber::LocalAssemblerForIntegralOperators<RESULT>&, \
+            const ParameterList&)
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(DenseGlobalAssembler);
+FIBER_ITERATE_OVER_BASIS_AND_RESULT_TYPES(INSTANTIATE_FREE_FUNCTIONS);
 
 } // namespace Bempp

@@ -70,6 +70,7 @@ from bempp.assembly import GridFunction
 from bempp.assembly import InverseSparseDiscreteBoundaryOperator
 from bempp.assembly import ZeroBoundaryOperator
 from bempp.assembly import as_matrix
+from bempp.assembly import assemble_dense_block
 from bempp import shapes
 from bempp.file_interfaces import import_grid
 from bempp.file_interfaces import export
@@ -80,6 +81,7 @@ from bempp.utils.logging import enable_console_logging
 from bempp.utils.logging import enable_file_logging
 from bempp.utils.logging import set_logging_level
 
+ALL = -1 # Useful global identifier
 
 def test():
     """ Runs BEM++ python unit tests """
