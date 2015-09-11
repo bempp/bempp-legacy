@@ -314,7 +314,7 @@ cdef class ParameterList:
             return self._hmat
 
     def write_state(self):
-        write_file("test.json", deref(self.impl_))
+        write_json("test.json", deref(self.impl_))
 
     def get_string(self):
         self._serialize()
@@ -323,4 +323,16 @@ cdef class ParameterList:
     def _serialize(self):
         deref(self.outputter_).str("");
         deref(self.outputter_).clear();
-        write_stream(deref(self.outputter_), deref(self.impl_), False)
+        write_json(deref(self.outputter_), deref(self.impl_), False)
+
+    def __getstate__(self):
+        self._serialize()
+        state = dict()
+        state['repr'] = deref(self.outputter_).str()
+        return state
+
+    def __setstate__(self, state):
+        self.impl_ = new c_ParameterList()
+        self.inputter_ = new istringstream(state['repr'])
+        print(deref(self.inputter_).str())
+        read_json(deref(self.inputter_), deref(self.impl_))
