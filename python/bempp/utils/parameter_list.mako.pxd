@@ -22,16 +22,23 @@ cdef extern from "<sstream>" namespace "std":
 
     cdef cppclass ostringstream:
         ostringstream() except +
+        ostringstream(string) except +
         string str()
         void str(string)
         void clear()
 
+    cdef cppclass istringstream:
+            istringstream() except +
+            istringstream(string) except +
+            string str()
+            void str(string)
+            void clear()
+
 cdef extern from "bempp/common/common.hpp" namespace "boost::property_tree::json_parser":
 
-    void write_file "write_json" (string, c_ParameterList)
-    void write_stream "write_json"(ostringstream, c_ParameterList, cbool)
-
-
+    void write_json(string, c_ParameterList)
+    void write_json(ostringstream, c_ParameterList, cbool)
+    void read_json(istringstream, c_ParameterList)
 
 cdef class _NearField:
     cdef c_ParameterList* impl_
@@ -64,6 +71,7 @@ cdef class _HMatParameterList:
 cdef class ParameterList:
     cdef c_ParameterList* impl_
     cdef ostringstream* outputter_
+    cdef istringstream* inputter_
     cdef _AssemblyParameterList _assembly
     cdef _QuadratureParameterList _quadrature
     cdef _HMatParameterList _hmat
