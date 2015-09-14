@@ -121,6 +121,12 @@ cdef class Grid:
         bary_grid.impl_ = deref(self.impl_).barycentricGrid()
         return bary_grid
 
+    cpdef Grid barycentric_father_grid(self):
+        """Return the GridView of the barycentric father grid"""
+        cdef Grid father_grid = Grid()
+        father_grid.impl_ =  deref(self.impl_).getBarycentricFather()
+        return father_grid
+
     def barycentric_son_map(self):
         """Return the son map of the barycentric refinement of the grid"""
         cdef Matrix[int] c
@@ -166,6 +172,9 @@ cdef class Grid:
 
     def is_barycentric_representation_of(self, Grid other):
         return deref(self.impl_).isBarycentricRepresentationOf(deref(other.impl_))
+
+    def is_barycentric_grid(self):
+        return deref(self.impl_).isBarycentricGrid()
 
     property dim:
         """" Dimension of the grid. """
