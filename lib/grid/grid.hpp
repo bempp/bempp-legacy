@@ -108,6 +108,10 @@ public:
    *  been created. */
   virtual bool hasBarycentricGrid() const = 0;
 
+  /** \brief Return \p true if a barycentric refinement of this grid has
+   *  been created. */
+  virtual bool isBarycentricGrid() const = 0;
+
   /** \brief Return \p true if this grid is a barycentric representation of
    *  \p other, i.e. if this grid was created by \p other.barycentricGrid(). */
   virtual bool isBarycentricRepresentationOf(const Grid &other) const;
@@ -161,12 +165,19 @@ public:
   /** \brief Connect entity to be notified when grid updates */
   boost::signals2::connection connect(const std::function<void()>& f) const;
 
+  /** \brief set father of barycentric refinement */
+  virtual void setBarycentricFather(shared_ptr<Grid> fatherGrid) = 0;
+
+  /** \brief get father of barycentric refinement */
+  virtual const shared_ptr<Grid> getBarycentricFather() = 0;
+
 
 private:
   /** \cond PRIVATE */
   mutable Vector<double> m_lowerBound, m_upperBound;
 
   mutable boost::signals2::signal<void()> gridUpdateSignal;
+
   /** \endcond */
 };
 
@@ -191,6 +202,7 @@ private:
  */
 std::vector<bool> areInside(const Grid &grid, const Matrix<double> &points);
 std::vector<bool> areInside(const Grid &grid, const Matrix<float> &points);
+
 
 } // namespace Bempp
 
