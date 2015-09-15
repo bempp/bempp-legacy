@@ -45,6 +45,7 @@ AdaptiveSpace<BasisFunctionType_,SpaceType>::~AdaptiveSpace()
     m_connection.disconnect();
 }
 
+
 template <typename BasisFunctionType_, typename SpaceType>
 void AdaptiveSpace<BasisFunctionType_,SpaceType>::initialize()
 {

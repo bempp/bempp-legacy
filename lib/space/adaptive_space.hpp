@@ -71,7 +71,6 @@ public:
 
   shared_ptr<const Grid> grid() const override;
 
-
   bool isDiscontinuous() const override;
 
   bool isBarycentric() const override;
