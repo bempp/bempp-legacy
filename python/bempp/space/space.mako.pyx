@@ -250,3 +250,7 @@ def function_space(Grid grid, kind, order, domains=None, cbool closed=True):
     return s
 
 
+#def dual_space(Grid grid):
+#    cdef Space s = Space(0)
+#    s.impl_.set(shared_ptr[c_Space[double]](adaptivePiecewiseConstantDualGridScalarSpace[double](grid.impl_)))
+#    return s
