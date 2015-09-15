@@ -45,8 +45,13 @@ namespace Bempp {
 template <typename BasisFunctionType>
 PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::
     PiecewiseConstantDualGridScalarSpace(const shared_ptr<const Grid> &grid)
-    : ScalarSpace<BasisFunctionType>(grid->barycentricGrid()),
-      m_originalGrid(grid) {
+    : ScalarSpace<BasisFunctionType>(grid->barycentricGrid()), m_originalGrid(grid),m_sonMap(grid->barycentricSonMap()) {
+  initialize();
+}
+template <typename BasisFunctionType>
+PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::
+    PiecewiseConstantDualGridScalarSpace(const shared_ptr<const Grid> &grid, const GridSegment &segment)
+    : ScalarSpace<BasisFunctionType>(grid->barycentricGrid()), m_originalGrid(grid),m_sonMap(grid->barycentricSonMap()) {
   initialize();
 }
 
@@ -114,7 +119,7 @@ PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::discontinuousSpace(
     if (!m_discontinuousSpace)
       m_discontinuousSpace.reset(
           new PiecewiseConstantDualGridDiscontinuousScalarSpace<
-              BasisFunctionType>(m_originalGrid));
+              BasisFunctionType>(this->grid()));
   }
   return m_discontinuousSpace;
 }
@@ -150,37 +155,37 @@ bool PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::isDiscontinuous()
 template <typename BasisFunctionType>
 void PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::assignDofsImpl() {
 
-  const std::pair<shared_ptr<Grid>,Matrix<int>> baryPair = this->grid()->barycentricGridSonPair();
-  const shared_ptr<Grid> baryGrid = std::get<0>(baryPair);
-  const Matrix<int> barySonMap = std::get<1>(baryPair);
   const int gridDim = this->domainDimension();
 
-  std::unique_ptr<GridView> coarseView = this->grid()->leafView();
+  std::unique_ptr<GridView> coarseView = m_originalGrid->leafView();
   const IndexSet &index = coarseView->indexSet();
-  int elementCount = this->gridView().entityCount(0);
-  int vertexCountCoarseGrid = this->gridView().entityCount(gridDim);
+  int elementCount = coarseView->entityCount(0);
+  std::cout << coarseView->entityCount(0);
+  std::cout << this->gridView().entityCount(0);
+  int vertexCountCoarseGrid = coarseView->entityCount(gridDim);
 
-  std::vector<int> globalDofIndices(vertexCountCoarseGrid, 0);
+  std::vector<int> globalDofIndices(m_sonMap.rows(), 0);
   int globalDofCount_ = 0;
   for (int vertexIndex = 0; vertexIndex < vertexCountCoarseGrid; ++vertexIndex)
     acc(globalDofIndices, vertexIndex) = globalDofCount_++;
   int flatLocalDofCount_ = 0;
 
   m_local2globalDofs.clear();
-  m_local2globalDofs.resize(elementCount);
+  m_local2globalDofs.resize(m_sonMap.size());
   m_global2localDofs.clear();
   m_global2localDofs.resize(globalDofCount_);
 
-  for(std::unique_ptr<EntityIterator<0>> it = coarseView->entityIterator<0>();!it->finished();it->next()){
+  for(std::unique_ptr<EntityIterator<0>> it = coarseView->entityIterator<0>();!it->finished();it->next()) {
     const Entity<0> &entity = it->entity();
-    const int ent0Number = index.subEntityIndex(entity,0,0);
+    int ent0Number = index.subEntityIndex(entity,0,0);
     for(int i=0;i!=6;++i){
-        EntityIndex sonIndex = barySonMap(ent0Number,i);
+        EntityIndex sonIndex = m_sonMap(ent0Number,i);
+
         std::vector<GlobalDofIndex> &globalDof = acc(m_local2globalDofs, sonIndex);
 
         EntityIndex vertexIndex = index.subEntityIndex(entity, i / 2, gridDim);
         GlobalDofIndex globalDofIndex;
-        globalDofIndex = acc(globalDofIndices, vertexIndex);
+        globalDofIndex = acc(globalDofIndices,  vertexIndex);
         globalDof.push_back(globalDofIndex);
         if (globalDofIndex >= 0) {
           acc(m_global2localDofs, globalDofIndex).push_back(LocalDof(sonIndex, 0));
@@ -418,6 +423,24 @@ void PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::dumpClusterIdsEx(
     vtkWriter->write(fileName);
   }
 }
+
+/* I'm pretty sure this is unnecessary...
+
+template <typename BasisFunctionType>
+shared_ptr<Space<BasisFunctionType>> adaptivePiecewiseConstantDualGridScalarSpace(const shared_ptr<const Grid>& grid)
+{
+
+    return shared_ptr<Space<BasisFunctionType>>(
+            new AdaptiveSpace<BasisFunctionType, PiecewiseConstantDualGridScalarSpace<BasisFunctionType>>(grid));
+
+}
+
+#define INSTANTIATE_FREE_FUNCTIONS(BASIS)   \
+    template shared_ptr<Space<BASIS>> adaptivePiecewiseConstantDualGridScalarSpace<BASIS>( \
+            const shared_ptr<const Grid>&)
+FIBER_ITERATE_OVER_BASIS_TYPES(INSTANTIATE_FREE_FUNCTIONS);
+
+*/
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(
     PiecewiseConstantDualGridScalarSpace);
