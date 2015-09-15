@@ -317,12 +317,12 @@ public:
             dynamic_pointer_cast<ConcreteGrid<DuneGrid>>(newGrid);
 //
 // recreate self because I can't work out how else to make `this` into a Grid :/
-        shared_ptr<Grid> fatherGrid = 
-            GridFactory::createGridFromConnectivityArrays(
-                params, vertices, elementCorners, barycentricDomainIndices);
+//        shared_ptr<Grid> fatherGrid = 
+//            GridFactory::createGridFromConnectivityArrays(
+//                params, vertices, elementCorners, barycentricDomainIndices);
 //
 //
-        newGrid->setBarycentricFather(fatherGrid);
+//        newGrid->setBarycentricFather(this);//fatherGrid);
 
         m_barycentricGrid = newGrid;
 
@@ -364,10 +364,10 @@ public:
       return true;
   }
 
-  /** \brief Return \p true if this is a barycentric refinement of another grid. */
-  virtual bool isBarycentricGrid() const {
-    return isBary;
-  }
+//  /** \brief Return \p true if this is a barycentric refinement of another grid. */
+//  virtual bool isBarycentricGrid() const {
+//    return isBary;
+//  }
 
   /** \brief Get insertion index of an element. */
 
@@ -449,18 +449,17 @@ public:
     return m_dune_grid->getMark(static_cast<const entity_t&>(element).duneEntity());
   }
 
-  /** \brief set father of barycentric refinement */
-  virtual void setBarycentricFather(shared_ptr<Grid> fatherGrid){
-    isBary=true;
-    m_barycentricFatherGrid = fatherGrid;
-  }
+//  /** \brief set father of barycentric refinement */
+//  virtual void setBarycentricFather(shared_ptr<Grid> fatherGrid){
+//    isBary=true;
+//    m_barycentricFatherGrid = fatherGrid;
+//  }
 
-  /** \brief get father of barycentric refinement */
-  virtual const shared_ptr<Grid> getBarycentricFather(){
-    if(this->isBarycentricGrid()) return m_barycentricFatherGrid;
-      throw std::runtime_error(
-          "Grid is not a barycentric grid.");
-  }
+//  /** \brief get father of barycentric refinement */
+//  virtual shared_ptr<Grid> getBarycentricFather(){
+//    if(this->isBarycentricGrid()) {return m_barycentricFatherGrid;}
+//    else{throw std::runtime_error("Grid is not a barycentric grid.");}
+//  }
 
 
   /** @}
@@ -473,8 +472,8 @@ private:
   mutable Matrix<int> m_barycentricSonMap;
   mutable shared_ptr<Grid> m_barycentricGrid;
   mutable tbb::mutex m_barycentricSpaceMutex;
-  bool isBary=false;
-  mutable shared_ptr<Grid> m_barycentricFatherGrid;
+//  bool isBary=false;
+//  mutable <shared_ptr<Grid> m_barycentricFatherGrid;
 };
 
 } // namespace Bempp
