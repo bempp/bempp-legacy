@@ -17,12 +17,17 @@ split_list(sources headers makoed ".*\\.pyx")
 install_python(FILES ${headers} 
                DESTINATION bempp/include/bempp/utils)
 
+# STARTLINE adds a line a the beginning of the generated cython files
+# It makes sure that Python.h is included *after* property tree
+# This is necessary on mac (or maybe clang++) to avoid unpleasant conflicts
+# between ctypes.h and cctypes.
 add_python_module(bempp.utils
     __init__.py data_types.py which.py matrix_operator.py
-    blocked_linear_operator.py byte_conversion.py ${sources} 
+    blocked_linear_operator.py byte_conversion.py ${sources}
     TARGETNAME bempp.utils
     CPP
     LIBRARIES libbempp
+    STARTLINE "#include <boost/property_tree/ptree.hpp>"
 )
 
 add_dependencies(cython-headers bempp.utils-mako)
