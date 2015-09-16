@@ -141,7 +141,7 @@ AdaptiveSpace<BasisFunctionType_,SpaceType>::barycentricSpace(
   const shared_ptr<const Space<BasisFunctionType> > &self) const
 {
 
-    return currentSpace().barycentricSpace(self);
+    return currentSpace().barycentricSpace(m_space);
 }
 
 
