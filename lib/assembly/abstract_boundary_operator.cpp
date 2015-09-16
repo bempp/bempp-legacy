@@ -65,19 +65,7 @@ AbstractBoundaryOperator<BasisFunctionType, ResultType>::
   // Check if one of the spaces is barycentric. If yes move all spaces to
   // barycentric representations.
 
-  bool isBarycentricSpace;
-
-  isBarycentricSpace =
-      (m_domain->isBarycentric() || m_dualToRange->isBarycentric());
-
-  if (isBarycentricSpace) {
-    m_domain = m_domain->barycentricSpace(m_domain);
-    m_dualToRange = m_dualToRange->barycentricSpace(m_dualToRange);
-  }
   if (m_range->grid() != m_dualToRange->grid())
-    if (!m_range->grid()->isBarycentricRepresentationOf(
-            *m_dualToRange->grid()) &&
-        !m_dualToRange->grid()->isBarycentricRepresentationOf(*m_range->grid()))
       throw std::invalid_argument(
           "AbstractBoundaryOperator::AbstractBoundaryOperator(): "
           "range and dualToRange must be defined on the same grid");
