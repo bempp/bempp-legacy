@@ -179,8 +179,9 @@ class GridFunction(object):
     def evaluate(self, element, local_coordinates):
         """Evaluate grid function on a single element."""
 
+        import numpy as np
         # Get global dof ids and weights
-        global_dofs, weights = self.space.get_global_dofs(element)
+        global_dofs, weights = self.space.get_global_dofs(element, dof_weights=True)
         dof_values = np.asarray([self.coefficients[dof] for dof in global_dofs if dof >= 0]) * \
                 np.asarray(weights)
         return self.space.evaluate_local_basis(element, local_coordinates, dof_values)
@@ -188,6 +189,7 @@ class GridFunction(object):
     def l2_norm(self):
         """Return the L^2 norm of the function."""
 
+        import numpy as np
         ident = bempp.operators.boundary.sparse.identity(\
                 sparse, sparse, sparse).weak_form()
 
