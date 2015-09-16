@@ -189,6 +189,10 @@ def function_space(Grid grid, kind, order, domains=None, cbool closed=True):
         are supported:
         "P" : Continuous and piecewise polynomial functions.
         "DP" : Discontinuous and elementwise polynomial functions.
+        "B-P": Polynomial spaces on barycentric grids.
+        "B-DP": Polynomial discontinuous spaces on barycentric grids.
+        "DUAL": Dual space on dual grid (only implemented for constants).
+        "RT": Raviart-Thomas Vector spaces.
 
     order : int
         The order of the space, e.g. 0 for piecewise const, 1 for
@@ -268,6 +272,14 @@ def function_space(Grid grid, kind, order, domains=None, cbool closed=True):
         else:
             s.impl_.assign(reverse_const_pointer_cast(
                     shared_ptr[c_Space[double]](adaptiveRaviartThomas0VectorSpace[double](grid.impl_, domains, closed))))
+    elif kind=="DUAL":
+        if order != 0:
+            raise ValueError("Only 0 order dual grid spaces are implemented.")
+        if domains is not None:
+            raise ValueError("Spaces on subdomains are not supported on dual grids.")
+        s.impl_.assign(reverse_const_pointer_cast(
+            shared_ptr[c_Space[double]](adaptivePiecewiseConstantDualGridScalarSpace[double](grid.impl_))
+        ))
     else:
         raise ValueError("Unknown kind")
 

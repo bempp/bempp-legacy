@@ -25,6 +25,7 @@ cdef extern from "bempp/grid/grid.hpp" namespace "Bempp" nogil:
         void globalRefine(int refCount)
         int getMark(const c_Entity[codim_zero]&)
         c_IdSet& globalIdSet() const
+        shared_ptr[c_Grid] barycentricGrid() const
 
 
     cdef enum Topology "Bempp::GridParameters::Topology":

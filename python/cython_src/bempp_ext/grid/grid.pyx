@@ -148,6 +148,13 @@ cdef class Grid:
         deref(self.impl_).globalRefine(refcount)
         deref(self.impl_).sendUpdateSignal()
 
+    def barycentric_grid(self):
+        """Retrun a barycentrically refined grid."""
+
+        cdef Grid grid = Grid()
+        grid.impl_.assign(deref(self.impl_).barycentricGrid())
+        return grid
+
     property dim:
         """" Dimension of the grid. """
         def __get__(self):
