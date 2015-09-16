@@ -254,6 +254,11 @@ class GridFunction(object):
         return self._space
 
     @property
+    def grid(self):
+        """Return the underlying grid."""
+        return self.space.grid
+
+    @property
     def parameters(self):
         """Return the parameters."""
         return self._parameters

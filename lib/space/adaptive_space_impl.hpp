@@ -90,7 +90,7 @@ template <typename BasisFunctionType_, typename SpaceType>
 shared_ptr<const Grid> AdaptiveSpace<BasisFunctionType_,SpaceType>::grid() const
 {
 
-    return m_grid;
+    return currentSpace().grid();
 
 }
 
