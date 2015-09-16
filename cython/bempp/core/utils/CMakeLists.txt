@@ -14,11 +14,16 @@ copy_files_on_change(${headers}
 install_python(FILES ${headers} 
                DESTINATION bempp/include/bempp/core/utils)
 
+# STARTLINE adds a line a the beginning of the generated cython files
+# It makes sure that Python.h is included *after* property tree
+# This is necessary on mac (or maybe clang++) to avoid unpleasant conflicts
+# between ctypes.h and cctypes.
 add_python_module(bempp.core.utils
     parameter_list.pyx eigen.pyx enum_types.pyx __init__.py
     TARGETNAME bempp.core.utils
     CPP
     LIBRARIES libbempp
+    STARTLINE "#include <boost/property_tree/ptree.hpp>"
 )
 
 add_dependencies(cython-headers bempp.core.utils-copied)
