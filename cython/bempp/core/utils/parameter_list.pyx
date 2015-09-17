@@ -334,5 +334,14 @@ cdef class ParameterList:
     def __setstate__(self, state):
         self.impl_ = new c_ParameterList()
         self.inputter_ = new istringstream(state['repr'])
-        print(deref(self.inputter_).str())
         read_json(deref(self.inputter_), deref(self.impl_))
+        self.outputter_ = new ostringstream()
+        self._assembly = _AssemblyParameterList(self)
+        self._quadrature = _QuadratureParameterList(self)
+        self._hmat = _HMatParameterList(self)
+        (<_AssemblyParameterList>self._assembly).impl_ = self.impl_
+        (<_QuadratureParameterList>self._quadrature).impl_ = self.impl_
+        (<_NearField>self.quadrature.near).impl_ = self.impl_
+        (<_MediumField>self.quadrature.medium).impl_ = self.impl_
+        (<_FarField>self.quadrature.far).impl_ = self.impl_
+        (<_HMatParameterList>self._hmat).impl_ = self.impl_
