@@ -1,14 +1,37 @@
 import bempp
 import pickle
+import pytest
 
 class TestPickleGlobalOptions(object):
 
-    def test_pickle_global_options(self):
+    @pytest.fixture
+    def grid(self):
+        return bempp.grid_from_sphere(3)
 
-        serialized = pickle.dumps(bempp.global_parameters)
-        restored = pickle.loads(serialized)
-        orig = bempp.global_parameters
-        self.__compare_options(orig, restored)
+    @pytest.fixture
+    def space(self,grid):
+        return bempp.function_space(grid,"DP",0, gridname='grid')
+
+    @pytest.fixture
+    def dual_space(self,grid):
+        return bempp.function_space(grid,"P",1, gridname='grid')
+
+    def test_pickle_global_options(self):
+        serializedoptions = pickle.dumps(bempp.global_parameters)
+        restoredoptions = pickle.loads(serializedoptions)
+        origoptions = bempp.global_parameters
+        self.__compare_options(origoptions, restoredoptions)
+
+    def test_pickle_grid(self, grid):
+        serializedgrid =  pickle.dumps(grid)
+        restoredgrid = pickle.loads(serializedgrid)
+        assert grid == restoredgrid
+
+    def test_pickle_space(self,grid,space):
+        grid
+        serializedspace =  pickle.dumps(space)
+        #restoredspace = pickle.loads(serializedspace)
+        #assert space == restoredspace
 
     def __compare_options(self, orig, restored):
         assert orig.assembly.boundary_operator_assembly_type \
