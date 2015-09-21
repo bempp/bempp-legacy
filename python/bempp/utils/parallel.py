@@ -15,8 +15,7 @@ class ParallelInterface:
                                                         origspace.kind,
                                                         origspace.order,
                                                         origspace.domains,
-                                                        origspace.closed,
-                                                        origspace.gridname)
+                                                        origspace.closed)
 
     def __setstate__(self, state):
         gridstate = state['grid']
@@ -33,8 +32,7 @@ class ParallelInterface:
                                                          spacestate['kind'],
                                                          spacestate['order'],
                                                          spacestate['domains'],
-                                                         spacestate['closed'],
-                                                         spacestate['gridname'])
+                                                         spacestate['closed'])
 
     def __getstate__(self):
         state = dict()

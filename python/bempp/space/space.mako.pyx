@@ -194,10 +194,6 @@ cdef class Space:
 
     def __getstate__(self):
         state = dict()
-        if self.gridname == 'none':
-            raise NameError('Cannot serialize Space without gridname. Please '
-            'specify gridname when constructing the Space')
-        state['gridname'] = self.gridname
         state['kind'] =  self.kind
         state['order'] = self.order
         state['domains'] = self.domains
@@ -206,20 +202,9 @@ cdef class Space:
         return state
 
     def __setstate__(self, state):
-        import __main__
-        if not state['gridname'] in __main__.__dict__.keys():
-            raise NameError("Could not find grid with name {gridname}. "
-                "Did you remember to push it before pushing the "
-                "space?".format(gridname=state['gridname']))
-        self._kind = state['kind']
-        self._order = state['order']
-        self._domains = state['domains']
-        self._closed = state['closed']
-        self._gridname = state['gridname']
-        cdef:
-            Grid grid = __main__.__dict__[self.gridname]
-        __function_space(self, grid, state['kind'], state['order'],
-                         state['domains'], state['closed'])
+        raise NotImplementedError('Cannot serialize Space alone. Please '
+                                  'use a bempp.utils.ParallelInterface to '
+                                  'serialize a spaces with matching grid')
 
 
 def function_space(Grid grid, kind, order, domains=None, cbool closed=True,
