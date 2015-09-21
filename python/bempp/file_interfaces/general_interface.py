@@ -42,7 +42,6 @@ class FileReader(object):
 
     def __init__(self,**kwargs):
         import os.path
-        from bempp import Grid
         from collections import OrderedDict
 
         self._impl = None 

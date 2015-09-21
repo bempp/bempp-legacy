@@ -91,22 +91,10 @@ shared_ptr<DiscreteBoundaryOperator<ResultType>>
 ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
     assembleWeakFormImpl(
         const Context<BasisFunctionType, ResultType> &context) const {
-  bool verbose =
-      (context.assemblyOptions().verbosityLevel() >= VerbosityLevel::DEFAULT);
-  if (verbose)
-    std::cout << "Assembling the weak form of operator '" << this->label()
-              << "'..." << std::endl;
-
-  tbb::tick_count start = tbb::tick_count::now();
   std::unique_ptr<LocalAssembler> assembler =
       this->makeAssembler(*context.quadStrategy(), context.assemblyOptions());
   shared_ptr<DiscreteBoundaryOperator<ResultType>> result =
       assembleWeakFormInternalImpl2(*assembler, context);
-  tbb::tick_count end = tbb::tick_count::now();
-
-  if (verbose)
-    std::cout << "Assembly of the weak form of operator '" << this->label()
-              << "' took " << (end - start).seconds() << " s" << std::endl;
   return result;
 }
 

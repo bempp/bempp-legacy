@@ -23,7 +23,7 @@
 #include "blas_quadrature_helper.hpp"
 #include "context.hpp"
 #include "general_elementary_local_operator_imp.hpp"
-#include "general_hypersingular_integral_operator_imp.hpp"
+#include "general_elementary_singular_integral_operator.hpp"
 #include "laplace_3d_single_layer_boundary_operator.hpp"
 #include "synthetic_integral_operator.hpp"
 
@@ -161,10 +161,6 @@ laplace3dHypersingularBoundaryOperator(
     const std::string &label, int symmetry,
     const BoundaryOperator<BasisFunctionType, ResultType> &externalSlp) {
   const AssemblyOptions &assemblyOptions = context->assemblyOptions();
-  if (assemblyOptions.assemblyMode() == AssemblyOptions::HMAT ||
-      externalSlp.isInitialized())
-    return laplace3dSyntheticHypersingularBoundaryOperator(
-        context, domain, range, dualToRange, label, symmetry, externalSlp);
 
   typedef typename ScalarTraits<BasisFunctionType>::RealType KernelType;
   typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
@@ -175,37 +171,23 @@ laplace3dHypersingularBoundaryOperator(
   typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctorExt<
       BasisFunctionType, KernelType, ResultType, 3> IntegrandFunctor;
 
-  typedef Fiber::Laplace3dHypersingularOffDiagonalKernelFunctor<KernelType>
-      OffDiagonalKernelFunctor;
-  typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
-      OffDiagonalTransformationFunctor;
-  typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctorExt<
-      BasisFunctionType, KernelType, ResultType, 1> OffDiagonalIntegrandFunctor;
-
-  typedef GeneralHypersingularIntegralOperator<BasisFunctionType, KernelType,
+  typedef GeneralElementarySingularIntegralOperator<BasisFunctionType, KernelType,
                                                ResultType> Op;
 
   shared_ptr<Fiber::TestKernelTrialIntegral<BasisFunctionType, KernelType,
-                                            ResultType>> integral,
-      offDiagonalIntegral;
+                                            ResultType>> integral;
+
   if (shouldUseBlasInQuadrature(assemblyOptions, *domain, *dualToRange)) {
     integral.reset(new Fiber::TypicalTestScalarKernelTrialIntegral<
         BasisFunctionType, KernelType, ResultType>());
-    offDiagonalIntegral = integral;
   } else {
     integral.reset(new Fiber::DefaultTestKernelTrialIntegral<IntegrandFunctor>(
         IntegrandFunctor()));
-    offDiagonalIntegral.reset(
-        new Fiber::DefaultTestKernelTrialIntegral<OffDiagonalIntegrandFunctor>(
-            OffDiagonalIntegrandFunctor()));
   }
 
   shared_ptr<Op> newOp(
       new Op(domain, range, dualToRange, label, symmetry, KernelFunctor(),
-             TransformationFunctor(), TransformationFunctor(), integral,
-             OffDiagonalKernelFunctor(), OffDiagonalTransformationFunctor(),
-             OffDiagonalTransformationFunctor(), offDiagonalIntegral));
-
+             TransformationFunctor(), TransformationFunctor(), integral));
   return BoundaryOperator<BasisFunctionType, ResultType>(context, newOp);
 }
 

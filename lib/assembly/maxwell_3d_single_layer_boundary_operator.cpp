@@ -196,11 +196,6 @@ maxwell3dSingleLayerBoundaryOperator(
                        "maxwell3dSingleLayerBoundaryOperator()");
 
   const AssemblyOptions &assemblyOptions = usedContext->assemblyOptions();
-  if (assemblyOptions.assemblyMode() == AssemblyOptions::ACA &&
-      assemblyOptions.acaOptions().mode == AcaOptions::LOCAL_ASSEMBLY)
-    return maxwell3dSyntheticSingleLayerBoundaryOperator(
-        context, domain, range, dualToRange, waveNumber, label, symmetry,
-        useInterpolation, interpPtsPerWavelength);
 
   typedef Fiber::ModifiedMaxwell3dSingleLayerBoundaryOperatorKernelFunctor<
       KernelType> KernelFunctor;

@@ -22,6 +22,7 @@
 #define bempp_elementary_integral_operator_base_hpp
 
 #include "../common/common.hpp"
+#include "../common/types.hpp"
 
 #include "abstract_boundary_operator.hpp"
 
@@ -112,6 +113,10 @@ public:
   std::unique_ptr<LocalAssembler>
   makeAssembler(const QuadratureStrategy &quadStrategy,
                 const AssemblyOptions &options) const;
+
+  /** \brief Overload that takes a parameter list instead of a context object. */
+  std::unique_ptr<LocalAssembler>
+  makeAssembler(const ParameterList& parameterList) const;
 
   /** \brief Assemble the operator's weak form using a specified local
    *assembler.

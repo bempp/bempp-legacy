@@ -1,10 +1,9 @@
 import numpy as _np
 
+
 class SoundHardPlaneWaveScattering(object):
-
-
-    def __init__(self, space, wavenumber, coupling = 'osrc',
-            direction = _np.array([1.,0,0])):
+    def __init__(self, space, wavenumber, coupling='osrc',
+                 direction=_np.array([1., 0, 0])):
         self._space = space
         self._wavenumber = wavenumber
         self._coupling = coupling
@@ -68,7 +67,7 @@ class SoundHardPlaneWaveScattering(object):
 
     def _compute_burton_miller(self):
 
-        from bempp.operators.boundary.sparse import identity 
+        from bempp.operators.boundary.sparse import identity
         from bempp.operators.boundary.helmholtz import double_layer
         from bempp.operators.boundary.helmholtz import hypersingular
         from bempp.operators.boundary.helmholtz import osrc_ntd
@@ -81,11 +80,11 @@ class SoundHardPlaneWaveScattering(object):
 
         if self._double_layer is None:
             self._double_layer = double_layer(space, space,
-                    space, wavenumber)
+                                              space, wavenumber)
 
         if self._hypersingular is None:
             self._hypersingular = hypersingular(space, space,
-                    space, wavenumber)
+                                                space, wavenumber)
 
         if self._coupling == 'osrc' and self._osrc is None:
             self._osrc = osrc_ntd(space, wavenumber)
@@ -93,33 +92,33 @@ class SoundHardPlaneWaveScattering(object):
         if self._burton_miller_operator is None:
             if self._coupling == 'osrc':
                 self._burton_miller_operator = (
-                        .5*self._id - self._double_layer - self._osrc * self._hypersingular)
+                    .5 * self._id - self._double_layer - self._osrc * self._hypersingular)
             else:
                 self._burton_miller_operator = (
-                        .5*self._id - self._double_layer - (1j/self._wavenumber) * self._hypersingular)
+                    .5 * self._id - self._double_layer - (1j / self._wavenumber) * self._hypersingular)
 
     def _compute_rhs(self):
 
         import bempp
+
         self._compute_burton_miller()
 
         def dirichlet_fun(x, n, domain_index, result):
-            result[0] = _np.exp(1j*self._wavenumber*_np.dot(x,self._direction))
+            result[0] = _np.exp(1j * self._wavenumber * _np.dot(x, self._direction))
 
         def neumann_fun(x, n, domain_index, result):
-            result[0] = _np.dot(n, 1j*self._wavenumber*self._direction*_np.exp(
-                1j*self._wavenumber*_np.dot(x,self._direction)))
+            result[0] = _np.dot(n, 1j * self._wavenumber * self._direction * _np.exp(
+                1j * self._wavenumber * _np.dot(x, self._direction)))
 
-        g1 = bempp.GridFunction(self._space, fun = dirichlet_fun, complex_data = True)
-        g2 = bempp.GridFunction(self._space, fun = neumann_fun, complex_data = True)
+        g1 = bempp.GridFunction(self._space, fun=dirichlet_fun, complex_data=True)
+        g2 = bempp.GridFunction(self._space, fun=neumann_fun, complex_data=True)
 
         if self._coupling == 'osrc':
-            return -g1+self._osrc*g2
+            return -g1 + self._osrc * g2
         else:
-            return -g1+(1j/self._wavenumber)*g2
+            return -g1 + (1j / self._wavenumber) * g2
 
-
-    def compute(self, tol = 1E-5, maxiter = 200):
+    def compute(self, tol=1E-5, maxiter=200):
 
         import scipy.sparse.linalg
         import bempp
@@ -131,13 +130,7 @@ class SoundHardPlaneWaveScattering(object):
             self._it_count += 1
 
         x, _ = scipy.sparse.linalg.gmres(self._burton_miller_operator.strong_form(),
-                self._compute_rhs().coefficients, tol = tol, maxiter = maxiter,
-                callback = it_count)
+                                         self._compute_rhs().coefficients, tol=tol, maxiter=maxiter,
+                                         callback=it_count)
 
-        return bempp.GridFunction(self._space, coefficients = x) 
-
-
-
-        
-
-
+        return bempp.GridFunction(self._space, coefficients=x)

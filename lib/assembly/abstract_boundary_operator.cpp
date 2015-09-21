@@ -21,6 +21,7 @@
 #include "abstract_boundary_operator.hpp"
 #include "discrete_boundary_operator.hpp"
 #include "local_assembler_construction_helper.hpp"
+#include "context.hpp"
 
 #include "../common/to_string.hpp"
 #include "../fiber/explicit_instantiation.hpp"
@@ -64,19 +65,7 @@ AbstractBoundaryOperator<BasisFunctionType, ResultType>::
   // Check if one of the spaces is barycentric. If yes move all spaces to
   // barycentric representations.
 
-  bool isBarycentricSpace;
-
-  isBarycentricSpace =
-      (m_domain->isBarycentric() || m_dualToRange->isBarycentric());
-
-  if (isBarycentricSpace) {
-    m_domain = m_domain->barycentricSpace(m_domain);
-    m_dualToRange = m_dualToRange->barycentricSpace(m_dualToRange);
-  }
   if (m_range->grid() != m_dualToRange->grid())
-    if (!m_range->grid()->isBarycentricRepresentationOf(
-            *m_dualToRange->grid()) &&
-        !m_dualToRange->grid()->isBarycentricRepresentationOf(*m_range->grid()))
       throw std::invalid_argument(
           "AbstractBoundaryOperator::AbstractBoundaryOperator(): "
           "range and dualToRange must be defined on the same grid");
@@ -114,6 +103,14 @@ shared_ptr<DiscreteBoundaryOperator<ResultType>>
 AbstractBoundaryOperator<BasisFunctionType, ResultType>::assembleWeakForm(
     const Context<BasisFunctionType, ResultType> &context) const {
   return this->assembleWeakFormImpl(context);
+}
+
+template <typename BasisFunctionType, typename ResultType>
+shared_ptr<DiscreteBoundaryOperator<ResultType>>
+AbstractBoundaryOperator<BasisFunctionType, ResultType>::assembleWeakForm(const ParameterList& parameterList) const
+{
+    Context<BasisFunctionType, ResultType> context(parameterList);
+    return this->assembleWeakForm(context);
 }
 
 template <typename BasisFunctionType, typename ResultType>

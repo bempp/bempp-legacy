@@ -22,6 +22,7 @@
 #define bempp_elementary_local_operator_hpp
 
 #include "../common/common.hpp"
+#include "../common/types.hpp"
 
 #include "abstract_boundary_operator.hpp"
 
@@ -82,6 +83,9 @@ public:
    */
   typedef Fiber::TestTrialIntegral<BasisFunctionType, ResultType>
       TestTrialIntegral;
+  /** \brief Type of the appropriate instantiation of
+   *  Fiber::LocalAssemblerForLocalOperators. */
+  typedef Fiber::LocalAssemblerForLocalOperators<ResultType> LocalAssembler;
 
   /** \copydoc AbstractBoundaryOperator::AbstractBoundaryOperator */
   ElementaryLocalOperator(
@@ -93,15 +97,21 @@ public:
   /** \brief Return true. */
   virtual bool isLocal() const;
 
+  /** \brief Create an assembler for the operator. */
+  std::unique_ptr<LocalAssembler>
+  makeAssembler(const QuadratureStrategy &quadStrategy,
+                const AssemblyOptions &options) const;
+
+  /** \brief Overload. */
+  std::unique_ptr<LocalAssembler>
+  makeAssembler(const ParameterList& parameterList) const;
+
 protected:
   virtual shared_ptr<DiscreteBoundaryOperator<ResultType_>>
   assembleWeakFormImpl(
       const Context<BasisFunctionType, ResultType> &context) const;
 
 private:
-  /** \brief Type of the appropriate instantiation of
-   *  Fiber::LocalAssemblerForLocalOperators. */
-  typedef Fiber::LocalAssemblerForLocalOperators<ResultType> LocalAssembler;
 
   /** \brief Return the collection of test function transformations occurring
    *  in the weak form of this operator. */
@@ -135,9 +145,6 @@ private:
   assembleWeakFormInSparseMode(LocalAssembler &assembler,
                                const AssemblyOptions &options) const;
 
-  std::unique_ptr<LocalAssembler>
-  makeAssembler(const QuadratureStrategy &quadStrategy,
-                const AssemblyOptions &options) const;
 
 private:
   shared_ptr<const AbstractBoundaryOperatorId> m_id;

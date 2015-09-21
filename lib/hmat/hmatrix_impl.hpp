@@ -99,11 +99,6 @@ void HMatrix<ValueType, N>::initialize(
   // Start the compression
   compressFun(m_blockClusterTree->root());
 
-  // Delete keys that are not needed after coarsening
-  for (auto &elem : m_hMatrixData)
-    if (!elem.second)
-      m_hMatrixData.unsafe_erase(elem.first);
-
   // Compute statistics
 
   for (auto &elem : m_hMatrixData) {
@@ -116,16 +111,6 @@ void HMatrix<ValueType, N>::initialize(
     m_memSizeKb += elem.second->memSizeKb();
   }
 
-  // The following can be removed for C++14 compilers that
-  // support polymorphic lambda expressions.
-  // typedef decltype(*begin(leafNodes)) node_t;
-
-  // tbb::parallel_for_each(begin(leafNodes),end(leafNodes),[&](const node_t&
-  // node){
-  //  shared_ptr<HMatrixData<ValueType>> nodeData;
-  //  hMatrixCompressor.compressBlock(*node, nodeData);
-  //  m_hMatrixData[node] = nodeData;
-  //});
 }
 
 template <typename ValueType, int N> void HMatrix<ValueType, N>::reset() {

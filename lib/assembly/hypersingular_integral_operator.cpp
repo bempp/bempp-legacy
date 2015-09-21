@@ -67,22 +67,16 @@ HypersingularIntegralOperator<BasisFunctionType, KernelType, ResultType>::
   typedef std::vector<const Fiber::Shapeset<BasisFunctionType> *>
       ShapesetPtrVector;
 
-  const bool verbose = (options.verbosityLevel() >= VerbosityLevel::DEFAULT);
-
   shared_ptr<RawGridGeometry> testRawGeometry, trialRawGeometry;
   shared_ptr<GeometryFactory> testGeometryFactory, trialGeometryFactory;
   shared_ptr<Fiber::OpenClHandler> openClHandler;
   shared_ptr<ShapesetPtrVector> testShapesets, trialShapesets;
   bool cacheSingularIntegrals;
 
-  if (verbose)
-    std::cout << "Collecting data for assembler construction..." << std::endl;
   this->collectDataForAssemblerConstruction(
       options, testRawGeometry, trialRawGeometry, testGeometryFactory,
       trialGeometryFactory, testShapesets, trialShapesets, openClHandler,
       cacheSingularIntegrals);
-  if (verbose)
-    std::cout << "Data collection finished." << std::endl;
 
   bool makeSeparateOffDiagonalAssembler =
       options.assemblyMode() == AssemblyOptions::ACA &&
@@ -156,11 +150,6 @@ shared_ptr<DiscreteBoundaryOperator<ResultType>>
 HypersingularIntegralOperator<BasisFunctionType, KernelType, ResultType>::
     assembleWeakFormImpl(
         const Context<BasisFunctionType, ResultType> &context) const {
-  bool verbose =
-      (context.assemblyOptions().verbosityLevel() >= VerbosityLevel::DEFAULT);
-  if (verbose)
-    std::cout << "Assembling the weak form of operator '" << this->label()
-              << "'..." << std::endl;
 
   tbb::tick_count start = tbb::tick_count::now();
   std::pair<shared_ptr<LocalAssembler>, shared_ptr<LocalAssembler>> assemblers =
@@ -169,9 +158,6 @@ HypersingularIntegralOperator<BasisFunctionType, KernelType, ResultType>::
       assembleWeakFormInternal(*assemblers.first, *assemblers.second, context);
   tbb::tick_count end = tbb::tick_count::now();
 
-  if (verbose)
-    std::cout << "Assembly of the weak form of operator '" << this->label()
-              << "' took " << (end - start).seconds() << " s" << std::endl;
   return result;
 }
 

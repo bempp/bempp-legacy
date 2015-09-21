@@ -35,6 +35,8 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 # Download and installs the cookoff in the build tree
 # From here on we can use cookoff recipes
 include(LookUp-GreatCMakeCookOff)
+include(utils)
+include(PythonInstall)
 
 # These are the original flags given by the user when compiling Bempp
 set(ORIGINAL_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
@@ -67,8 +69,7 @@ if(WITH_TESTS)
 endif(WITH_TESTS)
 
 add_subdirectory(lib)
-add_subdirectory(python)
-#add_subdirectory(examples)
+add_subdirectory(cython)
 add_subdirectory(meshes)
 # Installs FindX.cmake files for packages depending on cmake
 add_subdirectory(cmake)
@@ -86,6 +87,11 @@ add_custom_target(uninstall
 
 # Exports all Bempp so other packages can access it
 include(BemppExport)
+
+# Add python files to the installation
+install_python(DIRECTORY ${CMAKE_SOURCE_DIR}/python/bempp/ DESTINATION bempp
+    FILES_MATCHING PATTERN "*.py")
+
 
 # An install script to brutally modify the rpaths
 # It ensures that python extensions and libraries can see each other
@@ -111,4 +117,5 @@ execute_process(COMMAND chmod +x ${PROJECT_BINARY_DIR}/bin/ibempp)
 configure_file(${PROJECT_SOURCE_DIR}/create_debian_package.sh.in ${PROJECT_BINARY_DIR}/create_debian_package.sh)
 
 add_custom_target(debian sh ${PROJECT_BINARY_DIR}/create_debian_package.sh DEPENDS bempp)
+
 

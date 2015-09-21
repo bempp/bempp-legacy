@@ -93,20 +93,29 @@ ElementaryIntegralOperatorBase<BasisFunctionType, ResultType>::makeAssembler(
   shared_ptr<ShapesetPtrVector> testShapesets, trialShapesets;
   bool cacheSingularIntegrals;
 
-  if (verbose)
-    std::cout << "Collecting data for assembler construction..." << std::endl;
   this->collectDataForAssemblerConstruction(
       options, testRawGeometry, trialRawGeometry, testGeometryFactory,
       trialGeometryFactory, testShapesets, trialShapesets, openClHandler,
       cacheSingularIntegrals);
-  if (verbose)
-    std::cout << "Data collection finished." << std::endl;
 
   return makeAssemblerImpl(quadStrategy, testGeometryFactory,
                            trialGeometryFactory, testRawGeometry,
                            trialRawGeometry, testShapesets, trialShapesets,
                            openClHandler, options.parallelizationOptions(),
                            options.verbosityLevel(), cacheSingularIntegrals);
+}
+
+
+template <typename BasisFunctionType, typename ResultType>
+std::unique_ptr<typename ElementaryIntegralOperatorBase<
+    BasisFunctionType, ResultType>::LocalAssembler>
+ElementaryIntegralOperatorBase<BasisFunctionType, ResultType>::makeAssembler(const ParameterList& parameterList) const
+{
+
+    Context<BasisFunctionType,ResultType> context(parameterList);
+    return makeAssembler(*context.quadStrategy(),
+            context.assemblyOptions());
+
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(
