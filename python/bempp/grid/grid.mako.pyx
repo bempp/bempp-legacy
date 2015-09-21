@@ -240,8 +240,6 @@ cdef class Grid:
         vertices = state['vertices'],
         elements = state['elements'],
         domain_indices = state['domain_indices']
-        # for whatever reason this is a 1 touple of the ndarray
-        # so take the element out of it
         vertices = vertices[0]
         elements = elements[0]
 
