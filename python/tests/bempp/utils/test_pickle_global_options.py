@@ -1,6 +1,7 @@
 import bempp
 import pickle
 import pytest
+from bempp.utils import ParallelInterface
 
 class TestPickleGlobalOptions(object):
 
@@ -27,11 +28,14 @@ class TestPickleGlobalOptions(object):
         restoredgrid = pickle.loads(serializedgrid)
         assert grid == restoredgrid
 
-    def test_pickle_space(self,grid,space):
-        grid
-        serializedspace =  pickle.dumps(space)
-        #restoredspace = pickle.loads(serializedspace)
-        #assert space == restoredspace
+    def test_pickle_parallel_state(self, grid, space, dual_space):
+        spaces = dict()
+        spaces['space'] = space
+        spaces['dual_space'] = dual_space
+        pin = ParallelInterface(grid, spaces)
+        serializedpin = pickle.dumps(pin)
+        restoredpin = pickle.loads(serializedpin)
+
 
     def __compare_options(self, orig, restored):
         assert orig.assembly.boundary_operator_assembly_type \

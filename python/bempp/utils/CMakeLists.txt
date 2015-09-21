@@ -23,7 +23,7 @@ install_python(FILES ${headers}
 # between ctypes.h and cctypes.
 add_python_module(bempp.utils
     __init__.py data_types.py which.py matrix_operator.py
-    blocked_linear_operator.py byte_conversion.py ${sources}
+    blocked_linear_operator.py byte_conversion.py parallel.py ${sources}
     TARGETNAME bempp.utils
     CPP
     LIBRARIES libbempp
