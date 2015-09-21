@@ -2,9 +2,9 @@
 def lu(A, b):
 
     from numpy.linalg import solve
-    from bempp import GridFunction
+    from bempp import GridFunction, as_matrix
 
-    mat = A.weak_form().as_matrix()
+    mat = as_matrix(A.weak_form())
     vec = b.projections(A.dual_to_range)
 
     sol = solve(mat,vec)

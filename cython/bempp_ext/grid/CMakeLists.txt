@@ -22,7 +22,7 @@ copy_files_on_change(${headers}
            TARGETNAME bempp_ext.grid-copied
            )
 
-install_python(FILES ${headers} DESTINATION bempp/include/bempp/grid)
+install_python(FILES ${headers} DESTINATION bempp_ext/include/bempp/grid)
 add_dependencies(cython-headers bempp_ext.grid-copied)
 
 add_python_module(bempp_ext.grid __init__.py ${sources} CPP LIBRARIES libbempp)

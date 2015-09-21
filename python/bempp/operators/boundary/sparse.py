@@ -20,7 +20,7 @@ def identity(domain, range_, dual_to_range,
                          dual_to_range, "", symmetry),
             parameters=parameters, label=label)
 
-def maxwell_identity(domain, range_, dual_to_range,
+def maxwell_identity(space,
                      label="MAXWELL_IDENTITY", symmetry='no_symmetry',
                      parameters=None):
     """Return the Maxwell identity operator."""
@@ -33,8 +33,8 @@ def maxwell_identity(domain, range_, dual_to_range,
         parameters = bempp.global_parameters
 
     return LocalBoundaryOperator(\
-            maxwell_identity_ext(parameters, domain, range_,
-                                 dual_to_range, "", symmetry),
+            maxwell_identity_ext(parameters, space, space,
+                                 space, "", symmetry),
             parameters=parameters, label=label)
 
 def laplace_beltrami(domain, range_, dual_to_range,

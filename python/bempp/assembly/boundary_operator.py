@@ -70,11 +70,16 @@ class BoundaryOperator(object):
         """Return product with a scalar, grid function or other operator."""
 
         import numpy as np
+        from bempp import GridFunction
 
         if np.isscalar(other):
             return _ScaledBoundaryOperator(self, other)
         elif isinstance(other, BoundaryOperator):
             return _ProductBoundaryOperator(self, other)
+        elif isinstance(other, GridFunction):
+            if self.domain != other.space:
+                raise ValueError("Operator domain space does not match GridFunction space.")
+            return GridFunction(other.space, coefficients=self.strong_form() * other.coefficients)
         else:
             raise NotImplemented
 
