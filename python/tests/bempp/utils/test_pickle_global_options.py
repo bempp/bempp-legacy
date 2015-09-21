@@ -11,11 +11,11 @@ class TestPickleGlobalOptions(object):
 
     @pytest.fixture
     def space(self,grid):
-        return bempp.function_space(grid,"DP",0, gridname='grid')
+        return bempp.function_space(grid,"DP",0)
 
     @pytest.fixture
     def dual_space(self,grid):
-        return bempp.function_space(grid,"P",1, gridname='grid')
+        return bempp.function_space(grid,"P",1)
 
     def test_pickle_global_options(self):
         serializedoptions = pickle.dumps(bempp.global_parameters)

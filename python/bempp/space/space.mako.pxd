@@ -77,7 +77,7 @@ cdef class Space:
         str _kind
         list _domains
         cbool _closed
-        str _gridname
+
     cpdef cbool is_compatible(self, Space other)
 
 # Define all possible spaces

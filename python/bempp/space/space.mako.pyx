@@ -52,13 +52,12 @@ cdef class Space:
 
     """
     def __init__(self, unsigned int order, str kind, domains=None,
-                 cbool closed=True, gridname=None):
+                 cbool closed=True):
         super(Space, self).__init__()
         self._order = order
         self._kind = kind
         self._domains = domains
         self._closed = closed
-        self._gridname = gridname
 
     property dtype:
         """ Type of the basis functions in this space. """
@@ -134,13 +133,6 @@ cdef class Space:
         def __get__(self):
             return self._domains
 
-    property gridname:
-        """ Name of the variable that holds the grid used to create the space.
-        This is only used to serialize the space with a reference to the grid"""
-
-        def __get__(self):
-            return self._gridname
-
     def get_global_dofs(self,Entity0 element):
 
         cdef vector[int] global_dofs_vec
@@ -207,8 +199,7 @@ cdef class Space:
                                   'serialize a spaces with matching grid')
 
 
-def function_space(Grid grid, kind, order, domains=None, cbool closed=True,
-                   gridname='none'):
+def function_space(Grid grid, kind, order, domains=None, cbool closed=True):
     """ 
 
     Return a space defined over a given grid.
@@ -237,10 +228,6 @@ def function_space(Grid grid, kind, order, domains=None, cbool closed=True,
         Specifies whether the space is defined on a closed
         or open subspace.
 
-    gridname: str
-        name of the variable used to hold the grid. Used only for IPython
-        serialization. This is ugly and should be changed.
-
     Notes
     -----
     The most frequent used types are the space of piecewise constant
@@ -263,7 +250,7 @@ def function_space(Grid grid, kind, order, domains=None, cbool closed=True,
 
     """
 
-    cdef Space s = Space(order, kind, domains, closed, gridname)
+    cdef Space s = Space(order, kind, domains, closed)
     __function_space(s, grid, kind, order, domains, closed)
     return s
 
