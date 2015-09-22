@@ -89,9 +89,11 @@ add_custom_target(uninstall
 include(BemppExport)
 
 # Add python files to the installation
-install_python(DIRECTORY ${CMAKE_SOURCE_DIR}/python/bempp/ DESTINATION bempp
+install_python(DIRECTORY ${CMAKE_SOURCE_DIR}/python/bempp/api DESTINATION bempp
     FILES_MATCHING PATTERN "*.py")
 
+install_python(FILES ${CMAKE_SOURCE_DIR}/cmake/empty_file DESTINATION bempp
+    RENAME __init__.py)
 
 # An install script to brutally modify the rpaths
 # It ensures that python extensions and libraries can see each other
