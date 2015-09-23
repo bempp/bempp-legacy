@@ -172,7 +172,6 @@ const int gridDim = this->domainDimension();
     const Entity<0> &entity = it->entity();
     int ent0Number = index.subEntityIndex(entity,0,0);
     const EntityIndex faceIndex = index.subEntityIndex(entity, 0, 0);
-    std::cout << faceIndex << std::endl;
     for(int i=0;i!=6;++i){
         EntityIndex sonIndex = m_sonMap(ent0Number,i);
 
