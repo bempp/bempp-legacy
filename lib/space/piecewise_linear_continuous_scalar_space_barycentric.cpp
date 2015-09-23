@@ -79,8 +79,7 @@ void PiecewiseLinearContinuousScalarSpaceBarycentric<
     throw std::invalid_argument(
         "PiecewiseLinearContinuousScalarSpaceBarycentric::initialize(): "
         "only 1- and 2-dimensional grids are supported");
-//  m_view = this->grid()->leafView();
-  m_view = m_originalGrid->leafView();
+  m_view = this->grid()->leafView();
   assignDofsImpl();
 }
 
