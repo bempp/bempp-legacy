@@ -51,7 +51,7 @@ PiecewiseLinearContinuousScalarSpaceBarycentric<BasisFunctionType>::
     : PiecewiseLinearScalarSpace<BasisFunctionType>(grid->barycentricGrid()),
       m_segment(GridSegment::wholeGrid(*grid)), m_strictlyOnSegment(false),
       m_originalGrid(grid), m_linearBasisType1(Shapeset::TYPE1),
-      m_linearBasisType2(Shapeset::TYPE2) {
+      m_linearBasisType2(Shapeset::TYPE2), m_sonMap(grid->barycentricSonMap()) {
   initialize();
 }
 
@@ -63,7 +63,7 @@ PiecewiseLinearContinuousScalarSpaceBarycentric<BasisFunctionType>::
     : PiecewiseLinearScalarSpace<BasisFunctionType>(grid->barycentricGrid()),
       m_segment(segment), m_strictlyOnSegment(strictlyOnSegment),
       m_originalGrid(grid), m_linearBasisType1(Shapeset::TYPE1),
-      m_linearBasisType2(Shapeset::TYPE2) {
+      m_linearBasisType2(Shapeset::TYPE2), m_sonMap(grid->barycentricSonMap()) {
   initialize();
 }
 
@@ -79,7 +79,8 @@ void PiecewiseLinearContinuousScalarSpaceBarycentric<
     throw std::invalid_argument(
         "PiecewiseLinearContinuousScalarSpaceBarycentric::initialize(): "
         "only 1- and 2-dimensional grids are supported");
-  m_view = this->grid()->leafView();
+//  m_view = this->grid()->leafView();
+  m_view = m_originalGrid->leafView();
   assignDofsImpl();
 }
 
@@ -152,66 +153,26 @@ void PiecewiseLinearContinuousScalarSpaceBarycentric<
     BasisFunctionType>::assignDofsImpl() {
 
   const int gridDim = this->domainDimension();
-  const int elementCodim = 0;
+  std::unique_ptr<GridView> coarseView = m_originalGrid->leafView();
+  const IndexSet &index = coarseView->indexSet();
+  int elementCount = this->gridView().entityCount(0);
+//  int vertexCount = view.entityCount(gridDim);
+  int vertexCountCoarseGrid = coarseView->entityCount(gridDim);
 
-  const GridView &view = this->gridView();
 
-  std::unique_ptr<GridView> viewCoarseGridPtr = this->grid()->levelView(0);
-  const GridView &viewCoarseGrid = *viewCoarseGridPtr;
-
-  const Mapper &elementMapper = view.elementMapper();
-  const Mapper &elementMapperCoarseGrid = viewCoarseGrid.elementMapper();
-
-  int elementCount = view.entityCount(0);
-  int vertexCount = view.entityCount(gridDim);
-
-  int vertexCountCoarseGrid = viewCoarseGrid.entityCount(gridDim);
-  int elementCountCoarseGrid = viewCoarseGrid.entityCount(0);
-
-  const IndexSet &indexSetCoarseGrid = viewCoarseGrid.indexSet();
+//  const GridView &view = this->gridView();
+//  int elementCountCoarseGrid = viewCoarseGrid.entityCount(0);
 
   // Assign gdofs to grid vertices (choosing only those that belong to
   // the selected grid segment)
   std::vector<int> globalDofIndices(vertexCountCoarseGrid, 0);
-  m_segment.markExcludedEntities(gridDim, globalDofIndices);
-  std::vector<bool> segmentContainsElement;
-  if (m_strictlyOnSegment) {
-    std::vector<bool> noAdjacentElementsInsideSegment(vertexCountCoarseGrid,
-                                                      true);
-    segmentContainsElement.resize(elementCountCoarseGrid);
-    std::unique_ptr<EntityIterator<0>> itCoarseGrid =
-        viewCoarseGrid.entityIterator<0>();
-    while (!itCoarseGrid->finished()) {
-      const Entity<0> &elementCoarseGrid = itCoarseGrid->entity();
-      EntityIndex elementIndexCoarseGrid =
-          elementMapperCoarseGrid.entityIndex(elementCoarseGrid);
-      bool elementContained =
-          m_segment.contains(elementCodim, elementIndexCoarseGrid);
-      acc(segmentContainsElement, elementIndexCoarseGrid) = elementContained;
-
-      int cornerCount;
-      if (gridDim == 1)
-        cornerCount = elementCoarseGrid.template subEntityCount<1>();
-      else // gridDim == 2
-        cornerCount = elementCoarseGrid.template subEntityCount<2>();
-      if (elementContained)
-        for (int i = 0; i < cornerCount; ++i) {
-          int vertexIndexCoarseGrid =
-              indexSetCoarseGrid.subEntityIndex(elementCoarseGrid, i, gridDim);
-          acc(noAdjacentElementsInsideSegment, vertexIndexCoarseGrid) = false;
-        }
-      itCoarseGrid->next();
-    }
-    // Remove all DOFs associated with vertices lying next to no element
-    // belonging to the grid segment
-    for (size_t i = 0; i < vertexCount; ++i)
-      if (acc(noAdjacentElementsInsideSegment, i))
-        acc(globalDofIndices, i) = -1;
-  }
   int globalDofCount_ = 0;
   for (int vertexIndex = 0; vertexIndex < vertexCountCoarseGrid; ++vertexIndex)
-    if (acc(globalDofIndices, vertexIndex) == 0) // not excluded
       acc(globalDofIndices, vertexIndex) = globalDofCount_++;
+
+  int flatLocalDofCount_ = 0;
+
+
 
   // (Re)initialise DOF maps
   m_local2globalDofs.clear();
@@ -219,74 +180,56 @@ void PiecewiseLinearContinuousScalarSpaceBarycentric<
   m_global2localDofs.clear();
   m_global2localDofs.resize(globalDofCount_);
   m_elementIndex2Type.resize(elementCount);
-  // TODO: consider calling reserve(x) for each element of m_global2localDofs
-  // with x being the typical number of elements adjacent to a vertex in a
-  // grid of dimension gridDim
 
-  const int element2Basis[6][3] = {{0, 1, 2},
+  const int element2Basis[6][3] = {
+                                   {0, 1, 2},
                                    {0, 1, 2},
                                    {2, 0, 1},
                                    {2, 0, 1},
                                    {1, 2, 0},
-                                   {1, 2, 0}}; // element2Basis[i][j]
+                                   {1, 2, 0}
+                                            }; // element2Basis[i][j]
                                                // is the basis fct.
                                                // associated with the
                                                // jth vertex
-                                               // on element i.
+                                               // on element i.*/
 
   // Iterate over elements
-  std::unique_ptr<EntityIterator<0>> itCoarseGrid =
-      viewCoarseGrid.entityIterator<0>();
-  int flatLocalDofCount_ = 0;
-  while (!itCoarseGrid->finished()) {
-    const Entity<0> &elementCoarseGrid = itCoarseGrid->entity();
-    EntityIndex elementIndexCoarseGrid =
-        elementMapperCoarseGrid.entityIndex(elementCoarseGrid);
-    bool elementContained = m_strictlyOnSegment ? acc(segmentContainsElement,
-                                                      elementIndexCoarseGrid)
-                                                : true;
+  for (std::unique_ptr<EntityIterator<0>> it = coarseView->entityIterator<0>();!it->finished();it->next()) {
+    const Entity<0> &entity = it->entity();
+    EntityIndex ent0Number = index.subEntityIndex(entity,0,0);
 
     // Iterate through refined elements
-    std::unique_ptr<EntityIterator<0>> sonIt =
-        elementCoarseGrid.sonIterator(this->grid()->maxLevel());
-    int sonCounter = 5;
-    while (!sonIt->finished()) {
-      const Entity<0> &element = sonIt->entity();
-      int elementIndex = elementMapper.entityIndex(element);
-      int cornerCount = 3;
+    for(int i=0;i!=6;++i){
+      int sonIndex = m_sonMap(ent0Number,i);
 
-      if (sonCounter % 2 == 0) {
-        acc(m_elementIndex2Type, elementIndex) = Shapeset::TYPE1;
+      if (i % 2 == 0) {
+        acc(m_elementIndex2Type, sonIndex) = Shapeset::TYPE1;
       } else {
-        acc(m_elementIndex2Type, elementIndex) = Shapeset::TYPE2;
+        acc(m_elementIndex2Type, sonIndex) = Shapeset::TYPE2;
       }
 
-      std::vector<GlobalDofIndex> &globalDofs =
-          acc(m_local2globalDofs, elementIndex);
-      globalDofs.resize(cornerCount);
+      std::vector<GlobalDofIndex> &globalDofs = acc(m_local2globalDofs, sonIndex);
+      globalDofs.resize(3);
 
-      for (int i = 0; i < cornerCount; ++i) {
 
-        int basisNumber = element2Basis[sonCounter][i];
-        EntityIndex vertexIndex =
-            indexSetCoarseGrid.subEntityIndex(elementCoarseGrid, i, gridDim);
-        int globalDofIndex =
-            elementContained ? acc(globalDofIndices, vertexIndex) : -1;
-        acc(globalDofs, basisNumber) = globalDofIndex;
-        if (globalDofIndex >= 0) {
-          acc(m_global2localDofs, globalDofIndex)
-              .push_back(LocalDof(elementIndex, basisNumber));
-          ++flatLocalDofCount_;
-        }
+
+      for(int j=0;j!=3;++j){
+        int basisNumber = element2Basis[i][j];
+        EntityIndex vertexIndex = index.subEntityIndex(entity,j,gridDim);
+        int globalDofIndex = acc(globalDofIndices,vertexIndex);
+        acc(globalDofs, basisNumber) = globalDofIndex; /// THIS LINE
+//        acc(globalDofs, j) = globalDofIndex; /// THIS LINE
+        acc(m_global2localDofs, globalDofIndex).push_back(LocalDof(sonIndex, basisNumber));//basisNumber
+        ++flatLocalDofCount_;
       }
-      sonIt->next();
-      sonCounter--; // The Foamgrid iterator gives son elements in reverse order
     }
-    itCoarseGrid->next();
   }
 
   // Initialize the container mapping the flat local dof indices to
   // local dof indices
+  std::cout << m_flatLocal2localDofs.size();
+  std::cout << m_local2globalDofs.size();
   SpaceHelper<BasisFunctionType>::initializeLocal2FlatLocalDofMap(
       flatLocalDofCount_, m_local2globalDofs, m_flatLocal2localDofs);
 }

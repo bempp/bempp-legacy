@@ -161,13 +161,14 @@ private:
   std::vector<std::vector<LocalDof>> m_global2localDofs;
   std::vector<LocalDof> m_flatLocal2localDofs;
 
-  shared_ptr<const Grid> m_originalGrid;
+  mutable shared_ptr<const Grid> m_originalGrid;
 
   Shapeset m_linearBasisType1;
   Shapeset m_linearBasisType2;
 
   std::vector<typename Shapeset::BasisType> m_elementIndex2Type;
 
+  mutable Matrix<int> m_sonMap;
   mutable shared_ptr<Space<BasisFunctionType>> m_discontinuousSpace;
   mutable tbb::mutex m_discontinuousSpaceMutex;
   /** \endcond */
