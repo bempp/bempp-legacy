@@ -4,18 +4,32 @@ from __future__ import print_function
 # This imports dolfin at the same time as bempp if available to avoid delays
 # at later imports of dolfin
 
-try:
-    import dolfin as _
-except ImportError:
-    HAVE_DOLFIN = False
-else:
-    HAVE_DOLFIN = True
-
 # Initialize logger
 
 from bempp.api.utils.logging import _init_logger
 
 LOGGER = _init_logger()
+
+import os
+try:
+    if os.environ['BEMPP_CONSOLE_LOGGING'] == '1':
+        from bempp.api.utils.logging import enable_console_logging
+        enable_console_logging()
+except:
+    pass
+
+# Check for FEniCS
+
+try:
+    import dolfin as _
+except:
+    HAVE_DOLFIN = False
+    LOGGER.info("Dolfin could not be imported. FEM/BEM coupling with FEniCS not available.")
+else:
+    HAVE_DOLFIN = True
+    LOGGER.info("Found Dolfin. FEM/BEM coupling with FEniCS enabled.")
+
+
 
 # Check if config directory exists. If not create it.
 

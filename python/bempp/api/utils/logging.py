@@ -22,28 +22,28 @@ def _init_logger():
 def enable_console_logging(level=DEBUG, format=DEFAULT_FORMAT):
     """Enable console logging and return the console handler."""
 
-    import bempp
+    from bempp.api import LOGGER
     ch = _logging.StreamHandler()
     ch.setLevel(level)
     ch.setFormatter(_logging.Formatter(format))
-    bempp.api.LOGGER.addHandler(ch)
+    LOGGER.addHandler(ch)
     return ch
 
 def enable_file_logging(file_name, level=DEBUG, format=DEFAULT_FORMAT):
     """Enable logging to a specific file."""
 
-    import bempp
+    from bempp.api import LOGGER
     fh = _logging.FileHandler(file_name)
     fh.setLevel(level)
     fh.setFormatter(_logging.Formatter(format))
-    bempp.api.LOGGER.addHandler(fh)
+    LOGGER.addHandler(fh)
     return fh
 
 def set_logging_level(level):
     """Set the logging level."""
 
-    import bempp
-    bempp.api.LOGGER.setLevel(level)
+    from bempp.api import LOGGER
+    LOGGER.setLevel(level)
 
 
 
