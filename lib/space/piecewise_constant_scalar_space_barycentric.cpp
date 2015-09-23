@@ -42,7 +42,7 @@ template <typename BasisFunctionType>
 PiecewiseConstantScalarSpaceBarycentric<BasisFunctionType>::
     PiecewiseConstantScalarSpaceBarycentric(const shared_ptr<const Grid> &grid)
     : ScalarSpace<BasisFunctionType>(grid->barycentricGrid()),
-      m_segment(GridSegment::wholeGrid(*grid)), m_originalGrid(grid) {
+      m_segment(GridSegment::wholeGrid(*grid)), m_originalGrid(grid), m_sonMap(grid->barycentricSonMap()) {
   assignDofsImpl(m_segment);
 }
 
@@ -51,7 +51,7 @@ PiecewiseConstantScalarSpaceBarycentric<BasisFunctionType>::
     PiecewiseConstantScalarSpaceBarycentric(const shared_ptr<const Grid> &grid,
                                             const GridSegment &segment)
     : ScalarSpace<BasisFunctionType>(grid->barycentricGrid()),
-      m_segment(segment), m_originalGrid(grid) {
+      m_segment(segment), m_originalGrid(grid), m_sonMap(grid->barycentricSonMap()) {
   assignDofsImpl(m_segment);
 }
 
@@ -150,67 +150,44 @@ void PiecewiseConstantScalarSpaceBarycentric<
 template <typename BasisFunctionType>
 void PiecewiseConstantScalarSpaceBarycentric<BasisFunctionType>::assignDofsImpl(
     const GridSegment &segment) {
+const int gridDim = this->domainDimension();
 
-  const GridView &view = this->gridView();
+  std::unique_ptr<GridView> coarseView = m_originalGrid->leafView();
+  const IndexSet &index = coarseView->indexSet();
+  int elementCount = this->gridView().entityCount(0);
+  int faceCountCoarseGrid = coarseView->entityCount(0);
 
-  std::unique_ptr<GridView> viewCoarseGridPtr = this->grid()->levelView(0);
-  const GridView &viewCoarseGrid = *viewCoarseGridPtr;
-
-  const Mapper &elementMapper = view.elementMapper();
-  const Mapper &elementMapperCoarseGrid = viewCoarseGrid.elementMapper();
-
-  int elementCount = view.entityCount(0);
-  int elementCountCoarseGrid = viewCoarseGrid.entityCount(0);
-
-  // Assign gdofs to grid vertices (choosing only those that belong to
-  // the selected grid segment)
-  std::vector<int> globalDofIndices(elementCountCoarseGrid, 0);
-  segment.markExcludedEntities(0, globalDofIndices);
+  std::vector<int> globalDofIndices(faceCountCoarseGrid, 0);
   int globalDofCount_ = 0;
-  for (int elementIndex = 0; elementIndex < elementCountCoarseGrid;
-       ++elementIndex)
-    if (acc(globalDofIndices, elementIndex) == 0) // not excluded
-      acc(globalDofIndices, elementIndex) = globalDofCount_++;
+  for (int faceIndex = 0; faceIndex < faceCountCoarseGrid; ++faceIndex)
+    acc(globalDofIndices, faceIndex) = globalDofCount_++;
+  int flatLocalDofCount_ = 0;
 
-  // (Re)initialise DOF maps
   m_local2globalDofs.clear();
   m_local2globalDofs.resize(elementCount);
   m_global2localDofs.clear();
   m_global2localDofs.resize(globalDofCount_);
 
-  // Iterate over elements
-  std::unique_ptr<EntityIterator<0>> itCoarseGrid =
-      viewCoarseGrid.entityIterator<0>();
-  int flatLocalDofCount_ = 0;
-  while (!itCoarseGrid->finished()) {
-    const Entity<0> &elementCoarseGrid = itCoarseGrid->entity();
-    EntityIndex elementIndexCoarseGrid =
-        elementMapperCoarseGrid.entityIndex(elementCoarseGrid);
+  for(std::unique_ptr<EntityIterator<0>> it = coarseView->entityIterator<0>();!it->finished();it->next()) {
+    const Entity<0> &entity = it->entity();
+    int ent0Number = index.subEntityIndex(entity,0,0);
+    const EntityIndex faceIndex = index.subEntityIndex(entity, 0, 0);
+    std::cout << faceIndex << std::endl;
+    for(int i=0;i!=6;++i){
+        EntityIndex sonIndex = m_sonMap(ent0Number,i);
 
-    // Iterate through refined elements
-    std::unique_ptr<EntityIterator<0>> sonIt =
-        elementCoarseGrid.sonIterator(this->grid()->maxLevel());
-    while (!sonIt->finished()) {
-      const Entity<0> &element = sonIt->entity();
-      int elementIndex = elementMapper.entityIndex(element);
-      std::vector<GlobalDofIndex> &globalDofs =
-          acc(m_local2globalDofs, elementIndex);
-      int globalDofIndex = acc(globalDofIndices, elementIndexCoarseGrid);
-      globalDofs.push_back(globalDofIndex);
+        std::vector<GlobalDofIndex> &globalDof = acc(m_local2globalDofs, sonIndex);
+        globalDof.resize(1);
 
-      if (globalDofIndex >= 0) {
-        acc(m_global2localDofs, globalDofIndex)
-            .push_back(LocalDof(elementIndex, 0));
-        ++flatLocalDofCount_;
-      }
-
-      sonIt->next();
+        GlobalDofIndex globalDofIndex;
+        globalDofIndex = acc(globalDofIndices,  faceIndex);
+        globalDof[0] = globalDofIndex;
+        if (globalDofIndex >= 0) {
+          acc(m_global2localDofs, globalDofIndex).push_back(LocalDof(sonIndex, 0));
+          ++flatLocalDofCount_;
+        }
     }
-    itCoarseGrid->next();
   }
-
-  // Initialize the container mapping the flat local dof indices to
-  // local dof indices
   SpaceHelper<BasisFunctionType>::initializeLocal2FlatLocalDofMap(
       flatLocalDofCount_, m_local2globalDofs, m_flatLocal2localDofs);
 }
