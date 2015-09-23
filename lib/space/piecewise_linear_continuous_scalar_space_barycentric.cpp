@@ -228,8 +228,6 @@ void PiecewiseLinearContinuousScalarSpaceBarycentric<
 
   // Initialize the container mapping the flat local dof indices to
   // local dof indices
-  std::cout << m_flatLocal2localDofs.size();
-  std::cout << m_local2globalDofs.size();
   SpaceHelper<BasisFunctionType>::initializeLocal2FlatLocalDofMap(
       flatLocalDofCount_, m_local2globalDofs, m_flatLocal2localDofs);
 }
