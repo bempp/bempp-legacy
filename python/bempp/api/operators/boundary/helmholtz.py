@@ -14,7 +14,7 @@ def single_layer(domain, range_, dual_to_range,
     from .modified_helmholtz import single_layer as sl
 
     return sl(domain, range_, dual_to_range,
-              wave_number / (1j), "", symmetry,
+              wave_number / (1j), label, symmetry,
               parameters)
 
 
@@ -27,7 +27,7 @@ def double_layer(domain, range_, dual_to_range,
     from .modified_helmholtz import double_layer as dl
 
     return dl(domain, range_, dual_to_range,
-              wave_number / (1j), "", symmetry,
+              wave_number / (1j), label, symmetry,
               parameters)
 
 
@@ -40,7 +40,7 @@ def adjoint_double_layer(domain, range_, dual_to_range,
     from .modified_helmholtz import adjoint_double_layer as adl
 
     return adl(domain, range_, dual_to_range,
-               wave_number / (1j), "", symmetry,
+               wave_number / (1j), label, symmetry,
                parameters)
 
 
@@ -54,7 +54,7 @@ def hypersingular(domain, range_, dual_to_range,
     from .modified_helmholtz import hypersingular as hyp
 
     return hyp(domain, range_, dual_to_range,
-               wave_number / (1j), "", symmetry,
+               wave_number / (1j), label, symmetry,
                use_slp=use_slp, parameters=parameters)
 
 

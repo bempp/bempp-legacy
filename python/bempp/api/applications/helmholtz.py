@@ -84,7 +84,7 @@ class SoundHardPlaneWaveScattering(object):
 
         if self._hypersingular is None:
             self._hypersingular = hypersingular(space, space,
-                                                space, wavenumber)
+                                                space, wavenumber, use_slp=True)
 
         if self._coupling == 'osrc' and self._osrc is None:
             self._osrc = osrc_ntd(space, wavenumber)
@@ -110,8 +110,8 @@ class SoundHardPlaneWaveScattering(object):
             result[0] = _np.dot(n, 1j * self._wavenumber * self._direction * _np.exp(
                 1j * self._wavenumber * _np.dot(x, self._direction)))
 
-        g1 = bempp.api.GridFunction(self._space, fun=dirichlet_fun, complex_data=True)
-        g2 = bempp.api.GridFunction(self._space, fun=neumann_fun, complex_data=True)
+        g1 = bempp.api.GridFunction(self._space, fun=dirichlet_fun)
+        g2 = bempp.api.GridFunction(self._space, fun=neumann_fun)
 
         if self._coupling == 'osrc':
             return -g1 + self._osrc * g2
