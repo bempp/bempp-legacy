@@ -98,6 +98,7 @@ from bempp.api import shapes
 from bempp.api.file_interfaces import import_grid
 from bempp.api.file_interfaces import export
 from bempp.api import operators
+from bempp.api import linalg
 
 from bempp.api.utils.logging import DEBUG, INFO, WARNING, ERROR, CRITICAL
 from bempp.api.utils.logging import enable_console_logging
