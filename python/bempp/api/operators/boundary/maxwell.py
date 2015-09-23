@@ -56,7 +56,8 @@ def electric_field(space,
         for index in range(3):
             # Definition of range_ does not matter in next operator
             test_local_op = LocalBoundaryOperator(
-                vector_value_times_scalar_ext(slp.dual_to_range, space, space, index))
+                vector_value_times_scalar_ext(slp.dual_to_range, space, space, index),
+                    label='VECTOR_VALUE')
             test_local_ops.append(test_local_op)
             trial_local_ops.append(test_local_op.transpose(space))  # Range parameter arbitrary
 
@@ -65,7 +66,8 @@ def electric_field(space,
         test_local_ops = []
         trial_local_ops = []
 
-        div_op = LocalBoundaryOperator(div_times_scalar_ext(slp.dual_to_range, space, space))
+        div_op = LocalBoundaryOperator(div_times_scalar_ext(slp.dual_to_range, space, space),
+            label='DIV')
         div_op_transpose = div_op.transpose(space) # Range space does not matter
 
         term2 = CompoundBoundaryOperator([div_op], (1. / kappa) * slp,

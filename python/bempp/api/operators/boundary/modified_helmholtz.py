@@ -116,7 +116,8 @@ def hypersingular(domain, range_, dual_to_range, wave_number,
 
         for index in range(3):
             # Definition of range_ does not matter in next operator
-            test_local_op = LocalBoundaryOperator(curl_value_ext(slp.dual_to_range, range_, dual_to_range, index))
+            test_local_op = LocalBoundaryOperator(curl_value_ext(slp.dual_to_range, range_, dual_to_range, index),
+                label='CURL')
             test_local_ops.append(test_local_op)
             trial_local_ops.append(test_local_op.transpose(range_))  # Range parameter arbitrary
 
@@ -128,7 +129,8 @@ def hypersingular(domain, range_, dual_to_range, wave_number,
         for index in range(3):
             # Definition of range_ does not matter in next operator
             test_local_op = LocalBoundaryOperator(
-                value_times_normal_ext(slp.dual_to_range, range_, dual_to_range, index))
+                value_times_normal_ext(slp.dual_to_range, range_, dual_to_range, index),
+                    label='VALUE_TIMES_NORMAL')
             test_local_ops.append(test_local_op)
             trial_local_ops.append(test_local_op.transpose(range_))  # Range parameter arbitrary
 
