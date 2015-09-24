@@ -86,8 +86,8 @@ public:
 
   virtual bool isBarycentric() const { return false; }
 
-  virtual shared_ptr<const Space<BasisFunctionType>> barycentricSpace(
-      const shared_ptr<const Space<BasisFunctionType>> &self) const;
+//  virtual shared_ptr<const Space<BasisFunctionType>> barycentricSpace(
+//      const shared_ptr<const Space<BasisFunctionType>> &self) const;
 
   virtual bool spaceIsCompatible(const Space<BasisFunctionType> &other) const;
 
