@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_piecewise_linear_continuous_scalar_space_barycentric_hpp
-#define bempp_piecewise_linear_continuous_scalar_space_barycentric_hpp
+#ifndef bempp_piecewise_linear_discontinuous_scalar_space_barycentric_hpp
+#define bempp_piecewise_linear_discontinuous_scalar_space_barycentric_hpp
 
 #include "../common/common.hpp"
 
@@ -45,7 +45,7 @@ template <typename ValueType> class DiscreteBoundaryOperator;
 /** \ingroup space
  *  \brief Space of continuous, piecewise linear scalar functions. */
 template <typename BasisFunctionType>
-class PiecewiseLinearContinuousScalarSpaceBarycentric
+class PiecewiseLinearDiscontinuousScalarSpaceBarycentric
     : public PiecewiseLinearScalarSpace<BasisFunctionType> {
 public:
   typedef typename Space<BasisFunctionType>::CoordinateType CoordinateType;
@@ -58,7 +58,7 @@ public:
    *
    *  An exception is thrown if \p grid is a null pointer.
    */
-  explicit PiecewiseLinearContinuousScalarSpaceBarycentric(
+  explicit PiecewiseLinearDiscontinuousScalarSpaceBarycentric(
       const shared_ptr<const Grid> &grid);
 
   /** \brief Constructor.
@@ -75,10 +75,10 @@ public:
    *
    *  An exception is thrown if \p grid is a null pointer.
    */
-  PiecewiseLinearContinuousScalarSpaceBarycentric(
+  PiecewiseLinearDiscontinuousScalarSpaceBarycentric(
       const shared_ptr<const Grid> &grid, const GridSegment &segment,
       bool strictlyOnSegment = false);
-  virtual ~PiecewiseLinearContinuousScalarSpaceBarycentric();
+  virtual ~PiecewiseLinearDiscontinuousScalarSpaceBarycentric();
 
   virtual shared_ptr<const Space<BasisFunctionType>> discontinuousSpace(
       const shared_ptr<const Space<BasisFunctionType>> &self) const;
@@ -176,9 +176,9 @@ private:
   /** \endcond */
 };
 
-/** \brief Define a PiecewiseLinearContinuousScalarSpaceBarycentric that has an update method for grid refinement. */
+/** \brief Define a PiecewiseLinearDiscontinuousScalarSpaceBarycentric that has an update method for grid refinement. */
 template <typename BasisFunctionType>
-shared_ptr<Space<BasisFunctionType>> adaptivePiecewiseLinearContinuousScalarSpaceBarycentric(const shared_ptr<const Grid>& grid);
+shared_ptr<Space<BasisFunctionType>> adaptivePiecewiseLinearDiscontinuousScalarSpaceBarycentric(const shared_ptr<const Grid>& grid);
 
 } // namespace Bempp
 

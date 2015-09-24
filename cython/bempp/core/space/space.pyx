@@ -229,6 +229,7 @@ def function_space(Grid grid, kind, order, domains=None, cbool closed=True):
     """
 
     cdef Space s = Space()
+    cdef Grid bary_grid
     if kind=="P":
         if not (order>=1 and order <=10):
             raise ValueError("Order must be between 1 and 10")
@@ -280,6 +281,25 @@ def function_space(Grid grid, kind, order, domains=None, cbool closed=True):
         s.impl_.assign(reverse_const_pointer_cast(
             shared_ptr[c_Space[double]](adaptivePiecewiseConstantDualGridScalarSpace[double](grid.impl_))
         ))
+    elif kind == "B-P":
+        if order != 1:
+            raise ValueError("Only linear spaces on barycentric grids are supported.")
+        if domains is not None:
+            raise ValueError("Spaces on subdomains are not supported on barycentric grids.")
+        s.impl_.assign(reverse_const_pointer_cast(
+            shared_ptr[c_Space[double]](adaptivePiecewiseLinearContinuousScalarSpaceBarycentric[double](grid.impl_))))
+    elif kind == "B-DP":
+        if not (order>=0 and order <=10):
+            raise ValueError("Order must be between 0 and 10")
+        if domains is not None:
+            raise ValueError("Spaces on subdomains are not supported on barycentric grids.")
+        bary_grid = grid.barycentric_grid()
+        if (order==0):
+            s.impl_.assign(reverse_const_pointer_cast(
+                    shared_ptr[c_Space[double]](adaptivePiecewiseConstantScalarSpace[double](bary_grid.impl_))))
+        else:
+            s.impl_.assign(reverse_const_pointer_cast(
+                    shared_ptr[c_Space[double]](adaptivePiecewisePolynomialDiscontinuousScalarSpace[double](bary_grid.impl_, order))))
     else:
         raise ValueError("Unknown kind")
 

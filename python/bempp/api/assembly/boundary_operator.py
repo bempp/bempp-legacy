@@ -274,6 +274,43 @@ class LocalBoundaryOperator(BoundaryOperator):
 
         return discrete_operator
 
+class _ProjectionBoundaryOperator(BoundaryOperator):
+    """Define the projection of an operator onto new spaces."""
+
+    def __init__(self, operator, domain=None, range_=None, dual_to_range=None):
+
+        self._operator = operator
+        self._domain = domain
+        self._range = range
+        self._dual_to_range = dual_to_range
+
+        new_domain = operator.domain if domain is None else domain
+        new_range = operator.range if range_ is None else range_
+        new_dual_to_range = operator.dual_to_range if dual_to_range is None else dual_to_range
+
+        super(ProjectionBoundaryOperator, self).__init__(new_domain, new_range, new_dual_to_range,
+                                                         'Proj(' + operator.label + ')')
+
+    def _weak_form_impl(self):
+
+        from bempp.api.operators.boundary.sparse import identity
+        from .discrete_boundary_operator import InverseSparseDiscreteBoundaryOperator
+
+        projected_weak_form = self._operator.weak_form()
+
+        if self._dual_to_range is not None:
+
+            ident = identity(self._dual_to_range, self._dual_to_range).weak_form()
+            result_weak_form = ident * InverseSparseDiscreteBoundaryOperator(
+                identity(self._operator._dual_to_range, self._dual_to_range).weak_form()) * projected_weak_form
+
+        if self._domain is not None:
+
+            from bempp.api.space.projection import discrete_coefficient_projection
+
+            projected_weak_form *= discrete_coefficient_projection(self._operator.domain, domain)
+
+        return projected_weak_form
 
 class _SumBoundaryOperator(BoundaryOperator):
     """Return the sum of two boundary operators."""
@@ -312,8 +349,8 @@ class _ProductBoundaryOperator(BoundaryOperator):
     """Multiply two boundary operators."""
 
     def __init__(self, op1, op2):
-        if op2.range != op1.domain:
-            raise ValueError("Range space of second operator must be identical to " +
+        if not op2.range.is_compatible(op1.domain):
+            raise ValueError("Range space of second operator must be compatible to " +
                              "domain space of first operator.")
 
         super(_ProductBoundaryOperator, self).__init__( \

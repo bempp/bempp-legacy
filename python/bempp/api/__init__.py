@@ -89,6 +89,7 @@ global_parameters = __global_parameters()
 from bempp.api.grid import grid_from_element_data, structured_grid
 from bempp.api.grid import GridFactory
 from bempp.api.space import function_space
+from bempp.api.space import project_operator
 from bempp.api.assembly import GridFunction
 from bempp.api.assembly import InverseSparseDiscreteBoundaryOperator
 from bempp.api.assembly import ZeroBoundaryOperator

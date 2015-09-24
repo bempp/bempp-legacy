@@ -1,6 +1,6 @@
 from unittest import TestCase
 from unittest import skipIf
-import bempp
+import bempp.api
 import numpy as np
 
 

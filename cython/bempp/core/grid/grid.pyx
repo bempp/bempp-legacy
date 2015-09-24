@@ -82,7 +82,7 @@ cdef class Grid:
 
         """
 
-        from bempp.external.viewers import visualize_with_gmsh
+        from bempp.api.external.viewers import visualize_with_gmsh
 
         visualize_with_gmsh(self)
 
