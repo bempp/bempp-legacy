@@ -129,23 +129,10 @@ public:
   typedef Fiber::KernelTrialIntegral<BasisFunctionType, KernelType, ResultType>
       KernelTrialIntegral;
 
-  virtual std::unique_ptr<InterpolatedFunction<ResultType_>>
-  evaluateOnGrid(const GridFunction<BasisFunctionType, ResultType> &argument,
-                 const Grid &evaluationGrid,
-                 const QuadratureStrategy &quadStrategy,
-                 const EvaluationOptions &options) const;
-
-  virtual Matrix<ResultType_>
-  evaluateAtPoints(const GridFunction<BasisFunctionType, ResultType> &argument,
-                   const Matrix<CoordinateType> &evaluationPoints,
-                   const QuadratureStrategy &quadStrategy,
-                   const EvaluationOptions &options) const;
-
   virtual AssembledPotentialOperator<BasisFunctionType_, ResultType_>
   assemble(const shared_ptr<const Space<BasisFunctionType>> &space,
            const shared_ptr<const Matrix<CoordinateType>> &evaluationPoints,
-           const QuadratureStrategy &quadStrategy,
-           const EvaluationOptions &options) const;
+           const ParameterList &parameterList) const;
 
   virtual int componentCount() const;
 
@@ -183,7 +170,7 @@ private:
   assembleOperator(const Space<BasisFunctionType> &space,
                    const Matrix<CoordinateType> &evaluationPoints,
                    LocalAssembler &assembler,
-                   const EvaluationOptions &options) const;
+                   const ParameterList &parameterList) const;
 
   std::unique_ptr<DiscreteBoundaryOperator<ResultType_>>
   assembleOperatorInDenseMode(const Space<BasisFunctionType> &space,
@@ -192,10 +179,10 @@ private:
                               const EvaluationOptions &options) const;
 
   std::unique_ptr<DiscreteBoundaryOperator<ResultType_>>
-  assembleOperatorInAcaMode(const Space<BasisFunctionType> &space,
+  assembleOperatorInHMatMode(const Space<BasisFunctionType> &space,
                             const Matrix<CoordinateType> &evaluationPoints,
                             LocalAssembler &assembler,
-                            const EvaluationOptions &options) const;
+                            const ParameterList &parameterList) const;
   /** \endcond */
 };
 

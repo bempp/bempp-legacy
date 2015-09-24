@@ -38,6 +38,7 @@
 #include "../fiber/local_assembler_for_integral_operators.hpp"
 #include "../fiber/scalar_traits.hpp"
 #include "../fiber/shared_ptr.hpp"
+#include "../fiber/local_assembler_for_potential_operators.hpp"
 #include "../space/space.hpp"
 #include "../common/bounding_box.hpp"
 
@@ -150,6 +151,25 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
                                   localAssemblersForAdmissibleBlocks,
                                   sparseTermsToAdd, denseTermsMultipliers,
                                   sparseTermsMultipliers, context, symmetry);
+}
+
+template <typename BasisFunctionType, typename ResultType>
+std::unique_ptr<DiscreteBoundaryOperator<ResultType>>
+HMatGlobalAssembler<BasisFunctionType, ResultType>::assemblePotentialOperator(
+        const Matrix<CoordinateType> &points,
+                            const Space<BasisFunctionType> &trialSpace,
+                            LocalAssemblerForPotentialOperators &localAssembler,
+                            const ParameterList &parameterList)
+{
+
+    const size_t pointCount = points.cols();
+    const int componentCount = localAssembler.resultDimension();
+    const size_t testDofCount = pointCount * componentCount;
+    const size_t trialDofCount = trialSpace.globalDofCount();
+
+
+
+    return std::unique_ptr<DiscreteBoundaryOperator<ResultType>>();
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(HMatGlobalAssembler);

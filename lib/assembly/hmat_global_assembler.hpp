@@ -26,6 +26,7 @@
 #include "../common/shared_ptr.hpp"
 #include "../fiber/scalar_traits.hpp"
 #include "../common/eigen_support.hpp"
+#include "../common/types.hpp"
 
 #include <memory>
 #include <vector>
@@ -97,7 +98,7 @@ public:
   assemblePotentialOperator(const Matrix<CoordinateType> &points,
                             const Space<BasisFunctionType> &trialSpace,
                             LocalAssemblerForPotentialOperators &localAssembler,
-                            const EvaluationOptions &options);
+                            const ParameterList &parameterList);
 };
 
 } // namespace Bempp
