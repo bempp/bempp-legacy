@@ -151,6 +151,7 @@ private:
   shared_ptr<const Grid> m_originalGrid;
   mutable shared_ptr<Space<BasisFunctionType>> m_discontinuousSpace;
   mutable tbb::mutex m_discontinuousSpaceMutex;
+  mutable Matrix<int> m_sonMap;
 };
 
 } // namespace Bempp

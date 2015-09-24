@@ -160,19 +160,17 @@ void PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::assignDofsImpl() {
 
   std::unique_ptr<GridView> coarseView = m_originalGrid->leafView();
   const IndexSet &index = coarseView->indexSet();
-  int elementCount = coarseView->entityCount(0);
-  std::cout << coarseView->entityCount(0);
-  std::cout << this->gridView().entityCount(0);
+  int elementCount = this->gridView().entityCount(0);
   int vertexCountCoarseGrid = coarseView->entityCount(gridDim);
 
-  std::vector<int> globalDofIndices(m_sonMap.rows(), 0);
+  std::vector<int> globalDofIndices(vertexCountCoarseGrid, 0);
   int globalDofCount_ = 0;
   for (int vertexIndex = 0; vertexIndex < vertexCountCoarseGrid; ++vertexIndex)
     acc(globalDofIndices, vertexIndex) = globalDofCount_++;
   int flatLocalDofCount_ = 0;
 
   m_local2globalDofs.clear();
-  m_local2globalDofs.resize(m_sonMap.size());
+  m_local2globalDofs.resize(elementCount);
   m_global2localDofs.clear();
   m_global2localDofs.resize(globalDofCount_);
 
@@ -183,11 +181,13 @@ void PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::assignDofsImpl() {
         EntityIndex sonIndex = m_sonMap(ent0Number,i);
 
         std::vector<GlobalDofIndex> &globalDof = acc(m_local2globalDofs, sonIndex);
+        globalDof.resize(1);//3
 
         EntityIndex vertexIndex = index.subEntityIndex(entity, i / 2, gridDim);
         GlobalDofIndex globalDofIndex;
         globalDofIndex = acc(globalDofIndices,  vertexIndex);
-        globalDof.push_back(globalDofIndex);
+//        globalDof.push_back(globalDofIndex);
+        globalDof[0] = globalDofIndex;
         if (globalDofIndex >= 0) {
           acc(m_global2localDofs, globalDofIndex).push_back(LocalDof(sonIndex, 0));
           ++flatLocalDofCount_;
@@ -419,7 +419,7 @@ void PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::dumpClusterIdsEx(
       else
         ++row;
     }
-    std::cout << "about to write" << std::endl;
+    //std::cout << "about to write" << std::endl;
     vtkWriter->addVertexData(data, "ids");
     vtkWriter->write(fileName);
   }
