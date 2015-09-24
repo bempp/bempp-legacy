@@ -237,6 +237,10 @@ class GridFunction(object):
 
         return self * (1./alpha)
 
+    def __truediv__(self, alpha):
+
+        return self.__div__(alpha)
+
     def __neg__(self):
 
         return self.__mul__(-1.0)
@@ -288,6 +292,3 @@ class GridFunction(object):
     def dtype(self):
         """Return the dtype."""
         return self._coefficients.dtype
-
-
-

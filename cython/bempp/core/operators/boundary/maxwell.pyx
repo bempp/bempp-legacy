@@ -51,7 +51,7 @@ def electric_field_ext(
     op.impl_.assign(maxwell_single_layer(
         deref(parameters.impl_),domain.impl_, range.impl_, dual_to_range.impl_,
         complex_double(np.real(wave_number),np.imag(wave_number)),
-        _convert_to_bytes(label), symmetry_mode(symmetry)))
+        _convert_to_bytes(label), symmetry_mode(_convert_to_bytes(symmetry))))
     return op
 
 def magnetic_field_ext(
@@ -66,6 +66,5 @@ def magnetic_field_ext(
     op.impl_.assign(maxwell_double_layer(
         deref(parameters.impl_),domain.impl_, range.impl_, dual_to_range.impl_,
         complex_double(np.real(wave_number),np.imag(wave_number)),
-        _convert_to_bytes(label), symmetry_mode(symmetry)))
+        _convert_to_bytes(label), symmetry_mode(_convert_to_bytes(symmetry))))
     return op
-

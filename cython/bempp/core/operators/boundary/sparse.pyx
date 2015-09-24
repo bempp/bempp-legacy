@@ -69,7 +69,7 @@ def identity_ext(
     cdef ElementaryLocalOperator op = ElementaryLocalOperator()
     op.impl_.assign(identity_operator(
         deref(parameters.impl_),domain.impl_, range.impl_, dual_to_range.impl_,
-        _convert_to_bytes(label), symmetry_mode(symmetry)))
+        _convert_to_bytes(label), symmetry_mode(_convert_to_bytes(symmetry))))
     return op
 
 def maxwell_identity_ext(
@@ -82,7 +82,7 @@ def maxwell_identity_ext(
     cdef ElementaryLocalOperator op = ElementaryLocalOperator()
     op.impl_.assign(maxwell_identity_operator(
         deref(parameters.impl_),domain.impl_, range.impl_, dual_to_range.impl_,
-        _convert_to_bytes(label), symmetry_mode(symmetry)))
+        _convert_to_bytes(label), symmetry_mode(_convert_to_bytes(symmetry))))
     return op
 
 def laplace_beltrami_ext(
@@ -95,7 +95,7 @@ def laplace_beltrami_ext(
     cdef ElementaryLocalOperator op = ElementaryLocalOperator()
     op.impl_.assign(laplace_beltrami_operator(
         deref(parameters.impl_),domain.impl_, range.impl_, dual_to_range.impl_,
-        _convert_to_bytes(label), symmetry_mode(symmetry)))
+        _convert_to_bytes(label), symmetry_mode(_convert_to_bytes(symmetry))))
     return op
 
 def curl_value_ext(Space domain, Space range, Space dual_to_range,

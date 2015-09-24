@@ -56,7 +56,7 @@ def single_layer_ext(
     cdef RealElementaryIntegralOperator op = RealElementaryIntegralOperator()
     op.impl_.assign(laplace_single_layer(
         deref(parameters.impl_),domain.impl_, range.impl_, dual_to_range.impl_,
-        _convert_to_bytes(label), symmetry_mode(symmetry)))
+        _convert_to_bytes(label), symmetry_mode(_convert_to_bytes(symmetry))))
     return op
 
 def double_layer_ext(
@@ -69,7 +69,7 @@ def double_layer_ext(
     cdef RealElementaryIntegralOperator op = RealElementaryIntegralOperator()
     op.impl_.assign(laplace_double_layer(
         deref(parameters.impl_),domain.impl_, range.impl_, dual_to_range.impl_,
-        _convert_to_bytes(label), symmetry_mode(symmetry)))
+        _convert_to_bytes(label), symmetry_mode(_convert_to_bytes(symmetry))))
     return op
         
 def adjoint_double_layer_ext(
@@ -82,7 +82,7 @@ def adjoint_double_layer_ext(
     cdef RealElementaryIntegralOperator op = RealElementaryIntegralOperator()
     op.impl_.assign(laplace_adjoint_double_layer(
         deref(parameters.impl_),domain.impl_, range.impl_, dual_to_range.impl_,
-        _convert_to_bytes(label), symmetry_mode(symmetry)))
+        _convert_to_bytes(label), symmetry_mode(_convert_to_bytes(symmetry))))
     return op
     
 def hypersingular_ext(
@@ -95,6 +95,5 @@ def hypersingular_ext(
     cdef RealElementaryIntegralOperator op = RealElementaryIntegralOperator()
     op.impl_.assign(laplace_hypersingular(
         deref(parameters.impl_),domain.impl_, range.impl_, dual_to_range.impl_,
-        _convert_to_bytes(label), symmetry_mode(symmetry)))
+        _convert_to_bytes(label), symmetry_mode(_convert_to_bytes(symmetry))))
     return op
-

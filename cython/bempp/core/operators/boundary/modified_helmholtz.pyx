@@ -65,7 +65,7 @@ def single_layer_ext(
     op.impl_.assign(modified_helmholtz_single_layer(
         deref(parameters.impl_),domain.impl_, range.impl_, dual_to_range.impl_,
         complex_double(np.real(wave_number),np.imag(wave_number)),
-        _convert_to_bytes(label), symmetry_mode(symmetry)))
+        _convert_to_bytes(label), symmetry_mode(_convert_to_bytes(symmetry))))
     return op
 
 def double_layer_ext(
@@ -80,7 +80,7 @@ def double_layer_ext(
     op.impl_.assign(modified_helmholtz_double_layer(
         deref(parameters.impl_),domain.impl_, range.impl_, dual_to_range.impl_,
         complex_double(np.real(wave_number),np.imag(wave_number)),
-        _convert_to_bytes(label), symmetry_mode(symmetry)))
+        _convert_to_bytes(label), symmetry_mode(_convert_to_bytes(symmetry))))
     return op
 
 def adjoint_double_layer_ext(
@@ -95,7 +95,7 @@ def adjoint_double_layer_ext(
     op.impl_.assign(modified_helmholtz_adjoint_double_layer(
         deref(parameters.impl_),domain.impl_, range.impl_, dual_to_range.impl_,
         complex_double(np.real(wave_number),np.imag(wave_number)),
-        _convert_to_bytes(label), symmetry_mode(symmetry)))
+        _convert_to_bytes(label), symmetry_mode(_convert_to_bytes(symmetry))))
     return op
 
 def hypersingular_ext(
@@ -110,6 +110,5 @@ def hypersingular_ext(
     op.impl_.assign(modified_helmholtz_hypersingular(
         deref(parameters.impl_),domain.impl_, range.impl_, dual_to_range.impl_,
         complex_double(np.real(wave_number),np.imag(wave_number)),
-        _convert_to_bytes(label), symmetry_mode(symmetry)))
+        _convert_to_bytes(label), symmetry_mode(_convert_to_bytes(symmetry))))
     return op
-
