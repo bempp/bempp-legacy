@@ -102,14 +102,6 @@ cdef class Space:
             space.impl_.assign(deref(self.impl_).discontinuousSpace(self.impl_))
             return space
 
-    property barycentric_space:
-        """Return the associated discontinuous scalar space."""
-
-        def __get__(self):
-            cdef Space space = Space()
-            space.impl_.assign(deref(self.impl_).barycentricSpace(self.impl_))
-            return space
-
     property is_discontinuous:
         """Return true of basis functions are scalar and only extend over a single element."""
 

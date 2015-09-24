@@ -27,7 +27,6 @@ cdef extern from "bempp/space/space.hpp":
         void getNormalsAtGlobalDofInterpolationPoints(Matrix[double]& normals) const
         void getGlobalDofs(const c_Entity[codim_zero]&, vector[int]&, vector[double]&) const
         shared_ptr[const c_Space[BASIS]] discontinuousSpace(const shared_ptr[const c_Space[BASIS]]) const
-        shared_ptr[const c_Space[BASIS]] barycentricSpace(const shared_ptr[const c_Space[BASIS]]) const
 
 
 cdef class Space:
