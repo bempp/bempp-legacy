@@ -63,6 +63,56 @@
 
 namespace Bempp {
 
+namespace {
+
+template <typename CoordinateType>
+class PotentialGeometryInterface : public hmat::GeometryInterface {
+
+public:
+  PotentialGeometryInterface(const Matrix<CoordinateType> &points,
+                             int componentCount)
+      : m_points(points), m_componentCount(componentCount), m_p(0), m_c(0) {}
+
+  shared_ptr<const hmat::GeometryDataType> next() override {
+
+    std::size_t &p = m_p;
+    std::size_t &c = m_c;
+    const Matrix<CoordinateType> &points = m_points;
+
+    if (p == m_points.cols())
+      return shared_ptr<const hmat::GeometryDataType>();
+
+    shared_ptr<hmat::GeometryDataType> geomData(new hmat::GeometryDataType(
+        hmat::BoundingBox(points(0, p), points(0, p), points(1, p),
+                          points(1, p), points(2, p), points(2, p)),
+        std::array<double, 3>({{points(0, p), points(1, p), points(2, p)}})));
+
+    if (c == m_componentCount) {
+      c = 0;
+      p++;
+    } else
+      c++;
+    return geomData;
+  }
+
+  void reset() override {
+
+    m_p = 0;
+    m_c = 0;
+  }
+
+  std::size_t numberOfEntities() const override {
+    return m_points.cols() * m_componentCount;
+  }
+
+private:
+  size_t m_p;
+  size_t m_c;
+  const Matrix<CoordinateType> &m_points;
+  int m_componentCount;
+};
+}
+
 template <typename BasisFunctionType, typename ResultType>
 std::unique_ptr<DiscreteBoundaryOperator<ResultType>>
 HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
@@ -108,7 +158,8 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
   auto coarsening = parameterList.template get<bool>("options.hmat.coarsening");
   auto coarseningAccuracy =
       parameterList.template get<double>("options.hmat.coarseningAccuracy");
-  auto matVecParallelLevels = parameterList.template get<int>("options.hmat.matVecParallelLevels");
+  auto matVecParallelLevels =
+      parameterList.template get<int>("options.hmat.matVecParallelLevels");
   if (coarseningAccuracy == 0)
     coarseningAccuracy = eps;
 
@@ -118,11 +169,12 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
 
     hmat::HMatrixAcaCompressor<ResultType, 2> compressor(helper, eps, maxRank);
     hMatrix.reset(new hmat::DefaultHMatrixType<ResultType>(
-        blockClusterTree, compressor, matVecParallelLevels, coarsening, coarseningAccuracy));
+        blockClusterTree, compressor, matVecParallelLevels, coarsening,
+        coarseningAccuracy));
   } else if (compressionAlgorithm == "dense") {
     hmat::HMatrixDenseCompressor<ResultType, 2> compressor(helper);
-    hMatrix.reset(
-        new hmat::DefaultHMatrixType<ResultType>(blockClusterTree, compressor, matVecParallelLevels));
+    hMatrix.reset(new hmat::DefaultHMatrixType<ResultType>(
+        blockClusterTree, compressor, matVecParallelLevels));
   } else
     throw std::runtime_error("HMatGlobalAssember::assembleDetachedWeakForm: "
                              "Unknown compression algorithm");
@@ -156,20 +208,32 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
 template <typename BasisFunctionType, typename ResultType>
 std::unique_ptr<DiscreteBoundaryOperator<ResultType>>
 HMatGlobalAssembler<BasisFunctionType, ResultType>::assemblePotentialOperator(
-        const Matrix<CoordinateType> &points,
-                            const Space<BasisFunctionType> &trialSpace,
-                            LocalAssemblerForPotentialOperators &localAssembler,
-                            const ParameterList &parameterList)
-{
+    const Matrix<CoordinateType> &points,
+    const Space<BasisFunctionType> &trialSpace,
+    LocalAssemblerForPotentialOperators &localAssembler,
+    const ParameterList &parameterList) {
 
-    const size_t pointCount = points.cols();
-    const int componentCount = localAssembler.resultDimension();
-    const size_t testDofCount = pointCount * componentCount;
-    const size_t trialDofCount = trialSpace.globalDofCount();
+  const size_t pointCount = points.cols();
+  const int componentCount = localAssembler.resultDimension();
+  const size_t testDofCount = pointCount * componentCount;
+  const size_t trialDofCount = trialSpace.globalDofCount();
 
+  PotentialGeometryInterface<CoordinateType> potentialGeometryInterface(
+      points, componentCount);
 
+  hmat::Geometry testGeometry;
+  hmat::Geometry trialGeometry;
 
-    return std::unique_ptr<DiscreteBoundaryOperator<ResultType>>();
+  auto trialSpaceGeometryInterface = shared_ptr<hmat::GeometryInterface>(
+      new SpaceHMatGeometryInterface<BasisFunctionType>(trialSpace));
+
+  hmat::fillGeometry(testGeometry, potentialGeometryInterface);
+  hmat::fillGeometry(trialGeometry, *trialSpaceGeometryInterface);
+
+  auto blockClusterTree = generateBlockClusterTree(
+          testGeometry, trialGeometry, parameterList);
+
+  return std::unique_ptr<DiscreteBoundaryOperator<ResultType>>();
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(HMatGlobalAssembler);

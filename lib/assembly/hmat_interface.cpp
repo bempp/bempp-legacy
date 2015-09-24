@@ -63,23 +63,12 @@ void SpaceHMatGeometryInterface<BasisFunctionType>::reset() {
   m_counter = 0;
 }
 
-template <typename BasisFunctionType>
+
 shared_ptr<hmat::DefaultBlockClusterTreeType>
-generateBlockClusterTree(const Space<BasisFunctionType> &testSpace,
-                         const Space<BasisFunctionType> &trialSpace,
-                         const ParameterList &parameterList) {
-
-  hmat::Geometry testGeometry;
-  hmat::Geometry trialGeometry;
-
-  auto testSpaceGeometryInterface = shared_ptr<hmat::GeometryInterface>(
-      new SpaceHMatGeometryInterface<BasisFunctionType>(testSpace));
-
-  auto trialSpaceGeometryInterface = shared_ptr<hmat::GeometryInterface>(
-      new SpaceHMatGeometryInterface<BasisFunctionType>(trialSpace));
-
-  hmat::fillGeometry(testGeometry, *testSpaceGeometryInterface);
-  hmat::fillGeometry(trialGeometry, *trialSpaceGeometryInterface);
+generateBlockClusterTree(const hmat::Geometry& testGeometry,
+                         const hmat::Geometry& trialGeometry,
+                         const ParameterList &parameterList)
+{
 
   auto admissibility =
       parameterList.template get<std::string>("options.hmat.admissibility");
@@ -111,6 +100,31 @@ generateBlockClusterTree(const Space<BasisFunctionType> &testSpace,
                                             admissibilityFunction));
 
   return blockClusterTree;
+
+
+}
+
+template <typename BasisFunctionType>
+shared_ptr<hmat::DefaultBlockClusterTreeType>
+generateBlockClusterTree(const Space<BasisFunctionType> &testSpace,
+                         const Space<BasisFunctionType> &trialSpace,
+                         const ParameterList &parameterList) {
+
+  hmat::Geometry testGeometry;
+  hmat::Geometry trialGeometry;
+
+  auto testSpaceGeometryInterface = shared_ptr<hmat::GeometryInterface>(
+      new SpaceHMatGeometryInterface<BasisFunctionType>(testSpace));
+
+  auto trialSpaceGeometryInterface = shared_ptr<hmat::GeometryInterface>(
+      new SpaceHMatGeometryInterface<BasisFunctionType>(trialSpace));
+
+  hmat::fillGeometry(testGeometry, *testSpaceGeometryInterface);
+  hmat::fillGeometry(trialGeometry, *trialSpaceGeometryInterface);
+
+  return generateBlockClusterTree(testGeometry, trialGeometry,
+          parameterList);
+
 }
 
 #define INSTANTIATE_NONMEMBER_FUNCTION(VALUE)                                  \

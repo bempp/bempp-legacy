@@ -25,6 +25,7 @@
 #include "../common/shared_ptr.hpp"
 #include "../space/space.hpp"
 #include "../hmat/geometry_interface.hpp"
+#include "../hmat/geometry_data_type.hpp"
 #include "../hmat/block_cluster_tree.hpp"
 #include "../fiber/scalar_traits.hpp"
 
@@ -67,6 +68,11 @@ template <typename BasisFunctionType>
 shared_ptr<hmat::DefaultBlockClusterTreeType>
 generateBlockClusterTree(const Space<BasisFunctionType> &testSpace,
                          const Space<BasisFunctionType> &trialSpace,
+                         const ParameterList &parameterList);
+
+shared_ptr<hmat::DefaultBlockClusterTreeType>
+generateBlockClusterTree(const hmat::Geometry& testGeometry,
+                         const hmat::Geometry& trialGeometry,
                          const ParameterList &parameterList);
 }
 
