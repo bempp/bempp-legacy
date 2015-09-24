@@ -82,7 +82,7 @@ def hypersingular(domain, range_, dual_to_range,
         return ElementaryBoundaryOperator( \
             hypersingular_ext(parameters, domain, range_,
                               dual_to_range, label, symmetry),
-            parameters=parameters, label="")
+            parameters=parameters, label=label)
     else:
         if not isinstance(use_slp, BoundaryOperator):
             new_domain = domain.discontinuous_space
@@ -94,14 +94,6 @@ def hypersingular(domain, range_, dual_to_range,
         # Test that the spaces are correct.
         if slp.domain != slp.dual_to_range:
             raise ValueError("'domain' and 'dual_to_range' spaces must be identical for the slp operator.")
-
-        if not slp.domain.is_discontinuous:
-            raise ValueError("'domain' space of the slp operator must be a discontinuous " +
-                             "space of polynomial order larger 0.")
-
-        if not slp.dual_to_range.is_discontinuous:
-            raise ValueError("'dual_to_range' space of the slp operator must be a discontinuous " +
-                             "space of polynomial order larger 0.")
 
         # Now generate the compound operator
 

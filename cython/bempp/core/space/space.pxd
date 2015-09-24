@@ -61,4 +61,6 @@ cdef extern from "bempp/space/piecewise_constant_dual_grid_scalar_space.hpp" nam
     cdef shared_ptr[c_Space[T]] adaptivePiecewiseConstantDualGridScalarSpace[T](const shared_ptr[c_Grid]& grid)
 cdef extern from "bempp/space/piecewise_linear_continuous_scalar_space_barycentric.hpp" namespace "Bempp":
     cdef shared_ptr[c_Space[T]] adaptivePiecewiseLinearContinuousScalarSpaceBarycentric[T](const shared_ptr[c_Grid]& grid)
+cdef extern from "bempp/space/piecewise_linear_discontinuous_scalar_space_barycentric.hpp" namespace "Bempp":
+    cdef shared_ptr[c_Space[T]] adaptivePiecewiseLinearDiscontinuousScalarSpaceBarycentric[T](const shared_ptr[c_Grid]& grid)
 

@@ -22,7 +22,7 @@ def electric_field(space,
         return ElementaryBoundaryOperator( \
             electric_field_ext(parameters, space, space, space,
                                wave_number, "", symmetry),
-            parameters=parameters)
+            parameters=parameters, label=label)
     else:
         if not isinstance(use_slp, BoundaryOperator):
 
