@@ -50,7 +50,7 @@ struct ComponentLists {
  *  \brief Cache of ComponentLists objects. */
 class ComponentListsCache {
 public:
-  ComponentListsCache(const std::vector<unsigned int> &p2o, int componentCount);
+  ComponentListsCache(const std::vector<std::size_t> &p2o, int componentCount);
   ~ComponentListsCache();
 
   /** \brief Return the LocalDofLists object describing the DOFs corresponding
@@ -69,7 +69,7 @@ private:
 
 private:
   /** \cond PRIVATE */
-  const std::vector<unsigned int> &m_p2o;
+  const std::vector<std::size_t> &m_p2o;
   int m_componentCount;
 
   typedef tbb::concurrent_unordered_map<

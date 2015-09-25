@@ -22,6 +22,7 @@
 
 #include "hmat_global_assembler.hpp"
 
+#include "potential_operator_hmat_assembly_helper.hpp"
 #include "assembly_options.hpp"
 #include "context.hpp"
 #include "evaluation_options.hpp"
@@ -87,7 +88,7 @@ public:
                           points(1, p), points(2, p), points(2, p)),
         std::array<double, 3>({{points(0, p), points(1, p), points(2, p)}})));
 
-    if (c == m_componentCount) {
+    if (c == m_componentCount-1) {
       c = 0;
       p++;
     } else
@@ -230,10 +231,44 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assemblePotentialOperator(
   hmat::fillGeometry(testGeometry, potentialGeometryInterface);
   hmat::fillGeometry(trialGeometry, *trialSpaceGeometryInterface);
 
-  auto blockClusterTree = generateBlockClusterTree(
-          testGeometry, trialGeometry, parameterList);
+  auto blockClusterTree =
+      generateBlockClusterTree(testGeometry, trialGeometry, parameterList);
 
-  return std::unique_ptr<DiscreteBoundaryOperator<ResultType>>();
+
+  PotentialOperatorHMatAssemblyHelper<BasisFunctionType, ResultType> helper(
+      points, trialSpace, blockClusterTree, localAssembler, parameterList);
+
+  auto compressionAlgorithm = parameterList.template get<std::string>(
+      "options.hmat.compressionAlgorithm");
+
+  auto maxRank = parameterList.template get<int>("options.hmat.maxRank");
+  auto eps = parameterList.template get<double>("options.hmat.eps");
+  auto coarsening = parameterList.template get<bool>("options.hmat.coarsening");
+  auto coarseningAccuracy =
+      parameterList.template get<double>("options.hmat.coarseningAccuracy");
+  auto matVecParallelLevels =
+      parameterList.template get<int>("options.hmat.matVecParallelLevels");
+  if (coarseningAccuracy == 0)
+    coarseningAccuracy = eps;
+
+  shared_ptr<hmat::DefaultHMatrixType<ResultType>> hMatrix;
+
+  if (compressionAlgorithm == "aca") {
+
+    hmat::HMatrixAcaCompressor<ResultType, 2> compressor(helper, eps, maxRank);
+    hMatrix.reset(new hmat::DefaultHMatrixType<ResultType>(
+        blockClusterTree, compressor, matVecParallelLevels, coarsening,
+        coarseningAccuracy));
+  } else if (compressionAlgorithm == "dense") {
+    hmat::HMatrixDenseCompressor<ResultType, 2> compressor(helper);
+    hMatrix.reset(new hmat::DefaultHMatrixType<ResultType>(
+        blockClusterTree, compressor, matVecParallelLevels));
+  } else
+    throw std::runtime_error("HMatGlobalAssember::assembleDetachedWeakForm: "
+                             "Unknown compression algorithm");
+  return std::unique_ptr<DiscreteBoundaryOperator<ResultType>>(
+      static_cast<DiscreteBoundaryOperator<ResultType> *>(
+          new DiscreteHMatBoundaryOperator<ResultType>(hMatrix)));
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(HMatGlobalAssembler);

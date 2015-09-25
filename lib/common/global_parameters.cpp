@@ -42,7 +42,7 @@ ParameterList GlobalParameters::parameterList() {
   // Default assembly type for potential oeprators.
   // Allowed values are "dense" and "hmat".
   parameters.put("options.assembly.potentialOperatorAssemblyType",
-                 std::string("dense"));
+                 std::string("hmat"));
 
   // If true then singular integrals are pre-calculated and cached
   // before the boundary oeprator assembly.
