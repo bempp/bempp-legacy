@@ -52,7 +52,7 @@ public:
 
 private:
 #if PY_MAJOR_VERSION >= 3
-  void *numpy_init() { import_array(); }
+  void *numpy_init() { import_array(); return nullptr; }
 #else
   void numpy_init() { import_array(); }
 #endif
