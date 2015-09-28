@@ -45,7 +45,6 @@ namespace Bempp {
 
 /** \cond FORWARD_DECL */
 class EvaluationOptions;
-template <typename BasisFunctionType, typename ResultType> class GridFunction;
 template <typename ValueType> class InterpolatedFunction;
 /** \endcond */
 

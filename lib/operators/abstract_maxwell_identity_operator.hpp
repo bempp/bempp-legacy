@@ -18,13 +18,13 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_maxwell_3d_identity_operator_hpp
-#define bempp_maxwell_3d_identity_operator_hpp
+#ifndef bempp_abstract_maxwell_identity_operator_hpp
+#define bempp_abstract_maxwell_identity_operator_hpp
 
 #include "../common/common.hpp"
 #include "../common/types.hpp"
 
-#include "elementary_local_operator.hpp"
+#include "../assembly/elementary_local_operator.hpp"
 
 namespace Fiber {
 
@@ -67,10 +67,10 @@ class BoundaryOperator;
     parameters.
 
     Use the maxwell3dIdentityOperator() function to create a BoundaryOperator
-    object wrapping a Maxwell3dIdentityOperator object.
+    object wrapping a AbstractMaxwellIdentityOperator object.
  */
 template <typename BasisFunctionType_, typename ResultType_>
-class Maxwell3dIdentityOperator
+class AbstractMaxwellIdentityOperator
     : public ElementaryLocalOperator<BasisFunctionType_, ResultType_> {
   typedef ElementaryLocalOperator<BasisFunctionType_, ResultType_> Base;
 
@@ -105,12 +105,12 @@ public:
    *    the flags defined in the enumeration type Symmetry.
    *
    *  All the three spaces must be defined on the same grid. */
-  Maxwell3dIdentityOperator(
+  AbstractMaxwellIdentityOperator(
       const shared_ptr<const Space<BasisFunctionType>> &domain,
       const shared_ptr<const Space<BasisFunctionType>> &range,
       const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
       const std::string &label = "", int symmetry = NO_SYMMETRY);
-  virtual ~Maxwell3dIdentityOperator();
+  virtual ~AbstractMaxwellIdentityOperator();
 
 private:
   virtual const CollectionOfBasisTransformations &testTransformations() const;
@@ -125,44 +125,6 @@ private:
   /** \endcond */
 };
 
-/** \relates Maxwell3dIdentityOperator
- *  \brief Construct a BoundaryOperator object wrapping a
- *Maxwell3dIdentityOperator.
- *
- *  This convenience function constructs an abstract Maxwell identity operator
- *  and wraps it in a BoundaryOperator object.
- *
- *  \param[in] context
- *    A Context object that will be used to build the weak form of the
- *    identity operator when necessary.
- *  \param[in] domain
- *    Function space being the domain of the identity operator.
- *  \param[in] range
- *    Function space being the range of the identity operator.
- *  \param[in] dualToRange
- *    Function space dual to the the range of the identity operator.
- *  \param[in] label
- *    Textual label of the identity operator (optional, used for debugging).
- *  \param[in] symmetry
- *    Symmetry of the weak form of the operator. Can be any combination of
- *    the flags defined in the enumeration type Symmetry.
- *
- *  All the three spaces must be defined on the same grid. */
-template <typename BasisFunctionType, typename ResultType>
-BoundaryOperator<BasisFunctionType, ResultType> maxwell3dIdentityOperator(
-    const shared_ptr<const Context<BasisFunctionType, ResultType>> &context,
-    const shared_ptr<const Space<BasisFunctionType>> &domain,
-    const shared_ptr<const Space<BasisFunctionType>> &range,
-    const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
-    const std::string &label = "", int symmetry = NO_SYMMETRY);
-
-template <typename BasisFunctionType, typename ResultType>
-BoundaryOperator<BasisFunctionType, ResultType> maxwell3dIdentityOperator(
-    const ParameterList &parameterList,
-    const shared_ptr<const Space<BasisFunctionType>> &domain,
-    const shared_ptr<const Space<BasisFunctionType>> &range,
-    const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
-    const std::string &label = "", int symmetry = NO_SYMMETRY);
 
 } // namespace Bempp
 

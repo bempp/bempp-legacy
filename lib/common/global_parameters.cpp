@@ -54,7 +54,7 @@ ParameterList GlobalParameters::parameterList() {
   parameters.put("options.assembly.enableInterpolationForOscillatoryKernels", true);
 
   // Number of interpolation points per wavelength for oscillatory kernels.
-  parameters.put("interpolationPointsPerWavelength", static_cast<int>(5000));
+  parameters.put("options.assembly.interpolationPointsPerWavelength", static_cast<int>(5000));
    
 
   // Order for singular double integrals.

@@ -21,7 +21,6 @@
 #include "assembled_potential_operator.hpp"
 
 #include "discrete_boundary_operator.hpp"
-#include "grid_function.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 #include "../space/space.hpp"
 #include "../common/eigen_support.hpp"
@@ -91,16 +90,15 @@ int AssembledPotentialOperator<BasisFunctionType, ResultType>::componentCount()
 template <typename BasisFunctionType, typename ResultType>
 Matrix<ResultType>
 AssembledPotentialOperator<BasisFunctionType, ResultType>::apply(
-    const GridFunction<BasisFunctionType, ResultType> &argument) const {
-  if (m_space && argument.space() != m_space)
+    const Vector<ResultType> &coefficients) const {
+  if (m_space->globalDofCount() != coefficients.rows())
     throw std::invalid_argument(
         "AssembledPotentialOperator::apply(): "
         "space used to expand 'argument' does not "
         "match the one used during operator construction");
   Matrix<ResultType> result(m_op->rowCount(), 1);
-  const Vector<ResultType> &coeffs = argument.coefficients();
-  Matrix<ResultType> coeffsMatrix(coeffs.rows(), 1);
-  coeffsMatrix.col(0) = coeffs;
+  Matrix<ResultType> coeffsMatrix(coefficients.rows(), 1);
+  coeffsMatrix.col(0) = coefficients;
   m_op->apply(NO_TRANSPOSE, coeffsMatrix, result, 1., 0.);
   assert(result.rows() % m_componentCount == 0);
   result.resize(m_componentCount, result.rows() / m_componentCount);

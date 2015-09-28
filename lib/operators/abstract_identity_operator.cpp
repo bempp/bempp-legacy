@@ -18,31 +18,30 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "null_operator.hpp"
-
-#include "boundary_operator.hpp"
-#include "discrete_null_boundary_operator.hpp"
-#include "context.hpp"
+#include "abstract_identity_operator.hpp"
+#include "../assembly/context.hpp"
 
 #include "../common/boost_make_shared_fwd.hpp"
+#include "../fiber/default_test_trial_integral_imp.hpp"
 #include "../fiber/explicit_instantiation.hpp"
+#include "../fiber/simple_test_trial_integrand_functor.hpp"
 
-#include <stdexcept>
+#include <boost/type_traits/is_complex.hpp>
 
 namespace Bempp {
 
 ////////////////////////////////////////////////////////////////////////////////
-// NullOperatorId
+// AbstractIdentityOperatorId
 
 template <typename BasisFunctionType, typename ResultType>
-NullOperatorId<BasisFunctionType, ResultType>::NullOperatorId(
-    const NullOperator<BasisFunctionType, ResultType> &op)
+AbstractIdentityOperatorId<BasisFunctionType, ResultType>::AbstractIdentityOperatorId(
+    const AbstractIdentityOperator<BasisFunctionType, ResultType> &op)
     : m_domain(op.domain().get()), m_range(op.range().get()),
       m_dualToRange(op.dualToRange().get()) {}
 
 template <typename BasisFunctionType, typename ResultType>
-size_t NullOperatorId<BasisFunctionType, ResultType>::hash() const {
-  typedef NullOperator<BasisFunctionType, ResultType> OperatorType;
+size_t AbstractIdentityOperatorId<BasisFunctionType, ResultType>::hash() const {
+  typedef AbstractIdentityOperator<BasisFunctionType, ResultType> OperatorType;
   size_t result = tbb::tbb_hasher(typeid(OperatorType).name());
   tbb_hash_combine(result, m_domain);
   tbb_hash_combine(result, m_range);
@@ -51,13 +50,13 @@ size_t NullOperatorId<BasisFunctionType, ResultType>::hash() const {
 }
 
 template <typename BasisFunctionType, typename ResultType>
-bool NullOperatorId<BasisFunctionType, ResultType>::isEqual(
+bool AbstractIdentityOperatorId<BasisFunctionType, ResultType>::isEqual(
     const AbstractBoundaryOperatorId &other) const {
   // dynamic_cast won't suffice since we want to make sure both objects
   // are of exactly the same type (dynamic_cast would succeed for a subclass)
   if (typeid(other) == typeid(*this)) {
-    const NullOperatorId &otherCompatible =
-        static_cast<const NullOperatorId &>(other);
+    const AbstractIdentityOperatorId &otherCompatible =
+        static_cast<const AbstractIdentityOperatorId &>(other);
     return (m_domain == otherCompatible.m_domain &&
             m_range == otherCompatible.m_range &&
             m_dualToRange == otherCompatible.m_dualToRange);
@@ -65,71 +64,62 @@ bool NullOperatorId<BasisFunctionType, ResultType>::isEqual(
     return false;
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// AbstractIdentityOperator
+
 template <typename BasisFunctionType, typename ResultType>
-NullOperator<BasisFunctionType, ResultType>::NullOperator(
+AbstractIdentityOperator<BasisFunctionType, ResultType>::AbstractIdentityOperator(
     const shared_ptr<const Space<BasisFunctionType>> &domain,
     const shared_ptr<const Space<BasisFunctionType>> &range,
     const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
     const std::string &label, int symmetry)
     : Base(domain, range, dualToRange, label,
            (symmetry & AUTO_SYMMETRY
-                ? (domain == dualToRange ? SYMMETRIC | HERMITIAN : NO_SYMMETRY)
+                ? (domain == dualToRange
+                       ? (boost::is_complex<BasisFunctionType>()
+                              ? HERMITIAN
+                              : SYMMETRIC | HERMITIAN)
+                       : NO_SYMMETRY)
                 : symmetry)),
-      m_id(boost::make_shared<NullOperatorId<BasisFunctionType, ResultType>>(
-          *this)) {}
+      m_id(
+          boost::make_shared<AbstractIdentityOperatorId<BasisFunctionType, ResultType>>(
+              *this)) {
+  typedef Fiber::SimpleTestTrialIntegrandFunctor<BasisFunctionType, ResultType>
+      IntegrandFunctor;
+  typedef Fiber::DefaultTestTrialIntegral<IntegrandFunctor> Integral;
+  m_integral.reset(new Integral((IntegrandFunctor())));
+}
 
 template <typename BasisFunctionType, typename ResultType>
-NullOperator<BasisFunctionType, ResultType>::~NullOperator() {}
+AbstractIdentityOperator<BasisFunctionType, ResultType>::~AbstractIdentityOperator() {}
 
 template <typename BasisFunctionType, typename ResultType>
 shared_ptr<const AbstractBoundaryOperatorId>
-NullOperator<BasisFunctionType, ResultType>::id() const {
+AbstractIdentityOperator<BasisFunctionType, ResultType>::id() const {
   return m_id;
 }
 
 template <typename BasisFunctionType, typename ResultType>
-bool NullOperator<BasisFunctionType, ResultType>::isLocal() const {
-  return true;
+const typename AbstractIdentityOperator<
+    BasisFunctionType, ResultType>::CollectionOfShapesetTransformations &
+AbstractIdentityOperator<BasisFunctionType, ResultType>::testTransformations() const {
+  return this->dualToRange()->basisFunctionValue();
 }
 
 template <typename BasisFunctionType, typename ResultType>
-shared_ptr<DiscreteBoundaryOperator<ResultType>>
-NullOperator<BasisFunctionType, ResultType>::assembleWeakFormImpl(
-    const Context<BasisFunctionType, ResultType> &context) const {
-  return reallyAssembleWeakForm();
+const typename AbstractIdentityOperator<
+    BasisFunctionType, ResultType>::CollectionOfShapesetTransformations &
+AbstractIdentityOperator<BasisFunctionType, ResultType>::trialTransformations() const {
+  return this->domain()->basisFunctionValue();
 }
 
 template <typename BasisFunctionType, typename ResultType>
-shared_ptr<DiscreteBoundaryOperator<ResultType>>
-NullOperator<BasisFunctionType, ResultType>::reallyAssembleWeakForm() const {
-  shared_ptr<DiscreteBoundaryOperator<ResultType>> result(
-      new DiscreteNullBoundaryOperator<ResultType>(
-          this->dualToRange()->globalDofCount(),
-          this->domain()->globalDofCount()));
-  return result;
+const typename AbstractIdentityOperator<BasisFunctionType,
+                                ResultType>::TestTrialIntegral &
+AbstractIdentityOperator<BasisFunctionType, ResultType>::integral() const {
+  return *m_integral;
 }
 
-template <typename BasisFunctionType, typename ResultType>
-BoundaryOperator<BasisFunctionType, ResultType> nullOperator(
-    const shared_ptr<const Context<BasisFunctionType, ResultType>> &context,
-    const shared_ptr<const Space<BasisFunctionType>> &domain,
-    const shared_ptr<const Space<BasisFunctionType>> &range,
-    const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
-    const std::string &label, int symmetry) {
-  typedef NullOperator<BasisFunctionType, ResultType> NullOp;
-  return BoundaryOperator<BasisFunctionType, ResultType>(
-      context,
-      boost::make_shared<NullOp>(domain, range, dualToRange, label, symmetry));
-}
-
-#define INSTANTIATE_NONMEMBER_CONSTRUCTOR(BASIS, RESULT)                       \
-  template BoundaryOperator<BASIS, RESULT> nullOperator(                       \
-      const shared_ptr<const Context<BASIS, RESULT>> &,                        \
-      const shared_ptr<const Space<BASIS>> &,                                  \
-      const shared_ptr<const Space<BASIS>> &,                                  \
-      const shared_ptr<const Space<BASIS>> &, const std::string &, int)
-FIBER_ITERATE_OVER_BASIS_AND_RESULT_TYPES(INSTANTIATE_NONMEMBER_CONSTRUCTOR);
-
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(NullOperator);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(AbstractIdentityOperator);
 
 } // namespace Bempp

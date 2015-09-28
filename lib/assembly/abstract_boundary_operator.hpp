@@ -52,7 +52,6 @@ class AbstractBoundaryOperatorSum;
 template <typename BasisFunctionType, typename ResultType> class Context;
 template <typename BasisFunctionType, typename ResultType>
 class ElementaryAbstractBoundaryOperator;
-template <typename BasisFunctionType, typename ResultType> class GridFunction;
 template <typename BasisFunctionType, typename ResultType>
 class ScaledAbstractBoundaryOperator;
 /** \endcond */

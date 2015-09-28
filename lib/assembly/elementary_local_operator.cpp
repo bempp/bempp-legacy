@@ -27,7 +27,6 @@
 #endif
 
 #include "assembly_options.hpp"
-#include "boundary_operator.hpp"
 #include "cluster_construction_helper.hpp"
 #include "discrete_dense_boundary_operator.hpp"
 #include "discrete_sparse_boundary_operator.hpp"

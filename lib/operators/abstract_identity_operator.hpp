@@ -18,15 +18,15 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_identity_operator_hpp
-#define bempp_identity_operator_hpp
+#ifndef bempp_abstract_identity_operator_hpp
+#define bempp_abstract_identity_operator_hpp
 
 #include "../common/common.hpp"
 #include "../common/types.hpp"
 
-#include "elementary_local_operator.hpp"
+#include "../assembly/elementary_local_operator.hpp"
 
-#include "abstract_boundary_operator_id.hpp"
+#include "../assembly/abstract_boundary_operator_id.hpp"
 #include <boost/scoped_ptr.hpp>
 
 namespace Fiber {
@@ -41,15 +41,13 @@ namespace Bempp {
 
 /** \cond FORWARD_DECL */
 template <typename BasisFunctionType, typename ResultType>
-class BoundaryOperator;
-template <typename BasisFunctionType, typename ResultType>
-class IdentityOperator;
+class AbstractIdentityOperator;
 /** \endcond */
 
 template <typename BasisFunctionType, typename ResultType>
-class BEMPP_DEPRECATED IdentityOperatorId : public AbstractBoundaryOperatorId {
+class BEMPP_DEPRECATED AbstractIdentityOperatorId : public AbstractBoundaryOperatorId {
 public:
-  IdentityOperatorId(const IdentityOperator<BasisFunctionType, ResultType> &op);
+  AbstractIdentityOperatorId(const AbstractIdentityOperator<BasisFunctionType, ResultType> &op);
   virtual size_t hash() const;
   virtual bool isEqual(const AbstractBoundaryOperatorId &other) const;
 
@@ -63,7 +61,7 @@ private:
  *  \brief Identity operator.
  *
  *  Let \f$X\f$ and \f$Y\f$ be two function spaces defined on the same grid. If
- *  \f$X \supset Y\f$, an instance of IdentityOperator with domain \f$X\f$
+ *  \f$X \supset Y\f$, an instance of AbstractIdentityOperator with domain \f$X\f$
  *  and range \f$Y\f$ represents the orthogonal projection operator from
  *  \f$X\f$ to \f$Y\f$. If \f$X \subset Y\f$, it represents the inclusion
  *  operator from \f$X\f$ to \f$Y\f$. In the special case of \f$X = Y\f$, we
@@ -77,7 +75,7 @@ private:
  *  an identity operator.
  */
 template <typename BasisFunctionType_, typename ResultType_>
-class IdentityOperator
+class AbstractIdentityOperator
     : public ElementaryLocalOperator<BasisFunctionType_, ResultType_> {
   typedef ElementaryLocalOperator<BasisFunctionType_, ResultType_> Base;
 
@@ -119,12 +117,12 @@ public:
    *    and if the basis functions are real-valued, also as symmetric.
    *
    *  All the three spaces must be defined on the same grid. */
-  IdentityOperator(
+  AbstractIdentityOperator(
       const shared_ptr<const Space<BasisFunctionType>> &domain,
       const shared_ptr<const Space<BasisFunctionType>> &range,
       const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
       const std::string &label = "", int symmetry = AUTO_SYMMETRY);
-  virtual ~IdentityOperator();
+  virtual ~AbstractIdentityOperator();
 
   /** \brief Return the identifier of this operator.
    *
@@ -151,47 +149,6 @@ private:
   shared_ptr<const AbstractBoundaryOperatorId> m_id;
 };
 
-/** \relates IdentityOperator
- *  \brief Construct a BoundaryOperator object wrapping an IdentityOperator.
- *
- *  This convenience function constructs an abstract identity operator and wraps
- *  it in a BoundaryOperator object.
- *
- *  \param[in] context
- *    A Context object that will be used to build the weak form of the
- *    identity operator when necessary.
- *  \param[in] domain
- *    Function space being the domain of the identity operator.
- *  \param[in] range
- *    Function space being the range of the identity operator.
- *  \param[in] dualToRange
- *    Function space dual to the the range of the identity operator.
- *  \param[in] label
- *    Textual label of the identity operator (optional, used for debugging).
- *  \param[in] symmetry
- *    Symmetry of the weak form of the operator. Can be any combination of
- *    the flags defined in the enumeration type Symmetry.
- *    If set to AUTO_SYMMETRY (default), the symmetry is determined
- *    automatically by checking whether its domain and space dual to its
- *    range are equal. If so, the operator is marked as Hermitian,
- *    and if the basis functions are real-valued, also as symmetric.
- *
- *  All the three spaces must be defined on the same grid. */
-template <typename BasisFunctionType, typename ResultType>
-BoundaryOperator<BasisFunctionType, ResultType> identityOperator(
-    const shared_ptr<const Context<BasisFunctionType, ResultType>> &context,
-    const shared_ptr<const Space<BasisFunctionType>> &domain,
-    const shared_ptr<const Space<BasisFunctionType>> &range,
-    const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
-    const std::string &label = "", int symmetry = AUTO_SYMMETRY);
-
-template <typename BasisFunctionType, typename ResultType>
-BoundaryOperator<BasisFunctionType, ResultType>
-identityOperator(const ParameterList &parameterList,
-                 const shared_ptr<const Space<BasisFunctionType>> &domain,
-                 const shared_ptr<const Space<BasisFunctionType>> &range,
-                 const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
-                 const std::string &label = "", int symmetry = AUTO_SYMMETRY);
 
 } // namespace Bempp
 
