@@ -1,9 +1,12 @@
 from unittest import TestCase
+import unittest
 import bempp.api
 
 
 class TestBarycentricLinearSpace(TestCase):
     """Test linear spaces on barycentric grids."""
+
+    requiresgmsh = unittest.skipIf(bempp.api.GMSH_PATH is None, reason="Needs GMSH")
 
     def setUp(self):
 
@@ -11,10 +14,12 @@ class TestBarycentricLinearSpace(TestCase):
         self._bary_space = bempp.api.function_space(self._grid, "B-P", 1)
         self._space = bempp.api.function_space(self._grid, "P", 1)
 
+    @requiresgmsh
     def test_global_dof_count_agrees_with_non_barycentric_space(self):
 
         self.assertEqual(self._bary_space.global_dof_count, self._space.global_dof_count)
 
+    @requiresgmsh
     def test_mass_matrix_of_barycentric_space_agrees_with_non_barycentric_space(self):
 
         from bempp.api.operators.boundary.sparse import identity
@@ -27,6 +32,7 @@ class TestBarycentricLinearSpace(TestCase):
         self.assertAlmostEqual(diff.max(), 0, 15)
         self.assertAlmostEqual(diff.min(), 0, 15)
 
+    @requiresgmsh
     def test_slp_operator_on_barycentric_space_agrees_with_slp_on_non_barycentric_space(self):
 
         import numpy as np
@@ -44,6 +50,7 @@ class TestBarycentricLinearSpace(TestCase):
 
         self.assertAlmostEqual(diff, 0, 4)
 
+    @requiresgmsh
     def test_mass_matrix_of_barycentric_discontinuous_space_agrees_with_non_barycentric_discontinuous_space(self):
 
         from bempp.api.operators.boundary.sparse import identity
@@ -60,6 +67,7 @@ class TestBarycentricLinearSpace(TestCase):
         self.assertAlmostEqual(diff.max(), 0, 15)
         self.assertAlmostEqual(diff.min(), 0, 15)
 
+    @requiresgmsh
     def test_slp_operator_on_barycentric_discontinuous_space_agrees_with_slp_on_non_barycentric_disc_space(self):
 
         import numpy as np
@@ -83,5 +91,3 @@ if __name__ == "__main__":
     from unittest import main
 
     main()
-
-
