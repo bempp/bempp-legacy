@@ -13,29 +13,29 @@ from cython.operator cimport dereference as deref
 import numpy as np
 cimport numpy as np
 
-cdef extern from "bempp/core/operators/boundary/py_boundary_operators.hpp" namespace "Bempp":
-    shared_ptr[const c_ComplexElementaryIntegralOperator] modified_helmholtz_single_layer(
+cdef extern from "bempp/operators/modified_helmholtz_operators.hpp" namespace "Bempp":
+    shared_ptr[const c_ComplexElementaryIntegralOperator] modified_helmholtz_single_layer "Bempp::modifiedHelmholtzSingleLayerBoundaryOperator<double, std::complex<double>, std::complex<double>>"(
             const c_ParameterList&,
             shared_ptr[const c_Space[double]]&,
             shared_ptr[const c_Space[double]]&,
             shared_ptr[const c_Space[double]]&,
             complex_double,
             string label, SymmetryMode symmetry)
-    shared_ptr[const c_ComplexElementaryIntegralOperator] modified_helmholtz_double_layer(
+    shared_ptr[const c_ComplexElementaryIntegralOperator] modified_helmholtz_double_layer "Bempp::modifiedHelmholtzDoubleLayerBoundaryOperator<double, std::complex<double>, std::complex<double>>"(
             const c_ParameterList&,
             shared_ptr[const c_Space[double]]&,
             shared_ptr[const c_Space[double]]&,
             shared_ptr[const c_Space[double]]&,
             complex_double,
             string label, SymmetryMode symmetry)
-    shared_ptr[const c_ComplexElementaryIntegralOperator] modified_helmholtz_adjoint_double_layer(
+    shared_ptr[const c_ComplexElementaryIntegralOperator] modified_helmholtz_adjoint_double_layer "Bempp::modifiedHelmholtzAdjointDoubleLayerBoundaryOperator<double, std::complex<double>, std::complex<double>>"(
             const c_ParameterList&,
             shared_ptr[const c_Space[double]]&,
             shared_ptr[const c_Space[double]]&,
             shared_ptr[const c_Space[double]]&,
             complex_double,
             string label, SymmetryMode symmetry)
-    shared_ptr[const c_ComplexElementaryIntegralOperator] modified_helmholtz_hypersingular(
+    shared_ptr[const c_ComplexElementaryIntegralOperator] modified_helmholtz_hypersingular "Bempp::modifiedHelmholtzHypersingularBoundaryOperator<double, std::complex<double>, std::complex<double>>"(
             const c_ParameterList&,
             shared_ptr[const c_Space[double]]&,
             shared_ptr[const c_Space[double]]&,

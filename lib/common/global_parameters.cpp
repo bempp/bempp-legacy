@@ -49,6 +49,14 @@ ParameterList GlobalParameters::parameterList() {
 
   parameters.put("options.assembly.enableSingularIntegralCaching", true);
 
+  // Use polynomial interpolation instead of exponentials to assemble
+  // Helmholtz or Maxwell type kernels.
+  parameters.put("options.assembly.enableInterpolationForOscillatoryKernels", true);
+
+  // Number of interpolation points per wavelength for oscillatory kernels.
+  parameters.put("interpolationPointsPerWavelength", static_cast<int>(5000));
+   
+
   // Order for singular double integrals.
   parameters.put("options.quadrature.doubleSingular", static_cast<int>(6));
 

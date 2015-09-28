@@ -1,5 +1,4 @@
 set(headers __init__.pxd
-    py_far_field_operators.hpp
     )
             
 

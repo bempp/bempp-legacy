@@ -1,5 +1,4 @@
 set(headers __init__.pxd
-    py_potential_operators.hpp
     )
             
 

@@ -14,14 +14,14 @@ from cython.operator cimport dereference as deref
 cimport numpy as _np
 import numpy as _np
 
-cdef extern from "bempp/core/operators/potential/py_potential_operators.hpp" namespace "Bempp":
-    cdef shared_ptr[const c_DiscreteBoundaryOperator[complex_double]] maxwell_single_layer_potential_discrete_operator(
+cdef extern from "bempp/operators/maxwell_operators.hpp" namespace "Bempp":
+    cdef shared_ptr[const c_DiscreteBoundaryOperator[complex_double]] maxwell_electric_field_potential_operator "Bempp::electricFieldPotentialOperator<double>"(
                 const shared_ptr[const c_Space[double]]& space,
                 const Matrix[double]& evaluation_points,
                 complex_double wave_number,
                 const c_ParameterList& parameterList) except +catch_exception
 
-    cdef shared_ptr[const c_DiscreteBoundaryOperator[complex_double]] maxwell_double_layer_potential_discrete_operator(
+    cdef shared_ptr[const c_DiscreteBoundaryOperator[complex_double]] maxwell_magnetic_field_potential_operator "Bempp::magneticFieldPotentialOperator"(
                 const shared_ptr[const c_Space[double]]& space,
                 const Matrix[double]& evaluation_points,
                 complex_double wave_number,
@@ -41,7 +41,7 @@ def electric_field_ext(Space space not None,
         cdef ComplexDiscreteBoundaryOperator op = ComplexDiscreteBoundaryOperator()
 
         op.impl_.assign(
-             maxwell_single_layer_potential_discrete_operator(
+             maxwell_electric_field_potential_operator(
                  space.impl_,np_to_eigen_matrix_float64(points),
                  complex_double(_np.real(wave_number), _np.imag(wave_number)),
                  deref(parameters.impl_)))
@@ -61,7 +61,7 @@ def magnetic_field_ext(Space space not None,
         cdef ComplexDiscreteBoundaryOperator op = ComplexDiscreteBoundaryOperator()
 
         op.impl_.assign(
-             maxwell_double_layer_potential_discrete_operator(
+             maxwell_magnetic_field_potential_operator(
                  space.impl_,np_to_eigen_matrix_float64(points),
                  complex_double(_np.real(wave_number), _np.imag(wave_number)),
                  deref(parameters.impl_)))
