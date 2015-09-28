@@ -28,7 +28,7 @@ find_package(Doxygen)
 find_package(CoherentPython REQUIRED)
 # Get Python home directory
 include(CallPython)
-call_python(PYTHON_HOME "import sys; print('%s:%s' % (sys.base_prefix, sys.base_exec_prefix)")
+call_python(PYTHON_HOME "import sys; print('%s:%s' % (sys.base_prefix, sys.base_exec_prefix))")
 
 find_package(Sphinx)
 
