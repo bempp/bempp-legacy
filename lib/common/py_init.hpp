@@ -36,11 +36,8 @@ class PyInit {
 public:
   PyInit() : m_pyFinalize(false) {
     if (!Py_IsInitialized()) {
-#if PY_MAJOR_VERSION >= 3
-      Py_SetPythonHome(const_cast<wchar_t *>(PYTHON_HOME_NAME));
-#else
-      Py_SetPythonHome(const_cast<char *>(PYTHON_HOME_NAME));
-#endif
+      typedef decltype(PYTHON_HOME_NAME)::value_type character;
+      Py_SetPythonHome(const_cast<character *>(PYTHON_HOME_NAME.c_str()));
       Py_Initialize();
       PyEval_InitThreads();
       m_pyFinalize = true;
