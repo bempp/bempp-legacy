@@ -18,16 +18,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "bempp/common/config_ahmed.hpp"
 
 #include "elementary_local_operator.hpp"
 
-#ifdef WITH_AHMED
-#include "ahmed_aux.hpp"
-#endif
-
 #include "assembly_options.hpp"
-#include "cluster_construction_helper.hpp"
 #include "discrete_dense_boundary_operator.hpp"
 #include "discrete_sparse_boundary_operator.hpp"
 #include "context.hpp"

@@ -20,7 +20,6 @@
 
 #include "elementary_integral_operator.hpp"
 
-#include "aca_global_assembler.hpp"
 #include "assembly_options.hpp"
 #include "dense_global_assembler.hpp"
 #include "discrete_boundary_operator.hpp"
@@ -108,9 +107,6 @@ ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
   case AssemblyOptions::DENSE:
     return shared_ptr<DiscreteBoundaryOperator<ResultType>>(
         assembleWeakFormInDenseMode(assembler, context).release());
-  case AssemblyOptions::ACA:
-    return shared_ptr<DiscreteBoundaryOperator<ResultType>>(
-        assembleWeakFormInAcaMode(assembler, context).release());
   case AssemblyOptions::HMAT:
     return shared_ptr<DiscreteBoundaryOperator<ResultType>>(
         assembleWeakFormInHMatMode(assembler, context).release());
@@ -139,21 +135,6 @@ ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
                                                                     trialSpace,
                                                                     assembler,
                                                                     context);
-}
-
-template <typename BasisFunctionType, typename KernelType, typename ResultType>
-std::unique_ptr<DiscreteBoundaryOperator<ResultType>>
-ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
-    assembleWeakFormInAcaMode(
-        LocalAssembler &assembler,
-        const Context<BasisFunctionType, ResultType> &context) const {
-  const Space<BasisFunctionType> &testSpace = *this->dualToRange();
-  const Space<BasisFunctionType> &trialSpace = *this->domain();
-
-  // TODO: replace second assembler with assembler for admissible blocks
-  return AcaGlobalAssembler<BasisFunctionType, ResultType>::
-      assembleDetachedWeakForm(testSpace, trialSpace, assembler, assembler,
-                               context, this->symmetry() & SYMMETRIC);
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>

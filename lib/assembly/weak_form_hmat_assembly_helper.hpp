@@ -53,8 +53,7 @@ template <typename BasisFunctionType> class Space;
 /** \endcond */
 
 /** \ingroup weak_form_assembly_internal
- *  \brief Class whose methods are called by Ahmed during assembly in the ACA
- * mode.
+ *  \brief Class whose methods are called by HMAT during the assembly. 
  */
 template <typename BasisFunctionType, typename ResultType>
 class WeakFormHMatAssemblyHelper : public hmat::DataAccessor<ResultType, 2> {

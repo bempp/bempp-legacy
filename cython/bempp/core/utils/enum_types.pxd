@@ -14,17 +14,6 @@ cdef extern from "bempp/assembly/transposition_mode.hpp":
         transpose "Bempp::TranspositionMode::TRANSPOSE"
         conjugate_transpose "Bempp::TranspositionMode::CONJUGATE_TRANSPOSE"
 
-cdef extern from "bempp/assembly/grid_function.hpp":
-    cdef enum ConstructionMode "Bempp::ConstructionMode":
-        approximate "Bempp::ConstructionMode::APPROXIMATE"
-        interpolate "Bempp::ConstructionMode::INTERPOLATE"
-
-cdef extern from "bempp/io/gmsh.hpp":
-    cdef enum GmshPostDataType "Bempp::GmshPostData::Type":
-        node "Bempp::GmshPostData::NODE"
-        element "Bempp::GmshPostData::ELEMENT"
-        element_node "Bempp::GmshPostData::ELEMENT_NODE"
-
 cdef extern from "bempp/hmat/common.hpp":
     cdef enum HMatBlockType "hmat::DataBlockType":
         dense "hmat::DataBlockType::DENSE"
@@ -33,8 +22,6 @@ cdef extern from "bempp/hmat/common.hpp":
 
 cdef SymmetryMode symmetry_mode(string name)
 cdef TranspositionMode transposition_mode(string name)
-cdef ConstructionMode construction_mode(string name)
-cdef GmshPostDataType gmsh_post_data_type(string name)
 cdef HMatBlockType hmat_block_type(string name)
 cdef TranspositionMode compute_transpose_mode(
         TranspositionMode current_mode,

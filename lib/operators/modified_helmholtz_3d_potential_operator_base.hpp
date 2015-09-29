@@ -22,6 +22,7 @@
 #define bempp_modified_helmholtz_3d_potential_operator_base_hpp
 
 #include "../assembly/elementary_potential_operator.hpp"
+#include "../assembly/discrete_boundary_operator.hpp"
 
 #include <boost/scoped_ptr.hpp>
 

@@ -18,7 +18,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "bempp/common/config_ahmed.hpp"
 
 #include "hmat_global_assembler.hpp"
 
@@ -26,7 +25,6 @@
 #include "assembly_options.hpp"
 #include "context.hpp"
 #include "evaluation_options.hpp"
-#include "discrete_boundary_operator_composition.hpp"
 #include "discrete_sparse_boundary_operator.hpp"
 #include "weak_form_hmat_assembly_helper.hpp"
 #include "discrete_hmat_boundary_operator.hpp"

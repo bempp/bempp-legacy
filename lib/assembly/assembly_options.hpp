@@ -23,8 +23,6 @@
 
 #include "../common/common.hpp"
 
-#include "aca_options.hpp"
-
 #include "../common/deprecated.hpp"
 #include "../fiber/opencl_options.hpp"
 #include "../fiber/parallelization_options.hpp"
@@ -53,9 +51,6 @@ public:
   enum Mode {
     /** \brief Assemble dense matrices. */
     DENSE,
-    /** \brief Assemble hierarchical matrices using adaptive cross approximation
-       (ACA). */
-    ACA,
     /** \brief Assemble hierarchical matrices using the HMat library. */
     HMAT
   };
@@ -66,13 +61,6 @@ public:
    *  This is the default assembly mode. */
   void switchToDenseMode();
 
-  /** \brief Use adaptive cross approximation (ACA) to obtain
-   *hierarchical-matrix
-   *  representations of weak forms of boundary integral operators.
-   *
-   *  \param[in] acaOptions Parameters influencing the ACA algorithm. */
-  void switchToAcaMode(const AcaOptions &acaOptions);
-
   /** \brief Assemble using the HMat hierarchical matrix library. */
   void switchToHMatMode();
 
@@ -82,24 +70,11 @@ public:
    *  \deprecated Use switchToDenseMode() instead. */
   BEMPP_DEPRECATED void switchToDense();
 
-  /** \brief Use adaptive cross approximation (ACA) to obtain
-   *hierarchical-matrix
-   *  representations of weak forms of boundary integral operators.
-   *
-   *  \deprecated Use switchToAcaMode() instead. */
-  BEMPP_DEPRECATED void switchToAca(const AcaOptions &acaOptions);
-
   /** \brief Current assembly mode.
    *
    *  The assembly mode can be changed by calling switchToDenseMode() or
    *  switchToAcaMode(). */
   Mode assemblyMode() const;
-
-  /** \brief Return the current adaptive cross approximation (ACA) settings.
-   *
-   *  \note These settings are only used in the ACA assembly mode, i.e. when
-   *  assemblyMode() returns ACA. */
-  const AcaOptions &acaOptions() const;
 
   /** @}
     @name Parallelization
@@ -253,7 +228,6 @@ public:
 private:
   /** \cond */
   Mode m_assemblyMode;
-  AcaOptions m_acaOptions;
   ParallelizationOptions m_parallelizationOptions;
   VerbosityLevel::Level m_verbosityLevel;
   bool m_singularIntegralCaching;

@@ -26,8 +26,8 @@
 #include "../common/shared_ptr.hpp"
 #include "../fiber/scalar_traits.hpp"
 #include "../operators/modified_helmholtz_operators.hpp"
-#include "assembly/helmholtz_3d_far_field_double_layer_potential_operator.hpp"
-#include "assembly/helmholtz_3d_far_field_single_layer_potential_operator.hpp"
+#include "helmholtz_3d_far_field_double_layer_potential_operator.hpp"
+#include "helmholtz_3d_far_field_single_layer_potential_operator.hpp"
 #include "../fiber/scalar_traits.hpp"
 
 #include <complex>

@@ -202,10 +202,6 @@ private:
       LocalAssembler &assembler,
       const Context<BasisFunctionType, ResultType> &context) const;
   std::unique_ptr<DiscreteBoundaryOperator<ResultType_>>
-  assembleWeakFormInAcaMode(
-      LocalAssembler &assembler,
-      const Context<BasisFunctionType, ResultType> &context) const;
-  std::unique_ptr<DiscreteBoundaryOperator<ResultType_>>
   assembleWeakFormInHMatMode(
       LocalAssembler &assembler,
       const Context<BasisFunctionType, ResultType> &context) const;

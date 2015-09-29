@@ -22,8 +22,10 @@
 #define bempp_modified_helmholtz_operators_hpp
 
 #include "../assembly/symmetry.hpp"
+#include "../assembly/discrete_boundary_operator.hpp"
 #include "../common/types.hpp"
 #include "../common/shared_ptr.hpp"
+#include "../fiber/scalar_traits.hpp"
 #include <complex>
 
 namespace Bempp {

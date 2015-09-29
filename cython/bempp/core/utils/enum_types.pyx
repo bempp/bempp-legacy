@@ -34,34 +34,6 @@ cdef TranspositionMode transposition_mode(string name):
 
     return res
 
-cdef ConstructionMode construction_mode(string name):
-
-    cdef ConstructionMode res
-
-    if name==string(b'approximate'):
-        res = approximate
-    elif name==string(b'interpolate'):
-        res = interpolate
-    else:
-        raise ValueError("Unsupported construction mode")
-
-    return res
-
-
-cdef GmshPostDataType gmsh_post_data_type(string name):
-
-    cdef GmshPostDataType res
-
-    if name==string(b'node'):
-        res = node 
-    elif name==string(b'element'):
-        res = element
-    elif name==string(b'element_node'):
-        res = element_node
-    else:
-        raise ValueError("Unsupported gmsh type")
-
-    return res
 
 cdef HMatBlockType hmat_block_type(string name):
 

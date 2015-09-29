@@ -24,8 +24,8 @@
 #include "assembled_potential_operator.hpp"
 #include "evaluation_options.hpp"
 #include "local_assembler_construction_helper.hpp"
-#include "discrete_null_boundary_operator.hpp"
 #include "dense_global_assembler.hpp"
+#include "discrete_boundary_operator.hpp"
 
 #include "../common/shared_ptr.hpp"
 #include "../common/eigen_support.hpp"
