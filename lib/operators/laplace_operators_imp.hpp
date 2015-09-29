@@ -79,7 +79,7 @@ laplaceSingleLayerBoundaryOperator(
   else
     integral.reset(new Fiber::DefaultTestKernelTrialIntegral<IntegrandFunctor>(
         IntegrandFunctor()));
-  shared_ptr<ElementaryIntegralOperator<BasisFunctionType, ResultType, ResultType>> newOp(new Op(domain, range, dualToRange, label, symmetry,
+  shared_ptr<ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>> newOp(new Op(domain, range, dualToRange, label, symmetry,
                               KernelFunctor(), TransformationFunctor(),
                               TransformationFunctor(), integral));
   return newOp;
