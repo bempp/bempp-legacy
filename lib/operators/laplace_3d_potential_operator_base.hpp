@@ -21,7 +21,7 @@
 #ifndef bempp_laplace_3d_potential_operator_base_hpp
 #define bempp_laplace_3d_potential_operator_base_hpp
 
-#include "elementary_potential_operator.hpp"
+#include "../assembly/elementary_potential_operator.hpp"
 
 #include <boost/scoped_ptr.hpp>
 

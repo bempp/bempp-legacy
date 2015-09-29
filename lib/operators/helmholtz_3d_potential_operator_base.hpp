@@ -18,18 +18,17 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_modified_helmholtz_3d_potential_operator_base_hpp
-#define bempp_modified_helmholtz_3d_potential_operator_base_hpp
+#ifndef bempp_helmholtz_3d_potential_operator_base_hpp
+#define bempp_helmholtz_3d_potential_operator_base_hpp
 
-#include "elementary_potential_operator.hpp"
+#include "../assembly/elementary_potential_operator.hpp"
 
 #include <boost/scoped_ptr.hpp>
 
 namespace Bempp {
 
 /** \ingroup helmholtz_3d
- *  \brief Base class for potential operators for the modified Helmholtz
- *equation in 3D.
+ *  \brief Base class for potential operators for the Helmholtz equation in 3D.
  *
  *  \tparam Impl
  *    Type of the internal implementation object.
@@ -41,7 +40,7 @@ namespace Bempp {
  *
  *  \see helmholtz_3d */
 template <typename Impl, typename BasisFunctionType_>
-class ModifiedHelmholtz3dPotentialOperatorBase
+class Helmholtz3dPotentialOperatorBase
     : public ElementaryPotentialOperator<
           BasisFunctionType_,
           typename ScalarTraits<BasisFunctionType_>::ComplexType,
@@ -61,10 +60,6 @@ public:
   typedef typename Base::ResultType ResultType;
   /** \copydoc ElementaryPotentialOperator::CoordinateType */
   typedef typename Base::CoordinateType CoordinateType;
-  /** \copydoc ElementaryPotentialOperator::CollectionOfShapesetTransformations
-   */
-  typedef typename Base::CollectionOfShapesetTransformations
-      CollectionOfShapesetTransformations;
   /** \copydoc ElementaryPotentialOperator::CollectionOfBasisTransformations */
   typedef typename Base::CollectionOfBasisTransformations
       CollectionOfBasisTransformations;
@@ -76,24 +71,23 @@ public:
   /** \brief Constructor.
    *
    *  \param[in] waveNumber
-   *    Wave number. See \ref modified_helmholtz_3d for its definition. */
-  ModifiedHelmholtz3dPotentialOperatorBase(KernelType waveNumber);
+   *    Wave number. See \ref helmholtz_3d for its definition. */
+  Helmholtz3dPotentialOperatorBase(KernelType waveNumber);
   /** \brief Copy constructor. */
-  ModifiedHelmholtz3dPotentialOperatorBase(
-      const ModifiedHelmholtz3dPotentialOperatorBase &other);
+  Helmholtz3dPotentialOperatorBase(
+      const Helmholtz3dPotentialOperatorBase &other);
   /** \brief Destructor. */
-  virtual ~ModifiedHelmholtz3dPotentialOperatorBase();
+  virtual ~Helmholtz3dPotentialOperatorBase();
   /** \brief Assignment operator. */
-  ModifiedHelmholtz3dPotentialOperatorBase &
-  operator=(const ModifiedHelmholtz3dPotentialOperatorBase &rhs);
+  Helmholtz3dPotentialOperatorBase &
+  operator=(const Helmholtz3dPotentialOperatorBase &rhs);
 
   /** \brief Return the wave number set previously in the constructor. */
   KernelType waveNumber() const;
 
 private:
   virtual const CollectionOfKernels &kernels() const;
-  virtual const CollectionOfShapesetTransformations &
-  trialTransformations() const;
+  virtual const CollectionOfBasisTransformations &trialTransformations() const;
   virtual const KernelTrialIntegral &integral() const;
 
 private:

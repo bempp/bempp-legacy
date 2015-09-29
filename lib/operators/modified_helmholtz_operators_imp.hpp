@@ -47,8 +47,8 @@
 #include "../fiber/modified_helmholtz_3d_hypersingular_transformation_functor.hpp"
 #include "../fiber/modified_helmholtz_3d_hypersingular_transformation_functor_2.hpp"
 #include "../fiber/modified_helmholtz_3d_hypersingular_integrand_functor_2.hpp"
-#include "../assembly/modified_helmholtz_3d_single_layer_potential_operator.hpp"
-#include "../assembly/modified_helmholtz_3d_double_layer_potential_operator.hpp"
+#include "modified_helmholtz_3d_single_layer_potential_operator.hpp"
+#include "modified_helmholtz_3d_double_layer_potential_operator.hpp"
 
 #include "../grid/max_distance.hpp"
 
