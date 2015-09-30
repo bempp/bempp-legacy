@@ -81,7 +81,7 @@ class BoundaryOperator(object):
                 raise ValueError("Operator domain space does not match GridFunction space.")
             return GridFunction(other.space, coefficients=self.strong_form() * other.coefficients)
         else:
-            raise NotImplemented
+            raise NotImplementedError
 
     def __rmul__(self, other):
 
@@ -90,7 +90,7 @@ class BoundaryOperator(object):
         if np.isscalar(other):
             return _ScaledBoundaryOperator(self, other)
         else:
-            raise NotImplemented
+            raise NotImplementedError
 
     def __neg__(self):
 
@@ -115,7 +115,7 @@ class BoundaryOperator(object):
     def _weak_form_impl(self):
         """Returns a weak form. Needs to be implemented by subclasses."""
 
-        raise NotImplemented
+        raise NotImplementedError
 
     def transpose(self, range_):
         """Return the transpose of a boundary operator."""
