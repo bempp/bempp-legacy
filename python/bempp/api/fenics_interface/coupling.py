@@ -24,9 +24,9 @@ def fenics_to_bempp_trace_data(fenics_space):
             import p1_coupling
             return p1_coupling.p1_trace(fenics_space)
         else:
-            raise NotImplemented
+            raise NotImplementedError
     else:
-        raise NotImplemented
+        raise NotImplementedError
 
 def fenics_space_info(fenics_space):
     """
