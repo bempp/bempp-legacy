@@ -29,6 +29,7 @@ class BoundaryOperator(object):
         self._weak_form = None
         self._domain_map = None
         self._label = label
+        self._range_map = None
 
     @property
     def domain(self):
@@ -101,16 +102,16 @@ class BoundaryOperator(object):
         return self.__add__(-other)
 
     def strong_form(self):
-        """Return a discrete operator  that maps into the domain space."""
+        """Return a discrete operator  that maps into the range space."""
 
-        if self._domain_map is None:
+        if self._range_map is None:
             from bempp.api.operators.boundary.sparse import identity
             from bempp.api.assembly import InverseSparseDiscreteBoundaryOperator
 
-            self._domain_map = InverseSparseDiscreteBoundaryOperator( \
-                identity(self.domain, self.domain, self.dual_to_range).weak_form())
+            self._range_map = InverseSparseDiscreteBoundaryOperator( \
+                identity(self.range, self.range, self.dual_to_range).weak_form())
 
-        return self._domain_map * self._weak_form_impl()
+        return self._range_map * self.weak_form()
 
     def _weak_form_impl(self):
         """Returns a weak form. Needs to be implemented by subclasses."""
