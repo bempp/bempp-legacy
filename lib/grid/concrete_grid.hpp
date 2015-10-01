@@ -157,23 +157,23 @@ public:
   /** @name Grid parameters
   @{ */
 
-  virtual int dimWorld() const { return DuneGrid::dimensionworld; }
+  virtual int dimWorld() const override { return DuneGrid::dimensionworld; }
 
-  virtual int dim() const { return DuneGrid::dimension; }
+  virtual int dim() const override { return DuneGrid::dimension; }
 
-  virtual int maxLevel() const { return m_dune_grid->maxLevel(); }
+  virtual int maxLevel() const override { return m_dune_grid->maxLevel(); }
 
   /** @}
   @name Views
   @{ */
 
-  virtual std::unique_ptr<GridView> levelView(size_t level) const {
+  virtual std::unique_ptr<GridView> levelView(size_t level) const override {
     return std::unique_ptr<GridView>(
         new ConcreteGridView<typename DuneGrid::LevelGridView>(
             m_dune_grid->levelView(level), m_domain_index));
   }
 
-  virtual std::unique_ptr<GridView> leafView() const {
+  virtual std::unique_ptr<GridView> leafView() const override {
     return std::unique_ptr<GridView>(
         new ConcreteGridView<typename DuneGrid::LeafGridView>(
             m_dune_grid->leafGridView(), m_domain_index));
@@ -183,7 +183,7 @@ public:
   @name Geometry factory
   @{ */
 
-  virtual std::unique_ptr<GeometryFactory> elementGeometryFactory() const {
+  virtual std::unique_ptr<GeometryFactory> elementGeometryFactory() const override {
     return std::unique_ptr<GeometryFactory>(new ConcreteGeometryFactory<2>());
   }
 
@@ -191,11 +191,11 @@ public:
   @name Id sets
   @{ */
 
-  virtual const IdSet &globalIdSet() const { return m_global_id_set; }
+  virtual const IdSet &globalIdSet() const override { return m_global_id_set; }
 
   /** \brief Get the grid topology */
 
-  virtual GridParameters::Topology topology() const { return m_topology; }
+  virtual GridParameters::Topology topology() const override { return m_topology; }
 
   /** @}
   @name Refinement
@@ -203,7 +203,7 @@ public:
 
   /** \brief Return a barycentrically refined grid based on the Leaf View and its son map */
   // 
-  virtual std::pair<shared_ptr<Grid>,Matrix<int>> barycentricGridSonPair() const {
+  virtual std::pair<shared_ptr<Grid>,Matrix<int>> barycentricGridSonPair() const override {
     if (!m_barycentricGrid.get()) {
       tbb::mutex::scoped_lock lock(m_barycentricSpaceMutex);
       if (!m_barycentricGrid.get()) {
@@ -334,20 +334,20 @@ public:
   }
 
   /** \brief Return a barycentrically refined grid based on the Leaf View */
-  virtual shared_ptr<Grid> barycentricGrid() const {
+  virtual shared_ptr<Grid> barycentricGrid() const override {
     std::pair<shared_ptr<Grid>,Matrix<int>> baryPair = this->barycentricGridSonPair();
     return std::get<0>(baryPair);
   }
 
   /** \brief Return the son map for the barycentrically refined grid */
-  virtual Matrix<int> barycentricSonMap() const {
+  virtual Matrix<int> barycentricSonMap() const override {
     std::pair<shared_ptr<Grid>,Matrix<int>> baryPair = this->barycentricGridSonPair();
     return std::get<1>(baryPair);
   }
 
   /** \brief Return \p true if a barycentric refinement of this grid has
    *  been created. */
-  virtual bool hasBarycentricGrid() const {
+  virtual bool hasBarycentricGrid() const override {
     if (!m_barycentricGrid.get())
       return false;
     else
