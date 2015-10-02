@@ -282,14 +282,14 @@ class _ProjectionBoundaryOperator(BoundaryOperator):
 
         self._operator = operator
         self._domain = domain
-        self._range = range
+        self._range = range_
         self._dual_to_range = dual_to_range
 
         new_domain = operator.domain if domain is None else domain
         new_range = operator.range if range_ is None else range_
         new_dual_to_range = operator.dual_to_range if dual_to_range is None else dual_to_range
 
-        super(ProjectionBoundaryOperator, self).__init__(new_domain, new_range, new_dual_to_range,
+        super(_ProjectionBoundaryOperator, self).__init__(new_domain, new_range, new_dual_to_range,
                                                          'Proj(' + operator.label + ')')
 
     def _weak_form_impl(self):
@@ -301,15 +301,16 @@ class _ProjectionBoundaryOperator(BoundaryOperator):
 
         if self._dual_to_range is not None:
 
-            ident = identity(self._dual_to_range, self._dual_to_range).weak_form()
-            result_weak_form = ident * InverseSparseDiscreteBoundaryOperator(
-                identity(self._operator._dual_to_range, self._dual_to_range).weak_form()) * projected_weak_form
+            ident = identity(self._operator.dual_to_range, self._dual_to_range, self._dual_to_range).weak_form()
+            projected_weak_form = ident * InverseSparseDiscreteBoundaryOperator(
+                identity(self._operator.dual_to_range, self._operator.dual_to_range,
+                         self._operator.dual_to_range).weak_form()) * projected_weak_form
 
         if self._domain is not None:
 
             from bempp.api.space.projection import discrete_coefficient_projection
 
-            projected_weak_form *= discrete_coefficient_projection(self._operator.domain, domain)
+            projected_weak_form *= discrete_coefficient_projection(self._domain, self._operator.domain)
 
         return projected_weak_form
 
