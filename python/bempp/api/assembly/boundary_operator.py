@@ -275,6 +275,7 @@ class LocalBoundaryOperator(BoundaryOperator):
 
         return discrete_operator
 
+
 class _ProjectionBoundaryOperator(BoundaryOperator):
     """Define the projection of an operator onto new spaces."""
 
@@ -290,7 +291,7 @@ class _ProjectionBoundaryOperator(BoundaryOperator):
         new_dual_to_range = operator.dual_to_range if dual_to_range is None else dual_to_range
 
         super(_ProjectionBoundaryOperator, self).__init__(new_domain, new_range, new_dual_to_range,
-                                                         'Proj(' + operator.label + ')')
+                                                          'Proj(' + operator.label + ')')
 
     def _weak_form_impl(self):
 
@@ -300,27 +301,26 @@ class _ProjectionBoundaryOperator(BoundaryOperator):
         projected_weak_form = self._operator.weak_form()
 
         if self._dual_to_range is not None:
-
             ident = identity(self._operator.dual_to_range, self._dual_to_range, self._dual_to_range).weak_form()
             projected_weak_form = ident * InverseSparseDiscreteBoundaryOperator(
                 identity(self._operator.dual_to_range, self._operator.dual_to_range,
                          self._operator.dual_to_range).weak_form()) * projected_weak_form
 
         if self._domain is not None:
-
             from bempp.api.space.projection import discrete_coefficient_projection
 
             projected_weak_form *= discrete_coefficient_projection(self._domain, self._operator.domain)
 
         return projected_weak_form
 
+
 class _SumBoundaryOperator(BoundaryOperator):
     """Return the sum of two boundary operators."""
 
     def __init__(self, op1, op2):
-        if (op1.domain != op2.domain or
-                    op1.range != op2.range or
-                    op1.dual_to_range != op2.dual_to_range):
+        if (not op1.domain.is_compatible(op2.domain) or
+                not op1.range.is_compatible(op2.range) or
+                not op1.dual_to_range.is_compatible(op2.dual_to_range)):
             raise ValueError("Spaces not compatible.")
 
         super(_SumBoundaryOperator, self).__init__( \

@@ -93,7 +93,7 @@ class GridFunction(object):
     def __init__(self, space, dual_space=None, fun=None, coefficients=None,
                  projections=None, parameters=None):
 
-        import bempp
+        import bempp.api
         import numpy as np
 
         if space is None:
@@ -190,10 +190,12 @@ class GridFunction(object):
         """Return the L^2 norm of the function."""
 
         import numpy as np
-        ident = bempp.api.operators.boundary.sparse.identity(\
-                sparse, sparse, sparse).weak_form()
+        import bempp.api
 
-        return np.real(dot(self.coefficients.conjugate().T,\
+        ident = bempp.api.operators.boundary.sparse.identity(\
+                self.space, self.space, self.space).weak_form()
+
+        return np.real(np.dot(self.coefficients.conjugate().T,\
                 ident * self.coefficients))
 
     def __add__(self, other):

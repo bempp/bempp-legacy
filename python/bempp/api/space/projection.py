@@ -17,5 +17,5 @@ def project_operator(operator, domain=None, range_=None, dual_to_range=None):
 
     from bempp.api.assembly.boundary_operator import _ProjectionBoundaryOperator
 
-    return _ProjectionBoundaryOperator(operator, domain=domain, range_=range, dual_to_range=dual_to_range)
+    return _ProjectionBoundaryOperator(operator, domain=domain, range_=range_, dual_to_range=dual_to_range)
 

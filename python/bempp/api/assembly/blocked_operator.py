@@ -1,5 +1,5 @@
 import numpy as _np
-from bempp.api.utils.linear_operator import LinearOperator
+from scipy.sparse.linalg.interface import LinearOperator
 
 
 class BlockedOperator(object):
@@ -40,6 +40,21 @@ class BlockedOperator(object):
 
         return discrete_operator
 
+    def strong_form(self):
+
+        if not self._fill_complete():
+            raise ValueError("Each row and column must have at least one operator")
+
+        discrete_operator = BlockedDiscreteOperator(self._m, self._n)
+
+        for i in range(self._m):
+            for j in range(self._n):
+                if self._operators[i, j] is not None:
+                    discrete_operator[i, j] = self._operators[i, j].strong_form()
+
+        return discrete_operator
+
+
     def get_ndims(self):
 
         return (self._m, self._n)
@@ -55,8 +70,6 @@ class BlockedDiscreteOperator(LinearOperator):
         self._operators = _np.empty((m, n), dtype=_np.object)
         self._rows = _np.zeros(m, dtype=int)
         self._cols = _np.zeros(n, dtype=int)
-
-        super(BlockedDiscreteOperator, self).__init__(shape=self._get_shape(), dtype=self._get_dtype())
 
     def __getitem__(self, key):
 
@@ -84,9 +97,9 @@ class BlockedDiscreteOperator(LinearOperator):
 
         return True
 
-    def matvec(self, x):
+    def _matvec(self, x):
 
-        from .data_types import combined_type
+        from bempp.api.utils.data_types import combined_type
 
         if x.ndim == 1:
             x_new = _np.expand_dims(x, 1)
@@ -114,10 +127,6 @@ class BlockedDiscreteOperator(LinearOperator):
             row_dim += self._rows[i]
         return res
 
-    def matmat(self, x):
-
-        return self.matvec(x)
-
     def __mul__(self, x):
 
         if _np.isscalar(x):
@@ -129,7 +138,7 @@ class BlockedDiscreteOperator(LinearOperator):
             return res
 
         if isinstance(x, _np.ndarray):
-            return self.matvec(x)
+            return self._matvec(x)
 
         raise NotImplementedError("Cannot multiply with object of type {0}".format(str(type(x))))
 
@@ -179,6 +188,8 @@ class BlockedDiscreteOperator(LinearOperator):
             rows.append(_np.hstack(row))
         return _np.vstack(rows)
 
+    shape = property(_get_shape)
+    dtype = property(_get_dtype)
     ndims = property(_get_ndims)
     row_dimensions = property(_get_row_dimensions)
     column_dimensions = property(_get_column_dimensions)

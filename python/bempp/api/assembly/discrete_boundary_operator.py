@@ -1,7 +1,7 @@
 """This modules contains the data structures for assembled boundary operators."""
 
-from bempp.api.utils.linear_operator import LinearOperator as _LinearOperator
-from bempp.api.utils.linear_operator import MatrixLinearOperator as _MatrixLinearOperator
+from scipy.sparse.linalg.interface import LinearOperator as _LinearOperator
+from scipy.sparse.linalg.interface import MatrixLinearOperator as _MatrixLinearOperator
 import numpy as _np
 
 
@@ -74,6 +74,11 @@ class DenseDiscreteBoundaryOperator(_MatrixLinearOperator): # pylint: disable=to
         """Transpose of the operator."""
 
         return DenseDiscreteBoundaryOperator(self.A.T)
+
+    def _adjoint(self):
+        """Adjoint of the operator."""
+
+        return DenseDiscreteBoundaryOperator(self.A.conjugate().transpose())
 
 
 class SparseDiscreteBoundaryOperator(_LinearOperator):
