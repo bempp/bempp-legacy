@@ -2,6 +2,22 @@ import numpy as _np
 from scipy.sparse.linalg.interface import LinearOperator
 
 
+def _sum(op1, op2):
+
+    if op1 is None:
+        return op2
+    elif op2 is None:
+        return op1
+    else:
+        return op1 + op2
+
+def _prod(op1, op2):
+
+    if op1 is None or op2 is None:
+        return None
+    else:
+        return op1 * op2
+
 class BlockedOperator(object):
     def __init__(self, m, n):
 
@@ -53,6 +69,55 @@ class BlockedOperator(object):
                     discrete_operator[i, j] = self._operators[i, j].strong_form()
 
         return discrete_operator
+
+    def __add__(self, other):
+
+        if self.ndims != other.ndims:
+            return ValueError("Both blocked operators must have the same dimensions.")
+
+        blocked_operator = BlockedOperator(self.ndims[0], self.ndims[1])
+
+        for i in range(self.ndims[0]):
+            for j in range(self.ndims[1]):
+                if other[i, j] is None:
+                    blocked_operator[i, j] = self[i, j]
+                elif self[i, j] is None:
+                    blocked_operator[i, j] = other[i, j]
+                else:
+                    blocked_operator[i, j] = self[i, j] + other[i, j]
+        return blocked_operator
+
+    def __mul__(self, other):
+
+        import numpy as np
+        if np.isscalar(other):
+
+            blocked_operator = BlockedOperator(self.ndims[0], self.ndims[1])
+            for i in range(self.ndims[0]):
+                for j in range(self.ndims[1]):
+                    if self[i, j] is not None:
+                        blocked_operator[i, j] = other * self[i, j]
+            return blocked_operator
+        elif isinstance(other, BlockedOperator):
+            if self.ndims[1] != other.ndims[0]:
+                return ValueError("Dimensions are not compatible.")
+            blocked_operator = BlockedOperator(self.ndims[0], other.ndims[1])
+            for i in range(self.ndims[0]):
+                for j in range(other.ndims[1]):
+                    for k in range(self.ndims[1]):
+                        blocked_operator[i, j] = _sum(blocked_operator[i, j],
+                                                      _prod(self[i, k], other[k, j]))
+            return blocked_operator
+        else:
+            return NotImplementedError
+
+    def __rmul__(self, other):
+
+        import numpy as np
+        if np.isscalar(other):
+            return self.__mul__(other)
+        else:
+            return NotImplementedError
 
 
     def get_ndims(self):

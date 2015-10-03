@@ -93,18 +93,6 @@ def hypersingular(domain, range_, dual_to_range, wave_number,
         else:
             slp = use_slp
 
-        # Test that the spaces are correct.
-        if slp.domain != slp.dual_to_range:
-            raise ValueError("'domain' and 'dual_to_range' spaces must be identical for the slp operator.")
-
-        if not slp.domain.is_discontinuous:
-            raise ValueError("'domain' space of the slp operator must be a discontinuous " +
-                             "space of polynomial order larger 0.")
-
-        if not slp.dual_to_range.is_discontinuous:
-            raise ValueError("'dual_to_range' space of the slp operator must be a discontinuous " +
-                             "space of polynomial order larger 0.")
-
         # Now generate the compound operator
 
         test_local_ops = []
@@ -139,85 +127,36 @@ def hypersingular(domain, range_, dual_to_range, wave_number,
 
         return term1 + term2
 
+def multitrace_operator(grid, wave_number, parameters=None):
+
+    def op(operator):
+        if operator==hypersingular:
+            def op_impl(domain, range_, dual_to_range, label="HYP", symmetry="no_symmetry",
+                        parameters=None, use_slp=False):
+                return hypersingular(domain, range_, dual_to_range, wave_number, label, symmetry, parameters,
+                                     use_slp)
+            return op_impl
+        else:
+            import inspect
+            defaults = inspect.getargspec(operator).defaults
+            def op_impl(domain, range_, dual_to_range, label=defaults[0], symmetry=defaults[1],
+                        parameters=None):
+                return operator(domain, range_, dual_to_range, wave_number, label, symmetry, parameters)
+            return op_impl
+
+    from bempp.api.operators.boundary import _common
+    return _common.multitrace_operator_impl(grid, op(single_layer), op(double_layer),
+                                            op(hypersingular), parameters)
+
+
 def interior_calderon_projector(grid, wave_number, parameters=None):
-    import bempp.api
-    from bempp.api.assembly import BlockedOperator
-    from bempp.api.space import project_operator
 
-    if parameters is None:
-        parameters = bempp.api.global_parameters
+    from .sparse import multitrace_identity
 
-    blocked_operator = BlockedOperator(2, 2)
+    return .5 * multitrace_identity(grid, parameters) + multitrace_operator(grid, wave_number, parameters)
 
-    const_space = bempp.api.function_space(grid, "DUAL", 0)
-    lin_space = bempp.api.function_space(grid, "P", 1)
-    lin_space_bary = bempp.api.function_space(grid, "B-P", 1)
-    lin_space_disc_bary = bempp.api.function_space(grid, "B-DP", 1)
-    lin_space_disc = bempp.api.function_space(grid.barycentric_grid(), "DP", 1)
+def exterior_calderon_projector(grid, wave_number, parameters=None):
 
-    slp = bempp.api.operators.boundary.modified_helmholtz.single_layer(lin_space_disc, lin_space_disc, lin_space_disc,
-                                                            wave_number, parameters=parameters)
-    ident1 = bempp.api.operators.boundary.sparse.identity(lin_space_bary, lin_space_bary, const_space)
-    ident2 = bempp.api.operators.boundary.sparse.identity(const_space, const_space, lin_space_bary)
-    dlp_disc = bempp.api.operators.boundary.modifed_helmholtz.double_layer(lin_space_disc, lin_space_disc, lin_space_disc,
-                                                                 wave_number, parameters=parameters)
-    dlp = project_operator(dlp_disc, domain=lin_space_bary, range_=lin_space_bary,
-                           dual_to_range=const_space)
+    from .sparse import multitrace_identity
 
-    adlp = project_operator(dlp_disc.transpose(const_space), domain=const_space, range_=const_space,
-                            dual_to_range=lin_space_bary)
-
-    blocked_operator[0, 1] = project_operator(slp, domain=const_space, range_=lin_space_bary,
-                                              dual_to_range=const_space)
-
-    blocked_operator[1, 0] = (bempp.api.operators.boundary.modified_helmholtz.hypersingular( \
-        lin_space_bary, const_space, lin_space_bary, wave_number,
-        use_slp=project_operator(slp, domain=lin_space_disc_bary,
-                                 dual_to_range=lin_space_disc_bary),
-        parameters=parameters))
-    blocked_operator[0, 0] = .5 * ident1 - dlp
-    blocked_operator[1, 1] = .5 * ident2 + adlp
-
-    return blocked_operator
-
-
-def exterior_calderon_projector(grid, parameters=None):
-    import bempp.api
-    from bempp.api.assembly import BlockedOperator
-    from bempp.api.space import project_operator
-
-    if parameters is None:
-        parameters = bempp.api.global_parameters
-
-    blocked_operator = BlockedOperator(2, 2)
-
-    const_space = bempp.api.function_space(grid, "DUAL", 0)
-    lin_space = bempp.api.function_space(grid, "P", 1)
-    lin_space_bary = bempp.api.function_space(grid, "B-P", 1)
-    lin_space_disc_bary = bempp.api.function_space(grid, "B-DP", 1)
-    lin_space_disc = bempp.api.function_space(grid.barycentric_grid(), "DP", 1)
-
-    slp = bempp.api.operators.boundary.modified_helmholtz.single_layer(lin_space_disc, lin_space_disc, lin_space_disc,
-                                                            wave_number, parameters=parameters)
-    ident1 = bempp.api.operators.boundary.sparse.identity(lin_space_bary, lin_space_bary, const_space)
-    ident2 = bempp.api.operators.boundary.sparse.identity(const_space, const_space, lin_space_bary)
-    dlp_disc = bempp.api.operators.boundary.modified_helmholtz.double_layer(lin_space_disc, lin_space_disc, lin_space_disc,
-                                                                 wave_number, parameters=parameters)
-    dlp = project_operator(dlp_disc, domain=lin_space_bary, range_=lin_space_bary,
-                           dual_to_range=const_space)
-
-    adlp = project_operator(dlp_disc.transpose(const_space), domain=const_space, range_=const_space,
-                            dual_to_range=lin_space_bary)
-
-    blocked_operator[0, 1] = -1. * project_operator(slp, domain=const_space, range_=lin_space_bary,
-                                                    dual_to_range=const_space)
-
-    blocked_operator[1, 0] = -1. * (bempp.api.operators.boundary.modified_helmholtz.hypersingular( \
-        lin_space_bary, const_space, lin_space_bary, wave_number,
-        use_slp=project_operator(slp, domain=lin_space_disc_bary,
-                                 dual_to_range=lin_space_disc_bary),
-        parameters=parameters))
-    blocked_operator[0, 0] = .5 * ident1 + dlp
-    blocked_operator[1, 1] = .5 * ident2 - adlp
-
-    return blocked_operator
+    return .5 * multitrace_identity(grid, parameters) - multitrace_operator(grid, wave_number, parameters)
