@@ -24,7 +24,7 @@ class TestParallel(TestCase):
         np.testing.assert_array_equal(chunks, expectedchunks)
 
 
-    def test_gatherresults():
+    def test_gatherresults(self):
         pass
 
 
