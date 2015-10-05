@@ -58,7 +58,7 @@ cdef class _AssemblyParameterList:
         def __get__(self):
 
             cdef char* s = b"options.assembly.enableSingularIntegralCaching"
-            return (deref(self.impl_).get_string(s))
+            return (deref(self.impl_).get_bool(s))
 
         def __set__(self,cbool value):
 
@@ -326,6 +326,3 @@ cdef class ParameterList:
         
 
         
-
-
-
