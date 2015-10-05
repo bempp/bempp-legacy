@@ -9,13 +9,21 @@ class TestCalculateBlocks(TestCase):
 
     def test_calculateblocks(self):
         """Test that calulate blocks works in a simple case"""
-        from bempp.api.utils.parallel import calculateblocks
-        chunks, nrowseng, ncolseng = calculateblocks(100, 100, 4)
+        self.__calculateblocks_test(100, 4, (2, 2))
 
-        assert nrowseng == 2
-        assert nrowseng == 2
-        low = (0, 50)
-        high = (50, 100)
+    def test_calculateblocks_reminder(self):
+        """Test that calulate blocks works when the matrix is not dividable with
+           the number of engines"""
+        self.__calculateblocks_test(117, 4, (2, 2))
+
+    def __calculateblocks_test(self, size, engines, expectedengines):
+        from bempp.api.utils.parallel import calculateblocks
+
+        chunks, nrowseng, ncolseng = calculateblocks(size, size, engines)
+        assert nrowseng == expectedengines[0]
+        assert nrowseng == expectedengines[1]
+        low = (0, size//2)
+        high = (size//2, size)
 
         expectedchunks = [(low, low),
                           (low, high),

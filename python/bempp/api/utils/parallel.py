@@ -14,12 +14,12 @@ def calculateblocks(nrows, ncols, numengines):
     for i in range(nroweng):
         for j in range(ncoleng):
             colsstart = chunksizecols*i
-            if i == ncols-1:
+            if i == nroweng-1:
                 colsend = ncols
             else:
                 colsend = chunksizecols*(i+1)
             rowsstart = chunksizerows*j
-            if j == nrows-1:
+            if j == ncoleng-1:
                 rowsend = nrows
             else:
                 rowsend = chunksizerows*(j+1)
