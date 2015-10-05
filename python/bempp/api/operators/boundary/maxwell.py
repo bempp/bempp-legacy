@@ -14,16 +14,20 @@ def electric_field(space,
     from bempp.api.assembly import ElementaryBoundaryOperator
     from bempp.api.assembly.boundary_operator import BoundaryOperator
     from bempp.api.assembly import LocalBoundaryOperator
+    from bempp.api.assembly.abstract_boundary_operator import ElementaryAbstractIntegralOperator
+    from bempp.api.assembly.abstract_boundary_operator import ElementaryAbstractLocalOperator
 
     if parameters is None:
         parameters = bempp.api.global_parameters
 
     if not use_slp:
         return ElementaryBoundaryOperator( \
-            electric_field_ext(parameters, space, space, space,
-                               wave_number, "", symmetry),
+                ElementaryAbstractIntegralOperator(
+            electric_field_ext(parameters, space._impl, space._impl, space._impl,
+                               wave_number, "", symmetry)),
             parameters=parameters, label=label)
     else:
+
         if not isinstance(use_slp, BoundaryOperator):
 
             new_space = space.discontinuous_space
@@ -31,18 +35,6 @@ def electric_field(space,
                                                                   parameters=parameters)
         else:
             slp = use_slp
-
-        # Test that the spaces are correct.
-        if slp.domain != slp.dual_to_range:
-            raise ValueError("'domain' and 'dual_to_range' spaces must be identical for the slp operator.")
-
-        if not slp.domain.is_discontinuous:
-            raise ValueError("'domain' space of the slp operator must be a discontinuous " +
-                             "space of polynomial order larger 0.")
-
-        if not slp.dual_to_range.is_discontinuous:
-            raise ValueError("'dual_to_range' space of the slp operator must be a discontinuous " +
-                             "space of polynomial order larger 0.")
 
         test_local_ops = []
         trial_local_ops = []
@@ -55,8 +47,8 @@ def electric_field(space,
 
         for index in range(3):
             # Definition of range_ does not matter in next operator
-            test_local_op = LocalBoundaryOperator(
-                vector_value_times_scalar_ext(slp.dual_to_range, space, space, index),
+            test_local_op = LocalBoundaryOperator(ElementaryAbstractLocalOperator(
+                vector_value_times_scalar_ext(slp.dual_to_range._impl, space._impl, space._impl, index)),
                     label='VECTOR_VALUE')
             test_local_ops.append(test_local_op)
             trial_local_ops.append(test_local_op.transpose(space))  # Range parameter arbitrary
@@ -66,7 +58,7 @@ def electric_field(space,
         test_local_ops = []
         trial_local_ops = []
 
-        div_op = LocalBoundaryOperator(div_times_scalar_ext(slp.dual_to_range, space, space),
+        div_op = LocalBoundaryOperator(ElementaryAbstractLocalOperator(div_times_scalar_ext(slp.dual_to_range._impl, space._impl, space._impl)),
             label='DIV')
         div_op_transpose = div_op.transpose(space) # Range space does not matter
 
@@ -85,11 +77,13 @@ def magnetic_field(space,
     import bempp
     from bempp.core.operators.boundary.maxwell import magnetic_field_ext
     from bempp.api.assembly import ElementaryBoundaryOperator
+    from bempp.api.assembly.abstract_boundary_operator import ElementaryAbstractIntegralOperator
 
     if parameters is None:
         parameters = bempp.api.global_parameters
 
     return ElementaryBoundaryOperator( \
-        magnetic_field_ext(parameters, space, space, space,
-                           wave_number, "", symmetry),
+            ElementaryAbstractIntegralOperator(
+        magnetic_field_ext(parameters, space._impl, space._impl, space._impl,
+                           wave_number, "", symmetry)),
         parameters=parameters, label=label)

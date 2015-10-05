@@ -92,8 +92,9 @@ def regular_sphere(n):
     """Return a regular sphere."""
 
     from bempp.core.grid import grid_from_sphere
+    from bempp.api.grid.grid import Grid
 
-    return grid_from_sphere(n)
+    return Grid(grid_from_sphere(n))
 
 
 def ellipsoid(r1=1, r2=1, r3=1, origin=(0, 0, 0), h=0.1):

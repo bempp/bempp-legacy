@@ -11,13 +11,15 @@ def identity(domain, range_, dual_to_range,
     import bempp.api
     from bempp.core.operators.boundary.sparse import identity_ext
     from bempp.api.assembly import LocalBoundaryOperator
+    from bempp.api.assembly.abstract_boundary_operator import ElementaryAbstractLocalOperator
 
     if parameters is None:
         parameters = bempp.api.global_parameters
 
     return LocalBoundaryOperator(\
-            identity_ext(parameters, domain, range_,
-                         dual_to_range, "", symmetry),
+            ElementaryAbstractLocalOperator(
+            identity_ext(parameters, domain._impl, range_._impl,
+                         dual_to_range._impl, "", symmetry)),
             parameters=parameters, label=label)
 
 def maxwell_identity(space,
@@ -28,13 +30,15 @@ def maxwell_identity(space,
     import bempp.api
     from bempp.core.operators.boundary.sparse import maxwell_identity_ext
     from bempp.api.assembly import LocalBoundaryOperator
+    from bempp.api.assembly.abstract_boundary_operator import ElementaryAbstractLocalOperator
 
     if parameters is None:
         parameters = bempp.api.global_parameters
 
     return LocalBoundaryOperator(\
-            maxwell_identity_ext(parameters, space, space,
-                                 space, "", symmetry),
+            ElementaryAbstractLocalOperator(
+            maxwell_identity_ext(parameters, space._impl, space._impl,
+                                 space._impl, "", symmetry)),
             parameters=parameters, label=label)
 
 def laplace_beltrami(domain, range_, dual_to_range,
@@ -45,13 +49,15 @@ def laplace_beltrami(domain, range_, dual_to_range,
     import bempp.api
     from bempp.core.operators.boundary.sparse import laplace_beltrami_ext
     from bempp.api.assembly import LocalBoundaryOperator
+    from bempp.api.assembly.abstract_boundary_operator import ElementaryAbstractLocalOperator
 
     if parameters is None:
         parameters = bempp.api.global_parameters
 
     return LocalBoundaryOperator(\
-            laplace_beltrami_ext(parameters, domain, range_,
-                                 dual_to_range, "", symmetry),
+            ElementaryAbstractLocalOperator(
+            laplace_beltrami_ext(parameters, domain._impl, range_._impl,
+                                 dual_to_range._impl, "", symmetry)),
             parameters=parameters, label=label)
 
 def multitrace_identity(grid, parameters):

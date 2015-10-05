@@ -191,37 +191,20 @@ class ElementaryBoundaryOperator(BoundaryOperator):
         return self._impl.make_local_assembler(parameters)
 
     def _weak_form_impl(self):
-        import bempp
         import time
+        import bempp.api
 
-        if self._parameters.assembly.boundary_operator_assembly_type == 'dense':
-            from bempp.api.assembly.discrete_boundary_operator import \
-                DenseDiscreteBoundaryOperator
+        bempp.api.LOGGER.info(_start_assembly_message(self.domain,
+                                                      self.dual_to_range,
+                                                      'dense', self.label))
+        start_time = time.time()
 
-            bempp.api.LOGGER.info(_start_assembly_message(self.domain, self.dual_to_range, 'dense', self.label))
-            start_time = time.time()
+        weak_form = self._impl.assemble_weak_form(self._parameters)
 
-            discrete_operator = DenseDiscreteBoundaryOperator( \
-                self._impl.assemble_weak_form(self._parameters).as_matrix())
+        end_time = time.time()
+        bempp.api.LOGGER.info(_end_assembly_message(self.label, end_time - start_time))
 
-            end_time = time.time()
-            bempp.api.LOGGER.info(_end_assembly_message(self.label, end_time - start_time))
-
-        else:
-            from bempp.api.assembly.discrete_boundary_operator import \
-                GeneralNonlocalDiscreteBoundaryOperator
-
-            bempp.api.LOGGER.info(_start_assembly_message(self.domain, self.dual_to_range, 'hmat', self.label))
-            start_time = time.time()
-
-            discrete_operator = GeneralNonlocalDiscreteBoundaryOperator( \
-                self._impl.assemble_weak_form(self._parameters))
-
-            end_time = time.time()
-
-            bempp.api.LOGGER.info(_end_assembly_message(self.label, end_time - start_time))
-
-        return discrete_operator
+        return weak_form
 
 
 class LocalBoundaryOperator(BoundaryOperator):
@@ -257,23 +240,21 @@ class LocalBoundaryOperator(BoundaryOperator):
         return self._impl.make_local_assembler(parameters)
 
     def _weak_form_impl(self):
-        from bempp.core.assembly.discrete_boundary_operator import convert_to_sparse
-        from bempp.api.assembly.discrete_boundary_operator import SparseDiscreteBoundaryOperator
 
-        import bempp
         import time
+        import bempp.api
 
-        bempp.api.LOGGER.info(_start_assembly_message(self.domain, self.dual_to_range, 'sparse', self.label))
+        bempp.api.LOGGER.info(_start_assembly_message(self.domain,
+                                                      self.dual_to_range,
+                                                      'dense', self.label))
         start_time = time.time()
 
-        discrete_operator = SparseDiscreteBoundaryOperator( \
-            convert_to_sparse(self._impl.assemble_weak_form(self._parameters)))
+        weak_form = self._impl.assemble_weak_form(self._parameters)
 
         end_time = time.time()
-
         bempp.api.LOGGER.info(_end_assembly_message(self.label, end_time - start_time))
 
-        return discrete_operator
+        return weak_form
 
 
 class _ProjectionBoundaryOperator(BoundaryOperator):
@@ -411,11 +392,11 @@ class CompoundBoundaryOperator(BoundaryOperator):
         trial_dual_to_range = trial_local_ops[0].dual_to_range
 
         for i in range(number_of_ops):
-            if (test_local_ops[i].range != range_ or
-                        test_local_ops[i].dual_to_range != dual_to_range or
-                        trial_local_ops[i].domain != domain or
-                        test_domain != test_local_ops[i].domain or
-                        trial_dual_to_range != trial_local_ops[i].dual_to_range):
+            if (not test_local_ops[i].range.is_compatible(range_) or
+                        not test_local_ops[i].dual_to_range.is_compatible(dual_to_range) or
+                        not trial_local_ops[i].domain.is_compatible(domain) or
+                        not test_domain.is_compatible(test_local_ops[i].domain) or
+                        not trial_dual_to_range.is_compatible(trial_local_ops[i].dual_to_range)):
                 raise ValueError("Incompatible spaces.")
 
         if parameters is None:

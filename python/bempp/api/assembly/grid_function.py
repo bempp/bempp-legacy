@@ -121,7 +121,7 @@ class GridFunction(object):
             else:
                 proj_space = self.space
 
-            projections = calculate_projection(parameters, fun, proj_space)
+            projections = calculate_projection(parameters, fun, proj_space._impl)
 
         if projections is not None:
             np_proj = 1.0 * np.asarray(projections).squeeze()

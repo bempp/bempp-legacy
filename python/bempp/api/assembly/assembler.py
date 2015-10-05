@@ -15,6 +15,6 @@ def assemble_dense_block(operator, rows, cols, domain, dual_to_range, parameters
     if parameters is None:
         parameters = operator.parameters
 
-    return DenseDiscreteBoundaryOperator(assemble_dense_block_ext(rows, cols, domain, dual_to_range,
+    return DenseDiscreteBoundaryOperator(assemble_dense_block_ext(rows, cols, domain._impl, dual_to_range._impl,
                                                                   operator.local_assembler(parameters),
                                                                   parameters).as_matrix())
