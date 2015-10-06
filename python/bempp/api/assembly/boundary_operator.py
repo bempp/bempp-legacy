@@ -182,13 +182,11 @@ class ElementaryBoundaryOperator(BoundaryOperator):
         """Return the parameters of the operator."""
         return self._parameters
 
-    def local_assembler(self, parameters=None):
+    @property
+    def local_assembler(self):
         """Return the local assembler"""
 
-        if parameters is None:
-            parameters = self.parameters
-
-        return self._impl.make_local_assembler(parameters)
+        return self._impl.make_local_assembler(self._parameters)
 
     def _weak_form_impl(self):
         import time
@@ -231,13 +229,11 @@ class LocalBoundaryOperator(BoundaryOperator):
 
         return self._parameters
 
-    def local_assembler(self, parameters=None):
+    @property
+    def local_assembler(self):
         """Return the local assembler"""
 
-        if parameters is None:
-            parameters = self.parameters
-
-        return self._impl.make_local_assembler(parameters)
+        return self._impl.make_local_assembler(self._parameters)
 
     def _weak_form_impl(self):
 

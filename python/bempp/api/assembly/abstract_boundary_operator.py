@@ -64,7 +64,8 @@ class ElementaryAbstractLocalOperator(object):
 
     def make_local_assembler(self, parameters):
         """Create a local assembler object from the abstract operator."""
-        return self._impl.make_local_assembler(parameters)
+        from .assembler import LocalOperatorLocalAssembler
+        return LocalOperatorLocalAssembler(self._impl.make_local_assembler(parameters))
 
     def assemble_weak_form(self, parameters):
         """Assemble the local operator and return the assembled operator."""
