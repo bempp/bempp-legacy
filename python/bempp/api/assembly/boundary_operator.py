@@ -244,9 +244,11 @@ class LocalBoundaryOperator(BoundaryOperator):
         import time
         import bempp.api
 
+        assembly_mode = self._parameters.assembly.boundary_operator_assembly_type
+
         bempp.api.LOGGER.info(_start_assembly_message(self.domain,
                                                       self.dual_to_range,
-                                                      'dense', self.label))
+                                                      assembly_mode, self.label))
         start_time = time.time()
 
         weak_form = self._impl.assemble_weak_form(self._parameters)

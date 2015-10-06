@@ -9,7 +9,22 @@ The provides :class:`Grid` class defines the interfaces to iterate through grids
 query geometric information. It cannot be directly instantiated. BEM++ rather provides
 factory functions and a :class:`GridFactory` object to construct grids.
 
+
+
 .. autoclass:: bempp.api.grid.Grid
     :members:
+
+.. autoclass:: bempp.api.grid.GridView
+    :members:
+
+.. autoclass:: bempp.api.grid.Entity
+    :members:
+
+.. autoclass:: bempp.api.grid.Geometry
+    :members:
+
+.. autoclass:: bempp.api.grid.GridFactory
+    :members:
+
 
 

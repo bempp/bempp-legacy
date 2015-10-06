@@ -150,6 +150,7 @@ cdef class Grid:
     def refine(self):
         """ Refine grid. """
 
+        self._grid_view = None
         deref(self.impl_).preAdapt()
         deref(self.impl_).adapt()
         deref(self.impl_).postAdapt()
@@ -158,6 +159,7 @@ cdef class Grid:
     def global_refine(self, int refcount = 1):
         """ Refine all elements. """
 
+        self._grid_view = None
         deref(self.impl_).globalRefine(refcount)
         deref(self.impl_).sendUpdateSignal()
 

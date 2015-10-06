@@ -60,7 +60,7 @@ def laplace_beltrami(domain, range_, dual_to_range,
                                  dual_to_range._impl, "", symmetry)),
             parameters=parameters, label=label)
 
-def multitrace_identity(grid, parameters):
+def multitrace_identity(grid, parameters=None):
     """Return the multitrace identity operator."""
 
     from bempp.api.assembly import BlockedOperator
