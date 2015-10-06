@@ -208,15 +208,16 @@ public:
       tbb::mutex::scoped_lock lock(m_barycentricSpaceMutex);
       if (!m_barycentricGrid.get()) {
 
-        Matrix<double> vertices;
-        Matrix<int> elementCorners;
-        Matrix<char> auxData;
-        std::vector<int> domainIndices;
+        //Matrix<double> vertices;
+        //Matrix<int> elementCorners;
+        //Matrix<char> auxData;
+        //std::vector<int> domainIndices;
 
         std::unique_ptr<GridView> view = this->leafView();
 
-        view->getRawElementData(vertices, elementCorners, auxData,
-                                domainIndices);
+        //view->getRawElementData(vertices, elementCorners, auxData,
+        //                        domainIndices);
+
         GridParameters params;
         params.topology = GridParameters::TRIANGULAR;
 

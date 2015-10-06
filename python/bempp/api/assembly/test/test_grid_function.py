@@ -1,7 +1,7 @@
 """Test cases for Grid Functions."""
 
 from unittest import TestCase
-import bempp
+import bempp.api
 
 
 class TestGridFunction(TestCase):
@@ -132,6 +132,21 @@ class TestGridFunction(TestCase):
         actual = grid_fun2.coefficients
 
         self.assertAlmostEquals(np.linalg.norm(expected - actual), 0)
+
+    def test_sum_of_l2_norms_on_elements_is_equal_to_full_l2_norm(self):
+
+        import numpy as np
+
+        n = self._space.global_dof_count
+        coefficients = np.ones(n)
+        grid_fun = bempp.api.GridFunction(self._space, coefficients=coefficients)
+
+        sum = 0
+
+        for element in grid_fun.space.grid.leaf_view.entity_iterator(0):
+            sum += grid_fun.l2_norm(element)**2
+
+        self.assertAlmostEqual(np.sqrt(sum), grid_fun.l2_norm())
 
 
 if __name__ == "__main__":

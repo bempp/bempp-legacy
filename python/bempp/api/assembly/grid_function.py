@@ -182,21 +182,30 @@ class GridFunction(object):
         import numpy as np
         # Get global dof ids and weights
         global_dofs, weights = self.space.get_global_dofs(element, dof_weights=True)
-        dof_values = np.asarray([self.coefficients[dof] for dof in global_dofs if dof >= 0]) * \
+        dof_values = np.asarray([self.coefficients[dof] if dof >= 0 else 0 for dof in global_dofs]) * \
                 np.asarray(weights)
         return self.space.evaluate_local_basis(element, local_coordinates, dof_values)
 
-    def l2_norm(self):
-        """Return the L^2 norm of the function."""
+    def l2_norm(self, element=None):
+        """Return the L^2 norm of the function on a single element or in total."""
 
         import numpy as np
         import bempp.api
 
         ident = bempp.api.operators.boundary.sparse.identity(\
-                self.space, self.space, self.space).weak_form()
+                self.space, self.space, self.space)
 
-        return np.real(np.dot(self.coefficients.conjugate().T,\
-                ident * self.coefficients))
+        if element is None:
+            return np.sqrt(np.real(np.dot(self.coefficients.conjugate().T,\
+                    ident.weak_form() * self.coefficients)))
+        else:
+            element_index = self.space.grid.leaf_view.index_set().entity_index(element)
+            local_mass = ident.local_assembler.evaluate_local_weak_forms([element_index])[0]
+            global_dofs, weights = self.space.get_global_dofs(element, dof_weights=True)
+            dof_values = np.asarray([self.coefficients[dof] if dof >= 0 else 0 for dof in global_dofs]) * \
+                    np.asarray(weights)
+            return np.sqrt(np.real(np.dot(dof_values.conjugate().T,\
+                    local_mass.dot(dof_values))))
 
     def __add__(self, other):
 
