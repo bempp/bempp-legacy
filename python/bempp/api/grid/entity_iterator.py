@@ -13,5 +13,8 @@ class EntityIterator(object):
         return _Entity(self._codimension,
                        self._impl.__next__())
 
+    def __next__(self):
+        return self.next()
+
     def __iter__(self):
         return self
