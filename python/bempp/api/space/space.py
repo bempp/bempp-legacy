@@ -5,7 +5,7 @@ class Space(object):
 
         Attributes
         ----------
-        grid : Grid
+        grid : bempp.api.grid.Grid
             Grid over which to discretize the space.
 
         dtype : numpy.dtype
@@ -118,7 +118,7 @@ def function_space(grid, kind, order, domains=None, closed=True):
 
     Parameters
     ----------
-    grid : bempp.Grid
+    grid : bempp.api.grid.Grid
         The grid object over which the space is defined.
 
     kind : string

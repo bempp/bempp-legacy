@@ -1,6 +1,12 @@
 """ Boundary Element Method package BEM++ """
 from __future__ import print_function
 
+# Check if at least Scipy 0.16.0 is installed. BEM++ fails otherwise.
+import scipy
+if scipy.version.version < '0.16.0':
+    raise Exception("At leat SciPy version 0.16.0 required to run BEM++. Found version {0}".format(scipy.version.version))
+    
+
 # This imports dolfin at the same time as bempp if available to avoid delays
 # at later imports of dolfin
 

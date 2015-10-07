@@ -32,7 +32,7 @@ class GridFunction(object):
 
     Parameters
     ----------
-    space : bempp.api.Space
+    space : bempp.api.space.Space
         The space over which the GridFunction is defined.
     dual_space : bempp.api.Space
         A representation of the dual space. If not specified
@@ -57,9 +57,9 @@ class GridFunction(object):
     component_count : int
         Return the number of components of the grid
         function values.
-    space : bemp.Space
+    space : bemp.api.space.Space
         Return the space over which the GridFunction is defined.
-    grid : bempp.api.Grid
+    grid : bempp.api.grid.Grid
         Return the underlying grid.
     parameters : bempp.api.ParameterList
         Return the set of parameters.
@@ -157,7 +157,7 @@ class GridFunction(object):
 
         Parameters
         ----------
-        dual_space : bempp.api.Space
+        dual_space : bempp.api.space.Space
             A representation of the dual space. If not specified
             then space == dual_space is assumed (optional).
 
