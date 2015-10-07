@@ -295,6 +295,14 @@ def function_space(Grid grid, kind, order, domains=None, cbool closed=True):
             raise ValueError("Spaces on subdomains are not supported on barycentric grids.")
         s.impl_.assign(reverse_const_pointer_cast(
             shared_ptr[c_Space[double]](adaptivePiecewiseLinearDiscontinuousScalarSpaceBarycentric[double](grid.impl_))))
+    elif kind=="B-RT":
+        if order!=0:
+            raise ValueError("Only 0 order Raviart-Thomas spaces on barycentric grids are supported.")
+        if domains is not None:
+            raise ValueError("Spaces on subdomains are not supported on barycentric grids.")
+        else:
+            s.impl_.assign(reverse_const_pointer_cast(
+                    shared_ptr[c_Space[double]](adaptiveRaviartThomas0VectorSpaceBarycentric[double](grid.impl_))))
     else:
         raise ValueError("Unknown kind")
 
