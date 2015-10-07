@@ -93,7 +93,7 @@ class GridFunction(object):
     def __init__(self, space, dual_space=None, fun=None, coefficients=None,
                  projections=None, parameters=None):
 
-        import bempp
+        import bempp.api
         import numpy as np
 
         if space is None:
@@ -121,7 +121,7 @@ class GridFunction(object):
             else:
                 proj_space = self.space
 
-            projections = calculate_projection(parameters, fun, proj_space)
+            projections = calculate_projection(parameters, fun, proj_space._impl)
 
         if projections is not None:
             np_proj = 1.0 * np.asarray(projections).squeeze()
@@ -182,19 +182,30 @@ class GridFunction(object):
         import numpy as np
         # Get global dof ids and weights
         global_dofs, weights = self.space.get_global_dofs(element, dof_weights=True)
-        dof_values = np.asarray([self.coefficients[dof] for dof in global_dofs if dof >= 0]) * \
+        dof_values = np.asarray([self.coefficients[dof] if dof >= 0 else 0 for dof in global_dofs]) * \
                 np.asarray(weights)
         return self.space.evaluate_local_basis(element, local_coordinates, dof_values)
 
-    def l2_norm(self):
-        """Return the L^2 norm of the function."""
+    def l2_norm(self, element=None):
+        """Return the L^2 norm of the function on a single element or in total."""
 
         import numpy as np
-        ident = bempp.api.operators.boundary.sparse.identity(\
-                sparse, sparse, sparse).weak_form()
+        import bempp.api
 
-        return np.real(dot(self.coefficients.conjugate().T,\
-                ident * self.coefficients))
+        ident = bempp.api.operators.boundary.sparse.identity(\
+                self.space, self.space, self.space)
+
+        if element is None:
+            return np.sqrt(np.real(np.dot(self.coefficients.conjugate().T,\
+                    ident.weak_form() * self.coefficients)))
+        else:
+            element_index = self.space.grid.leaf_view.index_set().entity_index(element)
+            local_mass = ident.local_assembler.evaluate_local_weak_forms([element_index])[0]
+            global_dofs, weights = self.space.get_global_dofs(element, dof_weights=True)
+            dof_values = np.asarray([self.coefficients[dof] if dof >= 0 else 0 for dof in global_dofs]) * \
+                    np.asarray(weights)
+            return np.sqrt(np.real(np.dot(dof_values.conjugate().T,\
+                    local_mass.dot(dof_values))))
 
     def __add__(self, other):
 

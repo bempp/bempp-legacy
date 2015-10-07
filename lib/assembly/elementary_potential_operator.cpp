@@ -23,11 +23,9 @@
 #include "hmat_global_assembler.hpp"
 #include "assembled_potential_operator.hpp"
 #include "evaluation_options.hpp"
-#include "grid_function.hpp"
-#include "interpolated_function.hpp"
 #include "local_assembler_construction_helper.hpp"
-#include "discrete_null_boundary_operator.hpp"
 #include "dense_global_assembler.hpp"
+#include "discrete_boundary_operator.hpp"
 
 #include "../common/shared_ptr.hpp"
 #include "../common/eigen_support.hpp"
@@ -88,59 +86,6 @@ ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
 }
 
 // UNDOCUMENTED PRIVATE METHODS
-
-/** \cond PRIVATE */
-
-template <typename BasisFunctionType, typename KernelType, typename ResultType>
-std::unique_ptr<typename ElementaryPotentialOperator<
-    BasisFunctionType, KernelType, ResultType>::Evaluator>
-ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
-    makeEvaluator(const GridFunction<BasisFunctionType, ResultType> &argument,
-                  const QuadratureStrategy &quadStrategy,
-                  const EvaluationOptions &options) const {
-  // Collect the standard set of data necessary for construction of
-  // evaluators and assemblers
-  typedef Fiber::RawGridGeometry<CoordinateType> RawGridGeometry;
-  typedef std::vector<const Fiber::Shapeset<BasisFunctionType> *>
-      ShapesetPtrVector;
-  typedef std::vector<std::vector<ResultType>> CoefficientsVector;
-  typedef LocalAssemblerConstructionHelper Helper;
-
-  shared_ptr<RawGridGeometry> rawGeometry;
-  shared_ptr<GeometryFactory> geometryFactory;
-  shared_ptr<Fiber::OpenClHandler> openClHandler;
-  shared_ptr<ShapesetPtrVector> shapesets;
-
-  const Space<BasisFunctionType> &space = *argument.space();
-  shared_ptr<const Grid> grid = space.grid();
-  Helper::collectGridData(space, rawGeometry, geometryFactory);
-  Helper::makeOpenClHandler(options.parallelizationOptions().openClOptions(),
-                            rawGeometry, openClHandler);
-  Helper::collectShapesets(space, shapesets);
-
-  // In addition, get coefficients of argument's expansion in each element
-  const GridView &view = space.gridView();
-  const int elementCount = view.entityCount(0);
-
-  shared_ptr<CoefficientsVector> localCoefficients =
-      boost::make_shared<CoefficientsVector>(elementCount);
-
-  const Mapper &mapper = view.elementMapper();
-  std::unique_ptr<EntityIterator<0>> it = view.entityIterator<0>();
-  while (!it->finished()) {
-    const Entity<0> &element = it->entity();
-    const int elementIndex = mapper.entityIndex(element);
-    argument.getLocalCoefficients(element, (*localCoefficients)[elementIndex]);
-    it->next();
-  }
-
-  // Now create the evaluator
-  return quadStrategy.makeEvaluatorForIntegralOperators(
-      geometryFactory, rawGeometry, shapesets, make_shared_from_ref(kernels()),
-      make_shared_from_ref(trialTransformations()),
-      make_shared_from_ref(integral()), localCoefficients, openClHandler,
-      options.parallelizationOptions());
-}
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 std::unique_ptr<typename ElementaryPotentialOperator<

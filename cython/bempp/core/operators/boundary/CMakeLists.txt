@@ -1,5 +1,5 @@
 set(headers __init__.pxd
-    py_boundary_operators.hpp
+    support_operators.hpp
     )
             
 

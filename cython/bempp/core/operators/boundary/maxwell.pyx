@@ -13,15 +13,15 @@ from cython.operator cimport dereference as deref
 import numpy as np
 cimport numpy as np
 
-cdef extern from "bempp/core/operators/boundary/py_boundary_operators.hpp" namespace "Bempp":
-    shared_ptr[const c_ComplexElementaryIntegralOperator] maxwell_single_layer(
+cdef extern from "bempp/operators/maxwell_operators.hpp" namespace "Bempp":
+    shared_ptr[const c_ComplexElementaryIntegralOperator] maxwell_electric_field "Bempp::maxwellElectricFieldBoundaryOperator<double>"(
             const c_ParameterList&,
             shared_ptr[const c_Space[double]]&,
             shared_ptr[const c_Space[double]]&,
             shared_ptr[const c_Space[double]]&,
             complex_double,
             string label, SymmetryMode symmetry)
-    shared_ptr[const c_ComplexElementaryIntegralOperator] maxwell_double_layer(
+    shared_ptr[const c_ComplexElementaryIntegralOperator] maxwell_magnetic_field "Bempp::maxwellMagneticFieldBoundaryOperator<double>"(
             const c_ParameterList&,
             shared_ptr[const c_Space[double]]&,
             shared_ptr[const c_Space[double]]&,
@@ -48,7 +48,7 @@ def electric_field_ext(
         object label='', object symmetry='no_symmetry'):
 
     cdef ComplexElementaryIntegralOperator op = ComplexElementaryIntegralOperator()
-    op.impl_.assign(maxwell_single_layer(
+    op.impl_.assign(maxwell_electric_field(
         deref(parameters.impl_),domain.impl_, range.impl_, dual_to_range.impl_,
         complex_double(np.real(wave_number),np.imag(wave_number)),
         _convert_to_bytes(label), symmetry_mode(_convert_to_bytes(symmetry))))
@@ -63,7 +63,7 @@ def magnetic_field_ext(
         object label='', object symmetry='no_symmetry'):
 
     cdef ComplexElementaryIntegralOperator op = ComplexElementaryIntegralOperator()
-    op.impl_.assign(maxwell_double_layer(
+    op.impl_.assign(maxwell_magnetic_field(
         deref(parameters.impl_),domain.impl_, range.impl_, dual_to_range.impl_,
         complex_double(np.real(wave_number),np.imag(wave_number)),
         _convert_to_bytes(label), symmetry_mode(_convert_to_bytes(symmetry))))

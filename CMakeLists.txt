@@ -71,6 +71,7 @@ endif(WITH_TESTS)
 add_subdirectory(lib)
 add_subdirectory(cython)
 add_subdirectory(meshes)
+add_subdirectory(doc)
 # Installs FindX.cmake files for packages depending on cmake
 add_subdirectory(cmake)
 

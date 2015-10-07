@@ -154,12 +154,6 @@ private:
    *  transformations occurring in the integrand. */
   virtual const KernelTrialIntegral &integral() const = 0;
 
-  /** \cond PRIVATE */
-  std::unique_ptr<Evaluator>
-  makeEvaluator(const GridFunction<BasisFunctionType, ResultType> &argument,
-                const QuadratureStrategy &quadStrategy,
-                const EvaluationOptions &options) const;
-
   std::unique_ptr<LocalAssembler>
   makeAssembler(const Space<BasisFunctionType> &space,
                 const Matrix<CoordinateType> &evaluationPoints,

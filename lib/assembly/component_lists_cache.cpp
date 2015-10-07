@@ -26,7 +26,7 @@
 
 namespace Bempp {
 
-ComponentListsCache::ComponentListsCache(const std::vector<unsigned int> &p2o,
+ComponentListsCache::ComponentListsCache(const std::vector<std::size_t> &p2o,
                                          int componentCount)
     : m_p2o(p2o), m_componentCount(componentCount) {}
 

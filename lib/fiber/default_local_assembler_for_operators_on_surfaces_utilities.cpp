@@ -3,6 +3,7 @@
 #include "shapeset.hpp"
 #include "explicit_instantiation.hpp"
 #include "raw_grid_geometry.hpp"
+#include <iostream>
 
 namespace Fiber {
 

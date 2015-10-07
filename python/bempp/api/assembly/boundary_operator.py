@@ -29,6 +29,7 @@ class BoundaryOperator(object):
         self._weak_form = None
         self._domain_map = None
         self._label = label
+        self._range_map = None
 
     @property
     def domain(self):
@@ -81,7 +82,7 @@ class BoundaryOperator(object):
                 raise ValueError("Operator domain space does not match GridFunction space.")
             return GridFunction(other.space, coefficients=self.strong_form() * other.coefficients)
         else:
-            raise NotImplemented
+            raise NotImplementedError
 
     def __rmul__(self, other):
 
@@ -90,7 +91,7 @@ class BoundaryOperator(object):
         if np.isscalar(other):
             return _ScaledBoundaryOperator(self, other)
         else:
-            raise NotImplemented
+            raise NotImplementedError
 
     def __neg__(self):
 
@@ -101,21 +102,21 @@ class BoundaryOperator(object):
         return self.__add__(-other)
 
     def strong_form(self):
-        """Return a discrete operator  that maps into the domain space."""
+        """Return a discrete operator  that maps into the range space."""
 
-        if self._domain_map is None:
+        if self._range_map is None:
             from bempp.api.operators.boundary.sparse import identity
             from bempp.api.assembly import InverseSparseDiscreteBoundaryOperator
 
-            self._domain_map = InverseSparseDiscreteBoundaryOperator( \
-                identity(self.domain, self.domain, self.dual_to_range).weak_form())
+            self._range_map = InverseSparseDiscreteBoundaryOperator( \
+                identity(self.range, self.range, self.dual_to_range).weak_form())
 
-        return self._domain_map * self._weak_form_impl()
+        return self._range_map * self.weak_form()
 
     def _weak_form_impl(self):
         """Returns a weak form. Needs to be implemented by subclasses."""
 
-        raise NotImplemented
+        raise NotImplementedError
 
     def transpose(self, range_):
         """Return the transpose of a boundary operator."""
@@ -181,46 +182,27 @@ class ElementaryBoundaryOperator(BoundaryOperator):
         """Return the parameters of the operator."""
         return self._parameters
 
-    def local_assembler(self, parameters=None):
+    @property
+    def local_assembler(self):
         """Return the local assembler"""
 
-        if parameters is None:
-            parameters = self.parameters
-
-        return self._impl.make_local_assembler(parameters)
+        return self._impl.make_local_assembler(self._parameters)
 
     def _weak_form_impl(self):
-        import bempp
         import time
+        import bempp.api
 
-        if self._parameters.assembly.boundary_operator_assembly_type == 'dense':
-            from bempp.api.assembly.discrete_boundary_operator import \
-                DenseDiscreteBoundaryOperator
+        bempp.api.LOGGER.info(_start_assembly_message(self.domain,
+                                                      self.dual_to_range,
+                                                      'dense', self.label))
+        start_time = time.time()
 
-            bempp.api.LOGGER.info(_start_assembly_message(self.domain, self.dual_to_range, 'dense', self.label))
-            start_time = time.time()
+        weak_form = self._impl.assemble_weak_form(self._parameters)
 
-            discrete_operator = DenseDiscreteBoundaryOperator( \
-                self._impl.assemble_weak_form(self._parameters).as_matrix())
+        end_time = time.time()
+        bempp.api.LOGGER.info(_end_assembly_message(self.label, end_time - start_time))
 
-            end_time = time.time()
-            bempp.api.LOGGER.info(_end_assembly_message(self.label, end_time - start_time))
-
-        else:
-            from bempp.api.assembly.discrete_boundary_operator import \
-                GeneralNonlocalDiscreteBoundaryOperator
-
-            bempp.api.LOGGER.info(_start_assembly_message(self.domain, self.dual_to_range, 'hmat', self.label))
-            start_time = time.time()
-
-            discrete_operator = GeneralNonlocalDiscreteBoundaryOperator( \
-                self._impl.assemble_weak_form(self._parameters))
-
-            end_time = time.time()
-
-            bempp.api.LOGGER.info(_end_assembly_message(self.label, end_time - start_time))
-
-        return discrete_operator
+        return weak_form
 
 
 class LocalBoundaryOperator(BoundaryOperator):
@@ -247,32 +229,31 @@ class LocalBoundaryOperator(BoundaryOperator):
 
         return self._parameters
 
-    def local_assembler(self, parameters=None):
+    @property
+    def local_assembler(self):
         """Return the local assembler"""
 
-        if parameters is None:
-            parameters = self.parameters
-
-        return self._impl.make_local_assembler(parameters)
+        return self._impl.make_local_assembler(self._parameters)
 
     def _weak_form_impl(self):
-        from bempp.core.assembly.discrete_boundary_operator import convert_to_sparse
-        from bempp.api.assembly.discrete_boundary_operator import SparseDiscreteBoundaryOperator
 
-        import bempp
         import time
+        import bempp.api
 
-        bempp.api.LOGGER.info(_start_assembly_message(self.domain, self.dual_to_range, 'sparse', self.label))
+        assembly_mode = self._parameters.assembly.boundary_operator_assembly_type
+
+        bempp.api.LOGGER.info(_start_assembly_message(self.domain,
+                                                      self.dual_to_range,
+                                                      assembly_mode, self.label))
         start_time = time.time()
 
-        discrete_operator = SparseDiscreteBoundaryOperator( \
-            convert_to_sparse(self._impl.assemble_weak_form(self._parameters)))
+        weak_form = self._impl.assemble_weak_form(self._parameters)
 
         end_time = time.time()
-
         bempp.api.LOGGER.info(_end_assembly_message(self.label, end_time - start_time))
 
-        return discrete_operator
+        return weak_form
+
 
 class _ProjectionBoundaryOperator(BoundaryOperator):
     """Define the projection of an operator onto new spaces."""
@@ -281,15 +262,15 @@ class _ProjectionBoundaryOperator(BoundaryOperator):
 
         self._operator = operator
         self._domain = domain
-        self._range = range
+        self._range = range_
         self._dual_to_range = dual_to_range
 
         new_domain = operator.domain if domain is None else domain
         new_range = operator.range if range_ is None else range_
         new_dual_to_range = operator.dual_to_range if dual_to_range is None else dual_to_range
 
-        super(ProjectionBoundaryOperator, self).__init__(new_domain, new_range, new_dual_to_range,
-                                                         'Proj(' + operator.label + ')')
+        super(_ProjectionBoundaryOperator, self).__init__(new_domain, new_range, new_dual_to_range,
+                                                          'Proj(' + operator.label + ')')
 
     def _weak_form_impl(self):
 
@@ -299,26 +280,26 @@ class _ProjectionBoundaryOperator(BoundaryOperator):
         projected_weak_form = self._operator.weak_form()
 
         if self._dual_to_range is not None:
-
-            ident = identity(self._dual_to_range, self._dual_to_range).weak_form()
-            result_weak_form = ident * InverseSparseDiscreteBoundaryOperator(
-                identity(self._operator._dual_to_range, self._dual_to_range).weak_form()) * projected_weak_form
+            ident = identity(self._operator.dual_to_range, self._dual_to_range, self._dual_to_range).weak_form()
+            projected_weak_form = ident * InverseSparseDiscreteBoundaryOperator(
+                identity(self._operator.dual_to_range, self._operator.dual_to_range,
+                         self._operator.dual_to_range).weak_form()) * projected_weak_form
 
         if self._domain is not None:
-
             from bempp.api.space.projection import discrete_coefficient_projection
 
-            projected_weak_form *= discrete_coefficient_projection(self._operator.domain, domain)
+            projected_weak_form *= discrete_coefficient_projection(self._domain, self._operator.domain)
 
         return projected_weak_form
+
 
 class _SumBoundaryOperator(BoundaryOperator):
     """Return the sum of two boundary operators."""
 
     def __init__(self, op1, op2):
-        if (op1.domain != op2.domain or
-                    op1.range != op2.range or
-                    op1.dual_to_range != op2.dual_to_range):
+        if (not op1.domain.is_compatible(op2.domain) or
+                not op1.range.is_compatible(op2.range) or
+                not op1.dual_to_range.is_compatible(op2.dual_to_range)):
             raise ValueError("Spaces not compatible.")
 
         super(_SumBoundaryOperator, self).__init__( \
@@ -409,11 +390,11 @@ class CompoundBoundaryOperator(BoundaryOperator):
         trial_dual_to_range = trial_local_ops[0].dual_to_range
 
         for i in range(number_of_ops):
-            if (test_local_ops[i].range != range_ or
-                        test_local_ops[i].dual_to_range != dual_to_range or
-                        trial_local_ops[i].domain != domain or
-                        test_domain != test_local_ops[i].domain or
-                        trial_dual_to_range != trial_local_ops[i].dual_to_range):
+            if (not test_local_ops[i].range.is_compatible(range_) or
+                        not test_local_ops[i].dual_to_range.is_compatible(dual_to_range) or
+                        not trial_local_ops[i].domain.is_compatible(domain) or
+                        not test_domain.is_compatible(test_local_ops[i].domain) or
+                        not trial_dual_to_range.is_compatible(trial_local_ops[i].dual_to_range)):
                 raise ValueError("Incompatible spaces.")
 
         if parameters is None:

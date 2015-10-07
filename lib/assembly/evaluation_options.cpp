@@ -60,8 +60,6 @@ EvaluationOptions::Mode EvaluationOptions::evaluationMode() const {
   return m_evaluationMode;
 }
 
-const AcaOptions &EvaluationOptions::acaOptions() const { return m_acaOptions; }
-
 // void EvaluationOptions::switchToOpenCl(const OpenClOptions& openClOptions)
 //{
 //    m_parallelizationOptions.switchToOpenCl(openClOptions);

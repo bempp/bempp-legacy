@@ -10,26 +10,26 @@ from libcpp.string cimport string
 from cython.operator cimport dereference as deref
 
 
-cdef extern from "bempp/core/operators/boundary/py_boundary_operators.hpp" namespace "Bempp":
-    shared_ptr[const c_RealElementaryIntegralOperator] laplace_single_layer(
+cdef extern from "bempp/operators/laplace_operators.hpp" namespace "Bempp":
+    shared_ptr[const c_RealElementaryIntegralOperator] laplace_single_layer "Bempp::laplaceSingleLayerBoundaryOperator<double, double, double>"(
             const c_ParameterList&,
             shared_ptr[const c_Space[double]]&,
             shared_ptr[const c_Space[double]]&,
             shared_ptr[const c_Space[double]]&,
             string label, SymmetryMode symmetry)
-    shared_ptr[const c_RealElementaryIntegralOperator] laplace_double_layer(
+    shared_ptr[const c_RealElementaryIntegralOperator] laplace_double_layer "Bempp::laplaceDoubleLayerBoundaryOperator<double, double, double>"(
             const c_ParameterList&,
             shared_ptr[const c_Space[double]]&,
             shared_ptr[const c_Space[double]]&,
             shared_ptr[const c_Space[double]]&,
             string label, SymmetryMode symmetry)
-    shared_ptr[const c_RealElementaryIntegralOperator] laplace_adjoint_double_layer(
+    shared_ptr[const c_RealElementaryIntegralOperator] laplace_adjoint_double_layer "Bempp::laplaceAdjointDoubleLayerBoundaryOperator<double, double, double>"(
             const c_ParameterList&,
             shared_ptr[const c_Space[double]]&,
             shared_ptr[const c_Space[double]]&,
             shared_ptr[const c_Space[double]]&,
             string label, SymmetryMode symmetry)
-    shared_ptr[const c_RealElementaryIntegralOperator] laplace_hypersingular(
+    shared_ptr[const c_RealElementaryIntegralOperator] laplace_hypersingular "Bempp::laplaceHypersingularBoundaryOperator<double, double, double>"(
             const c_ParameterList&,
             shared_ptr[const c_Space[double]]&,
             shared_ptr[const c_Space[double]]&,

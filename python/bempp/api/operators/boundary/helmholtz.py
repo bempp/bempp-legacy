@@ -57,6 +57,23 @@ def hypersingular(domain, range_, dual_to_range,
                wave_number / (1j), label, symmetry,
                use_slp=use_slp, parameters=parameters)
 
+def multitrace_operator(grid, wave_number, parameters=None):
+
+    import bempp.api
+    return bempp.api.operators.boundary.modified_helmholtz.multitrace_operator(grid, wave_number/(1j), parameters)
+
+def interior_calderon_projector(grid, wave_number, parameters=None):
+
+    from .sparse import multitrace_identity
+
+    return .5 * multitrace_identity(grid, parameters) + multitrace_operator(grid, wave_number, parameters)
+
+def exterior_calderon_projector(grid, wave_number, parameters=None):
+
+    from .sparse import multitrace_identity
+
+    return .5 * multitrace_identity(grid, parameters) - multitrace_operator(grid, wave_number, parameters)
+
 
 def osrc_dtn(space, wave_number, npade=2, theta=_np.pi / 3,
              parameters=None, label="osrc_dtn"):

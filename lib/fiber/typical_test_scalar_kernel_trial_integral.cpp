@@ -541,6 +541,8 @@ void TypicalTestScalarKernelTrialIntegral<std::complex<CoordinateType>,
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(
     TypicalTestScalarKernelTrialIntegral);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(
+        TypicalTestScalarKernelTrialIntegralBase);
 
 } // namespace Fiber
 

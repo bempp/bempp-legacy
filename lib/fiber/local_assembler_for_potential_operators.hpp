@@ -24,6 +24,7 @@
 #include "../common/common.hpp"
 
 #include "_3d_array.hpp"
+#include "_2d_array.hpp"
 #include "scalar_traits.hpp"
 #include "types.hpp"
 

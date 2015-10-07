@@ -12,7 +12,7 @@ def single_layer(space, evaluation_points, wave_number, parameters=None):
     if parameters is None:
         parameters = bempp.api.global_parameters
 
-    return PotentialOperator(GeneralNonlocalDiscreteBoundaryOperator(single_layer_ext(space, evaluation_points,
+    return PotentialOperator(GeneralNonlocalDiscreteBoundaryOperator(single_layer_ext(space._impl, evaluation_points,
                                                                                       wave_number,
                                                                                       parameters)),
                              1, space, evaluation_points)
@@ -29,7 +29,7 @@ def double_layer(space, evaluation_points, wave_number, parameters=None):
     if parameters is None:
         parameters = bempp.api.global_parameters
 
-    return PotentialOperator(GeneralNonlocalDiscreteBoundaryOperator(double_layer_ext(space, evaluation_points,
+    return PotentialOperator(GeneralNonlocalDiscreteBoundaryOperator(double_layer_ext(space._impl, evaluation_points,
                                                                                       wave_number,
                                                                                       parameters)),
                              1, space, evaluation_points)

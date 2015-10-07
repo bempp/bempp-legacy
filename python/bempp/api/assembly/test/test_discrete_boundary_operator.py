@@ -1,8 +1,11 @@
 from unittest import TestCase
+import unittest
+import bempp.api
 
 
 class TestGeneralNonlocalDiscreteBoundaryOperator(TestCase):
     """Test cases for general discrete operators."""
+
 
     def setUp(self):
         import bempp
@@ -205,6 +208,9 @@ class TestSparseDiscreteBoundaryOperator(TestCase):
 
 
 class TestInverseSparseDiscreteBoundaryOperator(TestCase):
+
+    requiresgmsh = unittest.skipIf(bempp.api.GMSH_PATH is None, reason="Needs GMSH")
+
     def setUp(self):
         import bempp
 
@@ -212,6 +218,7 @@ class TestInverseSparseDiscreteBoundaryOperator(TestCase):
         self._space_const = bempp.api.function_space(grid, "DP", 0)
         self._space_lin = bempp.api.function_space(grid, "P", 1)
 
+    @requiresgmsh
     def test_square_inverse(self):
         import bempp
         import numpy as np
@@ -225,6 +232,7 @@ class TestInverseSparseDiscreteBoundaryOperator(TestCase):
 
         self.assertAlmostEqual(np.linalg.norm(expected - actual), 0)
 
+    @requiresgmsh
     def test_inverse_of_thin_sparse_matrix(self):
         import bempp
         import numpy as np
@@ -241,6 +249,7 @@ class TestInverseSparseDiscreteBoundaryOperator(TestCase):
 
         self.assertAlmostEqual(np.linalg.norm(expected - actual), 0)
 
+    @requiresgmsh
     def test_inverse_of_thick_sparse_matrix(self):
         import bempp
         import numpy as np

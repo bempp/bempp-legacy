@@ -12,7 +12,7 @@ def electric_field(space, evaluation_points, wave_number, parameters=None):
     if parameters is None:
         parameters = bempp.api.global_parameters
 
-    return PotentialOperator(GeneralNonlocalDiscreteBoundaryOperator(electric_field_ext(space, evaluation_points,
+    return PotentialOperator(GeneralNonlocalDiscreteBoundaryOperator(electric_field_ext(space._impl, evaluation_points,
                                                                                         wave_number,
                                                                                         parameters)),
                              3, space, evaluation_points)
@@ -29,7 +29,7 @@ def magnetic_field(space, evaluation_points, wave_number, parameters=None):
     if parameters is None:
         parameters = bempp.api.global_parameters
 
-    return PotentialOperator(GeneralNonlocalDiscreteBoundaryOperator(magnetic_field_ext(space, evaluation_points,
+    return PotentialOperator(GeneralNonlocalDiscreteBoundaryOperator(magnetic_field_ext(space._impl, evaluation_points,
                                                                                         wave_number,
                                                                                         parameters)),
                              3, space, evaluation_points)

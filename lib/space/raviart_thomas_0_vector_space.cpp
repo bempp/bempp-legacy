@@ -556,9 +556,10 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::getGlobalDofNormals(
       normal.y += elementNormals(1, m_global2localDofs[g][l].entityIndex);
       normal.z += elementNormals(2, m_global2localDofs[g][l].entityIndex);
     }
-    normal.x /= m_global2localDofs[g].size();
-    normal.y /= m_global2localDofs[g].size();
-    normal.z /= m_global2localDofs[g].size();
+    auto len = std::sqrt(normal.x * normal.x + normal.y * normal.y + normal.z * normal.z);
+    normal.x /= len;
+    normal.y /= len;
+    normal.z /= len;
   }
 }
 

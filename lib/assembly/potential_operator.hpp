@@ -39,7 +39,6 @@ class EvaluationOptions;
 class EvaluationOptions;
 class GeometryFactory;
 class Grid;
-template <typename BasisFunctionType, typename ResultType> class GridFunction;
 template <typename ResultType> class InterpolatedFunction;
 template <typename BasisFunctionType> class Space;
 template <typename BasisFunctionType, typename ResultType>
@@ -57,9 +56,7 @@ class AssembledPotentialOperator;
  *  *charge distribution*.
  *
  *  The functions evaluateOnGrid() and evaluateAtPoints() can be used to
- *  evaluate the potential produced by a given charge distribution, represented
- *  with a GridFunction object, at specified points in \f$\Omega \setminus
- *\Gamma\f$.
+ *  evaluate the potential produced by a given charge distribution.
  *
  *  \tparam BasisFunctionType_
  *    Type of the values of the (components of the) basis functions into

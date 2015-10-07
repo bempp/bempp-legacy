@@ -46,7 +46,6 @@ namespace Bempp {
 
 /** \cond FORWARD_DECL */
 class EvaluationOptions;
-template <typename BasisFunctionType, typename ResultType> class GridFunction;
 template <typename ValueType> class InterpolatedFunction;
 /** \endcond */
 
@@ -200,10 +199,6 @@ private:
 
   std::unique_ptr<DiscreteBoundaryOperator<ResultType_>>
   assembleWeakFormInDenseMode(
-      LocalAssembler &assembler,
-      const Context<BasisFunctionType, ResultType> &context) const;
-  std::unique_ptr<DiscreteBoundaryOperator<ResultType_>>
-  assembleWeakFormInAcaMode(
       LocalAssembler &assembler,
       const Context<BasisFunctionType, ResultType> &context) const;
   std::unique_ptr<DiscreteBoundaryOperator<ResultType_>>
