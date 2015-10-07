@@ -202,7 +202,7 @@ public:
   @{ */
 
   /** \brief Return a barycentrically refined grid based on the Leaf View and its son map */
-  // 
+  //
   virtual std::pair<shared_ptr<Grid>,Matrix<int>> barycentricGridSonPair() const {
     if (!m_barycentricGrid.get()) {
       tbb::mutex::scoped_lock lock(m_barycentricSpaceMutex);
@@ -217,6 +217,8 @@ public:
 
         view->getRawElementData(vertices, elementCorners, auxData,
                                 domainIndices);
+        const IndexSet &index=view->indexSet();
+
         GridParameters params;
         params.topology = GridParameters::TRIANGULAR;
 
@@ -230,47 +232,43 @@ public:
 
         barycentricVertices.conservativeResize(3,ent2Count+ent1Count+ent0Count);
 
-        {
-            int i=0;
-            for (std::unique_ptr<EntityIterator<2>> it = view->entityIterator<2>();!it->finished();it->next()){
-                const Entity<2> &entity = it->entity();
-                Matrix<double> corners;
-                entity.geometry().getCorners(corners);
-                for(int j=0;j!=3;++j){
-                    barycentricVertices(j,i) = corners(j,0);
-                }
-                ++i;
+        for (std::unique_ptr<EntityIterator<2>> it = view->entityIterator<2>();!it->finished();it->next()){
+            const Entity<2> &entity = it->entity();
+            const int ent2Number = index.entityIndex(entity);
+            Matrix<double> corners;
+            entity.geometry().getCorners(corners);
+            for(int j=0;j!=3;++j){
+                barycentricVertices(j,ent2Number) = corners(j,0);
             }
+        }
 
-            for (std::unique_ptr<EntityIterator<1>> it = view->entityIterator<1>();!it->finished();it->next()){
-                const Entity<1> &entity = it->entity();
-                Matrix<double> corners;
-                entity.geometry().getCorners(corners);
-                for(int j=0;j!=3;++j){
-                    barycentricVertices(j,i) = (corners(j,0)+corners(j,1))/2;
-                }
-                ++i;
+        for (std::unique_ptr<EntityIterator<1>> it = view->entityIterator<1>();!it->finished();it->next()){
+            const Entity<1> &entity = it->entity();
+            const int ent1Number = index.entityIndex(entity);
+            Matrix<double> corners;
+            entity.geometry().getCorners(corners);
+            for(int j=0;j!=3;++j){
+                barycentricVertices(j,ent2Count+ent1Number) = (corners(j,0)+corners(j,1))/2;
             }
+        }
 
-            for (std::unique_ptr<EntityIterator<0>> it = view->entityIterator<0>();!it->finished();it->next()){
-                const Entity<0> &entity = it->entity();
-                Matrix<double> corners;
-                entity.geometry().getCorners(corners);
-                for(int j=0;j!=3;++j){
-                    barycentricVertices(j,i) = (corners(j,0)+corners(j,1)+corners(j,2))/3;
-                    }
-                ++i;
-            }
+        for (std::unique_ptr<EntityIterator<0>> it = view->entityIterator<0>();!it->finished();it->next()){
+            const Entity<0> &entity = it->entity();
+            const int ent0Number = index.entityIndex(entity);
+            Matrix<double> corners;
+            entity.geometry().getCorners(corners);
+            for(int j=0;j!=3;++j){
+                barycentricVertices(j,ent2Count+ent1Count+ent0Number) = (corners(j,0)+corners(j,1)+corners(j,2))/3;
+                }
         }
 
         barycentricElementCorners.conservativeResize(3,6*ent0Count);
         Matrix<int> tempSonMap;
         tempSonMap.conservativeResize(6*ent0Count,2);
-        const IndexSet &index=view->indexSet();
+        int dummy_i=0;
         for(std::unique_ptr<EntityIterator<0>> it = view->entityIterator<0>();!it->finished();it->next()){
             const Entity<0> &entity = it->entity();
             const int ent0Number = index.subEntityIndex(entity,0,0);
-
             barycentricElementCorners(0,6*ent0Number)=index.subEntityIndex(entity,0,2);
             barycentricElementCorners(1,6*ent0Number)=ent2Count+ent1Count+ent0Number;
             barycentricElementCorners(2,6*ent0Number)=ent2Count+index.subEntityIndex(entity,1,1);
