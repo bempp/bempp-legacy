@@ -258,7 +258,6 @@ public:
         barycentricElementCorners.conservativeResize(3,6*ent0Count);
         Matrix<int> tempSonMap;
         tempSonMap.conservativeResize(6*ent0Count,2);
-        int dummy_i=0;
         for(std::unique_ptr<EntityIterator<0>> it = view->entityIterator<0>();!it->finished();it->next()){
             const Entity<0> &entity = it->entity();
             const int ent0Number = index.subEntityIndex(entity,0,0);
