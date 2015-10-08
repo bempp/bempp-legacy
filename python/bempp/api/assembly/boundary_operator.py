@@ -19,6 +19,8 @@ def _end_assembly_message(label, assembly_time):
 class BoundaryOperator(object):
     """A basic object describing operators acting on boundaries.
 
+    This class is not supposed to be instantiated directly.
+
     """
 
     def __init__(self, domain, range_, dual_to_range, label=""):
@@ -52,7 +54,15 @@ class BoundaryOperator(object):
         return self._label
 
     def weak_form(self, recompute=False):
-        """Return the discretised weak form."""
+        """Return the discretised weak form.
+
+        Parameters
+        ----------
+        recompute : bool
+            Usually the weak form is cached. If this parameter is set to
+            `true` the weak form is recomputed.
+
+        """
 
         if recompute:
             self._weak_form = None
@@ -101,8 +111,17 @@ class BoundaryOperator(object):
 
         return self.__add__(-other)
 
-    def strong_form(self):
-        """Return a discrete operator  that maps into the range space."""
+    def strong_form(self, recompute=False):
+        """Return a discrete operator  that maps into the range space.
+
+        Parameters
+        ----------
+        recompute : bool
+            Usually the strong form is cached. If this parameter is set to
+            `true` the strong form is recomputed.
+        """
+        if recompute is True:
+            self._range_map = None
 
         if self._range_map is None:
             from bempp.api.operators.boundary.sparse import identity
@@ -111,7 +130,7 @@ class BoundaryOperator(object):
             self._range_map = InverseSparseDiscreteBoundaryOperator( \
                 identity(self.range, self.range, self.dual_to_range).weak_form())
 
-        return self._range_map * self.weak_form()
+        return self._range_map * self.weak_form(recompute)
 
     def _weak_form_impl(self):
         """Returns a weak form. Needs to be implemented by subclasses."""
@@ -119,18 +138,44 @@ class BoundaryOperator(object):
         raise NotImplementedError
 
     def transpose(self, range_):
-        """Return the transpose of a boundary operator."""
+        """Return the transpose of a boundary operator.
+
+        Parameters
+        ----------
+        range_ : bempp.api.space.Space
+            The new range space of the transpose. This can not be 
+            determined automatically.
+
+        """
 
         return _TransposeBoundaryOperator(self, range_)
 
     def adjoint(self, range_):
-        """Return the adjoint of a boundary operator."""
+        """Return the adjoint of a boundary operator.
 
+        Parameters
+        ----------
+        range_ : bempp.api.space.Space
+            The new range space of the transpose. This can not be 
+            determined automatically.
+
+        """
         return _AdjointBoundaryOperator(self, range_)
 
 
 class ZeroBoundaryOperator(BoundaryOperator):
-    """A boundary operator that represents a zero operator."""
+    """A boundary operator that represents a zero operator.
+
+    Parameters
+    ----------
+    domain : bempp.api.space.Space
+        Domain space of the operator.
+    range_ : bempp.api.space.Space
+        Range space of the operator.
+    dual_to_range : bempp.api.space.Space
+        Dual space to the range space.
+
+    """
 
     def __init__(self, domain, range_, dual_to_range):
         super(ZeroBoundaryOperator, self).__init__(domain, range_, dual_to_range)
@@ -160,7 +205,27 @@ class ZeroBoundaryOperator(BoundaryOperator):
 
 
 class ElementaryBoundaryOperator(BoundaryOperator):
-    """Concrete implementation for elementary integral operators."""
+    """Concrete implementation for elementary integral operators.
+
+    Parameters
+    ----------
+    abstract_operator : Abstrct boundary operator object
+        Various types of abstract operators are defined in
+        ``bempp.api.assembly.abstract_boundary_operator``.
+    parameters : bempp.api.common.global_parameters
+        An optional parameters object (default is None).
+    label: string
+        An optional operator label (default is "").
+
+    Attributes
+    ----------
+    parameters : bempp.api.common.global_parameters
+        Returns the associated parameters object.
+    local_assembler : Local assembler object
+        Returns the associated local assembler. See also
+        ``bempp.api.assembly.assembler``.
+
+    """
 
     def __init__(self, abstract_operator, parameters=None, label=""):
         super(ElementaryBoundaryOperator, self).__init__(abstract_operator.domain,
@@ -192,9 +257,11 @@ class ElementaryBoundaryOperator(BoundaryOperator):
         import time
         import bempp.api
 
+        assembly_mode = self._parameters.assembly.boundary_operator_assembly_type
+
         bempp.api.LOGGER.info(_start_assembly_message(self.domain,
                                                       self.dual_to_range,
-                                                      'dense', self.label))
+                                                      assembly_mode, self.label))
         start_time = time.time()
 
         weak_form = self._impl.assemble_weak_form(self._parameters)
@@ -206,7 +273,27 @@ class ElementaryBoundaryOperator(BoundaryOperator):
 
 
 class LocalBoundaryOperator(BoundaryOperator):
-    """Concrete implementation for local (sparse) boundary operators."""
+    """Concrete implementation for local (sparse) boundary operators.
+
+    Parameters
+    ----------
+    abstract_operator : Abstrct boundary operator object
+        Various types of abstract operators are defined in
+        ``bempp.api.assembly.abstract_boundary_operator``.
+    parameters : bempp.api.common.global_parameters
+        An optional parameters object (default is None).
+    label: string
+        An optional operator label (default is "").
+
+    Attributes
+    ----------
+    parameters : bempp.api.common.global_parameters
+        Returns the associated parameters object.
+    local_assembler : Local assembler object
+        Returns the associated local assembler. See also
+        ``bempp.api.assembly.assember``.
+
+    """
 
     def __init__(self, abstract_operator, parameters=None, label=""):
         super(LocalBoundaryOperator, self).__init__(abstract_operator.domain,
@@ -240,11 +327,9 @@ class LocalBoundaryOperator(BoundaryOperator):
         import time
         import bempp.api
 
-        assembly_mode = self._parameters.assembly.boundary_operator_assembly_type
-
         bempp.api.LOGGER.info(_start_assembly_message(self.domain,
                                                       self.dual_to_range,
-                                                      assembly_mode, self.label))
+                                                      'sparse', self.label))
         start_time = time.time()
 
         weak_form = self._impl.assemble_weak_form(self._parameters)

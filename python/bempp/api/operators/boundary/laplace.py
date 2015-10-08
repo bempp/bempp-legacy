@@ -6,7 +6,27 @@
 def single_layer(domain, range_, dual_to_range,
                  label="SLP", symmetry='no_symmetry',
                  parameters=None):
-    """Return the single-layer boundary operator."""
+    """Return the Laplace single-layer boundary operator.
+
+    Parameters
+    ----------
+    domain : bempp.api.space.Space
+        Domain space.
+    range_ : bempp.api.space.Space
+        Range space.
+    dual_to_range : bempp.api.space.Space
+        Dual space to the range space.
+    label : string
+        Label for the operator.
+    symmetry : string
+        Symmetry mode. Possible values are: 'no_symmetry',
+        'symmetric', 'hermitian'.
+    parameters : bempp.api.common.ParameterList
+        Parameters for the operator. If none given the
+        default global parameter object `bempp.api.global_parameters`
+        is used.
+
+    """
 
     import bempp
     from bempp.core.operators.boundary.laplace import single_layer_ext
@@ -27,7 +47,27 @@ def single_layer(domain, range_, dual_to_range,
 def double_layer(domain, range_, dual_to_range,
                  label="DLP", symmetry='no_symmetry',
                  parameters=None):
-    """Return the double-layer boundary operator."""
+    """Return the Laplace double-layer boundary operator.
+
+    Parameters
+    ----------
+    domain : bempp.api.space.Space
+        Domain space.
+    range_ : bempp.api.space.Space
+        Range space.
+    dual_to_range : bempp.api.space.Space
+        Dual space to the range space.
+    label : string
+        Label for the operator.
+    symmetry : string
+        Symmetry mode. Possible values are: 'no_symmetry',
+        'symmetric', 'hermitian'.
+    parameters : bempp.api.common.ParameterList
+        Parameters for the operator. If none given the
+        default global parameter object `bempp.api.global_parameters`
+        is used.
+
+    """
 
     import bempp
     from bempp.core.operators.boundary.laplace import double_layer_ext
@@ -47,7 +87,27 @@ def double_layer(domain, range_, dual_to_range,
 def adjoint_double_layer(domain, range_, dual_to_range,
                          label="ADJ_DLP", symmetry='no_symmetry',
                          parameters=None):
-    """Return the adjoint double-layer boundary operator."""
+    """Return the Laplace adjoint double-layer boundary operator.
+
+    Parameters
+    ----------
+    domain : bempp.api.space.Space
+        Domain space.
+    range_ : bempp.api.space.Space
+        Range space.
+    dual_to_range : bempp.api.space.Space
+        Dual space to the range space.
+    label : string
+        Label for the operator.
+    symmetry : string
+        Symmetry mode. Possible values are: 'no_symmetry',
+        'symmetric', 'hermitian'.
+    parameters : bempp.api.common.ParameterList
+        Parameters for the operator. If none given the
+        default global parameter object `bempp.api.global_parameters`
+        is used.
+
+    """
 
     import bempp
     from bempp.core.operators.boundary.laplace import adjoint_double_layer_ext
@@ -67,7 +127,38 @@ def adjoint_double_layer(domain, range_, dual_to_range,
 def hypersingular(domain, range_, dual_to_range,
                   label="HYP", symmetry='no_symmetry',
                   parameters=None, use_slp=False):
-    """Return the hypersingular boundary operator."""
+    """Return the Laplace hypersingular boundary operator.
+
+    Parameters
+    ----------
+    domain : bempp.api.space.Space
+        Domain space.
+    range_ : bempp.api.space.Space
+        Range space.
+    dual_to_range : bempp.api.space.Space
+        Dual space to the range space.
+    label : string
+        Label for the operator.
+    symmetry : string
+        Symmetry mode. Possible values are: 'no_symmetry',
+        'symmetric', 'hermitian'.
+    parameters : bempp.api.common.ParameterList
+        Parameters for the operator. If none given the
+        default global parameter object `bempp.api.global_parameters`
+        is used.
+    use_slp : True/False or boundary operator object
+        The hypersingular operator can be represented as a sparse transformation
+        of a single-layer operator. If `use_slp=True` this representation is used.
+        If `use_slp=op` for a single-layer boundary operator assembled on a
+        suitable space this operator is used to assemble the hypersingular operator.
+        Note that if `use_slp=op` is used no checks are performed if the slp operator
+        is correctly defined for representing the hypersingular operator. Hence,
+        if no care is taken this option can lead to a wrong operator. Also,
+        `use_slp=True` or `use_slp=op` is only valid if the `domain` and `dual_to_range`
+        spaces are identical.
+
+
+    """
 
     import bempp
     from bempp.core.operators.boundary.laplace import hypersingular_ext
@@ -121,17 +212,53 @@ def hypersingular(domain, range_, dual_to_range,
         return CompoundBoundaryOperator(test_local_ops, slp, trial_local_ops, label=label)
 
 def multitrace_operator(grid, parameters=None):
+    """Return the Laplace multitrace operator.
+
+    Parameters
+    ----------
+    grid : bempp.api.grid.Grid
+        The underlying grid for the multitrace operator
+    parameters : bempp.api.common.ParameterList
+        Parameters for the operator. If none given
+        the default global parameter object
+        `bempp.api.global_parameters` is used.
+
+    """
 
     from bempp.api.operators.boundary import _common
     return _common.multitrace_operator_impl(grid, single_layer, double_layer, hypersingular, parameters)
 
 def interior_calderon_projector(grid, parameters=None):
+    """Return the Laplace interior Calderon projector.
+
+    Parameters
+    ----------
+    grid : bempp.api.grid.Grid
+        The underlying grid for the multitrace operator
+    parameters : bempp.api.common.ParameterList
+        Parameters for the operator. If none given
+        the default global parameter object
+        `bempp.api.global_parameters` is used.
+
+    """
 
     from .sparse import multitrace_identity
 
     return .5 * multitrace_identity(grid, parameters) + multitrace_operator(grid, parameters)
 
 def exterior_calderon_projector(grid, parameters=None):
+    """Return the Laplace exterior Calderon projector.
+
+    Parameters
+    ----------
+    grid : bempp.api.grid.Grid
+        The underlying grid for the multitrace operator
+    parameters : bempp.api.common.ParameterList
+        Parameters for the operator. If none given
+        the default global parameter object
+        `bempp.api.global_parameters` is used.
+
+    """
 
     from .sparse import multitrace_identity
 

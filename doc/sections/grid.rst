@@ -241,8 +241,8 @@ the module `bempp.api.shapes`
     :members:
 
 
-Class descriptions
----------------------------------
+Function and class reference
+----------------------------
 
 The following classes define a `Grid` and its various components. They
 are not meant to be instantiated directly.

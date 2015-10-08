@@ -6,7 +6,27 @@
 def identity(domain, range_, dual_to_range,
              label="IDENTITY", symmetry='no_symmetry',
              parameters=None):
-    """Return the identity operator."""
+    """Return the identity operator.
+
+    Parameters
+    ----------
+    domain : bempp.api.space.Space
+        Domain space.
+    range_ : bempp.api.space.Space
+        Range space.
+    dual_to_range : bempp.api.space.Space
+        Dual space to the range space.
+    label : string
+        Label for the operator.
+    symmetry : string
+        Symmetry mode. Possible values are: 'no_symmetry',
+        'symmetric', 'hermitian'.
+    parameters : bempp.api.common.ParameterList
+        Parameters for the operator. If none given the
+        default global parameter object `bempp.api.global_parameters`
+        is used.
+
+    """
 
     import bempp.api
     from bempp.core.operators.boundary.sparse import identity_ext
@@ -25,7 +45,23 @@ def identity(domain, range_, dual_to_range,
 def maxwell_identity(space,
                      label="MAXWELL_IDENTITY", symmetry='no_symmetry',
                      parameters=None):
-    """Return the Maxwell identity operator."""
+    """Return the Maxwell identity operator.
+
+    Parameters
+    ----------
+    space : bempp.api.space.Space
+        Space on which the operator is defined.
+    label : string
+        Label for the operator.
+    symmetry : string
+        Symmetry mode. Possible values are: 'no_symmetry',
+        'symmetric', 'hermitian'.
+    parameters : bempp.api.common.ParameterList
+        Parameters for the operator. If none given the
+        default global parameter object `bempp.api.global_parameters`
+        is used.
+
+    """
 
     import bempp.api
     from bempp.core.operators.boundary.sparse import maxwell_identity_ext
@@ -44,7 +80,31 @@ def maxwell_identity(space,
 def laplace_beltrami(domain, range_, dual_to_range,
                      label="LAPLACE_BELTRAMI", symmetry='no_symmetry',
                      parameters=None):
-    """Return the Laplace-Beltrami operator."""
+    """Return the Laplace Beltrami operator.
+
+    Parameters
+    ----------
+    domain : bempp.api.space.Space
+        Domain space.
+    range_ : bempp.api.space.Space
+        Range space.
+    dual_to_range : bempp.api.space.Space
+        Dual space to the range space.
+    label : string
+        Label for the operator.
+    symmetry : string
+        Symmetry mode. Possible values are: 'no_symmetry',
+        'symmetric', 'hermitian'.
+    parameters : bempp.api.common.ParameterList
+        Parameters for the operator. If none given the
+        default global parameter object `bempp.api.global_parameters`
+        is used.
+
+    Notes
+    -----
+    The spaces for this operator must be spaces of continuous functions.
+
+    """
 
     import bempp.api
     from bempp.core.operators.boundary.sparse import laplace_beltrami_ext
@@ -61,7 +121,18 @@ def laplace_beltrami(domain, range_, dual_to_range,
             parameters=parameters, label=label)
 
 def multitrace_identity(grid, parameters=None):
-    """Return the multitrace identity operator."""
+    """Return the multitrace identity operator.
+
+    Parameters
+    ----------
+    grid : bempp.api.grid.Grid
+        The underlying grid for the multitrace operator
+    parameters : bempp.api.common.ParameterList
+        Parameters for the operator. If none given
+        the default global parameter object
+        `bempp.api.global_parameters` is used.
+
+    """
 
     from bempp.api.assembly import BlockedOperator
     import bempp.api

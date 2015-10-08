@@ -2,6 +2,12 @@
 
 
 class PotentialOperator:
+    """Provides an interface to potential operators.
+
+    This class is not supposed to be instantiated directly.
+
+    """
+
     def __init__(self, op, component_count, space, evaluation_points):
 
         self._op = op
@@ -10,6 +16,15 @@ class PotentialOperator:
         self._evaluation_points = evaluation_points
 
     def evaluate(self, grid_fun):
+        """Apply the potential operator to a grid function.
+
+        Parameters
+        ----------
+        grid_fun : bempp.api.GridFunction
+            A GridFunction object that represents the boundary density to
+            which the potential is applied to.
+
+        """
 
         res = self._op * grid_fun.coefficients
         return res.reshape(self._component_count, -1, order='F')
@@ -58,18 +73,22 @@ class PotentialOperator:
 
     @property
     def space(self):
+        """Return the underlying function space."""
         return self._space
 
     @property
     def component_count(self):
+        """Return number of components of the potential (e.g. 1 or scalar potentials)."""
         return self._component_count
 
     @property
     def evaluation_points(self):
+        """Return the evaluation points."""
         return self._evaluation_points
 
     @property
     def discrete_operator(self):
+        """Return the underlying discrete operator that represents the potential."""
         return self._op
 
     @property

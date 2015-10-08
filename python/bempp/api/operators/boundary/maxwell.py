@@ -7,7 +7,36 @@ def electric_field(space,
                    wave_number,
                    label="EFIE", symmetry='no_symmetry',
                    parameters=None, use_slp=False):
-    """Return the electric field boundary operator."""
+    """Return the Maxwell electric field boundary operator.
+
+    Parameters
+    ----------
+    space : bempp.api.space.Space
+        Dual space to the range space.
+    wave_number : complex
+        Wavenumber for the Helmholtz problem.
+    label : string
+        Label for the operator.
+    symmetry : string
+        Symmetry mode. Possible values are: 'no_symmetry',
+        'symmetric', 'hermitian'.
+    parameters : bempp.api.common.ParameterList
+        Parameters for the operator. If none given the
+        default global parameter object `bempp.api.global_parameters`
+        is used.
+    use_slp : True/False or boundary operator object
+        The electric field operator can be represented as a sparse transformation
+        of a Helmholtz single-layer operator. If `use_slp=True` this representation is used.
+        If `use_slp=op` for a single-layer boundary operator assembled on a
+        suitable space this operator is used to assemble the hypersingular operator.
+        Note that if `use_slp=op` is used no checks are performed if the slp operator
+        is correctly defined for representing the hypersingular operator. Hence,
+        if no care is taken this option can lead to a wrong operator. Also,
+        `use_slp=True` or `use_slp=op` is only valid if the `domain` and `dual_to_range`
+        spaces are identical.
+
+
+    """
 
     import bempp
     from bempp.core.operators.boundary.maxwell import electric_field_ext
@@ -72,7 +101,25 @@ def magnetic_field(space,
                    wave_number,
                    label="MFIE", symmetry='no_symmetry',
                    parameters=None):
-    """Return the magnetic field boundary operator."""
+    """Return the Maxwell magnetic field boundary operator.
+
+    Parameters
+    ----------
+    space : bempp.api.space.Space
+        Dual space to the range space.
+    wave_number : complex
+        Wavenumber for the Helmholtz problem.
+    label : string
+        Label for the operator.
+    symmetry : string
+        Symmetry mode. Possible values are: 'no_symmetry',
+        'symmetric', 'hermitian'.
+    parameters : bempp.api.common.ParameterList
+        Parameters for the operator. If none given the
+        default global parameter object `bempp.api.global_parameters`
+        is used.
+
+    """
 
     import bempp
     from bempp.core.operators.boundary.maxwell import magnetic_field_ext

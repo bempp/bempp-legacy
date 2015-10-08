@@ -97,8 +97,8 @@ coefficients were computed. The parameter is optional and if it is not
 given then ``space == dual_space`` is assumed (i.e.
 :math:`L^2(\Gamma)`-projection).
 
-Class descriptions
-------------------
+Function and class reference
+----------------------------
 
 .. autoclass:: bempp.api.GridFunction
     :members:

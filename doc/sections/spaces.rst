@@ -137,8 +137,8 @@ corresponding global dof coefficient needs to be multiplied with the
 example, for Raviart-Thomas basis functions it can differ. Weights are
 only returned if the parameter ``dof_weights=True`` is set.
 
-Class descriptions
-------------------
+Function and class reference
+----------------------------
 
 Function spaces are instantiated by the function :class:`bempp.api.function_space`.
 They return :class:`bempp.api.space.Space` objects, which contain the necessary information that define

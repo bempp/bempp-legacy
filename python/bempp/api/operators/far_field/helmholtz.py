@@ -2,7 +2,22 @@
 
 
 def single_layer(space, evaluation_points, wave_number, parameters=None):
-    """Return the modified Helmholtz single-layer far field operator."""
+    """Return the Helmholtz single-layer far field operator.
+
+    Parameters
+    ----------
+    space : bempp.api.space.Space
+        The function space over which to assemble the potential.
+    evaluation_points : numpy.ndarray
+        A (3 x N) array of N evaluation points, where each column corresponds to
+        the coordinates of one evaluation point. For the far field the points
+        should lie on the unit sphere.
+    parameters : bempp.api.common.ParameterList
+        Parameters for the operator. If none given
+        the default global parameter object
+        `bempp.api.global_parameters` is used.
+
+    """
 
     import bempp
     from bempp.api.assembly.potential_operator import PotentialOperator
@@ -19,7 +34,22 @@ def single_layer(space, evaluation_points, wave_number, parameters=None):
 
 
 def double_layer(space, evaluation_points, wave_number, parameters=None):
-    """Return the modified Helmholtz double-layer far field operator."""
+    """Return the Helmholtz double-layer far field operator.
+
+    Parameters
+    ----------
+    space : bempp.api.space.Space
+        The function space over which to assemble the potential.
+    evaluation_points : numpy.ndarray
+        A (3 x N) array of N evaluation points, where each column corresponds to
+        the coordinates of one evaluation point. For the far field the points
+        should lie on the unit sphere.
+    parameters : bempp.api.common.ParameterList
+        Parameters for the operator. If none given
+        the default global parameter object
+        `bempp.api.global_parameters` is used.
+
+    """
 
     import bempp
     from bempp.api.assembly.potential_operator import PotentialOperator

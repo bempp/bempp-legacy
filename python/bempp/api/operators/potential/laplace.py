@@ -2,7 +2,21 @@
 
 
 def single_layer(space, evaluation_points, parameters=None):
-    """Return the Laplace single-layer potential operator."""
+    """Return the Laplace single-layer potential operator
+
+    Parameters
+    ----------
+    space : bempp.api.space.Space
+        The function space over which to assemble the potential.
+    evaluation_points : numpy.ndarray
+        A (3 x N) array of N evaluation points, where each column corresponds to
+        the coordinates of one evaluation point.
+    parameters : bempp.api.common.ParameterList
+        Parameters for the operator. If none given
+        the default global parameter object
+        `bempp.api.global_parameters` is used.
+        
+    """
 
     import bempp
     from bempp.api.assembly.potential_operator import PotentialOperator
@@ -18,7 +32,21 @@ def single_layer(space, evaluation_points, parameters=None):
 
 
 def double_layer(space, evaluation_points, parameters=None):
-    """Return the Laplace double-layer potential operator."""
+    """Return the Laplace double-layer potential operator
+
+    Parameters
+    ----------
+    space : bempp.api.space.Space
+        The function space over which to assemble the potential.
+    evaluation_points : numpy.ndarray
+        A (3 x N) array of N evaluation points, where each column corresponds to
+        the coordinates of one evaluation point.
+    parameters : bempp.api.common.ParameterList
+        Parameters for the operator. If none given
+        the default global parameter object
+        `bempp.api.global_parameters` is used.
+        
+    """
 
     import bempp
     from bempp.api.assembly.potential_operator import PotentialOperator

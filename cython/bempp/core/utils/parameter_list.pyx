@@ -196,14 +196,6 @@ cdef class _HMatParameterList:
     def __init__(self, ParameterList base):
         pass
 
-    property assembly_mode:
-        def __get__(self):
-            cdef char* s = b"options.hmat.hMatAssemblyMode"
-            return deref(self.impl_).get_string(s).decode("UTF-8")
-        def __set__(self,object value):
-            cdef char* s = b"options.hmat.hMatAssemblyMode"
-            deref(self.impl_).put_string(s,_convert_to_bytes(value))
-
     property min_block_size:
         def __get__(self):
             cdef char* s = b"options.hmat.minBlockSize"
