@@ -24,7 +24,7 @@ plot the grid with the following command.
 
     grid.plot()
 
-.. image:: sphere.png
+.. image:: figures/sphere.png
 
 This uses ``Gmsh`` to plot the grid externally. In order to work please
 make sure that ``Gmsh`` is installed and the command ``gmsh`` is

@@ -59,7 +59,7 @@ visualize the ``grid_fun`` object. This can be done with the command
 This command opens ``Gmsh`` externally as a viewer to show the
 ``GridFunction`` object. The results should look like the following.
 
-.. image:: grid_fun.png
+.. image:: figures/grid_fun.png
 
 By default the real part of ``grid_fun`` is plotted. There are more
 advanced functions to control this behavior.

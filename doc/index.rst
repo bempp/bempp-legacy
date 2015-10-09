@@ -5,10 +5,11 @@ Welcome to BEM++
     :maxdepth: 1
 
     installation
-    sections/grid
-    sections/spaces
-    sections/grid_functions
-    sections/operators_and_potentials
-    sections/available_operators
+    grid
+    spaces
+    grid_functions
+    operators_and_potentials
+    available_operators
+    quadrature
 
 
