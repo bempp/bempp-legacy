@@ -31,14 +31,15 @@ def _calculateenginesplit(nrows, ncols, numengines):
     "Private helper function for calculateblocks"
     import math
     aspectratio = nrows/ncols
-    # if aspectratio > 1.1:
-    nroweng = int(math.floor(aspectratio*numengines**(1./2)))
-    ncoleng = int(math.floor(numengines/nroweng))
-    # elif aspectratio < 0.9:
-    #     raise NotImplementedError
-    # else:
-    #     nroweng = int(math.floor(numengines**(1./2)))
-    #     ncoleng = nroweng
+
+    nsmalldim = int(math.floor(numengines**(1./2)/aspectratio)) or 1
+    nlargedim = int(math.floor(numengines/nsmalldim))
+    if aspectratio > 1:
+        nroweng = nlargedim
+        ncoleng = nsmalldim
+    else:
+        nroweng = nsmalldim
+        ncoleng = nlargedim
     return (nroweng, ncoleng)
 
 
