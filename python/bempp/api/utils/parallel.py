@@ -7,38 +7,39 @@ def calculateblocks(nrows, ncols, numengines):
     # we have ncoleng engines along the xaxis and nroweng engines
     # along the y axis with ncoleng *nroweng > numengines
     # nchunks = nroweng*ncoleng
-    ncoleng, nroweng = _calculateenginesplit(nrows, ncols, numengines)
+    nroweng, ncoleng = _calculateenginesplit(nrows, ncols, numengines)
     chunksizerows = nrows // nroweng
     chunksizecols = ncols // ncoleng
     blocks = list()
     for i in range(nroweng):
         for j in range(ncoleng):
-            colsstart = chunksizecols*i
+            rowsstart = chunksizerows*i
             if i == nroweng-1:
-                colsend = ncols
-            else:
-                colsend = chunksizecols*(i+1)
-            rowsstart = chunksizerows*j
-            if j == ncoleng-1:
                 rowsend = nrows
             else:
-                rowsend = chunksizerows*(j+1)
-            blocks.append(((colsstart, colsend), (rowsstart, rowsend)))
+                rowsend = chunksizerows*(i+1)
+            colsstart = chunksizecols*j
+            if j == ncoleng-1:
+                colsend = ncols
+            else:
+                colsend = chunksizecols*(j+1)
+            blocks.append(((rowsstart, rowsend), (colsstart, colsend)))
     return blocks, nroweng, ncoleng
 
 
 def _calculateenginesplit(nrows, ncols, numengines):
     "Private helper function for calculateblocks"
     import math
-    aspectratio = nrows//ncols
-    if aspectratio > 1.1:
-        raise NotImplementedError
-    elif aspectratio < 0.9:
-        raise NotImplementedError
-    else:
-        nroweng = int(math.floor(numengines**(1./2)))
-        ncoleng = nroweng
-    return (ncoleng, nroweng)
+    aspectratio = nrows/ncols
+    # if aspectratio > 1.1:
+    nroweng = int(math.floor(aspectratio*numengines**(1./2)))
+    ncoleng = int(math.floor(numengines/nroweng))
+    # elif aspectratio < 0.9:
+    #     raise NotImplementedError
+    # else:
+    #     nroweng = int(math.floor(numengines**(1./2)))
+    #     ncoleng = nroweng
+    return (nroweng, ncoleng)
 
 
 def gatherresults(view, resultname, nrows, ncols):
