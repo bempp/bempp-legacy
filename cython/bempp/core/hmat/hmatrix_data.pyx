@@ -1,6 +1,6 @@
-from bempp.api.utils.enum_types cimport HMatBlockType, dense, low_rank_ab
+from bempp.core.utils.enum_types cimport HMatBlockType, dense, low_rank_ab
 from cython.operator cimport dereference as deref
-from bempp.api.utils cimport complex_double
+from bempp.core.utils cimport complex_double
 
 cdef class HMatrixDataBase:
 

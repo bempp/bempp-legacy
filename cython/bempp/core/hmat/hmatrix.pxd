@@ -1,16 +1,10 @@
-<%
-from data_types import dtypes, scalar_cython_type
-%>
-from bempp.api.hmat.block_cluster_tree cimport c_BlockClusterTreeNode
-from bempp.api.hmat.block_cluster_tree cimport BlockClusterTreeNode
-from bempp.api.hmat.block_cluster_tree cimport c_BlockClusterTree
-from bempp.api.hmat.block_cluster_tree cimport BlockClusterTree
-from bempp.api.hmat.hmatrix_data cimport c_HMatrixData
-from bempp.api.utils cimport shared_ptr
-from bempp.api.utils cimport catch_exception
-
-
-
+from bempp.core.hmat.block_cluster_tree cimport c_BlockClusterTreeNode
+from bempp.core.hmat.block_cluster_tree cimport BlockClusterTreeNode
+from bempp.core.hmat.block_cluster_tree cimport c_BlockClusterTree
+from bempp.core.hmat.block_cluster_tree cimport BlockClusterTree
+from bempp.core.hmat.hmatrix_data cimport c_HMatrixData
+from bempp.core.utils cimport shared_ptr
+from bempp.core.utils cimport catch_exception
 
 cdef extern from "bempp/hmat/hmatrix.hpp":
     cdef cppclass c_HMatrix "hmat::DefaultHMatrixType"[T]:

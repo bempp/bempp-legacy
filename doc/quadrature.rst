@@ -6,7 +6,7 @@ an efficient evaluation of integrals of the form
 
 .. math::
 
-    I = \int_{T_1}\int_{T_2}g(x,y)\phi(y)\overline{\Psi(x)}ds(y)ds(x),
+    I = \int_{T_1}\int_{T_2}g(x,y)\phi(y)\overline{\psi(x)}ds(y)ds(x),
 
 where :math:`g(x,y)` is a weakly singular kernel and :math:`T_1` and :math:`T_2` are
 triangles. :math:`\psi(x)` and :math:`\phi(y)` are basis functions on :math:`T_1` and 
@@ -78,7 +78,41 @@ a small fraction of the overall computing time.
 Controlling the quadrature order in BEM++
 -----------------------------------------
 
-BEM++ provides fine-grained control of the quadrature order 
+BEM++ provides fine-grained control over the quadrature order. The simplest way to change the quadrature
+order is to use the global parameter object ``bempp.api.global_parameters``. For example, to change the
+singular quadrature order to :math:`5` use the command
 
+::
+
+    bempp.api.global_parameters.quadrature.double_singular = 5
+
+The quadrature order for approximating the regular integral over pairs of disjoint triangles :math:`T_1` and
+:math:`T_2` is dependent on the normalized distance between them. The normalized distance is defined as
+the distance of the centers of the triangles divided by the maximum of the areas of :math:`T_1` and :math:`T_2`.
+
+Three integration zones are defined, `near`, `medium` and `far`. The following parameters are set as default.
+
+====== =================== ============ ============
+Zone   Normalized distance Double Order Single Order
+====== =================== ============ ============
+near   2                   4            4
+medium 4                   3            3 
+far    infinity            2            2
+====== =================== ============ ============
+
+The given normalized distance is the maximum distance until which a quadrature rule is valid. The single order
+is the quadrature order used for the evaluation of potentials, where the normalized distance is the relative
+distance of an evaluation point to the corresponding surface element. For the discretisation of grid
+functions the `far` single order is used. The values given here are relatively sane defaults. However, we
+note that good values for the quadrature orders depend on the geometry and the accuracy requirements and
+may be very different from the default values stated here.
+
+To change for example the values of the medium distance quadrature orders the following commands can be used.
+
+::
+
+    bempp.api.global_parameters.quadrature.medium.max_rel_dist = 5
+    bempp.api.global_parameters.quadrature.medium.single_order = 1
+    bempp.api.global_parameters.quadrature.medium.double_order = 1
 
 

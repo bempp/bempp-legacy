@@ -1,5 +1,5 @@
-from bempp.api.utils.parameter_list cimport shared_ptr, c_ParameterList
-from bempp.api.space.space cimport Space, c_Space
+from bempp.core.utils.parameter_list cimport shared_ptr, c_ParameterList
+from bempp.core.space.space cimport Space, c_Space
 from libcpp cimport bool as cbool
 from libcpp.vector cimport vector
 
@@ -54,9 +54,6 @@ cdef extern from "bempp/assembly/hmat_interface.hpp":
             const c_Space[BASIS]&,
             const c_Space[BASIS]&,
             const c_ParameterList&)
-
-cdef class IndexRange:
-    cdef c_IndexRangeType impl_
 
 cdef class BlockClusterTreeNode:
     cdef shared_ptr[const c_BlockClusterTreeNode] impl_
