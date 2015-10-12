@@ -3,6 +3,11 @@ from bempp.core.hmat.block_cluster_tree cimport BlockClusterTreeNode
 from bempp.core.hmat.block_cluster_tree cimport c_BlockClusterTree
 from bempp.core.hmat.block_cluster_tree cimport BlockClusterTree
 from bempp.core.hmat.hmatrix_data cimport c_HMatrixData
+from bempp.core.hmat.hmatrix_data cimport HMatrixDenseData
+from bempp.core.hmat.hmatrix_data cimport HMatrixLowRankData
+from bempp.core.hmat.hmatrix_data cimport HMatrixData
+from bempp.core.hmat.hmatrix_data cimport down_cast_to_dense_data
+from bempp.core.hmat.hmatrix_data cimport down_cast_to_low_rank_data
 from bempp.core.utils cimport shared_ptr
 from bempp.core.utils cimport catch_exception
 from bempp.core.utils cimport complex_double
@@ -94,5 +99,37 @@ def mem_size_ext(discrete_operator):
                 <ComplexDiscreteBoundaryOperator>discrete_operator).impl_)).memSizeKb()
     except:
         raise ValueError("discrete_operator does not seem to be a valid HMatrix.")
+
+def data_block_ext(discrete_operator, block_cluster_tree_node):
+    """Return a data block for a block cluster tree node."""
+
+    cdef HMatrixData data = HMatrixData()
+    try:
+        if discrete_operator.dtype == 'float64':
+            try:
+                data.impl_float64_ = deref(castToHMatrix[double]((
+                    <RealDiscreteBoundaryOperator>discrete_operator).impl_)).data((<BlockClusterTreeNode>block_cluster_tree_node).impl_)
+                data._dtype = discrete_operator.dtype
+            except:
+                raise Exception("Could not find data block.")
+            if data.block_type == 'dense':
+                return down_cast_to_dense_data(data)
+            else:
+                return down_cast_to_low_rank_data(data)
+        else:
+            try:
+                data.impl_complex128_ = deref(castToHMatrix[complex_double]((
+                    <ComplexDiscreteBoundaryOperator>discrete_operator).impl_)).data((<BlockClusterTreeNode>block_cluster_tree_node).impl_)
+                data._dtype = discrete_operator.dtype
+            except:
+                raise Exception("Could not find data block.")
+            if data.block_type == 'dense':
+                return down_cast_to_dense_data(data)
+            else:
+                return down_cast_to_low_rank_data(data)
+    except:
+        raise ValueError("discrete_operator does not seem to be a valid HMatrix.")
+
+
 
 

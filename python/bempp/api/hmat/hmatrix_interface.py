@@ -49,3 +49,16 @@ def mem_size(discrete_operator):
         raise ValueError("discrete operator is not an HMatrix operator.")
     from bempp.core.hmat.hmatrix_interface import mem_size_ext
     return mem_size_ext(discrete_operator._impl)
+
+def data_block(discrete_operator, block_cluster_tree_node):
+    """Return the data block associated with a block cluster tree node."""
+
+    from bempp.api.assembly.discrete_boundary_operator import \
+            GeneralNonlocalDiscreteBoundaryOperator
+
+    if not isinstance(discrete_operator, GeneralNonlocalDiscreteBoundaryOperator):
+        raise ValueError("discrete operator is not an HMatrix operator.")
+    from bempp.core.hmat.hmatrix_interface import data_block_ext
+    return data_block_ext(discrete_operator._impl, block_cluster_tree_node)
+
+

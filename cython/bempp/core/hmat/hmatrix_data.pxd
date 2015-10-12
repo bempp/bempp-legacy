@@ -32,20 +32,18 @@ cdef extern from "bempp/core/hmat/py_hmat_support.hpp" namespace "hmat":
 
 
 cdef class HMatrixDataBase:
+    cdef object _dtype
     cdef _type_to_string(self, HMatBlockType block_type)
 
 cdef class HMatrixData(HMatrixDataBase):
-    cdef object _dtype
     cdef shared_ptr[const c_HMatrixData[double]] impl_float64_
     cdef shared_ptr[const c_HMatrixData[complex_double]] impl_complex128_
 
 cdef class HMatrixLowRankData(HMatrixDataBase):
-    cdef object _dtype
     cdef shared_ptr[const c_HMatrixLowRankData[double]] impl_float64_
     cdef shared_ptr[const c_HMatrixLowRankData[complex_double]] impl_complex128_
 
 cdef class HMatrixDenseData(HMatrixDataBase):
-    cdef object _dtype
     cdef shared_ptr[const c_HMatrixDenseData[double]] impl_float64_
     cdef shared_ptr[const c_HMatrixDenseData[complex_double]] impl_complex128_
 

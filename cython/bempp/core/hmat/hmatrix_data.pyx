@@ -1,6 +1,8 @@
 from bempp.core.utils.enum_types cimport HMatBlockType, dense, low_rank_ab
 from cython.operator cimport dereference as deref
 from bempp.core.utils cimport complex_double
+from bempp.core.utils cimport eigen_matrix_to_np_float64
+from bempp.core.utils cimport eigen_matrix_to_np_complex128
 
 cdef class HMatrixDataBase:
 
@@ -35,6 +37,11 @@ cdef class HMatrixDataBase:
 
         def __get__(self):
             return self._get_mem_size()
+
+    property dtype:
+
+        def __get__(self):
+            return self._dtype
 
 cdef class HMatrixData(HMatrixDataBase):
 
@@ -105,6 +112,24 @@ cdef class HMatrixLowRankData(HMatrixDataBase):
             return deref(self.impl_complex128_).memSizeKb()
         raise ValueError("Unsupported dtype.")
 
+    property A:
+
+        def __get__(self):
+
+            if self.dtype == 'float64':
+                return eigen_matrix_to_np_float64(deref(self.impl_float64_).A())
+            else:
+                return eigen_matrix_to_np_complex128(deref(self.impl_complex128_).A())
+    property B:
+
+        def __get__(self):
+
+            if self.dtype == 'float64':
+                return eigen_matrix_to_np_float64(deref(self.impl_float64_).B())
+            else:
+                return eigen_matrix_to_np_complex128(deref(self.impl_complex128_).B())
+
+
 cdef class HMatrixDenseData(HMatrixDataBase):
 
     def __cinit__(self):
@@ -152,6 +177,15 @@ cdef class HMatrixDenseData(HMatrixDataBase):
         if self._dtype == 'complex128':
             return deref(self.impl_complex128_).memSizeKb()
         raise ValueError("Unsupported dtype.")
+
+    property A:
+
+        def __get__(self):
+
+            if self.dtype == 'float64':
+                return eigen_matrix_to_np_float64(deref(self.impl_float64_).A())
+            else:
+                return eigen_matrix_to_np_complex128(deref(self.impl_complex128_).A())
 
 cdef HMatrixLowRankData down_cast_to_low_rank_data(HMatrixData data):
 
