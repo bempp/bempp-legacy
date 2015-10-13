@@ -1,3 +1,5 @@
+# cython: embedsignature=True
+
 from cython.operator cimport dereference as deref
 from cython.operator cimport address
 
@@ -5,6 +7,7 @@ from bempp.core.space.space cimport Space, c_Space
 from bempp.core.utils.parameter_list cimport ParameterList
 
 cdef class BlockClusterTreeNode:
+    """Interface to a single node of the block cluster tree."""
 
     def __cinit__(self):
         pass
@@ -17,6 +20,7 @@ cdef class BlockClusterTreeNode:
         self.impl_.reset()
 
     def child(self, int i):
+        """Access to a child node by index 0 <= i < 4."""
 
         if i<0 or i>3:
             raise ValueError("Index must be between 0 and 3.")
@@ -26,12 +30,14 @@ cdef class BlockClusterTreeNode:
         return result
 
     property children:
+        """Return an iterator over all child nodes."""
 
         def __get__(self):
             for i in range(4):
                 yield self.child(i)
 
     property row_cluster_range:
+        """Return the range of the associated row cluster node."""
 
         def __get__(self):
             s = deref(deref(self.impl_).data().rowClusterTreeNode).data().indexRange[0]
@@ -39,6 +45,7 @@ cdef class BlockClusterTreeNode:
             return (s, e)
 
     property column_cluster_range:
+        """Return the range of the associated column cluster node."""
 
         def __get__(self):
             s = deref(deref(self.impl_).data().columnClusterTreeNode).data().indexRange[0]
@@ -46,23 +53,27 @@ cdef class BlockClusterTreeNode:
             return (s, e)
 
     property shape:
+        """Return the shape of the block represented by this node."""
 
         def __get__(self):
             return (self.row_cluster_range[1]-self.row_cluster_range[0],
                     self.column_cluster_range[1]-self.column_cluster_range[0])
 
     property admissible:
+        """Return True if the node is admissible, otherwise False."""
 
         def __get__(self):
             return deref(self.impl_).data().admissible
 
     property is_leaf:
+        """Return True if the node is a leaf, otherwise False."""
 
         def __get__(self):
             return deref(self.impl_).isLeaf()
 
 
 cdef class BlockClusterTree:
+    """Interface to the block cluster tree structre of an H-Matrix."""
 
     def __cinit__(self):
         pass
@@ -75,6 +86,26 @@ cdef class BlockClusterTree:
 
     def plot(self,file_name = 'block_cluster_tree.png', display = True, width = 2000, height= 2000,
             delete=True):
+        """Plot a given block cluster tree into a file. If `display` is True the plot is also displayed.
+
+        Parameters
+        ----------
+        file_name : string
+            name of the output file.
+        display : bool
+            If True also display the plot.
+        width : int
+            Width in pixels.
+        height : int
+            Height in pixels.
+        delete : bool
+            If True image is deleted after displaying it.
+
+        Notes
+        -----
+        This method requires that PyQt4 is installed.
+
+        """
 
         from PyQt4 import QtGui
 
@@ -114,6 +145,7 @@ cdef class BlockClusterTree:
                 os.remove(file_name)
 
     property root:
+        """Return the root node of the tree."""
 
         def __get__(self):
             cdef BlockClusterTreeNode node = BlockClusterTreeNode()
@@ -121,6 +153,7 @@ cdef class BlockClusterTree:
             return node
 
     property leaf_nodes:
+        """Return an iterator over the leaf nodes."""
 
         def __get__(self):
 
@@ -141,6 +174,7 @@ cdef class BlockClusterTree:
 
 def generate_block_cluster_tree(Space test_space, Space trial_space, 
         ParameterList parameter_list = None):
+    """Create a block cluster tree for a given pair of spaces."""
 
     from bempp.api import global_parameters
 

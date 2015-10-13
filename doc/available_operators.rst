@@ -42,7 +42,7 @@ For the hypersingular operator integration a slightly different
 formulation based on integration by parts of this variational form is
 used. Details can be found for example in the book `Numerical
 Approximation Methods for Elliptic Boundary Value
-Problems <http://www.numerik.math.tu-graz.ac.at/~steinbach/FEMBEMEng.htm>`__
+Problems <http://www.numerik.math.tu-graz.ac.at/~steinbach/FEMBEMEng.htm>`_
 by O. Steinbach.
 
 The different types of boundary operators are dependent on the choice of

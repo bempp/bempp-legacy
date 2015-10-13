@@ -11,5 +11,8 @@ Welcome to BEM++
     operators_and_potentials
     available_operators
     quadrature
+    hmatrices
+    options
+
 
 

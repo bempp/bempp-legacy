@@ -1,3 +1,5 @@
+# cython: embedsignature=True
+
 from bempp.core.utils.enum_types cimport HMatBlockType, dense, low_rank_ab
 from cython.operator cimport dereference as deref
 from bempp.core.utils cimport complex_double
@@ -5,8 +7,10 @@ from bempp.core.utils cimport eigen_matrix_to_np_float64
 from bempp.core.utils cimport eigen_matrix_to_np_complex128
 
 cdef class HMatrixDataBase:
+    """Base class for H-Matrix data."""
 
     property block_type:
+        """Returns the type of the data block (`dense` or `low_rank_ab`). """
 
         def __get__(self):
             return self._get_type()
@@ -24,21 +28,25 @@ cdef class HMatrixDataBase:
         raise ValueError("Unsupported block type.")
 
     property shape:
+        """Returns the shape of the data block."""
 
         def __get__(self):
             return self._get_shape()
 
     property rank:
+        """Returns the rank of the data."""
 
         def __get__(self):
             return self._get_rank()
 
     property mem_size:
+        """Returns the memory size in kb of the data."""
 
         def __get__(self):
             return self._get_mem_size()
 
     property dtype:
+        """Returns the data type."""
 
         def __get__(self):
             return self._dtype
@@ -67,6 +75,18 @@ cdef class HMatrixData(HMatrixDataBase):
 
         
 cdef class HMatrixLowRankData(HMatrixDataBase):
+    """Interface to low-rank H-Matrix data.
+
+    This class provides an interface to low-rank H-Matrix data.
+    Algebraically, the stored matrix D has the form D = A * B,
+    where A is an (m, k) matrix and B a (k, n) matrix. Here,
+    k is the rank, m is the number of rows and n is the number
+    of columns.
+
+    """
+
+
+
 
     def __cinit__(self):
         pass
@@ -113,6 +133,7 @@ cdef class HMatrixLowRankData(HMatrixDataBase):
         raise ValueError("Unsupported dtype.")
 
     property A:
+        """Returns the matrix A as NumPy array."""
 
         def __get__(self):
 
@@ -121,6 +142,7 @@ cdef class HMatrixLowRankData(HMatrixDataBase):
             else:
                 return eigen_matrix_to_np_complex128(deref(self.impl_complex128_).A())
     property B:
+        """Returns the matrix B as NumPy array."""
 
         def __get__(self):
 
@@ -131,6 +153,14 @@ cdef class HMatrixLowRankData(HMatrixDataBase):
 
 
 cdef class HMatrixDenseData(HMatrixDataBase):
+    """Interface to dense H-Matrix data.
+
+    This class provides an interface to dense H-Matrix data, that
+    is internally the data is stored as a dense matrix A.
+
+    """
+
+
 
     def __cinit__(self):
         pass
@@ -179,6 +209,7 @@ cdef class HMatrixDenseData(HMatrixDataBase):
         raise ValueError("Unsupported dtype.")
 
     property A:
+        """Return the dense matrix."""
 
         def __get__(self):
 

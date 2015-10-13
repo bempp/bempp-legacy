@@ -64,6 +64,26 @@ cdef class _AssemblyParameterList:
 
             cdef char* s = b"options.assembly.enableSingularIntegralCaching"           
             deref(self.impl_).put_bool(s,value)
+    
+    property enable_interpolation_for_oscillatory_kernels:
+
+        def __get__(self):
+
+            cdef char* s = b"options.assembly.enableInterpolationForOscillatoryKernels"
+            return (deref(self.impl_).get_bool(s))
+
+        def __set__(self,cbool value):
+
+            cdef char* s = b"options.assembly.enableInterpolationForOscillatoryKernels"
+            deref(self.impl_).put_bool(s,value)
+
+    property interpolation_points_per_wavelength:
+        def __get__(self):
+            cdef char* s = b"options.assembly.interpolationPointsPerWavelength"
+            return deref(self.impl_).get_int(s)
+        def __set__(self,int value):
+            cdef char* s = b"options.assembly.interpolationPointsPerWavelength"
+            deref(self.impl_).put_int(s,value)
 
 cdef class _NearField:
 
@@ -260,7 +280,7 @@ cdef class _HMatParameterList:
             cdef char* s = b"options.hmat.coarsening"
             deref(self.impl_).put_bool(s,value)
 
-    property coarseningAccuracy:
+    property coarsening_accuracy:
         def __get__(self):
             cdef char* s = b"options.hmat.coarseningAccuracy"
             return deref(self.impl_).get_double(s)
