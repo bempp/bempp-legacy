@@ -5,8 +5,7 @@ def calculateblocks(nrows, ncols, numengines):
     """"Given the x and y size of an array split it in upto numengine chunks"""
 
     # we have ncoleng engines along the xaxis and nroweng engines
-    # along the y axis with ncoleng *nroweng > numengines
-    # nchunks = nroweng*ncoleng
+    # along the y axis with ncoleng *nroweng <= numengines
     nroweng, ncoleng = _calculateenginesplit(nrows, ncols, numengines)
     chunksizerows = nrows // nroweng
     chunksizecols = ncols // ncoleng
