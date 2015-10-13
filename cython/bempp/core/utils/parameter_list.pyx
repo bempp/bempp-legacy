@@ -281,6 +281,7 @@ cdef class ParameterList:
     def __cinit__(self):
         self.impl_ = new c_ParameterList()
         self.outputter_ = new ostringstream()
+        self.inputter_ = new istringstream()
         self._assembly = _AssemblyParameterList(self)
         self._quadrature = _QuadratureParameterList(self)
         self._hmat = _HMatParameterList(self)
@@ -297,6 +298,7 @@ cdef class ParameterList:
     def __dealloc__(self):
         del self.impl_
         del self.outputter_
+        del self.inputter_
 
     property assembly:
 
