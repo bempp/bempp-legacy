@@ -7,9 +7,11 @@ class TestAssembler(TestCase):
 
         grid = bempp.api.shapes.regular_sphere(3)
         space = bempp.api.function_space(grid, "P", 1)
+        pc_space = bempp.api.function_space(grid, "DP", 0)
         rt_space = bempp.api.function_space(grid, "RT", 0)
 
         self._real_operator = bempp.api.operators.boundary.laplace.single_layer(space, space, space)
+        self._real_operator_2 = bempp.api.operators.boundary.laplace.single_layer(space, space, pc_space)
         self._complex_operator = bempp.api.operators.boundary.maxwell.electric_field(rt_space, 1)
 
         self._rows = (5, 10)
@@ -34,7 +36,28 @@ class TestAssembler(TestCase):
 
         expected = as_matrix(operator.weak_form())
 
+        self.assertEqual(258,actual.shape[0])
+        self.assertEqual(258,actual.shape[1])
         self.assertAlmostEqual(np.linalg.norm(actual - expected), 0)
+
+    def test_assemble_complete_dense_real_operator_non_square(self):
+        "assemble an opperator with a non square matrix"
+        from bempp.api import as_matrix, assemble_dense_block
+        import numpy as np
+        import bempp
+
+        bempp.api.global_parameters.assembly.boundary_operator_assembly_type = 'dense'
+
+        operator = self._real_operator_2
+
+        actual = as_matrix(assemble_dense_block(operator, bempp.api.ALL, bempp.api.ALL,
+                                                operator.domain, operator.dual_to_range))
+
+        expected = as_matrix(operator.weak_form())
+
+        self.assertEqual(512, actual.shape[0])
+        self.assertEqual(258, actual.shape[1])
+        np.testing.assert_allclose(actual, expected)
 
     def test_assemble_subblock_dense_real_operator(self):
         from bempp.api import as_matrix, assemble_dense_block
