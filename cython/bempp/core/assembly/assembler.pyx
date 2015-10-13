@@ -73,7 +73,7 @@ def assemble_dense_block_ext(rows, cols, Space domain not None, Space dual_to_ra
 
     if cols == -1:
         col_start = 0
-        col_end = dual_to_range.global_dof_count
+        col_end = domain.global_dof_count
     else:
         col_start = cols[0]
         col_end = cols[1]
@@ -87,8 +87,3 @@ def assemble_dense_block_ext(rows, cols, Space domain not None, Space dual_to_ra
                 deref(dual_to_range.impl_), deref(domain.impl_), deref((<ComplexIntegralOperatorLocalAssembler> assembler).impl_), deref(parameters.impl_))
         return complex_discrete_operator
     raise ValueError("Unknown assembler type.")
-
-
-
-
-
