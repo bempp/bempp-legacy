@@ -18,10 +18,10 @@ class TestMaxwell(TestCase):
         parameters = bempp.api.common.global_parameters()
         parameters.assembly.boundary_operator_assembly_type = 'dense'
 
-        standard_efie = electric_field(self._space,
+        standard_efie = electric_field(self._space, self._space, self._space,
                                        WAVE_NUMBER,
                                        parameters=parameters).weak_form()
-        compound_efie = electric_field(self._space,
+        compound_efie = electric_field(self._space, self._space, self._space,
                                        WAVE_NUMBER,
                                        parameters=parameters, use_slp=True).weak_form()
 

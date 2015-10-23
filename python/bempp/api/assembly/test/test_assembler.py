@@ -12,7 +12,7 @@ class TestAssembler(TestCase):
 
         self._real_operator = bempp.api.operators.boundary.laplace.single_layer(space, space, space)
         self._real_operator_2 = bempp.api.operators.boundary.laplace.single_layer(space, space, pc_space)
-        self._complex_operator = bempp.api.operators.boundary.maxwell.electric_field(rt_space, 1)
+        self._complex_operator = bempp.api.operators.boundary.maxwell.electric_field(rt_space, rt_space, rt_space, 1)
 
         self._rows = (5, 10)
         self._cols = (73, 100)

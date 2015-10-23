@@ -220,17 +220,6 @@ For Maxwell problems this should be used instead of the standard
 identity operator. The corresponding function in BEM++ is
 ``bempp.operators.boundary.sparse.maxwell_identity``.
 
-Since the only suitable space type in BEM++ for Maxwell operators are
-low-order Raviart-Thomas basis functions the initialization functions
-for Maxwell operators take only one space argument as it is assumed that
-the ``range`` and ``dual_to_range`` space are identical to the
-``domain`` space. Hence, for example the Maxwell electric field boundary
-operator is initialized by the command
-
-::
-
-    efie = bempp.api.operators.boundary.maxwell.electric_field(space, wave_number)
-
 Far Field Operators
 -------------------
 

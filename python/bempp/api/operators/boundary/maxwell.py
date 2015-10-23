@@ -3,7 +3,7 @@
 """Definition of the Maxwell boundary operators."""
 
 
-def electric_field(space,
+def electric_field(domain, range_, dual_to_range,
                    wave_number,
                    label="EFIE", symmetry='no_symmetry',
                    parameters=None, use_slp=False):
@@ -11,7 +11,11 @@ def electric_field(space,
 
     Parameters
     ----------
-    space : bempp.api.space.Space
+    domain : bempp.api.space.Space
+        Domain space.
+    range_ : bempp.api.space.Space
+        Range space.
+    dual_to_range : bempp.api.space.Space
         Dual space to the range space.
     wave_number : complex
         Wavenumber for the Helmholtz problem.
@@ -27,6 +31,8 @@ def electric_field(space,
     use_slp : True/False or boundary operator object
         The electric field operator can be represented as a sparse transformation
         of a Helmholtz single-layer operator. If `use_slp=True` this representation is used.
+        It is currently only implemented for the case that the domain, range and dual_to_range
+        space are identical. Therefore, the range_ and dual_to_range parameters are ignored.
         If `use_slp=op` for a single-layer boundary operator assembled on a
         suitable space this operator is used to assemble the hypersingular operator.
         Note that if `use_slp=op` is used no checks are performed if the slp operator
@@ -52,10 +58,12 @@ def electric_field(space,
     if not use_slp:
         return ElementaryBoundaryOperator( \
                 ElementaryAbstractIntegralOperator(
-            electric_field_ext(parameters, space._impl, space._impl, space._impl,
+            electric_field_ext(parameters, domain._impl, range_._impl, dual_to_range._impl,
                                wave_number, "", symmetry)),
             parameters=parameters, label=label)
     else:
+
+        space = domain
 
         if not isinstance(use_slp, BoundaryOperator):
 
@@ -97,7 +105,7 @@ def electric_field(space,
         return term1 + term2
 
 
-def magnetic_field(space,
+def magnetic_field(domain, range_, dual_to_range,
                    wave_number,
                    label="MFIE", symmetry='no_symmetry',
                    parameters=None):
@@ -105,7 +113,11 @@ def magnetic_field(space,
 
     Parameters
     ----------
-    space : bempp.api.space.Space
+    domain : bempp.api.space.Space
+        Domain space.
+    range_ : bempp.api.space.Space
+        Range space.
+    dual_to_range : bempp.api.space.Space
         Dual space to the range space.
     wave_number : complex
         Wavenumber for the Helmholtz problem.
@@ -131,6 +143,6 @@ def magnetic_field(space,
 
     return ElementaryBoundaryOperator( \
             ElementaryAbstractIntegralOperator(
-        magnetic_field_ext(parameters, space._impl, space._impl, space._impl,
+        magnetic_field_ext(parameters, domain._impl, range_._impl, dual_to_range._impl,
                            wave_number, "", symmetry)),
         parameters=parameters, label=label)
