@@ -48,9 +48,9 @@ lookup_package(Boost ${BOOST_MIN_VER} COMPONENTS unit_test_framework filesystem
 lookup_package(TBB REQUIRED)
 lookup_package(Dune REQUIRED COMPONENTS geometry grid localfunctions devel )
 if (WITH_ALUGRID)
-    lookup_package(dune-alugrid REQUIRED)
+    lookup_package(dune-alugrid REQUIRED HINTS $ENV{Dune_PREFIX})
 else()
-    lookup_package(dune-foamgrid REQUIRED)
+    lookup_package(dune-foamgrid REQUIRED HINTS $ENV{Dune_PREFIX})
 endif()
 include("${PROJECT_SOURCE_DIR}/cmake/Dune/local.cmake")
 

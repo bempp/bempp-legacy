@@ -46,8 +46,7 @@ ExternalProject_Add(
     dune-foamgrid 
     DEPENDS ${depends}
     PREFIX ${EXTERNAL_ROOT}
-    GIT_REPOSITORY https://users.dune-project.org/repositories/projects/dune-foamgrid.git
-    GIT_TAG 7dead4425ed3b9c6d53f9a4004f449ed1172840f
+    GIT_REPOSITORY https://github.com/bempp/dune-foamgrid.git
     PATCH_COMMAND ${patch_script}
     CMAKE_ARGS -DCMAKE_BUILD_TYPE=${FOAMGRID_BUILD_TYPE}
                -C "${EXTERNAL_ROOT}/src/DuneVariables.cmake"
