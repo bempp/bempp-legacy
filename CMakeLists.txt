@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 2.8.12)
 project(Bempp CXX)
-set(Bempp_VERSION 2.9.1)
+
+# Get version string
+string(TIMESTAMP date_string %y-%m-%d)
+
+set(Bempp_VERSION 2.9.1-nightly-${date_string})
 
 # Set a default build type if none was specified
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -31,6 +35,8 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 # Download and installs the cookoff in the build tree
 # From here on we can use cookoff recipes
 include(LookUp-GreatCMakeCookOff)
+include(utils)
+include(PythonInstall)
 
 # These are the original flags given by the user when compiling Bempp
 set(ORIGINAL_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
@@ -63,9 +69,9 @@ if(WITH_TESTS)
 endif(WITH_TESTS)
 
 add_subdirectory(lib)
-add_subdirectory(python)
-#add_subdirectory(examples)
+add_subdirectory(cython)
 add_subdirectory(meshes)
+add_subdirectory(doc)
 # Installs FindX.cmake files for packages depending on cmake
 add_subdirectory(cmake)
 
@@ -82,6 +88,13 @@ add_custom_target(uninstall
 
 # Exports all Bempp so other packages can access it
 include(BemppExport)
+
+# Add python files to the installation
+install_python(DIRECTORY ${CMAKE_SOURCE_DIR}/python/bempp/api DESTINATION bempp
+    FILES_MATCHING PATTERN "*.py")
+
+install_python(FILES ${CMAKE_SOURCE_DIR}/cmake/empty_file DESTINATION bempp
+    RENAME __init__.py)
 
 # An install script to brutally modify the rpaths
 # It ensures that python extensions and libraries can see each other
@@ -102,5 +115,12 @@ file(WRITE ${PROJECT_BINARY_DIR}/bin/bempp "${PROJECT_BINARY_DIR}/localpython.sh
 file(WRITE ${PROJECT_BINARY_DIR}/bin/ibempp "${PROJECT_BINARY_DIR}/localpython.sh -m IPython \"$@\" ")
 execute_process(COMMAND chmod +x ${PROJECT_BINARY_DIR}/bin/bempp)
 execute_process(COMMAND chmod +x ${PROJECT_BINARY_DIR}/bin/ibempp)
+
+# Prepare the debian build script
+configure_file(${PROJECT_SOURCE_DIR}/create_debian_package.sh.in ${PROJECT_BINARY_DIR}/create_debian_package.sh)
+
+add_custom_target(bempp DEPENDS libbempp cython-headers cython)
+
+add_custom_target(debian sh ${PROJECT_BINARY_DIR}/create_debian_package.sh DEPENDS bempp)
 
 

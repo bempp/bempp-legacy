@@ -18,17 +18,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "bempp/common/config_ahmed.hpp"
 
 #include "elementary_local_operator.hpp"
 
-#ifdef WITH_AHMED
-#include "ahmed_aux.hpp"
-#endif
-
 #include "assembly_options.hpp"
-#include "boundary_operator.hpp"
-#include "cluster_construction_helper.hpp"
 #include "discrete_dense_boundary_operator.hpp"
 #include "discrete_sparse_boundary_operator.hpp"
 #include "context.hpp"
@@ -219,22 +212,13 @@ template <typename BasisFunctionType, typename ResultType>
 shared_ptr<DiscreteBoundaryOperator<ResultType>>
 ElementaryLocalOperator<BasisFunctionType, ResultType>::assembleWeakFormImpl(
     const Context<BasisFunctionType, ResultType> &context) const {
-  bool verbose =
-      (context.assemblyOptions().verbosityLevel() >= VerbosityLevel::DEFAULT);
-  if (verbose)
-    std::cout << "Assembling the weak form of operator '" << this->label()
-              << "'..." << std::endl;
 
-  tbb::tick_count start = tbb::tick_count::now();
   std::unique_ptr<LocalAssembler> assembler =
       this->makeAssembler(*context.quadStrategy(), context.assemblyOptions());
   shared_ptr<DiscreteBoundaryOperator<ResultType>> result =
       assembleWeakFormInternalImpl2(*assembler, context);
   tbb::tick_count end = tbb::tick_count::now();
 
-  if (verbose)
-    std::cout << "Assembly of the weak form of operator '" << this->label()
-              << "' took " << (end - start).seconds() << " s" << std::endl;
   return result;
 }
 
@@ -366,22 +350,16 @@ ElementaryLocalOperator<BasisFunctionType, ResultType>::makeAssembler(
   typedef std::vector<const Fiber::Shapeset<BasisFunctionType> *>
       ShapesetPtrVector;
 
-  const bool verbose = (options.verbosityLevel() >= VerbosityLevel::DEFAULT);
-
   shared_ptr<RawGridGeometry> testRawGeometry, trialRawGeometry;
   shared_ptr<GeometryFactory> testGeometryFactory, trialGeometryFactory;
   shared_ptr<Fiber::OpenClHandler> openClHandler;
   shared_ptr<ShapesetPtrVector> testShapesets, trialShapesets;
   bool cacheSingularIntegrals;
 
-  if (verbose)
-    std::cout << "Collecting data for assembler construction..." << std::endl;
   this->collectDataForAssemblerConstruction(
       options, testRawGeometry, trialRawGeometry, testGeometryFactory,
       trialGeometryFactory, testShapesets, trialShapesets, openClHandler,
       cacheSingularIntegrals);
-  if (verbose)
-    std::cout << "Data collection finished." << std::endl;
   assert(testRawGeometry == trialRawGeometry);
   assert(testGeometryFactory == trialGeometryFactory);
 
@@ -390,6 +368,17 @@ ElementaryLocalOperator<BasisFunctionType, ResultType>::makeAssembler(
       make_shared_from_ref(testTransformations()),
       make_shared_from_ref(trialTransformations()),
       make_shared_from_ref(integral()), openClHandler);
+}
+
+template <typename BasisFunctionType, typename ResultType>
+std::unique_ptr<typename ElementaryLocalOperator<BasisFunctionType,
+                                                 ResultType>::LocalAssembler>
+ElementaryLocalOperator<BasisFunctionType, ResultType>::makeAssembler(
+        const ParameterList& parameterList) const
+{
+    Context<BasisFunctionType, ResultType> context(parameterList);
+    return this->makeAssembler(*context.quadStrategy(),context.assemblyOptions());
+
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(ElementaryLocalOperator);

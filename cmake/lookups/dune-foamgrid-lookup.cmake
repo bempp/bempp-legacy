@@ -33,22 +33,11 @@ if(TARGET Dune)
     list(APPEND depends Dune)
 endif()
 
-include(PatchScript)
-set(patchdir "${PROJECT_SOURCE_DIR}/cmake/patches/dune")
-create_patch_script(dune-foamgrid patch_script
-    CMDLINE "-p1"
-    WORKING_DIRECTORY "${EXTERNAL_ROOT}/src/dune-foamgrid"
-    "${patchdir}/dune_foamgrid_cmake.patch"
-)
-
-
 ExternalProject_Add(
     dune-foamgrid 
     DEPENDS ${depends}
     PREFIX ${EXTERNAL_ROOT}
-    GIT_REPOSITORY https://users.dune-project.org/repositories/projects/dune-foamgrid.git
-    GIT_TAG 7dead4425ed3b9c6d53f9a4004f449ed1172840f
-    PATCH_COMMAND ${patch_script}
+    GIT_REPOSITORY https://github.com/bempp/dune-foamgrid.git
     CMAKE_ARGS -DCMAKE_BUILD_TYPE=${FOAMGRID_BUILD_TYPE}
                -C "${EXTERNAL_ROOT}/src/DuneVariables.cmake"
     LOG_DOWNLOAD ON LOG_CONFIGURE ON LOG_BUILD ON

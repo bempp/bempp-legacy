@@ -24,6 +24,7 @@
 #include "geometry.hpp"
 #include "grid_view.hpp"
 #include "ray_triangle_intersection.hpp"
+#include "../space/space.hpp"
 
 #include "../common/not_implemented_error.hpp"
 
@@ -51,6 +52,18 @@ bool isNew(Vector<double> &intersection,
 }
 
 } // namespace
+
+void Grid::sendUpdateSignal() const
+{
+
+    gridUpdateSignal();
+
+}
+
+boost::signals2::connection Grid::connect(const std::function<void()>& f) const
+{
+    return gridUpdateSignal.connect(f);
+}
 
 bool Grid::isBarycentricRepresentationOf(const Grid &other) const {
   if (!other.hasBarycentricGrid())

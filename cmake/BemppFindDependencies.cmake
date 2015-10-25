@@ -48,9 +48,9 @@ lookup_package(Boost ${BOOST_MIN_VER} COMPONENTS unit_test_framework filesystem
 lookup_package(TBB REQUIRED)
 lookup_package(Dune REQUIRED COMPONENTS geometry grid localfunctions devel )
 if (WITH_ALUGRID)
-    lookup_package(dune-alugrid REQUIRED)
+    lookup_package(dune-alugrid REQUIRED HINTS $ENV{Dune_PREFIX})
 else()
-    lookup_package(dune-foamgrid REQUIRED)
+    lookup_package(dune-foamgrid REQUIRED HINTS $ENV{Dune_PREFIX})
 endif()
 include("${PROJECT_SOURCE_DIR}/cmake/Dune/local.cmake")
 
@@ -76,13 +76,6 @@ find_python_package(numpy REQUIRED
         "numpy is required by the BEM++ python bindings"
 )
 find_package(Numpy REQUIRED)
-
-# Mako is used to generate some of the python bindings
-lookup_python_package(mako REQUIRED)
-find_program(mako_SCRIPT mako-render HINTS "${EXTERNAL_ROOT}/python")
-# Logic for mako should go into this directory
-add_to_python_path("${PROJECT_SOURCE_DIR}/python/templates")
-
 
 # Adds fake FC.h file cos dune incorrectly includes it in dune_config.h
 if(NOT EXISTS "${PROJECT_BINARY_DIR}/include/FC.h")
@@ -121,10 +114,6 @@ add_to_ld_path(
 )
 
 lookup_python_package(Cython VERSION 0.21 REQUIRED PATH "${EXTERNAL_ROOT}/python")
-if(WITH_TESTS)
-    include(AddPyTest)
-    setup_pytest("${EXTERNAL_ROOT}/python" "${PROJECT_BINARY_DIR}/py.test.sh")
-endif()
 
 # Now adds commands to install external packages
 if(EXISTS "${EXTERNAL_ROOT}/lib")

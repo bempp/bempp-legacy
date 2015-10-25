@@ -32,22 +32,30 @@ ParameterList GlobalParameters::parameterList() {
 
   // Default Verbosity of BEM++. Supported values are
   // -5 (low verbosity), 0 (default), 5 (high verbosity)
-  parameters.put("options.global.verbosityLevel", static_cast<int>(0));
+  parameters.put("options.global.verbosityLevel", static_cast<int>(5));
 
   // Default assembly type for boundary operators. Allowed values are
   // "dense" and "hmat".
   parameters.put("options.assembly.boundaryOperatorAssemblyType",
-                 std::string("dense"));
+                 std::string("hmat"));
 
   // Default assembly type for potential oeprators.
   // Allowed values are "dense" and "hmat".
   parameters.put("options.assembly.potentialOperatorAssemblyType",
-                 std::string("dense"));
+                 std::string("hmat"));
 
   // If true then singular integrals are pre-calculated and cached
   // before the boundary oeprator assembly.
 
   parameters.put("options.assembly.enableSingularIntegralCaching", true);
+
+  // Use polynomial interpolation instead of exponentials to assemble
+  // Helmholtz or Maxwell type kernels.
+  parameters.put("options.assembly.enableInterpolationForOscillatoryKernels", true);
+
+  // Number of interpolation points per wavelength for oscillatory kernels.
+  parameters.put("options.assembly.interpolationPointsPerWavelength", static_cast<int>(5000));
+   
 
   // Order for singular double integrals.
   parameters.put("options.quadrature.doubleSingular", static_cast<int>(6));
@@ -82,11 +90,6 @@ ParameterList GlobalParameters::parameterList() {
 
   parameters.erase("options.quadrature.far.maxRelDist");
 
-  // Specifies assembly mode. Allowed values are GlobalAssembly and
-  // LocalAssembly.
-  parameters.put("options.hmat.hMatAssemblyMode",
-                 std::string("GlobalAssembly"));
-
   // Specifies the minimum block size below which blocks are assumed to be dense
   parameters.put("options.hmat.minBlockSize", static_cast<int>(20));
 
@@ -113,7 +116,11 @@ ParameterList GlobalParameters::parameterList() {
 
   // Accuracy for coarsening
   // 0: Use same as options.hmat.eps
-  parameters.put("options.hmat.coarsening_accuracy", static_cast<double>(0));
+  parameters.put("options.hmat.coarseningAccuracy", static_cast<double>(0));
+
+  // Number of levels for matvec parallelisation
+  // The total number of tasks is 4^matVecParallelLevels
+  parameters.put("options.hmat.matVecParallelLevels", static_cast<int>(5));
 
   return parameters;
 }

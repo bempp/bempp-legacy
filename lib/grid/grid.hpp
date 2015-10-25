@@ -33,11 +33,14 @@
 #include <memory>
 #include <vector>
 #include <tbb/mutex.h>
+#include <boost/signals2/signal.hpp>
+#include <functional>
 
 namespace Bempp {
 
 /** \cond FORWARD_DECL */
 template <int codim> class Entity;
+template <typename BasisFunctionType> class Space;
 class GeometryFactory;
 class GridView;
 class IdSet;
@@ -92,12 +95,20 @@ public:
   @name Others
   @{ */
 
+  /** \brief Return a barycentrically refined grid based on the LeafView and the son map */
+  virtual std::pair<shared_ptr<Grid>,Matrix<int>> barycentricGridSonPair() const = 0;
+
   /** \brief Return a barycentrically refined grid based on the LeafView */
   virtual shared_ptr<Grid> barycentricGrid() const = 0;
+
+  /** \brief Return the son map for the barycentrically refined grid */
+  virtual Matrix<int> barycentricSonMap() const = 0;
 
   /** \brief Return \p true if a barycentric refinement of this grid has
    *  been created. */
   virtual bool hasBarycentricGrid() const = 0;
+
+//  virtual bool isBarycentricGrid() const = 0;
 
   /** \brief Return \p true if this grid is a barycentric representation of
    *  \p other, i.e. if this grid was created by \p other.barycentricGrid(). */
@@ -146,9 +157,25 @@ public:
 
   virtual void globalRefine(int refCount) = 0;
 
+  /** \brief Signal grid change to registered objects */
+  void sendUpdateSignal() const;
+
+  /** \brief Connect entity to be notified when grid updates */
+  boost::signals2::connection connect(const std::function<void()>& f) const;
+
+//  /** \brief set father of barycentric refinement */
+//  virtual void setBarycentricFather(shared_ptr<Grid> fatherGrid) = 0;
+//
+//  /** \brief get father of barycentric refinement */
+//  virtual shared_ptr<Grid> getBarycentricFather() = 0;
+
+
 private:
   /** \cond PRIVATE */
   mutable Vector<double> m_lowerBound, m_upperBound;
+
+  mutable boost::signals2::signal<void()> gridUpdateSignal;
+
   /** \endcond */
 };
 
@@ -173,6 +200,7 @@ private:
  */
 std::vector<bool> areInside(const Grid &grid, const Matrix<double> &points);
 std::vector<bool> areInside(const Grid &grid, const Matrix<float> &points);
+
 
 } // namespace Bempp
 

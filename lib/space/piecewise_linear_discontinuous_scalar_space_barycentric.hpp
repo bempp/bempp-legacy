@@ -18,16 +18,17 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef piecewise_linear_discontinuous_scalar_space_barycentric_hpp
-#define piecewise_linear_discontinuous_scalar_space_barycentric_hpp
+#ifndef bempp_piecewise_linear_discontinuous_scalar_space_barycentric_hpp
+#define bempp_piecewise_linear_discontinuous_scalar_space_barycentric_hpp
 
 #include "../common/common.hpp"
-#include "scalar_space.hpp"
+
+#include "piecewise_linear_scalar_space.hpp"
+#include "adaptive_space.hpp"
 
 #include "../grid/grid_segment.hpp"
 #include "../grid/grid_view.hpp"
 #include "../common/types.hpp"
-#include "../fiber/piecewise_constant_scalar_basis.hpp"
 #include "../fiber/linear_scalar_shapeset_barycentric.hpp"
 
 #include <map>
@@ -38,21 +39,22 @@ namespace Bempp {
 
 /** \cond FORWARD_DECL */
 class GridView;
+template <typename ValueType> class DiscreteBoundaryOperator;
 /** \endcond */
 
 /** \ingroup space
- *  \brief Space of piecewise constant functions define on the dual grid. */
+ *  \brief Space of continuous, piecewise linear scalar functions. */
 template <typename BasisFunctionType>
 class PiecewiseLinearDiscontinuousScalarSpaceBarycentric
-    : public ScalarSpace<BasisFunctionType> {
+    : public PiecewiseLinearScalarSpace<BasisFunctionType> {
 public:
   typedef typename Space<BasisFunctionType>::CoordinateType CoordinateType;
   typedef typename Space<BasisFunctionType>::ComplexType ComplexType;
 
   /** \brief Constructor.
    *
-   *  Construct a space of piecewise constant functions defined on the
-   *  dual grid
+   *  Construct a space of piecewise linear, continuous scalar functions
+   *  defined on the grid \p grid.
    *
    *  An exception is thrown if \p grid is a null pointer.
    */
@@ -61,7 +63,7 @@ public:
 
   /** \brief Constructor.
    *
-   *  Construct a space of dual grid piecewise constant scalar functions
+   *  Construct a space of piecewise linear, continuous scalar functions
    *  defined on the segment \p segment of the grid \p grid. More precisely,
    *  the space will encompass those basis functions that are associated with
    *  vertices belonging to \p segment. If \p strictlyOnSegment is \c true,
@@ -76,20 +78,18 @@ public:
   PiecewiseLinearDiscontinuousScalarSpaceBarycentric(
       const shared_ptr<const Grid> &grid, const GridSegment &segment,
       bool strictlyOnSegment = false);
-
   virtual ~PiecewiseLinearDiscontinuousScalarSpaceBarycentric();
 
   virtual shared_ptr<const Space<BasisFunctionType>> discontinuousSpace(
       const shared_ptr<const Space<BasisFunctionType>> &self) const;
-  virtual bool isDiscontinuous() const;
-
-  virtual int domainDimension() const;
-  virtual int codomainDimension() const;
 
   virtual bool isBarycentric() const { return true; }
 
   virtual shared_ptr<const Space<BasisFunctionType>> barycentricSpace(
       const shared_ptr<const Space<BasisFunctionType>> &self) const;
+
+  virtual int domainDimension() const;
+  virtual int codomainDimension() const;
 
   /** \brief Return the variant of element \p element.
    *
@@ -104,10 +104,12 @@ public:
   virtual const Fiber::Shapeset<BasisFunctionType> &
   shapeset(const Entity<0> &element) const;
 
+  virtual bool isDiscontinuous() const;
+
   virtual bool spaceIsCompatible(const Space<BasisFunctionType> &other) const;
 
   virtual SpaceIdentifier spaceIdentifier() const {
-    return PIECEWISE_LINEAR_DISCONTINUOUS_SCALAR_BARYCENTRIC;
+    return PIECEWISE_LINEAR_CONTINUOUS_SCALAR_BARYCENTRIC;
   }
 
   virtual size_t globalDofCount() const;
@@ -149,23 +151,34 @@ private:
   void assignDofsImpl();
 
 private:
-  typedef Fiber::LinearScalarShapesetBarycentric<BasisFunctionType> Shapeset;
   /** \cond PRIVATE */
+
+  typedef Fiber::LinearScalarShapesetBarycentric<BasisFunctionType> Shapeset;
+
   GridSegment m_segment;
   bool m_strictlyOnSegment;
+  std::unique_ptr<GridView> m_view;
   std::vector<std::vector<GlobalDofIndex>> m_local2globalDofs;
   std::vector<std::vector<LocalDof>> m_global2localDofs;
   std::vector<LocalDof> m_flatLocal2localDofs;
+
 
   Shapeset m_linearBasisType1;
   Shapeset m_linearBasisType2;
 
   std::vector<typename Shapeset::BasisType> m_elementIndex2Type;
 
+  mutable Matrix<int> m_sonMap;
+  mutable shared_ptr<const Grid> m_originalGrid;
+
   mutable shared_ptr<Space<BasisFunctionType>> m_discontinuousSpace;
   mutable tbb::mutex m_discontinuousSpaceMutex;
   /** \endcond */
 };
+
+/** \brief Define a PiecewiseLinearDiscontinuousScalarSpaceBarycentric that has an update method for grid refinement. */
+template <typename BasisFunctionType>
+shared_ptr<Space<BasisFunctionType>> adaptivePiecewiseLinearDiscontinuousScalarSpaceBarycentric(const shared_ptr<const Grid>& grid);
 
 } // namespace Bempp
 

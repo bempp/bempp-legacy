@@ -60,6 +60,9 @@ public:
   explicit PiecewiseConstantDualGridScalarSpace(
       const shared_ptr<const Grid> &grid);
 
+  PiecewiseConstantDualGridScalarSpace(
+      const shared_ptr<const Grid> &grid, const GridSegment &segment);
+
   virtual ~PiecewiseConstantDualGridScalarSpace();
 
   virtual shared_ptr<const Space<BasisFunctionType>> discontinuousSpace(
@@ -137,11 +140,16 @@ private:
   std::vector<std::vector<LocalDof>> m_global2localDofs;
   std::vector<LocalDof> m_flatLocal2localDofs;
   Fiber::ConstantScalarShapeset<BasisFunctionType> m_basis;
-  shared_ptr<const Grid> m_originalGrid;
+  mutable shared_ptr<const Grid> m_originalGrid;
+  mutable Matrix<int> m_sonMap;
   mutable shared_ptr<Space<BasisFunctionType>> m_discontinuousSpace;
   mutable tbb::mutex m_discontinuousSpaceMutex;
   /** \endcond */
 };
+
+template <typename BasisFunctionType>
+shared_ptr<Space<BasisFunctionType>> adaptivePiecewiseConstantDualGridScalarSpace(const shared_ptr<const Grid>& grid);
+
 
 } // namespace Bempp
 

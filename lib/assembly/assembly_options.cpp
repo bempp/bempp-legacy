@@ -34,37 +34,11 @@ void AssemblyOptions::switchToDenseMode() { m_assemblyMode = DENSE; }
 
 void AssemblyOptions::switchToHMatMode() { m_assemblyMode = HMAT; }
 
-void AssemblyOptions::switchToAcaMode(const AcaOptions &acaOptions) {
-  AcaOptions canonicalAcaOptions = acaOptions;
-  if (!canonicalAcaOptions.globalAssemblyBeforeCompression) {
-    canonicalAcaOptions.globalAssemblyBeforeCompression = true;
-    canonicalAcaOptions.mode = AcaOptions::HYBRID_ASSEMBLY;
-  }
-  if ((int)canonicalAcaOptions.mode < AcaOptions::MIN_ASSEMBLY_MODE ||
-      (int)canonicalAcaOptions.mode > AcaOptions::MAX_ASSEMBLY_MODE)
-    throw std::invalid_argument("AssemblyOptions::switchToAcaMode(): "
-                                "invalid ACA mode");
-  if ((int)canonicalAcaOptions.reactionToUnsupportedMode <
-          AcaOptions::MIN_REACTION ||
-      (int)canonicalAcaOptions.reactionToUnsupportedMode >
-          AcaOptions::MAX_REACTION)
-    throw std::invalid_argument("AssemblyOptions::switchToAcaMode(): "
-                                "invalid reaction to unsupported mode");
-  m_assemblyMode = ACA;
-  m_acaOptions = canonicalAcaOptions;
-}
-
 void AssemblyOptions::switchToDense() { switchToDenseMode(); }
-
-void AssemblyOptions::switchToAca(const AcaOptions &acaOptions) {
-  switchToAcaMode(acaOptions);
-}
 
 AssemblyOptions::Mode AssemblyOptions::assemblyMode() const {
   return m_assemblyMode;
 }
-
-const AcaOptions &AssemblyOptions::acaOptions() const { return m_acaOptions; }
 
 // void AssemblyOptions::switchToOpenCl(const OpenClOptions& openClOptions)
 //{

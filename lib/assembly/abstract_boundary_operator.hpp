@@ -22,6 +22,7 @@
 #define bempp_abstract_boundary_operator_hpp
 
 #include "../common/common.hpp"
+#include "../common/types.hpp"
 
 #include "assembly_options.hpp"
 #include "symmetry.hpp"
@@ -51,7 +52,6 @@ class AbstractBoundaryOperatorSum;
 template <typename BasisFunctionType, typename ResultType> class Context;
 template <typename BasisFunctionType, typename ResultType>
 class ElementaryAbstractBoundaryOperator;
-template <typename BasisFunctionType, typename ResultType> class GridFunction;
 template <typename BasisFunctionType, typename ResultType>
 class ScaledAbstractBoundaryOperator;
 /** \endcond */
@@ -217,6 +217,10 @@ public:
    */
   shared_ptr<DiscreteBoundaryOperator<ResultType_>> assembleWeakForm(
       const Context<BasisFunctionType_, ResultType_> &context) const;
+
+  /** \brief Overlad. */
+  shared_ptr<DiscreteBoundaryOperator<ResultType_>> assembleWeakForm(
+          const ParameterList& parameterList) const;
 
 protected:
   /** \brief Given an AssemblyOptions object, construct objects necessary for

@@ -18,11 +18,13 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "assembly/helmholtz_3d_operators_common.hpp"
 #include "fiber/geometrical_data.hpp"
 #include "fiber/modified_helmholtz_3d_adjoint_double_layer_potential_kernel_functor.hpp"
 #include "fiber/modified_helmholtz_3d_adjoint_double_layer_potential_kernel_interpolated_functor.hpp"
 #include "fiber/default_collection_of_kernels.hpp"
+#include "operators/modified_helmholtz_operators.hpp"
+#include "assembly/discrete_boundary_operator.hpp"
+#include "common/global_parameters.hpp"
 
 #include "../type_template.hpp"
 #include "../check_arrays_are_close.hpp"
@@ -32,6 +34,7 @@
 #include <typeinfo>
 
 #include "common/eigen_support.hpp"
+#include "common/global_parameters.hpp"
 #include <boost/test/unit_test.hpp>
 #include <boost/test/floating_point_comparison.hpp>
 #include <boost/version.hpp>
@@ -56,7 +59,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(agrees_with_noninterpolated_for_real_wave_number,
     const ValueType waveNumber = 1;
     const CoordinateType wavelength = 2. * M_PI / std::abs(waveNumber);
     const double maxDist = 20.;
-    const int interpPtsPerWavelength = Bempp::DEFAULT_HELMHOLTZ_INTERPOLATION_DENSITY;
+    auto parameterList = GlobalParameters::parameterList();
+    const int interpPtsPerWavelength = parameterList.template get<int>("options.assembly.interpolationPointsPerWavelength");
     NoninterpolatedKernels noninterpKernels((NoninterpolatedFunctor(waveNumber)));
     InterpolatedKernels interpKernels((InterpolatedFunctor(waveNumber, maxDist,
                                                           interpPtsPerWavelength)));
@@ -106,7 +110,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(agrees_with_noninterpolated_for_negative_real_wave
     const ValueType waveNumber = -1;
     const CoordinateType wavelength = 2. * M_PI / std::abs(waveNumber);
     const double maxDist = 20.;
-    const int interpPtsPerWavelength = Bempp::DEFAULT_HELMHOLTZ_INTERPOLATION_DENSITY;
+    auto parameterList = GlobalParameters::parameterList();
+    const int interpPtsPerWavelength = parameterList.template get<int>("options.assembly.interpolationPointsPerWavelength");
     NoninterpolatedKernels noninterpKernels((NoninterpolatedFunctor(waveNumber)));
     InterpolatedKernels interpKernels((InterpolatedFunctor(waveNumber, maxDist,
                                                           interpPtsPerWavelength)));
@@ -156,7 +161,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(agrees_with_noninterpolated_for_negative_imag_wave
     const ValueType waveNumber(0., -1.);
     const CoordinateType wavelength = 2. * M_PI / std::abs(waveNumber);
     const double maxDist = 20.;
-    const int interpPtsPerWavelength = Bempp::DEFAULT_HELMHOLTZ_INTERPOLATION_DENSITY;
+    auto parameterList = GlobalParameters::parameterList();
+    const int interpPtsPerWavelength = parameterList.template get<int>("options.assembly.interpolationPointsPerWavelength");
     NoninterpolatedKernels noninterpKernels((NoninterpolatedFunctor(waveNumber)));
     InterpolatedKernels interpKernels((InterpolatedFunctor(waveNumber, maxDist,
                                                           interpPtsPerWavelength)));
@@ -210,7 +216,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(agrees_with_noninterpolated_for_imag_wave_number,
     const ValueType waveNumber(0., 1.);
     const CoordinateType wavelength = 2. * M_PI / std::abs(waveNumber);
     const double maxDist = 20.;
-    const int interpPtsPerWavelength = Bempp::DEFAULT_HELMHOLTZ_INTERPOLATION_DENSITY;
+    auto parameterList = GlobalParameters::parameterList();
+    const int interpPtsPerWavelength = parameterList.template get<int>("options.assembly.interpolationPointsPerWavelength");
     NoninterpolatedKernels noninterpKernels((NoninterpolatedFunctor(waveNumber)));
     InterpolatedKernels interpKernels((InterpolatedFunctor(waveNumber, maxDist,
                                                           interpPtsPerWavelength)));
@@ -260,7 +267,8 @@ BOOST_AUTO_TEST_CASE_TEMPLATE(agrees_with_noninterpolated_for_complex_wave_numbe
     const ValueType waveNumber(1., 1.);
     const CoordinateType wavelength = 2. * M_PI / std::abs(waveNumber);
     const double maxDist = 20.;
-    const int interpPtsPerWavelength = Bempp::DEFAULT_HELMHOLTZ_INTERPOLATION_DENSITY;
+    auto parameterList = GlobalParameters::parameterList();
+    const int interpPtsPerWavelength = parameterList.template get<int>("options.assembly.interpolationPointsPerWavelength");
     NoninterpolatedKernels noninterpKernels((NoninterpolatedFunctor(waveNumber)));
     InterpolatedKernels interpKernels((InterpolatedFunctor(waveNumber, maxDist,
                                                           interpPtsPerWavelength)));

@@ -1,5 +1,5 @@
-#ifndef math_helper_impl_hpp
-#define math_helper_impl_hpp
+#ifndef HMAT_MATH_HELPER_IMPL_HPP
+#define HMAT_MATH_HELPER_IMPL_HPP
 
 #include "math_helper.hpp"
 #include <limits>
@@ -16,8 +16,7 @@ void computeLowRankApproximation(const Matrix<ValueType> &mat, double threshold,
   Eigen::JacobiSVD<Matrix<ValueType>> svd(mat, Eigen::ComputeThinU |
                                                    Eigen::ComputeThinV);
   // Get the index that is lower than the threshold
-  svd.setThreshold(threshold);
-  auto rank = svd.rank();
+  auto rank = computeRank(svd,threshold);
   if (rank == 0)
     rank = 1;
 
@@ -62,12 +61,25 @@ void randomizedLowRankApproximation(const matApply_t<ValueType> &applyFun,
   Matrix<ValueType> identity =
       Matrix<ValueType>::Identity(rows, actual_sample_size);
   Matrix<ValueType> Z = Matrix<ValueType>::Random(cols, actual_sample_size);
-  Eigen::HouseholderQR<Matrix<ValueType>> qr(
-      applyFun(Eigen::Ref<Matrix<ValueType>>(Z), NOTRANS));
-  A = qr.householderQ() * identity;
+
+  A = applyFun(Eigen::Ref<Matrix<ValueType>>(Z),NOTRANS).
+      colPivHouseholderQr().householderQ()*identity;
+
   B = applyFun(Eigen::Ref<Matrix<ValueType>>(A), CONJTRANS).adjoint();
   compressQB(A, B, threshold, maxRank, success);
 }
+
+
+template <typename ValueType>
+std::size_t computeRank(const Eigen::JacobiSVD<Matrix<ValueType>>& svd, double threshold){
+
+    auto singularValues = svd.singularValues().array();
+    auto maxSingVal = singularValues(0);
+    return (singularValues>(threshold*maxSingVal)).count();
+
+
+}
+
 }
 
 #endif
