@@ -3,9 +3,6 @@ include(FilterList)
 
 include_directories("${PYTHON_BINARY_DIR}/bempp/include")
 
-# An umbrella target for cython headeres
-add_custom_target(cython-headers)
-
 # Add empty __init__.pxd file so cython considers the include directory
 file(WRITE "${PYTHON_BINARY_DIR}/bempp/include/bempp/__init__.pxd")
 
@@ -15,10 +12,8 @@ file(WRITE "${PYTHON_BINARY_DIR}/bempp/__init__.py"
 
 install_python(FILES __init__.pxd DESTINATION bempp/include/bempp)
 
-
 #add_python_module(bempp __init__.py 
 #    CPP LIBRARIES libbempp)
-#add_dependencies(bempp cython-headers)
 
 # Sets path variables for in-build system
 set(BEMPP_MESHES "${PROJECT_SOURCE_DIR}/meshes")

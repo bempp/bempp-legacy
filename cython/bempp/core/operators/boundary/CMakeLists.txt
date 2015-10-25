@@ -20,4 +20,7 @@ add_python_module(bempp.core.operators.boundary __init__.py
                   maxwell.pyx
                   CPP LIBRARIES libbempp)
 
-add_dependencies(bempp.core.operators.boundary cython-headers)
+add_dependencies(bempp.core.operators.boundary cython-headers) 
+add_dependencies(bempp.core.operators.boundary bempp.core.assembly) 
+add_dependencies(cython bempp.core.operators.boundary)
+

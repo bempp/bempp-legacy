@@ -119,6 +119,8 @@ execute_process(COMMAND chmod +x ${PROJECT_BINARY_DIR}/bin/ibempp)
 # Prepare the debian build script
 configure_file(${PROJECT_SOURCE_DIR}/create_debian_package.sh.in ${PROJECT_BINARY_DIR}/create_debian_package.sh)
 
+add_custom_target(bempp DEPENDS libbempp cython-headers cython)
+
 add_custom_target(debian sh ${PROJECT_BINARY_DIR}/create_debian_package.sh DEPENDS bempp)
 
 

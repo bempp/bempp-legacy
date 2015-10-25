@@ -16,3 +16,6 @@ add_python_module(bempp.core.hmat __init__.py block_cluster_tree.pyx
                                   hmatrix_data.pyx hmatrix_interface.pyx
                                   CPP LIBRARIES libbempp)
 add_dependencies(bempp.core.hmat cython-headers)
+add_dependencies(bempp.core.hmat bempp.core.assembly)
+add_dependencies(cython bempp.core.hmat)
+

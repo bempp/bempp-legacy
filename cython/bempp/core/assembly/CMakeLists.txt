@@ -24,3 +24,7 @@ add_python_module(bempp.core.assembly __init__.py
                   CPP LIBRARIES libbempp)
 
 add_dependencies(bempp.core.assembly cython-headers)
+add_dependencies(bempp.core.assembly bempp.core.grid)
+add_dependencies(bempp.core.assembly bempp.core.utils)
+add_dependencies(bempp.core.assembly bempp.core.space)
+add_dependencies(cython bempp.core.assembly)

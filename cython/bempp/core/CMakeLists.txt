@@ -11,6 +11,7 @@ add_dependencies(cython-headers bempp.core-copied)
 
 add_python_module(bempp.core __init__.py CPP LIBRARIES libbempp)
 add_dependencies(bempp.core cython-headers)
+add_dependencies(cython bempp.core)
 
 add_subdirectory(utils)
 add_subdirectory(common)
