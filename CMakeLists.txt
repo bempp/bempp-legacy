@@ -4,7 +4,7 @@ project(Bempp CXX)
 # Get version string
 string(TIMESTAMP date_string %y-%m-%d)
 
-set(Bempp_VERSION 2.9.9-nightly-${date_string})
+set(Bempp_VERSION 2.9.9)
 
 # Set a default build type if none was specified
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
