@@ -71,14 +71,9 @@ class GridFunction(object):
 
     Examples
     --------
-    To create a GridFunction from a real Python callable my_fun use
+    To create a GridFunction from a Python callable my_fun use
 
     >>> grid_function = GridFunction(space, fun=my_fun)
-
-    To create a GridFunction from a complex Python callable my_fun use
-
-    >>> grid_function = GridFunction(space, fun=my_fun,
-    ...    complex_data=True)
 
     To create a GridFunction from a vector of coefficients coeffs use
 
