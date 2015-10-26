@@ -217,7 +217,7 @@ ElementaryLocalOperator<BasisFunctionType, ResultType>::assembleWeakFormImpl(
       this->makeAssembler(*context.quadStrategy(), context.assemblyOptions());
   shared_ptr<DiscreteBoundaryOperator<ResultType>> result =
       assembleWeakFormInternalImpl2(*assembler, context);
-  tbb::tick_count end = tbb::tick_count::now();
+  tbb::tick_count::now();
 
   return result;
 }

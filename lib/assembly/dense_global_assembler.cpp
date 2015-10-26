@@ -267,7 +267,6 @@ DenseGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
     const Space<BasisFunctionType> &trialSpace,
     LocalAssemblerForIntegralOperators &assembler,
     const Context<BasisFunctionType, ResultType> &context) {
-  const AssemblyOptions &options = context.assemblyOptions();
 
   // Global DOF indices corresponding to local DOFs on elements
   std::vector<std::vector<GlobalDofIndex>> testGlobalDofs, trialGlobalDofs;

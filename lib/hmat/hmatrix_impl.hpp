@@ -249,12 +249,6 @@ void HMatrix<ValueType, N>::apply_impl_parallel(
     int rowSplit = childRowRange[1] - childRowRange[0];
     int colSplit = childColRange[1] - childColRange[0];
 
-    IndexRangeType inputRange;
-    IndexRangeType outputRange;
-
-    int x_size = X.rows();
-    int y_size = Y.rows();
-
     // Ugly hack since Eigen::Ref constructor does not like const objects
     Eigen::Ref<Matrix<ValueType>> x_no_const =
         const_cast<Eigen::Ref<Matrix<ValueType>> &>(X);
