@@ -85,8 +85,6 @@ ElementaryIntegralOperatorBase<BasisFunctionType, ResultType>::makeAssembler(
   typedef std::vector<const Fiber::Shapeset<BasisFunctionType> *>
       ShapesetPtrVector;
 
-  const bool verbose = (options.verbosityLevel() >= VerbosityLevel::DEFAULT);
-
   shared_ptr<RawGridGeometry> testRawGeometry, trialRawGeometry;
   shared_ptr<GeometryFactory> testGeometryFactory, trialGeometryFactory;
   shared_ptr<Fiber::OpenClHandler> openClHandler;

@@ -6,7 +6,7 @@ include(PythonPackageLookup) # adds python packages if not found
 # Creates script for running python with the bempp package available
 # Also makes python packages and selected directories available to the build
 # system
-add_to_python_path("${PROJECT_BINARY_DIR}/python")
+add_to_python_path("${PROJECT_SOURCE_DIR}/python")
 add_to_python_path("${EXTERNAL_ROOT}/python")
 add_python_eggs("${PROJECT_SOURCE_DIR}"
     EXCLUDE

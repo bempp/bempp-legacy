@@ -21,3 +21,4 @@ bempp.egg-info/
 pkg_install/
 py-*/
 pytest*/
+.cache

@@ -33,7 +33,6 @@ Bempp::shared_ptr<Bempp::Grid> SimpleTriangularGridManager::createGrid()
     params.topology = Bempp::GridParameters::TRIANGULAR;
 
     const int dimGrid = 2;
-    typedef double ctype;
     Vector<double> lowerLeft(dimGrid);
     Vector<double> upperRight(dimGrid);
     Vector<int> nElements(dimGrid);

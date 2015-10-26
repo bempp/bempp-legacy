@@ -100,7 +100,6 @@ ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
   typedef Fiber::RawGridGeometry<CoordinateType> RawGridGeometry;
   typedef std::vector<const Fiber::Shapeset<BasisFunctionType> *>
       ShapesetPtrVector;
-  typedef std::vector<std::vector<ResultType>> CoefficientsVector;
   typedef LocalAssemblerConstructionHelper Helper;
 
   shared_ptr<RawGridGeometry> rawGeometry;
