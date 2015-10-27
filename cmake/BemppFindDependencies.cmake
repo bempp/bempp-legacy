@@ -124,6 +124,10 @@ if(EXISTS "${EXTERNAL_ROOT}/lib")
     install(DIRECTORY "${EXTERNAL_ROOT}/lib/"
         DESTINATION "${LIBRARY_INSTALL_PATH}")
 endif()
+if(EXISTS "${EXTERNAL_ROOT}/lib64")
+    install(DIRECTORY "${EXTERNAL_ROOT}/lib64/"
+        DESTINATION "${LIBRARY_INSTALL_PATH}")
+endif()
 if(EXISTS "${EXTERNAL_ROOT}/include")
     install(DIRECTORY "${EXTERNAL_ROOT}/include/"
         DESTINATION "${INCLUDE_INSTALL_PATH}")
