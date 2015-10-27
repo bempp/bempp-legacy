@@ -24,8 +24,12 @@ find . -name '*.py' -o -name '*.so' | cpio -pdm ${PROJECT_BINARY_DIR}/$package_n
 cd ${PROJECT_BINARY_DIR}
 cd python_package
 find . -name '*.py' -o -name '*.so' | cpio -pdm ../$package_name/usr/lib/python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}/dist-packages
-cp ../lib/libbempp* ../$package_name/usr/lib/
 cd ..
+cd $package_name
+find . -name '*.so' -exec @PATCHELF_EXECUTABLE@ --set-rpath . {} \;
+cd ..
+cp ./lib/libbempp* ./$package_name/usr/lib/
 fakeroot dpkg-deb -b ./$package_name
+rm -rf ./$package_name
 
 
