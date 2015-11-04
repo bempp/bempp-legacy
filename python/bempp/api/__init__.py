@@ -43,6 +43,7 @@ def _check_create_init_dir():
     """Create the temporary dir if necessary."""
     from os.path import expanduser, join, isdir
     from os import mkdir
+    import tempfile
 
     home = expanduser("~")
     config_path = join(home,".bempp")
@@ -51,21 +52,27 @@ def _check_create_init_dir():
         if not isdir(config_path):
             mkdir(config_path)
     except OSError: # Read only file system try a tmp dir
-        import tempfile
         import warnings
         warnings.warn("Could not create BEM++ config dir."
             "Falling back to a temorary dir."
             "Your config will not be stored")
         config_path = tempfile.mkdtemp()
 
-    tmp_path = join(config_path,"tmp")
-    if not isdir(tmp_path):
-        mkdir(tmp_path)
+    tmp_path = tempfile.mkdtemp()
 
     return config_path, tmp_path
 
 
 CONFIG_PATH, TMP_PATH = _check_create_init_dir()
+
+# Clean up function
+
+import atexit as _atexit
+@_atexit.register
+def clean_tmp():
+    import shutil
+    shutil.rmtree(TMP_PATH)
+
 
 
 # Get the path to Gmsh
