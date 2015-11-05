@@ -61,4 +61,13 @@ def data_block(discrete_operator, block_cluster_tree_node):
     from bempp.core.hmat.hmatrix_interface import data_block_ext
     return data_block_ext(discrete_operator._impl, block_cluster_tree_node)
 
+def compression_rate(discrete_operator):
+    """Return the compression rate for a HMatrix operator."""
+
+    mem = mem_size(discrete_operator)
+    total = 8 if discrete_operator.dtype == 'float64' else 16
+    total *= discrete_operator.shape[0] * discrete_operator.shape[1]/(1.0 * 1024)
+    return mem/total
+
+
 

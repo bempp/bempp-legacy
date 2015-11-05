@@ -1,6 +1,8 @@
 """Definition of single and double layer Helmholtz far field operators."""
+from bempp.api.operators.potential import _common
 
 
+@_common.potential_logger
 def single_layer(space, evaluation_points, wave_number, parameters=None):
     """Return the Helmholtz single-layer far field operator.
 
@@ -33,6 +35,7 @@ def single_layer(space, evaluation_points, wave_number, parameters=None):
                              1, space, evaluation_points)
 
 
+@_common.potential_logger
 def double_layer(space, evaluation_points, wave_number, parameters=None):
     """Return the Helmholtz double-layer far field operator.
 

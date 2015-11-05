@@ -1,6 +1,8 @@
 """Definition of electric and magnetic Maxwell potential operators."""
+from . import _common
 
 
+@_common.potential_logger
 def electric_field(space, evaluation_points, wave_number, parameters=None):
     """Return the Maxwell electric field potential operator
 
@@ -34,6 +36,7 @@ def electric_field(space, evaluation_points, wave_number, parameters=None):
                              3, space, evaluation_points)
 
 
+@_common.potential_logger
 def magnetic_field(space, evaluation_points, wave_number, parameters=None):
     """Return the Maxwell magnetic field potential operator
 

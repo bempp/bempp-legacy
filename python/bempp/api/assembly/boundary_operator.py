@@ -6,14 +6,21 @@
 def _start_assembly_message(domain, dual_to_range, assembly_type, label):
     """Create a coherent logger message for operator assembly start."""
 
-    return "Operator: {2}. START ASSEMBLY. Dimensions: ({0},{1}). Assembly Type: {3}".format(
+    return "{2}. START ASSEMBLY. Dim: ({0},{1}). Assembly Type: {3}".format(
         domain.global_dof_count, dual_to_range.global_dof_count, label, assembly_type)
+
 
 
 def _end_assembly_message(label, assembly_time):
     """Create a coherent logger message for operator assembly end."""
 
-    return "Operator: {1}. FINISHED ASSEMBLY. Time: {0} seconds".format(assembly_time, label)
+    return "{1}. FINISHED ASSEMBLY. Time: {0:.2E} sec.".format(assembly_time, label)
+
+def _end_hmat_assembly_message(label, assembly_time, compression_rate, mem_size):
+    """Create a coherent logger message for hmat operator assembly end."""
+
+    return "{1}. FINISHED ASSEMBLY. Time: {0:.2E} sec. Mem Size (Mb): {3:.2E}. Compression: {2:.2E}".format(assembly_time, label,
+            compression_rate, mem_size)
 
 
 class BoundaryOperator(object):
@@ -267,7 +274,13 @@ class ElementaryBoundaryOperator(BoundaryOperator):
         weak_form = self._impl.assemble_weak_form(self._parameters)
 
         end_time = time.time()
-        bempp.api.LOGGER.info(_end_assembly_message(self.label, end_time - start_time))
+
+        if assembly_mode == 'hmat':
+            from bempp.api.hmat import hmatrix_interface
+            mem_size = hmatrix_interface.mem_size(weak_form)/(1.0 *1024)
+            compression_rate = hmatrix_interface.compression_rate(weak_form)
+            bempp.api.LOGGER.info(_end_hmat_assembly_message(
+                self.label, end_time - start_time, compression_rate, mem_size))
 
         return weak_form
 
