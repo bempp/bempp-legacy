@@ -1,5 +1,5 @@
 import numpy as _np
-from scipy.sparse.linalg.interface import LinearOperator
+from bempp.api.utils.linear_operator import LinearOperator
 
 
 def _sum(op1, op2):

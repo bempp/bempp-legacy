@@ -68,7 +68,7 @@ class TestBoundaryOperator(TestCase):
         bempp.api.global_parameters.assembly.boundary_operator_assembly_type = assembly_mode
 
     def test_weak_form_of_operator_sum_is_discrete_operator_sum(self):
-        from scipy.sparse.linalg.interface import _SumLinearOperator
+        from bempp.api.utils.linear_operator import _SumLinearOperator
 
         operator_sum = self._local_operator + self._elementary_operator
 
@@ -76,7 +76,7 @@ class TestBoundaryOperator(TestCase):
                               "A _SumLinearOperator instance is expected here.")
 
     def test_weak_form_of_scaled_operator_is_scaled_discrete_operator(self):
-        from scipy.sparse.linalg.interface import _ScaledLinearOperator
+        from bempp.api.utils.linear_operator import _ScaledLinearOperator
 
         scaled_operator = 2.0 * self._elementary_operator
         weak_form = scaled_operator.weak_form()
@@ -87,7 +87,7 @@ class TestBoundaryOperator(TestCase):
 
     def test_weak_form_of_product_operator_is_product_discrete_operator(self):
         import bempp
-        from scipy.sparse.linalg.interface import _ProductLinearOperator
+        from bempp.api.utils.linear_operator import _ProductLinearOperator
 
         op = bempp.api.operators.boundary.laplace.single_layer(self.domain, self.domain, self.domain)
 
