@@ -132,4 +132,6 @@ def test():
     loader = unittest.TestLoader()
     suite = loader.discover(dirname(__file__))
     test_runner = unittest.TextTestRunner(verbosity=2)
-    test_runner.run(suite)
+    result = test_runner.run(suite)
+    return result.wasSuccessful()
+
