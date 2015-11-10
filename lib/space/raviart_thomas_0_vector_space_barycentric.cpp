@@ -61,8 +61,7 @@ template <typename BasisFunctionType>
 RaviartThomas0VectorSpaceBarycentric<BasisFunctionType>::RaviartThomas0VectorSpaceBarycentric(
     const shared_ptr<const Grid> &grid, bool putDofsOnBoundaries)
     : Base(grid->barycentricGrid()), m_impl(new Impl), m_segment(GridSegment::wholeGrid(*grid)),
-      m_putDofsOnBoundaries(putDofsOnBoundaries), m_dofMode(EDGE_ON_SEGMENT), m_vectorBasisType1(Shapeset::TYPE1),
-      m_vectorBasisType2(Shapeset::TYPE2),
+      m_putDofsOnBoundaries(putDofsOnBoundaries), m_dofMode(EDGE_ON_SEGMENT),
       m_originalGrid(grid), m_sonMap(grid->barycentricSonMap()) {
   initialize();
 }
@@ -72,8 +71,7 @@ RaviartThomas0VectorSpaceBarycentric<BasisFunctionType>::RaviartThomas0VectorSpa
     const shared_ptr<const Grid> &grid, const GridSegment &segment,
     bool putDofsOnBoundaries, int dofMode)
     : Base(grid->barycentricGrid()), m_impl(new Impl), m_segment(segment),
-      m_putDofsOnBoundaries(putDofsOnBoundaries), m_dofMode(dofMode), m_vectorBasisType1(Shapeset::TYPE1),
-      m_vectorBasisType2(Shapeset::TYPE2),
+      m_putDofsOnBoundaries(putDofsOnBoundaries), m_dofMode(dofMode),
       m_originalGrid(grid), m_sonMap(grid->barycentricSonMap()) {
   if (!(dofMode & (EDGE_ON_SEGMENT | ELEMENT_ON_SEGMENT)))
     throw std::invalid_argument("RaviartThomas0VectorSpaceBarycentric::"
@@ -99,7 +97,6 @@ void RaviartThomas0VectorSpaceBarycentric<BasisFunctionType>::initialize() {
                                 "grid must be 2-dimensional and embedded "
                                 "in 3-dimensional space");
   m_view = this->grid()->leafView();
-  std::cout << "BELLO!" << std::endl;
   assignDofsImpl();
 }
 
@@ -167,11 +164,13 @@ void RaviartThomas0VectorSpaceBarycentric<BasisFunctionType>::setElementVariant(
 
 template <typename BasisFunctionType>
 void RaviartThomas0VectorSpaceBarycentric<BasisFunctionType>::assignDofsImpl() {
-  std::cout << "1";
   int edgeCountCoarseGrid = m_originalGrid->leafView()->entityCount(1);
+  int edgeCountFineGrid = m_view->entityCount(1);
+  int faceCountFineGrid = m_view->entityCount(0);
   int elementCount = m_view->entityCount(0);
   std::unique_ptr<GridView> coarseView = m_originalGrid->leafView();
   const IndexSet &index = coarseView->indexSet();
+  const IndexSet &bindex = m_view->indexSet();
 
   std::vector<int> globalDofsOfEdges;
   globalDofsOfEdges.resize(edgeCountCoarseGrid);
@@ -186,10 +185,23 @@ void RaviartThomas0VectorSpaceBarycentric<BasisFunctionType>::assignDofsImpl() {
   for(std::unique_ptr<EntityIterator<0>> it = coarseView->entityIterator<0>();!it->finished();it->next()){
     for(int i=0;i!=3;++i){
       const Entity<0> &entity = it->entity();
-        const int ent0Number = index.subEntityIndex(entity,0,0);
+      const int ent0Number = index.subEntityIndex(entity,0,0);
+      int &lowestIndex = lowestIndicesOfElementsAdjacentToEdges[index.subEntityIndex(entity,i,1)];
+      lowestIndex = std::min(ent0Number,lowestIndex);
+    }
+  }
 
-       int &lowestIndex = lowestIndicesOfElementsAdjacentToEdges[index.subEntityIndex(entity,i,1)];
-       lowestIndex = std::min(ent0Number,lowestIndex);
+ // for(int i=0;i<edgeCountCoarseGrid;++i)
+   // std::cout << i << ":" << lowestIndicesOfElementsAdjacentToEdges[i] << std::endl;
+
+  std::vector<int> lowestIndicesOfElementsAdjacentToFineEdges(edgeCountFineGrid, std::numeric_limits<int>::max());
+
+  for(std::unique_ptr<EntityIterator<0>> it = m_view->entityIterator<0>();!it->finished();it->next()){
+    for(int i=0;i!=3;++i){
+      const Entity<0> &entity = it->entity();
+      const int ent0Number = index.subEntityIndex(entity,0,0);
+      int &lowestIndex = lowestIndicesOfElementsAdjacentToFineEdges[index.subEntityIndex(entity,i,1)];
+      lowestIndex = std::min(ent0Number,lowestIndex);
     }
   }
 
@@ -211,24 +223,45 @@ void RaviartThomas0VectorSpaceBarycentric<BasisFunctionType>::assignDofsImpl() {
   model.ubound.y = -std::numeric_limits<CoordinateType>::max();
   model.ubound.z = -std::numeric_limits<CoordinateType>::max();
   m_globalDofBoundingBoxes.resize(globalDofCount_, model);
-  m_elementIndex2Type.resize(elementCount);
+  m_elementShapesets.resize(elementCount);
 
   const int element2Basis[6][3] = {
-                                   {0,2,1},
-                                   {0,2,1},
-                                   {2,0,1},
+                                   {0,1,2},
+                                   {0,1,2},
+                                   {2,0,1},//2,0,1
                                    {2,0,1},
                                    {1,2,0},
                                    {1,2,0}
                                   };
 
-  int i__ = 0;
   Vector<CoordinateType> dofPosition;
   Matrix<CoordinateType> vertices;
+
+  Vector<double> coarseEdgeLengths;
+  coarseEdgeLengths.resize(edgeCountCoarseGrid);
+  for(std::unique_ptr<EntityIterator<1>> it=coarseView->entityIterator<1>();!it->finished();it->next()){
+    const Entity<1> &entity = it->entity();
+    coarseEdgeLengths(index.entityIndex(entity)) = entity.geometry().volume();
+  }
+  Vector<double> fineEdgeLengths;
+  fineEdgeLengths.resize(edgeCountFineGrid);
+  for(std::unique_ptr<EntityIterator<1>> it=m_view->entityIterator<1>();!it->finished();it->next()){
+    const Entity<1> &entity = it->entity();
+    fineEdgeLengths(bindex.entityIndex(entity)) = entity.geometry().volume();
+  }
+  Matrix<int> fineEdgeMap;
+  fineEdgeMap.conservativeResize(faceCountFineGrid,3);
+  for(std::unique_ptr<EntityIterator<0>> it=m_view->entityIterator<0>();!it->finished();it->next()){
+    int j=0;
+    for(std::unique_ptr<EntityIterator<1>> subIt=it->entity().subEntityIterator<1>();!subIt->finished();subIt->next()){
+        fineEdgeMap(bindex.entityIndex(it->entity()),j++)=bindex.entityIndex(subIt->entity());
+    }
+  }
+
   for(std::unique_ptr<EntityIterator<0>> it=coarseView->entityIterator<0>();!it->finished();it->next()){
     const Entity<0> &entity = it->entity();
     const Geometry &geo = entity.geometry();
-    int ent0Number = index.subEntityIndex(entity,0,0);
+    int ent0Number = index.entityIndex(entity);
     geo.getCorners(vertices);
 
     std::vector<int> edges;
@@ -236,13 +269,14 @@ void RaviartThomas0VectorSpaceBarycentric<BasisFunctionType>::assignDofsImpl() {
     edges[0] = index.subEntityIndex(entity,0,1);
     edges[1] = index.subEntityIndex(entity,1,1);
     edges[2] = index.subEntityIndex(entity,2,1);
+
     for(int i=0;i!=6;++i){
-      EntityIndex sonIndex = m_sonMap(ent0Number,i);
-      if (i % 2 == 0) {
-        acc(m_elementIndex2Type, sonIndex) = Shapeset::TYPE1;
-      } else {
-        acc(m_elementIndex2Type, sonIndex) = Shapeset::TYPE2;
-      }
+      int sonIndex = m_sonMap(ent0Number,i);
+      Matrix<double> sideLengths;
+      sideLengths.conservativeResize(2,3);
+      Matrix<int> weights;
+      weights.conservativeResize(2,3);
+
       std::vector<GlobalDofIndex> &globalDof = acc(m_local2globalDofs, sonIndex);
       globalDof.resize(3);
 
@@ -251,251 +285,48 @@ void RaviartThomas0VectorSpaceBarycentric<BasisFunctionType>::assignDofsImpl() {
 
       for(int j=0;j!=3;++j){
         const int edgeIndex = edges[element2Basis[i][j]];
+        const int fineEdgeIndex = fineEdgeMap(sonIndex,j);
         const int globalDofIndex = globalDofsOfEdges[edgeIndex];
-        globalDof[j] = globalDofIndex;
-        globalDofWeights[j] = acc(lowestIndicesOfElementsAdjacentToEdges, edgeIndex) == ent0Number
-              ? 1.
-              : -1.;
-        m_global2localDofs[globalDofIndex].push_back(LocalDof(ent0Number,j));
-        if(element2Basis[i][j]==0){
+        if (i == 0) {
           dofPosition = 0.5 * (vertices.col(0) + vertices.col(1));
-        } else if (element2Basis[i][j] == 1) {
+        } else if (i == 1) {
           dofPosition = 0.5 * (vertices.col(2) + vertices.col(0));
-        } else { // element2Basis[i][j] == 2
+        } else { // i == 2
           dofPosition = 0.5 * (vertices.col(1) + vertices.col(2));
         }
-        extendBoundingBox(acc(m_globalDofBoundingBoxes, globalDofIndex), vertices);
-        setBoundingBoxReference<CoordinateType>(
-            acc(m_globalDofBoundingBoxes, globalDofIndex), dofPosition);
+        sideLengths(0,j)=coarseEdgeLengths(edgeIndex);
+        sideLengths(1,j)=fineEdgeLengths(fineEdgeIndex);
+        //std::cout << sideLengths(0,j) << " " << sideLengths(1,j) << std::endl;
+        //weights(0,j)=acc(lowestIndicesOfElementsAdjacentToEdges, edgeIndex) == ent0Number ? 1 : -1;
+        //weights(1,j)=acc(lowestIndicesOfElementsAdjacentToFineEdges, fineEdgeIndex) == sonIndex ? 1 : -1;
 
+        globalDof[j] = globalDofIndex;
+        // globalDofWeights[j]=acc(lowestIndicesOfElementsAdjacentToFineEdges, fineEdgeIndex) == sonIndex ? 1. : -1.;
+        globalDofWeights[j]=acc(lowestIndicesOfElementsAdjacentToEdges, edgeIndex) == ent0Number ? 1. : -1.;
+        //std::cout << ent0Number << " " << edgeIndex << ": " << acc(lowestIndicesOfElementsAdjacentToEdges, edgeIndex) << std::endl;
+        m_global2localDofs[globalDofIndex].push_back(LocalDof(sonIndex,j));
+        setBoundingBoxReference<CoordinateType>(acc(m_globalDofBoundingBoxes, globalDofIndex), dofPosition);
         ++flatLocalDofCount;
       }
-    }
-    std::cout << i__++ << " ";
-  }
-
-
-
-/*  const Mapper &elementMapper = m_view->elementMapper();
-  const IndexSet &indexSet = m_view->indexSet();
-
-  int edgeCount = m_view->entityCount(1);
-  int elementCount = m_view->entityCount(0);
-  std::cout << m_view->entityCount(0) << std::endl;
-  std::cout << m_originalGrid->leafView()->entityCount(0) << std::endl;
-  // std::cout << "dofMode: " << m_dofMode << std::endl;
-
-  const int edgeCodim = 1;
-  const int elementCodim = 0;
-
-  std::vector<int> lowestIndicesOfElementsAdjacentToEdges(
-      edgeCount, std::numeric_limits<int>::max());
-  // number of element adjacent to each edge
-  std::vector<int> elementsAdjacentToEdges(edgeCount, 0);
-  std::vector<bool> noAdjacentElementsAreInSegment(edgeCount, true);
-  std::unique_ptr<EntityIterator<elementCodim>> it =
-      m_view->entityIterator<elementCodim>();
-  while (!it->finished()) {
-    const Entity<elementCodim> &element = it->entity();
-    const int elementIndex = indexSet.entityIndex(element);
-    const bool elementContained =
-        m_segment.contains(elementCodim, elementIndex);
-    const int localEdgeCount = element.subEntityCount<edgeCodim>();
-    for (int i = 0; i < localEdgeCount; ++i) {
-      int edgeIndex = indexSet.subEntityIndex(element, i, edgeCodim);
-      if (m_dofMode & EDGE_ON_SEGMENT &&
-          !m_segment.contains(edgeCodim, edgeIndex))
-        continue;
-      ++acc(elementsAdjacentToEdges, edgeIndex);
-      if (elementContained)
-        acc(noAdjacentElementsAreInSegment, edgeIndex) = false;
-      int &lowestIndex = acc(lowestIndicesOfElementsAdjacentToEdges, edgeIndex);
-      lowestIndex = std::min(lowestIndex, elementIndex);
-    }
-    it->next();
-  }
-
-  // (Re)initialise DOF maps
-  m_local2globalDofs.clear();
-  m_local2globalDofs.resize(elementCount);
-  m_local2globalDofWeights.clear();
-  m_local2globalDofWeights.resize(elementCount);
-  m_global2localDofs.clear();
-  m_global2localDofs.resize(globalDofCount_);
-  size_t flatLocalDofCount = 0;
-
-  // TODO: consider calling reserve(2) for each element of m_global2localDofs
-
-  // Initialise bounding-box caches
-  BoundingBox<CoordinateType> model;
-  model.lbound.x = std::numeric_limits<CoordinateType>::max();
-  model.lbound.y = std::numeric_limits<CoordinateType>::max();
-  model.lbound.z = std::numeric_limits<CoordinateType>::max();
-  model.ubound.x = -std::numeric_limits<CoordinateType>::max();
-  model.ubound.y = -std::numeric_limits<CoordinateType>::max();
-  model.ubound.z = -std::numeric_limits<CoordinateType>::max();
-  m_globalDofBoundingBoxes.resize(globalDofCount_, model);
-
-  // Iterate over elements
-  it = m_view->entityIterator<elementCodim>();
-  Matrix<CoordinateType> vertices;
-  Vector<CoordinateType> dofPosition;
-  while (!it->finished()) {
-    const Entity<elementCodim> &element = it->entity();
-    const Geometry &geo = element.geometry();
-    EntityIndex elementIndex = elementMapper.entityIndex(element);
-    bool elementContained = m_dofMode & ELEMENT_ON_SEGMENT
-                                ? m_segment.contains(elementCodim, elementIndex)
-                                : true;
-
-    geo.getCorners(vertices);
-    const int vertexCount = vertices.cols();
-    const int edgeCount = vertexCount;
-    if (edgeCount != 3)
-      throw std::runtime_error(
-          "RaviartThomas0VectorSpaceBarycentric::"
-          "assignDofsImpl(): support for quadrilaterals not in place yet");
-
-    // List of global DOF indices corresponding to the local DOFs of the
-    // current element
-    std::vector<GlobalDofIndex> &globalDofs =
-        acc(m_local2globalDofs, elementIndex);
-    // List of weights of the local DOFs residing on the current element
-    std::vector<BasisFunctionType> &globalDofWeights =
-        acc(m_local2globalDofWeights, elementIndex);
-    globalDofs.reserve(edgeCount);
-    globalDofWeights.reserve(edgeCount);
-    for (int i = 0; i < edgeCount; ++i) {
-      int edgeIndex = indexSet.subEntityIndex(element, i, edgeCodim);
-      GlobalDofIndex globalDofIndex =
-          elementContained ? acc(globalDofsOfEdges, edgeIndex) : -1;
-      // Handle Dune's funny subentity indexing order. This code is
-      // only valid for triangular elements.
-      if (i == 0) {
-        dofPosition = 0.5 * (vertices.col(0) + vertices.col(1));
-      } else if (i == 1) {
-        dofPosition = 0.5 * (vertices.col(2) + vertices.col(0));
-      } else { // i == 2
-        dofPosition = 0.5 * (vertices.col(1) + vertices.col(2));
+      if (i % 2 == 0) {
+        acc(m_elementShapesets, sonIndex) = Shapeset(Shapeset::TYPE1,sideLengths,weights,sonIndex);
+      } else {
+        acc(m_elementShapesets, sonIndex) = Shapeset(Shapeset::TYPE2,sideLengths,weights,sonIndex);//.cast<int>());
       }
-      BasisFunctionType weight =
-          acc(lowestIndicesOfElementsAdjacentToEdges, edgeIndex) == elementIndex
-              ? 1.
-              : -1.;
-      globalDofs.push_back(globalDofIndex);
-      globalDofWeights.push_back(weight);
-      if (globalDofIndex < 0)
-        continue; // constrained edge
-      acc(m_global2localDofs, globalDofIndex)
-          .push_back(LocalDof(elementIndex, i));
-
-      extendBoundingBox(acc(m_globalDofBoundingBoxes, globalDofIndex),
-                        vertices);
-      setBoundingBoxReference<CoordinateType>(
-          acc(m_globalDofBoundingBoxes, globalDofIndex), dofPosition);
-
-      ++flatLocalDofCount;
     }
-    it->next();
   }
 
-#ifndef NDEBUG
-  for (size_t i = 0; i < m_globalDofBoundingBoxes.size(); ++i) {
-    const BoundingBox<CoordinateType> &bbox = acc(m_globalDofBoundingBoxes, i);
-
-    assert(bbox.reference.x >= bbox.lbound.x);
-    assert(bbox.reference.y >= bbox.lbound.y);
-    assert(bbox.reference.z >= bbox.lbound.z);
-    assert(bbox.reference.x <= bbox.ubound.x);
-    assert(bbox.reference.y <= bbox.ubound.y);
-    assert(bbox.reference.z <= bbox.ubound.z);
-  }
-#endif // NDEBUG
-*/
   SpaceHelper<BasisFunctionType>::initializeLocal2FlatLocalDofMap(
       flatLocalDofCount, m_local2globalDofs, m_flatLocal2localDofs);
 
-  //    // Iterate over elements
-  //    std::unique_ptr<EntityIterator<elementCodim> > it =
-  //        m_view->entityIterator<elementCodim>();
-  //    m_flatLocalDofCount = 0;
-  //    while (!it->finished())
-  //    {
-  //        const Entity<elementCodim>& element = it->entity();
-  //        EntityIndex elementIndex = elementMapper.entityIndex(element);
-
-  //        const int vertexCount = element.template
-  // subEntityCount<vertexCodim>();
-  //        const int edgeCount = vertexCount;
-  //        m_flatLocalDofCount += edgeCount;
-
-  //        // List of global DOF indices corresponding to the local DOFs of the
-  //        // current element
-  //        std::vector<GlobalDofIndex>& globalDofs =
-  // m_local2globalDofs[elementIndex];
-  //        // List of weights of the local DOFs residing on the current element
-  //        std::vector<BasisFunctionType>& globalDofWeights =
-  //            m_local2globalDofWeights[elementIndex];
-  //        globalDofs.resize(edgeCount);
-  //        globalDofWeights.resize(edgeCount);
-  //        for (int i = 0; i < edgeCount; ++i)
-  //        {
-  //            GlobalDofIndex globalDofIndex =
-  //                indexSet.subEntityIndex(element, i, edgeCodim);
-  //            int vertex1Index, vertex2Index;
-  //            // Handle Dune's funny subentity indexing order
-  //            if (edgeCount == 3) {
-  //                if (i == 0) {
-  //                    vertex1Index = indexSet.subEntityIndex(element, 0,
-  // vertexCodim);
-  //                    vertex2Index = indexSet.subEntityIndex(element, 1,
-  // vertexCodim);
-  //                } else if (i == 1) {
-  //                    vertex1Index = indexSet.subEntityIndex(element, 2,
-  // vertexCodim);
-  //                    vertex2Index = indexSet.subEntityIndex(element, 0,
-  // vertexCodim);
-  //                } else { // i == 2
-  //                    vertex1Index = indexSet.subEntityIndex(element, 1,
-  // vertexCodim);
-  //                    vertex2Index = indexSet.subEntityIndex(element, 2,
-  // vertexCodim);
-  //                }
-  //            } else // edgeCount == 4
-  //                throw std::runtime_error(
-  //                    "RaviartThomas0VectorSpaceBarycentric::"
-  //                    "assignDofsImpl(): support for quadrilaterals not in
-  // place yet");
-  //            BasisFunctionType weight = vertex1Index < vertex2Index ? 1. :
-  // -1.;
-  //            globalDofs[i] = globalDofIndex;
-  //            globalDofWeights[i] = weight;
-  //            m_global2localDofs[globalDofIndex].push_back(LocalDof(elementIndex,
-  // i));
-  //            m_global2localDofWeights[globalDofIndex].push_back(weight);
-  //        }
-  //        it->next();
-  //    }
-
-  //    // Initialize the container mapping the flat local dof indices to
-  //    // local dof indices
-  //    m_flatLocal2localDofs.clear();
-  //    m_flatLocal2localDofs.reserve(m_flatLocalDofCount);
-  //    for (size_t e = 0; e < m_local2globalDofs.size(); ++e)
-  //        for (size_t dof = 0; dof < m_local2globalDofs[e].size(); ++dof)
-  //            m_flatLocal2localDofs.push_back(LocalDof(e, dof)); */
 }
 template <typename BasisFunctionType>
-const Fiber::Shapeset<BasisFunctionType> &
-RaviartThomas0VectorSpaceBarycentric<BasisFunctionType>::shapeset(
+const Fiber::Shapeset<BasisFunctionType> & RaviartThomas0VectorSpaceBarycentric<BasisFunctionType>::shapeset(
     const Entity<0> &element) const {
   const GridView &view = this->gridView();
   const Mapper &elementMapper = view.elementMapper();
   int index = elementMapper.entityIndex(element);
-  if (m_elementIndex2Type[index] == Shapeset::TYPE1)
-    return m_vectorBasisType1;
-  else
-    return m_vectorBasisType2;
+  return m_elementShapesets[index];
 }
 
 template <typename BasisFunctionType>
@@ -552,6 +383,11 @@ void RaviartThomas0VectorSpaceBarycentric<BasisFunctionType>::getGlobalDofPositi
   positions.resize(m_globalDofBoundingBoxes.size());
   for (size_t i = 0; i < m_globalDofBoundingBoxes.size(); ++i)
     acc(positions, i) = acc(m_globalDofBoundingBoxes, i).reference;
+    //std::cout << "globalDofPosition(" << i << ")";
+    //std::cout << acc(positions, i).x << ",";
+    //std::cout << acc(positions, i).y << ",";
+    //std::cout << acc(positions, i).z;
+    //std::cout << std::endl;
 }
 
 template <typename BasisFunctionType>
@@ -562,6 +398,12 @@ void RaviartThomas0VectorSpaceBarycentric<BasisFunctionType>::getFlatLocalDofPos
   positions.resize(bboxes.size());
   for (size_t i = 0; i < bboxes.size(); ++i)
     acc(positions, i) = acc(bboxes, i).reference;
+    //std::cout << "flatLocalDofPosition(" << i << ")";
+    //std::cout << acc(positions, i).x << ",";
+
+    //std::cout << acc(positions, i).y << ",";
+    //std::cout << acc(positions, i).z;
+    //std::cout << std::endl;}
 }
 
 template <typename BasisFunctionType>

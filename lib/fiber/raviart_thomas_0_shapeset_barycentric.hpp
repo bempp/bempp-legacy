@@ -36,7 +36,119 @@ public:
   enum BasisType { TYPE1, TYPE2 };
 
 public:
-  RaviartThomas0ShapesetBarycentric(BasisType type) : m_type(type) {}
+//  RaviartThomas0ShapesetBarycentric(BasisType type, int testInt) : m_type(type) {//std::cout << testInt << std::endl;}
+  RaviartThomas0ShapesetBarycentric(){}
+  RaviartThomas0ShapesetBarycentric(BasisType type, Matrix<double> sideLengths, Matrix<int> weights, int sonIndex) : m_type(type), m_sonIndex(sonIndex){
+    Matrix<double> coeffs;
+    coeffs.conservativeResize(3,3);
+    Matrix<double> coeffs2;
+    coeffs2.conservativeResize(3,3);
+//    sideLengths(0,0) = 1.;
+//    sideLengths(0,1) = 1.;
+//    sideLengths(0,2) = 1.;
+/*    if(type==TYPE1){
+        coeffs(0,0)=sideLengths(0,0)/(sideLengths(1,0)*3.);// * weights(0,0)*weights(1,0);
+        coeffs(1,0)=-sideLengths(0,1)/(sideLengths(1,0)*3.);// * weights(0,1)*weights(1,0);
+        coeffs(2,0)=0.;
+
+        coeffs(0,1)=0.;
+        coeffs(1,1)=1.;// * weights(0,1)*weights(1,1);
+        coeffs(2,1)=0.;
+
+        coeffs(0,2)=-sideLengths(0,0)/(sideLengths(1,2)*6.);// * weights(0,0)*weights(1,2);
+        coeffs(1,2)=0.;
+        coeffs(2,2)=sideLengths(0,2)/(sideLengths(1,2)*6.);// * weights(0,2)*weights(1,2);
+    } else {
+        coeffs(0,0)=1.;// * weights(0,0)*weights(1,0);
+        coeffs(1,0)=0.;
+        coeffs(2,0)=0.;
+
+        coeffs(0,1)=-sideLengths(0,0)/(sideLengths(1,1)*3.);// * weights(0,1)*weights(1,0);
+        coeffs(1,1)=sideLengths(0,1)/(sideLengths(1,1)*3.);// * weights(0,0)*weights(1,0);
+        coeffs(2,1)=0.;
+
+        coeffs(0,2)=0.;
+        coeffs(1,2)=-sideLengths(0,1)/(sideLengths(1,2)*6.);// * weights(0,0)*weights(1,2);
+        coeffs(2,2)=sideLengths(0,2)/(sideLengths(1,2)*6.);// * weights(0,2)*weights(1,2);
+
+    }// */
+//    sideLengths(1,0)=sqrt(13);
+//    sideLengths(1,1)=2.;
+//    sideLengths(1,2)=5.;
+/*    sideLengths(1,0)=sqrt(2);
+    sideLengths(1,1)=sqrt(2);
+    sideLengths(1,2)=sqrt(2);
+    if(type==TYPE1){
+    //std::cout << sideLengths(0,1) << ";" << sideLengths(1,1) << std::endl << std::endl;
+        coeffs(0,0)=sideLengths(0,0)/(sideLengths(1,0)*3.);// * weights(0,0)*weights(1,0);
+        coeffs(1,0)=-sideLengths(0,1)/(sideLengths(1,0)*3.);// * weights(0,1)*weights(1,0);
+        coeffs(2,0)=0.;
+
+        coeffs(0,1)=0.;
+        coeffs(1,1)=sideLengths(0,1)/(sideLengths(1,1)*2.);// * weights(0,1)*weights(1,1);
+        coeffs(2,1)=0.;
+
+        coeffs(0,2)=-sideLengths(0,0)/(sideLengths(1,2)*6.);// * weights(0,0)*weights(1,2);
+        coeffs(1,2)=0.;
+        coeffs(2,2)=sideLengths(0,2)/(sideLengths(1,2)*6.);// * weights(0,2)*weights(1,2);
+    } else {
+    //std::cout << sideLengths(0,0) << ";" << sideLengths(1,0) << std::endl << std::endl;
+        coeffs(0,0)=sideLengths(0,0)/(sideLengths(1,0)*2.);// * weights(0,0)*weights(1,0);
+        coeffs(1,0)=0.;
+        coeffs(2,0)=0.;
+
+        coeffs(0,1)=-sideLengths(0,0)/(sideLengths(1,1)*3.);// * weights(0,1)*weights(1,0);
+        coeffs(1,1)=sideLengths(0,1)/(sideLengths(1,1)*3.);// * weights(0,0)*weights(1,0);
+        coeffs(2,1)=0.;
+
+        coeffs(0,2)=0.;
+        coeffs(1,2)=-sideLengths(0,1)/(sideLengths(1,2)*6.);// * weights(0,0)*weights(1,2);
+        coeffs(2,2)=sideLengths(0,2)/(sideLengths(1,2)*6.);// * weights(0,2)*weights(1,2);
+
+    }// */
+
+    if(type==TYPE1){
+        coeffs(0,0)=1./3.;     coeffs(0,1)=0.;        coeffs(0,2)=-1./6.;
+        coeffs(1,0)=-1./3.;    coeffs(1,1)=1./2.;     coeffs(1,2)=0.;
+        coeffs(2,0)=0.;        coeffs(2,1)=0.;        coeffs(2,2)=1./6.;
+
+    } else {
+        coeffs(0,0)=1./2.;     coeffs(0,1)=-1./3.;    coeffs(0,2)=0.;
+        coeffs(1,0)=0.;        coeffs(1,1)=1./3.;     coeffs(1,2)=-1./6.;
+        coeffs(2,0)=0.;        coeffs(2,1)=0.;        coeffs(2,2)=1./6.;
+
+    }// */
+    /*if(type==TYPE1){
+        coeffs(0,0)=sqrt(13)/3.;// * weights(0,0);// * weights(0,0)*weights(1,0);
+        coeffs(1,0)=-2./3.;// * weights(0,1);// * weights(0,1)*weights(1,0);
+        coeffs(2,0)=0.;
+
+        coeffs(0,1)=0.;
+        coeffs(1,1)=1.;// * weights(0,1);// * weights(0,1)*weights(1,1);
+        coeffs(2,1)=0.;
+
+        coeffs(0,2)=-sqrt(13)/6.;// * weights(0,0);// * weights(0,0)*weights(1,2);
+        coeffs(1,2)=0.;
+        coeffs(2,2)=sqrt(13)/(sqrt(2)*3.);// * weights (0,2);// * weights(0,2)*weights(1,2);
+
+    } else {
+        coeffs(0,0)=1.;// * weights(0,0)*weights(1,0);
+        coeffs(1,0)=0.;
+        coeffs(2,0)=0.;
+
+        coeffs(0,1)=-2./3.;// * weights(0,1)*weights(1,0);
+        coeffs(1,1)=sqrt(13)/3.;// * weights(0,0)*weights(1,0);
+        coeffs(2,1)=0.;
+
+        coeffs(0,2)=0.;
+        coeffs(1,2)=-sqrt(13)/(sqrt(2)*6.);// * weights(0,0)*weights(1,2);
+        coeffs(2,2)=sqrt(13)/(sqrt(2)*3.);// * weights(0,2)*weights(1,2);
+
+    }// */
+    //std::cout << coeffs <<std::endl << "---------------"<<std::endl;
+
+    m_coeffs = coeffs.cast<ValueType>();
+  }
 
   virtual int size() const { return 3; }
 
@@ -47,28 +159,43 @@ public:
                         BasisData<ValueType> &data) const {
 
     BasisData<ValueType> temp;
+    //std::cout << "*BEFORE CALL" << std::endl;
+    raviartBasis.evaluate(what, points, ALL_DOFS, temp); //WHAT IS TEMP??
+    //std::cout << "*AFTER CALL" << std::endl;
 
-    raviartBasis.evaluate(what, points, ALL_DOFS, temp);
+    //std::cout << m_sonIndex << std::endl;
+    //std::cout << m_coeffs << std::endl << std::endl;
 
-    ValueType coeffs[2][3][3] = {
-        {{0,0,0}, {0, 0, 0}, {0, 0, sqrt(58)/12}},
-        {{0,0,0}, {0, 0, 0}, {0, 0, sqrt(58)/12}}};
+//    for (int i=0;i<points.rows();++i)
+ //    for (int j=0;j<points.cols();++j)
+      //std::cout << i << ',' << j << ": " << points(i,j) << "; ";
 
-    int type_index;
-    if (m_type == TYPE1)
-      type_index = 0;
-    else
-      type_index = 1;
+    //std::cout << "*temp*" << std::endl;
+//    for (int k=0;k<temp.values.extent(2);++k){
+      //std::cout << k << "th shape function: ";
+  //    for (int l=0;l<temp.values.extent(1);++l){
+    //    //std::cout << "(";
+       // for (int i=0;i<temp.values.extent(0);++i){
+      //    //std::cout << temp.values(i,k,l);
+         // if(i<temp.values.extent(0)-1) //std::cout << ",";
+      //  }
+        //std::cout << ") ";
+     // }
+      //std::cout << std::endl;
+    //}
 
     if (localDofIndex != ALL_DOFS) {
+//      std::cout << "not ALL_DOFS "<< what << std::endl;
 
       if (what & VALUES) {
         data.values.set_size(1, 1, temp.values.extent(2));
         for (int i = 0; i < data.values.extent(2); ++i) {
-          data.values(0, 0, i) = 0;
-          for (int j = 0; j < 3; ++j)
-            data.values(0, 0, i) +=
-                coeffs[type_index][localDofIndex][j] * temp.values(0, j, i);
+          for (int k=0; k < data.values.extent(0); ++k){
+            data.values(k, 0, i) = 0;
+            for (int j = 0; j < 3; ++j)
+              data.values(k, 0, i) +=
+                  m_coeffs(localDofIndex,j) * temp.values(k, j, i);
+          }
         }
       }
       if (what & DERIVATIVES) {
@@ -79,20 +206,23 @@ public:
             data.derivatives(0, i, 0, j) = 0;
             for (int k = 0; k < 3; ++k)
               data.derivatives(0, i, 0, j) +=
-                  coeffs[type_index][localDofIndex][k] *
+                  m_coeffs(localDofIndex,k) *
                   temp.derivatives(0, i, k, j);
           }
       }
 
     } else {
+//      std::cout << "ALL_DOFS " << what << std::endl;
       if (what & VALUES) {
-        data.values.set_size(1, 3, temp.values.extent(2));
+        data.values.set_size(temp.values.extent(0), 3, temp.values.extent(2));
         for (int dofIndex = 0; dofIndex < 3; ++dofIndex) {
           for (int i = 0; i < data.values.extent(2); ++i) {
-            data.values(0, dofIndex, i) = 0;
-            for (int j = 0; j < 3; ++j)
-              data.values(0, dofIndex, i) +=
-                  coeffs[type_index][dofIndex][j] * temp.values(0, j, i);
+            for (int k=0; k < data.values.extent(0); ++k){
+              data.values(k, dofIndex, i) = 0;
+              for (int j = 0; j < 3; ++j)
+                data.values(k, dofIndex, i) +=
+                    m_coeffs(dofIndex,j) * temp.values(k, j, i);
+            }
           }
         }
       }
@@ -106,11 +236,29 @@ public:
               data.derivatives(0, i, dofIndex, j) = 0;
               for (int k = 0; k < 3; ++k)
                 data.derivatives(0, i, dofIndex, j) +=
-                    coeffs[type_index][dofIndex][k] *
+                    m_coeffs(dofIndex,k) *
                     temp.derivatives(0, i, k, j);
             }
       }
     }
+/*    std::cout << "*data*" << std::endl;
+    for (int k=0;k<data.values.extent(2);++k){
+      std::cout << k << "th point";
+      for (int l=0;l<data.values.extent(1);++l){
+        std::cout << "(";
+        for (int i=0;i<data.values.extent(0);++i){
+          std::cout << data.values(i,k,l);
+          if(i<data.values.extent(0)-1) std::cout << ",";
+        }
+        std::cout << ") ";
+      }
+      std::cout << std::endl;
+    }
+    std::cout << "-----------------------------------" << std::endl << std::endl;*/
+//     for (int j=0;j<data.values.extent(1);++j)
+//      for (int k=0;k<data.values.extent(2);++k)
+//        if (k==2 && j==1) data.values(0,j,k) = 1.;
+//        else data.values(0,j,k)=0.;
   }
 
   virtual std::pair<const char *, int> clCodeString(bool isTestBasis) const {
@@ -121,7 +269,9 @@ public:
 
 private:
   Fiber::RaviartThomas0Shapeset<3, ValueType> raviartBasis;
-  BasisType m_type;
+  mutable BasisType m_type;
+  mutable int m_sonIndex;
+  Matrix<ValueType> m_coeffs;
 };
 
 } // namespace Fiber
