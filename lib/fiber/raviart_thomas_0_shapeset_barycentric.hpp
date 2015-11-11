@@ -127,7 +127,6 @@ public:
 private:
   Fiber::RaviartThomas0Shapeset<3, ValueType> raviartBasis;
   mutable BasisType m_type;
-  mutable int m_sonIndex;
 };
 
 } // namespace Fiber

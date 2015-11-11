@@ -193,6 +193,9 @@ def function_space(Grid grid, kind, order, domains=None, cbool closed=True):
         "B-DP": Polynomial discontinuous spaces on barycentric grids.
         "DUAL": Dual space on dual grid (only implemented for constants).
         "RT": Raviart-Thomas Vector spaces.
+        "B-RT": Raviart-Thomas Vector spaces on barycentric grids.
+        "N": Nedelec Vector spaces.
+        "B-N": Nedelec Vector spaces on barycentric grids.
 
     order : int
         The order of the space, e.g. 0 for piecewise const, 1 for
@@ -273,6 +276,15 @@ def function_space(Grid grid, kind, order, domains=None, cbool closed=True):
         else:
             s.impl_.assign(reverse_const_pointer_cast(
                     shared_ptr[c_Space[double]](adaptiveRaviartThomas0VectorSpace[double](grid.impl_, domains, closed))))
+    elif kind=="N":
+        if order!=1:
+            raise ValueError("Only 1 order Raviart-Thomas spaces are implemented.")
+        if domains is None:
+            s.impl_.assign(reverse_const_pointer_cast(
+                    shared_ptr[c_Space[double]](adaptiveNedelec1VectorSpace[double](grid.impl_))))
+        else:
+            s.impl_.assign(reverse_const_pointer_cast(
+                    shared_ptr[c_Space[double]](adaptiveNedelec1VectorSpace[double](grid.impl_, domains, closed))))
     elif kind=="DUAL":
         if order != 0:
             raise ValueError("Only 0 order dual grid spaces are implemented.")
@@ -303,6 +315,14 @@ def function_space(Grid grid, kind, order, domains=None, cbool closed=True):
         else:
             s.impl_.assign(reverse_const_pointer_cast(
                     shared_ptr[c_Space[double]](adaptiveRaviartThomas0VectorSpaceBarycentric[double](grid.impl_))))
+    elif kind=="B-N":
+        if order!=1:
+            raise ValueError("Only 1 order Nedelec spaces on barycentric grids are supported.")
+        if domains is not None:
+            raise ValueError("Spaces on subdomains are not supported on barycentric grids.")
+        else:
+            s.impl_.assign(reverse_const_pointer_cast(
+                    shared_ptr[c_Space[double]](adaptiveNedelec1VectorSpaceBarycentric[double](grid.impl_))))
     else:
         raise ValueError("Unknown kind")
 
