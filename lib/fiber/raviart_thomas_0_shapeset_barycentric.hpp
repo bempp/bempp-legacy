@@ -44,7 +44,7 @@ public:
                         LocalDofIndex localDofIndex,
                         BasisData<ValueType> &data) const {
 
-    ValueType coeffs[2][3][3] = {
+   const ValueType coeffs[2][3][3] = {
         {{1./3, 0, -1./6}, {-1./3, 1./2, 0}, {0, 0, 1./6}},
         {{1./2, -1./3, 0}, {0, 1./3, -1./6}, {0, 0, 1./6}}};
 //        coeffs(0,0)=1./3.;     coeffs(0,1)=0.;        coeffs(0,2)=-1./6.;
