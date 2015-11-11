@@ -152,9 +152,11 @@ private:
   std::vector<BoundingBox<CoordinateType>> m_globalDofBoundingBoxes;
   mutable shared_ptr<Space<BasisFunctionType>> m_discontinuousSpace;
   mutable tbb::mutex m_discontinuousSpaceMutex;
-  std::vector<Shapeset> m_elementShapesets;
+  std::vector<typename Shapeset::BasisType> m_elementShapesets;
   mutable Matrix<int> m_sonMap;
   mutable shared_ptr<const Grid> m_originalGrid;
+  Shapeset m_RTBasisType1;
+  Shapeset m_RTBasisType2;
 
   /** \endcond */
 };

@@ -62,6 +62,7 @@ RaviartThomas0VectorSpaceBarycentric<BasisFunctionType>::RaviartThomas0VectorSpa
     const shared_ptr<const Grid> &grid, bool putDofsOnBoundaries)
     : Base(grid->barycentricGrid()), m_impl(new Impl), m_segment(GridSegment::wholeGrid(*grid)),
       m_putDofsOnBoundaries(putDofsOnBoundaries), m_dofMode(EDGE_ON_SEGMENT),
+      m_RTBasisType1(Shapeset::TYPE1), m_RTBasisType2(Shapeset::TYPE2),
       m_originalGrid(grid), m_sonMap(grid->barycentricSonMap()) {
   initialize();
 }
@@ -72,6 +73,7 @@ RaviartThomas0VectorSpaceBarycentric<BasisFunctionType>::RaviartThomas0VectorSpa
     bool putDofsOnBoundaries, int dofMode)
     : Base(grid->barycentricGrid()), m_impl(new Impl), m_segment(segment),
       m_putDofsOnBoundaries(putDofsOnBoundaries), m_dofMode(dofMode),
+      m_RTBasisType1(Shapeset::TYPE1), m_RTBasisType2(Shapeset::TYPE2),
       m_originalGrid(grid), m_sonMap(grid->barycentricSonMap()) {
   if (!(dofMode & (EDGE_ON_SEGMENT | ELEMENT_ON_SEGMENT)))
     throw std::invalid_argument("RaviartThomas0VectorSpaceBarycentric::"
@@ -309,9 +311,9 @@ void RaviartThomas0VectorSpaceBarycentric<BasisFunctionType>::assignDofsImpl() {
         ++flatLocalDofCount;
       }
       if (i % 2 == 0) {
-        acc(m_elementShapesets, sonIndex) = Shapeset(Shapeset::TYPE1,sideLengths,weights,sonIndex);
+        acc(m_elementShapesets, sonIndex) = Shapeset::TYPE1;
       } else {
-        acc(m_elementShapesets, sonIndex) = Shapeset(Shapeset::TYPE2,sideLengths,weights,sonIndex);//.cast<int>());
+        acc(m_elementShapesets, sonIndex) = Shapeset::TYPE2;
       }
     }
   }
@@ -326,7 +328,8 @@ const Fiber::Shapeset<BasisFunctionType> & RaviartThomas0VectorSpaceBarycentric<
   const GridView &view = this->gridView();
   const Mapper &elementMapper = view.elementMapper();
   int index = elementMapper.entityIndex(element);
-  return m_elementShapesets[index];
+  if (m_elementShapesets[index] == Shapeset::TYPE1) return m_RTBasisType1;
+  else return m_RTBasisType2;
 }
 
 template <typename BasisFunctionType>

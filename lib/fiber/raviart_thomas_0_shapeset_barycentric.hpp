@@ -38,74 +38,9 @@ public:
 public:
 //  RaviartThomas0ShapesetBarycentric(BasisType type, int testInt) : m_type(type) {//std::cout << testInt << std::endl;}
   RaviartThomas0ShapesetBarycentric(){}
-  RaviartThomas0ShapesetBarycentric(BasisType type, Matrix<double> sideLengths, Matrix<int> weights, int sonIndex) : m_type(type), m_sonIndex(sonIndex){
+  RaviartThomas0ShapesetBarycentric(BasisType type) : m_type(type){
     Matrix<double> coeffs;
     coeffs.conservativeResize(3,3);
-    Matrix<double> coeffs2;
-    coeffs2.conservativeResize(3,3);
-//    sideLengths(0,0) = 1.;
-//    sideLengths(0,1) = 1.;
-//    sideLengths(0,2) = 1.;
-/*    if(type==TYPE1){
-        coeffs(0,0)=sideLengths(0,0)/(sideLengths(1,0)*3.);// * weights(0,0)*weights(1,0);
-        coeffs(1,0)=-sideLengths(0,1)/(sideLengths(1,0)*3.);// * weights(0,1)*weights(1,0);
-        coeffs(2,0)=0.;
-
-        coeffs(0,1)=0.;
-        coeffs(1,1)=1.;// * weights(0,1)*weights(1,1);
-        coeffs(2,1)=0.;
-
-        coeffs(0,2)=-sideLengths(0,0)/(sideLengths(1,2)*6.);// * weights(0,0)*weights(1,2);
-        coeffs(1,2)=0.;
-        coeffs(2,2)=sideLengths(0,2)/(sideLengths(1,2)*6.);// * weights(0,2)*weights(1,2);
-    } else {
-        coeffs(0,0)=1.;// * weights(0,0)*weights(1,0);
-        coeffs(1,0)=0.;
-        coeffs(2,0)=0.;
-
-        coeffs(0,1)=-sideLengths(0,0)/(sideLengths(1,1)*3.);// * weights(0,1)*weights(1,0);
-        coeffs(1,1)=sideLengths(0,1)/(sideLengths(1,1)*3.);// * weights(0,0)*weights(1,0);
-        coeffs(2,1)=0.;
-
-        coeffs(0,2)=0.;
-        coeffs(1,2)=-sideLengths(0,1)/(sideLengths(1,2)*6.);// * weights(0,0)*weights(1,2);
-        coeffs(2,2)=sideLengths(0,2)/(sideLengths(1,2)*6.);// * weights(0,2)*weights(1,2);
-
-    }// */
-//    sideLengths(1,0)=sqrt(13);
-//    sideLengths(1,1)=2.;
-//    sideLengths(1,2)=5.;
-/*    sideLengths(1,0)=sqrt(2);
-    sideLengths(1,1)=sqrt(2);
-    sideLengths(1,2)=sqrt(2);
-    if(type==TYPE1){
-    //std::cout << sideLengths(0,1) << ";" << sideLengths(1,1) << std::endl << std::endl;
-        coeffs(0,0)=sideLengths(0,0)/(sideLengths(1,0)*3.);// * weights(0,0)*weights(1,0);
-        coeffs(1,0)=-sideLengths(0,1)/(sideLengths(1,0)*3.);// * weights(0,1)*weights(1,0);
-        coeffs(2,0)=0.;
-
-        coeffs(0,1)=0.;
-        coeffs(1,1)=sideLengths(0,1)/(sideLengths(1,1)*2.);// * weights(0,1)*weights(1,1);
-        coeffs(2,1)=0.;
-
-        coeffs(0,2)=-sideLengths(0,0)/(sideLengths(1,2)*6.);// * weights(0,0)*weights(1,2);
-        coeffs(1,2)=0.;
-        coeffs(2,2)=sideLengths(0,2)/(sideLengths(1,2)*6.);// * weights(0,2)*weights(1,2);
-    } else {
-    //std::cout << sideLengths(0,0) << ";" << sideLengths(1,0) << std::endl << std::endl;
-        coeffs(0,0)=sideLengths(0,0)/(sideLengths(1,0)*2.);// * weights(0,0)*weights(1,0);
-        coeffs(1,0)=0.;
-        coeffs(2,0)=0.;
-
-        coeffs(0,1)=-sideLengths(0,0)/(sideLengths(1,1)*3.);// * weights(0,1)*weights(1,0);
-        coeffs(1,1)=sideLengths(0,1)/(sideLengths(1,1)*3.);// * weights(0,0)*weights(1,0);
-        coeffs(2,1)=0.;
-
-        coeffs(0,2)=0.;
-        coeffs(1,2)=-sideLengths(0,1)/(sideLengths(1,2)*6.);// * weights(0,0)*weights(1,2);
-        coeffs(2,2)=sideLengths(0,2)/(sideLengths(1,2)*6.);// * weights(0,2)*weights(1,2);
-
-    }// */
 
     if(type==TYPE1){
         coeffs(0,0)=1./3.;     coeffs(0,1)=0.;        coeffs(0,2)=-1./6.;
@@ -117,36 +52,7 @@ public:
         coeffs(1,0)=0.;        coeffs(1,1)=1./3.;     coeffs(1,2)=-1./6.;
         coeffs(2,0)=0.;        coeffs(2,1)=0.;        coeffs(2,2)=1./6.;
 
-    }// */
-    /*if(type==TYPE1){
-        coeffs(0,0)=sqrt(13)/3.;// * weights(0,0);// * weights(0,0)*weights(1,0);
-        coeffs(1,0)=-2./3.;// * weights(0,1);// * weights(0,1)*weights(1,0);
-        coeffs(2,0)=0.;
-
-        coeffs(0,1)=0.;
-        coeffs(1,1)=1.;// * weights(0,1);// * weights(0,1)*weights(1,1);
-        coeffs(2,1)=0.;
-
-        coeffs(0,2)=-sqrt(13)/6.;// * weights(0,0);// * weights(0,0)*weights(1,2);
-        coeffs(1,2)=0.;
-        coeffs(2,2)=sqrt(13)/(sqrt(2)*3.);// * weights (0,2);// * weights(0,2)*weights(1,2);
-
-    } else {
-        coeffs(0,0)=1.;// * weights(0,0)*weights(1,0);
-        coeffs(1,0)=0.;
-        coeffs(2,0)=0.;
-
-        coeffs(0,1)=-2./3.;// * weights(0,1)*weights(1,0);
-        coeffs(1,1)=sqrt(13)/3.;// * weights(0,0)*weights(1,0);
-        coeffs(2,1)=0.;
-
-        coeffs(0,2)=0.;
-        coeffs(1,2)=-sqrt(13)/(sqrt(2)*6.);// * weights(0,0)*weights(1,2);
-        coeffs(2,2)=sqrt(13)/(sqrt(2)*3.);// * weights(0,2)*weights(1,2);
-
-    }// */
-    //std::cout << coeffs <<std::endl << "---------------"<<std::endl;
-
+    }
     m_coeffs = coeffs.cast<ValueType>();
   }
 
@@ -159,33 +65,9 @@ public:
                         BasisData<ValueType> &data) const {
 
     BasisData<ValueType> temp;
-    //std::cout << "*BEFORE CALL" << std::endl;
-    raviartBasis.evaluate(what, points, ALL_DOFS, temp); //WHAT IS TEMP??
-    //std::cout << "*AFTER CALL" << std::endl;
-
-    //std::cout << m_sonIndex << std::endl;
-    //std::cout << m_coeffs << std::endl << std::endl;
-
-//    for (int i=0;i<points.rows();++i)
- //    for (int j=0;j<points.cols();++j)
-      //std::cout << i << ',' << j << ": " << points(i,j) << "; ";
-
-    //std::cout << "*temp*" << std::endl;
-//    for (int k=0;k<temp.values.extent(2);++k){
-      //std::cout << k << "th shape function: ";
-  //    for (int l=0;l<temp.values.extent(1);++l){
-    //    //std::cout << "(";
-       // for (int i=0;i<temp.values.extent(0);++i){
-      //    //std::cout << temp.values(i,k,l);
-         // if(i<temp.values.extent(0)-1) //std::cout << ",";
-      //  }
-        //std::cout << ") ";
-     // }
-      //std::cout << std::endl;
-    //}
+    raviartBasis.evaluate(what, points, ALL_DOFS, temp);
 
     if (localDofIndex != ALL_DOFS) {
-//      std::cout << "not ALL_DOFS "<< what << std::endl;
 
       if (what & VALUES) {
         data.values.set_size(1, 1, temp.values.extent(2));
@@ -212,7 +94,6 @@ public:
       }
 
     } else {
-//      std::cout << "ALL_DOFS " << what << std::endl;
       if (what & VALUES) {
         data.values.set_size(temp.values.extent(0), 3, temp.values.extent(2));
         for (int dofIndex = 0; dofIndex < 3; ++dofIndex) {
@@ -241,24 +122,6 @@ public:
             }
       }
     }
-/*    std::cout << "*data*" << std::endl;
-    for (int k=0;k<data.values.extent(2);++k){
-      std::cout << k << "th point";
-      for (int l=0;l<data.values.extent(1);++l){
-        std::cout << "(";
-        for (int i=0;i<data.values.extent(0);++i){
-          std::cout << data.values(i,k,l);
-          if(i<data.values.extent(0)-1) std::cout << ",";
-        }
-        std::cout << ") ";
-      }
-      std::cout << std::endl;
-    }
-    std::cout << "-----------------------------------" << std::endl << std::endl;*/
-//     for (int j=0;j<data.values.extent(1);++j)
-//      for (int k=0;k<data.values.extent(2);++k)
-//        if (k==2 && j==1) data.values(0,j,k) = 1.;
-//        else data.values(0,j,k)=0.;
   }
 
   virtual std::pair<const char *, int> clCodeString(bool isTestBasis) const {
