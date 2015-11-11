@@ -25,8 +25,6 @@
 #include "basis_data.hpp"
 #include "raviart_thomas_0_shapeset.hpp"
 
-#include <math.h>
-
 namespace Fiber {
 
 template <typename ValueType>
@@ -36,25 +34,7 @@ public:
   enum BasisType { TYPE1, TYPE2 };
 
 public:
-//  RaviartThomas0ShapesetBarycentric(BasisType type, int testInt) : m_type(type) {//std::cout << testInt << std::endl;}
-  RaviartThomas0ShapesetBarycentric(){}
-  RaviartThomas0ShapesetBarycentric(BasisType type) : m_type(type){
-    Matrix<double> coeffs;
-    coeffs.conservativeResize(3,3);
-
-    if(type==TYPE1){
-        coeffs(0,0)=1./3.;     coeffs(0,1)=0.;        coeffs(0,2)=-1./6.;
-        coeffs(1,0)=-1./3.;    coeffs(1,1)=1./2.;     coeffs(1,2)=0.;
-        coeffs(2,0)=0.;        coeffs(2,1)=0.;        coeffs(2,2)=1./6.;
-
-    } else {
-        coeffs(0,0)=1./2.;     coeffs(0,1)=-1./3.;    coeffs(0,2)=0.;
-        coeffs(1,0)=0.;        coeffs(1,1)=1./3.;     coeffs(1,2)=-1./6.;
-        coeffs(2,0)=0.;        coeffs(2,1)=0.;        coeffs(2,2)=1./6.;
-
-    }
-    m_coeffs = coeffs.cast<ValueType>();
-  }
+  RaviartThomas0ShapesetBarycentric(BasisType type) : m_type(type){}
 
   virtual int size() const { return 3; }
 
@@ -63,6 +43,20 @@ public:
   virtual void evaluate(size_t what, const Matrix<CoordinateType> &points,
                         LocalDofIndex localDofIndex,
                         BasisData<ValueType> &data) const {
+
+    ValueType coeffs[2][3][3] = {
+        {{1./3, 0, -1./6}, {-1./3, 1./2, 0}, {0, 0, 1./6}},
+        {{1./2, -1./3, 0}, {0, 1./3, -1./6}, {0, 0, 1./6}}};
+//        coeffs(0,0)=1./3.;     coeffs(0,1)=0.;        coeffs(0,2)=-1./6.;
+//        coeffs(1,0)=-1./3.;    coeffs(1,1)=1./2.;     coeffs(1,2)=0.;
+//        coeffs(2,0)=0.;        coeffs(2,1)=0.;        coeffs(2,2)=1./6.;
+
+//        coeffs(0,0)=1./2.;     coeffs(0,1)=-1./3.;    coeffs(0,2)=0.;
+//        coeffs(1,0)=0.;        coeffs(1,1)=1./3.;     coeffs(1,2)=-1./6.;
+//        coeffs(2,0)=0.;        coeffs(2,1)=0.;        coeffs(2,2)=1./6.;
+    int typeIndex;
+    if (m_type == TYPE1) typeIndex = 0;
+    else typeIndex = 1;
 
     BasisData<ValueType> temp;
     raviartBasis.evaluate(what, points, ALL_DOFS, temp);
@@ -76,7 +70,7 @@ public:
             data.values(k, 0, i) = 0;
             for (int j = 0; j < 3; ++j)
               data.values(k, 0, i) +=
-                  m_coeffs(localDofIndex,j) * temp.values(k, j, i);
+                  coeffs[typeIndex][localDofIndex][j] * temp.values(k, j, i);
           }
         }
       }
@@ -88,7 +82,7 @@ public:
             data.derivatives(0, i, 0, j) = 0;
             for (int k = 0; k < 3; ++k)
               data.derivatives(0, i, 0, j) +=
-                  m_coeffs(localDofIndex,k) *
+                  coeffs[typeIndex][localDofIndex][k] *
                   temp.derivatives(0, i, k, j);
           }
       }
@@ -102,7 +96,7 @@ public:
               data.values(k, dofIndex, i) = 0;
               for (int j = 0; j < 3; ++j)
                 data.values(k, dofIndex, i) +=
-                    m_coeffs(dofIndex,j) * temp.values(k, j, i);
+                    coeffs[typeIndex][dofIndex][j] * temp.values(k, j, i);
             }
           }
         }
@@ -117,7 +111,7 @@ public:
               data.derivatives(0, i, dofIndex, j) = 0;
               for (int k = 0; k < 3; ++k)
                 data.derivatives(0, i, dofIndex, j) +=
-                    m_coeffs(dofIndex,k) *
+                    coeffs[typeIndex][dofIndex][k] *
                     temp.derivatives(0, i, k, j);
             }
       }
@@ -134,7 +128,6 @@ private:
   Fiber::RaviartThomas0Shapeset<3, ValueType> raviartBasis;
   mutable BasisType m_type;
   mutable int m_sonIndex;
-  Matrix<ValueType> m_coeffs;
 };
 
 } // namespace Fiber
