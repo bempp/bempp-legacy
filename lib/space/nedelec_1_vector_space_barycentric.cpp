@@ -193,16 +193,13 @@ void Nedelec1VectorSpaceBarycentric<BasisFunctionType>::assignDofsImpl() {
     }
   }
 
- // for(int i=0;i<edgeCountCoarseGrid;++i)
-   // std::cout << i << ":" << lowestIndicesOfElementsAdjacentToEdges[i] << std::endl;
-
   std::vector<int> lowestIndicesOfElementsAdjacentToFineEdges(edgeCountFineGrid, std::numeric_limits<int>::max());
 
   for(std::unique_ptr<EntityIterator<0>> it = m_view->entityIterator<0>();!it->finished();it->next()){
     for(int i=0;i!=3;++i){
       const Entity<0> &entity = it->entity();
-      const int ent0Number = index.subEntityIndex(entity,0,0);
-      int &lowestIndex = lowestIndicesOfElementsAdjacentToFineEdges[index.subEntityIndex(entity,i,1)];
+      const int ent0Number = bindex.subEntityIndex(entity,0,0);
+      int &lowestIndex = lowestIndicesOfElementsAdjacentToFineEdges[bindex.subEntityIndex(entity,i,1)];
       lowestIndex = std::min(ent0Number,lowestIndex);
     }
   }
@@ -239,18 +236,6 @@ void Nedelec1VectorSpaceBarycentric<BasisFunctionType>::assignDofsImpl() {
   Vector<CoordinateType> dofPosition;
   Matrix<CoordinateType> vertices;
 
-  Vector<double> coarseEdgeLengths;
-  coarseEdgeLengths.resize(edgeCountCoarseGrid);
-  for(std::unique_ptr<EntityIterator<1>> it=coarseView->entityIterator<1>();!it->finished();it->next()){
-    const Entity<1> &entity = it->entity();
-    coarseEdgeLengths(index.entityIndex(entity)) = entity.geometry().volume();
-  }
-  Vector<double> fineEdgeLengths;
-  fineEdgeLengths.resize(edgeCountFineGrid);
-  for(std::unique_ptr<EntityIterator<1>> it=m_view->entityIterator<1>();!it->finished();it->next()){
-    const Entity<1> &entity = it->entity();
-    fineEdgeLengths(bindex.entityIndex(entity)) = entity.geometry().volume();
-  }
   Matrix<int> fineEdgeMap;
   fineEdgeMap.conservativeResize(faceCountFineGrid,3);
   for(std::unique_ptr<EntityIterator<0>> it=m_view->entityIterator<0>();!it->finished();it->next()){
@@ -274,10 +259,6 @@ void Nedelec1VectorSpaceBarycentric<BasisFunctionType>::assignDofsImpl() {
 
     for(int i=0;i!=6;++i){
       int sonIndex = m_sonMap(ent0Number,i);
-      Matrix<double> sideLengths;
-      sideLengths.conservativeResize(2,3);
-      Matrix<int> weights;
-      weights.conservativeResize(2,3);
 
       std::vector<GlobalDofIndex> &globalDof = acc(m_local2globalDofs, sonIndex);
       globalDof.resize(3);
@@ -296,16 +277,9 @@ void Nedelec1VectorSpaceBarycentric<BasisFunctionType>::assignDofsImpl() {
         } else { // i == 2
           dofPosition = 0.5 * (vertices.col(1) + vertices.col(2));
         }
-        sideLengths(0,j)=coarseEdgeLengths(edgeIndex);
-        sideLengths(1,j)=fineEdgeLengths(fineEdgeIndex);
-        //std::cout << sideLengths(0,j) << " " << sideLengths(1,j) << std::endl;
-        //weights(0,j)=acc(lowestIndicesOfElementsAdjacentToEdges, edgeIndex) == ent0Number ? 1 : -1;
-        //weights(1,j)=acc(lowestIndicesOfElementsAdjacentToFineEdges, fineEdgeIndex) == sonIndex ? 1 : -1;
 
         globalDof[j] = globalDofIndex;
-        // globalDofWeights[j]=acc(lowestIndicesOfElementsAdjacentToFineEdges, fineEdgeIndex) == sonIndex ? 1. : -1.;
         globalDofWeights[j]=acc(lowestIndicesOfElementsAdjacentToEdges, edgeIndex) == ent0Number ? 1. : -1.;
-        //std::cout << ent0Number << " " << edgeIndex << ": " << acc(lowestIndicesOfElementsAdjacentToEdges, edgeIndex) << std::endl;
         m_global2localDofs[globalDofIndex].push_back(LocalDof(sonIndex,j));
         setBoundingBoxReference<CoordinateType>(acc(m_globalDofBoundingBoxes, globalDofIndex), dofPosition);
         ++flatLocalDofCount;
