@@ -39,6 +39,7 @@
 #include "../hmat/geometry_data_type.hpp"
 #include "../hmat/geometry.hpp"
 #include "../assembly/hmat_interface.hpp"
+#include <iostream>
 
 namespace Bempp {
 

@@ -6,7 +6,7 @@ include(PythonPackageLookup) # adds python packages if not found
 # Creates script for running python with the bempp package available
 # Also makes python packages and selected directories available to the build
 # system
-add_to_python_path("${PROJECT_BINARY_DIR}/python")
+add_to_python_path("${PROJECT_SOURCE_DIR}/python")
 add_to_python_path("${EXTERNAL_ROOT}/python")
 add_python_eggs("${PROJECT_SOURCE_DIR}"
     EXCLUDE
@@ -28,14 +28,18 @@ find_package(Doxygen)
 find_package(CoherentPython REQUIRED)
 # Get Python home directory
 include(CallPython)
-call_python(PYTHON_HOME "import sys; print(sys.prefix)")
+if(PYTHON_VERSION_MAJOR EQUAL 2)
+  call_python(PYTHON_HOME "import sys; print('%s:%s' % (sys.prefix, sys.exec_prefix))")
+else()
+  call_python(PYTHON_HOME "import sys; print('%s:%s' % (sys.base_prefix, sys.base_exec_prefix))")
+endif()
 
 find_package(Sphinx)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   set(BOOST_MIN_VER 1.57)
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-  set(BOOST_MIN_VER 1.54) 
+  set(BOOST_MIN_VER 1.53) 
 else()
   message(FATAL_ERROR "Windows installation not supported.")
 endif()
@@ -48,9 +52,9 @@ lookup_package(Boost ${BOOST_MIN_VER} COMPONENTS unit_test_framework filesystem
 lookup_package(TBB REQUIRED)
 lookup_package(Dune REQUIRED COMPONENTS geometry grid localfunctions devel )
 if (WITH_ALUGRID)
-    lookup_package(dune-alugrid REQUIRED)
+    lookup_package(dune-alugrid REQUIRED HINTS $ENV{Dune_PREFIX})
 else()
-    lookup_package(dune-foamgrid REQUIRED)
+    lookup_package(dune-foamgrid REQUIRED HINTS $ENV{Dune_PREFIX})
 endif()
 include("${PROJECT_SOURCE_DIR}/cmake/Dune/local.cmake")
 
@@ -76,13 +80,6 @@ find_python_package(numpy REQUIRED
         "numpy is required by the BEM++ python bindings"
 )
 find_package(Numpy REQUIRED)
-
-# Mako is used to generate some of the python bindings
-lookup_python_package(mako REQUIRED)
-find_program(mako_SCRIPT mako-render HINTS "${EXTERNAL_ROOT}/python")
-# Logic for mako should go into this directory
-add_to_python_path("${PROJECT_SOURCE_DIR}/python/templates")
-
 
 # Adds fake FC.h file cos dune incorrectly includes it in dune_config.h
 if(NOT EXISTS "${PROJECT_BINARY_DIR}/include/FC.h")
@@ -121,14 +118,14 @@ add_to_ld_path(
 )
 
 lookup_python_package(Cython VERSION 0.21 REQUIRED PATH "${EXTERNAL_ROOT}/python")
-if(WITH_TESTS)
-    include(AddPyTest)
-    setup_pytest("${EXTERNAL_ROOT}/python" "${PROJECT_BINARY_DIR}/py.test.sh")
-endif()
 
 # Now adds commands to install external packages
 if(EXISTS "${EXTERNAL_ROOT}/lib")
     install(DIRECTORY "${EXTERNAL_ROOT}/lib/"
+        DESTINATION "${LIBRARY_INSTALL_PATH}")
+endif()
+if(EXISTS "${EXTERNAL_ROOT}/lib64")
+    install(DIRECTORY "${EXTERNAL_ROOT}/lib64/"
         DESTINATION "${LIBRARY_INSTALL_PATH}")
 endif()
 if(EXISTS "${EXTERNAL_ROOT}/include")

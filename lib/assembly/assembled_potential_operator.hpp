@@ -30,7 +30,6 @@
 namespace Bempp {
 
 template <typename ValueType> class DiscreteBoundaryOperator;
-template <typename BasisFunctionType, typename ResultType> class GridFunction;
 template <typename BasisFunctionType> class Space;
 
 /** \ingroup potential_operators
@@ -98,7 +97,7 @@ public:
 
   /** \brief Apply the operator to a grid function.
    *
-   *  \param[in] argument A grid function expanded in the space returned by
+   *  \param[in] coefficients Expansion coefficients of the function to be applied.
    *space().
    *
    *  \returns A matrix whose (\e i, \e j)th element contains the value of the
@@ -106,7 +105,7 @@ public:
    *  distribution \p argument at the <em>j</em>th point from the array
    *  returned by the function evaluationPoints(). */
   Matrix<ResultType>
-  apply(const GridFunction<BasisFunctionType, ResultType> &argument) const;
+  apply(const Vector<ResultType> &coefficienets) const;
 
 private:
   /** \cond PRIVATE */

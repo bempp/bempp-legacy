@@ -425,8 +425,9 @@ void PiecewiseLinearDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::
         normals[g].x += elementNormals(0, m_global2localDofs[g][l].entityIndex);
         normals[g].y += elementNormals(1, m_global2localDofs[g][l].entityIndex);
       }
-      normals[g].x /= m_global2localDofs[g].size();
-      normals[g].y /= m_global2localDofs[g].size();
+      auto len = std::sqrt(normals[g].x * normals[g].x + normals[g].y * normals[g].y);
+      normals[g].x /= len;
+      normals[g].y /= len;
     }
   else // gridDim == 2
     for (size_t g = 0; g < globalDofCount_; ++g) {
@@ -437,9 +438,11 @@ void PiecewiseLinearDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::
         normals[g].y += elementNormals(1, m_global2localDofs[g][l].entityIndex);
         normals[g].z += elementNormals(2, m_global2localDofs[g][l].entityIndex);
       }
-      normals[g].x /= m_global2localDofs[g].size();
-      normals[g].y /= m_global2localDofs[g].size();
-      normals[g].z /= m_global2localDofs[g].size();
+      auto len = std::sqrt(normals[g].x * normals[g].x + normals[g].y * normals[g].y +
+              normals[g].z * normals[g].z);
+      normals[g].x /= len;
+      normals[g].y /= len;
+      normals[g].z /= len;
     }
 }
 

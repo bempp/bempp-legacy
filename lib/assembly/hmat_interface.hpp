@@ -35,7 +35,7 @@
 namespace hmat {
 
 /** \cond FORWARD_DECL */
-class GeometryDataType;
+struct GeometryDataType;
 }
 
 namespace Bempp {

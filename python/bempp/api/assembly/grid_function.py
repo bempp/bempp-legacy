@@ -32,7 +32,7 @@ class GridFunction(object):
 
     Parameters
     ----------
-    space : bempp.api.Space
+    space : bempp.api.space.Space
         The space over which the GridFunction is defined.
     dual_space : bempp.api.Space
         A representation of the dual space. If not specified
@@ -57,9 +57,9 @@ class GridFunction(object):
     component_count : int
         Return the number of components of the grid
         function values.
-    space : bemp.Space
+    space : bemp.api.space.Space
         Return the space over which the GridFunction is defined.
-    grid : bempp.api.Grid
+    grid : bempp.api.grid.Grid
         Return the underlying grid.
     parameters : bempp.api.ParameterList
         Return the set of parameters.
@@ -71,14 +71,9 @@ class GridFunction(object):
 
     Examples
     --------
-    To create a GridFunction from a real Python callable my_fun use
+    To create a GridFunction from a Python callable my_fun use
 
     >>> grid_function = GridFunction(space, fun=my_fun)
-
-    To create a GridFunction from a complex Python callable my_fun use
-
-    >>> grid_function = GridFunction(space, fun=my_fun,
-    ...    complex_data=True)
 
     To create a GridFunction from a vector of coefficients coeffs use
 
@@ -93,7 +88,7 @@ class GridFunction(object):
     def __init__(self, space, dual_space=None, fun=None, coefficients=None,
                  projections=None, parameters=None):
 
-        import bempp
+        import bempp.api
         import numpy as np
 
         if space is None:
@@ -121,7 +116,7 @@ class GridFunction(object):
             else:
                 proj_space = self.space
 
-            projections = calculate_projection(parameters, fun, proj_space)
+            projections = calculate_projection(parameters, fun, proj_space._impl)
 
         if projections is not None:
             np_proj = 1.0 * np.asarray(projections).squeeze()
@@ -157,7 +152,7 @@ class GridFunction(object):
 
         Parameters
         ----------
-        dual_space : bempp.api.Space
+        dual_space : bempp.api.space.Space
             A representation of the dual space. If not specified
             then space == dual_space is assumed (optional).
 
@@ -182,19 +177,30 @@ class GridFunction(object):
         import numpy as np
         # Get global dof ids and weights
         global_dofs, weights = self.space.get_global_dofs(element, dof_weights=True)
-        dof_values = np.asarray([self.coefficients[dof] for dof in global_dofs if dof >= 0]) * \
+        dof_values = np.asarray([self.coefficients[dof] if dof >= 0 else 0 for dof in global_dofs]) * \
                 np.asarray(weights)
         return self.space.evaluate_local_basis(element, local_coordinates, dof_values)
 
-    def l2_norm(self):
-        """Return the L^2 norm of the function."""
+    def l2_norm(self, element=None):
+        """Return the L^2 norm of the function on a single element or in total."""
 
         import numpy as np
-        ident = bempp.api.operators.boundary.sparse.identity(\
-                sparse, sparse, sparse).weak_form()
+        import bempp.api
 
-        return np.real(dot(self.coefficients.conjugate().T,\
-                ident * self.coefficients))
+        ident = bempp.api.operators.boundary.sparse.identity(\
+                self.space, self.space, self.space)
+
+        if element is None:
+            return np.sqrt(np.real(np.dot(self.coefficients.conjugate().T,\
+                    ident.weak_form() * self.coefficients)))
+        else:
+            element_index = self.space.grid.leaf_view.index_set().entity_index(element)
+            local_mass = ident.local_assembler.evaluate_local_weak_forms([element_index])[0]
+            global_dofs, weights = self.space.get_global_dofs(element, dof_weights=True)
+            dof_values = np.asarray([self.coefficients[dof] if dof >= 0 else 0 for dof in global_dofs]) * \
+                    np.asarray(weights)
+            return np.sqrt(np.real(np.dot(dof_values.conjugate().T,\
+                    local_mass.dot(dof_values))))
 
     def __add__(self, other):
 

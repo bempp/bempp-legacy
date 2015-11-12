@@ -28,6 +28,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <array>
+#include <numpy/npy_common.h>
 
 namespace Bempp {
 
@@ -72,7 +73,7 @@ template <typename ValueType>
 PyObject *DiscreteDenseBoundaryOperator<ValueType>::asNumpyObject() const {
 
   int nd = 2;
-  std::array<npy_intp, 2> dims{this->rowCount(), this->columnCount()};
+  std::array<npy_intp, 2> dims{{this->rowCount(), this->columnCount()}};
 
   PyGILState_STATE gstate;
   gstate = PyGILState_Ensure();

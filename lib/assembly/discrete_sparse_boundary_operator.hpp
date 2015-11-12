@@ -22,12 +22,10 @@
 #define bempp_discrete_sparse_boundary_operator_hpp
 
 #include "../common/common.hpp"
-#include "bempp/common/config_ahmed.hpp"
 
 #include "discrete_boundary_operator.hpp"
 #include "../common/eigen_support.hpp"
 
-#include "ahmed_aux_fwd.hpp"
 #include "symmetry.hpp"
 #include "transposition_mode.hpp"
 

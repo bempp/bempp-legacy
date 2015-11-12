@@ -191,10 +191,6 @@ void LocalDofListsCache<BasisFunctionType>::findLocalDofs(
   assert(index >= 0 && index < m_p2o.size());
   originalIndices[0] = m_p2o[index];
 
-  // set of pairs (local dof index, array index)
-  typedef std::set<pair<LocalDofIndex, int>> LocalDofSet;
-  typedef std::map<EntityIndex, LocalDofSet> LocalDofMap;
-
   // Retrieve lists of local DOFs corresponding to original indices,
   // treated either as global DOFs (if m_indexWithGlobalDofs is true)
   // or flat local DOFs (if m_indexWithGlobalDofs is false)

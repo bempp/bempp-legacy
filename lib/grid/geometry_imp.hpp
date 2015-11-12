@@ -111,8 +111,6 @@ inline void Geometry::getJacobiansTransposed(
     const Matrix<double> &local,
     std::vector<Matrix<double>> &jacobian_t) const {
   const size_t n = local.cols();
-  const size_t mdim = dim();
-  const size_t cdim = dimWorld();
   jacobian_t.resize(n);
   getJacobiansTransposedImpl(local, jacobian_t);
 }

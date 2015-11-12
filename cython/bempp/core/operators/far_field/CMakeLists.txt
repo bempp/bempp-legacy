@@ -1,5 +1,4 @@
 set(headers __init__.pxd
-    py_far_field_operators.hpp
     )
             
 
@@ -20,3 +19,5 @@ add_python_module(bempp.core.operators.far_field __init__.py
 
 add_dependencies(bempp.core.operators.far_field bempp.core.assembly)
 add_dependencies(bempp.core.operators.far_field cython-headers)
+add_dependencies(cython bempp.core.operators.far_field)
+

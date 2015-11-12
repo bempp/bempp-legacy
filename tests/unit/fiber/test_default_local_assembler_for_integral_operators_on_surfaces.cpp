@@ -22,8 +22,9 @@
 #include "../check_arrays_are_close.hpp"
 
 #include "assembly/context.hpp"
+#include "common/global_parameters.hpp"
 #include "assembly/general_elementary_singular_integral_operator_imp.hpp"
-#include "assembly/laplace_3d_single_layer_boundary_operator.hpp"
+#include "operators/laplace_operators.hpp"
 #include "assembly/numerical_quadrature_strategy.hpp"
 #include "common/scalar_traits.hpp"
 #include "fiber/geometrical_data.hpp"
@@ -82,23 +83,13 @@ public:
         piecewiseConstantSpace.reset(new PiecewiseConstantSpace(grid));
         piecewiseLinearSpace.reset(new PiecewiseLinearSpace(grid));
 
-        bop = laplace3dSingleLayerBoundaryOperator<BFT, RT>(
-                    make_shared_from_ref(context),
+        op = laplaceSingleLayerBoundaryOperator<BFT, BFT, RT>(
+                    GlobalParameters::parameterList(),
                     piecewiseConstantSpace,
                     piecewiseLinearSpace,
                     piecewiseLinearSpace,
                     "SLP");
-        const Operator& op = static_cast<const Operator&>(*bop.abstractOperator());
-
-        // This would be more elegant than the above, but it doesn't
-        // work on Mac because of a problem with RTTI across
-        // shared-library boundaries.
-
-        // op = boost::dynamic_pointer_cast<const Operator>(bop.abstractOperator());
-
-        // Construct local assembler
-
-        assembler = op.makeAssembler(*quadStrategy, assemblyOptions);
+        assembler = op->makeAssembler(*quadStrategy, assemblyOptions);
     }
 
 private:
@@ -123,7 +114,7 @@ private:
 public:
     shared_ptr<PiecewiseConstantSpace> piecewiseConstantSpace;
     shared_ptr<PiecewiseLinearSpace> piecewiseLinearSpace;
-    BoundaryOperator<BFT, RT> bop;
+    shared_ptr<const ElementaryIntegralOperator<BFT,BFT,RT>> op;
 
     shared_ptr<QuadratureStrategy> quadStrategy;
     std::unique_ptr<typename Operator::LocalAssembler> assembler;

@@ -64,6 +64,8 @@ def __generate_grid_from_geo_string(geo_string):
 
     def msh_from_string(geo_string):
         gmsh_command = bempp.api.GMSH_PATH
+        if gmsh_command is None:
+            raise RuntimeError("Gmsh is not found. Cannot generate mesh")
         f, geo_name, msh_name = get_gmsh_file()
         f.write(geo_string)
         f.close()
@@ -90,8 +92,9 @@ def regular_sphere(n):
     """Return a regular sphere."""
 
     from bempp.core.grid import grid_from_sphere
+    from bempp.api.grid.grid import Grid
 
-    return grid_from_sphere(n)
+    return Grid(grid_from_sphere(n))
 
 
 def ellipsoid(r1=1, r2=1, r3=1, origin=(0, 0, 0), h=0.1):

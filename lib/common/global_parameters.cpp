@@ -42,12 +42,20 @@ ParameterList GlobalParameters::parameterList() {
   // Default assembly type for potential oeprators.
   // Allowed values are "dense" and "hmat".
   parameters.put("options.assembly.potentialOperatorAssemblyType",
-                 std::string("dense"));
+                 std::string("hmat"));
 
   // If true then singular integrals are pre-calculated and cached
   // before the boundary oeprator assembly.
 
   parameters.put("options.assembly.enableSingularIntegralCaching", true);
+
+  // Use polynomial interpolation instead of exponentials to assemble
+  // Helmholtz or Maxwell type kernels.
+  parameters.put("options.assembly.enableInterpolationForOscillatoryKernels", true);
+
+  // Number of interpolation points per wavelength for oscillatory kernels.
+  parameters.put("options.assembly.interpolationPointsPerWavelength", static_cast<int>(5000));
+   
 
   // Order for singular double integrals.
   parameters.put("options.quadrature.doubleSingular", static_cast<int>(6));

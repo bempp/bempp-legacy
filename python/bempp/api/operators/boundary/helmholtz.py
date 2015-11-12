@@ -9,7 +9,30 @@ def single_layer(domain, range_, dual_to_range,
                  wave_number,
                  label="SLP", symmetry='no_symmetry',
                  parameters=None):
-    """Return the single-layer boundary operator."""
+    """Return the Helmholtz single-layer boundary operator.
+
+    Parameters
+    ----------
+    domain : bempp.api.space.Space
+        Domain space.
+    range_ : bempp.api.space.Space
+        Range space.
+    dual_to_range : bempp.api.space.Space
+        Dual space to the range space.
+    wave_number : complex
+        Wavenumber for the Helmholtz problem.
+    label : string
+        Label for the operator.
+    symmetry : string
+        Symmetry mode. Possible values are: 'no_symmetry',
+        'symmetric', 'hermitian'.
+    parameters : bempp.api.common.ParameterList
+        Parameters for the operator. If none given the
+        default global parameter object `bempp.api.global_parameters`
+        is used.
+
+    """
+
 
     from .modified_helmholtz import single_layer as sl
 
@@ -22,7 +45,29 @@ def double_layer(domain, range_, dual_to_range,
                  wave_number,
                  label="DLP", symmetry='no_symmetry',
                  parameters=None):
-    """Return the double-layer boundary operator."""
+    """Return the Helmholtz double-layer boundary operator.
+
+    Parameters
+    ----------
+    domain : bempp.api.space.Space
+        Domain space.
+    range_ : bempp.api.space.Space
+        Range space.
+    dual_to_range : bempp.api.space.Space
+        Dual space to the range space.
+    wave_number : complex
+        Wavenumber for the Helmholtz problem.
+    label : string
+        Label for the operator.
+    symmetry : string
+        Symmetry mode. Possible values are: 'no_symmetry',
+        'symmetric', 'hermitian'.
+    parameters : bempp.api.common.ParameterList
+        Parameters for the operator. If none given the
+        default global parameter object `bempp.api.global_parameters`
+        is used.
+
+    """
 
     from .modified_helmholtz import double_layer as dl
 
@@ -35,7 +80,29 @@ def adjoint_double_layer(domain, range_, dual_to_range,
                          wave_number,
                          label="ADJ_DLP", symmetry='no_symmetry',
                          parameters=None):
-    """Return the adjoint double-layer boundary operator."""
+    """Return the Helmholtz adjoint double-layer boundary operator.
+
+    Parameters
+    ----------
+    domain : bempp.api.space.Space
+        Domain space.
+    range_ : bempp.api.space.Space
+        Range space.
+    dual_to_range : bempp.api.space.Space
+        Dual space to the range space.
+    wave_number : complex
+        Wavenumber for the Helmholtz problem.
+    label : string
+        Label for the operator.
+    symmetry : string
+        Symmetry mode. Possible values are: 'no_symmetry',
+        'symmetric', 'hermitian'.
+    parameters : bempp.api.common.ParameterList
+        Parameters for the operator. If none given the
+        default global parameter object `bempp.api.global_parameters`
+        is used.
+
+    """
 
     from .modified_helmholtz import adjoint_double_layer as adl
 
@@ -49,7 +116,40 @@ def hypersingular(domain, range_, dual_to_range,
                   label="HYP", symmetry='no_symmetry',
                   parameters=None,
                   use_slp=False):
-    """Return the hypersingular boundary operator."""
+    """Return the Helmholtz hypersingular boundary operator.
+
+    Parameters
+    ----------
+    domain : bempp.api.space.Space
+        Domain space.
+    range_ : bempp.api.space.Space
+        Range space.
+    dual_to_range : bempp.api.space.Space
+        Dual space to the range space.
+    wave_number : complex
+        Wavenumber for the Helmholtz problem.
+    label : string
+        Label for the operator.
+    symmetry : string
+        Symmetry mode. Possible values are: 'no_symmetry',
+        'symmetric', 'hermitian'.
+    parameters : bempp.api.common.ParameterList
+        Parameters for the operator. If none given the
+        default global parameter object `bempp.api.global_parameters`
+        is used.
+    use_slp : True/False or boundary operator object
+        The hypersingular operator can be represented as a sparse transformation
+        of a single-layer operator. If `use_slp=True` this representation is used.
+        If `use_slp=op` for a single-layer boundary operator assembled on a
+        suitable space this operator is used to assemble the hypersingular operator.
+        Note that if `use_slp=op` is used no checks are performed if the slp operator
+        is correctly defined for representing the hypersingular operator. Hence,
+        if no care is taken this option can lead to a wrong operator. Also,
+        `use_slp=True` or `use_slp=op` is only valid if the `domain` and `dual_to_range`
+        spaces are identical.
+
+
+    """
 
     from .modified_helmholtz import hypersingular as hyp
 
@@ -57,10 +157,89 @@ def hypersingular(domain, range_, dual_to_range,
                wave_number / (1j), label, symmetry,
                use_slp=use_slp, parameters=parameters)
 
+def multitrace_operator(grid, wave_number, parameters=None):
+    """Return the Helmholtz multitrace operator.
+
+    Parameters
+    ----------
+    grid : bempp.api.grid.Grid
+        The underlying grid for the multitrace operator
+    wave_number : complex
+        Wavenumber of the operator.
+    parameters : bempp.api.common.ParameterList
+        Parameters for the operator. If none given
+        the default global parameter object
+        `bempp.api.global_parameters` is used.
+
+    """
+
+    import bempp.api
+    return bempp.api.operators.boundary.modified_helmholtz.multitrace_operator(grid, wave_number/(1j), parameters)
+
+def interior_calderon_projector(grid, wave_number, parameters=None):
+    """Return the interior Calderon projector.
+
+    Parameters
+    ----------
+    grid : bempp.api.grid.Grid
+        The underlying grid for the multitrace operator
+    wave_number : complex
+        Wavenumber of the operator.
+    parameters : bempp.api.common.ParameterList
+        Parameters for the operator. If none given
+        the default global parameter object
+        `bempp.api.global_parameters` is used.
+
+    """
+
+    from .sparse import multitrace_identity
+
+    return .5 * multitrace_identity(grid, parameters) + multitrace_operator(grid, wave_number, parameters)
+
+def exterior_calderon_projector(grid, wave_number, parameters=None):
+    """Return the exterior Calderon projector.
+
+    Parameters
+    ----------
+    grid : bempp.api.grid.Grid
+        The underlying grid for the multitrace operator
+    wave_number : complex
+        Wavenumber of the operator.
+    parameters : bempp.api.common.ParameterList
+        Parameters for the operator. If none given
+        the default global parameter object
+        `bempp.api.global_parameters` is used.
+
+    """
+
+    from .sparse import multitrace_identity
+
+    return .5 * multitrace_identity(grid, parameters) - multitrace_operator(grid, wave_number, parameters)
+
 
 def osrc_dtn(space, wave_number, npade=2, theta=_np.pi / 3,
              parameters=None, label="osrc_dtn"):
-    """Return the OSRC approximation to the DtN map."""
+    """Return the OSRC approximation to the DtN map.
+
+    Parameters
+    ----------
+    space : bempp.api.space.Space
+        Underlying function space. Needs to be a continuous space.
+    wave_number : complex
+        Wavenumber of the operator.
+    npade : int
+        Number of Pade terms to be used in the approximation
+    theta : float64
+        Angle of the branch cut of the square root operator.
+    parameters : bempp.api.common.ParameterList
+        Parameters for the operator. If none given
+        the default global parameter object
+        `bempp.api.global_parameters` is used.
+    label : string
+        Label for the operator.
+
+    """
+
     return _OsrcDtn(space, wave_number, npade, theta, label=label)
 
 
@@ -113,7 +292,26 @@ class _OsrcDtn(_BoundaryOperator):
 
 
 def osrc_ntd(space, wave_number, npade=2, theta=_np.pi / 3, parameters=None, label="osrc_ntd"):
-    """Return the OSRC approximation to the NtD map."""
+    """Return the OSRC approximation to the NtD map.
+
+    Parameters
+    ----------
+    space : bempp.api.space.Space
+        Underlying function space. Needs to be a continuous space.
+    wave_number : complex
+        Wavenumber of the operator.
+    npade : int
+        Number of Pade terms to be used in the approximation
+    theta : float64
+        Angle of the branch cut of the square root operator.
+    parameters : bempp.api.common.ParameterList
+        Parameters for the operator. If none given
+        the default global parameter object
+        `bempp.api.global_parameters` is used.
+    label : string
+        Label for the operator.
+
+    """
     return _OsrcNtd(space, wave_number, npade, theta, label=label)
 
 

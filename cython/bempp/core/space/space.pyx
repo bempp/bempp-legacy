@@ -12,41 +12,6 @@ from libcpp.vector cimport vector
 
 
 cdef class Space:
-    """ Space of functions defined on a grid
-
-        Attributes
-        ----------
-
-        grid : Grid
-            Grid over which to discretize the space.
-
-        dtype : numpy.dtype
-            Type of the basis functions in this space.
-
-        codomain_dimension : int
-            Number of components of values of functions in this space.
-
-        domain_dimension : int
-            Dimension of the domain on which the space is defined.
-
-        global_dof_count : int
-            Number of global degrees of freedom.
-
-        flat_local_dof_count : int
-            Total number of local degrees of freedom.
-
-        global_dof_interpolation_points : np.ndarray 
-            (3xN) matrix of global interpolation points for the space,
-            where each column is the coordinate of an interpolation point.
-
-        global_dof_interpolation_points : np.ndarray
-            (3xN) matrix of normal directions associated with the interpolation points.
-
-        Notes
-        -----
-        A space instance should always be created using the function 'bempp.function_space'.
-
-    """
 
 
     def __cinit__(self):
@@ -174,65 +139,7 @@ cdef class Space:
             deref(self.impl_).getNormalsAtGlobalDofInterpolationPoints(data)
             return eigen_matrix_to_np_float64(data)
 
-def function_space(Grid grid, kind, order=None, domains=None, cbool closed=True):
-    """ 
-
-    Return a space defined over a given grid.
-
-    Parameters
-    ----------
-    grid : bempp.Grid
-        The grid object over which the space is defined.
-
-    kind : string
-        The type of space. Currently, the following types
-        are supported:
-            "P" : Continuous and piecewise polynomial functions.
-            "DP" : Discontinuous and elementwise polynomial functions.
-            "RT": Raviart-Thomas Vector spaces.
-            "N": Nedelec Vector spaces.
-
-            "B-P": Polynomial spaces on barycentric grids.
-            "B-DP": Polynomial discontinuous spaces on barycentric grids.
-            "B-RT": Raviart-Thomas Vector spaces on barycentric grids.
-            "B-N": Nedelec Vector spaces on barycentric grids.
-
-            "DUAL": Dual space on dual grid (only implemented for constants).
-            "BC": Buffa-Christian Vector space.
-
-    order : int
-        The order of the space, e.g. 0 for piecewise const, 1 for
-        piecewise linear functions.
-
-    domains : list
-        List of integers specifying a list of physical entities
-        of subdomains that should be included in the space.
-
-    closed : bool
-        Specifies whether the space is defined on a closed
-        or open subspace.
-
-    Notes
-    -----
-    The most frequent used types are the space of piecewise constant
-    functions (kind="DP", order=0) and the space of continuous,
-    piecewise linear functions (kind="P", order=1).
-
-    This is a factory function that initializes a space object. To 
-    see a detailed help for space objects see the documentation
-    of the instantiated object.
-
-    Examples
-    --------
-    To initialize a space of piecewise constant functions use
-
-    >>> space = function_space(grid,"DP",0)
-
-    To initialize a space of continuous, piecewise linear functions, use
-
-    >>> space = function_space(grid,"P",1)
-
-    """
+def function_space(Grid grid, kind, order, domains=None, cbool closed=True):
 
     cdef Space s = Space()
     cdef Grid bary_grid

@@ -1,6 +1,12 @@
 """ Boundary Element Method package BEM++ """
 from __future__ import print_function
 
+# Check if at least Scipy 0.16.0 is installed. BEM++ fails otherwise.
+#import scipy
+#if scipy.version.version < '0.16.0':
+#    raise Exception("At leat SciPy version 0.16.0 required to run BEM++. Found version {0}".format(scipy.version.version))
+    
+
 # This imports dolfin at the same time as bempp if available to avoid delays
 # at later imports of dolfin
 
@@ -37,6 +43,7 @@ def _check_create_init_dir():
     """Create the temporary dir if necessary."""
     from os.path import expanduser, join, isdir
     from os import mkdir
+    import tempfile
 
     home = expanduser("~")
     config_path = join(home,".bempp")
@@ -45,21 +52,27 @@ def _check_create_init_dir():
         if not isdir(config_path):
             mkdir(config_path)
     except OSError: # Read only file system try a tmp dir
-        import tempfile
         import warnings
         warnings.warn("Could not create BEM++ config dir."
             "Falling back to a temorary dir."
             "Your config will not be stored")
         config_path = tempfile.mkdtemp()
 
-    tmp_path = join(config_path,"tmp")
-    if not isdir(tmp_path):
-        mkdir(tmp_path)
+    tmp_path = tempfile.mkdtemp()
 
     return config_path, tmp_path
 
 
 CONFIG_PATH, TMP_PATH = _check_create_init_dir()
+
+# Clean up function
+
+import atexit as _atexit
+@_atexit.register
+def clean_tmp():
+    import shutil
+    shutil.rmtree(TMP_PATH)
+
 
 
 # Get the path to Gmsh
@@ -95,11 +108,15 @@ from bempp.api.assembly import InverseSparseDiscreteBoundaryOperator
 from bempp.api.assembly import ZeroBoundaryOperator
 from bempp.api.assembly import as_matrix
 from bempp.api.assembly import assemble_dense_block
+from bempp.api.assembly import BlockedOperator
+from bempp.api.assembly import BlockedDiscreteOperator
 from bempp.api import shapes
 from bempp.api.file_interfaces import import_grid
 from bempp.api.file_interfaces import export
 from bempp.api import operators
 from bempp.api import linalg
+from bempp.api import hmat
+from bempp.api.hmat import hmatrix_interface
 
 from bempp.api.utils.logging import DEBUG, INFO, WARNING, ERROR, CRITICAL
 from bempp.api.utils.logging import enable_console_logging

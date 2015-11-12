@@ -24,8 +24,6 @@
 #include "../common/common.hpp"
 #include "../common/types.hpp"
 
-#include "aca_options.hpp"
-
 #include "../common/deprecated.hpp"
 #include "../fiber/opencl_options.hpp"
 #include "../fiber/parallelization_options.hpp"
@@ -57,9 +55,6 @@ public:
   enum Mode {
     /** \brief Assemble dense matrices. */
     DENSE,
-    /** \brief Assemble hierarchical matrices using adaptive cross approximation
-       (ACA). */
-    ACA,
     /** \brief Assemble hierarchical matrices using HMat. */
     HMAT
   };
@@ -100,38 +95,12 @@ public:
    */
   void switchToDenseMode();
 
-  /** \brief Use adaptive cross approximation (ACA) to obtain
-   *hierarchical-matrix
-   *  representations of potential operators.
-   *
-   *  \param[in] acaOptions Parameters influencing the ACA algorithm.
-   *
-   *  In this mode, evaluation of potentials always entails the construction
-   *  of a hierarchical-matrix representation of the potential operator, as
-   *  defined in the documentation of switchToDenseMode(). The potential
-   *  given by a particular charge distribution is then calculated by
-   *  left-multiplying the vector of its expansion coefficients by the above
-   *  hierarchical matrix.
-   *
-   *  \note Our (BEM++ developers') numerical experiments indicate that to
-   *  maximize the efficiency of potential evaluation, the acaOptions.eta
-   *  parameter should be chosen much smaller than the default 1.2 (which is
-   *  adequate for the ACA of discrete weak forms). For potential evaluation,
-   *  eta = 0.4 seems to work well.
-   */
-  void switchToAcaMode(const AcaOptions &acaOptions);
 
   /** \brief Return current evaluation mode.
    *
    *  The evaluation mode can be changed by calling switchToDenseMode() or
    *  switchToAcaMode(). */
   Mode evaluationMode() const;
-
-  /** \brief Return the current adaptive cross approximation (ACA) settings.
-   *
-   *  \note These settings are only used in the ACA evaluation mode, i.e. when
-   *  evaluationMode() returns ACA. */
-  const AcaOptions &acaOptions() const;
 
   /** @}
     @name Parallelization
@@ -175,7 +144,6 @@ public:
 private:
   /** \cond */
   Mode m_evaluationMode;
-  AcaOptions m_acaOptions;
   ParallelizationOptions m_parallelizationOptions;
   VerbosityLevel::Level m_verbosityLevel;
   ParameterList m_parameterList;

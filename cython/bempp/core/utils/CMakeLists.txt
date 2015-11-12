@@ -23,3 +23,5 @@ add_python_module(bempp.core.utils
 
 add_dependencies(cython-headers bempp.core.utils-copied)
 add_dependencies(bempp.core.utils cython-headers)
+add_dependencies(cython bempp.core.utils)
+

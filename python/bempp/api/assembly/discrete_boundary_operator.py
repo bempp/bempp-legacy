@@ -4,10 +4,13 @@ from bempp.api.utils.linear_operator import LinearOperator as _LinearOperator
 from bempp.api.utils.linear_operator import MatrixLinearOperator as _MatrixLinearOperator
 import numpy as _np
 
-
-
 class GeneralNonlocalDiscreteBoundaryOperator(_LinearOperator):
-    """Main class for the discrete form of general discrete nonlocal operators."""
+    """Main class for the discrete form of general discrete nonlocal operators.
+
+    This class derives from :class:`scipy.sparse.linalg.interface.LinearOperator`
+    and thereby implements the SciPy LinearOperator protocol.
+
+    """
 
     def __init__(self, impl):
 
@@ -33,7 +36,12 @@ class GeneralNonlocalDiscreteBoundaryOperator(_LinearOperator):
         return GeneralNonlocalDiscreteBoundaryOperator(self._impl.transpose())
 
 class DenseDiscreteBoundaryOperator(_MatrixLinearOperator): # pylint: disable=too-few-public-methods
-    """Main class for the discrete form of dense discretisations of nonlocal operators."""
+    """Main class for the discrete form of dense discretisations of nonlocal operators.
+
+    This class derives from :class:`scipy.sparse.linalg.interface.LinearOperator`
+    and thereby implements the SciPy LinearOperator protocol.
+
+    """
 
     def __init__(self, impl): # pylint: disable=super-on-old-class
 
@@ -75,9 +83,19 @@ class DenseDiscreteBoundaryOperator(_MatrixLinearOperator): # pylint: disable=to
 
         return DenseDiscreteBoundaryOperator(self.A.T)
 
+    def _adjoint(self):
+        """Adjoint of the operator."""
+
+        return DenseDiscreteBoundaryOperator(self.A.conjugate().transpose())
+
 
 class SparseDiscreteBoundaryOperator(_LinearOperator):
-    """Main class for the discrete form of sparse operators."""
+    """Main class for the discrete form of sparse operators.
+
+    This class derives from :class:`scipy.sparse.linalg.interface.LinearOperator`
+    and thereby implements the SciPy LinearOperator protocol.
+
+    """
 
     def __init__(self, impl):
 
@@ -143,7 +161,21 @@ class SparseDiscreteBoundaryOperator(_LinearOperator):
 
 
 class InverseSparseDiscreteBoundaryOperator(_LinearOperator):
-    """Apply the (pseudo-)inverse of a sparse operator."""
+    """Apply the (pseudo-)inverse of a sparse operator.
+
+    This class uses a Sparse LU-Decomposition (in the case of a square matrix)
+    or a sparse normal equation to provide the application of an inverse to
+    a sparse operator.
+
+    This class derives from :class:`scipy.sparse.linalg.interface.LinearOperator`
+    and thereby implements the SciPy LinearOperator protocol.
+
+    Parameters
+    ----------
+    operator : bempp.api.SparseDiscreteBoundaryOperator or scipy.sparse.csc_matrix
+        Sparse operator to be inverted.
+
+    """
 
     class _Solver(object): # pylint: disable=too-few-public-methods
         """Actual solver class."""
@@ -218,7 +250,20 @@ class InverseSparseDiscreteBoundaryOperator(_LinearOperator):
         return self._solver.solve(vec)
 
 class ZeroDiscreteBoundaryOperator(_LinearOperator):
-    """A discrete operator that represents a zero operator."""
+    """A discrete operator that represents a zero operator.
+
+    This class derives from :class:`scipy.sparse.linalg.interface.LinearOperator`
+    and thereby implements the SciPy LinearOperator protocol.
+
+    Parameters
+    ----------
+    rows : int
+        The number of rows in the operator.
+    columns : int
+        The number of columns in the operator.
+
+    """
+
 
     def __init__(self, rows, columns):
 
@@ -232,8 +277,27 @@ class ZeroDiscreteBoundaryOperator(_LinearOperator):
             return _np.zeros(self.shape[0], dtype='float64')
 
 def as_matrix(operator):
-    """Return a representation of a discrete linear operator as a dense numpy matrix."""
+    """Return a representation of a discrete linear operator as a dense numpy matrix.
+
+    Parameters
+    ----------
+    operator : scipy.sparse.linalg.interface.LinearOperator
+        The linear operator to be converted into a dense matrix.
+    
+
+    Notes
+    -----
+    Note that this function may be slow depending on how the original discrete operator was stored.
+    In the case of a dense assembly simple the underlying NumPy matrix is returned. Otherwise,
+    the operator needs to be converted to an array, which can take a long time.
+
+    """
 
     from numpy import eye
     cols = operator.shape[1]
-    return operator * eye(cols, cols)
+    if isinstance(operator, DenseDiscreteBoundaryOperator):
+        return operator.A
+    elif isinstance(operator, SparseDiscreteBoundaryOperator):
+        return operator.sparse_operator
+    else:
+        return operator * eye(cols, cols)

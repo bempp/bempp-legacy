@@ -198,7 +198,6 @@ assembleDenseBlock(
                              "Indices out of bounds");
 
   Context<BasisFunctionType, ResultType> context(parameterList);
-  const AssemblyOptions &options = context.assemblyOptions();
 
   // Create the operator's matrix
   Matrix<ResultType> result(numberOfRows, numberOfColumns);

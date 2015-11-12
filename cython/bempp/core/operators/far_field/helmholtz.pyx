@@ -14,14 +14,14 @@ from cython.operator cimport dereference as deref
 cimport numpy as _np
 import numpy as _np
 
-cdef extern from "bempp/core/operators/far_field/py_far_field_operators.hpp" namespace "Bempp":
-    cdef shared_ptr[const c_DiscreteBoundaryOperator[complex_double]] helmholtz_single_layer_far_field_discrete_operator(
+cdef extern from "bempp/operators/helmholtz_operators.hpp" namespace "Bempp":
+    cdef shared_ptr[const c_DiscreteBoundaryOperator[complex_double]] helmholtz_single_layer_far_field_discrete_operator "Bempp::helmholtzSingleLayerFarFieldOperator<double>"(
                 const shared_ptr[const c_Space[double]]& space,
                 const Matrix[double]& evaluation_points,
                 complex_double wave_number,
                 const c_ParameterList& parameterList) except +catch_exception
 
-    cdef shared_ptr[const c_DiscreteBoundaryOperator[complex_double]] helmholtz_double_layer_far_field_discrete_operator(
+    cdef shared_ptr[const c_DiscreteBoundaryOperator[complex_double]] helmholtz_double_layer_far_field_discrete_operator "Bempp::helmholtzDoubleLayerFarFieldOperator<double>"(
                 const shared_ptr[const c_Space[double]]& space,
                 const Matrix[double]& evaluation_points,
                 complex_double wave_number,

@@ -8,25 +8,27 @@ from libcpp.string cimport string
 from cython.operator cimport dereference as deref
 
 
-cdef extern from "bempp/core/operators/boundary/py_boundary_operators.hpp" namespace "Bempp":
-    shared_ptr[const c_ElementaryLocalOperator] identity_operator(
+cdef extern from "bempp/operators/sparse_operators.hpp" namespace "Bempp":
+    shared_ptr[const c_ElementaryLocalOperator] identity_operator "Bempp::identityOperator<double,double>"(
             const c_ParameterList&,
             shared_ptr[const c_Space[double]]&,
             shared_ptr[const c_Space[double]]&,
             shared_ptr[const c_Space[double]]&,
             string label, SymmetryMode symmetry)
-    shared_ptr[const c_ElementaryLocalOperator] maxwell_identity_operator(
+    shared_ptr[const c_ElementaryLocalOperator] maxwell_identity_operator "Bempp::maxwellIdentityOperator<double,double>"(
             const c_ParameterList&,
             shared_ptr[const c_Space[double]]&,
             shared_ptr[const c_Space[double]]&,
             shared_ptr[const c_Space[double]]&,
             string label, SymmetryMode symmetry)
-    shared_ptr[const c_ElementaryLocalOperator] laplace_beltrami_operator(
+    shared_ptr[const c_ElementaryLocalOperator] laplace_beltrami_operator "Bempp::laplaceBeltramiOperator<double,double>"(
             const c_ParameterList&,
             shared_ptr[const c_Space[double]]&,
             shared_ptr[const c_Space[double]]&,
             shared_ptr[const c_Space[double]]&,
             string label, SymmetryMode symmetry)
+
+cdef extern from "bempp/core/operators/boundary/support_operators.hpp" namespace "Bempp":
     shared_ptr[const c_ElementaryLocalOperator] curl_value_local_operator(
             shared_ptr[const c_Space[double]]&,
             shared_ptr[const c_Space[double]]&,

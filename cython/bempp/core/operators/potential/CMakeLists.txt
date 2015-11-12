@@ -1,5 +1,4 @@
 set(headers __init__.pxd
-    py_potential_operators.hpp
     )
             
 
@@ -21,3 +20,5 @@ add_python_module(bempp.core.operators.potential __init__.py
 
 add_dependencies(bempp.core.operators.potential bempp.core.assembly)
 add_dependencies(bempp.core.operators.potential cython-headers)
+add_dependencies(cython bempp.core.operators.potential)
+

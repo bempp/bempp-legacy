@@ -14,14 +14,14 @@ from cython.operator cimport dereference as deref
 cimport numpy as _np
 import numpy as _np
 
-cdef extern from "bempp/core/operators/potential/py_potential_operators.hpp" namespace "Bempp":
-    cdef shared_ptr[const c_DiscreteBoundaryOperator[complex_double]] modified_helmholtz_single_layer_potential_discrete_operator(
+cdef extern from "bempp/operators/modified_helmholtz_operators.hpp" namespace "Bempp":
+    cdef shared_ptr[const c_DiscreteBoundaryOperator[complex_double]] modified_helmholtz_single_layer_potential_discrete_operator "Bempp::modifiedHelmholtzSingleLayerPotentialOperator<double, std::complex<double>>"(
                 const shared_ptr[const c_Space[double]]& space,
                 const Matrix[double]& evaluation_points,
                 complex_double wave_number,
                 const c_ParameterList& parameterList) except +catch_exception
 
-    cdef shared_ptr[const c_DiscreteBoundaryOperator[complex_double]] modified_helmholtz_double_layer_potential_discrete_operator(
+    cdef shared_ptr[const c_DiscreteBoundaryOperator[complex_double]] modified_helmholtz_double_layer_potential_discrete_operator "Bempp::modifiedHelmholtzDoubleLayerPotentialOperator<double, std::complex<double>>"(
                 const shared_ptr[const c_Space[double]]& space,
                 const Matrix[double]& evaluation_points,
                 complex_double wave_number,

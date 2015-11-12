@@ -54,10 +54,23 @@ cdef extern from "bempp/core/grid/py_sphere.hpp" namespace "Bempp":
 
 
 cdef class Grid:
-    """ 
-        
+    """The basic grid class in BEM++.
 
+    The Grid class contains interfaces to query and iterate grid
+    information in BEM++. The basic access point to iterate
+    through grid data structures is the method `leaf_view` that
+    returns a GridView object. The BEM++ Grid class is implemented
+    using using the Dune-grid library and follows closely its
+    design principles.
 
+    The Grid class can not be directly instantiated. Rather,
+    a range of factory functions are available that return grids.
+
+    See Also
+    --------
+    :mod:`bempp.api.shapes`, :func:`bempp.api.import_grid`,
+    :class:`bempp.api.GridFactory`
+    
     """
 
 
@@ -137,6 +150,7 @@ cdef class Grid:
     def refine(self):
         """ Refine grid. """
 
+        self._grid_view = None
         deref(self.impl_).preAdapt()
         deref(self.impl_).adapt()
         deref(self.impl_).postAdapt()
@@ -145,11 +159,12 @@ cdef class Grid:
     def global_refine(self, int refcount = 1):
         """ Refine all elements. """
 
+        self._grid_view = None
         deref(self.impl_).globalRefine(refcount)
         deref(self.impl_).sendUpdateSignal()
 
     def barycentric_grid(self):
-        """Retrun a barycentrically refined grid."""
+        """Return a barycentrically refined grid."""
 
         cdef Grid grid = Grid()
         grid.impl_.assign(deref(self.impl_).barycentricGrid())

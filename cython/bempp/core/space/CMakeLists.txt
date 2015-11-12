@@ -11,3 +11,6 @@ add_dependencies(cython-headers bempp.core.space-copied)
 
 add_python_module(bempp.core.space __init__.py space.pyx CPP LIBRARIES libbempp)
 add_dependencies(bempp.core.space cython-headers)
+add_dependencies(bempp.core.space bempp.core.grid)
+add_dependencies(cython bempp.core.space)
+
