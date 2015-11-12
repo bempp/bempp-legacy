@@ -192,9 +192,6 @@ void BuffaChristiansenVectorSpace<BasisFunctionType>::assignDofsImpl() {
     }
   }
 
- // for(int i=0;i<edgeCountCoarseGrid;++i)
-   // std::cout << i << ":" << lowestIndicesOfElementsAdjacentToEdges[i] << std::endl;
-
   std::vector<int> lowestIndicesOfElementsAdjacentToFineEdges(edgeCountFineGrid, std::numeric_limits<int>::max());
 
   for (std::unique_ptr<EntityIterator<0>> it = m_view->entityIterator<0>();!it->finished();it->next()){
@@ -235,7 +232,6 @@ void BuffaChristiansenVectorSpace<BasisFunctionType>::assignDofsImpl() {
     for (int i=0;i!=3;++i){
       int ent2Number = index.subEntityIndex(entity,i,2);
       ++edgeCountNextToVertex[ent2Number];
-      //std::cout << ent2Number <<" "<< edgeCountNextToVertex[ent2Number] << std::endl;
     }
     for (int i=0;i!=3;++i){
       int ent1Number = index.subEntityIndex(entity,i,1);
@@ -317,9 +313,7 @@ void BuffaChristiansenVectorSpace<BasisFunctionType>::assignDofsImpl() {
 
     int faceNum = fineFacesOnEdgeDof(ent1Number,0);
     int N = edgeCountNextToVertex[coarseVerticesOnEdgeDof(ent1Number,0)];
-    //std::cout << std::endl << "~~~~~~ " << faceNum << " ~~~~~~" << std::endl;
-    //std::cout << coarseVerticesOnEdgeDof(ent1Number,0) << " " << N << std::endl;
-    //std::cout << std::endl << "~~~~" << std::endl;
+
     faceNum = nextFaceAnticlockwise[faceNum];
     {// First edge bottom
     Matrix<BasisFunctionType> &ffCoeff = fineFaceCoeffs[faceNum];
@@ -331,33 +325,19 @@ void BuffaChristiansenVectorSpace<BasisFunctionType>::assignDofsImpl() {
     for (int i=N-1; faceNum!=fineFacesOnEdgeDof(ent1Number,0);--i){
         {// Before
         Matrix<BasisFunctionType> &ffCoeff = fineFaceCoeffs[faceNum];
-        //std::cout << i << " " << 2*N << " : " << i*1./(2*N) << std::endl;
         ffCoeff(1,ffCoeff.cols()-1) = -i*1./(2*N);
         m_local2globalDofs[faceNum].push_back(glDof);
         m_local2globalDofWeights[faceNum].push_back(1.);
         m_global2localDofs[glDof].push_back(LocalDof(faceNum,ffCoeff.cols()-1));
-        ++flatLocalDofCount;    
-    //std::cout << "*ff_Coeff (after)*" << std::endl;
-    //for (int i=0;i<ffCoeff.rows();++i){
-    //for (int j=0;j<ffCoeff.cols();++j)
-        //std::cout << "  " << ffCoeff(i,j) << " ";
-      //std::cout << std::endl;}
-            }
+        ++flatLocalDofCount;    }
 
         faceNum = nextFaceAnticlockwise[faceNum];
         {// After
         Matrix<BasisFunctionType> &ffCoeff = fineFaceCoeffs[faceNum];
-    //std::cout << "*ff_Coeff (before)*" << std::endl;
-    //for (int i=0;i<ffCoeff.rows();++i){
-    //for (int j=0;j<ffCoeff.cols();++j)
-    //    std::cout << "  " << ffCoeff(i,j) << " ";
-    //  std::cout << std::endl;
-    //}
         ffCoeff.conservativeResize(3,ffCoeff.cols()+1);
         ffCoeff(0,ffCoeff.cols()-1) = i*1./(2*N);
         ffCoeff(1,ffCoeff.cols()-1) = 0;
-        ffCoeff(2,ffCoeff.cols()-1) = 0;      
-}
+        ffCoeff(2,ffCoeff.cols()-1) = 0;      }
     }
     {// First edge top
     Matrix<BasisFunctionType> &ffCoeff = fineFaceCoeffs[faceNum];
@@ -403,12 +383,7 @@ void BuffaChristiansenVectorSpace<BasisFunctionType>::assignDofsImpl() {
         m_local2globalDofWeights[faceNum].push_back(1.);
     m_global2localDofs[glDof].push_back(LocalDof(faceNum,ffCoeff.cols()-1));
     ++flatLocalDofCount;    }
-// */
-
-
   }
-
-
 
 
   for(std::unique_ptr<EntityIterator<0>> it=m_view->entityIterator<0>();!it->finished();it->next()){
