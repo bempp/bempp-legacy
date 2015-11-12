@@ -139,8 +139,65 @@ cdef class Space:
             deref(self.impl_).getNormalsAtGlobalDofInterpolationPoints(data)
             return eigen_matrix_to_np_float64(data)
 
-def function_space(Grid grid, kind, order, domains=None, cbool closed=True):
+def function_space(Grid grid, kind, order=None, domains=None, cbool closed=True):
+    """ 
 
+    Return a space defined over a given grid.
+
+    Parameters
+    ----------
+    grid : bempp.Grid
+        The grid object over which the space is defined.
+
+    kind : string
+        The type of space. Currently, the following types
+        are supported:
+            "P" : Continuous and piecewise polynomial functions.
+            "DP" : Discontinuous and elementwise polynomial functions.
+            "RT": Raviart-Thomas Vector spaces.
+            "N": Nedelec Vector spaces.
+
+            "B-P": Polynomial spaces on barycentric grids.
+            "B-DP": Polynomial discontinuous spaces on barycentric grids.
+            "B-RT": Raviart-Thomas Vector spaces on barycentric grids.
+            "B-N": Nedelec Vector spaces on barycentric grids.
+
+            "DUAL": Dual space on dual grid (only implemented for constants).
+            "BC": Buffa-Christian Vector space.
+
+    order : int
+        The order of the space, e.g. 0 for piecewise const, 1 for
+        piecewise linear functions.
+
+    domains : list
+        List of integers specifying a list of physical entities
+        of subdomains that should be included in the space.
+
+    closed : bool
+        Specifies whether the space is defined on a closed
+        or open subspace.
+
+    Notes
+    -----
+    The most frequent used types are the space of piecewise constant
+    functions (kind="DP", order=0) and the space of continuous,
+    piecewise linear functions (kind="P", order=1).
+
+    This is a factory function that initializes a space object. To 
+    see a detailed help for space objects see the documentation
+    of the instantiated object.
+
+    Examples
+    --------
+    To initialize a space of piecewise constant functions use
+
+    >>> space = function_space(grid,"DP",0)
+
+    To initialize a space of continuous, piecewise linear functions, use
+
+    >>> space = function_space(grid,"P",1)
+
+    """
     cdef Space s = Space()
     cdef Grid bary_grid
     if kind=="P":
@@ -187,8 +244,8 @@ def function_space(Grid grid, kind, order, domains=None, cbool closed=True):
             s.impl_.assign(reverse_const_pointer_cast(
                     shared_ptr[c_Space[double]](adaptiveRaviartThomas0VectorSpace[double](grid.impl_, domains, closed))))
     elif kind=="N":
-        if order is not None:
-            raise ValueError("Nedelec spaces do not need an order.")
+        if order!=0:
+            raise ValueError("Only order 0 (type 1) Nedelec spaces are implemented.")
         if domains is None:
             s.impl_.assign(reverse_const_pointer_cast(
                     shared_ptr[c_Space[double]](adaptiveNedelec1VectorSpace[double](grid.impl_))))
@@ -218,7 +275,7 @@ def function_space(Grid grid, kind, order, domains=None, cbool closed=True):
         s.impl_.assign(reverse_const_pointer_cast(
             shared_ptr[c_Space[double]](adaptivePiecewiseLinearDiscontinuousScalarSpaceBarycentric[double](grid.impl_))))
     elif kind=="B-RT":
-        if order!=0 and order is not None:
+        if order!=0:
             raise ValueError("Only 0 order Raviart-Thomas spaces on barycentric grids are supported.")
         if domains is not None:
             raise ValueError("Spaces on subdomains are not supported on barycentric grids.")
@@ -226,16 +283,16 @@ def function_space(Grid grid, kind, order, domains=None, cbool closed=True):
             s.impl_.assign(reverse_const_pointer_cast(
                     shared_ptr[c_Space[double]](adaptiveRaviartThomas0VectorSpaceBarycentric[double](grid.impl_))))
     elif kind=="B-N":
-        if order is not None:
-            raise ValueError("Nedelec spaces do not need an order.")
+        if order!=0:
+            raise ValueError("Only order 0 (type 1) Nedelec spaces are implemented.")
         if domains is not None:
             raise ValueError("Spaces on subdomains are not supported on barycentric grids.")
         else:
             s.impl_.assign(reverse_const_pointer_cast(
                     shared_ptr[c_Space[double]](adaptiveNedelec1VectorSpaceBarycentric[double](grid.impl_))))
     elif kind=="BC":
-        if order is not None:
-            raise ValueError("Buffa-Christiansen spaces do not need an order.")
+        if order!=0:
+            raise ValueError("Only order 0 Buffa-Christiansen spaces are implemented.")
         if domains is not None:
             raise ValueError("Spaces on subdomains are not supported for Buffa-Christiansen spaces.")
         else:
@@ -247,3 +304,4 @@ def function_space(Grid grid, kind, order, domains=None, cbool closed=True):
     return s
 
 
+ 
