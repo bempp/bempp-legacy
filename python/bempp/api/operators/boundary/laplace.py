@@ -211,7 +211,7 @@ def hypersingular(domain, range_, dual_to_range,
 
         return CompoundBoundaryOperator(test_local_ops, slp, trial_local_ops, label=label)
 
-def multitrace_operator(grid, parameters=None):
+def multitrace_operator(grid, parameters=None, spaces='linear'):
     """Return the Laplace multitrace operator.
 
     Parameters
@@ -222,44 +222,17 @@ def multitrace_operator(grid, parameters=None):
         Parameters for the operator. If none given
         the default global parameter object
         `bempp.api.global_parameters` is used.
+    spaces: string
+        Choose 'linear' to assemble the operator
+        with continuous linear function spaces for the
+        Dirichlet and Neumann component (default). For
+        a dual pairing of a linear space for the Dirichlet
+        data and piecewise constant space for the Neumann
+        data choose 'dual'.
 
     """
 
     from bempp.api.operators.boundary import _common
-    return _common.multitrace_operator_impl(grid, single_layer, double_layer, hypersingular, parameters)
+    return _common.multitrace_operator_impl(
+            grid, single_layer, double_layer, hypersingular, parameters, spaces)
 
-def interior_calderon_projector(grid, parameters=None):
-    """Return the Laplace interior Calderon projector.
-
-    Parameters
-    ----------
-    grid : bempp.api.grid.Grid
-        The underlying grid for the multitrace operator
-    parameters : bempp.api.common.ParameterList
-        Parameters for the operator. If none given
-        the default global parameter object
-        `bempp.api.global_parameters` is used.
-
-    """
-
-    from .sparse import multitrace_identity
-
-    return .5 * multitrace_identity(grid, parameters) + multitrace_operator(grid, parameters)
-
-def exterior_calderon_projector(grid, parameters=None):
-    """Return the Laplace exterior Calderon projector.
-
-    Parameters
-    ----------
-    grid : bempp.api.grid.Grid
-        The underlying grid for the multitrace operator
-    parameters : bempp.api.common.ParameterList
-        Parameters for the operator. If none given
-        the default global parameter object
-        `bempp.api.global_parameters` is used.
-
-    """
-
-    from .sparse import multitrace_identity
-
-    return .5 * multitrace_identity(grid, parameters) - multitrace_operator(grid, parameters)
