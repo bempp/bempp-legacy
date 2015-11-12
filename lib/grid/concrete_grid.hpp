@@ -211,11 +211,6 @@ public:
         std::unique_ptr<GridView> view = this->leafView();
         const IndexSet &index=view->indexSet();
 
-<<<<<<< HEAD
-=======
-        const IndexSet &index=view->indexSet();
-
->>>>>>> development
         GridParameters params;
         params.topology = GridParameters::TRIANGULAR;
 
@@ -229,11 +224,7 @@ public:
 
         barycentricVertices.conservativeResize(3,ent2Count+ent1Count+ent0Count);
 
-<<<<<<< HEAD
-         for (std::unique_ptr<EntityIterator<2>> it = view->entityIterator<2>();!it->finished();it->next()){
-=======
         for (std::unique_ptr<EntityIterator<2>> it = view->entityIterator<2>();!it->finished();it->next()){
->>>>>>> development
             const Entity<2> &entity = it->entity();
             const int ent2Number = index.entityIndex(entity);
             Matrix<double> corners;
