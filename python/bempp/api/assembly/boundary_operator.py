@@ -281,6 +281,9 @@ class ElementaryBoundaryOperator(BoundaryOperator):
             compression_rate = hmatrix_interface.compression_rate(weak_form)
             bempp.api.LOGGER.info(_end_hmat_assembly_message(
                 self.label, end_time - start_time, compression_rate, mem_size))
+        else:
+            bempp.api.LOGGER.info(_end_assembly_message(
+                self.label, end_time - start_time))
 
         return weak_form
 

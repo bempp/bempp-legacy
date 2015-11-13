@@ -65,16 +65,6 @@ def _check_create_init_dir():
 
 CONFIG_PATH, TMP_PATH = _check_create_init_dir()
 
-# Clean up function
-
-import atexit as _atexit
-@_atexit.register
-def clean_tmp():
-    import shutil
-    shutil.rmtree(TMP_PATH)
-
-
-
 # Get the path to Gmsh
 
 def _gmsh_path():
