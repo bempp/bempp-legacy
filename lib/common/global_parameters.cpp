@@ -51,7 +51,7 @@ ParameterList GlobalParameters::parameterList() {
 
   // Use polynomial interpolation instead of exponentials to assemble
   // Helmholtz or Maxwell type kernels.
-  parameters.put("options.assembly.enableInterpolationForOscillatoryKernels", false);
+  parameters.put("options.assembly.enableInterpolationForOscillatoryKernels", true);
 
   // Number of interpolation points per wavelength for oscillatory kernels.
   parameters.put("options.assembly.interpolationPointsPerWavelength", static_cast<int>(5000));
