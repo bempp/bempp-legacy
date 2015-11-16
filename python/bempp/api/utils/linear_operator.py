@@ -570,6 +570,7 @@ else:
     from scipy.sparse.linalg.interface import _SumLinearOperator
     from scipy.sparse.linalg.interface import _ProductLinearOperator
     from scipy.sparse.linalg.interface import _ScaledLinearOperator
+    from scipy.sparse.linalg.interface import aslinearoperator
 
         
                 

@@ -1,5 +1,13 @@
 
 def lu(A, b):
+    """Simple direct solver interface.
+
+    This function takes an operator and a grid function,
+    converts the operator into a dense matrix and solves
+    the system via LU decomposition. The result is again
+    returned as a grid function.
+
+    """
 
     from numpy.linalg import solve
     from bempp.api import GridFunction, as_matrix

@@ -2,9 +2,8 @@ cmake_minimum_required(VERSION 2.8.11)
 project(Bempp CXX)
 
 # Get version string
-string(TIMESTAMP date_string %y-%m-%d)
-
-set(Bempp_VERSION 2.9.9)
+file(STRINGS "VERSION" Bempp_VERSION LIMIT_COUNT 1)
+message("BEM++ Version ${Bempp_VERSION}")
 
 # Set a default build type if none was specified
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)

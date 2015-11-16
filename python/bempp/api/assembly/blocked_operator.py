@@ -56,19 +56,40 @@ class BlockedOperator(object):
 
         return discrete_operator
 
-    def strong_form(self):
+    def strong_form(self, mode='simple'):
 
         if not self._fill_complete():
             raise ValueError("Each row and column must have at least one operator")
 
-        discrete_operator = BlockedDiscreteOperator(self._m, self._n)
 
-        for i in range(self._m):
-            for j in range(self._n):
-                if self._operators[i, j] is not None:
-                    discrete_operator[i, j] = self._operators[i, j].strong_form()
+        if mode=='full':
+            discrete_operator = BlockedDiscreteOperator(self._m, self._n)
 
-        return discrete_operator
+            for i in range(self._m):
+                for j in range(self._n):
+                    if self._operators[i, j] is not None:
+                        discrete_operator[i, j] = self._operators[i, j].strong_form()
+            return discrete_operator           
+
+        elif mode=='simple':
+            from bempp.api import InverseSparseDiscreteBoundaryOperator
+            from bempp.api.operators.boundary.sparse import identity
+
+            blocked = BlockedDiscreteOperator(self.ndims[0], self.ndims[0])
+
+            for i in range(self.ndims[0]):
+                op = None
+                for j in range(self.ndims[1]):
+                    if self[i, j] is not None:
+                        op = self[i, j]
+                        break
+
+                blocked[i, i] = InverseSparseDiscreteBoundaryOperator(
+                        identity(op.range, op.dual_to_range, 
+                            op.dual_to_range).weak_form())
+            return blocked * self.weak_form() 
+        else:
+            raise ValueError("Unknown value for 'mode'. Allowed values are 'simple' and 'full'")
 
     def __add__(self, other):
 
@@ -86,6 +107,12 @@ class BlockedOperator(object):
                 else:
                     blocked_operator[i, j] = self[i, j] + other[i, j]
         return blocked_operator
+
+    def __neg__(self):
+        return self.__mul__(-1)
+
+    def __sub__(self, other):
+        return self.__add__(-other)
 
     def __mul__(self, other):
 
@@ -191,29 +218,6 @@ class BlockedDiscreteOperator(LinearOperator):
                 col_dim += self._cols[j]
             row_dim += self._rows[i]
         return res
-
-    def __mul__(self, x):
-
-        if _np.isscalar(x):
-            res = BlockedDiscreteOperator(self.ndims[0], self.ndims[1])
-            for i in range(self.ndims[0]):
-                for j in range(self.ndims[1]):
-                    op = self[i, j]
-                    if op is not None: res[i, j] = x * op
-            return res
-
-        if isinstance(x, _np.ndarray):
-            return self._matvec(x)
-
-        raise NotImplementedError("Cannot multiply with object of type {0}".format(str(type(x))))
-
-    def __rmul__(self, x):
-
-        return self * x
-
-    def __neg__(self):
-
-        return self.__mul__(-1)
 
     def _get_shape(self):
         return (_np.sum(self._rows), _np.sum(self._cols))

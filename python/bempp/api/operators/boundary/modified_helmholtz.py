@@ -236,7 +236,7 @@ def hypersingular(domain, range_, dual_to_range, wave_number,
 
         return term1 + term2
 
-def multitrace_operator(grid, wave_number, parameters=None):
+def multitrace_operator(grid, wave_number, parameters=None, spaces='linear'):
     """Return the modified Helmholtz multitrace operator.
 
     Parameters
@@ -249,6 +249,13 @@ def multitrace_operator(grid, wave_number, parameters=None):
         Parameters for the operator. If none given
         the default global parameter object
         `bempp.api.global_parameters` is used.
+    spaces: string
+        Choose 'linear' to assemble the operator
+        with continuous linear function spaces for the
+        Dirichlet and Neumann component (default). For
+        a dual pairing of a linear space for the Dirichlet
+        data and piecewise constant space for the Neumann
+        data choose 'dual'.
 
     """
 
@@ -269,45 +276,6 @@ def multitrace_operator(grid, wave_number, parameters=None):
 
     from bempp.api.operators.boundary import _common
     return _common.multitrace_operator_impl(grid, op(single_layer), op(double_layer),
-                                            op(hypersingular), parameters)
+                                            op(hypersingular), parameters, spaces)
 
 
-def interior_calderon_projector(grid, wave_number, parameters=None):
-    """Return the modified Helmholtz interior Calderon projector.
-
-    Parameters
-    ----------
-    grid : bempp.api.grid.Grid
-        The underlying grid for the multitrace operator
-    wave_number : complex
-        Wavenumber of the operator.
-    parameters : bempp.api.common.ParameterList
-        Parameters for the operator. If none given
-        the default global parameter object
-        `bempp.api.global_parameters` is used.
-
-    """
-
-    from .sparse import multitrace_identity
-
-    return .5 * multitrace_identity(grid, parameters) + multitrace_operator(grid, wave_number, parameters)
-
-def exterior_calderon_projector(grid, wave_number, parameters=None):
-    """Return the modified Helmholtz exterior Calderon projector.
-
-    Parameters
-    ----------
-    grid : bempp.api.grid.Grid
-        The underlying grid for the multitrace operator
-    wave_number : complex
-        Wavenumber of the operator.
-    parameters : bempp.api.common.ParameterList
-        Parameters for the operator. If none given
-        the default global parameter object
-        `bempp.api.global_parameters` is used.
-
-    """
-
-    from .sparse import multitrace_identity
-
-    return .5 * multitrace_identity(grid, parameters) - multitrace_operator(grid, wave_number, parameters)

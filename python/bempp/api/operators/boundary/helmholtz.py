@@ -157,7 +157,7 @@ def hypersingular(domain, range_, dual_to_range,
                wave_number / (1j), label, symmetry,
                use_slp=use_slp, parameters=parameters)
 
-def multitrace_operator(grid, wave_number, parameters=None):
+def multitrace_operator(grid, wave_number, parameters=None, spaces='linear'):
     """Return the Helmholtz multitrace operator.
 
     Parameters
@@ -170,11 +170,19 @@ def multitrace_operator(grid, wave_number, parameters=None):
         Parameters for the operator. If none given
         the default global parameter object
         `bempp.api.global_parameters` is used.
+    spaces: string
+        Choose 'linear' to assemble the operator
+        with continuous linear function spaces for the
+        Dirichlet and Neumann component (default). For
+        a dual pairing of a linear space for the Dirichlet
+        data and piecewise constant space for the Neumann
+        data choose 'dual'.
 
     """
 
     import bempp.api
-    return bempp.api.operators.boundary.modified_helmholtz.multitrace_operator(grid, wave_number/(1j), parameters)
+    return bempp.api.operators.boundary.modified_helmholtz.multitrace_operator(
+            grid, wave_number/(1j), parameters, spaces)
 
 def interior_calderon_projector(grid, wave_number, parameters=None):
     """Return the interior Calderon projector.
