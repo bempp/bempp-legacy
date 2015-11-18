@@ -36,7 +36,7 @@ public:
   BuffaChristiansenShapeset(){}
   BuffaChristiansenShapeset(Matrix<ValueType> coeffs) :m_coeffs(coeffs) {}
 
-  virtual int size() const { return 3; }
+  virtual int size() const { return m_coeffs.cols(); }
 
   virtual int order() const { return 1; }
 
@@ -78,7 +78,7 @@ public:
           for (int i = 0; i < data.values.extent(2); ++i) {
             for (int k=0; k < data.values.extent(0); ++k){
               data.values(k, dofIndex, i) = 0;
-              for (int j = 0; j < 3; ++j)
+              for (int j = 0; j < temp.values.extent(1); ++j)
                 data.values(k, dofIndex, i) += m_coeffs(j,dofIndex) * temp.values(k, j, i);
             }
           }
