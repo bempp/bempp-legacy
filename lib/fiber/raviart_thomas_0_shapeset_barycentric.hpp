@@ -64,7 +64,7 @@ public:
     if (localDofIndex != ALL_DOFS) {
 
       if (what & VALUES) {
-        data.values.set_size(1, 1, temp.values.extent(2));
+        data.values.set_size(temp.values.extent(0), 1, temp.values.extent(2));
         for (int i = 0; i < data.values.extent(2); ++i) {
           for (int k=0; k < data.values.extent(0); ++k){
             data.values(k, 0, i) = 0;

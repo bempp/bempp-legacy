@@ -270,18 +270,19 @@ void Nedelec1VectorSpaceBarycentric<BasisFunctionType>::assignDofsImpl() {
         const int edgeIndex = edges[element2Basis[i][j]];
         const int fineEdgeIndex = fineEdgeMap(sonIndex,j);
         const int globalDofIndex = globalDofsOfEdges[edgeIndex];
-        if (i == 0) {
+        if (j == 0) {
           dofPosition = 0.5 * (vertices.col(0) + vertices.col(1));
-        } else if (i == 1) {
+        } else if (j == 1) {
           dofPosition = 0.5 * (vertices.col(2) + vertices.col(0));
-        } else { // i == 2
+        } else { // j == 2
           dofPosition = 0.5 * (vertices.col(1) + vertices.col(2));
         }
 
         globalDof[j] = globalDofIndex;
         globalDofWeights[j]=acc(lowestIndicesOfElementsAdjacentToEdges, edgeIndex) == ent0Number ? 1. : -1.;
         m_global2localDofs[globalDofIndex].push_back(LocalDof(sonIndex,j));
-        setBoundingBoxReference<CoordinateType>(acc(m_globalDofBoundingBoxes, globalDofIndex), dofPosition);
+        if (acc(lowestIndicesOfElementsAdjacentToEdges, edgeIndex) == ent0Number && i==0)
+            setBoundingBoxReference<CoordinateType>(acc(m_globalDofBoundingBoxes, globalDofIndex), dofPosition);
         ++flatLocalDofCount;
       }
       if (i % 2 == 0) {

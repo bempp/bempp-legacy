@@ -126,6 +126,7 @@ template <typename BasisFunctionType>
 const typename BuffaChristiansenVectorSpace<
     BasisFunctionType>::CollectionOfShapesetTransformations &
 BuffaChristiansenVectorSpace<BasisFunctionType>::basisFunctionValue() const {
+
   return m_impl->transformations;
 }
 
@@ -164,6 +165,11 @@ void BuffaChristiansenVectorSpace<BasisFunctionType>::setElementVariant(
 
 template <typename BasisFunctionType>
 void BuffaChristiansenVectorSpace<BasisFunctionType>::assignDofsImpl() {
+
+/*
+
+*/
+
   int edgeCountCoarseGrid = m_originalGrid->leafView()->entityCount(1);
   int vertexCountCoarseGrid = m_originalGrid->leafView()->entityCount(2);
   int edgeCountFineGrid = m_view->entityCount(1);
@@ -311,6 +317,11 @@ void BuffaChristiansenVectorSpace<BasisFunctionType>::assignDofsImpl() {
     const int ent1Number = index.entityIndex(entity);
     const int glDof = globalDofsOfEdges[ent1Number];
 
+    Matrix<CoordinateType> vertices;
+    const Geometry &geo = entity.geometry();
+    geo.getCorners(vertices);
+    setBoundingBoxReference<CoordinateType>(acc(m_globalDofBoundingBoxes, glDof), 0.5 * (vertices.col(0)+vertices.col(1)));
+
     int faceNum = fineFacesOnEdgeDof(ent1Number,0);
     int N = edgeCountNextToVertex[coarseVerticesOnEdgeDof(ent1Number,0)];
 
@@ -389,17 +400,23 @@ void BuffaChristiansenVectorSpace<BasisFunctionType>::assignDofsImpl() {
   for(std::unique_ptr<EntityIterator<0>> it=m_view->entityIterator<0>();!it->finished();it->next()){
     const Entity<0> &entity = it->entity();
     int ent0Number = bindex.entityIndex(entity);
+/*    Matrix<BasisFunctionType> coeffs;
+    coeffs.conservativeResize(3,3);
+    for (int i=0; i!=3; ++i)
+      for (int j=0; j!=3; ++j)
+        coeffs(i,j)=fineFaceCoeffs[ent0Number](i,j);
+    m_elementShapesets[ent0Number] = Shapeset(coeffs);*/
     m_elementShapesets[ent0Number] = Shapeset(fineFaceCoeffs[ent0Number]);
   }
 
   SpaceHelper<BasisFunctionType>::initializeLocal2FlatLocalDofMap(
       flatLocalDofCount, m_local2globalDofs, m_flatLocal2localDofs);
+// */
 }
 template <typename BasisFunctionType>
 const Fiber::Shapeset<BasisFunctionType> & BuffaChristiansenVectorSpace<BasisFunctionType>::shapeset(
     const Entity<0> &element) const {
-  const GridView &view = this->gridView();
-  const Mapper &elementMapper = view.elementMapper();
+  const Mapper &elementMapper = m_view->elementMapper();
   int index = elementMapper.entityIndex(element);
   return m_elementShapesets[index];
 }

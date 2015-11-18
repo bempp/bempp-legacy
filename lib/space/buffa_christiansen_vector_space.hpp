@@ -30,8 +30,8 @@
 #include "../grid/grid_segment.hpp"
 #include "../grid/grid_view.hpp"
 #include "../common/types.hpp"
+//#include "../fiber/raviart_thomas_0_shapeset_barycentric.hpp"
 #include "../fiber/buffa_christiansen_shapeset.hpp"
-//#include "../fiber/raviart_thomas_0_shapeset.hpp"
 
 #include <boost/scoped_ptr.hpp>
 #include <map>
@@ -138,6 +138,9 @@ private:
 
 private:
   /** \cond PRIVATE */
+//  typedef Fiber::RaviartThomas0ShapesetBarycentric<BasisFunctionType> Shapeset;
+//  std::vector<typename Shapeset::BasisType> m_RelementShapesets;
+
   struct Impl;
   boost::scoped_ptr<Impl> m_impl;
   GridSegment m_segment;
@@ -156,8 +159,8 @@ private:
   std::vector<Shapeset> m_elementShapesets;
   mutable Matrix<int> m_sonMap;
   mutable shared_ptr<const Grid> m_originalGrid;
-  Shapeset m_RTBasisType1;
-  Shapeset m_RTBasisType2;
+//  Shapeset m_RTBasisType1;
+//  Shapeset m_RTBasisType2;
 
   /** \endcond */
 };
