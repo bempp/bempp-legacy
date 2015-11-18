@@ -294,7 +294,9 @@ void BuffaChristiansenVectorSpace<BasisFunctionType>::assignDofsImpl() {
   m_local2globalDofWeights.resize(elementCount);
   m_global2localDofs.clear();
   m_global2localDofs.resize(globalDofCount_);
-  size_t flatLocalDofCount = 0;
+  m_fineFaceCoeffs.clear();
+  m_fineFaceCoeffs.resize(faceCountFineGrid);
+  size_t flatLocalDofCount_ = 0;
 
   // Initialise bounding-box caches
   BoundingBox<CoordinateType> model;
@@ -309,8 +311,6 @@ void BuffaChristiansenVectorSpace<BasisFunctionType>::assignDofsImpl() {
 
 
 
-  std::vector<Matrix<BasisFunctionType>> fineFaceCoeffs;
-  fineFaceCoeffs.resize(faceCountFineGrid);
 
   for(std::unique_ptr<EntityIterator<1>> it=coarseView->entityIterator<1>();!it->finished();it->next()){
     const Entity<1> &entity = it->entity();
@@ -327,7 +327,7 @@ void BuffaChristiansenVectorSpace<BasisFunctionType>::assignDofsImpl() {
 
     faceNum = nextFaceAnticlockwise[faceNum];
     {// First edge bottom
-    Matrix<BasisFunctionType> &ffCoeff = fineFaceCoeffs[faceNum];
+    Matrix<BasisFunctionType> &ffCoeff = m_fineFaceCoeffs[faceNum];
     ffCoeff.conservativeResize(3,ffCoeff.cols()+1);
     ffCoeff(0,ffCoeff.cols()-1) = 0;
     ffCoeff(1,ffCoeff.cols()-1) = 0;
@@ -335,28 +335,28 @@ void BuffaChristiansenVectorSpace<BasisFunctionType>::assignDofsImpl() {
     // Go around loop
     for (int i=N-1; faceNum!=fineFacesOnEdgeDof(ent1Number,0);--i){
         {// Before
-        Matrix<BasisFunctionType> &ffCoeff = fineFaceCoeffs[faceNum];
+        Matrix<BasisFunctionType> &ffCoeff = m_fineFaceCoeffs[faceNum];
         ffCoeff(1,ffCoeff.cols()-1) = -i*1./(2*N);
         m_local2globalDofs[faceNum].push_back(glDof);
         m_local2globalDofWeights[faceNum].push_back(1.);
         m_global2localDofs[glDof].push_back(LocalDof(faceNum,ffCoeff.cols()-1));
-        ++flatLocalDofCount;    }
+        ++flatLocalDofCount_;    }
 
         faceNum = nextFaceAnticlockwise[faceNum];
         {// After
-        Matrix<BasisFunctionType> &ffCoeff = fineFaceCoeffs[faceNum];
+        Matrix<BasisFunctionType> &ffCoeff = m_fineFaceCoeffs[faceNum];
         ffCoeff.conservativeResize(3,ffCoeff.cols()+1);
         ffCoeff(0,ffCoeff.cols()-1) = i*1./(2*N);
         ffCoeff(1,ffCoeff.cols()-1) = 0;
         ffCoeff(2,ffCoeff.cols()-1) = 0;      }
     }
     {// First edge top
-    Matrix<BasisFunctionType> &ffCoeff = fineFaceCoeffs[faceNum];
+    Matrix<BasisFunctionType> &ffCoeff = m_fineFaceCoeffs[faceNum];
     ffCoeff(2,ffCoeff.cols()-1) = 1./2;
     m_local2globalDofs[faceNum].push_back(glDof);
         m_local2globalDofWeights[faceNum].push_back(1.);
     m_global2localDofs[glDof].push_back(LocalDof(faceNum,ffCoeff.cols()-1));
-    ++flatLocalDofCount;    }
+    ++flatLocalDofCount_;    }
 
 
 
@@ -364,7 +364,7 @@ void BuffaChristiansenVectorSpace<BasisFunctionType>::assignDofsImpl() {
     N = edgeCountNextToVertex[coarseVerticesOnEdgeDof(ent1Number,1)];
     faceNum = nextFaceAnticlockwise[faceNum];
     {// Second edge bottom
-    Matrix<BasisFunctionType> &ffCoeff = fineFaceCoeffs[faceNum];
+    Matrix<BasisFunctionType> &ffCoeff = m_fineFaceCoeffs[faceNum];
     ffCoeff.conservativeResize(3,ffCoeff.cols()+1);
     ffCoeff(0,ffCoeff.cols()-1) = 0;
     ffCoeff(1,ffCoeff.cols()-1) = 0;
@@ -372,47 +372,49 @@ void BuffaChristiansenVectorSpace<BasisFunctionType>::assignDofsImpl() {
     // Go around loop
     for (int i=N-1; faceNum!=fineFacesOnEdgeDof(ent1Number,1);--i){
         {// Before
-        Matrix<BasisFunctionType> &ffCoeff = fineFaceCoeffs[faceNum];
+        Matrix<BasisFunctionType> &ffCoeff = m_fineFaceCoeffs[faceNum];
         ffCoeff(1,ffCoeff.cols()-1) = i*1./(2*N);
         m_local2globalDofs[faceNum].push_back(glDof);
         m_local2globalDofWeights[faceNum].push_back(1.);
         m_global2localDofs[glDof].push_back(LocalDof(faceNum,ffCoeff.cols()-1));
-        ++flatLocalDofCount;    }
+        ++flatLocalDofCount_;    }
 
         faceNum = nextFaceAnticlockwise[faceNum];
         {// After
-        Matrix<BasisFunctionType> &ffCoeff = fineFaceCoeffs[faceNum];
+        Matrix<BasisFunctionType> &ffCoeff = m_fineFaceCoeffs[faceNum];
         ffCoeff.conservativeResize(3,ffCoeff.cols()+1);
         ffCoeff(0,ffCoeff.cols()-1) = -i*1./(2*N);
         ffCoeff(1,ffCoeff.cols()-1) = 0;
         ffCoeff(2,ffCoeff.cols()-1) = 0;      }
     }
     {// Second edge top
-    Matrix<BasisFunctionType> &ffCoeff = fineFaceCoeffs[faceNum];
+    Matrix<BasisFunctionType> &ffCoeff = m_fineFaceCoeffs[faceNum];
     ffCoeff(2,ffCoeff.cols()-1) = -1./2;
     m_local2globalDofs[faceNum].push_back(glDof);
         m_local2globalDofWeights[faceNum].push_back(1.);
     m_global2localDofs[glDof].push_back(LocalDof(faceNum,ffCoeff.cols()-1));
-    ++flatLocalDofCount;    }
+    ++flatLocalDofCount_;    }
   }
 
 
   for(std::unique_ptr<EntityIterator<0>> it=m_view->entityIterator<0>();!it->finished();it->next()){
     const Entity<0> &entity = it->entity();
     int ent0Number = bindex.entityIndex(entity);
-/*    Matrix<BasisFunctionType> coeffs;
-    coeffs.conservativeResize(3,3);
-    for (int i=0; i!=3; ++i)
-      for (int j=0; j!=3; ++j)
-        coeffs(i,j)=fineFaceCoeffs[ent0Number](i,j);
-    m_elementShapesets[ent0Number] = Shapeset(coeffs);*/
-    m_elementShapesets[ent0Number] = Shapeset(fineFaceCoeffs[ent0Number]);
+ // Matrix<BasisFunctionType> coeffs;
+ //   coeffs.conservativeResize(m_fineFaceCoeffs[ent0Number].rows(),m_fineFaceCoeffs[ent0Number].cols());//m_fineFaceCoeffs[ent0Number].rows(),m_fineFaceCoeffs[ent0Number].cols());
+ //   std::cout << ent0Number << ": " << m_fineFaceCoeffs[ent0Number].rows() << "," << m_fineFaceCoeffs[ent0Number].cols() << std::endl;
+ //   for (int i=0; i!=m_fineFaceCoeffs[ent0Number].cols(); ++i)
+ //     for (int j=0; j!=m_fineFaceCoeffs[ent0Number].rows(); ++j)
+ //       coeffs(i,j)=m_fineFaceCoeffs[ent0Number](i,j);
+ //   m_elementShapesets[ent0Number] = Shapeset(coeffs);
+    m_elementShapesets[ent0Number] = Shapeset(m_fineFaceCoeffs[ent0Number]);
   }
 
   SpaceHelper<BasisFunctionType>::initializeLocal2FlatLocalDofMap(
-      flatLocalDofCount, m_local2globalDofs, m_flatLocal2localDofs);
-// */
+      flatLocalDofCount_, m_local2globalDofs, m_flatLocal2localDofs);
+
 }
+
 template <typename BasisFunctionType>
 const Fiber::Shapeset<BasisFunctionType> & BuffaChristiansenVectorSpace<BasisFunctionType>::shapeset(
     const Entity<0> &element) const {
@@ -503,8 +505,8 @@ void BuffaChristiansenVectorSpace<BasisFunctionType>::getFlatLocalDofBoundingBox
   model.ubound.x = -std::numeric_limits<CoordinateType>::max();
   model.ubound.y = -std::numeric_limits<CoordinateType>::max();
   model.ubound.z = -std::numeric_limits<CoordinateType>::max();
-  const int flatLocalDofCount = m_flatLocal2localDofs.size();
-  bboxes.resize(flatLocalDofCount);
+  const int flatLocalDofCount_ = m_flatLocal2localDofs.size();
+  bboxes.resize(flatLocalDofCount_);
 
   const IndexSet &indexSet = m_view->indexSet();
   int elementCount = m_view->entityCount(0);
@@ -524,8 +526,9 @@ void BuffaChristiansenVectorSpace<BasisFunctionType>::getFlatLocalDofBoundingBox
 
   size_t flatLdofIndex = 0;
   Vector<CoordinateType> dofPosition;
-  for (size_t e = 0; e < m_local2globalDofs.size(); ++e)
-    for (size_t v = 0; v < acc(m_local2globalDofs, e).size(); ++v)
+  for (size_t e = 0; e < m_local2globalDofs.size(); ++e){
+    for (size_t v = 0; v < acc(m_local2globalDofs, e).size(); ++v){
+      std::cout << e<<","<<v<<"; ";
       if (acc(acc(m_local2globalDofs, e), v) >= 0) { // is this LDOF used?
         const Matrix<CoordinateType> &vertices = acc(elementCorners, e);
         BoundingBox<CoordinateType> &bbox = acc(bboxes, flatLdofIndex);
@@ -538,8 +541,8 @@ void BuffaChristiansenVectorSpace<BasisFunctionType>::getFlatLocalDofBoundingBox
         extendBoundingBox(bbox, vertices);
         setBoundingBoxReference<CoordinateType>(bbox, dofPosition);
         ++flatLdofIndex;
-      }
-  assert(flatLdofIndex == flatLocalDofCount);
+      }}}
+  assert(flatLdofIndex == flatLocalDofCount_);
 }
 
 template <typename BasisFunctionType>
@@ -683,3 +686,4 @@ FIBER_ITERATE_OVER_BASIS_TYPES(INSTANTIATE_FREE_FUNCTIONS);
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(BuffaChristiansenVectorSpace);
 
 } // namespace Bempp
+

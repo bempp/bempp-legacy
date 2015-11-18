@@ -148,12 +148,13 @@ private:
   bool m_putDofsOnBoundaries;
   int m_dofMode;
   std::unique_ptr<GridView> m_view;
-  Fiber::RaviartThomas0Shapeset<3, BasisFunctionType> m_triangleShapeset;
+//  Fiber::RaviartThomas0Shapeset<3, BasisFunctionType> m_triangleShapeset;
   std::vector<std::vector<GlobalDofIndex>> m_local2globalDofs;
   std::vector<std::vector<BasisFunctionType>> m_local2globalDofWeights;
   std::vector<std::vector<LocalDof>> m_global2localDofs;
   std::vector<LocalDof> m_flatLocal2localDofs;
   std::vector<BoundingBox<CoordinateType>> m_globalDofBoundingBoxes;
+  std::vector<Matrix<BasisFunctionType>> m_fineFaceCoeffs;
   mutable shared_ptr<Space<BasisFunctionType>> m_discontinuousSpace;
   mutable tbb::mutex m_discontinuousSpaceMutex;
   std::vector<Shapeset> m_elementShapesets;
