@@ -46,8 +46,8 @@ public:
 
     BasisData<ValueType> temp;
     if (what & VALUES) {
-        if (m_type == TYPE1) raviartBasis1.evaluate(what, points, ALL_DOFS, temp);
-        else                 raviartBasis2.evaluate(what, points, ALL_DOFS, temp);
+        if (m_type == TYPE1) raviartBasis1.evaluate(what, points, what, temp);
+        else                 raviartBasis2.evaluate(what, points, what, temp);
 
         data.values.set_size(temp.values.extent(0),temp.values.extent(1),temp.values.extent(2));
         for (int i=0; i!=temp.values.extent(1); ++i)
@@ -57,8 +57,8 @@ public:
           }
     }
     if (what & DERIVATIVES) {
-        if (m_type == TYPE1) raviartBasis1.evaluate(what, points, ALL_DOFS, temp);
-        else                 raviartBasis2.evaluate(what, points, ALL_DOFS, temp);
+        if (m_type == TYPE1) raviartBasis1.evaluate(what, points, what, temp);
+        else                 raviartBasis2.evaluate(what, points, what, temp);
 
         data.derivatives.set_size(temp.derivatives.extent(0),temp.derivatives.extent(1),temp.derivatives.extent(2),temp.derivatives.extent(3));
         for (int i=0; i!=temp.derivatives.extent(1); ++i)
