@@ -61,14 +61,15 @@ public:
         }
       }
       if (what & DERIVATIVES) {
-        data.derivatives.set_size(1, temp.derivatives.extent(1), 1,
+        data.derivatives.set_size(temp.derivatives.extent(0), temp.derivatives.extent(1), 1,
                                   temp.derivatives.extent(3));
-        for (int i = 0; i < data.derivatives.extent(1); ++i)
-          for (int j = 0; j < data.derivatives.extent(3); ++j) {
-            data.derivatives(0, i, 0, j) = 0;
-            for (int k = 0; k < data.derivatives.extent(2); ++k)
-              data.derivatives(0, i, 0, j) += m_coeffs(k,localDofIndex) * temp.derivatives(0, i, k, j);
-          }
+        for (int l = 0; l < data.derivatives.extent(0); ++l)
+          for (int i = 0; i < data.derivatives.extent(1); ++i)
+            for (int j = 0; j < data.derivatives.extent(3); ++j) {
+              data.derivatives(l, i, 0, j) = 0;
+              for (int k = 0; k < data.derivatives.extent(2); ++k)
+                data.derivatives(l, i, 0, j) += m_coeffs(k,localDofIndex) * temp.derivatives(l, i, k, j);
+            }
       }
 
     } else {
@@ -86,14 +87,15 @@ public:
       }
 
       if (what & DERIVATIVES) {
-        data.derivatives.set_size(1, temp.derivatives.extent(1), m_coeffs.cols(),
+        data.derivatives.set_size(temp.derivatives.extent(0), temp.derivatives.extent(1), m_coeffs.cols(),
                                   temp.derivatives.extent(3));
-        for (int dofIndex = 0; dofIndex < m_coeffs.cols(); ++dofIndex)
-          for (int i = 0; i < data.derivatives.extent(1); ++i)
-            for (int j = 0; j < data.derivatives.extent(3); ++j) {
-              data.derivatives(0, i, dofIndex, j) = 0;
-              for (int k = 0; k < data.derivatives.extent(2); ++k)
-                data.derivatives(0, i, dofIndex, j) += m_coeffs(k,dofIndex) * temp.derivatives(0, i, k, j);
+        for (int l = 0; l < data.derivatives.extent(0); ++l)
+          for (int dofIndex = 0; dofIndex < m_coeffs.cols(); ++dofIndex)
+            for (int i = 0; i < data.derivatives.extent(1); ++i)
+              for (int j = 0; j < data.derivatives.extent(3); ++j) {
+                data.derivatives(l, i, dofIndex, j) = 0;
+                for (int k = 0; k < data.derivatives.extent(2); ++k)
+                  data.derivatives(l, i, dofIndex, j) += m_coeffs(k,dofIndex) * temp.derivatives(l, i, k, j);
             }
       }
     }

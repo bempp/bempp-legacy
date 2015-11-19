@@ -75,15 +75,16 @@ public:
         }
       }
       if (what & DERIVATIVES) {
-        data.derivatives.set_size(1, temp.derivatives.extent(1), 1,
+        data.derivatives.set_size(temp.derivatives.extent(0), temp.derivatives.extent(1), 1,
                                   temp.derivatives.extent(3));
-        for (int i = 0; i < data.derivatives.extent(1); ++i)
-          for (int j = 0; j < data.derivatives.extent(3); ++j) {
-            data.derivatives(0, i, 0, j) = 0;
-            for (int k = 0; k < 3; ++k)
-              data.derivatives(0, i, 0, j) +=
-                  coeffs[typeIndex][localDofIndex][k] *
-                  temp.derivatives(0, i, k, j);
+        for (int l=0; l<temp.derivatives.extent(0); ++l)
+          for (int i = 0; i < data.derivatives.extent(1); ++i)
+            for (int j = 0; j < data.derivatives.extent(3); ++j) {
+              data.derivatives(l, i, 0, j) = 0;
+              for (int k = 0; k < 3; ++k)
+                data.derivatives(l, i, 0, j) +=
+                    coeffs[typeIndex][localDofIndex][k] *
+                    temp.derivatives(l, i, k, j);
           }
       }
 
@@ -103,16 +104,17 @@ public:
       }
 
       if (what & DERIVATIVES) {
-        data.derivatives.set_size(1, temp.derivatives.extent(1), 3,
+        data.derivatives.set_size(temp.derivatives.extent(0), temp.derivatives.extent(1), 3,
                                   temp.derivatives.extent(3));
-        for (int dofIndex = 0; dofIndex < 3; ++dofIndex)
-          for (int i = 0; i < data.derivatives.extent(1); ++i)
-            for (int j = 0; j < data.derivatives.extent(3); ++j) {
-              data.derivatives(0, i, dofIndex, j) = 0;
-              for (int k = 0; k < 3; ++k)
-                data.derivatives(0, i, dofIndex, j) +=
-                    coeffs[typeIndex][dofIndex][k] *
-                    temp.derivatives(0, i, k, j);
+        for (int l=0; l<temp.derivatives.extent(0); ++l)
+          for (int dofIndex = 0; dofIndex < 3; ++dofIndex)
+            for (int i = 0; i < data.derivatives.extent(1); ++i)
+              for (int j = 0; j < data.derivatives.extent(3); ++j) {
+                data.derivatives(l, i, dofIndex, j) = 0;
+                for (int k = 0; k < 3; ++k)
+                  data.derivatives(l, i, dofIndex, j) +=
+                      coeffs[typeIndex][dofIndex][k] *
+                      temp.derivatives(l, i, k, j);
             }
       }
     }
