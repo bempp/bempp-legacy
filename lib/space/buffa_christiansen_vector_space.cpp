@@ -401,13 +401,6 @@ void BuffaChristiansenVectorSpace<BasisFunctionType>::assignDofsImpl() {
   for(std::unique_ptr<EntityIterator<0>> it=m_view->entityIterator<0>();!it->finished();it->next()){
     const Entity<0> &entity = it->entity();
     int ent0Number = bindex.entityIndex(entity);
- // Matrix<BasisFunctionType> coeffs;
- //   coeffs.conservativeResize(m_fineFaceCoeffs[ent0Number].rows(),m_fineFaceCoeffs[ent0Number].cols());//m_fineFaceCoeffs[ent0Number].rows(),m_fineFaceCoeffs[ent0Number].cols());
- //   std::cout << ent0Number << ": " << m_fineFaceCoeffs[ent0Number].rows() << "," << m_fineFaceCoeffs[ent0Number].cols() << std::endl;
- //   for (int i=0; i!=m_fineFaceCoeffs[ent0Number].cols(); ++i)
- //     for (int j=0; j!=m_fineFaceCoeffs[ent0Number].rows(); ++j)
- //       coeffs(i,j)=m_fineFaceCoeffs[ent0Number](i,j);
- //   m_elementShapesets[ent0Number] = Shapeset(coeffs);
     m_elementShapesets[ent0Number] = Shapeset(m_fineFaceCoeffs[ent0Number]);
   }
 
