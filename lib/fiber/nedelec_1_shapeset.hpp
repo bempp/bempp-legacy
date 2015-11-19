@@ -61,7 +61,7 @@ public:
 
     BasisData<ValueType> temp;
     if (what & VALUES) {
-        raviartBasis.evaluate(what, points, what, temp);
+        raviartBasis.evaluate(what, points, LocalDofIndex, temp);
 
         data.values.set_size(temp.values.extent(0),temp.values.extent(1),temp.values.extent(2));
         for (int i=0; i!=temp.values.extent(1); ++i)
@@ -71,7 +71,7 @@ public:
           }
     }
     if (what & DERIVATIVES) {
-        raviartBasis.evaluate(what, points, what, temp);
+        raviartBasis.evaluate(what, points, LocalDofIndex, temp);
 
         data.derivatives.set_size(temp.derivatives.extent(0),temp.derivatives.extent(1),temp.derivatives.extent(2),temp.derivatives.extent(3));
         for (int i=0; i!=temp.derivatives.extent(1); ++i)
