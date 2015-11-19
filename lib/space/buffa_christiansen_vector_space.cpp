@@ -320,6 +320,7 @@ void BuffaChristiansenVectorSpace<BasisFunctionType>::assignDofsImpl() {
     Matrix<CoordinateType> vertices;
     const Geometry &geo = entity.geometry();
     geo.getCorners(vertices);
+    extendBoundingBox(acc(m_globalDofBoundingBoxes, glDof), vertices);
     setBoundingBoxReference<CoordinateType>(acc(m_globalDofBoundingBoxes, glDof), 0.5 * (vertices.col(0)+vertices.col(1)));
 
     int faceNum = fineFacesOnEdgeDof(ent1Number,0);
