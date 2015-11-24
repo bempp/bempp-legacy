@@ -8,6 +8,13 @@ www.bempp.org
 History
 =======
 
+3.0.1 (24 November 2015)
+------------------------
+Released version 3.0.1
+
+* Fixed bug in export function
+
+
 3.0.0 (14 November 2015)
 ------------------------
 Released version 3.0.0

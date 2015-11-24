@@ -265,7 +265,7 @@ def export(**kwargs):
     vertices = OrderedDict([(vertex_index_to_file_key_map[index_set.entity_index(vertex)],vertex.geometry.corners[:,0])
         for vertex in vertex_iterator])
     elements = OrderedDict([(element_index_to_file_key_map[index_set.entity_index(element)],
-        {'data':[element_index_to_file_key_map[index_set.sub_entity_index(element,n,2)] for n in range(3)],
+        {'data':[vertex_index_to_file_key_map[index_set.sub_entity_index(element,n,2)] for n in range(3)],
          'domain_index':element.domain}) for element in element_iterator])
 
     interface.add_grid_data(vertices,elements)
