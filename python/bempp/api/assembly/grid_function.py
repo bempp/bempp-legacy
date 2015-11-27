@@ -181,6 +181,25 @@ class GridFunction(object):
                 np.asarray(weights)
         return self.space.evaluate_local_basis(element, local_coordinates, dof_values)
 
+    def sum(self):
+        """Integrate the function over the grid."""
+
+        from bempp.api.integration import gauss_triangle_points_and_weights
+        import numpy as np
+
+        n = self.component_count
+        res = np.zeros((n,1),dtype='float64')
+        accuracy_order = self.parameters.quadrature.far.single_order
+        points, weights = gauss_triangle_points_and_weights(accuracy_order)
+
+        for element in self.grid.leaf_view.entity_iterator(0):
+            integration_elements = element.geometry.integration_elements(points)
+            res += np.sum(self.evaluate(element, points) * weights * integration_elements, 
+                    axis=1)
+
+        return res
+
+
     def l2_norm(self, element=None):
         """Return the L^2 norm of the function on a single element or in total."""
 
@@ -292,7 +311,7 @@ class GridFunction(object):
     @property
     def component_count(self):
         """Return the number of components of the grid function values."""
-        return self.space.codomainDimension
+        return self.space.codomain_dimension
 
     @property
     def dtype(self):

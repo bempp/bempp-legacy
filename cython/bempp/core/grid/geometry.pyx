@@ -1,11 +1,24 @@
 from bempp.core.utils cimport Matrix
+from bempp.core.utils cimport RowVector
 from bempp.core.utils.eigen cimport eigen_matrix_to_np_float64
+from bempp.core.utils.eigen cimport eigen_row_vector_to_np_float64
+from bempp.core.utils.eigen cimport np_to_eigen_matrix_float64
 from cython.operator cimport dereference as deref
 import numpy as _np
 cimport numpy as _np
 
 
 cdef class Geometry0:
+
+    def integration_elements(self, local_coordinates):
+        """Return the integration elements for the given local coordinates."""
+
+        cdef Matrix[double] local_vector = np_to_eigen_matrix_float64(local_coordinates)
+        cdef RowVector[double] int_elements
+
+        self.impl_.getIntegrationElements(local_vector, int_elements)
+
+        return eigen_row_vector_to_np_float64(int_elements)
 
 
     property corners:
@@ -46,6 +59,15 @@ cdef class Geometry0:
 
 cdef class Geometry1:
 
+    def integration_elements(self, local_coordinates):
+        """Return the integration elements for the given local coordinates."""
+
+        cdef Matrix[double] local_vector = np_to_eigen_matrix_float64(local_coordinates)
+        cdef RowVector[double] int_elements
+
+        self.impl_.getIntegrationElements(local_vector, int_elements)
+
+        return eigen_row_vector_to_np_float64(int_elements)
 
     property corners:
         """Corners of entity"""
@@ -84,6 +106,16 @@ cdef class Geometry1:
             return self.impl_.volume()
 
 cdef class Geometry2:
+    
+    def integration_elements(self, local_coordinates):
+        """Return the integration elements for the given local coordinates."""
+
+        cdef Matrix[double] local_vector = np_to_eigen_matrix_float64(local_coordinates)
+        cdef RowVector[double] int_elements
+
+        self.impl_.getIntegrationElements(local_vector, int_elements)
+
+        return eigen_row_vector_to_np_float64(int_elements)
 
     property corners:
         """Corners of entity"""

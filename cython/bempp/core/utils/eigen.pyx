@@ -20,6 +20,14 @@ cdef Vector[complex_double] np_to_eigen_vector_complex128(np.ndarray x):
     cdef double complex[::1] buf = np.require(x,dtype='complex128',requirements=['A','F'])
     return copy_buf_to_vec[complex_double](<complex_double*>&buf[0],buf.shape[0])
 
+cdef RowVector[double] np_to_eigen_row_vector_float64(np.ndarray x):
+    cdef double[::1] buf = np.require(x,dtype='float64',requirements=['A','F'])
+    return copy_buf_to_row_vec[double](<double*>&buf[0],buf.shape[0])
+
+cdef RowVector[complex_double] np_to_eigen_row_vector_complex128(np.ndarray x):
+    cdef double complex[::1] buf = np.require(x,dtype='complex128',requirements=['A','F'])
+    return copy_buf_to_row_vec[complex_double](<complex_double*>&buf[0],buf.shape[0])
+
 @cython.boundscheck(False)
 @cython.wraparound(False)
 cdef np.ndarray eigen_matrix_to_np_float64(const Matrix[double]& x):
@@ -75,6 +83,32 @@ cdef np.ndarray eigen_vector_to_np_complex128(const Vector[complex_double]& x):
     cdef np.ndarray[double complex,ndim=1,mode='fortran'] res = np.empty(rows,dtype="complex128",order='F')
 
     for i in range(rows):
+        res[i] = deref(<double complex*>&x.value(i))
+    return res
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+cdef np.ndarray eigen_row_vector_to_np_float64(const RowVector[double]& x):
+    
+    cdef int cols = x.cols()
+    cdef int i
+
+    cdef np.ndarray[double,ndim=1,mode='fortran'] res = np.empty(cols,dtype="float64",order='F')
+
+    for i in range(cols):
+        res[i] = deref(<double*>&x.value(i))
+    return res
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+cdef np.ndarray eigen_row_vector_to_np_complex128(const RowVector[complex_double]& x):
+    
+    cdef int cols = x.cols()
+    cdef int i
+
+    cdef np.ndarray[double complex,ndim=1,mode='fortran'] res = np.empty(cols,dtype="complex128",order='F')
+
+    for i in range(cols):
         res[i] = deref(<double complex*>&x.value(i))
     return res
 

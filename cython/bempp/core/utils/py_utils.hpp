@@ -60,6 +60,17 @@ namespace Bempp {
     }
 
     template <typename T>
+    RowVector<T> copy_buf_to_row_vec(T* buf, int n){
+
+        RowVector<T> res(n);
+        for (int i = 0; i < n; ++i)
+            res(i) = buf[i];
+
+        return res;
+
+    }
+
+    template <typename T>
     Matrix<T> copy_buf_to_mat(T* buf, int m, int n){
 
         Matrix<T> res(m,n);

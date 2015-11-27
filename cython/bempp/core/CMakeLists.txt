@@ -14,6 +14,7 @@ add_dependencies(bempp.core cython-headers)
 add_dependencies(cython bempp.core)
 
 add_subdirectory(utils)
+add_subdirectory(fiber)
 add_subdirectory(common)
 add_subdirectory(grid)
 add_subdirectory(space)

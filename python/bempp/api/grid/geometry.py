@@ -8,6 +8,11 @@ class Geometry(object):
         self._codimension = codimension
         self._impl = impl
 
+    def integration_elements(self, local_coordinates):
+        """Return the integration elements associated with the given local coordinates."""
+
+        return self._impl.integration_elements(local_coordinates)
+
     @property
     def corners(self):
         """Return a (3xn) array whose columns are the corners of the entity."""

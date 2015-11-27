@@ -57,6 +57,15 @@ class Space(object):
         """
         return self._impl.get_global_dofs(element._impl, dof_weights)
 
+    def shapeset(self, element):
+        """Return the Shapeset associated with a given element."""
+
+        from bempp.api.space.shapeset import Shapeset
+        return Shapeset(
+                self._impl.shapeset(element._impl))
+
+
+
     def evaluate_local_basis(self, element, local_coordinates,
                              local_coefficients):
         """Evaluate a local basis on a given element."""

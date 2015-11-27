@@ -3,6 +3,7 @@ from bempp.core.utils cimport eigen_matrix_to_np_float64
 from bempp.core.utils cimport catch_exception
 from bempp.core.utils cimport shared_ptr, complex_double
 from bempp.core.utils cimport Connection, SlotInterface
+from bempp.core.fiber cimport c_Shapeset
 from bempp.core.grid.grid cimport Grid, c_Grid
 from bempp.core.grid.entity cimport Entity0, c_Entity
 from bempp.core.grid.codim_template cimport codim_zero
@@ -27,6 +28,7 @@ cdef extern from "bempp/space/space.hpp":
         void getNormalsAtGlobalDofInterpolationPoints(Matrix[double]& normals) const
         void getGlobalDofs(const c_Entity[codim_zero]&, vector[int]&, vector[double]&) const
         shared_ptr[const c_Space[BASIS]] discontinuousSpace(const shared_ptr[const c_Space[BASIS]]) const
+        const c_Shapeset & shapeset(const c_Entity[codim_zero]&)
 
 
 cdef class Space:

@@ -8,6 +8,7 @@ from bempp.core.utils cimport np_to_eigen_matrix_float64
 from bempp.core.utils cimport np_to_eigen_matrix_complex128
 from bempp.core.utils cimport np_to_eigen_vector_float64
 from bempp.core.utils cimport np_to_eigen_vector_complex128
+from bempp.core.fiber cimport Shapeset
 from libcpp.vector cimport vector
 
 
@@ -100,6 +101,13 @@ cdef class Space:
             return global_dofs_vec,local_dof_weights_vec
         else:
             return global_dofs_vec
+
+    def shapeset(self, Entity0 element):
+
+        cdef Shapeset shapeset = Shapeset()
+        shapeset.impl_ = &deref(self.impl_).shapeset(deref(element.impl_))
+        return shapeset
+
         
     def evaluate_local_basis(self, Entity0 element, object local_coordinates, object local_coefficients):
         """Evaluate local basis functions on a given element."""
