@@ -181,7 +181,7 @@ class GridFunction(object):
                 np.asarray(weights)
         return self.space.evaluate_local_basis(element, local_coordinates, dof_values)
 
-    def sum(self):
+    def integral(self):
         """Integrate the function over the grid."""
 
         from bempp.api.integration import gauss_triangle_points_and_weights
