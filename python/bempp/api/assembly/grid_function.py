@@ -191,7 +191,7 @@ class GridFunction(object):
         return self.space.evaluate_surface_gradient(element, local_coordinates, dof_values)
         
 
-    def integrate(self):
+    def integrate(self, element=None):
         """Integrate the function over the grid or a single element."""
 
         from bempp.api.integration import gauss_triangle_points_and_weights
