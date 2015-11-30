@@ -38,6 +38,8 @@ cdef class Space:
 cdef extern from "bempp/core/space/local_evaluator.hpp" namespace "Bempp":
     cdef Matrix[T] c_evaluateLocalBasis "Bempp::evaluateLocalBasis"[T](const c_Space[double]&,
             const c_Entity[codim_zero]&, const Matrix[double]&, const Vector[T]&) except +catch_exception
+    cdef Matrix[T] c_evaluateSurfaceGradients "Bempp::evaluateSurfaceGradients"[T](const c_Space[double]&,
+            const c_Entity[codim_zero]&, const Matrix[double]&, const Vector[T]&) except +catch_exception
 
 # Define all possible spaces
 

@@ -221,4 +221,22 @@ def function_space(Grid grid, kind, order, domains=None, cbool closed=True):
 
     return s
 
+def evaluate_local_surface_gradient_ext(Space space, Entity0 element, object local_coordinates, object local_coefficients):
+    """Evaluate the surface gradient on a given element."""
+
+    import numpy as np
+
+    if np.isreal(local_coefficients).all():
+        coeffs_real = local_coefficients
+        return eigen_matrix_to_np_float64(
+                c_evaluateSurfaceGradients[double](deref(space.impl_), deref(element.impl_), 
+                                            np_to_eigen_matrix_float64(local_coordinates),
+                                            np_to_eigen_vector_float64(local_coefficients)))
+    else:
+        coeffs_complex = local_coefficients
+        return eigen_matrix_to_np_complex128(
+                c_evaluateSurfaceGradients[complex_double](deref(space.impl_), deref(element.impl_), 
+                                                    np_to_eigen_matrix_float64(local_coordinates),
+                                                    np_to_eigen_vector_complex128(local_coefficients)))
+
 

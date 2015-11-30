@@ -121,6 +121,12 @@ class Space(object):
         """
         return self._impl.global_dof_normals
 
+def _evaluate_local_surface_gradient(space, element, local_coordinates, local_coefficients):
+    """Evaluate the local surface gradient on a given element."""
+    from bempp.core.space.space import evaluate_local_surface_gradient_ext
+    return evaluate_local_surface_gradient_ext(space._impl, element._impl, 
+                                           local_coordinates,
+                                           local_coefficients)
 
 def function_space(grid, kind, order, domains=None, closed=True):
     """ Return a space defined over a given grid.
@@ -173,7 +179,13 @@ def function_space(grid, kind, order, domains=None, closed=True):
     >>> space = function_space(grid,"P",1)
 
     """
+    from types import MethodType
     from bempp.core.space.space import function_space as _function_space
-    return Space(_function_space(grid._impl, kind, order, domains, closed))
+    space = Space(_function_space(grid._impl, kind, order, domains, closed))
 
+    # Add a surface gradient function for spaces that support it
+    if kind == "P" or kind == "DP":
+        space.evaluate_surface_gradient = MethodType(_evaluate_local_surface_gradient, space)
+
+    return space
 

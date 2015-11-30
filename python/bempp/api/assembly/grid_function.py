@@ -181,8 +181,18 @@ class GridFunction(object):
                 np.asarray(weights)
         return self.space.evaluate_local_basis(element, local_coordinates, dof_values)
 
-    def integral(self):
-        """Integrate the function over the grid."""
+    def evaluate_surface_gradient(self, element, local_coordinates):
+        """Evaluate surface gradient of grid function (only scalar spaces supported)."""
+
+        import numpy as np
+        global_dofs, weights = self.space.get_global_dofs(element, dof_weights=True)
+        dof_values = np.asarray([self.coefficients[dof] if dof >= 0 else 0 for dof in global_dofs]) * \
+                np.asarray(weights)
+        return self.space.evaluate_surface_gradient(element, local_coordinates, dof_values)
+        
+
+    def integrate(self):
+        """Integrate the function over the grid or a single element."""
 
         from bempp.api.integration import gauss_triangle_points_and_weights
         import numpy as np
@@ -192,12 +202,34 @@ class GridFunction(object):
         accuracy_order = self.parameters.quadrature.far.single_order
         points, weights = gauss_triangle_points_and_weights(accuracy_order)
 
-        for element in self.grid.leaf_view.entity_iterator(0):
+        element_list = [element] if element is not None else list(self.grid.leaf_view.entity_iterator(0))
+
+        for element in element_list:
             integration_elements = element.geometry.integration_elements(points)
             res += np.sum(self.evaluate(element, points) * weights * integration_elements, 
                     axis=1)
 
         return res
+
+
+    def surface_grad_norm(self, element=None):
+        """Return the norm of the surface gradient on a single element or in total."""
+
+        from bempp.api.integration import gauss_triangle_points_and_weights
+        import numpy as np
+
+        res = 0
+        accuracy_order = self.parameters.quadrature.far.single_order
+        points, weights = gauss_triangle_points_and_weights(accuracy_order)
+
+        element_list = [element] if element is not None else list(self.grid.leaf_view.entity_iterator(0))
+
+        for element in element_list:
+            integration_elements = element.geometry.integration_elements(points)
+            abs_surface_gradient_square = np.sum(self.evaluate_surface_gradient(element, points)**2, axis=0)
+            res += np.sum(abs_surface_gradient_square * weights * integration_elements) 
+
+        return np.sqrt(res)
 
 
     def l2_norm(self, element=None):
