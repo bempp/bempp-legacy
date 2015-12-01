@@ -29,6 +29,8 @@
 #include "grid_view.hpp"
 #include "index_set.hpp"
 
+#include <dune/geometry/referenceelements.hh>
+
 #include <stdexcept>
 
 namespace Bempp {
@@ -49,6 +51,30 @@ std::set<int> entitiesWithNonpositiveX(const GridView &view) {
     it->next();
   }
   return result;
+}
+
+// Add indices of all subentities ("children") of facet \p facetIndex of
+// entity \p entity to \p excludedEntities.
+template <int gridDim>
+void excludeFacetChildren(const Entity<0> &entity,
+                          int facetIndex,
+                          const IndexSet &indexSet,
+                          boost::array<std::set<int>, 4> &excludedEntities)
+{
+  const int facetCodim = 1;
+
+  const GeometryType type = entity.type();
+  // The floating-point type used here has no influence on the entity topology,
+  // which is all we're interested in. So we just use double.
+  const auto &refElement = Dune::ReferenceElements<double, gridDim>::general(type);
+  for (int childCodim = 2; childCodim <= gridDim; ++childCodim) {
+    const int childCount = refElement.size(facetIndex, facetCodim, childCodim);
+    for (int j = 0; j < childCount; ++j) {
+      const int childIndex = refElement.subEntity(facetIndex, facetCodim, j, childCodim);
+      const int childGlobalIndex = indexSet.subEntityIndex(entity, childIndex, childCodim);
+      excludedEntities[childCodim].insert(childGlobalIndex);
+    }
+  }
 }
 
 } // namespace
@@ -96,14 +122,14 @@ GridSegment GridSegment::wholeGrid(const Grid &grid, int level) {
 
 GridSegment GridSegment::openDomain(const Grid& grid, int domain, int level)
 {
-
     std::vector<int> domains;
     domains.push_back(domain);
     return GridSegment::openDomain(grid, domains, level);
 }
 
-GridSegment GridSegment::openDomain(const Grid &grid, 
-        const std::vector<int>& domains, int level) {
+GridSegment GridSegment::openDomain(
+        const Grid &grid, const std::vector<int>& domains, int level)
+{
   const int gridDim = grid.dim();
   std::unique_ptr<GridView> view;
   if (level == -1)
@@ -112,41 +138,78 @@ GridSegment GridSegment::openDomain(const Grid &grid,
     view = grid.levelView(level);
   const IndexSet &indexSet = view->indexSet();
 
-  std::set<int> domainSet(domains.begin(),domains.end());
+  std::set<int> domainSet(domains.begin(), domains.end());
 
-  boost::array<std::vector<bool>, 4> entirelyInDomain;
-  for (int codim = 1; codim <= gridDim; ++codim)
-    entirelyInDomain[codim].resize(view->entityCount(codim), true);
+  // In this function, we refer to codim-0 entities as "elements"
+  // and to codim-1 entities as "facets".
+  const int elementCodim = 0;
+  const int facetCodim = 1;
 
+  // Sets to be used to construct the GridSegment
   boost::array<std::set<int>, 4> excludedEntities;
-  std::unique_ptr<EntityIterator<0>> it = view->entityIterator<0>();
+
+  // Number of elements from the specified domains adjacent to each facet
+  std::vector<unsigned char> neighbourElementCount(
+      view->entityCount(facetCodim), (unsigned char) 0);
+
+  // Mark elements not belonging to the specified domains and count
+  // facet neighbours
+  std::unique_ptr<EntityIterator<elementCodim>> it = view->entityIterator<elementCodim>();
   while (!it->finished()) {
-    const Entity<0> &e = it->entity();
-    if (!domainSet.count(e.domain())) {
-      excludedEntities[0].insert(indexSet.entityIndex(e));
+    const Entity<elementCodim> &e = it->entity();
+    if (domainSet.count(e.domain())) {
+      // Element is in domain
+      const int subEntityCount = e.subEntityCount<facetCodim>();
+      for (int i = 0; i < subEntityCount; ++i) {
+        const int index = indexSet.subEntityIndex(e, i, facetCodim);
+        ++acc(neighbourElementCount, index);
+      }
+    } else {
+      // Element is not in domain
+      excludedEntities[elementCodim].insert(indexSet.entityIndex(e));
       for (int codim = 1; codim <= gridDim; ++codim) {
-        int subEntityCount =
-            (codim == 1) ? e.subEntityCount<1>() : (codim == 2)
-                                                       ? e.subEntityCount<2>()
-                                                       : e.subEntityCount<3>();
+        const int subEntityCount =
+          (codim == 1) ? e.subEntityCount<1>() :
+          (codim == 2) ? e.subEntityCount<2>() : e.subEntityCount<3>();
         for (int i = 0; i < subEntityCount; ++i) {
           int index = indexSet.subEntityIndex(e, i, codim);
-          acc(entirelyInDomain[codim], index) = false;
+          excludedEntities[codim].insert(index);
         }
       }
     }
     it->next();
   }
-  for (int codim = 1; codim <= gridDim; ++codim)
-    for (int index = 0; index < entirelyInDomain[codim].size(); ++index)
-      if (!acc(entirelyInDomain[codim], index))
-        excludedEntities[codim].insert(index);
+
+  // Mark boundary facets
+  std::set<int> boundaryFacets;
+  for (int index = 0; index < neighbourElementCount.size(); ++index)
+    if (neighbourElementCount[index] == 1)
+      boundaryFacets.insert(index);
+  excludedEntities[facetCodim].insert(boundaryFacets.begin(),
+                                      boundaryFacets.end());
+
+  // Mark children (higher-codim subentities) of boundary facets
+  it = view->entityIterator<elementCodim>();
+  while (!it->finished()) {
+    const Entity<elementCodim> &e = it->entity();
+    const int facetCount = e.subEntityCount<facetCodim>();
+    for (int i = 0; i < facetCount; ++i) {
+      const int facetGlobalIndex = indexSet.subEntityIndex(e, i, facetCodim);
+      if (boundaryFacets.count(facetGlobalIndex)) {
+        if (gridDim == 2)
+          excludeFacetChildren<2>(e, i, indexSet, excludedEntities);
+        else if (gridDim == 3)
+          excludeFacetChildren<3>(e, i, indexSet, excludedEntities);
+      }
+    }
+    it->next();
+  }
+
   return GridSegment(view->entityCount(0), view->entityCount(1),
                      view->entityCount(2), view->entityCount(3),
                      excludedEntities[0], excludedEntities[1],
                      excludedEntities[2], excludedEntities[3]);
 }
-
 
 GridSegment GridSegment::closedDomain(const Grid &grid,
         int domain, int level)
@@ -158,7 +221,7 @@ GridSegment GridSegment::closedDomain(const Grid &grid,
 
 }
 
-GridSegment GridSegment::closedDomain(const Grid &grid, 
+GridSegment GridSegment::closedDomain(const Grid &grid,
         const std::vector<int>& domains, int level) {
   const int gridDim = grid.dim();
   std::unique_ptr<GridView> view;
@@ -316,7 +379,7 @@ GridSegment AdaptiveGridSegmentFactory::update() const
     if (m_whole_grid)
         return GridSegment::wholeGrid(*m_grid, -1);
 
-    return (m_closed) ? 
+    return (m_closed) ?
         GridSegment::closedDomain(*m_grid, m_domains, -1) :
         GridSegment::openDomain(*m_grid, m_domains, -1);
 }
