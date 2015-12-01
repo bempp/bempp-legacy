@@ -147,7 +147,7 @@ cdef class Space:
             deref(self.impl_).getNormalsAtGlobalDofInterpolationPoints(data)
             return eigen_matrix_to_np_float64(data)
 
-def function_space(Grid grid, kind, order, domains=None, cbool closed=True):
+def function_space(Grid grid, kind, order, domains=None, cbool closed=True, cbool strictly_on_domains=False):
 
     cdef Space s = Space()
     cdef Grid bary_grid
@@ -160,24 +160,31 @@ def function_space(Grid grid, kind, order, domains=None, cbool closed=True):
                         shared_ptr[c_Space[double]](adaptivePiecewiseLinearContinuousScalarSpace[double](grid.impl_))))
             else:
                 s.impl_.assign(reverse_const_pointer_cast(
-                        shared_ptr[c_Space[double]](adaptivePiecewiseLinearContinuousScalarSpace[double](grid.impl_, domains, closed))))
+                        shared_ptr[c_Space[double]](adaptivePiecewiseLinearContinuousScalarSpace[double](grid.impl_, domains, closed, strictly_on_domains))))
         else:
             if domains is None:
                 s.impl_.assign(reverse_const_pointer_cast(
                         shared_ptr[c_Space[double]](adaptivePiecewisePolynomialContinuousScalarSpace[double](grid.impl_, order))))
             else:
                 s.impl_.assign(reverse_const_pointer_cast(
-                        shared_ptr[c_Space[double]](adaptivePiecewisePolynomialContinuousScalarSpace[double](grid.impl_, order, domains, closed))))
+                        shared_ptr[c_Space[double]](adaptivePiecewisePolynomialContinuousScalarSpace[double](grid.impl_, order, domains, closed, strictly_on_domains))))
     elif kind=="DP":
         if not (order>=0 and order <=10):
             raise ValueError("Order must be between 0 and 10")
-        if (order==0):
+        if order==0:
             if domains is None:
                 s.impl_.assign(reverse_const_pointer_cast(
                         shared_ptr[c_Space[double]](adaptivePiecewiseConstantScalarSpace[double](grid.impl_))))
             else:
                 s.impl_.assign(reverse_const_pointer_cast(
                         shared_ptr[c_Space[double]](adaptivePiecewiseConstantScalarSpace[double](grid.impl_, domains, closed))))
+        elif order==1:
+            if domains is None:
+                s.impl_.assign(reverse_const_pointer_cast(
+                        shared_ptr[c_Space[double]](adaptivePiecewiseLinearDiscontinuousScalarSpace[double](grid.impl_))))
+            else:
+                s.impl_.assign(reverse_const_pointer_cast(
+                        shared_ptr[c_Space[double]](adaptivePiecewiseLinearDiscontinuousScalarSpace[double](grid.impl_, domains, closed, strictly_on_domains))))
         else:
             if domains is None:
                 s.impl_.assign(reverse_const_pointer_cast(

@@ -128,7 +128,7 @@ def _evaluate_local_surface_gradient(space, element, local_coordinates, local_co
                                            local_coordinates,
                                            local_coefficients)
 
-def function_space(grid, kind, order, domains=None, closed=True):
+def function_space(grid, kind, order, domains=None, closed=True, strictly_on_domains=False):
     """ Return a space defined over a given grid.
 
     Parameters
@@ -158,6 +158,14 @@ def function_space(grid, kind, order, domains=None, closed=True):
         Specifies whether the space is defined on a closed
         or open subspace.
 
+    strictly_on_domains: bool
+        Specifies whether local basis functions are truncated to
+        the domains specified (True) or if they are allowed to extend
+        past the domains (False). Default is False. This attribute
+        is only supported for piecewise linear continuous and discontinuous
+        spaces and piecewise polynomial continuous spaces of higher
+        order.
+
     Notes
     -----
     The most frequent used types are the space of piecewise constant
@@ -181,7 +189,7 @@ def function_space(grid, kind, order, domains=None, closed=True):
     """
     from types import MethodType
     from bempp.core.space.space import function_space as _function_space
-    space = Space(_function_space(grid._impl, kind, order, domains, closed))
+    space = Space(_function_space(grid._impl, kind, order, domains, closed, strictly_on_domains))
 
     # Add a surface gradient function for spaces that support it
     if kind == "P" or kind == "DP":

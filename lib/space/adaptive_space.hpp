@@ -33,11 +33,27 @@
 namespace Bempp {
 
 /** \ingroup space
+ *  \brief Abstract factory class to create spaces with unified interface.
+ *
+ *  This base class provides a unified interface for different space
+ *  constructors to be called inside the adaptive space class. */
+template <typename BasisFunctionType_>
+class SpaceFactory {
+    public:
+
+       virtual shared_ptr<Space<BasisFunctionType_>> create(const shared_ptr<const Grid> &grid,
+                               const GridSegment &segment) const = 0;
+
+};
+
+
+
+/** \ingroup space
  *  \brief Adaptive Function space interface.
  *
  *  This class provides a wrapper to implement a hierarchy of
  *  adaptive function spaces. */
-template <typename BasisFunctionType_, typename SpaceType> 
+template <typename BasisFunctionType_> 
 class AdaptiveSpace : public Space<BasisFunctionType_> {
 public:
 
@@ -55,10 +71,10 @@ public:
   typedef Fiber::CollectionOfBasisTransformations<CoordinateType>
       CollectionOfBasisTransformations;
 
-  AdaptiveSpace(const shared_ptr<const Grid>& grid, 
+  AdaptiveSpace(const shared_ptr<const SpaceFactory<BasisFunctionType_>>& factory, const shared_ptr<const Grid>& grid, 
           const std::vector<int>& domains, bool closed);
 
-  AdaptiveSpace(const shared_ptr<const Grid>& grid);
+  AdaptiveSpace(const shared_ptr<const SpaceFactory<BasisFunctionType_>>& factory, const shared_ptr<const Grid>& grid);
 
   AdaptiveSpace(const AdaptiveSpace& other);
 
@@ -186,6 +202,7 @@ private:
   int m_level;
   shared_ptr<const Grid> m_grid;
   shared_ptr<Space<BasisFunctionType>> m_space;
+  shared_ptr<const SpaceFactory<BasisFunctionType_>> m_factory;
 
 };
 

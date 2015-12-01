@@ -166,7 +166,8 @@ private:
 
 /** \brief Define a PiecewisePolynomialDiscontinuousScalarSpace that has an update method for grid refinement. */
 template <typename BasisFunctionType>
-shared_ptr<Space<BasisFunctionType>> adaptivePiecewisePolynomialDiscontinuousScalarSpace(const shared_ptr<const Grid>& grid, int order);
+shared_ptr<Space<BasisFunctionType>> adaptivePiecewisePolynomialDiscontinuousScalarSpace(const shared_ptr<const Grid>& grid, 
+        int order);
 
 /** \brief Overload to define a set of domains for the space and whether the space contains boundary entities
  (\p open = true) or not. */

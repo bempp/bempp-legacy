@@ -161,12 +161,12 @@ shared_ptr<Space<BasisFunctionType>> adaptivePiecewiseLinearDiscontinuousScalarS
  (\p open = true) or not. */
 template <typename BasisFunctionType>
 shared_ptr<Space<BasisFunctionType>> adaptivePiecewiseLinearDiscontinuousScalarSpace(const shared_ptr<const Grid>& grid,
-        const std::vector<int>& domains, bool open);
+        const std::vector<int>& domains, bool open, bool strictlyOnSegment=false);
 
 /** \brief Overlad. */
 template <typename BasisFunctionType>
 shared_ptr<Space<BasisFunctionType>> adaptivePiecewiseLinearDiscontinuousScalarSpace(const shared_ptr<const Grid>& grid,
-        int domain, bool open);
+        int domain, bool open, bool strictlyOnSegment=false);
 
 } // namespace Bempp
 

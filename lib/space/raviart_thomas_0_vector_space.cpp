@@ -45,6 +45,21 @@
 
 namespace Bempp {
 
+namespace {
+
+template <typename BasisFunctionType>
+class RaviartThomas0SpaceFactory : public SpaceFactory<BasisFunctionType> {
+    public:
+       shared_ptr<Space<BasisFunctionType>> create(const shared_ptr<const Grid> &grid,
+                               const GridSegment &segment) const override{
+           
+           return shared_ptr<Space<BasisFunctionType>>(new RaviartThomas0VectorSpace<BasisFunctionType>(grid, segment));
+       }
+           
+};
+
+}
+
 /** \cond PRIVATE */
 template <typename BasisFunctionType>
 struct RaviartThomas0VectorSpace<BasisFunctionType>::Impl {
@@ -620,9 +635,10 @@ template <typename BasisFunctionType>
 shared_ptr<Space<BasisFunctionType>>
 adaptiveRaviartThomas0VectorSpace(const shared_ptr<const Grid> &grid) {
 
+    shared_ptr<SpaceFactory<BasisFunctionType>> factory(
+            new RaviartThomas0SpaceFactory<BasisFunctionType>());
   return shared_ptr<Space<BasisFunctionType>>(
-      new AdaptiveSpace<BasisFunctionType,
-                        RaviartThomas0VectorSpace<BasisFunctionType>>(grid));
+      new AdaptiveSpace<BasisFunctionType>(factory, grid));
 }
 
 template <typename BasisFunctionType>
@@ -631,10 +647,10 @@ adaptiveRaviartThomas0VectorSpace(const shared_ptr<const Grid> &grid,
                                      const std::vector<int> &domains,
                                      bool open) {
 
+    shared_ptr<SpaceFactory<BasisFunctionType>> factory(
+            new RaviartThomas0SpaceFactory<BasisFunctionType>());
   return shared_ptr<Space<BasisFunctionType>>(
-      new AdaptiveSpace<BasisFunctionType,
-                        RaviartThomas0VectorSpace<BasisFunctionType>>(
-          grid, domains, open));
+      new AdaptiveSpace<BasisFunctionType>(factory, grid, domains, open));
 }
 
 template <typename BasisFunctionType>
@@ -642,10 +658,10 @@ shared_ptr<Space<BasisFunctionType>>
 adaptiveRaviartThomas0VectorSpace(const shared_ptr<const Grid> &grid,
                                      int domain, bool open) {
 
+    shared_ptr<SpaceFactory<BasisFunctionType>> factory(
+            new RaviartThomas0SpaceFactory<BasisFunctionType>());
   return shared_ptr<Space<BasisFunctionType>>(
-      new AdaptiveSpace<BasisFunctionType,
-                        RaviartThomas0VectorSpace<BasisFunctionType>>(
-          grid, std::vector<int>({domain}), open));
+      new AdaptiveSpace<BasisFunctionType>(factory, grid, std::vector<int>({domain}), open));
 }
 
 #define INSTANTIATE_FREE_FUNCTIONS(BASIS)                                      \

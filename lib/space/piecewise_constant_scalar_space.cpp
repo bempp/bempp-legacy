@@ -39,6 +39,21 @@
 
 namespace Bempp {
 
+namespace {
+
+template <typename BasisFunctionType>
+class PiecewiseConstantSpaceFactory : public SpaceFactory<BasisFunctionType> {
+    public:
+       shared_ptr<Space<BasisFunctionType>> create(const shared_ptr<const Grid> &grid,
+                               const GridSegment &segment) const override{
+           
+           return shared_ptr<Space<BasisFunctionType>>(new PiecewiseConstantScalarSpace<BasisFunctionType>(grid, segment));
+       }
+           
+};
+    
+}
+
 template <typename BasisFunctionType>
 PiecewiseConstantScalarSpace<BasisFunctionType>::PiecewiseConstantScalarSpace(
     const shared_ptr<const Grid> &grid)
@@ -355,8 +370,10 @@ template <typename BasisFunctionType>
 shared_ptr<Space<BasisFunctionType>> adaptivePiecewiseConstantScalarSpace(const shared_ptr<const Grid>& grid)
 {
 
+    shared_ptr<SpaceFactory<BasisFunctionType>> factory(
+            new PiecewiseConstantSpaceFactory<BasisFunctionType>());
     return shared_ptr<Space<BasisFunctionType>>(
-            new AdaptiveSpace<BasisFunctionType, PiecewiseConstantScalarSpace<BasisFunctionType>>(grid));
+            new AdaptiveSpace<BasisFunctionType>(factory, grid));
 
 }
 
@@ -365,8 +382,10 @@ shared_ptr<Space<BasisFunctionType>> adaptivePiecewiseConstantScalarSpace(const 
         const std::vector<int>& domains, bool open)
 {
 
+    shared_ptr<SpaceFactory<BasisFunctionType>> factory(
+            new PiecewiseConstantSpaceFactory<BasisFunctionType>());
     return shared_ptr<Space<BasisFunctionType>>(
-            new AdaptiveSpace<BasisFunctionType, PiecewiseConstantScalarSpace<BasisFunctionType>>(grid, domains, open));
+            new AdaptiveSpace<BasisFunctionType>(factory, grid, domains, open));
 
 }
 
@@ -375,8 +394,10 @@ shared_ptr<Space<BasisFunctionType>> adaptivePiecewiseConstantScalarSpace(const 
         int domain, bool open)
 {
     
+    shared_ptr<SpaceFactory<BasisFunctionType>> factory(
+            new PiecewiseConstantSpaceFactory<BasisFunctionType>());
     return shared_ptr<Space<BasisFunctionType>>(
-            new AdaptiveSpace<BasisFunctionType, PiecewiseConstantScalarSpace<BasisFunctionType>>(grid,
+            new AdaptiveSpace<BasisFunctionType>(factory, grid,
                 std::vector<int>({domain}),open));
 }
 

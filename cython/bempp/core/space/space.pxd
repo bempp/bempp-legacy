@@ -48,13 +48,15 @@ cdef extern from "bempp/space/piecewise_constant_scalar_space.hpp" namespace "Be
     cdef shared_ptr[c_Space[T]] adaptivePiecewiseConstantScalarSpace[T](const shared_ptr[c_Grid]& grid, vector[int] domains, cbool closed)
 cdef extern from "bempp/space/piecewise_linear_continuous_scalar_space.hpp" namespace "Bempp":
     cdef shared_ptr[c_Space[T]] adaptivePiecewiseLinearContinuousScalarSpace[T](const shared_ptr[c_Grid]& grid)
-    cdef shared_ptr[c_Space[T]] adaptivePiecewiseLinearContinuousScalarSpace[T](const shared_ptr[c_Grid]& grid, vector[int] domains, cbool closed)
+    cdef shared_ptr[c_Space[T]] adaptivePiecewiseLinearContinuousScalarSpace[T](const shared_ptr[c_Grid]& grid, vector[int] domains, 
+            cbool closed, cbool strictly_on_segment)
 cdef extern from "bempp/space/piecewise_linear_discontinuous_scalar_space.hpp" namespace "Bempp":
     cdef shared_ptr[c_Space[T]] adaptivePiecewiseLinearDiscontinuousScalarSpace[T](const shared_ptr[c_Grid]& grid)
-    cdef shared_ptr[c_Space[T]] adaptivePiecewiseLinearDiscontinuousScalarSpace[T](const shared_ptr[c_Grid]& grid, vector[int] domains, cbool closed)
+    cdef shared_ptr[c_Space[T]] adaptivePiecewiseLinearDiscontinuousScalarSpace[T](const shared_ptr[c_Grid]& grid, vector[int] domains, 
+            cbool closed, cbool strictly_on_segment)
 cdef extern from "bempp/space/piecewise_polynomial_continuous_scalar_space.hpp" namespace "Bempp":
     cdef shared_ptr[c_Space[T]] adaptivePiecewisePolynomialContinuousScalarSpace[T](const shared_ptr[c_Grid]& grid, int order)
-    cdef shared_ptr[c_Space[T]] adaptivePiecewisePolynomialContinuousScalarSpace[T](const shared_ptr[c_Grid]& grid, int order, vector[int] domains, cbool closed)
+    cdef shared_ptr[c_Space[T]] adaptivePiecewisePolynomialContinuousScalarSpace[T](const shared_ptr[c_Grid]& grid, int order, vector[int] domains, cbool closed, cbool strictly_on_segment)
 cdef extern from "bempp/space/piecewise_polynomial_discontinuous_scalar_space.hpp" namespace "Bempp":
     cdef shared_ptr[c_Space[T]] adaptivePiecewisePolynomialDiscontinuousScalarSpace[T](const shared_ptr[c_Grid]& grid, int order)
     cdef shared_ptr[c_Space[T]] adaptivePiecewisePolynomialDiscontinuousScalarSpace[T](const shared_ptr[c_Grid]& grid, int order, vector[int] domains, cbool closed)

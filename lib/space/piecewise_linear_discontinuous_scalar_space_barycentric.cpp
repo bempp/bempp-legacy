@@ -44,6 +44,22 @@
 
 namespace Bempp {
 
+namespace {
+
+template <typename BasisFunctionType>
+class LinearDiscontinuousBarycentricSpaceFactory : public SpaceFactory<BasisFunctionType> {
+    public:
+       shared_ptr<Space<BasisFunctionType>> create(const shared_ptr<const Grid> &grid,
+                               const GridSegment &segment) const override{
+           
+           return shared_ptr<Space<BasisFunctionType>>(new PiecewiseLinearDiscontinuousScalarSpaceBarycentric<BasisFunctionType>(grid, segment));
+       }
+           
+};
+
+
+}
+
 template <typename BasisFunctionType>
 PiecewiseLinearDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::
     PiecewiseLinearDiscontinuousScalarSpaceBarycentric(
@@ -553,8 +569,10 @@ template <typename BasisFunctionType>
 shared_ptr<Space<BasisFunctionType>> adaptivePiecewiseLinearDiscontinuousScalarSpaceBarycentric(const shared_ptr<const Grid>& grid)
 {
 
+    shared_ptr<SpaceFactory<BasisFunctionType>> factory(
+            new LinearDiscontinuousBarycentricSpaceFactory<BasisFunctionType>());
     return shared_ptr<Space<BasisFunctionType>>(
-            new AdaptiveSpace<BasisFunctionType, PiecewiseLinearDiscontinuousScalarSpaceBarycentric<BasisFunctionType>>(grid));
+            new AdaptiveSpace<BasisFunctionType>(factory, grid));
 
 }
 
