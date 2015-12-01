@@ -148,6 +148,34 @@ class TestGridFunction(TestCase):
 
         self.assertAlmostEqual(np.sqrt(sum), grid_fun.l2_norm())
 
+    def test_surface_grad_is_correct(self):
+
+        import numpy as np
+        parameters = bempp.api.common.global_parameters()
+        parameters.quadrature.far.single_order = 8
+        grid = bempp.api.shapes.regular_sphere(3)
+        space = bempp.api.function_space(grid, "P", 4)
+
+        elements = list(grid.leaf_view.entity_iterator(0))
+
+        def fun(x, n, domain, result):
+            result[0] = np.sum(x**2)
+
+        grid_fun = bempp.api.GridFunction(space, fun=fun, parameters=parameters)
+
+        element = elements[0]
+        geometry = element.geometry
+        local_coordinate = np.array([[0],[0]])
+        global_coordinate = geometry.local2global(local_coordinate)
+        normal = geometry.normals(local_coordinate)
+        grad = 2 * global_coordinate[:,0]
+
+        expected = grad - normal[:,0] * np.dot(grad, normal[:,0])
+        actual = grid_fun.evaluate_surface_gradient(element, local_coordinate)[:, 0]
+        rel_diff = np.linalg.norm(expected-actual)/np.linalg.norm(actual)
+
+        self.assertAlmostEqual(rel_diff, 0)
+
 
 if __name__ == "__main__":
     from unittest import main

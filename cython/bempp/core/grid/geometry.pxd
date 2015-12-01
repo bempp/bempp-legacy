@@ -9,8 +9,12 @@ cdef extern from "bempp/grid/geometry.hpp" namespace "Bempp":
         int cornerCount() const
         void getCorners(Matrix[double]& c) const
         double volume() const
-        void getIntegrationElements(const Matrix[double]& local,
-                RowVector[double]& int_element)
+        void getIntegrationElements(const Matrix[double]&,
+                RowVector[double]&)
+        void getNormals(const Matrix[double]&,
+                Matrix[double])
+        void local2global(const Matrix[double]&,
+                Matrix[double])
 
 from bempp.core.grid.entity cimport Entity0
 from bempp.core.grid.entity cimport Entity1

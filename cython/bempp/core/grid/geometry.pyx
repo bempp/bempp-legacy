@@ -20,6 +20,26 @@ cdef class Geometry0:
 
         return eigen_row_vector_to_np_float64(int_elements)
 
+    def normals(self, local_coordinates):
+        """Return normal directions for the given local coordinates."""
+
+        cdef Matrix[double] local_vector = np_to_eigen_matrix_float64(local_coordinates)
+        cdef Matrix[double] normal_directions
+
+        self.impl_.getNormals(local_vector, normal_directions)
+
+        return eigen_matrix_to_np_float64(normal_directions)
+
+    def local2global(self, local_coordinates):
+        """Return the global coordinates associated with the given local coordinates."""
+
+        cdef Matrix[double] local_vector = np_to_eigen_matrix_float64(local_coordinates)
+        cdef Matrix[double] global_coords
+
+        self.impl_.local2global(local_vector, global_coords)
+
+        return eigen_matrix_to_np_float64(global_coords)
+
 
     property corners:
         """Corners of entity"""
