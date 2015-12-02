@@ -140,6 +140,14 @@ def ellipsoid(r1=1, r2=1, r3=1, origin=(0, 0, 0), h=0.1):
     Ruled Surface(28) = {27};
     Surface Loop(29) = {28,26,16,14,20,24,22,18};
     Volume(30) = {29};
+    Physical Surface(1) = {14};
+    Physical Surface(2) = {16};
+    Physical Surface(3) = {18};
+    Physical Surface(4) = {20};
+    Physical Surface(5) = {22};
+    Physical Surface(6) = {24};
+    Physical Surface(7) = {26};
+    Physical Surface(8) = {28};
     Mesh.Algorithm = 6;
     """
 
@@ -196,6 +204,13 @@ def cube(length=1, origin=(0, 0, 0), h=0.1):
     Plane Surface(4) = {4};
     Plane Surface(5) = {5};
     Plane Surface(6) = {6};
+
+    Physical Surface(1) = {1};
+    Physical Surface(2) = {2};
+    Physical Surface(3) = {3};
+    Physical Surface(4) = {4};
+    Physical Surface(5) = {5};
+    Physical Surface(6) = {6};
 
     Surface Loop (1) = {1,2,3,4,5,6};
 

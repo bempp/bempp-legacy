@@ -147,10 +147,21 @@ cdef class Space:
             deref(self.impl_).getNormalsAtGlobalDofInterpolationPoints(data)
             return eigen_matrix_to_np_float64(data)
 
-def function_space(Grid grid, kind, order, domains=None, cbool closed=True, cbool strictly_on_domains=False):
+def function_space(Grid grid, kind, order, domains=None, cbool closed=True, cbool strictly_on_segment=False, 
+        cbool reference_point_on_segment=True, cbool element_on_segment=False):
 
     cdef Space s = Space()
     cdef Grid bary_grid
+    cdef int dof_mode = 0
+
+    if element_on_segment:
+        dof_mode += 2
+    if reference_point_on_segment:
+        dof_mode += 4
+
+    if dof_mode < 2:
+        raise ValueError("At least one of 'reference_point_on_segment' or 'element_on_segment' must be true.")
+
     if kind=="P":
         if not (order>=1 and order <=10):
             raise ValueError("Order must be between 1 and 10")
@@ -160,14 +171,14 @@ def function_space(Grid grid, kind, order, domains=None, cbool closed=True, cboo
                         shared_ptr[c_Space[double]](adaptivePiecewiseLinearContinuousScalarSpace[double](grid.impl_))))
             else:
                 s.impl_.assign(reverse_const_pointer_cast(
-                        shared_ptr[c_Space[double]](adaptivePiecewiseLinearContinuousScalarSpace[double](grid.impl_, domains, closed, strictly_on_domains))))
+                        shared_ptr[c_Space[double]](adaptivePiecewiseLinearContinuousScalarSpace[double](grid.impl_, domains, closed, strictly_on_segment))))
         else:
             if domains is None:
                 s.impl_.assign(reverse_const_pointer_cast(
                         shared_ptr[c_Space[double]](adaptivePiecewisePolynomialContinuousScalarSpace[double](grid.impl_, order))))
             else:
                 s.impl_.assign(reverse_const_pointer_cast(
-                        shared_ptr[c_Space[double]](adaptivePiecewisePolynomialContinuousScalarSpace[double](grid.impl_, order, domains, closed, strictly_on_domains))))
+                        shared_ptr[c_Space[double]](adaptivePiecewisePolynomialContinuousScalarSpace[double](grid.impl_, order, domains, closed, strictly_on_segment))))
     elif kind=="DP":
         if not (order>=0 and order <=10):
             raise ValueError("Order must be between 0 and 10")
@@ -178,20 +189,13 @@ def function_space(Grid grid, kind, order, domains=None, cbool closed=True, cboo
             else:
                 s.impl_.assign(reverse_const_pointer_cast(
                         shared_ptr[c_Space[double]](adaptivePiecewiseConstantScalarSpace[double](grid.impl_, domains, closed))))
-        elif order==1:
-            if domains is None:
-                s.impl_.assign(reverse_const_pointer_cast(
-                        shared_ptr[c_Space[double]](adaptivePiecewiseLinearDiscontinuousScalarSpace[double](grid.impl_))))
-            else:
-                s.impl_.assign(reverse_const_pointer_cast(
-                        shared_ptr[c_Space[double]](adaptivePiecewiseLinearDiscontinuousScalarSpace[double](grid.impl_, domains, closed, strictly_on_domains))))
         else:
             if domains is None:
                 s.impl_.assign(reverse_const_pointer_cast(
                         shared_ptr[c_Space[double]](adaptivePiecewisePolynomialDiscontinuousScalarSpace[double](grid.impl_, order))))
             else:
                 s.impl_.assign(reverse_const_pointer_cast(
-                        shared_ptr[c_Space[double]](adaptivePiecewisePolynomialDiscontinuousScalarSpace[double](grid.impl_, order, domains, closed))))
+                        shared_ptr[c_Space[double]](adaptivePiecewisePolynomialDiscontinuousScalarSpace[double](grid.impl_, order, domains, closed, dof_mode))))
     elif kind=="RT":
         if order!=0:
             raise ValueError("Only 0 order Raviart-Thomas spaces are implemented.")

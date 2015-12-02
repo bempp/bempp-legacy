@@ -173,12 +173,12 @@ shared_ptr<Space<BasisFunctionType>> adaptivePiecewisePolynomialDiscontinuousSca
  (\p open = true) or not. */
 template <typename BasisFunctionType>
 shared_ptr<Space<BasisFunctionType>> adaptivePiecewisePolynomialDiscontinuousScalarSpace(const shared_ptr<const Grid>& grid, int order,
-        const std::vector<int>& domains, bool open);
+        const std::vector<int>& domains, bool open, int dofMode=REFERENCE_POINT_ON_SEGMENT);
 
 /** \brief Overlad. */
 template <typename BasisFunctionType>
 shared_ptr<Space<BasisFunctionType>> adaptivePiecewisePolynomialDiscontinuousScalarSpace(const shared_ptr<const Grid>& grid, int order,
-        int domain, bool open);
+        int domain, bool open, int dofMode=REFERENCE_POINT_ON_SEGMENT);
 
 } // namespace Bempp
 

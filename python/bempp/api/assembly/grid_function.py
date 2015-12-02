@@ -253,6 +253,36 @@ class GridFunction(object):
             return np.sqrt(np.real(np.dot(dof_values.conjugate().T,\
                     local_mass.dot(dof_values))))
 
+    def relative_error(self, fun, element=None):
+        """Compute the relative L^2 error compared to a given analytic function."""
+
+
+        from bempp.api.integration import gauss_triangle_points_and_weights
+        import numpy as np
+
+        global_diff = 0
+        fun_l2_norm = 0
+        accuracy_order = self.parameters.quadrature.far.single_order
+        points, weights = gauss_triangle_points_and_weights(accuracy_order)
+        npoints = points.shape[1]
+
+        element_list = [element] if element is not None else list(self.grid.leaf_view.entity_iterator(0))
+
+        for element in element_list:
+            integration_elements = element.geometry.integration_elements(points)
+            global_dofs = element.geometry.local2global(points)
+            fun_vals = np.zeros((self.component_count, npoints), dtype=self.dtype)
+
+            for j in range(npoints):
+                fun_vals[:, j] = fun(global_dofs[:, j])
+
+            diff = np.sum(np.abs(self.evaluate(element, points) - fun_vals)**2, axis=0)
+            global_diff += np.sum(diff * integration_elements * weights)
+            abs_fun_squared = np.sum(np.abs(fun_vals)**2, axis=0)
+            fun_l2_norm += np.sum(abs_fun_squared * integration_elements * weights)
+
+        return np.sqrt(global_diff/fun_l2_norm)
+
     def __add__(self, other):
 
         if self.space != other.space:
