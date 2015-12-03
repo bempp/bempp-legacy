@@ -7,6 +7,15 @@ www.bempp.org
 
 History
 =======
+3.0.2 (03 December 2015)
+------------------------
+Released version 3.0.2
+
+* Fixed bug in range space assignment of operator times GridFunction
+* Disabled Blas-like assembly for higher-order basis functions to to bug in typical_test_scalar_kernel_trial_integral.cpp
+* Added new methods to GridFunction to evaluate integral over boundary and to evaluate surface gradient
+* Made accessible space parameters in Python that control the boundary behavior of spaces on segments
+* Other small fixes
 
 3.0.1 (24 November 2015)
 ------------------------
