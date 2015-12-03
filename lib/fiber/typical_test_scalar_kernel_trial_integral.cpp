@@ -298,18 +298,21 @@ void evaluateWithTensorQuadratureRuleImpl(
           &tmpReordered[0], trialDofCount * transDim, trialPointCount);
       tmpIntermediate.resize(matTrial.rows() * matKernel.rows());
 
-      Eigen::Map<Matrix<ResultType>> matTmp(
-          &tmpIntermediate[0], trialDofCount * transDim, testPointCount);
+      {
+          Eigen::Map<Matrix<ResultType>> matTmp(
+              &tmpIntermediate[0], trialDofCount * transDim, testPointCount);
+          matTmp = matTrial * matKernel.adjoint();
+      }
 
-      matTmp = matTrial * matKernel.adjoint();
-      matTmp.resize(trialDofCount, transDim * testPointCount);
+      Eigen::Map<Matrix<ResultType>> shuffledMatTmp(
+              &tmpIntermediate[0], trialDofCount, transDim * testPointCount);
 
       // Result += Test * Tmp
       outOfPlaceMultiplyByWeightsAndConjugateTransposeDimAndDofDimensions(
           testValues[transIndex], testGeomData, testQuadWeights, tmpReordered);
       Eigen::Map<Matrix<ResultType>> matTest(&tmpReordered[0], testDofCount,
                                              transDim * testPointCount);
-      result += matTest * matTmp.adjoint();
+      result += matTest * shuffledMatTmp.adjoint();
     } else { // testDofCount < trialDofCount
       // TmpIntermediate = Test * Kernel
       outOfPlaceMultiplyByWeightsAndConjugateTransposeDimAndDofDimensions(
@@ -318,10 +321,14 @@ void evaluateWithTensorQuadratureRuleImpl(
           &tmpReordered[0], testDofCount * transDim, testPointCount);
       tmpIntermediate.resize(matTest.rows() * matKernel.cols());
 
-      Eigen::Map<Matrix<IntermediateType>> matTmp(
-          &tmpIntermediate[0], testDofCount * transDim, trialPointCount);
-      matTmp = matTest * matKernel;
-      matTmp.resize(testDofCount, transDim * trialPointCount);
+      {
+          Eigen::Map<Matrix<IntermediateType>> matTmp(
+              &tmpIntermediate[0], testDofCount * transDim, trialPointCount);
+          matTmp = matTest * matKernel;
+      }
+
+      Eigen::Map<Matrix<ResultType>> shuffledMatTmp(
+              &tmpIntermediate[0], testDofCount, transDim * trialPointCount);
 
       // Result += Tmp * Trial
       outOfPlaceMultiplyByWeightsAndConjugateTransposeDimAndDofDimensions(
@@ -329,7 +336,7 @@ void evaluateWithTensorQuadratureRuleImpl(
           tmpReordered);
       Eigen::Map<Matrix<ResultType>> matTrial(&tmpReordered[0], trialDofCount,
                                               transDim * trialPointCount);
-      result += matTmp * matTrial.adjoint();
+      result += shuffledMatTmp * matTrial.adjoint();
     }
   }
 }
