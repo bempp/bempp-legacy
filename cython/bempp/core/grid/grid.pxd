@@ -1,5 +1,6 @@
 from bempp.core.utils cimport shared_ptr,unique_ptr
 from bempp.core.utils cimport Vector
+from bempp.core.utils cimport Matrix
 from bempp.core.grid.grid_view cimport c_GridView, GridView
 from bempp.core.grid.entity cimport Entity0, Entity2
 from bempp.core.grid.entity cimport c_Entity
@@ -26,6 +27,7 @@ cdef extern from "bempp/grid/grid.hpp" namespace "Bempp" nogil:
         int getMark(const c_Entity[codim_zero]&)
         c_IdSet& globalIdSet() const
         shared_ptr[c_Grid] barycentricGrid() const
+        Matrix[int] barycentricSonMap() const
 
 
     cdef enum Topology "Bempp::GridParameters::Topology":

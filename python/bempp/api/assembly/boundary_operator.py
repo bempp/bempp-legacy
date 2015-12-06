@@ -535,3 +535,70 @@ class CompoundBoundaryOperator(BoundaryOperator):
             discrete_op += (self._test_local_ops[i].weak_form() * test_inverse * kernel_discrete_op *
                             trial_inverse * self._trial_local_ops[i].weak_form())
         return discrete_op
+
+class RankOneBoundaryOperator(BoundaryOperator):
+    """Define a rank one boundary operator.
+
+    This operator is defined as 
+    op = <w, 1> * <v, 1>, where v are functions in
+    `dual_to_range` and w are functions in `domain`.
+
+    Parameters
+    ----------
+    domain : bempp.api.space.Space
+        Domain space.
+    range_ : bempp.api.space.Space
+        Range space.
+    dual_to_range : bempp.api.space.Space
+        Dual space to the range space.
+    label : string
+        Label for the operator.
+    symmetry : string
+        Symmetry mode. Possible values are: 'no_symmetry',
+        'symmetric', 'hermitian'.
+    parameters : bempp.api.common.ParameterList
+        Parameters for the operator. If none given the
+        default global parameter object `bempp.api.global_parameters`
+        is used.
+
+    """
+
+    def __init__(self, domain, range_, dual_to_range, label='',
+            parameters=None):
+
+        import bempp.api
+
+        super(RankOneBoundaryOperator, self).__init__(domain, range_, dual_to_range, label=label)
+
+        if parameters is None:
+            parameters = bempp.api.global_parameters
+
+        self._domain = domain
+        self._range = range_
+        self._dual_to_range = dual_to_range
+        self._parameters = parameters
+
+    def _weak_form_impl(self):
+
+        import bempp.api
+
+        def one_fun(x, n, domain_index, res):
+            res[0] = 1
+
+        one_domain = bempp.api.GridFunction(self._domain, fun=one_fun,
+                parameters=self._parameters)
+        one_dual_to_range = bempp.api.GridFunction(self._dual_to_range, fun=one_fun,
+                parameters=self._parameters)
+
+        mass_domain = bempp.api.operators.boundary.sparse.identity(self._domain,
+                self._domain, self._domain)
+        mass_dual_to_range = bempp.api.operators.boundary.sparse.identity(self._dual_to_range,
+                self._dual_to_range, self._dual_to_range)
+
+        col = one_dual_to_range.projections(self._dual_to_range)
+        row = one_domain.projections(self._domain)
+
+        return bempp.api.assembly.DiscreteRankOneOperator(col, row)
+
+
+

@@ -71,6 +71,16 @@ class Grid(object):
         """Return a barycentrically refine grid."""
         return Grid(self._impl.barycentric_grid())
 
+    def barycentric_descendents_map(self):
+        """Return a matrix that provides a map between elements in the original grid and the barycentric refinement.
+
+        This function returns a (nelements x 6) matrix where the row i contains the indices
+        of all elements in the barycentric grid that are descendents of the element with index i in the original grid.
+
+        """
+
+        return self._impl.barycentric_descendents_map()
+
     @property
     def dim(self):
         """Return the dimension of the grid."""

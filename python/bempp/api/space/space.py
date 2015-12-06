@@ -73,6 +73,17 @@ class Space(object):
                                                local_coordinates,
                                                local_coefficients)
 
+    def evaluate_surface_gradient(self, element, local_coordinates, local_coefficients):
+        """Evaluate the local surface gradient on a given element."""
+       
+        if self.codomain_dimension > 1:
+            raise ValueError("Method only implemented for scalar spaces.")
+
+        from bempp.core.space.space import evaluate_local_surface_gradient_ext
+        return evaluate_local_surface_gradient_ext(self._impl, element._impl, 
+                                               local_coordinates,
+                                               local_coefficients)
+
     @property
     def dtype(self):
         """Return the data type of the basis functions in the space."""
@@ -121,12 +132,6 @@ class Space(object):
         """
         return self._impl.global_dof_normals
 
-def _evaluate_local_surface_gradient(space, element, local_coordinates, local_coefficients):
-    """Evaluate the local surface gradient on a given element."""
-    from bempp.core.space.space import evaluate_local_surface_gradient_ext
-    return evaluate_local_surface_gradient_ext(space._impl, element._impl, 
-                                           local_coordinates,
-                                           local_coefficients)
 
 def function_space(grid, kind, order, domains=None, closed=True, strictly_on_segment=False,
         reference_point_on_segment=True, element_on_segment=False):
@@ -206,10 +211,6 @@ def function_space(grid, kind, order, domains=None, closed=True, strictly_on_seg
     from bempp.core.space.space import function_space as _function_space
     space = Space(_function_space(grid._impl, kind, order, domains, closed, strictly_on_segment,
         reference_point_on_segment, element_on_segment))
-
-    # Add a surface gradient function for spaces that support it
-    if kind == "P" or kind == "DP":
-        space.evaluate_surface_gradient = MethodType(_evaluate_local_surface_gradient, space)
 
     return space
 

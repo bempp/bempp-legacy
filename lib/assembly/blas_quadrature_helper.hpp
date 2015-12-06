@@ -36,13 +36,11 @@ shouldUseBlasInQuadrature(const AssemblyOptions &assemblyOptions,
                           const Space<BasisFunctionType> &dualToRange) {
 // Disabled as BLAS quadrature causes crashes in the hypersingular operator for
 // unknown reasons.
-//  return assemblyOptions.isBlasEnabledInQuadrature() == AssemblyOptions::YES ||
-//         (assemblyOptions.isBlasEnabledInQuadrature() ==
-//              AssemblyOptions::AUTO &&
-//          (maximumShapesetOrder(domain) >= 2 ||
-//           maximumShapesetOrder(dualToRange) >= 2));
-
-    return false;
+  return assemblyOptions.isBlasEnabledInQuadrature() == AssemblyOptions::YES ||
+         (assemblyOptions.isBlasEnabledInQuadrature() ==
+              AssemblyOptions::AUTO &&
+          (maximumShapesetOrder(domain) >= 2 ||
+           maximumShapesetOrder(dualToRange) >= 2));
 }
 
 } // namespace

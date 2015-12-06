@@ -166,6 +166,82 @@ def ellipsoid(r1=1, r2=1, r3=1, origin=(0, 0, 0), h=0.1):
 def sphere(r=1, origin=(0, 0, 0), h=0.1):
     return ellipsoid(origin=origin, h=h)
 
+def reentrant_cube(h=0.1, refinement_factor=0.2):
+    reentrant_cube_stub="""
+    Point(1) = {0, 0, 0, h};
+    Point(2) = {1, 0, 0, h};
+    Point(3) = {1, 1, 0, h};
+    Point(4) = {0, 1, 0, h};
+    Point(5) = {0, 0, 1, h};
+    Point(6) = {1, 0, 1, h};
+    Point(7) = {1, 1, 1, h};
+    Point(8) = {0, 1, 1, h};
+    Point(9) = {.5, .5, .5, r};
+    Point(10) = {0, 0, .5, h};
+    Point(11) = {0.5, 0, .5, h};
+    Point(12) = {0, .5, .5, h};
+    Point(13) = {0.5, 0, 1, h};
+    Point(14) = {0.5, 0.5, 1, h};
+    Point(15) = {0, 0.5, 1, h};
+
+    Line(1) = {1, 2};
+    Line(2) = {2, 6};
+    Line(3) = {6, 13};
+    Line(4) = {13, 11};
+    Line(5) = {11, 10};
+    Line(6) = {10, 1};
+
+    Line(7) = {2, 3};
+    Line(8) = {3, 7};
+    Line(9) = {7, 6};
+    
+    Line(10) = {3, 4};
+    Line(11) = {4, 8};
+    Line(12) = {8, 7};
+
+    Line(13) = {4, 1};
+    Line(14) = {10, 12};
+    Line(15) = {12, 15};
+    Line(16) = {15, 8};
+
+    Line(17) = {12, 9};
+    Line(18) = {9, 14};
+    Line(19) = {14, 15};
+
+    Line(20) = {11, 9};
+    Line(21) = {13, 14};
+
+    Line Loop(1) = {1, 2, 3, 4, 5, 6};
+    Line Loop(2) = {-2, 7, 8, 9};
+    Line Loop(3) = {-8, 10, 11, 12};
+    Line Loop(4) = {13, -6, 14, 15, 16, -11};
+    Line Loop(5) = {17, 18, 19, -15};
+    Line Loop(6) = {-14, -5, 20, -17};
+    Line Loop(7) = {-4, 21, -18, -20};
+    Line Loop(8) = {-13, -10, -7, -1};
+    Line Loop(9) = {-21, -3, -9, -12, -16, -19};
+
+    Plane Surface(1) = {1};
+    Plane Surface(2) = {2};
+    Plane Surface(3) = {3};
+    Plane Surface(4) = {4};
+    Plane Surface(5) = {5};
+    Plane Surface(6) = {6};
+    Plane Surface(7) = {7};
+    Plane Surface(8) = {8};
+    Plane Surface(9) = {9};
+
+    Surface Loop(1) = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+
+    Volume(1) = {1};
+    Mesh.Algorithm = 6;
+    """
+    reentrant_cube_geometry = (
+        "h = " + str(h) + ";\n" +
+        "r = h * " + str(refinement_factor) + ";\n" + reentrant_cube_stub)
+    return __generate_grid_from_geo_string(reentrant_cube_geometry)
+
+
 
 def cube(length=1, origin=(0, 0, 0), h=0.1):
     cube_stub = """

@@ -1,4 +1,52 @@
 
+def slp_and_hyp_impl(grid, slp_operator, hyp_operator, parameters, spaces='linear', return_base_slp=False):
+
+    import bempp.api
+    from bempp.api.space import project_operator
+
+    if parameters is None:
+        parameters = bempp.api.global_parameters
+
+    if spaces=='linear':
+
+        lin_space = bempp.api.function_space(grid, "P", 1)
+        lin_space_disc = bempp.api.function_space(grid, "DP", 1)
+
+        slp_disc = slp_operator(lin_space_disc, lin_space_disc, lin_space_disc, parameters=parameters)
+        slp = project_operator(slp_disc, domain=lin_space, range_=lin_space, dual_to_range=lin_space)
+        hyp = hyp_operator(lin_space, lin_space, lin_space, use_slp=slp_disc, parameters=parameters)
+
+        if return_base_slp:
+            return (slp, hyp, slp_disc)
+        else:
+            return (slp, hyp)
+
+
+    elif spaces=='dual':
+
+        const_space = bempp.api.function_space(grid, "DUAL", 0)
+        lin_space = bempp.api.function_space(grid, "P", 1)
+        lin_space_bary = bempp.api.function_space(grid, "B-P", 1)
+        lin_space_disc_bary = bempp.api.function_space(grid, "B-DP", 1)
+        lin_space_disc = bempp.api.function_space(grid.barycentric_grid(), "DP", 1)
+
+        slp = slp_operator(lin_space_disc, lin_space_disc, lin_space_disc, parameters=parameters)
+
+        slp_projected = project_operator(slp, domain=const_space, range_=lin_space_bary,
+                                                  dual_to_range=const_space)
+
+        hyp_projected = (hyp_operator( \
+            lin_space_bary, const_space, lin_space_bary,
+            use_slp=project_operator(slp, domain=lin_space_disc_bary,
+                                     dual_to_range=lin_space_disc_bary),
+            parameters=parameters))
+
+        if return_base_slp:
+            return (slp_projected, hyp_projected, slp)
+        else:
+            return (slp_projected, hyp_projected)
+
+
 
 def multitrace_operator_impl(grid, slp_operator, dlp_operator, hyp_operator, parameters, 
         spaces='linear'):

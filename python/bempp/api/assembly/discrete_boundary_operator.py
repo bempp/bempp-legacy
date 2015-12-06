@@ -276,6 +276,59 @@ class ZeroDiscreteBoundaryOperator(_LinearOperator):
         else:
             return _np.zeros(self.shape[0], dtype='float64')
 
+
+class DiscreteRankOneOperator(_LinearOperator):
+    """Creates a discrete rank one operator.
+
+    This class represents a rank one operator given
+    by column * row, where column is column is
+    interpreted as a (m, 1) array and row as
+    a (1, n) array.
+
+    Parameters
+    ----------
+    column : np.array
+        A column vector
+    row : np.array
+        A row vector
+
+    """
+
+    def __init__(self, column, row):
+
+        if row.dtype=='complex128' or column.dtype=='complex128':
+            dtype = 'complex128'
+        else:
+            dtype = 'float64'
+
+        self._row = row.ravel()
+        self._column = column.ravel()
+
+        shape=(len(self._column), len(self._row))
+
+        super(DiscreteRankOneOperator, self).__init__(dtype=dtype,
+                shape=shape)
+
+    def _matvec(self, x):
+
+        import numpy as np
+
+        if x.ndim > 1:
+            return np.outer(self._column, np.dot(self._row, x))
+        else:
+            return self._column * np.dot(self._row, x)
+
+    def _transpose(self, x):
+
+        return DiscreteRankOneOperator(row, column)
+
+    def _adjoint(self, x):
+
+        return DiscreteRankOneOperator(row.conjugate(), column.conjugate())
+
+
+
+
 def as_matrix(operator):
     """Return a representation of a discrete linear operator as a dense numpy matrix.
 

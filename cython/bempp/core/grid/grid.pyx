@@ -7,6 +7,7 @@ from libcpp.vector cimport vector
 from bempp.core.utils cimport catch_exception
 from bempp.core.utils cimport unique_ptr
 from bempp.core.utils cimport Vector
+from bempp.core.utils cimport eigen_matrix_to_np_int
 from bempp.core.grid.entity cimport Entity0
 from bempp.core.grid.grid_view cimport c_GridView, GridView
 from bempp.core.grid.grid_view cimport _grid_view_from_unique_ptr
@@ -169,6 +170,11 @@ cdef class Grid:
         cdef Grid grid = Grid()
         grid.impl_.assign(deref(self.impl_).barycentricGrid())
         return grid
+
+    def barycentric_descendents_map(self):
+        """Return the map between elements in the original grid and its barycentric refinement."""
+
+        return eigen_matrix_to_np_int(deref(self.impl_).barycentricSonMap()) 
 
     property dim:
         """" Dimension of the grid. """

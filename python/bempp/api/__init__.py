@@ -93,6 +93,7 @@ from bempp.api.space import project_operator
 from bempp.api.assembly import GridFunction
 from bempp.api.assembly import InverseSparseDiscreteBoundaryOperator
 from bempp.api.assembly import ZeroBoundaryOperator
+from bempp.api.assembly import RankOneBoundaryOperator
 from bempp.api.assembly import as_matrix
 from bempp.api.assembly import assemble_dense_block
 from bempp.api.assembly import BlockedOperator
