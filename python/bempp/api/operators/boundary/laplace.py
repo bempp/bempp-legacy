@@ -156,8 +156,6 @@ def hypersingular(domain, range_, dual_to_range,
         if no care is taken this option can lead to a wrong operator. Also,
         `use_slp=True` or `use_slp=op` is only valid if the `domain` and `dual_to_range`
         spaces are identical.
-
-
     """
 
     import bempp
@@ -211,8 +209,14 @@ def hypersingular(domain, range_, dual_to_range,
 
         return CompoundBoundaryOperator(test_local_ops, slp, trial_local_ops, label=label)
 
-def slp_and_hyp(grid, parameters=None, spaces='linear', return_base_slp=False):
+def single_layer_and_hypersingular_pair(grid, parameters=None, spaces='linear', return_base_slp=False, stabilization_factor=0):
     """Return a pair of hypersingular and single layer operator.
+
+    This function creates a pair of a single-layer and a hypersingular
+    operator, where both operators are instantiated using a common
+    base single-layer operator. Hence, only one single-layer operator
+    needs to be discretized to obtain both operators on the given 
+    grid.
 
     Parameters
     ----------
@@ -233,12 +237,32 @@ def slp_and_hyp(grid, parameters=None, spaces='linear', return_base_slp=False):
         If True also return the original large space single layer 
         operator from which the hypersingular and slp operator
         are derived. Default is False
+    stabilization_factor : double
+        If not equal to zero add
+        this factor times the rank one operator <w 1><v, 1>
+        to the hypersingular,
+        where w is in the domain space and v in the dual space
+        of the hypersingular operator. This regularizes the
+        hypersingular operator.
+
+    Returns
+    -------
+    A pair (slp, hyp) of a single-layer and hypersingular operator.
+    If return_base_slp is true a triplet (slp, hyp, base_slp) is
+    returned, where base_slp is the single-layer operator, from
+    which slp and hyp are obtained via sparse transformations.
 
     """
 
     from bempp.api.operators.boundary import _common
-    return _common.slp_and_hyp_impl(
-            grid, single_layer, hypersingular, parameters, spaces, return_base_slp)
+    ops = list(_common.slp_and_hyp_impl(
+            grid, single_layer, hypersingular, parameters, spaces, return_base_slp, laplace=True))
+    if stabilization_factor != 0:
+        from bempp.api.assembly import RankOneBoundaryOperator
+        ops[1] += stabilization_factor * RankOneBoundaryOperator(
+                ops[1].domain, ops[1].range, ops[1].dual_to_range)
+    return ops
+
 
 
 def multitrace_operator(grid, parameters=None, spaces='linear'):
@@ -264,5 +288,5 @@ def multitrace_operator(grid, parameters=None, spaces='linear'):
 
     from bempp.api.operators.boundary import _common
     return _common.multitrace_operator_impl(
-            grid, single_layer, double_layer, hypersingular, parameters, spaces)
+            grid, single_layer, double_layer, hypersingular, parameters, spaces, laplace=True)
 

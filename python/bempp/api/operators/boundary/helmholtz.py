@@ -184,6 +184,49 @@ def multitrace_operator(grid, wave_number, parameters=None, spaces='linear'):
     return bempp.api.operators.boundary.modified_helmholtz.multitrace_operator(
             grid, wave_number/(1j), parameters, spaces)
 
+def single_layer_and_hypersingular_pair(grid, wave_number, parameters=None, spaces='linear', return_base_slp=False):
+    """Return a pair of hypersingular and single layer operator.
+
+    This function creates a pair of a single-layer and a hypersingular
+    operator, where both operators are instantiated using a common
+    base single-layer operator. Hence, only one single-layer operator
+    needs to be discretized to obtain both operators on the given 
+    grid.
+
+    Parameters
+    ----------
+    grid : bempp.api.grid.Grid
+        The underlying grid for the multitrace operator
+    wave_number : complex
+        Wavenumber of the operator.
+    parameters : bempp.api.common.ParameterList
+        Parameters for the operator. If none given
+        the default global parameter object
+        `bempp.api.global_parameters` is used.
+    spaces: string
+        Choose 'linear' to assemble the operator
+        with continuous linear function spaces for the
+        Dirichlet and Neumann component (default). For
+        a dual pairing of a linear space for the Dirichlet
+        data and piecewise constant space for the Neumann
+        data choose 'dual'.
+    return_base_slp : bool
+        If True also return the original large space single layer 
+        operator from which the hypersingular and slp operator
+        are derived. Default is False
+
+    Returns
+    -------
+    A pair (slp, hyp) of a single-layer and hypersingular operator.
+    If return_base_slp is true a triplet (slp, hyp, base_slp) is
+    returned, where base_slp is the single-layer operator, from
+    which slp and hyp are obtained via sparse transformations.
+
+    """
+    import bempp.api
+    return bempp.api.operators.boundary.modified_helmholtz.single_layer_and_hypersingular_pair(
+            grid, wave_number/(1j), parameters, spaces, return_base_slp)
+
 def interior_calderon_projector(grid, wave_number, parameters=None):
     """Return the interior Calderon projector.
 

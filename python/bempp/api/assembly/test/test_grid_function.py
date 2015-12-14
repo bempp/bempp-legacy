@@ -133,6 +133,22 @@ class TestGridFunction(TestCase):
 
         self.assertAlmostEquals(np.linalg.norm(expected - actual), 0)
 
+    def test_l2_norm(self):
+
+        import numpy as np
+
+        space = self._space
+        n = space.global_dof_count
+        coefficients = np.ones(n)
+        grid_fun = bempp.api.GridFunction(space, coefficients=coefficients)
+
+        ident = bempp.api.operators.boundary.sparse.identity(space, space, space)
+
+        expected = np.sqrt(np.dot(coefficients, ident.weak_form() * coefficients))
+        actual = grid_fun.l2_norm()
+
+        self.assertAlmostEqual(expected, actual, 9)
+
     def test_sum_of_l2_norms_on_elements_is_equal_to_full_l2_norm(self):
 
         import numpy as np

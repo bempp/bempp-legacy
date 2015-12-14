@@ -226,7 +226,7 @@ class GridFunction(object):
 
         for element in element_list:
             integration_elements = element.geometry.integration_elements(points)
-            abs_surface_gradient_square = np.sum(self.evaluate_surface_gradient(element, points)**2, axis=0)
+            abs_surface_gradient_square = np.sum(np.abs(self.evaluate_surface_gradient(element, points))**2, axis=0)
             res += np.sum(abs_surface_gradient_square * weights * integration_elements) 
 
         return np.sqrt(res)
@@ -235,23 +235,23 @@ class GridFunction(object):
     def l2_norm(self, element=None):
         """Return the L^2 norm of the function on a single element or in total."""
 
+
+        from bempp.api.integration import gauss_triangle_points_and_weights
         import numpy as np
         import bempp.api
 
-        ident = bempp.api.operators.boundary.sparse.identity(\
-                self.space, self.space, self.space)
+        res = 0
+        accuracy_order = self.parameters.quadrature.far.single_order
+        points, weights = gauss_triangle_points_and_weights(accuracy_order)
 
-        if element is None:
-            return np.sqrt(np.real(np.dot(self.coefficients.conjugate().T,\
-                    ident.weak_form() * self.coefficients)))
-        else:
-            element_index = self.space.grid.leaf_view.index_set().entity_index(element)
-            local_mass = ident.local_assembler.evaluate_local_weak_forms([element_index])[0]
-            global_dofs, weights = self.space.get_global_dofs(element, dof_weights=True)
-            dof_values = np.asarray([self.coefficients[dof] if dof >= 0 else 0 for dof in global_dofs]) * \
-                    np.asarray(weights)
-            return np.sqrt(np.real(np.dot(dof_values.conjugate().T,\
-                    local_mass.dot(dof_values))))
+        element_list = [element] if element is not None else list(self.grid.leaf_view.entity_iterator(0))
+
+        for element in element_list:
+            integration_elements = element.geometry.integration_elements(points)
+            abs_surface_value_squared = np.sum(np.abs(self.evaluate(element, points))**2, axis=0)
+            res += np.sum(abs_surface_value_squared * weights * integration_elements) 
+
+        return np.sqrt(res)
 
     def relative_error(self, fun, element=None):
         """Compute the relative L^2 error compared to a given analytic function."""
