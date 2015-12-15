@@ -279,7 +279,7 @@ def multitrace_operator(grid, wave_number, parameters=None, spaces='linear'):
                                             op(hypersingular), parameters, spaces)
 
 
-def single_layer_and_hypersingular_pair(grid, wave_number, parameters=None, spaces='linear', return_base_slp=False):
+def single_layer_and_hypersingular_pair(grid, wave_number, parameters=None, spaces='linear', base_slp=None, return_base_slp=False):
     """Return a pair of hypersingular and single layer operator.
 
     This function creates a pair of a single-layer and a hypersingular
@@ -305,6 +305,10 @@ def single_layer_and_hypersingular_pair(grid, wave_number, parameters=None, spac
         a dual pairing of a linear space for the Dirichlet
         data and piecewise constant space for the Neumann
         data choose 'dual'.
+    base_slp : None
+        Specify a base single-layer operator to be used. If 
+        set to None, a base single-layer operator will be
+        instantiated by the function.
     return_base_slp : bool
         If True also return the original large space single layer 
         operator from which the hypersingular and slp operator
@@ -337,5 +341,5 @@ def single_layer_and_hypersingular_pair(grid, wave_number, parameters=None, spac
             return op_impl
 
     ops = _common.slp_and_hyp_impl(
-            grid, op(single_layer), op(hypersingular), parameters, spaces, return_base_slp, laplace=False)
+            grid, op(single_layer), op(hypersingular), parameters, spaces, base_slp, return_base_slp, laplace=False)
     return ops

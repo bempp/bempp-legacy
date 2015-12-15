@@ -106,3 +106,8 @@ class TestAssembler(TestCase):
         expected = as_matrix(operator.weak_form())[self._rows[0]:self._rows[1], self._cols[0]:self._cols[1]]
 
         self.assertAlmostEqual(np.linalg.norm(actual - expected), 0)
+
+if __name__ == "__main__":
+    from unittest import main
+
+    main()

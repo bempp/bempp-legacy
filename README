@@ -7,6 +7,18 @@ www.bempp.org
 
 History
 =======
+
+3.0.3 (15 December 2015)
+------------------------
+Released version 3.0.3
+
+* Various bug fixes
+* New unit tests
+* Added function to efficiently assemble pairs of single-layer/hypersingular operators
+* Cube with reentrant corner added to shapes module
+* Reenabled BLAS-like assembly for higher order spaces
+ 
+
 3.0.2 (03 December 2015)
 ------------------------
 Released version 3.0.2

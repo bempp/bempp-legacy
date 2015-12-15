@@ -209,7 +209,7 @@ def hypersingular(domain, range_, dual_to_range,
 
         return CompoundBoundaryOperator(test_local_ops, slp, trial_local_ops, label=label)
 
-def single_layer_and_hypersingular_pair(grid, parameters=None, spaces='linear', return_base_slp=False, stabilization_factor=0):
+def single_layer_and_hypersingular_pair(grid, parameters=None, spaces='linear', base_slp=None, return_base_slp=False, stabilization_factor=0):
     """Return a pair of hypersingular and single layer operator.
 
     This function creates a pair of a single-layer and a hypersingular
@@ -233,6 +233,10 @@ def single_layer_and_hypersingular_pair(grid, parameters=None, spaces='linear', 
         a dual pairing of a linear space for the Dirichlet
         data and piecewise constant space for the Neumann
         data choose 'dual'.
+    base_slp : None
+        Specify a base single-layer operator to be used. If 
+        set to None, a base single-layer operator will be
+        instantiated by the function.
     return_base_slp : bool
         If True also return the original large space single layer 
         operator from which the hypersingular and slp operator
@@ -256,7 +260,7 @@ def single_layer_and_hypersingular_pair(grid, parameters=None, spaces='linear', 
 
     from bempp.api.operators.boundary import _common
     ops = list(_common.slp_and_hyp_impl(
-            grid, single_layer, hypersingular, parameters, spaces, return_base_slp, laplace=True))
+            grid, single_layer, hypersingular, parameters, spaces, base_slp, return_base_slp, laplace=True))
     if stabilization_factor != 0:
         from bempp.api.assembly import RankOneBoundaryOperator
         ops[1] += stabilization_factor * RankOneBoundaryOperator(
