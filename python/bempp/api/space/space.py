@@ -73,6 +73,15 @@ class Space(object):
                                                local_coordinates,
                                                local_coefficients)
 
+    def global_to_local_dofs(self, global_dofs):
+        """Return the local dofs and weights for the given list of global dofs."""
+
+        import numpy as np
+        if np.min(global_dofs) < 0 or np.max(global_dofs) >= self.global_dof_count:
+            raise ValueError("For each dof index i it must hold that 0 <=i < space.global_dof_count")
+
+        return self._impl.global_to_local_dofs(global_dofs)
+
     def evaluate_surface_gradient(self, element, local_coordinates, local_coefficients):
         """Evaluate the local surface gradient on a given element."""
        

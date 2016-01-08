@@ -11,6 +11,26 @@ from bempp.core.utils cimport np_to_eigen_vector_complex128
 from bempp.core.fiber cimport Shapeset
 from libcpp.vector cimport vector
 
+cdef class LocalDof:
+    cdef int entity_index
+    cdef int dof_index
+
+    def __cinit__(self, int entity_index, int dof_index):
+        pass
+
+    def __init__(self, int entity_index, int dof_index):
+        self.entity_index = entity_index
+        self.dof_index = dof_index
+
+    property entity_index:
+
+        def __get__(self):
+            return self.entity_index
+
+    property dof_index:
+
+        def __get__(self):
+            return self.dof_index
 
 cdef class Space:
 
@@ -126,6 +146,50 @@ cdef class Space:
                     c_evaluateLocalBasis[complex_double](deref(self.impl_), deref(element.impl_), 
                                                         np_to_eigen_matrix_float64(local_coordinates),
                                                         np_to_eigen_vector_complex128(local_coefficients)))
+
+
+    def global_to_local_dofs(self, global_dofs):
+
+        cdef vector[int] global_dofs_vector
+        cdef vector[vector[c_LocalDof]] local_dofs_vector
+        cdef vector[vector[double]] weights_vector
+
+        cdef int i
+        cdef int j
+        global_dofs_vector.resize(len(global_dofs))
+
+        for i in range(len(global_dofs)):
+            global_dofs_vector[i] = global_dofs[i]
+
+        deref(self.impl_).global2localDofs(global_dofs_vector,
+                local_dofs_vector, weights_vector)
+
+        local_dofs = []
+        weights = []
+
+        for i in range(local_dofs_vector.size()):
+            local_dofs.append([])
+            for j in range(local_dofs_vector[i].size()):
+                local_dofs[i].append(LocalDof(
+                    local_dofs_vector[i][j].entity_index,
+                    local_dofs_vector[i][j].dof_index))
+
+
+        for i in range(weights_vector.size()):
+            weights.append([])
+            for j in range(weights_vector[i].size()):
+                weights[i].append(weights_vector[i][j])
+
+        return (local_dofs, weights)
+
+
+
+
+        
+
+
+        
+
 
 
 

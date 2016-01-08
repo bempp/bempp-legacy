@@ -11,6 +11,11 @@ from libcpp cimport complex as ccomplex, bool as cbool
 from libcpp.string cimport string
 from libcpp.vector cimport vector
 
+cdef extern from "bempp/common/types.hpp":
+    cdef cppclass c_LocalDof "Bempp::LocalDof":
+        int entity_index "entityIndex"
+        int dof_index "dofIndex"
+
 cdef extern from "bempp/space/space.hpp":
     cdef cppclass c_Space "Bempp::Space" [BASIS]:
         c_Space(const shared_ptr[c_Grid]&)
@@ -29,6 +34,7 @@ cdef extern from "bempp/space/space.hpp":
         void getGlobalDofs(const c_Entity[codim_zero]&, vector[int]&, vector[double]&) const
         shared_ptr[const c_Space[BASIS]] discontinuousSpace(const shared_ptr[const c_Space[BASIS]]) const
         const c_Shapeset & shapeset(const c_Entity[codim_zero]&)
+        void global2localDofs(const vector[int]&, vector[vector[c_LocalDof]]&, vector[vector[BASIS]]&)
 
 
 cdef class Space:
