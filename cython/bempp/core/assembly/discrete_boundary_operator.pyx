@@ -67,7 +67,7 @@ cdef class RealDiscreteBoundaryOperator:
     def matvec(self,np.ndarray x):
 
         if np.iscomplexobj(x):
-            return self*np.real(x)+1j*(self*np.imag(x))
+            return self.matvec(np.real(x))+1j*self.matvec(np.imag(x))
 
         cdef np.ndarray x_in
         cdef np.ndarray y_inout
