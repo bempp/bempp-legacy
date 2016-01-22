@@ -45,6 +45,22 @@
 
 namespace Bempp {
 
+
+namespace {
+
+template <typename BasisFunctionType>
+class RaviartThomas0SpaceBarycentricFactory : public SpaceFactory<BasisFunctionType> {
+    public:
+       shared_ptr<Space<BasisFunctionType>> create(const shared_ptr<const Grid> &grid,
+                               const GridSegment &segment) const override{
+           
+           return shared_ptr<Space<BasisFunctionType>>(new RaviartThomas0VectorSpaceBarycentric<BasisFunctionType>(grid, segment));
+       }
+           
+};
+
+}
+
 /** \cond PRIVATE */
 template <typename BasisFunctionType>
 struct RaviartThomas0VectorSpaceBarycentric<BasisFunctionType>::Impl {
@@ -532,7 +548,75 @@ void RaviartThomas0VectorSpaceBarycentric<BasisFunctionType>::dumpClusterIdsEx(
                            "dumpClusterIdsEx(): Not implemented yet");
 }
 
+
+
+
+
+
+
+
+
+
 template <typename BasisFunctionType>
+shared_ptr<Space<BasisFunctionType>>
+adaptiveRaviartThomas0VectorSpaceBarycentric(const shared_ptr<const Grid> &grid) {
+
+    shared_ptr<SpaceFactory<BasisFunctionType>> factory(
+            new RaviartThomas0SpaceBarycentricFactory<BasisFunctionType>());
+  return shared_ptr<Space<BasisFunctionType>>(
+      new AdaptiveSpace<BasisFunctionType>(factory, grid));
+}
+
+template <typename BasisFunctionType>
+shared_ptr<Space<BasisFunctionType>>
+adaptiveRaviartThomas0VectorSpaceBarycentric(const shared_ptr<const Grid> &grid,
+                                     const std::vector<int> &domains,
+                                     bool open) {
+
+    shared_ptr<SpaceFactory<BasisFunctionType>> factory(
+            new RaviartThomas0SpaceBarycentricFactory<BasisFunctionType>());
+  return shared_ptr<Space<BasisFunctionType>>(
+      new AdaptiveSpace<BasisFunctionType>(factory, grid, domains, open));
+}
+
+template <typename BasisFunctionType>
+shared_ptr<Space<BasisFunctionType>>
+adaptiveRaviartThomas0VectorSpaceBarycentric(const shared_ptr<const Grid> &grid,
+                                     int domain, bool open) {
+
+    shared_ptr<SpaceFactory<BasisFunctionType>> factory(
+            new RaviartThomas0SpaceBarycentricFactory<BasisFunctionType>());
+  return shared_ptr<Space<BasisFunctionType>>(
+      new AdaptiveSpace<BasisFunctionType>(factory, grid, std::vector<int>({domain}), open));
+}
+
+#define INSTANTIATE_FREE_FUNCTIONS(BASIS)                                      \
+  template shared_ptr<Space<BASIS>>                                            \
+  adaptiveRaviartThomas0VectorSpaceBarycentric<BASIS>(const shared_ptr<const Grid> &); \
+  template shared_ptr<Space<BASIS>>                                            \
+  adaptiveRaviartThomas0VectorSpaceBarycentric<BASIS>(const shared_ptr<const Grid> &,  \
+                                              const std::vector<int> &, bool); \
+  template shared_ptr<Space<BASIS>>                                            \
+  adaptiveRaviartThomas0VectorSpaceBarycentric<BASIS>(const shared_ptr<const Grid> &,  \
+                                              int, bool)
+
+FIBER_ITERATE_OVER_BASIS_TYPES(INSTANTIATE_FREE_FUNCTIONS);
+
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(RaviartThomas0VectorSpaceBarycentric);
+
+} // namespace Bempp
+
+
+
+
+
+
+
+
+
+
+
+/*template <typename BasisFunctionType>
 shared_ptr<Space<BasisFunctionType>>
 adaptiveRaviartThomas0VectorSpaceBarycentric(const shared_ptr<const Grid> &grid) {
 
@@ -579,3 +663,4 @@ FIBER_ITERATE_OVER_BASIS_TYPES(INSTANTIATE_FREE_FUNCTIONS);
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(RaviartThomas0VectorSpaceBarycentric);
 
 } // namespace Bempp
+*/
