@@ -37,24 +37,20 @@ inline void
 ClusterTreeNodeData::geometryData(const std::vector<Point> &centerPoints,
                                   const std::vector<Point> &dofBoundingPoints) {
 
+  // Compute the centroid
 
-  // Compute the centroid 
-  
   centroid = Eigen::Vector3d::Zero();
 
-  for (const auto& p: centerPoints){
-    
+  for (const auto &p : centerPoints) {
+
     centroid(0) += p.x();
     centroid(1) += p.y();
     centroid(2) += p.z();
-
   }
 
   centroid /= centerPoints.size();
 
   // Now compute the main direction of the cluster
-
-
 
   Eigen::Matrix<double, 3, Eigen::Dynamic> boundingPoints(
       3, dofBoundingPoints.size());
@@ -65,13 +61,13 @@ ClusterTreeNodeData::geometryData(const std::vector<Point> &centerPoints,
     boundingPoints(2, i) = dofBoundingPoints[i].z();
   }
 
-  auto shiftedBoundingPoints = boundingPoints.colwise()-centroid;
+  auto shiftedBoundingPoints = boundingPoints.colwise() - centroid;
 
   Eigen::Matrix3d covarianceMatrix(Eigen::Matrix3d::Zero());
 
   for (int i = 0; i < boundingPoints.cols(); ++i)
-    covarianceMatrix += shiftedBoundingPoints.col(i)*
-      shiftedBoundingPoints.col(i).transpose();
+    covarianceMatrix +=
+        shiftedBoundingPoints.col(i) * shiftedBoundingPoints.col(i).transpose();
 
   Eigen::SelfAdjointEigenSolver<Eigen::Matrix3d> es(covarianceMatrix);
   mainDirection = es.eigenvectors().col(2);
@@ -95,9 +91,9 @@ ClusterTreeNodeData::geometryData(const std::vector<Point> &centerPoints,
 
   // Compute the diameter
 
-  auto projections = shiftedBoundingPoints.transpose()*mainDirection;
+  auto projections = shiftedBoundingPoints.transpose() * mainDirection;
 
-  diameter = projections.maxCoeff()-projections.minCoeff();
+  diameter = projections.maxCoeff() - projections.minCoeff();
 }
 
 template <int N> std::size_t ClusterTree<N>::numberOfDofs() const {
@@ -159,12 +155,16 @@ ClusterTree<2>::splitClusterTreeByGeometry(const Geometry &geometry,
       const IndexSetType &indexSet) {
 
     std::size_t indexSetSize = indexSet.size();
+    bool stop_recursion = false;
 
     assert(indexSetSize ==
            clusterTreeNode->data().indexRange[1] -
                clusterTreeNode->data().indexRange[0]);
 
-    if (indexSetSize > minBlockSize) {
+    if (indexSetSize <= minBlockSize)
+      stop_recursion = true;
+
+    if (!stop_recursion) {
 
       IndexSetType firstIndexSet;
       IndexSetType secondIndexSet;
@@ -176,55 +176,86 @@ ClusterTree<2>::splitClusterTreeByGeometry(const Geometry &geometry,
       std::vector<Point> firstBoundingPointSet;
       std::vector<Point> secondBoundingPointSet;
 
-      for (auto index : indexSet){
+      // Compute all inner products along the main direction
 
-        Eigen::Vector3d shiftedCenter = -1.*clusterTreeNode->data().centroid;
+      std::map<std::size_t, double> products;
+
+      for (auto index : indexSet) {
+
+        Eigen::Vector3d shiftedCenter = -1. * clusterTreeNode->data().centroid;
         shiftedCenter(0) += geometry[index]->center.x();
         shiftedCenter(1) += geometry[index]->center.y();
         shiftedCenter(2) += geometry[index]->center.z();
 
-        double orientation = shiftedCenter.transpose()*
-          clusterTreeNode->data().mainDirection;
+        products[index] =
+            (shiftedCenter.transpose() * clusterTreeNode->data().mainDirection);
+      }
 
-        if (orientation>0) {
+      // Create the sort indices;
+
+      IndexSetType sortedIndices(indexSet);
+      std::sort(begin(sortedIndices), end(sortedIndices),
+                [&](std::size_t i, std::size_t j) {
+                  return (products[i] < products[j]);
+                });
+
+      int i1 = 0;
+      int i2 = sortedIndices.size() - 1;
+
+      while (i1 <= i2) {
+
+        if (i1 == i2) {
+          std::size_t index = sortedIndices[i1];
           firstIndexSet.push_back(index);
           firstPointSet.push_back(geometry[index]->center);
           geometry[index]->boundingBox.corners(firstBoundingPointSet);
         } else {
-          secondIndexSet.push_back(index);
-          secondPointSet.push_back(geometry[index]->center);
-          geometry[index]->boundingBox.corners(secondBoundingPointSet);
+
+          std::size_t index1 = sortedIndices[i1];
+          std::size_t index2 = sortedIndices[i2];
+
+          firstIndexSet.push_back(index1);
+          firstPointSet.push_back(geometry[index1]->center);
+          geometry[index1]->boundingBox.corners(firstBoundingPointSet);
+
+          secondIndexSet.push_back(index2);
+          secondPointSet.push_back(geometry[index2]->center);
+          geometry[index2]->boundingBox.corners(secondBoundingPointSet);
         }
 
+        i1++;
+        i2--;
       }
 
-      if (firstIndexSet.size() == 0)
-        throw std::runtime_error(
-            "hmat::splitClusterTreeByGeometry(): First index set is zero.");
+      // This does not occur unless there is only one element left in the
+      // IndexSet.
+      if (firstIndexSet.size() == 0 || secondIndexSet.size() == 0) {
+        stop_recursion = true;
+      }
 
-      if (secondIndexSet.size() == 0)
-        throw std::runtime_error(
-            "hmat::splitClusterTreeByGeometry(): Second index set is zero.");
+      if (!stop_recursion) {
 
-      auto pivot = firstIndexSet.size();
+        auto pivot = firstIndexSet.size();
 
-      IndexRangeType newRangeFirst = clusterTreeNode->data().indexRange;
-      IndexRangeType newRangeSecond = clusterTreeNode->data().indexRange;
+        IndexRangeType newRangeFirst = clusterTreeNode->data().indexRange;
+        IndexRangeType newRangeSecond = clusterTreeNode->data().indexRange;
 
-      newRangeFirst[1] = newRangeSecond[0] = newRangeFirst[0] + pivot;
+        newRangeFirst[1] = newRangeSecond[0] = newRangeFirst[0] + pivot;
 
-      clusterTreeNode->addChild(ClusterTreeNodeData(newRangeFirst,
-                                                    firstPointSet,
-                                                    firstBoundingPointSet),
-                                0);
-      clusterTreeNode->addChild(ClusterTreeNodeData(newRangeSecond,
-                                                    secondPointSet,
-                                                    secondBoundingPointSet),
-                                1);
-      splittingFun(clusterTreeNode->child(0), firstIndexSet);
-      splittingFun(clusterTreeNode->child(1), secondIndexSet);
+        clusterTreeNode->addChild(ClusterTreeNodeData(newRangeFirst,
+                                                      firstPointSet,
+                                                      firstBoundingPointSet),
+                                  0);
+        clusterTreeNode->addChild(ClusterTreeNodeData(newRangeSecond,
+                                                      secondPointSet,
+                                                      secondBoundingPointSet),
+                                  1);
+        splittingFun(clusterTreeNode->child(0), firstIndexSet);
+        splittingFun(clusterTreeNode->child(1), secondIndexSet);
+      }
+    }
 
-    } else {
+    if (stop_recursion) {
 
       int originalIndexCount = 0;
       const auto &indexRange = clusterTreeNode->data().indexRange;

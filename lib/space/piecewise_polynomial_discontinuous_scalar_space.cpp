@@ -46,22 +46,24 @@ namespace Bempp {
 
 namespace {
 
-// Helper class that has a constructor without the space order
-// (needed for adaptive space template)
-template <typename BasisFunctionType, int order>
-class PiecewisePolynomialDiscontinuousScalarSpaceHelper :
-    public Bempp::PiecewisePolynomialDiscontinuousScalarSpace<BasisFunctionType> {
+template <typename BasisFunctionType>
+class PolynomialDiscontinuousSpaceFactory : public SpaceFactory<BasisFunctionType> {
 
-public:
+    public:
+       PolynomialDiscontinuousSpaceFactory(int order, int dofMode) :
+           m_order(order), m_dofMode(dofMode) {}
 
-        PiecewisePolynomialDiscontinuousScalarSpaceHelper(const shared_ptr<const Grid>& grid, GridSegment segment):
-                Bempp::PiecewisePolynomialDiscontinuousScalarSpace<BasisFunctionType>(grid,order, segment){}
+       shared_ptr<Space<BasisFunctionType>> create(const shared_ptr<const Grid> &grid,
+                               const GridSegment &segment) const override{
+           
+           return shared_ptr<Space<BasisFunctionType>>(new PiecewisePolynomialDiscontinuousScalarSpace<BasisFunctionType>(grid, m_order, segment, m_dofMode));
+       }
+    private:
+       int m_order;
+       int m_dofMode;
+           
+};
 
-        PiecewisePolynomialDiscontinuousScalarSpaceHelper(const shared_ptr<const Grid>& grid):
-                Bempp::PiecewisePolynomialDiscontinuousScalarSpace<BasisFunctionType>(grid,order){}
-
-
-    };
 
 }
 
@@ -627,126 +629,37 @@ shared_ptr<Space<BasisFunctionType>> adaptivePiecewisePolynomialDiscontinuousSca
         int order)
 {
 
-    if (order==0)
-        return shared_ptr<Space<BasisFunctionType>>(
-                 new AdaptiveSpace<BasisFunctionType, PiecewisePolynomialDiscontinuousScalarSpaceHelper<BasisFunctionType,0>>(grid));
-    if (order==1)
-        return shared_ptr<Space<BasisFunctionType>>(
-                 new AdaptiveSpace<BasisFunctionType, PiecewisePolynomialDiscontinuousScalarSpaceHelper<BasisFunctionType,1>>(grid));
-    if (order==2)
-        return shared_ptr<Space<BasisFunctionType>>(
-                 new AdaptiveSpace<BasisFunctionType, PiecewisePolynomialDiscontinuousScalarSpaceHelper<BasisFunctionType,2>>(grid));
-    if (order==3)
-        return shared_ptr<Space<BasisFunctionType>>(
-                 new AdaptiveSpace<BasisFunctionType, PiecewisePolynomialDiscontinuousScalarSpaceHelper<BasisFunctionType,3>>(grid));
-    if (order==4)
-        return shared_ptr<Space<BasisFunctionType>>(
-                 new AdaptiveSpace<BasisFunctionType, PiecewisePolynomialDiscontinuousScalarSpaceHelper<BasisFunctionType,4>>(grid));
-    if (order==5)
-        return shared_ptr<Space<BasisFunctionType>>(
-                 new AdaptiveSpace<BasisFunctionType, PiecewisePolynomialDiscontinuousScalarSpaceHelper<BasisFunctionType,5>>(grid));
-    if (order==6)
-        return shared_ptr<Space<BasisFunctionType>>(
-                 new AdaptiveSpace<BasisFunctionType, PiecewisePolynomialDiscontinuousScalarSpaceHelper<BasisFunctionType,6>>(grid));
-    if (order==7)
-        return shared_ptr<Space<BasisFunctionType>>(
-                 new AdaptiveSpace<BasisFunctionType, PiecewisePolynomialDiscontinuousScalarSpaceHelper<BasisFunctionType,7>>(grid));
-    if (order==8)
-        return shared_ptr<Space<BasisFunctionType>>(
-                 new AdaptiveSpace<BasisFunctionType, PiecewisePolynomialDiscontinuousScalarSpaceHelper<BasisFunctionType,8>>(grid));
-    if (order==9)
-        return shared_ptr<Space<BasisFunctionType>>(
-                 new AdaptiveSpace<BasisFunctionType, PiecewisePolynomialDiscontinuousScalarSpaceHelper<BasisFunctionType,9>>(grid));
-    if (order==10)
-        return shared_ptr<Space<BasisFunctionType>>(
-                 new AdaptiveSpace<BasisFunctionType, PiecewisePolynomialDiscontinuousScalarSpaceHelper<BasisFunctionType,10>>(grid));
+    shared_ptr<SpaceFactory<BasisFunctionType>> factory(
+            new PolynomialDiscontinuousSpaceFactory<BasisFunctionType>(order, REFERENCE_POINT_ON_SEGMENT));
+    return shared_ptr<Space<BasisFunctionType>>(
+            new AdaptiveSpace<BasisFunctionType>(factory, grid));
 
-    throw std::runtime_error("adaptivePiecewisePolynomialDiscontinuousScalarSpace(): Wrong order");
 
 }
 
 template <typename BasisFunctionType>
 shared_ptr<Space<BasisFunctionType>> adaptivePiecewisePolynomialDiscontinuousScalarSpace(const shared_ptr<const Grid>& grid, int order,
-        const std::vector<int>& domains, bool open)
+        const std::vector<int>& domains, bool open, int dofMode)
 {
 
-    if (order==0)
-        return shared_ptr<Space<BasisFunctionType>>(
-                 new AdaptiveSpace<BasisFunctionType, PiecewisePolynomialDiscontinuousScalarSpaceHelper<BasisFunctionType,0>>(grid, domains, open));
-    if (order==1)
-        return shared_ptr<Space<BasisFunctionType>>(
-                 new AdaptiveSpace<BasisFunctionType, PiecewisePolynomialDiscontinuousScalarSpaceHelper<BasisFunctionType,1>>(grid, domains, open));
-    if (order==2)
-        return shared_ptr<Space<BasisFunctionType>>(
-                 new AdaptiveSpace<BasisFunctionType, PiecewisePolynomialDiscontinuousScalarSpaceHelper<BasisFunctionType,2>>(grid, domains, open));
-    if (order==3)
-        return shared_ptr<Space<BasisFunctionType>>(
-                 new AdaptiveSpace<BasisFunctionType, PiecewisePolynomialDiscontinuousScalarSpaceHelper<BasisFunctionType,3>>(grid, domains, open));
-    if (order==4)
-        return shared_ptr<Space<BasisFunctionType>>(
-                 new AdaptiveSpace<BasisFunctionType, PiecewisePolynomialDiscontinuousScalarSpaceHelper<BasisFunctionType,4>>(grid, domains, open));
-    if (order==5)
-        return shared_ptr<Space<BasisFunctionType>>(
-                 new AdaptiveSpace<BasisFunctionType, PiecewisePolynomialDiscontinuousScalarSpaceHelper<BasisFunctionType,5>>(grid, domains, open));
-    if (order==6)
-        return shared_ptr<Space<BasisFunctionType>>(
-                 new AdaptiveSpace<BasisFunctionType, PiecewisePolynomialDiscontinuousScalarSpaceHelper<BasisFunctionType,6>>(grid, domains, open));
-    if (order==7)
-        return shared_ptr<Space<BasisFunctionType>>(
-                 new AdaptiveSpace<BasisFunctionType, PiecewisePolynomialDiscontinuousScalarSpaceHelper<BasisFunctionType,7>>(grid, domains, open));
-    if (order==8)
-        return shared_ptr<Space<BasisFunctionType>>(
-                 new AdaptiveSpace<BasisFunctionType, PiecewisePolynomialDiscontinuousScalarSpaceHelper<BasisFunctionType,8>>(grid, domains, open));
-    if (order==9)
-        return shared_ptr<Space<BasisFunctionType>>(
-                 new AdaptiveSpace<BasisFunctionType, PiecewisePolynomialDiscontinuousScalarSpaceHelper<BasisFunctionType,9>>(grid, domains, open));
-    if (order==10)
-        return shared_ptr<Space<BasisFunctionType>>(
-                 new AdaptiveSpace<BasisFunctionType, PiecewisePolynomialDiscontinuousScalarSpaceHelper<BasisFunctionType,10>>(grid, domains, open));
-
-    throw std::runtime_error("adaptivePiecewisePolynomialDiscontinuousScalarSpace(): Wrong order");
+    shared_ptr<SpaceFactory<BasisFunctionType>> factory(
+            new PolynomialDiscontinuousSpaceFactory<BasisFunctionType>(order, dofMode));
+    return shared_ptr<Space<BasisFunctionType>>(
+            new AdaptiveSpace<BasisFunctionType>(factory, grid, domains, open));
 
 }
 
 template <typename BasisFunctionType>
 shared_ptr<Space<BasisFunctionType>> adaptivePiecewisePolynomialDiscontinuousScalarSpace(const shared_ptr<const Grid>& grid, int order, 
-        int domain, bool open)
+        int domain, bool open, int dofMode)
 {
-    if (order==0)
-        return shared_ptr<Space<BasisFunctionType>>(
-                 new AdaptiveSpace<BasisFunctionType, PiecewisePolynomialDiscontinuousScalarSpaceHelper<BasisFunctionType,0>>(grid, std::vector<int>({domain}), open));
-    if (order==1)
-        return shared_ptr<Space<BasisFunctionType>>(
-                 new AdaptiveSpace<BasisFunctionType, PiecewisePolynomialDiscontinuousScalarSpaceHelper<BasisFunctionType,1>>(grid, std::vector<int>({domain}), open));
-    if (order==2)
-        return shared_ptr<Space<BasisFunctionType>>(
-                 new AdaptiveSpace<BasisFunctionType, PiecewisePolynomialDiscontinuousScalarSpaceHelper<BasisFunctionType,2>>(grid, std::vector<int>({domain}), open));
-    if (order==3)
-        return shared_ptr<Space<BasisFunctionType>>(
-                 new AdaptiveSpace<BasisFunctionType, PiecewisePolynomialDiscontinuousScalarSpaceHelper<BasisFunctionType,3>>(grid, std::vector<int>({domain}), open));
-    if (order==4)
-        return shared_ptr<Space<BasisFunctionType>>(
-                 new AdaptiveSpace<BasisFunctionType, PiecewisePolynomialDiscontinuousScalarSpaceHelper<BasisFunctionType,4>>(grid, std::vector<int>({domain}), open));
-    if (order==5)
-        return shared_ptr<Space<BasisFunctionType>>(
-                 new AdaptiveSpace<BasisFunctionType, PiecewisePolynomialDiscontinuousScalarSpaceHelper<BasisFunctionType,5>>(grid, std::vector<int>({domain}), open));
-    if (order==6)
-        return shared_ptr<Space<BasisFunctionType>>(
-                 new AdaptiveSpace<BasisFunctionType, PiecewisePolynomialDiscontinuousScalarSpaceHelper<BasisFunctionType,6>>(grid, std::vector<int>({domain}), open));
-    if (order==7)
-        return shared_ptr<Space<BasisFunctionType>>(
-                 new AdaptiveSpace<BasisFunctionType, PiecewisePolynomialDiscontinuousScalarSpaceHelper<BasisFunctionType,7>>(grid, std::vector<int>({domain}), open));
-    if (order==8)
-        return shared_ptr<Space<BasisFunctionType>>(
-                 new AdaptiveSpace<BasisFunctionType, PiecewisePolynomialDiscontinuousScalarSpaceHelper<BasisFunctionType,8>>(grid, std::vector<int>({domain}), open));
-    if (order==9)
-        return shared_ptr<Space<BasisFunctionType>>(
-                 new AdaptiveSpace<BasisFunctionType, PiecewisePolynomialDiscontinuousScalarSpaceHelper<BasisFunctionType,9>>(grid, std::vector<int>({domain}), open));
-    if (order==10)
-        return shared_ptr<Space<BasisFunctionType>>(
-                 new AdaptiveSpace<BasisFunctionType, PiecewisePolynomialDiscontinuousScalarSpaceHelper<BasisFunctionType,10>>(grid, std::vector<int>({domain}), open));
-    
-    throw std::runtime_error("adaptivePiecewisePolynomialDiscontinuousScalarSpace(): Wrong order");
+
+
+    shared_ptr<SpaceFactory<BasisFunctionType>> factory(
+            new PolynomialDiscontinuousSpaceFactory<BasisFunctionType>(order, dofMode));
+    return shared_ptr<Space<BasisFunctionType>>(
+            new AdaptiveSpace<BasisFunctionType>(factory, grid, std::vector<int>({domain}), open));
+
 }
 
 #define INSTANTIATE_FREE_FUNCTIONS(BASIS)   \
@@ -754,10 +667,10 @@ shared_ptr<Space<BasisFunctionType>> adaptivePiecewisePolynomialDiscontinuousSca
             const shared_ptr<const Grid>&, int); \
     template shared_ptr<Space<BASIS>> adaptivePiecewisePolynomialDiscontinuousScalarSpace<BASIS>( \
             const shared_ptr<const Grid>&, int, \
-            const std::vector<int>&, bool); \
+            const std::vector<int>&, bool, int); \
     template shared_ptr<Space<BASIS>> adaptivePiecewisePolynomialDiscontinuousScalarSpace<BASIS>( \
             const shared_ptr<const Grid>&, int, \
-            int, bool) 
+            int, bool, int) 
 
 
 FIBER_ITERATE_OVER_BASIS_TYPES(INSTANTIATE_FREE_FUNCTIONS);

@@ -400,6 +400,7 @@ public:
 
   bool adapt() override {
 
+    m_barycentricGrid.reset();
     return m_dune_grid->adapt();
 
   }
@@ -416,6 +417,7 @@ public:
 
   void globalRefine(int refCount) override {
 
+    m_barycentricGrid.reset();
     m_dune_grid->globalRefine(refCount);
 
   }

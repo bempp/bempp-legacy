@@ -43,6 +43,21 @@
 
 namespace Bempp {
 
+namespace {
+
+template <typename BasisFunctionType>
+class PiecewiseConstantDualGridSpaceFactory : public SpaceFactory<BasisFunctionType> {
+    public:
+       shared_ptr<Space<BasisFunctionType>> create(const shared_ptr<const Grid> &grid,
+                               const GridSegment &segment) const override{
+           
+           return shared_ptr<Space<BasisFunctionType>>(new PiecewiseConstantDualGridScalarSpace<BasisFunctionType>(grid, segment));
+       }
+           
+};
+
+}
+
 template <typename BasisFunctionType>
 PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::
     PiecewiseConstantDualGridScalarSpace(const shared_ptr<const Grid> &grid)
@@ -429,8 +444,10 @@ template <typename BasisFunctionType>
 shared_ptr<Space<BasisFunctionType>> adaptivePiecewiseConstantDualGridScalarSpace(const shared_ptr<const Grid>& grid)
 {
 
+    shared_ptr<SpaceFactory<BasisFunctionType>> factory(
+            new PiecewiseConstantDualGridSpaceFactory<BasisFunctionType>());
     return shared_ptr<Space<BasisFunctionType>>(
-            new AdaptiveSpace<BasisFunctionType, PiecewiseConstantDualGridScalarSpace<BasisFunctionType>>(grid));
+            new AdaptiveSpace<BasisFunctionType>(factory, grid));
 
 }
 

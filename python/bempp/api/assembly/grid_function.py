@@ -181,26 +181,107 @@ class GridFunction(object):
                 np.asarray(weights)
         return self.space.evaluate_local_basis(element, local_coordinates, dof_values)
 
+    def evaluate_surface_gradient(self, element, local_coordinates):
+        """Evaluate surface gradient of grid function (only scalar spaces supported)."""
+
+        import numpy as np
+        global_dofs, weights = self.space.get_global_dofs(element, dof_weights=True)
+        dof_values = np.asarray([self.coefficients[dof] if dof >= 0 else 0 for dof in global_dofs]) * \
+                np.asarray(weights)
+        return self.space.evaluate_surface_gradient(element, local_coordinates, dof_values)
+        
+
+    def integrate(self, element=None):
+        """Integrate the function over the grid or a single element."""
+
+        from bempp.api.integration import gauss_triangle_points_and_weights
+        import numpy as np
+
+        n = self.component_count
+        res = np.zeros((n,1),dtype='float64')
+        accuracy_order = self.parameters.quadrature.far.single_order
+        points, weights = gauss_triangle_points_and_weights(accuracy_order)
+
+        element_list = [element] if element is not None else list(self.grid.leaf_view.entity_iterator(0))
+
+        for element in element_list:
+            integration_elements = element.geometry.integration_elements(points)
+            res += np.sum(self.evaluate(element, points) * weights * integration_elements, 
+                    axis=1)
+
+        return res
+
+
+    def surface_grad_norm(self, element=None):
+        """Return the norm of the surface gradient on a single element or in total."""
+
+        from bempp.api.integration import gauss_triangle_points_and_weights
+        import numpy as np
+
+        res = 0
+        accuracy_order = self.parameters.quadrature.far.single_order
+        points, weights = gauss_triangle_points_and_weights(accuracy_order)
+
+        element_list = [element] if element is not None else list(self.grid.leaf_view.entity_iterator(0))
+
+        for element in element_list:
+            integration_elements = element.geometry.integration_elements(points)
+            abs_surface_gradient_square = np.sum(np.abs(self.evaluate_surface_gradient(element, points))**2, axis=0)
+            res += np.sum(abs_surface_gradient_square * weights * integration_elements) 
+
+        return np.sqrt(res)
+
+
     def l2_norm(self, element=None):
         """Return the L^2 norm of the function on a single element or in total."""
 
+
+        from bempp.api.integration import gauss_triangle_points_and_weights
         import numpy as np
         import bempp.api
 
-        ident = bempp.api.operators.boundary.sparse.identity(\
-                self.space, self.space, self.space)
+        res = 0
+        accuracy_order = self.parameters.quadrature.far.single_order
+        points, weights = gauss_triangle_points_and_weights(accuracy_order)
 
-        if element is None:
-            return np.sqrt(np.real(np.dot(self.coefficients.conjugate().T,\
-                    ident.weak_form() * self.coefficients)))
-        else:
-            element_index = self.space.grid.leaf_view.index_set().entity_index(element)
-            local_mass = ident.local_assembler.evaluate_local_weak_forms([element_index])[0]
-            global_dofs, weights = self.space.get_global_dofs(element, dof_weights=True)
-            dof_values = np.asarray([self.coefficients[dof] if dof >= 0 else 0 for dof in global_dofs]) * \
-                    np.asarray(weights)
-            return np.sqrt(np.real(np.dot(dof_values.conjugate().T,\
-                    local_mass.dot(dof_values))))
+        element_list = [element] if element is not None else list(self.grid.leaf_view.entity_iterator(0))
+
+        for element in element_list:
+            integration_elements = element.geometry.integration_elements(points)
+            abs_surface_value_squared = np.sum(np.abs(self.evaluate(element, points))**2, axis=0)
+            res += np.sum(abs_surface_value_squared * weights * integration_elements) 
+
+        return np.sqrt(res)
+
+    def relative_error(self, fun, element=None):
+        """Compute the relative L^2 error compared to a given analytic function."""
+
+
+        from bempp.api.integration import gauss_triangle_points_and_weights
+        import numpy as np
+
+        global_diff = 0
+        fun_l2_norm = 0
+        accuracy_order = self.parameters.quadrature.far.single_order
+        points, weights = gauss_triangle_points_and_weights(accuracy_order)
+        npoints = points.shape[1]
+
+        element_list = [element] if element is not None else list(self.grid.leaf_view.entity_iterator(0))
+
+        for element in element_list:
+            integration_elements = element.geometry.integration_elements(points)
+            global_dofs = element.geometry.local2global(points)
+            fun_vals = np.zeros((self.component_count, npoints), dtype=self.dtype)
+
+            for j in range(npoints):
+                fun_vals[:, j] = fun(global_dofs[:, j])
+
+            diff = np.sum(np.abs(self.evaluate(element, points) - fun_vals)**2, axis=0)
+            global_diff += np.sum(diff * integration_elements * weights)
+            abs_fun_squared = np.sum(np.abs(fun_vals)**2, axis=0)
+            fun_l2_norm += np.sum(abs_fun_squared * integration_elements * weights)
+
+        return np.sqrt(global_diff/fun_l2_norm)
 
     def __add__(self, other):
 
@@ -292,7 +373,7 @@ class GridFunction(object):
     @property
     def component_count(self):
         """Return the number of components of the grid function values."""
-        return self.space.codomainDimension
+        return self.space.codomain_dimension
 
     @property
     def dtype(self):

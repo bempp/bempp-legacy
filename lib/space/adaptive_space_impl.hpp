@@ -23,53 +23,55 @@
 
 namespace Bempp {
 
-template <typename BasisFunctionType_, typename SpaceType>
-AdaptiveSpace<BasisFunctionType_,SpaceType>::AdaptiveSpace(const shared_ptr<const Grid>& grid, const std::vector<int>& domains, bool closed):
-    Space<BasisFunctionType_>(grid), 
+template <typename BasisFunctionType_>
+AdaptiveSpace<BasisFunctionType_>::AdaptiveSpace(const shared_ptr<const SpaceFactory<BasisFunctionType_>>& factory, 
+        const shared_ptr<const Grid>& grid, const std::vector<int>& domains, bool closed):
+    Space<BasisFunctionType_>(grid), m_factory(factory),
     m_gridSegmentFactory(grid, domains, closed), m_level(0), m_grid(grid) {
 
         initialize();
     }
 
-template <typename BasisFunctionType_, typename SpaceType>
-AdaptiveSpace<BasisFunctionType_,SpaceType>::AdaptiveSpace(const shared_ptr<const Grid>& grid):
-    Space<BasisFunctionType_>(grid), 
+template <typename BasisFunctionType_>
+AdaptiveSpace<BasisFunctionType_>::AdaptiveSpace(const shared_ptr<const SpaceFactory<BasisFunctionType_>>& factory,
+        const shared_ptr<const Grid>& grid):
+    Space<BasisFunctionType_>(grid), m_factory(factory),
     m_gridSegmentFactory(grid), m_level(0), m_grid(grid) {
 
         initialize();
     }
 
-template <typename BasisFunctionType_, typename SpaceType>
-AdaptiveSpace<BasisFunctionType_,SpaceType>::~AdaptiveSpace()
+template <typename BasisFunctionType_>
+AdaptiveSpace<BasisFunctionType_>::~AdaptiveSpace()
 {
     m_connection.disconnect();
 }
 
-template <typename BasisFunctionType_, typename SpaceType>
-void AdaptiveSpace<BasisFunctionType_,SpaceType>::initialize()
+template <typename BasisFunctionType_>
+void AdaptiveSpace<BasisFunctionType_>::initialize()
 {
 
-    m_space = shared_ptr<Space<BasisFunctionType_>>(new SpaceType(m_grid, 
-            m_gridSegmentFactory.update()));
+    m_space = m_factory->create(m_grid, 
+            m_gridSegmentFactory.update());
     m_connection = m_grid->connect(boost::bind(&Space<BasisFunctionType>::update,this));
 
 }
 
-template <typename BasisFunctionType_, typename SpaceType>
-AdaptiveSpace<BasisFunctionType_,SpaceType>::AdaptiveSpace(const AdaptiveSpace<BasisFunctionType_,SpaceType>& other): 
-    Space<BasisFunctionType>(other), m_gridSegmentFactory(other.m_gridSegmentFactory), m_level(other.m_level), m_grid(other.m_grid), m_space(other.m_space)
+template <typename BasisFunctionType_>
+AdaptiveSpace<BasisFunctionType_>::AdaptiveSpace(const AdaptiveSpace<BasisFunctionType_>& other): 
+    Space<BasisFunctionType>(other), m_factory(other.m_factory), m_gridSegmentFactory(other.m_gridSegmentFactory), m_level(other.m_level), m_grid(other.m_grid), m_space(other.m_space)
 {
 }
 
-template <typename BasisFunctionType_, typename SpaceType>
-bool AdaptiveSpace<BasisFunctionType_,SpaceType>::isDiscontinuous() const {
+template <typename BasisFunctionType_>
+bool AdaptiveSpace<BasisFunctionType_>::isDiscontinuous() const {
 
     return currentSpace().isDiscontinuous();
 
 }
 
-template <typename BasisFunctionType_, typename SpaceType>
-shared_ptr<const Space<BasisFunctionType_>> AdaptiveSpace<BasisFunctionType_,SpaceType>::discontinuousSpace(
+template <typename BasisFunctionType_>
+shared_ptr<const Space<BasisFunctionType_>> AdaptiveSpace<BasisFunctionType_>::discontinuousSpace(
       const shared_ptr<const Space<BasisFunctionType_>> &self) const
 {
 
@@ -78,66 +80,66 @@ shared_ptr<const Space<BasisFunctionType_>> AdaptiveSpace<BasisFunctionType_,Spa
 }
 
 
-template <typename BasisFunctionType_, typename SpaceType>
-bool AdaptiveSpace<BasisFunctionType_,SpaceType>::isBarycentric() const
+template <typename BasisFunctionType_>
+bool AdaptiveSpace<BasisFunctionType_>::isBarycentric() const
 {
 
     return currentSpace().isBarycentric();
 
 }
 
-template <typename BasisFunctionType_, typename SpaceType>
-shared_ptr<const Grid> AdaptiveSpace<BasisFunctionType_,SpaceType>::grid() const
+template <typename BasisFunctionType_>
+shared_ptr<const Grid> AdaptiveSpace<BasisFunctionType_>::grid() const
 {
 
     return currentSpace().grid();
 
 }
 
-template <typename BasisFunctionType_, typename SpaceType>
-const GridView & AdaptiveSpace<BasisFunctionType_,SpaceType>::gridView() const
+template <typename BasisFunctionType_>
+const GridView & AdaptiveSpace<BasisFunctionType_>::gridView() const
 {
 
     return currentSpace().gridView();
 
 }
 
-template <typename BasisFunctionType_, typename SpaceType>
-int AdaptiveSpace<BasisFunctionType_,SpaceType>::domainDimension() const
+template <typename BasisFunctionType_>
+int AdaptiveSpace<BasisFunctionType_>::domainDimension() const
 {
 
     return currentSpace().domainDimension();
 
 }
 
-template <typename BasisFunctionType_, typename SpaceType>
-int AdaptiveSpace<BasisFunctionType_,SpaceType>::codomainDimension() const
+template <typename BasisFunctionType_>
+int AdaptiveSpace<BasisFunctionType_>::codomainDimension() const
 {
 
     return currentSpace().codomainDimension();
 
 }
 
-template <typename BasisFunctionType_, typename SpaceType>
+template <typename BasisFunctionType_>
 BEMPP_DEPRECATED const Fiber::Shapeset<BasisFunctionType_> &
-  AdaptiveSpace<BasisFunctionType_,SpaceType>::shapeset(const Entity<0> &element) const
+  AdaptiveSpace<BasisFunctionType_>::shapeset(const Entity<0> &element) const
 {
 
     return currentSpace().shapeset(element);
 }
 
-template <typename BasisFunctionType_, typename SpaceType>
-BEMPP_DEPRECATED const typename AdaptiveSpace<BasisFunctionType_,SpaceType>::CollectionOfBasisTransformations &
-  AdaptiveSpace<BasisFunctionType_,SpaceType>::shapeFunctionValue() const
+template <typename BasisFunctionType_>
+BEMPP_DEPRECATED const typename AdaptiveSpace<BasisFunctionType_>::CollectionOfBasisTransformations &
+  AdaptiveSpace<BasisFunctionType_>::shapeFunctionValue() const
 {
 
     return currentSpace().shapeFunctionValue();
     
 }
 
-template <typename BasisFunctionType_, typename SpaceType>
+template <typename BasisFunctionType_>
 shared_ptr<const Space<BasisFunctionType_> > 
-AdaptiveSpace<BasisFunctionType_,SpaceType>::barycentricSpace(
+AdaptiveSpace<BasisFunctionType_>::barycentricSpace(
   const shared_ptr<const Space<BasisFunctionType> > &self) const
 {
 
@@ -145,48 +147,48 @@ AdaptiveSpace<BasisFunctionType_,SpaceType>::barycentricSpace(
 }
 
 
-template <typename BasisFunctionType_, typename SpaceType>
-const typename AdaptiveSpace<BasisFunctionType_,SpaceType>::CollectionOfShapesetTransformations & 
-AdaptiveSpace<BasisFunctionType_,SpaceType>::basisFunctionValue() const
+template <typename BasisFunctionType_>
+const typename AdaptiveSpace<BasisFunctionType_>::CollectionOfShapesetTransformations & 
+AdaptiveSpace<BasisFunctionType_>::basisFunctionValue() const
 {
 
     return currentSpace().basisFunctionValue();
 
 }
 
-template <typename BasisFunctionType_, typename SpaceType> 
-void AdaptiveSpace<BasisFunctionType_,SpaceType>::setElementVariant(const Entity<0> &element,
+template <typename BasisFunctionType_> 
+void AdaptiveSpace<BasisFunctionType_>::setElementVariant(const Entity<0> &element,
                              ElementVariant variant) {
     currentSpace().setElementVariant(element, variant);
 
 }
 
-template <typename BasisFunctionType_, typename SpaceType>
-ElementVariant AdaptiveSpace<BasisFunctionType_,SpaceType>::elementVariant(const Entity<0> &element) const
+template <typename BasisFunctionType_>
+ElementVariant AdaptiveSpace<BasisFunctionType_>::elementVariant(const Entity<0> &element) const
 {
 
     return currentSpace().elementVariant(element);
 
 }
 
-template <typename BasisFunctionType_, typename SpaceType>
-size_t AdaptiveSpace<BasisFunctionType_,SpaceType>::flatLocalDofCount() const
+template <typename BasisFunctionType_>
+size_t AdaptiveSpace<BasisFunctionType_>::flatLocalDofCount() const
 {
 
     return currentSpace().flatLocalDofCount();
 
 }
 
-template <typename BasisFunctionType_, typename SpaceType>
-size_t AdaptiveSpace<BasisFunctionType_,SpaceType>::globalDofCount() const
+template <typename BasisFunctionType_>
+size_t AdaptiveSpace<BasisFunctionType_>::globalDofCount() const
 {
 
     return currentSpace().globalDofCount();
 
 }
 
-template <typename BasisFunctionType_, typename SpaceType>
-void AdaptiveSpace<BasisFunctionType_,SpaceType>::getGlobalDofs(const Entity<0> &element,
+template <typename BasisFunctionType_>
+void AdaptiveSpace<BasisFunctionType_>::getGlobalDofs(const Entity<0> &element,
       std::vector<GlobalDofIndex> &dofs) const
 {
 
@@ -194,43 +196,43 @@ void AdaptiveSpace<BasisFunctionType_,SpaceType>::getGlobalDofs(const Entity<0> 
 
 }
 
-template <typename BasisFunctionType_, typename SpaceType>
+template <typename BasisFunctionType_>
 void
-AdaptiveSpace<BasisFunctionType_,SpaceType>::getGlobalDofs(const Entity<0> &element, std::vector<GlobalDofIndex> &dofs, std::vector<BasisFunctionType> &localDofWeights) const 
+AdaptiveSpace<BasisFunctionType_>::getGlobalDofs(const Entity<0> &element, std::vector<GlobalDofIndex> &dofs, std::vector<BasisFunctionType> &localDofWeights) const 
 {
 
     currentSpace().getGlobalDofs(element,dofs,localDofWeights);
 
 }
 
-template <typename BasisFunctionType_, typename SpaceType>
-bool AdaptiveSpace<BasisFunctionType_,SpaceType>::gridIsIdentical(const Space<BasisFunctionType> &other) const
+template <typename BasisFunctionType_>
+bool AdaptiveSpace<BasisFunctionType_>::gridIsIdentical(const Space<BasisFunctionType> &other) const
 {
 
     return currentSpace().gridIsIdentical(other);
 
 }
 
-template <typename BasisFunctionType_, typename SpaceType>
-SpaceIdentifier AdaptiveSpace<BasisFunctionType_,SpaceType>::spaceIdentifier() const
+template <typename BasisFunctionType_>
+SpaceIdentifier AdaptiveSpace<BasisFunctionType_>::spaceIdentifier() const
 {
 
     return currentSpace().spaceIdentifier();
 
 }
 
-template <typename BasisFunctionType_, typename SpaceType>
+template <typename BasisFunctionType_>
 bool
-AdaptiveSpace<BasisFunctionType_,SpaceType>::spaceIsCompatible(const Space<BasisFunctionType> &other) const
+AdaptiveSpace<BasisFunctionType_>::spaceIsCompatible(const Space<BasisFunctionType> &other) const
 {
 
     return this->globalDofCount()==other.globalDofCount();
 
 }
 
-template <typename BasisFunctionType_, typename SpaceType>
+template <typename BasisFunctionType_>
 void
-AdaptiveSpace<BasisFunctionType_,SpaceType>::global2localDofs(const std::vector<GlobalDofIndex> &globalDofs,
+AdaptiveSpace<BasisFunctionType_>::global2localDofs(const std::vector<GlobalDofIndex> &globalDofs,
                std::vector<std::vector<LocalDof>> &localDofs) const 
 {
 
@@ -238,8 +240,8 @@ AdaptiveSpace<BasisFunctionType_,SpaceType>::global2localDofs(const std::vector<
 
 }
 
-template <typename BasisFunctionType_, typename SpaceType>
-void AdaptiveSpace<BasisFunctionType_,SpaceType>::global2localDofs(
+template <typename BasisFunctionType_>
+void AdaptiveSpace<BasisFunctionType_>::global2localDofs(
   const std::vector<GlobalDofIndex> &globalDofs,
   std::vector<std::vector<LocalDof>> &localDofs,
   std::vector<std::vector<BasisFunctionType>> &localDofWeights) const
@@ -250,9 +252,9 @@ void AdaptiveSpace<BasisFunctionType_,SpaceType>::global2localDofs(
 
 }
 
-template <typename BasisFunctionType_, typename SpaceType>
+template <typename BasisFunctionType_>
 void
-AdaptiveSpace<BasisFunctionType_,SpaceType>::flatLocal2localDofs(const std::vector<FlatLocalDofIndex> &flatLocalDofs,
+AdaptiveSpace<BasisFunctionType_>::flatLocal2localDofs(const std::vector<FlatLocalDofIndex> &flatLocalDofs,
                   std::vector<LocalDof> &localDofs) const
 {
 
@@ -261,79 +263,79 @@ AdaptiveSpace<BasisFunctionType_,SpaceType>::flatLocal2localDofs(const std::vect
 
 }
 
-template <typename BasisFunctionType_, typename SpaceType>
+template <typename BasisFunctionType_>
 void
-AdaptiveSpace<BasisFunctionType_,SpaceType>::getGlobalDofInterpolationPoints(Matrix<CoordinateType> &points) const
+AdaptiveSpace<BasisFunctionType_>::getGlobalDofInterpolationPoints(Matrix<CoordinateType> &points) const
 {
 
     currentSpace().getGlobalDofInterpolationPoints(points);
 
 }
 
-template <typename BasisFunctionType_, typename SpaceType>
-void AdaptiveSpace<BasisFunctionType_,SpaceType>::getNormalsAtGlobalDofInterpolationPoints(
+template <typename BasisFunctionType_>
+void AdaptiveSpace<BasisFunctionType_>::getNormalsAtGlobalDofInterpolationPoints(
   Matrix<CoordinateType> &normals) const 
 {
     currentSpace().getNormalsAtGlobalDofInterpolationPoints(normals);
 
 }
 
-template <typename BasisFunctionType_, typename SpaceType>
-void AdaptiveSpace<BasisFunctionType_,SpaceType>::getGlobalDofInterpolationDirections(
+template <typename BasisFunctionType_>
+void AdaptiveSpace<BasisFunctionType_>::getGlobalDofInterpolationDirections(
   Matrix<CoordinateType> &directions) const 
 {
     currentSpace().getGlobalDofInterpolationDirections(directions);
 }
 
-template <typename BasisFunctionType_, typename SpaceType>
-void AdaptiveSpace<BasisFunctionType_,SpaceType>::getGlobalDofBoundingBoxes(
+template <typename BasisFunctionType_>
+void AdaptiveSpace<BasisFunctionType_>::getGlobalDofBoundingBoxes(
   std::vector<BoundingBox<CoordinateType>> &boundingBoxes) const
 {
     currentSpace().getGlobalDofBoundingBoxes(boundingBoxes);
 }
 
-template <typename BasisFunctionType_, typename SpaceType>
-void AdaptiveSpace<BasisFunctionType_,SpaceType>::getFlatLocalDofBoundingBoxes(
+template <typename BasisFunctionType_>
+void AdaptiveSpace<BasisFunctionType_>::getFlatLocalDofBoundingBoxes(
   std::vector<BoundingBox<CoordinateType>> &boundingBoxes) const 
 {
     currentSpace().getFlatLocalDofBoundingBoxes(boundingBoxes);
 }
 
-template <typename BasisFunctionType_, typename SpaceType>
-void AdaptiveSpace<BasisFunctionType_,SpaceType>::getGlobalDofPositions(
+template <typename BasisFunctionType_>
+void AdaptiveSpace<BasisFunctionType_>::getGlobalDofPositions(
   std::vector<Point3D<CoordinateType>> &positions) const
 {
     currentSpace().getGlobalDofPositions(positions);
 }
 
-template <typename BasisFunctionType_, typename SpaceType>
-void AdaptiveSpace<BasisFunctionType_,SpaceType>::getFlatLocalDofPositions(
+template <typename BasisFunctionType_>
+void AdaptiveSpace<BasisFunctionType_>::getFlatLocalDofPositions(
   std::vector<Point3D<CoordinateType>> &positions) const
 {
     currentSpace().getFlatLocalDofPositions(positions);
 
 }
 
-template <typename BasisFunctionType_, typename SpaceType>
+template <typename BasisFunctionType_>
 void
-AdaptiveSpace<BasisFunctionType_,SpaceType>::getGlobalDofNormals(std::vector<Point3D<CoordinateType>> &normals) const
+AdaptiveSpace<BasisFunctionType_>::getGlobalDofNormals(std::vector<Point3D<CoordinateType>> &normals) const
 {
 
     currentSpace().getGlobalDofNormals(normals);
 
 }
 
-template <typename BasisFunctionType_, typename SpaceType>
+template <typename BasisFunctionType_>
 void
-AdaptiveSpace<BasisFunctionType_,SpaceType>::getFlatLocalDofNormals(std::vector<Point3D<CoordinateType>> &normals) const
+AdaptiveSpace<BasisFunctionType_>::getFlatLocalDofNormals(std::vector<Point3D<CoordinateType>> &normals) const
 {
 
     currentSpace().getFlatLocalDofNormals(normals);
 
 }
 
-template <typename BasisFunctionType_, typename SpaceType>
-BEMPP_DEPRECATED void AdaptiveSpace<BasisFunctionType_,SpaceType>::dumpClusterIds(
+template <typename BasisFunctionType_>
+BEMPP_DEPRECATED void AdaptiveSpace<BasisFunctionType_>::dumpClusterIds(
   const char *fileName,
   const std::vector<unsigned int> &clusterIdsOfGlobalDofs) const
 {
@@ -342,9 +344,9 @@ BEMPP_DEPRECATED void AdaptiveSpace<BasisFunctionType_,SpaceType>::dumpClusterId
 
 }
 
-template <typename BasisFunctionType_, typename SpaceType>
+template <typename BasisFunctionType_>
 void
-AdaptiveSpace<BasisFunctionType_,SpaceType>::dumpClusterIdsEx(const char *fileName,
+AdaptiveSpace<BasisFunctionType_>::dumpClusterIdsEx(const char *fileName,
                const std::vector<unsigned int> &clusterIdsOfGlobalDofs,
                DofType dofType) const 
 {
@@ -352,42 +354,42 @@ AdaptiveSpace<BasisFunctionType_,SpaceType>::dumpClusterIdsEx(const char *fileNa
 
 }
 
-template <typename BasisFunctionType_, typename SpaceType>
-void AdaptiveSpace<BasisFunctionType_,SpaceType>::initializeClusterTree(const ParameterList& parameterList) 
+template <typename BasisFunctionType_>
+void AdaptiveSpace<BasisFunctionType_>::initializeClusterTree(const ParameterList& parameterList) 
 {
 
     currentSpace().initializeClusterTree(parameterList);
 
 }
 
-template <typename BasisFunctionType_, typename SpaceType>
-void AdaptiveSpace<BasisFunctionType_,SpaceType>::update()
+template <typename BasisFunctionType_>
+void AdaptiveSpace<BasisFunctionType_>::update()
 {
 
-   m_space = shared_ptr<Space<BasisFunctionType_>>(new SpaceType(m_grid, m_gridSegmentFactory.update()));
+   m_space = m_factory->create(m_grid, m_gridSegmentFactory.update());
    m_level = m_grid->maxLevel();
    this->sendUpdateSignal(); 
 
 }
 
-template <typename BasisFunctionType_, typename SpaceType>
-int AdaptiveSpace<BasisFunctionType_,SpaceType>::currentLevel()
+template <typename BasisFunctionType_>
+int AdaptiveSpace<BasisFunctionType_>::currentLevel()
 {
 
     return m_level;
 
 }
 
-template <typename BasisFunctionType_, typename SpaceType>
-const Space<BasisFunctionType_>& AdaptiveSpace<BasisFunctionType_,SpaceType>::currentSpace() const
+template <typename BasisFunctionType_>
+const Space<BasisFunctionType_>& AdaptiveSpace<BasisFunctionType_>::currentSpace() const
 {
 
     return *m_space;
 
 }
 
-template <typename BasisFunctionType_, typename SpaceType>
-Space<BasisFunctionType_>& AdaptiveSpace<BasisFunctionType_,SpaceType>::currentSpace()
+template <typename BasisFunctionType_>
+Space<BasisFunctionType_>& AdaptiveSpace<BasisFunctionType_>::currentSpace()
 {
 
    return *m_space;

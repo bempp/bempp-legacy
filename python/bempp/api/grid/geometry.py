@@ -8,6 +8,22 @@ class Geometry(object):
         self._codimension = codimension
         self._impl = impl
 
+    def integration_elements(self, local_coordinates):
+        """Return the integration elements associated with the given local coordinates."""
+
+        return self._impl.integration_elements(local_coordinates)
+
+    def normals(self,local_coordinates):
+        """Return the normal directions associated with the given element."""
+        if self._codimension != 0:
+            raise ValueError("Method can only be called for element geometries. ")
+
+        return self._impl.normals(local_coordinates)
+
+    def local2global(self, local_coordinates):
+        """Return the global coordinates associated with the given local coordinates."""
+        return self._impl.local2global(local_coordinates)
+
     @property
     def corners(self):
         """Return a (3xn) array whose columns are the corners of the entity."""

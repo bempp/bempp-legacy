@@ -211,8 +211,8 @@ class BlockedDiscreteOperator(LinearOperator):
                 if self._operators[i, j] is not None:
                     op_is_complex = _np.iscomplexobj(self._operators[i, j].dtype.type(1))
                     if _np.iscomplexobj(x) and not op_is_complex:
-                        local_res[:] += (self._operators[i, j] * _np.real(local_x) +
-                                         1j * self._operators[i, j] * _np.imag(local_x))
+                        local_res[:] += (self._operators[i, j].dot(_np.real(local_x)) +
+                                         1j * self._operators[i, j].dot(_np.imag(local_x)))
                     else:
                         local_res[:] += self._operators[i, j].dot(local_x)
                 col_dim += self._cols[j]

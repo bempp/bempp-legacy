@@ -279,3 +279,67 @@ def multitrace_operator(grid, wave_number, parameters=None, spaces='linear'):
                                             op(hypersingular), parameters, spaces)
 
 
+def single_layer_and_hypersingular_pair(grid, wave_number, parameters=None, spaces='linear', base_slp=None, return_base_slp=False):
+    """Return a pair of hypersingular and single layer operator.
+
+    This function creates a pair of a single-layer and a hypersingular
+    operator, where both operators are instantiated using a common
+    base single-layer operator. Hence, only one single-layer operator
+    needs to be discretized to obtain both operators on the given 
+    grid.
+
+    Parameters
+    ----------
+    grid : bempp.api.grid.Grid
+        The underlying grid for the multitrace operator
+    wave_number : complex
+        Wavenumber of the operator.
+    parameters : bempp.api.common.ParameterList
+        Parameters for the operator. If none given
+        the default global parameter object
+        `bempp.api.global_parameters` is used.
+    spaces: string
+        Choose 'linear' to assemble the operator
+        with continuous linear function spaces for the
+        Dirichlet and Neumann component (default). For
+        a dual pairing of a linear space for the Dirichlet
+        data and piecewise constant space for the Neumann
+        data choose 'dual'.
+    base_slp : None
+        Specify a base single-layer operator to be used. If 
+        set to None, a base single-layer operator will be
+        instantiated by the function.
+    return_base_slp : bool
+        If True also return the original large space single layer 
+        operator from which the hypersingular and slp operator
+        are derived. Default is False
+
+    Returns
+    -------
+    A pair (slp, hyp) of a single-layer and hypersingular operator.
+    If return_base_slp is true a triplet (slp, hyp, base_slp) is
+    returned, where base_slp is the single-layer operator, from
+    which slp and hyp are obtained via sparse transformations.
+
+    """
+
+    from bempp.api.operators.boundary import _common
+
+    def op(operator):
+        if operator==hypersingular:
+            def op_impl(domain, range_, dual_to_range, label="HYP", symmetry="no_symmetry",
+                        parameters=None, use_slp=False):
+                return hypersingular(domain, range_, dual_to_range, wave_number, label, symmetry, parameters,
+                                     use_slp)
+            return op_impl
+        else:
+            import inspect
+            defaults = inspect.getargspec(operator).defaults
+            def op_impl(domain, range_, dual_to_range, label=defaults[0], symmetry=defaults[1],
+                        parameters=None):
+                return operator(domain, range_, dual_to_range, wave_number, label, symmetry, parameters)
+            return op_impl
+
+    ops = _common.slp_and_hyp_impl(
+            grid, op(single_layer), op(hypersingular), parameters, spaces, base_slp, return_base_slp, laplace=False)
+    return ops

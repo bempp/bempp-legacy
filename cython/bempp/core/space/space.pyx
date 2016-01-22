@@ -8,8 +8,29 @@ from bempp.core.utils cimport np_to_eigen_matrix_float64
 from bempp.core.utils cimport np_to_eigen_matrix_complex128
 from bempp.core.utils cimport np_to_eigen_vector_float64
 from bempp.core.utils cimport np_to_eigen_vector_complex128
+from bempp.core.fiber cimport Shapeset
 from libcpp.vector cimport vector
 
+cdef class LocalDof:
+    cdef int entity_index
+    cdef int dof_index
+
+    def __cinit__(self, int entity_index, int dof_index):
+        pass
+
+    def __init__(self, int entity_index, int dof_index):
+        self.entity_index = entity_index
+        self.dof_index = dof_index
+
+    property entity_index:
+
+        def __get__(self):
+            return self.entity_index
+
+    property dof_index:
+
+        def __get__(self):
+            return self.dof_index
 
 cdef class Space:
 
@@ -100,6 +121,13 @@ cdef class Space:
             return global_dofs_vec,local_dof_weights_vec
         else:
             return global_dofs_vec
+
+    def shapeset(self, Entity0 element):
+
+        cdef Shapeset shapeset = Shapeset()
+        shapeset.impl_ = &deref(self.impl_).shapeset(deref(element.impl_))
+        return shapeset
+
         
     def evaluate_local_basis(self, Entity0 element, object local_coordinates, object local_coefficients):
         """Evaluate local basis functions on a given element."""
@@ -118,6 +146,50 @@ cdef class Space:
                     c_evaluateLocalBasis[complex_double](deref(self.impl_), deref(element.impl_), 
                                                         np_to_eigen_matrix_float64(local_coordinates),
                                                         np_to_eigen_vector_complex128(local_coefficients)))
+
+
+    def global_to_local_dofs(self, global_dofs):
+
+        cdef vector[int] global_dofs_vector
+        cdef vector[vector[c_LocalDof]] local_dofs_vector
+        cdef vector[vector[double]] weights_vector
+
+        cdef int i
+        cdef int j
+        global_dofs_vector.resize(len(global_dofs))
+
+        for i in range(len(global_dofs)):
+            global_dofs_vector[i] = global_dofs[i]
+
+        deref(self.impl_).global2localDofs(global_dofs_vector,
+                local_dofs_vector, weights_vector)
+
+        local_dofs = []
+        weights = []
+
+        for i in range(local_dofs_vector.size()):
+            local_dofs.append([])
+            for j in range(local_dofs_vector[i].size()):
+                local_dofs[i].append(LocalDof(
+                    local_dofs_vector[i][j].entity_index,
+                    local_dofs_vector[i][j].dof_index))
+
+
+        for i in range(weights_vector.size()):
+            weights.append([])
+            for j in range(weights_vector[i].size()):
+                weights[i].append(weights_vector[i][j])
+
+        return (local_dofs, weights)
+
+
+
+
+        
+
+
+        
+
 
 
 
@@ -139,8 +211,8 @@ cdef class Space:
             deref(self.impl_).getNormalsAtGlobalDofInterpolationPoints(data)
             return eigen_matrix_to_np_float64(data)
 
-def function_space(Grid grid, kind, order=None, domains=None, cbool closed=True):
-    """ 
+def function_space(Grid grid, kind, order, domains=None, cbool closed=True, cbool strictly_on_segment=False, 
+        cbool reference_point_on_segment=True, cbool element_on_segment=False):
 
     Return a space defined over a given grid.
 
@@ -200,6 +272,16 @@ def function_space(Grid grid, kind, order=None, domains=None, cbool closed=True)
     """
     cdef Space s = Space()
     cdef Grid bary_grid
+    cdef int dof_mode = 0
+
+    if element_on_segment:
+        dof_mode += 2
+    if reference_point_on_segment:
+        dof_mode += 4
+
+    if dof_mode < 2:
+        raise ValueError("At least one of 'reference_point_on_segment' or 'element_on_segment' must be true.")
+
     if kind=="P":
         if not (order>=1 and order <=10):
             raise ValueError("Order must be between 1 and 10")
@@ -209,18 +291,18 @@ def function_space(Grid grid, kind, order=None, domains=None, cbool closed=True)
                         shared_ptr[c_Space[double]](adaptivePiecewiseLinearContinuousScalarSpace[double](grid.impl_))))
             else:
                 s.impl_.assign(reverse_const_pointer_cast(
-                        shared_ptr[c_Space[double]](adaptivePiecewiseLinearContinuousScalarSpace[double](grid.impl_, domains, closed))))
+                        shared_ptr[c_Space[double]](adaptivePiecewiseLinearContinuousScalarSpace[double](grid.impl_, domains, closed, strictly_on_segment))))
         else:
             if domains is None:
                 s.impl_.assign(reverse_const_pointer_cast(
                         shared_ptr[c_Space[double]](adaptivePiecewisePolynomialContinuousScalarSpace[double](grid.impl_, order))))
             else:
                 s.impl_.assign(reverse_const_pointer_cast(
-                        shared_ptr[c_Space[double]](adaptivePiecewisePolynomialContinuousScalarSpace[double](grid.impl_, order, domains, closed))))
+                        shared_ptr[c_Space[double]](adaptivePiecewisePolynomialContinuousScalarSpace[double](grid.impl_, order, domains, closed, strictly_on_segment))))
     elif kind=="DP":
         if not (order>=0 and order <=10):
             raise ValueError("Order must be between 0 and 10")
-        if (order==0):
+        if order==0:
             if domains is None:
                 s.impl_.assign(reverse_const_pointer_cast(
                         shared_ptr[c_Space[double]](adaptivePiecewiseConstantScalarSpace[double](grid.impl_))))
@@ -233,7 +315,7 @@ def function_space(Grid grid, kind, order=None, domains=None, cbool closed=True)
                         shared_ptr[c_Space[double]](adaptivePiecewisePolynomialDiscontinuousScalarSpace[double](grid.impl_, order))))
             else:
                 s.impl_.assign(reverse_const_pointer_cast(
-                        shared_ptr[c_Space[double]](adaptivePiecewisePolynomialDiscontinuousScalarSpace[double](grid.impl_, order, domains, closed))))
+                        shared_ptr[c_Space[double]](adaptivePiecewisePolynomialDiscontinuousScalarSpace[double](grid.impl_, order, domains, closed, dof_mode))))
     elif kind=="RT":
         if order!=0:
             raise ValueError("Only 0 order Raviart-Thomas spaces are implemented.")
@@ -302,6 +384,24 @@ def function_space(Grid grid, kind, order=None, domains=None, cbool closed=True)
         raise ValueError("Unknown kind")
 
     return s
+
+def evaluate_local_surface_gradient_ext(Space space, Entity0 element, object local_coordinates, object local_coefficients):
+    """Evaluate the surface gradient on a given element."""
+
+    import numpy as np
+
+    if np.isreal(local_coefficients).all():
+        coeffs_real = local_coefficients
+        return eigen_matrix_to_np_float64(
+                c_evaluateSurfaceGradients[double](deref(space.impl_), deref(element.impl_), 
+                                            np_to_eigen_matrix_float64(local_coordinates),
+                                            np_to_eigen_vector_float64(local_coefficients)))
+    else:
+        coeffs_complex = local_coefficients
+        return eigen_matrix_to_np_complex128(
+                c_evaluateSurfaceGradients[complex_double](deref(space.impl_), deref(element.impl_), 
+                                                    np_to_eigen_matrix_float64(local_coordinates),
+                                                    np_to_eigen_vector_complex128(local_coefficients)))
 
 
  

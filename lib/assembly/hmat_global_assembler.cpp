@@ -160,7 +160,7 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
   auto matVecParallelLevels =
       parameterList.template get<int>("options.hmat.matVecParallelLevels");
   if (coarseningAccuracy == 0)
-    coarseningAccuracy = eps;
+    coarseningAccuracy = 0.1 * eps; // Default is finer tol for coarsening than eps
 
   shared_ptr<hmat::DefaultHMatrixType<ResultType>> hMatrix;
 

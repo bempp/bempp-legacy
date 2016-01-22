@@ -230,6 +230,67 @@ class TestModifiedHelmholtz(TestCase):
 
         self.assertAlmostEqual(diff_norm, 0, 4)
 
+    def test_slp_hyp_pair_on_dual_grids(self):
+
+        import bempp.api
+        lin_space = self._lin_space
+        const_space = self._const_space
+
+        parameters = bempp.api.common.global_parameters()
+        parameters.assembly.boundary_operator_assembly_type = 'dense'
+        parameters.quadrature.double_singular = 9
+        parameters.quadrature.near.double_order = 9
+        parameters.quadrature.medium.double_order = 9
+        parameters.quadrature.far.double_order = 9
+
+        expected_ops_dual = bempp.api.operators.boundary.modified_helmholtz.single_layer_and_hypersingular_pair(
+                self._grid, WAVE_NUMBER, spaces='dual', parameters=parameters)
+
+        dual_space = bempp.api.function_space(self._grid, "DUAL", 0)
+        expected_slp = bempp.api.as_matrix(bempp.api.operators.boundary.modified_helmholtz.single_layer(
+            dual_space, dual_space, dual_space, WAVE_NUMBER, parameters=parameters).weak_form())
+        actual_slp = bempp.api.as_matrix(expected_ops_dual[0].weak_form())
+
+        expected_hyp = bempp.api.as_matrix(bempp.api.operators.boundary.modified_helmholtz.hypersingular(
+            lin_space, lin_space, lin_space, WAVE_NUMBER, parameters=parameters).weak_form())
+        actual_hyp = bempp.api.as_matrix(expected_ops_dual[1].weak_form())
+
+        diff_norm_slp = np.linalg.norm(expected_slp - actual_slp)/np.linalg.norm(actual_slp)
+        diff_norm_hyp = np.linalg.norm(expected_hyp - actual_hyp)/np.linalg.norm(actual_hyp)
+
+        self.assertAlmostEqual(diff_norm_slp, 0, 6)
+        self.assertAlmostEqual(diff_norm_hyp, 0, 4)
+
+
+    def test_slp_hyp_pair_linear_space(self):
+
+        import bempp.api
+        lin_space = self._lin_space
+        const_space = self._const_space
+
+        parameters = bempp.api.common.global_parameters()
+        parameters.assembly.boundary_operator_assembly_type = 'dense'
+        parameters.quadrature.double_singular = 9
+        parameters.quadrature.near.double_order = 9
+        parameters.quadrature.medium.double_order = 9
+        parameters.quadrature.far.double_order = 9
+
+        expected_ops_dual = bempp.api.operators.boundary.modified_helmholtz.single_layer_and_hypersingular_pair(
+                self._grid, WAVE_NUMBER, spaces='linear', parameters=parameters)
+
+        expected_slp = bempp.api.as_matrix(bempp.api.operators.boundary.modified_helmholtz.single_layer(
+            lin_space, lin_space, lin_space, WAVE_NUMBER, parameters=parameters).weak_form())
+        actual_slp = bempp.api.as_matrix(expected_ops_dual[0].weak_form())
+
+        expected_hyp = bempp.api.as_matrix(bempp.api.operators.boundary.modified_helmholtz.hypersingular(
+            lin_space, lin_space, lin_space, WAVE_NUMBER, parameters=parameters).weak_form())
+        actual_hyp = bempp.api.as_matrix(expected_ops_dual[1].weak_form())
+
+        diff_norm_slp = np.linalg.norm(expected_slp - actual_slp)/np.linalg.norm(actual_slp)
+        diff_norm_hyp = np.linalg.norm(expected_hyp - actual_hyp)/np.linalg.norm(actual_hyp)
+
+        self.assertAlmostEqual(diff_norm_slp, 0, 6)
+        self.assertAlmostEqual(diff_norm_hyp, 0, 6)
 
 
 if __name__ == "__main__":

@@ -13,6 +13,16 @@ cdef extern from "bempp/common/eigen_support.hpp" namespace "Bempp":
         int rows()
         int cols()
 
+    cdef cppclass RowVector[T]:
+        RowVector()
+        RowVector(int)
+        RowVector(RowVector[T])
+        void resize(int)
+        T* data()
+        T& value "operator()"(int i) 
+        int rows()
+        int cols()
+
     cdef cppclass Matrix[T]:
         Matrix()
         Matrix(int,int)
@@ -25,6 +35,7 @@ cdef extern from "bempp/common/eigen_support.hpp" namespace "Bempp":
 
 cdef extern from "bempp/core/utils/py_utils.hpp" namespace "Bempp":
     cdef Vector[T] copy_buf_to_vec[T](T* buf, int n)
+    cdef RowVector[T] copy_buf_to_row_vec[T](T* buf, int n)
     cdef Matrix[T] copy_buf_to_mat[T](T* buf, int m, int n)
 
 cdef np.ndarray eigen_matrix_to_np_float64(const Matrix[double]& x)
@@ -33,11 +44,17 @@ cdef np.ndarray eigen_matrix_to_np_complex128(const Matrix[complex_double]& x)
 cdef np.ndarray eigen_vector_to_np_float64(const Vector[double]& x)
 cdef np.ndarray eigen_vector_to_np_complex128(const Vector[complex_double]& x)
 
+cdef np.ndarray eigen_row_vector_to_np_float64(const RowVector[double]& x)
+cdef np.ndarray eigen_row_vector_to_np_complex128(const RowVector[complex_double]& x)
+
 cdef Matrix[double] np_to_eigen_matrix_float64(np.ndarray x)
 cdef Matrix[complex_double] np_to_eigen_matrix_complex128(np.ndarray x)
 
 cdef Vector[double] np_to_eigen_vector_float64(np.ndarray x)
 cdef Vector[complex_double] np_to_eigen_vector_complex128(np.ndarray x)
+
+cdef RowVector[double] np_to_eigen_row_vector_float64(np.ndarray x)
+cdef RowVector[complex_double] np_to_eigen_row_vector_complex128(np.ndarray x)
 
 cdef np.ndarray eigen_matrix_to_np_int(const Matrix[int]& x)
 cdef np.ndarray eigen_vector_to_np_int(const Vector[int]& x)

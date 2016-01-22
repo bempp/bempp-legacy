@@ -9,15 +9,19 @@ cdef extern from "bempp/core/utils/py_utils.hpp" namespace "Bempp":
     void catch_exception()
 
 
-from bempp.core.utils.eigen cimport Vector, Matrix
+from bempp.core.utils.eigen cimport Vector, Matrix, RowVector
 from bempp.core.utils.eigen cimport eigen_matrix_to_np_float64
 from bempp.core.utils.eigen cimport eigen_matrix_to_np_complex128
 from bempp.core.utils.eigen cimport eigen_vector_to_np_float64
 from bempp.core.utils.eigen cimport eigen_vector_to_np_complex128
+from bempp.core.utils.eigen cimport eigen_row_vector_to_np_float64
+from bempp.core.utils.eigen cimport eigen_row_vector_to_np_complex128
 from bempp.core.utils.eigen cimport np_to_eigen_matrix_float64
 from bempp.core.utils.eigen cimport np_to_eigen_matrix_complex128
 from bempp.core.utils.eigen cimport np_to_eigen_vector_float64
 from bempp.core.utils.eigen cimport np_to_eigen_vector_complex128
+from bempp.core.utils.eigen cimport np_to_eigen_row_vector_float64
+from bempp.core.utils.eigen cimport np_to_eigen_row_vector_complex128
 from bempp.core.utils.eigen cimport eigen_matrix_to_np_int
 from bempp.core.utils.eigen cimport eigen_vector_to_np_int
 
