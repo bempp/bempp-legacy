@@ -45,6 +45,21 @@
 
 namespace Bempp {
 
+namespace {
+
+template <typename BasisFunctionType>
+class Nedelec1SpaceFactory : public SpaceFactory<BasisFunctionType> {
+    public:
+       shared_ptr<Space<BasisFunctionType>> create(const shared_ptr<const Grid> &grid,
+                               const GridSegment &segment) const override{
+           
+           return shared_ptr<Space<BasisFunctionType>>(new Nedelec1VectorSpace<BasisFunctionType>(grid, segment));
+       }
+           
+};
+
+}
+
 /** \cond PRIVATE */
 template <typename BasisFunctionType>
 struct Nedelec1VectorSpace<BasisFunctionType>::Impl {
@@ -619,6 +634,56 @@ template <typename BasisFunctionType>
 shared_ptr<Space<BasisFunctionType>>
 adaptiveNedelec1VectorSpace(const shared_ptr<const Grid> &grid) {
 
+    shared_ptr<SpaceFactory<BasisFunctionType>> factory(
+            new Nedelec1SpaceFactory<BasisFunctionType>());
+  return shared_ptr<Space<BasisFunctionType>>(
+      new AdaptiveSpace<BasisFunctionType>(factory, grid));
+}
+
+template <typename BasisFunctionType>
+shared_ptr<Space<BasisFunctionType>>
+adaptiveNedelec1VectorSpace(const shared_ptr<const Grid> &grid,
+                                     const std::vector<int> &domains,
+                                     bool open) {
+
+    shared_ptr<SpaceFactory<BasisFunctionType>> factory(
+            new Nedelec1SpaceFactory<BasisFunctionType>());
+  return shared_ptr<Space<BasisFunctionType>>(
+      new AdaptiveSpace<BasisFunctionType>(factory, grid, domains, open));
+}
+
+template <typename BasisFunctionType>
+shared_ptr<Space<BasisFunctionType>>
+adaptiveNedelec1VectorSpace(const shared_ptr<const Grid> &grid,
+                                     int domain, bool open) {
+
+    shared_ptr<SpaceFactory<BasisFunctionType>> factory(
+            new Nedelec1SpaceFactory<BasisFunctionType>());
+  return shared_ptr<Space<BasisFunctionType>>(
+      new AdaptiveSpace<BasisFunctionType>(factory, grid, std::vector<int>({domain}), open));
+}
+
+#define INSTANTIATE_FREE_FUNCTIONS(BASIS)                                      \
+  template shared_ptr<Space<BASIS>>                                            \
+  adaptiveNedelec1VectorSpace<BASIS>(const shared_ptr<const Grid> &); \
+  template shared_ptr<Space<BASIS>>                                            \
+  adaptiveNedelec1VectorSpace<BASIS>(const shared_ptr<const Grid> &,  \
+                                              const std::vector<int> &, bool); \
+  template shared_ptr<Space<BASIS>>                                            \
+  adaptiveNedelec1VectorSpace<BASIS>(const shared_ptr<const Grid> &,  \
+                                              int, bool)
+
+FIBER_ITERATE_OVER_BASIS_TYPES(INSTANTIATE_FREE_FUNCTIONS);
+
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(Nedelec1VectorSpace);
+
+} // namespace Bempp
+
+
+/*template <typename BasisFunctionType>
+shared_ptr<Space<BasisFunctionType>>
+adaptiveNedelec1VectorSpace(const shared_ptr<const Grid> &grid) {
+
   return shared_ptr<Space<BasisFunctionType>>(
       new AdaptiveSpace<BasisFunctionType,
                         Nedelec1VectorSpace<BasisFunctionType>>(grid));
@@ -662,3 +727,4 @@ FIBER_ITERATE_OVER_BASIS_TYPES(INSTANTIATE_FREE_FUNCTIONS);
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(Nedelec1VectorSpace);
 
 } // namespace Bempp
+*/
