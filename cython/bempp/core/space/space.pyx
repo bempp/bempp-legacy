@@ -211,9 +211,9 @@ cdef class Space:
             deref(self.impl_).getNormalsAtGlobalDofInterpolationPoints(data)
             return eigen_matrix_to_np_float64(data)
 
-def function_space(Grid grid, kind, order, domains=None, cbool closed=True, cbool strictly_on_segment=False, 
+def function_space(Grid grid, kind, order, domains=None, cbool closed=True, cbool strictly_on_segment=False,
         cbool reference_point_on_segment=True, cbool element_on_segment=False):
-
+    """
     Return a space defined over a given grid.
 
     Parameters
