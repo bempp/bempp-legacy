@@ -94,8 +94,11 @@ public:
             for (int i = 0; i < data.derivatives.extent(1); ++i)
               for (int j = 0; j < data.derivatives.extent(3); ++j) {
                 data.derivatives(l, i, dofIndex, j) = 0;
-                for (int k = 0; k < data.derivatives.extent(2); ++k)
-                  data.derivatives(l, i, dofIndex, j) += m_coeffs(k,dofIndex) * temp.derivatives(l, i, k, j);
+                for (int k = 0; k < temp.derivatives.extent(2); ++k){
+                  data.derivatives(l, i, dofIndex, j) += 
+                    m_coeffs(k,dofIndex) * 
+                    temp.derivatives(l, i, k, j);
+                    }
             }
       }
     }
