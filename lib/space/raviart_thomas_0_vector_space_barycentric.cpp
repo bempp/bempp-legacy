@@ -190,12 +190,25 @@ void RaviartThomas0VectorSpaceBarycentric<BasisFunctionType>::assignDofsImpl() {
   const IndexSet &index = coarseView->indexSet();
   const IndexSet &bindex = m_view->indexSet();
 
+  std::vector<int> faceCountNextToEdge;
+  faceCountNextToEdge.resize(edgeCountCoarseGrid,0);
+
+  for (std::unique_ptr<EntityIterator<0>> it = coarseView->entityIterator<0>(); !it->finished(); it->next()){
+    const Entity<0> &entity = it->entity();
+    for(int i=0;i!=3;++i)
+      ++faceCountNextToEdge[index.subEntityIndex(entity,i,1)];
+  }
+
   std::vector<int> globalDofsOfEdges;
   globalDofsOfEdges.resize(edgeCountCoarseGrid);
   int globalDofCount_ = 0;
   for (int i = 0; i != edgeCountCoarseGrid; ++i) {
       int &globalDofOfEdge = acc(globalDofsOfEdges,i);
-      globalDofOfEdge = globalDofCount_++;
+      if (m_putDofsOnBoundaries || faceCountNextToEdge[i]==2)
+        globalDofOfEdge = globalDofCount_++;
+      else
+        globalDofOfEdge = -1;
+        
   }
 
   std::vector<int> lowestIndicesOfElementsAdjacentToEdges(edgeCountCoarseGrid, std::numeric_limits<int>::max());
@@ -278,27 +291,29 @@ void RaviartThomas0VectorSpaceBarycentric<BasisFunctionType>::assignDofsImpl() {
       int sonIndex = m_sonMap(ent0Number,i);
 
       std::vector<GlobalDofIndex> &globalDof = acc(m_local2globalDofs, sonIndex);
-      globalDof.resize(3);
 
       std::vector<BasisFunctionType> &globalDofWeights = acc(m_local2globalDofWeights, sonIndex);
-      globalDofWeights.resize(3);
 
       for(int j=0;j!=3;++j){
         const int edgeIndex = edges[element2Basis[i][j]];
         const int fineEdgeIndex = fineEdgeMap(sonIndex,j);
         const int globalDofIndex = globalDofsOfEdges[edgeIndex];
         if (acc(lowestIndicesOfElementsAdjacentToEdges, edgeIndex) == ent0Number && i==0){
-            if (j == 0) dofPosition = 0.5 * (vertices.col(0) + vertices.col(1));
-            else if (j == 1) dofPosition = 0.5 * (vertices.col(2) + vertices.col(0));
-            else dofPosition = 0.5 * (vertices.col(1) + vertices.col(2));
+          if (j == 0) dofPosition = 0.5 * (vertices.col(0) + vertices.col(1));
+          else if (j == 1) dofPosition = 0.5 * (vertices.col(2) + vertices.col(0));
+          else dofPosition = 0.5 * (vertices.col(1) + vertices.col(2));
+          if (globalDofIndex!=-1){
             extendBoundingBox(acc(m_globalDofBoundingBoxes, globalDofIndex), vertices);
             setBoundingBoxReference<CoordinateType>(acc(m_globalDofBoundingBoxes, globalDofIndex), dofPosition);
+          }
         }
 
-        globalDof[j] = globalDofIndex;
-        globalDofWeights[j]=acc(lowestIndicesOfElementsAdjacentToEdges, edgeIndex) == ent0Number ? 1. : -1.;
-        m_global2localDofs[globalDofIndex].push_back(LocalDof(sonIndex,j));
-        ++flatLocalDofCount;
+          globalDof.push_back(globalDofIndex);
+          globalDofWeights.push_back(acc(lowestIndicesOfElementsAdjacentToEdges, edgeIndex) == ent0Number ? 1. : -1.);
+          if (globalDofIndex!=-1){
+            m_global2localDofs[globalDofIndex].push_back(LocalDof(sonIndex,j));
+            ++flatLocalDofCount;
+          }
       }
       if (i % 2 == 0) {
         acc(m_elementShapesets, sonIndex) = Shapeset::TYPE1;
