@@ -55,7 +55,7 @@ public:
         for (int i = 0; i < data.values.extent(2); ++i) {
           for (int k=0; k < data.values.extent(0); ++k){
             data.values(k, 0, i) = 0;
-            for (int j = 0; j < data.values.extent(1); ++j)
+            for (int j = 0; j < temp.values.extent(1); ++j)
               data.values(k, 0, i) += m_coeffs(j,localDofIndex) * temp.values(k, j, i);
           }
         }
@@ -67,7 +67,7 @@ public:
           for (int i = 0; i < data.derivatives.extent(1); ++i)
             for (int j = 0; j < data.derivatives.extent(3); ++j) {
               data.derivatives(l, i, 0, j) = 0;
-              for (int k = 0; k < data.derivatives.extent(2); ++k)
+              for (int k = 0; k < temp.derivatives.extent(2); ++k)
                 data.derivatives(l, i, 0, j) += m_coeffs(k,localDofIndex) * temp.derivatives(l, i, k, j);
             }
       }
