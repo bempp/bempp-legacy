@@ -504,12 +504,11 @@ void BuffaChristiansenVectorSpace<BasisFunctionType>::assignDofsImpl() {
     const Geometry &geo = entity.geometry();
     geo.getCorners(vertices);
 
-    for(int i=0;i<m_local2globalDofs.size();++i)
-      for(int j=0;j<m_local2globalDofs[i].size();++j){
-        int glDof=m_local2globalDofs[i][j];
-        extendBoundingBox(acc(m_globalDofBoundingBoxes, glDof), vertices);
-        setBoundingBoxReference<CoordinateType>(acc(m_globalDofBoundingBoxes, glDof), 0.5 * (vertices.col(0)+vertices.col(1)));
-     }
+    for(int j=0;j<m_local2globalDofs[ent0Number].size();++j){
+      int glDof=m_local2globalDofs[ent0Number][j];
+      extendBoundingBox(acc(m_globalDofBoundingBoxes, glDof), vertices);
+      setBoundingBoxReference<CoordinateType>(acc(m_globalDofBoundingBoxes, glDof), 0.5 * (vertices.col(0)+vertices.col(1)));
+    }
   }
 
 
