@@ -71,11 +71,6 @@ cdef extern from "bempp/space/raviart_thomas_0_vector_space.hpp" namespace "Bemp
     cdef shared_ptr[c_Space[T]] adaptiveRaviartThomas0VectorSpace[T](const shared_ptr[c_Grid]& grid, vector[int] domains, cbool closed)
 cdef extern from "bempp/space/raviart_thomas_0_vector_space_barycentric.hpp" namespace "Bempp":
     cdef shared_ptr[c_Space[T]] adaptiveRaviartThomas0VectorSpaceBarycentric[T](const shared_ptr[c_Grid]& grid)
-cdef extern from "bempp/space/nedelec_1_vector_space.hpp" namespace "Bempp":
-    cdef shared_ptr[c_Space[T]] adaptiveNedelec1VectorSpace[T](const shared_ptr[c_Grid]& grid)
-    cdef shared_ptr[c_Space[T]] adaptiveNedelec1VectorSpace[T](const shared_ptr[c_Grid]& grid, vector[int] domains, cbool closed)
-cdef extern from "bempp/space/nedelec_1_vector_space_barycentric.hpp" namespace "Bempp":
-    cdef shared_ptr[c_Space[T]] adaptiveNedelec1VectorSpaceBarycentric[T](const shared_ptr[c_Grid]& grid)
 cdef extern from "bempp/space/buffa_christiansen_vector_space.hpp" namespace "Bempp":
     cdef shared_ptr[c_Space[T]] adaptiveBuffaChristiansenVectorSpace[T](const shared_ptr[c_Grid]& grid)
 cdef extern from "bempp/space/piecewise_constant_dual_grid_scalar_space.hpp" namespace "Bempp":

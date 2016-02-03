@@ -227,12 +227,10 @@ def function_space(Grid grid, kind, order, domains=None, cbool closed=True, cboo
             "P" : Continuous and piecewise polynomial functions.
             "DP" : Discontinuous and elementwise polynomial functions.
             "RT": Raviart-Thomas Vector spaces.
-            "N": Nedelec Vector spaces.
 
             "B-P": Polynomial spaces on barycentric grids.
             "B-DP": Polynomial discontinuous spaces on barycentric grids.
             "B-RT": Raviart-Thomas Vector spaces on barycentric grids.
-            "B-N": Nedelec Vector spaces on barycentric grids.
 
             "DUAL": Dual space on dual grid (only implemented for constants).
             "BC": Buffa-Christian Vector space.
@@ -325,15 +323,6 @@ def function_space(Grid grid, kind, order, domains=None, cbool closed=True, cboo
         else:
             s.impl_.assign(reverse_const_pointer_cast(
                     shared_ptr[c_Space[double]](adaptiveRaviartThomas0VectorSpace[double](grid.impl_, domains, closed))))
-    elif kind=="N":
-        if order!=0:
-            raise ValueError("Only order 0 (type 1) Nedelec spaces are implemented.")
-        if domains is None:
-            s.impl_.assign(reverse_const_pointer_cast(
-                    shared_ptr[c_Space[double]](adaptiveNedelec1VectorSpace[double](grid.impl_))))
-        else:
-            s.impl_.assign(reverse_const_pointer_cast(
-                    shared_ptr[c_Space[double]](adaptiveNedelec1VectorSpace[double](grid.impl_, domains, closed))))
     elif kind=="DUAL":
         if order != 0:
             raise ValueError("Only 0 order dual grid spaces are implemented.")
@@ -364,14 +353,6 @@ def function_space(Grid grid, kind, order, domains=None, cbool closed=True, cboo
         else:
             s.impl_.assign(reverse_const_pointer_cast(
                     shared_ptr[c_Space[double]](adaptiveRaviartThomas0VectorSpaceBarycentric[double](grid.impl_))))
-    elif kind=="B-N":
-        if order!=0:
-            raise ValueError("Only order 0 (type 1) Nedelec spaces are implemented.")
-        if domains is not None:
-            raise ValueError("Spaces on subdomains are not supported on barycentric grids.")
-        else:
-            s.impl_.assign(reverse_const_pointer_cast(
-                    shared_ptr[c_Space[double]](adaptiveNedelec1VectorSpaceBarycentric[double](grid.impl_))))
     elif kind=="BC":
         if order!=0:
             raise ValueError("Only order 0 Buffa-Christiansen spaces are implemented.")
