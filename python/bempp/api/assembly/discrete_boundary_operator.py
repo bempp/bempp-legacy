@@ -194,6 +194,7 @@ class InverseSparseDiscreteBoundaryOperator(_LinearOperator):
                                  str(type(operator)))
 
             from scipy.sparse.linalg import factorized
+            from scipy.sparse.linalg import splu
             self._solve_fun = None
             self._shape = (mat.shape[1], mat.shape[0])
             self._dtype = mat.dtype
