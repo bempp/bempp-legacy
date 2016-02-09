@@ -193,15 +193,14 @@ class InverseSparseDiscreteBoundaryOperator(_LinearOperator):
                                  "SparseDiscreteBoundaryOperator or of type csc_matrix. Actual type: " +
                                  str(type(operator)))
 
-            from scipy.sparse.linalg import splu
+            from scipy.sparse.linalg import factorized
             self._solve_fun = None
             self._shape = (mat.shape[1], mat.shape[0])
             self._dtype = mat.dtype
 
             if mat.shape[0] == mat.shape[1]:
                 # Square matrix case
-                solver = splu(mat)
-                self._solve_fun = solver.solve
+                self._solve_fun = factorized(mat)
             elif mat.shape[0] > mat.shape[1]:
                 # Thin matrix case
                 mat_hermitian = mat.conjugate().transpose()

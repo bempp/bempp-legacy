@@ -95,7 +95,7 @@ class BoundaryOperator(object):
         elif isinstance(other, BoundaryOperator):
             return _ProductBoundaryOperator(self, other)
         elif isinstance(other, GridFunction):
-            if self.domain != other.space:
+            if not self.domain.is_compatible(other.space):
                 raise ValueError("Operator domain space does not match GridFunction space.")
             return GridFunction(self.range, coefficients=self.strong_form() * other.coefficients)
         else:
@@ -120,6 +120,9 @@ class BoundaryOperator(object):
 
     def strong_form(self, recompute=False):
         """Return a discrete operator  that maps into the range space.
+
+        The computed map into a range space is based on a simple L^2 mass
+        matrix solve.
 
         Parameters
         ----------
