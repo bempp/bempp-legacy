@@ -402,7 +402,7 @@ void BuffaChristiansenVectorSpace<BasisFunctionType>::assignDofsImpl() {
       {// First edge bottom
       Matrix<BasisFunctionType> &ffCoeff = m_fineFaceCoeffs[faceNum];
       ffCoeff.conservativeResize(3,ffCoeff.cols()+1);
-      if(vertexOnBoundary[coarseVerticesonEdge(ent1Number,0)]) ffCoeff(0,ffCoeff.cols()-1) = -(N-2.)/N;
+      if(vertexOnBoundary[coarseVerticesonEdge(ent1Number,0)]) ffCoeff(0,ffCoeff.cols()-1) = -(N-2.)/(2*N);
       else ffCoeff(0,ffCoeff.cols()-1) = 0;
       ffCoeff(1,ffCoeff.cols()-1) = 0;
       ffCoeff(2,ffCoeff.cols()-1) = 1./2;      }
@@ -437,7 +437,7 @@ void BuffaChristiansenVectorSpace<BasisFunctionType>::assignDofsImpl() {
       }
       {// First edge top
         Matrix<BasisFunctionType> &ffCoeff = m_fineFaceCoeffs[faceNum];
-        if(vertexOnBoundary[coarseVerticesonEdge(ent1Number,0)]) ffCoeff(1,ffCoeff.cols()-1) = (N-2.)/N;
+        if(vertexOnBoundary[coarseVerticesonEdge(ent1Number,0)]) ffCoeff(1,ffCoeff.cols()-1) = (N-2.)/(2*N);
         ffCoeff(2,ffCoeff.cols()-1) = 1./2;
         m_local2globalDofs[faceNum].push_back(glDof);
         m_local2globalDofWeights[faceNum].push_back(1.);
@@ -453,7 +453,7 @@ void BuffaChristiansenVectorSpace<BasisFunctionType>::assignDofsImpl() {
       {// Second edge bottom
       Matrix<BasisFunctionType> &ffCoeff = m_fineFaceCoeffs[faceNum];
       ffCoeff.conservativeResize(3,ffCoeff.cols()+1);
-      if(vertexOnBoundary[coarseVerticesonEdge(ent1Number,1)]) ffCoeff(0,ffCoeff.cols()-1) = -(N-2.)/N;
+      if(vertexOnBoundary[coarseVerticesonEdge(ent1Number,1)]) ffCoeff(0,ffCoeff.cols()-1) = -(N-2.)/(N*2);
       else ffCoeff(0,ffCoeff.cols()-1) = 0;
       ffCoeff(1,ffCoeff.cols()-1) = 0;
       ffCoeff(2,ffCoeff.cols()-1) = 1./2;      }
@@ -488,7 +488,7 @@ void BuffaChristiansenVectorSpace<BasisFunctionType>::assignDofsImpl() {
       }
       {// Second edge top
       Matrix<BasisFunctionType> &ffCoeff = m_fineFaceCoeffs[faceNum];
-        if(vertexOnBoundary[coarseVerticesonEdge(ent1Number,1)]) ffCoeff(1,ffCoeff.cols()-1) = (N-2.)/N;
+        if(vertexOnBoundary[coarseVerticesonEdge(ent1Number,1)]) ffCoeff(1,ffCoeff.cols()-1) = (N-2.)/(N*2);
       ffCoeff(2,ffCoeff.cols()-1) = 1./2;
         m_local2globalDofs[faceNum].push_back(glDof);
         m_local2globalDofWeights[faceNum].push_back(-1.);
