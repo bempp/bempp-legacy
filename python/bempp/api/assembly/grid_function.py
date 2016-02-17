@@ -86,7 +86,7 @@ class GridFunction(object):
     """
 
     def __init__(self, space, dual_space=None, fun=None, coefficients=None,
-                 projections=None, parameters=None):
+            projections=None, parameters=None, identity_operator=None):
 
         import bempp.api
         import numpy as np
@@ -100,6 +100,12 @@ class GridFunction(object):
         if sum([1 for a in [fun, coefficients, projections] if a is not None]) != 1:
             raise ValueError("Exactly one of 'fun', 'coefficients' or 'projections' must " +
                              "be given.")
+
+        if identity_operator is None:
+            self._identity_operator = bempp.api.operators.boundary.sparse.identity
+        else:
+            self._identity_operator = identity_operator
+
 
         self._coefficients = None
         self._space = space
@@ -130,9 +136,8 @@ class GridFunction(object):
             else:
                 proj_space = self.space
 
-            from bempp.api.operators.boundary.sparse import identity
             inv_ident = InverseSparseDiscreteBoundaryOperator(\
-                    identity(self.space, self.space, proj_space).weak_form())
+                    self._identity_operator(self.space, self.space, proj_space).weak_form())
 
 
             self._coefficients = inv_ident * projections
@@ -163,12 +168,10 @@ class GridFunction(object):
 
         """
 
-        from bempp.api.operators.boundary.sparse import identity
-
         if dual_space is None:
             dual_space = self.space
 
-        ident = identity(self.space, self.space, dual_space).weak_form()
+        ident = self._identity_operator(self.space, self.space, dual_space).weak_form()
         return ident * self.coefficients
 
     def evaluate(self, element, local_coordinates):
@@ -365,7 +368,7 @@ class GridFunction(object):
     def coefficients(self, value):
         """Set the coefficients of the grid function."""
         import numpy as np
-        np_coeffs = 1.0 * np.asarray(value).squeeze()
+        np_coeffs = 1.0 * np.asarray(value)
         if np_coeffs.ndim > 1:
             raise ValueError("'coefficients' must be a 1-d array.")
         self._coefficients = np_coeffs
@@ -374,6 +377,16 @@ class GridFunction(object):
     def component_count(self):
         """Return the number of components of the grid function values."""
         return self.space.codomain_dimension
+
+    @property
+    def identity_operator(self):
+        """Return the identity operator used for projections."""
+        return self._identity_operator
+
+    @identity_operator.setter
+    def identity_operator(self, op):
+        """Set the identity operator used for projections."""
+        self._identity_operator = op
 
     @property
     def dtype(self):

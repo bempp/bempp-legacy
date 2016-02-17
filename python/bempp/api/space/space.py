@@ -120,7 +120,7 @@ class Space(object):
         return self._impl.global_dof_count
 
     @property
-    def flat_local_dof_clount(self):
+    def flat_local_dof_count(self):
         """Return the total number of local degrees of freedom."""
         return self._impl.flat_local_dof_count
 
