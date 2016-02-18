@@ -163,7 +163,7 @@ def grid_from_element_data(vertices, elements, domain_indices=[]):
     from bempp.core.grid.grid import grid_from_element_data as grid_fun
     return Grid(grid_fun(vertices, elements, domain_indices))
         
-def structured_grid(lower_left, upper_right, subdivisions):
+def structured_grid(lower_left, upper_right, subdivisions, axis="xy"):
     """Create a two dimensional grid by defining the lower left and
     upper right point.
 
@@ -176,6 +176,10 @@ def structured_grid(lower_left, upper_right, subdivisions):
     subdivisions : tuple
         A tuple (N,M) specifiying the number of subdivisions in
         each dimension.
+    axis : string
+        Possible choices are "xy", "xz", "yz". Denotes the
+        axes along which the structured grid is generated.
+        Default is "xy".
 
     Returns
     -------
@@ -189,11 +193,20 @@ def structured_grid(lower_left, upper_right, subdivisions):
     >>> grid = structured_grid((0,0),(1,1),(100,100))
 
     """
-
     from bempp.core.grid.grid import structured_grid as grid_fun
-    return Grid(grid_fun(lower_left, upper_right, subdivisions))
 
+    # Get a grid along the xy axis
+    grid = Grid(grid_fun(lower_left, upper_right, subdivisions))
+    vertices = grid.leaf_view.vertices
+    elements = grid.leaf_view.elements
 
-
-
+    if axis == "xy":
+        # Nothing to be done
+        return grid_from_element_data(vertices, elements)
+    elif axis == "xz":
+        return grid_from_element_data(vertices[[0, 2, 1],:], elements)
+    elif axis == "yz":
+        return grid_from_element_data(vertices[[2, 0, 1],:], elements)
+    else:
+        raise ValueError("axis parameter must be 'xy', 'xz', or 'yz'.")
 

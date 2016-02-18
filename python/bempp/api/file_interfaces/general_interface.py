@@ -366,3 +366,75 @@ class Element(object):
         self.index = index
         self.data = [v0, v1, v2]
         self.domain_index = domain_index
+
+
+def three_planes_view(file_name, lower_left, upper_right, ndims, evaluator):
+    """
+    Export three files containing data views in the "xy", "xz" and "yz" axis.
+
+    Parameters
+    ----------
+    file_name : string
+        Name of the output file use .msh extension
+    lower_left : tuple
+        A tuple (xmin, ymin, zmin) of the lower left coordinate of the
+        bounding box in each dimension.
+    upper_right : tuple
+        A tuple (xmax, ymax, zmax) of the upper right coordinate of the
+        bounding box in each dimension.
+    ndims : tuple
+        A tuple (nx, ny, nz) of the number of subdivisions in each
+        dimension.
+    evaluator : callable
+        A function res = callable(points) that takes an 3 x n
+        numpy array of point coordinates and returns a real scalar 
+        numpy array of dimension n with the function values at the
+        given points.
+
+    """
+    import bempp.api
+    import os
+
+    fname, extension = os.path.splitext(file_name)
+
+    ll = {"xy": (lower_left[0], lower_left[1]),
+            "xz": (lower_left[0], lower_left[2]),
+            "yz": (lower_left[1], lower_left[2])}
+    ur = {"xy": (upper_right[0], upper_right[1]),
+            "xz": (upper_right[0], upper_right[2]),
+            "yz": (upper_right[1], upper_right[2])}
+    nd = {"xy": (ndims[0], ndims[1]),
+            "xz": (ndims[0], ndims[2]),
+            "yz": (ndims[1], ndims[2])}
+
+    name = {"xy": fname + "_xy" + extension,
+            "xz": fname + "_xz" + extension,
+            "yz": fname + "_yz" + extension}
+
+    node_offset = 1
+    element_offset = 1
+
+    for mode in ["xy", "xz", "yz"]:
+        grid = bempp.api.structured_grid(ll[mode], ur[mode], nd[mode], axis=mode)
+        nnodes = grid.leaf_view.entity_count(2)
+        nelements = grid.leaf_view.entity_count(0)
+        space = bempp.api.function_space(grid, "P", 1, domains=[0], closed=True) 
+        points = space.global_dof_interpolation_points
+        vals = evaluator(points)
+        output_fun = bempp.api.GridFunction(space, coefficients=vals)
+        bempp.api.export(file_name=name[mode], grid_function=output_fun, 
+                data_type='node',
+                vertex_index_to_file_key_map=range(node_offset, node_offset+nnodes),
+                element_index_to_file_key_map=range(element_offset, element_offset+nelements))
+        node_offset += nnodes
+        element_offset += nelements
+
+
+
+
+
+
+        
+
+
+
