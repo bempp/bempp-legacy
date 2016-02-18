@@ -31,6 +31,8 @@
 #include "types.hpp"
 
 #include "../common/boost_ptr_map_fwd.hpp"
+#include <tbb/concurrent_unordered_map.h>
+#include <tbb/mutex.h>
 #include <cstring>
 #include <iostream>
 #include <map>
@@ -73,6 +75,7 @@ public:
           CoordinateType>> &quadDescSelector,
       const shared_ptr<const SingleQuadratureRuleFamily<CoordinateType>>
           &quadRuleFamily);
+  ~DefaultLocalAssemblerForLocalOperatorsOnSurfaces();
 
   virtual void evaluateLocalWeakForms(const std::vector<int> &elementIndices,
                                       std::vector<Matrix<ResultType>> &result);
@@ -86,9 +89,11 @@ private:
   getIntegrator(const SingleQuadratureDescriptor &desc);
 
 private:
-  typedef boost::ptr_map<SingleQuadratureDescriptor,
-                         TestTrialIntegrator<BasisFunctionType, ResultType>>
-      IntegratorMap;
+  //typedef boost::ptr_map<SingleQuadratureDescriptor,
+  //                       TestTrialIntegrator<BasisFunctionType, ResultType>>
+  //    IntegratorMap;
+  typedef tbb::concurrent_unordered_map<SingleQuadratureDescriptor, 
+          TestTrialIntegrator<BasisFunctionType, ResultType>*> IntegratorMap;
   typedef DefaultLocalAssemblerForOperatorsOnSurfacesUtilities<
       BasisFunctionType> Utilities;
 
@@ -110,6 +115,7 @@ private:
   shared_ptr<const SingleQuadratureRuleFamily<CoordinateType>> m_quadRuleFamily;
 
   IntegratorMap m_testTrialIntegrators;
+  mutable tbb::mutex m_integratorCreationMutex;
   /** \endcond */
 };
 

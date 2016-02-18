@@ -14,7 +14,7 @@ class _it_counter(object):
     def count(self):
         return self._count
 
-def gmres(A, b, tol=1E-5, restart=None, maxiter=None):
+def gmres(A, b, tol=1E-5, restart=None, maxiter=None, use_strong_form=False):
     """Interface to the scipy.sparse.linalg.gmres function.
 
     This function behaves like the scipy.sparse.linalg.gmres function. But
@@ -34,8 +34,14 @@ def gmres(A, b, tol=1E-5, restart=None, maxiter=None):
 
     # Assemble weak form before the logging messages
 
-    A_op = A.weak_form()
-    b_vec = b.projections(A.dual_to_range)
+    if use_strong_form:
+        if not A.range.is_compatible(b.space):
+            raise ValueError("The range of A and the space of A must have the same number of unknowns if the strong form is used.")
+        A_op = A.strong_form()
+        b_vec = b.coefficients
+    else:
+        A_op = A.weak_form()
+        b_vec = b.projections(A.dual_to_range)
 
     callback = _it_counter()
 
@@ -50,7 +56,7 @@ def gmres(A, b, tol=1E-5, restart=None, maxiter=None):
     return GridFunction(A.domain, coefficients=x.ravel()), info
 
 
-def cg(A, b, tol=1E-5, maxiter=None):
+def cg(A, b, tol=1E-5, maxiter=None, use_strong_form=False):
     """Interface to the scipy.sparse.linalg.cg function.
 
     This function behaves like the scipy.sparse.linalg.cg function. But
@@ -68,8 +74,14 @@ def cg(A, b, tol=1E-5, maxiter=None):
     if not isinstance(b, GridFunction):
         raise ValueError("b must be of type GridFunction")
 
-    A_op = A.weak_form()
-    b_vec = b.projections(A.dual_to_range)
+    if use_strong_form:
+        if not A.range.is_compatible(b.space):
+            raise ValueError("The range of A and the space of A must have the same number of unknowns if the strong form is used.")
+        A_op = A.strong_form()
+        b_vec = b.coefficients
+    else:
+        A_op = A.weak_form()
+        b_vec = b.projections(A.dual_to_range)
 
     callback = _it_counter()
     bempp.api.LOGGER.info("Starting CG iteration")

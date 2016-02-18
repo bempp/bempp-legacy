@@ -48,6 +48,7 @@
 #include <boost/type_traits/is_complex.hpp>
 
 #include <tbb/tick_count.h>
+#include <tbb/tbb.h>
 
 #include <stdexcept>
 #include <vector>
@@ -304,8 +305,22 @@ ElementaryLocalOperator<BasisFunctionType, ResultType>::
   std::vector<int> elementIndices(elementCount);
   for (size_t i = 0; i < elementCount; ++i)
     elementIndices[i] = i;
-  std::vector<Matrix<ResultType>> localResult;
-  assembler.evaluateLocalWeakForms(elementIndices, localResult);
+  std::vector<Matrix<ResultType>> localResult(elementCount);
+  tbb::parallel_for(tbb::blocked_range<size_t>(0, elementCount),
+          [&assembler,&localResult](tbb::blocked_range<size_t>& r){
+          size_t numElements = r.end() - r.begin();
+          std::vector<int> myIndices(numElements);
+          std::vector<Matrix<ResultType>> myLocalResult;
+          myLocalResult.reserve(numElements);
+          int count = 0;
+          for (size_t i = r.begin(); i!= r.end(); ++i)
+            myIndices[count++] = i;
+          assembler.evaluateLocalWeakForms(myIndices, myLocalResult);
+          for (size_t i = 0; i < numElements; ++i)
+            localResult[myIndices[i]] = myLocalResult[i];
+            });
+          
+  //assembler.evaluateLocalWeakForms(elementIndices, localResult);
 
   // Global DOF indices corresponding to local DOFs on elements
   std::vector<std::vector<GlobalDofIndex>> testGdofs(elementCount);
