@@ -164,7 +164,8 @@ def ellipsoid(r1=1, r2=1, r3=1, origin=(0, 0, 0), h=0.1):
 
 
 def sphere(r=1, origin=(0, 0, 0), h=0.1):
-    return ellipsoid(origin=origin, h=h)
+    """Return an sphere grid. """
+    return ellipsoid(r1=r, r2=r, r3=r, origin=origin, h=h)
 
 def reentrant_cube(h=0.1, refinement_factor=0.2):
     reentrant_cube_stub="""
