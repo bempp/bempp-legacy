@@ -25,7 +25,7 @@ class TestHMatrixAssembly(TestCase):
         parameters_hmat_fine.assembly.boundary_operator_assembly_type = 'hmat'
         parameters_hmat_fine.hmat.eps = TOL_FINE
 
-        grid = bempp.api.shapes.sphere(4)
+        grid = bempp.api.shapes.regular_sphere(4)
         space = bempp.api.function_space(grid, "DP", 0)
 
         slp_hmat_coarse = bempp.api.as_matrix(
@@ -88,7 +88,7 @@ class TestHMatrixAssembly(TestCase):
         parameters_hmat_fine.assembly.boundary_operator_assembly_type = 'hmat'
         parameters_hmat_fine.hmat.eps = TOL_FINE
 
-        grid = bempp.api.shapes.sphere(4)
+        grid = bempp.api.shapes.regular_sphere(4)
         space = bempp.api.function_space(grid, "P", 1)
 
         slp_hmat_coarse = bempp.api.as_matrix(
