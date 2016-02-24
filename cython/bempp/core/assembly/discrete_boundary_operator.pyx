@@ -112,7 +112,7 @@ cdef class RealDiscreteBoundaryOperator:
         cdef RealDiscreteBoundaryOperator op = RealDiscreteBoundaryOperator()
         op.impl_ = self.impl_
         op.transpose_mode = enums.compute_transpose_mode(self.transpose_mode,
-                                                          enums.adjoint)
+                                                          enums.conjugate_transpose)
         return op
 
     def conjugate(self):
@@ -120,7 +120,7 @@ cdef class RealDiscreteBoundaryOperator:
         cdef RealDiscreteBoundaryOperator op = RealDiscreteBoundaryOperator()
         op.impl_ = self.impl_
         op.transpose_mode = enums.compute_transpose_mode(self.transpose_mode,
-                                                          enums.conjugate)
+                                                          enums.conjugate_transpose)
         return op
 
 cdef class ComplexDiscreteBoundaryOperator:
@@ -223,7 +223,7 @@ cdef class ComplexDiscreteBoundaryOperator:
         cdef ComplexDiscreteBoundaryOperator op = ComplexDiscreteBoundaryOperator()
         op.impl_ = self.impl_
         op.transpose_mode = enums.compute_transpose_mode(self.transpose_mode,
-                                                          enums.adjoint)
+                                                          enums.conjugate_transpose)
         return op
 
     def conjugate(self):
