@@ -51,16 +51,19 @@ def electric_field(domain, range_, dual_to_range,
     from bempp.api.assembly import LocalBoundaryOperator
     from bempp.api.assembly.abstract_boundary_operator import ElementaryAbstractIntegralOperator
     from bempp.api.assembly.abstract_boundary_operator import ElementaryAbstractLocalOperator
+    from bempp.api.operators.boundary.sparse import maxwell_identity
 
     if parameters is None:
         parameters = bempp.api.global_parameters
 
     if not use_slp:
-        return ElementaryBoundaryOperator( \
+        efie_op =  ElementaryBoundaryOperator( \
                 ElementaryAbstractIntegralOperator(
             electric_field_ext(parameters, domain._impl, range_._impl, dual_to_range._impl,
                                wave_number, "", symmetry)),
             parameters=parameters, label=label)
+        efie_op.range_identity_operator = maxwell_identity
+        return efie_op
     else:
 
         space = domain
@@ -102,7 +105,9 @@ def electric_field(domain, range_, dual_to_range,
         term2 = CompoundBoundaryOperator([div_op], (1. / kappa) * slp,
                                          [div_op_transpose], label=label+"_term2")
 
-        return term1 + term2
+        efie_op = term1 + term2
+        efie_op.range_identity_operator = maxwell_identity
+        return efie_op
 
 def calderon_electric_field(grid, wave_number, parameters=None):
     """Return a pair (E^2, E) of the squared EFIE operator E^2 and E itself"""
@@ -116,20 +121,16 @@ def calderon_electric_field(grid, wave_number, parameters=None):
             from bempp.api.space import project_operator
 
             bc_space = bempp.api.function_space(grid, "BC", 0)
-            rt_space = bempp.api.function_space(grid, "B-RT", 0)
-            rt_bary_space = bempp.api.function_space(grid.barycentric_grid(), "RT", 0)
-            super(EfieSquared, self).__init__(rt_space, rt_space, bc_space,
+            rwg_space = bempp.api.function_space(grid, "B-RT", 0)
+            rwg_bary_space = bempp.api.function_space(grid.barycentric_grid(), "RT", 0)
+            super(EfieSquared, self).__init__(rwg_space, rwg_space, bc_space,
                     label="EFIE_SQUARED")
 
-            self._efie_fine = electric_field(rt_bary_space, rt_bary_space, rt_bary_space, wave_number,
+            self._efie_fine = electric_field(rwg_bary_space, rwg_bary_space, rwg_bary_space, wave_number,
                     parameters=parameters)
-            self._efie = project_operator(self._efie_fine, domain=rt_space, range_=rt_space, dual_to_range=rt_space) 
-            self._efie2 = project_operator(self._efie_fine, domain=bc_space, range_=bc_space, dual_to_range=bc_space)
-            #self._efie = electric_field(self.domain, self.domain, self.domain, wave_number, use_slp=self._slp,
-                    #parameters=parameters)
-            #self._efie2 = electric_field(self.dual_to_range, self.range, self.dual_to_range, wave_number, use_slp=self._slp,
-                    #parameters=self._parameters)
-            self._ident = bempp.api.operators.boundary.sparse.maxwell_identity(self.dual_to_range, self.range, self.range)
+            self._efie = project_operator(self._efie_fine, domain=rwg_space, range_=rwg_space, dual_to_range=rwg_space) 
+            self._efie2 = project_operator(self._efie_fine, domain=bc_space, range_=rwg_space, dual_to_range=bc_space)
+            self._ident = bempp.api.operators.boundary.sparse.maxwell_identity(bc_space, rwg_space, rwg_space)
             self._inv_ident = InverseSparseDiscreteBoundaryOperator(self._ident.weak_form())
 
         def _weak_form_impl(self):
@@ -140,26 +141,13 @@ def calderon_electric_field(grid, wave_number, parameters=None):
 
             return efie2_weak * self._inv_ident * efie_weak
 
+    from bempp.api.operators.boundary.sparse import maxwell_identity
+
     op = EfieSquared(grid, wave_number, parameters)
+    op.range_identity_operator = maxwell_identity
+    op._efie2.range_identity_operator = maxwell_identity
     return op, op._efie2
 
-
-
-
-
-
-
-    bary_grid = grid.barycentric_grid
-    disc_space = bempp.api.function_space(bary_grid, "DP", 1)
-    bc_space = bempp.api.function_space(grid, "BC", 0)
-    rt_space = bempp.api.function_space(grid, "B-RT", 0)
-    slp = bempp.api.operators.boundary.helmholtz.single_layer(single_layer,
-            disc_space, disc_space, disc_space, parameters=parameters)
-
-    efie = electric_field(rt_space, rt_space, rt_space, wave_number,use_slp=slp, 
-            parameters=parameters)
-    efie2 = electric_field(bc_space, bc_space, bc_space, wave_number, usel_slp=slp, 
-            parameters=parameters)
 
 def magnetic_field(domain, range_, dual_to_range,
                    wave_number,
@@ -193,12 +181,15 @@ def magnetic_field(domain, range_, dual_to_range,
     from bempp.core.operators.boundary.maxwell import magnetic_field_ext
     from bempp.api.assembly import ElementaryBoundaryOperator
     from bempp.api.assembly.abstract_boundary_operator import ElementaryAbstractIntegralOperator
+    from bempp.api.operators.boundary.sparse import maxwell_identity
 
     if parameters is None:
         parameters = bempp.api.global_parameters
 
-    return ElementaryBoundaryOperator( \
+    mfie_op =  ElementaryBoundaryOperator( \
             ElementaryAbstractIntegralOperator(
         magnetic_field_ext(parameters, domain._impl, range_._impl, dual_to_range._impl,
                            wave_number, "", symmetry)),
         parameters=parameters, label=label)
+    mfie_op.range_identity_operator = maxwell_identity
+    return mfie_op

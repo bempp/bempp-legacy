@@ -87,6 +87,8 @@ class TestBarycentricLinearSpace(TestCase):
 
 
 
+
+
 if __name__ == "__main__":
     from unittest import main
 

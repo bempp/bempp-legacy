@@ -94,7 +94,7 @@ ParameterList GlobalParameters::parameterList() {
   parameters.put("options.hmat.minBlockSize", static_cast<int>(20));
 
   // Specifies the maximum size of an admissible block
-  parameters.put("options.hmat.maxBlockSize", static_cast<int>(2048));
+  parameters.put("options.hmat.maxBlockSize", static_cast<int>(1000000));
 
   // Specifies the block separation parameter eta.
   parameters.put("options.hmat.eta", static_cast<double>(1.2));

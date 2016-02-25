@@ -2,8 +2,19 @@ import scipy.sparse.linalg
 from bempp.api.assembly import GridFunction
 from bempp.api.assembly import BoundaryOperator
 
+class _it_counter(object):
 
-def gmres(A, b, tol=1E-5, restart=None, maxiter=None, M=None, callback=None):
+    def __init__(self):
+        self._count = 0
+
+    def __call__(self, x):
+        self._count += 1
+
+    @property
+    def count(self):
+        return self._count
+
+def gmres(A, b, tol=1E-5, restart=None, maxiter=None, use_strong_form=False):
     """Interface to the scipy.sparse.linalg.gmres function.
 
     This function behaves like the scipy.sparse.linalg.gmres function. But
@@ -12,7 +23,8 @@ def gmres(A, b, tol=1E-5, restart=None, maxiter=None, M=None, callback=None):
     correct space.
 
     """
-
+    import bempp.api
+    import time
 
     if not isinstance(A, BoundaryOperator):
         raise ValueError("A must be of type BoundaryOperator")
@@ -20,13 +32,31 @@ def gmres(A, b, tol=1E-5, restart=None, maxiter=None, M=None, callback=None):
     if not isinstance(b, GridFunction):
         raise ValueError("b must be of type GridFunction")
 
-    x, info = scipy.sparse.linalg.gmres(A.weak_form(), b.projections(A.dual_to_range),
-                                        tol=tol, restart=restart, maxiter=maxiter, M=M, callback=callback)
+    # Assemble weak form before the logging messages
+
+    if use_strong_form:
+        if not A.range.is_compatible(b.space):
+            raise ValueError("The range of A and the space of A must have the same number of unknowns if the strong form is used.")
+        A_op = A.strong_form()
+        b_vec = b.coefficients
+    else:
+        A_op = A.weak_form()
+        b_vec = b.projections(A.dual_to_range)
+
+    callback = _it_counter()
+
+    bempp.api.LOGGER.info("Starting GMRES iteration")
+    start_time = time.time()
+    x, info = scipy.sparse.linalg.gmres(A_op, b_vec,
+                                        tol=tol, restart=restart, maxiter=maxiter, callback=callback)
+    end_time = time.time()
+    bempp.api.LOGGER.info("GMRES finished in {0} iterations and took {1:.2E} sec.".format(
+        callback.count, end_time - start_time))
 
     return GridFunction(A.domain, coefficients=x.ravel()), info
 
 
-def cg(A, b, tol=1E-5, maxiter=None, M=None, callback=None):
+def cg(A, b, tol=1E-5, maxiter=None, use_strong_form=False):
     """Interface to the scipy.sparse.linalg.cg function.
 
     This function behaves like the scipy.sparse.linalg.cg function. But
@@ -35,13 +65,31 @@ def cg(A, b, tol=1E-5, maxiter=None, M=None, callback=None):
     correct space.
 
     """
+    import bempp.api
+    import time
+
     if not isinstance(A, BoundaryOperator):
         raise ValueError("A must be of type BoundaryOperator")
 
     if not isinstance(b, GridFunction):
         raise ValueError("b must be of type GridFunction")
 
-    x, info = scipy.sparse.linalg.cg(A.weak_form(), b.projections(A.dual_to_range),
-                                     tol=tol, maxiter=maxiter, M=M, callback=callback)
+    if use_strong_form:
+        if not A.range.is_compatible(b.space):
+            raise ValueError("The range of A and the space of A must have the same number of unknowns if the strong form is used.")
+        A_op = A.strong_form()
+        b_vec = b.coefficients
+    else:
+        A_op = A.weak_form()
+        b_vec = b.projections(A.dual_to_range)
+
+    callback = _it_counter()
+    bempp.api.LOGGER.info("Starting CG iteration")
+    start_time = time.time()
+    x, info = scipy.sparse.linalg.cg(A_op, b_vec,
+                                     tol=tol, maxiter=maxiter, callback=callback)
+    end_time = time.time()
+    bempp.api.LOGGER.info("CG finished in {0} iterations and took {1:.2E} sec.".format(
+        callback.count, end_time - start_time))
 
     return GridFunction(A.domain, coefficients=x.ravel()), info

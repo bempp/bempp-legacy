@@ -75,11 +75,13 @@ def maxwell_identity(domain, range_, dual_to_range,
     if parameters is None:
         parameters = bempp.api.global_parameters
 
-    return LocalBoundaryOperator(\
+    id_op =  LocalBoundaryOperator(\
             ElementaryAbstractLocalOperator(
             maxwell_identity_ext(parameters, domain._impl, range_._impl,
                                  dual_to_range._impl, "", symmetry)),
             parameters=parameters, label=label)
+    id_op.range_identity_operator = maxwell_identity
+    return id_op
 
 def laplace_beltrami(domain, range_, dual_to_range,
                      label="LAPLACE_BELTRAMI", symmetry='no_symmetry',

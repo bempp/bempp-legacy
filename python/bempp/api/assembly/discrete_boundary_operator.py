@@ -199,6 +199,13 @@ class InverseSparseDiscreteBoundaryOperator(_LinearOperator):
             self._shape = (mat.shape[1], mat.shape[0])
             self._dtype = mat.dtype
 
+            import time
+            import bempp.api
+
+            bempp.api.LOGGER.info("Start computing LU (pseudo)-inverse of ({0}, {1}) matrix.".format(
+                mat.shape[0], mat.shape[1]))
+
+            start_time = time.time()
             if mat.shape[0] == mat.shape[1]:
                 # Square matrix case
                 self._solve_fun = factorized(mat)
@@ -213,6 +220,10 @@ class InverseSparseDiscreteBoundaryOperator(_LinearOperator):
                 mat_hermitian = mat.conjugate().transpose()
                 solver = splu((mat*mat_hermitian).tocsc())
                 self._solve_fun = lambda x: mat_hermitian*solver.solve(x)
+
+            end_time = time.time()
+            bempp.api.LOGGER.info("Finished computation of inverse in {0:.2E} seconds.".format(
+                end_time-start_time))
 
         def solve(self, vec):
             """Solve with right-hand side vec."""
