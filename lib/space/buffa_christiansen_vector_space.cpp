@@ -515,6 +515,14 @@ void BuffaChristiansenVectorSpace<BasisFunctionType>::assignDofsImpl() {
   for(std::unique_ptr<EntityIterator<0>> it=m_view->entityIterator<0>();!it->finished();it->next()){
     const Entity<0> &entity = it->entity();
     int ent0Number = bindex.entityIndex(entity);
+    Matrix<BasisFunctionType> &ffCoeff = m_fineFaceCoeffs[faceNum]
+    if (ffCoeff.cols()==0){
+      ffCoeff.conservativeResize(3,1);
+      ffCoeff(0,1) = 0.;
+      ffCoeff(1,1) = 0.;
+      ffCoeff(2,1) = 0.;
+      m_local2globalDofs[ent0Number].push_back(-1);
+    }
     m_elementShapesets[ent0Number] = Shapeset(m_fineFaceCoeffs[ent0Number]);
   }
   SpaceHelper<BasisFunctionType>::initializeLocal2FlatLocalDofMap(
