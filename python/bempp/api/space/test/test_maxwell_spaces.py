@@ -29,7 +29,7 @@ class TestMaxwellSpaces(TestCase):
                 self.assertAlmostEqual(weights_rt[ind] * edge_volumes[ind], weights_rwg[ind])
 
     @requiresgmsh
-    def test_maxwell_barycentric_rwg_mass_agrees_with_rwg_maxx(self):
+    def test_maxwell_barycentric_rwg_mass_agrees_with_rwg_mass(self):
 
         import numpy as np
 

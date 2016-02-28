@@ -46,5 +46,12 @@ class GridFactory(object):
     def finalize(self):
         """Finalize the grid creation and return a grid object."""
         from bempp.api.grid.grid import Grid
-        return Grid(self._impl.finalize())
+        from bempp.api import LOGGER
+
+        grid = Grid(self._impl.finalize())
+
+        LOGGER.info("Created grid with {0} elements, {1} nodes and {2} edges.".format(grid.leaf_view.entity_count(0),
+        grid.leaf_view.entity_count(2),
+        grid.leaf_view.entity_count(1)))
+        return grid
 

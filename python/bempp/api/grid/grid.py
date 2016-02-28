@@ -159,9 +159,15 @@ def grid_from_element_data(vertices, elements, domain_indices=[]):
     >>> grid = grid_from_element_data(vertices,elements)
 
     """
-
+    from bempp.api import LOGGER
     from bempp.core.grid.grid import grid_from_element_data as grid_fun
-    return Grid(grid_fun(vertices, elements, domain_indices))
+
+    grid = Grid(grid_fun(vertices, elements, domain_indices))
+    LOGGER.info("Created grid with {0} elements, {1} nodes and {2} edges.".format(grid.leaf_view.entity_count(0),
+        grid.leaf_view.entity_count(2),
+        grid.leaf_view.entity_count(1)))
+
+    return grid
         
 def structured_grid(lower_left, upper_right, subdivisions, axis="xy"):
     """Create a two dimensional grid by defining the lower left and
@@ -197,6 +203,11 @@ def structured_grid(lower_left, upper_right, subdivisions, axis="xy"):
 
     # Get a grid along the xy axis
     grid = Grid(grid_fun(lower_left, upper_right, subdivisions))
+    from bempp.api import LOGGER
+    LOGGER.info("Created grid with {0} elements, {1} nodes and {2} edges.".format(grid.leaf_view.entity_count(0),
+        grid.leaf_view.entity_count(2),
+        grid.leaf_view.entity_count(1)))
+
     vertices = grid.leaf_view.vertices
     elements = grid.leaf_view.elements
 
