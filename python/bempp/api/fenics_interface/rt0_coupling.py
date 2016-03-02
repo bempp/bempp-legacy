@@ -34,7 +34,7 @@ def n1curl_to_rt0_tangential_trace(fenics_space):
 
     mesh = fenics_space.mesh()
 
-    fenics_dim = fenics_space.dofmap().global_dimension()
+    fenics_dim = fenics_space.dim()
 
     bm = dolfin.BoundaryMesh(mesh, "exterior", False)
     bm_nodes = bm.entity_map(0).array().astype(np.int64)
