@@ -46,7 +46,6 @@ def p1_trace(fenics_space):
     from scipy.sparse import coo_matrix
 
     vertex_indices = np.arange(space.global_dof_count)
-    data = np.ones(space.global_dof_count)
     bempp_dofs_from_b_vertices = p1_dof_to_vertex_matrix(space).transpose()
 
     # Now the boundary vertices to all the vertices
