@@ -71,6 +71,20 @@ cdef class BlockClusterTreeNode:
         def __get__(self):
             return deref(self.impl_).isLeaf()
 
+    property diameters:
+        """Return a tuple with the diameters of the row cluster bounding box and the column cluster bounding box."""
+
+        def __get__(self):
+            row_diam = deref(deref(self.impl_).data().rowClusterTreeNode).data().boundingBox.diameter()
+            column_diam = deref(deref(self.impl_).data().columnClusterTreeNode).data().boundingBox.diameter()
+            return (row_diam, column_diam)
+
+    property cluster_distance:
+        """Return the distance between the associated row and column cluster node."""
+
+        def __get__(self):
+            return deref(deref(self.impl_).data().rowClusterTreeNode).data().boundingBox.distance(deref(deref(self.impl_).data().columnClusterTreeNode).data().boundingBox)
+
 
 cdef class BlockClusterTree:
     """Interface to the block cluster tree structre of an H-Matrix."""
