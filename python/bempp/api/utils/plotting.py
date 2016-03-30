@@ -87,7 +87,7 @@ def plot_slice(plot_f, dolfin_function=None, x=None, y=None, z=None, n=(151,151)
             title = "Plot at z="+str(z)
     plt.title(title)
     if x is None:
-        plt.xlabel(x)
+        plt.xlabel("x")
         if y is None:
             plt.ylabel("y")
         else:
