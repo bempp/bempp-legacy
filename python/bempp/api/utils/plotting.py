@@ -58,7 +58,6 @@ def plot_slice(plot_f, dolfin_function=None, x=None, y=None, z=None, n=(151,151)
 
     if dolfin_function is None:
         plot_me = np.real(plot_f(points))
-        assert len(plot_me) == points.shape[1]
     else:
         plot_me = np.zeros(points.shape[1], dtype=np.float64)
         bem_x = np.full(points.shape[1], False, dtype=np.bool)
