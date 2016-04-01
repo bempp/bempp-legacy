@@ -1,32 +1,10 @@
-from IPython import embed
-def rt0_dofs_to_boundary_vertex_pairs(space):
-    """Return permutation matrix that maps from dofs to grid insertion edge indices."""
-    import numpy as np
-
-    from scipy.sparse import coo_matrix
-
-    grid = space.grid
-    edge_count = space.global_dof_count
-
-    dof_to_vertices_map = np.zeros((edge_count,2), dtype=np.int64)
-
-    i_s = grid.leaf_view.index_set()
-
-    for element in grid.leaf_view.entity_iterator(0):
-        g_d = space.get_global_dofs(element)
-        vs = [i_s.entity_index(v) for v in element.sub_entity_iterator(2)]
-        for i,e in enumerate([(0,1),(0,2),(1,2)]):
-            dof_to_vertices_map[g_d[i],0] = vs[e[0]]
-            dof_to_vertices_map[g_d[i],1] = vs[e[1]]
-
-    return dof_to_vertices_map
-
 
 def n1curl_to_rt0_tangential_trace(fenics_space):
     import dolfin
     from .coupling import fenics_space_info
-    from bempp.api import function_space, grid_from_element_data
+    from bempp.api import function_space, grid_from_element_data, GridFunction
     import numpy as np
+    from scipy.sparse import coo_matrix
 
     family, degree = fenics_space_info(fenics_space)
     if not (family == 'Nedelec 1st kind H(curl)' and degree == 1):
@@ -51,9 +29,24 @@ def n1curl_to_rt0_tangential_trace(fenics_space):
 
     # First the BEM++ dofs to the boundary edges
     #   bempp_dofs <- bd_vertex_pairs
-    from scipy.sparse import coo_matrix
 
-    dof_to_vertices_map = rt0_dofs_to_boundary_vertex_pairs(space)
+    grid = space.grid
+    edge_count = space.global_dof_count
+
+    dof_to_vertices_map = np.zeros((edge_count,2), dtype=np.int64)
+    dof_to_face_map = [None]*edge_count
+
+    i_s = grid.leaf_view.index_set()
+
+    for element in grid.leaf_view.entity_iterator(0):
+        g_d = space.get_global_dofs(element)
+        vs = [i_s.entity_index(v) for v in element.sub_entity_iterator(2)]
+        for i,e in enumerate([(0,1),(0,2),(1,2)]):
+            dof_to_vertices_map[g_d[i],0] = vs[e[0]]
+            dof_to_vertices_map[g_d[i],1] = vs[e[1]]
+
+            dof_to_face_map[g_d[i]] = (element,i)
+
 
     # Now the boundary triangle edges to the tetrahedron faces
     #   bd_vertex_pairs <- all_vertex_pairs
@@ -98,5 +91,38 @@ def n1curl_to_rt0_tangential_trace(fenics_space):
     #   bempp_dofs <- bd_edges <- all_edges <- fenics_dofs
     trace_matrix = bempp_dofs_from_all_edges * all_edges_from_fenics_dofs
 
+    # Now sort out directions
+    v_list = list(space.grid.leaf_view.entity_iterator(2))
+    local_coords = [
+                    np.array([[.5],[0.]]),
+                    np.array([[0.],[.5]]),
+                    np.array([[.5],[.5]])
+                   ]
+
+    non_z = trace_matrix.nonzero()
+    for i,j in zip(non_z[0],non_z[1]):
+        fenics_coeffs = np.zeros(fenics_dim)
+        bempp_coeffs = np.zeros(space.global_dof_count)
+        fenics_coeffs[j] = 1.
+        bempp_coeffs[i] = 1.
+        fenics_fun = dolfin.Function(fenics_space)
+        fenics_fun.vector()[:] = fenics_coeffs
+        bempp_fun = GridFunction(space, coefficients=bempp_coeffs)
+
+        v1 = v_list[dof_to_vertices_map[i][0]]
+        v2 = v_list[dof_to_vertices_map[i][1]]
+        midpoint = (v1.geometry.corners+v2.geometry.corners)/2
+
+        fenics_values = np.zeros(3)
+        fenics_fun.eval(fenics_values,midpoint.T[0])
+
+        face = dof_to_face_map[i]
+        bempp_values = bempp_fun.evaluate(face[0],local_coords[face[1]])
+
+        normal = face[0].geometry.normals(np.array([[.25],[.25]]))
+        cross =  np.cross(normal.T[0], fenics_values)
+        k = np.argmax(np.abs(cross))
+
+        trace_matrix[i,j] = cross[k]/bempp_values[k,0]
     # Now return everything
     return space, trace_matrix
