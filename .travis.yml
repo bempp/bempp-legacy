@@ -33,7 +33,7 @@ before_install:
     - python -c 'import numpy'
     - python -c 'import scipy'
 ## same about cython ?
-    - conda install cython -y -q
+    - conda install cython=0.23.4 -y -q
 
 
 before_script:
