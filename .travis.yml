@@ -63,6 +63,10 @@ script:
 # ## Run test suite from python
     - python -c "import bempp.api ; bempp.api.test()"
 
+# ## Re-Run with Gmsh installed
+    - sudo apt-get install gmsh -q -y
+    - python -c "import bempp.api ; bempp.api.test()"
+
 
 #
 # This after_* is not doing what I expect
