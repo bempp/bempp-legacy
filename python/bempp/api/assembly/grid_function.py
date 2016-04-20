@@ -108,8 +108,10 @@ class GridFunction(object):
 
 
         self._coefficients = None
+        self._dual_coefficients = None
         self._space = space
         self._parameters = parameters
+        self._dual_space = None
 
         if coefficients is not None:
             self.coefficients = coefficients

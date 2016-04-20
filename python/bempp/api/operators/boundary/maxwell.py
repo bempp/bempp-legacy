@@ -121,8 +121,8 @@ def calderon_electric_field(grid, wave_number, parameters=None):
             from bempp.api.space import project_operator
 
             bc_space = bempp.api.function_space(grid, "BC", 0)
-            rwg_space = bempp.api.function_space(grid, "B-RT", 0)
-            rwg_bary_space = bempp.api.function_space(grid.barycentric_grid(), "RT", 0)
+            rwg_space = bempp.api.function_space(grid, "B-RWG", 0)
+            rwg_bary_space = bempp.api.function_space(grid.barycentric_grid(), "RWG", 0)
             super(EfieSquared, self).__init__(rwg_space, rwg_space, bc_space,
                     label="EFIE_SQUARED")
 
