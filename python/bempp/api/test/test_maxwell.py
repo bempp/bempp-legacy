@@ -64,11 +64,13 @@ class TestMaxwell(TestCase):
 	ident = bempp.api.operators.boundary.sparse.maxwell_identity(space, space, space, parameters=parameters)
 
 	dirichlet_grid_fun = bempp.api.GridFunction(space, fun=eval_dirichlet_data)
-	rhs_coeffs = -(.5 * ident.weak_form() + mfie.weak_form() ) * dirichlet_grid_fun.coefficients
+        rhs = -(.5 * ident + mfie ) * dirichlet_grid_fun
+	#rhs_coeffs = -(.5 * ident.weak_form() + mfie.weak_form() ) * dirichlet_grid_fun.coefficients
 	
         from scipy.linalg import solve
-	sol_coefficients = solve(bempp.api.as_matrix(efie.weak_form()), rhs_coeffs)
-        sol = bempp.api.GridFunction(space, coefficients=sol_coefficients)
+        sol = bempp.api.linalg.lu(efie, rhs)
+	#sol_coefficients = solve(bempp.api.as_matrix(efie.weak_form()), rhs_coeffs)
+        #sol = bempp.api.GridFunction(space, coefficients=sol_coefficients)
 
 	exact_solution = bempp.api.GridFunction(space, fun=eval_exact_neumann_data)
 	rel_error = (sol-exact_solution).l2_norm() / exact_solution.l2_norm()

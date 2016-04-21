@@ -60,7 +60,8 @@ def electric_field(domain, range_, dual_to_range,
         efie_op =  ElementaryBoundaryOperator( \
                 ElementaryAbstractIntegralOperator(
             electric_field_ext(parameters, domain._impl, range_._impl, dual_to_range._impl,
-                               wave_number, "", symmetry)),
+                               wave_number, "", symmetry),
+            domain, range_, dual_to_range),
             parameters=parameters, label=label)
         efie_op.range_identity_operator = maxwell_identity
         return efie_op
@@ -88,7 +89,8 @@ def electric_field(domain, range_, dual_to_range,
         for index in range(3):
             # Definition of range_ does not matter in next operator
             test_local_op = LocalBoundaryOperator(ElementaryAbstractLocalOperator(
-                vector_value_times_scalar_ext(slp.dual_to_range._impl, space._impl, space._impl, index)),
+                vector_value_times_scalar_ext(slp.dual_to_range._impl, space._impl, space._impl, index),
+                slp.dual_to_range, space, space),
                     label='VECTOR_VALUE')
             test_local_ops.append(test_local_op)
             trial_local_ops.append(test_local_op.transpose(space))  # Range parameter arbitrary
@@ -98,7 +100,8 @@ def electric_field(domain, range_, dual_to_range,
         test_local_ops = []
         trial_local_ops = []
 
-        div_op = LocalBoundaryOperator(ElementaryAbstractLocalOperator(div_times_scalar_ext(slp.dual_to_range._impl, space._impl, space._impl)),
+        div_op = LocalBoundaryOperator(ElementaryAbstractLocalOperator(div_times_scalar_ext(slp.dual_to_range._impl, space._impl, space._impl),
+            slp.dual_to_range, space, space),
             label='DIV')
         div_op_transpose = div_op.transpose(space) # Range space does not matter
 
@@ -189,7 +192,8 @@ def magnetic_field(domain, range_, dual_to_range,
     mfie_op =  ElementaryBoundaryOperator( \
             ElementaryAbstractIntegralOperator(
         magnetic_field_ext(parameters, domain._impl, range_._impl, dual_to_range._impl,
-                           wave_number, "", symmetry)),
+                           wave_number, "", symmetry),
+        domain, range_, dual_to_range),
         parameters=parameters, label=label)
     mfie_op.range_identity_operator = maxwell_identity
     return mfie_op

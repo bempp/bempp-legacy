@@ -9,8 +9,11 @@ class ElementaryAbstractIntegralOperator(object):
     
     """
 
-    def __init__(self, impl):
+    def __init__(self, impl, domain, range_, dual_to_range):
         self._impl = impl
+        self._domain = domain
+        self._range = range_
+        self._dual_to_range = dual_to_range
 
     def make_local_assembler(self, parameters):
         """Create a local assembler object from the abstract operator."""
@@ -40,27 +43,27 @@ class ElementaryAbstractIntegralOperator(object):
     @property
     def domain(self):
         """Return the domain space."""
-        from bempp.api.space.space import Space
-        return Space(self._impl.domain)
+        return self._domain
 
     @property
     def range(self):
         """Return the range space."""
-        from bempp.api.space.space import Space
-        return Space(self._impl.range)
+        return self._range
     
     @property
     def dual_to_range(self):
         """Return the dual_to_range space."""
-        from bempp.api.space.space import Space
-        return Space(self._impl.dual_to_range)
+        return self._dual_to_range
 
 
 class ElementaryAbstractLocalOperator(object):
     """An interface to abstract elementary local operators."""
 
-    def __init__(self, impl):
+    def __init__(self, impl, domain, range_, dual_to_range):
         self._impl = impl
+        self._domain = domain
+        self._range = range_
+        self._dual_to_range = dual_to_range
 
     def make_local_assembler(self, parameters):
         """Create a local assembler object from the abstract operator."""
@@ -82,18 +85,15 @@ class ElementaryAbstractLocalOperator(object):
     @property
     def domain(self):
         """Return the domain space."""
-        from bempp.api.space.space import Space
-        return Space(self._impl.domain)
+        return self._domain
 
     @property
     def range(self):
         """Return the range space."""
-        from bempp.api.space.space import Space
-        return Space(self._impl.range)
+        return self._range
     
     @property
     def dual_to_range(self):
         """Return the dual_to_range space."""
-        from bempp.api.space.space import Space
-        return Space(self._impl.dual_to_range)
+        return self._dual_to_range
 

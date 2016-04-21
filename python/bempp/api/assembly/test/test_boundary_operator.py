@@ -68,31 +68,31 @@ class TestBoundaryOperator(TestCase):
         bempp.api.global_parameters.assembly.boundary_operator_assembly_type = assembly_mode
 
     def test_weak_form_of_operator_sum_is_discrete_operator_sum(self):
-        from bempp.api.utils.linear_operator import _SumLinearOperator
+        from bempp.api.assembly.discrete_boundary_operator import DiscreteBoundaryOperatorSum
 
         operator_sum = self._local_operator + self._elementary_operator
 
-        self.assertIsInstance(operator_sum.weak_form(), _SumLinearOperator,
-                              "A _SumLinearOperator instance is expected here.")
+        self.assertIsInstance(operator_sum.weak_form(), DiscreteBoundaryOperatorSum,
+                              "A DiscreteBoundaryOperatorSum instance is expected here.")
 
     def test_weak_form_of_scaled_operator_is_scaled_discrete_operator(self):
-        from bempp.api.utils.linear_operator import _ScaledLinearOperator
+        from bempp.api.assembly.discrete_boundary_operator import ScaledDiscreteBoundaryOperator
 
         scaled_operator = 2.0 * self._elementary_operator
         weak_form = scaled_operator.weak_form()
 
-        self.assertIsInstance(weak_form, _ScaledLinearOperator,
-                              "A _ScaledLinearOperator instance is expected here. Actual type: " +
+        self.assertIsInstance(weak_form, ScaledDiscreteBoundaryOperator,
+                              "A ScaledDiscreteBoundaryOperator instance is expected here. Actual type: " +
                               str(type(weak_form)))
 
     def test_weak_form_of_product_operator_is_product_discrete_operator(self):
-        import bempp
-        from bempp.api.utils.linear_operator import _ProductLinearOperator
+        import bempp.api
+        from bempp.api.assembly.discrete_boundary_operator import DiscreteBoundaryOperatorProduct
 
         op = bempp.api.operators.boundary.laplace.single_layer(self.domain, self.domain, self.domain)
 
-        self.assertIsInstance((op * op).weak_form(), _ProductLinearOperator,
-                              "A _ProductLinearOperator is expected.")
+        self.assertIsInstance((op * op).weak_form(), DiscreteBoundaryOperatorProduct,
+                              "A DiscreteBoundaryOperatorProduct instance is expected.")
 
 
 if __name__ == "__main__":

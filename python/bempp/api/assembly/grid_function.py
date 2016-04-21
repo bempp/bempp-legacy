@@ -49,6 +49,9 @@ class GridFunction(object):
     parameters : bempp.api.ParameterList
         A ParameterList object used for the assembly of
         the GridFunction (optional).
+    identity_operator : BoundaryOperator
+        A callable that returns an identity operator.
+        The default is the standard L^2 identity.
 
     Attributes
     ----------
@@ -63,6 +66,10 @@ class GridFunction(object):
         Return the underlying grid.
     parameters : bempp.api.ParameterList
         Return the set of parameters.
+    representation : string
+        Return 'primal' if the coefficients of the Gridfunction
+        are known. Return 'dual' if only the coefficients in the
+        dual space are known.
 
     Notes
     -----
@@ -111,39 +118,41 @@ class GridFunction(object):
         self._dual_coefficients = None
         self._space = space
         self._parameters = parameters
-        self._dual_space = None
+
+        if dual_space is not None:
+            self._dual_space = dual_space
+        else:
+            self._dual_space = space
 
         if coefficients is not None:
             self.coefficients = coefficients
+            self._representation = 'primal'
 
         if fun is not None:
             from bempp.core.assembly.function_projector import calculate_projection
 
-            if dual_space is not None:
-                proj_space = dual_space
-            else:
-                proj_space = self.space
-
-            projections = calculate_projection(parameters, fun, proj_space._impl)
+            self._dual_coefficients = calculate_projection(parameters, fun, self._dual_space._impl)
+            self._representation = 'dual'
 
         if projections is not None:
-            np_proj = 1.0 * np.asarray(projections).squeeze()
-            if np_proj.ndim > 1:
-                raise ValueError("'projections' must be a 1-d array.")
 
-            from bempp.api.assembly import InverseSparseDiscreteBoundaryOperator
+            self._dual_coefficients = projections
+            self._representation = 'dual'
 
-            if dual_space is not None:
-                proj_space = dual_space
-            else:
-                proj_space = self.space
+    def _compute_coefficients(self, projections, dual_space):
+        """Compute coefficients from projections."""
 
-            inv_ident = InverseSparseDiscreteBoundaryOperator(\
-                    self._identity_operator(self.space, self.space, proj_space).weak_form())
+        import numpy as np
+        np_proj = 1.0 * np.asarray(projections).squeeze()
+        if np_proj.ndim > 1:
+            raise ValueError("'projections' must be a 1-d array.")
 
+        from bempp.api.assembly import InverseSparseDiscreteBoundaryOperator
+        ident = self._identity_operator(self.space, self.space, dual_space).weak_form()
 
-            self._coefficients = inv_ident * projections
+        inv_ident = InverseSparseDiscreteBoundaryOperator(ident)
 
+        return inv_ident * projections
 
     def plot(self):
         """Plot the grid function."""
@@ -161,7 +170,7 @@ class GridFunction(object):
         ----------
         dual_space : bempp.api.space.Space
             A representation of the dual space. If not specified
-            then space == dual_space is assumed (optional).
+            then fun.dual_space is used.
 
         Returns
         -------
@@ -171,18 +180,25 @@ class GridFunction(object):
         """
 
         if dual_space is None:
-            dual_space = self.space
+            dual_space = self._dual_space
+
+        if dual_space == self._dual_space and self._dual_coefficients is not None:
+            return self._dual_coefficients
 
         ident = self._identity_operator(self.space, self.space, dual_space).weak_form()
-        return ident * self.coefficients
+        self._dual_space = dual_space
+        self._dual_coefficients = ident * self.coefficients
+
+        return self._dual_coefficients
 
     def evaluate(self, element, local_coordinates):
         """Evaluate grid function on a single element."""
 
         import numpy as np
+        coefficients = self.coefficients
         # Get global dof ids and weights
         global_dofs, weights = self.space.get_global_dofs(element, dof_weights=True)
-        dof_values = np.asarray([self.coefficients[dof] if dof >= 0 else 0 for dof in global_dofs]) * \
+        dof_values = np.asarray([coefficients[dof] if dof >= 0 else 0 for dof in global_dofs]) * \
                 np.asarray(weights)
         return self.space.evaluate_local_basis(element, local_coordinates, dof_values)
 
@@ -190,8 +206,9 @@ class GridFunction(object):
         """Evaluate surface gradient of grid function (only scalar spaces supported)."""
 
         import numpy as np
+        coefficients = self.coefficients
         global_dofs, weights = self.space.get_global_dofs(element, dof_weights=True)
-        dof_values = np.asarray([self.coefficients[dof] if dof >= 0 else 0 for dof in global_dofs]) * \
+        dof_values = np.asarray([coefficients[dof] if dof >= 0 else 0 for dof in global_dofs]) * \
                 np.asarray(weights)
         return self.space.evaluate_surface_gradient(element, local_coordinates, dof_values)
         
@@ -293,18 +310,28 @@ class GridFunction(object):
         if self.space != other.space:
             raise ValueError("Spaces are not identical.")
 
+        if self.representation == 'dual' and other.representation == 'dual':
+            if self.dual_space == other.dual_space:
+                return GridFunction(self.space, projections=self.projections() + other.projections(),
+                        dual_space=self.dual_space)
+            
         return GridFunction(self.space,
-                            coefficients=self.coefficients + other.coefficients,
-                            parameters=self.parameters)
-
+                            coefficients=self.coefficients + other.coefficients)
+                            
     def __mul__(self, alpha):
 
         import numpy as np
 
         if np.isscalar(alpha):
-            return GridFunction(self.space,
-                                coefficients=alpha * self.coefficients,
-                                parameters=self.parameters)
+            if self.representation == 'dual':
+                return GridFunction(self.space,
+                                    projections=alpha * self._dual_coefficients,
+                                    dual_space=self.dual_space,
+                                    parameters=self.parameters)
+            else:
+                return GridFunction(self.space,
+                        coefficients=alpha * self.coefficients,
+                        parameters=self.parameters)
         else:
             raise NotImplementedError(\
                     "Cannot multiply Gridfunction with object of type "+str(type(alpha)))
@@ -314,9 +341,7 @@ class GridFunction(object):
         import numpy as np
 
         if np.isscalar(alpha):
-            return GridFunction(self.space,
-                                coefficients=alpha * self.coefficients,
-                                parameters=self.parameters)
+            return self * alpha
         else:
             raise NotImplementedError( \
                 "Cannot multiply Gridfunction with object of type "+str(type(alpha)))
@@ -325,7 +350,7 @@ class GridFunction(object):
     def __div__(self, alpha):
 
         if not isinstance(self, GridFunction):
-            return alpha * self
+            return (1./alpha) * self
 
         return self * (1./alpha)
 
@@ -342,14 +367,22 @@ class GridFunction(object):
         if self.space != other.space:
             raise ValueError("Spaces are not identical.")
 
-        return GridFunction(self.space,
-                            coefficients=self.coefficients - other.coefficients,
-                            parameters=self.parameters)
+        return self + (-other)
 
     @property
     def space(self):
         """Return the Space object."""
         return self._space
+
+    @property
+    def dual_space(self):
+        """Return the dual space."""
+        return self._dual_space
+
+    @property
+    def representation(self):
+        """Return whether the function is given via its 'dual' or 'primal' coefficients."""
+        return self._representation
 
     @property
     def grid(self):
@@ -364,6 +397,10 @@ class GridFunction(object):
     @property
     def coefficients(self):
         """Return the function coefficients."""
+        if self._coefficients is None:
+            self._coefficients = self._compute_coefficients(
+                    self._dual_coefficients, self.dual_space)
+            self._representation = 'primal'
         return self._coefficients
 
     @coefficients.setter
@@ -374,6 +411,8 @@ class GridFunction(object):
         if np_coeffs.ndim > 1:
             raise ValueError("'coefficients' must be a 1-d array.")
         self._coefficients = np_coeffs
+        self._representation = 'primal'
+        self._dual_coefficients = None
 
     @property
     def component_count(self):
@@ -385,12 +424,10 @@ class GridFunction(object):
         """Return the identity operator used for projections."""
         return self._identity_operator
 
-    @identity_operator.setter
-    def identity_operator(self, op):
-        """Set the identity operator used for projections."""
-        self._identity_operator = op
-
     @property
     def dtype(self):
         """Return the dtype."""
-        return self._coefficients.dtype
+        if self.representation == 'primal':
+            return self._coefficients.dtype
+        else:
+            return self._dual_coefficients.dtype

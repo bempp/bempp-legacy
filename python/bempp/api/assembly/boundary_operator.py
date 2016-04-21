@@ -100,8 +100,8 @@ class BoundaryOperator(object):
         elif isinstance(other, GridFunction):
             if not self.domain.is_compatible(other.space):
                 raise ValueError("Operator domain space does not match GridFunction space.")
-            return GridFunction(self.range, coefficients=self.strong_form() * other.coefficients,
-                    identity_operator = self._identity_operator)
+            return GridFunction(self.range, projections=self.weak_form() * other.coefficients,
+                    identity_operator = self._identity_operator, dual_space=self.dual_to_range)
         else:
             raise NotImplementedError
 

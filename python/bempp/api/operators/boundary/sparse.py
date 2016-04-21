@@ -39,7 +39,8 @@ def identity(domain, range_, dual_to_range,
     return LocalBoundaryOperator(\
             ElementaryAbstractLocalOperator(
             identity_ext(parameters, domain._impl, range_._impl,
-                         dual_to_range._impl, "", symmetry)),
+                         dual_to_range._impl, "", symmetry),
+            domain, range_, dual_to_range),
             parameters=parameters, label=label)
 
 def maxwell_identity(domain, range_, dual_to_range,
@@ -78,7 +79,8 @@ def maxwell_identity(domain, range_, dual_to_range,
     id_op =  LocalBoundaryOperator(\
             ElementaryAbstractLocalOperator(
             maxwell_identity_ext(parameters, domain._impl, range_._impl,
-                                 dual_to_range._impl, "", symmetry)),
+                                 dual_to_range._impl, "", symmetry),
+            domain, range_, dual_to_range),
             parameters=parameters, label=label)
     id_op.range_identity_operator = maxwell_identity
     return id_op
@@ -123,7 +125,8 @@ def laplace_beltrami(domain, range_, dual_to_range,
     return LocalBoundaryOperator(\
             ElementaryAbstractLocalOperator(
             laplace_beltrami_ext(parameters, domain._impl, range_._impl,
-                                 dual_to_range._impl, "", symmetry)),
+                                 dual_to_range._impl, "", symmetry),
+            domain, range_, dual_to_range),
             parameters=parameters, label=label)
 
 def multitrace_identity(grid, parameters=None, spaces='linear'):
