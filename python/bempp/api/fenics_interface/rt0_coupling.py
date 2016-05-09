@@ -1,5 +1,6 @@
 
 def n1curl_to_rt0_tangential_trace(fenics_space):
+    done_embed = False
     import dolfin
     from .coupling import fenics_space_info
     from bempp.api import function_space, grid_from_element_data, GridFunction
@@ -32,6 +33,7 @@ def n1curl_to_rt0_tangential_trace(fenics_space):
 
     grid = space.grid
     edge_count = space.global_dof_count
+    face_count = grid.leaf_view.entity_count(0)
 
     dof_to_vertices_map = np.zeros((edge_count,2), dtype=np.int64)
     dof_to_face_map = [None]*edge_count
@@ -77,6 +79,7 @@ def n1curl_to_rt0_tangential_trace(fenics_space):
     #   all_edges <- fenics_dofs
     dofmap = fenics_space.dofmap()
     dof_to_edge_map = np.zeros(fenics_dim,dtype=np.int64)
+    dof_to_tetra_map = [None] * fenics_dim
     for cell in dolfin.cells(mesh):
         c_d = dofmap.cell_dofs(cell.index())
         c_e = cell.entities(1)
@@ -99,6 +102,24 @@ def n1curl_to_rt0_tangential_trace(fenics_space):
                     np.array([[.5],[.5]])
                    ]
 
+    # Build a map from BEM++ triangles to FEniCS edges
+    # aim: bempp_triangles -> all_edge_triplets -> fenics_tetrahedra
+    # First: bempp Triangles -> all edge triplets
+
+    triangles_to_edge_triples = [None] * face_count
+    for face in grid.leaf_view.entity_iterator(0):
+        es = [grid.vertex_insertion_index(e) for e in face.sub_entity_iterator(2)]
+        all_es = [bm_nodes[e] for e in es]
+        all_es.sort()
+        triangles_to_edge_triples[grid.element_insertion_index(face)] = str(all_es)
+    edge_triples_to_tetrahedra = {}
+    for tetra in dolfin.cells(mesh):
+        all_es = [v.index() for v in dolfin.vertices(tetra)]
+        all_es.sort()
+        for i in range(4):
+            edge_triples_to_tetrahedra[str(all_es[:i]+all_es[i+1:])] = tetra
+    triangles_to_tetrahedra = [edge_triples_to_tetrahedra[triple] for triple in triangles_to_edge_triples]
+
     non_z = trace_matrix.nonzero()
     for i,j in zip(non_z[0],non_z[1]):
         fenics_coeffs = np.zeros(fenics_dim)
@@ -113,16 +134,16 @@ def n1curl_to_rt0_tangential_trace(fenics_space):
         v2 = v_list[dof_to_vertices_map[i][1]]
         midpoint = (v1.geometry.corners+v2.geometry.corners)/2
 
-        fenics_values = np.zeros(3)
-        fenics_fun.eval(fenics_values,midpoint.T[0])
-
         face = dof_to_face_map[i]
-        bempp_values = bempp_fun.evaluate(face[0],local_coords[face[1]])
+        fenics_values = np.zeros(3)
+        fenics_fun.eval_cell(fenics_values,midpoint.T[0],triangles_to_tetrahedra[grid.element_insertion_index(face[0])])
 
+        bempp_values = bempp_fun.evaluate(face[0],local_coords[face[1]])
         normal = face[0].geometry.normals(np.array([[.25],[.25]]))
         cross =  np.cross(normal.T[0], fenics_values)
         k = np.argmax(np.abs(cross))
 
         trace_matrix[i,j] = cross[k]/bempp_values[k,0]
-    # Now return everything
+
+    # Now return everything    
     return space, trace_matrix
