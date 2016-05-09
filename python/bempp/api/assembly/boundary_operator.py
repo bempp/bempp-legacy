@@ -10,17 +10,17 @@ def _start_assembly_message(domain, dual_to_range, assembly_type, label):
         domain.global_dof_count, dual_to_range.global_dof_count, label, assembly_type)
 
 
-
 def _end_assembly_message(label, assembly_time):
     """Create a coherent logger message for operator assembly end."""
 
     return "{1}. FINISHED ASSEMBLY. Time: {0:.2E} sec.".format(assembly_time, label)
 
+
 def _end_hmat_assembly_message(label, assembly_time, compression_rate, mem_size):
     """Create a coherent logger message for hmat operator assembly end."""
 
     return "{1}. FINISHED ASSEMBLY. Time: {0:.2E} sec. Mem Size (Mb): {3:.2E}. Compression: {2:.2E}".format(assembly_time, label,
-            compression_rate, mem_size)
+                                                                                                            compression_rate, mem_size)
 
 
 class BoundaryOperator(object):
@@ -99,9 +99,10 @@ class BoundaryOperator(object):
             return _ProductBoundaryOperator(self, other)
         elif isinstance(other, GridFunction):
             if not self.domain.is_compatible(other.space):
-                raise ValueError("Operator domain space does not match GridFunction space.")
+                raise ValueError(
+                    "Operator domain space does not match GridFunction space.")
             return GridFunction(self.range, projections=self.weak_form() * other.coefficients,
-                    identity_operator = self._identity_operator, dual_space=self.dual_to_range)
+                                identity_operator=self._identity_operator, dual_space=self.dual_to_range)
         else:
             return NotImplemented
 
@@ -141,7 +142,7 @@ class BoundaryOperator(object):
         if self._range_map is None:
             from bempp.api.assembly import InverseSparseDiscreteBoundaryOperator
 
-            self._range_map = InverseSparseDiscreteBoundaryOperator( \
+            self._range_map = InverseSparseDiscreteBoundaryOperator(
                 self._identity_operator(self.range, self.range, self.dual_to_range).weak_form())
 
         return self._range_map * self.weak_form(recompute)
@@ -203,7 +204,8 @@ class ZeroBoundaryOperator(BoundaryOperator):
     """
 
     def __init__(self, domain, range_, dual_to_range):
-        super(ZeroBoundaryOperator, self).__init__(domain, range_, dual_to_range)
+        super(ZeroBoundaryOperator, self).__init__(
+            domain, range_, dual_to_range)
 
     def _weak_form_impl(self):
 
@@ -214,16 +216,16 @@ class ZeroBoundaryOperator(BoundaryOperator):
 
     def __iadd__(self, other):
         if (self.domain != other.domain or
-                    self.range != other.range or
-                    self.dual_to_range != other.dual_to_range):
+                self.range != other.range or
+                self.dual_to_range != other.dual_to_range):
             raise ValueError("Spaces not compatible.")
 
         return other
 
     def __isub__(self, other):
         if (self.domain != other.domain or
-                    self.range != other.range or
-                    self.dual_to_range != other.dual_to_range):
+                self.range != other.range or
+                self.dual_to_range != other.dual_to_range):
             raise ValueError("Spaces not compatible.")
 
         return -other
@@ -295,7 +297,7 @@ class ElementaryBoundaryOperator(BoundaryOperator):
 
         if assembly_mode == 'hmat':
             from bempp.api.hmat import hmatrix_interface
-            mem_size = hmatrix_interface.mem_size(weak_form)/(1.0 *1024)
+            mem_size = hmatrix_interface.mem_size(weak_form) / (1.0 * 1024)
             compression_rate = hmatrix_interface.compression_rate(weak_form)
             bempp.api.LOGGER.info(_end_hmat_assembly_message(
                 self.label, end_time - start_time, compression_rate, mem_size))
@@ -369,7 +371,8 @@ class LocalBoundaryOperator(BoundaryOperator):
         weak_form = self._impl.assemble_weak_form(self._parameters)
 
         end_time = time.time()
-        bempp.api.LOGGER.info(_end_assembly_message(self.label, end_time - start_time))
+        bempp.api.LOGGER.info(_end_assembly_message(
+            self.label, end_time - start_time))
 
         return weak_form
 
@@ -399,7 +402,8 @@ class _ProjectionBoundaryOperator(BoundaryOperator):
         projected_weak_form = self._operator.weak_form()
 
         if self._dual_to_range is not None:
-            ident = identity(self._operator.dual_to_range, self._dual_to_range, self._dual_to_range).weak_form()
+            ident = identity(self._operator.dual_to_range,
+                             self._dual_to_range, self._dual_to_range).weak_form()
             projected_weak_form = ident * InverseSparseDiscreteBoundaryOperator(
                 identity(self._operator.dual_to_range, self._operator.dual_to_range,
                          self._operator.dual_to_range).weak_form()) * projected_weak_form
@@ -407,7 +411,8 @@ class _ProjectionBoundaryOperator(BoundaryOperator):
         if self._domain is not None:
             from bempp.api.space.projection import discrete_coefficient_projection
 
-            projected_weak_form *= discrete_coefficient_projection(self._domain, self._operator.domain)
+            projected_weak_form *= discrete_coefficient_projection(
+                self._domain, self._operator.domain)
 
         return projected_weak_form
 
@@ -423,7 +428,7 @@ class _SumBoundaryOperator(BoundaryOperator):
         if op1.range_identity_operator != op2.range_identity_operator:
             raise ValueError("Range identity operators not identical.")
 
-        super(_SumBoundaryOperator, self).__init__( \
+        super(_SumBoundaryOperator, self).__init__(
             op1.domain, op1.range, op1.dual_to_range, label="(" + op1.label + " + " + op2.label + ")")
 
         self._op1 = op1
@@ -439,7 +444,7 @@ class _ScaledBoundaryOperator(BoundaryOperator):
     """Scale a boundary operator."""
 
     def __init__(self, op, alpha):
-        super(_ScaledBoundaryOperator, self).__init__( \
+        super(_ScaledBoundaryOperator, self).__init__(
             op.domain, op.range, op.dual_to_range, label=str(alpha) + " * " + op.label)
 
         self.range_identity_operator = op.range_identity_operator
@@ -459,7 +464,7 @@ class _ProductBoundaryOperator(BoundaryOperator):
             raise ValueError("Range space of second operator must be compatible to " +
                              "domain space of first operator.")
 
-        super(_ProductBoundaryOperator, self).__init__( \
+        super(_ProductBoundaryOperator, self).__init__(
             op2.domain, op1.range, op1.dual_to_range, label=op1.label + " * " + op2.label)
 
         self._op1 = op1
@@ -475,7 +480,7 @@ class _TransposeBoundaryOperator(BoundaryOperator):
     """Return the transpose of a boundary operator."""
 
     def __init__(self, op, range_):
-        super(_TransposeBoundaryOperator, self).__init__( \
+        super(_TransposeBoundaryOperator, self).__init__(
             op.dual_to_range, range_, op.domain, label=op.label + ".T")
 
         self._op = op
@@ -488,7 +493,7 @@ class _AdjointBoundaryOperator(BoundaryOperator):
     """Return the adjoint of a boundary operator."""
 
     def __init__(self, op, range_):
-        super(_AdjointBoundaryOperator, self).__init__( \
+        super(_AdjointBoundaryOperator, self).__init__(
             op.dual_to_range, range_, op.domain, label=op.label + ".H")
 
         self._op = op
@@ -506,7 +511,8 @@ class CompoundBoundaryOperator(BoundaryOperator):
         import bempp
 
         if len(test_local_ops) != len(trial_local_ops):
-            raise ValueError("There must be the same number of test and trial operators.")
+            raise ValueError(
+                "There must be the same number of test and trial operators.")
 
         number_of_ops = len(test_local_ops)
 
@@ -518,10 +524,10 @@ class CompoundBoundaryOperator(BoundaryOperator):
 
         for i in range(number_of_ops):
             if (not test_local_ops[i].range.is_compatible(range_) or
-                        not test_local_ops[i].dual_to_range.is_compatible(dual_to_range) or
-                        not trial_local_ops[i].domain.is_compatible(domain) or
-                        not test_domain.is_compatible(test_local_ops[i].domain) or
-                        not trial_dual_to_range.is_compatible(trial_local_ops[i].dual_to_range)):
+                    not test_local_ops[i].dual_to_range.is_compatible(dual_to_range) or
+                    not trial_local_ops[i].domain.is_compatible(domain) or
+                    not test_domain.is_compatible(test_local_ops[i].domain) or
+                    not trial_dual_to_range.is_compatible(trial_local_ops[i].dual_to_range)):
                 raise ValueError("Incompatible spaces.")
 
         if parameters is None:
@@ -531,7 +537,8 @@ class CompoundBoundaryOperator(BoundaryOperator):
         else:
             self._parameters = parameters
 
-        super(CompoundBoundaryOperator, self).__init__(domain, range_, dual_to_range, label=label)
+        super(CompoundBoundaryOperator, self).__init__(
+            domain, range_, dual_to_range, label=label)
 
         self._test_local_ops = test_local_ops
         self._trial_local_ops = trial_local_ops
@@ -553,7 +560,8 @@ class CompoundBoundaryOperator(BoundaryOperator):
                      self._kernel_op.dual_to_range,
                      parameters=self._parameters).weak_form())
         trial_inverse = InverseSparseDiscreteBoundaryOperator(identity(self._kernel_op.domain, self._kernel_op.domain,
-                                                                       self._trial_local_ops[0].dual_to_range,
+                                                                       self._trial_local_ops[
+                                                                           0].dual_to_range,
                                                                        parameters=self._parameters).weak_form())
 
         kernel_discrete_op = self._kernel_op.weak_form()
@@ -561,6 +569,7 @@ class CompoundBoundaryOperator(BoundaryOperator):
             discrete_op += (self._test_local_ops[i].weak_form() * test_inverse * kernel_discrete_op *
                             trial_inverse * self._trial_local_ops[i].weak_form())
         return discrete_op
+
 
 class RankOneBoundaryOperator(BoundaryOperator):
     """Define a rank one boundary operator.
@@ -590,11 +599,12 @@ class RankOneBoundaryOperator(BoundaryOperator):
     """
 
     def __init__(self, domain, range_, dual_to_range, label='',
-            parameters=None):
+                 parameters=None):
 
         import bempp.api
 
-        super(RankOneBoundaryOperator, self).__init__(domain, range_, dual_to_range, label=label)
+        super(RankOneBoundaryOperator, self).__init__(
+            domain, range_, dual_to_range, label=label)
 
         if parameters is None:
             parameters = bempp.api.global_parameters
@@ -612,14 +622,14 @@ class RankOneBoundaryOperator(BoundaryOperator):
             res[0] = 1
 
         one_domain = bempp.api.GridFunction(self._domain, fun=one_fun,
-                parameters=self._parameters)
+                                            parameters=self._parameters)
         one_dual_to_range = bempp.api.GridFunction(self._dual_to_range, fun=one_fun,
-                parameters=self._parameters)
+                                                   parameters=self._parameters)
 
         mass_domain = bempp.api.operators.boundary.sparse.identity(self._domain,
-                self._domain, self._domain)
+                                                                   self._domain, self._domain)
         mass_dual_to_range = bempp.api.operators.boundary.sparse.identity(self._dual_to_range,
-                self._dual_to_range, self._dual_to_range)
+                                                                          self._dual_to_range, self._dual_to_range)
 
         col = one_dual_to_range.projections(self._dual_to_range)
         row = one_domain.projections(self._domain)

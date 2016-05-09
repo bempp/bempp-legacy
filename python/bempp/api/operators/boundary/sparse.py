@@ -1,4 +1,4 @@
-#pylint: disable-msg=too-many-arguments
+# pylint: disable-msg=too-many-arguments
 
 """Definition of sparse boundary operators."""
 
@@ -36,12 +36,13 @@ def identity(domain, range_, dual_to_range,
     if parameters is None:
         parameters = bempp.api.global_parameters
 
-    return LocalBoundaryOperator(\
-            ElementaryAbstractLocalOperator(
+    return LocalBoundaryOperator(
+        ElementaryAbstractLocalOperator(
             identity_ext(parameters, domain._impl, range_._impl,
                          dual_to_range._impl, "", symmetry),
             domain, range_, dual_to_range),
-            parameters=parameters, label=label)
+        parameters=parameters, label=label)
+
 
 def maxwell_identity(domain, range_, dual_to_range,
                      label="MAXWELL_IDENTITY", symmetry='no_symmetry',
@@ -76,14 +77,15 @@ def maxwell_identity(domain, range_, dual_to_range,
     if parameters is None:
         parameters = bempp.api.global_parameters
 
-    id_op =  LocalBoundaryOperator(\
-            ElementaryAbstractLocalOperator(
+    id_op = LocalBoundaryOperator(
+        ElementaryAbstractLocalOperator(
             maxwell_identity_ext(parameters, domain._impl, range_._impl,
                                  dual_to_range._impl, "", symmetry),
             domain, range_, dual_to_range),
-            parameters=parameters, label=label)
+        parameters=parameters, label=label)
     id_op.range_identity_operator = maxwell_identity
     return id_op
+
 
 def laplace_beltrami(domain, range_, dual_to_range,
                      label="LAPLACE_BELTRAMI", symmetry='no_symmetry',
@@ -122,12 +124,13 @@ def laplace_beltrami(domain, range_, dual_to_range,
     if parameters is None:
         parameters = bempp.api.global_parameters
 
-    return LocalBoundaryOperator(\
-            ElementaryAbstractLocalOperator(
+    return LocalBoundaryOperator(
+        ElementaryAbstractLocalOperator(
             laplace_beltrami_ext(parameters, domain._impl, range_._impl,
                                  dual_to_range._impl, "", symmetry),
             domain, range_, dual_to_range),
-            parameters=parameters, label=label)
+        parameters=parameters, label=label)
+
 
 def multitrace_identity(grid, parameters=None, spaces='linear'):
     """Return the multitrace identity operator.
@@ -153,16 +156,19 @@ def multitrace_identity(grid, parameters=None, spaces='linear'):
     from bempp.api.assembly import BlockedOperator
     import bempp.api
 
-    blocked_operator = BlockedOperator(2,2)
+    blocked_operator = BlockedOperator(2, 2)
 
-    if spaces=='linear':
+    if spaces == 'linear':
         const_space = bempp.api.function_space(grid, "DUAL", 0)
         lin_space = bempp.api.function_space(grid, "B-P", 1)
-        blocked_operator[0, 0] = identity(lin_space, lin_space, const_space, parameters=parameters)
-        blocked_operator[1, 1] = identity(const_space, const_space, lin_space, parameters=parameters)
-    elif spaces=='dual':
+        blocked_operator[0, 0] = identity(
+            lin_space, lin_space, const_space, parameters=parameters)
+        blocked_operator[1, 1] = identity(
+            const_space, const_space, lin_space, parameters=parameters)
+    elif spaces == 'dual':
         space = bempp.api.function_space(grid, "P", 1)
-        blocked_operator[0, 0] = identity(space, space, space, parameters=parameters)
+        blocked_operator[0, 0] = identity(
+            space, space, space, parameters=parameters)
         blocked_operator[1, 1] = blocked_operator[0, 0]
 
     return blocked_operator

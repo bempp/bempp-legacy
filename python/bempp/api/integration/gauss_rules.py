@@ -9,6 +9,6 @@ def gauss_triangle_points_and_weights(accuracy_order):
     """
 
     from bempp.core.fiber.integrators import \
-            fill_quadrature_points_and_weights
+        fill_quadrature_points_and_weights
 
     return fill_quadrature_points_and_weights(3, accuracy_order)

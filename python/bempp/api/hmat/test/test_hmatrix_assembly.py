@@ -7,9 +7,11 @@ TOL_FINE = 1E-5
 TOL_COARSE = 1E-3
 TOL_FACTOR = 10
 
+
 class TestHMatrixAssembly(TestCase):
 
-    requiresgmsh = unittest.skipIf(bempp.api.GMSH_PATH is None, reason="Needs GMSH")
+    requiresgmsh = unittest.skipIf(
+        bempp.api.GMSH_PATH is None, reason="Needs GMSH")
 
     def test_laplace_single_layer_sphere(self):
 
@@ -29,17 +31,19 @@ class TestHMatrixAssembly(TestCase):
         space = bempp.api.function_space(grid, "DP", 0)
 
         slp_hmat_coarse = bempp.api.as_matrix(
-                bempp.api.operators.boundary.laplace.single_layer(space, space, space, parameters=parameters_hmat_coarse).weak_form())
+            bempp.api.operators.boundary.laplace.single_layer(space, space, space, parameters=parameters_hmat_coarse).weak_form())
         slp_hmat_fine = bempp.api.as_matrix(
-                bempp.api.operators.boundary.laplace.single_layer(space, space, space, parameters=parameters_hmat_fine).weak_form())
+            bempp.api.operators.boundary.laplace.single_layer(space, space, space, parameters=parameters_hmat_fine).weak_form())
 
         slp_dense = bempp.api.as_matrix(
-                bempp.api.operators.boundary.laplace.single_layer(space, space, space, parameters=parameters_dense).weak_form())
+            bempp.api.operators.boundary.laplace.single_layer(space, space, space, parameters=parameters_dense).weak_form())
 
-        rel_diff_coarse = np.linalg.norm(slp_hmat_coarse-slp_dense)/np.linalg.norm(slp_dense)
+        rel_diff_coarse = np.linalg.norm(
+            slp_hmat_coarse - slp_dense) / np.linalg.norm(slp_dense)
         self.assertTrue(rel_diff_coarse < TOL_FACTOR * TOL_COARSE)
 
-        rel_diff_fine = np.linalg.norm(slp_hmat_fine-slp_dense)/np.linalg.norm(slp_dense)
+        rel_diff_fine = np.linalg.norm(
+            slp_hmat_fine - slp_dense) / np.linalg.norm(slp_dense)
         self.assertTrue(rel_diff_fine < TOL_FACTOR * TOL_FINE)
 
     @requiresgmsh
@@ -61,17 +65,19 @@ class TestHMatrixAssembly(TestCase):
         space = bempp.api.function_space(grid, "DP", 0)
 
         slp_hmat_coarse = bempp.api.as_matrix(
-                bempp.api.operators.boundary.laplace.double_layer(space, space, space, parameters=parameters_hmat_coarse).weak_form())
+            bempp.api.operators.boundary.laplace.double_layer(space, space, space, parameters=parameters_hmat_coarse).weak_form())
         slp_hmat_fine = bempp.api.as_matrix(
-                bempp.api.operators.boundary.laplace.double_layer(space, space, space, parameters=parameters_hmat_fine).weak_form())
+            bempp.api.operators.boundary.laplace.double_layer(space, space, space, parameters=parameters_hmat_fine).weak_form())
 
         slp_dense = bempp.api.as_matrix(
-                bempp.api.operators.boundary.laplace.double_layer(space, space, space, parameters=parameters_dense).weak_form())
+            bempp.api.operators.boundary.laplace.double_layer(space, space, space, parameters=parameters_dense).weak_form())
 
-        rel_diff_coarse = np.linalg.norm(slp_hmat_coarse-slp_dense)/np.linalg.norm(slp_dense)
+        rel_diff_coarse = np.linalg.norm(
+            slp_hmat_coarse - slp_dense) / np.linalg.norm(slp_dense)
         self.assertTrue(rel_diff_coarse < TOL_FACTOR * TOL_COARSE)
 
-        rel_diff_fine = np.linalg.norm(slp_hmat_fine-slp_dense)/np.linalg.norm(slp_dense)
+        rel_diff_fine = np.linalg.norm(
+            slp_hmat_fine - slp_dense) / np.linalg.norm(slp_dense)
         self.assertTrue(rel_diff_fine < TOL_FACTOR * TOL_FINE)
 
     def test_helmholtz_single_layer_sphere_linear_space(self):
@@ -92,24 +98,21 @@ class TestHMatrixAssembly(TestCase):
         space = bempp.api.function_space(grid, "P", 1)
 
         slp_hmat_coarse = bempp.api.as_matrix(
-                bempp.api.operators.boundary.helmholtz.single_layer(space, space, space, 1, parameters=parameters_hmat_coarse).weak_form())
+            bempp.api.operators.boundary.helmholtz.single_layer(space, space, space, 1, parameters=parameters_hmat_coarse).weak_form())
         slp_hmat_fine = bempp.api.as_matrix(
-                bempp.api.operators.boundary.helmholtz.single_layer(space, space, space, 1, parameters=parameters_hmat_fine).weak_form())
+            bempp.api.operators.boundary.helmholtz.single_layer(space, space, space, 1, parameters=parameters_hmat_fine).weak_form())
 
         slp_dense = bempp.api.as_matrix(
-                bempp.api.operators.boundary.helmholtz.single_layer(space, space, space, 1, parameters=parameters_dense).weak_form())
+            bempp.api.operators.boundary.helmholtz.single_layer(space, space, space, 1, parameters=parameters_dense).weak_form())
 
-        rel_diff_coarse = np.linalg.norm(slp_hmat_coarse-slp_dense)/np.linalg.norm(slp_dense)
+        rel_diff_coarse = np.linalg.norm(
+            slp_hmat_coarse - slp_dense) / np.linalg.norm(slp_dense)
         self.assertTrue(rel_diff_coarse < TOL_FACTOR * TOL_COARSE)
 
-        rel_diff_fine = np.linalg.norm(slp_hmat_fine-slp_dense)/np.linalg.norm(slp_dense)
+        rel_diff_fine = np.linalg.norm(
+            slp_hmat_fine - slp_dense) / np.linalg.norm(slp_dense)
         self.assertTrue(rel_diff_fine < TOL_FACTOR * TOL_FINE)
 
 if __name__ == "__main__":
     from unittest import main
     main()
-
-
-
-
-

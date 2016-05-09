@@ -3,6 +3,7 @@ import numpy as np
 from bempp.api.assembly import GridFunction
 from bempp.api.assembly import BoundaryOperator
 
+
 class _it_counter(object):
 
     def __init__(self, store_residuals):
@@ -15,7 +16,6 @@ class _it_counter(object):
         if self._store_residuals:
             self._residuals.append(np.linalg.norm(x))
 
-
     @property
     def count(self):
         return self._count
@@ -23,6 +23,7 @@ class _it_counter(object):
     @property
     def residuals(self):
         return self._residuals
+
 
 def gmres(A, b, tol=1E-5, restart=None, maxiter=None, use_strong_form=False, return_residuals=False):
     """Interface to the scipy.sparse.linalg.gmres function.
@@ -46,7 +47,8 @@ def gmres(A, b, tol=1E-5, restart=None, maxiter=None, use_strong_form=False, ret
 
     if use_strong_form:
         if not A.range.is_compatible(b.space):
-            raise ValueError("The range of A and the space of A must have the same number of unknowns if the strong form is used.")
+            raise ValueError(
+                "The range of A and the space of A must have the same number of unknowns if the strong form is used.")
         A_op = A.strong_form()
         b_vec = b.coefficients
     else:
@@ -71,7 +73,7 @@ def gmres(A, b, tol=1E-5, restart=None, maxiter=None, use_strong_form=False, ret
         return res_fun, info
 
 
-def cg(A, b, tol=1E-5, maxiter=None, 
+def cg(A, b, tol=1E-5, maxiter=None,
         use_strong_form=False, return_residuals=False):
     """Interface to the scipy.sparse.linalg.cg function.
 
@@ -92,7 +94,8 @@ def cg(A, b, tol=1E-5, maxiter=None,
 
     if use_strong_form:
         if not A.range.is_compatible(b.space):
-            raise ValueError("The range of A and the space of A must have the same number of unknowns if the strong form is used.")
+            raise ValueError(
+                "The range of A and the space of A must have the same number of unknowns if the strong form is used.")
         A_op = A.strong_form()
         b_vec = b.coefficients
     else:

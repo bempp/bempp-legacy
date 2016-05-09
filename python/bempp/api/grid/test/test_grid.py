@@ -31,7 +31,6 @@ class TestGrid(unittest.TestCase):
         self.assertTrue(np.all(box == np.array([[0, 0, 0], [1, 2, 0]])))
         self.assertEqual(grid.leaf_view.entity_count(0), 2 * n_x * n_y)
 
-
     def test_grid_from_element_data(self):
         """Test grid generation from element data."""
 

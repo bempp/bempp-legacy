@@ -55,18 +55,18 @@ def electric_field(domain, range_, dual_to_range,
     from bempp.api.operators.boundary._common import update_to_non_barycentric_space
 
     new_domain, new_range_, new_dual_to_range = update_to_non_barycentric_space(
-            domain, range_, dual_to_range)
+        domain, range_, dual_to_range)
 
     if parameters is None:
         parameters = bempp.api.global_parameters
 
     if not use_slp:
-        efie_op =  ElementaryBoundaryOperator( \
-                ElementaryAbstractIntegralOperator(
-                    electric_field_ext(parameters, new_domain._impl,
-                    new_range_._impl, new_dual_to_range._impl,
-                    wave_number, "", symmetry),
-            domain, range_, dual_to_range),
+        efie_op = ElementaryBoundaryOperator(
+            ElementaryAbstractIntegralOperator(
+                electric_field_ext(parameters, new_domain._impl,
+                                   new_range_._impl, new_dual_to_range._impl,
+                                   wave_number, "", symmetry),
+                domain, range_, dual_to_range),
             parameters=parameters, label=label)
         efie_op.range_identity_operator = maxwell_identity
         return efie_op
@@ -95,28 +95,33 @@ def electric_field(domain, range_, dual_to_range,
         for index in range(3):
             # Definition of range_ does not matter in next operator
             test_local_op = LocalBoundaryOperator(ElementaryAbstractLocalOperator(
-                vector_value_times_scalar_ext(slp.dual_to_range._impl, space._impl, space._impl, index),
+                vector_value_times_scalar_ext(
+                    slp.dual_to_range._impl, space._impl, space._impl, index),
                 slp.dual_to_range, space, space),
-                    label='VECTOR_VALUE')
+                label='VECTOR_VALUE')
             test_local_ops.append(test_local_op)
-            trial_local_ops.append(test_local_op.transpose(space))  # Range parameter arbitrary
+            # Range parameter arbitrary
+            trial_local_ops.append(test_local_op.transpose(space))
 
-        term1 = CompoundBoundaryOperator(test_local_ops, kappa * slp, trial_local_ops, label=label+"_term1")
+        term1 = CompoundBoundaryOperator(
+            test_local_ops, kappa * slp, trial_local_ops, label=label + "_term1")
 
         test_local_ops = []
         trial_local_ops = []
 
         div_op = LocalBoundaryOperator(ElementaryAbstractLocalOperator(div_times_scalar_ext(slp.dual_to_range._impl, space._impl, space._impl),
-            slp.dual_to_range, space, space),
-            label='DIV')
-        div_op_transpose = div_op.transpose(space) # Range space does not matter
+                                                                       slp.dual_to_range, space, space),
+                                       label='DIV')
+        div_op_transpose = div_op.transpose(
+            space)  # Range space does not matter
 
         term2 = CompoundBoundaryOperator([div_op], (1. / kappa) * slp,
-                                         [div_op_transpose], label=label+"_term2")
+                                         [div_op_transpose], label=label + "_term2")
 
         efie_op = term1 + term2
         efie_op.range_identity_operator = maxwell_identity
         return efie_op
+
 
 def calderon_electric_field(grid, wave_number, parameters=None):
     """Return a pair (E^2, E) of the squared EFIE operator E^2 and E itself"""
@@ -131,19 +136,23 @@ def calderon_electric_field(grid, wave_number, parameters=None):
 
             bc_space = bempp.api.function_space(grid, "BC", 0)
             rwg_space = bempp.api.function_space(grid, "B-RWG", 0)
-            rwg_bary_space = bempp.api.function_space(grid.barycentric_grid(), "RWG", 0)
+            rwg_bary_space = bempp.api.function_space(
+                grid.barycentric_grid(), "RWG", 0)
             super(EfieSquared, self).__init__(rwg_space, rwg_space, bc_space,
-                    label="EFIE_SQUARED")
+                                              label="EFIE_SQUARED")
 
             self._efie_fine = electric_field(rwg_bary_space, rwg_bary_space, rwg_bary_space, wave_number,
-                    parameters=parameters)
-            self._efie = project_operator(self._efie_fine, domain=rwg_space, range_=rwg_space, dual_to_range=rwg_space)
-            self._efie2 = project_operator(self._efie_fine, domain=bc_space, range_=rwg_space, dual_to_range=bc_space)
-            self._ident = bempp.api.operators.boundary.sparse.maxwell_identity(bc_space, rwg_space, rwg_space)
-            self._inv_ident = InverseSparseDiscreteBoundaryOperator(self._ident.weak_form())
+                                             parameters=parameters)
+            self._efie = project_operator(
+                self._efie_fine, domain=rwg_space, range_=rwg_space, dual_to_range=rwg_space)
+            self._efie2 = project_operator(
+                self._efie_fine, domain=bc_space, range_=rwg_space, dual_to_range=bc_space)
+            self._ident = bempp.api.operators.boundary.sparse.maxwell_identity(
+                bc_space, rwg_space, rwg_space)
+            self._inv_ident = InverseSparseDiscreteBoundaryOperator(
+                self._ident.weak_form())
 
         def _weak_form_impl(self):
-
 
             efie_weak = self._efie.weak_form()
             efie2_weak = self._efie2.weak_form()
@@ -194,16 +203,15 @@ def magnetic_field(domain, range_, dual_to_range,
     from bempp.api.operators.boundary._common import update_to_non_barycentric_space
 
     new_domain, new_range_, new_dual_to_range = update_to_non_barycentric_space(
-            domain, range_, dual_to_range)
-
+        domain, range_, dual_to_range)
 
     if parameters is None:
         parameters = bempp.api.global_parameters
 
-    mfie_op =  ElementaryBoundaryOperator( \
-            ElementaryAbstractIntegralOperator(
-        magnetic_field_ext(parameters, new_domain._impl, new_range_._impl,
-            new_dual_to_range._impl, wave_number, "", symmetry),
+    mfie_op = ElementaryBoundaryOperator(
+        ElementaryAbstractIntegralOperator(
+            magnetic_field_ext(parameters, new_domain._impl, new_range_._impl,
+                               new_dual_to_range._impl, wave_number, "", symmetry),
             domain, range_, dual_to_range),
         parameters=parameters, label=label)
     mfie_op.range_identity_operator = maxwell_identity

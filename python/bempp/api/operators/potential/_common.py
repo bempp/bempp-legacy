@@ -1,10 +1,10 @@
 """Define common decorators for logging Potential operator assembly."""
 
+
 def potential_logger(fun):
     """A decorator that inserts logging into the assembly of potentials."""
     import bempp.api
     import time
-
 
     def wrapper(*args, **kwargs):
 
@@ -19,7 +19,7 @@ def potential_logger(fun):
         start = time.time()
         op = fun(*args, **kwargs)
         end = time.time()
-        bempp.api.LOGGER.info("FINISHED POTENTIAL OPERATOR ASSEMBLY. Time: {0:.2E} sec.".format(end-start))
+        bempp.api.LOGGER.info(
+            "FINISHED POTENTIAL OPERATOR ASSEMBLY. Time: {0:.2E} sec.".format(end - start))
         return op
     return wrapper
-

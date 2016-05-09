@@ -26,16 +26,11 @@ def visualize_with_gmsh(obj):
         print("Gmsh not available for visualization.")
         return None
 
-    f = tempfile.NamedTemporaryFile(suffix=".msh",dir=TMP_PATH, delete=False)
+    f = tempfile.NamedTemporaryFile(suffix=".msh", dir=TMP_PATH, delete=False)
     if isinstance(obj, Grid):
-        export(grid=obj,file_name=f.name)
+        export(grid=obj, file_name=f.name)
     elif isinstance(obj, GridFunction):
-        export(grid_function=obj,file_name=f.name,transformation=real)
+        export(grid_function=obj, file_name=f.name, transformation=real)
     f.close()
 
-    subprocess.Popen([GMSH_PATH,f.name])
-
-
-
-
-    
+    subprocess.Popen([GMSH_PATH, f.name])

@@ -1,5 +1,6 @@
 import numpy as _np
 
+
 class FileReader(object):
     """
 
@@ -39,12 +40,11 @@ class FileReader(object):
 
     """
 
-
-    def __init__(self,**kwargs):
+    def __init__(self, **kwargs):
         import os.path
         from collections import OrderedDict
 
-        self._impl = None 
+        self._impl = None
         self._vertex_file_to_insertion_indices = None
         self._element_file_to_insertion_indices = None
         self._vertex_insertion_indices_to_file = []
@@ -59,7 +59,7 @@ class FileReader(object):
             fname = kwargs['file_name']
             extension = os.path.splitext(fname)[1].lower()
 
-            if extension=='.msh':
+            if extension == '.msh':
                 from bempp.api.file_interfaces import gmsh
                 self._impl = gmsh.GmshInterface.read(fname)
 
@@ -67,24 +67,30 @@ class FileReader(object):
 
             # Setup the mappers
 
-            self._file_to_vertex_indices = OrderedDict.fromkeys(self._impl.vertices.keys(),value=-1)
-            self._file_to_element_indices = OrderedDict.fromkeys(self._impl.elements.keys(),value=-1)
+            self._file_to_vertex_indices = OrderedDict.fromkeys(
+                self._impl.vertices.keys(), value=-1)
+            self._file_to_element_indices = OrderedDict.fromkeys(
+                self._impl.elements.keys(), value=-1)
 
-            self._vertex_indices_to_file = self._grid.leaf_view.entity_count(2)*[None]
-            self._element_indices_to_file = self._grid.leaf_view.entity_count(0)*[None]
+            self._vertex_indices_to_file = self._grid.leaf_view.entity_count(
+                2) * [None]
+            self._element_indices_to_file = self._grid.leaf_view.entity_count(
+                0) * [None]
 
             index_set = self._grid.leaf_view.index_set()
             for elem in self._grid.leaf_view.entity_iterator(0):
                 index = index_set.entity_index(elem)
                 insertion_index = self._grid.element_insertion_index(elem)
-                file_key = self._element_insertion_indices_to_file[insertion_index]
+                file_key = self._element_insertion_indices_to_file[
+                    insertion_index]
                 self._element_indices_to_file[index] = file_key
                 self._file_to_element_indices[file_key] = index
-                
+
             for vertex in self._grid.leaf_view.entity_iterator(2):
                 index = index_set.entity_index(vertex)
                 insertion_index = self._grid.vertex_insertion_index(vertex)
-                file_key = self._vertex_insertion_indices_to_file[insertion_index]
+                file_key = self._vertex_insertion_indices_to_file[
+                    insertion_index]
                 self._vertex_indices_to_file[index] = file_key
                 self._file_to_vertex_indices[file_key] = index
 
@@ -98,8 +104,10 @@ class FileReader(object):
 
         factory = GridFactory()
 
-        self._element_file_to_insertion_indices = OrderedDict.fromkeys(elements.keys(),value=-1)
-        self._vertex_file_to_insertion_indices = OrderedDict.fromkeys(vertices.keys(),value=-1)
+        self._element_file_to_insertion_indices = OrderedDict.fromkeys(
+            elements.keys(), value=-1)
+        self._vertex_file_to_insertion_indices = OrderedDict.fromkeys(
+            vertices.keys(), value=-1)
 
         vertex_insertion_count = 0
         element_insertion_count = 0
@@ -108,26 +116,35 @@ class FileReader(object):
             elem = elements[key]
             elem_vertex_keys = []
             for vertex_key in elem['data']:
-                if self._vertex_file_to_insertion_indices[vertex_key] ==-1:
+                if self._vertex_file_to_insertion_indices[vertex_key] == -1:
                     factory.insert_vertex(vertices[vertex_key])
-                    self._vertex_file_to_insertion_indices[vertex_key] = vertex_insertion_count
+                    self._vertex_file_to_insertion_indices[
+                        vertex_key] = vertex_insertion_count
                     self._vertex_insertion_indices_to_file.append(vertex_key)
                     vertex_insertion_count += 1
-                elem_vertex_keys.append(self._vertex_file_to_insertion_indices[vertex_key])
-            factory.insert_element(elem_vertex_keys, domain_index=elem['domain_index'])
-            self._element_file_to_insertion_indices[key] = element_insertion_count
+                elem_vertex_keys.append(
+                    self._vertex_file_to_insertion_indices[vertex_key])
+            factory.insert_element(
+                elem_vertex_keys, domain_index=elem['domain_index'])
+            self._element_file_to_insertion_indices[
+                key] = element_insertion_count
             self._element_insertion_indices_to_file.append(key)
             element_insertion_count += 1
 
         return factory.finalize()
 
-    vertex_index_to_file_key_map = property(lambda self: self._vertex_indices_to_file)
-    vertex_file_key_to_index_map = property(lambda self: self._file_to_vertex_indices)
+    vertex_index_to_file_key_map = property(
+        lambda self: self._vertex_indices_to_file)
+    vertex_file_key_to_index_map = property(
+        lambda self: self._file_to_vertex_indices)
 
-    element_index_to_file_key_map = property(lambda self: self._element_indices_to_file)
-    element_file_key_to_index_map = property(lambda self: self._file_to_element_indices)
+    element_index_to_file_key_map = property(
+        lambda self: self._element_indices_to_file)
+    element_file_key_to_index_map = property(
+        lambda self: self._file_to_element_indices)
 
     grid = property(lambda self: self._grid)
+
 
 def import_grid(file_name):
     """
@@ -218,7 +235,7 @@ def export(**kwargs):
 
     import os
 
-    interface = None # Holds the actual FileInterface for the specified data format
+    interface = None  # Holds the actual FileInterface for the specified data format
     vertex_index_to_file_key_map = None
     element_index_to_file_key_map = None
 
@@ -226,15 +243,16 @@ def export(**kwargs):
         fname = kwargs['file_name']
     else:
         raise ValueError("file_name must be specified.")
-    
+
     extension = os.path.splitext(fname)[1].lower()
 
-    if extension=='.msh':
+    if extension == '.msh':
         from bempp.api.file_interfaces import gmsh
         interface = gmsh.GmshInterface()
-    
+
     if int('grid' in kwargs) + int('grid_function' in kwargs) != 1:
-        raise ValueError("Exactly one of 'grid' or 'grid_function' must be specified")
+        raise ValueError(
+            "Exactly one of 'grid' or 'grid_function' must be specified")
 
     if 'grid' in kwargs:
         grid = kwargs['grid']
@@ -248,11 +266,13 @@ def export(**kwargs):
     if 'vertex_index_to_file_key_map' in kwargs:
         vertex_index_to_file_key_map = kwargs['vertex_index_to_file_key_map']
     else:
-        vertex_index_to_file_key_map = range(offset,number_of_vertices+offset)
+        vertex_index_to_file_key_map = range(
+            offset, number_of_vertices + offset)
     if 'element_index_to_file_key_map' in kwargs:
         element_index_to_file_key_map = kwargs['element_index_to_file_key_map']
     else:
-        element_index_to_file_key_map = range(offset,number_of_elements+offset)
+        element_index_to_file_key_map = range(
+            offset, number_of_elements + offset)
 
     # Create the vertex and element structure
 
@@ -262,19 +282,19 @@ def export(**kwargs):
     element_iterator = grid.leaf_view.entity_iterator(0)
     index_set = grid.leaf_view.index_set()
 
-    vertices = OrderedDict([(vertex_index_to_file_key_map[index_set.entity_index(vertex)],vertex.geometry.corners[:,0])
-        for vertex in vertex_iterator])
+    vertices = OrderedDict([(vertex_index_to_file_key_map[index_set.entity_index(vertex)], vertex.geometry.corners[:, 0])
+                            for vertex in vertex_iterator])
     elements = OrderedDict([(element_index_to_file_key_map[index_set.entity_index(element)],
-        {'data':[vertex_index_to_file_key_map[index_set.sub_entity_index(element,n,2)] for n in range(3)],
-         'domain_index':element.domain}) for element in element_iterator])
+                             {'data': [vertex_index_to_file_key_map[index_set.sub_entity_index(element, n, 2)] for n in range(3)],
+                              'domain_index':element.domain}) for element in element_iterator])
 
-    interface.add_grid_data(vertices,elements)
+    interface.add_grid_data(vertices, elements)
 
     # Evaluate data
 
     if 'grid_function' in kwargs:
         fun = kwargs['grid_function']
-        data_type = kwargs.get('data_type',interface.default_data_type)
+        data_type = kwargs.get('data_type', interface.default_data_type)
 
         if 'transformation' in kwargs:
             transformation = kwargs['transformation']
@@ -284,31 +304,36 @@ def export(**kwargs):
         index_set = grid.leaf_view.index_set()
 
         if data_type == 'element_node':
-            local_coordinates = _np.array([[0,1,0],[0,0,1]])
+            local_coordinates = _np.array([[0, 1, 0], [0, 0, 1]])
             data = OrderedDict.fromkeys(element_index_to_file_key_map)
 
             for element in grid.leaf_view.entity_iterator(0):
                 data[element_index_to_file_key_map[index_set.entity_index(element)]] = transformation(
-                        fun.evaluate(element,local_coordinates))
-            interface.add_element_node_data(data,kwargs.get('label','element_node_data'))
+                    fun.evaluate(element, local_coordinates))
+            interface.add_element_node_data(
+                data, kwargs.get('label', 'element_node_data'))
         elif data_type == 'node':
-            local_coordinates = _np.array([[0,1,0],[0,0,1]])
+            local_coordinates = _np.array([[0, 1, 0], [0, 0, 1]])
             data = OrderedDict.fromkeys(vertex_index_to_file_key_map)
             for element in grid.leaf_view.entity_iterator(0):
-                local_data = transformation(fun.evaluate(element,local_coordinates))
+                local_data = transformation(
+                    fun.evaluate(element, local_coordinates))
                 for i in range(3):
-                    data[vertex_index_to_file_key_map[index_set.sub_entity_index(element,i,2)]] = local_data[:,i]
-            interface.add_node_data(data,kwargs.get('label','node_data'))
+                    data[vertex_index_to_file_key_map[
+                        index_set.sub_entity_index(element, i, 2)]] = local_data[:, i]
+            interface.add_node_data(data, kwargs.get('label', 'node_data'))
         elif data_type == 'element':
-            local_coordinates = _np.array([[1./3],[1./3]])
+            local_coordinates = _np.array([[1. / 3], [1. / 3]])
             data = OrderedDict.fromkeys(element_index_to_file_key_map)
 
             for element in grid.leaf_view.entity_iterator(0):
                 data[element_index_to_file_key_map[index_set.entity_index(element)]] = transformation(
-                        fun.evaluate(element,local_coordinates).ravel())
-            interface.add_element_data(data,kwargs.get('label','element_data'))
+                    fun.evaluate(element, local_coordinates).ravel())
+            interface.add_element_data(
+                data, kwargs.get('label', 'element_data'))
         else:
-            raise ValueError("data_type must be one of 'node', 'element', or 'element_node'")
+            raise ValueError(
+                "data_type must be one of 'node', 'element', or 'element_node'")
 
     interface.write(kwargs['file_name'])
 
@@ -348,21 +373,21 @@ class FileInterfaceImpl(object):
     @property
     def default_data_type(self):
         return 'node'
-        
 
     vertices = property(lambda self: self.__vertices)
     elements = property(lambda self: self.__elements)
-    
+
 
 class Vertex(object):
 
     def __init__(self, index, x, y, z):
         self.index = index
-        self.data = _np.array([x,y,z],dtype='float64')
+        self.data = _np.array([x, y, z], dtype='float64')
+
 
 class Element(object):
 
-    def __init__(self, index, v0, v1, v2, domain_index = 0):
+    def __init__(self, index, v0, v1, v2, domain_index=0):
         self.index = index
         self.data = [v0, v1, v2]
         self.domain_index = domain_index
@@ -398,14 +423,14 @@ def three_planes_view(file_name, lower_left, upper_right, ndims, evaluator):
     fname, extension = os.path.splitext(file_name)
 
     ll = {"xy": (lower_left[0], lower_left[1]),
-            "xz": (lower_left[0], lower_left[2]),
-            "yz": (lower_left[1], lower_left[2])}
+          "xz": (lower_left[0], lower_left[2]),
+          "yz": (lower_left[1], lower_left[2])}
     ur = {"xy": (upper_right[0], upper_right[1]),
-            "xz": (upper_right[0], upper_right[2]),
-            "yz": (upper_right[1], upper_right[2])}
+          "xz": (upper_right[0], upper_right[2]),
+          "yz": (upper_right[1], upper_right[2])}
     nd = {"xy": (ndims[0], ndims[1]),
-            "xz": (ndims[0], ndims[2]),
-            "yz": (ndims[1], ndims[2])}
+          "xz": (ndims[0], ndims[2]),
+          "yz": (ndims[1], ndims[2])}
 
     name = {"xy": fname + "_xy" + extension,
             "xz": fname + "_xz" + extension,
@@ -415,26 +440,19 @@ def three_planes_view(file_name, lower_left, upper_right, ndims, evaluator):
     element_offset = 1
 
     for mode in ["xy", "xz", "yz"]:
-        grid = bempp.api.structured_grid(ll[mode], ur[mode], nd[mode], axis=mode)
+        grid = bempp.api.structured_grid(
+            ll[mode], ur[mode], nd[mode], axis=mode)
         nnodes = grid.leaf_view.entity_count(2)
         nelements = grid.leaf_view.entity_count(0)
-        space = bempp.api.function_space(grid, "P", 1, domains=[0], closed=True) 
+        space = bempp.api.function_space(
+            grid, "P", 1, domains=[0], closed=True)
         points = space.global_dof_interpolation_points
         vals = evaluator(points)
         output_fun = bempp.api.GridFunction(space, coefficients=vals)
-        bempp.api.export(file_name=name[mode], grid_function=output_fun, 
-                data_type='node',
-                vertex_index_to_file_key_map=range(node_offset, node_offset+nnodes),
-                element_index_to_file_key_map=range(element_offset, element_offset+nelements))
+        bempp.api.export(file_name=name[mode], grid_function=output_fun,
+                         data_type='node',
+                         vertex_index_to_file_key_map=range(
+                             node_offset, node_offset + nnodes),
+                         element_index_to_file_key_map=range(element_offset, element_offset + nelements))
         node_offset += nnodes
         element_offset += nelements
-
-
-
-
-
-
-        
-
-
-

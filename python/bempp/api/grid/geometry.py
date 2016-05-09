@@ -1,5 +1,6 @@
 """Define the basic geometry class."""
 
+
 class Geometry(object):
     """This class returns geometry information for an entity."""
 
@@ -13,10 +14,11 @@ class Geometry(object):
 
         return self._impl.integration_elements(local_coordinates)
 
-    def normals(self,local_coordinates):
+    def normals(self, local_coordinates):
         """Return the normal directions associated with the given element."""
         if self._codimension != 0:
-            raise ValueError("Method can only be called for element geometries. ")
+            raise ValueError(
+                "Method can only be called for element geometries. ")
 
         return self._impl.normals(local_coordinates)
 
@@ -53,6 +55,3 @@ class Geometry(object):
     def codimension(self):
         """Return the codimension of the property."""
         return self._codimension
-
-
-

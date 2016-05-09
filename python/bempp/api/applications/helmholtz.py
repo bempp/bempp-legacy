@@ -2,6 +2,7 @@ import numpy as _np
 
 
 class SoundHardPlaneWaveScattering(object):
+
     def __init__(self, space, wavenumber, coupling='osrc',
                  direction=_np.array([1., 0, 0])):
         self._space = space
@@ -104,7 +105,8 @@ class SoundHardPlaneWaveScattering(object):
         self._compute_burton_miller()
 
         def dirichlet_fun(x, n, domain_index, result):
-            result[0] = _np.exp(1j * self._wavenumber * _np.dot(x, self._direction))
+            result[0] = _np.exp(1j * self._wavenumber *
+                                _np.dot(x, self._direction))
 
         def neumann_fun(x, n, domain_index, result):
             result[0] = _np.dot(n, 1j * self._wavenumber * self._direction * _np.exp(

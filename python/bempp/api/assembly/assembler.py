@@ -1,14 +1,15 @@
 """Various assemblers for integral operators."""
 
+
 class LocalOperatorLocalAssembler(object):
-    """This assembler evaluates local weak forms on elements for local operators."""
+    """This assembler evaluates local weak forms for local operators."""
 
     def __init__(self, impl):
 
         self._impl = impl
 
     def evaluate_local_weak_forms(self, element_indices):
-        """Return a list of local element matrices on the given element indices."""
+        """Return local element matrices on the given element indices."""
         return self._impl.evaluate_local_weak_forms(element_indices)
 
 
@@ -21,7 +22,8 @@ def assemble_dense_block(operator, rows, cols, domain, dual_to_range, parameters
     from bempp.core.assembly.assembler import assemble_dense_block_ext
 
     if not isinstance(operator, ElementaryBoundaryOperator):
-        raise TypeError("operator must be of type 'ElementaryBoundaryOperator.")
+        raise TypeError(
+            "operator must be of type 'ElementaryBoundaryOperator.")
 
     if parameters is None:
         parameters = operator.parameters

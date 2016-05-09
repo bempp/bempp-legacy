@@ -1,6 +1,7 @@
 """Definition of the electric and magnetic far field operators for Maxwell."""
 from bempp.api.operators.potential import _common
 
+
 @_common.potential_logger
 def electric_field(space, evaluation_points, wave_number, parameters=None):
     """Return the Maxwell electric far field operator
@@ -18,7 +19,7 @@ def electric_field(space, evaluation_points, wave_number, parameters=None):
         Parameters for the operator. If none given
         the default global parameter object
         `bempp.api.global_parameters` is used.
-        
+
     """
 
     import bempp
@@ -52,7 +53,7 @@ def magnetic_field(space, evaluation_points, wave_number, parameters=None):
         Parameters for the operator. If none given
         the default global parameter object
         `bempp.api.global_parameters` is used.
-        
+
     """
 
     import bempp

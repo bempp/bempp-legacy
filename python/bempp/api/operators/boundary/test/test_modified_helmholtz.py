@@ -4,6 +4,7 @@ import numpy as np
 
 WAVE_NUMBER = -2j
 
+
 class TestModifiedHelmholtz(TestCase):
     """Test cases for modified Helmholtz operators."""
 
@@ -29,7 +30,8 @@ class TestModifiedHelmholtz(TestCase):
         mat1 = bempp.api.as_matrix(standard_hypersingular)
         mat2 = bempp.api.as_matrix(compound_hypersingular)
 
-        self.assertAlmostEqual(np.linalg.norm(mat1 - mat2) / np.linalg.norm(mat1), 0)
+        self.assertAlmostEqual(np.linalg.norm(
+            mat1 - mat2) / np.linalg.norm(mat1), 0)
 
     def test_multitrace_single_layer_agrees_with_standard_single_layer_dual_lin(self):
 
@@ -37,18 +39,19 @@ class TestModifiedHelmholtz(TestCase):
         parameters.assembly.boundary_operator_assembly_type = 'dense'
 
         multitrace = bempp.api.operators.boundary.modified_helmholtz.multitrace_operator(self._grid, WAVE_NUMBER,
-                                                                                               parameters=parameters)
+                                                                                         parameters=parameters)
 
         actual = multitrace[0, 1]
 
         expected = bempp.api.operators.boundary.modified_helmholtz.single_layer(self._lin_space, self._lin_space,
-                                                                     self._lin_space, WAVE_NUMBER,
-                                                                     parameters=parameters)
+                                                                                self._lin_space, WAVE_NUMBER,
+                                                                                parameters=parameters)
 
         mat_expected = bempp.api.as_matrix(expected.weak_form())
         mat_actual = bempp.api.as_matrix(actual.weak_form())
 
-        diff_norm = np.linalg.norm(mat_expected-mat_actual)/np.linalg.norm(mat_actual)
+        diff_norm = np.linalg.norm(
+            mat_expected - mat_actual) / np.linalg.norm(mat_actual)
 
         self.assertAlmostEqual(diff_norm, 0)
 
@@ -58,18 +61,19 @@ class TestModifiedHelmholtz(TestCase):
         parameters.assembly.boundary_operator_assembly_type = 'dense'
 
         multitrace = bempp.api.operators.boundary.modified_helmholtz.multitrace_operator(self._grid, WAVE_NUMBER,
-                                                                                               parameters=parameters)
+                                                                                         parameters=parameters)
 
         actual = multitrace[1, 0]
 
         expected = bempp.api.operators.boundary.modified_helmholtz.hypersingular(self._lin_space, self._lin_space,
-                                                                      self._lin_space, WAVE_NUMBER,
-                                                                      parameters=parameters)
+                                                                                 self._lin_space, WAVE_NUMBER,
+                                                                                 parameters=parameters)
 
         mat_expected = bempp.api.as_matrix(expected.weak_form())
         mat_actual = bempp.api.as_matrix(actual.weak_form())
 
-        diff_norm = np.linalg.norm(mat_expected-mat_actual)/np.linalg.norm(mat_actual)
+        diff_norm = np.linalg.norm(
+            mat_expected - mat_actual) / np.linalg.norm(mat_actual)
 
         self.assertAlmostEqual(diff_norm, 0, 3)
 
@@ -79,7 +83,7 @@ class TestModifiedHelmholtz(TestCase):
         parameters.assembly.boundary_operator_assembly_type = 'dense'
 
         multitrace = bempp.api.operators.boundary.modified_helmholtz.multitrace_operator(self._grid, WAVE_NUMBER,
-                                                                                               parameters=parameters)
+                                                                                         parameters=parameters)
         dlp = bempp.api.operators.boundary.modified_helmholtz.double_layer(self._lin_space, self._lin_space, self._lin_space,
                                                                            WAVE_NUMBER, parameters=parameters)
 
@@ -89,7 +93,8 @@ class TestModifiedHelmholtz(TestCase):
         mat_expected = bempp.api.as_matrix(expected.weak_form())
         mat_actual = bempp.api.as_matrix(actual.weak_form())
 
-        diff_norm = np.linalg.norm(mat_expected-mat_actual)/np.linalg.norm(mat_actual)
+        diff_norm = np.linalg.norm(
+            mat_expected - mat_actual) / np.linalg.norm(mat_actual)
 
         self.assertAlmostEqual(diff_norm, 0)
 
@@ -99,9 +104,9 @@ class TestModifiedHelmholtz(TestCase):
         parameters.assembly.boundary_operator_assembly_type = 'dense'
 
         multitrace = bempp.api.operators.boundary.modified_helmholtz.multitrace_operator(self._grid, WAVE_NUMBER,
-                                                                                               parameters=parameters)
+                                                                                         parameters=parameters)
         adlp = bempp.api.operators.boundary.modified_helmholtz.adjoint_double_layer(self._lin_space, self._lin_space, self._lin_space,
-                                                                         WAVE_NUMBER, parameters=parameters)
+                                                                                    WAVE_NUMBER, parameters=parameters)
 
         actual = multitrace[1, 1]
         expected = adlp
@@ -109,7 +114,8 @@ class TestModifiedHelmholtz(TestCase):
         mat_expected = bempp.api.as_matrix(expected.weak_form())
         mat_actual = bempp.api.as_matrix(actual.weak_form())
 
-        diff_norm = np.linalg.norm(mat_expected-mat_actual)/np.linalg.norm(mat_actual)
+        diff_norm = np.linalg.norm(
+            mat_expected - mat_actual) / np.linalg.norm(mat_actual)
 
         self.assertAlmostEqual(diff_norm, 0, 4)
 
@@ -130,7 +136,8 @@ class TestModifiedHelmholtz(TestCase):
         mat1 = bempp.api.as_matrix(standard_hypersingular)
         mat2 = bempp.api.as_matrix(compound_hypersingular)
 
-        self.assertAlmostEqual(np.linalg.norm(mat1 - mat2) / np.linalg.norm(mat1), 0)
+        self.assertAlmostEqual(np.linalg.norm(
+            mat1 - mat2) / np.linalg.norm(mat1), 0)
 
     def test_multitrace_single_layer_agrees_with_standard_single_layer_dual(self):
 
@@ -140,19 +147,20 @@ class TestModifiedHelmholtz(TestCase):
         parameters.assembly.boundary_operator_assembly_type = 'dense'
 
         multitrace = bempp.api.operators.boundary.modified_helmholtz.multitrace_operator(self._grid, WAVE_NUMBER,
-                                                                                               parameters=parameters,
-                                                                                               spaces='dual')
+                                                                                         parameters=parameters,
+                                                                                         spaces='dual')
 
         actual = multitrace[0, 1]
 
         expected = bempp.api.operators.boundary.modified_helmholtz.single_layer(dual_const_space, dual_const_space,
-                                                                     dual_const_space, WAVE_NUMBER,
-                                                                     parameters=parameters)
+                                                                                dual_const_space, WAVE_NUMBER,
+                                                                                parameters=parameters)
 
         mat_expected = bempp.api.as_matrix(expected.weak_form())
         mat_actual = bempp.api.as_matrix(actual.weak_form())
 
-        diff_norm = np.linalg.norm(mat_expected-mat_actual)/np.linalg.norm(mat_actual)
+        diff_norm = np.linalg.norm(
+            mat_expected - mat_actual) / np.linalg.norm(mat_actual)
 
         self.assertAlmostEqual(diff_norm, 0)
 
@@ -164,19 +172,20 @@ class TestModifiedHelmholtz(TestCase):
         parameters.assembly.boundary_operator_assembly_type = 'dense'
 
         multitrace = bempp.api.operators.boundary.modified_helmholtz.multitrace_operator(self._grid, WAVE_NUMBER,
-                                                                                               parameters=parameters,
-                                                                                               spaces='dual')
+                                                                                         parameters=parameters,
+                                                                                         spaces='dual')
 
         actual = multitrace[1, 0]
 
         expected = bempp.api.operators.boundary.modified_helmholtz.hypersingular(lin_space, lin_space,
-                                                                      lin_space, WAVE_NUMBER,
-                                                                      parameters=parameters)
+                                                                                 lin_space, WAVE_NUMBER,
+                                                                                 parameters=parameters)
 
         mat_expected = bempp.api.as_matrix(expected.weak_form())
         mat_actual = bempp.api.as_matrix(actual.weak_form())
 
-        diff_norm = np.linalg.norm(mat_expected-mat_actual)/np.linalg.norm(mat_actual)
+        diff_norm = np.linalg.norm(
+            mat_expected - mat_actual) / np.linalg.norm(mat_actual)
 
         self.assertAlmostEqual(diff_norm, 0, 3)
 
@@ -189,11 +198,12 @@ class TestModifiedHelmholtz(TestCase):
         parameters.assembly.boundary_operator_assembly_type = 'dense'
 
         multitrace = bempp.api.operators.boundary.modified_helmholtz.multitrace_operator(self._grid, WAVE_NUMBER,
-                                                                                               parameters=parameters,
-                                                                                               spaces='dual')
+                                                                                         parameters=parameters,
+                                                                                         spaces='dual')
         dlp = bempp.api.operators.boundary.modified_helmholtz.double_layer(lin_space_bary, lin_space_bary, const_space,
                                                                            WAVE_NUMBER, parameters=parameters)
-        ident = bempp.api.operators.boundary.sparse.identity(lin_space_bary, lin_space_bary, const_space)
+        ident = bempp.api.operators.boundary.sparse.identity(
+            lin_space_bary, lin_space_bary, const_space)
 
         actual = multitrace[0, 0]
         expected = -dlp
@@ -201,7 +211,8 @@ class TestModifiedHelmholtz(TestCase):
         mat_expected = bempp.api.as_matrix(expected.weak_form())
         mat_actual = bempp.api.as_matrix(actual.weak_form())
 
-        diff_norm = np.linalg.norm(mat_expected-mat_actual)/np.linalg.norm(mat_actual)
+        diff_norm = np.linalg.norm(
+            mat_expected - mat_actual) / np.linalg.norm(mat_actual)
 
         self.assertAlmostEqual(diff_norm, 0)
 
@@ -214,11 +225,12 @@ class TestModifiedHelmholtz(TestCase):
         parameters.assembly.boundary_operator_assembly_type = 'dense'
 
         multitrace = bempp.api.operators.boundary.modified_helmholtz.multitrace_operator(self._grid, WAVE_NUMBER,
-                                                                                               parameters=parameters,
-                                                                                               spaces='dual')
+                                                                                         parameters=parameters,
+                                                                                         spaces='dual')
         adlp = bempp.api.operators.boundary.modified_helmholtz.adjoint_double_layer(const_space, const_space, lin_space_bary,
-                                                                         WAVE_NUMBER, parameters=parameters)
-        ident = bempp.api.operators.boundary.sparse.identity(const_space, const_space, lin_space_bary)
+                                                                                    WAVE_NUMBER, parameters=parameters)
+        ident = bempp.api.operators.boundary.sparse.identity(
+            const_space, const_space, lin_space_bary)
 
         actual = multitrace[1, 1]
         expected = adlp
@@ -226,7 +238,8 @@ class TestModifiedHelmholtz(TestCase):
         mat_expected = bempp.api.as_matrix(expected.weak_form())
         mat_actual = bempp.api.as_matrix(actual.weak_form())
 
-        diff_norm = np.linalg.norm(mat_expected-mat_actual)/np.linalg.norm(mat_actual)
+        diff_norm = np.linalg.norm(
+            mat_expected - mat_actual) / np.linalg.norm(mat_actual)
 
         self.assertAlmostEqual(diff_norm, 0, 4)
 
@@ -244,7 +257,7 @@ class TestModifiedHelmholtz(TestCase):
         parameters.quadrature.far.double_order = 9
 
         expected_ops_dual = bempp.api.operators.boundary.modified_helmholtz.single_layer_and_hypersingular_pair(
-                self._grid, WAVE_NUMBER, spaces='dual', parameters=parameters)
+            self._grid, WAVE_NUMBER, spaces='dual', parameters=parameters)
 
         dual_space = bempp.api.function_space(self._grid, "DUAL", 0)
         expected_slp = bempp.api.as_matrix(bempp.api.operators.boundary.modified_helmholtz.single_layer(
@@ -255,12 +268,13 @@ class TestModifiedHelmholtz(TestCase):
             lin_space, lin_space, lin_space, WAVE_NUMBER, parameters=parameters).weak_form())
         actual_hyp = bempp.api.as_matrix(expected_ops_dual[1].weak_form())
 
-        diff_norm_slp = np.linalg.norm(expected_slp - actual_slp)/np.linalg.norm(actual_slp)
-        diff_norm_hyp = np.linalg.norm(expected_hyp - actual_hyp)/np.linalg.norm(actual_hyp)
+        diff_norm_slp = np.linalg.norm(
+            expected_slp - actual_slp) / np.linalg.norm(actual_slp)
+        diff_norm_hyp = np.linalg.norm(
+            expected_hyp - actual_hyp) / np.linalg.norm(actual_hyp)
 
         self.assertAlmostEqual(diff_norm_slp, 0, 6)
         self.assertAlmostEqual(diff_norm_hyp, 0, 4)
-
 
     def test_slp_hyp_pair_linear_space(self):
 
@@ -276,7 +290,7 @@ class TestModifiedHelmholtz(TestCase):
         parameters.quadrature.far.double_order = 9
 
         expected_ops_dual = bempp.api.operators.boundary.modified_helmholtz.single_layer_and_hypersingular_pair(
-                self._grid, WAVE_NUMBER, spaces='linear', parameters=parameters)
+            self._grid, WAVE_NUMBER, spaces='linear', parameters=parameters)
 
         expected_slp = bempp.api.as_matrix(bempp.api.operators.boundary.modified_helmholtz.single_layer(
             lin_space, lin_space, lin_space, WAVE_NUMBER, parameters=parameters).weak_form())
@@ -286,8 +300,10 @@ class TestModifiedHelmholtz(TestCase):
             lin_space, lin_space, lin_space, WAVE_NUMBER, parameters=parameters).weak_form())
         actual_hyp = bempp.api.as_matrix(expected_ops_dual[1].weak_form())
 
-        diff_norm_slp = np.linalg.norm(expected_slp - actual_slp)/np.linalg.norm(actual_slp)
-        diff_norm_hyp = np.linalg.norm(expected_hyp - actual_hyp)/np.linalg.norm(actual_hyp)
+        diff_norm_slp = np.linalg.norm(
+            expected_slp - actual_slp) / np.linalg.norm(actual_slp)
+        diff_norm_hyp = np.linalg.norm(
+            expected_hyp - actual_hyp) / np.linalg.norm(actual_hyp)
 
         self.assertAlmostEqual(diff_norm_slp, 0, 6)
         self.assertAlmostEqual(diff_norm_hyp, 0, 6)

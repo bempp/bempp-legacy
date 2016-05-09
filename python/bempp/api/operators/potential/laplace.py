@@ -1,6 +1,7 @@
 """Definition of single and double layer Laplace potential operators."""
 from . import _common
 
+
 @_common.potential_logger
 def single_layer(space, evaluation_points, parameters=None):
     """Return the Laplace single-layer potential operator

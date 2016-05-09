@@ -6,7 +6,6 @@ import bempp.api
 class TestGeneralNonlocalDiscreteBoundaryOperator(TestCase):
     """Test cases for general discrete operators."""
 
-
     def setUp(self):
         import bempp
 
@@ -16,15 +15,16 @@ class TestGeneralNonlocalDiscreteBoundaryOperator(TestCase):
         grid = bempp.api.shapes.regular_sphere(3)
         space = bempp.api.function_space(grid, "DP", 0)
         self._operator_real = bempp.api.operators.boundary.laplace.single_layer(space, space, space,
-                                                                            parameters=parameters).weak_form()
+                                                                                parameters=parameters).weak_form()
         self._operator_complex = bempp.api.operators.boundary.helmholtz.single_layer(space, space, space, 1,
-                                                                                 parameters=parameters).weak_form()
+                                                                                     parameters=parameters).weak_form()
         self._space = space
 
     def test_type(self):
         from bempp.api.assembly.discrete_boundary_operator import GeneralNonlocalDiscreteBoundaryOperator
 
-        self.assertIsInstance(self._operator_real, GeneralNonlocalDiscreteBoundaryOperator)
+        self.assertIsInstance(self._operator_real,
+                              GeneralNonlocalDiscreteBoundaryOperator)
 
     def test_shape(self):
         expected = (self._space.global_dof_count, self._space.global_dof_count)
@@ -63,15 +63,16 @@ class TestDenseDiscreteBoundaryOperator(TestCase):
         grid = bempp.api.shapes.regular_sphere(3)
         space = bempp.api.function_space(grid, "DP", 0)
         self._operator_real = bempp.api.operators.boundary.laplace.single_layer(space, space, space,
-                                                                            parameters=parameters).weak_form()
+                                                                                parameters=parameters).weak_form()
         self._operator_complex = bempp.api.operators.boundary.helmholtz.single_layer(space, space, space, 1,
-                                                                                 parameters=parameters).weak_form()
+                                                                                     parameters=parameters).weak_form()
         self._space = space
 
     def test_type(self):
         from bempp.api.assembly.discrete_boundary_operator import DenseDiscreteBoundaryOperator
 
-        self.assertIsInstance(self._operator_real, DenseDiscreteBoundaryOperator)
+        self.assertIsInstance(self._operator_real,
+                              DenseDiscreteBoundaryOperator)
 
     def test_shape(self):
         expected = (self._space.global_dof_count, self._space.global_dof_count)
@@ -144,7 +145,8 @@ class TestSparseDiscreteBoundaryOperator(TestCase):
 
         grid = bempp.api.shapes.regular_sphere(3)
         space = bempp.api.function_space(grid, "DP", 0)
-        self._operator = bempp.api.operators.boundary.sparse.identity(space, space, space).weak_form()
+        self._operator = bempp.api.operators.boundary.sparse.identity(
+            space, space, space).weak_form()
         self._space = space
 
     def test_type(self):
@@ -209,7 +211,8 @@ class TestSparseDiscreteBoundaryOperator(TestCase):
 
 class TestInverseSparseDiscreteBoundaryOperator(TestCase):
 
-    requiresgmsh = unittest.skipIf(bempp.api.GMSH_PATH is None, reason="Needs GMSH")
+    requiresgmsh = unittest.skipIf(
+        bempp.api.GMSH_PATH is None, reason="Needs GMSH")
 
     def setUp(self):
         import bempp
@@ -224,7 +227,8 @@ class TestInverseSparseDiscreteBoundaryOperator(TestCase):
         import numpy as np
 
         space = self._space_const
-        op = bempp.api.operators.boundary.sparse.identity(space, space, space).weak_form()
+        op = bempp.api.operators.boundary.sparse.identity(
+            space, space, space).weak_form()
         inverse_op = bempp.api.InverseSparseDiscreteBoundaryOperator(op)
 
         expected = np.eye(space.global_dof_count, space.global_dof_count)
@@ -239,11 +243,14 @@ class TestInverseSparseDiscreteBoundaryOperator(TestCase):
 
         space_const = self._space_const
         space_lin = self._space_lin
-        op = bempp.api.operators.boundary.sparse.identity(space_lin, space_const, space_const).weak_form()
+        op = bempp.api.operators.boundary.sparse.identity(
+            space_lin, space_const, space_const).weak_form()
         inverse_op = bempp.api.InverseSparseDiscreteBoundaryOperator(op)
 
-        identity = np.eye(space_lin.global_dof_count, space_lin.global_dof_count)
-        expected = np.eye(space_lin.global_dof_count, space_lin.global_dof_count)
+        identity = np.eye(space_lin.global_dof_count,
+                          space_lin.global_dof_count)
+        expected = np.eye(space_lin.global_dof_count,
+                          space_lin.global_dof_count)
 
         actual = inverse_op * (op * expected)
 
@@ -256,15 +263,19 @@ class TestInverseSparseDiscreteBoundaryOperator(TestCase):
 
         space_const = self._space_const
         space_lin = self._space_lin
-        op = bempp.api.operators.boundary.sparse.identity(space_const, space_lin, space_lin).weak_form()
+        op = bempp.api.operators.boundary.sparse.identity(
+            space_const, space_lin, space_lin).weak_form()
         inverse_op = bempp.api.InverseSparseDiscreteBoundaryOperator(op)
 
-        identity = np.eye(space_lin.global_dof_count, space_lin.global_dof_count)
-        expected = np.eye(space_lin.global_dof_count, space_lin.global_dof_count)
+        identity = np.eye(space_lin.global_dof_count,
+                          space_lin.global_dof_count)
+        expected = np.eye(space_lin.global_dof_count,
+                          space_lin.global_dof_count)
 
         actual = op * inverse_op * expected
 
         self.assertAlmostEqual(np.linalg.norm(expected - actual), 0)
+
 
 class TestZeroDiscreteBoundaryOperator(TestCase):
 
@@ -285,12 +296,12 @@ class TestZeroDiscreteBoundaryOperator(TestCase):
         import numpy as np
         x = np.ones((self._N, 1), dtype='float64')
         res = self._op * x
-        self.assertEqual(res.shape, (self._M, 1), "Multiply with array with ndim = 2.")
+        self.assertEqual(res.shape, (self._M, 1),
+                         "Multiply with array with ndim = 2.")
 
         res = self._op * x.squeeze()
-        self.assertEqual(res.shape, (self._M, ), "Multiply with array with ndim = 1.")
-
-
+        self.assertEqual(res.shape, (self._M, ),
+                         "Multiply with array with ndim = 1.")
 
 
 if __name__ == "__main__":

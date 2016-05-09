@@ -20,6 +20,7 @@ class GridFactory(object):
     >>> grid = factory.finalize()
 
     """
+
     def __init__(self):
         from bempp.core.grid.grid_factory import GridFactory as Factory
         self._impl = Factory()
@@ -51,7 +52,7 @@ class GridFactory(object):
         grid = Grid(self._impl.finalize())
 
         LOGGER.info("Created grid with {0} elements, {1} nodes and {2} edges.".format(grid.leaf_view.entity_count(0),
-        grid.leaf_view.entity_count(2),
-        grid.leaf_view.entity_count(1)))
+                                                                                      grid.leaf_view.entity_count(
+                                                                                          2),
+                                                                                      grid.leaf_view.entity_count(1)))
         return grid
-

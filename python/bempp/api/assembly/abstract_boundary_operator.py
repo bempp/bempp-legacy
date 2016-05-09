@@ -73,7 +73,7 @@ class ElementaryAbstractLocalOperator(object):
 
         import bempp.api
 
-        discrete_operator = SparseDiscreteBoundaryOperator( \
+        discrete_operator = SparseDiscreteBoundaryOperator(
             convert_to_sparse(self._impl.assemble_weak_form(parameters)))
 
         return discrete_operator

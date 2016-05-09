@@ -1,5 +1,6 @@
-#pylint: disable-msg=too-many-arguments
+# pylint: disable-msg=too-many-arguments
 """Definition of Grid functions in BEM++"""
+
 
 class GridFunction(object):
     """
@@ -93,7 +94,7 @@ class GridFunction(object):
     """
 
     def __init__(self, space, dual_space=None, fun=None, coefficients=None,
-            projections=None, parameters=None, identity_operator=None):
+                 projections=None, parameters=None, identity_operator=None):
 
         import bempp.api
         import numpy as np
@@ -113,7 +114,6 @@ class GridFunction(object):
         else:
             self._identity_operator = identity_operator
 
-
         self._coefficients = None
         self._dual_coefficients = None
         self._space = space
@@ -131,7 +131,8 @@ class GridFunction(object):
         if fun is not None:
             from bempp.core.assembly.function_projector import calculate_projection
 
-            self._dual_coefficients = calculate_projection(parameters, fun, self._dual_space._impl)
+            self._dual_coefficients = calculate_projection(
+                parameters, fun, self._dual_space._impl)
             self._representation = 'dual'
 
         if projections is not None:
@@ -148,7 +149,8 @@ class GridFunction(object):
             raise ValueError("'projections' must be a 1-d array.")
 
         from bempp.api.assembly import InverseSparseDiscreteBoundaryOperator
-        ident = self._identity_operator(self.space, self.space, dual_space).weak_form()
+        ident = self._identity_operator(
+            self.space, self.space, dual_space).weak_form()
 
         inv_ident = InverseSparseDiscreteBoundaryOperator(ident)
 
@@ -185,7 +187,8 @@ class GridFunction(object):
         if dual_space == self._dual_space and self._dual_coefficients is not None:
             return self._dual_coefficients
 
-        ident = self._identity_operator(self.space, self.space, dual_space).weak_form()
+        ident = self._identity_operator(
+            self.space, self.space, dual_space).weak_form()
         self._dual_space = dual_space
         self._dual_coefficients = ident * self.coefficients
 
@@ -197,9 +200,10 @@ class GridFunction(object):
         import numpy as np
         coefficients = self.coefficients
         # Get global dof ids and weights
-        global_dofs, weights = self.space.get_global_dofs(element, dof_weights=True)
+        global_dofs, weights = self.space.get_global_dofs(
+            element, dof_weights=True)
         dof_values = np.asarray([coefficients[dof] if dof >= 0 else 0 for dof in global_dofs]) * \
-                np.asarray(weights)
+            np.asarray(weights)
         return self.space.evaluate_local_basis(element, local_coordinates, dof_values)
 
     def evaluate_surface_gradient(self, element, local_coordinates):
@@ -207,11 +211,11 @@ class GridFunction(object):
 
         import numpy as np
         coefficients = self.coefficients
-        global_dofs, weights = self.space.get_global_dofs(element, dof_weights=True)
+        global_dofs, weights = self.space.get_global_dofs(
+            element, dof_weights=True)
         dof_values = np.asarray([coefficients[dof] if dof >= 0 else 0 for dof in global_dofs]) * \
-                np.asarray(weights)
+            np.asarray(weights)
         return self.space.evaluate_surface_gradient(element, local_coordinates, dof_values)
-
 
     def integrate(self, element=None):
         """Integrate the function over the grid or a single element."""
@@ -220,19 +224,20 @@ class GridFunction(object):
         import numpy as np
 
         n = self.component_count
-        res = np.zeros((n,1),dtype='float64')
+        res = np.zeros((n, 1), dtype='float64')
         accuracy_order = self.parameters.quadrature.far.single_order
         points, weights = gauss_triangle_points_and_weights(accuracy_order)
 
-        element_list = [element] if element is not None else list(self.grid.leaf_view.entity_iterator(0))
+        element_list = [element] if element is not None else list(
+            self.grid.leaf_view.entity_iterator(0))
 
         for element in element_list:
-            integration_elements = element.geometry.integration_elements(points)
+            integration_elements = element.geometry.integration_elements(
+                points)
             res += np.sum(self.evaluate(element, points) * weights * integration_elements,
-                    axis=1)
+                          axis=1)
 
         return res
-
 
     def surface_grad_norm(self, element=None):
         """Return the norm of the surface gradient on a single element or in total."""
@@ -244,19 +249,21 @@ class GridFunction(object):
         accuracy_order = self.parameters.quadrature.far.single_order
         points, weights = gauss_triangle_points_and_weights(accuracy_order)
 
-        element_list = [element] if element is not None else list(self.grid.leaf_view.entity_iterator(0))
+        element_list = [element] if element is not None else list(
+            self.grid.leaf_view.entity_iterator(0))
 
         for element in element_list:
-            integration_elements = element.geometry.integration_elements(points)
-            abs_surface_gradient_square = np.sum(np.abs(self.evaluate_surface_gradient(element, points))**2, axis=0)
-            res += np.sum(abs_surface_gradient_square * weights * integration_elements)
+            integration_elements = element.geometry.integration_elements(
+                points)
+            abs_surface_gradient_square = np.sum(
+                np.abs(self.evaluate_surface_gradient(element, points))**2, axis=0)
+            res += np.sum(abs_surface_gradient_square *
+                          weights * integration_elements)
 
         return np.sqrt(res)
 
-
     def l2_norm(self, element=None):
         """Return the L^2 norm of the function on a single element or in total."""
-
 
         from bempp.api.integration import gauss_triangle_points_and_weights
         import numpy as np
@@ -266,18 +273,21 @@ class GridFunction(object):
         accuracy_order = self.parameters.quadrature.far.single_order
         points, weights = gauss_triangle_points_and_weights(accuracy_order)
 
-        element_list = [element] if element is not None else list(self.grid.leaf_view.entity_iterator(0))
+        element_list = [element] if element is not None else list(
+            self.grid.leaf_view.entity_iterator(0))
 
         for element in element_list:
-            integration_elements = element.geometry.integration_elements(points)
-            abs_surface_value_squared = np.sum(np.abs(self.evaluate(element, points))**2, axis=0)
-            res += np.sum(abs_surface_value_squared * weights * integration_elements)
+            integration_elements = element.geometry.integration_elements(
+                points)
+            abs_surface_value_squared = np.sum(
+                np.abs(self.evaluate(element, points))**2, axis=0)
+            res += np.sum(abs_surface_value_squared *
+                          weights * integration_elements)
 
         return np.sqrt(res)
 
     def relative_error(self, fun, element=None):
         """Compute the relative L^2 error compared to a given analytic function."""
-
 
         from bempp.api.integration import gauss_triangle_points_and_weights
         import numpy as np
@@ -288,22 +298,27 @@ class GridFunction(object):
         points, weights = gauss_triangle_points_and_weights(accuracy_order)
         npoints = points.shape[1]
 
-        element_list = [element] if element is not None else list(self.grid.leaf_view.entity_iterator(0))
+        element_list = [element] if element is not None else list(
+            self.grid.leaf_view.entity_iterator(0))
 
         for element in element_list:
-            integration_elements = element.geometry.integration_elements(points)
+            integration_elements = element.geometry.integration_elements(
+                points)
             global_dofs = element.geometry.local2global(points)
-            fun_vals = np.zeros((self.component_count, npoints), dtype=self.dtype)
+            fun_vals = np.zeros(
+                (self.component_count, npoints), dtype=self.dtype)
 
             for j in range(npoints):
                 fun_vals[:, j] = fun(global_dofs[:, j])
 
-            diff = np.sum(np.abs(self.evaluate(element, points) - fun_vals)**2, axis=0)
+            diff = np.sum(np.abs(self.evaluate(
+                element, points) - fun_vals)**2, axis=0)
             global_diff += np.sum(diff * integration_elements * weights)
             abs_fun_squared = np.sum(np.abs(fun_vals)**2, axis=0)
-            fun_l2_norm += np.sum(abs_fun_squared * integration_elements * weights)
+            fun_l2_norm += np.sum(abs_fun_squared *
+                                  integration_elements * weights)
 
-        return np.sqrt(global_diff/fun_l2_norm)
+        return np.sqrt(global_diff / fun_l2_norm)
 
     def __add__(self, other):
 
@@ -313,7 +328,7 @@ class GridFunction(object):
         if self.representation == 'dual' and other.representation == 'dual':
             if self.dual_space == other.dual_space:
                 return GridFunction(self.space, projections=self.projections() + other.projections(),
-                        dual_space=self.dual_space)
+                                    dual_space=self.dual_space)
 
         return GridFunction(self.space,
                             coefficients=self.coefficients + other.coefficients)
@@ -330,8 +345,8 @@ class GridFunction(object):
                                     parameters=self.parameters)
             else:
                 return GridFunction(self.space,
-                        coefficients=alpha * self.coefficients,
-                        parameters=self.parameters)
+                                    coefficients=alpha * self.coefficients,
+                                    parameters=self.parameters)
         else:
             return NotImplemented
 
@@ -344,13 +359,12 @@ class GridFunction(object):
         else:
             return NotImplemented
 
-
     def __div__(self, alpha):
 
         if not isinstance(self, GridFunction):
-            return (1./alpha) * self
+            return (1. / alpha) * self
 
-        return self * (1./alpha)
+        return self * (1. / alpha)
 
     def __truediv__(self, alpha):
 
@@ -397,7 +411,7 @@ class GridFunction(object):
         """Return the function coefficients."""
         if self._coefficients is None:
             self._coefficients = self._compute_coefficients(
-                    self._dual_coefficients, self.dual_space)
+                self._dual_coefficients, self.dual_space)
             self._representation = 'primal'
         return self._coefficients
 

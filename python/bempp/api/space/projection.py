@@ -12,10 +12,10 @@ def discrete_coefficient_projection(space, new_space):
 
     return InverseSparseDiscreteBoundaryOperator(ident2) * ident1
 
+
 def project_operator(operator, domain=None, range_=None, dual_to_range=None):
     """Project operator onto a new set of spaces."""
 
     from bempp.api.assembly.boundary_operator import _ProjectionBoundaryOperator
 
     return _ProjectionBoundaryOperator(operator, domain=domain, range_=range_, dual_to_range=dual_to_range)
-

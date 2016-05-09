@@ -46,8 +46,3 @@ class GridView(object):
     def domain_indices(self):
         """Return a list of domain indices."""
         return self._impl.domain_indices
-
-
-
-
-
