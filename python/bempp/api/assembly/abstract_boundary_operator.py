@@ -6,7 +6,6 @@ class ElementaryAbstractIntegralOperator(object):
 
     This object provides methods to discretize non-local boundary
     operators.
-    
     """
 
     def __init__(self, impl, domain, range_, dual_to_range):
@@ -20,22 +19,19 @@ class ElementaryAbstractIntegralOperator(object):
         return self._impl.make_local_assembler(parameters)
 
     def assemble_weak_form(self, parameters):
-        """Assemble a boundary integral operator and return the assembled operator."""
-        import bempp.api
-
+        """Assemble a boundary integral operator and return the weak form."""
         if parameters.assembly.boundary_operator_assembly_type == 'dense':
             from bempp.api.assembly.discrete_boundary_operator import \
                 DenseDiscreteBoundaryOperator
 
-
-            discrete_operator = DenseDiscreteBoundaryOperator( \
+            discrete_operator = DenseDiscreteBoundaryOperator(
                 self._impl.assemble_weak_form(parameters).as_matrix())
 
         else:
             from bempp.api.assembly.discrete_boundary_operator import \
                 GeneralNonlocalDiscreteBoundaryOperator
 
-            discrete_operator = GeneralNonlocalDiscreteBoundaryOperator( \
+            discrete_operator = GeneralNonlocalDiscreteBoundaryOperator(
                 self._impl.assemble_weak_form(parameters))
 
         return discrete_operator
@@ -49,7 +45,7 @@ class ElementaryAbstractIntegralOperator(object):
     def range(self):
         """Return the range space."""
         return self._range
-    
+
     @property
     def dual_to_range(self):
         """Return the dual_to_range space."""
@@ -91,9 +87,8 @@ class ElementaryAbstractLocalOperator(object):
     def range(self):
         """Return the range space."""
         return self._range
-    
+
     @property
     def dual_to_range(self):
         """Return the dual_to_range space."""
         return self._dual_to_range
-

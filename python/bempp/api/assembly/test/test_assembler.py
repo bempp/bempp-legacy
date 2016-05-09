@@ -3,7 +3,7 @@ from unittest import TestCase
 
 class TestAssembler(TestCase):
     def setUp(self):
-        import bempp
+        import bempp.api
 
         grid = bempp.api.shapes.regular_sphere(3)
         space = bempp.api.function_space(grid, "P", 1)

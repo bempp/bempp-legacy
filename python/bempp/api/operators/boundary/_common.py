@@ -1,3 +1,10 @@
+def update_to_non_barycentric_space(domain, range_, dual_to_range):
+    """Return non-barycentric spaces if possible. Otherwise, return original spaces."""
+
+    if domain.has_non_barycentric_space and dual_to_range.has_non_barycentric_space:
+        return (domain.non_barycentric_space, range_, dual_to_range.non_barycentric_space)
+    else:
+        return (domain, range_, dual_to_range)
 
 def slp_and_hyp_impl(grid, slp_operator, hyp_operator, parameters, spaces='linear', base_slp=None,
         return_base_slp=False, laplace='False'):

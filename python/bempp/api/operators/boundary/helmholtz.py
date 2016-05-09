@@ -1,8 +1,8 @@
 # pylint: disable-msg=too-many-arguments
-from bempp.api.assembly.boundary_operator import BoundaryOperator as _BoundaryOperator
-import numpy as _np
-
 """Definition of the Helmholtz boundary operators."""
+from bempp.api.assembly.boundary_operator import \
+    BoundaryOperator as _BoundaryOperator
+import numpy as _np
 
 
 def single_layer(domain, range_, dual_to_range,
@@ -32,8 +32,6 @@ def single_layer(domain, range_, dual_to_range,
         is used.
 
     """
-
-
     from .modified_helmholtz import single_layer as sl
 
     return sl(domain, range_, dual_to_range,
@@ -191,7 +189,7 @@ def single_layer_and_hypersingular_pair(grid, wave_number, parameters=None, spac
     This function creates a pair of a single-layer and a hypersingular
     operator, where both operators are instantiated using a common
     base single-layer operator. Hence, only one single-layer operator
-    needs to be discretized to obtain both operators on the given 
+    needs to be discretized to obtain both operators on the given
     grid.
 
     Parameters
@@ -212,11 +210,11 @@ def single_layer_and_hypersingular_pair(grid, wave_number, parameters=None, spac
         data and piecewise constant space for the Neumann
         data choose 'dual'.
     base_slp : None
-        Specify a base single-layer operator to be used. If 
+        Specify a base single-layer operator to be used. If
         set to None, a base single-layer operator will be
         instantiated by the function.
     return_base_slp : bool
-        If True also return the original large space single layer 
+        If True also return the original large space single layer
         operator from which the hypersingular and slp operator
         are derived. Default is False
 

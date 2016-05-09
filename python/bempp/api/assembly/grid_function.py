@@ -211,7 +211,7 @@ class GridFunction(object):
         dof_values = np.asarray([coefficients[dof] if dof >= 0 else 0 for dof in global_dofs]) * \
                 np.asarray(weights)
         return self.space.evaluate_surface_gradient(element, local_coordinates, dof_values)
-        
+
 
     def integrate(self, element=None):
         """Integrate the function over the grid or a single element."""
@@ -228,7 +228,7 @@ class GridFunction(object):
 
         for element in element_list:
             integration_elements = element.geometry.integration_elements(points)
-            res += np.sum(self.evaluate(element, points) * weights * integration_elements, 
+            res += np.sum(self.evaluate(element, points) * weights * integration_elements,
                     axis=1)
 
         return res
@@ -249,7 +249,7 @@ class GridFunction(object):
         for element in element_list:
             integration_elements = element.geometry.integration_elements(points)
             abs_surface_gradient_square = np.sum(np.abs(self.evaluate_surface_gradient(element, points))**2, axis=0)
-            res += np.sum(abs_surface_gradient_square * weights * integration_elements) 
+            res += np.sum(abs_surface_gradient_square * weights * integration_elements)
 
         return np.sqrt(res)
 
@@ -271,7 +271,7 @@ class GridFunction(object):
         for element in element_list:
             integration_elements = element.geometry.integration_elements(points)
             abs_surface_value_squared = np.sum(np.abs(self.evaluate(element, points))**2, axis=0)
-            res += np.sum(abs_surface_value_squared * weights * integration_elements) 
+            res += np.sum(abs_surface_value_squared * weights * integration_elements)
 
         return np.sqrt(res)
 
@@ -314,10 +314,10 @@ class GridFunction(object):
             if self.dual_space == other.dual_space:
                 return GridFunction(self.space, projections=self.projections() + other.projections(),
                         dual_space=self.dual_space)
-            
+
         return GridFunction(self.space,
                             coefficients=self.coefficients + other.coefficients)
-                            
+
     def __mul__(self, alpha):
 
         import numpy as np
@@ -333,8 +333,7 @@ class GridFunction(object):
                         coefficients=alpha * self.coefficients,
                         parameters=self.parameters)
         else:
-            raise NotImplementedError(\
-                    "Cannot multiply Gridfunction with object of type "+str(type(alpha)))
+            return NotImplemented
 
     def __rmul__(self, alpha):
 
@@ -343,8 +342,7 @@ class GridFunction(object):
         if np.isscalar(alpha):
             return self * alpha
         else:
-            raise NotImplementedError( \
-                "Cannot multiply Gridfunction with object of type "+str(type(alpha)))
+            return NotImplemented
 
 
     def __div__(self, alpha):

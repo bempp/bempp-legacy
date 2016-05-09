@@ -127,7 +127,7 @@ class Space(object):
     @property
     def discontinuous_space(self):
         """Return the associated discontinuous scalar space."""
-        return Space(self._impl.discontinuous_space)
+        return self._discontinuous_space
 
     @property
     def global_dof_interpolation_points(self):
@@ -170,6 +170,7 @@ class DiscontinuousPolynomialSpace(Space):
         self._order = order
         self._has_non_barycentric_space = True
         self._non_barycentric_space = self
+        self._discontinuous_space = self
 
 class BarycentricDiscontinuousPolynomialSpace(Space):
     """Represents a space of discontinuous, polynomial functions over a barycentric grid."""
@@ -184,6 +185,7 @@ class BarycentricDiscontinuousPolynomialSpace(Space):
         self._order = order
         self._has_non_barycentric_space = True
         self._non_barycentric_space = DiscontinuousPolynomialSpace(grid, order)
+        self._discontinuous_space = DiscontinuousPolynomialSpace(grid.barycentric_grid(), order)
 
 class ContinuousPolynomialSpace(Space):
     """Represents a space of continuous, polynomial functions."""
@@ -200,6 +202,7 @@ class ContinuousPolynomialSpace(Space):
         self._order = order
         self._has_non_barycentric_space = True
         self._non_barycentric_space = self
+        self._discontinuous_space = DiscontinuousPolynomialSpace(grid, order)
 
 class BarycentricContinuousPolynomialSpace(Space):
     """Represents a space of continuous, polynomial functions on a barycentric grid."""
@@ -214,6 +217,7 @@ class BarycentricContinuousPolynomialSpace(Space):
         self._order = order
         self._has_non_barycentric_space = True
         self._non_barycentric_space = ContinuousPolynomialSpace(grid, order)
+        self._discontinuous_space = DiscontinuousPolynomialSpace(grid.barycentric_grid(), order)
 
 class DualSpace(Space):
     """A space of piecewise constant dual functions over a barycentric grid."""
@@ -228,6 +232,7 @@ class DualSpace(Space):
         self._order = 0
         self._has_non_barycentric_space = False
         self._non_barycentric_space = None
+        self._discontinuous_polynomial_space = DiscontinuousPolynomialSpace(grid.barycentric_grid(), 1)
 
 class RTSpace(Space):
     """A space of Raviart-Thomas functions."""
@@ -242,6 +247,7 @@ class RTSpace(Space):
         self._order = 0
         self._has_non_barycentric_space = True
         self._non_barycentric_space = self
+        self._discontinuous_space = DiscontinuousPolynomialSpace(grid, 1)
 
 class BarycentricRTSpace(Space):
     """A space of Raviart-Thomas functions on a barycentric grid."""
@@ -256,6 +262,7 @@ class BarycentricRTSpace(Space):
         self._order = 0
         self._has_non_barycentric_space = True
         self._non_barycentric_space = RTSpace(grid, None, True)
+        self._discontinuous_space = DiscontinuousPolynomialSpace(grid.barycentric_grid(), 1)
 
 class RWGSpace(Space):
     """A space of RWG functions."""
@@ -270,6 +277,7 @@ class RWGSpace(Space):
         self._order = 0
         self._has_non_barycentric_space = True
         self._non_barycentric_space = self
+        self._discontinuous_space = DiscontinuousPolynomialSpace(grid, 1)
 
 class BarycentricRWGSpace(Space):
     """A space of RWG functions on a barycentric grid."""
@@ -284,6 +292,7 @@ class BarycentricRWGSpace(Space):
         self._order = 0
         self._has_non_barycentric_space = True
         self._non_barycentric_space = RWGSpace(grid, None, True)
+        self._discontinuous_space = DiscontinuousPolynomialSpace(grid.barycentric_grid(), 1)
 
 class BuffaChristiansenSpace(Space):
     """A space of Buffa-Christiansen basis functions on a barycentrid grid."""
@@ -298,6 +307,7 @@ class BuffaChristiansenSpace(Space):
         self._order = 0
         self._has_non_barycentric_space = True
         self._non_barycentric_space = None
+        self._discontinuous_space = DiscontinuousPolynomialSpace(grid.barycentric_grid(), 1)
 
 def function_space(grid, kind, order, domains=None, closed=True, strictly_on_segment=False,
         reference_point_on_segment=True, element_on_segment=False):

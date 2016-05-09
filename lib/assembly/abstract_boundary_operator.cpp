@@ -76,10 +76,12 @@ AbstractBoundaryOperator<BasisFunctionType, ResultType>::
     }
   }*/
 
+  /*
   if (m_range->grid() != m_dualToRange->grid())
       throw std::invalid_argument(
           "AbstractBoundaryOperator::AbstractBoundaryOperator(): "
           "range and dualToRange must be defined on the same grid");
+          */
 
   if (m_label.empty())
     m_label = uniqueLabel();

@@ -103,7 +103,7 @@ class BoundaryOperator(object):
             return GridFunction(self.range, projections=self.weak_form() * other.coefficients,
                     identity_operator = self._identity_operator, dual_space=self.dual_to_range)
         else:
-            raise NotImplementedError
+            return NotImplemented
 
     def __rmul__(self, other):
 
@@ -112,7 +112,7 @@ class BoundaryOperator(object):
         if np.isscalar(other):
             return _ScaledBoundaryOperator(self, other)
         else:
-            raise NotImplementedError
+            return NotImplemented
 
     def __neg__(self):
 
@@ -140,7 +140,7 @@ class BoundaryOperator(object):
 
         if self._range_map is None:
             from bempp.api.assembly import InverseSparseDiscreteBoundaryOperator
-        
+
             self._range_map = InverseSparseDiscreteBoundaryOperator( \
                 self._identity_operator(self.range, self.range, self.dual_to_range).weak_form())
 
@@ -157,7 +157,7 @@ class BoundaryOperator(object):
         Parameters
         ----------
         range_ : bempp.api.space.Space
-            The new range space of the transpose. This can not be 
+            The new range space of the transpose. This can not be
             determined automatically.
 
         """
@@ -170,7 +170,7 @@ class BoundaryOperator(object):
         Parameters
         ----------
         range_ : bempp.api.space.Space
-            The new range space of the transpose. This can not be 
+            The new range space of the transpose. This can not be
             determined automatically.
 
         """
@@ -565,7 +565,7 @@ class CompoundBoundaryOperator(BoundaryOperator):
 class RankOneBoundaryOperator(BoundaryOperator):
     """Define a rank one boundary operator.
 
-    This operator is defined as 
+    This operator is defined as
     op = <w, 1> * <v, 1>, where v are functions in
     `dual_to_range` and w are functions in `domain`.
 
@@ -625,6 +625,3 @@ class RankOneBoundaryOperator(BoundaryOperator):
         row = one_domain.projections(self._domain)
 
         return bempp.api.assembly.DiscreteRankOneOperator(col, row)
-
-
-
