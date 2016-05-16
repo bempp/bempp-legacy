@@ -29,7 +29,7 @@ before_install:
     - ./miniconda.sh -b -p $HOME/miniconda
     - export PATH=$HOME/miniconda/bin:$PATH
     - conda update conda -q -y
-    - conda install numpy scipy -q -y
+    - conda install python=2.7 numpy scipy -q -y
     - python -c 'import numpy'
     - python -c 'import scipy'
 ## same about cython ?
@@ -42,7 +42,7 @@ before_script:
 script:
 
 # ###### step 1: build
-#    ## travis_wait avoids time out when downloading
+#    ## `travis_wait` avoids time out when downloading
 #    ## and building external dependencies
 
     - mkdir -p build && cd build
@@ -57,7 +57,7 @@ script:
     - sudo make install
 
 # ###### step 3: test
-#    ## travis_wait has troubles with ""
+#    ## `travis_wait` has troubles with ""
 #    ## but travis_wait should be useful for intensive tests
 
 # ## Disable this test, because  it does not necessary pass.
