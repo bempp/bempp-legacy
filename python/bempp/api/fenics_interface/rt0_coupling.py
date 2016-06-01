@@ -111,13 +111,15 @@ def n1curl_to_rt0_tangential_trace(fenics_space):
         es = [grid.vertex_insertion_index(e) for e in face.sub_entity_iterator(2)]
         all_es = [bm_nodes[e] for e in es]
         all_es.sort()
-        triangles_to_edge_triples[grid.element_insertion_index(face)] = str(all_es)
+        triangles_to_edge_triples[grid.element_insertion_index(face)] = tuple(all_es)
     edge_triples_to_tetrahedra = {}
     for tetra in dolfin.cells(mesh):
         all_es = [v.index() for v in dolfin.vertices(tetra)]
         all_es.sort()
-        for i in range(4):
-            edge_triples_to_tetrahedra[str(all_es[:i]+all_es[i+1:])] = tetra
+        edge_triples_to_tetrahedra[(all_es[0],all_es[1],all_es[2])] = tetra
+        edge_triples_to_tetrahedra[(all_es[0],all_es[1],all_es[3])] = tetra
+        edge_triples_to_tetrahedra[(all_es[0],all_es[2],all_es[3])] = tetra
+        edge_triples_to_tetrahedra[(all_es[1],all_es[2],all_es[3])] = tetra
     triangles_to_tetrahedra = [edge_triples_to_tetrahedra[triple] for triple in triangles_to_edge_triples]
 
     non_z = trace_matrix.nonzero()
@@ -140,7 +142,7 @@ def n1curl_to_rt0_tangential_trace(fenics_space):
 
         bempp_values = bempp_fun.evaluate(face[0],local_coords[face[1]])
         normal = face[0].geometry.normals(np.array([[.25],[.25]]))
-        cross =  np.cross(normal.T[0], fenics_values)
+        cross =  np.cross(fenics_values, normal.T[0])
         k = np.argmax(np.abs(cross))
 
         trace_matrix[i,j] = cross[k]/bempp_values[k,0]
