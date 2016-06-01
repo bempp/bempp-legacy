@@ -1,5 +1,5 @@
 import numpy as _np
-from bempp.api.utils.linear_operator import LinearOperator
+from .discrete_boundary_operator import DiscreteBoundaryOperator
 
 
 def _sum(op1, op2):
@@ -159,7 +159,7 @@ class BlockedOperator(object):
     ndims = property(get_ndims)
 
 
-class BlockedDiscreteOperator(LinearOperator):
+class BlockedDiscreteOperator(DiscreteBoundaryOperator):
 
     def __init__(self, m, n):
 
