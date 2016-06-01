@@ -100,4 +100,4 @@ def plot_slice(plot_f, dolfin_function=None, x=None, y=None, z=None, n=(151,151)
     if show:
         plt.show()
 
-
+    plt.clf()
