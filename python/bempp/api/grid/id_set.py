@@ -41,4 +41,3 @@ class IdSet(object):
         if element.codimension != 0:
             return ValueError("`Element` must be an entity of codimension0.")
         return self._impl.sub_entity_id(element._impl, i, codim)
-

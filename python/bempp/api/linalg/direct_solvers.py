@@ -15,7 +15,5 @@ def lu(A, b):
     mat = as_matrix(A.weak_form())
     vec = b.projections(A.dual_to_range)
 
-    sol = solve(mat,vec)
-    return GridFunction(A.domain,coefficients=sol) 
-
-
+    sol = solve(mat, vec)
+    return GridFunction(A.domain, coefficients=sol)

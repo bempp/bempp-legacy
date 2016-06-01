@@ -17,8 +17,3 @@ class Shapeset(object):
     @property
     def size(self):
         return self._impl.size
-
-
-
-
-

@@ -1,5 +1,5 @@
 import numpy as _np
-from bempp.api.utils.linear_operator import LinearOperator
+from .discrete_boundary_operator import DiscreteBoundaryOperator
 
 
 def _sum(op1, op2):
@@ -11,6 +11,7 @@ def _sum(op1, op2):
     else:
         return op1 + op2
 
+
 def _prod(op1, op2):
 
     if op1 is None or op2 is None:
@@ -18,7 +19,9 @@ def _prod(op1, op2):
     else:
         return op1 * op2
 
+
 class BlockedOperator(object):
+
     def __init__(self, m, n):
 
         self._m = m
@@ -45,7 +48,8 @@ class BlockedOperator(object):
     def weak_form(self):
 
         if not self._fill_complete():
-            raise ValueError("Each row and column must have at least one operator")
+            raise ValueError(
+                "Each row and column must have at least one operator")
 
         discrete_operator = BlockedDiscreteOperator(self._m, self._n)
 
@@ -59,19 +63,20 @@ class BlockedOperator(object):
     def strong_form(self, mode='simple'):
 
         if not self._fill_complete():
-            raise ValueError("Each row and column must have at least one operator")
+            raise ValueError(
+                "Each row and column must have at least one operator")
 
-
-        if mode=='full':
+        if mode == 'full':
             discrete_operator = BlockedDiscreteOperator(self._m, self._n)
 
             for i in range(self._m):
                 for j in range(self._n):
                     if self._operators[i, j] is not None:
-                        discrete_operator[i, j] = self._operators[i, j].strong_form()
-            return discrete_operator           
+                        discrete_operator[i, j] = self._operators[
+                            i, j].strong_form()
+            return discrete_operator
 
-        elif mode=='simple':
+        elif mode == 'simple':
             from bempp.api import InverseSparseDiscreteBoundaryOperator
             from bempp.api.operators.boundary.sparse import identity
 
@@ -85,11 +90,12 @@ class BlockedOperator(object):
                         break
 
                 blocked[i, i] = InverseSparseDiscreteBoundaryOperator(
-                        identity(op.range, op.dual_to_range, 
-                            op.dual_to_range).weak_form())
-            return blocked * self.weak_form() 
+                    identity(op.range, op.dual_to_range,
+                             op.dual_to_range).weak_form())
+            return blocked * self.weak_form()
         else:
-            raise ValueError("Unknown value for 'mode'. Allowed values are 'simple' and 'full'")
+            raise ValueError(
+                "Unknown value for 'mode'. Allowed values are 'simple' and 'full'")
 
     def __add__(self, other):
 
@@ -146,7 +152,6 @@ class BlockedOperator(object):
         else:
             return NotImplementedError
 
-
     def get_ndims(self):
 
         return (self._m, self._n)
@@ -154,7 +159,8 @@ class BlockedOperator(object):
     ndims = property(get_ndims)
 
 
-class BlockedDiscreteOperator(LinearOperator):
+class BlockedDiscreteOperator(DiscreteBoundaryOperator):
+
     def __init__(self, m, n):
 
         self._m = m
@@ -201,7 +207,8 @@ class BlockedDiscreteOperator(LinearOperator):
             raise ValueError("Not all rows or columns contain operators.")
 
         row_dim = 0
-        res = _np.zeros((self.shape[0], x.shape[1]), dtype=combined_type(self.dtype, x.dtype))
+        res = _np.zeros((self.shape[0], x.shape[1]),
+                        dtype=combined_type(self.dtype, x.dtype))
 
         for i in range(self._m):
             col_dim = 0
@@ -209,7 +216,8 @@ class BlockedDiscreteOperator(LinearOperator):
             for j in range(self._n):
                 local_x = x[col_dim:col_dim + self._cols[j], :]
                 if self._operators[i, j] is not None:
-                    op_is_complex = _np.iscomplexobj(self._operators[i, j].dtype.type(1))
+                    op_is_complex = _np.iscomplexobj(
+                        self._operators[i, j].dtype.type(1))
                     if _np.iscomplexobj(x) and not op_is_complex:
                         local_res[:] += (self._operators[i, j].dot(_np.real(local_x)) +
                                          1j * self._operators[i, j].dot(_np.imag(local_x)))

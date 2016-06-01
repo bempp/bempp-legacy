@@ -1,5 +1,6 @@
 """Implement the interface to index sets."""
 
+
 class IndexSet(object):
     """Query the index set of a grid view."""
 

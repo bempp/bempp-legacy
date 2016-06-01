@@ -1,6 +1,7 @@
 """Definition of single and double layer Laplace potential operators."""
 from . import _common
 
+
 @_common.potential_logger
 def single_layer(space, evaluation_points, parameters=None):
     """Return the Laplace single-layer potential operator
@@ -16,13 +17,16 @@ def single_layer(space, evaluation_points, parameters=None):
         Parameters for the operator. If none given
         the default global parameter object
         `bempp.api.global_parameters` is used.
-        
+
     """
 
     import bempp
     from bempp.api.assembly.potential_operator import PotentialOperator
     from bempp.api.assembly.discrete_boundary_operator import GeneralNonlocalDiscreteBoundaryOperator
     from bempp.core.operators.potential.laplace import single_layer_ext
+
+    if space.has_non_barycentric_space:
+        space = space.non_barycentric_space
 
     if parameters is None:
         parameters = bempp.api.global_parameters
@@ -47,13 +51,16 @@ def double_layer(space, evaluation_points, parameters=None):
         Parameters for the operator. If none given
         the default global parameter object
         `bempp.api.global_parameters` is used.
-        
+
     """
 
     import bempp
     from bempp.api.assembly.potential_operator import PotentialOperator
     from bempp.api.assembly.discrete_boundary_operator import GeneralNonlocalDiscreteBoundaryOperator
     from bempp.core.operators.potential.laplace import double_layer_ext
+
+    if space.has_non_barycentric_space:
+        space = space.non_barycentric_space
 
     if parameters is None:
         parameters = bempp.api.global_parameters

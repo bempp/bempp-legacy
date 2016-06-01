@@ -35,14 +35,19 @@ def single_layer(domain, range_, dual_to_range,
     from bempp.core.operators.boundary.modified_helmholtz import single_layer_ext
     from bempp.api.assembly import ElementaryBoundaryOperator
     from bempp.api.assembly.abstract_boundary_operator import ElementaryAbstractIntegralOperator
+    from bempp.api.operators.boundary._common import update_to_non_barycentric_space
+
+    new_domain, new_range_, new_dual_to_range = update_to_non_barycentric_space(
+        domain, range_, dual_to_range)
 
     if parameters is None:
         parameters = bempp.api.global_parameters
 
-    return ElementaryBoundaryOperator( \
-            ElementaryAbstractIntegralOperator(
-        single_layer_ext(parameters, domain._impl, range_._impl,
-                         dual_to_range._impl, wave_number, "", symmetry)),
+    return ElementaryBoundaryOperator(
+        ElementaryAbstractIntegralOperator(
+            single_layer_ext(parameters, new_domain._impl, new_range_._impl,
+                             new_dual_to_range._impl, wave_number, "", symmetry),
+            domain, range_, dual_to_range),
         parameters=parameters, label=label)
 
 
@@ -78,14 +83,19 @@ def double_layer(domain, range_, dual_to_range,
     from bempp.core.operators.boundary.modified_helmholtz import double_layer_ext
     from bempp.api.assembly import ElementaryBoundaryOperator
     from bempp.api.assembly.abstract_boundary_operator import ElementaryAbstractIntegralOperator
+    from bempp.api.operators.boundary._common import update_to_non_barycentric_space
+
+    new_domain, new_range_, new_dual_to_range = update_to_non_barycentric_space(
+        domain, range_, dual_to_range)
 
     if parameters is None:
         parameters = bempp.api.global_parameters
 
-    return ElementaryBoundaryOperator( \
-            ElementaryAbstractIntegralOperator(
-        double_layer_ext(parameters, domain._impl, range_._impl,
-                         dual_to_range._impl, wave_number, "", symmetry)),
+    return ElementaryBoundaryOperator(
+        ElementaryAbstractIntegralOperator(
+            double_layer_ext(parameters, new_domain._impl, new_range_._impl,
+                             new_dual_to_range._impl, wave_number, "", symmetry),
+            domain, range_, dual_to_range),
         parameters=parameters, label=label)
 
 
@@ -121,14 +131,19 @@ def adjoint_double_layer(domain, range_, dual_to_range,
     from bempp.core.operators.boundary.modified_helmholtz import adjoint_double_layer_ext
     from bempp.api.assembly import ElementaryBoundaryOperator
     from bempp.api.assembly.abstract_boundary_operator import ElementaryAbstractIntegralOperator
+    from bempp.api.operators.boundary._common import update_to_non_barycentric_space
+
+    new_domain, new_range_, new_dual_to_range = update_to_non_barycentric_space(
+        domain, range_, dual_to_range)
 
     if parameters is None:
         parameters = bempp.api.global_parameters
 
-    return ElementaryBoundaryOperator( \
-            ElementaryAbstractIntegralOperator(
-        adjoint_double_layer_ext(parameters, domain._impl, range_._impl,
-                                 dual_to_range._impl, wave_number, "", symmetry)),
+    return ElementaryBoundaryOperator(
+        ElementaryAbstractIntegralOperator(
+            adjoint_double_layer_ext(parameters, new_domain._impl, new_range_._impl,
+                                     new_dual_to_range._impl, wave_number, "", symmetry),
+            domain, range_, dual_to_range),
         parameters=parameters, label=label)
 
 
@@ -178,6 +193,10 @@ def hypersingular(domain, range_, dual_to_range, wave_number,
     from bempp.api.assembly import LocalBoundaryOperator
     from bempp.api.assembly.abstract_boundary_operator import ElementaryAbstractIntegralOperator
     from bempp.api.assembly.abstract_boundary_operator import ElementaryAbstractLocalOperator
+    from bempp.api.operators.boundary._common import update_to_non_barycentric_space
+
+    new_domain, new_range_, new_dual_to_range = update_to_non_barycentric_space(
+        domain, range_, dual_to_range)
 
     if parameters is None:
         parameters = bempp.api.global_parameters
@@ -188,17 +207,19 @@ def hypersingular(domain, range_, dual_to_range, wave_number,
         use_slp = False
 
     if not use_slp:
-        return ElementaryBoundaryOperator( \
-                ElementaryAbstractIntegralOperator(
-            hypersingular_ext(parameters, domain._impl, range_._impl,
-                              dual_to_range._impl, wave_number, "", symmetry)),
+        return ElementaryBoundaryOperator(
+            ElementaryAbstractIntegralOperator(
+                hypersingular_ext(parameters, new_domain._impl, new_range_._impl,
+                                  new_dual_to_range._impl, wave_number, "", symmetry),
+                domain, range_, dual_to_range),
             parameters=parameters, label=label)
     else:
 
         if not isinstance(use_slp, BoundaryOperator):
-            new_domain = domain.discontinuous_space
-            new_dual_to_range = dual_to_range.discontinuous_space
-            slp = single_layer(new_domain, range_, new_dual_to_range, wave_number, parameters=parameters)
+            disc_domain = domain.discontinuous_space
+            disc_dual_to_range = dual_to_range.discontinuous_space
+            slp = single_layer(
+                disc_domain, range_, disc_dual_to_range, wave_number, parameters=parameters)
         else:
             slp = use_slp
 
@@ -213,12 +234,18 @@ def hypersingular(domain, range_, dual_to_range, wave_number,
 
         for index in range(3):
             # Definition of range_ does not matter in next operator
-            test_local_op = LocalBoundaryOperator(ElementaryAbstractLocalOperator(curl_value_ext(slp.dual_to_range._impl, range_._impl, dual_to_range._impl, index)),
+            test_local_op = LocalBoundaryOperator(
+                ElementaryAbstractLocalOperator(
+                    curl_value_ext(slp.dual_to_range._impl,
+                                   range_._impl, dual_to_range._impl, index),
+                    slp.dual_to_range, range_, dual_to_range),
                 label='CURL')
             test_local_ops.append(test_local_op)
-            trial_local_ops.append(test_local_op.transpose(range_))  # Range parameter arbitrary
+            trial_local_ops.append(test_local_op.transpose(
+                range_))  # Range parameter arbitrary
 
-        term1 = CompoundBoundaryOperator(test_local_ops, slp, trial_local_ops, label=label + "_term1")
+        term1 = CompoundBoundaryOperator(
+            test_local_ops, slp, trial_local_ops, label=label + "_term1")
 
         test_local_ops = []
         trial_local_ops = []
@@ -226,15 +253,19 @@ def hypersingular(domain, range_, dual_to_range, wave_number,
         for index in range(3):
             # Definition of range_ does not matter in next operator
             test_local_op = LocalBoundaryOperator(ElementaryAbstractLocalOperator(
-                value_times_normal_ext(slp.dual_to_range._impl, range_._impl, dual_to_range._impl, index)),
-                    label='VALUE_TIMES_NORMAL')
+                value_times_normal_ext(
+                    slp.dual_to_range._impl, range_._impl, dual_to_range._impl, index),
+                slp.dual_to_range, range_, dual_to_range),
+                label='VALUE_TIMES_NORMAL')
             test_local_ops.append(test_local_op)
-            trial_local_ops.append(test_local_op.transpose(range_))  # Range parameter arbitrary
+            trial_local_ops.append(test_local_op.transpose(
+                range_))  # Range parameter arbitrary
 
         term2 = (wave_number * wave_number) * CompoundBoundaryOperator(test_local_ops, slp, trial_local_ops,
                                                                        label=label + "_term2")
 
         return term1 + term2
+
 
 def multitrace_operator(grid, wave_number, parameters=None, spaces='linear'):
     """Return the modified Helmholtz multitrace operator.
@@ -260,7 +291,7 @@ def multitrace_operator(grid, wave_number, parameters=None, spaces='linear'):
     """
 
     def op(operator):
-        if operator==hypersingular:
+        if operator == hypersingular:
             def op_impl(domain, range_, dual_to_range, label="HYP", symmetry="no_symmetry",
                         parameters=None, use_slp=False):
                 return hypersingular(domain, range_, dual_to_range, wave_number, label, symmetry, parameters,
@@ -269,6 +300,7 @@ def multitrace_operator(grid, wave_number, parameters=None, spaces='linear'):
         else:
             import inspect
             defaults = inspect.getargspec(operator).defaults
+
             def op_impl(domain, range_, dual_to_range, label=defaults[0], symmetry=defaults[1],
                         parameters=None):
                 return operator(domain, range_, dual_to_range, wave_number, label, symmetry, parameters)
@@ -285,7 +317,7 @@ def single_layer_and_hypersingular_pair(grid, wave_number, parameters=None, spac
     This function creates a pair of a single-layer and a hypersingular
     operator, where both operators are instantiated using a common
     base single-layer operator. Hence, only one single-layer operator
-    needs to be discretized to obtain both operators on the given 
+    needs to be discretized to obtain both operators on the given
     grid.
 
     Parameters
@@ -306,11 +338,11 @@ def single_layer_and_hypersingular_pair(grid, wave_number, parameters=None, spac
         data and piecewise constant space for the Neumann
         data choose 'dual'.
     base_slp : None
-        Specify a base single-layer operator to be used. If 
+        Specify a base single-layer operator to be used. If
         set to None, a base single-layer operator will be
         instantiated by the function.
     return_base_slp : bool
-        If True also return the original large space single layer 
+        If True also return the original large space single layer
         operator from which the hypersingular and slp operator
         are derived. Default is False
 
@@ -326,7 +358,7 @@ def single_layer_and_hypersingular_pair(grid, wave_number, parameters=None, spac
     from bempp.api.operators.boundary import _common
 
     def op(operator):
-        if operator==hypersingular:
+        if operator == hypersingular:
             def op_impl(domain, range_, dual_to_range, label="HYP", symmetry="no_symmetry",
                         parameters=None, use_slp=False):
                 return hypersingular(domain, range_, dual_to_range, wave_number, label, symmetry, parameters,
@@ -335,11 +367,12 @@ def single_layer_and_hypersingular_pair(grid, wave_number, parameters=None, spac
         else:
             import inspect
             defaults = inspect.getargspec(operator).defaults
+
             def op_impl(domain, range_, dual_to_range, label=defaults[0], symmetry=defaults[1],
                         parameters=None):
                 return operator(domain, range_, dual_to_range, wave_number, label, symmetry, parameters)
             return op_impl
 
     ops = _common.slp_and_hyp_impl(
-            grid, op(single_layer), op(hypersingular), parameters, spaces, base_slp, return_base_slp, laplace=False)
+        grid, op(single_layer), op(hypersingular), parameters, spaces, base_slp, return_base_slp, laplace=False)
     return ops

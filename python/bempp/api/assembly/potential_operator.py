@@ -61,7 +61,8 @@ class PotentialOperator:
         elif isinstance(obj, GridFunction):
             return self.evaluate(obj)
         else:
-            raise NotImplementedError("Cannot multiply with object of type {0}".format(str(type(obj))))
+            raise NotImplementedError(
+                "Cannot multiply with object of type {0}".format(str(type(obj))))
 
     def __neg__(self):
 

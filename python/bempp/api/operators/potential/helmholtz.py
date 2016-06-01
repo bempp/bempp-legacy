@@ -1,5 +1,6 @@
 """Definition of single and double layer Helmholtz potential operators."""
 
+
 def single_layer(space, evaluation_points, wave_number, parameters=None):
     """Return the Helmholtz single-layer potential operator
 
@@ -16,12 +17,13 @@ def single_layer(space, evaluation_points, wave_number, parameters=None):
         Parameters for the operator. If none given
         the default global parameter object
         `bempp.api.global_parameters` is used.
-        
+
     """
 
     from .modified_helmholtz import single_layer
 
-    return single_layer(space, evaluation_points, wave_number/(1j), parameters)
+    return single_layer(space, evaluation_points, wave_number / (1j), parameters)
+
 
 def double_layer(space, evaluation_points, wave_number, parameters=None):
     """Return the Helmholtz double-layer potential operator
@@ -39,9 +41,9 @@ def double_layer(space, evaluation_points, wave_number, parameters=None):
         Parameters for the operator. If none given
         the default global parameter object
         `bempp.api.global_parameters` is used.
-        
+
     """
 
     from .modified_helmholtz import double_layer
 
-    return double_layer(space, evaluation_points, wave_number/(1j), parameters)
+    return double_layer(space, evaluation_points, wave_number / (1j), parameters)

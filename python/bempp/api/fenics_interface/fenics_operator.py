@@ -3,6 +3,7 @@ from scipy.sparse import csr_matrix
 
 
 class FenicsOperator(object):
+
     def __init__(self, fenics_weak_form):
         self._fenics_weak_form = fenics_weak_form
         self._sparse_mat = None
@@ -21,7 +22,8 @@ class FenicsOperator(object):
         if parameters['linear_algebra_backend'] == 'PETSc':
             A = as_backend_type(assemble(self._fenics_weak_form)).mat()
             (indptr, indices, data) = A.getValuesCSR()
-            self._sparse_mat = csr_matrix((data, indices, indptr), shape=A.size)
+            self._sparse_mat = csr_matrix(
+                (data, indices, indptr), shape=A.size)
         elif parameters['linear_algebra_backend'] == 'uBLAS':
             self._sparse_mat = assemble(self._fenics_weak_form).sparray()
         else:

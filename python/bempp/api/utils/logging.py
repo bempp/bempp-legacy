@@ -12,12 +12,14 @@ CRITICAL = _logging.CRITICAL
 
 DEFAULT_FORMAT = '%(asctime)s:%(name)s:%(levelname)s: %(message)s'
 
+
 def _init_logger():
 
     logger = _logging.getLogger('BEMPP')
     logger.setLevel(_logging.DEBUG)
     logger.addHandler(_logging.NullHandler())
     return logger
+
 
 def enable_console_logging(level=DEBUG, format=DEFAULT_FORMAT):
     """Enable console logging and return the console handler."""
@@ -29,6 +31,7 @@ def enable_console_logging(level=DEBUG, format=DEFAULT_FORMAT):
     LOGGER.addHandler(ch)
     return ch
 
+
 def enable_file_logging(file_name, level=DEBUG, format=DEFAULT_FORMAT):
     """Enable logging to a specific file."""
 
@@ -39,18 +42,9 @@ def enable_file_logging(file_name, level=DEBUG, format=DEFAULT_FORMAT):
     LOGGER.addHandler(fh)
     return fh
 
+
 def set_logging_level(level):
     """Set the logging level."""
 
     from bempp.api import LOGGER
     LOGGER.setLevel(level)
-
-
-
-
-
-
-
-
-
-

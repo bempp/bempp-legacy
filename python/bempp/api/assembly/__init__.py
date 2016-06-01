@@ -18,6 +18,3 @@ from .blocked_operator import BlockedDiscreteOperator
 from .grid_function import GridFunction
 from .assembler import assemble_dense_block
 from .potential_operator import PotentialOperator
-
-
-

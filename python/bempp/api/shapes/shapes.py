@@ -88,6 +88,7 @@ def __generate_grid_from_geo_string(geo_string):
     os.remove(msh_name)
     return grid
 
+
 def regular_sphere(n):
     """Return a regular sphere."""
 
@@ -167,8 +168,9 @@ def sphere(r=1, origin=(0, 0, 0), h=0.1):
     """Return an sphere grid. """
     return ellipsoid(r1=r, r2=r, r3=r, origin=origin, h=h)
 
+
 def reentrant_cube(h=0.1, refinement_factor=0.2):
-    reentrant_cube_stub="""
+    reentrant_cube_stub = """
     Point(1) = {0, 0, 0, h};
     Point(2) = {1, 0, 0, h};
     Point(3) = {1, 1, 0, h};
@@ -241,7 +243,6 @@ def reentrant_cube(h=0.1, refinement_factor=0.2):
         "h = " + str(h) + ";\n" +
         "r = h * " + str(refinement_factor) + ";\n" + reentrant_cube_stub)
     return __generate_grid_from_geo_string(reentrant_cube_geometry)
-
 
 
 def cube(length=1, origin=(0, 0, 0), h=0.1):

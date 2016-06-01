@@ -6,6 +6,7 @@ import numpy as np
 
 @skipIf(not bempp.api.HAVE_DOLFIN, "Test requires Dolfin")
 class TestP1Coupling(TestCase):
+
     def test_dolfin_p1_identity_equals_bempp_p1_identity(self):
 
         import dolfin
@@ -25,7 +26,8 @@ class TestP1Coupling(TestCase):
 
         from bempp.api.operators.boundary import sparse
 
-        expected = sparse.identity(space, space, space).weak_form().sparse_operator
+        expected = sparse.identity(
+            space, space, space).weak_form().sparse_operator
         diff = actual - expected
         self.assertAlmostEqual(np.max(np.abs(diff.data)), 0)
 

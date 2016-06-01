@@ -16,18 +16,22 @@ class TestGridFunction(TestCase):
 
         n = self._space.global_dof_count
         coefficients = np.ones(n)
-        grid_fun = bempp.api.GridFunction(self._space, coefficients=coefficients)
+        grid_fun = bempp.api.GridFunction(
+            self._space, coefficients=coefficients)
 
-        self.assertAlmostEquals(np.linalg.norm(coefficients - grid_fun.coefficients), 0)
+        self.assertAlmostEquals(np.linalg.norm(
+            coefficients - grid_fun.coefficients), 0)
 
     def test_set_coefficients(self):
         import numpy as np
 
         n = self._space.global_dof_count
         coefficients = np.ones(n)
-        grid_fun = bempp.api.GridFunction(self._space, coefficients=coefficients)
+        grid_fun = bempp.api.GridFunction(
+            self._space, coefficients=coefficients)
         grid_fun.coefficients *= 2
-        self.assertAlmostEquals(np.linalg.norm(2 * coefficients - grid_fun.coefficients), 0)
+        self.assertAlmostEquals(np.linalg.norm(
+            2 * coefficients - grid_fun.coefficients), 0)
 
     def test_initialize_from_real_function(self):
         import numpy as np
@@ -58,19 +62,22 @@ class TestGridFunction(TestCase):
 
         n = self._space.global_dof_count
         coefficients = np.ones(n)
-        identity = bempp.api.operators.boundary.sparse.identity(self._space, self._space, self._space).weak_form()
+        identity = bempp.api.operators.boundary.sparse.identity(
+            self._space, self._space, self._space).weak_form()
         projections = identity * coefficients
 
         grid_fun = bempp.api.GridFunction(self._space, projections=projections)
 
-        self.assertAlmostEquals(np.linalg.norm(coefficients - grid_fun.coefficients), 0)
+        self.assertAlmostEquals(np.linalg.norm(
+            coefficients - grid_fun.coefficients), 0)
 
     def test_add_two_grid_functions(self):
         import numpy as np
 
         n = self._space.global_dof_count
         coefficients = np.ones(n)
-        identity = bempp.api.operators.boundary.sparse.identity(self._space, self._space, self._space).weak_form()
+        identity = bempp.api.operators.boundary.sparse.identity(
+            self._space, self._space, self._space).weak_form()
         projections = identity * coefficients
 
         grid_fun = bempp.api.GridFunction(self._space, projections=projections)
@@ -87,7 +94,8 @@ class TestGridFunction(TestCase):
 
         n = self._space.global_dof_count
         coefficients = np.ones(n)
-        identity = bempp.api.operators.boundary.sparse.identity(self._space, self._space, self._space).weak_form()
+        identity = bempp.api.operators.boundary.sparse.identity(
+            self._space, self._space, self._space).weak_form()
         projections = identity * coefficients
 
         grid_fun = bempp.api.GridFunction(self._space, projections=projections)
@@ -104,14 +112,15 @@ class TestGridFunction(TestCase):
 
         n = self._space.global_dof_count
         coefficients = np.ones(n)
-        identity = bempp.api.operators.boundary.sparse.identity(self._space, self._space, self._space).weak_form()
+        identity = bempp.api.operators.boundary.sparse.identity(
+            self._space, self._space, self._space).weak_form()
         projections = identity * coefficients
 
         grid_fun = bempp.api.GridFunction(self._space, projections=projections)
 
-        grid_fun2 = grid_fun/2
+        grid_fun2 = grid_fun / 2
 
-        expected = grid_fun.coefficients/2
+        expected = grid_fun.coefficients / 2
         actual = grid_fun2.coefficients
 
         self.assertAlmostEquals(np.linalg.norm(expected - actual), 0)
@@ -121,7 +130,8 @@ class TestGridFunction(TestCase):
 
         n = self._space.global_dof_count
         coefficients = np.ones(n)
-        identity = bempp.api.operators.boundary.sparse.identity(self._space, self._space, self._space).weak_form()
+        identity = bempp.api.operators.boundary.sparse.identity(
+            self._space, self._space, self._space).weak_form()
         projections = identity * coefficients
 
         grid_fun = bempp.api.GridFunction(self._space, projections=projections)
@@ -142,9 +152,11 @@ class TestGridFunction(TestCase):
         coefficients = np.ones(n)
         grid_fun = bempp.api.GridFunction(space, coefficients=coefficients)
 
-        ident = bempp.api.operators.boundary.sparse.identity(space, space, space)
+        ident = bempp.api.operators.boundary.sparse.identity(
+            space, space, space)
 
-        expected = np.sqrt(np.dot(coefficients, ident.weak_form() * coefficients))
+        expected = np.sqrt(
+            np.dot(coefficients, ident.weak_form() * coefficients))
         actual = grid_fun.l2_norm()
 
         self.assertAlmostEqual(expected, actual, 9)
@@ -155,7 +167,8 @@ class TestGridFunction(TestCase):
 
         n = self._space.global_dof_count
         coefficients = np.ones(n)
-        grid_fun = bempp.api.GridFunction(self._space, coefficients=coefficients)
+        grid_fun = bempp.api.GridFunction(
+            self._space, coefficients=coefficients)
 
         sum = 0
 
@@ -177,18 +190,20 @@ class TestGridFunction(TestCase):
         def fun(x, n, domain, result):
             result[0] = np.sum(x**2)
 
-        grid_fun = bempp.api.GridFunction(space, fun=fun, parameters=parameters)
+        grid_fun = bempp.api.GridFunction(
+            space, fun=fun, parameters=parameters)
 
         element = elements[0]
         geometry = element.geometry
-        local_coordinate = np.array([[0],[0]])
+        local_coordinate = np.array([[0], [0]])
         global_coordinate = geometry.local2global(local_coordinate)
         normal = geometry.normals(local_coordinate)
-        grad = 2 * global_coordinate[:,0]
+        grad = 2 * global_coordinate[:, 0]
 
-        expected = grad - normal[:,0] * np.dot(grad, normal[:,0])
-        actual = grid_fun.evaluate_surface_gradient(element, local_coordinate)[:, 0]
-        rel_diff = np.linalg.norm(expected-actual)/np.linalg.norm(actual)
+        expected = grad - normal[:, 0] * np.dot(grad, normal[:, 0])
+        actual = grid_fun.evaluate_surface_gradient(
+            element, local_coordinate)[:, 0]
+        rel_diff = np.linalg.norm(expected - actual) / np.linalg.norm(actual)
 
         self.assertAlmostEqual(rel_diff, 0)
 

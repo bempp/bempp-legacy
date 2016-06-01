@@ -12,7 +12,8 @@ def p1_dof_to_vertex_matrix(space):
     for element in grid.leaf_view.entity_iterator(0):
         global_dofs = space.get_global_dofs(element)
         for ind, v in enumerate(element.sub_entity_iterator(2)):
-            vertex_to_dof_map[grid.vertex_insertion_index(v)] = global_dofs[ind]
+            vertex_to_dof_map[grid.vertex_insertion_index(v)] = global_dofs[
+                ind]
 
     vertex_indices = np.arange(vertex_count)
     data = np.ones(vertex_count)
@@ -35,9 +36,10 @@ def p1_trace(fenics_space):
     bm_nodes = bm.entity_map(0).array().astype(np.int64)
     bm_coords = bm.coordinates()
     bm_cells = bm.cells()
-    bempp_boundary_grid = grid_from_element_data(bm_coords.transpose(), bm_cells.transpose())
+    bempp_boundary_grid = grid_from_element_data(
+        bm_coords.transpose(), bm_cells.transpose())
 
-    # First get trace space 
+    # First get trace space
     space = function_space(bempp_boundary_grid, "P", 1)
 
     # Now compute the mapping from BEM++ dofs to FEniCS dofs
@@ -59,7 +61,8 @@ def p1_trace(fenics_space):
         shape=(mesh.num_vertices(), mesh.num_vertices()), dtype='float64').tocsc()
 
     # Get trace matrix by multiplication
-    trace_matrix = bempp_dofs_from_b_vertices * b_vertices_from_vertices * vertices_from_fenics_dofs
+    trace_matrix = bempp_dofs_from_b_vertices * \
+        b_vertices_from_vertices * vertices_from_fenics_dofs
 
     # Now return everything
     return space, trace_matrix

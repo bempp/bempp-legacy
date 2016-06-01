@@ -28,7 +28,8 @@ class TestMaxwell(TestCase):
         mat1 = bempp.api.as_matrix(standard_efie)
         mat2 = bempp.api.as_matrix(compound_efie)
 
-        self.assertAlmostEqual(np.linalg.norm(mat1 - mat2) / np.linalg.norm(mat1), 0)
+        self.assertAlmostEqual(np.linalg.norm(
+            mat1 - mat2) / np.linalg.norm(mat1), 0)
 
 
 if __name__ == "__main__":

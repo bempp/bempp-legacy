@@ -4,6 +4,7 @@ from .entity import Entity as _Entity
 from .grid_view import GridView as _GridView
 from .id_set import IdSet as _IdSet
 
+
 class Grid(object):
     """The basic grid class in BEM++.
 
@@ -21,7 +22,7 @@ class Grid(object):
     --------
     :mod:`bempp.api.shapes`, :func:`bempp.api.grid.import_grid`,
     :class:`bempp.api.grid.GridFactory`
-    
+
     """
 
     def __init__(self, impl):
@@ -127,6 +128,7 @@ class Grid(object):
         """Return an Id set for the grid."""
         return _IdSet(self._impl.id_set)
 
+
 def grid_from_element_data(vertices, elements, domain_indices=[]):
     """Create a grid from a given set of vertices and elements.
 
@@ -159,10 +161,18 @@ def grid_from_element_data(vertices, elements, domain_indices=[]):
     >>> grid = grid_from_element_data(vertices,elements)
 
     """
-
+    from bempp.api import LOGGER
     from bempp.core.grid.grid import grid_from_element_data as grid_fun
-    return Grid(grid_fun(vertices, elements, domain_indices))
-        
+
+    grid = Grid(grid_fun(vertices, elements, domain_indices))
+    LOGGER.info("Created grid with {0} elements, {1} nodes and {2} edges.".format(grid.leaf_view.entity_count(0),
+                                                                                  grid.leaf_view.entity_count(
+                                                                                      2),
+                                                                                  grid.leaf_view.entity_count(1)))
+
+    return grid
+
+
 def structured_grid(lower_left, upper_right, subdivisions, axis="xy"):
     """Create a two dimensional grid by defining the lower left and
     upper right point.
@@ -197,6 +207,12 @@ def structured_grid(lower_left, upper_right, subdivisions, axis="xy"):
 
     # Get a grid along the xy axis
     grid = Grid(grid_fun(lower_left, upper_right, subdivisions))
+    from bempp.api import LOGGER
+    LOGGER.info("Created grid with {0} elements, {1} nodes and {2} edges.".format(grid.leaf_view.entity_count(0),
+                                                                                  grid.leaf_view.entity_count(
+                                                                                      2),
+                                                                                  grid.leaf_view.entity_count(1)))
+
     vertices = grid.leaf_view.vertices
     elements = grid.leaf_view.elements
 
@@ -204,9 +220,8 @@ def structured_grid(lower_left, upper_right, subdivisions, axis="xy"):
         # Nothing to be done
         return grid_from_element_data(vertices, elements)
     elif axis == "xz":
-        return grid_from_element_data(vertices[[0, 2, 1],:], elements)
+        return grid_from_element_data(vertices[[0, 2, 1], :], elements)
     elif axis == "yz":
-        return grid_from_element_data(vertices[[2, 0, 1],:], elements)
+        return grid_from_element_data(vertices[[2, 0, 1], :], elements)
     else:
         raise ValueError("axis parameter must be 'xy', 'xz', or 'yz'.")
-

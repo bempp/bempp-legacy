@@ -2,17 +2,21 @@ from unittest import TestCase
 
 
 class TestAssembler(TestCase):
+
     def setUp(self):
-        import bempp
+        import bempp.api
 
         grid = bempp.api.shapes.regular_sphere(3)
         space = bempp.api.function_space(grid, "P", 1)
         pc_space = bempp.api.function_space(grid, "DP", 0)
         rt_space = bempp.api.function_space(grid, "RT", 0)
 
-        self._real_operator = bempp.api.operators.boundary.laplace.single_layer(space, space, space)
-        self._real_operator_2 = bempp.api.operators.boundary.laplace.single_layer(space, space, pc_space)
-        self._complex_operator = bempp.api.operators.boundary.maxwell.electric_field(rt_space, rt_space, rt_space, 1)
+        self._real_operator = bempp.api.operators.boundary.laplace.single_layer(
+            space, space, space)
+        self._real_operator_2 = bempp.api.operators.boundary.laplace.single_layer(
+            space, space, pc_space)
+        self._complex_operator = bempp.api.operators.boundary.maxwell.electric_field(
+            rt_space, rt_space, rt_space, 1)
 
         self._rows = (5, 10)
         self._cols = (73, 100)
@@ -36,8 +40,8 @@ class TestAssembler(TestCase):
 
         expected = as_matrix(operator.weak_form())
 
-        self.assertEqual(258,actual.shape[0])
-        self.assertEqual(258,actual.shape[1])
+        self.assertEqual(258, actual.shape[0])
+        self.assertEqual(258, actual.shape[1])
         self.assertAlmostEqual(np.linalg.norm(actual - expected), 0)
 
     def test_assemble_complete_dense_real_operator_non_square(self):
@@ -71,7 +75,8 @@ class TestAssembler(TestCase):
         actual = as_matrix(assemble_dense_block(self._real_operator, self._rows, self._cols,
                                                 operator.domain, operator.dual_to_range))
 
-        expected = as_matrix(operator.weak_form())[self._rows[0]:self._rows[1], self._cols[0]:self._cols[1]]
+        expected = as_matrix(operator.weak_form())[self._rows[
+            0]:self._rows[1], self._cols[0]:self._cols[1]]
 
         self.assertAlmostEqual(np.linalg.norm(actual - expected), 0)
 
@@ -103,7 +108,8 @@ class TestAssembler(TestCase):
         actual = as_matrix(assemble_dense_block(self._complex_operator, self._rows, self._cols,
                                                 operator.domain, operator.dual_to_range))
 
-        expected = as_matrix(operator.weak_form())[self._rows[0]:self._rows[1], self._cols[0]:self._cols[1]]
+        expected = as_matrix(operator.weak_form())[self._rows[
+            0]:self._rows[1], self._cols[0]:self._cols[1]]
 
         self.assertAlmostEqual(np.linalg.norm(actual - expected), 0)
 

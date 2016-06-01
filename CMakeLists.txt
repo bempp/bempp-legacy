@@ -62,10 +62,10 @@ endif()
 
 
 # Tests
-if(WITH_TESTS)
-    enable_testing()
-    add_subdirectory(tests)
-endif(WITH_TESTS)
+# if(WITH_TESTS)
+#    enable_testing()
+#    add_subdirectory(tests)
+# endif(WITH_TESTS)
 
 add_subdirectory(lib)
 add_subdirectory(cython)

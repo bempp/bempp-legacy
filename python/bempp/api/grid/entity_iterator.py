@@ -2,6 +2,7 @@
 
 from .entity import Entity as _Entity
 
+
 class EntityIterator(object):
     """Implements iterators over entities."""
 

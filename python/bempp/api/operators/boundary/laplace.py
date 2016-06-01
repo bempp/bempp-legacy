@@ -33,14 +33,19 @@ def single_layer(domain, range_, dual_to_range,
     from bempp.api.assembly import ElementaryBoundaryOperator
     from bempp.api.assembly.boundary_operator import ElementaryBoundaryOperator
     from bempp.api.assembly.abstract_boundary_operator import ElementaryAbstractIntegralOperator
+    from bempp.api.operators.boundary._common import update_to_non_barycentric_space
+
+    new_domain, new_range_, new_dual_to_range = update_to_non_barycentric_space(
+        domain, range_, dual_to_range)
 
     if parameters is None:
         parameters = bempp.api.global_parameters
 
-    return ElementaryBoundaryOperator( \
-            ElementaryAbstractIntegralOperator(
-        single_layer_ext(parameters, domain._impl, range_._impl,
-                         dual_to_range._impl, "", symmetry)),
+    return ElementaryBoundaryOperator(
+        ElementaryAbstractIntegralOperator(
+            single_layer_ext(parameters, new_domain._impl, new_range_._impl,
+                             new_dual_to_range._impl, "", symmetry),
+            domain, range_, dual_to_range),
         parameters=parameters, label=label)
 
 
@@ -73,14 +78,19 @@ def double_layer(domain, range_, dual_to_range,
     from bempp.core.operators.boundary.laplace import double_layer_ext
     from bempp.api.assembly.boundary_operator import ElementaryBoundaryOperator
     from bempp.api.assembly.abstract_boundary_operator import ElementaryAbstractIntegralOperator
+    from bempp.api.operators.boundary._common import update_to_non_barycentric_space
+
+    new_domain, new_range_, new_dual_to_range = update_to_non_barycentric_space(
+        domain, range_, dual_to_range)
 
     if parameters is None:
         parameters = bempp.api.global_parameters
 
-    return ElementaryBoundaryOperator( \
-            ElementaryAbstractIntegralOperator(
-        double_layer_ext(parameters, domain._impl, range_._impl,
-                         dual_to_range._impl, "", symmetry)),
+    return ElementaryBoundaryOperator(
+        ElementaryAbstractIntegralOperator(
+            double_layer_ext(parameters, new_domain._impl, new_range_._impl,
+                             new_dual_to_range._impl, "", symmetry),
+            domain, range_, dual_to_range),
         parameters=parameters, label=label)
 
 
@@ -113,14 +123,19 @@ def adjoint_double_layer(domain, range_, dual_to_range,
     from bempp.core.operators.boundary.laplace import adjoint_double_layer_ext
     from bempp.api.assembly.boundary_operator import ElementaryBoundaryOperator
     from bempp.api.assembly.abstract_boundary_operator import ElementaryAbstractIntegralOperator
+    from bempp.api.operators.boundary._common import update_to_non_barycentric_space
+
+    new_domain, new_range_, new_dual_to_range = update_to_non_barycentric_space(
+        domain, range_, dual_to_range)
 
     if parameters is None:
         parameters = bempp.api.global_parameters
 
-    return ElementaryBoundaryOperator( \
-            ElementaryAbstractIntegralOperator(
-        adjoint_double_layer_ext(parameters, domain._impl, range_._impl,
-                                 dual_to_range._impl, "", symmetry)),
+    return ElementaryBoundaryOperator(
+        ElementaryAbstractIntegralOperator(
+            adjoint_double_layer_ext(parameters, new_domain._impl, new_range_._impl,
+                                     new_dual_to_range._impl, "", symmetry),
+            domain, range_, dual_to_range),
         parameters=parameters, label=label)
 
 
@@ -165,6 +180,10 @@ def hypersingular(domain, range_, dual_to_range,
     from bempp.api.assembly.boundary_operator import ElementaryBoundaryOperator
     from bempp.api.assembly.abstract_boundary_operator import ElementaryAbstractIntegralOperator
     from bempp.api.assembly.abstract_boundary_operator import ElementaryAbstractLocalOperator
+    from bempp.api.operators.boundary._common import update_to_non_barycentric_space
+
+    new_domain, new_range_, new_dual_to_range = update_to_non_barycentric_space(
+        domain, range_, dual_to_range)
 
     if parameters is None:
         parameters = bempp.api.global_parameters
@@ -175,22 +194,25 @@ def hypersingular(domain, range_, dual_to_range,
         use_slp = False
 
     if not use_slp:
-        return ElementaryBoundaryOperator( \
-                ElementaryAbstractIntegralOperator(
-            hypersingular_ext(parameters, domain._impl, range_._impl,
-                              dual_to_range._impl, label, symmetry)),
+        return ElementaryBoundaryOperator(
+            ElementaryAbstractIntegralOperator(
+                hypersingular_ext(parameters, new_domain._impl, new_range_._impl,
+                                  new_dual_to_range._impl, label, symmetry),
+                domain, range_, dual_to_range),
             parameters=parameters, label=label)
     else:
         if not isinstance(use_slp, BoundaryOperator):
-            new_domain = domain.discontinuous_space
-            new_dual_to_range = dual_to_range.discontinuous_space
-            slp = single_layer(new_domain, range_, new_dual_to_range, parameters=parameters)
+            disc_domain = domain.discontinuous_space
+            disc_dual_to_range = dual_to_range.discontinuous_space
+            slp = single_layer(disc_domain, range_,
+                               disc_dual_to_range, parameters=parameters)
         else:
             slp = use_slp
 
         # Test that the spaces are correct.
         if slp.domain != slp.dual_to_range:
-            raise ValueError("'domain' and 'dual_to_range' spaces must be identical for the slp operator.")
+            raise ValueError(
+                "'domain' and 'dual_to_range' spaces must be identical for the slp operator.")
 
         # Now generate the compound operator
 
@@ -202,12 +224,17 @@ def hypersingular(domain, range_, dual_to_range,
 
         for index in range(3):
             # Definition of range_ does not matter in next operator
-            test_local_op = LocalBoundaryOperator(ElementaryAbstractLocalOperator(curl_value_ext(slp.dual_to_range._impl, range_._impl, dual_to_range._impl, index)),
-                                                  label='CURL')
+            test_local_op = LocalBoundaryOperator(
+                ElementaryAbstractLocalOperator(
+                    curl_value_ext(
+                        slp.dual_to_range._impl, range_._impl, dual_to_range._impl, index),
+                    slp.dual_to_range, range_, dual_to_range), label='CURL')
             test_local_ops.append(test_local_op)
-            trial_local_ops.append(test_local_op.transpose(range_))  # Range parameter arbitrary
+            trial_local_ops.append(test_local_op.transpose(
+                range_))  # Range parameter arbitrary
 
         return CompoundBoundaryOperator(test_local_ops, slp, trial_local_ops, label=label)
+
 
 def single_layer_and_hypersingular_pair(grid, parameters=None, spaces='linear', base_slp=None, return_base_slp=False, stabilization_factor=0):
     """Return a pair of hypersingular and single layer operator.
@@ -260,13 +287,12 @@ def single_layer_and_hypersingular_pair(grid, parameters=None, spaces='linear', 
 
     from bempp.api.operators.boundary import _common
     ops = list(_common.slp_and_hyp_impl(
-            grid, single_layer, hypersingular, parameters, spaces, base_slp, return_base_slp, laplace=True))
+        grid, single_layer, hypersingular, parameters, spaces, base_slp, return_base_slp, laplace=True))
     if stabilization_factor != 0:
         from bempp.api.assembly import RankOneBoundaryOperator
         ops[1] += stabilization_factor * RankOneBoundaryOperator(
-                ops[1].domain, ops[1].range, ops[1].dual_to_range)
+            ops[1].domain, ops[1].range, ops[1].dual_to_range)
     return ops
-
 
 
 def multitrace_operator(grid, parameters=None, spaces='linear'):
@@ -292,5 +318,4 @@ def multitrace_operator(grid, parameters=None, spaces='linear'):
 
     from bempp.api.operators.boundary import _common
     return _common.multitrace_operator_impl(
-            grid, single_layer, double_layer, hypersingular, parameters, spaces, laplace=True)
-
+        grid, single_layer, double_layer, hypersingular, parameters, spaces, laplace=True)

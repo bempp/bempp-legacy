@@ -6,7 +6,8 @@ import bempp.api
 class TestBarycentricLinearSpace(TestCase):
     """Test linear spaces on barycentric grids."""
 
-    requiresgmsh = unittest.skipIf(bempp.api.GMSH_PATH is None, reason="Needs GMSH")
+    requiresgmsh = unittest.skipIf(
+        bempp.api.GMSH_PATH is None, reason="Needs GMSH")
 
     def setUp(self):
 
@@ -17,15 +18,18 @@ class TestBarycentricLinearSpace(TestCase):
     @requiresgmsh
     def test_global_dof_count_agrees_with_non_barycentric_space(self):
 
-        self.assertEqual(self._bary_space.global_dof_count, self._space.global_dof_count)
+        self.assertEqual(self._bary_space.global_dof_count,
+                         self._space.global_dof_count)
 
     @requiresgmsh
     def test_mass_matrix_of_barycentric_space_agrees_with_non_barycentric_space(self):
 
         from bempp.api.operators.boundary.sparse import identity
 
-        barycentric_ident = identity(self._bary_space, self._bary_space, self._bary_space).weak_form().sparse_operator
-        ident = identity(self._space, self._space, self._space).weak_form().sparse_operator
+        barycentric_ident = identity(
+            self._bary_space, self._bary_space, self._bary_space).weak_form().sparse_operator
+        ident = identity(self._space, self._space,
+                         self._space).weak_form().sparse_operator
 
         diff = barycentric_ident - ident
 
@@ -43,10 +47,13 @@ class TestBarycentricLinearSpace(TestCase):
         parameters = bempp.api.common.global_parameters()
         parameters.assembly.boundary_operator_assembly_type = 'dense'
 
-        discrete_barycentric_slp = bempp.api.as_matrix(slp(space, space, space, parameters=parameters).weak_form())
-        discrete_slp = bempp.api.as_matrix(slp(bary_space, bary_space, bary_space, parameters=parameters).weak_form())
+        discrete_barycentric_slp = bempp.api.as_matrix(
+            slp(space, space, space, parameters=parameters).weak_form())
+        discrete_slp = bempp.api.as_matrix(
+            slp(bary_space, bary_space, bary_space, parameters=parameters).weak_form())
 
-        diff = np.linalg.norm(discrete_barycentric_slp - discrete_slp, np.inf) / np.linalg.norm(discrete_slp, np.inf)
+        diff = np.linalg.norm(discrete_barycentric_slp - discrete_slp,
+                              np.inf) / np.linalg.norm(discrete_slp, np.inf)
 
         self.assertAlmostEqual(diff, 0, 4)
 
@@ -55,12 +62,13 @@ class TestBarycentricLinearSpace(TestCase):
 
         from bempp.api.operators.boundary.sparse import identity
 
+        disc_space_bary = bempp.api.function_space(self._grid, "B-DP", 1)
+        disc_space = bempp.api.function_space(self._grid, "DP", 1)
 
-
-        barycentric_ident = identity(self._bary_space.discontinuous_space, self._bary_space.discontinuous_space,
-                                     self._bary_space.discontinuous_space).weak_form().sparse_operator
-        ident = identity(self._space.discontinuous_space, self._space.discontinuous_space,
-                         self._space.discontinuous_space).weak_form().sparse_operator
+        barycentric_ident = identity(disc_space_bary, disc_space_bary,
+                                     disc_space_bary).weak_form().sparse_operator
+        ident = identity(disc_space, disc_space,
+                         disc_space).weak_form().sparse_operator
 
         diff = barycentric_ident - ident
 
@@ -72,21 +80,21 @@ class TestBarycentricLinearSpace(TestCase):
 
         import numpy as np
         slp = bempp.api.operators.boundary.laplace.single_layer
-        space = self._space.discontinuous_space
-        bary_space = self._bary_space.discontinuous_space
+        bary_space = bempp.api.function_space(self._grid, "B-DP", 1)
+        space = bempp.api.function_space(self._grid, "DP", 1)
 
         parameters = bempp.api.common.global_parameters()
         parameters.assembly.boundary_operator_assembly_type = 'dense'
 
-        discrete_barycentric_slp = bempp.api.as_matrix(slp(space, space, space, parameters=parameters).weak_form())
-        discrete_slp = bempp.api.as_matrix(slp(bary_space, bary_space, bary_space, parameters=parameters).weak_form())
+        discrete_barycentric_slp = bempp.api.as_matrix(
+            slp(space, space, space, parameters=parameters).weak_form())
+        discrete_slp = bempp.api.as_matrix(
+            slp(bary_space, bary_space, bary_space, parameters=parameters).weak_form())
 
-        diff = np.linalg.norm(discrete_barycentric_slp - discrete_slp, np.inf) / np.linalg.norm(discrete_slp, np.inf)
+        diff = np.linalg.norm(discrete_barycentric_slp - discrete_slp,
+                              np.inf) / np.linalg.norm(discrete_slp, np.inf)
 
         self.assertAlmostEqual(diff, 0, 3)
-
-
-
 
 
 if __name__ == "__main__":

@@ -1,5 +1,6 @@
 """Definition of a Bem++ space object and the associated factory function."""
 
+
 class Space(object):
     """ Space of functions defined on a grid
 
@@ -31,7 +32,7 @@ class Space(object):
             (3xN) matrix of normal directions associated with the interpolation points.
 
     """
-    
+
     def __init__(self, impl):
         self._impl = impl
 
@@ -62,14 +63,12 @@ class Space(object):
 
         from bempp.api.space.shapeset import Shapeset
         return Shapeset(
-                self._impl.shapeset(element._impl))
-
-
+            self._impl.shapeset(element._impl))
 
     def evaluate_local_basis(self, element, local_coordinates,
                              local_coefficients):
         """Evaluate a local basis on a given element."""
-        return self._impl.evaluate_local_basis(element._impl, 
+        return self._impl.evaluate_local_basis(element._impl,
                                                local_coordinates,
                                                local_coefficients)
 
@@ -78,20 +77,21 @@ class Space(object):
 
         import numpy as np
         if np.min(global_dofs) < 0 or np.max(global_dofs) >= self.global_dof_count:
-            raise ValueError("For each dof index i it must hold that 0 <=i < space.global_dof_count")
+            raise ValueError(
+                "For each dof index i it must hold that 0 <=i < space.global_dof_count")
 
         return self._impl.global_to_local_dofs(global_dofs)
 
     def evaluate_surface_gradient(self, element, local_coordinates, local_coefficients):
         """Evaluate the local surface gradient on a given element."""
-       
+
         if self.codomain_dimension > 1:
             raise ValueError("Method only implemented for scalar spaces.")
 
         from bempp.core.space.space import evaluate_local_surface_gradient_ext
-        return evaluate_local_surface_gradient_ext(self._impl, element._impl, 
-                                               local_coordinates,
-                                               local_coefficients)
+        return evaluate_local_surface_gradient_ext(self._impl, element._impl,
+                                                   local_coordinates,
+                                                   local_coefficients)
 
     @property
     def dtype(self):
@@ -127,7 +127,7 @@ class Space(object):
     @property
     def discontinuous_space(self):
         """Return the associated discontinuous scalar space."""
-        return Space(self._impl.discontinuous_space)
+        return self._discontinuous_space
 
     @property
     def global_dof_interpolation_points(self):
@@ -141,9 +141,192 @@ class Space(object):
         """
         return self._impl.global_dof_normals
 
+    @property
+    def has_non_barycentric_space(self):
+        """ Return if the space has an equivalent space that lives on the original grid."""
+        return self._has_non_barycentric_space
+
+    @property
+    def non_barycentric_space(self):
+        return self._non_barycentric_space
+
+    @property
+    def order(self):
+        return self._order
+
+
+class DiscontinuousPolynomialSpace(Space):
+    """Represents a space of discontinuous, polynomial functions."""
+
+    def __init__(self, grid, order, domains=None, closed=True, reference_point_on_segment=True,
+                 element_on_segment=False):
+
+        from bempp.core.space.space import function_space as _function_space
+
+        super(DiscontinuousPolynomialSpace, self).__init__(
+            _function_space(grid._impl, "DP", order, domains, closed,
+                            False, reference_point_on_segment, element_on_segment))
+
+        self._order = order
+        self._has_non_barycentric_space = True
+        self._non_barycentric_space = self
+        self._discontinuous_space = self
+
+
+class BarycentricDiscontinuousPolynomialSpace(Space):
+    """Represents a space of discontinuous, polynomial functions over a barycentric grid."""
+
+    def __init__(self, grid, order):
+
+        from bempp.core.space.space import function_space as _function_space
+
+        super(BarycentricDiscontinuousPolynomialSpace, self).__init__(
+            _function_space(grid._impl, "B-DP", order))
+
+        self._order = order
+        self._has_non_barycentric_space = True
+        self._non_barycentric_space = DiscontinuousPolynomialSpace(grid, order)
+        self._discontinuous_space = DiscontinuousPolynomialSpace(
+            grid.barycentric_grid(), order)
+
+
+class ContinuousPolynomialSpace(Space):
+    """Represents a space of continuous, polynomial functions."""
+
+    def __init__(self, grid, order, domains=None, closed=True, strictly_on_segment=False,
+                 element_on_segment=False):
+
+        from bempp.core.space.space import function_space as _function_space
+
+        super(ContinuousPolynomialSpace, self).__init__(
+            _function_space(grid._impl, "P", order, domains, closed,
+                            strictly_on_segment, True, element_on_segment))
+
+        self._order = order
+        self._has_non_barycentric_space = True
+        self._non_barycentric_space = self
+        self._discontinuous_space = DiscontinuousPolynomialSpace(grid, order)
+
+
+class BarycentricContinuousPolynomialSpace(Space):
+    """Represents a space of continuous, polynomial functions on a barycentric grid."""
+
+    def __init__(self, grid, order):
+
+        from bempp.core.space.space import function_space as _function_space
+
+        super(BarycentricContinuousPolynomialSpace, self).__init__(
+            _function_space(grid._impl, "B-P", order))
+
+        self._order = order
+        self._has_non_barycentric_space = True
+        self._non_barycentric_space = ContinuousPolynomialSpace(grid, order)
+        self._discontinuous_space = DiscontinuousPolynomialSpace(
+            grid.barycentric_grid(), order)
+
+
+class DualSpace(Space):
+    """A space of piecewise constant dual functions over a barycentric grid."""
+
+    def __init__(self, grid):
+
+        from bempp.core.space.space import function_space as _function_space
+
+        super(DualSpace, self).__init__(
+            _function_space(grid._impl, "DUAL", 0))
+
+        self._order = 0
+        self._has_non_barycentric_space = False
+        self._non_barycentric_space = None
+        self._discontinuous_polynomial_space = DiscontinuousPolynomialSpace(
+            grid.barycentric_grid(), 1)
+
+
+class RTSpace(Space):
+    """A space of Raviart-Thomas functions."""
+
+    def __init__(self, grid, domains, closed):
+
+        from bempp.core.space.space import function_space as _function_space
+
+        super(RTSpace, self).__init__(
+            _function_space(grid._impl, "RT", 0, domains, closed))
+
+        self._order = 0
+        self._has_non_barycentric_space = True
+        self._non_barycentric_space = self
+        self._discontinuous_space = DiscontinuousPolynomialSpace(grid, 1)
+
+
+class BarycentricRTSpace(Space):
+    """A space of Raviart-Thomas functions on a barycentric grid."""
+
+    def __init__(self, grid):
+
+        from bempp.core.space.space import function_space as _function_space
+
+        super(BarycentricRTSpace, self).__init__(
+            _function_space(grid._impl, "B-RT", 0))
+
+        self._order = 0
+        self._has_non_barycentric_space = True
+        self._non_barycentric_space = RTSpace(grid, None, True)
+        self._discontinuous_space = DiscontinuousPolynomialSpace(
+            grid.barycentric_grid(), 1)
+
+
+class RWGSpace(Space):
+    """A space of RWG functions."""
+
+    def __init__(self, grid, domains, closed):
+
+        from bempp.core.space.space import function_space as _function_space
+
+        super(RWGSpace, self).__init__(
+            _function_space(grid._impl, "RWG", 0, domains, closed))
+
+        self._order = 0
+        self._has_non_barycentric_space = True
+        self._non_barycentric_space = self
+        self._discontinuous_space = DiscontinuousPolynomialSpace(grid, 1)
+
+
+class BarycentricRWGSpace(Space):
+    """A space of RWG functions on a barycentric grid."""
+
+    def __init__(self, grid):
+
+        from bempp.core.space.space import function_space as _function_space
+
+        super(BarycentricRWGSpace, self).__init__(
+            _function_space(grid._impl, "B-RWG", 0))
+
+        self._order = 0
+        self._has_non_barycentric_space = True
+        self._non_barycentric_space = RWGSpace(grid, None, True)
+        self._discontinuous_space = DiscontinuousPolynomialSpace(
+            grid.barycentric_grid(), 1)
+
+
+class BuffaChristiansenSpace(Space):
+    """A space of Buffa-Christiansen basis functions on a barycentrid grid."""
+
+    def __init__(self, grid):
+
+        from bempp.core.space.space import function_space as _function_space
+
+        super(BuffaChristiansenSpace, self).__init__(_function_space(
+            grid._impl, "BC", 0))
+
+        self._order = 0
+        self._has_non_barycentric_space = True
+        self._non_barycentric_space = None
+        self._discontinuous_space = DiscontinuousPolynomialSpace(
+            grid.barycentric_grid(), 1)
+
 
 def function_space(grid, kind, order, domains=None, closed=True, strictly_on_segment=False,
-        reference_point_on_segment=True, element_on_segment=False):
+                   reference_point_on_segment=True, element_on_segment=False):
     """ Return a space defined over a given grid.
 
     Parameters
@@ -178,7 +361,7 @@ def function_space(grid, kind, order, domains=None, closed=True, strictly_on_seg
         the domains specified (True) or if they are allowed to extend
         past the domains (False). Default is False. This argument is
         only used for scalar continuous spaces.
-    
+
     reference_point_on_segment: bool
         If true only include a dof if its reference point (i.e. the 
         dof position) is part of the segment. This argument is only
@@ -216,10 +399,40 @@ def function_space(grid, kind, order, domains=None, closed=True, strictly_on_seg
     >>> space = function_space(grid,"P",1)
 
     """
-    from types import MethodType
-    from bempp.core.space.space import function_space as _function_space
-    space = Space(_function_space(grid._impl, kind, order, domains, closed, strictly_on_segment,
-        reference_point_on_segment, element_on_segment))
-
-    return space
-
+    if kind == "DP":
+        return DiscontinuousPolynomialSpace(grid, order, domains, closed, reference_point_on_segment,
+                                            element_on_segment)
+    elif kind == "B-DP":
+        return BarycentricDiscontinuousPolynomialSpace(grid, order)
+    elif kind == "P":
+        return ContinuousPolynomialSpace(grid, order, domains, closed, strictly_on_segment,
+                                         element_on_segment)
+    elif kind == "B-P":
+        return BarycentricContinuousPolynomialSpace(grid, order)
+    elif kind == "DUAL":
+        if order > 0:
+            raise ValueError("Only order zero dual spaces supported.")
+        return DualSpace(grid)
+    elif kind == "RT":
+        if order > 0:
+            raise ValueError(
+                "Only order zero Raviart-Thomas spaces supported.")
+        return RTSpace(grid, domains, closed)
+    elif kind == "RWG":
+        if order > 0:
+            raise ValueError("Only order zero RWG spaces supported.")
+        return RWGSpace(grid, domains, closed)
+    elif kind == "B-RT":
+        if order > 0:
+            raise ValueError(
+                "Only order zero Raviart-Thomas functions supported.")
+        return BarycentricRTSpace(grid)
+    elif kind == "B-RWG":
+        if order > 0:
+            raise ValueError("Only order zero RWG functions supported.")
+        return BarycentricRWGSpace(grid)
+    elif kind == "BC":
+        if order > 0:
+            raise ValueError(
+                "Only order zero Buffa-Christiansen functions supported.")
+        return BuffaChristiansenSpace(grid)

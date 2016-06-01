@@ -47,8 +47,10 @@ class TestGridFactory(unittest.TestCase):
             original_element_index = self.n_elements - insertion_index - 1
             corners = elem.geometry.corners
             for i in range(3):
-                original_vertex_index = self.elements[i, original_element_index]
-                self.assertAlmostEqual(np.max(np.abs(corners[:, i] - self.vertices[:, original_vertex_index])), 0, 13)
+                original_vertex_index = self.elements[
+                    i, original_element_index]
+                self.assertAlmostEqual(
+                    np.max(np.abs(corners[:, i] - self.vertices[:, original_vertex_index])), 0, 13)
 
     def test_vertex_insertion_indices(self):
 

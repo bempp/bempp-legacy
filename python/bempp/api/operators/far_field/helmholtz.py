@@ -26,6 +26,9 @@ def single_layer(space, evaluation_points, wave_number, parameters=None):
     from bempp.api.assembly.discrete_boundary_operator import GeneralNonlocalDiscreteBoundaryOperator
     from bempp.core.operators.far_field.helmholtz import single_layer_ext
 
+    if space.has_non_barycentric_space:
+        space = space.non_barycentric_space
+
     if parameters is None:
         parameters = bempp.api.global_parameters
 
@@ -58,6 +61,9 @@ def double_layer(space, evaluation_points, wave_number, parameters=None):
     from bempp.api.assembly.potential_operator import PotentialOperator
     from bempp.api.assembly.discrete_boundary_operator import GeneralNonlocalDiscreteBoundaryOperator
     from bempp.core.operators.far_field.helmholtz import double_layer_ext
+
+    if space.has_non_barycentric_space:
+        space = space.non_barycentric_space
 
     if parameters is None:
         parameters = bempp.api.global_parameters
