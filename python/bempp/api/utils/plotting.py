@@ -1,5 +1,5 @@
 def plot_slice(plot_f, dolfin_function=None, x=None, y=None, z=None, n=(151,151), extent=(-5,5,-5,5),
-                 cmap='coolwarm', filename=None, title=None, show=None):
+                 cmap='coolwarm', filename=None, title=None, show=None, **kwargs):
     """Plots a slice of the function plot_f at a constant x, y or z.
 
     Parameters
@@ -76,7 +76,7 @@ def plot_slice(plot_f, dolfin_function=None, x=None, y=None, z=None, n=(151,151)
 
     plt.imshow(plot_me.reshape(n).T,
                cmap=cmap, origin='lower',
-               extent=extent)
+               extent=extent, **kwargs)
     plt.colorbar()
     if title is None:
         if x is not None:
