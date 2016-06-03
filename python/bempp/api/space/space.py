@@ -24,7 +24,7 @@ class Space(object):
         flat_local_dof_count : int
             Total number of local degrees of freedom.
 
-        global_dof_interpolation_points : np.ndarray 
+        global_dof_interpolation_points : np.ndarray
             (3xN) matrix of global interpolation points for the space,
             where each column is the coordinate of an interpolation point.
 
@@ -319,7 +319,7 @@ class BuffaChristiansenSpace(Space):
             grid._impl, "BC", 0))
 
         self._order = 0
-        self._has_non_barycentric_space = True
+        self._has_non_barycentric_space = False
         self._non_barycentric_space = None
         self._discontinuous_space = DiscontinuousPolynomialSpace(
             grid.barycentric_grid(), 1)
@@ -363,7 +363,7 @@ def function_space(grid, kind, order, domains=None, closed=True, strictly_on_seg
         only used for scalar continuous spaces.
 
     reference_point_on_segment: bool
-        If true only include a dof if its reference point (i.e. the 
+        If true only include a dof if its reference point (i.e. the
         dof position) is part of the segment. This argument is only
         used for discontinuous spaces (default is True).
 
@@ -384,7 +384,7 @@ def function_space(grid, kind, order, domains=None, closed=True, strictly_on_seg
     must be true for discontinuous spaces. For piecewise constant spaces
     neither of these two options has any effect.
 
-    This is a factory function that initializes a space object. To 
+    This is a factory function that initializes a space object. To
     see a detailed help for space objects see the documentation
     of the instantiated object.
 

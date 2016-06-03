@@ -86,6 +86,90 @@ def maxwell_identity(domain, range_, dual_to_range,
     id_op.range_identity_operator = maxwell_identity
     return id_op
 
+def div_times_div(domain, range_, dual_to_range):
+    """Return the weak form of divergence of trial and test functions.
+
+    Parameters
+    ----------
+    domain : bempp.api.space.Space
+        Domain space.
+    range_ : bempp.api.space.Space
+        Range space.
+    dual_to_range : bempp.api.space.Space
+        Dual space to the range space.
+
+    """
+
+    import bempp.api
+    from bempp.core.operators.boundary.sparse import div_times_div_ext
+    from bempp.api.assembly import LocalBoundaryOperator
+    from bempp.api.assembly.abstract_boundary_operator import ElementaryAbstractLocalOperator
+
+    op = LocalBoundaryOperator(
+        ElementaryAbstractLocalOperator(
+            div_times_div_ext(domain._impl, range_._impl,
+                                 dual_to_range._impl),
+            domain, range_, dual_to_range),
+        parameters=bempp.api.global_parameters, label='')
+    op.range_identity_operator = maxwell_identity
+    return op
+
+def grad_times_hcurl_value(domain, range_, dual_to_range):
+    """Return the weak form of divergence of trial and test functions.
+
+    Parameters
+    ----------
+    domain : bempp.api.space.Space
+        Domain space.
+    range_ : bempp.api.space.Space
+        Range space.
+    dual_to_range : bempp.api.space.Space
+        Dual space to the range space.
+
+    """
+
+    import bempp.api
+    from bempp.core.operators.boundary.sparse import grad_times_hcurl_value_ext
+    from bempp.api.assembly import LocalBoundaryOperator
+    from bempp.api.assembly.abstract_boundary_operator import ElementaryAbstractLocalOperator
+
+    op = LocalBoundaryOperator(
+        ElementaryAbstractLocalOperator(
+            grad_times_hcurl_value_ext(domain._impl, range_._impl,
+                                 dual_to_range._impl),
+            domain, range_, dual_to_range),
+        parameters=bempp.api.global_parameters, label='')
+    op.range_identity_operator = maxwell_identity
+    return op
+
+def hcurl_times_hcurl_value(domain, range_, dual_to_range):
+    """Return the weak form of divergence of trial and test functions.
+
+    Parameters
+    ----------
+    domain : bempp.api.space.Space
+        Domain space.
+    range_ : bempp.api.space.Space
+        Range space.
+    dual_to_range : bempp.api.space.Space
+        Dual space to the range space.
+
+    """
+
+    import bempp.api
+    from bempp.core.operators.boundary.sparse import hcurl_times_hcurl_value_ext
+    from bempp.api.assembly import LocalBoundaryOperator
+    from bempp.api.assembly.abstract_boundary_operator import ElementaryAbstractLocalOperator
+
+    op = LocalBoundaryOperator(
+        ElementaryAbstractLocalOperator(
+            hcurl_times_hcurl_value_ext(domain._impl, range_._impl,
+                                 dual_to_range._impl),
+            domain, range_, dual_to_range),
+        parameters=bempp.api.global_parameters, label='')
+    op.range_identity_operator = maxwell_identity
+    return op
+
 
 def laplace_beltrami(domain, range_, dual_to_range,
                      label="LAPLACE_BELTRAMI", symmetry='no_symmetry',

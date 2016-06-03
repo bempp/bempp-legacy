@@ -48,6 +48,18 @@ cdef extern from "bempp/core/operators/boundary/support_operators.hpp" namespace
             shared_ptr[const c_Space[double]]&,
             shared_ptr[const c_Space[double]]&,
             shared_ptr[const c_Space[double]]&)
+    shared_ptr[const c_ElementaryLocalOperator] div_times_div_local_operator(
+            shared_ptr[const c_Space[double]]&,
+            shared_ptr[const c_Space[double]]&,
+            shared_ptr[const c_Space[double]]&)
+    shared_ptr[const c_ElementaryLocalOperator] grad_times_hcurl_value_local_operator(
+            shared_ptr[const c_Space[double]]&,
+            shared_ptr[const c_Space[double]]&,
+            shared_ptr[const c_Space[double]]&)
+    shared_ptr[const c_ElementaryLocalOperator] hcurl_times_hcurl_value_local_operator(
+            shared_ptr[const c_Space[double]]&,
+            shared_ptr[const c_Space[double]]&,
+            shared_ptr[const c_Space[double]]&)
 
 
 
@@ -86,6 +98,16 @@ def maxwell_identity_ext(
         deref(parameters.impl_),domain.impl_, range.impl_, dual_to_range.impl_,
         _convert_to_bytes(label), symmetry_mode(_convert_to_bytes(symmetry))))
     return op
+
+def div_times_div_ext(
+        Space domain,
+        Space range,
+        Space dual_to_range):
+
+    cdef ElementaryLocalOperator op = ElementaryLocalOperator()
+    op.impl_.assign(div_times_div_local_operator(domain.impl_, range.impl_, dual_to_range.impl_))
+    return op
+
 
 def laplace_beltrami_ext(
         ParameterList parameters,
@@ -128,4 +150,16 @@ def div_times_scalar_ext(Space domain, Space range, Space dual_to_range):
 
     cdef ElementaryLocalOperator op = ElementaryLocalOperator()
     op.impl_.assign(div_times_scalar_local_operator(domain.impl_, range.impl_, dual_to_range.impl_))
+    return op
+
+def grad_times_hcurl_value_ext(Space domain, Space range, Space dual_to_range):
+
+    cdef ElementaryLocalOperator op = ElementaryLocalOperator()
+    op.impl_.assign(grad_times_hcurl_value_local_operator(domain.impl_, range.impl_, dual_to_range.impl_))
+    return op
+
+def hcurl_times_hcurl_value_ext(Space domain, Space range, Space dual_to_range):
+
+    cdef ElementaryLocalOperator op = ElementaryLocalOperator()
+    op.impl_.assign(hcurl_times_hcurl_value_local_operator(domain.impl_, range.impl_, dual_to_range.impl_))
     return op
