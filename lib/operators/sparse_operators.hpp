@@ -28,7 +28,6 @@
 #include "../assembly/general_elementary_local_operator.hpp"
 #include "../operators/abstract_identity_operator.hpp"
 #include "../operators/abstract_maxwell_identity_operator.hpp"
-#include "../operators/abstract_hdiv_div_div_operator.hpp"
 #include "../common/boost_make_shared_fwd.hpp"
 #include "../fiber/default_collection_of_basis_transformations.hpp"
 #include "../fiber/default_test_trial_integral_imp.hpp"
@@ -73,22 +72,6 @@ maxwellIdentityOperator(
 
     return shared_ptr<const ElementaryLocalOperator<BasisFunctionType,ResultType>>
         (new AbstractMaxwellIdentityOperator<BasisFunctionType,ResultType>(
-                                 domain, range, dualToRange, label, symmetry));
-
-}
-
-template <typename BasisFunctionType, typename ResultType>
-shared_ptr<const ElementaryLocalOperator<BasisFunctionType,ResultType>>
-hdivDivDivOperator(
-    const ParameterList &parameterList,
-    const shared_ptr<const Space<BasisFunctionType>> &domain,
-    const shared_ptr<const Space<BasisFunctionType>> &range,
-    const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
-    const std::string &label = "", int symmetry = NO_SYMMETRY)
-{
-
-    return shared_ptr<const ElementaryLocalOperator<BasisFunctionType,ResultType>>
-        (new AbstractHdivDivDivOperator<BasisFunctionType,ResultType>(
                                  domain, range, dualToRange, label, symmetry));
 
 }
