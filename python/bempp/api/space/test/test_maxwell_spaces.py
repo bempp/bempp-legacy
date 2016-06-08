@@ -51,6 +51,25 @@ class TestMaxwellSpaces(TestCase):
         max_diff = np.max(np.abs((mat_ident_rwg - mat_ident_rwg_b).data))
         self.assertAlmostEqual(max_diff, 0)
 
+    @requiresgmsh
+    def test_nedelec_space_and_rotated_rt_space_agree(self):
+
+        import numpy as np
+
+        space_nc = bempp.api.function_space(self._grid, "NC", 0)
+        space_rt = bempp.api.function_space(self._grid, "RT", 0)
+
+        ident_nc = bempp.api.operators.boundary.sparse.identity(
+            space_nc, space_nc, space_nc)
+        ident_rt = bempp.api.operators.boundary.sparse.maxwell_identity(
+            space_nc, space_nc, space_rt)
+
+        m_nc = bempp.api.as_matrix(ident_nc.weak_form())
+        m_rt = bempp.api.as_matrix(ident_rt.weak_form())
+        max_diff = np.max(np.abs((m_nc - m_rt).data))
+        self.assertAlmostEqual(max_diff, 0)
+
+
 if __name__ == "__main__":
     from unittest import main
 

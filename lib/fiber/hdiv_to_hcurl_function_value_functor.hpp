@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_hcurl_function_value_functor_hpp
-#define fiber_hcurl_function_value_functor_hpp
+#ifndef fiber_hdiv_to_hcurl_function_value_functor_hpp
+#define fiber_hdiv_to_hcurl_hcurl_function_value_functor_hpp
 
 #include "../common/common.hpp"
 
@@ -30,7 +30,7 @@
 
 namespace Fiber {
 
-template <typename CoordinateType_> class HcurlFunctionValueElementaryFunctor {
+template <typename CoordinateType_> class HdvivToHcurlFunctionValueElementaryFunctor {
 public:
   typedef CoordinateType_ CoordinateType;
 
@@ -39,7 +39,7 @@ public:
 
   void addDependencies(size_t &basisDeps, size_t &geomDeps) const {
     basisDeps |= VALUES;
-    geomDeps |= JACOBIAN_INVERSES_TRANSPOSED;
+    geomDeps |= INTEGRATION_ELEMENTS | JACOBIANS_TRANSPOSED | NORMALS;
   }
 
   template <typename ValueType>
@@ -48,11 +48,17 @@ public:
                 _1dSliceOf3dArray<ValueType> &result) const {
     assert(basisData.componentCount() == argumentDimension());
     assert(result.extent(0) == resultDimension());
-
+    boost::array<ValueType, 3> piola; // Value of function after Piola transform
     for (int rdim = 0; rdim < resultDimension(); ++rdim)
-      result(rdim) =
-          (geomData.jacobianInverseTransposed(rdim, 0) * basisData.values(0) +
-           geomData.jacobianInverseTransposed(rdim, 1) * basisData.values(1));
+      piola[rdim] =
+          (geomData.jacobianTransposed(0, rdim) * basisData.values(0) +
+           geomData.jacobianTransposed(1, rdim) * basisData.values(1)) /
+          geomData.integrationElement();
+    // Now take the cross product with the normal direction
+
+    result(0) = piola[1] * geomData.normal(2) - piola[2] * geomData.normal(1);
+    result(1) = piola[2] * geomData.normal(0) - piola[0] * geomData.normal(2);
+    result(2) = piola[0] * geomData.normal(1) - piola[1] * geomData.normal(0);
   }
 
 };
@@ -61,9 +67,9 @@ public:
 /** \ingroup functors
  *  \brief Functor calculating the value of a basis function from H(div). */
 template <typename CoordinateType_>
-class HcurlFunctionValueFunctor
+class HdivToHcurlFunctionValueFunctor
     : public ElementaryShapeTransformationFunctorWrapper<
-          HcurlFunctionValueElementaryFunctor<CoordinateType_>> {
+          HdivToHcurlFunctionValueElementaryFunctor<CoordinateType_>> {
 public:
   typedef CoordinateType_ CoordinateType;
 };

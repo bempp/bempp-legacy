@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_nedelec_1_shapeset_barycentric_hpp
-#define fiber_nedelec_1_shapeset_barycentric_hpp
+#ifndef fiber_nedelec_0_shapeset_barycentric_hpp
+#define fiber_nedelec_0_shapeset_barycentric_hpp
 
 #include "basis.hpp"
 #include "basis_data.hpp"
@@ -28,13 +28,13 @@
 namespace Fiber {
 
 template <typename ValueType>
-class Nedelec1ShapesetBarycentric : public Basis<ValueType> {
+class Nedelec0ShapesetBarycentric : public Basis<ValueType> {
 public:
   typedef typename Basis<ValueType>::CoordinateType CoordinateType;
   enum BasisType { TYPE1, TYPE2 };
 
 public:
-  Nedelec1ShapesetBarycentric(BasisType type) : m_type(type){}
+  Nedelec0ShapesetBarycentric(BasisType type) : m_type(type){}
 
   virtual int size() const { return 3; }
 
@@ -52,8 +52,8 @@ public:
         data.values.set_size(temp.values.extent(0),temp.values.extent(1),temp.values.extent(2));
         for (int i=0; i!=temp.values.extent(1); ++i)
           for (int j=0; j!=temp.values.extent(2); ++j) {
-            data.values(0,i,j) = temp.values(1,i,j);
-            data.values(1,i,j) = -temp.values(0,i,j);
+            data.values(0,i,j) = -temp.values(1,i,j);
+            data.values(1,i,j) = temp.values(0,i,j);
           }
     }
     if (what & DERIVATIVES) {
@@ -64,8 +64,8 @@ public:
         for (int i=0; i!=temp.derivatives.extent(1); ++i)
           for (int j=0; j!=temp.derivatives.extent(2); ++j)
             for (int k=0; k!=temp.derivatives.extent(3); ++k) {
-              data.derivatives(0,i,j,k) = temp.derivatives(1,i,j,k);
-              data.derivatives(1,i,j,k) = -temp.derivatives(0,i,j,k);
+              data.derivatives(0,i,j,k) = -temp.derivatives(1,i,j,k);
+              data.derivatives(1,i,j,k) = temp.derivatives(0,i,j,k);
             }
     }
 
@@ -73,7 +73,7 @@ public:
 
   virtual std::pair<const char *, int> clCodeString(bool isTestBasis) const {
     throw std::runtime_error(
-        "Nedelec1BasisBarycentric::clCodeString():"
+        "Nedelec0BasisBarycentric::clCodeString():"
         "OpenCL not supported for this basis type.");
   }
 
@@ -87,4 +87,3 @@ private:
 } // namespace Fiber
 
 #endif
-

@@ -257,6 +257,20 @@ class RTSpace(Space):
         self._non_barycentric_space = self
         self._discontinuous_space = DiscontinuousPolynomialSpace(grid, 1)
 
+class NCSpace(Space):
+    """A space of Nedelec functions."""
+
+    def __init__(self, grid, domains, closed):
+
+        from bempp.core.space.space import function_space as _function_space
+
+        super(NCSpace, self).__init__(
+            _function_space(grid._impl, "NC", 0, domains, closed))
+
+        self._order = 0
+        self._has_non_barycentric_space = True
+        self._non_barycentric_space = self
+        self._discontinuous_space = DiscontinuousPolynomialSpace(grid, 1)
 
 class BarycentricRTSpace(Space):
     """A space of Raviart-Thomas functions on a barycentric grid."""
@@ -271,6 +285,22 @@ class BarycentricRTSpace(Space):
         self._order = 0
         self._has_non_barycentric_space = True
         self._non_barycentric_space = RTSpace(grid, None, True)
+        self._discontinuous_space = DiscontinuousPolynomialSpace(
+            grid.barycentric_grid(), 1)
+
+class BarycentricNCSpace(Space):
+    """A space of Nedelec functions on a barycentric grid."""
+
+    def __init__(self, grid):
+
+        from bempp.core.space.space import function_space as _function_space
+
+        super(BarycentricNCSpace, self).__init__(
+            _function_space(grid._impl, "B-RT", 0))
+
+        self._order = 0
+        self._has_non_barycentric_space = True
+        self._non_barycentric_space = NCSpace(grid, None, True)
         self._discontinuous_space = DiscontinuousPolynomialSpace(
             grid.barycentric_grid(), 1)
 
@@ -337,12 +367,20 @@ def function_space(grid, kind, order, domains=None, closed=True, strictly_on_seg
     kind : string
         The type of space. Currently, the following types
         are supported:
-        "P" : Continuous and piecewise polynomial functions.
-        "DP" : Discontinuous and elementwise polynomial functions.
-        "B-P": Polynomial spaces on barycentric grids.
-        "B-DP": Polynomial discontinuous spaces on barycentric grids.
-        "DUAL": Dual space on dual grid (only implemented for constants).
-        "RT": Raviart-Thomas Vector spaces.
+            "P" : Continuous and piecewise polynomial functions.
+            "DP" : Discontinuous and elementwise polynomial functions.
+            "RT": Raviart-Thomas Vector spaces.
+            "RWG": RWG Vector spaces.
+            "NC": Nedelec Vector spaces.
+
+            "B-P": Polynomial spaces on barycentric grids.
+            "B-DP": Polynomial discontinuous spaces on barycentric grids.
+            "B-RT": Raviart-Thomas Vector spaces on barycentric grids.
+            "B-RWG": RWG Vector spaces on barycentric grids.
+            "B-NC": Nedelec Vector spaces on barycentric grids.
+
+            "DUAL": Dual space on dual grid (only implemented for constants).
+            "BC": Buffa-Christian Vector space.
 
     order : int
         The order of the space, e.g. 0 for piecewise const, 1 for
@@ -418,6 +456,11 @@ def function_space(grid, kind, order, domains=None, closed=True, strictly_on_seg
             raise ValueError(
                 "Only order zero Raviart-Thomas spaces supported.")
         return RTSpace(grid, domains, closed)
+    elif kind == "NC":
+        if order > 0:
+            raise ValueError(
+                "Only order zero Nedelec spaces supported.")
+        return NCSpace(grid, domains, closed)
     elif kind == "RWG":
         if order > 0:
             raise ValueError("Only order zero RWG spaces supported.")
@@ -427,6 +470,12 @@ def function_space(grid, kind, order, domains=None, closed=True, strictly_on_seg
             raise ValueError(
                 "Only order zero Raviart-Thomas functions supported.")
         return BarycentricRTSpace(grid)
+    elif kind == "B-NC":
+        if order > 0:
+            raise ValueError(
+                "Only order zero Nedelec functions supported.")
+        return BarycentricNCSpace(grid)
+
     elif kind == "B-RWG":
         if order > 0:
             raise ValueError("Only order zero RWG functions supported.")
