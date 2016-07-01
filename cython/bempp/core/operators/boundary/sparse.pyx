@@ -60,6 +60,10 @@ cdef extern from "bempp/core/operators/boundary/support_operators.hpp" namespace
             shared_ptr[const c_Space[double]]&,
             shared_ptr[const c_Space[double]]&,
             shared_ptr[const c_Space[double]]&)
+    shared_ptr[const c_ElementaryLocalOperator] hcurl_curl_times_curl_local_operator(
+            shared_ptr[const c_Space[double]]&,
+            shared_ptr[const c_Space[double]]&,
+            shared_ptr[const c_Space[double]]&)
 
 
 
@@ -162,4 +166,10 @@ def hcurl_times_hcurl_value_ext(Space domain, Space range, Space dual_to_range):
 
     cdef ElementaryLocalOperator op = ElementaryLocalOperator()
     op.impl_.assign(hcurl_times_hcurl_value_local_operator(domain.impl_, range.impl_, dual_to_range.impl_))
+    return op
+
+def hcurl_curl_times_curl_ext(Space domain, Space range, Space dual_to_range):
+
+    cdef ElementaryLocalOperator op = ElementaryLocalOperator()
+    op.impl_.assign(hcurl_curl_times_curl_local_operator(domain.impl_, range.impl_, dual_to_range.impl_))
     return op

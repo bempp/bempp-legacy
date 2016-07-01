@@ -18,10 +18,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_hcurl_function_value_functor_hpp
-#define fiber_hcurl_function_value_functor_hpp
+#ifndef fiber_hcurl_surface_curl_functor_hpp
+#define fiber_hcurl_surface_curl_functor_hpp
 
 #include "../common/common.hpp"
+#include "../common/eigen_support.hpp"
 
 #include "basis_data.hpp"
 #include "geometrical_data.hpp"
@@ -38,7 +39,7 @@ public:
   int resultDimension() const { return 1; }
 
   void addDependencies(size_t &basisDeps, size_t &geomDeps) const {
-    basisDeps |= VALUES;
+    basisDeps |= DERIVATIVES;
     geomDeps |= JACOBIAN_INVERSES_TRANSPOSED | NORMALS;
   }
 
@@ -49,13 +50,13 @@ public:
     assert(basisData.componentCount() == argumentDimension());
     assert(result.extent(0) == resultDimension());
 
-    int cdim = resultDimension();
-    int mydim = argumentDimension();
+    const int cdim = 3;
+    const int mydim = 2;
 
     Eigen::Matrix<CoordinateType, cdim, mydim> jacobianInverseTransposed;
-    Eigen::Matrix<CoordinateType, mydim, mydim> referenceDerivative;
-    Eigen::Matrix<CoordinateType, cdim, cdim> derivative;
-    Eigen::Vector<CoordinateType, cdim> curlValue;
+    Eigen::Matrix<ValueType, mydim, mydim> referenceDerivative;
+    Eigen::Matrix<ValueType, cdim, cdim> derivative;
+    Eigen::Matrix<ValueType, cdim, 1> curlValue;
 
     for (int i = 0; i < cdim; ++i)
         for (int j = 0; j < mydim; ++j)
@@ -63,7 +64,7 @@ public:
     
     for (int i = 0; i < mydim; ++i)
         for (int j = 0; j < mydim; ++j)
-            referenceDerivative(i, j) = basisData.derivative(i, j);
+            referenceDerivative(i, j) = basisData.derivatives(i, j);
 
     derivative = jacobianInverseTransposed * referenceDerivative * jacobianInverseTransposed.transpose();
 

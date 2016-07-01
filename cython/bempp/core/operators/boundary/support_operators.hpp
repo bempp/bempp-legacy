@@ -17,6 +17,7 @@
 #include "bempp/fiber/surface_div_3d_functor.hpp"
 #include "bempp/fiber/surface_grad_3d_functor.hpp"
 #include "bempp/fiber/hcurl_function_value_functor.hpp"
+#include "bempp/fiber/hcurl_surface_curl_functor.hpp"
 #include "bempp/operators/laplace_operators.hpp"
 
 namespace Bempp {
@@ -142,6 +143,22 @@ hcurl_times_hcurl_value_local_operator(const shared_ptr<const Space<double>> &do
   return shared_ptr<const ElementaryLocalOperator<double, double>>(
       new LocalOp(domain, range, dualToRange, "", NO_SYMMETRY, HcurlValueFunctor(),
                   HcurlValueFunctor(), IntegrandFunctor()));
+}
+
+inline shared_ptr<const ElementaryLocalOperator<double, double>>
+hcurl_curl_times_curl_local_operator(const shared_ptr<const Space<double>> &domain,
+                          const shared_ptr<const Space<double>> &range,
+                          const shared_ptr<const Space<double>> &dualToRange) {
+
+  typedef Fiber::HcurlSurfaceCurlFunctor<double> HcurlSurfaceCurlFunctor;
+  typedef Fiber::SimpleTestTrialIntegrandFunctor<double, double>
+      IntegrandFunctor;
+
+  typedef GeneralElementaryLocalOperator<double, double> LocalOp;
+
+  return shared_ptr<const ElementaryLocalOperator<double, double>>(
+      new LocalOp(domain, range, dualToRange, "", NO_SYMMETRY, HcurlSurfaceCurlFunctor(),
+                  HcurlSurfaceCurlFunctor(), IntegrandFunctor()));
 }
 
 

@@ -170,6 +170,33 @@ def hcurl_times_hcurl_value(domain, range_, dual_to_range):
     op.range_identity_operator = maxwell_identity
     return op
 
+def curl_times_curl_value(domain, range_, dual_to_range):
+    """Return the weak form of the curl of trial and test functions.
+
+    Parameters
+    ----------
+    domain : bempp.api.space.Space
+        Domain space.
+    range_ : bempp.api.space.Space
+        Range space.
+    dual_to_range : bempp.api.space.Space
+        Dual space to the range space.
+
+    """
+
+    import bempp.api
+    from bempp.core.operators.boundary.sparse import hcurl_curl_times_curl_ext
+    from bempp.api.assembly import LocalBoundaryOperator
+    from bempp.api.assembly.abstract_boundary_operator import ElementaryAbstractLocalOperator
+
+    op = LocalBoundaryOperator(
+        ElementaryAbstractLocalOperator(
+            hcurl_curl_times_curl_ext(domain._impl, range_._impl,
+                                 dual_to_range._impl),
+            domain, range_, dual_to_range),
+        parameters=bempp.api.global_parameters, label='')
+    op.range_identity_operator = maxwell_identity
+    return op
 
 def laplace_beltrami(domain, range_, dual_to_range,
                      label="LAPLACE_BELTRAMI", symmetry='no_symmetry',

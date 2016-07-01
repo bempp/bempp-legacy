@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_hcurl_surface_curl_functor_hpp
-#define fiber_hcurl_surface_curl_functor_hpp
+#ifndef fiber_hcurl_function_value_functor_hpp
+#define fiber_hcurl_function_value_functor_hpp
 
 #include "../common/common.hpp"
 
