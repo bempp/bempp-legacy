@@ -3,9 +3,13 @@ from bempp.core.utils cimport shared_ptr
 from bempp.core.utils cimport complex_double
 from bempp.core.utils cimport c_ParameterList
 from bempp.core.space cimport c_Space
+from bempp.core.fiber.shape_transformation_functors cimport c_ShapeTransformationFunctorContainer
+from bempp.core.fiber.local_integrand_functors cimport c_LocalIntegrandFunctorContainer
 from .discrete_boundary_operator cimport c_DiscreteBoundaryOperator
 from .assembler cimport c_LocalAssemblerForIntegralOperators
 from .assembler cimport c_LocalAssemblerForLocalOperators
+from bempp.core.utils.enum_types cimport SymmetryMode, symmetry_mode
+from libcpp.string cimport string
 
 
 cdef extern from "bempp/assembly/elementary_integral_operator.hpp" namespace "Bempp":
@@ -31,7 +35,15 @@ cdef extern from "bempp/assembly/elementary_local_operator.hpp" namespace "Bempp
         shared_ptr[const c_Space[double]] range()
         shared_ptr[const c_Space[double]] dualToRange()
 
-
+cdef extern from "bempp/core/assembly/assembly_from_functors.hpp" namespace "Bempp":
+    cdef shared_ptr[const c_ElementaryLocalOperator] c_abstract_local_operator_from_functors "abstract_local_operator_from_functors"(
+        shared_ptr[const c_Space[double]]&,
+        shared_ptr[const c_Space[double]]&,
+        shared_ptr[const c_Space[double]]&,
+        string, SymmetryMode,
+        const c_ShapeTransformationFunctorContainer&,
+        const c_ShapeTransformationFunctorContainer&,
+        const c_LocalIntegrandFunctorContainer&)
 
 cdef class RealElementaryIntegralOperator:
     cdef shared_ptr[const c_RealElementaryIntegralOperator] impl_

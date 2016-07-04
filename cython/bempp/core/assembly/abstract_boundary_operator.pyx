@@ -2,13 +2,16 @@ from cython.operator cimport dereference as deref
 from .discrete_boundary_operator cimport RealDiscreteBoundaryOperator
 from .discrete_boundary_operator cimport ComplexDiscreteBoundaryOperator
 from bempp.core.utils.parameter_list cimport ParameterList
+from bempp.core.utils import _convert_to_bytes
 from bempp.core.space.space cimport Space
 from .assembler cimport c_LocalAssemblerForIntegralOperators
 from .assembler cimport c_LocalAssemblerForLocalOperators
 from .assembler cimport RealIntegralOperatorLocalAssembler
 from .assembler cimport ComplexIntegralOperatorLocalAssembler
 from .assembler cimport LocalOperatorLocalAssembler
-
+from bempp.core.utils.enum_types cimport SymmetryMode, symmetry_mode
+from bempp.core.fiber.shape_transformation_functors cimport ShapeTransformationFunctorContainerExt
+from bempp.core.fiber.local_integrand_functors cimport LocalIntegrandFunctorContainerExt
 
 
 cdef class RealElementaryIntegralOperator:
@@ -127,4 +130,26 @@ cdef class ElementaryLocalOperator:
             cdef Space space = Space()
             space.impl_ = deref(self.impl_).dualToRange()
             return space
+
+def abstract_local_operator_from_functors_ext(Space domain, Space range_, Space dual_to_range,
+        ShapeTransformationFunctorContainerExt test_functor,
+        ShapeTransformationFunctorContainerExt trial_functor,
+        LocalIntegrandFunctorContainerExt integrand_functor,
+        object label='', object symmetry='no_symmetry'):
+
+    cdef ElementaryLocalOperator op = ElementaryLocalOperator()
+
+    op.impl_.assign(
+            c_abstract_local_operator_from_functors(
+                domain.impl_,
+                range_.impl_,
+                dual_to_range.impl_,
+                _convert_to_bytes(label),
+                symmetry_mode(_convert_to_bytes(symmetry)),
+                deref(test_functor.impl_),
+                deref(trial_functor.impl_),
+                deref(integrand_functor.impl_)))
+    return op
+
+
 

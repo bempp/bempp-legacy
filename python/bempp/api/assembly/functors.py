@@ -29,7 +29,7 @@ class LocalIntegrandFunctorContainer(object):
         self._impl = impl
 
 
-def scalarFunctionValueFunctor():
+def scalar_function_value_functor():
 
     from bempp.core.fiber.shape_transformation_functors import ShapeTransformationFunctorContainerExt
     from bempp.core.fiber.shape_transformation_functors import scalarFunctionValueFunctorExt
@@ -39,13 +39,13 @@ def scalarFunctionValueFunctor():
 
 
 
-def simpleTestTrialIntegrandFunctor():
+def simple_test_trial_integrand_functor():
 
     from bempp.core.fiber.local_integrand_functors import LocalIntegrandFunctorContainerExt
     from bempp.core.fiber.local_integrand_functors import simpleTestTrialIntegrandFunctorExt
 
     return LocalIntegrandFunctorContainer(
-            simpleTestTrialIntegrandFunctorExt)
+            simpleTestTrialIntegrandFunctorExt())
 
 
 

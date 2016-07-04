@@ -98,13 +98,26 @@ class ShapeTransformationFunctorContainer
 
         }
 
-        void evaluate(const ConstBasisDataSlice<double> &basisData,
+        inline void evaluate(const ConstBasisDataSlice<double> &basisData,
                       const ConstGeometricalDataSlice<double> &geomData,
                       CollectionOf1dSlicesOf3dArrays<double> &result) const {
 
             m_functor->evaluate(basisData, geomData, result);
 
         }
+
+        inline void evaluate(const ConstBasisDataSlice<std::complex<double>> &basisData,
+                      const ConstGeometricalDataSlice<double> &geomData,
+                      CollectionOf1dSlicesOf3dArrays<std::complex<double>> &result) const {
+            // Only necessary because CollectionOfShapeTransformations always wants to
+            // implement evaluate for complex types.
+
+            throw std::runtime_error("ShapeTransformationFunctorContainer:evaluate(): "
+                                     "Not implemented for complex types.");
+
+        }
+
+       
 
     private:
 

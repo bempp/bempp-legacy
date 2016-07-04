@@ -145,4 +145,6 @@ private:
 
 } // namespace Bempp
 
+#include "general_elementary_local_operator_imp.hpp"
+
 #endif

@@ -3,6 +3,7 @@ set(headers assembler.pxd
             discrete_boundary_operator.pxd
             discrete_operator_conversion.hpp
             function_projector.hpp
+            assembly_from_functors.hpp
             __init__.pxd
             )
 

@@ -2,6 +2,28 @@
 
 """Definition of sparse boundary operators."""
 
+def operator_from_functors(domain, range_, dual_to_range,
+        test_functor, trial_functor, integrand_functor,
+        label='', symmetry='no_symmetry', parameters=None):
+
+    import bempp.api
+    from bempp.core.assembly.abstract_boundary_operator import abstract_local_operator_from_functors_ext
+    from bempp.api.assembly import LocalBoundaryOperator
+    from bempp.api.assembly.abstract_boundary_operator import ElementaryAbstractLocalOperator
+
+    if parameters is None:
+        parameters = bempp.api.global_parameters
+
+    return LocalBoundaryOperator(
+        ElementaryAbstractLocalOperator(
+            abstract_local_operator_from_functors_ext(
+                domain._impl, range_._impl,
+                dual_to_range._impl, 
+                test_functor._impl, trial_functor._impl, 
+                integrand_functor._impl, label, symmetry),
+            domain, range_, dual_to_range),
+        parameters=parameters, label=label)
+
 
 def identity(domain, range_, dual_to_range,
              label="IDENTITY", symmetry='no_symmetry',

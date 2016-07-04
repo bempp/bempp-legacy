@@ -18,7 +18,7 @@ class LocalIntegrandFunctorBase
 
         inline virtual ~LocalIntegrandFunctorBase() {};
 
-        virtual void evaluate(const ConstGeometricalDataSlice<double> &geomData,
+        virtual double evaluate(const ConstGeometricalDataSlice<double> &geomData,
                       const CollectionOf1dSlicesOfConst3dArrays<double>& testValues,
                       const CollectionOf1dSlicesOfConst3dArrays<double>& trialValues)
             const = 0;
@@ -43,12 +43,12 @@ class ConcreteLocalIntegrandFunctor :
             m_functor.addGeometricalDependencies(geomDeps);
         }
 
-        void evaluate(const ConstGeometricalDataSlice<double> &geomData,
+        double evaluate(const ConstGeometricalDataSlice<double> &geomData,
                       const CollectionOf1dSlicesOfConst3dArrays<double>& testValues,
                       const CollectionOf1dSlicesOfConst3dArrays<double>& trialValues)
             const override {
 
-                m_functor.evaluate(geomData, testValues, trialValues);
+                return m_functor.evaluate(geomData, testValues, trialValues);
             } 
 
     private:
@@ -73,14 +73,14 @@ class LocalIntegrandFunctorContainer
 
         }
 
-        inline void evaluate(const ConstGeometricalDataSlice<double> &geomData,
+        inline double evaluate(const ConstGeometricalDataSlice<double> &geomData,
                       const CollectionOf1dSlicesOfConst3dArrays<double>& testValues,
                       const CollectionOf1dSlicesOfConst3dArrays<double>& trialValues)
             const {
 
-                m_functor->evaluate(geomData, testValues, trialValues);
+                return m_functor->evaluate(geomData, testValues, trialValues);
             } 
-
+        
 
     private:
 
