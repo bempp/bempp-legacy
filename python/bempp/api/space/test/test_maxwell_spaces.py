@@ -52,15 +52,15 @@ class TestMaxwellSpaces(TestCase):
         self.assertAlmostEqual(max_diff, 0)
 
     @requiresgmsh
-    def test_nedelec_barycentric_space_agrees_with_rotated_rt_space(self):
+    def test_nedelec_barycentric_space_agrees_with_twisted_barycentric_rt_space(self):
 
         import numpy as np
 
-        nc_space = bempp.api.function_space(self._grid, "NC", 0)
-        rt_space = bempp.api.function_space(self._grid, "RT", 0)
+        nc_space = bempp.api.function_space(self._grid, "B-NC", 0)
+        rt_space = bempp.api.function_space(self._grid, "B-RT", 0)
 
         op1 = bempp.api.operators.boundary.sparse.identity(nc_space, nc_space, nc_space)
-        op2 = bempp.api.operators.boundary.sparse.maxwell_identity(nc_space, nc_space, rt_space)
+        op2 = bempp.api.operators.boundary.sparse.maxwell_identity(rt_space, nc_space, nc_space)
 
         m1 = bempp.api.as_matrix(op1.weak_form())
         m2 = bempp.api.as_matrix(op2.weak_form())
@@ -74,6 +74,22 @@ class TestMaxwellSpaces(TestCase):
 
         nc_space = bempp.api.function_space(self._grid, "NC", 0)
         nc_space_bary = bempp.api.function_space(self._grid, "B-NC", 0)
+
+        op1 = bempp.api.operators.boundary.sparse.identity(nc_space, nc_space, nc_space)
+        op2 = bempp.api.operators.boundary.sparse.identity(nc_space_bary, nc_space_bary, nc_space_bary)
+
+        m1 = bempp.api.as_matrix(op1.weak_form())
+        m2 = bempp.api.as_matrix(op2.weak_form())
+        max_diff = np.max(np.abs((m1 - m2).data))
+        self.assertAlmostEqual(max_diff, 0)
+
+    @requiresgmsh
+    def test_scaled_nedelec_barycentric_space_agrees_with_non_barycentric_space(self):
+
+        import numpy as np
+
+        nc_space = bempp.api.function_space(self._grid, "SNC", 0)
+        nc_space_bary = bempp.api.function_space(self._grid, "B-SNC", 0)
 
         op1 = bempp.api.operators.boundary.sparse.identity(nc_space, nc_space, nc_space)
         op2 = bempp.api.operators.boundary.sparse.identity(nc_space_bary, nc_space_bary, nc_space_bary)
@@ -155,7 +171,7 @@ class TestMaxwellSpaces(TestCase):
             self.assertAlmostEqual(elem_tangent_0,elem_tangent_1)
 
     @requiresgmsh
-    def test_rwg_space_is_normal_conforming(self):
+    def test_rt_space_is_normal_conforming(self):
 
         import numpy as np
 
@@ -224,6 +240,42 @@ class TestMaxwellSpaces(TestCase):
             elem_normal_1 = elem_val_1.dot(normal_1)
 
             self.assertAlmostEqual(elem_normal_0,elem_normal_1)
+
+
+    #requiresgmsh
+    def test_twisted_rt_space_agrees_with_nedelec_space(self):
+        """Test that Nedelec spaces and twisted RT spaces agree."""
+
+        grid = bempp.api.shapes.cube(h=.1)
+        space_rt = bempp.api.function_space(grid, "RT", 0)
+        space_nc = bempp.api.function_space(grid, "NC", 0)
+
+        op1 = bempp.api.operators.boundary.sparse.maxwell_identity(space_rt, space_rt, space_nc)
+        op2 = bempp.api.operators.boundary.sparse.identity(space_nc, space_rt, space_nc)
+
+        m1 = bempp.api.as_matrix(op1.weak_form())
+        m2 = bempp.api.as_matrix(op2.weak_form())
+        diff = m1-m2
+
+        self.assertAlmostEqual(np.max(np.abs(diff.data)),0)
+
+    #requiresgmsh
+    def test_twisted_rwg_space_agrees_with_scaled_nedelec_space(self):
+        """Test that scaled Nedelec spaces and twisted RWG spaces agree."""
+
+        grid = bempp.api.shapes.cube(h=.1)
+        space_rwg = bempp.api.function_space(grid, "RWG", 0)
+        space_nc = bempp.api.function_space(grid, "SNC", 0)
+
+        op1 = bempp.api.operators.boundary.sparse.maxwell_identity(space_rwg, space_rwg, space_nc)
+        op2 = bempp.api.operators.boundary.sparse.identity(space_nc, space_rwg, space_nc)
+
+        m1 = bempp.api.as_matrix(op1.weak_form())
+        m2 = bempp.api.as_matrix(op2.weak_form())
+        diff = m1-m2
+
+        self.assertAlmostEqual(np.max(np.abs(diff.data)),0)
+
 
 
 if __name__ == "__main__":

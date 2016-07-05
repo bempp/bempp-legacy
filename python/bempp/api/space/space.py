@@ -291,6 +291,23 @@ class NCSpace(Space):
         self._discontinuous_space = DiscontinuousPolynomialSpace(grid, 1)
         self._evaluation_functor = hcurl_function_value_functor()
 
+class SNCSpace(Space):
+    """A space of scaled Nedelec functions."""
+
+    def __init__(self, grid, domains, closed):
+
+        from bempp.core.space.space import function_space as _function_space
+        from bempp.api.assembly.functors import hcurl_function_value_functor
+
+        super(SNCSpace, self).__init__(
+            _function_space(grid._impl, "SNC", 0, domains, closed))
+
+        self._order = 0
+        self._has_non_barycentric_space = True
+        self._non_barycentric_space = self
+        self._discontinuous_space = DiscontinuousPolynomialSpace(grid, 1)
+        self._evaluation_functor = hcurl_function_value_functor()
+
 class BarycentricRTSpace(Space):
     """A space of Raviart-Thomas functions on a barycentric grid."""
 
@@ -318,7 +335,7 @@ class BarycentricNCSpace(Space):
         from bempp.api.assembly.functors import hcurl_function_value_functor
 
         super(BarycentricNCSpace, self).__init__(
-            _function_space(grid._impl, "B-RT", 0))
+            _function_space(grid._impl, "B-NC", 0))
 
         self._order = 0
         self._has_non_barycentric_space = True
@@ -327,6 +344,23 @@ class BarycentricNCSpace(Space):
             grid.barycentric_grid(), 1)
         self._evaluation_functor = hcurl_function_value_functor()
 
+class BarycentricSNCSpace(Space):
+    """A space of scaled Nedelec functions on a barycentric grid."""
+
+    def __init__(self, grid):
+
+        from bempp.core.space.space import function_space as _function_space
+        from bempp.api.assembly.functors import hcurl_function_value_functor
+
+        super(BarycentricSNCSpace, self).__init__(
+            _function_space(grid._impl, "B-SNC", 0))
+
+        self._order = 0
+        self._has_non_barycentric_space = True
+        self._non_barycentric_space = NCSpace(grid, None, True)
+        self._discontinuous_space = DiscontinuousPolynomialSpace(
+            grid.barycentric_grid(), 1)
+        self._evaluation_functor = hcurl_function_value_functor()
 
 class RWGSpace(Space):
     """A space of RWG functions."""
@@ -401,12 +435,16 @@ def function_space(grid, kind, order, domains=None, closed=True, strictly_on_seg
             "RT": Raviart-Thomas Vector spaces.
             "RWG": RWG Vector spaces.
             "NC": Nedelec Vector spaces.
+            "SNC": Scaled Nedelec Vector spaces. The Nedelec basis functions
+                   are scaled with the edge length so that they are identical
+                   to RWG functions crossed with the element normals.
 
             "B-P": Polynomial spaces on barycentric grids.
             "B-DP": Polynomial discontinuous spaces on barycentric grids.
             "B-RT": Raviart-Thomas Vector spaces on barycentric grids.
             "B-RWG": RWG Vector spaces on barycentric grids.
             "B-NC": Nedelec Vector spaces on barycentric grids.
+            "B-SNC": Scaled Nedelec Vector spaces on barycentric grids.
 
             "DUAL": Dual space on dual grid (only implemented for constants).
             "BC": Buffa-Christian Vector space.
@@ -490,6 +528,11 @@ def function_space(grid, kind, order, domains=None, closed=True, strictly_on_seg
             raise ValueError(
                 "Only order zero Nedelec spaces supported.")
         return NCSpace(grid, domains, closed)
+    elif kind == "SNC":
+        if order > 0:
+            raise ValueError(
+                "Only order zero Nedelec spaces supported.")
+        return SNCSpace(grid, domains, closed)
     elif kind == "RWG":
         if order > 0:
             raise ValueError("Only order zero RWG spaces supported.")
@@ -504,7 +547,11 @@ def function_space(grid, kind, order, domains=None, closed=True, strictly_on_seg
             raise ValueError(
                 "Only order zero Nedelec functions supported.")
         return BarycentricNCSpace(grid)
-
+    elif kind == "B-SNC":
+        if order > 0:
+            raise ValueError(
+                "Only order zero Nedelec functions supported.")
+        return BarycentricSNCSpace(grid)
     elif kind == "B-RWG":
         if order > 0:
             raise ValueError("Only order zero RWG functions supported.")

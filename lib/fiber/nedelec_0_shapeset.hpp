@@ -66,8 +66,8 @@ public:
         data.values.set_size(temp.values.extent(0),temp.values.extent(1),temp.values.extent(2));
         for (int i=0; i!=temp.values.extent(1); ++i)
           for (int j=0; j!=temp.values.extent(2); ++j) {
-            data.values(0,i,j) = -temp.values(1,i,j);
-            data.values(1,i,j) = temp.values(0,i,j);
+            data.values(0,i,j) = temp.values(1,i,j);
+            data.values(1,i,j) = -temp.values(0,i,j);
           }
     }
     if (what & DERIVATIVES) {
@@ -77,8 +77,8 @@ public:
         for (int i=0; i!=temp.derivatives.extent(1); ++i)
           for (int j=0; j!=temp.derivatives.extent(2); ++j)
             for (int k=0; k!=temp.derivatives.extent(3); ++k) {
-              data.derivatives(0,i,j,k) = -temp.derivatives(1,i,j,k);
-              data.derivatives(1,i,j,k) = temp.derivatives(0,i,j,k);
+              data.derivatives(0,i,j,k) = temp.derivatives(1,i,j,k);
+              data.derivatives(1,i,j,k) = -temp.derivatives(0,i,j,k);
             }
     }
 

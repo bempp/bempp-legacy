@@ -229,12 +229,14 @@ def function_space(Grid grid, kind, order, domains=None, cbool closed=True, cboo
             "RT": Raviart-Thomas Vector spaces.
             "RWG": RWG Vector spaces.
             "NC": Nedelec Vector spaces.
+            "SNC": Scaled Nedelec Vector spaces.
 
             "B-P": Polynomial spaces on barycentric grids.
             "B-DP": Polynomial discontinuous spaces on barycentric grids.
             "B-RT": Raviart-Thomas Vector spaces on barycentric grids.
             "B-RWG": RWG Vector spaces on barycentric grids.
             "B-NC": Nedelec Vector spaces on barycentric grids.
+            "B-SNC": Scaled Nedelec Vector spaces on barycentric grids.
 
             "DUAL": Dual space on dual grid (only implemented for constants).
             "BC": Buffa-Christian Vector space.
@@ -336,6 +338,15 @@ def function_space(Grid grid, kind, order, domains=None, cbool closed=True, cboo
         else:
             s.impl_.assign(reverse_const_pointer_cast(
                     shared_ptr[c_Space[double]](adaptiveNedelec0VectorSpace[double](grid.impl_, domains, closed))))
+    elif kind=="SNC":
+        if order!=0:
+            raise ValueError("Only 0 order Nedelec spaces are implemented.")
+        if domains is None:
+            s.impl_.assign(reverse_const_pointer_cast(
+                    shared_ptr[c_Space[double]](adaptiveScaledNedelec0VectorSpace[double](grid.impl_))))
+        else:
+            s.impl_.assign(reverse_const_pointer_cast(
+                    shared_ptr[c_Space[double]](adaptiveScaledNedelec0VectorSpace[double](grid.impl_, domains, closed))))
     elif kind=="RWG":
         if order!=0:
             raise ValueError("Only 0 order RWG spaces are implemented.")
@@ -383,6 +394,14 @@ def function_space(Grid grid, kind, order, domains=None, cbool closed=True, cboo
         else:
             s.impl_.assign(reverse_const_pointer_cast(
                     shared_ptr[c_Space[double]](adaptiveNedelec0VectorSpaceBarycentric[double](grid.impl_))))
+    elif kind=="B-SNC":
+        if order!=0:
+            raise ValueError("Only 0 order Nedelec spaces on barycentric grids are supported.")
+        if domains is not None:
+            raise ValueError("Spaces on subdomains are not supported on barycentric grids.")
+        else:
+            s.impl_.assign(reverse_const_pointer_cast(
+                    shared_ptr[c_Space[double]](adaptiveScaledNedelec0VectorSpaceBarycentric[double](grid.impl_))))
     elif kind=="B-RWG":
         if order!=0:
             raise ValueError("Only 0 order RWG spaces on barycentric grids are supported.")

@@ -4,7 +4,7 @@ from unittest import TestCase
 class TestBoundaryOperator(TestCase):
 
     def setUp(self):
-        import bempp
+        import bempp.api
 
         grid = bempp.api.shapes.regular_sphere(2)
         self.domain = bempp.api.function_space(grid, "DP", 0)
