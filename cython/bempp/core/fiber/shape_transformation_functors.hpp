@@ -7,6 +7,12 @@
 #include "bempp/fiber/collection_of_3d_arrays.hpp"
 #include "bempp/fiber/shape_transformation_functor_wrappers.hpp"
 #include "bempp/fiber/scalar_function_value_functor.hpp"
+#include "bempp/fiber/surface_grad_3d_functor.hpp"
+#include "bempp/fiber/surface_curl_3d_functor.hpp"
+#include "bempp/fiber/surface_div_3d_functor.hpp"
+#include "bempp/fiber/hcurl_function_value_functor.hpp"
+#include "bempp/fiber/hdiv_function_value_functor.hpp"
+#include "bempp/fiber/hcurl_surface_curl_functor.hpp"
 
 namespace Fiber {
 
@@ -131,6 +137,73 @@ inline ShapeTransformationFunctorContainer* scalarFunctionValueFunctor(){
                 shared_ptr<ShapeTransformationFunctorBase>(
                     new ConcreteShapeTransformationFunctor<ScalarFunctionValueFunctor<double>>(
                         ScalarFunctionValueFunctor<double>())
+                    )
+                );
+
+}
+
+inline ShapeTransformationFunctorContainer* surfaceGrad3dFunctor(){
+
+    return new ShapeTransformationFunctorContainer(
+                shared_ptr<ShapeTransformationFunctorBase>(
+                    new ConcreteShapeTransformationFunctor<SurfaceGrad3dFunctor<double>>(
+                        SurfaceGrad3dFunctor<double>())
+                    )
+                );
+
+}
+
+inline ShapeTransformationFunctorContainer* surfaceDiv3dFunctor(){
+
+    return new ShapeTransformationFunctorContainer(
+                shared_ptr<ShapeTransformationFunctorBase>(
+                    new ConcreteShapeTransformationFunctor<SurfaceDiv3dFunctor<double>>(
+                        SurfaceDiv3dFunctor<double>())
+                    )
+                );
+
+}
+
+inline ShapeTransformationFunctorContainer* surfaceCurl3dFunctor(){
+
+    return new ShapeTransformationFunctorContainer(
+                shared_ptr<ShapeTransformationFunctorBase>(
+                    new ConcreteShapeTransformationFunctor<SurfaceCurl3dFunctor<double>>(
+                        SurfaceCurl3dFunctor<double>())
+                    )
+                );
+
+}
+
+
+inline ShapeTransformationFunctorContainer* hcurlFunctionValueFunctor(){
+
+    return new ShapeTransformationFunctorContainer(
+                shared_ptr<ShapeTransformationFunctorBase>(
+                    new ConcreteShapeTransformationFunctor<HcurlFunctionValueFunctor<double>>(
+                        HcurlFunctionValueFunctor<double>())
+                    )
+                );
+
+}
+
+inline ShapeTransformationFunctorContainer* hdivFunctionValueFunctor(){
+
+    return new ShapeTransformationFunctorContainer(
+                shared_ptr<ShapeTransformationFunctorBase>(
+                    new ConcreteShapeTransformationFunctor<HdivFunctionValueFunctor<double>>(
+                        HdivFunctionValueFunctor<double>())
+                    )
+                );
+
+}
+
+inline ShapeTransformationFunctorContainer* hcurlSurfaceCurlFunctor(){
+
+    return new ShapeTransformationFunctorContainer(
+                shared_ptr<ShapeTransformationFunctorBase>(
+                    new ConcreteShapeTransformationFunctor<HcurlSurfaceCurlFunctor<double>>(
+                        HcurlSurfaceCurlFunctor<double>())
                     )
                 );
 

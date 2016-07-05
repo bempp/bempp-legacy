@@ -5,5 +5,5 @@ cdef extern from "bempp/core/fiber/shape_transformation_functors.hpp" namespace 
         int argumentDimension()
         int resultDimension(int)
 
-cdef class ShapeTransformationFunctorContainerExt:
+cdef class ShapeTransformationFunctorContainer:
     cdef unique_ptr[c_ShapeTransformationFunctorContainer] impl_

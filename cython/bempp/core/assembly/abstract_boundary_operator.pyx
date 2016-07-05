@@ -10,8 +10,8 @@ from .assembler cimport RealIntegralOperatorLocalAssembler
 from .assembler cimport ComplexIntegralOperatorLocalAssembler
 from .assembler cimport LocalOperatorLocalAssembler
 from bempp.core.utils.enum_types cimport SymmetryMode, symmetry_mode
-from bempp.core.fiber.shape_transformation_functors cimport ShapeTransformationFunctorContainerExt
-from bempp.core.fiber.local_integrand_functors cimport LocalIntegrandFunctorContainerExt
+from bempp.core.fiber.shape_transformation_functors cimport ShapeTransformationFunctorContainer
+from bempp.core.fiber.local_integrand_functors cimport LocalIntegrandFunctorContainer
 
 
 cdef class RealElementaryIntegralOperator:
@@ -132,9 +132,9 @@ cdef class ElementaryLocalOperator:
             return space
 
 def abstract_local_operator_from_functors_ext(Space domain, Space range_, Space dual_to_range,
-        ShapeTransformationFunctorContainerExt test_functor,
-        ShapeTransformationFunctorContainerExt trial_functor,
-        LocalIntegrandFunctorContainerExt integrand_functor,
+        ShapeTransformationFunctorContainer test_functor,
+        ShapeTransformationFunctorContainer trial_functor,
+        LocalIntegrandFunctorContainer integrand_functor,
         object label='', object symmetry='no_symmetry'):
 
     cdef ElementaryLocalOperator op = ElementaryLocalOperator()

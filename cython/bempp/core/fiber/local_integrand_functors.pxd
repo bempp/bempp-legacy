@@ -4,5 +4,5 @@ cdef extern from "bempp/core/fiber/local_integrand_functors.hpp" namespace "Fibe
     cdef cppclass c_LocalIntegrandFunctorContainer "Fiber::LocalIntegrandFunctorContainer":
         pass
 
-cdef class LocalIntegrandFunctorContainerExt:
+cdef class LocalIntegrandFunctorContainer:
     cdef unique_ptr[c_LocalIntegrandFunctorContainer] impl_

@@ -28,24 +28,67 @@ class LocalIntegrandFunctorContainer(object):
 
         self._impl = impl
 
-
 def scalar_function_value_functor():
 
-    from bempp.core.fiber.shape_transformation_functors import ShapeTransformationFunctorContainerExt
-    from bempp.core.fiber.shape_transformation_functors import scalarFunctionValueFunctorExt
+    from bempp.core.fiber.shape_transformation_functors import scalar_function_value_functor_ext
 
     return ShapeTransformationFunctorContainer(
-            scalarFunctionValueFunctorExt())
+            scalar_function_value_functor_ext())
 
+def surface_gradient_functor():
 
+    from bempp.core.fiber.shape_transformation_functors import surface_gradient_functor_ext
+
+    return ShapeTransformationFunctorContainer(
+            surface_gradient_functor_ext())
+
+def surface_divergence_functor():
+
+    from bempp.core.fiber.shape_transformation_functors import surface_divergence_functor_ext
+
+    return ShapeTransformationFunctorContainer(
+            surface_divergence_functor_ext())
+
+def vector_surface_curl_functor():
+
+    from bempp.core.fiber.shape_transformation_functors import vector_surface_curl_functor_ext
+
+    return ShapeTransformationFunctorContainer(
+            vector_surface_curl_functor_ext())
+
+def hdiv_function_value_functor():
+
+    from bempp.core.fiber.shape_transformation_functors import hdiv_function_value_functor_ext
+
+    return ShapeTransformationFunctorContainer(
+            hdiv_function_value_functor_ext())
+
+def hcurl_function_value_functor():
+
+    from bempp.core.fiber.shape_transformation_functors import hcurl_function_value_functor_ext
+
+    return ShapeTransformationFunctorContainer(
+            hcurl_function_value_functor_ext())
+
+def scalar_surface_curl_functor():
+
+    from bempp.core.fiber.shape_transformation_functors import scalar_surface_curl_functor_ext
+
+    return ShapeTransformationFunctorContainer(
+            scalar_surface_curl_functor_ext())
 
 def simple_test_trial_integrand_functor():
 
-    from bempp.core.fiber.local_integrand_functors import LocalIntegrandFunctorContainerExt
-    from bempp.core.fiber.local_integrand_functors import simpleTestTrialIntegrandFunctorExt
+    from bempp.core.fiber.local_integrand_functors import simple_test_trial_integrand_functor_ext
 
     return LocalIntegrandFunctorContainer(
-            simpleTestTrialIntegrandFunctorExt())
+            simple_test_trial_integrand_functor_ext())
 
+def maxwell_test_trial_integrand_functor():
+
+    from bempp.core.fiber.local_integrand_functors import maxwell_test_trial_integrand_functor_ext
+
+    return LocalIntegrandFunctorContainer(
+            maxwell_test_trial_integrand_functor_ext())
 
 
