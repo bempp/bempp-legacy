@@ -2,6 +2,28 @@
 
 """Definition of sparse boundary operators."""
 
+def operator_from_functors(domain, range_, dual_to_range,
+        test_functor, trial_functor, integrand_functor,
+        label='', symmetry='no_symmetry', parameters=None):
+
+    import bempp.api
+    from bempp.core.assembly.abstract_boundary_operator import abstract_local_operator_from_functors_ext
+    from bempp.api.assembly import LocalBoundaryOperator
+    from bempp.api.assembly.abstract_boundary_operator import ElementaryAbstractLocalOperator
+
+    if parameters is None:
+        parameters = bempp.api.global_parameters
+
+    return LocalBoundaryOperator(
+        ElementaryAbstractLocalOperator(
+            abstract_local_operator_from_functors_ext(
+                domain._impl, range_._impl,
+                dual_to_range._impl, 
+                test_functor._impl, trial_functor._impl, 
+                integrand_functor._impl, label, symmetry),
+            domain, range_, dual_to_range),
+        parameters=parameters, label=label)
+
 
 def identity(domain, range_, dual_to_range,
              label="IDENTITY", symmetry='no_symmetry',
@@ -28,21 +50,12 @@ def identity(domain, range_, dual_to_range,
 
     """
 
-    import bempp.api
-    from bempp.core.operators.boundary.sparse import identity_ext
-    from bempp.api.assembly import LocalBoundaryOperator
-    from bempp.api.assembly.abstract_boundary_operator import ElementaryAbstractLocalOperator
-
-    if parameters is None:
-        parameters = bempp.api.global_parameters
-
-    return LocalBoundaryOperator(
-        ElementaryAbstractLocalOperator(
-            identity_ext(parameters, domain._impl, range_._impl,
-                         dual_to_range._impl, "", symmetry),
-            domain, range_, dual_to_range),
-        parameters=parameters, label=label)
-
+    from bempp.api.assembly.functors import simple_test_trial_integrand_functor
+    return operator_from_functors(domain, range_, dual_to_range,
+            dual_to_range.evaluation_functor,
+            domain.evaluation_functor,
+            simple_test_trial_integrand_functor(),
+            label, symmetry, parameters)
 
 def maxwell_identity(domain, range_, dual_to_range,
                      label="MAXWELL_IDENTITY", symmetry='no_symmetry',
@@ -69,20 +82,12 @@ def maxwell_identity(domain, range_, dual_to_range,
 
     """
 
-    import bempp.api
-    from bempp.core.operators.boundary.sparse import maxwell_identity_ext
-    from bempp.api.assembly import LocalBoundaryOperator
-    from bempp.api.assembly.abstract_boundary_operator import ElementaryAbstractLocalOperator
-
-    if parameters is None:
-        parameters = bempp.api.global_parameters
-
-    id_op = LocalBoundaryOperator(
-        ElementaryAbstractLocalOperator(
-            maxwell_identity_ext(parameters, domain._impl, range_._impl,
-                                 dual_to_range._impl, "", symmetry),
-            domain, range_, dual_to_range),
-        parameters=parameters, label=label)
+    from bempp.api.assembly.functors import maxwell_test_trial_integrand_functor
+    id_op = operator_from_functors(domain, range_, dual_to_range,
+            dual_to_range.evaluation_functor,
+            domain.evaluation_functor,
+            maxwell_test_trial_integrand_functor(),
+            label, symmetry, parameters)
     id_op.range_identity_operator = maxwell_identity
     return id_op
 
@@ -116,21 +121,14 @@ def laplace_beltrami(domain, range_, dual_to_range,
 
     """
 
-    import bempp.api
-    from bempp.core.operators.boundary.sparse import laplace_beltrami_ext
-    from bempp.api.assembly import LocalBoundaryOperator
-    from bempp.api.assembly.abstract_boundary_operator import ElementaryAbstractLocalOperator
+    from bempp.api.assembly.functors import simple_test_trial_integrand_functor
+    from bempp.api.assembly.functors import surface_gradient_functor
 
-    if parameters is None:
-        parameters = bempp.api.global_parameters
-
-    return LocalBoundaryOperator(
-        ElementaryAbstractLocalOperator(
-            laplace_beltrami_ext(parameters, domain._impl, range_._impl,
-                                 dual_to_range._impl, "", symmetry),
-            domain, range_, dual_to_range),
-        parameters=parameters, label=label)
-
+    return operator_from_functors(domain, range_, dual_to_range,
+            surface_gradient_functor(),
+            surface_gradient_functor(),
+            simple_test_trial_integrand_functor(),
+            label, symmetry, parameters)
 
 def multitrace_identity(grid, parameters=None, spaces='linear'):
     """Return the multitrace identity operator.

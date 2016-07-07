@@ -2,6 +2,7 @@ from bempp.core.assembly.abstract_boundary_operator cimport ElementaryLocalOpera
 from bempp.core.assembly.abstract_boundary_operator cimport c_ElementaryLocalOperator
 from bempp.core.space.space cimport c_Space, Space
 from bempp.core.utils cimport shared_ptr
+from bempp.core.utils import _convert_to_bytes
 from bempp.core.utils.enum_types cimport SymmetryMode, symmetry_mode
 from bempp.core.utils cimport ParameterList, c_ParameterList
 from libcpp.string cimport string
@@ -48,17 +49,22 @@ cdef extern from "bempp/core/operators/boundary/support_operators.hpp" namespace
             shared_ptr[const c_Space[double]]&,
             shared_ptr[const c_Space[double]]&,
             shared_ptr[const c_Space[double]]&)
-
-
-
-def _convert_to_bytes(s):
-    res = s
-    try:
-        if not isinstance(s,bytes):
-            res = res.encode('UTF-8')
-    except:
-        raise ValueError('String type expected.')
-    return res
+    shared_ptr[const c_ElementaryLocalOperator] div_times_div_local_operator(
+            shared_ptr[const c_Space[double]]&,
+            shared_ptr[const c_Space[double]]&,
+            shared_ptr[const c_Space[double]]&)
+    shared_ptr[const c_ElementaryLocalOperator] grad_times_hcurl_value_local_operator(
+            shared_ptr[const c_Space[double]]&,
+            shared_ptr[const c_Space[double]]&,
+            shared_ptr[const c_Space[double]]&)
+    shared_ptr[const c_ElementaryLocalOperator] hcurl_times_hcurl_value_local_operator(
+            shared_ptr[const c_Space[double]]&,
+            shared_ptr[const c_Space[double]]&,
+            shared_ptr[const c_Space[double]]&)
+    shared_ptr[const c_ElementaryLocalOperator] hcurl_curl_times_curl_local_operator(
+            shared_ptr[const c_Space[double]]&,
+            shared_ptr[const c_Space[double]]&,
+            shared_ptr[const c_Space[double]]&)
 
 
 def identity_ext(
@@ -86,6 +92,16 @@ def maxwell_identity_ext(
         deref(parameters.impl_),domain.impl_, range.impl_, dual_to_range.impl_,
         _convert_to_bytes(label), symmetry_mode(_convert_to_bytes(symmetry))))
     return op
+
+def div_times_div_ext(
+        Space domain,
+        Space range,
+        Space dual_to_range):
+
+    cdef ElementaryLocalOperator op = ElementaryLocalOperator()
+    op.impl_.assign(div_times_div_local_operator(domain.impl_, range.impl_, dual_to_range.impl_))
+    return op
+
 
 def laplace_beltrami_ext(
         ParameterList parameters,
@@ -128,4 +144,22 @@ def div_times_scalar_ext(Space domain, Space range, Space dual_to_range):
 
     cdef ElementaryLocalOperator op = ElementaryLocalOperator()
     op.impl_.assign(div_times_scalar_local_operator(domain.impl_, range.impl_, dual_to_range.impl_))
+    return op
+
+def grad_times_hcurl_value_ext(Space domain, Space range, Space dual_to_range):
+
+    cdef ElementaryLocalOperator op = ElementaryLocalOperator()
+    op.impl_.assign(grad_times_hcurl_value_local_operator(domain.impl_, range.impl_, dual_to_range.impl_))
+    return op
+
+def hcurl_times_hcurl_value_ext(Space domain, Space range, Space dual_to_range):
+
+    cdef ElementaryLocalOperator op = ElementaryLocalOperator()
+    op.impl_.assign(hcurl_times_hcurl_value_local_operator(domain.impl_, range.impl_, dual_to_range.impl_))
+    return op
+
+def hcurl_curl_times_curl_ext(Space domain, Space range, Space dual_to_range):
+
+    cdef ElementaryLocalOperator op = ElementaryLocalOperator()
+    op.impl_.assign(hcurl_curl_times_curl_local_operator(domain.impl_, range.impl_, dual_to_range.impl_))
     return op

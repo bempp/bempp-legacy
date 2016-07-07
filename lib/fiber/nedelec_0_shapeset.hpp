@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_nedelec_1_shapeset_hpp
-#define fiber_nedelec_1_shapeset_hpp
+#ifndef fiber_nedelec_0_shapeset_hpp
+#define fiber_nedelec_0_shapeset_hpp
 
 #include "basis.hpp"
 #include "basis_data.hpp"
@@ -28,23 +28,23 @@
 namespace Fiber {
 
 template <int elementVertexCount, typename CoordinateType, typename ValueType>
-struct Nedelec1BasisTraits {};
+struct Nedelec0BasisTraits {};
 
 // Triangle
 template <typename CoordinateType, typename ValueType>
-struct Nedelec1BasisTraits<3, CoordinateType, ValueType> {
+struct Nedelec0BasisTraits<3, CoordinateType, ValueType> {
 public:
   typedef Dune::RT02DLocalBasis<CoordinateType, ValueType> DuneBasis;
 };
 
 /** \brief Shapeset composed of the lowest-order Raviart-Thomas functions. */
 template <int elementVertexCount, typename ValueType>
-class Nedelec1Shapeset : public Basis<ValueType> {
+class Nedelec0Shapeset : public Basis<ValueType> {
 public:
   typedef typename Basis<ValueType>::CoordinateType CoordinateType;
 
 private:
-  typedef typename Nedelec1BasisTraits<elementVertexCount, CoordinateType,
+  typedef typename Nedelec0BasisTraits<elementVertexCount, CoordinateType,
                                              ValueType>::DuneBasis DuneBasis;
 
 public:

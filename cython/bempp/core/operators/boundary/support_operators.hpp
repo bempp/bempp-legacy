@@ -15,6 +15,9 @@
 #include "bempp/fiber/simple_test_trial_integrand_functor.hpp"
 #include "bempp/fiber/single_component_test_trial_integrand_functor.hpp"
 #include "bempp/fiber/surface_div_3d_functor.hpp"
+#include "bempp/fiber/surface_grad_3d_functor.hpp"
+#include "bempp/fiber/hcurl_function_value_functor.hpp"
+#include "bempp/fiber/hcurl_surface_curl_functor.hpp"
 #include "bempp/operators/laplace_operators.hpp"
 
 namespace Bempp {
@@ -92,6 +95,73 @@ div_times_scalar_local_operator(const shared_ptr<const Space<double>> &domain,
       new LocalOp(domain, range, dualToRange, "", NO_SYMMETRY, DivFunctor(),
                   ScalarValueFunctor(), IntegrandFunctor()));
 }
+
+inline shared_ptr<const ElementaryLocalOperator<double, double>>
+div_times_div_local_operator(const shared_ptr<const Space<double>> &domain,
+                          const shared_ptr<const Space<double>> &range,
+                          const shared_ptr<const Space<double>> &dualToRange) {
+
+  typedef Fiber::SurfaceDiv3dFunctor<double> DivFunctor;
+  typedef Fiber::SimpleTestTrialIntegrandFunctor<double, double>
+      IntegrandFunctor;
+
+  typedef GeneralElementaryLocalOperator<double, double> LocalOp;
+
+  return shared_ptr<const ElementaryLocalOperator<double, double>>(
+      new LocalOp(domain, range, dualToRange, "", NO_SYMMETRY, DivFunctor(),
+                  DivFunctor(), IntegrandFunctor()));
+}
+
+inline shared_ptr<const ElementaryLocalOperator<double, double>>
+grad_times_hcurl_value_local_operator(const shared_ptr<const Space<double>> &domain,
+                          const shared_ptr<const Space<double>> &range,
+                          const shared_ptr<const Space<double>> &dualToRange) {
+
+  typedef Fiber::SurfaceGrad3dFunctor<double> GradFunctor;
+  typedef Fiber::HcurlFunctionValueFunctor<double> HcurlValueFunctor;
+  typedef Fiber::SimpleTestTrialIntegrandFunctor<double, double>
+      IntegrandFunctor;
+
+  typedef GeneralElementaryLocalOperator<double, double> LocalOp;
+
+  return shared_ptr<const ElementaryLocalOperator<double, double>>(
+      new LocalOp(domain, range, dualToRange, "", NO_SYMMETRY, GradFunctor(),
+                  HcurlValueFunctor(), IntegrandFunctor()));
+}
+
+inline shared_ptr<const ElementaryLocalOperator<double, double>>
+hcurl_times_hcurl_value_local_operator(const shared_ptr<const Space<double>> &domain,
+                          const shared_ptr<const Space<double>> &range,
+                          const shared_ptr<const Space<double>> &dualToRange) {
+
+  typedef Fiber::HcurlFunctionValueFunctor<double> HcurlValueFunctor;
+  typedef Fiber::SimpleTestTrialIntegrandFunctor<double, double>
+      IntegrandFunctor;
+
+  typedef GeneralElementaryLocalOperator<double, double> LocalOp;
+
+  return shared_ptr<const ElementaryLocalOperator<double, double>>(
+      new LocalOp(domain, range, dualToRange, "", NO_SYMMETRY, HcurlValueFunctor(),
+                  HcurlValueFunctor(), IntegrandFunctor()));
+}
+
+inline shared_ptr<const ElementaryLocalOperator<double, double>>
+hcurl_curl_times_curl_local_operator(const shared_ptr<const Space<double>> &domain,
+                          const shared_ptr<const Space<double>> &range,
+                          const shared_ptr<const Space<double>> &dualToRange) {
+
+  typedef Fiber::HcurlSurfaceCurlFunctor<double> HcurlSurfaceCurlFunctor;
+  typedef Fiber::SimpleTestTrialIntegrandFunctor<double, double>
+      IntegrandFunctor;
+
+  typedef GeneralElementaryLocalOperator<double, double> LocalOp;
+
+  return shared_ptr<const ElementaryLocalOperator<double, double>>(
+      new LocalOp(domain, range, dualToRange, "", NO_SYMMETRY, HcurlSurfaceCurlFunctor(),
+                  HcurlSurfaceCurlFunctor(), IntegrandFunctor()));
+}
+
+
 
 }
 

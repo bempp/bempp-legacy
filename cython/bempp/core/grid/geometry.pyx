@@ -40,6 +40,25 @@ cdef class Geometry0:
 
         return eigen_matrix_to_np_float64(global_coords)
 
+    def jacobians_transposed(self, local_coordinates):
+        """Return the transposed Jacobians associated with the given local coordinates."""
+
+        cdef Matrix[double] local_vector = np_to_eigen_matrix_float64(local_coordinates)
+        cdef vector[Matrix[double]] jacobians_t
+
+        self.impl_.getJacobiansTransposed(local_vector, jacobians_t)
+
+        return [eigen_matrix_to_np_float64(mat) for mat in jacobians_t]
+
+    def jacobian_inverses_transposed(self, local_coordinates):
+        """Return the inverse transposed Jacobians associated with the given local coordinates."""
+
+        cdef Matrix[double] local_vector = np_to_eigen_matrix_float64(local_coordinates)
+        cdef vector[Matrix[double]] jacobians_t
+
+        self.impl_.getJacobianInversesTransposed(local_vector, jacobians_t)
+
+        return [eigen_matrix_to_np_float64(mat) for mat in jacobians_t]
 
     property corners:
         """Corners of entity"""

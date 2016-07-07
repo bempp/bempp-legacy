@@ -128,7 +128,7 @@ cdef class Space:
         shapeset.impl_ = &deref(self.impl_).shapeset(deref(element.impl_))
         return shapeset
 
-        
+
     def evaluate_local_basis(self, Entity0 element, object local_coordinates, object local_coefficients):
         """Evaluate local basis functions on a given element."""
 
@@ -137,13 +137,13 @@ cdef class Space:
         if np.isreal(local_coefficients).all():
             coeffs_real = local_coefficients
             return eigen_matrix_to_np_float64(
-                    c_evaluateLocalBasis[double](deref(self.impl_), deref(element.impl_), 
+                    c_evaluateLocalBasis[double](deref(self.impl_), deref(element.impl_),
                                                 np_to_eigen_matrix_float64(local_coordinates),
                                                 np_to_eigen_vector_float64(local_coefficients)))
         else:
             coeffs_complex = local_coefficients
             return eigen_matrix_to_np_complex128(
-                    c_evaluateLocalBasis[complex_double](deref(self.impl_), deref(element.impl_), 
+                    c_evaluateLocalBasis[complex_double](deref(self.impl_), deref(element.impl_),
                                                         np_to_eigen_matrix_float64(local_coordinates),
                                                         np_to_eigen_vector_complex128(local_coefficients)))
 
@@ -185,15 +185,15 @@ cdef class Space:
 
 
 
-        
-
-
-        
 
 
 
 
-           
+
+
+
+
+
     property global_dof_interpolation_points:
         """ (3xN) matrix of global interpolation points for the space, where each column is the
             coordinate of an interpolation points. """
@@ -228,11 +228,15 @@ def function_space(Grid grid, kind, order, domains=None, cbool closed=True, cboo
             "DP" : Discontinuous and elementwise polynomial functions.
             "RT": Raviart-Thomas Vector spaces.
             "RWG": RWG Vector spaces.
+            "NC": Nedelec Vector spaces.
+            "SNC": Scaled Nedelec Vector spaces.
 
             "B-P": Polynomial spaces on barycentric grids.
             "B-DP": Polynomial discontinuous spaces on barycentric grids.
             "B-RT": Raviart-Thomas Vector spaces on barycentric grids.
             "B-RWG": RWG Vector spaces on barycentric grids.
+            "B-NC": Nedelec Vector spaces on barycentric grids.
+            "B-SNC": Scaled Nedelec Vector spaces on barycentric grids.
 
             "DUAL": Dual space on dual grid (only implemented for constants).
             "BC": Buffa-Christian Vector space.
@@ -255,7 +259,7 @@ def function_space(Grid grid, kind, order, domains=None, cbool closed=True, cboo
     functions (kind="DP", order=0) and the space of continuous,
     piecewise linear functions (kind="P", order=1).
 
-    This is a factory function that initializes a space object. To 
+    This is a factory function that initializes a space object. To
     see a detailed help for space objects see the documentation
     of the instantiated object.
 
@@ -325,6 +329,24 @@ def function_space(Grid grid, kind, order, domains=None, cbool closed=True, cboo
         else:
             s.impl_.assign(reverse_const_pointer_cast(
                     shared_ptr[c_Space[double]](adaptiveRaviartThomas0VectorSpace[double](grid.impl_, domains, closed))))
+    elif kind=="NC":
+        if order!=0:
+            raise ValueError("Only 0 order Nedelec spaces are implemented.")
+        if domains is None:
+            s.impl_.assign(reverse_const_pointer_cast(
+                    shared_ptr[c_Space[double]](adaptiveNedelec0VectorSpace[double](grid.impl_))))
+        else:
+            s.impl_.assign(reverse_const_pointer_cast(
+                    shared_ptr[c_Space[double]](adaptiveNedelec0VectorSpace[double](grid.impl_, domains, closed))))
+    elif kind=="SNC":
+        if order!=0:
+            raise ValueError("Only 0 order Nedelec spaces are implemented.")
+        if domains is None:
+            s.impl_.assign(reverse_const_pointer_cast(
+                    shared_ptr[c_Space[double]](adaptiveScaledNedelec0VectorSpace[double](grid.impl_))))
+        else:
+            s.impl_.assign(reverse_const_pointer_cast(
+                    shared_ptr[c_Space[double]](adaptiveScaledNedelec0VectorSpace[double](grid.impl_, domains, closed))))
     elif kind=="RWG":
         if order!=0:
             raise ValueError("Only 0 order RWG spaces are implemented.")
@@ -364,6 +386,22 @@ def function_space(Grid grid, kind, order, domains=None, cbool closed=True, cboo
         else:
             s.impl_.assign(reverse_const_pointer_cast(
                     shared_ptr[c_Space[double]](adaptiveRaviartThomas0VectorSpaceBarycentric[double](grid.impl_))))
+    elif kind=="B-NC":
+        if order!=0:
+            raise ValueError("Only 0 order Nedelec spaces on barycentric grids are supported.")
+        if domains is not None:
+            raise ValueError("Spaces on subdomains are not supported on barycentric grids.")
+        else:
+            s.impl_.assign(reverse_const_pointer_cast(
+                    shared_ptr[c_Space[double]](adaptiveNedelec0VectorSpaceBarycentric[double](grid.impl_))))
+    elif kind=="B-SNC":
+        if order!=0:
+            raise ValueError("Only 0 order Nedelec spaces on barycentric grids are supported.")
+        if domains is not None:
+            raise ValueError("Spaces on subdomains are not supported on barycentric grids.")
+        else:
+            s.impl_.assign(reverse_const_pointer_cast(
+                    shared_ptr[c_Space[double]](adaptiveScaledNedelec0VectorSpaceBarycentric[double](grid.impl_))))
     elif kind=="B-RWG":
         if order!=0:
             raise ValueError("Only 0 order RWG spaces on barycentric grids are supported.")
@@ -393,15 +431,12 @@ def evaluate_local_surface_gradient_ext(Space space, Entity0 element, object loc
     if np.isreal(local_coefficients).all():
         coeffs_real = local_coefficients
         return eigen_matrix_to_np_float64(
-                c_evaluateSurfaceGradients[double](deref(space.impl_), deref(element.impl_), 
+                c_evaluateSurfaceGradients[double](deref(space.impl_), deref(element.impl_),
                                             np_to_eigen_matrix_float64(local_coordinates),
                                             np_to_eigen_vector_float64(local_coefficients)))
     else:
         coeffs_complex = local_coefficients
         return eigen_matrix_to_np_complex128(
-                c_evaluateSurfaceGradients[complex_double](deref(space.impl_), deref(element.impl_), 
+                c_evaluateSurfaceGradients[complex_double](deref(space.impl_), deref(element.impl_),
                                                     np_to_eigen_matrix_float64(local_coordinates),
                                                     np_to_eigen_vector_complex128(local_coefficients)))
-
-
- 

@@ -36,6 +36,8 @@ cdef class Shapeset:
 
         if what == 1:
             return _3d_array_to_numpy(basis_data.values)
+        if what == 2:
+            return _4d_array_to_numpy(basis_data.derivatives)
         if what == 3:
             return (_3d_array_to_numpy(basis_data.values),
                     _4d_array_to_numpy(basis_data.derivatives))

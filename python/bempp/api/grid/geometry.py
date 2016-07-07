@@ -26,6 +26,14 @@ class Geometry(object):
         """Return the global coordinates associated with the given local coordinates."""
         return self._impl.local2global(local_coordinates)
 
+    def jacobians_transposed(self, local_coordinates):
+        """Return a list of transposed Jacobians associated with the given local coordinates."""
+        return self._impl.jacobians_transposed(local_coordinates)
+
+    def jacobian_inverses_transposed(self, local_coordinates):
+        """Return a list of inverse transposed Jacobians associated with the given local coordinates."""
+        return self._impl.jacobian_inverses_transposed(local_coordinates)
+
     @property
     def corners(self):
         """Return a (3xn) array whose columns are the corners of the entity."""

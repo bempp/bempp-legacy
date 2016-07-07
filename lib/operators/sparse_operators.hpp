@@ -76,6 +76,7 @@ maxwellIdentityOperator(
 
 }
 
+
 template <typename BasisFunctionType, typename ResultType>
 shared_ptr<const ElementaryLocalOperator<BasisFunctionType,ResultType>>
 laplaceBeltramiOperator(
@@ -106,7 +107,7 @@ laplaceBeltramiOperator(
       IntegrandFunctor;
 
   typedef GeneralElementaryLocalOperator<BasisFunctionType, ResultType> Op;
-  return 
+  return
       shared_ptr<const ElementaryLocalOperator<BasisFunctionType,ResultType>>(
               new GeneralElementaryLocalOperator<BasisFunctionType,ResultType>(domain, range, dualToRange, label, symmetry,
                              TransformationFunctor(), TransformationFunctor(),
@@ -117,4 +118,3 @@ laplaceBeltramiOperator(
 }
 
 #endif
-
