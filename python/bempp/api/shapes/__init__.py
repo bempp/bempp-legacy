@@ -1,6 +1,6 @@
 __all__ = ['sphere', 'ellipsoid', 'cube',
            'almond', 'regular_sphere', 'reentrant_cube',
-           'letters_b','letters_be','letters_bempp']
+           'bempp','sierpinski_pyramid']
 
 from .shapes import sphere, ellipsoid, cube, almond, regular_sphere, reentrant_cube
 from .letters import letters_bempp as bempp
