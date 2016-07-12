@@ -10,13 +10,14 @@ class TestAssembler(TestCase):
         space = bempp.api.function_space(grid, "P", 1)
         pc_space = bempp.api.function_space(grid, "DP", 0)
         rt_space = bempp.api.function_space(grid, "RT", 0)
+        nc_space = bempp.api.function_space(grid, "NC", 0)
 
         self._real_operator = bempp.api.operators.boundary.laplace.single_layer(
             space, space, space)
         self._real_operator_2 = bempp.api.operators.boundary.laplace.single_layer(
             space, space, pc_space)
         self._complex_operator = bempp.api.operators.boundary.maxwell.electric_field(
-            rt_space, rt_space, rt_space, 1)
+            rt_space, rt_space, nc_space, 1)
 
         self._rows = (5, 10)
         self._cols = (73, 100)

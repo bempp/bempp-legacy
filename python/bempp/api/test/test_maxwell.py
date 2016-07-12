@@ -58,26 +58,24 @@ class TestMaxwell(TestCase):
             scale = h1kr / r
             return np.array([-y * scale, x * scale, 0.])
 
-        space = bempp.api.function_space(grid, "RT", 0)
+        rt_space = bempp.api.function_space(grid, "RT", 0)
+        nc_space = bempp.api.function_space(grid, "NC", 0)
 
         efie = bempp.api.operators.boundary.maxwell.electric_field(
-            space, space, space, k, parameters=parameters)
+            rt_space, rt_space, nc_space, k, parameters=parameters)
         mfie = bempp.api.operators.boundary.maxwell.magnetic_field(
-            space, space, space, k, parameters=parameters)
-        ident = bempp.api.operators.boundary.sparse.maxwell_identity(
-            space, space, space, parameters=parameters)
+            rt_space, rt_space, nc_space, k, parameters=parameters)
+        ident = bempp.api.operators.boundary.sparse.identity(
+            rt_space, rt_space, nc_space, parameters=parameters)
 
         dirichlet_grid_fun = bempp.api.GridFunction(
-            space, fun=eval_dirichlet_data)
+            rt_space, fun=eval_dirichlet_data)
         rhs = -(.5 * ident + mfie) * dirichlet_grid_fun
-        #rhs_coeffs = -(.5 * ident.weak_form() + mfie.weak_form() ) * dirichlet_grid_fun.coefficients
 
         sol = bempp.api.linalg.lu(efie, rhs)
-        #sol_coefficients = solve(bempp.api.as_matrix(efie.weak_form()), rhs_coeffs)
-        #sol = bempp.api.GridFunction(space, coefficients=sol_coefficients)
 
         exact_solution = bempp.api.GridFunction(
-            space, fun=eval_exact_neumann_data)
+            rt_space, fun=eval_exact_neumann_data)
         rel_error = (sol - exact_solution).l2_norm() / exact_solution.l2_norm()
         self.assertTrue(
             rel_error < 2E-2, msg="Actual error: {0}. Expected error: 2E-2".format(rel_error))
@@ -103,7 +101,9 @@ class TestMaxwell(TestCase):
         efie_squared, efie = bempp.api.operators.boundary.maxwell.calderon_electric_field(
             grid, k)
         rwg_space = efie_squared.domain
-        bc_space = efie_squared.dual_to_range
+        snc_space = bempp.api.function_space(grid, "B-SNC", 0)
+        bc_space = bempp.api.function_space(grid, "BC", 0)
+        tbc_space = efie_squared.dual_to_range
 
         def eval_dirichlet_data(point, normal, domain_index, result):
             x, y, z = point - source
@@ -137,9 +137,9 @@ class TestMaxwell(TestCase):
             return np.array([-y * scale, x * scale, 0.])
 
         mfie = bempp.api.operators.boundary.maxwell.magnetic_field(
-            rwg_space, bc_space, rwg_space, k)
-        ident = bempp.api.operators.boundary.sparse.maxwell_identity(
-            rwg_space, bc_space, rwg_space)
+            rwg_space, bc_space, snc_space, k)
+        ident = bempp.api.operators.boundary.sparse.identity(
+            rwg_space, bc_space, snc_space)
 
         dirichlet_grid_fun = bempp.api.GridFunction(
             rwg_space, fun=eval_dirichlet_data)
@@ -208,27 +208,28 @@ class TestMaxwell(TestCase):
             scale = h1kr / r
             return np.array([-y * scale, x * scale, 0.])
 
-        space = bempp.api.function_space(grid, "RWG", 0)
+        rwg_space = bempp.api.function_space(grid, "RWG", 0)
+        snc_space = bempp.api.function_space(grid, "SNC", 0)
 
         efie = bempp.api.operators.boundary.maxwell.electric_field(
-            space, space, space, k, parameters=parameters)
+            rwg_space, rwg_space, snc_space, k, parameters=parameters)
         mfie = bempp.api.operators.boundary.maxwell.magnetic_field(
-            space, space, space, k, parameters=parameters)
-        ident = bempp.api.operators.boundary.sparse.maxwell_identity(
-            space, space, space, parameters=parameters)
+            rwg_space, rwg_space, snc_space, k, parameters=parameters)
+        ident = bempp.api.operators.boundary.sparse.identity(
+            rwg_space, rwg_space, snc_space, parameters=parameters)
 
         dirichlet_grid_fun = bempp.api.GridFunction(
-            space, fun=eval_dirichlet_data)
+            rwg_space, fun=eval_dirichlet_data)
         rhs_coeffs = -(.5 * ident.weak_form() + mfie.weak_form()
                        ) * dirichlet_grid_fun.coefficients
 
         from scipy.linalg import solve
         sol_coefficients = solve(
             bempp.api.as_matrix(efie.weak_form()), rhs_coeffs)
-        sol = bempp.api.GridFunction(space, coefficients=sol_coefficients)
+        sol = bempp.api.GridFunction(rwg_space, coefficients=sol_coefficients)
 
         exact_solution = bempp.api.GridFunction(
-            space, fun=eval_exact_neumann_data)
+            rwg_space, fun=eval_exact_neumann_data)
         rel_error = (sol - exact_solution).l2_norm() / exact_solution.l2_norm()
         self.assertTrue(
             rel_error < 2E-2, msg="Actual error: {0}. Expected error: 2E-2".format(rel_error))
@@ -325,7 +326,8 @@ class TestMaxwell(TestCase):
         bempp.api.global_parameters.assembly.potential_operator_assembly_type = 'dense'
         grid = bempp.api.shapes.regular_sphere(4)
 
-        space = bempp.api.function_space(grid, 'RWG', 0)
+        rwg_space = bempp.api.function_space(grid, 'RWG', 0)
+        snc_space = bempp.api.function_space(grid, "SNC", 0)
 
         k = 1
 
@@ -336,12 +338,12 @@ class TestMaxwell(TestCase):
             field = h1kr * np.array([-x[1] / r, x[0] / r, 0.])
             res[:] = np.cross(field, n)
 
-        grid_fun = bempp.api.GridFunction(space, fun=dirichlet_data)
+        grid_fun = bempp.api.GridFunction(rwg_space, fun=dirichlet_data)
 
-        ident = bempp.api.operators.boundary.sparse.maxwell_identity(
-            space, space, space)
+        ident = bempp.api.operators.boundary.sparse.identity(
+            rwg_space, rwg_space, snc_space)
         efie = bempp.api.operators.boundary.maxwell.electric_field(
-            space, space, space, k)
+            rwg_space, rwg_space, snc_space, k)
 
         sol = bempp.api.linalg.lu(efie, ident * grid_fun)
 
@@ -351,7 +353,7 @@ class TestMaxwell(TestCase):
         points = np.vstack([np.cos(theta), np.sin(
             theta), np.zeros(100, dtype='float64')])
 
-        far_field = electric_far_field(space, points, k) * sol
+        far_field = electric_far_field(rwg_space, points, k) * sol
         exact = np.vstack([points[1], -points[0], np.zeros(100)])
 
         rel_error = np.linalg.norm(far_field - exact) / np.linalg.norm(exact)

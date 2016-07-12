@@ -57,7 +57,7 @@ def identity(domain, range_, dual_to_range,
             simple_test_trial_integrand_functor(),
             label, symmetry, parameters)
 
-def maxwell_identity(domain, range_, dual_to_range,
+def _maxwell_identity(domain, range_, dual_to_range,
                      label="MAXWELL_IDENTITY", symmetry='no_symmetry',
                      parameters=None):
     """Return the Maxwell identity operator.
@@ -88,7 +88,6 @@ def maxwell_identity(domain, range_, dual_to_range,
             domain.evaluation_functor,
             maxwell_test_trial_integrand_functor(),
             label, symmetry, parameters)
-    id_op.range_identity_operator = maxwell_identity
     return id_op
 
 

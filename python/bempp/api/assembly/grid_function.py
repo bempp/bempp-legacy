@@ -94,7 +94,7 @@ class GridFunction(object):
     """
 
     def __init__(self, space, dual_space=None, fun=None, coefficients=None,
-                 projections=None, parameters=None, identity_operator=None):
+                 projections=None, parameters=None):
 
         import bempp.api
         import numpy as np
@@ -109,10 +109,7 @@ class GridFunction(object):
             raise ValueError("Exactly one of 'fun', 'coefficients' or 'projections' must " +
                              "be given.")
 
-        if identity_operator is None:
-            self._identity_operator = bempp.api.operators.boundary.sparse.identity
-        else:
-            self._identity_operator = identity_operator
+        self._identity_operator = bempp.api.operators.boundary.sparse.identity
 
         self._coefficients = None
         self._dual_coefficients = None
@@ -430,11 +427,6 @@ class GridFunction(object):
     def component_count(self):
         """Return the number of components of the grid function values."""
         return self.space.codomain_dimension
-
-    @property
-    def identity_operator(self):
-        """Return the identity operator used for projections."""
-        return self._identity_operator
 
     @property
     def dtype(self):

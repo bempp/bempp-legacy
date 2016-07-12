@@ -41,7 +41,6 @@ class BoundaryOperator(object):
         self._domain_map = None
         self._label = label
         self._range_map = None
-        self._identity_operator = bempp.api.operators.boundary.sparse.identity
 
     @property
     def domain(self):
@@ -102,7 +101,7 @@ class BoundaryOperator(object):
                 raise ValueError(
                     "Operator domain space does not match GridFunction space.")
             return GridFunction(self.range, projections=self.weak_form() * other.coefficients,
-                                identity_operator=self._identity_operator, dual_space=self.dual_to_range)
+                                dual_space=self.dual_to_range)
         else:
             return NotImplemented
 
@@ -126,10 +125,6 @@ class BoundaryOperator(object):
     def strong_form(self, recompute=False):
         """Return a discrete operator  that maps into the range space.
 
-        The computed map into a range space is based on a simple mass
-        matrix solve. The identity operator for the range space can be
-        modified by the attribute 'range_identity_operator'.
-
         Parameters
         ----------
         recompute : bool
@@ -141,9 +136,10 @@ class BoundaryOperator(object):
 
         if self._range_map is None:
             from bempp.api.assembly import InverseSparseDiscreteBoundaryOperator
+            from bempp.api.operators.boundary.sparse import identity
 
             self._range_map = InverseSparseDiscreteBoundaryOperator(
-                self._identity_operator(self.range, self.range, self.dual_to_range).weak_form())
+                identity(self.range, self.range, self.dual_to_range).weak_form())
 
         return self._range_map * self.weak_form(recompute)
 
@@ -176,18 +172,6 @@ class BoundaryOperator(object):
 
         """
         return _AdjointBoundaryOperator(self, range_)
-
-    @property
-    def range_identity_operator(self):
-        """Return the identity operator used for the range space."""
-        return self._identity_operator
-
-    @range_identity_operator.setter
-    def range_identity_operator(self, op):
-        """Set the identity operator used for the range space."""
-        self._identity_operator = op
-        self._range_map = None
-
 
 class ZeroBoundaryOperator(BoundaryOperator):
     """A boundary operator that represents a zero operator.
@@ -425,16 +409,12 @@ class _SumBoundaryOperator(BoundaryOperator):
                 not op1.range.is_compatible(op2.range) or
                 not op1.dual_to_range.is_compatible(op2.dual_to_range)):
             raise ValueError("Spaces not compatible.")
-        if op1.range_identity_operator != op2.range_identity_operator:
-            raise ValueError("Range identity operators not identical.")
 
         super(_SumBoundaryOperator, self).__init__(
             op1.domain, op1.range, op1.dual_to_range, label="(" + op1.label + " + " + op2.label + ")")
 
         self._op1 = op1
         self._op2 = op2
-
-        self.range_identity_operator = op1.range_identity_operator
 
     def _weak_form_impl(self):
         return self._op1.weak_form() + self._op2.weak_form()
@@ -446,8 +426,6 @@ class _ScaledBoundaryOperator(BoundaryOperator):
     def __init__(self, op, alpha):
         super(_ScaledBoundaryOperator, self).__init__(
             op.domain, op.range, op.dual_to_range, label=str(alpha) + " * " + op.label)
-
-        self.range_identity_operator = op.range_identity_operator
 
         self._op = op
         self._alpha = alpha
@@ -469,8 +447,6 @@ class _ProductBoundaryOperator(BoundaryOperator):
 
         self._op1 = op1
         self._op2 = op2
-
-        self.range_identity_operator = op1.range_identity_operator
 
     def _weak_form_impl(self):
         return self._op1.weak_form() * self._op2.strong_form()

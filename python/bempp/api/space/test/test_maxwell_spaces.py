@@ -60,11 +60,11 @@ class TestMaxwellSpaces(TestCase):
         rt_space = bempp.api.function_space(self._grid, "B-RT", 0)
 
         op1 = bempp.api.operators.boundary.sparse.identity(nc_space, nc_space, nc_space)
-        op2 = bempp.api.operators.boundary.sparse.maxwell_identity(rt_space, nc_space, nc_space)
+        op2 = bempp.api.operators.boundary.sparse._maxwell_identity(rt_space, nc_space, nc_space)
 
         m1 = bempp.api.as_matrix(op1.weak_form())
         m2 = bempp.api.as_matrix(op2.weak_form())
-        max_diff = np.max(np.abs((m1 - m2).data))
+        max_diff = np.max(np.abs((m1 + m2).data))
         self.assertAlmostEqual(max_diff, 0)
 
     @requiresgmsh
@@ -250,12 +250,12 @@ class TestMaxwellSpaces(TestCase):
         space_rt = bempp.api.function_space(grid, "RT", 0)
         space_nc = bempp.api.function_space(grid, "NC", 0)
 
-        op1 = bempp.api.operators.boundary.sparse.maxwell_identity(space_rt, space_rt, space_nc)
+        op1 = bempp.api.operators.boundary.sparse._maxwell_identity(space_rt, space_rt, space_nc)
         op2 = bempp.api.operators.boundary.sparse.identity(space_nc, space_rt, space_nc)
 
         m1 = bempp.api.as_matrix(op1.weak_form())
         m2 = bempp.api.as_matrix(op2.weak_form())
-        diff = m1-m2
+        diff = m1 + m2
 
         self.assertAlmostEqual(np.max(np.abs(diff.data)),0)
 
@@ -267,12 +267,14 @@ class TestMaxwellSpaces(TestCase):
         space_rwg = bempp.api.function_space(grid, "RWG", 0)
         space_nc = bempp.api.function_space(grid, "SNC", 0)
 
-        op1 = bempp.api.operators.boundary.sparse.maxwell_identity(space_rwg, space_rwg, space_nc)
+        op1 = bempp.api.operators.boundary.sparse._maxwell_identity(space_rwg, space_rwg, space_nc)
         op2 = bempp.api.operators.boundary.sparse.identity(space_nc, space_rwg, space_nc)
 
         m1 = bempp.api.as_matrix(op1.weak_form())
         m2 = bempp.api.as_matrix(op2.weak_form())
-        diff = m1-m2
+
+        # Need that they are negative to each other
+        diff = m1 + m2
 
         self.assertAlmostEqual(np.max(np.abs(diff.data)),0)
 

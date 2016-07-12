@@ -112,7 +112,7 @@ ParameterList GlobalParameters::parameterList() {
   parameters.put("options.hmat.compressionAlgorithm", std::string("aca"));
 
   // Enable coarsening
-  parameters.put("options.hmat.coarsening", true);
+  parameters.put("options.hmat.coarsening", false);
 
   // Accuracy for coarsening
   // 0: Use same as options.hmat.eps
