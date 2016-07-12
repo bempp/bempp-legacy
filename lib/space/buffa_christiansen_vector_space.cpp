@@ -408,6 +408,7 @@ void BuffaChristiansenVectorSpace<BasisFunctionType>::assignDofsImpl() {
       ffCoeff(2,ffCoeff.cols()-1) = 1./2;      }
       // Go around loop
       for (int i=N-1; faceNum!=fineFacesonEdge(ent1Number,0);--i){
+          if(i<-N*3){throw std::runtime_error("Error probably caused by a bad mesh. Please check your normal orientations");}
           {// Before
           Matrix<BasisFunctionType> &ffCoeff = m_fineFaceCoeffs[faceNum];
           if(vertexOnBoundary[coarseVerticesonEdge(ent1Number,0)])
@@ -459,6 +460,7 @@ void BuffaChristiansenVectorSpace<BasisFunctionType>::assignDofsImpl() {
       ffCoeff(2,ffCoeff.cols()-1) = 1./2;      }
       // Go around loop
       for (int i=N-1; faceNum!=fineFacesonEdge(ent1Number,1);--i){
+          if(i<-N*3){throw std::runtime_error("Error probably caused by a bad mesh. Please check your normal orientations");}
           {// Before
           Matrix<BasisFunctionType> &ffCoeff = m_fineFaceCoeffs[faceNum];
           if(vertexOnBoundary[coarseVerticesonEdge(ent1Number,1)])
