@@ -18,7 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#include "twisted_buffa_christiansen_vector_space.hpp"
+#include "rotated_buffa_christiansen_vector_space.hpp"
 #include "adaptive_space.hpp"
 
 #include "piecewise_linear_discontinuous_scalar_space.hpp"
@@ -48,12 +48,12 @@ namespace Bempp {
 namespace {
 
 template <typename BasisFunctionType>
-class TwistedBuffaChristiansenSpaceFactory : public SpaceFactory<BasisFunctionType> {
+class RotatedBuffaChristiansenSpaceFactory : public SpaceFactory<BasisFunctionType> {
     public:
        shared_ptr<Space<BasisFunctionType>> create(const shared_ptr<const Grid> &grid,
                                const GridSegment &segment) const override{
            
-           return shared_ptr<Space<BasisFunctionType>>(new TwistedBuffaChristiansenVectorSpace<BasisFunctionType>(grid, segment));
+           return shared_ptr<Space<BasisFunctionType>>(new RotatedBuffaChristiansenVectorSpace<BasisFunctionType>(grid, segment));
        }
            
 };
@@ -62,7 +62,7 @@ class TwistedBuffaChristiansenSpaceFactory : public SpaceFactory<BasisFunctionTy
 
 /** \cond PRIVATE */
 template <typename BasisFunctionType>
-struct TwistedBuffaChristiansenVectorSpace<BasisFunctionType>::Impl {
+struct RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::Impl {
   typedef Fiber::HcurlFunctionValueFunctor<CoordinateType> TransformationFunctor;
 
   Impl() : transformations(TransformationFunctor()) {}
@@ -73,7 +73,7 @@ struct TwistedBuffaChristiansenVectorSpace<BasisFunctionType>::Impl {
 /** \endcond */
 
 template <typename BasisFunctionType>
-TwistedBuffaChristiansenVectorSpace<BasisFunctionType>::TwistedBuffaChristiansenVectorSpace(
+RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::RotatedBuffaChristiansenVectorSpace(
     const shared_ptr<const Grid> &grid, bool putDofsOnBoundaries)
     : Base(grid->barycentricGrid()), m_impl(new Impl), m_segment(GridSegment::wholeGrid(*grid)),
       m_putDofsOnBoundaries(putDofsOnBoundaries), m_dofMode(EDGE_ON_SEGMENT),
@@ -82,21 +82,21 @@ TwistedBuffaChristiansenVectorSpace<BasisFunctionType>::TwistedBuffaChristiansen
 }
 
 template <typename BasisFunctionType>
-TwistedBuffaChristiansenVectorSpace<BasisFunctionType>::TwistedBuffaChristiansenVectorSpace(
+RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::RotatedBuffaChristiansenVectorSpace(
     const shared_ptr<const Grid> &grid, const GridSegment &segment,
     bool putDofsOnBoundaries, int dofMode)
     : Base(grid->barycentricGrid()), m_impl(new Impl), m_segment(segment),
       m_putDofsOnBoundaries(putDofsOnBoundaries), m_dofMode(dofMode),
       m_originalGrid(grid), m_sonMap(grid->barycentricSonMap()) {
   if (!(dofMode & (EDGE_ON_SEGMENT | ELEMENT_ON_SEGMENT)))
-    throw std::invalid_argument("TwistedBuffaChristiansenVectorSpace::"
-                                "TwistedBuffaChristiansenVectorSpace(): "
+    throw std::invalid_argument("RotatedBuffaChristiansenVectorSpace::"
+                                "RotatedBuffaChristiansenVectorSpace(): "
                                 "invalid dofMode");
   initialize();
 }
 
 template <typename BasisFunctionType>
-bool TwistedBuffaChristiansenVectorSpace<BasisFunctionType>::spaceIsCompatible(
+bool RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::spaceIsCompatible(
     const Space<BasisFunctionType> &other) const {
 
   if (other.grid().get() == this->grid().get()) {
@@ -106,13 +106,13 @@ bool TwistedBuffaChristiansenVectorSpace<BasisFunctionType>::spaceIsCompatible(
 }
 
 template <typename BasisFunctionType>
-void TwistedBuffaChristiansenVectorSpace<BasisFunctionType>::initialize() {
+void RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::initialize() {
   if (this->grid()->dim() != 2 || this->grid()->dimWorld() != 3)
-    throw std::invalid_argument("TwistedBuffaChristiansenVectorSpace::initialize(): "
+    throw std::invalid_argument("RotatedBuffaChristiansenVectorSpace::initialize(): "
                                 "grid must be 2-dimensional and embedded "
                                 "in 3-dimensional space");
   if (m_putDofsOnBoundaries)
-    throw std::invalid_argument("TwistedBuffaChristiansenVectorSpace::initialize(): "
+    throw std::invalid_argument("RotatedBuffaChristiansenVectorSpace::initialize(): "
                                 "Buffa-Christian spaces do not yet support DOFs "
                                 "on boundaries");
   m_view = this->grid()->leafView();
@@ -120,11 +120,11 @@ void TwistedBuffaChristiansenVectorSpace<BasisFunctionType>::initialize() {
 }
 
 template <typename BasisFunctionType>
-TwistedBuffaChristiansenVectorSpace<BasisFunctionType>::~TwistedBuffaChristiansenVectorSpace() {}
+RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::~RotatedBuffaChristiansenVectorSpace() {}
 
 template <typename BasisFunctionType>
 shared_ptr<const Space<BasisFunctionType>>
-TwistedBuffaChristiansenVectorSpace<BasisFunctionType>::discontinuousSpace(
+RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::discontinuousSpace(
     const shared_ptr<const Space<BasisFunctionType>> &self) const {
   if (!m_discontinuousSpace) {
     tbb::mutex::scoped_lock lock(m_discontinuousSpaceMutex);
@@ -137,30 +137,30 @@ TwistedBuffaChristiansenVectorSpace<BasisFunctionType>::discontinuousSpace(
 }
 
 template <typename BasisFunctionType>
-bool TwistedBuffaChristiansenVectorSpace<BasisFunctionType>::isDiscontinuous() const {
+bool RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::isDiscontinuous() const {
   return false;
 }
 
 template <typename BasisFunctionType>
-const typename TwistedBuffaChristiansenVectorSpace<
+const typename RotatedBuffaChristiansenVectorSpace<
     BasisFunctionType>::CollectionOfShapesetTransformations &
-TwistedBuffaChristiansenVectorSpace<BasisFunctionType>::basisFunctionValue() const {
+RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::basisFunctionValue() const {
 
   return m_impl->transformations;
 }
 
 template <typename BasisFunctionType>
-int TwistedBuffaChristiansenVectorSpace<BasisFunctionType>::domainDimension() const {
+int RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::domainDimension() const {
   return 2;
 }
 
 template <typename BasisFunctionType>
-int TwistedBuffaChristiansenVectorSpace<BasisFunctionType>::codomainDimension() const {
+int RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::codomainDimension() const {
   return 3;
 }
 
 template <typename BasisFunctionType>
-ElementVariant TwistedBuffaChristiansenVectorSpace<BasisFunctionType>::elementVariant(
+ElementVariant RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::elementVariant(
     const Entity<0> &element) const {
   GeometryType type = element.type();
   if (type.isTriangle())
@@ -168,22 +168,22 @@ ElementVariant TwistedBuffaChristiansenVectorSpace<BasisFunctionType>::elementVa
   else if (type.isQuadrilateral())
     return 4;
   else
-    throw std::runtime_error("TwistedBuffaChristiansenVectorSpace::"
+    throw std::runtime_error("RotatedBuffaChristiansenVectorSpace::"
                              "elementVariant(): invalid geometry type, "
                              "this shouldn't happen!");
 }
 
 template <typename BasisFunctionType>
-void TwistedBuffaChristiansenVectorSpace<BasisFunctionType>::setElementVariant(
+void RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::setElementVariant(
     const Entity<0> &element, ElementVariant variant) {
   if (variant != elementVariant(element))
     // for this space, the element variants are unmodifiable,
-    throw std::runtime_error("TwistedBuffaChristiansenVectorSpace::"
+    throw std::runtime_error("RotatedBuffaChristiansenVectorSpace::"
                              "setElementVariant(): invalid variant");
 }
 
 template <typename BasisFunctionType>
-void TwistedBuffaChristiansenVectorSpace<BasisFunctionType>::assignDofsImpl() {
+void RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::assignDofsImpl() {
   // Set up useful numbers, maps, etc.
   int edgeCountCoarseGrid = m_originalGrid->leafView()->entityCount(1);
   int vertexCountCoarseGrid = m_originalGrid->leafView()->entityCount(2);
@@ -532,7 +532,7 @@ void TwistedBuffaChristiansenVectorSpace<BasisFunctionType>::assignDofsImpl() {
 }
 
 template <typename BasisFunctionType>
-const Fiber::Shapeset<BasisFunctionType> & TwistedBuffaChristiansenVectorSpace<BasisFunctionType>::shapeset(
+const Fiber::Shapeset<BasisFunctionType> & RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::shapeset(
     const Entity<0> &element) const {
   const Mapper &elementMapper = m_view->elementMapper();
   int index = elementMapper.entityIndex(element);
@@ -540,17 +540,17 @@ const Fiber::Shapeset<BasisFunctionType> & TwistedBuffaChristiansenVectorSpace<B
 }
 
 template <typename BasisFunctionType>
-size_t TwistedBuffaChristiansenVectorSpace<BasisFunctionType>::globalDofCount() const {
+size_t RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::globalDofCount() const {
   return m_global2localDofs.size();
 }
 
 template <typename BasisFunctionType>
-size_t TwistedBuffaChristiansenVectorSpace<BasisFunctionType>::flatLocalDofCount() const {
+size_t RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::flatLocalDofCount() const {
   return m_flatLocal2localDofs.size();
 }
 
 template <typename BasisFunctionType>
-void TwistedBuffaChristiansenVectorSpace<BasisFunctionType>::getGlobalDofs(
+void RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::getGlobalDofs(
     const Entity<0> &element, std::vector<GlobalDofIndex> &dofs,
     std::vector<BasisFunctionType> &dofWeights) const {
   const Mapper &mapper = m_view->elementMapper();
@@ -560,7 +560,7 @@ void TwistedBuffaChristiansenVectorSpace<BasisFunctionType>::getGlobalDofs(
 }
 
 template <typename BasisFunctionType>
-void TwistedBuffaChristiansenVectorSpace<BasisFunctionType>::global2localDofs(
+void RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::global2localDofs(
     const std::vector<GlobalDofIndex> &globalDofs,
     std::vector<std::vector<LocalDof>> &localDofs,
     std::vector<std::vector<BasisFunctionType>> &localDofWeights) const {
@@ -579,7 +579,7 @@ void TwistedBuffaChristiansenVectorSpace<BasisFunctionType>::global2localDofs(
 }
 
 template <typename BasisFunctionType>
-void TwistedBuffaChristiansenVectorSpace<BasisFunctionType>::flatLocal2localDofs(
+void RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::flatLocal2localDofs(
     const std::vector<FlatLocalDofIndex> &flatLocalDofs,
     std::vector<LocalDof> &localDofs) const {
   localDofs.resize(flatLocalDofs.size());
@@ -588,7 +588,7 @@ void TwistedBuffaChristiansenVectorSpace<BasisFunctionType>::flatLocal2localDofs
 }
 
 template <typename BasisFunctionType>
-void TwistedBuffaChristiansenVectorSpace<BasisFunctionType>::getGlobalDofPositions(
+void RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::getGlobalDofPositions(
     std::vector<Point3D<CoordinateType>> &positions) const {
   positions.resize(m_globalDofBoundingBoxes.size());
   for (size_t i = 0; i < m_globalDofBoundingBoxes.size(); ++i)
@@ -596,7 +596,7 @@ void TwistedBuffaChristiansenVectorSpace<BasisFunctionType>::getGlobalDofPositio
 }
 
 template <typename BasisFunctionType>
-void TwistedBuffaChristiansenVectorSpace<BasisFunctionType>::getFlatLocalDofPositions(
+void RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::getFlatLocalDofPositions(
     std::vector<Point3D<CoordinateType>> &positions) const {
   std::vector<BoundingBox<CoordinateType>> bboxes;
   getFlatLocalDofBoundingBoxes(bboxes);
@@ -606,13 +606,13 @@ void TwistedBuffaChristiansenVectorSpace<BasisFunctionType>::getFlatLocalDofPosi
 }
 
 template <typename BasisFunctionType>
-void TwistedBuffaChristiansenVectorSpace<BasisFunctionType>::getGlobalDofBoundingBoxes(
+void RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::getGlobalDofBoundingBoxes(
     std::vector<BoundingBox<CoordinateType>> &bboxes) const {
   bboxes = m_globalDofBoundingBoxes;
 }
 
 template <typename BasisFunctionType>
-void TwistedBuffaChristiansenVectorSpace<BasisFunctionType>::getFlatLocalDofBoundingBoxes(
+void RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::getFlatLocalDofBoundingBoxes(
     std::vector<BoundingBox<CoordinateType>> &bboxes) const {
   BoundingBox<CoordinateType> model;
   model.lbound.x = std::numeric_limits<CoordinateType>::max();
@@ -635,7 +635,7 @@ void TwistedBuffaChristiansenVectorSpace<BasisFunctionType>::getFlatLocalDofBoun
     e.geometry().getCorners(acc(elementCorners, index));
     if (acc(elementCorners, index).cols() != 3)
       throw std::runtime_error(
-          "TwistedBuffaChristiansenVectorSpace::getFlatLocalDofBoundingBoxes(): "
+          "RotatedBuffaChristiansenVectorSpace::getFlatLocalDofBoundingBoxes(): "
           "only triangular elements are supported at present");
     it->next();
   }
@@ -661,7 +661,7 @@ void TwistedBuffaChristiansenVectorSpace<BasisFunctionType>::getFlatLocalDofBoun
 }
 
 template <typename BasisFunctionType>
-void TwistedBuffaChristiansenVectorSpace<BasisFunctionType>::getGlobalDofNormals(
+void RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::getGlobalDofNormals(
     std::vector<Point3D<CoordinateType>> &normals) const {
   const int gridDim = 2;
   const int worldDim = 3;
@@ -702,7 +702,7 @@ void TwistedBuffaChristiansenVectorSpace<BasisFunctionType>::getGlobalDofNormals
 }
 
 template <typename BasisFunctionType>
-void TwistedBuffaChristiansenVectorSpace<BasisFunctionType>::getFlatLocalDofNormals(
+void RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::getFlatLocalDofNormals(
     std::vector<Point3D<CoordinateType>> &normals) const {
   const int gridDim = 2;
   const int worldDim = 3;
@@ -740,115 +740,115 @@ void TwistedBuffaChristiansenVectorSpace<BasisFunctionType>::getFlatLocalDofNorm
 }
 
 template <typename BasisFunctionType>
-void TwistedBuffaChristiansenVectorSpace<BasisFunctionType>::dumpClusterIds(
+void RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::dumpClusterIds(
     const char *fileName,
     const std::vector<unsigned int> &clusterIdsOfDofs) const {
   dumpClusterIdsEx(fileName, clusterIdsOfDofs, GLOBAL_DOFS);
 }
 
 template <typename BasisFunctionType>
-void TwistedBuffaChristiansenVectorSpace<BasisFunctionType>::dumpClusterIdsEx(
+void RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::dumpClusterIdsEx(
     const char *fileName, const std::vector<unsigned int> &clusterIdsOfDofs,
     DofType dofType) const {
-  throw std::runtime_error("TwistedBuffaChristiansenVectorSpace::"
+  throw std::runtime_error("RotatedBuffaChristiansenVectorSpace::"
                            "dumpClusterIdsEx(): Not implemented yet");
 }
 
 template <typename BasisFunctionType>
 shared_ptr<Space<BasisFunctionType>>
-adaptiveTwistedBuffaChristiansenVectorSpace(const shared_ptr<const Grid> &grid) {
+adaptiveRotatedBuffaChristiansenVectorSpace(const shared_ptr<const Grid> &grid) {
 
     shared_ptr<SpaceFactory<BasisFunctionType>> factory(
-            new TwistedBuffaChristiansenSpaceFactory<BasisFunctionType>());
+            new RotatedBuffaChristiansenSpaceFactory<BasisFunctionType>());
   return shared_ptr<Space<BasisFunctionType>>(
       new AdaptiveSpace<BasisFunctionType>(factory, grid));
 }
 
 template <typename BasisFunctionType>
 shared_ptr<Space<BasisFunctionType>>
-adaptiveTwistedBuffaChristiansenVectorSpace(const shared_ptr<const Grid> &grid,
+adaptiveRotatedBuffaChristiansenVectorSpace(const shared_ptr<const Grid> &grid,
                                      const std::vector<int> &domains,
                                      bool open) {
 
     shared_ptr<SpaceFactory<BasisFunctionType>> factory(
-            new TwistedBuffaChristiansenSpaceFactory<BasisFunctionType>());
+            new RotatedBuffaChristiansenSpaceFactory<BasisFunctionType>());
   return shared_ptr<Space<BasisFunctionType>>(
       new AdaptiveSpace<BasisFunctionType>(factory, grid, domains, open));
 }
 
 template <typename BasisFunctionType>
 shared_ptr<Space<BasisFunctionType>>
-adaptiveTwistedBuffaChristiansenVectorSpace(const shared_ptr<const Grid> &grid,
+adaptiveRotatedBuffaChristiansenVectorSpace(const shared_ptr<const Grid> &grid,
                                      int domain, bool open) {
 
     shared_ptr<SpaceFactory<BasisFunctionType>> factory(
-            new TwistedBuffaChristiansenSpaceFactory<BasisFunctionType>());
+            new RotatedBuffaChristiansenSpaceFactory<BasisFunctionType>());
   return shared_ptr<Space<BasisFunctionType>>(
       new AdaptiveSpace<BasisFunctionType>(factory, grid, std::vector<int>({domain}), open));
 }
 
 #define INSTANTIATE_FREE_FUNCTIONS(BASIS)                                      \
   template shared_ptr<Space<BASIS>>                                            \
-  adaptiveTwistedBuffaChristiansenVectorSpace<BASIS>(const shared_ptr<const Grid> &); \
+  adaptiveRotatedBuffaChristiansenVectorSpace<BASIS>(const shared_ptr<const Grid> &); \
   template shared_ptr<Space<BASIS>>                                            \
-  adaptiveTwistedBuffaChristiansenVectorSpace<BASIS>(const shared_ptr<const Grid> &,  \
+  adaptiveRotatedBuffaChristiansenVectorSpace<BASIS>(const shared_ptr<const Grid> &,  \
                                               const std::vector<int> &, bool); \
   template shared_ptr<Space<BASIS>>                                            \
-  adaptiveTwistedBuffaChristiansenVectorSpace<BASIS>(const shared_ptr<const Grid> &,  \
+  adaptiveRotatedBuffaChristiansenVectorSpace<BASIS>(const shared_ptr<const Grid> &,  \
                                               int, bool)
 
 FIBER_ITERATE_OVER_BASIS_TYPES(INSTANTIATE_FREE_FUNCTIONS);
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(TwistedBuffaChristiansenVectorSpace);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(RotatedBuffaChristiansenVectorSpace);
 
 } // namespace Bempp
 
 
 /*template <typename BasisFunctionType>
 shared_ptr<Space<BasisFunctionType>>
-adaptiveTwistedBuffaChristiansenVectorSpace(const shared_ptr<const Grid> &grid) {
+adaptiveRotatedBuffaChristiansenVectorSpace(const shared_ptr<const Grid> &grid) {
 
   return shared_ptr<Space<BasisFunctionType>>(
       new AdaptiveSpace<BasisFunctionType,
-                        TwistedBuffaChristiansenVectorSpace<BasisFunctionType>>(grid));
+                        RotatedBuffaChristiansenVectorSpace<BasisFunctionType>>(grid));
 }
 
 template <typename BasisFunctionType>
 shared_ptr<Space<BasisFunctionType>>
-adaptiveTwistedBuffaChristiansenVectorSpace(const shared_ptr<const Grid> &grid,
+adaptiveRotatedBuffaChristiansenVectorSpace(const shared_ptr<const Grid> &grid,
                                      const std::vector<int> &domains,
                                      bool open) {
 
   return shared_ptr<Space<BasisFunctionType>>(
       new AdaptiveSpace<BasisFunctionType,
-                        TwistedBuffaChristiansenVectorSpace<BasisFunctionType>>(
+                        RotatedBuffaChristiansenVectorSpace<BasisFunctionType>>(
           grid, domains, open));
 }
 
 template <typename BasisFunctionType>
 shared_ptr<Space<BasisFunctionType>>
-adaptiveTwistedBuffaChristiansenVectorSpace(const shared_ptr<const Grid> &grid,
+adaptiveRotatedBuffaChristiansenVectorSpace(const shared_ptr<const Grid> &grid,
                                      int domain, bool open) {
 
   return shared_ptr<Space<BasisFunctionType>>(
       new AdaptiveSpace<BasisFunctionType,
-                        TwistedBuffaChristiansenVectorSpace<BasisFunctionType>>(
+                        RotatedBuffaChristiansenVectorSpace<BasisFunctionType>>(
           grid, std::vector<int>({domain}), open));
 }
 
 #define INSTANTIATE_FREE_FUNCTIONS(BASIS)                                      \
   template shared_ptr<Space<BASIS>>                                            \
-  adaptiveTwistedBuffaChristiansenVectorSpace<BASIS>(const shared_ptr<const Grid> &); \
+  adaptiveRotatedBuffaChristiansenVectorSpace<BASIS>(const shared_ptr<const Grid> &); \
   template shared_ptr<Space<BASIS>>                                            \
-  adaptiveTwistedBuffaChristiansenVectorSpace<BASIS>(const shared_ptr<const Grid> &,  \
+  adaptiveRotatedBuffaChristiansenVectorSpace<BASIS>(const shared_ptr<const Grid> &,  \
                                               const std::vector<int> &, bool); \
   template shared_ptr<Space<BASIS>>                                            \
-  adaptiveTwistedBuffaChristiansenVectorSpace<BASIS>(const shared_ptr<const Grid> &,  \
+  adaptiveRotatedBuffaChristiansenVectorSpace<BASIS>(const shared_ptr<const Grid> &,  \
                                               int, bool)
 
 FIBER_ITERATE_OVER_BASIS_TYPES(INSTANTIATE_FREE_FUNCTIONS);
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(TwistedBuffaChristiansenVectorSpace);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(RotatedBuffaChristiansenVectorSpace);
 
 } // namespace Bempp
 

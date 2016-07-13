@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_twisted_buffa_christiansen_vector_space_hpp
-#define bempp_twisted_buffa_christiansen_vector_space_hpp
+#ifndef bempp_rotated_buffa_christiansen_vector_space_hpp
+#define bempp_rotated_buffa_christiansen_vector_space_hpp
 
 #include "../common/common.hpp"
 
@@ -31,7 +31,7 @@
 #include "../grid/grid_view.hpp"
 #include "../common/types.hpp"
 //#include "../fiber/raviart_thomas_0_shapeset_barycentric.hpp"
-#include "../fiber/twisted_buffa_christiansen_shapeset.hpp"
+#include "../fiber/rotated_buffa_christiansen_shapeset.hpp"
 
 #include <boost/scoped_ptr.hpp>
 #include <map>
@@ -48,7 +48,7 @@ class Grid;
 /** \ingroup space
  *  \brief Space of continuous, piecewise linear scalar functions. */
 template <typename BasisFunctionType>
-class TwistedBuffaChristiansenVectorSpace : public Space<BasisFunctionType> {
+class RotatedBuffaChristiansenVectorSpace : public Space<BasisFunctionType> {
   typedef Space<BasisFunctionType> Base;
 
 public:
@@ -59,13 +59,13 @@ public:
   typedef typename Base::CollectionOfBasisTransformations
       CollectionOfBasisTransformations;
 
-  explicit TwistedBuffaChristiansenVectorSpace(const shared_ptr<const Grid> &grid,
+  explicit RotatedBuffaChristiansenVectorSpace(const shared_ptr<const Grid> &grid,
                                      bool putDofsOnBoundaries = false);
-  TwistedBuffaChristiansenVectorSpace(const shared_ptr<const Grid> &grid,
+  RotatedBuffaChristiansenVectorSpace(const shared_ptr<const Grid> &grid,
                             const GridSegment &segment,
                             bool putDofsOnBoundaries = false,
                             int dofMode = EDGE_ON_SEGMENT);
-  virtual ~TwistedBuffaChristiansenVectorSpace();
+  virtual ~RotatedBuffaChristiansenVectorSpace();
 
   virtual shared_ptr<const Space<BasisFunctionType>> discontinuousSpace(
       const shared_ptr<const Space<BasisFunctionType>> &self) const;
@@ -81,7 +81,7 @@ public:
   virtual bool spaceIsCompatible(const Space<BasisFunctionType> &other) const;
 
   virtual SpaceIdentifier spaceIdentifier() const {
-    return TWISTED_BUFFA_CHRISTIANSEN_VECTOR;
+    return ROTATED_BUFFA_CHRISTIANSEN_VECTOR;
   }
 
   /** \brief Return the variant of element \p element.
@@ -144,7 +144,7 @@ private:
   struct Impl;
   boost::scoped_ptr<Impl> m_impl;
   GridSegment m_segment;
-  typedef Fiber::TwistedBuffaChristiansenShapeset<BasisFunctionType> Shapeset;
+  typedef Fiber::RotatedBuffaChristiansenShapeset<BasisFunctionType> Shapeset;
   bool m_putDofsOnBoundaries;
   int m_dofMode;
   std::unique_ptr<GridView> m_view;
@@ -166,19 +166,19 @@ private:
   /** \endcond */
 };
 
-/** \brief Define a TwistedBuffaChristiansenVectorSpace that has an update method for grid refinement. */
+/** \brief Define a RotatedBuffaChristiansenVectorSpace that has an update method for grid refinement. */
 template <typename BasisFunctionType>
-shared_ptr<Space<BasisFunctionType>> adaptiveTwistedBuffaChristiansenVectorSpace(const shared_ptr<const Grid>& grid);
+shared_ptr<Space<BasisFunctionType>> adaptiveRotatedBuffaChristiansenVectorSpace(const shared_ptr<const Grid>& grid);
 
 /** \brief Overload to define a set of domains for the space and whether the space contains boundary entities
  (\p open = true) or not. */
 template <typename BasisFunctionType>
-shared_ptr<Space<BasisFunctionType>> adaptiveTwistedBuffaChristiansenVectorSpace(const shared_ptr<const Grid>& grid,
+shared_ptr<Space<BasisFunctionType>> adaptiveRotatedBuffaChristiansenVectorSpace(const shared_ptr<const Grid>& grid,
         const std::vector<int>& domains, bool open);
 
 /** \brief Overlad. */
 template <typename BasisFunctionType>
-shared_ptr<Space<BasisFunctionType>> adaptiveTwistedBuffaChristiansenVectorSpace(const shared_ptr<const Grid>& grid,
+shared_ptr<Space<BasisFunctionType>> adaptiveRotatedBuffaChristiansenVectorSpace(const shared_ptr<const Grid>& grid,
         int domain, bool open);
 
 } // namespace Bempp

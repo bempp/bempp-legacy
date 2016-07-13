@@ -85,8 +85,8 @@ cdef extern from "bempp/space/rwg_vector_space_barycentric.hpp" namespace "Bempp
     cdef shared_ptr[c_Space[T]] adaptiveRWGVectorSpaceBarycentric[T](const shared_ptr[c_Grid]& grid)
 cdef extern from "bempp/space/buffa_christiansen_vector_space.hpp" namespace "Bempp":
     cdef shared_ptr[c_Space[T]] adaptiveBuffaChristiansenVectorSpace[T](const shared_ptr[c_Grid]& grid)
-cdef extern from "bempp/space/twisted_buffa_christiansen_vector_space.hpp" namespace "Bempp":
-    cdef shared_ptr[c_Space[T]] adaptiveTwistedBuffaChristiansenVectorSpace[T](const shared_ptr[c_Grid]& grid)
+cdef extern from "bempp/space/rotated_buffa_christiansen_vector_space.hpp" namespace "Bempp":
+    cdef shared_ptr[c_Space[T]] adaptiveRotatedBuffaChristiansenVectorSpace[T](const shared_ptr[c_Grid]& grid)
 cdef extern from "bempp/space/rwg_vector_space.hpp" namespace "Bempp":
     cdef shared_ptr[c_Space[T]] adaptiveRWGVectorSpace[T](const shared_ptr[c_Grid]& grid)
     cdef shared_ptr[c_Space[T]] adaptiveRWGVectorSpace[T](const shared_ptr[c_Grid]& grid, vector[int] domains, cbool closed)

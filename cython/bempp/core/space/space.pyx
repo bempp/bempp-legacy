@@ -419,14 +419,14 @@ def function_space(Grid grid, kind, order, domains=None, cbool closed=True, cboo
         else:
             s.impl_.assign(reverse_const_pointer_cast(
                     shared_ptr[c_Space[double]](adaptiveBuffaChristiansenVectorSpace[double](grid.impl_))))
-    elif kind=="TBC":
+    elif kind=="RBC":
         if order!=0:
             raise ValueError("Only order 0 Buffa-Christiansen spaces are implemented.")
         if domains is not None:
             raise ValueError("Spaces on subdomains are not supported for Buffa-Christiansen spaces.")
         else:
             s.impl_.assign(reverse_const_pointer_cast(
-                    shared_ptr[c_Space[double]](adaptiveTwistedBuffaChristiansenVectorSpace[double](grid.impl_))))
+                    shared_ptr[c_Space[double]](adaptiveRotatedBuffaChristiansenVectorSpace[double](grid.impl_))))
     else:
         raise ValueError("Unknown kind")
 

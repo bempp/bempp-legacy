@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_twisted_buffa_christiansen_shapeset_hpp
-#define fiber_twisted_buffa_christiansen_shapeset_hpp
+#ifndef fiber_rotated_buffa_christiansen_shapeset_hpp
+#define fiber_rotated_buffa_christiansen_shapeset_hpp
 
 #include "basis.hpp"
 #include "basis_data.hpp"
@@ -28,13 +28,13 @@
 namespace Fiber {
 
 template <typename ValueType>
-class TwistedBuffaChristiansenShapeset : public Basis<ValueType> {
+class RotatedBuffaChristiansenShapeset : public Basis<ValueType> {
 public:
   typedef typename Basis<ValueType>::CoordinateType CoordinateType;
 
 public:
-  TwistedBuffaChristiansenShapeset(){}
-  TwistedBuffaChristiansenShapeset(Matrix<ValueType> coeffs) :m_coeffs(coeffs) {}
+  RotatedBuffaChristiansenShapeset(){}
+  RotatedBuffaChristiansenShapeset(Matrix<ValueType> coeffs) :m_coeffs(coeffs) {}
 
   virtual int size() const { return m_coeffs.cols(); }
 
