@@ -97,36 +97,42 @@ def menger_sponge(h=0.1, level=2):
     for i,p in enumerate(points):
         geo += "Point("+str(1+i)+") = {"+str(p[0])+","+str(p[1])+","+str(p[2])+",lc};\n"
     loop_n = 1
+    line_n = 1
+    all_edges = {}
     for n,t in enumerate(cubes):
-        geo += "Line("+str(1+12*n   )+") = {"+str(1+t[0])+","+str(1+t[1])+"};\n"
-        geo += "Line("+str(1+12*n+1 )+") = {"+str(1+t[1])+","+str(1+t[2])+"};\n"
-        geo += "Line("+str(1+12*n+2 )+") = {"+str(1+t[2])+","+str(1+t[3])+"};\n"
-        geo += "Line("+str(1+12*n+3 )+") = {"+str(1+t[3])+","+str(1+t[0])+"};\n"
-        geo += "Line("+str(1+12*n+4 )+") = {"+str(1+t[0])+","+str(1+t[4])+"};\n"
-        geo += "Line("+str(1+12*n+5 )+") = {"+str(1+t[1])+","+str(1+t[5])+"};\n"
-        geo += "Line("+str(1+12*n+6 )+") = {"+str(1+t[2])+","+str(1+t[6])+"};\n"
-        geo += "Line("+str(1+12*n+7 )+") = {"+str(1+t[3])+","+str(1+t[7])+"};\n"
-        geo += "Line("+str(1+12*n+8 )+") = {"+str(1+t[4])+","+str(1+t[5])+"};\n"
-        geo += "Line("+str(1+12*n+9 )+") = {"+str(1+t[5])+","+str(1+t[6])+"};\n"
-        geo += "Line("+str(1+12*n+10)+") = {"+str(1+t[6])+","+str(1+t[7])+"};\n"
-        geo += "Line("+str(1+12*n+11)+") = {"+str(1+t[7])+","+str(1+t[4])+"};\n"
+        edges = []
+        for a in [(0,1),(1,2),(2,3),(3,0),(0,4),(1,5),(2,6),(3,7),(4,5),(5,6),(6,7),(7,4)]:
+            v1 = 1+t[a[0]]
+            v2 = 1+t[a[1]]
+            if v1 in all_edges and v2 in all_edges[v1]:
+                edges.append(all_edges[v1][v2])
+            elif v2 in all_edges and v1 in all_edges[v2]:
+                edges.append(-all_edges[v2][v1])
+            else:
+                geo += "Line("+str(line_n)+") = {"+str(v1)+","+str(v2)+"};\n"
+                if v1 not in all_edges:
+                    all_edges[v1] = {}
+                all_edges[v1][v2] = line_n
+                edges.append(line_n)
+                line_n += 1
+
         if t[8][0]:
-            geo += "Line Loop("+str(loop_n)+") = { "+str(1+12*n   )+", "+str(1+12*n+1 )+", "+str(1+12*n+2 )+", "+str(1+12*n+3 )+"};\n"
+            geo += "Line Loop("+str(loop_n)+") = { "+str(edges[0])+", "+str(edges[1])+", "+str(edges[2])+", "+str(edges[3])+"};\n"
             loop_n += 1
         if t[8][1]:
-            geo += "Line Loop("+str(loop_n)+") = {-"+str(1+12*n   )+", "+str(1+12*n+4 )+", "+str(1+12*n+8 )+",-"+str(1+12*n+5 )+"};\n"
+            geo += "Line Loop("+str(loop_n)+") = {"+str(-edges[0])+", "+str(edges[4])+", "+str(edges[8])+","+str(-edges[5])+"};\n"
             loop_n += 1
         if t[8][2]:
-            geo += "Line Loop("+str(loop_n)+") = {-"+str(1+12*n+1 )+", "+str(1+12*n+5 )+", "+str(1+12*n+9 )+",-"+str(1+12*n+6 )+"};\n"
+            geo += "Line Loop("+str(loop_n)+") = {"+str(-edges[1])+", "+str(edges[5])+", "+str(edges[9])+","+str(-edges[6])+"};\n"
             loop_n += 1
         if t[8][3]:
-            geo += "Line Loop("+str(loop_n)+") = {-"+str(1+12*n+2 )+", "+str(1+12*n+6 )+", "+str(1+12*n+10)+",-"+str(1+12*n+7 )+"};\n"
+            geo += "Line Loop("+str(loop_n)+") = {"+str(-edges[2])+", "+str(edges[6])+", "+str(edges[10])+","+str(-edges[7])+"};\n"
             loop_n += 1
         if t[8][4]:
-            geo += "Line Loop("+str(loop_n)+") = {-"+str(1+12*n+3 )+", "+str(1+12*n+7 )+", "+str(1+12*n+11)+",-"+str(1+12*n+4 )+"};\n"
+            geo += "Line Loop("+str(loop_n)+") = {"+str(-edges[3])+", "+str(edges[7])+", "+str(edges[11])+","+str(-edges[4])+"};\n"
             loop_n += 1
         if t[8][5]:
-            geo += "Line Loop("+str(loop_n)+") = {-"+str(1+12*n+11)+",-"+str(1+12*n+10)+",-"+str(1+12*n+9 )+",-"+str(1+12*n+8 )+"};\n"
+            geo += "Line Loop("+str(loop_n)+") = {"+str(-edges[11])+","+str(-edges[10])+","+str(-edges[9])+","+str(-edges[8])+"};\n"
             loop_n += 1
     for i in range(1,loop_n):
         geo += "Plane Surface("+str(i)+") = {"+str(i)+"};\n"
