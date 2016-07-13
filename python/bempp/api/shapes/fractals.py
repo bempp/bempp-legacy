@@ -131,6 +131,4 @@ def menger_sponge(h=0.1, level=2):
     for i in range(1,loop_n):
         geo += "Plane Surface("+str(i)+") = {"+str(i)+"};\n"
     geo += "\nMesh.Algorithm = 6;"
-    with open("/home/matt/python/bempp/fractals/cube.geo","w") as f:
-        f.write(geo)
     return __generate_grid_from_geo_string(geo)
