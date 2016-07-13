@@ -240,7 +240,7 @@ def function_space(Grid grid, kind, order, domains=None, cbool closed=True, cboo
 
             "DUAL": Dual space on dual grid (only implemented for constants).
             "BC": Buffa-Christian Vector space.
-            "TBC": Twisted Buffa-Christiansen Vector space.
+            "RBC": Rotated Buffa-Christiansen Vector space.
 
     order : int
         The order of the space, e.g. 0 for piecewise const, 1 for

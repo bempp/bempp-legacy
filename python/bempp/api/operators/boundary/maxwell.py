@@ -136,13 +136,13 @@ def calderon_electric_field(grid, wave_number, parameters=None):
             from bempp.api.space import project_operator
 
             bc_space = bempp.api.function_space(grid, "BC", 0)
-            tbc_space = bempp.api.function_space(grid, "TBC", 0)
+            rbc_space = bempp.api.function_space(grid, "RBC", 0)
             rwg_space = bempp.api.function_space(grid, "B-RWG", 0)
             snc_space = bempp.api.function_space(grid, "B-SNC", 0)
             rwg_bary_space = bempp.api.function_space(
                 grid.barycentric_grid(), "RWG", 0)
             snc_bary_space = bempp.api.function_space(grid.barycentric_grid(), "SNC", 0)
-            super(EfieSquared, self).__init__(rwg_space, rwg_space, tbc_space,
+            super(EfieSquared, self).__init__(rwg_space, rwg_space, rbc_space,
                                               label="EFIE_SQUARED")
 
             self._efie_fine = electric_field(rwg_bary_space, rwg_bary_space, snc_bary_space, wave_number,
@@ -150,7 +150,7 @@ def calderon_electric_field(grid, wave_number, parameters=None):
             self._efie = project_operator(
                 self._efie_fine, domain=rwg_space, range_=rwg_space, dual_to_range=snc_space)
             self._efie2 = project_operator(
-                self._efie_fine, domain=bc_space, range_=rwg_space, dual_to_range=tbc_space)
+                self._efie_fine, domain=bc_space, range_=rwg_space, dual_to_range=rbc_space)
             self._ident = bempp.api.operators.boundary.sparse.identity(
                 bc_space, rwg_space, snc_space)
             self._inv_ident = InverseSparseDiscreteBoundaryOperator(

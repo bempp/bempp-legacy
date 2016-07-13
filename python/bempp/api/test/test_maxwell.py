@@ -103,7 +103,6 @@ class TestMaxwell(TestCase):
         rwg_space = efie_squared.domain
         snc_space = bempp.api.function_space(grid, "B-SNC", 0)
         bc_space = bempp.api.function_space(grid, "BC", 0)
-        tbc_space = efie_squared.dual_to_range
 
         def eval_dirichlet_data(point, normal, domain_index, result):
             x, y, z = point - source

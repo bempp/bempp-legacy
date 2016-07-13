@@ -424,16 +424,16 @@ class BuffaChristiansenSpace(Space):
             grid.barycentric_grid(), 1)
         self._evaluation_functor = hdiv_function_value_functor()
 
-class TwistedBuffaChristiansenSpace(Space):
-    """A space of twisted Buffa-Christiansen curl conforming basis functions on a barycentrid grid."""
+class RotatedBuffaChristiansenSpace(Space):
+    """A space of rotated Buffa-Christiansen curl conforming basis functions on a barycentrid grid."""
 
     def __init__(self, grid):
 
         from bempp.core.space.space import function_space as _function_space
         from bempp.api.assembly.functors import hcurl_function_value_functor
 
-        super(TwistedBuffaChristiansenSpace, self).__init__(_function_space(
-            grid._impl, "TBC", 0))
+        super(RotatedBuffaChristiansenSpace, self).__init__(_function_space(
+            grid._impl, "RBC", 0))
 
         self._order = 0
         self._has_non_barycentric_space = False
@@ -472,7 +472,7 @@ def function_space(grid, kind, order, domains=None, closed=True, strictly_on_seg
 
             "DUAL": Dual space on dual grid (only implemented for constants).
             "BC": Buffa-Christian Vector space.
-            "TBC": Twisted Buffa-Christian Vector space of curl-conforming
+            "RBC": Rotated Buffa-Christian Vector space of curl-conforming
                    functions.
 
     order : int
@@ -587,8 +587,11 @@ def function_space(grid, kind, order, domains=None, closed=True, strictly_on_seg
             raise ValueError(
                 "Only order zero Buffa-Christiansen functions supported.")
         return BuffaChristiansenSpace(grid)
-    elif kind == "TBC":
+    elif kind == "RBC":
         if order > 0:
             raise ValueError(
                 "Only order zero Buffa-Christiansen functions supported.")
-        return TwistedBuffaChristiansenSpace(grid)
+        return RotatedBuffaChristiansenSpace(grid)
+    else:
+        raise ValueError("Unknown space type.")
+
