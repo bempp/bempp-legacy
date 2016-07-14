@@ -5,6 +5,7 @@ def _make_word(geo,h):
 
 def sierpinski_pyramid(h=0.1, level=2):
     from numpy import sqrt
+    from numpy import array
     if level < 1:
         raise ValueError("level must be 1 or larger")
     geo = "lc = "+str(h)+";\n"
