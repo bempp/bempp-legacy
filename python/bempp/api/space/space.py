@@ -441,6 +441,7 @@ class RotatedBuffaChristiansenSpace(Space):
         self._discontinuous_space = DiscontinuousPolynomialSpace(
             grid.barycentric_grid(), 1)
         self._evaluation_functor = hcurl_function_value_functor()
+        self._hdiv_space = BuffaChristiansenSpace(grid)
 
 def function_space(grid, kind, order, domains=None, closed=True, strictly_on_segment=False,
                    reference_point_on_segment=True, element_on_segment=False):
