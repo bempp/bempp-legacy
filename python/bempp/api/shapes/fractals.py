@@ -49,10 +49,12 @@ def sierpinski_pyramid(h=0.1, level=2):
     geo += "\nMesh.Algorithm = 6;"
     return __generate_grid_from_geo_string(geo)
 
-def sierpinski_triangle(h=0.1, level=2):
+def sierpinski_triangle(h=None, level=2):
     from numpy import sqrt, array
     if level < 1:
         raise ValueError("level must be 1 or larger")
+    if h is None:
+        h = .5**(level+1)
     geo = "lc = "+str(h)+";\n"
     points = [array((0,0)),array((1,0)),array((.5,sqrt(3)/2))]
     tris = [[0,1,2,3]]
