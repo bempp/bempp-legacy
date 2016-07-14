@@ -227,3 +227,40 @@ def sierpinski_carpet(h=.1, level=2):
         geo += "Plane Surface("+str(n)+") = {"+str(n)+"};\n"
     geo += "\nMesh.Algorithm = 6;"
     return __generate_grid_from_geo_string(geo)
+
+def koch_snowflake(h=.1, level=2):
+    from numpy import sqrt, array
+    if level < 1:
+        raise ValueError("level must be 1 or larger")
+    h = min(.5**(level+1),h)
+    geo = "lc = "+str(h)+";\n"
+    points = [array((0,0)),array((1,0)),array((.5,sqrt(3)/2))]
+    lines = [(0,1),(1,2),(2,0)]
+    
+    for l in range(level):
+        new_lines = []
+        for line in lines:
+            new_lines.append((line[0],len(points)))
+            new_lines.append((len(points),len(points)+1))
+            new_lines.append((len(points)+1,len(points)+2))
+            new_lines.append((len(points)+2,line[1]))
+
+            edge = points[line[1]]-points[line[0]]
+            normal = sqrt(3)/6*array((-edge[1],edge[0]))
+            points.append(points[line[0]] + edge/3.)
+            points.append(points[line[0]] + (edge)/2. - normal)
+            points.append(points[line[0]] + 2*edge/3.)
+
+        lines = new_lines
+
+    for i,p in enumerate(points):
+        geo += "Point("+str(1+i)+") = {"+str(p[0])+","+str(p[1])+",0,lc};\n"
+    for i,l in enumerate(lines):
+        geo += "Line("+str(1+i)+") = {"+str(l[0]+1)+","+str(l[1]+1)+"};\n"
+    geo += "Line Loop(1) = { "+",".join([str(i+1) for i in range(len(lines))])+"};\n"
+    geo += "Plane Surface(1) = {1};\n"
+    geo += "\nMesh.Algorithm = 6;"
+    with open("/home/matt/python/bempp/fractals/k.geo","w") as f:
+        f.write(geo)
+    return __generate_grid_from_geo_string(geo)
+
