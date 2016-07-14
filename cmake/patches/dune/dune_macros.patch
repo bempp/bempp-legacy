@@ -1,0 +1,34 @@
+--- dune-common/cmake/modules/DuneMacros.cmake	2015-11-15 10:54:42.000000000 +0000
++++ dune-common/cmake/modules/DuneMacros.cmake.new	2015-11-15 11:32:17.000000000 +0000
+@@ -78,6 +78,7 @@
+ 
+ enable_language(C) # Enable C to skip CXX bindings for some tests.
+ 
++include(CheckIncludeFiles)
+ include(FeatureSummary)
+ 
+ # Converts a module name given by _module into an uppercase string
+@@ -310,15 +311,6 @@
+     endif(NOT ("${ARGV1}" STREQUAL QUIET))
+   endif(${DUNE_MOD_NAME}_DEPENDS)
+ 
+-  # 4. Check for line starting with Suggests
+-  extract_line("Suggests:" ${DUNE_MOD_NAME}_SUGGESTS "${DUNE_MODULE}")
+-  if(${DUNE_MOD_NAME}_SUGGESTS)
+-    split_module_version(${${DUNE_MOD_NAME}_SUGGESTS} ${DUNE_MOD_NAME}_SUGGESTS_MODULE ${DUNE_MOD_NAME}_SUGGESTS_VERSION)
+-    convert_deps_to_list(${DUNE_MOD_NAME}_SUGGESTS)
+-    if(NOT ("${ARGV1}" STREQUAL QUIET))
+-      message(STATUS "Suggestions for ${DUNE_MOD_NAME}: ${${DUNE_MOD_NAME}_SUGGESTS}")
+-    endif(NOT ("${ARGV1}" STREQUAL QUIET))
+-  endif(${DUNE_MOD_NAME}_SUGGESTS)
+ 
+   dune_module_to_uppercase(DUNE_MOD_NAME_UPPERCASE ${DUNE_MOD_NAME})
+ 
+@@ -354,7 +346,6 @@
+       else(NOT "${is_required}" STREQUAL "")
+         set(${next_level_sugs} ${${_mod}_DEPENDS} ${${next_level_sugs}})
+       endif(NOT "${is_required}" STREQUAL "")
+-      set(${next_level_sugs} ${${_mod}_SUGGESTS} ${${next_level_sugs}})
+     endforeach(i RANGE 0 ${length})
+   endif(mlength GREATER 0)
+   if(${next_level_sugs})
