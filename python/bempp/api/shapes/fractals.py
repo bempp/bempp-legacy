@@ -173,8 +173,6 @@ def sierpinski_triangle(h=.1, level=2):
         geo += "Line Loop("+str(1+n)+") = {"+str(1+3*n)+","+str(1+3*n+1)+","+str(1+3*n+2)+"};\n"
         geo += "Plane Surface("+str(1+n)+") = { "+str(1+n)+"};\n"
     geo += "\nMesh.Algorithm = 6;"
-    with open("/home/matt/python/bempp/fractals/tri.geo","w") as f:
-        f.write(geo)
     return __generate_grid_from_geo_string(geo)
 
 def sierpinski_carpet(h=.1, level=2):
