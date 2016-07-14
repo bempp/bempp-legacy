@@ -4,7 +4,7 @@ def _make_word(geo,h):
     return __generate_grid_from_geo_string(intro+geo+outro)
 
 def sierpinski_pyramid(h=0.1, level=2):
-    from numpy import sqrt
+    from numpy import sqrt, array
     if level < 1:
         raise ValueError("level must be 1 or larger")
     geo = "lc = "+str(h)+";\n"
@@ -34,7 +34,7 @@ def sierpinski_pyramid(h=0.1, level=2):
     for i,p in enumerate(points):
         geo += "Point("+str(1+i)+") = {"+str(p[0])+","+str(p[1])+","+str(p[2])+",lc};\n"
     for n,t in enumerate(tetras):
-        geo += "Line("+str(1+6*n+i)+") = {"+str(1+t[0])+","+str(1+t[1])+"};\n"
+        geo += "Line("+str(1+6*n  )+") = {"+str(1+t[0])+","+str(1+t[1])+"};\n"
         geo += "Line("+str(1+6*n+1)+") = {"+str(1+t[0])+","+str(1+t[2])+"};\n"
         geo += "Line("+str(1+6*n+2)+") = {"+str(1+t[0])+","+str(1+t[3])+"};\n"
         geo += "Line("+str(1+6*n+3)+") = {"+str(1+t[1])+","+str(1+t[2])+"};\n"
@@ -46,6 +46,36 @@ def sierpinski_pyramid(h=0.1, level=2):
         geo += "Line Loop("+str(1+4*n+3)+") = {-"+str(1+6*n+4)+",-"+str(1+6*n+3)+",-"+str(1+6*n+5)+"};\n"
         for i in range(4):
             geo += "Plane Surface("+str(1+4*n+i)+") = {"+str(1+4*n+i)+"};\n"
+    geo += "\nMesh.Algorithm = 6;"
+    return __generate_grid_from_geo_string(geo)
+
+def sierpinski_triangle(h=0.1, level=2):
+    from numpy import sqrt, array
+    if level < 1:
+        raise ValueError("level must be 1 or larger")
+    geo = "lc = "+str(h)+";\n"
+    points = [array((0,0)),array((1,0)),array((.5,sqrt(3)/2))]
+    tris = [[0,1,2,3]]
+    for l in range(level):
+        new_tris = []
+        vertex_map = {}
+        for t in tris:
+            new_p = []
+            for i in range(3):
+                new_p.append(len(points))
+                points.append((points[t[0]]+points[t[1]]+points[t[2]]-points[t[i]])/2.)
+            new_tris.append([t[0],new_p[2],new_p[1]])
+            new_tris.append([new_p[2],t[1],new_p[0]])
+            new_tris.append([new_p[1],new_p[0],t[2]])
+        tris = new_tris
+    for i,p in enumerate(points):
+        geo += "Point("+str(1+i)+") = {"+str(p[0])+","+str(p[1])+",0,lc};\n"
+    for n,t in enumerate(tris):
+        geo += "Line("+str(1+3*n  )+") = {"+str(1+t[0])+","+str(1+t[1])+"};\n"
+        geo += "Line("+str(1+3*n+1)+") = {"+str(1+t[1])+","+str(1+t[2])+"};\n"
+        geo += "Line("+str(1+3*n+2)+") = {"+str(1+t[2])+","+str(1+t[0])+"};\n"
+        geo += "Line Loop("+str(1+n)+") = {"+str(1+3*n)+","+str(1+3*n+1)+","+str(1+3*n+2)+"};\n"
+        geo += "Plane Surface("+str(1+n)+") = { "+str(1+n)+"};\n"
     geo += "\nMesh.Algorithm = 6;"
     return __generate_grid_from_geo_string(geo)
 
