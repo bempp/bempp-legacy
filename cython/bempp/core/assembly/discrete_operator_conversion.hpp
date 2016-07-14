@@ -46,10 +46,10 @@ PyObject *py_get_sparse_from_discrete_operator(
 
   // Now get the parameter objects
 
-  RealSparseMatrix::Index *indexOffset =
-      const_cast<RealSparseMatrix::Index *>(sparseOperator->outerIndexPtr());
-  RealSparseMatrix::Index *indices =
-      const_cast<RealSparseMatrix::Index *>(sparseOperator->innerIndexPtr());
+  int *indexOffset =
+      const_cast<int *>(sparseOperator->outerIndexPtr());
+  int *indices =
+      const_cast<int *>(sparseOperator->innerIndexPtr());
   double *values = const_cast<double *>(sparseOperator->valuePtr());
 
   npy_intp num_nonzeros = sparseOperator->nonZeros();

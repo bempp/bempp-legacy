@@ -90,6 +90,7 @@ create_patch_script(Dune-Common dune_common_patch_script
     WORKING_DIRECTORY "${EXTERNAL_ROOT}/src"
     "${patchdir}/dune_common_cmake.patch"
     "${patchdir}/dune_disable_fortran.patch"
+    "${patchdir}/dune_macros.patch"
 )
 
 create_patch_script(Dune-Geometry dune_geometry_patch_script
