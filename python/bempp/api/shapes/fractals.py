@@ -3,6 +3,8 @@ from .shapes import __generate_grid_from_geo_string
 def _make_word(geo,h):
     return __generate_grid_from_geo_string(intro+geo+outro)
 
+# 3D fractals
+
 def sierpinski_pyramid(h=0.1, level=2):
     from numpy import sqrt, array
     if level < 1:
@@ -46,38 +48,6 @@ def sierpinski_pyramid(h=0.1, level=2):
         geo += "Line Loop("+str(1+4*n+3)+") = {-"+str(1+6*n+4)+",-"+str(1+6*n+3)+",-"+str(1+6*n+5)+"};\n"
         for i in range(4):
             geo += "Plane Surface("+str(1+4*n+i)+") = {"+str(1+4*n+i)+"};\n"
-    geo += "\nMesh.Algorithm = 6;"
-    return __generate_grid_from_geo_string(geo)
-
-def sierpinski_triangle(h=None, level=2):
-    from numpy import sqrt, array
-    if level < 1:
-        raise ValueError("level must be 1 or larger")
-    if h is None:
-        h = .5**(level+1)
-    geo = "lc = "+str(h)+";\n"
-    points = [array((0,0)),array((1,0)),array((.5,sqrt(3)/2))]
-    tris = [[0,1,2,3]]
-    for l in range(level):
-        new_tris = []
-        vertex_map = {}
-        for t in tris:
-            new_p = []
-            for i in range(3):
-                new_p.append(len(points))
-                points.append((points[t[0]]+points[t[1]]+points[t[2]]-points[t[i]])/2.)
-            new_tris.append([t[0],new_p[2],new_p[1]])
-            new_tris.append([new_p[2],t[1],new_p[0]])
-            new_tris.append([new_p[1],new_p[0],t[2]])
-        tris = new_tris
-    for i,p in enumerate(points):
-        geo += "Point("+str(1+i)+") = {"+str(p[0])+","+str(p[1])+",0,lc};\n"
-    for n,t in enumerate(tris):
-        geo += "Line("+str(1+3*n  )+") = {"+str(1+t[0])+","+str(1+t[1])+"};\n"
-        geo += "Line("+str(1+3*n+1)+") = {"+str(1+t[1])+","+str(1+t[2])+"};\n"
-        geo += "Line("+str(1+3*n+2)+") = {"+str(1+t[2])+","+str(1+t[0])+"};\n"
-        geo += "Line Loop("+str(1+n)+") = {"+str(1+3*n)+","+str(1+3*n+1)+","+str(1+3*n+2)+"};\n"
-        geo += "Plane Surface("+str(1+n)+") = { "+str(1+n)+"};\n"
     geo += "\nMesh.Algorithm = 6;"
     return __generate_grid_from_geo_string(geo)
 
@@ -168,5 +138,94 @@ def menger_sponge(h=0.1, level=2):
             loop_n += 1
     for i in range(1,loop_n):
         geo += "Plane Surface("+str(i)+") = {"+str(i)+"};\n"
+    geo += "\nMesh.Algorithm = 6;"
+    return __generate_grid_from_geo_string(geo)
+
+
+# 2D fractals
+
+def sierpinski_triangle(h=.1, level=2):
+    from numpy import sqrt, array
+    if level < 1:
+        raise ValueError("level must be 1 or larger")
+    h = min(.5**(level+1),h)
+    geo = "lc = "+str(h)+";\n"
+    points = [array((0,0)),array((1,0)),array((.5,sqrt(3)/2))]
+    tris = [[0,1,2]]
+    for l in range(level):
+        new_tris = []
+        vertex_map = {}
+        for t in tris:
+            new_p = []
+            for i in range(3):
+                new_p.append(len(points))
+                points.append((points[t[0]]+points[t[1]]+points[t[2]]-points[t[i]])/2.)
+            new_tris.append([t[0],new_p[2],new_p[1]])
+            new_tris.append([new_p[2],t[1],new_p[0]])
+            new_tris.append([new_p[1],new_p[0],t[2]])
+        tris = new_tris
+    for i,p in enumerate(points):
+        geo += "Point("+str(1+i)+") = {"+str(p[0])+","+str(p[1])+",0,lc};\n"
+    for n,t in enumerate(tris):
+        geo += "Line("+str(1+3*n  )+") = {"+str(1+t[0])+","+str(1+t[1])+"};\n"
+        geo += "Line("+str(1+3*n+1)+") = {"+str(1+t[1])+","+str(1+t[2])+"};\n"
+        geo += "Line("+str(1+3*n+2)+") = {"+str(1+t[2])+","+str(1+t[0])+"};\n"
+        geo += "Line Loop("+str(1+n)+") = {"+str(1+3*n)+","+str(1+3*n+1)+","+str(1+3*n+2)+"};\n"
+        geo += "Plane Surface("+str(1+n)+") = { "+str(1+n)+"};\n"
+    geo += "\nMesh.Algorithm = 6;"
+    with open("/home/matt/python/bempp/fractals/tri.geo","w") as f:
+        f.write(geo)
+    return __generate_grid_from_geo_string(geo)
+
+def sierpinski_carpet(h=.1, level=2):
+    from numpy import array
+    from itertools import product
+    geo = "lc = "+str(h)+";\n"
+    if level < 1:
+        raise ValueError("level must be 1 or larger")
+    points = [array((0,0)),array((1,0)),array((1,1)),array((0,1))]
+    squs = [(0,1,2,3)]
+    for i in range(level):
+        new_squs = []
+        for c in squs:
+            n = []
+            for x,y in product((0,1./3,2./3,1),repeat=2):
+                if x not in [0,1] or y not in [0,1]:
+                    n.append(len(points))
+                    points.append(points[c[0]]
+                                  + x*(points[c[1]]-points[c[0]])
+                                  + y*(points[c[3]]-points[c[0]])
+                                 )
+            new_squs.append((n[1],n[4],n[5],c[3]))
+            new_squs.append((n[0],n[3],n[4],n[1]))
+            new_squs.append((c[0],n[2],n[3],n[0]))
+            new_squs.append((n[2],n[6],n[7],n[3]))
+            new_squs.append((n[6],c[1],n[10],n[7]))
+            new_squs.append((n[7],n[10],n[11],n[8]))
+            new_squs.append((n[8],n[11],c[2],n[9]))
+            new_squs.append((n[4],n[8],n[9],n[5]))
+        squs = new_squs
+    for i,p in enumerate(points):
+        geo += "Point("+str(1+i)+") = {"+str(p[0])+","+str(p[1])+",0,lc};\n"
+    line_n = 1
+    all_edges = {}
+    for n,t in enumerate(squs):
+        edges = []
+        for a in [(0,1),(1,2),(2,3),(3,0)]:
+            v1 = 1+t[a[0]]
+            v2 = 1+t[a[1]]
+            if v1 in all_edges and v2 in all_edges[v1]:
+                edges.append(all_edges[v1][v2])
+            elif v2 in all_edges and v1 in all_edges[v2]:
+                edges.append(-all_edges[v2][v1])
+            else:
+                geo += "Line("+str(line_n)+") = {"+str(v1)+","+str(v2)+"};\n"
+                if v1 not in all_edges:
+                    all_edges[v1] = {}
+                all_edges[v1][v2] = line_n
+                edges.append(line_n)
+                line_n += 1
+        geo += "Line Loop("+str(n)+") = { "+str(edges[0])+", "+str(edges[1])+", "+str(edges[2])+", "+str(edges[3])+"};\n"
+        geo += "Plane Surface("+str(n)+") = {"+str(n)+"};\n"
     geo += "\nMesh.Algorithm = 6;"
     return __generate_grid_from_geo_string(geo)
