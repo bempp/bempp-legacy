@@ -153,12 +153,23 @@ class Space(object):
         return self._has_non_barycentric_space
 
     @property
+    def is_barycentric(self):
+        """ REturn if the space is defined over a barycentric refinement."""
+
+        return self._is_barycentric
+
+    @property
     def non_barycentric_space(self):
         return self._non_barycentric_space
 
     @property
     def order(self):
         return self._order
+
+    @property
+    def super_space(self):
+        """ A super space that contains the space as subspace. Can be identical to space."""
+        return self._super_space
 
 
 class DiscontinuousPolynomialSpace(Space):
@@ -178,7 +189,9 @@ class DiscontinuousPolynomialSpace(Space):
         self._has_non_barycentric_space = True
         self._non_barycentric_space = self
         self._discontinuous_space = self
+        self._super_space = self
         self._evaluation_functor = scalar_function_value_functor()
+        self._is_barycentric = False
 
 
 class BarycentricDiscontinuousPolynomialSpace(Space):
@@ -197,7 +210,9 @@ class BarycentricDiscontinuousPolynomialSpace(Space):
         self._non_barycentric_space = DiscontinuousPolynomialSpace(grid, order)
         self._discontinuous_space = DiscontinuousPolynomialSpace(
             grid.barycentric_grid(), order)
+        self._super_space = self._discontinuous_space
         self._evaluation_functor = scalar_function_value_functor()
+        self._is_barycentric = True
 
 
 class ContinuousPolynomialSpace(Space):
@@ -217,7 +232,9 @@ class ContinuousPolynomialSpace(Space):
         self._has_non_barycentric_space = True
         self._non_barycentric_space = self
         self._discontinuous_space = DiscontinuousPolynomialSpace(grid, order)
+        self._super_space = self._discontinuous_space
         self._evaluation_functor = scalar_function_value_functor()
+        self._is_barycentric = False
 
 class BarycentricContinuousPolynomialSpace(Space):
     """Represents a space of continuous, polynomial functions on a barycentric grid."""
@@ -235,7 +252,9 @@ class BarycentricContinuousPolynomialSpace(Space):
         self._non_barycentric_space = ContinuousPolynomialSpace(grid, order)
         self._discontinuous_space = DiscontinuousPolynomialSpace(
             grid.barycentric_grid(), order)
+        self._super_space = self._discontinuous_space
         self._evaluation_functor = scalar_function_value_functor()
+        self._is_barycentric = True
 
 
 class DualSpace(Space):
@@ -252,9 +271,11 @@ class DualSpace(Space):
         self._order = 0
         self._has_non_barycentric_space = False
         self._non_barycentric_space = None
-        self._discontinuous_polynomial_space = DiscontinuousPolynomialSpace(
-            grid.barycentric_grid(), 1)
+        self._discontinuous_space = DiscontinuousPolynomialSpace(
+            grid.barycentric_grid(), 0)
+        self._super_space = self._discontinuous_space
         self._evaluation_functor = scalar_function_value_functor()
+        self._is_barycentric = True
 
 
 class RTSpace(Space):
@@ -272,7 +293,9 @@ class RTSpace(Space):
         self._has_non_barycentric_space = True
         self._non_barycentric_space = self
         self._discontinuous_space = DiscontinuousPolynomialSpace(grid, 1)
+        self._super_space = self
         self._evaluation_functor = hdiv_function_value_functor()
+        self._is_barycentric = False
 
 class NCSpace(Space):
     """A space of Nedelec functions."""
@@ -290,7 +313,9 @@ class NCSpace(Space):
         self._non_barycentric_space = self
         self._discontinuous_space = DiscontinuousPolynomialSpace(grid, 1)
         self._evaluation_functor = hcurl_function_value_functor()
+        self._super_space = self
         self._hdiv_space = RTSpace(grid, domains, closed)
+        self._is_barycentric = False
 
 class RWGSpace(Space):
     """A space of RWG functions."""
@@ -307,7 +332,9 @@ class RWGSpace(Space):
         self._has_non_barycentric_space = True
         self._non_barycentric_space = self
         self._discontinuous_space = DiscontinuousPolynomialSpace(grid, 1)
+        self._super_space = self
         self._evaluation_functor = hdiv_function_value_functor()
+        self._is_barycentric = False
 
 class SNCSpace(Space):
     """A space of scaled Nedelec functions."""
@@ -325,7 +352,9 @@ class SNCSpace(Space):
         self._non_barycentric_space = self
         self._discontinuous_space = DiscontinuousPolynomialSpace(grid, 1)
         self._evaluation_functor = hcurl_function_value_functor()
+        self._super_space = self
         self._hdiv_space = RWGSpace(grid, domains, closed)
+        self._is_barycentric = False
 
 class BarycentricRTSpace(Space):
     """A space of Raviart-Thomas functions on a barycentric grid."""
@@ -343,7 +372,9 @@ class BarycentricRTSpace(Space):
         self._non_barycentric_space = RTSpace(grid, None, True)
         self._discontinuous_space = DiscontinuousPolynomialSpace(
             grid.barycentric_grid(), 1)
+        self._super_space = RTSpace(grid.barycentric_grid(), None, True)
         self._evaluation_functor = hdiv_function_value_functor()
+        self._is_barycentric = True
 
 class BarycentricNCSpace(Space):
     """A space of Nedelec functions on a barycentric grid."""
@@ -362,7 +393,9 @@ class BarycentricNCSpace(Space):
         self._discontinuous_space = DiscontinuousPolynomialSpace(
             grid.barycentric_grid(), 1)
         self._evaluation_functor = hcurl_function_value_functor()
+        self._super_space = NCSpace(grid.barycentric_grid(), None, True)
         self._hdiv_space = BarycentricRTSpace(grid)
+        self._is_barycentric = True
 
 
 
@@ -382,7 +415,9 @@ class BarycentricRWGSpace(Space):
         self._non_barycentric_space = RWGSpace(grid, None, True)
         self._discontinuous_space = DiscontinuousPolynomialSpace(
             grid.barycentric_grid(), 1)
+        self._super_space = RWGSpace(grid.barycentric_grid(), None, True)
         self._evaluation_functor = hdiv_function_value_functor()
+        self._is_barycentric = True
 
 class BarycentricSNCSpace(Space):
     """A space of scaled Nedelec functions on a barycentric grid."""
@@ -401,7 +436,9 @@ class BarycentricSNCSpace(Space):
         self._discontinuous_space = DiscontinuousPolynomialSpace(
             grid.barycentric_grid(), 1)
         self._evaluation_functor = hcurl_function_value_functor()
+        self._super_space = SNCSpace(grid.barycentric_grid(), None, True)
         self._hdiv_space = BarycentricRWGSpace(grid)
+        self._is_barycentric = True
 
 
 
@@ -422,7 +459,9 @@ class BuffaChristiansenSpace(Space):
         self._non_barycentric_space = None
         self._discontinuous_space = DiscontinuousPolynomialSpace(
             grid.barycentric_grid(), 1)
+        self._super_space = RWGSpace(grid.barycentric_grid(), None, True)
         self._evaluation_functor = hdiv_function_value_functor()
+        self._is_barycentric = True
 
 class RotatedBuffaChristiansenSpace(Space):
     """A space of rotated Buffa-Christiansen curl conforming basis functions on a barycentrid grid."""
@@ -441,7 +480,9 @@ class RotatedBuffaChristiansenSpace(Space):
         self._discontinuous_space = DiscontinuousPolynomialSpace(
             grid.barycentric_grid(), 1)
         self._evaluation_functor = hcurl_function_value_functor()
+        self._super_space = SNCSpace(grid.barycentric_grid(), None, True)
         self._hdiv_space = BuffaChristiansenSpace(grid)
+        self._is_barycentric = True
 
 def function_space(grid, kind, order, domains=None, closed=True, strictly_on_segment=False,
                    reference_point_on_segment=True, element_on_segment=False):

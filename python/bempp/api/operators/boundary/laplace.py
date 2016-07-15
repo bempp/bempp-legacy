@@ -3,6 +3,67 @@
 """Definition of the Laplace boundary operators."""
 
 
+
+def _single_layer_impl(domain, range_, dual_to_range,
+        label, symmetry, parameters):
+    """ Return the actual Laplace single layer operator. """
+
+    from bempp.core.operators.boundary.laplace import single_layer_ext
+    from bempp.api.assembly import ElementaryBoundaryOperator
+    from bempp.api.assembly.abstract_boundary_operator import ElementaryAbstractIntegralOperator
+
+    return ElementaryBoundaryOperator(
+        ElementaryAbstractIntegralOperator(
+            single_layer_ext(parameters, domain._impl, range_._impl,
+                             dual_to_range._impl, "", symmetry),
+            domain, range_, dual_to_range),
+        parameters=parameters, label=label)
+    
+def _double_layer_impl(domain, range_, dual_to_range,
+        label, symmetry, parameters):
+    """ Return the actual Laplace double layer operator. """
+
+    from bempp.core.operators.boundary.laplace import double_layer_ext
+    from bempp.api.assembly import ElementaryBoundaryOperator
+    from bempp.api.assembly.abstract_boundary_operator import ElementaryAbstractIntegralOperator
+
+    return ElementaryBoundaryOperator(
+        ElementaryAbstractIntegralOperator(
+            double_layer_ext(parameters, domain._impl, range_._impl,
+                             dual_to_range._impl, "", symmetry),
+            domain, range_, dual_to_range),
+        parameters=parameters, label=label)
+
+def _adjoint_double_layer_impl(domain, range_, dual_to_range,
+        label, symmetry, parameters):
+    """ Return the actual Laplace adjoint double layer operator. """
+
+    from bempp.core.operators.boundary.laplace import adjoint_double_layer_ext
+    from bempp.api.assembly import ElementaryBoundaryOperator
+    from bempp.api.assembly.abstract_boundary_operator import ElementaryAbstractIntegralOperator
+
+    return ElementaryBoundaryOperator(
+        ElementaryAbstractIntegralOperator(
+            adjoint_double_layer_ext(parameters, domain._impl, range_._impl,
+                             dual_to_range._impl, "", symmetry),
+            domain, range_, dual_to_range),
+        parameters=parameters, label=label)
+
+def _hypersingular_impl(domain, range_, dual_to_range,
+        label, symmetry, parameters):
+    """ Return the actual Laplace hypersingular operator. """
+
+    from bempp.core.operators.boundary.laplace import hypersingular_ext
+    from bempp.api.assembly import ElementaryBoundaryOperator
+    from bempp.api.assembly.abstract_boundary_operator import ElementaryAbstractIntegralOperator
+
+    return ElementaryBoundaryOperator(
+        ElementaryAbstractIntegralOperator(
+            hypersingular_ext(parameters, domain._impl, range_._impl,
+                             dual_to_range._impl, "", symmetry),
+            domain, range_, dual_to_range),
+        parameters=parameters, label=label)
+
 def single_layer(domain, range_, dual_to_range,
                  label="SLP", symmetry='no_symmetry',
                  parameters=None):
@@ -28,25 +89,10 @@ def single_layer(domain, range_, dual_to_range,
 
     """
 
-    import bempp
-    from bempp.core.operators.boundary.laplace import single_layer_ext
-    from bempp.api.assembly import ElementaryBoundaryOperator
-    from bempp.api.assembly.boundary_operator import ElementaryBoundaryOperator
-    from bempp.api.assembly.abstract_boundary_operator import ElementaryAbstractIntegralOperator
-    from bempp.api.operators.boundary._common import update_to_non_barycentric_space
+    from bempp.api.operators.boundary._common import get_operator_with_space_preprocessing
 
-    new_domain, new_range_, new_dual_to_range = update_to_non_barycentric_space(
-        domain, range_, dual_to_range)
-
-    if parameters is None:
-        parameters = bempp.api.global_parameters
-
-    return ElementaryBoundaryOperator(
-        ElementaryAbstractIntegralOperator(
-            single_layer_ext(parameters, new_domain._impl, new_range_._impl,
-                             new_dual_to_range._impl, "", symmetry),
-            domain, range_, dual_to_range),
-        parameters=parameters, label=label)
+    return get_operator_with_space_preprocessing(_single_layer_impl, domain, range_, dual_to_range, label,
+        symmetry, parameters) 
 
 
 def double_layer(domain, range_, dual_to_range,
@@ -74,25 +120,10 @@ def double_layer(domain, range_, dual_to_range,
 
     """
 
-    import bempp
-    from bempp.core.operators.boundary.laplace import double_layer_ext
-    from bempp.api.assembly.boundary_operator import ElementaryBoundaryOperator
-    from bempp.api.assembly.abstract_boundary_operator import ElementaryAbstractIntegralOperator
-    from bempp.api.operators.boundary._common import update_to_non_barycentric_space
+    from bempp.api.operators.boundary._common import get_operator_with_space_preprocessing
 
-    new_domain, new_range_, new_dual_to_range = update_to_non_barycentric_space(
-        domain, range_, dual_to_range)
-
-    if parameters is None:
-        parameters = bempp.api.global_parameters
-
-    return ElementaryBoundaryOperator(
-        ElementaryAbstractIntegralOperator(
-            double_layer_ext(parameters, new_domain._impl, new_range_._impl,
-                             new_dual_to_range._impl, "", symmetry),
-            domain, range_, dual_to_range),
-        parameters=parameters, label=label)
-
+    return get_operator_with_space_preprocessing(_double_layer_impl, domain, range_, dual_to_range, label,
+        symmetry, parameters) 
 
 def adjoint_double_layer(domain, range_, dual_to_range,
                          label="ADJ_DLP", symmetry='no_symmetry',
@@ -119,24 +150,11 @@ def adjoint_double_layer(domain, range_, dual_to_range,
 
     """
 
-    import bempp
-    from bempp.core.operators.boundary.laplace import adjoint_double_layer_ext
-    from bempp.api.assembly.boundary_operator import ElementaryBoundaryOperator
-    from bempp.api.assembly.abstract_boundary_operator import ElementaryAbstractIntegralOperator
-    from bempp.api.operators.boundary._common import update_to_non_barycentric_space
+    from bempp.api.operators.boundary._common import get_operator_with_space_preprocessing
 
-    new_domain, new_range_, new_dual_to_range = update_to_non_barycentric_space(
-        domain, range_, dual_to_range)
+    return get_operator_with_space_preprocessing(_adjoint_double_layer_impl, domain, range_, dual_to_range, label,
+        symmetry, parameters) 
 
-    if parameters is None:
-        parameters = bempp.api.global_parameters
-
-    return ElementaryBoundaryOperator(
-        ElementaryAbstractIntegralOperator(
-            adjoint_double_layer_ext(parameters, new_domain._impl, new_range_._impl,
-                                     new_dual_to_range._impl, "", symmetry),
-            domain, range_, dual_to_range),
-        parameters=parameters, label=label)
 
 
 def hypersingular(domain, range_, dual_to_range,
@@ -182,9 +200,6 @@ def hypersingular(domain, range_, dual_to_range,
     from bempp.api.assembly.abstract_boundary_operator import ElementaryAbstractLocalOperator
     from bempp.api.operators.boundary._common import update_to_non_barycentric_space
 
-    new_domain, new_range_, new_dual_to_range = update_to_non_barycentric_space(
-        domain, range_, dual_to_range)
-
     if parameters is None:
         parameters = bempp.api.global_parameters
 
@@ -194,12 +209,9 @@ def hypersingular(domain, range_, dual_to_range,
         use_slp = False
 
     if not use_slp:
-        return ElementaryBoundaryOperator(
-            ElementaryAbstractIntegralOperator(
-                hypersingular_ext(parameters, new_domain._impl, new_range_._impl,
-                                  new_dual_to_range._impl, label, symmetry),
-                domain, range_, dual_to_range),
-            parameters=parameters, label=label)
+        from bempp.api.operators.boundary._common import get_operator_with_space_preprocessing
+        return get_operator_with_space_preprocessing(_hypersingular_impl, domain, range_, dual_to_range, label,
+            symmetry, parameters, use_super_space=False) 
     else:
         if not isinstance(use_slp, BoundaryOperator):
             disc_domain = domain.discontinuous_space

@@ -11,6 +11,7 @@ class TestGeneralNonlocalDiscreteBoundaryOperator(TestCase):
 
         parameters = bempp.api.common.global_parameters()
         parameters.assembly.boundary_operator_assembly_type = 'hmat'
+        parameters.assembly.use_super_spaces = False
         self._parameters = parameters
         grid = bempp.api.shapes.regular_sphere(3)
         space = bempp.api.function_space(grid, "DP", 0)
@@ -59,13 +60,16 @@ class TestDenseDiscreteBoundaryOperator(TestCase):
 
         parameters = bempp.api.common.global_parameters()
         parameters.assembly.boundary_operator_assembly_type = 'dense'
+        parameters.assembly.use_super_spaces = False
         self._parameters = parameters
         grid = bempp.api.shapes.regular_sphere(3)
         space = bempp.api.function_space(grid, "DP", 0)
+        bempp.api.global_parameters.assembly.use_super_spaces = False
         self._operator_real = bempp.api.operators.boundary.laplace.single_layer(space, space, space,
                                                                                 parameters=parameters).weak_form()
         self._operator_complex = bempp.api.operators.boundary.helmholtz.single_layer(space, space, space, 1,
                                                                                      parameters=parameters).weak_form()
+        bempp.api.global_parameters.assembly.use_super_spaces = True
         self._space = space
 
     def test_type(self):

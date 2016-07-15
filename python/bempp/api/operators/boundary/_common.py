@@ -6,6 +6,80 @@ def update_to_non_barycentric_space(domain, range_, dual_to_range):
     else:
         return (domain, range_, dual_to_range)
 
+def check_for_non_barycentric_spaces(domain, dual_to_range):
+    """ Check if the pair (domain, dual_to_range) can be cast to equivalent non-barycentric spaces. """
+
+    if not domain.is_barycentric or not dual_to_range.is_barycentric:
+        return False
+
+    if domain.has_non_barycentric_space and dual_to_range.has_non_barycentric_space:
+        return True
+    else:
+        return False
+
+
+def get_operator_with_space_preprocessing(op_fun, domain, range_, dual_to_range, label,
+        symmetry, parameters, use_super_space=True): 
+
+    import bempp.api
+    from bempp.api.assembly import ElementaryBoundaryOperator
+    from bempp.api.assembly.boundary_operator import ElementaryBoundaryOperator
+    from bempp.api.assembly.abstract_boundary_operator import ElementaryAbstractIntegralOperator
+    from bempp.api.space import rewrite_operator_spaces
+    from bempp.api.space import project_operator
+
+    if parameters is None:
+        parameters = bempp.api.global_parameters
+
+    if check_for_non_barycentric_spaces(domain, dual_to_range):
+        return rewrite_operator_spaces(
+                get_operator_with_space_preprocessing(
+                    op_fun, domain.non_barycentric_space, range_, 
+                    dual_to_range.non_barycentric_space,
+                    label, symmetry, parameters, use_super_space), 
+                domain, range_, dual_to_range)
+
+
+    if not parameters.assembly.use_super_spaces or not use_super_space:
+        return op_fun(domain, range_, dual_to_range, label, symmetry, parameters)
+    else:
+
+        op = op_fun(domain.super_space, range_, dual_to_range.super_space, label,
+                symmetry, parameters)
+
+        return project_operator(op, domain=domain, range_=range_, dual_to_range=dual_to_range)
+
+
+def get_wave_operator_with_space_preprocessing(op_fun, domain, range_, dual_to_range, wave_number, label,
+        symmetry, parameters, use_super_space=True): 
+
+    import bempp.api
+    from bempp.api.assembly import ElementaryBoundaryOperator
+    from bempp.api.assembly.boundary_operator import ElementaryBoundaryOperator
+    from bempp.api.assembly.abstract_boundary_operator import ElementaryAbstractIntegralOperator
+    from bempp.api.space import rewrite_operator_spaces
+    from bempp.api.space import project_operator
+
+    if parameters is None:
+        parameters = bempp.api.global_parameters
+
+    if check_for_non_barycentric_spaces(domain, dual_to_range):
+        return rewrite_operator_spaces(
+                get_wave_operator_with_space_preprocessing(
+                    op_fun, domain.non_barycentric_space, range_, 
+                    dual_to_range.non_barycentric_space, wave_number,
+                    label, symmetry, parameters, use_super_space), 
+                domain, range_, dual_to_range)
+
+
+    if not parameters.assembly.use_super_spaces or not use_super_space:
+        return op_fun(domain, range_, dual_to_range, wave_number, label, symmetry, parameters)
+    else:
+
+        op = op_fun(domain.super_space, range_, dual_to_range.super_space, wave_number, label,
+                symmetry, parameters)
+
+        return project_operator(op, domain=domain, range_=range_, dual_to_range=dual_to_range)
 
 def slp_and_hyp_impl(grid, slp_operator, hyp_operator, parameters, spaces='linear', base_slp=None,
                      return_base_slp=False, laplace='False'):

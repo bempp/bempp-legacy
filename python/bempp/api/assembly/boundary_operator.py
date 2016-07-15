@@ -401,6 +401,20 @@ class _ProjectionBoundaryOperator(BoundaryOperator):
         return projected_weak_form
 
 
+class _ReinterpretSpacesBoundaryOperator(BoundaryOperator):
+    """ Return a boundary operator, where the user visible space objects have changed without changing
+        the implementation spaces. """
+
+    def __init__(self, operator, domain, range_, dual_to_range):
+
+        super(_ReinterpretSpacesBoundaryOperator, self).__init__(domain, range_, dual_to_range)
+        self._operator = operator
+
+    def _weak_form_impl(self):
+
+        return self._operator.weak_form()
+
+
 class _SumBoundaryOperator(BoundaryOperator):
     """Return the sum of two boundary operators."""
 

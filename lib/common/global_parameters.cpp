@@ -56,6 +56,8 @@ ParameterList GlobalParameters::parameterList() {
   // Number of interpolation points per wavelength for oscillatory kernels.
   parameters.put("options.assembly.interpolationPointsPerWavelength", static_cast<int>(5000));
    
+  // Use super spaces for assembly (only used within Python).
+  parameters.put("options.assembly.use_super_spaces", true);
 
   // Order for singular double integrals.
   parameters.put("options.quadrature.doubleSingular", static_cast<int>(6));

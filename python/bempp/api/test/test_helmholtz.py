@@ -77,10 +77,11 @@ class TestHelmholtz(TestCase):
 
     def test_solve_helmholtz_neumann_problem_on_sphere(self):
 
-        grid = bempp.api.shapes.regular_sphere(4)
+        grid = bempp.api.shapes.regular_sphere(5)
         space = bempp.api.function_space(grid, "P", 2)
 
         parameters = bempp.api.common.global_parameters()
+        parameters.quadrature.near.double_order = 6
         parameters.quadrature.medium.double_order = 3
         parameters.quadrature.far.double_order = 3
         wave_number = 1

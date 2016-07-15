@@ -116,11 +116,11 @@ class DiscreteBoundaryOperatorSum(DiscreteBoundaryOperator):
 
         return self._op1.rmatvec(x) + self._op2.rmatvec(x)
 
-    def _adjoint(self, x):
+    def _adjoint(self):
 
         return self._op1.adjoint() + self._op2.adjoint()
 
-    def _transpose(self, x):
+    def _transpose(self):
 
         return self._op1.transpose() + self._op2.transpose()
 
@@ -157,13 +157,13 @@ class DiscreteBoundaryOperatorProduct(DiscreteBoundaryOperator):
 
         return self._op2.rmatvec(self._op1.rmatvec(x))
 
-    def _adjoint(self, x):
+    def _adjoint(self):
 
         return self._op2.adjoint() * self._op1.adjoint()
 
-    def _transpose(self, x):
+    def _transpose(self):
 
-        return self._op2.transpose() + self._op1.transpose()
+        return self._op2.transpose() * self._op1.transpose()
 
 
 class ScaledDiscreteBoundaryOperator(DiscreteBoundaryOperator):
@@ -472,6 +472,7 @@ class InverseSparseDiscreteBoundaryOperator(DiscreteBoundaryOperator):
     def __init__(self, operator):
 
         self._solver = InverseSparseDiscreteBoundaryOperator._Solver(operator)
+        self._operator = operator
         super(DiscreteBoundaryOperator, self).__init__(
             self._solver.dtype, self._solver.shape)
 
@@ -479,6 +480,14 @@ class InverseSparseDiscreteBoundaryOperator(DiscreteBoundaryOperator):
         """Implemententation of matvec."""
 
         return self._solver.solve(vec)
+
+    def _transpose(self):
+
+        return InverseSparseDiscreteBoundaryOperator(self._operator.transpose())
+
+    def _adjoint(self):
+
+        return InverseSparseDiscreteBoundaryOperator(self._operator.adjoint())
 
 
 class ZeroDiscreteBoundaryOperator(DiscreteBoundaryOperator):

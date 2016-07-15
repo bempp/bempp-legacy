@@ -19,3 +19,11 @@ def project_operator(operator, domain=None, range_=None, dual_to_range=None):
     from bempp.api.assembly.boundary_operator import _ProjectionBoundaryOperator
 
     return _ProjectionBoundaryOperator(operator, domain=domain, range_=range_, dual_to_range=dual_to_range)
+
+def rewrite_operator_spaces(operator, domain, range_, dual_to_range):
+    """Rewrite the user visible spaces of a boundary operator without changing the spaces in the implementation
+       of the operator. """
+
+    from bempp.api.assembly.boundary_operator import _ReinterpretSpacesBoundaryOperator
+
+    return _ReinterpretSpacesBoundaryOperator(operator, domain, range_, dual_to_range)

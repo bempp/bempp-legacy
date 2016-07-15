@@ -90,7 +90,7 @@ class TestLaplace(TestCase):
 
         rel_error = res.l2_norm() / grid_fun.l2_norm()
         self.assertTrue(
-            rel_error < 1E-3, msg="Actual error: {0}. Expected error: 1E-3".format(rel_error))
+            rel_error < 3E-3, msg="Actual error: {0}. Expected error: 3E-3".format(rel_error))
 
     def test_mixed_laplace_dirichlet_problem(self):
         """Solve a mixed Neumann / Dirichlet Laplace problem with higher order basis functions."""
@@ -221,7 +221,7 @@ class TestLaplace(TestCase):
 
         rel_error = dirichlet.relative_error(dirichlet_data_fun)
         self.assertTrue(
-            rel_error < 1E-3, msg="Actual error: {0}. Expected error: 1E-3".format(rel_error))
+            rel_error < 2E-3, msg="Actual error: {0}. Expected error: 2E-3".format(rel_error))
 
     def test_operator_preconditioned_dirichlet_solve_dual(self):
         """Solve an operator preconditioned Laplace Dirichlet problem with dual spaces."""

@@ -10,10 +10,12 @@ class TestBoundaryOperator(TestCase):
         self.domain = bempp.api.function_space(grid, "DP", 0)
         self.range_ = bempp.api.function_space(grid, "DP", 1)
         self.dual_to_range = bempp.api.function_space(grid, "DP", 2)
+        parameters = bempp.api.common.global_parameters()
+        parameters.assembly.use_super_spaces = False
         self._local_operator = bempp.api.operators.boundary.sparse.identity(
             self.domain, self.range_, self.dual_to_range)
         self._elementary_operator = bempp.api.operators.boundary.laplace.single_layer(
-            self.domain, self.range_, self.dual_to_range)
+            self.domain, self.range_, self.dual_to_range, parameters=parameters)
 
     def test_elementary_boundary_operator_domain(self):
         self.assertTrue(self.domain.is_identical(
@@ -64,16 +66,6 @@ class TestBoundaryOperator(TestCase):
 
         self.assertIsInstance(self._local_operator.weak_form(),
                               SparseDiscreteBoundaryOperator)
-
-    def test_weak_form_of_dense_operator_is_dense_discrete_operator(self):
-        import bempp
-        from bempp.api.assembly.discrete_boundary_operator import DenseDiscreteBoundaryOperator
-
-        assembly_mode = bempp.api.global_parameters.assembly.boundary_operator_assembly_type
-        bempp.api.global_parameters.assembly.boundary_operator_assembly_type = 'dense'
-        self.assertIsInstance(
-            self._elementary_operator.weak_form(), DenseDiscreteBoundaryOperator)
-        bempp.api.global_parameters.assembly.boundary_operator_assembly_type = assembly_mode
 
     def test_weak_form_of_operator_sum_is_discrete_operator_sum(self):
         from bempp.api.assembly.discrete_boundary_operator import DiscreteBoundaryOperatorSum

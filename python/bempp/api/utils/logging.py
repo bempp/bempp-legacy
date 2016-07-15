@@ -12,7 +12,6 @@ CRITICAL = _logging.CRITICAL
 
 DEFAULT_FORMAT = '%(asctime)s:%(name)s:%(levelname)s: %(message)s'
 
-
 def _init_logger():
 
     logger = _logging.getLogger('BEMPP')
