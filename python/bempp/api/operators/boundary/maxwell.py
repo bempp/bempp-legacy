@@ -62,15 +62,17 @@ def electric_field(domain, range_, dual_to_range,
     """
 
     from bempp.api.operators.boundary._common import get_wave_operator_with_space_preprocessing
+    from bempp.api.space import rewrite_operator_spaces
 
     try:
-        dual_to_range = dual_to_range._hdiv_space
+        hdiv_dual_to_range = dual_to_range._hdiv_space
     except:
         print("The dual space must be a valid Nedelec curl-conforming space.")
 
-    return get_wave_operator_with_space_preprocessing(_electric_field_impl, domain, range_, dual_to_range, 
-            wave_number, label, symmetry, parameters) 
-
+    return rewrite_operator_spaces(get_wave_operator_with_space_preprocessing(
+            _electric_field_impl, domain, range_, hdiv_dual_to_range, 
+            wave_number, label, symmetry, parameters),
+            domain, range_, dual_to_range)
 
 def calderon_electric_field(grid, wave_number, parameters=None):
     """Return a pair (E^2, E) of the squared EFIE operator E^2 and E itself"""
@@ -144,11 +146,14 @@ def magnetic_field(domain, range_, dual_to_range,
     """
 
     from bempp.api.operators.boundary._common import get_wave_operator_with_space_preprocessing
+    from bempp.api.space import rewrite_operator_spaces
 
     try:
-        dual_to_range = dual_to_range._hdiv_space
+        hdiv_dual_to_range = dual_to_range._hdiv_space
     except:
         print("The dual space must be a valid Nedelec curl-conforming space.")
 
-    return get_wave_operator_with_space_preprocessing(_magnetic_field_impl, domain, range_, dual_to_range, 
-            wave_number, label, symmetry, parameters) 
+    return rewrite_operator_spaces(get_wave_operator_with_space_preprocessing(
+            _magnetic_field_impl, domain, range_, hdiv_dual_to_range, 
+            wave_number, label, symmetry, parameters),
+            domain, range_, dual_to_range)

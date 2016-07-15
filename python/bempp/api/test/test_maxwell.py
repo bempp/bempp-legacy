@@ -26,6 +26,7 @@ class TestMaxwell(TestCase):
         grid = bempp.api.shapes.regular_sphere(4)
         parameters = bempp.api.common.global_parameters()
         parameters.assembly.boundary_operator_assembly_type = 'dense'
+        parameters.assembly.use_super_spaces = False
 
         def eval_dirichlet_data(point, normal, domain_index, result):
             x, y, z = point - source
@@ -175,6 +176,7 @@ class TestMaxwell(TestCase):
         grid = bempp.api.shapes.regular_sphere(4)
         parameters = bempp.api.common.global_parameters()
         parameters.assembly.boundary_operator_assembly_type = 'dense'
+        parameters.assembly.use_super_spaces = False
 
         def eval_dirichlet_data(point, normal, domain_index, result):
             x, y, z = point - source
@@ -254,6 +256,7 @@ class TestMaxwell(TestCase):
         parameters = bempp.api.common.global_parameters()
         parameters.assembly.boundary_operator_assembly_type = 'dense'
         parameters.assembly.potential_operator_assembly_type = 'dense'
+        parameters.assembly.use_super_spaces = False
 
         def eval_dirichlet_data(point, normal, domain_index, result):
             x, y, z = point - source
@@ -321,8 +324,10 @@ class TestMaxwell(TestCase):
         #
         # The far-field pattern is given analytically by $-e_{\phi}$.
 
-        bempp.api.global_parameters.assembly.boundary_operator_assembly_type = 'dense'
-        bempp.api.global_parameters.assembly.potential_operator_assembly_type = 'dense'
+        parameters = bempp.api.common.global_parameters()
+        parameters.assembly.boundary_operator_assembly_type = 'dense'
+        parameters.assembly.potential_operator_assembly_type = 'dense'
+        parameters.assembly.use_super_spaces = False
         grid = bempp.api.shapes.regular_sphere(4)
 
         rwg_space = bempp.api.function_space(grid, 'RWG', 0)
@@ -342,7 +347,7 @@ class TestMaxwell(TestCase):
         ident = bempp.api.operators.boundary.sparse.identity(
             rwg_space, rwg_space, snc_space)
         efie = bempp.api.operators.boundary.maxwell.electric_field(
-            rwg_space, rwg_space, snc_space, k)
+            rwg_space, rwg_space, snc_space, k, parameters=parameters)
 
         sol = bempp.api.linalg.lu(efie, ident * grid_fun)
 
@@ -352,7 +357,7 @@ class TestMaxwell(TestCase):
         points = np.vstack([np.cos(theta), np.sin(
             theta), np.zeros(100, dtype='float64')])
 
-        far_field = electric_far_field(rwg_space, points, k) * sol
+        far_field = electric_far_field(rwg_space, points, k, parameters=parameters) * sol
         exact = np.vstack([points[1], -points[0], np.zeros(100)])
 
         rel_error = np.linalg.norm(far_field - exact) / np.linalg.norm(exact)

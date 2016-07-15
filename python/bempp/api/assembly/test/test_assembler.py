@@ -9,8 +9,6 @@ class TestAssembler(TestCase):
         grid = bempp.api.shapes.regular_sphere(3)
         space = bempp.api.function_space(grid, "P", 1)
         pc_space = bempp.api.function_space(grid, "DP", 0)
-        rt_space = bempp.api.function_space(grid, "RT", 0)
-        nc_space = bempp.api.function_space(grid, "NC", 0)
 
         bempp.api.global_parameters.assembly.use_super_spaces = False
 
@@ -18,8 +16,8 @@ class TestAssembler(TestCase):
             space, space, space)
         self._real_operator_2 = bempp.api.operators.boundary.laplace.single_layer(
             space, space, pc_space)
-        self._complex_operator = bempp.api.operators.boundary.maxwell.electric_field(
-            rt_space, rt_space, nc_space, 1)
+        self._complex_operator = bempp.api.operators.boundary.helmholtz.single_layer(
+            space, space, space, 1)
 
         bempp.api.global_parameters.assembly.use_super_spaces = True
 
