@@ -173,7 +173,7 @@ def grid_from_element_data(vertices, elements, domain_indices=[]):
     return grid
 
 
-def structured_grid(lower_left, upper_right, subdivisions, axis="xy"):
+def structured_grid(lower_left, upper_right, subdivisions, axis="xy", offset=0):
     """Create a two dimensional grid by defining the lower left and
     upper right point.
 
@@ -190,6 +190,9 @@ def structured_grid(lower_left, upper_right, subdivisions, axis="xy"):
         Possible choices are "xy", "xz", "yz". Denotes the
         axes along which the structured grid is generated.
         Default is "xy".
+    offset : double
+        Defines an offset value that shifts the structured grid
+        in the remaining coordinate direction.
 
     Returns
     -------
@@ -204,6 +207,7 @@ def structured_grid(lower_left, upper_right, subdivisions, axis="xy"):
 
     """
     from bempp.core.grid.grid import structured_grid as grid_fun
+    import numpy as np
 
     # Get a grid along the xy axis
     grid = Grid(grid_fun(lower_left, upper_right, subdivisions))
@@ -218,10 +222,13 @@ def structured_grid(lower_left, upper_right, subdivisions, axis="xy"):
 
     if axis == "xy":
         # Nothing to be done
-        return grid_from_element_data(vertices, elements)
+        offset_vector = np.array([[0, 0, offset]]).T
+        return grid_from_element_data(vertices + offset_vector, elements)
     elif axis == "xz":
-        return grid_from_element_data(vertices[[0, 2, 1], :], elements)
+        offset_vector = np.array([[0, offset, 0]]).T
+        return grid_from_element_data(vertices[[0, 2, 1], :] + offset_vector, elements)
     elif axis == "yz":
-        return grid_from_element_data(vertices[[2, 0, 1], :], elements)
+        offset_vector = np.array([[offset, 0, 0]]).T
+        return grid_from_element_data(vertices[[2, 0, 1], :] + offset_vector, elements)
     else:
         raise ValueError("axis parameter must be 'xy', 'xz', or 'yz'.")
