@@ -261,7 +261,5 @@ def koch_snowflake(h=.1, level=2):
     geo += "Line Loop(1) = { "+",".join([str(i+1) for i in range(len(lines))])+"};\n"
     geo += "Plane Surface(1) = {1};\n"
     geo += "\nMesh.Algorithm = 6;"
-    with open("/home/matt/python/bempp/fractals/k.geo","w") as f:
-        f.write(geo)
     return __generate_grid_from_geo_string(geo)
 
