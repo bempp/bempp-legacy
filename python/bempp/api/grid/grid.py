@@ -28,6 +28,7 @@ class Grid(object):
     def __init__(self, impl):
         self._impl = impl
         self._barycentric_grid = None
+        self._view = None
 
     def plot(self):
         """Plot the grid with Gmsh."""
@@ -121,7 +122,9 @@ class Grid(object):
     @property
     def leaf_view(self):
         """Return a view onto the grid."""
-        return _GridView(self._impl.leaf_view)
+        if self._view is None:
+            self._view = _GridView(self._impl.leaf_view)
+        return self._view
 
     @property
     def id_set(self):

@@ -410,6 +410,11 @@ class _ReinterpretSpacesBoundaryOperator(BoundaryOperator):
         super(_ReinterpretSpacesBoundaryOperator, self).__init__(domain, range_, dual_to_range)
         self._operator = operator
 
+    @property
+    def local_assembler(self):
+
+        return self._operator.local_assembler
+
     def _weak_form_impl(self):
 
         return self._operator.weak_form()

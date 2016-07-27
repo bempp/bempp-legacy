@@ -67,7 +67,7 @@ def electric_field(domain, range_, dual_to_range,
     try:
         hdiv_dual_to_range = dual_to_range._hdiv_space
     except:
-        print("The dual space must be a valid Nedelec curl-conforming space.")
+        raise ValueError("The dual space must be a valid Nedelec curl-conforming space.")
 
     return rewrite_operator_spaces(get_wave_operator_with_space_preprocessing(
             _electric_field_impl, domain, range_, hdiv_dual_to_range, 
@@ -151,7 +151,7 @@ def magnetic_field(domain, range_, dual_to_range,
     try:
         hdiv_dual_to_range = dual_to_range._hdiv_space
     except:
-        print("The dual space must be a valid Nedelec curl-conforming space.")
+        raise ValueError("The dual space must be a valid Nedelec curl-conforming space.")
 
     return rewrite_operator_spaces(get_wave_operator_with_space_preprocessing(
             _magnetic_field_impl, domain, range_, hdiv_dual_to_range, 
