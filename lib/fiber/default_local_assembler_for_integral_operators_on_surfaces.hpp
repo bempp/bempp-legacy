@@ -107,6 +107,18 @@ public:
                          Fiber::_2dArray<Matrix<ResultType>> &result,
                          CoordinateType nominalDistance = -1.);
 
+  virtual void
+  evaluateLocalWeakForms(int testElementIndex,
+                         int trialElementIndex,
+                         Matrix<ResultType> &result,
+                         CoordinateType nominalDistance = -1.);
+
+  virtual void
+  evaluateLocalWeakForms(const std::vector<int> &testElementIndices,
+                         const std::vector<int> &trialElementIndices,
+                         std::vector<Matrix<ResultType>> &result,
+                         CoordinateType nominalDistance = -1.);
+
   virtual CoordinateType estimateRelativeScale(CoordinateType minDist) const;
 
 private:

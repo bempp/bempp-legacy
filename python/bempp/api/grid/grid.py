@@ -27,9 +27,7 @@ class Grid(object):
 
     def __init__(self, impl):
         self._impl = impl
-
-    def __eq__(self, other):
-        return self._impl == other._impl
+        self._barycentric_grid = None
 
     def plot(self):
         """Plot the grid with Gmsh."""
@@ -70,7 +68,9 @@ class Grid(object):
 
     def barycentric_grid(self):
         """Return a barycentrically refine grid."""
-        return Grid(self._impl.barycentric_grid())
+        if self._barycentric_grid is None:
+            self._barycentric_grid = Grid(self._impl.barycentric_grid())
+        return self._barycentric_grid
 
     def barycentric_descendents_map(self):
         """Return a matrix that provides a map between elements in the original grid and the barycentric refinement.
@@ -212,10 +212,6 @@ def structured_grid(lower_left, upper_right, subdivisions, axis="xy", offset=0):
     # Get a grid along the xy axis
     grid = Grid(grid_fun(lower_left, upper_right, subdivisions))
     from bempp.api import LOGGER
-    LOGGER.info("Created grid with {0} elements, {1} nodes and {2} edges.".format(grid.leaf_view.entity_count(0),
-                                                                                  grid.leaf_view.entity_count(
-                                                                                      2),
-                                                                                  grid.leaf_view.entity_count(1)))
 
     vertices = grid.leaf_view.vertices
     elements = grid.leaf_view.elements

@@ -4,6 +4,7 @@ from bempp.core.utils cimport catch_exception
 from bempp.core.utils cimport c_ParameterList, ParameterList
 from bempp.core.utils cimport Matrix
 from bempp.core.utils cimport eigen_matrix_to_np_float64
+from bempp.core.utils cimport eigen_matrix_to_np_complex128
 from bempp.core.space.space cimport c_Space, Space
 from .discrete_boundary_operator cimport c_DiscreteBoundaryOperator
 from .discrete_boundary_operator cimport RealDiscreteBoundaryOperator
@@ -22,6 +23,24 @@ cdef class RealIntegralOperatorLocalAssembler:
     def __dealloc__(self):
         self.impl_.reset()
 
+    def evaluate_local_weak_forms(self, object test_indices, object trial_indices):
+
+        if len(test_indices) != len(trial_indices):
+            raise ValueError("Test and trial indices must have the same length.")
+
+        cdef vector[int] c_test_indices = test_indices
+        cdef vector[int] c_trial_indices = trial_indices
+        cdef vector[Matrix[double]] result
+        deref(self.impl_).evaluateLocalWeakForms(c_test_indices, c_trial_indices, result)
+        result_list = []
+        for i in range(result.size()):
+            result_list.append(eigen_matrix_to_np_float64(result[i]))
+        return result_list
+
+    def dtype(self):
+        import numpy as np
+        return np.dtype('float64')
+
 cdef class ComplexIntegralOperatorLocalAssembler:
 
     def __cinit__(self):
@@ -32,6 +51,24 @@ cdef class ComplexIntegralOperatorLocalAssembler:
 
     def __dealloc__(self):
         self.impl_.reset()
+
+    def evaluate_local_weak_forms(self, object test_indices, object trial_indices):
+
+        if len(test_indices) != len(trial_indices):
+            raise ValueError("Test and trial indices must have the same length.")
+
+        cdef vector[int] c_test_indices = test_indices
+        cdef vector[int] c_trial_indices = trial_indices
+        cdef vector[Matrix[complex_double]] result
+        deref(self.impl_).evaluateLocalWeakForms(c_test_indices, c_trial_indices, result)
+        result_list = []
+        for i in range(result.size()):
+            result_list.append(eigen_matrix_to_np_complex128(result[i]))
+        return result_list
+
+    def dtype(self):
+        import numpy as np
+        return np.dtype('complex128')
 
 cdef class LocalOperatorLocalAssembler:
 
@@ -53,6 +90,10 @@ cdef class LocalOperatorLocalAssembler:
 
     def __dealloc__(self):
         self.impl_.reset()
+
+    def dtype(self):
+        import numpy as np
+        return np.dtype('float64')
 
 cdef extern from "bempp/assembly/dense_global_block_assembler.hpp" namespace "Bempp":
     cdef shared_ptr[const c_DiscreteBoundaryOperator[RESULT]] c_assembleDenseBlock "Bempp::assembleDenseBlock"[BASIS,RESULT](

@@ -16,7 +16,8 @@ class ElementaryAbstractIntegralOperator(object):
 
     def make_local_assembler(self, parameters):
         """Create a local assembler object from the abstract operator."""
-        return self._impl.make_local_assembler(parameters)
+        from bempp.api.assembly.assembler import IntegralOperatorLocalAssembler
+        return IntegralOperatorLocalAssembler(self._impl.make_local_assembler(parameters))
 
     def assemble_weak_form(self, parameters):
         """Assemble a boundary integral operator and return the weak form."""

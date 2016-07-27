@@ -5,7 +5,7 @@ from libcpp.vector cimport vector
 
 cdef extern from "bempp/fiber/local_assembler_for_integral_operators.hpp" namespace "Fiber":
     cdef cppclass c_LocalAssemblerForIntegralOperators "Fiber::LocalAssemblerForIntegralOperators"[T]:
-        pass
+        void evaluateLocalWeakForms(const vector[int]&, const vector[int]&, vector[Matrix[T]]&)
 
 cdef extern from "bempp/fiber/local_assembler_for_local_operators.hpp" namespace "Fiber":
     cdef cppclass c_LocalAssemblerForLocalOperators "Fiber::LocalAssemblerForLocalOperators"[T]:

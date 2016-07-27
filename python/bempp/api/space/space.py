@@ -112,8 +112,7 @@ class Space(object):
     @property
     def grid(self):
         """Return the underlying grid of the space."""
-        from bempp.api.grid import Grid
-        return Grid(self._impl.grid)
+        return self._grid
 
     @property
     def domain_dimension(self):
@@ -192,7 +191,7 @@ class DiscontinuousPolynomialSpace(Space):
         self._super_space = self
         self._evaluation_functor = scalar_function_value_functor()
         self._is_barycentric = False
-
+        self._grid = grid
 
 class BarycentricDiscontinuousPolynomialSpace(Space):
     """Represents a space of discontinuous, polynomial functions over a barycentric grid."""
@@ -213,6 +212,7 @@ class BarycentricDiscontinuousPolynomialSpace(Space):
         self._super_space = self._discontinuous_space
         self._evaluation_functor = scalar_function_value_functor()
         self._is_barycentric = True
+        self._grid = grid.barycentric_grid()
 
 
 class ContinuousPolynomialSpace(Space):
@@ -235,6 +235,7 @@ class ContinuousPolynomialSpace(Space):
         self._super_space = self._discontinuous_space
         self._evaluation_functor = scalar_function_value_functor()
         self._is_barycentric = False
+        self._grid = grid
 
 class BarycentricContinuousPolynomialSpace(Space):
     """Represents a space of continuous, polynomial functions on a barycentric grid."""
@@ -255,6 +256,7 @@ class BarycentricContinuousPolynomialSpace(Space):
         self._super_space = self._discontinuous_space
         self._evaluation_functor = scalar_function_value_functor()
         self._is_barycentric = True
+        self._grid = grid.barycentric_grid()
 
 
 class DualSpace(Space):
@@ -276,6 +278,7 @@ class DualSpace(Space):
         self._super_space = self._discontinuous_space
         self._evaluation_functor = scalar_function_value_functor()
         self._is_barycentric = True
+        self._grid = grid.barycentric_grid()
 
 
 class RTSpace(Space):
@@ -296,6 +299,7 @@ class RTSpace(Space):
         self._super_space = self
         self._evaluation_functor = hdiv_function_value_functor()
         self._is_barycentric = False
+        self._grid = grid
 
 class NCSpace(Space):
     """A space of Nedelec functions."""
@@ -316,6 +320,7 @@ class NCSpace(Space):
         self._super_space = self
         self._hdiv_space = RTSpace(grid, domains, closed)
         self._is_barycentric = False
+        self._grid = grid
 
 class RWGSpace(Space):
     """A space of RWG functions."""
@@ -335,6 +340,7 @@ class RWGSpace(Space):
         self._super_space = self
         self._evaluation_functor = hdiv_function_value_functor()
         self._is_barycentric = False
+        self._grid = grid
 
 class SNCSpace(Space):
     """A space of scaled Nedelec functions."""
@@ -355,6 +361,7 @@ class SNCSpace(Space):
         self._super_space = self
         self._hdiv_space = RWGSpace(grid, domains, closed)
         self._is_barycentric = False
+        self._grid = grid
 
 class BarycentricRTSpace(Space):
     """A space of Raviart-Thomas functions on a barycentric grid."""
@@ -375,6 +382,7 @@ class BarycentricRTSpace(Space):
         self._super_space = RTSpace(grid.barycentric_grid(), None, True)
         self._evaluation_functor = hdiv_function_value_functor()
         self._is_barycentric = True
+        self._grid = grid.barycentric_grid()
 
 class BarycentricNCSpace(Space):
     """A space of Nedelec functions on a barycentric grid."""
@@ -396,6 +404,7 @@ class BarycentricNCSpace(Space):
         self._super_space = NCSpace(grid.barycentric_grid(), None, True)
         self._hdiv_space = BarycentricRTSpace(grid)
         self._is_barycentric = True
+        self._grid = grid.barycentric_grid()
 
 
 
@@ -418,6 +427,7 @@ class BarycentricRWGSpace(Space):
         self._super_space = RWGSpace(grid.barycentric_grid(), None, True)
         self._evaluation_functor = hdiv_function_value_functor()
         self._is_barycentric = True
+        self._grid = grid.barycentric_grid
 
 class BarycentricSNCSpace(Space):
     """A space of scaled Nedelec functions on a barycentric grid."""
@@ -439,6 +449,7 @@ class BarycentricSNCSpace(Space):
         self._super_space = SNCSpace(grid.barycentric_grid(), None, True)
         self._hdiv_space = BarycentricRWGSpace(grid)
         self._is_barycentric = True
+        self._grid = grid.barycentric_grid()
 
 
 
@@ -462,6 +473,7 @@ class BuffaChristiansenSpace(Space):
         self._super_space = RWGSpace(grid.barycentric_grid(), None, True)
         self._evaluation_functor = hdiv_function_value_functor()
         self._is_barycentric = True
+        self._grid = grid.barycentric_grid()
 
 class RotatedBuffaChristiansenSpace(Space):
     """A space of rotated Buffa-Christiansen curl conforming basis functions on a barycentrid grid."""
@@ -483,6 +495,7 @@ class RotatedBuffaChristiansenSpace(Space):
         self._super_space = SNCSpace(grid.barycentric_grid(), None, True)
         self._hdiv_space = BuffaChristiansenSpace(grid)
         self._is_barycentric = True
+        self._grid = grid.barycentric_grid()
 
 def function_space(grid, kind, order, domains=None, closed=True, strictly_on_segment=False,
                    reference_point_on_segment=True, element_on_segment=False):
