@@ -19,8 +19,17 @@ class ElementaryAbstractIntegralOperator(object):
         from bempp.api.assembly.assembler import IntegralOperatorLocalAssembler
         return IntegralOperatorLocalAssembler(self._impl.make_local_assembler(parameters))
 
-    def assemble_weak_form(self, parameters):
+    def assemble_weak_form(self, parameters, assemble_only_singular_part=False):
         """Assemble a boundary integral operator and return the weak form."""
+
+        if assemble_only_singular_part:
+            from bempp.api.assembly.assembler import assemble_singular_part
+            from bempp.api.assembly.boundary_operator import ElementaryBoundaryOperator
+            # assemble_singular_part expects boundary operator, so create one
+            op = ElementaryBoundaryOperator(self, parameters=parameters)
+
+            return assemble_singular_part(op)
+
         if parameters.assembly.boundary_operator_assembly_type == 'dense':
             from bempp.api.assembly.discrete_boundary_operator import \
                 DenseDiscreteBoundaryOperator

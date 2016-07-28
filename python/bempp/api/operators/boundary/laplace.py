@@ -5,7 +5,7 @@
 
 
 def _single_layer_impl(domain, range_, dual_to_range,
-        label, symmetry, parameters):
+        label, symmetry, parameters, assemble_only_singular_part):
     """ Return the actual Laplace single layer operator. """
 
     from bempp.core.operators.boundary.laplace import single_layer_ext
@@ -17,10 +17,11 @@ def _single_layer_impl(domain, range_, dual_to_range,
             single_layer_ext(parameters, domain._impl, range_._impl,
                              dual_to_range._impl, "", symmetry),
             domain, range_, dual_to_range),
-        parameters=parameters, label=label)
+        parameters=parameters, label=label, 
+        assemble_only_singular_part=assemble_only_singular_part)
     
 def _double_layer_impl(domain, range_, dual_to_range,
-        label, symmetry, parameters):
+        label, symmetry, parameters, assemble_only_singular_part):
     """ Return the actual Laplace double layer operator. """
 
     from bempp.core.operators.boundary.laplace import double_layer_ext
@@ -32,10 +33,11 @@ def _double_layer_impl(domain, range_, dual_to_range,
             double_layer_ext(parameters, domain._impl, range_._impl,
                              dual_to_range._impl, "", symmetry),
             domain, range_, dual_to_range),
-        parameters=parameters, label=label)
+        parameters=parameters, label=label,
+        assemble_only_singular_part=assemble_only_singular_part)
 
 def _adjoint_double_layer_impl(domain, range_, dual_to_range,
-        label, symmetry, parameters):
+        label, symmetry, parameters, assemble_only_singular_part):
     """ Return the actual Laplace adjoint double layer operator. """
 
     from bempp.core.operators.boundary.laplace import adjoint_double_layer_ext
@@ -47,10 +49,11 @@ def _adjoint_double_layer_impl(domain, range_, dual_to_range,
             adjoint_double_layer_ext(parameters, domain._impl, range_._impl,
                              dual_to_range._impl, "", symmetry),
             domain, range_, dual_to_range),
-        parameters=parameters, label=label)
+        parameters=parameters, label=label,
+        assemble_only_singular_part=assemble_only_singular_part)
 
 def _hypersingular_impl(domain, range_, dual_to_range,
-        label, symmetry, parameters):
+        label, symmetry, parameters, assemble_only_singular_part):
     """ Return the actual Laplace hypersingular operator. """
 
     from bempp.core.operators.boundary.laplace import hypersingular_ext
@@ -62,11 +65,13 @@ def _hypersingular_impl(domain, range_, dual_to_range,
             hypersingular_ext(parameters, domain._impl, range_._impl,
                              dual_to_range._impl, "", symmetry),
             domain, range_, dual_to_range),
-        parameters=parameters, label=label)
+        parameters=parameters, label=label,
+        assemble_only_singular_part=assemble_only_singular_part)
 
 def single_layer(domain, range_, dual_to_range,
                  label="SLP", symmetry='no_symmetry',
-                 parameters=None):
+                 parameters=None, use_projection_spaces=False,
+                 assemble_only_singular_part=False):
     """Return the Laplace single-layer boundary operator.
 
     Parameters
@@ -86,18 +91,27 @@ def single_layer(domain, range_, dual_to_range,
         Parameters for the operator. If none given the
         default global parameter object `bempp.api.global_parameters`
         is used.
+    use_projection_spaces : bool
+        Represent operator by projection from higher dimensional space
+        if available. This parameter can speed up fast assembly routines,
+        such as H-Matrices or FMM (default true).
+    assemble_only_singular_part : bool
+        When assembled the operator will only contain components for adjacent or 
+        overlapping test and trial functions (default false).
 
     """
 
     from bempp.api.operators.boundary._common import get_operator_with_space_preprocessing
 
     return get_operator_with_space_preprocessing(_single_layer_impl, domain, range_, dual_to_range, label,
-        symmetry, parameters) 
+        symmetry, parameters, use_projection_spaces, assemble_only_singular_part) 
 
 
 def double_layer(domain, range_, dual_to_range,
                  label="DLP", symmetry='no_symmetry',
-                 parameters=None):
+                 parameters=None, 
+                 use_projection_spaces=True,
+                 assemble_only_singular_part=False):
     """Return the Laplace double-layer boundary operator.
 
     Parameters
@@ -117,17 +131,26 @@ def double_layer(domain, range_, dual_to_range,
         Parameters for the operator. If none given the
         default global parameter object `bempp.api.global_parameters`
         is used.
+    use_projection_spaces : bool
+        Represent operator by projection from higher dimensional space
+        if available. This parameter can speed up fast assembly routines,
+        such as H-Matrices or FMM (default true).
+    assemble_only_singular_part : bool
+        When assembled the operator will only contain components for adjacent or 
+        overlapping test and trial functions (default false).
 
     """
 
     from bempp.api.operators.boundary._common import get_operator_with_space_preprocessing
 
     return get_operator_with_space_preprocessing(_double_layer_impl, domain, range_, dual_to_range, label,
-        symmetry, parameters) 
+        symmetry, parameters, use_projection_spaces, assemble_only_singular_part) 
 
 def adjoint_double_layer(domain, range_, dual_to_range,
                          label="ADJ_DLP", symmetry='no_symmetry',
-                         parameters=None):
+                         parameters=None,
+                         use_projection_spaces=True,
+                         assemble_only_singular_part=False):
     """Return the Laplace adjoint double-layer boundary operator.
 
     Parameters
@@ -147,19 +170,27 @@ def adjoint_double_layer(domain, range_, dual_to_range,
         Parameters for the operator. If none given the
         default global parameter object `bempp.api.global_parameters`
         is used.
+    use_projection_spaces : bool
+        Represent operator by projection from higher dimensional space
+        if available. This parameter can speed up fast assembly routines,
+        such as H-Matrices or FMM (default true).
+    assemble_only_singular_part : bool
+        When assembled the operator will only contain components for adjacent or 
+        overlapping test and trial functions (default false).
 
     """
 
     from bempp.api.operators.boundary._common import get_operator_with_space_preprocessing
 
     return get_operator_with_space_preprocessing(_adjoint_double_layer_impl, domain, range_, dual_to_range, label,
-        symmetry, parameters) 
+        symmetry, parameters, use_projection_spaces, assemble_only_singular_part) 
 
 
 
 def hypersingular(domain, range_, dual_to_range,
                   label="HYP", symmetry='no_symmetry',
-                  parameters=None, use_slp=False):
+                  parameters=None, use_slp=False,
+                  assemble_only_singular_part=False):
     """Return the Laplace hypersingular boundary operator.
 
     Parameters
@@ -189,6 +220,10 @@ def hypersingular(domain, range_, dual_to_range,
         if no care is taken this option can lead to a wrong operator. Also,
         `use_slp=True` or `use_slp=op` is only valid if the `domain` and `dual_to_range`
         spaces are identical.
+    assemble_only_singular_part : bool
+        When assembled the operator will only contain components for adjacent or 
+        overlapping test and trial functions (default false).
+        Note. This option is only used if `use_slp` is not specified.
     """
 
     import bempp
@@ -211,7 +246,8 @@ def hypersingular(domain, range_, dual_to_range,
     if not use_slp:
         from bempp.api.operators.boundary._common import get_operator_with_space_preprocessing
         return get_operator_with_space_preprocessing(_hypersingular_impl, domain, range_, dual_to_range, label,
-            symmetry, parameters, use_super_space=False) 
+            symmetry, parameters, use_projection_spaces=False, 
+            assemble_only_singular_part=assemble_only_singular_part) 
     else:
         if not isinstance(use_slp, BoundaryOperator):
             disc_domain = domain.discontinuous_space

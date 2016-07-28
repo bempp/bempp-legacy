@@ -19,7 +19,7 @@ def check_for_non_barycentric_spaces(domain, dual_to_range):
 
 
 def get_operator_with_space_preprocessing(op_fun, domain, range_, dual_to_range, label,
-        symmetry, parameters, use_super_space=True): 
+        symmetry, parameters, use_projection_spaces=True, assemble_only_singular_part=False): 
 
     import bempp.api
     from bempp.api.assembly import ElementaryBoundaryOperator
@@ -36,22 +36,24 @@ def get_operator_with_space_preprocessing(op_fun, domain, range_, dual_to_range,
                 get_operator_with_space_preprocessing(
                     op_fun, domain.non_barycentric_space, range_, 
                     dual_to_range.non_barycentric_space,
-                    label, symmetry, parameters, use_super_space), 
+                    label, symmetry, parameters, use_projection_spaces,
+                    assemble_only_singular_part), 
                 domain, range_, dual_to_range)
 
 
-    if not parameters.assembly.use_super_spaces or not use_super_space:
-        return op_fun(domain, range_, dual_to_range, label, symmetry, parameters)
+    if not use_projection_spaces:
+        return op_fun(domain, range_, dual_to_range, label, symmetry, parameters, 
+                assemble_only_singular_part)
     else:
 
         op = op_fun(domain.super_space, range_, dual_to_range.super_space, label,
-                symmetry, parameters)
+                symmetry, parameters, assemble_only_singular_part)
 
         return project_operator(op, domain=domain, range_=range_, dual_to_range=dual_to_range)
 
 
 def get_wave_operator_with_space_preprocessing(op_fun, domain, range_, dual_to_range, wave_number, label,
-        symmetry, parameters, use_super_space=True): 
+        symmetry, parameters, use_projection_spaces=True, assemble_only_singular_part=False): 
 
     import bempp.api
     from bempp.api.assembly import ElementaryBoundaryOperator
@@ -68,16 +70,18 @@ def get_wave_operator_with_space_preprocessing(op_fun, domain, range_, dual_to_r
                 get_wave_operator_with_space_preprocessing(
                     op_fun, domain.non_barycentric_space, range_, 
                     dual_to_range.non_barycentric_space, wave_number,
-                    label, symmetry, parameters, use_super_space), 
+                    label, symmetry, parameters, use_projection_spaces,
+                    assemble_only_singular_part), 
                 domain, range_, dual_to_range)
 
 
-    if not parameters.assembly.use_super_spaces or not use_super_space:
-        return op_fun(domain, range_, dual_to_range, wave_number, label, symmetry, parameters)
+    if not use_projection_spaces:
+        return op_fun(domain, range_, dual_to_range, wave_number, label, symmetry, parameters,
+                assemble_only_singular_part)
     else:
 
         op = op_fun(domain.super_space, range_, dual_to_range.super_space, wave_number, label,
-                symmetry, parameters)
+                symmetry, parameters, assemble_only_singular_part)
 
         return project_operator(op, domain=domain, range_=range_, dual_to_range=dual_to_range)
 

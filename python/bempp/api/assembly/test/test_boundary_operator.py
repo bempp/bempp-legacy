@@ -11,11 +11,11 @@ class TestBoundaryOperator(TestCase):
         self.range_ = bempp.api.function_space(grid, "DP", 1)
         self.dual_to_range = bempp.api.function_space(grid, "DP", 2)
         parameters = bempp.api.common.global_parameters()
-        parameters.assembly.use_super_spaces = False
         self._local_operator = bempp.api.operators.boundary.sparse.identity(
             self.domain, self.range_, self.dual_to_range)
         self._elementary_operator = bempp.api.operators.boundary.laplace.single_layer(
-            self.domain, self.range_, self.dual_to_range, parameters=parameters)
+            self.domain, self.range_, self.dual_to_range, parameters=parameters,
+            use_projection_spaces=False)
 
     def test_elementary_boundary_operator_domain(self):
         self.assertTrue(self.domain.is_identical(

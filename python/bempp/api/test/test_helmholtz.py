@@ -77,7 +77,7 @@ class TestHelmholtz(TestCase):
 
     def test_solve_helmholtz_neumann_problem_on_sphere(self):
 
-        grid = bempp.api.shapes.regular_sphere(5)
+        grid = bempp.api.shapes.regular_sphere(4)
         space = bempp.api.function_space(grid, "P", 2)
 
         parameters = bempp.api.common.global_parameters()
@@ -101,7 +101,8 @@ class TestHelmholtz(TestCase):
             space, space, space, wave_number, parameters=parameters)
 
         hyp = bempp.api.operators.boundary.helmholtz.hypersingular(
-            space, space, space, wave_number, parameters=parameters)
+            space, space, space, wave_number, parameters=parameters,
+            use_slp=True)
 
         ident = bempp.api.operators.boundary.sparse.identity(
             space, space, space, parameters=parameters)

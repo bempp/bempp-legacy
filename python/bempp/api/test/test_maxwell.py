@@ -26,7 +26,6 @@ class TestMaxwell(TestCase):
         grid = bempp.api.shapes.regular_sphere(4)
         parameters = bempp.api.common.global_parameters()
         parameters.assembly.boundary_operator_assembly_type = 'dense'
-        parameters.assembly.use_super_spaces = False
 
         def eval_dirichlet_data(point, normal, domain_index, result):
             x, y, z = point - source
@@ -63,9 +62,11 @@ class TestMaxwell(TestCase):
         nc_space = bempp.api.function_space(grid, "NC", 0)
 
         efie = bempp.api.operators.boundary.maxwell.electric_field(
-            rt_space, rt_space, nc_space, k, parameters=parameters)
+            rt_space, rt_space, nc_space, k, parameters=parameters,
+            use_projection_spaces=False)
         mfie = bempp.api.operators.boundary.maxwell.magnetic_field(
-            rt_space, rt_space, nc_space, k, parameters=parameters)
+            rt_space, rt_space, nc_space, k, parameters=parameters,
+            use_projection_spaces=False)
         ident = bempp.api.operators.boundary.sparse.identity(
             rt_space, rt_space, nc_space, parameters=parameters)
 
@@ -176,7 +177,6 @@ class TestMaxwell(TestCase):
         grid = bempp.api.shapes.regular_sphere(4)
         parameters = bempp.api.common.global_parameters()
         parameters.assembly.boundary_operator_assembly_type = 'dense'
-        parameters.assembly.use_super_spaces = False
 
         def eval_dirichlet_data(point, normal, domain_index, result):
             x, y, z = point - source
@@ -213,9 +213,11 @@ class TestMaxwell(TestCase):
         snc_space = bempp.api.function_space(grid, "SNC", 0)
 
         efie = bempp.api.operators.boundary.maxwell.electric_field(
-            rwg_space, rwg_space, snc_space, k, parameters=parameters)
+            rwg_space, rwg_space, snc_space, k, parameters=parameters,
+            use_projection_spaces=False)
         mfie = bempp.api.operators.boundary.maxwell.magnetic_field(
-            rwg_space, rwg_space, snc_space, k, parameters=parameters)
+            rwg_space, rwg_space, snc_space, k, parameters=parameters,
+            use_projection_spaces=False)
         ident = bempp.api.operators.boundary.sparse.identity(
             rwg_space, rwg_space, snc_space, parameters=parameters)
 
@@ -256,7 +258,6 @@ class TestMaxwell(TestCase):
         parameters = bempp.api.common.global_parameters()
         parameters.assembly.boundary_operator_assembly_type = 'dense'
         parameters.assembly.potential_operator_assembly_type = 'dense'
-        parameters.assembly.use_super_spaces = False
 
         def eval_dirichlet_data(point, normal, domain_index, result):
             x, y, z = point - source
@@ -327,7 +328,6 @@ class TestMaxwell(TestCase):
         parameters = bempp.api.common.global_parameters()
         parameters.assembly.boundary_operator_assembly_type = 'dense'
         parameters.assembly.potential_operator_assembly_type = 'dense'
-        parameters.assembly.use_super_spaces = False
         grid = bempp.api.shapes.regular_sphere(4)
 
         rwg_space = bempp.api.function_space(grid, 'RWG', 0)
@@ -347,7 +347,8 @@ class TestMaxwell(TestCase):
         ident = bempp.api.operators.boundary.sparse.identity(
             rwg_space, rwg_space, snc_space)
         efie = bempp.api.operators.boundary.maxwell.electric_field(
-            rwg_space, rwg_space, snc_space, k, parameters=parameters)
+            rwg_space, rwg_space, snc_space, k, parameters=parameters,
+            use_projection_spaces=False)
 
         sol = bempp.api.linalg.lu(efie, ident * grid_fun)
 

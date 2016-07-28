@@ -8,7 +8,9 @@ import numpy as _np
 def single_layer(domain, range_, dual_to_range,
                  wave_number,
                  label="SLP", symmetry='no_symmetry',
-                 parameters=None):
+                 parameters=None,
+                 use_projection_spaces=True,
+                 assemble_only_singular_part=False):
     """Return the Helmholtz single-layer boundary operator.
 
     Parameters
@@ -30,19 +32,28 @@ def single_layer(domain, range_, dual_to_range,
         Parameters for the operator. If none given the
         default global parameter object `bempp.api.global_parameters`
         is used.
+    use_projection_spaces : bool
+        Represent operator by projection from higher dimensional space
+        if available. This parameter can speed up fast assembly routines,
+        such as H-Matrices or FMM (default true).
+    assemble_only_singular_part : bool
+        When assembled the operator will only contain components for adjacent or 
+        overlapping test and trial functions (default false).
 
     """
     from .modified_helmholtz import single_layer as sl
 
     return sl(domain, range_, dual_to_range,
               wave_number / (1j), label, symmetry,
-              parameters)
+              parameters, use_projection_spaces, assemble_only_singular_part)
 
 
 def double_layer(domain, range_, dual_to_range,
                  wave_number,
                  label="DLP", symmetry='no_symmetry',
-                 parameters=None):
+                 parameters=None,
+                 use_projection_spaces=True,
+                 assemble_only_singular_part=False):
     """Return the Helmholtz double-layer boundary operator.
 
     Parameters
@@ -64,6 +75,13 @@ def double_layer(domain, range_, dual_to_range,
         Parameters for the operator. If none given the
         default global parameter object `bempp.api.global_parameters`
         is used.
+    use_projection_spaces : bool
+        Represent operator by projection from higher dimensional space
+        if available. This parameter can speed up fast assembly routines,
+        such as H-Matrices or FMM (default true).
+    assemble_only_singular_part : bool
+        When assembled the operator will only contain components for adjacent or 
+        overlapping test and trial functions (default false).
 
     """
 
@@ -71,13 +89,17 @@ def double_layer(domain, range_, dual_to_range,
 
     return dl(domain, range_, dual_to_range,
               wave_number / (1j), label, symmetry,
-              parameters)
+              parameters,
+              use_projection_spaces,
+              assemble_only_singular_part)
 
 
 def adjoint_double_layer(domain, range_, dual_to_range,
                          wave_number,
                          label="ADJ_DLP", symmetry='no_symmetry',
-                         parameters=None):
+                         parameters=None,
+                         use_projection_spaces=True,
+                         assemble_only_singular_part=False):
     """Return the Helmholtz adjoint double-layer boundary operator.
 
     Parameters
@@ -99,6 +121,13 @@ def adjoint_double_layer(domain, range_, dual_to_range,
         Parameters for the operator. If none given the
         default global parameter object `bempp.api.global_parameters`
         is used.
+    use_projection_spaces : bool
+        Represent operator by projection from higher dimensional space
+        if available. This parameter can speed up fast assembly routines,
+        such as H-Matrices or FMM (default true).
+    assemble_only_singular_part : bool
+        When assembled the operator will only contain components for adjacent or 
+        overlapping test and trial functions (default false).
 
     """
 
@@ -106,14 +135,17 @@ def adjoint_double_layer(domain, range_, dual_to_range,
 
     return adl(domain, range_, dual_to_range,
                wave_number / (1j), label, symmetry,
-               parameters)
+               parameters,
+               use_projection_spaces=True,
+               assemble_only_singular_part=False)
 
 
 def hypersingular(domain, range_, dual_to_range,
                   wave_number,
                   label="HYP", symmetry='no_symmetry',
                   parameters=None,
-                  use_slp=False):
+                  use_slp=False,
+                  assemble_only_singular_part=False):
     """Return the Helmholtz hypersingular boundary operator.
 
     Parameters
@@ -145,15 +177,18 @@ def hypersingular(domain, range_, dual_to_range,
         if no care is taken this option can lead to a wrong operator. Also,
         `use_slp=True` or `use_slp=op` is only valid if the `domain` and `dual_to_range`
         spaces are identical.
-
-
+    assemble_only_singular_part : bool
+        When assembled the operator will only contain components for adjacent or 
+        overlapping test and trial functions (default false).
+        Note. This option is only used if `use_slp` is not specified.
     """
 
     from .modified_helmholtz import hypersingular as hyp
 
     return hyp(domain, range_, dual_to_range,
                wave_number / (1j), label, symmetry,
-               use_slp=use_slp, parameters=parameters)
+               use_slp=use_slp, parameters=parameters,
+               assemble_only_singular_part=False)
 
 
 def multitrace_operator(grid, wave_number, parameters=None, spaces='linear'):

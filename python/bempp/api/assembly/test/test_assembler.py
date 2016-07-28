@@ -10,16 +10,12 @@ class TestAssembler(TestCase):
         space = bempp.api.function_space(grid, "P", 1)
         pc_space = bempp.api.function_space(grid, "DP", 0)
 
-        bempp.api.global_parameters.assembly.use_super_spaces = False
-
         self._real_operator = bempp.api.operators.boundary.laplace.single_layer(
-            space, space, space)
+            space, space, space, use_projection_spaces=False)
         self._real_operator_2 = bempp.api.operators.boundary.laplace.single_layer(
-            space, space, pc_space)
+            space, space, pc_space, use_projection_spaces=False)
         self._complex_operator = bempp.api.operators.boundary.helmholtz.single_layer(
-            space, space, space, 1)
-
-        bempp.api.global_parameters.assembly.use_super_spaces = True
+            space, space, space, 1, use_projection_spaces=False)
 
         self._rows = (5, 10)
         self._cols = (73, 100)
@@ -35,14 +31,12 @@ class TestAssembler(TestCase):
         import bempp
 
         bempp.api.global_parameters.assembly.boundary_operator_assembly_type = 'dense'
-        bempp.api.global_parameters.assembly.use_super_spaces = False
 
         operator = self._real_operator
 
         actual = as_matrix(assemble_dense_block(self._real_operator, bempp.api.ALL, bempp.api.ALL,
                                                 operator.domain, operator.dual_to_range))
 
-        bempp.api.global_parameters.assembly.use_super_spaces = True
 
         expected = as_matrix(operator.weak_form())
 
@@ -57,13 +51,11 @@ class TestAssembler(TestCase):
         import bempp
 
         bempp.api.global_parameters.assembly.boundary_operator_assembly_type = 'dense'
-        bempp.api.global_parameters.assembly.use_super_spaces = False
 
         operator = self._real_operator_2
 
         actual = as_matrix(assemble_dense_block(operator, bempp.api.ALL, bempp.api.ALL,
                                                 operator.domain, operator.dual_to_range))
-        bempp.api.global_parameters.assembly.use_super_spaces = True
 
         expected = as_matrix(operator.weak_form())
 
@@ -79,11 +71,9 @@ class TestAssembler(TestCase):
         bempp.api.global_parameters.assembly.boundary_operator_assembly_type = 'dense'
 
         operator = self._real_operator
-        bempp.api.global_parameters.assembly.use_super_spaces = False
 
         actual = as_matrix(assemble_dense_block(self._real_operator, self._rows, self._cols,
                                                 operator.domain, operator.dual_to_range))
-        bempp.api.global_parameters.assembly.use_super_spaces = True
 
         expected = as_matrix(operator.weak_form())[self._rows[
             0]:self._rows[1], self._cols[0]:self._cols[1]]
@@ -98,7 +88,6 @@ class TestAssembler(TestCase):
         bempp.api.global_parameters.assembly.boundary_operator_assembly_type = 'dense'
 
         operator = self._complex_operator
-
         actual = as_matrix(assemble_dense_block(self._complex_operator, bempp.api.ALL, bempp.api.ALL,
                                                 operator.domain, operator.dual_to_range))
 

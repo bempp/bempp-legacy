@@ -3,7 +3,7 @@
 """Definition of the Maxwell boundary operators."""
 
 def _electric_field_impl(domain, range_, dual_to_range, wave_number,
-        label, symmetry, parameters):
+        label, symmetry, parameters, assemble_only_singular_part):
     """ Return the actual electric field operator. """
 
     from bempp.core.operators.boundary.maxwell import electric_field_ext
@@ -16,10 +16,11 @@ def _electric_field_impl(domain, range_, dual_to_range, wave_number,
                              dual_to_range._impl, 
                              wave_number, "", symmetry),
             domain, range_, dual_to_range),
-        parameters=parameters, label=label)
+        parameters=parameters, label=label,
+        assemble_only_singular_part=assemble_only_singular_part)
     
 def _magnetic_field_impl(domain, range_, dual_to_range, wave_number,
-        label, symmetry, parameters):
+        label, symmetry, parameters, assemble_only_singular_part):
     """ Return the actual magnetic field operator. """
 
     from bempp.core.operators.boundary.maxwell import magnetic_field_ext
@@ -32,12 +33,14 @@ def _magnetic_field_impl(domain, range_, dual_to_range, wave_number,
                              dual_to_range._impl, 
                              wave_number, "", symmetry),
             domain, range_, dual_to_range),
-        parameters=parameters, label=label)
+        parameters=parameters, label=label,
+        assemble_only_singular_part=assemble_only_singular_part)
 
 def electric_field(domain, range_, dual_to_range,
                    wave_number,
                    label="EFIE", symmetry='no_symmetry',
-                   parameters=None):
+                   parameters=None, use_projection_spaces=True,
+                   assemble_only_singular_part=False):
     """Return the Maxwell electric field boundary operator.
 
     Parameters
@@ -59,6 +62,13 @@ def electric_field(domain, range_, dual_to_range,
         Parameters for the operator. If none given the
         default global parameter object `bempp.api.global_parameters`
         is used.
+    use_projection_spaces : bool
+        Represent operator by projection from higher dimensional space
+        if available. This parameter can speed up fast assembly routines,
+        such as H-Matrices or FMM (default true).
+    assemble_only_singular_part : bool
+        When assembled the operator will only contain components for adjacent or 
+        overlapping test and trial functions (default false).
     """
 
     from bempp.api.operators.boundary._common import get_wave_operator_with_space_preprocessing
@@ -71,7 +81,7 @@ def electric_field(domain, range_, dual_to_range,
 
     return rewrite_operator_spaces(get_wave_operator_with_space_preprocessing(
             _electric_field_impl, domain, range_, hdiv_dual_to_range, 
-            wave_number, label, symmetry, parameters),
+            wave_number, label, symmetry, parameters, use_projection_spaces, assemble_only_singular_part),
             domain, range_, dual_to_range)
 
 def calderon_electric_field(grid, wave_number, parameters=None):
@@ -120,7 +130,9 @@ def calderon_electric_field(grid, wave_number, parameters=None):
 def magnetic_field(domain, range_, dual_to_range,
                    wave_number,
                    label="MFIE", symmetry='no_symmetry',
-                   parameters=None):
+                   parameters=None,
+                   use_projection_spaces=True,
+                   assemble_only_singular_part=False):
     """Return the Maxwell magnetic field boundary operator.
 
     Parameters
@@ -142,6 +154,13 @@ def magnetic_field(domain, range_, dual_to_range,
         Parameters for the operator. If none given the
         default global parameter object `bempp.api.global_parameters`
         is used.
+    use_projection_spaces : bool
+        Represent operator by projection from higher dimensional space
+        if available. This parameter can speed up fast assembly routines,
+        such as H-Matrices or FMM (default true).
+    assemble_only_singular_part : bool
+        When assembled the operator will only contain components for adjacent or 
+        overlapping test and trial functions (default false).
 
     """
 
@@ -155,5 +174,5 @@ def magnetic_field(domain, range_, dual_to_range,
 
     return rewrite_operator_spaces(get_wave_operator_with_space_preprocessing(
             _magnetic_field_impl, domain, range_, hdiv_dual_to_range, 
-            wave_number, label, symmetry, parameters),
+            wave_number, label, symmetry, parameters, use_projection_spaces, assemble_only_singular_part),
             domain, range_, dual_to_range)

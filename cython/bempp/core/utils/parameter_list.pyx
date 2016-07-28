@@ -65,18 +65,6 @@ cdef class _AssemblyParameterList:
             cdef char* s = b"options.assembly.enableSingularIntegralCaching"           
             deref(self.impl_).put_bool(s,value)
 
-    property use_super_spaces:
-
-        def __get__(self):
-
-            cdef char* s = b"options.assembly.use_super_spaces"
-            return (deref(self.impl_).get_bool(s))
-
-        def __set__(self,cbool value):
-
-            cdef char* s = b"options.assembly.use_super_spaces"
-            deref(self.impl_).put_bool(s,value)
-    
     property enable_interpolation_for_oscillatory_kernels:
 
         def __get__(self):

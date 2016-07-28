@@ -227,7 +227,10 @@ class ElementaryBoundaryOperator(BoundaryOperator):
         An optional parameters object (default is None).
     label: string
         An optional operator label (default is "").
-
+    represent_only_singular_part : bool
+        When assembled the operator will only contain components for adjacent or 
+        overlapping test and trial functions (default false).
+        
     Attributes
     ----------
     parameters : bempp.api.common.global_parameters
@@ -238,7 +241,8 @@ class ElementaryBoundaryOperator(BoundaryOperator):
 
     """
 
-    def __init__(self, abstract_operator, parameters=None, label=""):
+    def __init__(self, abstract_operator, parameters=None, label="",
+            assemble_only_singular_part=False):
         super(ElementaryBoundaryOperator, self).__init__(abstract_operator.domain,
                                                          abstract_operator.range,
                                                          abstract_operator.dual_to_range,
@@ -252,6 +256,8 @@ class ElementaryBoundaryOperator(BoundaryOperator):
             self._parameters = parameters
 
         self._impl = abstract_operator
+
+        self._assemble_only_singular_part = assemble_only_singular_part
 
     @property
     def parameters(self):
@@ -275,11 +281,12 @@ class ElementaryBoundaryOperator(BoundaryOperator):
                                                       assembly_mode, self.label))
         start_time = time.time()
 
-        weak_form = self._impl.assemble_weak_form(self._parameters)
+        weak_form = self._impl.assemble_weak_form(self._parameters,
+                self._assemble_only_singular_part)
 
         end_time = time.time()
 
-        if assembly_mode == 'hmat':
+        if assembly_mode == 'hmat' and not self._assemble_only_singular_part:
             from bempp.api.hmat import hmatrix_interface
             mem_size = hmatrix_interface.mem_size(weak_form) / (1.0 * 1024)
             compression_rate = hmatrix_interface.compression_rate(weak_form)

@@ -52,7 +52,7 @@ def assemble_dense_block(operator, rows, cols, domain, dual_to_range, parameters
         parameters = operator.parameters
 
     return DenseDiscreteBoundaryOperator(assemble_dense_block_ext(rows, cols, domain._impl, dual_to_range._impl,
-                                                                  operator.local_assembler,
+                                                                  operator.local_assembler._impl,
                                                                   parameters).as_matrix())
 
 
@@ -60,6 +60,7 @@ def assemble_singular_part(operator):
     """Assemble the singular part of an integral operator."""
 
     from scipy.sparse import csc_matrix
+    from bempp.api.assembly.discrete_boundary_operator import SparseDiscreteBoundaryOperator
     import numpy as np
 
     test_space = operator.dual_to_range
@@ -71,7 +72,7 @@ def assemble_singular_part(operator):
     # If the test and trial grid are different return a zero matrix
 
     if operator.domain.grid != operator.dual_to_range.grid:
-        return csc_matrix((test_dof_count, trial_dof_count))
+        return SparseDiscreteBoundaryOperator(csc_matrix((test_dof_count, trial_dof_count)))
 
     grid = operator.domain.grid
 
@@ -156,7 +157,7 @@ def assemble_singular_part(operator):
                 data[index] += (weak_form_lookup[element_pair][test_dof.dof_index, trial_dof.dof_index] *
                         np.conj(test_weights[i]) * np.conj(trial_weights[j]))
 
-    return csc_matrix((data, (row_indices, col_indices)), 
-            shape=(test_dof_count, trial_dof_count))
+    return SparseDiscreteBoundaryOperator(csc_matrix((data, (row_indices, col_indices)), 
+            shape=(test_dof_count, trial_dof_count)))
 
 

@@ -427,7 +427,7 @@ class BarycentricRWGSpace(Space):
         self._super_space = RWGSpace(grid.barycentric_grid(), None, True)
         self._evaluation_functor = hdiv_function_value_functor()
         self._is_barycentric = True
-        self._grid = grid.barycentric_grid
+        self._grid = grid.barycentric_grid()
 
 class BarycentricSNCSpace(Space):
     """A space of scaled Nedelec functions on a barycentric grid."""
