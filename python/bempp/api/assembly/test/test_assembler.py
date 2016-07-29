@@ -112,6 +112,89 @@ class TestAssembler(TestCase):
 
         self.assertAlmostEqual(np.linalg.norm(actual - expected), 0)
 
+    def test_singular_assembly_of_laplace_single_layer_operator(self):
+
+        import bempp.api
+        import numpy as np
+
+        grid = bempp.api.shapes.cube(h=0.1)
+        space = bempp.api.function_space(grid, "P", 1)
+
+        parameters = bempp.api.common.global_parameters()
+        parameters.assembly.boundary_operator_assembly_type = 'dense'
+
+        op_sing = bempp.api.operators.boundary.laplace.single_layer(space, space, space,
+                assemble_only_singular_part=True, use_projection_spaces=False)
+
+        op = bempp.api.operators.boundary.laplace.single_layer(space, space, space,
+                use_projection_spaces=False, parameters=parameters)
+
+        mat_sing = op_sing.weak_form().sparse_operator
+
+        mat = bempp.api.as_matrix(op.weak_form())
+
+        indices = mat_sing.nonzero()
+        n_elements = mat_sing.nnz
+
+        actual = np.zeros(n_elements, dtype='float64')
+        expected  = np.zeros(n_elements, dtype='float64')
+
+        for i in range(n_elements):
+
+            m = indices[0][i]
+            n = indices[1][i]
+
+            actual[i] = mat_sing[m, n]
+            expected[i] = mat[m, n]
+
+        from numpy.testing import assert_allclose
+
+        assert_allclose(actual, expected, rtol=1E-15)
+
+
+    def test_singular_assembly_of_maxwell_efie_operator(self):
+
+        import bempp.api
+        import numpy as np
+
+        grid = bempp.api.shapes.cube(h=0.1)
+        rt_space = bempp.api.function_space(grid, "RT", 0)
+        nc_space = bempp.api.function_space(grid, "NC", 0)
+
+        parameters = bempp.api.common.global_parameters()
+        parameters.assembly.boundary_operator_assembly_type = 'dense'
+
+        op_sing = bempp.api.operators.boundary.maxwell.electric_field(rt_space, rt_space, nc_space, 1,
+                assemble_only_singular_part=True, use_projection_spaces=False)
+
+        op = bempp.api.operators.boundary.maxwell.electric_field(rt_space, rt_space, nc_space, 1,
+                use_projection_spaces=False, parameters=parameters)
+
+        mat_sing = op_sing.weak_form().sparse_operator
+
+        mat = bempp.api.as_matrix(op.weak_form())
+
+        indices = mat_sing.nonzero()
+        n_elements = mat_sing.nnz
+
+        actual = np.zeros(n_elements, dtype='complex128')
+        expected  = np.zeros(n_elements, dtype='complex128')
+
+        for i in range(n_elements):
+
+            m = indices[0][i]
+            n = indices[1][i]
+
+            actual[i] = mat_sing[m, n]
+            expected[i] = mat[m, n]
+
+        from numpy.testing import assert_allclose
+
+        self.assertAlmostEqual(np.linalg.norm(actual-expected,np.inf)/np.linalg.norm(expected,np.inf), 0)
+
+
+
+
 if __name__ == "__main__":
     from unittest import main
 

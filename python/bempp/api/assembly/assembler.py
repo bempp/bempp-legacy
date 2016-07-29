@@ -59,6 +59,35 @@ def assemble_dense_block(operator, rows, cols, domain, dual_to_range, parameters
 def assemble_singular_part(operator):
     """Assemble the singular part of an integral operator."""
 
+
+    def create_sparse_matrix_from_integration_pairs(all_test_trial_function_pairs,
+            test_dof_map, trial_dof_map, test_dof_count, trial_dof_count):
+
+        data = np.zeros(len(all_test_trial_function_pairs), dtype=assembler.dtype)
+        row_indices = np.zeros(len(all_test_trial_function_pairs), dtype=np.int)
+        col_indices = np.zeros(len(all_test_trial_function_pairs), dtype=np.int)
+
+        #import ipdb; ipdb.set_trace()
+
+        for index, (test_index, trial_index) in enumerate(all_test_trial_function_pairs):
+
+            row_indices[index] = test_index
+            col_indices[index] = trial_index
+
+            # Get local dofs and dof_weights
+            test_dofs, test_weights = test_dof_map[0][test_index], test_dof_map[1][test_index]
+            trial_dofs, trial_weights = trial_dof_map[0][trial_index], trial_dof_map[1][trial_index]
+
+            for i, test_dof in enumerate(test_dofs):
+                for j, trial_dof in enumerate(trial_dofs):
+                    element_pair = (test_dof.entity_index, trial_dof.entity_index)
+                    weak_form_data = weak_form_lookup.get(element_pair)
+                    data[index] += (weak_form_data[test_dof.dof_index, trial_dof.dof_index] *
+                            np.conj(test_weights[i]) * np.conj(trial_weights[j]))
+
+        return SparseDiscreteBoundaryOperator(csc_matrix((data, (row_indices, col_indices)), 
+                shape=(test_dof_count, trial_dof_count)))
+
     from scipy.sparse import csc_matrix
     from bempp.api.assembly.discrete_boundary_operator import SparseDiscreteBoundaryOperator
     import numpy as np
@@ -73,6 +102,12 @@ def assemble_singular_part(operator):
 
     if operator.domain.grid != operator.dual_to_range.grid:
         return SparseDiscreteBoundaryOperator(csc_matrix((test_dof_count, trial_dof_count)))
+
+
+    # Cache the global to local accesses
+
+    test_dof_map = test_space.global_to_local_dofs(range(test_dof_count))
+    trial_dof_map = trial_space.global_to_local_dofs(range(trial_dof_count))
 
     grid = operator.domain.grid
 
@@ -111,9 +146,8 @@ def assemble_singular_part(operator):
 
     for function_pair in all_test_trial_function_pairs:
 
-        local_dofs = test_space.global_to_local_dofs(function_pair)[0]
-        test_local_dofs = local_dofs[0]
-        trial_local_dofs = local_dofs[1]
+        test_local_dofs = test_dof_map[0][function_pair[0]]
+        trial_local_dofs = trial_dof_map[0][function_pair[1]]
 
         for test_dof in test_local_dofs:
             for trial_dof in trial_local_dofs:
@@ -135,29 +169,6 @@ def assemble_singular_part(operator):
 
     # Now need to create the sparse matrix
 
-    data = np.zeros(len(all_test_trial_function_pairs), dtype=assembler.dtype)
-    row_indices = np.zeros(len(all_test_trial_function_pairs), dtype=np.int)
-    col_indices = np.zeros(len(all_test_trial_function_pairs), dtype=np.int)
-
-    #import ipdb; ipdb.set_trace()
-
-    for index, (test_index, trial_index) in enumerate(all_test_trial_function_pairs):
-
-        row_indices[index] = test_index
-        col_indices[index] = trial_index
-
-        # Get local dofs and dof_weights
-        local_dofs, weights = test_space.global_to_local_dofs([test_index, trial_index])
-        test_dofs, trial_dofs = local_dofs
-        test_weights, trial_weights = weights
-
-        for i, test_dof in enumerate(test_dofs):
-            for j, trial_dof in enumerate(trial_dofs):
-                element_pair = (test_dof.entity_index, trial_dof.entity_index)
-                data[index] += (weak_form_lookup[element_pair][test_dof.dof_index, trial_dof.dof_index] *
-                        np.conj(test_weights[i]) * np.conj(trial_weights[j]))
-
-    return SparseDiscreteBoundaryOperator(csc_matrix((data, (row_indices, col_indices)), 
-            shape=(test_dof_count, trial_dof_count)))
-
+    return create_sparse_matrix_from_integration_pairs(all_test_trial_function_pairs,
+            test_dof_map, trial_dof_map, test_dof_count, trial_dof_count)
 

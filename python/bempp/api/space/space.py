@@ -35,6 +35,7 @@ class Space(object):
 
     def __init__(self, impl):
         self._impl = impl
+        self._global_to_local_dofs = None
 
     def __eq__(self, other):
         return self.is_identical(other)
@@ -75,12 +76,13 @@ class Space(object):
     def global_to_local_dofs(self, global_dofs):
         """Return the local dofs and weights for the given list of global dofs."""
 
-        import numpy as np
-        if np.min(global_dofs) < 0 or np.max(global_dofs) >= self.global_dof_count:
-            raise ValueError(
-                "For each dof index i it must hold that 0 <=i < space.global_dof_count")
+        if self._global_to_local_dofs is None:
+            self._global_to_local_dofs = self._impl.global_to_local_dofs(range(self.global_dof_count))
 
-        return self._impl.global_to_local_dofs(global_dofs)
+        dofs = [self._global_to_local_dofs[0][index] for index in global_dofs]
+        weights = [self._global_to_local_dofs[1][index] for index in global_dofs]
+
+        return dofs, weights
 
     def evaluate_surface_gradient(self, element, local_coordinates, local_coefficients):
         """Evaluate the local surface gradient on a given element."""
