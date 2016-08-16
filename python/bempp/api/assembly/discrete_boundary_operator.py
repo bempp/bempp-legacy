@@ -20,7 +20,6 @@ class DiscreteBoundaryOperator(_LinearOperator):
         return object.__new__(cls)
 
     def __init__(self, dtype, shape):
-
         import scipy
         if scipy.__version__ < '0.16.0':
             super(DiscreteBoundaryOperator, self).__init__(shape, self._matvec, rmatvec=self._rmatvec,
@@ -83,6 +82,14 @@ class DiscreteBoundaryOperator(_LinearOperator):
 
         return self.__add__(-other)
 
+    import scipy
+    if scipy.__version__ < '0.16.0':
+        def adjoint(self):
+            return self._adjoint()
+        H = property(adjoint)
+        def transpose(self):
+            return self._transpose()
+        T = property(transpose)
 
 class DiscreteBoundaryOperatorSum(DiscreteBoundaryOperator):
 
@@ -221,6 +228,11 @@ class GeneralNonlocalDiscreteBoundaryOperator(DiscreteBoundaryOperator):
         """Implements matrix-vector product."""
 
         return self._impl.matvec(vec)
+
+    def _rmatvec(self, vec):  # pylint: disable=method-hidden
+        """Implements r-matrix-vector product."""
+
+        return self._impl.rmatvec(vec)
 
     def _matmat(self, vec):  # pylint: disable=method-hidden
 
@@ -479,13 +491,17 @@ class InverseSparseDiscreteBoundaryOperator(DiscreteBoundaryOperator):
 
         self._solver = InverseSparseDiscreteBoundaryOperator._Solver(operator)
         self._operator = operator
-        super(DiscreteBoundaryOperator, self).__init__(
-            self._solver.dtype, self._solver.shape)
+        super(InverseSparseDiscreteBoundaryOperator, self).__init__(self._solver.dtype, self._solver.shape)
 
     def _matvec(self, vec):  # pylint: disable=method-hidden
         """Implemententation of matvec."""
 
         return self._solver.solve(vec)
+
+    def _rmatvec(self, vec):  # pylint: disable=method-hidden
+        """Implemententation of rmatvec."""
+
+        return self.adjoint()._matvec(vec)
 
     def _transpose(self):
 
@@ -517,6 +533,13 @@ class ZeroDiscreteBoundaryOperator(DiscreteBoundaryOperator):
                                                            (rows, columns))
 
     def _matvec(self, x):
+
+        if x.ndim > 1:
+            return _np.zeros((self.shape[0], x.shape[1]), dtype='float64')
+        else:
+            return _np.zeros(self.shape[0], dtype='float64')
+
+    def _rmatvec(self, x):
 
         if x.ndim > 1:
             return _np.zeros((self.shape[0], x.shape[1]), dtype='float64')
@@ -564,6 +587,9 @@ class DiscreteRankOneOperator(DiscreteBoundaryOperator):
             return np.outer(self._column, np.dot(self._row, x))
         else:
             return self._column * np.dot(self._row, x)
+
+    def _rmatvec(self, x):
+        return self._adjoint()._matvec(x)
 
     def _transpose(self, x):
 
