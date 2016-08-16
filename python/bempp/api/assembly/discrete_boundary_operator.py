@@ -222,6 +222,11 @@ class GeneralNonlocalDiscreteBoundaryOperator(DiscreteBoundaryOperator):
 
         return self._impl.matvec(vec)
 
+    def _rmatvec(self, vec):  # pylint: disable=method-hidden
+        """Implements matrix-vector product."""
+
+        return self._impl.rmatvec(vec)
+
     def _matmat(self, vec):  # pylint: disable=method-hidden
 
         return self._impl.matmat(vec)
@@ -331,6 +336,12 @@ class SparseDiscreteBoundaryOperator(DiscreteBoundaryOperator):
             return self._impl * _np.real(vec) + 1j * (self._impl * _np.imag(vec))
 
         return self._impl * vec
+
+    def _rmatvec(self, vec):
+        if self.dtype == 'float64' and _np.iscomplexobj(vec):
+            return self._impl * _np.real(vec) + 1j * (self._impl * _np.imag(vec))
+
+        return self._adjoint()._impl * vec
 
     def _matmat(self, mat):
         """Multiply operator with the dense numpy matrix mat."""
