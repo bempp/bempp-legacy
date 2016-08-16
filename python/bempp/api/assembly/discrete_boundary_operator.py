@@ -222,11 +222,6 @@ class GeneralNonlocalDiscreteBoundaryOperator(DiscreteBoundaryOperator):
 
         return self._impl.matvec(vec)
 
-    def _rmatvec(self, vec):  # pylint: disable=method-hidden
-        """Implements matrix-vector product."""
-
-        return self._impl.rmatvec(vec)
-
     def _matmat(self, vec):  # pylint: disable=method-hidden
 
         return self._impl.matmat(vec)
