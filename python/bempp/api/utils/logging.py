@@ -47,3 +47,23 @@ def set_logging_level(level):
 
     from bempp.api import LOGGER
     LOGGER.setLevel(level)
+
+
+def timeit(message):
+    """Decorator to time a method in BEM++"""
+    import time
+    from bempp.api import LOGGER
+
+    def timeit_impl(fun):
+
+        def timed_fun(*args, **kwargs):
+
+            st = time.time()
+            res = fun(*args, **kwargs)
+            et = time.time()
+            LOGGER.info(message + " : {0:.3e}s".format(et-st))
+            return res
+
+        return timed_fun
+
+    return timeit_impl

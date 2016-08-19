@@ -80,7 +80,7 @@ class GridView(object):
         """Return an IndexSet object for the GridView."""
         if self._index_set is None:
             from .index_set import IndexSet
-            self._index_set = IndexSet(self._impl.index_set(), self)
+            self._index_set = IndexSet(self._impl.index_set())
         return self._index_set
 
     def entity_iterator(self, codimension):
