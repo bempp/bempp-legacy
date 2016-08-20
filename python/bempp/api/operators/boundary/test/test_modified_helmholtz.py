@@ -22,7 +22,7 @@ class TestModifiedHelmholtz(TestCase):
 
         standard_hypersingular = hypersingular(self._lin_space, self._lin_space, self._lin_space,
                                                WAVE_NUMBER,
-                                               parameters=parameters).weak_form()
+                                               parameters=parameters, use_slp=False).weak_form()
         compound_hypersingular = hypersingular(self._lin_space, self._lin_space, self._lin_space,
                                                WAVE_NUMBER,
                                                parameters=parameters, use_slp=True).weak_form()

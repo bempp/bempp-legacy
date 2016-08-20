@@ -1,6 +1,7 @@
 """This modules contains the data structures for assembled boundary operators."""
 
 from scipy.sparse.linalg.interface import LinearOperator as _LinearOperator
+from bempp.api.utils.logging import timeit as _timeit
 import numpy as _np
 
 
@@ -224,6 +225,7 @@ class GeneralNonlocalDiscreteBoundaryOperator(DiscreteBoundaryOperator):
 
         self._impl = impl
 
+    @_timeit("Nonlocal Operator matvec")
     def _matvec(self, vec):  # pylint: disable=method-hidden
         """Implements matrix-vector product."""
 
@@ -336,6 +338,7 @@ class SparseDiscreteBoundaryOperator(DiscreteBoundaryOperator):
 
         self._impl = impl
 
+    @_timeit("Sparse Operator matvec")
     def _matvec(self, vec):
         """Multiply the operator with a numpy vector or matrix x."""
 
@@ -374,7 +377,10 @@ class SparseDiscreteBoundaryOperator(DiscreteBoundaryOperator):
 
     def __mul__(self, other):
 
-        return self.dot(other)
+        if isinstance(other, SparseDiscreteBoundaryOperator):
+            return SparseDiscreteBoundaryOperator(self.sparse_operator * other.sparse_operator)
+        else:
+            return self.dot(other)
 
     def dot(self, other):
 
@@ -493,6 +499,7 @@ class InverseSparseDiscreteBoundaryOperator(DiscreteBoundaryOperator):
         self._operator = operator
         super(InverseSparseDiscreteBoundaryOperator, self).__init__(self._solver.dtype, self._solver.shape)
 
+    @_timeit("Inverse Sparse Operator matvec ")
     def _matvec(self, vec):  # pylint: disable=method-hidden
         """Implemententation of matvec."""
 

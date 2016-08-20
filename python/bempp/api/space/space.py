@@ -172,6 +172,11 @@ class Space(object):
         """ A super space that contains the space as subspace. Can be identical to space."""
         return self._super_space
 
+    @property
+    def has_local_support(self):
+        """Return true of the support of each basis function is restricted to a single element."""
+        return self == self.discontinuous_space
+
 
 class DiscontinuousPolynomialSpace(Space):
     """Represents a space of discontinuous, polynomial functions."""

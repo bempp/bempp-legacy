@@ -53,10 +53,13 @@ def timeit(message):
     """Decorator to time a method in BEM++"""
     import time
     from bempp.api import LOGGER
+    from bempp.api import global_parameters
 
     def timeit_impl(fun):
 
         def timed_fun(*args, **kwargs):
+            if not global_parameters.verbosity.extended_verbosity:
+                return fun(*args, **kwargs)
 
             st = time.time()
             res = fun(*args, **kwargs)
