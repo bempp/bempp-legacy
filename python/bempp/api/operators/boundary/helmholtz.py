@@ -145,6 +145,7 @@ def hypersingular(domain, range_, dual_to_range,
                   label="HYP", symmetry='no_symmetry',
                   parameters=None,
                   use_slp=False,
+                  use_projection_spaces=True,
                   assemble_only_singular_part=False):
     """Return the Helmholtz hypersingular boundary operator.
 
@@ -167,6 +168,10 @@ def hypersingular(domain, range_, dual_to_range,
         Parameters for the operator. If none given the
         default global parameter object `bempp.api.global_parameters`
         is used.
+    use_projection_spaces : bool
+        Represent operator by projection from higher dimensional space
+        if available. This parameter can speed up fast assembly routines,
+        such as H-Matrices or FMM (default true).
     use_slp : True/False or boundary operator object
         The hypersingular operator can be represented as a sparse transformation
         of a single-layer operator. If `use_slp=True` this representation is used.
@@ -188,6 +193,7 @@ def hypersingular(domain, range_, dual_to_range,
     return hyp(domain, range_, dual_to_range,
                wave_number / (1j), label, symmetry,
                use_slp=use_slp, parameters=parameters,
+               use_projection_spaces=use_projection_spaces,
                assemble_only_singular_part=False)
 
 

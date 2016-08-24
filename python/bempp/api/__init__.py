@@ -112,6 +112,8 @@ from bempp.api.utils.logging import DEBUG, INFO, WARNING, ERROR, CRITICAL
 from bempp.api.utils.logging import enable_console_logging
 from bempp.api.utils.logging import enable_file_logging
 from bempp.api.utils.logging import set_logging_level
+from bempp.api.utils.logging import timeit
+from bempp.api.utils.logging import Timer
 
 ALL = -1  # Useful global identifier
 

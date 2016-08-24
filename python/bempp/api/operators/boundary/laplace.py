@@ -190,6 +190,7 @@ def adjoint_double_layer(domain, range_, dual_to_range,
 def hypersingular(domain, range_, dual_to_range,
                   label="HYP", symmetry='no_symmetry',
                   parameters=None, use_slp=False,
+                  use_projection_spaces=True,            
                   assemble_only_singular_part=False):
     """Return the Laplace hypersingular boundary operator.
 
@@ -210,6 +211,10 @@ def hypersingular(domain, range_, dual_to_range,
         Parameters for the operator. If none given the
         default global parameter object `bempp.api.global_parameters`
         is used.
+    use_projection_spaces : bool
+        Represent operator by projection from higher dimensional space
+        if available. This parameter can speed up fast assembly routines,
+        such as H-Matrices or FMM (default true).
     use_slp : True/False or boundary operator object
         The hypersingular operator can be represented as a sparse transformation
         of a single-layer operator. If `use_slp=True` this representation is used.
@@ -246,7 +251,7 @@ def hypersingular(domain, range_, dual_to_range,
     if not use_slp:
         from bempp.api.operators.boundary._common import get_operator_with_space_preprocessing
         return get_operator_with_space_preprocessing(_hypersingular_impl, domain, range_, dual_to_range, label,
-            symmetry, parameters, use_projection_spaces=False, 
+            symmetry, parameters, use_projection_spaces=use_projection_spaces, 
             assemble_only_singular_part=assemble_only_singular_part) 
     else:
         if not isinstance(use_slp, BoundaryOperator):

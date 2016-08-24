@@ -1,6 +1,7 @@
 """This module contains functions to initialize the Python logger"""
 from __future__ import absolute_import
 import logging as _logging
+import time as _time
 
 # Logging levels
 
@@ -70,3 +71,16 @@ def timeit(message):
         return timed_fun
 
     return timeit_impl
+
+class Timer:
+    """Context manager to measure time in BEM++."""
+
+    def __enter__(self):
+        self.start = _time.time()
+        return self
+    
+    def __exit__(self, *args):
+        self.end = _time.time()
+        self.interval = self.end - self.start
+
+

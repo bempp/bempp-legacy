@@ -235,10 +235,15 @@ class ContinuousPolynomialSpace(Space):
             _function_space(grid._impl, "P", order, domains, closed,
                             strictly_on_segment, True, element_on_segment))
 
+
         self._order = order
         self._has_non_barycentric_space = True
         self._non_barycentric_space = self
-        self._discontinuous_space = DiscontinuousPolynomialSpace(grid, order)
+        if not closed:
+            self._discontinuous_space = DiscontinuousPolynomialSpace(grid, order, domains=domains, closed=closed, reference_point_on_segment=False, element_on_segment=True)
+        else:
+            self._discontinuous_space = DiscontinuousPolynomialSpace(grid, order, domains=domains, closed=closed, reference_point_on_segment=True, element_on_segment=strictly_on_segment)
+
         self._super_space = self._discontinuous_space
         self._evaluation_functor = scalar_function_value_functor()
         self._is_barycentric = False
@@ -302,7 +307,10 @@ class RTSpace(Space):
         self._order = 0
         self._has_non_barycentric_space = True
         self._non_barycentric_space = self
-        self._discontinuous_space = DiscontinuousPolynomialSpace(grid, 1)
+        if not closed:
+            self._discontinuous_space = DiscontinuousPolynomialSpace(grid, 1, domains=domains, closed=closed, reference_point_on_segment=False, element_on_segment=True)
+        else:
+            self._discontinuous_space = DiscontinuousPolynomialSpace(grid, 1, domains=domains, closed=closed, reference_point_on_segment=True, element_on_segment=False)
         self._super_space = self
         self._evaluation_functor = hdiv_function_value_functor()
         self._is_barycentric = False
@@ -322,7 +330,10 @@ class NCSpace(Space):
         self._order = 0
         self._has_non_barycentric_space = True
         self._non_barycentric_space = self
-        self._discontinuous_space = DiscontinuousPolynomialSpace(grid, 1)
+        if not closed:
+            self._discontinuous_space = DiscontinuousPolynomialSpace(grid, 1, domains=domains, closed=closed, reference_point_on_segment=False, element_on_segment=True)
+        else:
+            self._discontinuous_space = DiscontinuousPolynomialSpace(grid, 1, domains=domains, closed=closed, reference_point_on_segment=True, element_on_segment=False)
         self._evaluation_functor = hcurl_function_value_functor()
         self._super_space = self
         self._hdiv_space = RTSpace(grid, domains, closed)
@@ -343,7 +354,10 @@ class RWGSpace(Space):
         self._order = 0
         self._has_non_barycentric_space = True
         self._non_barycentric_space = self
-        self._discontinuous_space = DiscontinuousPolynomialSpace(grid, 1)
+        if not closed:
+            self._discontinuous_space = DiscontinuousPolynomialSpace(grid, 1, domains=domains, closed=closed, reference_point_on_segment=False, element_on_segment=True)
+        else:
+            self._discontinuous_space = DiscontinuousPolynomialSpace(grid, 1, domains=domains, closed=closed, reference_point_on_segment=True, element_on_segment=False)
         self._super_space = self
         self._evaluation_functor = hdiv_function_value_functor()
         self._is_barycentric = False
@@ -363,7 +377,10 @@ class SNCSpace(Space):
         self._order = 0
         self._has_non_barycentric_space = True
         self._non_barycentric_space = self
-        self._discontinuous_space = DiscontinuousPolynomialSpace(grid, 1)
+        if not closed:
+            self._discontinuous_space = DiscontinuousPolynomialSpace(grid, 1, domains=domains, closed=closed, reference_point_on_segment=False, element_on_segment=True)
+        else:
+            self._discontinuous_space = DiscontinuousPolynomialSpace(grid, 1, domains=domains, closed=closed, reference_point_on_segment=True, element_on_segment=False)
         self._evaluation_functor = hcurl_function_value_functor()
         self._super_space = self
         self._hdiv_space = RWGSpace(grid, domains, closed)
