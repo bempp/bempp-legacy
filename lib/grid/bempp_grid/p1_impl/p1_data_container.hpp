@@ -18,11 +18,18 @@ namespace Bempp {
             typedef std::vector<std::array<std::size_t, 3>> ElementsContainer;
             typedef std::vector<std::array<std::size_t, 2>> EdgesContainer;
 
-            P1DataContainer(const shared_ptr<NodesContainer>& nodes, 
+            P1DataContainer();
+
+            void addLevel( const shared_ptr<NodesContainer>& nodes, 
                     const shared_ptr<ElementsContainer>& elements);
 
             const NodesContainer& nodes(int level) const;
             const ElementsContainer& elements(int level) const;
+
+            int numberOfNodes(int level) const;
+            int numberOfElements(int level) const;
+            int numberOfEdges(int level) const;
+            int levels() const;
 
         private:
 
@@ -32,6 +39,7 @@ namespace Bempp {
             std::vector<shared_ptr<NodesContainer>> m_nodes;
             std::vector<shared_ptr<ElementsContainer>> m_elements;
             std::vector<shared_ptr<EdgesContainer>> m_edges;
+            std::vector<std::vector<std::array<std::size_t, 3>>> m_element2Edges;
 
     }; 
 

@@ -41,12 +41,37 @@ namespace Bempp {
     template<>
     class P1Entity<1, 2, P1Grid> {
 
+        public:
+
+            P1Entity(const shared_ptr<P1DataContainer>& data,
+                    int level, int index);
+
+            int level() const;
+
+        private:
+
+            shared_ptr<P1DataContainer> m_data;
+            int m_level;
+            int m_index;
+
     };
 
     // Vertices
     template<>
     class P1Entity<2, 2, P1Grid> {
 
+        public:
+
+            P1Entity(const shared_ptr<P1DataContainer>& data,
+                    int level, int index);
+
+            int level() const;
+
+        private:
+
+            shared_ptr<P1DataContainer> m_data;
+            int m_level;
+            int m_index;
     };
 
 }

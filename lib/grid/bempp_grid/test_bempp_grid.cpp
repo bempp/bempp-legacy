@@ -36,8 +36,8 @@ namespace Bempp {
         elements[0][2] = 2;
 
 
-        auto data = boost::make_shared<P1DataContainer>(
-                vertexContainer, elementContainer);
+        auto data = boost::make_shared<P1DataContainer>();
+        data->addLevel(vertexContainer, elementContainer);
         P1Entity<0, 2, P1Grid> entity(data, 0, 0); 
         P1GridGeometry<2, 3, P1Grid > geom(geometryType, vertices);
         std::cout << "Geometry created" << std::endl;
