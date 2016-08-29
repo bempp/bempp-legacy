@@ -2,21 +2,21 @@
 #define bempp_p1_entity_hpp
 
 #include "../../../common/common.hpp"
-#include "../../../common/shared_ptr.hpp"
+#include "../bempp_grid_types.hpp"
+#include "p1_geometry.hpp"
 #include <dune/grid/common/gridenums.hh>
 #include <dune/grid/common/geometry.hh>
 #include <dune/geometry/type.hh>
+#include <dune/grid/common/entity.hh>
 
 
-namespace Bempp {
+namespace BemppGrid {
 
     class P1Grid;
     class P1DataContainer;
 
     template <int cd, int dim, class>
-    class P1Entity {
-
-    };
+    class P1Entity {};
 
     // Elements
     template<>
@@ -28,6 +28,10 @@ namespace Bempp {
                     int level, int index);
 
             int level() const;
+            Dune::Geometry<2, 3, P1Grid, P1GridGeometry> geometry() const;
+            Dune::GeometryType type() const;
+            Dune::PartitionType partitionType() const;
+            bool equals(const P1Entity<0, 2, P1Grid>& other) const;
 
         private:
 
@@ -47,6 +51,10 @@ namespace Bempp {
                     int level, int index);
 
             int level() const;
+            Dune::Geometry<1, 3, P1Grid, P1GridGeometry> geometry() const;
+            Dune::GeometryType type() const;
+            Dune::PartitionType partitionType() const;
+            bool equals(const P1Entity<1, 2, P1Grid>& other) const;
 
         private:
 
@@ -66,6 +74,10 @@ namespace Bempp {
                     int level, int index);
 
             int level() const;
+            Dune::Geometry<0, 3, P1Grid, P1GridGeometry> geometry() const;
+            Dune::GeometryType type() const;
+            Dune::PartitionType partitionType() const;
+            bool equals(const P1Entity<2, 2, P1Grid>& other) const;
 
         private:
 

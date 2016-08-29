@@ -7,14 +7,15 @@
 
 namespace Bempp {
 
-    void create_bempp_geometry() {
+    void test_grid() {
+
+        using namespace BemppGrid;
 
         Dune::GeometryType geometryType;
         geometryType.makeTriangle();
         auto vertexContainer = 
-            boost::make_shared<std::vector<Dune::FieldVector<double, 3>>>(3); 
+            boost::make_shared<std::vector<Dune::FieldVector<double, 3>>>(4); 
         auto& vertices = *vertexContainer;
-        vertices.resize(3);
         vertices[0][0] = 0;
         vertices[0][1] = 0;
         vertices[0][2] = 0;
@@ -27,20 +28,27 @@ namespace Bempp {
         vertices[2][1] = 1;
         vertices[2][2] = 0;
 
+        vertices[3][0] = 1;
+        vertices[3][1] = 1;
+        vertices[3][2] = 0;
+
         auto elementContainer = 
-            boost::make_shared<std::vector<std::array<std::size_t, 3>>>(1);
+            boost::make_shared<std::vector<std::array<std::size_t, 3>>>(2);
         auto& elements = *elementContainer;
-        elements.resize(1);
         elements[0][0] = 0;
         elements[0][1] = 1;
         elements[0][2] = 2;
 
+        elements[1][0] = 2;
+        elements[1][1] = 1;
+        elements[1][2] = 3;
 
         auto data = boost::make_shared<P1DataContainer>();
         data->addLevel(vertexContainer, elementContainer);
         P1Entity<0, 2, P1Grid> entity(data, 0, 0); 
         P1GridGeometry<2, 3, P1Grid > geom(geometryType, vertices);
-        std::cout << "Geometry created" << std::endl;
+        std::cout << "Number of edges: " << data->numberOfEdges(0) << std::endl;
+
 
     }
 

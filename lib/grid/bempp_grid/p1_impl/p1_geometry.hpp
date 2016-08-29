@@ -5,7 +5,7 @@
 #include <dune/geometry/multilineargeometry.hh>
 #include <cmath>
 
-namespace Bempp {
+namespace BemppGrid {
 
 template <int mydim, int cdim, class>
 using P1GridGeometry = Dune::CachedMultiLinearGeometry<double, mydim, cdim>;

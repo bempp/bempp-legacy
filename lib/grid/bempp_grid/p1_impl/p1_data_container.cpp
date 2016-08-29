@@ -2,7 +2,7 @@
 #include <cassert>
 #include <utility>
 
-namespace Bempp {
+namespace BemppGrid {
 
     P1DataContainer::P1DataContainer() :
         m_levels(0) {};
@@ -10,17 +10,20 @@ namespace Bempp {
     void P1DataContainer::addLevel(const shared_ptr<P1DataContainer::NodesContainer>& nodes,
                                      const shared_ptr<P1DataContainer::ElementsContainer>& elements){
 
+        int nelements = elements->size();
+        int nnodes = nodes->size();
+
         m_nodes.push_back(nodes);
         m_elements.push_back(elements);
-        int numberOfElements = elements->size();
-        auto edges = shared_ptr<EdgesContainer>(
-                    new EdgesContainer());
+        m_edges.push_back(EdgesContainer());
+        auto& edges = m_edges[m_levels];
+        m_element2Edges.push_back(std::vector<std::array<std::size_t, 3>>());
+        auto& element2Edges = m_element2Edges[m_levels];
 
-        std::vector<std::array<std::size_t, 3>> element2Edges;
-        element2Edges.resize(elements->size());
+        element2Edges.resize(nelements);
         std::vector<std::vector<std::pair<std::size_t, std::size_t>>> nodes2EdgeIndexPair;
         nodes2EdgeIndexPair.resize(nodes->size());
-        for (int elementIndex = 0; elementIndex < numberOfElements; ++elementIndex) {
+        for (int elementIndex = 0; elementIndex < nelements; ++elementIndex) {
             const auto& element = (*elements)[elementIndex];
             for (int i = 3; i > 0; --i) { 
                 // Strange counting due to edge numbering in Dune
@@ -38,23 +41,44 @@ namespace Bempp {
                     }
                 if (!edgeExists){
                     // Create Edge
-                    edgeIndex = edges->size();
+                    edgeIndex = edges.size();
                     nodes2EdgeIndexPair[n0].push_back(std::pair<std::size_t, std::size_t>(n1, edgeIndex));
-                    edges->push_back(std::array<std::size_t, 2>({n0, n1}));
+                    edges.push_back(std::array<std::size_t, 2>({n0, n1}));
                 }
                 element2Edges[elementIndex][i-1] = edgeIndex;
             }
         }
 
-        m_edges.push_back(edges);
-        m_levels += 1;
+        // Fill the connectivity data arrays
+        m_edge2Elements.push_back(std::vector<std::vector<std::size_t>>());
+        m_node2Elements.push_back(std::vector<std::vector<std::size_t>>());
+        m_node2Edges.push_back(std::vector<std::vector<std::size_t>>());
+        
+        auto& edge2Elements = m_edge2Elements[m_levels];
+        auto& node2Elements = m_node2Elements[m_levels];
+        auto& node2Edges = m_node2Edges[m_levels];
 
+        edge2Elements.resize(edges.size());
+        node2Elements.resize(nnodes);
+        node2Edges.resize(nnodes);
+
+        for (std::size_t i = 0; i < nelements; ++i){
+            for (int j = 0; j < 3; ++j){
+                edge2Elements[element2Edges[i][j]].push_back(i);
+            }
+        }
+
+        for (std::size_t i = 0; i < nelements; ++i)
+            for (int j = 0; j < 3; ++j)
+                node2Elements[(*elements)[i][j]].push_back(i);
+
+        for (std::size_t i = 0; i < edges.size(); ++i)
+            for (int j = 0; j < 2; ++j)
+                node2Edges[edges[i][j]].push_back(i);
+        
+        m_levels++;
     }
                     
-
-
-
-
     const P1DataContainer::NodesContainer& P1DataContainer::nodes(int level) const {
         assert(level < m_levels);
         return *(m_nodes[level]);
@@ -63,6 +87,11 @@ namespace Bempp {
     const P1DataContainer::ElementsContainer& P1DataContainer::elements(int level) const{
         assert(level < m_levels);
         return *(m_elements[level]);
+    }
+
+    const P1DataContainer::EdgesContainer& P1DataContainer::edges(int level) const {
+        assert(level < m_levels);
+        return m_edges[level];
     }
 
     int P1DataContainer::numberOfNodes(int level) const {
@@ -82,9 +111,25 @@ namespace Bempp {
     int P1DataContainer::numberOfEdges(int level) const {
 
         assert(level < m_levels);
-        return m_edges[level]->size();
+        return m_edges[level].size();
 
     }
 
+    const std::vector<size_t>& P1DataContainer::edge2Elements(int level, std::size_t edgeIndex) const {
+        assert(level < m_levels);
+        return m_edge2Elements[level][edgeIndex];
+
+    }
+    const std::vector<size_t>& P1DataContainer::node2Elements(int level, std::size_t nodeIndex) const {
+        assert(level < m_levels);
+        return m_node2Elements[level][nodeIndex];
+
+    }
+
+    const std::vector<size_t>& P1DataContainer::node2Edges(int level, std::size_t nodeIndex) const {
+        assert(level < m_levels);
+        return m_node2Edges[level][nodeIndex];
+
+    }
 
 }

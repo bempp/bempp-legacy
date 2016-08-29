@@ -2,13 +2,12 @@
 #define p1_data_container_hpp
 
 #include "../../../common/common.hpp"
-#include "../../../common/shared_ptr.hpp"
+#include "../bempp_grid_types.hpp"
 #include <dune/common/fvector.hh>
 #include <vector>
 #include <array>
 
-namespace Bempp {
-
+namespace BemppGrid {
 
     class P1DataContainer {
 
@@ -25,11 +24,16 @@ namespace Bempp {
 
             const NodesContainer& nodes(int level) const;
             const ElementsContainer& elements(int level) const;
+            const EdgesContainer& edges(int level) const;
 
             int numberOfNodes(int level) const;
             int numberOfElements(int level) const;
             int numberOfEdges(int level) const;
             int levels() const;
+
+            const std::vector<size_t>& edge2Elements(int level, std::size_t edgeIndex) const;
+            const std::vector<size_t>& node2Elements(int level, std::size_t nodeIndex) const;
+            const std::vector<size_t>& node2Edges(int level, std::size_t nodeIndex) const; 
 
         private:
 
@@ -38,8 +42,11 @@ namespace Bempp {
             int m_levels;
             std::vector<shared_ptr<NodesContainer>> m_nodes;
             std::vector<shared_ptr<ElementsContainer>> m_elements;
-            std::vector<shared_ptr<EdgesContainer>> m_edges;
+            std::vector<EdgesContainer> m_edges;
             std::vector<std::vector<std::array<std::size_t, 3>>> m_element2Edges;
+            std::vector<std::vector<std::vector<std::size_t>>> m_edge2Elements;
+            std::vector<std::vector<std::vector<std::size_t>>> m_node2Elements;
+            std::vector<std::vector<std::vector<std::size_t>>> m_node2Edges;
 
     }; 
 
