@@ -6,6 +6,7 @@
 #include "bempp/fiber/geometrical_data.hpp"
 #include "bempp/fiber/simple_test_trial_integrand_functor.hpp"
 #include "bempp/fiber/maxwell_3d_test_trial_integrand_functor.hpp"
+#include "bempp/fiber/single_component_test_trial_integrand_functor.hpp"
 
 namespace Fiber {
 
@@ -109,6 +110,17 @@ inline LocalIntegrandFunctorContainer* maxwell3dTestTrialIntegrandFunctor(){
                 shared_ptr<LocalIntegrandFunctorBase>(
                     new ConcreteLocalIntegrandFunctor<Maxwell3dTestTrialIntegrandFunctor<double, double>>(
                         Maxwell3dTestTrialIntegrandFunctor<double, double>())
+                    )
+                );
+
+}
+
+inline LocalIntegrandFunctorContainer* singleComponentTestTrialIntegrandFunctor(std::size_t testComponent, std::size_t trialComponent){
+
+    return new LocalIntegrandFunctorContainer(
+                shared_ptr<LocalIntegrandFunctorBase>(
+                    new ConcreteLocalIntegrandFunctor<SingleComponentTestTrialIntegrandFunctor<double, double>>(
+                        SingleComponentTestTrialIntegrandFunctor<double, double>(testComponent, trialComponent))
                     )
                 );
 

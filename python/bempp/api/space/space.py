@@ -33,15 +33,18 @@ class Space(object):
 
     """
 
-    def __init__(self, impl):
+    def __init__(self, impl, comp_key):
         self._impl = impl
         self._global_to_local_dofs = None
+        self._mass_matrix = None
+        self._inverse_mass_matrix = None
+        self._comp_key = comp_key
 
     def __eq__(self, other):
-        return self.is_identical(other)
+        return self._comp_key == other._comp_key
 
     def __ne__(self, other):
-        return not self.is_identical(other)
+        return self._comp_key != other._comp_key
 
     def is_compatible(self, other):
         """Return true if spaces have the same number of global dofs."""
@@ -49,7 +52,7 @@ class Space(object):
 
     def is_identical(self, other):
         """Return true of spaces are identical."""
-        return self._impl.is_identical(other._impl)
+        return self == other
 
     def get_global_dofs(self, element, dof_weights=False):
         """Return the global dofs associated with the local dofs on the given element.
@@ -94,6 +97,22 @@ class Space(object):
         return evaluate_local_surface_gradient_ext(self._impl, element._impl,
                                                    local_coordinates,
                                                    local_coefficients)
+
+    def mass_matrix(self):
+
+        if self._mass_matrix is None:
+            from bempp.api.operators.boundary.sparse import identity
+            self._mass_matrix = identity(self, self, self)
+
+        return self._mass_matrix
+
+    def inverse_mass_matrix(self):
+	
+        import bempp.api
+        if self._inverse_mass_matrix is None:
+            self._inverse_mass_matrix = bempp.api.InverseLocalBoundaryOperator(
+                    self.mass_matrix())
+        return self._inverse_mass_matrix
 
     @property
     def evaluation_functor(self):
@@ -182,14 +201,14 @@ class DiscontinuousPolynomialSpace(Space):
     """Represents a space of discontinuous, polynomial functions."""
 
     def __init__(self, grid, order, domains=None, closed=True, reference_point_on_segment=True,
-                 element_on_segment=False):
+                 element_on_segment=False, comp_key=None):
 
         from bempp.core.space.space import function_space as _function_space
         from bempp.api.assembly.functors import scalar_function_value_functor
 
         super(DiscontinuousPolynomialSpace, self).__init__(
             _function_space(grid._impl, "DP", order, domains, closed,
-                            False, reference_point_on_segment, element_on_segment))
+                            False, reference_point_on_segment, element_on_segment), comp_key=comp_key)
 
         self._order = order
         self._has_non_barycentric_space = True
@@ -203,19 +222,18 @@ class DiscontinuousPolynomialSpace(Space):
 class BarycentricDiscontinuousPolynomialSpace(Space):
     """Represents a space of discontinuous, polynomial functions over a barycentric grid."""
 
-    def __init__(self, grid, order):
+    def __init__(self, grid, order, comp_key=None):
 
         from bempp.core.space.space import function_space as _function_space
         from bempp.api.assembly.functors import scalar_function_value_functor
 
         super(BarycentricDiscontinuousPolynomialSpace, self).__init__(
-            _function_space(grid._impl, "B-DP", order))
+            _function_space(grid._impl, "B-DP", order), comp_key)
 
         self._order = order
         self._has_non_barycentric_space = True
-        self._non_barycentric_space = DiscontinuousPolynomialSpace(grid, order)
-        self._discontinuous_space = DiscontinuousPolynomialSpace(
-            grid.barycentric_grid(), order)
+        self._non_barycentric_space = function_space(grid, "DP", order)
+        self._discontinuous_space = function_space(grid.barycentric_grid(), "DP", order)
         self._super_space = self._discontinuous_space
         self._evaluation_functor = scalar_function_value_functor()
         self._is_barycentric = True
@@ -226,23 +244,23 @@ class ContinuousPolynomialSpace(Space):
     """Represents a space of continuous, polynomial functions."""
 
     def __init__(self, grid, order, domains=None, closed=True, strictly_on_segment=False,
-                 element_on_segment=False):
+                 element_on_segment=False, comp_key=None):
 
         from bempp.core.space.space import function_space as _function_space
         from bempp.api.assembly.functors import scalar_function_value_functor
 
         super(ContinuousPolynomialSpace, self).__init__(
             _function_space(grid._impl, "P", order, domains, closed,
-                            strictly_on_segment, True, element_on_segment))
+                            strictly_on_segment, True, element_on_segment), comp_key)
 
 
         self._order = order
         self._has_non_barycentric_space = True
         self._non_barycentric_space = self
         if not closed:
-            self._discontinuous_space = DiscontinuousPolynomialSpace(grid, order, domains=domains, closed=closed, reference_point_on_segment=False, element_on_segment=True)
+            self._discontinuous_space = function_space(grid, "DP", order, domains=domains, closed=closed, reference_point_on_segment=False, element_on_segment=True)
         else:
-            self._discontinuous_space = DiscontinuousPolynomialSpace(grid, order, domains=domains, closed=closed, reference_point_on_segment=True, element_on_segment=strictly_on_segment)
+            self._discontinuous_space = function_space(grid, "DP", order, domains=domains, closed=closed, reference_point_on_segment=True, element_on_segment=strictly_on_segment)
 
         self._super_space = self._discontinuous_space
         self._evaluation_functor = scalar_function_value_functor()
@@ -252,19 +270,18 @@ class ContinuousPolynomialSpace(Space):
 class BarycentricContinuousPolynomialSpace(Space):
     """Represents a space of continuous, polynomial functions on a barycentric grid."""
 
-    def __init__(self, grid, order):
+    def __init__(self, grid, order, comp_key=None):
 
         from bempp.core.space.space import function_space as _function_space
         from bempp.api.assembly.functors import scalar_function_value_functor
 
         super(BarycentricContinuousPolynomialSpace, self).__init__(
-            _function_space(grid._impl, "B-P", order))
+            _function_space(grid._impl, "B-P", order), comp_key)
 
         self._order = order
         self._has_non_barycentric_space = True
-        self._non_barycentric_space = ContinuousPolynomialSpace(grid, order)
-        self._discontinuous_space = DiscontinuousPolynomialSpace(
-            grid.barycentric_grid(), order)
+        self._non_barycentric_space = function_space(grid, "P", order)
+        self._discontinuous_space = function_space(grid.barycentric_grid(), "DP", order)
         self._super_space = self._discontinuous_space
         self._evaluation_functor = scalar_function_value_functor()
         self._is_barycentric = True
@@ -274,19 +291,18 @@ class BarycentricContinuousPolynomialSpace(Space):
 class DualSpace(Space):
     """A space of piecewise constant dual functions over a barycentric grid."""
 
-    def __init__(self, grid):
+    def __init__(self, grid, comp_key=None):
 
         from bempp.core.space.space import function_space as _function_space
         from bempp.api.assembly.functors import scalar_function_value_functor
 
         super(DualSpace, self).__init__(
-            _function_space(grid._impl, "DUAL", 0))
+            _function_space(grid._impl, "DUAL", 0), comp_key)
 
         self._order = 0
         self._has_non_barycentric_space = False
         self._non_barycentric_space = None
-        self._discontinuous_space = DiscontinuousPolynomialSpace(
-            grid.barycentric_grid(), 0)
+        self._discontinuous_space = function_space(grid.barycentric_grid(), "DP", 0)
         self._super_space = self._discontinuous_space
         self._evaluation_functor = scalar_function_value_functor()
         self._is_barycentric = True
@@ -296,21 +312,21 @@ class DualSpace(Space):
 class RTSpace(Space):
     """A space of Raviart-Thomas functions."""
 
-    def __init__(self, grid, domains, closed):
+    def __init__(self, grid, domains, closed, comp_key=None):
 
         from bempp.core.space.space import function_space as _function_space
         from bempp.api.assembly.functors import hdiv_function_value_functor
 
         super(RTSpace, self).__init__(
-            _function_space(grid._impl, "RT", 0, domains, closed))
+            _function_space(grid._impl, "RT", 0, domains, closed), comp_key)
 
         self._order = 0
         self._has_non_barycentric_space = True
         self._non_barycentric_space = self
         if not closed:
-            self._discontinuous_space = DiscontinuousPolynomialSpace(grid, 1, domains=domains, closed=closed, reference_point_on_segment=False, element_on_segment=True)
+            self._discontinuous_space = function_space(grid, "DP", 1, domains=domains, closed=closed, reference_point_on_segment=False, element_on_segment=True)
         else:
-            self._discontinuous_space = DiscontinuousPolynomialSpace(grid, 1, domains=domains, closed=closed, reference_point_on_segment=True, element_on_segment=False)
+            self._discontinuous_space = function_space(grid, "DP", 1, domains=domains, closed=closed, reference_point_on_segment=True, element_on_segment=False)
         self._super_space = self
         self._evaluation_functor = hdiv_function_value_functor()
         self._is_barycentric = False
@@ -319,45 +335,45 @@ class RTSpace(Space):
 class NCSpace(Space):
     """A space of Nedelec functions."""
 
-    def __init__(self, grid, domains, closed):
+    def __init__(self, grid, domains, closed, comp_key=None):
 
         from bempp.core.space.space import function_space as _function_space
         from bempp.api.assembly.functors import hcurl_function_value_functor
 
         super(NCSpace, self).__init__(
-            _function_space(grid._impl, "NC", 0, domains, closed))
+            _function_space(grid._impl, "NC", 0, domains, closed), comp_key)
 
         self._order = 0
         self._has_non_barycentric_space = True
         self._non_barycentric_space = self
         if not closed:
-            self._discontinuous_space = DiscontinuousPolynomialSpace(grid, 1, domains=domains, closed=closed, reference_point_on_segment=False, element_on_segment=True)
+            self._discontinuous_space = function_space(grid, "DP", 1, domains=domains, closed=closed, reference_point_on_segment=False, element_on_segment=True)
         else:
-            self._discontinuous_space = DiscontinuousPolynomialSpace(grid, 1, domains=domains, closed=closed, reference_point_on_segment=True, element_on_segment=False)
+            self._discontinuous_space = function_space(grid, "DP", 1, domains=domains, closed=closed, reference_point_on_segment=True, element_on_segment=False)
         self._evaluation_functor = hcurl_function_value_functor()
         self._super_space = self
-        self._hdiv_space = RTSpace(grid, domains, closed)
+        self._hdiv_space = function_space(grid, "RT", 0, domains=domains, closed=closed)
         self._is_barycentric = False
         self._grid = grid
 
 class RWGSpace(Space):
     """A space of RWG functions."""
 
-    def __init__(self, grid, domains, closed):
+    def __init__(self, grid, domains, closed, comp_key=None):
 
         from bempp.core.space.space import function_space as _function_space
         from bempp.api.assembly.functors import hdiv_function_value_functor
 
         super(RWGSpace, self).__init__(
-            _function_space(grid._impl, "RWG", 0, domains, closed))
+            _function_space(grid._impl, "RWG", 0, domains, closed), comp_key)
 
         self._order = 0
         self._has_non_barycentric_space = True
         self._non_barycentric_space = self
         if not closed:
-            self._discontinuous_space = DiscontinuousPolynomialSpace(grid, 1, domains=domains, closed=closed, reference_point_on_segment=False, element_on_segment=True)
+            self._discontinuous_space = function_space(grid, "DP", 1, domains=domains, closed=closed, reference_point_on_segment=False, element_on_segment=True)
         else:
-            self._discontinuous_space = DiscontinuousPolynomialSpace(grid, 1, domains=domains, closed=closed, reference_point_on_segment=True, element_on_segment=False)
+            self._discontinuous_space = function_space(grid, "DP", 1, domains=domains, closed=closed, reference_point_on_segment=True, element_on_segment=False)
         self._super_space = self
         self._evaluation_functor = hdiv_function_value_functor()
         self._is_barycentric = False
@@ -366,44 +382,43 @@ class RWGSpace(Space):
 class SNCSpace(Space):
     """A space of scaled Nedelec functions."""
 
-    def __init__(self, grid, domains, closed):
+    def __init__(self, grid, domains, closed, comp_key=None):
 
         from bempp.core.space.space import function_space as _function_space
         from bempp.api.assembly.functors import hcurl_function_value_functor
 
         super(SNCSpace, self).__init__(
-            _function_space(grid._impl, "SNC", 0, domains, closed))
+            _function_space(grid._impl, "SNC", 0, domains, closed), comp_key)
 
         self._order = 0
         self._has_non_barycentric_space = True
         self._non_barycentric_space = self
         if not closed:
-            self._discontinuous_space = DiscontinuousPolynomialSpace(grid, 1, domains=domains, closed=closed, reference_point_on_segment=False, element_on_segment=True)
+            self._discontinuous_space = function_space(grid, "DP", 1, domains=domains, closed=closed, reference_point_on_segment=False, element_on_segment=True)
         else:
-            self._discontinuous_space = DiscontinuousPolynomialSpace(grid, 1, domains=domains, closed=closed, reference_point_on_segment=True, element_on_segment=False)
+            self._discontinuous_space = function_space(grid, "DP", 1, domains=domains, closed=closed, reference_point_on_segment=True, element_on_segment=False)
         self._evaluation_functor = hcurl_function_value_functor()
         self._super_space = self
-        self._hdiv_space = RWGSpace(grid, domains, closed)
+        self._hdiv_space = function_space(grid, "RWG", 0, domains, closed)
         self._is_barycentric = False
         self._grid = grid
 
 class BarycentricRTSpace(Space):
     """A space of Raviart-Thomas functions on a barycentric grid."""
 
-    def __init__(self, grid):
+    def __init__(self, grid, comp_key=None):
 
         from bempp.core.space.space import function_space as _function_space
         from bempp.api.assembly.functors import hdiv_function_value_functor
 
         super(BarycentricRTSpace, self).__init__(
-            _function_space(grid._impl, "B-RT", 0))
+            _function_space(grid._impl, "B-RT", 0), comp_key)
 
         self._order = 0
         self._has_non_barycentric_space = True
-        self._non_barycentric_space = RTSpace(grid, None, True)
-        self._discontinuous_space = DiscontinuousPolynomialSpace(
-            grid.barycentric_grid(), 1)
-        self._super_space = RTSpace(grid.barycentric_grid(), None, True)
+        self._non_barycentric_space = function_space(grid, "RT", 0)
+        self._discontinuous_space = function_space(grid.barycentric_grid(), "DP", 1)
+        self._super_space = function_space(grid.barycentric_grid(), "RT", 0) 
         self._evaluation_functor = hdiv_function_value_functor()
         self._is_barycentric = True
         self._grid = grid.barycentric_grid()
@@ -411,22 +426,21 @@ class BarycentricRTSpace(Space):
 class BarycentricNCSpace(Space):
     """A space of Nedelec functions on a barycentric grid."""
 
-    def __init__(self, grid):
+    def __init__(self, grid, comp_key=None):
 
         from bempp.core.space.space import function_space as _function_space
         from bempp.api.assembly.functors import hcurl_function_value_functor
 
         super(BarycentricNCSpace, self).__init__(
-            _function_space(grid._impl, "B-NC", 0))
+            _function_space(grid._impl, "B-NC", 0), comp_key)
 
         self._order = 0
         self._has_non_barycentric_space = True
-        self._non_barycentric_space = NCSpace(grid, None, True)
-        self._discontinuous_space = DiscontinuousPolynomialSpace(
-            grid.barycentric_grid(), 1)
+        self._non_barycentric_space = function_space(grid, "NC", 0)
+        self._discontinuous_space = function_space(grid.barycentric_grid(), "DP", 1)
         self._evaluation_functor = hcurl_function_value_functor()
-        self._super_space = NCSpace(grid.barycentric_grid(), None, True)
-        self._hdiv_space = BarycentricRTSpace(grid)
+        self._super_space = function_space(grid.barycentric_grid(), "NC", 0)
+        self._hdiv_space = function_space(grid, "B-RT", 0)
         self._is_barycentric = True
         self._grid = grid.barycentric_grid()
 
@@ -435,20 +449,19 @@ class BarycentricNCSpace(Space):
 class BarycentricRWGSpace(Space):
     """A space of RWG functions on a barycentric grid."""
 
-    def __init__(self, grid):
+    def __init__(self, grid, comp_key=None):
 
         from bempp.core.space.space import function_space as _function_space
         from bempp.api.assembly.functors import hdiv_function_value_functor
 
         super(BarycentricRWGSpace, self).__init__(
-            _function_space(grid._impl, "B-RWG", 0))
+            _function_space(grid._impl, "B-RWG", 0), comp_key)
 
         self._order = 0
         self._has_non_barycentric_space = True
-        self._non_barycentric_space = RWGSpace(grid, None, True)
-        self._discontinuous_space = DiscontinuousPolynomialSpace(
-            grid.barycentric_grid(), 1)
-        self._super_space = RWGSpace(grid.barycentric_grid(), None, True)
+        self._non_barycentric_space = function_space(grid, "RWG", 0)
+        self._discontinuous_space = function_space(grid.barycentric_grid(), "DP", 1)
+        self._super_space = function_space(grid.barycentric_grid(), "RWG", 0)
         self._evaluation_functor = hdiv_function_value_functor()
         self._is_barycentric = True
         self._grid = grid.barycentric_grid()
@@ -456,45 +469,41 @@ class BarycentricRWGSpace(Space):
 class BarycentricSNCSpace(Space):
     """A space of scaled Nedelec functions on a barycentric grid."""
 
-    def __init__(self, grid):
+    def __init__(self, grid, comp_key=None):
 
         from bempp.core.space.space import function_space as _function_space
         from bempp.api.assembly.functors import hcurl_function_value_functor
 
         super(BarycentricSNCSpace, self).__init__(
-            _function_space(grid._impl, "B-SNC", 0))
+            _function_space(grid._impl, "B-SNC", 0), comp_key)
 
         self._order = 0
         self._has_non_barycentric_space = True
-        self._non_barycentric_space = NCSpace(grid, None, True)
-        self._discontinuous_space = DiscontinuousPolynomialSpace(
-            grid.barycentric_grid(), 1)
+        self._non_barycentric_space = function_space(grid, "SNC", 0)
+        self._discontinuous_space = function_space(grid.barycentric_grid(), "DP", 1)
         self._evaluation_functor = hcurl_function_value_functor()
-        self._super_space = SNCSpace(grid.barycentric_grid(), None, True)
-        self._hdiv_space = BarycentricRWGSpace(grid)
+        self._super_space = function_space(grid.barycentric_grid(), "SNC", 0)
+        self._hdiv_space = function_space(grid, "B-RWG", 0)
         self._is_barycentric = True
         self._grid = grid.barycentric_grid()
-
-
 
 
 class BuffaChristiansenSpace(Space):
     """A space of Buffa-Christiansen basis functions on a barycentrid grid."""
 
-    def __init__(self, grid):
+    def __init__(self, grid, comp_key=None):
 
         from bempp.core.space.space import function_space as _function_space
         from bempp.api.assembly.functors import hdiv_function_value_functor
 
         super(BuffaChristiansenSpace, self).__init__(_function_space(
-            grid._impl, "BC", 0))
+            grid._impl, "BC", 0), comp_key)
 
         self._order = 0
         self._has_non_barycentric_space = False
         self._non_barycentric_space = None
-        self._discontinuous_space = DiscontinuousPolynomialSpace(
-            grid.barycentric_grid(), 1)
-        self._super_space = RWGSpace(grid.barycentric_grid(), None, True)
+        self._discontinuous_space = function_space(grid.barycentric_grid(), "DP", 1)
+        self._super_space = function_space(grid.barycentric_grid(), "RWG", 0)
         self._evaluation_functor = hdiv_function_value_functor()
         self._is_barycentric = True
         self._grid = grid.barycentric_grid()
@@ -502,21 +511,20 @@ class BuffaChristiansenSpace(Space):
 class RotatedBuffaChristiansenSpace(Space):
     """A space of rotated Buffa-Christiansen curl conforming basis functions on a barycentrid grid."""
 
-    def __init__(self, grid):
+    def __init__(self, grid, comp_key=None):
 
         from bempp.core.space.space import function_space as _function_space
         from bempp.api.assembly.functors import hcurl_function_value_functor
 
         super(RotatedBuffaChristiansenSpace, self).__init__(_function_space(
-            grid._impl, "RBC", 0))
+            grid._impl, "RBC", 0), comp_key)
 
         self._order = 0
         self._has_non_barycentric_space = False
         self._non_barycentric_space = None
-        self._discontinuous_space = DiscontinuousPolynomialSpace(
-            grid.barycentric_grid(), 1)
+        self._discontinuous_space = function_space(grid.barycentric_grid(), "DP", 1)
         self._evaluation_functor = hcurl_function_value_functor()
-        self._super_space = SNCSpace(grid.barycentric_grid(), None, True)
+        self._super_space = function_space(grid.barycentric_grid(), "SNC", 0)
         self._hdiv_space = BuffaChristiansenSpace(grid)
         self._is_barycentric = True
         self._grid = grid.barycentric_grid()
@@ -609,68 +617,73 @@ def function_space(grid, kind, order, domains=None, closed=True, strictly_on_seg
     >>> space = function_space(grid,"P",1)
 
     """
+
+
+    comp_key = (grid, kind, order, None if domains is None else tuple(sorted(domains)),
+            closed, strictly_on_segment, reference_point_on_segment, element_on_segment)
+
     if kind == "DP":
         return DiscontinuousPolynomialSpace(grid, order, domains, closed, reference_point_on_segment,
-                                            element_on_segment)
+                                            element_on_segment, comp_key)
     elif kind == "B-DP":
-        return BarycentricDiscontinuousPolynomialSpace(grid, order)
+        return BarycentricDiscontinuousPolynomialSpace(grid, order, comp_key)
     elif kind == "P":
         return ContinuousPolynomialSpace(grid, order, domains, closed, strictly_on_segment,
-                                         element_on_segment)
+                                         element_on_segment, comp_key)
     elif kind == "B-P":
-        return BarycentricContinuousPolynomialSpace(grid, order)
+        return BarycentricContinuousPolynomialSpace(grid, order, comp_key)
     elif kind == "DUAL":
         if order > 0:
             raise ValueError("Only order zero dual spaces supported.")
-        return DualSpace(grid)
+        return DualSpace(grid, comp_key)
     elif kind == "RT":
         if order > 0:
             raise ValueError(
                 "Only order zero Raviart-Thomas spaces supported.")
-        return RTSpace(grid, domains, closed)
+        return RTSpace(grid, domains, closed, comp_key)
     elif kind == "NC":
         if order > 0:
             raise ValueError(
                 "Only order zero Nedelec spaces supported.")
-        return NCSpace(grid, domains, closed)
+        return NCSpace(grid, domains, closed, comp_key)
     elif kind == "SNC":
         if order > 0:
             raise ValueError(
                 "Only order zero Nedelec spaces supported.")
-        return SNCSpace(grid, domains, closed)
+        return SNCSpace(grid, domains, closed, comp_key)
     elif kind == "RWG":
         if order > 0:
             raise ValueError("Only order zero RWG spaces supported.")
-        return RWGSpace(grid, domains, closed)
+        return RWGSpace(grid, domains, closed, comp_key)
     elif kind == "B-RT":
         if order > 0:
             raise ValueError(
                 "Only order zero Raviart-Thomas functions supported.")
-        return BarycentricRTSpace(grid)
+        return BarycentricRTSpace(grid, comp_key)
     elif kind == "B-NC":
         if order > 0:
             raise ValueError(
                 "Only order zero Nedelec functions supported.")
-        return BarycentricNCSpace(grid)
+        return BarycentricNCSpace(grid, comp_key)
     elif kind == "B-SNC":
         if order > 0:
             raise ValueError(
                 "Only order zero Nedelec functions supported.")
-        return BarycentricSNCSpace(grid)
+        return BarycentricSNCSpace(grid, comp_key)
     elif kind == "B-RWG":
         if order > 0:
             raise ValueError("Only order zero RWG functions supported.")
-        return BarycentricRWGSpace(grid)
+        return BarycentricRWGSpace(grid, comp_key)
     elif kind == "BC":
         if order > 0:
             raise ValueError(
                 "Only order zero Buffa-Christiansen functions supported.")
-        return BuffaChristiansenSpace(grid)
+        return BuffaChristiansenSpace(grid, comp_key)
     elif kind == "RBC":
         if order > 0:
             raise ValueError(
                 "Only order zero Buffa-Christiansen functions supported.")
-        return RotatedBuffaChristiansenSpace(grid)
+        return RotatedBuffaChristiansenSpace(grid, comp_key)
     else:
         raise ValueError("Unknown space type.")
 

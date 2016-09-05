@@ -231,7 +231,7 @@ def hypersingular(domain, range_, dual_to_range,
         Note. This option is only used if `use_slp` is not specified.
     """
 
-    import bempp
+    import bempp.api
     from bempp.core.operators.boundary.laplace import hypersingular_ext
     from bempp.api.assembly.boundary_operator import BoundaryOperator
     from bempp.api.assembly import LocalBoundaryOperator
@@ -254,39 +254,37 @@ def hypersingular(domain, range_, dual_to_range,
             symmetry, parameters, use_projection_spaces=use_projection_spaces, 
             assemble_only_singular_part=assemble_only_singular_part) 
     else:
+
+        if domain != dual_to_range:
+            raise ValueError("domain and dual_to_range spaces must be identical if use_slp=True")
+
         if not isinstance(use_slp, BoundaryOperator):
-            disc_domain = domain.discontinuous_space
-            disc_dual_to_range = dual_to_range.discontinuous_space
-            slp = single_layer(disc_domain, range_,
-                               disc_dual_to_range, parameters=parameters)
+            disc_space = domain.discontinuous_space
+            slp = single_layer(disc_space, range_,
+                               disc_space, parameters=parameters)
         else:
             slp = use_slp
 
-        # Test that the spaces are correct.
-        if slp.domain != slp.dual_to_range:
-            raise ValueError(
-                "'domain' and 'dual_to_range' spaces must be identical for the slp operator.")
+
+        from bempp.api.assembly.functors import vector_surface_curl_functor
+        from bempp.api.assembly.functors import scalar_function_value_functor
+        from bempp.api.assembly.functors import single_component_test_trial_integrand_functor
+        from bempp.api.space.projection import rewrite_operator_spaces
+
+        D = bempp.api.ZeroBoundaryOperator(domain, slp.range, dual_to_range)
+
+        for i in range(3):
+            curl_value_op = bempp.api.operators.boundary.sparse.operator_from_functors(
+                    domain, slp.domain, slp.domain,
+                    scalar_function_value_functor(), vector_surface_curl_functor(),
+                    single_component_test_trial_integrand_functor(0, i),
+                    label="CURL_OP[{0}]".format(i),
+                    parameters=parameters)
+            D += curl_value_op.dual_product(slp) * curl_value_op
 
         # Now generate the compound operator
 
-        test_local_ops = []
-        trial_local_ops = []
-
-        from bempp.api.assembly.boundary_operator import CompoundBoundaryOperator
-        from bempp.core.operators.boundary.sparse import curl_value_ext
-
-        for index in range(3):
-            # Definition of range_ does not matter in next operator
-            test_local_op = LocalBoundaryOperator(
-                ElementaryAbstractLocalOperator(
-                    curl_value_ext(
-                        slp.dual_to_range._impl, range_._impl, dual_to_range._impl, index),
-                    slp.dual_to_range, range_, dual_to_range), label='CURL')
-            test_local_ops.append(test_local_op)
-            trial_local_ops.append(test_local_op.transpose(
-                range_))  # Range parameter arbitrary
-
-        return CompoundBoundaryOperator(test_local_ops, slp, trial_local_ops, label=label)
+        return rewrite_operator_spaces(D, domain=domain, range_=range_, dual_to_range=dual_to_range)
 
 
 def single_layer_and_hypersingular_pair(grid, parameters=None, spaces='linear', base_slp=None, return_base_slp=False, stabilization_factor=0):

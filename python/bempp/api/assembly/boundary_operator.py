@@ -135,11 +135,17 @@ class BoundaryOperator(object):
             self._range_map = None
 
         if self._range_map is None:
-            from bempp.api.assembly import InverseSparseDiscreteBoundaryOperator
-            from bempp.api.operators.boundary.sparse import identity
+           
+            # This is the most frequent case and we cache the mass
+            # matrix from the space object.
+            if self.range == self.dual_to_range:
+                self._range_map = self.dual_to_range.inverse_mass_matrix().weak_form()
+            else:
+                from bempp.api.assembly import InverseSparseDiscreteBoundaryOperator
+                from bempp.api.operators.boundary.sparse import identity
 
-            self._range_map = InverseSparseDiscreteBoundaryOperator(
-                identity(self.range, self.range, self.dual_to_range).weak_form())
+                self._range_map = InverseLocalBoundaryOperator(
+                    identity(self.range, self.range, self.dual_to_range)).weak_form()
 
         return self._range_map * self.weak_form(recompute)
 
@@ -172,6 +178,22 @@ class BoundaryOperator(object):
 
         """
         return _AdjointBoundaryOperator(self, range_)
+
+    def dual_product(self, other):
+        """Return the dual product with another boundary operator.
+
+           Notes
+           -----
+           The dual product B *_D A acts only only on the test functions
+           of A  and is defined as 
+           self.adjoint(other.range) * other
+
+        """
+
+        from bempp.api.space.projection import rewrite_operator_spaces
+
+        return self.adjoint(other.range) * rewrite_operator_spaces(other,
+                other.domain, self.dual_to_range, other.dual_to_range)
 
 class ZeroBoundaryOperator(BoundaryOperator):
     """A boundary operator that represents a zero operator.

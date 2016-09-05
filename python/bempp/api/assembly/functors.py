@@ -84,6 +84,13 @@ def simple_test_trial_integrand_functor():
     return LocalIntegrandFunctorContainer(
             simple_test_trial_integrand_functor_ext())
 
+def single_component_test_trial_integrand_functor(test_component, trial_component):
+
+    from bempp.core.fiber.local_integrand_functors import single_component_test_trial_integrand_functor_ext
+
+    return LocalIntegrandFunctorContainer(
+            single_component_test_trial_integrand_functor_ext(test_component, trial_component))
+
 def maxwell_test_trial_integrand_functor():
 
     from bempp.core.fiber.local_integrand_functors import maxwell_test_trial_integrand_functor_ext
