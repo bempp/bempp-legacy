@@ -132,6 +132,10 @@ class DiscreteBoundaryOperatorSum(DiscreteBoundaryOperator):
 
         return self._op1.transpose() + self._op2.transpose()
 
+    @property
+    def memory(self):
+        return self._op1.memory + self._op2.memory
+
 
 class DiscreteBoundaryOperatorProduct(DiscreteBoundaryOperator):
 
@@ -173,6 +177,9 @@ class DiscreteBoundaryOperatorProduct(DiscreteBoundaryOperator):
 
         return self._op2.transpose() * self._op1.transpose()
 
+    @property
+    def memory(self):
+        return self._op1.memory + self._op2.memory
 
 class ScaledDiscreteBoundaryOperator(DiscreteBoundaryOperator):
 
@@ -209,6 +216,9 @@ class ScaledDiscreteBoundaryOperator(DiscreteBoundaryOperator):
 
         return self._alpha * self._op.transpose()
 
+    @property
+    def memory(self):
+        return self._op.memory
 
 class GeneralNonlocalDiscreteBoundaryOperator(DiscreteBoundaryOperator):
     """Main class for the discrete form of general discrete nonlocal operators.
@@ -247,6 +257,11 @@ class GeneralNonlocalDiscreteBoundaryOperator(DiscreteBoundaryOperator):
     def _transpose(self):
         """Return the transposed operator."""
         return GeneralNonlocalDiscreteBoundaryOperator(self._impl.transpose())
+
+    @property
+    def memory(self):
+        from bempp.api.hmat.hmatrix_interface import mem_size
+        return mem_size(self)
 
 
 class DenseDiscreteBoundaryOperator(DiscreteBoundaryOperator):  # pylint: disable=too-few-public-methods
@@ -321,6 +336,10 @@ class DenseDiscreteBoundaryOperator(DiscreteBoundaryOperator):  # pylint: disabl
         """Return the underlying array."""
 
         return self._impl
+
+    @property
+    def memory(self):
+        return self.A.nbytes / 1024.
 
 
 class SparseDiscreteBoundaryOperator(DiscreteBoundaryOperator):
@@ -403,6 +422,10 @@ class SparseDiscreteBoundaryOperator(DiscreteBoundaryOperator):
     def sparse_operator(self):
         """Return the underlying Scipy sparse matrix."""
         return self._impl
+
+    @property
+    def memory(self):
+        return 0
 
 
 class InverseSparseDiscreteBoundaryOperator(DiscreteBoundaryOperator):
@@ -518,6 +541,10 @@ class InverseSparseDiscreteBoundaryOperator(DiscreteBoundaryOperator):
 
         return InverseSparseDiscreteBoundaryOperator(self._operator.adjoint())
 
+    @property
+    def memory(self):
+        return 0
+
 
 class ZeroDiscreteBoundaryOperator(DiscreteBoundaryOperator):
     """A discrete operator that represents a zero operator.
@@ -552,6 +579,10 @@ class ZeroDiscreteBoundaryOperator(DiscreteBoundaryOperator):
             return _np.zeros((self.shape[0], x.shape[1]), dtype='float64')
         else:
             return _np.zeros(self.shape[0], dtype='float64')
+
+    @property
+    def memory(self):
+        return 0
 
 
 class DiscreteRankOneOperator(DiscreteBoundaryOperator):
@@ -605,6 +636,10 @@ class DiscreteRankOneOperator(DiscreteBoundaryOperator):
     def _adjoint(self, x):
 
         return DiscreteRankOneOperator(row.conjugate(), column.conjugate())
+
+    @property
+    def memory(self):
+        return 0
 
 
 def as_matrix(operator):
