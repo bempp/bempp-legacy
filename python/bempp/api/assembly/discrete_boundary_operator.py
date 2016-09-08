@@ -5,8 +5,6 @@ from bempp.api.utils.logging import timeit as _timeit
 import numpy as _np
 
 
-def _call_super(obj, dtype, shape):
-    """Call the correct super constructor depending on scipy version."""
 
 
 class DiscreteBoundaryOperator(_LinearOperator):
@@ -92,6 +90,12 @@ class DiscreteBoundaryOperator(_LinearOperator):
             return self._transpose()
         T = property(transpose)
 
+    @property
+    def memory(self):
+        """Return an estimate of the memory size in kb"""
+        ops = self.elementary_operators()
+        return sum([op._memory for op in ops])
+
 class DiscreteBoundaryOperatorSum(DiscreteBoundaryOperator):
 
     def __init__(self, op1, op2):
@@ -132,9 +136,10 @@ class DiscreteBoundaryOperatorSum(DiscreteBoundaryOperator):
 
         return self._op1.transpose() + self._op2.transpose()
 
-    @property
-    def memory(self):
-        return self._op1.memory + self._op2.memory
+    def elementary_operators(self):
+        """Return a set of all elementary sparse or nonlocal operators that form this operator."""
+
+        return self._op1.elementary_operators() | self._op2.elementary_operators()
 
 
 class DiscreteBoundaryOperatorProduct(DiscreteBoundaryOperator):
@@ -177,9 +182,10 @@ class DiscreteBoundaryOperatorProduct(DiscreteBoundaryOperator):
 
         return self._op2.transpose() * self._op1.transpose()
 
-    @property
-    def memory(self):
-        return self._op1.memory + self._op2.memory
+    def elementary_operators(self):
+        """Return a set of all elementary sparse or nonlocal operators that form this operator."""
+
+        return self._op1.elementary_operators() | self._op2.elementary_operators()
 
 class ScaledDiscreteBoundaryOperator(DiscreteBoundaryOperator):
 
@@ -216,9 +222,10 @@ class ScaledDiscreteBoundaryOperator(DiscreteBoundaryOperator):
 
         return self._alpha * self._op.transpose()
 
-    @property
-    def memory(self):
-        return self._op.memory
+    def elementary_operators(self):
+        """Return a set of all elementary sparse or nonlocal operators that form this operator."""
+
+        return self._op.elementary_operators()
 
 class GeneralNonlocalDiscreteBoundaryOperator(DiscreteBoundaryOperator):
     """Main class for the discrete form of general discrete nonlocal operators.
@@ -259,9 +266,14 @@ class GeneralNonlocalDiscreteBoundaryOperator(DiscreteBoundaryOperator):
         return GeneralNonlocalDiscreteBoundaryOperator(self._impl.transpose())
 
     @property
-    def memory(self):
+    def _memory(self):
         from bempp.api.hmat.hmatrix_interface import mem_size
         return mem_size(self)
+
+    def elementary_operators(self):
+        """Return a set of all elementary sparse or nonlocal operators that form this operator."""
+
+        return {self}
 
 
 class DenseDiscreteBoundaryOperator(DiscreteBoundaryOperator):  # pylint: disable=too-few-public-methods
@@ -338,9 +350,13 @@ class DenseDiscreteBoundaryOperator(DiscreteBoundaryOperator):  # pylint: disabl
         return self._impl
 
     @property
-    def memory(self):
+    def _memory(self):
         return self.A.nbytes / 1024.
 
+    def elementary_operators(self):
+        """Return a set of all elementary sparse or nonlocal operators that form this operator."""
+
+        return {self}
 
 class SparseDiscreteBoundaryOperator(DiscreteBoundaryOperator):
     """Main class for the discrete form of sparse operators.
@@ -424,8 +440,14 @@ class SparseDiscreteBoundaryOperator(DiscreteBoundaryOperator):
         return self._impl
 
     @property
-    def memory(self):
-        return 0
+    def _memory(self):
+        mat = self.sparse_operator
+        return (mat.data.nbytes + mat.indices.nbytes + mat.indptr.nbytes) / 1024
+
+    def elementary_operators(self):
+        """Return a set of all elementary sparse or nonlocal operators that form this operator."""
+
+        return {self}
 
 
 class InverseSparseDiscreteBoundaryOperator(DiscreteBoundaryOperator):
@@ -541,9 +563,10 @@ class InverseSparseDiscreteBoundaryOperator(DiscreteBoundaryOperator):
 
         return InverseSparseDiscreteBoundaryOperator(self._operator.adjoint())
 
-    @property
-    def memory(self):
-        return 0
+    def elementary_operators(self):
+        """Return a set of all elementary sparse or nonlocal operators that form this operator."""
+
+        return self._operator.elementary_operators()
 
 
 class ZeroDiscreteBoundaryOperator(DiscreteBoundaryOperator):
@@ -580,9 +603,10 @@ class ZeroDiscreteBoundaryOperator(DiscreteBoundaryOperator):
         else:
             return _np.zeros(self.shape[0], dtype='float64')
 
-    @property
-    def memory(self):
-        return 0
+    def elementary_operators(self):
+        """Return a set of all elementary sparse or nonlocal operators that form this operator."""
+
+        return {}
 
 
 class DiscreteRankOneOperator(DiscreteBoundaryOperator):
@@ -637,9 +661,10 @@ class DiscreteRankOneOperator(DiscreteBoundaryOperator):
 
         return DiscreteRankOneOperator(row.conjugate(), column.conjugate())
 
-    @property
-    def memory(self):
-        return 0
+    def elementary_operators(self):
+        """Return a set of all elementary sparse or nonlocal operators that form this operator."""
+
+        return {}
 
 
 def as_matrix(operator):

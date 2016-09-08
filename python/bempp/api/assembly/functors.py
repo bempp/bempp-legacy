@@ -35,6 +35,13 @@ def scalar_function_value_functor():
     return ShapeTransformationFunctorContainer(
             scalar_function_value_functor_ext())
 
+def scalar_function_value_times_normal_functor():
+
+    from bempp.core.fiber.shape_transformation_functors import scalar_function_value_times_normal_functor_ext
+
+    return ShapeTransformationFunctorContainer(
+            scalar_function_value_times_normal_functor_ext())
+
 def surface_gradient_functor():
 
     from bempp.core.fiber.shape_transformation_functors import surface_gradient_functor_ext
