@@ -155,14 +155,14 @@ def multitrace_identity(grid, parameters=None, spaces='linear'):
 
     blocked_operator = BlockedOperator(2, 2)
 
-    if spaces == 'linear':
+    if spaces == 'dual':
         const_space = bempp.api.function_space(grid, "DUAL", 0)
         lin_space = bempp.api.function_space(grid, "B-P", 1)
         blocked_operator[0, 0] = identity(
             lin_space, lin_space, const_space, parameters=parameters)
         blocked_operator[1, 1] = identity(
             const_space, const_space, lin_space, parameters=parameters)
-    elif spaces == 'dual':
+    elif spaces == 'linear':
         space = bempp.api.function_space(grid, "P", 1)
         blocked_operator[0, 0] = identity(
             space, space, space, parameters=parameters)

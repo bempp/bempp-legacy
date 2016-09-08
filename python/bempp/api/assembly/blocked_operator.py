@@ -31,15 +31,44 @@ class BlockedOperator(object):
         self._rows = m * [False]
         self._cols = n * [False]
 
+        self._dual_to_range_spaces = m * [None]
+        self._range_spaces = m * [None]
+        self._domain_spaces = n * [None]
+
     def __getitem__(self, key):
 
         return self._operators[key]
 
     def __setitem__(self, key, operator):
 
+        row = key[0]
+        col = key[1]
+
+        if self.range_spaces[row] is not None:
+            if operator.range != self.range_spaces[row]:
+                raise ValueError(
+                        "Range space not compatible with self.range_spaces[{0}]".format(row))
+        else:
+            self._range_spaces[row] = operator.range
+
+        if self.dual_to_range_spaces[row] is not None:
+            if operator.dual_to_range != self.dual_to_range_spaces[row]:
+                raise ValueError(
+                        "Dual to range space not compatible with self.dual_to_range_spaces[{0}]".format(row))
+        else:
+            self._dual_to_range_spaces[row] = operator.dual_to_range
+
+        if self.domain_spaces[col] is not None:
+            if operator.domain != self.domain_spaces[col]:
+                raise ValueError(
+                        "Domain space {0} not compatible with self.domain_spaces[{1}] = {2}".format(
+                            type(operator.domain), col, type(self.domain_spaces[col])))
+        else:
+            self._domain_spaces[col] = operator.domain
+
         self._operators[key] = operator
-        self._rows[key[0]] = True
-        self._cols[key[1]] = True
+        self._rows[row] = True
+        self._cols[col] = True
 
     def _fill_complete(self):
 
@@ -123,6 +152,7 @@ class BlockedOperator(object):
     def __mul__(self, other):
 
         import numpy as np
+        import collections
         if np.isscalar(other):
 
             blocked_operator = BlockedOperator(self.ndims[0], self.ndims[1])
@@ -141,6 +171,29 @@ class BlockedOperator(object):
                         blocked_operator[i, j] = _sum(blocked_operator[i, j],
                                                       _prod(self[i, k], other[k, j]))
             return blocked_operator
+        elif isinstance(other, collections.Iterable):
+            from bempp.api.assembly.grid_function import GridFunction
+            list_input = list(other)
+            if len(list_input) != self.ndims[1]:
+                raise ValueError("Length of input list incompatible with block operator dimension.")
+            for item in list_input:
+                if not isinstance(item, GridFunction):
+                    raise ValueError("All items in the input list must be grid functions.")
+            weak_op = self.weak_form()
+            x = np.zeros(weak_op.shape[1], dtype=weak_op.dtype)
+            col_pos = np.hstack([[0], np.cumsum(weak_op.column_dimensions)])
+            row_pos = np.hstack([[0], np.cumsum(weak_op.row_dimensions)])
+            for index in range(weak_op.ndims[1]):
+                x[col_pos[index]:col_pos[index+1]] = list_input[index].coefficients
+            res = weak_op * x
+            output_list = []
+
+            for index in range(weak_op.ndims[0]):
+                output_list.append(GridFunction(
+                    self.range_spaces[index], dual_space=self.dual_to_range_spaces[index],
+                    projections=res[row_pos[index]:row_pos[index+1]]))
+            return output_list
+
         else:
             return NotImplementedError
 
@@ -157,6 +210,18 @@ class BlockedOperator(object):
         return (self._m, self._n)
 
     ndims = property(get_ndims)
+
+    @property
+    def range_spaces(self):
+        return self._range_spaces
+
+    @property
+    def dual_to_range_spaces(self):
+        return tuple(self._dual_to_range_spaces)
+
+    @property
+    def domain_spaces(self):
+        return tuple(self._domain_spaces)
 
 
 class BlockedDiscreteOperator(DiscreteBoundaryOperator):
