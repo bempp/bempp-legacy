@@ -346,7 +346,7 @@ def single_layer_and_hypersingular_pair(grid, parameters=None, spaces='linear', 
     return ops
 
 
-def multitrace_operator(grid, parameters=None, spaces='linear'):
+def multitrace_operator(grid, parameters=None, spaces='linear', target=None):
     """Return the Laplace multitrace operator.
 
     Parameters
@@ -364,9 +364,13 @@ def multitrace_operator(grid, parameters=None, spaces='linear'):
         a dual pairing of a linear space for the Dirichlet
         data and piecewise constant space for the Neumann
         data choose 'dual'.
+    target: bempp.api.grid.Grid
+        Specifies a target grid. If it is different from
+        'grid' then the operator maps from 'grid' to
+        'target'.
 
     """
 
     from bempp.api.operators.boundary import _common
     return _common.multitrace_operator_impl(
-        grid, single_layer, double_layer, hypersingular, parameters, spaces, laplace=True)
+        grid, single_layer, double_layer, hypersingular, parameters, spaces, laplace=True, target=target)

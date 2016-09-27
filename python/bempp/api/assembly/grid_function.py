@@ -435,3 +435,13 @@ class GridFunction(object):
             return self._coefficients.dtype
         else:
             return self._dual_coefficients.dtype
+
+    @classmethod
+    def from_random(cls, space):
+        """Create a random grid function. """
+
+        from numpy.random import randn
+        ndofs = space.global_dof_count
+
+        return cls(space, coefficients=randn(ndofs))
+

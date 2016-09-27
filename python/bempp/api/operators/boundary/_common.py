@@ -151,7 +151,52 @@ def slp_and_hyp_impl(grid, slp_operator, hyp_operator, parameters, spaces='linea
 
 
 def multitrace_operator_impl(grid, slp_operator, dlp_operator, hyp_operator, parameters,
-                             spaces='linear', laplace=False):
+                             spaces='linear', laplace=False, target=None):
+
+
+    if (target is not None) and (target != grid):
+
+        import bempp.api
+
+        blocked = bempp.api.BlockedOperator(2, 2)
+
+        if spaces == 'linear':
+
+            target_lin = bempp.api.function_space(target, "P", 1)
+            source_lin = bempp.api.function_space(grid, "P", 1)
+
+            slp = slp_operator(source_lin, target_lin, target_lin, parameters=parameters)
+            dlp = dlp_operator(source_lin, target_lin, target_lin, parameters=parameters)
+            adlp = dlp_operator(target_lin, source_lin, source_lin, parameters=parameters).transpose(target_lin)
+            hyp = hyp_operator(source_lin, target_lin, target_lin, parameters=parameters)
+
+            blocked[0, 0] = -dlp
+            blocked[0, 1] = slp
+            blocked[1, 0] = adlp
+            blocked[1, 1] = hyp
+
+        elif spaces == 'dual':
+
+            target_dual = bempp.api.function_space(target, "DUAL", 0)
+            target_lin = bempp.api.function_space(target, "B-P", 1)
+            source_dual = bempp.api.function_space(source, "DUAL", 0)
+            source_lin = bempp.api.function_space(source, "B-P", 1)
+
+            slp = slp_operator(source_dual, target_lin, target_dual, parameters=parameters)
+            dlp = dlp_operator(source_lin, target_lin, target_dual, parameters=parameters)
+            adlp = dlp_operator(target_lin, source_lin, source_dual, parameters=parameters).transpose(target_dual)
+            hyp = hyp_operator(source_lin, target_dual, target_lin, parameters=parameters)
+
+            blocked[0, 0] = -dlp
+            blocked[0, 1] = slp
+            blocked[1, 0] = adlp
+            blocked[1, 1] = hyp
+
+        else:
+            raise ValueError("spaces must be one of 'linear' or 'dual'")
+            
+        return blocked
+
     if spaces == 'linear':
         return multitrace_operator_impl_lin(grid, slp_operator, dlp_operator, hyp_operator,
                                             parameters)

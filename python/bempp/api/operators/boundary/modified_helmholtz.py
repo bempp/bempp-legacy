@@ -309,7 +309,7 @@ def hypersingular(domain, range_, dual_to_range, wave_number,
 
         return rewrite_operator_spaces(D, domain=domain, range_=range_, dual_to_range=dual_to_range)
         
-def multitrace_operator(grid, wave_number, parameters=None, spaces='linear'):
+def multitrace_operator(grid, wave_number, parameters=None, spaces='linear', target=None):
     """Return the modified Helmholtz multitrace operator.
 
     Parameters
@@ -329,6 +329,10 @@ def multitrace_operator(grid, wave_number, parameters=None, spaces='linear'):
         a dual pairing of a linear space for the Dirichlet
         data and piecewise constant space for the Neumann
         data choose 'dual'.
+    target: bempp.api.grid.Grid
+        Specifies a target grid. If it is different from
+        'grid' then the operator maps from 'grid' to
+        'target'.
 
     """
 
@@ -350,7 +354,7 @@ def multitrace_operator(grid, wave_number, parameters=None, spaces='linear'):
 
     from bempp.api.operators.boundary import _common
     return _common.multitrace_operator_impl(grid, op(single_layer), op(double_layer),
-                                            op(hypersingular), parameters, spaces)
+                                            op(hypersingular), parameters, spaces, target=target)
 
 
 def single_layer_and_hypersingular_pair(grid, wave_number, parameters=None, spaces='linear', base_slp=None, return_base_slp=False):
