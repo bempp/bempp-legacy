@@ -8,11 +8,11 @@
 
 namespace BemppGrid {
 
-    P1Entity<0, 2, P1Grid>::P1Entity(const shared_ptr<P1DataContainer>& data,
+    P1EntityImp<0, 2, P1Grid>::P1EntityImp(const shared_ptr<P1DataContainer>& data,
         int level, int index) : m_data(data), m_level(level), m_index(index)
     {}
 
-    Dune::Geometry<2, 3, P1Grid, P1GridGeometry> P1Entity<0, 2, P1Grid>::geometry() const {
+    Dune::Geometry<2, 3, P1Grid, P1GridGeometry> P1EntityImp<0, 2, P1Grid>::geometry() const {
         const auto& nodeIndices = m_data->elements(m_level)[m_index]; 
         Dune::GeometryType geometryType;
         geometryType.makeTriangle();
@@ -23,17 +23,17 @@ namespace BemppGrid {
 
     }
 
-    Dune::PartitionType P1Entity<0, 2, P1Grid>::partitionType() const {
+    Dune::PartitionType P1EntityImp<0, 2, P1Grid>::partitionType() const {
 
         return Dune::InteriorEntity;
 
     }
 
-    int P1Entity<0, 2, P1Grid>::level() const {
+    int P1EntityImp<0, 2, P1Grid>::level() const {
         return m_level;
     }     
 
-    Dune::GeometryType P1Entity<0, 2, P1Grid>::type() const {
+    Dune::GeometryType P1EntityImp<0, 2, P1Grid>::type() const {
 
         Dune::GeometryType geometryType;
         geometryType.makeTriangle();
@@ -41,17 +41,17 @@ namespace BemppGrid {
 
     }
 
-    bool P1Entity<0, 2, P1Grid>::equals(const P1Entity<0, 2, P1Grid>& other) const {
+    bool P1EntityImp<0, 2, P1Grid>::equals(const P1EntityImp<0, 2, P1Grid>& other) const {
 
         return m_level == other.m_level && m_index == other.m_index;
     }
 
-    P1Entity<1, 2, P1Grid>::P1Entity(const shared_ptr<P1DataContainer>& data,
+    P1EntityImp<1, 2, P1Grid>::P1EntityImp(const shared_ptr<P1DataContainer>& data,
         int level, int index) : m_data(data), m_level(level), m_index(index)
     {}
 
 
-    Dune::Geometry<1, 3, P1Grid, P1GridGeometry> P1Entity<1, 2, P1Grid>::geometry() const {
+    Dune::Geometry<1, 3, P1Grid, P1GridGeometry> P1EntityImp<1, 2, P1Grid>::geometry() const {
         const auto& nodeIndices = m_data->elements(m_level)[m_index]; 
         Dune::GeometryType geometryType;
         geometryType.makeLine();
@@ -62,11 +62,11 @@ namespace BemppGrid {
 
     }
 
-    int P1Entity<1, 2, P1Grid>::level() const {
+    int P1EntityImp<1, 2, P1Grid>::level() const {
         return m_level;
     }     
 
-    Dune::GeometryType P1Entity<1, 2, P1Grid>::type() const {
+    Dune::GeometryType P1EntityImp<1, 2, P1Grid>::type() const {
 
         Dune::GeometryType geometryType;
         geometryType.makeLine();
@@ -74,23 +74,23 @@ namespace BemppGrid {
 
     }
 
-    Dune::PartitionType P1Entity<1, 2, P1Grid>::partitionType() const {
+    Dune::PartitionType P1EntityImp<1, 2, P1Grid>::partitionType() const {
 
         return Dune::InteriorEntity;
 
     }
 
-    bool P1Entity<1, 2, P1Grid>::equals(const P1Entity<1, 2, P1Grid>& other) const {
+    bool P1EntityImp<1, 2, P1Grid>::equals(const P1EntityImp<1, 2, P1Grid>& other) const {
 
         return m_level == other.m_level && m_index == other.m_index;
     }
 
-    P1Entity<2, 2, P1Grid>::P1Entity(const shared_ptr<P1DataContainer>& data,
+    P1EntityImp<2, 2, P1Grid>::P1EntityImp(const shared_ptr<P1DataContainer>& data,
         int level, int index) : m_data(data), m_level(level), m_index(index)
     {}
 
 
-    Dune::Geometry<0, 3, P1Grid, P1GridGeometry> P1Entity<2, 2, P1Grid>::geometry() const {
+    Dune::Geometry<0, 3, P1Grid, P1GridGeometry> P1EntityImp<2, 2, P1Grid>::geometry() const {
         const auto& nodeIndices = m_data->elements(m_level)[m_index]; 
         Dune::GeometryType geometryType;
         geometryType.makeVertex();
@@ -101,11 +101,11 @@ namespace BemppGrid {
 
     }
 
-    int P1Entity<2, 2, P1Grid>::level() const {
+    int P1EntityImp<2, 2, P1Grid>::level() const {
         return m_level;
     }     
 
-    Dune::GeometryType P1Entity<2, 2, P1Grid>::type() const {
+    Dune::GeometryType P1EntityImp<2, 2, P1Grid>::type() const {
 
         Dune::GeometryType geometryType;
         geometryType.makeVertex();
@@ -113,13 +113,13 @@ namespace BemppGrid {
 
     }
 
-    Dune::PartitionType P1Entity<2, 2, P1Grid>::partitionType() const {
+    Dune::PartitionType P1EntityImp<2, 2, P1Grid>::partitionType() const {
 
         return Dune::InteriorEntity;
 
     }
 
-    bool P1Entity<2, 2, P1Grid>::equals(const P1Entity<2, 2, P1Grid>& other) const {
+    bool P1EntityImp<2, 2, P1Grid>::equals(const P1EntityImp<2, 2, P1Grid>& other) const {
 
         return m_level == other.m_level && m_index == other.m_index;
     }

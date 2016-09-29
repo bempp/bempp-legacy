@@ -3,11 +3,14 @@
 
 #include "../../common/common.hpp"
 #include <dune/grid/common/geometry.hh>
+#include <dune/grid/common/entityseed.hh>
 #include <boost/none.hpp>
+
 
 namespace BemppGrid {
 
     template <int mydim, int cdim, class> class P1Geometry;
+    template <int> class P1EntitySeedImp;
 
     struct P1GridFamily {};
 
@@ -25,7 +28,7 @@ namespace BemppGrid {
             struct Codim
             {
              typedef P1Geometry<2-cd, 3, P1Grid> Geometry;
-             typedef boost::none_t EntitySeed;
+             typedef Dune::EntitySeed<P1Grid, P1EntitySeedImp<cd>>  EntitySeed;
              typedef boost::none_t LocalGeometry;
              typedef boost::none_t EntityPointer;
             };
@@ -41,6 +44,7 @@ namespace BemppGrid {
 
 }
 
+#include "p1_impl/p1_entity_seed.hpp"
 #include "p1_impl/p1_geometry.hpp"
 #include "p1_impl/p1_entity.hpp"
 #include "p1_impl/p1_entity_iterator.hpp"

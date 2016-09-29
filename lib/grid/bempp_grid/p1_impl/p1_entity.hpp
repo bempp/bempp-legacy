@@ -15,23 +15,24 @@ namespace BemppGrid {
     class P1Grid;
     class P1DataContainer;
 
-    template <int cd, int dim, class>
-    class P1Entity {};
+    template <int cd, int dim, class GridImp>
+    class P1EntityImp {};
 
     // Elements
     template<>
-    class P1Entity<0, 2, P1Grid> {
+    class P1EntityImp<0, 2, P1Grid> : 
+    public Dune::EntityDefaultImplementation<0, 2, P1Grid, P1EntityImp>  {
 
         public:
 
-            P1Entity(const shared_ptr<P1DataContainer>& data, 
+            P1EntityImp(const shared_ptr<P1DataContainer>& data, 
                     int level, int index);
 
             int level() const;
             Dune::Geometry<2, 3, P1Grid, P1GridGeometry> geometry() const;
             Dune::GeometryType type() const;
             Dune::PartitionType partitionType() const;
-            bool equals(const P1Entity<0, 2, P1Grid>& other) const;
+            bool equals(const P1EntityImp<0, 2, P1Grid>& other) const;
 
         private:
 
@@ -43,18 +44,19 @@ namespace BemppGrid {
 
     // Edges
     template<>
-    class P1Entity<1, 2, P1Grid> {
+    class P1EntityImp<1, 2, P1Grid> : 
+    public Dune::EntityDefaultImplementation<1, 2, P1Grid, P1EntityImp> {
 
         public:
 
-            P1Entity(const shared_ptr<P1DataContainer>& data,
+            P1EntityImp(const shared_ptr<P1DataContainer>& data,
                     int level, int index);
 
             int level() const;
             Dune::Geometry<1, 3, P1Grid, P1GridGeometry> geometry() const;
             Dune::GeometryType type() const;
             Dune::PartitionType partitionType() const;
-            bool equals(const P1Entity<1, 2, P1Grid>& other) const;
+            bool equals(const P1EntityImp<1, 2, P1Grid>& other) const;
 
         private:
 
@@ -66,18 +68,19 @@ namespace BemppGrid {
 
     // Vertices
     template<>
-    class P1Entity<2, 2, P1Grid> {
+    class P1EntityImp<2, 2, P1Grid> :
+    public Dune::EntityDefaultImplementation<2, 2, P1Grid, P1EntityImp> {
 
         public:
 
-            P1Entity(const shared_ptr<P1DataContainer>& data,
+            P1EntityImp(const shared_ptr<P1DataContainer>& data,
                     int level, int index);
 
             int level() const;
             Dune::Geometry<0, 3, P1Grid, P1GridGeometry> geometry() const;
             Dune::GeometryType type() const;
             Dune::PartitionType partitionType() const;
-            bool equals(const P1Entity<2, 2, P1Grid>& other) const;
+            bool equals(const P1EntityImp<2, 2, P1Grid>& other) const;
 
         private:
 
