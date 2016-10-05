@@ -5,7 +5,7 @@
 namespace BemppGrid {
 
     P1DataContainer::P1DataContainer() :
-        m_levels(0) {};
+        m_levels(0), m_idCounter(0) {};
 
     void P1DataContainer::addLevel(const shared_ptr<P1DataContainer::NodesContainer>& nodes,
                                      const shared_ptr<P1DataContainer::ElementsContainer>& elements){
@@ -75,10 +75,26 @@ namespace BemppGrid {
         for (std::size_t i = 0; i < edges.size(); ++i)
             for (int j = 0; j < 2; ++j)
                 node2Edges[edges[i][j]].push_back(i);
-        
+
+        // Now generate the Ids
+
+        m_nodeIds.push_back(std::vector<std::size_t>(m_nodes[m_levels]->size()));
+        m_elementIds.push_back(std::vector<std::size_t>(m_elements[m_levels]->size()));
+        m_edgeIds.push_back(std::vector<std::size_t>(m_edges[m_levels].size()));
+
+        for (std::size_t i = 0; i < m_nodes[m_levels]->size(); ++i)
+            m_nodeIds[m_levels][i] = m_idCounter++;
+
+        for (std::size_t i = 0; i < m_elements[m_levels]->size(); ++i)
+            m_elementIds[m_levels][i] = m_idCounter++;
+
+        for (std::size_t i = 0; i < m_edges[m_levels].size(); ++i)
+            m_edgeIds[m_levels][i] = m_idCounter++;
+
         m_levels++;
     }
-                    
+
+
     const P1DataContainer::NodesContainer& P1DataContainer::nodes(int level) const {
         assert(level < m_levels);
         return *(m_nodes[level]);
@@ -112,6 +128,14 @@ namespace BemppGrid {
 
         assert(level < m_levels);
         return m_edges[level].size();
+
+    }
+
+
+    const std::array<std::size_t, 3>& P1DataContainer::element2Edges(
+            int level, std::size_t elementIndex) const {
+        assert(level < m_levels);
+        return m_element2Edges[level][elementIndex];
 
     }
 

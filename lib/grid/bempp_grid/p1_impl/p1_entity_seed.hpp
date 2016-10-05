@@ -5,7 +5,7 @@ namespace BemppGrid {
 
     class P1Grid;
 
-    template<int, int, class> class EntityImp;
+    template<int, int, class> class P1EntityImp;
 
     template <int codim>
     class P1EntitySeedImp {
@@ -14,18 +14,20 @@ namespace BemppGrid {
 
             enum {codimension = codim};
 
-            P1EntitySeedImp(EntityImp<codim, 2, P1Grid> const * target ) : 
-                m_target(target) {}
+            P1EntitySeedImp(int level, std::size_t index) : 
+                m_level(level), m_index(index) {}
 
             bool isValid() const {
 
-                return m_target != nullptr;
+                return true;
 
             }
 
         private:
 
-            EntityImp<codim, 2, P1Grid> const * m_target;
+            int m_level;
+            std::size_t m_index;
+
 
     };
 

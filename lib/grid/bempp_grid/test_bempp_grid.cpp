@@ -3,6 +3,7 @@
 #include "../../common/boost_make_shared_fwd.hpp"
 #include "p1_grid.hpp"
 #include <dune/geometry/type.hh>
+#include <dune/grid/common/entity.hh>
 #include <iostream>
 
 namespace Bempp {
@@ -45,7 +46,12 @@ namespace Bempp {
 
         auto data = boost::make_shared<P1DataContainer>();
         data->addLevel(vertexContainer, elementContainer);
-        P1EntityImp<0, 2, P1Grid> entity(data, 0, 0); 
+        Dune::Entity<0, 2, P1Grid, P1EntityImp> entity(P1EntityImp<0, 2, P1Grid>(data, 0, 0));
+        for (int i = 0; i < 3; ++i){
+            auto node = entity.subEntity<2>(i)->geometry().center(); 
+            for (int j = 0; j < 3; ++j) std::cout << node[j] << " ";
+            std::cout << std::endl;
+        }
         P1GridGeometry<2, 3, P1Grid > geom(geometryType, vertices);
         std::cout << "Number of edges: " << data->numberOfEdges(0) << std::endl;
 

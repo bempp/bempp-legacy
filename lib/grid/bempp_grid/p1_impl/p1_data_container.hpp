@@ -31,18 +31,24 @@ namespace BemppGrid {
             int numberOfEdges(int level) const;
             int levels() const;
 
+            const std::array<std::size_t, 3>& element2Edges(int level, std::size_t elementIndex) const;
             const std::vector<size_t>& edge2Elements(int level, std::size_t edgeIndex) const;
             const std::vector<size_t>& node2Elements(int level, std::size_t nodeIndex) const;
             const std::vector<size_t>& node2Edges(int level, std::size_t nodeIndex) const; 
 
         private:
 
-            void populateData(int level);
-
             int m_levels;
             std::vector<shared_ptr<NodesContainer>> m_nodes;
             std::vector<shared_ptr<ElementsContainer>> m_elements;
             std::vector<EdgesContainer> m_edges;
+
+            std::vector<std::vector<std::size_t>> m_nodeIds;
+            std::vector<std::vector<std::size_t>> m_elementIds;
+            std::vector<std::vector<std::size_t>> m_edgeIds;
+
+            std::size_t m_idCounter;
+
             std::vector<std::vector<std::array<std::size_t, 3>>> m_element2Edges;
             std::vector<std::vector<std::vector<std::size_t>>> m_edge2Elements;
             std::vector<std::vector<std::vector<std::size_t>>> m_node2Elements;

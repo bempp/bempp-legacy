@@ -4,12 +4,14 @@
 #include "../../common/common.hpp"
 #include <dune/grid/common/geometry.hh>
 #include <dune/grid/common/entityseed.hh>
+#include <dune/grid/common/entitypointer.hh>
 #include <boost/none.hpp>
 
 
 namespace BemppGrid {
 
-    template <int mydim, int cdim, class> class P1Geometry;
+    template <int mydim, int cdim, class> class P1GridGeometry;
+    template <int> class P1EntityPointerImp;
     template <int> class P1EntitySeedImp;
 
     struct P1GridFamily {};
@@ -27,10 +29,10 @@ namespace BemppGrid {
             template <int cd>
             struct Codim
             {
-             typedef P1Geometry<2-cd, 3, P1Grid> Geometry;
+             typedef Dune::Geometry<2-cd, 3, P1Grid, P1GridGeometry> Geometry;
              typedef Dune::EntitySeed<P1Grid, P1EntitySeedImp<cd>>  EntitySeed;
              typedef boost::none_t LocalGeometry;
-             typedef boost::none_t EntityPointer;
+             typedef Dune::EntityPointer<P1Grid, P1EntityPointerImp<cd>> EntityPointer;
             };
 
             typedef boost::none_t LeafIntersectionIterator;
@@ -47,6 +49,7 @@ namespace BemppGrid {
 #include "p1_impl/p1_entity_seed.hpp"
 #include "p1_impl/p1_geometry.hpp"
 #include "p1_impl/p1_entity.hpp"
+#include "p1_impl/p1_entity_pointer.hpp"
 #include "p1_impl/p1_entity_iterator.hpp"
 #include "p1_impl/p1_data_container.hpp"
 
