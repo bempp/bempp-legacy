@@ -24,6 +24,7 @@
 #include "../common/common.hpp"
 
 #include "opencl_options.hpp"
+#include "cuda_options.hpp"
 
 namespace Fiber {
 
@@ -35,14 +36,23 @@ public:
   /** \brief Constructor. */
   ParallelizationOptions();
 
-  /** \brief Enable GPU-based calculations (currently broken). */
+  /** \brief Enable OpenCL-based calculations (currently broken). */
   void enableOpenCl(const OpenClOptions &openClOptions);
-  /** \brief Disable GPU-based calculations. */
+  /** \brief Disable OpenCL-based calculations. */
   void disableOpenCl();
-  /** \brief Return whether GPU-based calculations are enabled. */
+  /** \brief Return whether OpenCL-based calculations are enabled. */
   bool isOpenClEnabled() const;
   /** \brief Return current settings controlling operation of the GPU. */
   const OpenClOptions &openClOptions() const;
+
+//  /** \brief Enable CUDA-based calculations (in process). */
+//  void enableCUDA(const CUDAOptions &CUDAOptions);
+  /** \brief Disable CUDA-based calculations. */
+  void disableCUDA();
+  /** \brief Return whether CUDA-based calculations are enabled. */
+  bool isCUDAEnabled() const;
+//  /** \brief Return current settings controlling operation of the GPU. */
+//  const CUDAOptions &CUDAOptions() const;
 
   /** \brief Set the maximum number of threads used during the assembly.
    *
@@ -60,7 +70,9 @@ public:
 
 private:
   bool m_openClEnabled;
+  bool m_CUDAEnabled;
   OpenClOptions m_openClOptions;
+  CUDAOptions m_CUDAOptions;
   int m_maxThreadCount;
 };
 

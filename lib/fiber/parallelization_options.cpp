@@ -25,7 +25,7 @@
 namespace Fiber {
 
 ParallelizationOptions::ParallelizationOptions()
-    : m_openClEnabled(false), m_maxThreadCount(AUTO) {
+    : m_openClEnabled(false), m_CUDAEnabled(false), m_maxThreadCount(AUTO) {
   m_openClOptions.useOpenCl = false;
 }
 
@@ -45,6 +45,21 @@ bool ParallelizationOptions::isOpenClEnabled() const { return m_openClEnabled; }
 const OpenClOptions &ParallelizationOptions::openClOptions() const {
   return m_openClOptions;
 }
+
+//void ParallelizationOptions::enableCUDA(const CUDAOptions &CUDAOptions) {
+//  m_CUDAEnabled = true;
+//  m_CUDAOptions = CUDAOptions;
+//}
+//
+//void ParallelizationOptions::disableCUDA() {
+//  m_CUDAEnabled = false;
+//}
+//
+//bool ParallelizationOptions::isCUDAEnabled() const { return m_CUDAEnabled; }
+//
+//const CUDAOptions &ParallelizationOptions::CUDAOptions() const {
+//  return m_CUDAOptions;
+//}
 
 void ParallelizationOptions::setMaxThreadCount(int maxThreadCount) {
   if (maxThreadCount <= 0 && maxThreadCount != AUTO)
