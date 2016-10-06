@@ -18,45 +18,27 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_cuda_grid_hpp
-#define bempp_cuda_grid_hpp
-
-/** \file . */
-
-#include "../common/common.hpp"
-
-#include <thrust/device_vector.h>
+#include "cuda_grid.hpp"
 
 namespace Bempp {
 
-class CudaGrid {
-public:
+  CudaGrid::CudaGrid() {
 
-  /** \brief Constructor */
-  CudaGrid();
+  }
 
-  /** \brief Destructor */
-  virtual ~CudaGrid();
+  CudaGrid::~CudaGrid() {
 
-  /**
-   * \brief Push the mesh geometry to device memory
-   * \param vertices mesh vertices
-   * \param elementCorners element corner indices
-   */
+  }
+
   template <typename CoordinateType, typename IndexType>
-  void pushGeometry(const Matrix<CoordinateType> &vertices,
-                    const Matrix<IndexType> &elementCorners);
+  void CudaGrid::pushGeometry(const Matrix<CoordinateType> &vertices,
+                              const Matrix<IndexType> &elementCorners) {
 
-private:
-  /** \cond PRIVATE */
-  // TODO: double, int -> CoordinateType, IndexType
-  thrust::device_vector<double> d_vertices;
-  thrust::device_vector<int> d_elementCorners;
-  thrust::device_vector<double> d_normals;
-  thrust::device_vector<double> d_integrationElements;
-  /** \endcond */
-};
+//    d_vertices.resize(vertices.rows() * vertices.cols());
+//    d_vertices = vertices.data();
+
+//    d_elementCorners.resize(elementCorners.rows() * elementCorners.cols());
+//    d_elementCorners = elementCorners.data();
+  }
 
 } // namespace Bempp
-
-#endif

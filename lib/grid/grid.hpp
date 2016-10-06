@@ -44,6 +44,7 @@ template <typename BasisFunctionType> class Space;
 class GeometryFactory;
 class GridView;
 class IdSet;
+class CudaGrid;
 /** \endcond */
 
 /** \ingroup grid
@@ -169,6 +170,8 @@ public:
 //  /** \brief get father of barycentric refinement */
 //  virtual shared_ptr<Grid> getBarycentricFather() = 0;
 
+  /** \brief Push the mesh geometry to device memory */
+  shared_ptr<CudaGrid> pushToDevice() const;
 
 private:
   /** \cond PRIVATE */
@@ -176,6 +179,7 @@ private:
 
   mutable boost::signals2::signal<void()> gridUpdateSignal;
 
+  mutable shared_ptr<CudaGrid> cudaGridPtr;
   /** \endcond */
 };
 

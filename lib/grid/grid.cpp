@@ -25,6 +25,8 @@
 #include "grid_view.hpp"
 #include "ray_triangle_intersection.hpp"
 #include "../space/space.hpp"
+#include "../cuda/cuda_grid.hpp"
+#include "../fiber/raw_grid_geometry.hpp"
 
 #include "../common/not_implemented_error.hpp"
 
@@ -193,6 +195,23 @@ unsigned int Grid::elementInsertionIndex(const Entity<0> &element) const {
 unsigned int Grid::vertexInsertionIndex(const Entity<2> &vertex) const {
   throw std::runtime_error("Grid::vertexInsertionIndex(): "
                            "method not implemented.");
+}
+
+shared_ptr<CudaGrid> Grid::pushToDevice() const {
+  if (cudaGridPtr == NULL) {
+    cudaGridPtr = boost::make_shared<CudaGrid>();
+
+    std::unique_ptr<GridView> view = leafView();
+    // TODO: double -> CoordinateType
+    Fiber::RawGridGeometry<double> rawGeometry(dim(),dimWorld());
+    view->getRawElementData(
+        rawGeometry.vertices(), rawGeometry.elementCornerIndices(),
+        rawGeometry.auxData(), rawGeometry.domainIndices());
+
+    cudaGridPtr->pushGeometry(
+        rawGeometry.vertices(), rawGeometry.elementCornerIndices());
+  }
+  return cudaGridPtr;
 }
 
 } // namespace Bempp
