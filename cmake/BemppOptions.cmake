@@ -2,7 +2,7 @@
 option(WITH_TESTS "Compile unit tests (can be run with 'make test')" ON)
 option(WITH_INTEGRATION_TESTS "Compile integration tests" OFF)
 option(WITH_OPENCL "Add OpenCL support for Fiber module" OFF)
-option(WITH_CUDA "Add CUDA support for Fiber module" OFF)
+option(WITH_CUDA "Add CUDA support" ON)
 option(WITH_MPI "Whether to compile with MPI" OFF)
 option(WITH_FENICS "Whether to compile with FEniCS support" OFF)
 option(WITH_ALUGRID "If enabled use Alugrid instead of Foamgrid as Grid manager" OFF)

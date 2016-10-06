@@ -34,6 +34,11 @@ else()
   call_python(PYTHON_HOME "import sys; print('%s:%s' % (sys.base_prefix, sys.base_exec_prefix))")
 endif()
 
+# CUDA
+if (WITH_CUDA)
+    find_package(CUDA REQUIRED)
+endif()
+
 find_package(Sphinx)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")

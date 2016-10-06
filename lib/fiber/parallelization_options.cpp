@@ -25,7 +25,7 @@
 namespace Fiber {
 
 ParallelizationOptions::ParallelizationOptions()
-    : m_openClEnabled(false), m_CUDAEnabled(false), m_maxThreadCount(AUTO) {
+    : m_openClEnabled(false), m_maxThreadCount(AUTO) {
   m_openClOptions.useOpenCl = false;
 }
 

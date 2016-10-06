@@ -21,6 +21,9 @@
 #ifndef bempp_common_hpp
 #define bempp_common_hpp
 
+// Cuda definition
+#include "bempp/common/config_cuda.hpp"
+
 // dune localfunction patch
 #include <complex>
 namespace std {
