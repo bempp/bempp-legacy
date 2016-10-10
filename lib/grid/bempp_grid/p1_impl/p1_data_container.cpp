@@ -156,4 +156,37 @@ namespace BemppGrid {
 
     }
 
+
+    const P1DataContainer::NodesContainer P1DataContainer::get_entity_nodes(int codim, int level, int index) const {
+
+        assert(level < m_levels);
+        P1DataContainer::NodesContainer nodes;
+
+        if (codim == 0) {
+            // Element
+            const auto& nodeIds = this->elements(level)[index];
+            for (auto index: nodeIds)
+                nodes.push_back(this->nodes(level)[index]);
+            return nodes;
+        }
+
+        if (codim == 1) {
+            // Edge
+            const auto& nodeIds = this->edges(level)[index];
+            for (auto index: nodeIds)
+                nodes.push_back(this->nodes(level)[index]);
+            return nodes;
+        }
+
+        if (codim == 2) {
+            // Vertex
+            nodes.push_back(this->nodes(level)[index]);
+            return nodes;
+        }
+
+        throw std::runtime_error("P1DataContainer::get_entity_nodes(): codim not valid.");
+
+
+    }
+
 }

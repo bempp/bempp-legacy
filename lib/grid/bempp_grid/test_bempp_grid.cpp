@@ -48,7 +48,7 @@ namespace Bempp {
         data->addLevel(vertexContainer, elementContainer);
         Dune::Entity<0, 2, P1Grid, P1EntityImp> entity(P1EntityImp<0, 2, P1Grid>(data, 0, 0));
         for (int i = 0; i < 3; ++i){
-            auto node = entity.subEntity<2>(i)->geometry().center(); 
+            auto node = entity.subEntity<1>(i)->geometry().center(); 
             for (int j = 0; j < 3; ++j) std::cout << node[j] << " ";
             std::cout << std::endl;
         }

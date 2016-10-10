@@ -36,6 +36,8 @@ namespace BemppGrid {
             const std::vector<size_t>& node2Elements(int level, std::size_t nodeIndex) const;
             const std::vector<size_t>& node2Edges(int level, std::size_t nodeIndex) const; 
 
+            const NodesContainer get_entity_nodes(int codim, int level, int index) const;
+
         private:
 
             int m_levels;

@@ -55,7 +55,7 @@ namespace BemppGrid {
             shared_ptr<P1DataContainer> m_data;
             int m_level;
             std::size_t m_index;
-            P1GridGeometry<2, 3, P1Grid> m_geometry;
+            mutable shared_ptr<P1GridGeometry<2, 3, P1Grid>> m_geometry;
 
     };
 
@@ -82,7 +82,7 @@ namespace BemppGrid {
             shared_ptr<P1DataContainer> m_data;
             int m_level;
             std::size_t m_index;
-            P1GridGeometry<1, 3, P1Grid> m_geometry;
+            mutable shared_ptr<P1GridGeometry<1, 3, P1Grid>> m_geometry;
 
     };
 
@@ -109,7 +109,7 @@ namespace BemppGrid {
             shared_ptr<P1DataContainer> m_data;
             int m_level;
             std::size_t m_index;
-            P1GridGeometry<0, 3, P1Grid> m_geometry;
+            mutable shared_ptr<P1GridGeometry<0, 3, P1Grid>> m_geometry;
     };
 
 }

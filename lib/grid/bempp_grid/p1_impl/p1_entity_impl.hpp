@@ -14,14 +14,19 @@ namespace BemppGrid {
     {}
 
     Dune::Geometry<2, 3, P1Grid, P1GridGeometry> P1EntityImp<0, 2, P1Grid>::geometry() const {
-        const auto& nodeIndices = m_data->elements(m_level)[m_index]; 
-        Dune::GeometryType geometryType;
-        geometryType.makeTriangle();
-        std::vector<Dune::FieldVector<double, 3>> vertices;
-        for (int i = 0; i < 3; ++i) vertices.push_back(m_data->nodes(m_level)[nodeIndices[i]]);
-        return Dune::Geometry<2, 3, P1Grid, P1GridGeometry>(
-                P1GridGeometry<2, 3, P1Grid>(geometryType, vertices));
 
+        if (m_geometry == nullptr) {
+            const auto& nodeIndices = m_data->elements(m_level)[m_index]; 
+            Dune::GeometryType geometryType;
+            geometryType.makeTriangle();
+            std::vector<Dune::FieldVector<double, 3>> vertices;
+            for (int i = 0; i < 3; ++i) vertices.push_back(m_data->nodes(m_level)[nodeIndices[i]]);
+            m_geometry = shared_ptr<P1GridGeometry<2, 3, P1Grid>>(
+                    new P1GridGeometry<2, 3, P1Grid>(geometryType, vertices));
+        }
+
+        return Dune::Geometry<2, 3, P1Grid, P1GridGeometry>(*m_geometry);
+                
     }
 
     Dune::PartitionType P1EntityImp<0, 2, P1Grid>::partitionType() const {
@@ -85,13 +90,18 @@ namespace BemppGrid {
 
 
     Dune::Geometry<1, 3, P1Grid, P1GridGeometry> P1EntityImp<1, 2, P1Grid>::geometry() const {
-        const auto& nodeIndices = m_data->edges(m_level)[m_index]; 
-        Dune::GeometryType geometryType;
-        geometryType.makeLine();
-        std::vector<Dune::FieldVector<double, 3>> vertices;
-        for (int i = 0; i < 2; ++i) vertices.push_back(m_data->nodes(m_level)[nodeIndices[i]]);
-        return Dune::Geometry<1, 3, P1Grid, P1GridGeometry>(
-                P1GridGeometry<1, 3, P1Grid>(geometryType, vertices));
+
+        if (m_geometry == nullptr) {
+            const auto& nodeIndices = m_data->edges(m_level)[m_index]; 
+            Dune::GeometryType geometryType;
+            geometryType.makeLine();
+            std::vector<Dune::FieldVector<double, 3>> vertices;
+            for (int i = 0; i < 2; ++i) vertices.push_back(m_data->nodes(m_level)[nodeIndices[i]]);
+            m_geometry = shared_ptr<P1GridGeometry<1, 3, P1Grid>>(
+                    new P1GridGeometry<1, 3, P1Grid>(geometryType, vertices));
+
+        }
+        return Dune::Geometry<1, 3, P1Grid, P1GridGeometry>(*m_geometry);
 
     }
 
@@ -136,14 +146,18 @@ namespace BemppGrid {
     }
 
     Dune::Geometry<0, 3, P1Grid, P1GridGeometry> P1EntityImp<2, 2, P1Grid>::geometry() const {
-        const auto& node = m_data->nodes(m_level)[m_index]; 
-        Dune::GeometryType geometryType;
-        geometryType.makeVertex();
-        std::vector<Dune::FieldVector<double, 3>> vertices;
-        vertices.push_back(node);
-        std::cout << "Output " << node << " " << vertices[0] << std::endl;
-        return Dune::Geometry<0, 3, P1Grid, P1GridGeometry>(
-                P1GridGeometry<0, 3, P1Grid>(geometryType, vertices));
+
+        if (m_geometry == nullptr) {
+            const auto& node = m_data->nodes(m_level)[m_index]; 
+            Dune::GeometryType geometryType;
+            geometryType.makeVertex();
+            std::vector<Dune::FieldVector<double, 3>> vertices;
+            vertices.push_back(node);
+            std::cout << "Output " << node << " " << vertices[0] << std::endl;
+            m_geometry = shared_ptr<P1GridGeometry<0, 3, P1Grid>>(
+                    new P1GridGeometry<0, 3, P1Grid>(geometryType, vertices));
+        }
+        return Dune::Geometry<0, 3, P1Grid, P1GridGeometry>(*m_geometry);
 
     }
 
