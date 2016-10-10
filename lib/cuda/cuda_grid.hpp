@@ -24,10 +24,13 @@
 /** \file . */
 
 #include "../common/common.hpp"
+#include "../common/eigen_support.hpp"
 
 #include <thrust/device_vector.h>
 
 namespace Bempp {
+
+
 
 class CudaGrid {
 public:
@@ -43,9 +46,8 @@ public:
    * \param vertices mesh vertices
    * \param elementCorners element corner indices
    */
-  template <typename CoordinateType, typename IndexType>
-  void pushGeometry(const Matrix<CoordinateType> &vertices,
-                    const Matrix<IndexType> &elementCorners);
+  void pushGeometry(const Matrix<double> &vertices,
+                    const Matrix<int> &elementCorners);
 
 private:
   /** \cond PRIVATE */

@@ -21,3 +21,5 @@ add_subdirectory(space)
 add_subdirectory(assembly)
 add_subdirectory(operators)
 add_subdirectory(hmat)
+add_subdirectory(cuda)
+

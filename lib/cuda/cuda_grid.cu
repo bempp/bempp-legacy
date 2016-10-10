@@ -30,9 +30,8 @@ namespace Bempp {
 
   }
 
-  template <typename CoordinateType, typename IndexType>
-  void CudaGrid::pushGeometry(const Matrix<CoordinateType> &vertices,
-                              const Matrix<IndexType> &elementCorners) {
+  void CudaGrid::pushGeometry(const Matrix<double> &vertices,
+                              const Matrix<int> &elementCorners) {
 
 //    d_vertices.resize(vertices.rows() * vertices.cols());
 //    d_vertices = vertices.data();
