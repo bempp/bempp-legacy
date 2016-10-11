@@ -171,7 +171,7 @@ public:
 //  virtual shared_ptr<Grid> getBarycentricFather() = 0;
 
   /** \brief Push the mesh geometry to device memory */
-  shared_ptr<CudaGrid> pushToDevice() const;
+  shared_ptr<CudaGrid> pushToDevice(unsigned int deviceId) const;
 
 private:
   /** \cond PRIVATE */

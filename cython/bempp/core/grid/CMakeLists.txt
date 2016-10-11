@@ -28,5 +28,5 @@ add_dependencies(cython-headers bempp.core.grid-copied)
 add_python_module(bempp.core.grid __init__.py ${sources} CPP LIBRARIES libbempp)
 add_dependencies(bempp.core.grid cython-headers)
 add_dependencies(bempp.core.grid bempp.core.utils)
+add_dependencies(bempp.core.grid bempp.core.cuda)
 add_dependencies(cython bempp.core.grid)
-

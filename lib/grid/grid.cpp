@@ -197,7 +197,7 @@ unsigned int Grid::vertexInsertionIndex(const Entity<2> &vertex) const {
                            "method not implemented.");
 }
 
-shared_ptr<CudaGrid> Grid::pushToDevice() const {
+shared_ptr<CudaGrid> Grid::pushToDevice(unsigned int deviceId) const {
   if (cudaGridPtr == NULL) {
     cudaGridPtr = boost::make_shared<CudaGrid>();
 

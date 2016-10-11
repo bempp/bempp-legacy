@@ -12,6 +12,7 @@ from bempp.core.grid.entity cimport Entity0
 from bempp.core.grid.grid_view cimport c_GridView, GridView
 from bempp.core.grid.grid_view cimport _grid_view_from_unique_ptr
 from bempp.core.grid.id_set cimport IdSet
+from bempp.core.cuda cimport CudaGrid
 import numpy as _np
 cimport numpy as _np
 cimport cython
@@ -175,6 +176,13 @@ cdef class Grid:
         """Return the map between elements in the original grid and its barycentric refinement."""
 
         return eigen_matrix_to_np_int(deref(self.impl_).barycentricSonMap()) 
+
+    def push_to_device(self, device_id):
+        """Push a grid to a Cuda device with a given id."""
+
+        cdef CudaGrid cuda_grid = CudaGrid()
+        cuda_grid.impl_.assign(deref(self.impl_).pushToDevice(device_id))
+        return cuda_grid
 
     property dim:
         """" Dimension of the grid. """
