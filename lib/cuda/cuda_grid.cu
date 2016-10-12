@@ -66,7 +66,7 @@ namespace Bempp {
     }
   };
 
-  struct funFunctor {
+  struct geomShapeFunFunctor {
 
     __host__ __device__
     thrust::tuple<double, double, double> operator()(
@@ -85,7 +85,7 @@ namespace Bempp {
 
   struct local2globalFunctor {
 
-    unsigned int nLocalPoints;
+    unsigned int nEls;
 
     thrust::device_ptr<double> vtx0x;
     thrust::device_ptr<double> vtx0y;
@@ -104,7 +104,7 @@ namespace Bempp {
     thrust::device_ptr<double> fun2;
 
     local2globalFunctor(
-      const unsigned int _nLocalPoints,
+      const unsigned int _nEls,
       thrust::device_ptr<double> _vtx0x,
       thrust::device_ptr<double> _vtx0y,
       thrust::device_ptr<double> _vtx0z,
@@ -117,7 +117,7 @@ namespace Bempp {
       thrust::device_ptr<double> _fun0,
       thrust::device_ptr<double> _fun1,
       thrust::device_ptr<double> _fun2)
-      : nLocalPoints(_nLocalPoints),
+      : nEls(_nEls),
         vtx0x(_vtx0x), vtx0y(_vtx0y), vtx0z(_vtx0z),
         vtx1x(_vtx1x), vtx1y(_vtx1y), vtx1z(_vtx1z),
         vtx2x(_vtx2x), vtx2y(_vtx2y), vtx2z(_vtx2z),
@@ -127,11 +127,11 @@ namespace Bempp {
     thrust::tuple<double, double, double> operator()(
         const unsigned int i) const {
 
-      // Alternative memory mapping?
-      unsigned int localPointIdx = i % nLocalPoints;
-      unsigned int elementIdx = i / nLocalPoints;
-//      unsigned int localPointIdx = i / nLocalPoints;
-//      unsigned int elementIdx = i % nLocalPoints;
+      // Which memory mapping to go for?
+//      unsigned int localPointIdx = i % nLocalPoints;
+//      unsigned int elementIdx = i / nLocalPoints;
+      unsigned int localPointIdx = i / nEls;
+      unsigned int elementIdx = i % nEls;
 
       double elVtx0x = vtx0x[elementIdx];
       double elVtx0y = vtx0y[elementIdx];
@@ -173,6 +173,19 @@ namespace Bempp {
 
     d_vertices.clear();
     d_elementCorners.clear();
+
+    d_vtx0x.clear();
+    d_vtx0y.clear();
+    d_vtx0z.clear();
+
+    d_vtx1x.clear();
+    d_vtx1y.clear();
+    d_vtx1z.clear();
+
+    d_vtx2x.clear();
+    d_vtx2y.clear();
+    d_vtx2z.clear();
+
     d_normals.clear();
     d_integrationElements.clear();
   }
@@ -189,9 +202,6 @@ namespace Bempp {
     nVtx = vertices.rows();
     nIdx = elementCorners.cols();
     nEls = elementCorners.rows();
-
-    std::cout << "nVtx = " << nVtx << std::endl;
-    std::cout << "nEls = " << nEls << std::endl;
 
     if (dim != 3 || nIdx != 3)
       throw std::runtime_error("CudaGrid::pushGeometry(): "
@@ -223,23 +233,83 @@ namespace Bempp {
 //    }
 //    std::cout << std::endl;
 
-    // TEST Calculate element normals vectors and integration elements
+    // TEST Setup geometry
+    setupGeometry();
+  }
+
+  void CudaGrid::setupGeometry() {
+
+    // Gather element corner coordinates
+    d_vtx0x.resize(nEls);
+    d_vtx0y.resize(nEls);
+    d_vtx0z.resize(nEls);
+
+    d_vtx1x.resize(nEls);
+    d_vtx1y.resize(nEls);
+    d_vtx1z.resize(nEls);
+
+    d_vtx2x.resize(nEls);
+    d_vtx2y.resize(nEls);
+    d_vtx2z.resize(nEls);
+
+    // Measure time of the GPU execution (CUDA event based)
+    cudaEvent_t start, stop;
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+    cudaEventRecord(start, 0);
+
+    // Vertex 0
+    thrust::gather(d_elementCorners.begin(), d_elementCorners.begin()+nEls,
+                   d_vertices.begin(),
+                   d_vtx0x.begin());
+    thrust::gather(d_elementCorners.begin(), d_elementCorners.begin()+nEls,
+                   d_vertices.begin()+nVtx,
+                   d_vtx0y.begin());
+    thrust::gather(d_elementCorners.begin(), d_elementCorners.begin()+nEls,
+                   d_vertices.begin()+2*nVtx,
+                   d_vtx0z.begin());
+
+    // Vertex 1
+    thrust::gather(d_elementCorners.begin()+nEls, d_elementCorners.begin()+2*nEls,
+                   d_vertices.begin(),
+                   d_vtx1x.begin());
+    thrust::gather(d_elementCorners.begin()+nEls, d_elementCorners.begin()+2*nEls,
+                   d_vertices.begin()+nVtx,
+                   d_vtx1y.begin());
+    thrust::gather(d_elementCorners.begin()+nEls, d_elementCorners.begin()+2*nEls,
+                   d_vertices.begin()+2*nVtx,
+                   d_vtx1z.begin());
+
+    // Vertex 2
+    thrust::gather(d_elementCorners.begin()+2*nEls, d_elementCorners.end(),
+                   d_vertices.begin(),
+                   d_vtx2x.begin());
+    thrust::gather(d_elementCorners.begin()+2*nEls, d_elementCorners.end(),
+                   d_vertices.begin()+nVtx,
+                   d_vtx2y.begin());
+    thrust::gather(d_elementCorners.begin()+2*nEls, d_elementCorners.end(),
+                   d_vertices.begin()+2*nVtx,
+                   d_vtx2z.begin());
+
+    cudaEventRecord(stop, 0);
+    cudaEventSynchronize(stop);
+    float elapsedTimeGather;
+    cudaEventElapsedTime(&elapsedTimeGather , start, stop);
+    std::cout << "Time for gathering element corner coordinates is "
+      << elapsedTimeGather << " ms" << std::endl;
+
+//    std::cout << "d_vtx0x = " << std::endl;
+//    for (int i = 0; i < nEls; ++i) {
+//      std::cout << d_vtx0x[i] << std::endl;
+//    }
+//    std::cout << std::endl;
+
     calculateNormalsAndIntegrationElements();
 
     // TEST Convert local to global coordinates for all elements
-    thrust::host_vector<double> localPoints(12);
+    thrust::host_vector<double> localPoints(2);
     localPoints[0] = 0.1;
     localPoints[1] = 0.1;
-    localPoints[2] = 0.1;
-    localPoints[3] = 0.4;
-    localPoints[4] = 0.4;
-    localPoints[5] = 0.8;
-    localPoints[6] = 0.1;
-    localPoints[7] = 0.4;
-    localPoints[8] = 0.8;
-    localPoints[9] = 0.1;
-    localPoints[10] = 0.4;
-    localPoints[11] = 0.1;
 
     thrust::device_vector<double> globalPoints;
     local2global(localPoints, globalPoints);
@@ -251,84 +321,22 @@ namespace Bempp {
     d_normals.resize(dim * nEls);
     d_integrationElements.resize(nEls);
 
-    // Gather element corner coordinates
-    // Perform only once when geometry is pushed to device?
-    thrust::device_vector<double> vtx0x(nEls);
-    thrust::device_vector<double> vtx0y(nEls);
-    thrust::device_vector<double> vtx0z(nEls);
-
-    thrust::device_vector<double> vtx1x(nEls);
-    thrust::device_vector<double> vtx1y(nEls);
-    thrust::device_vector<double> vtx1z(nEls);
-
-    thrust::device_vector<double> vtx2x(nEls);
-    thrust::device_vector<double> vtx2y(nEls);
-    thrust::device_vector<double> vtx2z(nEls);
-
     // Measure time of the GPU execution (CUDA event based)
     cudaEvent_t start, stop;
     cudaEventCreate(&start);
     cudaEventCreate(&stop);
     cudaEventRecord(start, 0);
 
-    // Vertex 0
-    thrust::gather(d_elementCorners.begin(), d_elementCorners.begin()+nEls,
-                   d_vertices.begin(),
-                   vtx0x.begin());
-    thrust::gather(d_elementCorners.begin(), d_elementCorners.begin()+nEls,
-                   d_vertices.begin()+nVtx,
-                   vtx0y.begin());
-    thrust::gather(d_elementCorners.begin(), d_elementCorners.begin()+nEls,
-                   d_vertices.begin()+2*nVtx,
-                   vtx0z.begin());
-
-    // Vertex 1
-    thrust::gather(d_elementCorners.begin()+nEls, d_elementCorners.begin()+2*nEls,
-                   d_vertices.begin(),
-                   vtx1x.begin());
-    thrust::gather(d_elementCorners.begin()+nEls, d_elementCorners.begin()+2*nEls,
-                   d_vertices.begin()+nVtx,
-                   vtx1y.begin());
-    thrust::gather(d_elementCorners.begin()+nEls, d_elementCorners.begin()+2*nEls,
-                   d_vertices.begin()+2*nVtx,
-                   vtx1z.begin());
-
-    // Vertex 2
-    thrust::gather(d_elementCorners.begin()+2*nEls, d_elementCorners.end(),
-                   d_vertices.begin(),
-                   vtx2x.begin());
-    thrust::gather(d_elementCorners.begin()+2*nEls, d_elementCorners.end(),
-                   d_vertices.begin()+nVtx,
-                   vtx2y.begin());
-    thrust::gather(d_elementCorners.begin()+2*nEls, d_elementCorners.end(),
-                   d_vertices.begin()+2*nVtx,
-                   vtx2z.begin());
-
-    cudaEventRecord(stop, 0);
-    cudaEventSynchronize(stop);
-    float elapsedTimeGather;
-    cudaEventElapsedTime(&elapsedTimeGather , start, stop);
-    std::cout << "Time for thrust::gather() in CudaGrid::calculateNormals() is "
-      << elapsedTimeGather << " ms" << std::endl;
-
-//    std::cout << "vtx0x = " << std::endl;
-//    for (int i = 0; i < nEls; ++i) {
-//      std::cout << vtx0x[i] << std::endl;
-//    }
-//    std::cout << std::endl;
-
-    cudaEventRecord(start, 0);
-
     // Calculate element normals vectors and integration elements
     thrust::transform(
       thrust::make_zip_iterator(
-        thrust::make_tuple(vtx0x.begin(), vtx0y.begin(), vtx0z.begin(),
-                           vtx1x.begin(), vtx1y.begin(), vtx1z.begin(),
-                           vtx2x.begin(), vtx2y.begin(), vtx2z.begin())),
+        thrust::make_tuple(d_vtx0x.begin(), d_vtx0y.begin(), d_vtx0z.begin(),
+                           d_vtx1x.begin(), d_vtx1y.begin(), d_vtx1z.begin(),
+                           d_vtx2x.begin(), d_vtx2y.begin(), d_vtx2z.begin())),
       thrust::make_zip_iterator(
-        thrust::make_tuple(vtx0x.end(), vtx0y.end(), vtx0z.end(),
-                           vtx1x.end(), vtx1y.end(), vtx1z.end(),
-                           vtx2x.end(), vtx2y.end(), vtx2z.end())),
+        thrust::make_tuple(d_vtx0x.end(), d_vtx0y.end(), d_vtx0z.end(),
+                           d_vtx1x.end(), d_vtx1y.end(), d_vtx1z.end(),
+                           d_vtx2x.end(), d_vtx2y.end(), d_vtx2z.end())),
       thrust::make_zip_iterator(
         thrust::make_tuple(d_normals.begin(), d_normals.begin()+nEls,
                            d_normals.begin()+2*nEls, d_integrationElements.begin())),
@@ -338,7 +346,7 @@ namespace Bempp {
     cudaEventSynchronize(stop);
     float elapsedTimeNormals;
     cudaEventElapsedTime(&elapsedTimeNormals , start, stop);
-    std::cout << "Time for calculateNormalsAndIntegrationElements() is "
+    std::cout << "Time for calculating normals and integration elements is "
       << elapsedTimeNormals << " ms" << std::endl;
 
 //    std::cout << "d_normals = " << std::endl;
@@ -360,10 +368,10 @@ namespace Bempp {
   void CudaGrid::local2global(const thrust::host_vector<double> &localPoints,
                               thrust::device_vector<double> &globalPoints) {
 
+    // localPoints = [r0 r1 ... rN | s0 s1 ... sN]
+
     const unsigned int localPointDim = 2;
     const unsigned int nLocalPoints = localPoints.size() / localPointDim;
-
-    std::cout << "nLocalPoints = " << nLocalPoints << std::endl;
 
     if (localPoints.size() % localPointDim != 0)
       throw std::runtime_error("CudaGrid::local2global(): "
@@ -371,46 +379,41 @@ namespace Bempp {
 
     // Allocate device memory
     globalPoints.resize(dim * nEls * nLocalPoints);
+    // [xPt0el0 xPt0el1 ... xPt0elM | xPt1el0 ... xPt1elM | ... | ... xPtNelM |
+    //  yPt0el0 yPt0el1 ... yPt0elM | yPt1el0 ... yPt1elM | ... | ... yPtNelM |
+    //  zPt0el0 zPt0el1 ... zPt0elM | zPt1el0 ... zPt1elM | ... | ... zPtNelM ]
 
-    // Evaluate function values on host
-    thrust::host_vector<double> h_fun0(nLocalPoints);
-    thrust::host_vector<double> h_fun1(nLocalPoints);
-    thrust::host_vector<double> h_fun2(nLocalPoints);
+    thrust::host_vector<double> h_geomShapeFun0(nLocalPoints);
+    thrust::host_vector<double> h_geomShapeFun1(nLocalPoints);
+    thrust::host_vector<double> h_geomShapeFun2(nLocalPoints);
+    // [pt0 pt1 ... ptN]
+
+    // Evaluate geometrical shape function values on the host
     thrust::transform(thrust::host,
-        thrust::make_zip_iterator(
-            thrust::make_tuple(localPoints.begin(), localPoints.begin()+nLocalPoints)),
-        thrust::make_zip_iterator(
-            thrust::make_tuple(localPoints.begin()+nLocalPoints, localPoints.end())),
-        thrust::make_zip_iterator(
-            thrust::make_tuple(h_fun0.begin(), h_fun1.begin(), h_fun2.begin())),
-        funFunctor());
+      thrust::make_zip_iterator(
+        thrust::make_tuple(localPoints.begin(),
+                           localPoints.begin()+nLocalPoints)),
+      thrust::make_zip_iterator(
+        thrust::make_tuple(localPoints.begin()+nLocalPoints,
+                           localPoints.end())),
+      thrust::make_zip_iterator(
+        thrust::make_tuple(h_geomShapeFun0.begin(),
+                           h_geomShapeFun1.begin(),
+                           h_geomShapeFun2.begin())),
+      geomShapeFunFunctor());
 
     // Copy data to device
-    thrust::device_vector<double> fun0 = h_fun0;
-    thrust::device_vector<double> fun1 = h_fun1;
-    thrust::device_vector<double> fun2 = h_fun2;
+    thrust::device_vector<double> geomShapeFun0 = h_geomShapeFun0;
+    thrust::device_vector<double> geomShapeFun1 = h_geomShapeFun1;
+    thrust::device_vector<double> geomShapeFun2 = h_geomShapeFun2;
 
-//    std::cout << "fun = " << std::endl;
+//    std::cout << "geomShapeFun = " << std::endl;
 //    for (int i = 0; i < nLocalPoints; ++i) {
-//      std::cout << fun0[i] << " "
-//                << fun1[i] << " "
-//                << fun2[i] << std::endl;
+//      std::cout << geomShapeFun0[i] << " "
+//                << geomShapeFun1[i] << " "
+//                << geomShapeFun2[i] << std::endl;
 //    }
 //    std::cout << std::endl;
-
-    // Gather element corner coordinates
-    // Perform only once when geometry is pushed to device?
-    thrust::device_vector<double> vtx0x(nEls);
-    thrust::device_vector<double> vtx0y(nEls);
-    thrust::device_vector<double> vtx0z(nEls);
-
-    thrust::device_vector<double> vtx1x(nEls);
-    thrust::device_vector<double> vtx1y(nEls);
-    thrust::device_vector<double> vtx1z(nEls);
-
-    thrust::device_vector<double> vtx2x(nEls);
-    thrust::device_vector<double> vtx2y(nEls);
-    thrust::device_vector<double> vtx2z(nEls);
 
     // Measure time of the GPU execution (CUDA event based)
     cudaEvent_t start, stop;
@@ -418,71 +421,33 @@ namespace Bempp {
     cudaEventCreate(&stop);
     cudaEventRecord(start, 0);
 
-    // Vertex 0
-    thrust::gather(d_elementCorners.begin(), d_elementCorners.begin()+nEls,
-                   d_vertices.begin(),
-                   vtx0x.begin());
-    thrust::gather(d_elementCorners.begin(), d_elementCorners.begin()+nEls,
-                   d_vertices.begin()+nVtx,
-                   vtx0y.begin());
-    thrust::gather(d_elementCorners.begin(), d_elementCorners.begin()+nEls,
-                   d_vertices.begin()+2*nVtx,
-                   vtx0z.begin());
-
-    // Vertex 1
-    thrust::gather(d_elementCorners.begin()+nEls, d_elementCorners.begin()+2*nEls,
-                   d_vertices.begin(),
-                   vtx1x.begin());
-    thrust::gather(d_elementCorners.begin()+nEls, d_elementCorners.begin()+2*nEls,
-                   d_vertices.begin()+nVtx,
-                   vtx1y.begin());
-    thrust::gather(d_elementCorners.begin()+nEls, d_elementCorners.begin()+2*nEls,
-                   d_vertices.begin()+2*nVtx,
-                   vtx1z.begin());
-
-    // Vertex 2
-    thrust::gather(d_elementCorners.begin()+2*nEls, d_elementCorners.end(),
-                   d_vertices.begin(),
-                   vtx2x.begin());
-    thrust::gather(d_elementCorners.begin()+2*nEls, d_elementCorners.end(),
-                   d_vertices.begin()+nVtx,
-                   vtx2y.begin());
-    thrust::gather(d_elementCorners.begin()+2*nEls, d_elementCorners.end(),
-                   d_vertices.begin()+2*nVtx,
-                   vtx2z.begin());
-
-    cudaEventRecord(stop, 0);
-    cudaEventSynchronize(stop);
-    float elapsedTimeGather;
-    cudaEventElapsedTime(&elapsedTimeGather , start, stop);
-    std::cout << "Time for thrust::gather() in CudaGrid::local2global() is "
-      << elapsedTimeGather << " ms" << std::endl;
-
-    cudaEventRecord(start, 0);
-
     thrust::tabulate(
-        thrust::make_zip_iterator(
-            thrust::make_tuple(globalPoints.begin(), globalPoints.begin()+nEls*nLocalPoints, globalPoints.begin()+2*nEls*nLocalPoints)),
-        thrust::make_zip_iterator(
-            thrust::make_tuple(globalPoints.begin()+nEls*nLocalPoints, globalPoints.begin()+2*nEls*nLocalPoints, globalPoints.end())),
-        local2globalFunctor(nLocalPoints,
-            vtx0x.data(), vtx0y.data(), vtx0z.data(),
-            vtx1x.data(), vtx1y.data(), vtx1z.data(),
-            vtx2x.data(), vtx2y.data(), vtx2z.data(),
-            fun0.data(), fun1.data(), fun2.data()));
+      thrust::make_zip_iterator(
+        thrust::make_tuple(globalPoints.begin(),
+                           globalPoints.begin()+nEls*nLocalPoints,
+                           globalPoints.begin()+2*nEls*nLocalPoints)),
+      thrust::make_zip_iterator(
+        thrust::make_tuple(globalPoints.begin()+nEls*nLocalPoints,
+                           globalPoints.begin()+2*nEls*nLocalPoints,
+                           globalPoints.end())),
+      local2globalFunctor(nEls,
+                          d_vtx0x.data(), d_vtx0y.data(), d_vtx0z.data(),
+                          d_vtx1x.data(), d_vtx1y.data(), d_vtx1z.data(),
+                          d_vtx2x.data(), d_vtx2y.data(), d_vtx2z.data(),
+                          geomShapeFun0.data(), geomShapeFun1.data(), geomShapeFun2.data()));
 
     cudaEventRecord(stop, 0);
     cudaEventSynchronize(stop);
     float elapsedTimeMapping;
     cudaEventElapsedTime(&elapsedTimeMapping , start, stop);
-    std::cout << "Time for local2global() is "
+    std::cout << "Time for mapping local to global coordinates is "
       << elapsedTimeMapping << " ms" << std::endl;
 
 //    std::cout << "globalPoints = " << std::endl;
-//    for (int i = 0; i < nEls; ++i) {
-//      for (int j = 0; j < nLocalPoints; ++j) {
+//    for (int i = 0; i < nLocalPoints; ++i) {
+//      for (int j = 0; j < nEls; ++j) {
 //        for (int k = 0; k < dim; ++k) {
-//          std::cout << globalPoints[k * nLocalPoints * nEls + i * nLocalPoints + j] << " " << std::flush;
+//          std::cout << globalPoints[k * nLocalPoints * nEls + i * nEls + j] << " " << std::flush;
 //        }
 //        std::cout << std::endl;
 //      }

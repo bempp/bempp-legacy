@@ -47,6 +47,12 @@ public:
   void pushGeometry(const Matrix<double> &vertices,
                     const Matrix<int> &elementCorners);
   /**
+   * \brief Setup the geometry on the device, i.e. gather element corner
+   * coordinates, calculate normal vectors and integration elements
+   * */
+  void setupGeometry();
+
+  /**
    * \brief Calculate element normal vectors and determinants of Jacobian
    * (factor appearing in the integral transformation formula) on the device
    */
@@ -63,15 +69,39 @@ public:
 
 private:
   /** \cond PRIVATE */
+
+  // Mesh parameters
   unsigned int dim;
   unsigned int nIdx;
   unsigned int nVtx;
   unsigned int nEls;
 
   thrust::device_vector<double> d_vertices;
+  // [x0 x1 x2 ... xN | y0 y1 ... yN | z0 z1 ... zN]
+
   thrust::device_vector<int> d_elementCorners;
+  // [vtx0el0 vtx0el1 ... vtx0elN | vtx1el0 ... vtx1elN | vtx2el0 ... vtx2elN]
+
+  // Element corner coordinates
+  thrust::device_vector<double> d_vtx0x;
+  thrust::device_vector<double> d_vtx0y;
+  thrust::device_vector<double> d_vtx0z;
+
+  thrust::device_vector<double> d_vtx1x;
+  thrust::device_vector<double> d_vtx1y;
+  thrust::device_vector<double> d_vtx1z;
+
+  thrust::device_vector<double> d_vtx2x;
+  thrust::device_vector<double> d_vtx2y;
+  thrust::device_vector<double> d_vtx2z;
+  // [el0 el1 el2 ... elN]
+
   thrust::device_vector<double> d_normals;
+  // [x0 x1 x2 ... xN | y0 y1 ... yN | z0 z1 ... zN]
+
   thrust::device_vector<double> d_integrationElements;
+  // [el0 el1 el2 ... elN]
+
   /** \endcond */
 };
 
