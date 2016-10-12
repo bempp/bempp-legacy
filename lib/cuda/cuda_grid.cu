@@ -232,9 +232,6 @@ namespace Bempp {
 //      std::cout << std::endl;
 //    }
 //    std::cout << std::endl;
-
-    // TEST Setup geometry
-    setupGeometry();
   }
 
   void CudaGrid::setupGeometry() {
