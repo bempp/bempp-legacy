@@ -30,8 +30,6 @@
 
 namespace Bempp {
 
-
-
 class CudaGrid {
 public:
 
@@ -48,10 +46,28 @@ public:
    */
   void pushGeometry(const Matrix<double> &vertices,
                     const Matrix<int> &elementCorners);
+  /**
+   * \brief Calculate element normal vectors and determinants of Jacobian
+   * (factor appearing in the integral transformation formula) on the device
+   */
+  void calculateNormalsAndIntegrationElements();
+
+  /**
+   * \brief Convert local (logical) to global (physical) coordinates for all
+   * elements on the device
+   * \param localPoints local coordinates
+   * \param globalPoints global coordinates
+   */
+  void local2global(const thrust::host_vector<double> &localPoints,
+                    thrust::device_vector<double> &globalPoints);
 
 private:
   /** \cond PRIVATE */
-  // TODO: double, int -> CoordinateType, IndexType
+  unsigned int dim;
+  unsigned int nIdx;
+  unsigned int nVtx;
+  unsigned int nEls;
+
   thrust::device_vector<double> d_vertices;
   thrust::device_vector<int> d_elementCorners;
   thrust::device_vector<double> d_normals;

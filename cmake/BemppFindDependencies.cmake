@@ -37,6 +37,7 @@ endif()
 # CUDA
 if (WITH_CUDA)
     find_package(CUDA REQUIRED)
+    set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-gencode arch=compute_35,code=sm_35")
 endif()
 
 find_package(Sphinx)

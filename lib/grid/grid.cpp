@@ -202,14 +202,15 @@ shared_ptr<CudaGrid> Grid::pushToDevice(unsigned int deviceId) const {
     cudaGridPtr = boost::make_shared<CudaGrid>();
 
     std::unique_ptr<GridView> view = leafView();
-    // TODO: double -> CoordinateType
+
     Fiber::RawGridGeometry<double> rawGeometry(dim(),dimWorld());
     view->getRawElementData(
         rawGeometry.vertices(), rawGeometry.elementCornerIndices(),
         rawGeometry.auxData(), rawGeometry.domainIndices());
 
     cudaGridPtr->pushGeometry(
-        rawGeometry.vertices(), rawGeometry.elementCornerIndices());
+        rawGeometry.vertices().transpose().eval(),
+        rawGeometry.elementCornerIndices().topRows(3).transpose().eval());
   }
   return cudaGridPtr;
 }
