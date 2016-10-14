@@ -18,6 +18,7 @@
 
 #include "../assembly/discrete_dense_boundary_operator.hpp"
 #include "../common/types.hpp"
+#include "../fiber/explicit_instantiation.hpp"
 
 namespace Bempp {
 
@@ -156,5 +157,8 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakFor
   return std::unique_ptr<DiscreteBoundaryOperator<ResultType>>(
       new DiscreteDenseBoundaryOperator<ResultType>(result));
 }
+
+
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(CudaDenseGlobalAssembler);
 
 } // namespace Bempp
