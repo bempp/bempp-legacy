@@ -67,40 +67,59 @@ public:
   void local2global(const thrust::host_vector<double> &localPoints,
                     thrust::device_vector<double> &globalPoints);
 
+  /** brief Evaluate the kernels on a grid of test and trial points
+   * \param[in] testPoints Global coordinates of points on the test element
+   * \param[in] trialPoints Global coordinates of point on the trial element
+   * \param[out] kernelValues Results
+   */
+  void evaluateKernel(thrust::device_vector<double> &testPoints,
+                      thrust::device_vector<double> &trialPoints,
+                      thrust::device_vector<double> &kernelValues);
+
+  void evaluateIntegral(const unsigned int testElemCount,
+                        const unsigned int trialElemCount,
+                        thrust::device_vector<double> &kernelValues,
+                        thrust::device_vector<double> &testBasisData,
+                        thrust::device_vector<double> &trialBasisData,
+                        thrust::device_vector<double> &testQuadWeights,
+                        thrust::device_vector<double> &trialQuadWeights,
+                        thrust::device_vector<double> &result);
 private:
   /** \cond PRIVATE */
 
   // Mesh parameters
-  unsigned int dim;
-  unsigned int nIdx;
-  unsigned int nVtx;
-  unsigned int nEls;
+  unsigned int m_dim;
+  unsigned int m_IdxCount;
+  unsigned int m_VtxCount;
+  unsigned int m_ElemCount;
 
-  thrust::device_vector<double> d_vertices;
+  thrust::device_vector<double> m_vertices;
   // [x0 x1 x2 ... xN | y0 y1 ... yN | z0 z1 ... zN]
 
-  thrust::device_vector<int> d_elementCorners;
+  thrust::device_vector<int> m_elementCorners;
   // [vtx0el0 vtx0el1 ... vtx0elN | vtx1el0 ... vtx1elN | vtx2el0 ... vtx2elN]
 
   // Element corner coordinates
-  thrust::device_vector<double> d_vtx0x;
-  thrust::device_vector<double> d_vtx0y;
-  thrust::device_vector<double> d_vtx0z;
+  thrust::device_vector<double> m_vtx0x;
+  thrust::device_vector<double> m_vtx0y;
+  thrust::device_vector<double> m_vtx0z;
 
-  thrust::device_vector<double> d_vtx1x;
-  thrust::device_vector<double> d_vtx1y;
-  thrust::device_vector<double> d_vtx1z;
+  thrust::device_vector<double> m_vtx1x;
+  thrust::device_vector<double> m_vtx1y;
+  thrust::device_vector<double> m_vtx1z;
 
-  thrust::device_vector<double> d_vtx2x;
-  thrust::device_vector<double> d_vtx2y;
-  thrust::device_vector<double> d_vtx2z;
+  thrust::device_vector<double> m_vtx2x;
+  thrust::device_vector<double> m_vtx2y;
+  thrust::device_vector<double> m_vtx2z;
   // [el0 el1 el2 ... elN]
 
-  thrust::device_vector<double> d_normals;
+  thrust::device_vector<double> m_normals;
   // [x0 x1 x2 ... xN | y0 y1 ... yN | z0 z1 ... zN]
 
-  thrust::device_vector<double> d_integrationElements;
+  thrust::device_vector<double> m_integrationElements;
   // [el0 el1 el2 ... elN]
+
+  bool m_setupDone;
 
   /** \endcond */
 };

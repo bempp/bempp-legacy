@@ -33,6 +33,8 @@
 
 #include "../common/boost_make_shared_fwd.hpp"
 
+#include "../cuda/cuda_dense_global_assembler.hpp"
+
 #include <stdexcept>
 #include <iostream>
 
@@ -110,6 +112,9 @@ ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
   case AssemblyOptions::HMAT:
     return shared_ptr<DiscreteBoundaryOperator<ResultType>>(
         assembleWeakFormInHMatMode(assembler, context).release());
+  case AssemblyOptions::CUDADENSE:
+    return shared_ptr<DiscreteBoundaryOperator<ResultType>>(
+        assembleWeakFormInCudaDenseMode(assembler, context).release());
   default:
     throw std::runtime_error(
         "ElementaryIntegralOperator::assembleWeakFormInternalImpl2(): "
@@ -148,6 +153,19 @@ ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
   return HMatGlobalAssembler<BasisFunctionType, ResultType>::
       assembleDetachedWeakForm(testSpace, trialSpace, assembler, assembler,
                                context, this->symmetry() & SYMMETRIC);
+}
+
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+std::unique_ptr<DiscreteBoundaryOperator<ResultType>>
+ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>::
+    assembleWeakFormInCudaDenseMode(
+        LocalAssembler &assembler,
+        const Context<BasisFunctionType, ResultType> &context) const {
+  const Space<BasisFunctionType> &testSpace = *this->dualToRange();
+  const Space<BasisFunctionType> &trialSpace = *this->domain();
+
+  return CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::
+      assembleDetachedWeakForm(testSpace, trialSpace, assembler, context);
 }
 
 /** \endcond */

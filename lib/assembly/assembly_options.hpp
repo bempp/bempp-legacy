@@ -52,7 +52,9 @@ public:
     /** \brief Assemble dense matrices. */
     DENSE,
     /** \brief Assemble hierarchical matrices using the HMat library. */
-    HMAT
+    HMAT,
+    /** \brief Assemble dense matrices with CUDA. */
+    CUDADENSE
   };
 
   /** \brief Use dense-matrix representations of weak forms of boundary integral
@@ -63,6 +65,9 @@ public:
 
   /** \brief Assemble using the HMat hierarchical matrix library. */
   void switchToHMatMode();
+
+  /** \brief Assemble dense-matrix representations with CUDA. */
+  void switchToCudaDenseMode();
 
   /** \brief Use dense-matrix representations of weak forms of boundary integral
    *operators.

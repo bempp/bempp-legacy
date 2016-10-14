@@ -24,6 +24,7 @@
 #include <thrust/transform.h>
 #include <thrust/tabulate.h>
 #include <thrust/execution_policy.h>
+#include <thrust/iterator/counting_iterator.h>
 
 namespace Bempp {
 
@@ -85,7 +86,7 @@ namespace Bempp {
 
   struct local2globalFunctor {
 
-    unsigned int nEls;
+    unsigned int elemCount;
 
     thrust::device_ptr<double> vtx0x;
     thrust::device_ptr<double> vtx0y;
@@ -104,7 +105,7 @@ namespace Bempp {
     thrust::device_ptr<double> fun2;
 
     local2globalFunctor(
-      const unsigned int _nEls,
+      const unsigned int _elemCount,
       thrust::device_ptr<double> _vtx0x,
       thrust::device_ptr<double> _vtx0y,
       thrust::device_ptr<double> _vtx0z,
@@ -117,7 +118,7 @@ namespace Bempp {
       thrust::device_ptr<double> _fun0,
       thrust::device_ptr<double> _fun1,
       thrust::device_ptr<double> _fun2)
-      : nEls(_nEls),
+      : elemCount(_elemCount),
         vtx0x(_vtx0x), vtx0y(_vtx0y), vtx0z(_vtx0z),
         vtx1x(_vtx1x), vtx1y(_vtx1y), vtx1z(_vtx1z),
         vtx2x(_vtx2x), vtx2y(_vtx2y), vtx2z(_vtx2z),
@@ -130,8 +131,8 @@ namespace Bempp {
       // Which memory mapping to go for?
 //      unsigned int localPointIdx = i % nLocalPoints;
 //      unsigned int elementIdx = i / nLocalPoints;
-      unsigned int localPointIdx = i / nEls;
-      unsigned int elementIdx = i % nEls;
+      unsigned int localPointIdx = i / elemCount;
+      unsigned int elementIdx = i % elemCount;
 
       double elVtx0x = vtx0x[elementIdx];
       double elVtx0y = vtx0y[elementIdx];
@@ -163,31 +164,182 @@ namespace Bempp {
     }
   };
 
+  struct evaluateKernelFunctor {
+
+    unsigned int testPointCount;
+    unsigned int trialPointCount;
+
+    thrust::device_ptr<double> testPoints;
+    thrust::device_ptr<double> trialPoints;
+
+    evaluateKernelFunctor(
+      const unsigned int _testPointCount, const unsigned int _trialPointCount,
+      thrust::device_ptr<double> _testPoints,
+      thrust::device_ptr<double> _trialPoints)
+      : testPointCount(_testPointCount), trialPointCount(_trialPointCount),
+        testPoints(_testPoints), trialPoints(_trialPoints) {}
+
+    __host__ __device__
+    double operator() (const unsigned int i) {
+
+      // Which memory mapping to go for?
+//      unsigned int testPointIdx = i % nTestPoints;
+//      unsigned int trialPointIdx = i / nTestPoints;
+      unsigned int testPointIdx = i / trialPointCount;
+      unsigned int trialPointIdx = i % trialPointCount;
+
+      double xTest = testPoints[testPointIdx];
+      double yTest = testPoints[testPointIdx+testPointCount];
+      double zTest = testPoints[testPointIdx+2*testPointCount];
+
+      double xTrial = trialPoints[trialPointIdx];
+      double yTrial = trialPoints[trialPointIdx+trialPointCount];
+      double zTrial = trialPoints[trialPointIdx+2*trialPointCount];
+
+      double xDiff = xTest - xTrial;
+      double yDiff = yTest - yTrial;
+      double zDiff = zTest - zTrial;
+
+      double distance = std::sqrt(xDiff*xDiff + yDiff*yDiff + zDiff*zDiff);
+
+      return 1.0 / (4.0 * M_PI * distance);
+    }
+  };
+
+  struct evaluateIntegralFunctor {
+
+    unsigned int testElemCount;
+    unsigned int trialElemCount;
+    unsigned int localTestPointCount;
+    unsigned int localTrialPointCount;
+    unsigned int localTestDofCount;
+    unsigned int localTrialDofCount;
+
+    thrust::device_ptr<double> kernelValues;
+    thrust::device_ptr<double> integrationElements;
+    thrust::device_ptr<double> testBasisData;
+    thrust::device_ptr<double> trialBasisData;
+    thrust::device_ptr<double> testQuadWeights;
+    thrust::device_ptr<double> trialQuadWeights;
+    thrust::device_ptr<double> result;
+
+    evaluateIntegralFunctor(
+      const unsigned int _testElemCount, const unsigned int _trialElemCount,
+      const unsigned int _localTestPointCount,
+      const unsigned int _localTrialPointCount,
+      const unsigned int _localTestDofCount,
+      const unsigned int _localTrialDofCount,
+      thrust::device_ptr<double> _kernelValues,
+      thrust::device_ptr<double> _integrationElements,
+      thrust::device_ptr<double> _testBasisData,
+      thrust::device_ptr<double> _trialBasisData,
+      thrust::device_ptr<double> _testQuadWeights,
+      thrust::device_ptr<double> _trialQuadWeights,
+      thrust::device_ptr<double> _result)
+      : testElemCount(_testElemCount), trialElemCount(_trialElemCount),
+        localTestPointCount(_localTestPointCount),
+        localTrialPointCount(_localTrialPointCount),
+        localTestDofCount(_localTestDofCount),
+        localTrialDofCount(_localTrialDofCount),
+        kernelValues(_kernelValues),
+        integrationElements(_integrationElements),
+        testBasisData(_testBasisData),
+        trialBasisData(_trialBasisData),
+        testQuadWeights(_testQuadWeights),
+        trialQuadWeights(_trialQuadWeights),
+        result(_result) {}
+
+    __host__ __device__
+    void operator() (const unsigned int i) {
+
+      // Identify element pair to work on
+      const unsigned int testElementIdx = i / trialElemCount;
+      const unsigned int trialElementIdx = i % trialElemCount;
+
+      // Fetch element pair related data
+      double testIntegrationElement = integrationElements[testElementIdx];
+      double trialIntegrationElement = integrationElements[trialElementIdx];
+      double* elementPairKernelValues =
+          new double[localTestPointCount * localTrialPointCount];
+      for (int tePt = 0; tePt < localTestPointCount; ++tePt) {
+        for (int trPt = 0; trPt < localTrialPointCount; ++trPt) {
+          unsigned int localPointPairIdx = tePt * localTestPointCount + trPt;
+          unsigned int globalPointPairIdx =
+            testElementIdx * trialElemCount * localTestPointCount * localTrialPointCount
+            + trialElementIdx * localTrialPointCount
+            + tePt * localTrialPointCount * trialElemCount
+            + trPt;
+          elementPairKernelValues[localPointPairIdx] =
+              kernelValues[globalPointPairIdx];
+        }
+      }
+
+      // Create element pair result array
+      double* elementPairResult =
+          new double[localTestDofCount * localTrialDofCount];
+
+      // Loop over dofs
+      for (int teDof = 0; teDof < localTestDofCount; ++teDof) {
+        for (int trDof = 0; trDof < localTrialDofCount; ++trDof) {
+          double sum = 0.0;
+          // Loop over quad points
+          for (int tePt = 0; tePt < localTestPointCount; ++tePt) {
+            double testWeight = testIntegrationElement * testQuadWeights[tePt];
+            double partialSum = 0.0;
+            for (int trPt = 0; trPt < localTrialPointCount; ++trPt) {
+              double trialWeight = trialIntegrationElement * testQuadWeights[trPt];
+              partialSum +=
+                  trialWeight
+                  * testBasisData[teDof * localTestDofCount + tePt]
+                  * trialBasisData[trDof * localTrialDofCount + trPt]
+                  * elementPairKernelValues[tePt * localTestPointCount + trPt];
+            }
+            sum += partialSum * testWeight;
+          }
+          elementPairResult[teDof * localTestDofCount + trDof] = sum;
+        }
+      }
+
+      // Copy data to global result array
+      unsigned int offset = i * localTestDofCount * localTrialDofCount;
+      for (int teDof = 0; teDof < localTestDofCount; ++teDof) {
+        for (int trDof = 0; trDof < localTrialDofCount; ++trDof) {
+          unsigned int dofPairIdx = teDof * localTestDofCount + trDof;
+          result[offset + dofPairIdx] = elementPairResult[dofPairIdx];
+        }
+      }
+      delete[] elementPairKernelValues;
+      delete[] elementPairResult;
+    }
+  };
+
   CudaGrid::CudaGrid() {
 
     // Initialise member variables
-    dim = 0;
-    nIdx = 0;
-    nVtx = 0;
-    nEls = 0;
+    m_dim = 0;
+    m_IdxCount = 0;
+    m_VtxCount = 0;
+    m_ElemCount = 0;
 
-    d_vertices.clear();
-    d_elementCorners.clear();
+    m_vertices.clear();
+    m_elementCorners.clear();
 
-    d_vtx0x.clear();
-    d_vtx0y.clear();
-    d_vtx0z.clear();
+    m_vtx0x.clear();
+    m_vtx0y.clear();
+    m_vtx0z.clear();
 
-    d_vtx1x.clear();
-    d_vtx1y.clear();
-    d_vtx1z.clear();
+    m_vtx1x.clear();
+    m_vtx1y.clear();
+    m_vtx1z.clear();
 
-    d_vtx2x.clear();
-    d_vtx2y.clear();
-    d_vtx2z.clear();
+    m_vtx2x.clear();
+    m_vtx2y.clear();
+    m_vtx2z.clear();
 
-    d_normals.clear();
-    d_integrationElements.clear();
+    m_normals.clear();
+    m_integrationElements.clear();
+
+    m_setupDone = false;
   }
 
   CudaGrid::~CudaGrid() {
@@ -198,125 +350,162 @@ namespace Bempp {
                               const Matrix<int> &elementCorners) {
 
     // Determine mesh parameters
-    dim = vertices.cols();
-    nVtx = vertices.rows();
-    nIdx = elementCorners.cols();
-    nEls = elementCorners.rows();
+    m_dim = vertices.cols();
+    m_VtxCount = vertices.rows();
+    m_IdxCount = elementCorners.cols();
+    m_ElemCount = elementCorners.rows();
 
-    if (dim != 3 || nIdx != 3)
+    if (m_dim != 3 || m_IdxCount != 3)
       throw std::runtime_error("CudaGrid::pushGeometry(): "
                                "only valid for triangular meshes in three dimensions.");
 
     // Allocate device memory
-    d_vertices.resize(dim * nVtx);
-    d_elementCorners.resize(nIdx * nEls);
+    m_vertices.resize(m_dim * m_VtxCount);
+    m_elementCorners.resize(m_IdxCount * m_ElemCount);
 
     // Copy data to device
-    d_vertices.assign(vertices.data(), vertices.data()+dim*nVtx);
-    d_elementCorners.assign(elementCorners.data(), elementCorners.data()+nIdx*nEls);
+    m_vertices.assign(vertices.data(), vertices.data()+m_dim*m_VtxCount);
+    m_elementCorners.assign(elementCorners.data(), elementCorners.data()+m_IdxCount*m_ElemCount);
 
-//    std::cout << "d_vertices = " << std::endl;
-//    for (int i = 0; i < nVtx; ++i) {
-//      for (int j = 0; j < dim; ++j) {
-//        std::cout << d_vertices[j * nVtx + i] << " " << std::flush;
+//    std::cout << "m_vertices = " << std::endl;
+//    for (int i = 0; i < m_nVtx; ++i) {
+//      for (int j = 0; j < m_dim; ++j) {
+//        std::cout << m_vertices[j * m_nVtx + i] << " " << std::flush;
 //      }
 //      std::cout << std::endl;
 //    }
 //    std::cout << std::endl;
 //
-//    std::cout << "d_elementCorners = " << std::endl;
-//    for (int i = 0; i < nEls; ++i) {
-//      for (int j = 0; j < nIdx; ++j) {
-//        std::cout << d_elementCorners[j * nEls + i] << " " << std::flush;
+//    std::cout << "m_elementCorners = " << std::endl;
+//    for (int i = 0; i < m_nEls; ++i) {
+//      for (int j = 0; j < m_nIdx; ++j) {
+//        std::cout << m_elementCorners[j * m_nEls + i] << " " << std::flush;
 //      }
 //      std::cout << std::endl;
 //    }
 //    std::cout << std::endl;
+
+    m_setupDone = false;
   }
 
   void CudaGrid::setupGeometry() {
 
-    // Gather element corner coordinates
-    d_vtx0x.resize(nEls);
-    d_vtx0y.resize(nEls);
-    d_vtx0z.resize(nEls);
+    if (m_setupDone == false) {
 
-    d_vtx1x.resize(nEls);
-    d_vtx1y.resize(nEls);
-    d_vtx1z.resize(nEls);
+      // Gather element corner coordinates
+      m_vtx0x.resize(m_ElemCount);
+      m_vtx0y.resize(m_ElemCount);
+      m_vtx0z.resize(m_ElemCount);
 
-    d_vtx2x.resize(nEls);
-    d_vtx2y.resize(nEls);
-    d_vtx2z.resize(nEls);
+      m_vtx1x.resize(m_ElemCount);
+      m_vtx1y.resize(m_ElemCount);
+      m_vtx1z.resize(m_ElemCount);
 
-    // Measure time of the GPU execution (CUDA event based)
-    cudaEvent_t start, stop;
-    cudaEventCreate(&start);
-    cudaEventCreate(&stop);
-    cudaEventRecord(start, 0);
+      m_vtx2x.resize(m_ElemCount);
+      m_vtx2y.resize(m_ElemCount);
+      m_vtx2z.resize(m_ElemCount);
 
-    // Vertex 0
-    thrust::gather(d_elementCorners.begin(), d_elementCorners.begin()+nEls,
-                   d_vertices.begin(),
-                   d_vtx0x.begin());
-    thrust::gather(d_elementCorners.begin(), d_elementCorners.begin()+nEls,
-                   d_vertices.begin()+nVtx,
-                   d_vtx0y.begin());
-    thrust::gather(d_elementCorners.begin(), d_elementCorners.begin()+nEls,
-                   d_vertices.begin()+2*nVtx,
-                   d_vtx0z.begin());
+      // Measure time of the GPU execution (CUDA event based)
+      cudaEvent_t start, stop;
+      cudaEventCreate(&start);
+      cudaEventCreate(&stop);
+      cudaEventRecord(start, 0);
 
-    // Vertex 1
-    thrust::gather(d_elementCorners.begin()+nEls, d_elementCorners.begin()+2*nEls,
-                   d_vertices.begin(),
-                   d_vtx1x.begin());
-    thrust::gather(d_elementCorners.begin()+nEls, d_elementCorners.begin()+2*nEls,
-                   d_vertices.begin()+nVtx,
-                   d_vtx1y.begin());
-    thrust::gather(d_elementCorners.begin()+nEls, d_elementCorners.begin()+2*nEls,
-                   d_vertices.begin()+2*nVtx,
-                   d_vtx1z.begin());
+      // Vertex 0
+      thrust::gather(m_elementCorners.begin(),
+                     m_elementCorners.begin()+m_ElemCount,
+                     m_vertices.begin(),
+                     m_vtx0x.begin());
+      thrust::gather(m_elementCorners.begin(),
+                     m_elementCorners.begin()+m_ElemCount,
+                     m_vertices.begin()+m_VtxCount,
+                     m_vtx0y.begin());
+      thrust::gather(m_elementCorners.begin(),
+                     m_elementCorners.begin()+m_ElemCount,
+                     m_vertices.begin()+2*m_VtxCount,
+                     m_vtx0z.begin());
 
-    // Vertex 2
-    thrust::gather(d_elementCorners.begin()+2*nEls, d_elementCorners.end(),
-                   d_vertices.begin(),
-                   d_vtx2x.begin());
-    thrust::gather(d_elementCorners.begin()+2*nEls, d_elementCorners.end(),
-                   d_vertices.begin()+nVtx,
-                   d_vtx2y.begin());
-    thrust::gather(d_elementCorners.begin()+2*nEls, d_elementCorners.end(),
-                   d_vertices.begin()+2*nVtx,
-                   d_vtx2z.begin());
+      // Vertex 1
+      thrust::gather(m_elementCorners.begin()+m_ElemCount,
+                     m_elementCorners.begin()+2*m_ElemCount,
+                     m_vertices.begin(),
+                     m_vtx1x.begin());
+      thrust::gather(m_elementCorners.begin()+m_ElemCount,
+                     m_elementCorners.begin()+2*m_ElemCount,
+                     m_vertices.begin()+m_VtxCount,
+                     m_vtx1y.begin());
+      thrust::gather(m_elementCorners.begin()+m_ElemCount,
+                     m_elementCorners.begin()+2*m_ElemCount,
+                     m_vertices.begin()+2*m_VtxCount,
+                     m_vtx1z.begin());
 
-    cudaEventRecord(stop, 0);
-    cudaEventSynchronize(stop);
-    float elapsedTimeGather;
-    cudaEventElapsedTime(&elapsedTimeGather , start, stop);
-    std::cout << "Time for gathering element corner coordinates is "
-      << elapsedTimeGather << " ms" << std::endl;
+      // Vertex 2
+      thrust::gather(m_elementCorners.begin()+2*m_ElemCount,
+                     m_elementCorners.end(),
+                     m_vertices.begin(),
+                     m_vtx2x.begin());
+      thrust::gather(m_elementCorners.begin()+2*m_ElemCount,
+                     m_elementCorners.end(),
+                     m_vertices.begin()+m_VtxCount,
+                     m_vtx2y.begin());
+      thrust::gather(m_elementCorners.begin()+2*m_ElemCount,
+                     m_elementCorners.end(),
+                     m_vertices.begin()+2*m_VtxCount,
+                     m_vtx2z.begin());
 
-//    std::cout << "d_vtx0x = " << std::endl;
-//    for (int i = 0; i < nEls; ++i) {
-//      std::cout << d_vtx0x[i] << std::endl;
-//    }
-//    std::cout << std::endl;
+      cudaEventRecord(stop, 0);
+      cudaEventSynchronize(stop);
+      float elapsedTimeGather;
+      cudaEventElapsedTime(&elapsedTimeGather , start, stop);
+      std::cout << "Time for gathering element corner coordinates is "
+        << elapsedTimeGather << " ms" << std::endl;
 
-    calculateNormalsAndIntegrationElements();
+  //    std::cout << "m_vtx0x = " << std::endl;
+  //    for (int i = 0; i < m_nEls; ++i) {
+  //      std::cout << m_vtx0x[i] << std::endl;
+  //    }
+  //    std::cout << std::endl;
+
+      // TODO Remove m_vertices and m_elementCorners on the device at this point?
+
+      calculateNormalsAndIntegrationElements();
+
+      m_setupDone = true;
+    }
 
     // TEST Convert local to global coordinates for all elements
-    thrust::host_vector<double> localPoints(2);
-    localPoints[0] = 0.1;
-    localPoints[1] = 0.1;
+    thrust::host_vector<double> h_localPoints(2);
+    h_localPoints[0] = 0.1;
+    h_localPoints[1] = 0.1;
 
-    thrust::device_vector<double> globalPoints;
-    local2global(localPoints, globalPoints);
+    thrust::device_vector<double> d_globalPoints;
+    local2global(h_localPoints, d_globalPoints);
+
+    // TEST Evaluate the kernel
+    thrust::device_vector<double> d_kernelValues;
+    evaluateKernel(d_globalPoints, d_globalPoints, d_kernelValues);
+
+    // TEST Evaluate the integral
+    thrust::device_vector<double> d_testBasisData(3);
+    d_testBasisData[0] = 0.9;
+    d_testBasisData[1] = 0.2;
+    d_testBasisData[2] = 0.2;
+    thrust::device_vector<double> d_trialBasisData = d_testBasisData;
+
+    thrust::device_vector<double> d_testQuadWeights(1);
+    d_testQuadWeights[0] = 2.0;
+    thrust::device_vector<double> d_trialQuadWeights = d_testQuadWeights;
+
+    thrust::device_vector<double> d_result;
+    evaluateIntegral(m_ElemCount, m_ElemCount, d_kernelValues,
+        d_testBasisData, d_trialBasisData, d_testQuadWeights, d_trialQuadWeights, d_result);
   }
 
   void CudaGrid::calculateNormalsAndIntegrationElements() {
 
     // Allocate device memory
-    d_normals.resize(dim * nEls);
-    d_integrationElements.resize(nEls);
+    m_normals.resize(m_dim * m_ElemCount);
+    m_integrationElements.resize(m_ElemCount);
 
     // Measure time of the GPU execution (CUDA event based)
     cudaEvent_t start, stop;
@@ -327,16 +516,16 @@ namespace Bempp {
     // Calculate element normals vectors and integration elements
     thrust::transform(
       thrust::make_zip_iterator(
-        thrust::make_tuple(d_vtx0x.begin(), d_vtx0y.begin(), d_vtx0z.begin(),
-                           d_vtx1x.begin(), d_vtx1y.begin(), d_vtx1z.begin(),
-                           d_vtx2x.begin(), d_vtx2y.begin(), d_vtx2z.begin())),
+        thrust::make_tuple(m_vtx0x.begin(), m_vtx0y.begin(), m_vtx0z.begin(),
+                           m_vtx1x.begin(), m_vtx1y.begin(), m_vtx1z.begin(),
+                           m_vtx2x.begin(), m_vtx2y.begin(), m_vtx2z.begin())),
       thrust::make_zip_iterator(
-        thrust::make_tuple(d_vtx0x.end(), d_vtx0y.end(), d_vtx0z.end(),
-                           d_vtx1x.end(), d_vtx1y.end(), d_vtx1z.end(),
-                           d_vtx2x.end(), d_vtx2y.end(), d_vtx2z.end())),
+        thrust::make_tuple(m_vtx0x.end(), m_vtx0y.end(), m_vtx0z.end(),
+                           m_vtx1x.end(), m_vtx1y.end(), m_vtx1z.end(),
+                           m_vtx2x.end(), m_vtx2y.end(), m_vtx2z.end())),
       thrust::make_zip_iterator(
-        thrust::make_tuple(d_normals.begin(), d_normals.begin()+nEls,
-                           d_normals.begin()+2*nEls, d_integrationElements.begin())),
+        thrust::make_tuple(m_normals.begin(), m_normals.begin()+m_ElemCount,
+                           m_normals.begin()+2*m_ElemCount, m_integrationElements.begin())),
       calculateElementNormalAndIntegrationElementFunctor());
 
     cudaEventRecord(stop, 0);
@@ -346,53 +535,53 @@ namespace Bempp {
     std::cout << "Time for calculating normals and integration elements is "
       << elapsedTimeNormals << " ms" << std::endl;
 
-//    std::cout << "d_normals = " << std::endl;
-//    for (int i = 0; i < nEls; ++i) {
-//      for (int j = 0; j < dim; ++j) {
-//        std::cout << d_normals[j * nEls + i] << " " << std::flush;
+//    std::cout << "m_normals = " << std::endl;
+//    for (int i = 0; i < m_nEls; ++i) {
+//      for (int j = 0; j < m_dim; ++j) {
+//        std::cout << m_normals[j * m_nEls + i] << " " << std::flush;
 //      }
 //      std::cout << std::endl;
 //    }
 //    std::cout << std::endl;
 //
-//    std::cout << "d_integrationElements = " << std::endl;
-//    for (int i = 0; i < nEls; ++i) {
-//      std::cout << d_integrationElements[i] << std::endl;
+//    std::cout << "m_integrationElements = " << std::endl;
+//    for (int i = 0; i < m_nEls; ++i) {
+//      std::cout << m_integrationElements[i] << std::endl;
 //    }
 //    std::cout << std::endl;
   }
 
-  void CudaGrid::local2global(const thrust::host_vector<double> &localPoints,
-                              thrust::device_vector<double> &globalPoints) {
+  void CudaGrid::local2global(const thrust::host_vector<double> &h_localPoints,
+                              thrust::device_vector<double> &d_globalPoints) {
 
     // localPoints = [r0 r1 ... rN | s0 s1 ... sN]
 
     const unsigned int localPointDim = 2;
-    const unsigned int nLocalPoints = localPoints.size() / localPointDim;
+    const unsigned int localPointCount = h_localPoints.size() / localPointDim;
 
-    if (localPoints.size() % localPointDim != 0)
+    if (h_localPoints.size() % localPointDim != 0)
       throw std::runtime_error("CudaGrid::local2global(): "
                                "only valid for two-dimensional local points");
 
     // Allocate device memory
-    globalPoints.resize(dim * nEls * nLocalPoints);
+    d_globalPoints.resize(m_dim * m_ElemCount * localPointCount);
     // [xPt0el0 xPt0el1 ... xPt0elM | xPt1el0 ... xPt1elM | ... | ... xPtNelM |
     //  yPt0el0 yPt0el1 ... yPt0elM | yPt1el0 ... yPt1elM | ... | ... yPtNelM |
     //  zPt0el0 zPt0el1 ... zPt0elM | zPt1el0 ... zPt1elM | ... | ... zPtNelM ]
 
-    thrust::host_vector<double> h_geomShapeFun0(nLocalPoints);
-    thrust::host_vector<double> h_geomShapeFun1(nLocalPoints);
-    thrust::host_vector<double> h_geomShapeFun2(nLocalPoints);
+    thrust::host_vector<double> h_geomShapeFun0(localPointCount);
+    thrust::host_vector<double> h_geomShapeFun1(localPointCount);
+    thrust::host_vector<double> h_geomShapeFun2(localPointCount);
     // [pt0 pt1 ... ptN]
 
     // Evaluate geometrical shape function values on the host
     thrust::transform(thrust::host,
       thrust::make_zip_iterator(
-        thrust::make_tuple(localPoints.begin(),
-                           localPoints.begin()+nLocalPoints)),
+        thrust::make_tuple(h_localPoints.begin(),
+                           h_localPoints.begin()+localPointCount)),
       thrust::make_zip_iterator(
-        thrust::make_tuple(localPoints.begin()+nLocalPoints,
-                           localPoints.end())),
+        thrust::make_tuple(h_localPoints.begin()+localPointCount,
+                           h_localPoints.end())),
       thrust::make_zip_iterator(
         thrust::make_tuple(h_geomShapeFun0.begin(),
                            h_geomShapeFun1.begin(),
@@ -400,15 +589,15 @@ namespace Bempp {
       geomShapeFunFunctor());
 
     // Copy data to device
-    thrust::device_vector<double> geomShapeFun0 = h_geomShapeFun0;
-    thrust::device_vector<double> geomShapeFun1 = h_geomShapeFun1;
-    thrust::device_vector<double> geomShapeFun2 = h_geomShapeFun2;
+    thrust::device_vector<double> d_geomShapeFun0 = h_geomShapeFun0;
+    thrust::device_vector<double> d_geomShapeFun1 = h_geomShapeFun1;
+    thrust::device_vector<double> d_geomShapeFun2 = h_geomShapeFun2;
 
-//    std::cout << "geomShapeFun = " << std::endl;
+//    std::cout << "d_geomShapeFun = " << std::endl;
 //    for (int i = 0; i < nLocalPoints; ++i) {
-//      std::cout << geomShapeFun0[i] << " "
-//                << geomShapeFun1[i] << " "
-//                << geomShapeFun2[i] << std::endl;
+//      std::cout << d_geomShapeFun0[i] << " "
+//                << d_geomShapeFun1[i] << " "
+//                << d_geomShapeFun2[i] << std::endl;
 //    }
 //    std::cout << std::endl;
 
@@ -420,18 +609,20 @@ namespace Bempp {
 
     thrust::tabulate(
       thrust::make_zip_iterator(
-        thrust::make_tuple(globalPoints.begin(),
-                           globalPoints.begin()+nEls*nLocalPoints,
-                           globalPoints.begin()+2*nEls*nLocalPoints)),
+        thrust::make_tuple(d_globalPoints.begin(),
+                           d_globalPoints.begin()+m_ElemCount*localPointCount,
+                           d_globalPoints.begin()+2*m_ElemCount*localPointCount)),
       thrust::make_zip_iterator(
-        thrust::make_tuple(globalPoints.begin()+nEls*nLocalPoints,
-                           globalPoints.begin()+2*nEls*nLocalPoints,
-                           globalPoints.end())),
-      local2globalFunctor(nEls,
-                          d_vtx0x.data(), d_vtx0y.data(), d_vtx0z.data(),
-                          d_vtx1x.data(), d_vtx1y.data(), d_vtx1z.data(),
-                          d_vtx2x.data(), d_vtx2y.data(), d_vtx2z.data(),
-                          geomShapeFun0.data(), geomShapeFun1.data(), geomShapeFun2.data()));
+        thrust::make_tuple(d_globalPoints.begin()+m_ElemCount*localPointCount,
+                           d_globalPoints.begin()+2*m_ElemCount*localPointCount,
+                           d_globalPoints.end())),
+      local2globalFunctor(m_ElemCount,
+                          m_vtx0x.data(), m_vtx0y.data(), m_vtx0z.data(),
+                          m_vtx1x.data(), m_vtx1y.data(), m_vtx1z.data(),
+                          m_vtx2x.data(), m_vtx2y.data(), m_vtx2z.data(),
+                          d_geomShapeFun0.data(),
+                          d_geomShapeFun1.data(),
+                          d_geomShapeFun2.data()));
 
     cudaEventRecord(stop, 0);
     cudaEventSynchronize(stop);
@@ -440,17 +631,128 @@ namespace Bempp {
     std::cout << "Time for mapping local to global coordinates is "
       << elapsedTimeMapping << " ms" << std::endl;
 
-//    std::cout << "globalPoints = " << std::endl;
+//    std::cout << "d_globalPoints = " << std::endl;
 //    for (int i = 0; i < nLocalPoints; ++i) {
-//      for (int j = 0; j < nEls; ++j) {
-//        for (int k = 0; k < dim; ++k) {
-//          std::cout << globalPoints[k * nLocalPoints * nEls + i * nEls + j] << " " << std::flush;
+//      for (int j = 0; j < m_nEls; ++j) {
+//        for (int k = 0; k < m_dim; ++k) {
+//          std::cout << d_globalPoints[k * localPointsCount * m_nEls + i * m_nEls + j] << " " << std::flush;
 //        }
 //        std::cout << std::endl;
 //      }
 //      std::cout << std::endl;
 //    }
 //    std::cout << std::endl;
+  }
+
+  void CudaGrid::evaluateKernel(thrust::device_vector<double> &d_testPoints,
+                                thrust::device_vector<double> &d_trialPoints,
+                                thrust::device_vector<double> &d_kernelValues) {
+
+    const unsigned int pointDim = 3;
+    const unsigned int testPointCount = d_testPoints.size() / pointDim;
+    const unsigned int trialPointCount = d_trialPoints.size() / pointDim;
+
+    if (d_testPoints.size() % pointDim != 0 || d_trialPoints.size() % pointDim != 0)
+      throw std::runtime_error("CudaGrid::evaluateKernel(): "
+                               "only valid for three-dimensional points");
+
+    // Allocate device memory
+    d_kernelValues.resize(testPointCount * trialPointCount);
+
+    // Measure time of the GPU execution (CUDA event based)
+    cudaEvent_t start, stop;
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+    cudaEventRecord(start, 0);
+
+    thrust::tabulate(d_kernelValues.begin(), d_kernelValues.end(),
+                     evaluateKernelFunctor(testPointCount, trialPointCount,
+                         d_testPoints.data(), d_trialPoints.data()));
+
+    cudaEventRecord(stop, 0);
+    cudaEventSynchronize(stop);
+    float elapsedTimeKernel;
+    cudaEventElapsedTime(&elapsedTimeKernel , start, stop);
+    std::cout << "Time for kernel evaluation is "
+      << elapsedTimeKernel << " ms" << std::endl;
+
+//    std::cout << "d_kernelValues = " << std::endl;
+//    for (int i = 0; i < nTestPoints; ++i) {
+//      for (int j = 0; j < nTrialPoints; ++j) {
+//        std::cout << d_kernelValues[i * nTestPoints + j] << " " << std::flush;
+//      }
+//      std::cout << std::endl;
+//    }
+  }
+
+  void CudaGrid::evaluateIntegral(
+      const unsigned int testElemCount, const unsigned int trialElemCount,
+      thrust::device_vector<double> &d_kernelValues,
+      thrust::device_vector<double> &d_testBasisData,
+      thrust::device_vector<double> &d_trialBasisData,
+      thrust::device_vector<double> &d_testQuadWeights,
+      thrust::device_vector<double> &d_trialQuadWeights,
+      thrust::device_vector<double> &d_result) {
+
+    const unsigned int localTestPointCount = d_testQuadWeights.size();
+    const unsigned int localTrialPointCount = d_trialQuadWeights.size();
+
+    const unsigned int localTestDofCount =
+        d_testBasisData.size() / localTestPointCount;
+    const unsigned int localTrialDofCount =
+        d_trialBasisData.size() / localTrialPointCount;
+
+    if (d_testBasisData.size() % localTestPointCount != 0
+        || d_trialBasisData.size() % localTrialPointCount != 0)
+      throw std::runtime_error("CudaGrid::evaluateIntegral(): "
+                               "basis data size does not fit number of quad points");
+
+    // Allocate device memory
+    d_result.resize(testElemCount * localTestDofCount
+        * trialElemCount * localTrialDofCount);
+
+    // Measure time of the GPU execution (CUDA event based)
+    cudaEvent_t start, stop;
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+    cudaEventRecord(start, 0);
+
+    // Each thread is working on one pair of elements
+    thrust::counting_iterator<int> iter(0);
+    thrust::for_each(iter, iter+testElemCount*trialElemCount,
+                     evaluateIntegralFunctor(testElemCount, trialElemCount,
+                                             localTestPointCount, localTrialPointCount,
+                                             localTestDofCount, localTrialDofCount,
+                                             m_integrationElements.data(),
+                                             d_kernelValues.data(),
+                                             d_testBasisData.data(),
+                                             d_trialBasisData.data(),
+                                             d_testQuadWeights.data(),
+                                             d_trialQuadWeights.data(),
+                                             d_result.data()));
+
+    cudaEventRecord(stop, 0);
+    cudaEventSynchronize(stop);
+    float elapsedTimeIntegral;
+    cudaEventElapsedTime(&elapsedTimeIntegral , start, stop);
+    std::cout << "Time for integral evaluation is "
+      << elapsedTimeIntegral << " ms" << std::endl;
+
+//    std::cout << "d_result = " << std::endl;
+//    for (int i = 0; i < nTestElements; ++i) {
+//      for (int j = 0; j < nTrialElements; ++j) {
+//        for (int k = 0; k < nLocalTestDofs; ++k) {
+//          for (int l = 0; l < nLocalTrialDofs; ++l) {
+//            std::cout << d_result[
+//              i * nTrialElements * nLocalTestDofs * nLocalTrialDofs
+//              + j * nLocalTestDofs * nLocalTrialDofs
+//              + k * nLocalTrialDofs
+//              +l] << " " << std::flush;
+//          }
+//        }
+//      }
+//      std::cout << std::endl;
+//    }
   }
 
 } // namespace Bempp
