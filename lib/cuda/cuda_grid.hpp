@@ -41,51 +41,57 @@ public:
 
   /**
    * \brief Push the mesh geometry to device memory
-   * \param vertices mesh vertices
-   * \param elementCorners element corner indices
+   * \param[in] vertices mesh vertices
+   * \param[in] elementCorners element corner indices
    */
   void pushGeometry(const Matrix<double> &vertices,
                     const Matrix<int> &elementCorners);
   /**
-   * \brief Setup the geometry on the device, i.e. gather element corner
+   * \brief Setup the whole geometry on the device, i.e. gather element corner
    * coordinates, calculate normal vectors and integration elements
    * */
   void setupGeometry();
+
+  /**
+   * \brief Setup geometry data for specified elements on the device
+   * \param[in] elementIndices indices of elements to set up
+   */
+  void setupElements(const std::vector<int> &elementIndices);
+
+  /**
+   * \brief Clean up element data on the device
+   */
+  void freeElementData();
+
+  /**
+   * \brief Convert local (logical) to global (physical) coordinates on the device
+   * \param[in] localPoints local coordinates
+   * \param[out] globalPoints global coordinates
+   */
+  void local2global(const thrust::host_vector<double> &localPoints,
+                    thrust::device_vector<double> &globalPoints);
+
+  void evaluateKernel(thrust::device_vector<double> &d_testPoints,
+                      thrust::device_vector<double> &d_trialPoints,
+                      thrust::device_vector<double> &d_kernelValues);
+
+  void evaluateIntegral(
+      const unsigned int testElemCount, const unsigned int trialElemCount,
+      thrust::device_vector<double> &d_kernelValues,
+      thrust::device_vector<double> &d_testBasisData,
+      thrust::device_vector<double> &d_trialBasisData,
+      thrust::device_vector<double> &d_testQuadWeights,
+      thrust::device_vector<double> &d_trialQuadWeights,
+      thrust::device_vector<double> &d_result);
+
+private:
+  /** \cond PRIVATE */
 
   /**
    * \brief Calculate element normal vectors and determinants of Jacobian
    * (factor appearing in the integral transformation formula) on the device
    */
   void calculateNormalsAndIntegrationElements();
-
-  /**
-   * \brief Convert local (logical) to global (physical) coordinates for all
-   * elements on the device
-   * \param localPoints local coordinates
-   * \param globalPoints global coordinates
-   */
-  void local2global(const thrust::host_vector<double> &localPoints,
-                    thrust::device_vector<double> &globalPoints);
-
-  /** brief Evaluate the kernels on a grid of test and trial points
-   * \param[in] testPoints Global coordinates of points on the test element
-   * \param[in] trialPoints Global coordinates of point on the trial element
-   * \param[out] kernelValues Results
-   */
-  void evaluateKernel(thrust::device_vector<double> &testPoints,
-                      thrust::device_vector<double> &trialPoints,
-                      thrust::device_vector<double> &kernelValues);
-
-  void evaluateIntegral(const unsigned int testElemCount,
-                        const unsigned int trialElemCount,
-                        thrust::device_vector<double> &kernelValues,
-                        thrust::device_vector<double> &testBasisData,
-                        thrust::device_vector<double> &trialBasisData,
-                        thrust::device_vector<double> &testQuadWeights,
-                        thrust::device_vector<double> &trialQuadWeights,
-                        thrust::device_vector<double> &result);
-private:
-  /** \cond PRIVATE */
 
   // Mesh parameters
   unsigned int m_dim;
@@ -94,10 +100,7 @@ private:
   unsigned int m_ElemCount;
 
   thrust::device_vector<double> m_vertices;
-  // [x0 x1 x2 ... xN | y0 y1 ... yN | z0 z1 ... zN]
-
   thrust::device_vector<int> m_elementCorners;
-  // [vtx0el0 vtx0el1 ... vtx0elN | vtx1el0 ... vtx1elN | vtx2el0 ... vtx2elN]
 
   // Element corner coordinates
   thrust::device_vector<double> m_vtx0x;
@@ -111,15 +114,12 @@ private:
   thrust::device_vector<double> m_vtx2x;
   thrust::device_vector<double> m_vtx2y;
   thrust::device_vector<double> m_vtx2z;
-  // [el0 el1 el2 ... elN]
 
   thrust::device_vector<double> m_normals;
-  // [x0 x1 x2 ... xN | y0 y1 ... yN | z0 z1 ... zN]
-
   thrust::device_vector<double> m_integrationElements;
-  // [el0 el1 el2 ... elN]
 
   bool m_setupDone;
+  unsigned int m_activeElemCount;
 
   /** \endcond */
 };

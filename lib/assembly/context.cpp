@@ -62,6 +62,8 @@ Context<BasisFunctionType, ResultType>::Context(
     m_assemblyOptions.switchToHMatMode();
   else if (assemblyType == "dense")
     m_assemblyOptions.switchToDenseMode();
+  else if (assemblyType == "cudadense")
+    m_assemblyOptions.switchToCudaDenseMode();
   else
     throw std::runtime_error(
         "Context::Context(): boundaryOperatorAssemblyType has "

@@ -29,6 +29,7 @@
 namespace Fiber {
 /** \cond FORWARD_DECL */
 template <typename ResultType> class LocalAssemblerForIntegralOperators;
+template <typename BasisFunctionType> class Shapeset;
 /** \endcond */
 } // namespace Fiber
 
@@ -46,6 +47,11 @@ template <typename BasisFunctionType, typename ResultType> class Context;
 template <typename BasisFunctionType, typename ResultType>
 class CudaDenseGlobalAssembler {
 public:
+
+  typedef Fiber::Shapeset<BasisFunctionType> Shapeset;
+  typedef std::pair<Shapeset*, Shapeset*> ShapesetPair;
+  typedef std::pair<Matrix<double>, std::vector<double>> QuadData;
+  typedef std::pair<QuadData, QuadData> QuadDataPair;
 
   typedef Fiber::LocalAssemblerForIntegralOperators<ResultType>
       LocalAssemblerForIntegralOperators;

@@ -340,6 +340,7 @@ namespace Bempp {
     m_integrationElements.clear();
 
     m_setupDone = false;
+    m_activeElemCount = 0;
   }
 
   CudaGrid::~CudaGrid() {
@@ -386,11 +387,14 @@ namespace Bempp {
 //    std::cout << std::endl;
 
     m_setupDone = false;
+    m_activeElemCount = 0;
   }
 
   void CudaGrid::setupGeometry() {
 
     if (m_setupDone == false) {
+
+      m_activeElemCount = m_ElemCount;
 
       // Gather element corner coordinates
       m_vtx0x.resize(m_ElemCount);
@@ -466,8 +470,6 @@ namespace Bempp {
   //    }
   //    std::cout << std::endl;
 
-      // TODO Remove m_vertices and m_elementCorners on the device at this point?
-
       calculateNormalsAndIntegrationElements();
 
       m_setupDone = true;
@@ -501,11 +503,122 @@ namespace Bempp {
         d_testBasisData, d_trialBasisData, d_testQuadWeights, d_trialQuadWeights, d_result);
   }
 
+  void CudaGrid::setupElements(const std::vector<int> &elementIndices) {
+
+    if (m_setupDone == false) {
+
+      // Copy element indices to device memory
+      const thrust::device_vector<int> d_elementIndices(elementIndices);
+
+      m_activeElemCount = elementIndices.size();
+
+      // Gather element corner coordinates
+      m_vtx0x.resize(m_activeElemCount);
+      m_vtx0y.resize(m_activeElemCount);
+      m_vtx0z.resize(m_activeElemCount);
+
+      m_vtx1x.resize(m_activeElemCount);
+      m_vtx1y.resize(m_activeElemCount);
+      m_vtx1z.resize(m_activeElemCount);
+
+      m_vtx2x.resize(m_activeElemCount);
+      m_vtx2y.resize(m_activeElemCount);
+      m_vtx2z.resize(m_activeElemCount);
+
+      // Measure time of the GPU execution (CUDA event based)
+      cudaEvent_t start, stop;
+      cudaEventCreate(&start);
+      cudaEventCreate(&stop);
+      cudaEventRecord(start, 0);
+
+      // Create gather condition
+      thrust::device_vector<bool> isConsidered(m_ElemCount, false);
+      thrust::scatter(thrust::make_constant_iterator(true),
+                      thrust::make_constant_iterator(true)+m_ElemCount,
+                      d_elementIndices.begin(),
+                      isConsidered.begin());
+
+      // Vertex 0
+      thrust::gather_if(m_elementCorners.begin(),
+                        m_elementCorners.begin()+m_ElemCount,
+                        isConsidered.begin(),
+                        m_vertices.begin(),
+                        m_vtx0x.begin());
+      thrust::gather_if(m_elementCorners.begin(),
+                        m_elementCorners.begin()+m_ElemCount,
+                        isConsidered.begin(),
+                        m_vertices.begin()+m_VtxCount,
+                        m_vtx0y.begin());
+      thrust::gather_if(m_elementCorners.begin(),
+                        m_elementCorners.begin()+m_ElemCount,
+                        isConsidered.begin(),
+                        m_vertices.begin()+2*m_VtxCount,
+                        m_vtx0z.begin());
+
+      // Vertex 1
+      thrust::gather_if(m_elementCorners.begin()+m_ElemCount,
+                        m_elementCorners.begin()+2*m_ElemCount,
+                        isConsidered.begin(),
+                        m_vertices.begin(),
+                        m_vtx1x.begin());
+      thrust::gather_if(m_elementCorners.begin()+m_ElemCount,
+                        m_elementCorners.begin()+2*m_ElemCount,
+                        isConsidered.begin(),
+                        m_vertices.begin()+m_VtxCount,
+                        m_vtx1y.begin());
+      thrust::gather_if(m_elementCorners.begin()+m_ElemCount,
+                        m_elementCorners.begin()+2*m_ElemCount,
+                        isConsidered.begin(),
+                        m_vertices.begin()+2*m_VtxCount,
+                        m_vtx1z.begin());
+
+      // Vertex 2
+      thrust::gather_if(m_elementCorners.begin()+2*m_ElemCount,
+                        m_elementCorners.end(),
+                        isConsidered.begin(),
+                        m_vertices.begin(),
+                        m_vtx2x.begin());
+      thrust::gather_if(m_elementCorners.begin()+2*m_ElemCount,
+                        m_elementCorners.end(),
+                        isConsidered.begin(),
+                        m_vertices.begin()+m_VtxCount,
+                        m_vtx2y.begin());
+      thrust::gather_if(m_elementCorners.begin()+2*m_ElemCount,
+                        m_elementCorners.end(),
+                        isConsidered.begin(),
+                        m_vertices.begin()+2*m_VtxCount,
+                        m_vtx2z.begin());
+
+      cudaEventRecord(stop, 0);
+      cudaEventSynchronize(stop);
+      float elapsedTimeGather;
+      cudaEventElapsedTime(&elapsedTimeGather , start, stop);
+      std::cout << "Time for gathering element corner coordinates is "
+        << elapsedTimeGather << " ms" << std::endl;
+
+  //    std::cout << "m_vtx0x = " << std::endl;
+  //    for (int i = 0; i < m_activeElemCount; ++i) {
+  //      std::cout << m_vtx0x[i] << std::endl;
+  //    }
+  //    std::cout << std::endl;
+
+      calculateNormalsAndIntegrationElements();
+
+      m_setupDone = true;
+    }
+  }
+
+  void CudaGrid::freeElementData() {
+
+    // Enable new setup without releasing memory
+    m_setupDone = false;
+  }
+
   void CudaGrid::calculateNormalsAndIntegrationElements() {
 
     // Allocate device memory
-    m_normals.resize(m_dim * m_ElemCount);
-    m_integrationElements.resize(m_ElemCount);
+    m_normals.resize(m_dim * m_activeElemCount);
+    m_integrationElements.resize(m_activeElemCount);
 
     // Measure time of the GPU execution (CUDA event based)
     cudaEvent_t start, stop;
@@ -524,8 +637,8 @@ namespace Bempp {
                            m_vtx1x.end(), m_vtx1y.end(), m_vtx1z.end(),
                            m_vtx2x.end(), m_vtx2y.end(), m_vtx2z.end())),
       thrust::make_zip_iterator(
-        thrust::make_tuple(m_normals.begin(), m_normals.begin()+m_ElemCount,
-                           m_normals.begin()+2*m_ElemCount, m_integrationElements.begin())),
+        thrust::make_tuple(m_normals.begin(), m_normals.begin()+m_activeElemCount,
+                           m_normals.begin()+2*m_activeElemCount, m_integrationElements.begin())),
       calculateElementNormalAndIntegrationElementFunctor());
 
     cudaEventRecord(stop, 0);
@@ -536,16 +649,16 @@ namespace Bempp {
       << elapsedTimeNormals << " ms" << std::endl;
 
 //    std::cout << "m_normals = " << std::endl;
-//    for (int i = 0; i < m_nEls; ++i) {
+//    for (int i = 0; i < m_activeElemCount; ++i) {
 //      for (int j = 0; j < m_dim; ++j) {
-//        std::cout << m_normals[j * m_nEls + i] << " " << std::flush;
+//        std::cout << m_normals[j * m_activeElemCount + i] << " " << std::flush;
 //      }
 //      std::cout << std::endl;
 //    }
 //    std::cout << std::endl;
 //
 //    std::cout << "m_integrationElements = " << std::endl;
-//    for (int i = 0; i < m_nEls; ++i) {
+//    for (int i = 0; i < m_activeElemCount; ++i) {
 //      std::cout << m_integrationElements[i] << std::endl;
 //    }
 //    std::cout << std::endl;
@@ -564,7 +677,7 @@ namespace Bempp {
                                "only valid for two-dimensional local points");
 
     // Allocate device memory
-    d_globalPoints.resize(m_dim * m_ElemCount * localPointCount);
+    d_globalPoints.resize(m_dim * m_activeElemCount * localPointCount);
     // [xPt0el0 xPt0el1 ... xPt0elM | xPt1el0 ... xPt1elM | ... | ... xPtNelM |
     //  yPt0el0 yPt0el1 ... yPt0elM | yPt1el0 ... yPt1elM | ... | ... yPtNelM |
     //  zPt0el0 zPt0el1 ... zPt0elM | zPt1el0 ... zPt1elM | ... | ... zPtNelM ]
@@ -610,13 +723,13 @@ namespace Bempp {
     thrust::tabulate(
       thrust::make_zip_iterator(
         thrust::make_tuple(d_globalPoints.begin(),
-                           d_globalPoints.begin()+m_ElemCount*localPointCount,
-                           d_globalPoints.begin()+2*m_ElemCount*localPointCount)),
+                           d_globalPoints.begin()+m_activeElemCount*localPointCount,
+                           d_globalPoints.begin()+2*m_activeElemCount*localPointCount)),
       thrust::make_zip_iterator(
-        thrust::make_tuple(d_globalPoints.begin()+m_ElemCount*localPointCount,
-                           d_globalPoints.begin()+2*m_ElemCount*localPointCount,
+        thrust::make_tuple(d_globalPoints.begin()+m_activeElemCount*localPointCount,
+                           d_globalPoints.begin()+2*m_activeElemCount*localPointCount,
                            d_globalPoints.end())),
-      local2globalFunctor(m_ElemCount,
+      local2globalFunctor(m_activeElemCount,
                           m_vtx0x.data(), m_vtx0y.data(), m_vtx0z.data(),
                           m_vtx1x.data(), m_vtx1y.data(), m_vtx1z.data(),
                           m_vtx2x.data(), m_vtx2y.data(), m_vtx2z.data(),
@@ -633,9 +746,9 @@ namespace Bempp {
 
 //    std::cout << "d_globalPoints = " << std::endl;
 //    for (int i = 0; i < nLocalPoints; ++i) {
-//      for (int j = 0; j < m_nEls; ++j) {
+//      for (int j = 0; j < m_activeElemCount; ++j) {
 //        for (int k = 0; k < m_dim; ++k) {
-//          std::cout << d_globalPoints[k * localPointsCount * m_nEls + i * m_nEls + j] << " " << std::flush;
+//          std::cout << d_globalPoints[k * localPointsCount * m_activeElemCount + i * m_activeElemCount + j] << " " << std::flush;
 //        }
 //        std::cout << std::endl;
 //      }
