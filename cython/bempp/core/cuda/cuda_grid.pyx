@@ -11,9 +11,5 @@ cdef class CudaGrid:
 
     def __dealloc__(self):
         self.impl_.reset()
-        
-    def setup_geometry(self):
-        """ Setup geometry on the device."""
-        deref(self.impl_).setupGeometry()
 
 

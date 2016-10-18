@@ -19,8 +19,15 @@
 // THE SOFTWARE.
 
 #include "cuda_integrator.hpp"
+#include "cuda_grid.hpp"
 
 #include "../common/not_implemented_error.hpp"
+
+#include "../fiber/explicit_instantiation.hpp"
+#include "../fiber/shapeset.hpp"
+#include "../fiber/basis_data.hpp"
+
+#include <thrust/device_vector.h>
 
 namespace Fiber {
 
@@ -30,8 +37,8 @@ CudaIntegrator<BasisFunctionType, ResultType>::CudaIntegrator(
     const Matrix<double> &localTrialQuadPoints,
     const std::vector<double> &testQuadWeights,
     const std::vector<double> &trialQuadWeights,
-    shared_ptr<const CudaGrid> testGrid,
-    shared_ptr<const CudaGrid> trialGrid)
+    shared_ptr<const Bempp::CudaGrid> testGrid,
+    shared_ptr<const Bempp::CudaGrid> trialGrid)
     : m_localTestQuadPoints(localTestQuadPoints),
       m_localTrialQuadPoints(localTrialQuadPoints),
       m_testQuadWeights(testQuadWeights), m_trialQuadWeights(trialQuadWeights),
@@ -56,10 +63,62 @@ void CudaIntegrator<BasisFunctionType, ResultType>::integrate(
     const std::vector<int> &elementPairTrialIndices,
     const Shapeset<BasisFunctionType> &testShapeset,
     const Shapeset<BasisFunctionType> &trialShapeset,
-    std::vector<Matrix<ResultType>> &result) const {
+    std::vector<Matrix<ResultType>*> &result) const {
+
+  std::cout << "Hello, this is CudaIntegrator::integrate()!" << std::endl;
+
+  const int testPointCount = m_localTestQuadPoints.cols();
+  const int trialPointCount = m_localTrialQuadPoints.cols();
+  const int geometryPairCount = elementPairTestIndices.size();
+
+  if (elementPairTestIndices.size() != elementPairTrialIndices.size())
+    throw std::invalid_argument(
+        "CudaIntegrator::integrate(): "
+        "arrays 'elementPairTestIndices' and 'elementPairTrialIndices' must "
+        "have the same number of elements");
+
+  if (result.size() != geometryPairCount)
+    throw std::invalid_argument(
+        "CudaIntegrator::integrate(): "
+        "arrays 'result' and 'elementPairIndices' must have the same number "
+        "of elements");
+
+  if (testPointCount == 0 || trialPointCount == 0 || geometryPairCount == 0)
+    return;
+  // TODO: in the (pathological) case that pointCount == 0 but
+  // geometryPairCount != 0, set elements of result to 0.
+
+  const int testDofCount = testShapeset.size();
+  const int trialDofCount = trialShapeset.size();
+
+  for (size_t i = 0; i < result.size(); ++i) {
+    assert(result[i]);
+    result[i]->resize(testDofCount, trialDofCount);
+  }
+
+  BasisData<BasisFunctionType> testBasisData, trialBasisData;
+  size_t testBasisDeps = 0, trialBasisDeps = 0;
+//  testShapeset.evaluate(testBasisDeps, m_localTestQuadPoints, ALL_DOFS,
+//                        testBasisData);
+//  trialShapeset.evaluate(trialBasisDeps, m_localTrialQuadPoints, ALL_DOFS,
+//                         trialBasisData);
+
+  thrust::device_vector<double> testGeomData;
+  thrust::device_vector<double> trialGeomData;
+  m_testGrid->local2global(
+      m_localTestQuadPoints.transpose().eval(), testGeomData);
+  if (m_testGrid.get() == m_trialGrid.get() &&
+      m_localTestQuadPoints == m_localTrialQuadPoints) {
+    trialGeomData.data() = testGeomData.data();
+  } else {
+    m_trialGrid->local2global(
+        m_localTrialQuadPoints.transpose().eval(), trialGeomData);
+  }
 
   throw Bempp::NotImplementedError(
-      "CudaIntegrator::integrate(): not implemented yet");
+      "CudaIntegrator::integrate(): not completed yet");
 }
+
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(CudaIntegrator);
 
 } // namespace Fiber

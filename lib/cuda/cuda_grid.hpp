@@ -46,14 +46,10 @@ public:
    */
   void pushGeometry(const Matrix<double> &vertices,
                     const Matrix<int> &elementCorners);
-  /**
-   * \brief Setup the whole geometry on the device, i.e. gather element corner
-   * coordinates, calculate normal vectors and integration elements
-   * */
-  void setupGeometry();
 
   /**
-   * \brief Setup geometry data for specified elements on the device
+   * \brief Setup geometry data for specified elements on the device i.e. gather
+   * element corner coordinates, calculate normal vectors and integration elements
    * \param[in] elementIndices indices of elements to set up
    */
   void setupElements(const std::vector<int> &elementIndices);
@@ -68,24 +64,17 @@ public:
    * \param[in] localPoints local coordinates
    * \param[out] globalPoints global coordinates
    */
-  void local2global(const thrust::host_vector<double> &localPoints,
-                    thrust::device_vector<double> &globalPoints);
-
-  void evaluateKernel(thrust::device_vector<double> &d_testPoints,
-                      thrust::device_vector<double> &d_trialPoints,
-                      thrust::device_vector<double> &d_kernelValues);
-
-  void evaluateIntegral(
-      const unsigned int testElemCount, const unsigned int trialElemCount,
-      thrust::device_vector<double> &d_kernelValues,
-      thrust::device_vector<double> &d_testBasisData,
-      thrust::device_vector<double> &d_trialBasisData,
-      thrust::device_vector<double> &d_testQuadWeights,
-      thrust::device_vector<double> &d_trialQuadWeights,
-      thrust::device_vector<double> &d_result);
+  void local2global(const Matrix<double> &localPoints,
+                    thrust::device_vector<double> &globalPoints) const;
 
 private:
   /** \cond PRIVATE */
+
+  /**
+   * \brief Setup geometry data for all elements on the device, i.e. gather
+   * element corner coordinates, calculate normal vectors and integration elements
+   * */
+  void setupGeometry();
 
   /**
    * \brief Calculate element normal vectors and determinants of Jacobian
@@ -118,8 +107,7 @@ private:
   thrust::device_vector<double> m_normals;
   thrust::device_vector<double> m_integrationElements;
 
-  bool m_setupDone;
-  unsigned int m_activeElemCount;
+  thrust::device_vector<int> m_activeElemIndices;
 
   /** \endcond */
 };

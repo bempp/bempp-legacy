@@ -49,7 +49,7 @@ class CudaDenseGlobalAssembler {
 public:
 
   typedef Fiber::Shapeset<BasisFunctionType> Shapeset;
-  typedef std::pair<Shapeset*, Shapeset*> ShapesetPair;
+  typedef std::pair<const Shapeset*, const Shapeset*> ShapesetPair;
   typedef std::pair<Matrix<double>, std::vector<double>> QuadData;
   typedef std::pair<QuadData, QuadData> QuadDataPair;
 

@@ -27,11 +27,18 @@
 #include "../fiber/types.hpp"
 #include "../fiber/shared_ptr.hpp"
 
+namespace Bempp {
+
+/** \cond FORWARD_DECL */
+class CudaGrid;
+/** \endcond */
+
+} // namespace Bempp
+
 namespace Fiber {
 
 /** \cond FORWARD_DECL */
 template <typename BasisFunctionType> class Shapeset;
-class CudaGrid;
 /** \endcond */
 
 /** \brief Regular integration over pairs of elements on the device. */
@@ -45,8 +52,8 @@ public:
       const Matrix<double> &localTrialQuadPoints,
       const std::vector<double> &testQuadWeights,
       const std::vector<double> &trialQuadWeights,
-      shared_ptr<const CudaGrid> testGrid,
-      shared_ptr<const CudaGrid> trialGrid);
+      shared_ptr<const Bempp::CudaGrid> testGrid,
+      shared_ptr<const Bempp::CudaGrid> trialGrid);
 
   /** \brief Destructor. */
   virtual ~CudaIntegrator();
@@ -56,7 +63,7 @@ public:
       const std::vector<int> &elementPairTrialIndices,
       const Shapeset<BasisFunctionType> &testShapeset,
       const Shapeset<BasisFunctionType> &trialShapeset,
-      std::vector<Matrix<ResultType>> &result) const;
+      std::vector<Matrix<ResultType>*> &result) const;
 
 private:
   /** \cond PRIVATE */
@@ -66,8 +73,8 @@ private:
   std::vector<double> m_testQuadWeights;
   std::vector<double> m_trialQuadWeights;
 
-  shared_ptr<const CudaGrid> m_testGrid;
-  shared_ptr<const CudaGrid> m_trialGrid;
+  shared_ptr<const Bempp::CudaGrid> m_testGrid;
+  shared_ptr<const Bempp::CudaGrid> m_trialGrid;
 
   /** \endcond */
 };
