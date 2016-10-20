@@ -54,8 +54,13 @@ public:
    */
   void setupElements(const std::vector<int> &elementIndices);
 
+  void getElementData(unsigned int &activeElemCount,
+                      thrust::device_vector<int> &activeElemIndices,
+                      thrust::device_vector<double> &normals,
+                      thrust::device_vector<double> &integrationElements) const;
+
   /**
-   * \brief Clean up element data on the device
+   * \brief Free element data on the device
    */
   void freeElementData();
 
@@ -74,7 +79,7 @@ private:
    * \brief Setup geometry data for all elements on the device, i.e. gather
    * element corner coordinates, calculate normal vectors and integration elements
    * */
-  void setupGeometry();
+  void setupAllElements();
 
   /**
    * \brief Calculate element normal vectors and determinants of Jacobian

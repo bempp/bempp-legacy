@@ -20,16 +20,14 @@
 #include "../assembly/discrete_dense_boundary_operator.hpp"
 
 #include "../common/types.hpp"
-//#include "../common/eigen_support.hpp"
-//
+#include "../common/complex_aux.hpp"
+
 #include "../fiber/explicit_instantiation.hpp"
 #include "../fiber/element_pair_topology.hpp"
 #include "../fiber/raw_grid_geometry.hpp"
 #include "../fiber/local_assembler_for_integral_operators.hpp"
-//#include "../fiber/shapeset.hpp"
 #include "../fiber/numerical_quadrature.hpp"
-//
-//#include "../grid/grid.hpp" // CAUSES COMPILER ERROR
+
 #include "../grid/grid_view.hpp"
 #include "../grid/mapper.hpp"
 
@@ -176,8 +174,8 @@ void getSortedElementPairs(
 
         const int testBasisOrder = testShapeset->order();
         const int trialBasisOrder = trialShapeset->order();
-        testQuadOrder = testBasisOrder;
-        trialQuadOrder = trialBasisOrder;
+        testQuadOrder = testBasisOrder+2;
+        trialQuadOrder = trialBasisOrder+2;
 
         regularElemPairTestIndices[0][0].push_back(testIndices[testIndex]);
         regularElemPairTrialIndices[0][0].push_back(trialIndices[trialIndex]);
@@ -259,17 +257,17 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakFor
     }
   }
 
-  std::cout << "testIndices = " << std::endl;
-  for (int i = 0; i < testIndices.size(); ++i) {
-    std::cout << testIndices[i] << " " << std::flush;
-  }
-  std::cout << std::endl;
-
-  std::cout << "trialIndices = " << std::endl;
-  for (int i = 0; i < trialIndices.size(); ++i) {
-    std::cout << trialIndices[i] << " " << std::flush;
-  }
-  std::cout << std::endl;
+//  std::cout << "testIndices = " << std::endl;
+//  for (int i = 0; i < testIndices.size(); ++i) {
+//    std::cout << testIndices[i] << " " << std::flush;
+//  }
+//  std::cout << std::endl;
+//
+//  std::cout << "trialIndices = " << std::endl;
+//  for (int i = 0; i < trialIndices.size(); ++i) {
+//    std::cout << trialIndices[i] << " " << std::flush;
+//  }
+//  std::cout << std::endl;
 
   // Create the operator's matrix
   Matrix<ResultType> result(testSpace.globalDofCount(),
@@ -290,40 +288,40 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakFor
       regularQuadOrderCombinations, regularShapesetCombinations,
       singularElemPairTestIndices, singularElemPairTrialIndices);
 
-  std::cout << "number of singular element pairs: " << singularElemPairTestIndices.size() << std::endl;
-  std::cout << "number of regular element pairs: " << regularElemPairTestIndices[0][0].size() << std::endl;
+//  std::cout << "number of singular element pairs: " << singularElemPairTestIndices.size() << std::endl;
+//  std::cout << "number of regular element pairs: " << regularElemPairTestIndices[0][0].size() << std::endl;
 
-  std::cout << "singularElemPairIndices = " << std::endl;
-  for (int i = 0; i < singularElemPairTestIndices.size(); ++i) {
-    std::cout << singularElemPairTestIndices[i] << " "
-              << singularElemPairTrialIndices[i] << std::endl;
-  }
-  std::cout << std::endl;
+//  std::cout << "singularElemPairIndices = " << std::endl;
+//  for (int i = 0; i < singularElemPairTestIndices.size(); ++i) {
+//    std::cout << singularElemPairTestIndices[i] << " "
+//              << singularElemPairTrialIndices[i] << std::endl;
+//  }
+//  std::cout << std::endl;
+//
+//  std::cout << "regularElemPairIndices = " << std::endl;
+//  for (int i = 0; i < regularElemPairTestIndices[0][0].size(); ++i) {
+//    std::cout << regularElemPairTestIndices[0][0][i] << " "
+//              << regularElemPairTrialIndices[0][0][i] << std::endl;
+//  }
+//  std::cout << std::endl;
 
-  std::cout << "regularElemPairIndices = " << std::endl;
-  for (int i = 0; i < regularElemPairTestIndices[0][0].size(); ++i) {
-    std::cout << regularElemPairTestIndices[0][0][i] << " "
-              << regularElemPairTrialIndices[0][0][i] << std::endl;
-  }
-  std::cout << std::endl;
-
-  std::cout << "testQuadPoints = " << std::endl;
-  std::cout << regularQuadOrderCombinations[0].first.first << std::endl;
-  std::cout << "testQuadWeights = " << std::endl;
-  for (int i = 0; i < regularQuadOrderCombinations[0].first.second.size(); ++i) {
-    std::cout << regularQuadOrderCombinations[0].first.second[i] << " " << std::flush;
-  }
-  std::cout << std::endl;
-  std::cout << "trialQuadPoints = " << std::endl;
-  std::cout << regularQuadOrderCombinations[0].second.first << std::endl;
-  std::cout << "trialQuadWeights = " << std::endl;
-  for (int i = 0; i < regularQuadOrderCombinations[0].second.second.size(); ++i) {
-    std::cout << regularQuadOrderCombinations[0].second.second[i] << " " << std::flush;
-  }
-  std::cout << std::endl;
-
-  std::cout << "number of test shape functions: " << regularShapesetCombinations[0][0].first->size() << std::endl;
-  std::cout << "number of trial shape functions: " << regularShapesetCombinations[0][0].second->size() << std::endl;
+//  std::cout << "testQuadPoints = " << std::endl;
+//  std::cout << regularQuadOrderCombinations[0].first.first << std::endl;
+//  std::cout << "testQuadWeights = " << std::endl;
+//  for (int i = 0; i < regularQuadOrderCombinations[0].first.second.size(); ++i) {
+//    std::cout << regularQuadOrderCombinations[0].first.second[i] << " " << std::flush;
+//  }
+//  std::cout << std::endl;
+//  std::cout << "trialQuadPoints = " << std::endl;
+//  std::cout << regularQuadOrderCombinations[0].second.first << std::endl;
+//  std::cout << "trialQuadWeights = " << std::endl;
+//  for (int i = 0; i < regularQuadOrderCombinations[0].second.second.size(); ++i) {
+//    std::cout << regularQuadOrderCombinations[0].second.second[i] << " " << std::flush;
+//  }
+//  std::cout << std::endl;
+//
+//  std::cout << "number of test shape functions: " << regularShapesetCombinations[0][0].first->size() << std::endl;
+//  std::cout << "number of trial shape functions: " << regularShapesetCombinations[0][0].second->size() << std::endl;
 
   // Evaluate singular integrals over selected element pairs
   std::vector<Matrix<ResultType>> singularResult;
@@ -369,12 +367,12 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakFor
 
       // Create chunks of element pairs according to a maximum number of element
       // data on the device
-      const unsigned int maxDeviceElemCount = 1000;
+      const unsigned int maxActiveElemCount = 1000;
 
       std::vector<int> testDeviceElemIndices;
       std::vector<int> trialDeviceElemIndices;
-      testDeviceElemIndices.reserve(maxDeviceElemCount);
-      trialDeviceElemIndices.reserve(maxDeviceElemCount);
+      testDeviceElemIndices.reserve(maxActiveElemCount);
+      trialDeviceElemIndices.reserve(maxActiveElemCount);
 
       std::vector<int> elemPairChunkTestIndices;
       std::vector<int> elemPairChunkTrialIndices;
@@ -388,7 +386,7 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakFor
 
       for (int elemPair = 0; elemPair < elemPairCount; ++elemPair) {
 
-        std::cout << "elemPair = " << elemPair << std::endl;
+//        std::cout << "elemPair = " << elemPair << std::endl;
 
         unsigned int deviceElemCount = 0;
 
@@ -411,22 +409,22 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakFor
           regularResultChunk.push_back(&regularResult[quadOrderCombination][shapesetCombination][elemPair]);
         }
 
-        std::cout << "elemPairChunkIndices = " << std::endl;
-        for (int i = 0; i < elemPairChunkTestIndices.size(); ++i) {
-          std::cout << elemPairChunkTestIndices[i] << " "
-                    << elemPairChunkTrialIndices[i] << std::endl;
-        }
-
-        std::cout << "testDeviceElemIndices = " << std::endl;
-        for (int i = 0; i < testDeviceElemIndices.size(); ++i) {
-          std::cout << testDeviceElemIndices[i] << " " << std::flush;
-        }
-        std::cout << std::endl;
-        std::cout << "trialDeviceElemIndices = " << std::endl;
-        for (int i = 0; i < trialDeviceElemIndices.size(); ++i) {
-          std::cout << trialDeviceElemIndices[i] << " " << std::flush;
-        }
-        std::cout << std::endl << std::endl;
+//        std::cout << "elemPairChunkIndices = " << std::endl;
+//        for (int i = 0; i < elemPairChunkTestIndices.size(); ++i) {
+//          std::cout << elemPairChunkTestIndices[i] << " "
+//                    << elemPairChunkTrialIndices[i] << std::endl;
+//        }
+//
+//        std::cout << "testDeviceElemIndices = " << std::endl;
+//        for (int i = 0; i < testDeviceElemIndices.size(); ++i) {
+//          std::cout << testDeviceElemIndices[i] << " " << std::flush;
+//        }
+//        std::cout << std::endl;
+//        std::cout << "trialDeviceElemIndices = " << std::endl;
+//        for (int i = 0; i < trialDeviceElemIndices.size(); ++i) {
+//          std::cout << trialDeviceElemIndices[i] << " " << std::flush;
+//        }
+//        std::cout << std::endl << std::endl;
 
         // TODO
         if (elemPairChunkTestIndices.size() == elemPairCount) {
@@ -440,6 +438,11 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakFor
                                    elemPairChunkTrialIndices,
                                    testShapeset, trialShapeset,
                                    regularResultChunk);
+
+//          std::cout << "regularResultChunk = " << std::endl;
+//          for (int i = 0; i < elemPairChunkTestIndices.size(); ++i) {
+//            std::cout << *(regularResultChunk[i]) << std::endl;
+//          }
 
           // Free element data on the device
           testGrid->freeElementData();
@@ -455,32 +458,85 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakFor
     }
   }
 
-    // TODO Global assembly
-//    {
-//      // Loop over test indices
-//      for (int row = 0; row < testElementCount; ++row) {
-//        const int testIndex = testIndices[row];
-//        const int testDofCount = testGlobalDofs[testIndex].size();
-//        // Add the integrals to appropriate entries in the operator's matrix
-//        for (int trialDof = 0; trialDof < trialDofCount; ++trialDof) {
-//          int trialGlobalDof = trialGlobalDofs[trialIndex][trialDof];
-//          if (trialGlobalDof < 0)
-//            continue;
-//          for (int testDof = 0; testDof < testDofCount; ++testDof) {
-//            int testGlobalDof = testGlobalDofs[testIndex][testDof];
-//            if (testGlobalDof < 0)
-//              continue;
-//            assert(std::abs(testLocalDofWeights[testIndex][testDof]) > 0.);
-//            assert(std::abs(trialLocalDofWeights[trialIndex][trialDof]) > 0.);
-//            result(testGlobalDof, trialGlobalDof) +=
-//              conj(testLocalDofWeights[testIndex][testDof]) *
-//              trialLocalDofWeights[trialIndex][trialDof] *
-//              localResult[row](testDof, trialDof);
-//          }
-//        }
-//      }
-//    }
-//  }
+  // Global assembly
+  {
+    // Loop over singular element pairs
+    for (int singularElemPair = 0; singularElemPair < singularElemPairTestIndices.size(); ++singularElemPair) {
+
+      const int testIndex = singularElemPairTestIndices[singularElemPair];
+      const int trialIndex = singularElemPairTrialIndices[singularElemPair];
+
+      const int testDofCount = testGlobalDofs[testIndex].size();
+      const int trialDofCount = trialGlobalDofs[trialIndex].size();
+
+      // Add the integrals to appropriate entries in the operator's matrix
+      for (int testDof = 0; testDof < testDofCount; ++testDof) {
+
+        int testGlobalDof = testGlobalDofs[testIndex][testDof];
+        if (testGlobalDof < 0)
+          continue;
+
+        for (int trialDof = 0; trialDof < trialDofCount; ++trialDof) {
+
+          int trialGlobalDof = trialGlobalDofs[trialIndex][trialDof];
+          if (trialGlobalDof < 0)
+            continue;
+
+          assert(std::abs(testLocalDofWeights[testIndex][testDof]) > 0.);
+          assert(std::abs(trialLocalDofWeights[trialIndex][trialDof]) > 0.);
+
+          result(testGlobalDof, trialGlobalDof) +=
+            conj(testLocalDofWeights[testIndex][testDof]) *
+            trialLocalDofWeights[trialIndex][trialDof] *
+            singularResult[singularElemPair](testDof, trialDof);
+        }
+      }
+    }
+
+    // Loop over regular element pairs
+    for (int quadOrderCombination = 0; quadOrderCombination < quadOrderCombinationCount; ++quadOrderCombination) {
+
+      const unsigned int shapesetCombinationCount = regularResult[quadOrderCombination].size();
+      for (int shapesetCombination = 0; shapesetCombination < shapesetCombinationCount; ++shapesetCombination) {
+
+        const unsigned int elemPairCount = regularResult[quadOrderCombination][shapesetCombination].size();
+        for (int elemPair = 0; elemPair < elemPairCount; ++elemPair) {
+
+          const int testIndex = regularElemPairTestIndices[quadOrderCombination][shapesetCombination][elemPair];
+          const int trialIndex = regularElemPairTrialIndices[quadOrderCombination][shapesetCombination][elemPair];
+
+          const int testDofCount = testGlobalDofs[testIndex].size();
+          const int trialDofCount = trialGlobalDofs[trialIndex].size();
+
+          // Add the integrals to appropriate entries in the operator's matrix
+          for (int testDof = 0; testDof < testDofCount; ++testDof) {
+
+            int testGlobalDof = testGlobalDofs[testIndex][testDof];
+            if (testGlobalDof < 0)
+              continue;
+
+            for (int trialDof = 0; trialDof < trialDofCount; ++trialDof) {
+
+              int trialGlobalDof = trialGlobalDofs[trialIndex][trialDof];
+              if (trialGlobalDof < 0)
+                continue;
+
+              assert(std::abs(testLocalDofWeights[testIndex][testDof]) > 0.);
+              assert(std::abs(trialLocalDofWeights[trialIndex][trialDof]) > 0.);
+
+              result(testGlobalDof, trialGlobalDof) +=
+                conj(testLocalDofWeights[testIndex][testDof]) *
+                trialLocalDofWeights[trialIndex][trialDof] *
+                regularResult[quadOrderCombination][shapesetCombination][elemPair](testDof, trialDof);
+            }
+          }
+        }
+      }
+    }
+  }
+
+//  std::cout << "result (cudadense) = " << std::endl;
+//  std::cout << result << std::endl;
 
   // Create and return a discrete operator represented by the matrix that
   // has just been calculated

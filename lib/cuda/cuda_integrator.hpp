@@ -39,6 +39,7 @@ namespace Fiber {
 
 /** \cond FORWARD_DECL */
 template <typename BasisFunctionType> class Shapeset;
+template <typename BasisFunctionType> class BasisData;
 /** \endcond */
 
 /** \brief Regular integration over pairs of elements on the device. */

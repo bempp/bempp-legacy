@@ -239,9 +239,7 @@ namespace Bempp {
     m_activeElemIndices.clear();
   }
 
-  void CudaGrid::setupGeometry() {
-
-    if (m_activeElemIndices.empty()) {
+  void CudaGrid::setupAllElements() {
 
       m_activeElemIndices.resize(m_ElemCount);
       thrust::sequence(m_activeElemIndices.begin(), m_activeElemIndices.end());
@@ -319,15 +317,13 @@ namespace Bempp {
   //      std::cout << m_vtx0x[i] << std::endl;
   //    }
   //    std::cout << std::endl;
-
-      calculateNormalsAndIntegrationElements();
-    }
   }
 
   void CudaGrid::setupElements(const std::vector<int> &elementIndices) {
 
     if (m_activeElemIndices.empty()) {
 
+      // TODO: treat case ALL_ELEMS separately
       if (true) {
 
         const unsigned int activeElemCount = elementIndices.size();
@@ -338,11 +334,11 @@ namespace Bempp {
                                    elementIndices.begin()+activeElemCount);
         thrust::sort(m_activeElemIndices.begin(), m_activeElemIndices.end());
 
-        std::cout << "m_activeElemIndices = " << std::endl;
-        for (int i = 0; i < activeElemCount; ++i) {
-          std::cout << m_activeElemIndices[i] << " " << std::flush;
-        }
-        std::cout << std::endl;
+//        std::cout << "m_activeElemIndices = " << std::endl;
+//        for (int i = 0; i < activeElemCount; ++i) {
+//          std::cout << m_activeElemIndices[i] << " " << std::flush;
+//        }
+//        std::cout << std::endl;
 
         // Gather element corner coordinates
         m_vtx0x.resize(activeElemCount);
@@ -428,15 +424,28 @@ namespace Bempp {
         std::cout << "Time for gathering element corner coordinates is "
           << elapsedTimeGather << " ms" << std::endl;
 
-        std::cout << "m_vtx0x = " << std::endl;
-        for (int i = 0; i < activeElemCount; ++i) {
-          std::cout << m_vtx0x[i] << " " << std::flush;
-        }
-        std::cout << std::endl;
+//        std::cout << "m_vtx0x = " << std::endl;
+//        for (int i = 0; i < activeElemCount; ++i) {
+//          std::cout << m_vtx0x[i] << " " << std::flush;
+//        }
+//        std::cout << std::endl;
       }
 
       calculateNormalsAndIntegrationElements();
     }
+  }
+
+  void CudaGrid::getElementData(
+      unsigned int &activeElemCount,
+      thrust::device_vector<int> &activeElemIndices,
+      thrust::device_vector<double> &normals,
+      thrust::device_vector<double> &integrationElements) const {
+
+      // TODO: avoid copy
+      activeElemCount = m_activeElemIndices.size();
+      activeElemIndices = m_activeElemIndices;
+      normals = m_normals;
+      integrationElements = m_integrationElements;
   }
 
   void CudaGrid::freeElementData() {
@@ -484,19 +493,19 @@ namespace Bempp {
     std::cout << "Time for calculating normals and integration elements is "
       << elapsedTimeNormals << " ms" << std::endl;
 
-    std::cout << "m_normals = " << std::endl;
-    for (int i = 0; i < activeElemCount; ++i) {
-      for (int j = 0; j < m_dim; ++j) {
-        std::cout << m_normals[j * activeElemCount + i] << " " << std::flush;
-      }
-      std::cout << std::endl;
-    }
-
-    std::cout << "m_integrationElements = " << std::endl;
-    for (int i = 0; i < activeElemCount; ++i) {
-      std::cout << m_integrationElements[i] << " " << std::flush;
-    }
-    std::cout << std::endl;
+//    std::cout << "m_normals = " << std::endl;
+//    for (int i = 0; i < activeElemCount; ++i) {
+//      for (int j = 0; j < m_dim; ++j) {
+//        std::cout << m_normals[j * activeElemCount + i] << " " << std::flush;
+//      }
+//      std::cout << std::endl;
+//    }
+//
+//    std::cout << "m_integrationElements = " << std::endl;
+//    for (int i = 0; i < activeElemCount; ++i) {
+//      std::cout << m_integrationElements[i] << " " << std::flush;
+//    }
+//    std::cout << std::endl;
   }
 
   void CudaGrid::local2global(const Matrix<double> &localPoints,
@@ -585,18 +594,18 @@ namespace Bempp {
     std::cout << "Time for mapping local to global coordinates is "
       << elapsedTimeMapping << " ms" << std::endl;
 
-    std::cout << "globalPoints = " << std::endl;
-    for (int i = 0; i < activeElemCount; ++i) {
-      for (int j = 0; j < localPointCount; ++j) {
-        for (int k = 0; k < m_dim; ++k) {
-          std::cout << globalPoints[k * localPointCount * activeElemCount
-                                  + j * activeElemCount
-                                  + i] << " " << std::flush;
-        }
-        std::cout << std::endl;
-      }
-      std::cout << std::endl;
-    }
+//    std::cout << "globalPoints = " << std::endl;
+//    for (int i = 0; i < activeElemCount; ++i) {
+//      for (int j = 0; j < localPointCount; ++j) {
+//        for (int k = 0; k < m_dim; ++k) {
+//          std::cout << globalPoints[k * localPointCount * activeElemCount
+//                                  + j * activeElemCount
+//                                  + i] << " " << std::flush;
+//        }
+//        std::cout << std::endl;
+//      }
+//      std::cout << std::endl;
+//    }
   }
 
 } // namespace Bempp
