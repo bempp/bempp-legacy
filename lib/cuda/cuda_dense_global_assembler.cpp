@@ -35,6 +35,7 @@
 #include "../grid/grid.hpp"
 
 #include <algorithm>
+#include <chrono>
 
 namespace Bempp {
 
@@ -174,8 +175,8 @@ void getSortedElementPairs(
 
         const int testBasisOrder = testShapeset->order();
         const int trialBasisOrder = trialShapeset->order();
-        testQuadOrder = testBasisOrder+2;
-        trialQuadOrder = trialBasisOrder+2;
+        testQuadOrder = testBasisOrder+4;
+        trialQuadOrder = trialBasisOrder+4;
 
         regularElemPairTestIndices[0][0].push_back(testIndices[testIndex]);
         regularElemPairTrialIndices[0][0].push_back(trialIndices[trialIndex]);
@@ -282,11 +283,18 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakFor
   std::vector<int> singularElemPairTestIndices;
   std::vector<int> singularElemPairTrialIndices;
 
+  std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+
   getSortedElementPairs(
       testSpace, trialSpace, testIndices, trialIndices,
       regularElemPairTestIndices, regularElemPairTrialIndices,
       regularQuadOrderCombinations, regularShapesetCombinations,
       singularElemPairTestIndices, singularElemPairTrialIndices);
+
+  std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+  std::cout << "Time for getSortedElementPairs() = "
+            << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()
+            << " ms" << std::endl;
 
 //  std::cout << "number of singular element pairs: " << singularElemPairTestIndices.size() << std::endl;
 //  std::cout << "number of regular element pairs: " << regularElemPairTestIndices[0][0].size() << std::endl;
@@ -323,11 +331,18 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakFor
 //  std::cout << "number of test shape functions: " << regularShapesetCombinations[0][0].first->size() << std::endl;
 //  std::cout << "number of trial shape functions: " << regularShapesetCombinations[0][0].second->size() << std::endl;
 
+  begin = std::chrono::steady_clock::now();
+
   // Evaluate singular integrals over selected element pairs
   std::vector<Matrix<ResultType>> singularResult;
   assembler.evaluateLocalWeakForms(singularElemPairTestIndices,
                                    singularElemPairTrialIndices,
                                    singularResult);
+
+  end = std::chrono::steady_clock::now();
+  std::cout << "Time for evaluateSingularWeakForms() = "
+            << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()
+            << " ms" << std::endl;
 
   std::vector<std::vector<std::vector<Matrix<ResultType>>>> regularResult;
 
@@ -338,6 +353,8 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakFor
   const unsigned int quadOrderCombinationCount = regularQuadOrderCombinations.size();
 
   regularResult.resize(quadOrderCombinationCount);
+
+  begin = std::chrono::steady_clock::now();
 
   for (int quadOrderCombination = 0; quadOrderCombination < quadOrderCombinationCount; ++quadOrderCombination) {
 
@@ -367,12 +384,25 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakFor
 
       // Create chunks of element pairs according to a maximum number of element
       // data on the device
-      const unsigned int maxActiveElemCount = 1000;
+      const int ALL_ELEMS = -1;
+      const int maxActiveElemCount = ALL_ELEMS;
 
+      // TODO: use a set instead of a vector?
       std::vector<int> testDeviceElemIndices;
       std::vector<int> trialDeviceElemIndices;
-      testDeviceElemIndices.reserve(maxActiveElemCount);
-      trialDeviceElemIndices.reserve(maxActiveElemCount);
+
+      if (maxActiveElemCount != ALL_ELEMS) {
+
+        testDeviceElemIndices.reserve(maxActiveElemCount);
+        trialDeviceElemIndices.reserve(maxActiveElemCount);
+
+      } else {
+
+       testDeviceElemIndices.resize(1);
+       trialDeviceElemIndices.resize(1);
+       testDeviceElemIndices[0] = -1;
+       trialDeviceElemIndices[0] = -1;
+      }
 
       std::vector<int> elemPairChunkTestIndices;
       std::vector<int> elemPairChunkTrialIndices;
@@ -401,10 +431,13 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakFor
           elemPairChunkTestIndices.push_back(elemPairTestIndex);
           elemPairChunkTrialIndices.push_back(elemPairTrialIndex);
 
-          if (std::find(testDeviceElemIndices.begin(), testDeviceElemIndices.end(), elemPairTestIndex) == testDeviceElemIndices.end())
-            testDeviceElemIndices.push_back(elemPairTestIndex);
-          if (std::find(trialDeviceElemIndices.begin(), trialDeviceElemIndices.end(), elemPairTrialIndex) == trialDeviceElemIndices.end())
-            trialDeviceElemIndices.push_back(elemPairTrialIndex);
+          if (maxActiveElemCount != ALL_ELEMS) {
+
+            if (std::find(testDeviceElemIndices.begin(), testDeviceElemIndices.end(), elemPairTestIndex) == testDeviceElemIndices.end())
+              testDeviceElemIndices.push_back(elemPairTestIndex);
+            if (std::find(trialDeviceElemIndices.begin(), trialDeviceElemIndices.end(), elemPairTrialIndex) == trialDeviceElemIndices.end())
+              trialDeviceElemIndices.push_back(elemPairTrialIndex);
+          }
 
           regularResultChunk.push_back(&regularResult[quadOrderCombination][shapesetCombination][elemPair]);
         }
@@ -429,15 +462,24 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakFor
         // TODO
         if (elemPairChunkTestIndices.size() == elemPairCount) {
 
-          // Setup geometry data for selected elements on the device
-          testGrid->setupElements(testDeviceElemIndices);
-          trialGrid->setupElements(trialDeviceElemIndices);
+          end = std::chrono::steady_clock::now();
+          std::cout << "Time for creating chunk = "
+                    << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()
+                    << " ms" << std::endl;
 
+          begin = std::chrono::steady_clock::now();
           // Evaluate regular integrals over selected element pairs
           cudaIntegrator.integrate(elemPairChunkTestIndices,
                                    elemPairChunkTrialIndices,
+                                   testDeviceElemIndices,
+                                   trialDeviceElemIndices,
                                    testShapeset, trialShapeset,
                                    regularResultChunk);
+
+          end = std::chrono::steady_clock::now();
+          std::cout << "Time for integrate() = "
+                    << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()
+                    << " ms" << std::endl;
 
 //          std::cout << "regularResultChunk = " << std::endl;
 //          for (int i = 0; i < elemPairChunkTestIndices.size(); ++i) {
@@ -453,6 +495,8 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakFor
           elemPairChunkTestIndices.clear();
           elemPairChunkTrialIndices.clear();
           regularResultChunk.clear();
+
+          begin = std::chrono::steady_clock::now();
         }
       }
     }
@@ -460,6 +504,8 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakFor
 
   // Global assembly
   {
+    begin = std::chrono::steady_clock::now();
+
     // Loop over singular element pairs
     for (int singularElemPair = 0; singularElemPair < singularElemPairTestIndices.size(); ++singularElemPair) {
 
@@ -533,6 +579,10 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakFor
         }
       }
     }
+    end = std::chrono::steady_clock::now();
+    std::cout << "Time for global assembly = "
+              << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()
+              << " ms" << std::endl;
   }
 
 //  std::cout << "result (cudadense) = " << std::endl;

@@ -53,8 +53,9 @@ public:
       const Matrix<double> &localTrialQuadPoints,
       const std::vector<double> &testQuadWeights,
       const std::vector<double> &trialQuadWeights,
-      shared_ptr<const Bempp::CudaGrid> testGrid,
-      shared_ptr<const Bempp::CudaGrid> trialGrid);
+      shared_ptr<Bempp::CudaGrid> testGrid,
+      shared_ptr<Bempp::CudaGrid> trialGrid,
+      bool cacheElemData = false);
 
   /** \brief Destructor. */
   virtual ~CudaIntegrator();
@@ -62,9 +63,11 @@ public:
   void integrate(
       const std::vector<int> &elementPairTestIndices,
       const std::vector<int> &elementPairTrialIndices,
+      const std::vector<int> &testDeviceElemIndices,
+      const std::vector<int> &trialDeviceElemIndices,
       const Shapeset<BasisFunctionType> &testShapeset,
       const Shapeset<BasisFunctionType> &trialShapeset,
-      std::vector<Matrix<ResultType>*> &result) const;
+      std::vector<Matrix<ResultType>*> &result);
 
 private:
   /** \cond PRIVATE */
@@ -74,8 +77,10 @@ private:
   std::vector<double> m_testQuadWeights;
   std::vector<double> m_trialQuadWeights;
 
-  shared_ptr<const Bempp::CudaGrid> m_testGrid;
-  shared_ptr<const Bempp::CudaGrid> m_trialGrid;
+  shared_ptr<Bempp::CudaGrid> m_testGrid;
+  shared_ptr<Bempp::CudaGrid> m_trialGrid;
+
+  bool m_cacheElemData;
 
   /** \endcond */
 };

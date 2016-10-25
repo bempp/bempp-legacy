@@ -54,10 +54,23 @@ public:
    */
   void setupElements(const std::vector<int> &elementIndices);
 
-  void getElementData(unsigned int &activeElemCount,
-                      thrust::device_vector<int> &activeElemIndices,
-                      thrust::device_vector<double> &normals,
-                      thrust::device_vector<double> &integrationElements) const;
+  /**
+   * \brief Calculate element normal vectors and determinants of Jacobian
+   * (factor appearing in the integral transformation formula) on the device
+   */
+  void calculateNormalsAndIntegrationElements(
+      thrust::device_vector<double> &normals,
+      thrust::device_vector<double> &integrationElements) const;
+
+  void getRawElementData(thrust::device_vector<double> &vtx0x,
+                         thrust::device_vector<double> &vtx0y,
+                         thrust::device_vector<double> &vtx0z,
+                         thrust::device_vector<double> &vtx1x,
+                         thrust::device_vector<double> &vtx1y,
+                         thrust::device_vector<double> &vtx1z,
+                         thrust::device_vector<double> &vtx2x,
+                         thrust::device_vector<double> &vtx2y,
+                         thrust::device_vector<double> &vtx2z) const;
 
   /**
    * \brief Free element data on the device
@@ -81,12 +94,6 @@ private:
    * */
   void setupAllElements();
 
-  /**
-   * \brief Calculate element normal vectors and determinants of Jacobian
-   * (factor appearing in the integral transformation formula) on the device
-   */
-  void calculateNormalsAndIntegrationElements();
-
   // Mesh parameters
   unsigned int m_dim;
   unsigned int m_IdxCount;
@@ -108,9 +115,6 @@ private:
   thrust::device_vector<double> m_vtx2x;
   thrust::device_vector<double> m_vtx2y;
   thrust::device_vector<double> m_vtx2z;
-
-  thrust::device_vector<double> m_normals;
-  thrust::device_vector<double> m_integrationElements;
 
   thrust::device_vector<int> m_activeElemIndices;
 

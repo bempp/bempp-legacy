@@ -336,6 +336,9 @@ DenseGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
   //                        localResult[testIndex](testDof, trialDof);
   //    }
 
+//  std::cout << "result (dense) = " << std::endl;
+//  std::cout << result << std::endl;
+
   // Create and return a discrete operator represented by the matrix that
   // has just been calculated
   return std::unique_ptr<DiscreteBoundaryOperator<ResultType>>(

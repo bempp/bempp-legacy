@@ -20,6 +20,8 @@
 
 #include "cuda_grid.hpp"
 
+#include "../fiber/types.hpp"
+
 #include <thrust/gather.h>
 #include <thrust/transform.h>
 #include <thrust/tabulate.h>
@@ -187,9 +189,6 @@ namespace Bempp {
     m_vtx2y.clear();
     m_vtx2z.clear();
 
-    m_normals.clear();
-    m_integrationElements.clear();
-
     m_activeElemIndices.clear();
   }
 
@@ -241,8 +240,11 @@ namespace Bempp {
 
   void CudaGrid::setupAllElements() {
 
+    std::cout << "Hello, this is CudaGrid::setupAllElements()!" << std::endl;
+
       m_activeElemIndices.resize(m_ElemCount);
-      thrust::sequence(m_activeElemIndices.begin(), m_activeElemIndices.end());
+//      thrust::sequence(m_activeElemIndices.begin(), m_activeElemIndices.end());
+      m_activeElemIndices[0] = -1;
 
       // Gather element corner coordinates
       m_vtx0x.resize(m_ElemCount);
@@ -321,10 +323,13 @@ namespace Bempp {
 
   void CudaGrid::setupElements(const std::vector<int> &elementIndices) {
 
+    // TODO: define somewhere else
+    std::vector<int> ALL_ELEMS(1);
+    ALL_ELEMS[0] = -1;
+
     if (m_activeElemIndices.empty()) {
 
-      // TODO: treat case ALL_ELEMS separately
-      if (true) {
+      if (elementIndices != ALL_ELEMS) {
 
         const unsigned int activeElemCount = elementIndices.size();
 
@@ -429,23 +434,35 @@ namespace Bempp {
 //          std::cout << m_vtx0x[i] << " " << std::flush;
 //        }
 //        std::cout << std::endl;
-      }
 
-      calculateNormalsAndIntegrationElements();
+      } else {
+
+        setupAllElements();
+      }
     }
   }
 
-  void CudaGrid::getElementData(
-      unsigned int &activeElemCount,
-      thrust::device_vector<int> &activeElemIndices,
-      thrust::device_vector<double> &normals,
-      thrust::device_vector<double> &integrationElements) const {
+  void CudaGrid::getRawElementData(
+      thrust::device_vector<double> &vtx0x,
+      thrust::device_vector<double> &vtx0y,
+      thrust::device_vector<double> &vtx0z,
+      thrust::device_vector<double> &vtx1x,
+      thrust::device_vector<double> &vtx1y,
+      thrust::device_vector<double> &vtx1z,
+      thrust::device_vector<double> &vtx2x,
+      thrust::device_vector<double> &vtx2y,
+      thrust::device_vector<double> &vtx2z) const {
 
-      // TODO: avoid copy
-      activeElemCount = m_activeElemIndices.size();
-      activeElemIndices = m_activeElemIndices;
-      normals = m_normals;
-      integrationElements = m_integrationElements;
+    // TODO: avoid copy
+    vtx0x = m_vtx0x;
+    vtx0y = m_vtx0y;
+    vtx0z = m_vtx0z;
+    vtx1x = m_vtx1x;
+    vtx1y = m_vtx1y;
+    vtx1z = m_vtx1z;
+    vtx2x = m_vtx2x;
+    vtx2y = m_vtx2y;
+    vtx2z = m_vtx2z;
   }
 
   void CudaGrid::freeElementData() {
@@ -454,7 +471,9 @@ namespace Bempp {
     m_activeElemIndices.clear();
   }
 
-  void CudaGrid::calculateNormalsAndIntegrationElements() {
+  void CudaGrid::calculateNormalsAndIntegrationElements(
+      thrust::device_vector<double> &normals,
+      thrust::device_vector<double> &integrationElements) const {
 
     const unsigned int activeElemCount = m_activeElemIndices.size();
 
@@ -462,8 +481,8 @@ namespace Bempp {
       return;
 
     // Allocate device memory
-    m_normals.resize(m_dim * activeElemCount);
-    m_integrationElements.resize(activeElemCount);
+    normals.resize(m_dim * activeElemCount);
+    integrationElements.resize(activeElemCount);
 
     // Measure time of the GPU execution (CUDA event based)
     cudaEvent_t start, stop;
@@ -482,8 +501,8 @@ namespace Bempp {
                            m_vtx1x.end(), m_vtx1y.end(), m_vtx1z.end(),
                            m_vtx2x.end(), m_vtx2y.end(), m_vtx2z.end())),
       thrust::make_zip_iterator(
-        thrust::make_tuple(m_normals.begin(), m_normals.begin()+activeElemCount,
-                           m_normals.begin()+2*activeElemCount, m_integrationElements.begin())),
+        thrust::make_tuple(normals.begin(), normals.begin()+activeElemCount,
+                           normals.begin()+2*activeElemCount, integrationElements.begin())),
       calculateElementNormalAndIntegrationElementFunctor());
 
     cudaEventRecord(stop, 0);
@@ -493,17 +512,17 @@ namespace Bempp {
     std::cout << "Time for calculating normals and integration elements is "
       << elapsedTimeNormals << " ms" << std::endl;
 
-//    std::cout << "m_normals = " << std::endl;
+//    std::cout << "normals = " << std::endl;
 //    for (int i = 0; i < activeElemCount; ++i) {
 //      for (int j = 0; j < m_dim; ++j) {
-//        std::cout << m_normals[j * activeElemCount + i] << " " << std::flush;
+//        std::cout << normals[j * activeElemCount + i] << " " << std::flush;
 //      }
 //      std::cout << std::endl;
 //    }
 //
-//    std::cout << "m_integrationElements = " << std::endl;
+//    std::cout << "integrationElements = " << std::endl;
 //    for (int i = 0; i < activeElemCount; ++i) {
-//      std::cout << m_integrationElements[i] << " " << std::flush;
+//      std::cout << integrationElements[i] << " " << std::flush;
 //    }
 //    std::cout << std::endl;
   }
