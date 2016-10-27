@@ -48,11 +48,10 @@ public:
                     const Matrix<int> &elementCorners);
 
   /**
-   * \brief Setup geometry data for specified elements on the device i.e. gather
-   * element corner coordinates, calculate normal vectors and integration elements
-   * \param[in] elementIndices indices of elements to set up
+   * \brief Setup geometry data for all elements on the device i.e. gather
+   * element corner coordinates
    */
-  void setupElements(const std::vector<int> &elementIndices);
+  void setupGeometry();
 
   /**
    * \brief Calculate element normal vectors and determinants of Jacobian
@@ -62,20 +61,10 @@ public:
       thrust::device_vector<double> &normals,
       thrust::device_vector<double> &integrationElements) const;
 
-  void getRawElementData(thrust::device_vector<double> &vtx0x,
-                         thrust::device_vector<double> &vtx0y,
-                         thrust::device_vector<double> &vtx0z,
-                         thrust::device_vector<double> &vtx1x,
-                         thrust::device_vector<double> &vtx1y,
-                         thrust::device_vector<double> &vtx1z,
-                         thrust::device_vector<double> &vtx2x,
-                         thrust::device_vector<double> &vtx2y,
-                         thrust::device_vector<double> &vtx2z) const;
-
-  /**
-   * \brief Free element data on the device
-   */
-  void freeElementData();
+  void getRawGeometryData(unsigned int &vtxCount,
+                          unsigned int &elemCount,
+                          thrust::device_ptr<const double> &vertices,
+                          thrust::device_ptr<const int> &elementCorners);
 
   /**
    * \brief Convert local (logical) to global (physical) coordinates on the device
@@ -87,12 +76,6 @@ public:
 
 private:
   /** \cond PRIVATE */
-
-  /**
-   * \brief Setup geometry data for all elements on the device, i.e. gather
-   * element corner coordinates, calculate normal vectors and integration elements
-   * */
-  void setupAllElements();
 
   // Mesh parameters
   unsigned int m_dim;
@@ -116,7 +99,7 @@ private:
   thrust::device_vector<double> m_vtx2y;
   thrust::device_vector<double> m_vtx2z;
 
-  thrust::device_vector<int> m_activeElemIndices;
+  bool m_setupDone;
 
   /** \endcond */
 };

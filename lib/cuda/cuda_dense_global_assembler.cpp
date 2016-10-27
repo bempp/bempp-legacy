@@ -34,6 +34,7 @@
 #include "../space/space.hpp"
 #include "../grid/grid.hpp"
 
+#include <tbb/tbb.h>
 #include <algorithm>
 #include <chrono>
 
@@ -138,9 +139,20 @@ void getSortedElementPairs(
       trialRawGeometry.vertices(), trialRawGeometry.elementCornerIndices(),
       trialRawGeometry.auxData(), trialRawGeometry.domainIndices());
 
-  int testQuadOrder = 0;
-  int trialQuadOrder = 0;
-  ShapesetPair shapesetPair;
+  const Shapeset* testShapeset = testShapesets[testIndices[0]];
+  const Shapeset* trialShapeset = trialShapesets[trialIndices[0]];
+  ShapesetPair shapesetPair = std::make_pair(testShapeset, trialShapeset);
+  const int testBasisOrder = testShapeset->order();
+  const int trialBasisOrder = trialShapeset->order();
+  const int testQuadOrder = testBasisOrder+4;
+  const int trialQuadOrder = trialBasisOrder+4;
+  QuadDataPair quadDataPair;
+  Fiber::fillSingleQuadraturePointsAndWeights(
+      3, testQuadOrder, quadDataPair.first.first, quadDataPair.first.second);
+  Fiber::fillSingleQuadraturePointsAndWeights(
+      3, trialQuadOrder, quadDataPair.second.first, quadDataPair.second.second);
+  regularQuadOrderCombinations.push_back(quadDataPair);
+  regularShapesetCombinations[0].push_back(shapesetPair);
 
   // Sort element pairs regarding regular and singular integrals
   for (int testIndex = 0; testIndex < testIndexCount; ++testIndex) {
@@ -169,15 +181,6 @@ void getSortedElementPairs(
       if (topology.type == Fiber::ElementPairTopology::Disjoint) {
 
         // Element pair related to regular integrals
-        const Shapeset* testShapeset = testShapesets[testIndices[testIndex]];
-        const Shapeset* trialShapeset = trialShapesets[trialIndices[trialIndex]];
-        shapesetPair = std::make_pair(testShapeset, trialShapeset);
-
-        const int testBasisOrder = testShapeset->order();
-        const int trialBasisOrder = trialShapeset->order();
-        testQuadOrder = testBasisOrder+4;
-        trialQuadOrder = trialBasisOrder+4;
-
         regularElemPairTestIndices[0][0].push_back(testIndices[testIndex]);
         regularElemPairTrialIndices[0][0].push_back(trialIndices[trialIndex]);
 
@@ -189,14 +192,6 @@ void getSortedElementPairs(
       }
     }
   }
-
-  QuadDataPair quadDataPair;
-  Fiber::fillSingleQuadraturePointsAndWeights(
-      3, testQuadOrder, quadDataPair.first.first, quadDataPair.first.second);
-  Fiber::fillSingleQuadraturePointsAndWeights(
-      3, trialQuadOrder, quadDataPair.second.first, quadDataPair.second.second);
-  regularQuadOrderCombinations.push_back(quadDataPair);
-  regularShapesetCombinations[0].push_back(shapesetPair);
 }
 
 } // namespace
@@ -382,64 +377,37 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakFor
       const Shapeset &testShapeset = *(regularShapesetCombinations[quadOrderCombination][shapesetCombination].first);
       const Shapeset &trialShapeset = *(regularShapesetCombinations[quadOrderCombination][shapesetCombination].second);
 
-      // Create chunks of element pairs according to a maximum number of element
-      // data on the device
-      const int ALL_ELEMS = -1;
-      const int maxActiveElemCount = ALL_ELEMS;
+      regularResult[quadOrderCombination][shapesetCombination].resize(elemPairCount);
 
-      // TODO: use a set instead of a vector?
-      std::vector<int> testDeviceElemIndices;
-      std::vector<int> trialDeviceElemIndices;
-
-      if (maxActiveElemCount != ALL_ELEMS) {
-
-        testDeviceElemIndices.reserve(maxActiveElemCount);
-        trialDeviceElemIndices.reserve(maxActiveElemCount);
-
-      } else {
-
-       testDeviceElemIndices.resize(1);
-       trialDeviceElemIndices.resize(1);
-       testDeviceElemIndices[0] = -1;
-       trialDeviceElemIndices[0] = -1;
-      }
+      // Create chunks of element pairs according to a maximum number of
+      // element pairs active on the device
+      const unsigned int maxActiveElemPairCount = 100e06;
 
       std::vector<int> elemPairChunkTestIndices;
       std::vector<int> elemPairChunkTrialIndices;
-      elemPairChunkTestIndices.reserve(elemPairCount);
-      elemPairChunkTrialIndices.reserve(elemPairCount);
-
-      regularResult[quadOrderCombination][shapesetCombination].resize(elemPairCount);
+      elemPairChunkTestIndices.reserve(maxActiveElemPairCount);
+      elemPairChunkTrialIndices.reserve(maxActiveElemPairCount);
 
       std::vector<Matrix<ResultType>*> regularResultChunk;
-      regularResultChunk.reserve(elemPairCount);
+      regularResultChunk.reserve(maxActiveElemPairCount);
+
+      unsigned int activeElemPairCount = 0;
 
       for (int elemPair = 0; elemPair < elemPairCount; ++elemPair) {
 
 //        std::cout << "elemPair = " << elemPair << std::endl;
-
-        unsigned int deviceElemCount = 0;
 
         const int elemPairTestIndex =
             regularElemPairTestIndices[quadOrderCombination][shapesetCombination][elemPair];
         const int elemPairTrialIndex =
             regularElemPairTrialIndices[quadOrderCombination][shapesetCombination][elemPair];
 
-        // TODO
-        if (true) {
+        if (activeElemPairCount < maxActiveElemPairCount) {
 
           elemPairChunkTestIndices.push_back(elemPairTestIndex);
           elemPairChunkTrialIndices.push_back(elemPairTrialIndex);
-
-          if (maxActiveElemCount != ALL_ELEMS) {
-
-            if (std::find(testDeviceElemIndices.begin(), testDeviceElemIndices.end(), elemPairTestIndex) == testDeviceElemIndices.end())
-              testDeviceElemIndices.push_back(elemPairTestIndex);
-            if (std::find(trialDeviceElemIndices.begin(), trialDeviceElemIndices.end(), elemPairTrialIndex) == trialDeviceElemIndices.end())
-              trialDeviceElemIndices.push_back(elemPairTrialIndex);
-          }
-
           regularResultChunk.push_back(&regularResult[quadOrderCombination][shapesetCombination][elemPair]);
+          activeElemPairCount++;
         }
 
 //        std::cout << "elemPairChunkIndices = " << std::endl;
@@ -447,20 +415,8 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakFor
 //          std::cout << elemPairChunkTestIndices[i] << " "
 //                    << elemPairChunkTrialIndices[i] << std::endl;
 //        }
-//
-//        std::cout << "testDeviceElemIndices = " << std::endl;
-//        for (int i = 0; i < testDeviceElemIndices.size(); ++i) {
-//          std::cout << testDeviceElemIndices[i] << " " << std::flush;
-//        }
-//        std::cout << std::endl;
-//        std::cout << "trialDeviceElemIndices = " << std::endl;
-//        for (int i = 0; i < trialDeviceElemIndices.size(); ++i) {
-//          std::cout << trialDeviceElemIndices[i] << " " << std::flush;
-//        }
-//        std::cout << std::endl << std::endl;
 
-        // TODO
-        if (elemPairChunkTestIndices.size() == elemPairCount) {
+        if (activeElemPairCount == maxActiveElemPairCount || elemPair == elemPairCount-1) {
 
           end = std::chrono::steady_clock::now();
           std::cout << "Time for creating chunk = "
@@ -468,11 +424,10 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakFor
                     << " ms" << std::endl;
 
           begin = std::chrono::steady_clock::now();
+
           // Evaluate regular integrals over selected element pairs
           cudaIntegrator.integrate(elemPairChunkTestIndices,
                                    elemPairChunkTrialIndices,
-                                   testDeviceElemIndices,
-                                   trialDeviceElemIndices,
                                    testShapeset, trialShapeset,
                                    regularResultChunk);
 
@@ -486,15 +441,10 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakFor
 //            std::cout << *(regularResultChunk[i]) << std::endl;
 //          }
 
-          // Free element data on the device
-          testGrid->freeElementData();
-          trialGrid->freeElementData();
-
-          testDeviceElemIndices.clear();
-          trialDeviceElemIndices.clear();
           elemPairChunkTestIndices.clear();
           elemPairChunkTrialIndices.clear();
           regularResultChunk.clear();
+          activeElemPairCount = 0;
 
           begin = std::chrono::steady_clock::now();
         }

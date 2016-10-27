@@ -63,8 +63,6 @@ public:
   void integrate(
       const std::vector<int> &elementPairTestIndices,
       const std::vector<int> &elementPairTrialIndices,
-      const std::vector<int> &testDeviceElemIndices,
-      const std::vector<int> &trialDeviceElemIndices,
       const Shapeset<BasisFunctionType> &testShapeset,
       const Shapeset<BasisFunctionType> &trialShapeset,
       std::vector<Matrix<ResultType>*> &result);
