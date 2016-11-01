@@ -21,11 +21,17 @@
 #ifndef fiber_cuda_integrator_hpp
 #define fiber_cuda_integrator_hpp
 
+#include "cuda_evaluate_laplace_3d_single_layer_potential_integral_functor.cuh"
+#include "cuda_evaluate_laplace_3d_double_layer_potential_integral_functor.cuh"
+
 #include "../common/common.hpp"
 #include "../common/eigen_support.hpp"
+#include "../common/scalar_traits.hpp"
 
 #include "../fiber/types.hpp"
 #include "../fiber/shared_ptr.hpp"
+
+#include <thrust/device_ptr.h>
 
 namespace Bempp {
 
@@ -47,12 +53,16 @@ template <typename BasisFunctionType, typename ResultType>
 class CudaIntegrator {
 public:
 
+  typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
+
   /** \brief Constructor */
   CudaIntegrator(
-      const Matrix<double> &localTestQuadPoints,
-      const Matrix<double> &localTrialQuadPoints,
-      const std::vector<double> &testQuadWeights,
-      const std::vector<double> &trialQuadWeights,
+      const Matrix<CoordinateType> &localTestQuadPoints,
+      const Matrix<CoordinateType> &localTrialQuadPoints,
+      const std::vector<CoordinateType> &testQuadWeights,
+      const std::vector<CoordinateType> &trialQuadWeights,
+      const Shapeset<BasisFunctionType> &testShapeset,
+      const Shapeset<BasisFunctionType> &trialShapeset,
       shared_ptr<Bempp::CudaGrid> testGrid,
       shared_ptr<Bempp::CudaGrid> trialGrid,
       bool cacheElemData = false);
@@ -63,17 +73,19 @@ public:
   void integrate(
       const std::vector<int> &elementPairTestIndices,
       const std::vector<int> &elementPairTrialIndices,
-      const Shapeset<BasisFunctionType> &testShapeset,
-      const Shapeset<BasisFunctionType> &trialShapeset,
       std::vector<Matrix<ResultType>*> &result);
 
 private:
   /** \cond PRIVATE */
 
-  Matrix<double> m_localTestQuadPoints;
-  Matrix<double> m_localTrialQuadPoints;
-  std::vector<double> m_testQuadWeights;
-  std::vector<double> m_trialQuadWeights;
+  QuadData<CoordinateType> m_testQuadData;
+  QuadData<CoordinateType> m_trialQuadData;
+
+  BasisFunData<BasisFunctionType> m_testBasisData;
+  BasisFunData<BasisFunctionType> m_trialBasisData;
+
+  Matrix<CoordinateType> m_localTestQuadPoints;
+  Matrix<CoordinateType> m_localTrialQuadPoints;
 
   shared_ptr<Bempp::CudaGrid> m_testGrid;
   shared_ptr<Bempp::CudaGrid> m_trialGrid;

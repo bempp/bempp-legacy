@@ -84,16 +84,24 @@ void getSortedElementPairs(
     std::vector<int> &trialIndices,
     std::vector<std::vector<std::vector<int>>> &regularElemPairTestIndices,
     std::vector<std::vector<std::vector<int>>> &regularElemPairTrialIndices,
-    std::vector<std::pair<std::pair<Matrix<double>, std::vector<double>>, std::pair<Matrix<double>, std::vector<double>>>>
+    std::vector<std::pair<
+    std::pair<Matrix<typename ScalarTraits<BasisFunctionType>::RealType>,
+    std::vector<typename ScalarTraits<BasisFunctionType>::RealType>>,
+    std::pair<Matrix<typename ScalarTraits<BasisFunctionType>::RealType>,
+    std::vector<typename ScalarTraits<BasisFunctionType>::RealType>>>>
     &regularQuadOrderCombinations,
-    std::vector<std::vector<std::pair<const Fiber::Shapeset<BasisFunctionType>*, const Fiber::Shapeset<BasisFunctionType>*>>>
+    std::vector<std::vector<std::pair<
+    const Fiber::Shapeset<BasisFunctionType>*,
+    const Fiber::Shapeset<BasisFunctionType>*>>>
     &regularShapesetCombinations,
     std::vector<int> &singularElemPairTestIndices,
     std::vector<int> &singularElemPairTrialIndices) {
 
+  typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
+
   typedef Fiber::Shapeset<BasisFunctionType> Shapeset;
   typedef std::pair<const Shapeset*, const Shapeset*> ShapesetPair;
-  typedef std::pair<Matrix<double>, std::vector<double>> QuadData;
+  typedef std::pair<Matrix<CoordinateType>, std::vector<CoordinateType>> QuadData;
   typedef std::pair<QuadData, QuadData> QuadDataPair;
 
   std::vector<const Shapeset*> testShapesets, trialShapesets;
@@ -127,9 +135,9 @@ void getSortedElementPairs(
   std::unique_ptr<GridView> testView = testSpace.grid()->leafView();
   std::unique_ptr<GridView> trialView = trialSpace.grid()->leafView();
 
-  Fiber::RawGridGeometry<double> testRawGeometry(
+  Fiber::RawGridGeometry<CoordinateType> testRawGeometry(
       testSpace.grid()->dim(), testSpace.grid()->dimWorld());
-  Fiber::RawGridGeometry<double> trialRawGeometry(
+  Fiber::RawGridGeometry<CoordinateType> trialRawGeometry(
       trialSpace.grid()->dim(), trialSpace.grid()->dimWorld());
 
   testView->getRawElementData(
@@ -355,18 +363,14 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakFor
 
     const unsigned int shapesetCombinationCount = regularShapesetCombinations[quadOrderCombination].size();
 
-    Matrix<double> localTestQuadPoints = regularQuadOrderCombinations[quadOrderCombination].first.first;
-    Matrix<double> localTrialQuadPoints = regularQuadOrderCombinations[quadOrderCombination].second.first;
-    std::vector<double> testQuadWeights = regularQuadOrderCombinations[quadOrderCombination].first.second;
-    std::vector<double> trialQuadWeights = regularQuadOrderCombinations[quadOrderCombination].second.second;
-
-    Fiber::CudaIntegrator<BasisFunctionType, ResultType> cudaIntegrator(
-        localTestQuadPoints,
-        localTrialQuadPoints,
-        testQuadWeights,
-        trialQuadWeights,
-        testGrid,
-        trialGrid);
+    Matrix<CoordinateType> localTestQuadPoints =
+        regularQuadOrderCombinations[quadOrderCombination].first.first;
+    Matrix<CoordinateType> localTrialQuadPoints =
+        regularQuadOrderCombinations[quadOrderCombination].second.first;
+    std::vector<CoordinateType> testQuadWeights =
+        regularQuadOrderCombinations[quadOrderCombination].first.second;
+    std::vector<CoordinateType> trialQuadWeights =
+        regularQuadOrderCombinations[quadOrderCombination].second.second;
 
     regularResult[quadOrderCombination].resize(shapesetCombinationCount);
 
@@ -376,6 +380,16 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakFor
 
       const Shapeset &testShapeset = *(regularShapesetCombinations[quadOrderCombination][shapesetCombination].first);
       const Shapeset &trialShapeset = *(regularShapesetCombinations[quadOrderCombination][shapesetCombination].second);
+
+      Fiber::CudaIntegrator<BasisFunctionType, ResultType> cudaIntegrator(
+          localTestQuadPoints,
+          localTrialQuadPoints,
+          testQuadWeights,
+          trialQuadWeights,
+          testShapeset,
+          trialShapeset,
+          testGrid,
+          trialGrid);
 
       regularResult[quadOrderCombination][shapesetCombination].resize(elemPairCount);
 
@@ -428,7 +442,6 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakFor
           // Evaluate regular integrals over selected element pairs
           cudaIntegrator.integrate(elemPairChunkTestIndices,
                                    elemPairChunkTrialIndices,
-                                   testShapeset, trialShapeset,
                                    regularResultChunk);
 
           end = std::chrono::steady_clock::now();
@@ -535,8 +548,8 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakFor
               << " ms" << std::endl;
   }
 
-//  std::cout << "result (cudadense) = " << std::endl;
-//  std::cout << result << std::endl;
+  std::cout << "result (cudadense) = " << std::endl;
+  std::cout << result << std::endl;
 
   // Create and return a discrete operator represented by the matrix that
   // has just been calculated

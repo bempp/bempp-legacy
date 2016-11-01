@@ -25,6 +25,7 @@
 
 #include "../common/common.hpp"
 #include "../common/eigen_support.hpp"
+#include "../common/scalar_traits.hpp"
 
 namespace Fiber {
 /** \cond FORWARD_DECL */
@@ -47,10 +48,11 @@ template <typename BasisFunctionType, typename ResultType> class Context;
 template <typename BasisFunctionType, typename ResultType>
 class CudaDenseGlobalAssembler {
 public:
+  typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
 
   typedef Fiber::Shapeset<BasisFunctionType> Shapeset;
   typedef std::pair<const Shapeset*, const Shapeset*> ShapesetPair;
-  typedef std::pair<Matrix<double>, std::vector<double>> QuadData;
+  typedef std::pair<Matrix<CoordinateType>, std::vector<CoordinateType>> QuadData;
   typedef std::pair<QuadData, QuadData> QuadDataPair;
 
   typedef Fiber::LocalAssemblerForIntegralOperators<ResultType>

@@ -318,6 +318,26 @@ namespace Bempp {
   void CudaGrid::calculateNormalsAndIntegrationElements(
       thrust::device_vector<double> &normals,
       thrust::device_vector<double> &integrationElements) const {
+    calculateNormalsAndIntegrationElementsImpl(normals, integrationElements);
+  }
+
+  void CudaGrid::calculateNormalsAndIntegrationElements(
+      thrust::device_vector<float> &normals,
+      thrust::device_vector<float> &integrationElements) const {
+    thrust::device_vector<double> normalsDouble;
+    thrust::device_vector<double> integrationElementsDouble;
+    calculateNormalsAndIntegrationElementsImpl(
+        normalsDouble, integrationElementsDouble);
+    normals.resize(normalsDouble.size());
+    integrationElements.resize(integrationElementsDouble.size());
+    thrust::copy(normalsDouble.begin(), normalsDouble.end(), normals.begin());
+    thrust::copy(integrationElementsDouble.begin(), integrationElementsDouble.end(),
+        integrationElements.begin());
+  }
+
+  void CudaGrid::calculateNormalsAndIntegrationElementsImpl(
+      thrust::device_vector<double> &normals,
+      thrust::device_vector<double> &integrationElements) const {
 
     if (m_setupDone == true) {
 
@@ -375,6 +395,21 @@ namespace Bempp {
 
   void CudaGrid::local2global(const Matrix<double> &localPoints,
                               thrust::device_vector<double> &globalPoints) const {
+    local2globalImpl(localPoints, globalPoints);
+  }
+
+  void CudaGrid::local2global(const Matrix<float> &localPoints,
+                              thrust::device_vector<float> &globalPoints) const {
+    Matrix<double> localPointsDouble;
+    convertMat(localPoints, localPointsDouble);
+    thrust::device_vector<double> globalPointsDouble;
+    local2globalImpl(localPointsDouble, globalPointsDouble);
+    globalPoints.resize(globalPointsDouble.size());
+    thrust::copy(globalPointsDouble.begin(), globalPointsDouble.end(), globalPoints.begin());
+  }
+
+  void CudaGrid::local2globalImpl(const Matrix<double> &localPoints,
+                                  thrust::device_vector<double> &globalPoints) const {
 
     if (m_setupDone == true) {
 
@@ -462,9 +497,17 @@ namespace Bempp {
 //    }
 
     } else {
-      throw std::runtime_error("CudaGrid::local2global(): "
+      throw std::runtime_error("CudaGrid::local2globalImpl(): "
                                "setup required");
     }
+  }
+
+  template <typename T1, typename T2>
+  void CudaGrid::convertMat(const Matrix<T1> &in, Matrix<T2> &out) const {
+    out.resize(in.rows(), in.cols());
+    for (int j = 0; j < in.cols(); ++j)
+      for (int i = 0; i < in.rows(); ++i)
+        out(i, j) = in(i, j);
   }
 
 } // namespace Bempp

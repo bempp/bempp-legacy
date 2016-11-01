@@ -21,8 +21,6 @@
 #include "cuda_integrator.hpp"
 #include "cuda_grid.hpp"
 
-#include "../common/not_implemented_error.hpp"
-
 #include "../fiber/explicit_instantiation.hpp"
 #include "../fiber/shapeset.hpp"
 #include "../fiber/basis_data.hpp"
@@ -31,444 +29,94 @@
 #include <complex>
 #include <chrono>
 #include <thrust/device_vector.h>
-#include <thrust/execution_policy.h>
 
 namespace Fiber {
 
-struct BasisFunData {
-  unsigned int dofCount;
-  thrust::device_ptr<double> basisData;
-};
-
-struct QuadData {
-  unsigned int pointCount;
-  thrust::device_ptr<double> weights;
-};
-
-struct GeomShapeFunData {
-  thrust::device_ptr<const double> fun0;
-  thrust::device_ptr<const double> fun1;
-  thrust::device_ptr<const double> fun2;
-};
-
-struct RawGeometryData {
-  unsigned int elemCount, vtxCount;
-  thrust::device_ptr<const double> vertices;
-  thrust::device_ptr<const int> elementCorners;
-};
-
-struct ElemData {
-  unsigned int activeElemCount;
-  thrust::device_ptr<double> geomData;
-  thrust::device_ptr<const double> normals;
-  thrust::device_ptr<const double> integrationElements;
-};
-
-//template <typename BasisFunctionType, typename KernelType, typename ResultType>
-struct evaluateIntegralFunctorCached {
-
-  thrust::device_ptr<int> elementPairTestIndexPositions;
-  thrust::device_ptr<int> elementPairTrialIndexPositions;
-  QuadData testQuadData, trialQuadData;
-  unsigned int testDofCount, trialDofCount;
-  thrust::device_ptr<double> testBasisData, trialBasisData;
-  ElemData testElemData, trialElemData;
-  thrust::device_ptr<double> result;
-
-  evaluateIntegralFunctorCached(
-      thrust::device_ptr<int> _elementPairTestIndexPositions,
-      thrust::device_ptr<int> _elementPairTrialIndexPositions,
-      const QuadData _testQuadData, const QuadData _trialQuadData,
-      const unsigned int _testDofCount, const unsigned int _trialDofCount,
-      thrust::device_ptr<double> _testBasisData,
-      thrust::device_ptr<double> _trialBasisData,
-      const ElemData _testElemData, const ElemData _trialElemData,
-      thrust::device_ptr<double> _result)
-      : elementPairTestIndexPositions(_elementPairTestIndexPositions),
-        elementPairTrialIndexPositions(_elementPairTrialIndexPositions),
-        testQuadData(_testQuadData), trialQuadData(_trialQuadData),
-        testDofCount(_testDofCount), trialDofCount(_trialDofCount),
-        testBasisData(_testBasisData), trialBasisData(_trialBasisData),
-        testElemData(_testElemData), trialElemData(_trialElemData),
-        result (_result) {
-
-    assert(testQuadData.pointCount <= 10);
-    assert(trialQuadData.pointCount <= 10);
-    assert(testDofCount * trialDofCount <= 36);
-  }
-
-  __host__ __device__
-  void operator() (const unsigned int i) {
-
-    const int testElemPosition = elementPairTestIndexPositions[i];
-    const int trialElemPosition = elementPairTrialIndexPositions[i];
-
-    clock_t start_time = clock();
-
-    const double testIntegrationElement =
-        testElemData.integrationElements[testElemPosition];
-    const double trialIntegrationElement =
-        trialElemData.integrationElements[trialElemPosition];
-
-    const unsigned int activeTestElemCount = testElemData.activeElemCount;
-    const unsigned int activeTrialElemCount = trialElemData.activeElemCount;
-
-    const double xTestElemNormal = testElemData.normals[testElemPosition];
-    const double yTestElemNormal = testElemData.normals[testElemPosition+activeTestElemCount];
-    const double zTestElemNormal = testElemData.normals[testElemPosition+2*activeTestElemCount];
-
-    const double xTrialElemNormal = trialElemData.normals[trialElemPosition];
-    const double yTrialElemNormal = trialElemData.normals[trialElemPosition+activeTrialElemCount];
-    const double zTrialElemNormal = trialElemData.normals[trialElemPosition+2*activeTrialElemCount];
-
-    clock_t stop_time = clock();
-
-    if (i == 0)
-      printf("Gather normals and integration elements: %d clock cycles\n",
-          stop_time-start_time);
-
-    start_time = clock();
-
-    double xTestGeomData[10], yTestGeomData[10], zTestGeomData[10];
-    double xTrialGeomData[10], yTrialGeomData[10], zTrialGeomData[10];
-    double testElemQuadWeights[10], trialElemQuadWeights[10];
-
-    const unsigned int testPointCount = testQuadData.pointCount;
-    const unsigned int trialPointCount = trialQuadData.pointCount;
-
-    for (int testPoint = 0; testPoint < testPointCount; ++testPoint) {
-      xTestGeomData[testPoint] =
-          testElemData.geomData[testPoint * activeTestElemCount + testElemPosition];
-      yTestGeomData[testPoint] =
-          testElemData.geomData[testPoint * activeTestElemCount + testElemPosition
-                                + testPointCount * activeTestElemCount];
-      zTestGeomData[testPoint] =
-          testElemData.geomData[testPoint * activeTestElemCount + testElemPosition
-                                + 2 * testPointCount * activeTestElemCount];
-      testElemQuadWeights[testPoint] = testQuadData.weights[testPoint];
-    }
-    for (int trialPoint = 0; trialPoint < trialPointCount; ++trialPoint) {
-      xTrialGeomData[trialPoint] =
-          trialElemData.geomData[trialPoint * activeTrialElemCount + trialElemPosition];
-      yTrialGeomData[trialPoint] =
-          trialElemData.geomData[trialPoint * activeTrialElemCount + trialElemPosition
-                                 + trialPointCount * activeTrialElemCount];
-      zTrialGeomData[trialPoint] =
-          trialElemData.geomData[trialPoint * activeTrialElemCount + trialElemPosition
-                                 + 2 * trialPointCount * activeTrialElemCount];
-      trialElemQuadWeights[trialPoint] = trialQuadData.weights[trialPoint];
-    }
-
-    stop_time = clock();
-
-    if (i == 0)
-      printf("Gather global points: %d clock cycles\n", stop_time-start_time);
-
-    start_time = clock();
-
-    double localResult[36];
-    for (size_t trialDof = 0; trialDof < trialDofCount; ++trialDof) {
-      for (size_t testDof = 0; testDof < testDofCount; ++testDof) {
-        double sum = 0.;
-        for (size_t trialPoint = 0; trialPoint < trialPointCount; ++trialPoint) {
-          const double trialWeight =
-              trialIntegrationElement * trialElemQuadWeights[trialPoint];
-          double partialSum = 0.;
-          for (size_t testPoint = 0; testPoint < testPointCount; ++testPoint) {
-            const double testWeight =
-                testIntegrationElement * testElemQuadWeights[testPoint];
-            const double xDist = xTestGeomData[testPoint] - xTrialGeomData[trialPoint];
-            const double yDist = yTestGeomData[testPoint] - yTrialGeomData[trialPoint];
-            const double zDist = zTestGeomData[testPoint] - zTrialGeomData[trialPoint];
-            const double distance = std::sqrt(xDist*xDist + yDist*yDist + zDist*zDist);
-            const double kernelValue = 1.0 / (4.0 * M_PI * distance);
-            partialSum += kernelValue *
-//                          testBasisData[testDof + testDofCount * testPoint] *
-//                          trialBasisData[trialDof + trialDofCount * trialPoint] *
-                          testWeight;
-          }
-          sum += partialSum * trialWeight;
-        }
-        localResult[testDof * trialDofCount + trialDof] = sum;
-      }
-    }
-
-    stop_time = clock();
-
-    if (i == 0)
-      printf("Numerical integration: %d clock cycles\n", stop_time-start_time);
-
-    start_time = clock();
-
-    // Copy local result to global device memory
-    const unsigned int offset = i * testDofCount * trialDofCount;
-    for (size_t trialDof = 0; trialDof < trialDofCount; ++trialDof) {
-      for (size_t testDof = 0; testDof < testDofCount; ++testDof) {
-        result[offset + testDof * trialDofCount + trialDof] =
-            localResult[testDof * trialDofCount + trialDof];
-      }
-    }
-
-    stop_time = clock();
-
-    if (i == 0)
-      printf("Copy to global memory: %d clock cycles\n", stop_time-start_time);
-  }
-};
-
-//template <typename BasisFunctionType, typename KernelType, typename ResultType>
-struct evaluateIntegralFunctorNonCached {
-
-  thrust::device_ptr<int> elementPairTestIndexPositions;
-  thrust::device_ptr<int> elementPairTrialIndexPositions;
-  QuadData testQuadData, trialQuadData;
-  unsigned int testDofCount, trialDofCount;
-  thrust::device_ptr<double> testBasisData, trialBasisData;
-  RawGeometryData testRawGeometryData, trialRawGeometryData;
-  GeomShapeFunData testGeomShapeFunData, trialGeomShapeFunData;
-  thrust::device_ptr<double> result;
-
-  evaluateIntegralFunctorNonCached(
-      thrust::device_ptr<int> _elementPairTestIndexPositions,
-      thrust::device_ptr<int> _elementPairTrialIndexPositions,
-      const QuadData _testQuadData, const QuadData _trialQuadData,
-      const unsigned int _testDofCount, const unsigned int _trialDofCount,
-      thrust::device_ptr<double> _testBasisData,
-      thrust::device_ptr<double> _trialBasisData,
-      const RawGeometryData _testRawGeometryData,
-      const RawGeometryData _trialRawGeometryData,
-      const GeomShapeFunData _testGeomShapeFunData,
-      const GeomShapeFunData _trialGeomShapeFunData,
-      thrust::device_ptr<double> _result)
-      : elementPairTestIndexPositions(_elementPairTestIndexPositions),
-        elementPairTrialIndexPositions(_elementPairTrialIndexPositions),
-        testQuadData(_testQuadData), trialQuadData(_trialQuadData),
-        testDofCount(_testDofCount), trialDofCount(_trialDofCount),
-        testBasisData(_testBasisData), trialBasisData(_trialBasisData),
-        testRawGeometryData(_testRawGeometryData),
-        trialRawGeometryData(_trialRawGeometryData),
-        testGeomShapeFunData(_testGeomShapeFunData),
-        trialGeomShapeFunData(_trialGeomShapeFunData),
-        result (_result) {
-
-    assert(testQuadData.pointCount <= 10);
-    assert(trialQuadData.pointCount <= 10);
-    assert(testDofCount * trialDofCount <= 36);
-  }
-
-  __host__ __device__
-  void operator() (const unsigned int i) {
-
-    const int coordCount = 3;
-
-    const int testElemPosition = elementPairTestIndexPositions[i];
-    const int trialElemPosition = elementPairTrialIndexPositions[i];
-
-    clock_t start_time = clock();
-
-    double testElemVtx0[coordCount];
-    double testElemVtx1[coordCount];
-    double testElemVtx2[coordCount];
-
-    double trialElemVtx0[coordCount];
-    double trialElemVtx1[coordCount];
-    double trialElemVtx2[coordCount];
-
-    const unsigned int testVtxCount = testRawGeometryData.vtxCount;
-    const unsigned int testElemCount = testRawGeometryData.elemCount;
-
-    const unsigned int trialVtxCount = trialRawGeometryData.vtxCount;
-    const unsigned int trialElemCount = trialRawGeometryData.elemCount;
-
-    for (int i = 0; i < coordCount; ++i) {
-
-      testElemVtx0[i] = testRawGeometryData.vertices[testRawGeometryData.elementCorners[testElemPosition]+i*testVtxCount];
-      testElemVtx1[i] = testRawGeometryData.vertices[testRawGeometryData.elementCorners[testElemPosition+testElemCount]+i*testVtxCount];
-      testElemVtx2[i] = testRawGeometryData.vertices[testRawGeometryData.elementCorners[testElemPosition+2*testElemCount]+i*testVtxCount];
-
-      trialElemVtx0[i] = trialRawGeometryData.vertices[trialRawGeometryData.elementCorners[trialElemPosition]+i*trialVtxCount];
-      trialElemVtx1[i] = trialRawGeometryData.vertices[trialRawGeometryData.elementCorners[trialElemPosition+trialElemCount]+i*trialVtxCount];
-      trialElemVtx2[i] = trialRawGeometryData.vertices[trialRawGeometryData.elementCorners[trialElemPosition+2*trialElemCount]+i*trialVtxCount];
-    }
-
-    clock_t stop_time = clock();
-
-    if (i == 0)
-      printf("Gather coordinates: %d clock cycles\n", stop_time-start_time);
-
-    start_time = clock();
-
-    double xTestElemNormal =
-        (testElemVtx1[1] - testElemVtx0[1]) * (testElemVtx2[2] - testElemVtx0[2])
-      - (testElemVtx1[2] - testElemVtx0[2]) * (testElemVtx2[1] - testElemVtx0[1]);
-    double yTestElemNormal =
-        (testElemVtx1[2] - testElemVtx0[2]) * (testElemVtx2[0] - testElemVtx0[0])
-      - (testElemVtx1[0] - testElemVtx0[0]) * (testElemVtx2[2] - testElemVtx0[2]);
-    double zTestElemNormal =
-        (testElemVtx1[0] - testElemVtx0[0]) * (testElemVtx2[1] - testElemVtx0[1])
-      - (testElemVtx1[1] - testElemVtx0[1]) * (testElemVtx2[0] - testElemVtx0[0]);
-
-    double xTrialElemNormal =
-        (trialElemVtx1[1] - trialElemVtx0[1]) * (trialElemVtx2[2] - trialElemVtx0[2])
-      - (trialElemVtx1[2] - trialElemVtx0[2]) * (trialElemVtx2[1] - trialElemVtx0[1]);
-    double yTrialElemNormal =
-        (trialElemVtx1[2] - trialElemVtx0[2]) * (trialElemVtx2[0] - trialElemVtx0[0])
-      - (trialElemVtx1[0] - trialElemVtx0[0]) * (trialElemVtx2[2] - trialElemVtx0[2]);
-    double zTrialElemNormal =
-        (trialElemVtx1[0] - trialElemVtx0[0]) * (trialElemVtx2[1] - trialElemVtx0[1])
-      - (trialElemVtx1[1] - trialElemVtx0[1]) * (trialElemVtx2[0] - trialElemVtx0[0]);
-
-    const double testIntegrationElement =
-        std::sqrt(xTestElemNormal*xTestElemNormal
-                + yTestElemNormal*yTestElemNormal
-                + zTestElemNormal*zTestElemNormal);
-
-    const double trialIntegrationElement =
-        std::sqrt(xTrialElemNormal*xTrialElemNormal
-                + yTrialElemNormal*yTrialElemNormal
-                + zTrialElemNormal*zTrialElemNormal);
-
-    xTestElemNormal /= testIntegrationElement;
-    yTestElemNormal /= testIntegrationElement;
-    zTestElemNormal /= testIntegrationElement;
-
-    xTrialElemNormal /= trialIntegrationElement;
-    yTrialElemNormal /= trialIntegrationElement;
-    zTrialElemNormal /= trialIntegrationElement;
-
-    stop_time = clock();
-
-    if (i == 0)
-      printf("Calculate normals and integration elements: %d clock cycles\n",
-          stop_time-start_time);
-
-    start_time = clock();
-
-    double testGeomData[10 * coordCount], trialGeomData[10 * coordCount];
-    double testElemQuadWeights[10], trialElemQuadWeights[10];
-
-    const unsigned int testPointCount = testQuadData.pointCount;
-    const unsigned int trialPointCount = trialQuadData.pointCount;
-
-    for (int testPoint = 0; testPoint < testPointCount; ++testPoint) {
-      const double ptFun0 = testGeomShapeFunData.fun0[testPoint];
-      const double ptFun1 = testGeomShapeFunData.fun1[testPoint];
-      const double ptFun2 = testGeomShapeFunData.fun2[testPoint];
-      for (int i = 0; i < coordCount; ++i) {
-        testGeomData[coordCount * testPoint + i] =
-            ptFun0 * testElemVtx0[i]
-          + ptFun1 * testElemVtx1[i]
-          + ptFun2 * testElemVtx2[i];
-      }
-      testElemQuadWeights[testPoint] = testQuadData.weights[testPoint];
-    }
-    for (int trialPoint = 0; trialPoint < trialPointCount; ++trialPoint) {
-      const double ptFun0 = trialGeomShapeFunData.fun0[trialPoint];
-      const double ptFun1 = trialGeomShapeFunData.fun1[trialPoint];
-      const double ptFun2 = trialGeomShapeFunData.fun2[trialPoint];
-      for (int i = 0; i < coordCount; ++i) {
-        trialGeomData[coordCount * trialPoint + i] =
-            ptFun0 * trialElemVtx0[i]
-          + ptFun1 * trialElemVtx1[i]
-          + ptFun2 * trialElemVtx2[i];
-      }
-      trialElemQuadWeights[trialPoint] = trialQuadData.weights[trialPoint];
-    }
-
-    stop_time = clock();
-
-    if (i == 0)
-      printf("Calculate global points: %d clock cycles\n", stop_time-start_time);
-
-    start_time = clock();
-
-    double localResult[36];
-    for (size_t trialDof = 0; trialDof < trialDofCount; ++trialDof) {
-      for (size_t testDof = 0; testDof < testDofCount; ++testDof) {
-        double sum = 0.;
-        for (size_t trialPoint = 0; trialPoint < trialPointCount; ++trialPoint) {
-          const double trialWeight =
-              trialIntegrationElement * trialElemQuadWeights[trialPoint];
-          double partialSum = 0.;
-          for (size_t testPoint = 0; testPoint < testPointCount; ++testPoint) {
-            const double testWeight =
-                testIntegrationElement * testElemQuadWeights[testPoint];
-            const double xDist = testGeomData[coordCount * testPoint]
-                               - trialGeomData[coordCount * trialPoint];
-            const double yDist = testGeomData[coordCount * testPoint + 1]
-                               - trialGeomData[coordCount * trialPoint + 1];
-            const double zDist = testGeomData[coordCount * testPoint + 2]
-                               - trialGeomData[coordCount * trialPoint + 2];
-            const double distance = std::sqrt(xDist*xDist + yDist*yDist + zDist*zDist);
-            const double kernelValue = 1.0 / (4.0 * M_PI * distance);
-            partialSum += kernelValue *
-//                          testBasisData[testDof + testDofCount * testPoint] *
-//                          trialBasisData[trialDof + trialDofCount * trialPoint] *
-                          testWeight;
-          }
-          sum += partialSum * trialWeight;
-        }
-        localResult[testDof * trialDofCount + trialDof] = sum;
-      }
-    }
-
-    stop_time = clock();
-
-    if (i == 0)
-      printf("Numerical integration: %d clock cycles\n", stop_time-start_time);
-
-    start_time = clock();
-
-    // Copy local result to global device memory
-    const unsigned int offset = i * testDofCount * trialDofCount;
-    for (size_t trialDof = 0; trialDof < trialDofCount; ++trialDof) {
-      for (size_t testDof = 0; testDof < testDofCount; ++testDof) {
-        result[offset + testDof * trialDofCount + trialDof] =
-            localResult[testDof * trialDofCount + trialDof];
-      }
-    }
-
-    stop_time = clock();
-
-    if (i == 0)
-      printf("Copy to global memory: %d clock cycles\n", stop_time-start_time);
-  }
-};
-
 template <typename BasisFunctionType, typename ResultType>
 CudaIntegrator<BasisFunctionType, ResultType>::CudaIntegrator(
-    const Matrix<double> &localTestQuadPoints,
-    const Matrix<double> &localTrialQuadPoints,
-    const std::vector<double> &testQuadWeights,
-    const std::vector<double> &trialQuadWeights,
+    const Matrix<CoordinateType> &localTestQuadPoints,
+    const Matrix<CoordinateType> &localTrialQuadPoints,
+    const std::vector<CoordinateType> &testQuadWeights,
+    const std::vector<CoordinateType> &trialQuadWeights,
+    const Shapeset<BasisFunctionType> &testShapeset,
+    const Shapeset<BasisFunctionType> &trialShapeset,
     shared_ptr<Bempp::CudaGrid> testGrid,
     shared_ptr<Bempp::CudaGrid> trialGrid,
     bool cacheElemData)
     : m_localTestQuadPoints(localTestQuadPoints),
       m_localTrialQuadPoints(localTrialQuadPoints),
-      m_testQuadWeights(testQuadWeights), m_trialQuadWeights(trialQuadWeights),
       m_testGrid(testGrid), m_trialGrid(trialGrid),
       m_cacheElemData(cacheElemData) {
 
-  if (localTestQuadPoints.cols() != testQuadWeights.size())
+  const unsigned int testPointCount = localTestQuadPoints.cols();
+  const unsigned int trialPointCount = localTrialQuadPoints.cols();
+
+  if (testPointCount != testQuadWeights.size())
     throw std::invalid_argument(
         "CudaIntegrator::CudaIntegrator(): "
         "numbers of test points and weights do not match");
-  if (localTrialQuadPoints.cols() != trialQuadWeights.size())
+  if (trialPointCount != trialQuadWeights.size())
     throw std::invalid_argument(
         "CudaIntegrator::CudaIntegrator(): "
         "numbers of trial points and weights do not match");
+
+  // Copy numerical quadrature weights to device memory
+  m_testQuadData.weights = thrust::device_malloc<CoordinateType>(testPointCount);
+  thrust::copy(testQuadWeights.begin(), testQuadWeights.end(),
+      m_testQuadData.weights);
+  if (testQuadWeights == trialQuadWeights) {
+    m_trialQuadData.weights = m_testQuadData.weights;
+  } else {
+    m_trialQuadData.weights = thrust::device_malloc<CoordinateType>(trialPointCount);
+      thrust::copy(trialQuadWeights.begin(), trialQuadWeights.end(),
+          m_trialQuadData.weights);
+  }
+  m_testQuadData.pointCount = testPointCount;
+  m_trialQuadData.pointCount = trialPointCount;
+
+  cudaMemcpyToSymbol(constTestQuadWeights, &testQuadWeights[0],
+      testPointCount*sizeof(CoordinateType));
+  cudaMemcpyToSymbol(constTrialQuadWeights, &trialQuadWeights[0],
+      trialPointCount*sizeof(CoordinateType));
+
+  // Evaluate shapesets and copy basis data to device memory
+  m_testBasisData.dofCount = testShapeset.size();
+  m_trialBasisData.dofCount = trialShapeset.size();
+  BasisData<BasisFunctionType> testBasisData, trialBasisData;
+  size_t testBasisDeps = 0, trialBasisDeps = 0;
+  testShapeset.evaluate(testBasisDeps, m_localTestQuadPoints, ALL_DOFS,
+                        testBasisData);
+  trialShapeset.evaluate(trialBasisDeps, m_localTrialQuadPoints, ALL_DOFS,
+                         trialBasisData);
+  m_testBasisData.basisData = thrust::device_malloc<BasisFunctionType>(
+      testBasisData.componentCount() *
+      testBasisData.functionCount() *
+      testBasisData.pointCount());
+  m_trialBasisData.basisData = thrust::device_malloc<BasisFunctionType>(
+      trialBasisData.componentCount() *
+      trialBasisData.functionCount() *
+      trialBasisData.pointCount());
+  thrust::copy(testBasisData.values.begin(), testBasisData.values.end(),
+      m_testBasisData.basisData);
+  thrust::copy(trialBasisData.values.begin(), trialBasisData.values.end(),
+      m_trialBasisData.basisData);
 }
 
 template <typename BasisFunctionType, typename ResultType>
-CudaIntegrator<BasisFunctionType, ResultType>::~CudaIntegrator() { }
+CudaIntegrator<BasisFunctionType, ResultType>::~CudaIntegrator() {
+
+  thrust::device_free(m_testQuadData.weights);
+  if (m_testQuadData.weights.get() != m_testQuadData.weights.get())
+    thrust::device_free(m_trialQuadData.weights);
+
+  thrust::device_free(m_testBasisData.basisData);
+  thrust::device_free(m_trialBasisData.basisData);
+}
 
 template <typename BasisFunctionType, typename ResultType>
 void CudaIntegrator<BasisFunctionType, ResultType>::integrate(
     const std::vector<int> &elementPairTestIndices,
     const std::vector<int> &elementPairTrialIndices,
-    const Shapeset<BasisFunctionType> &testShapeset,
-    const Shapeset<BasisFunctionType> &trialShapeset,
     std::vector<Matrix<ResultType>*> &result) {
 
   std::cout << "Hello, this is CudaIntegrator::integrate()!" << std::endl;
@@ -502,48 +150,20 @@ void CudaIntegrator<BasisFunctionType, ResultType>::integrate(
   // TODO: in the (pathological) case that pointCount == 0 but
   // geometryPairCount != 0, set elements of result to 0.
 
-  const int testDofCount = testShapeset.size();
-  const int trialDofCount = trialShapeset.size();
+  const int testDofCount = m_testBasisData.dofCount;
+  const int trialDofCount = m_trialBasisData.dofCount;
 
   for (size_t i = 0; i < result.size(); ++i) {
     assert(result[i]);
     result[i]->resize(testDofCount, trialDofCount);
   }
 
-  // Evaluate shapesets
-  BasisData<double> testBasisData, trialBasisData;
-  size_t testBasisDeps = 0, trialBasisDeps = 0;
-//  testShapeset.evaluate(testBasisDeps, m_localTestQuadPoints, ALL_DOFS,
-//                        testBasisData);
-//  trialShapeset.evaluate(trialBasisDeps, m_localTrialQuadPoints, ALL_DOFS,
-//                         trialBasisData);
-  thrust::device_vector<double> d_testBasisData(
-      testBasisData.values.begin(), testBasisData.values.end());
-  thrust::device_vector<double> d_trialBasisData(
-      trialBasisData.values.begin(), trialBasisData.values.end());
-
-  // Copy numerical quadrature weights to device memory
-  QuadData testQuadData, trialQuadData;
-  thrust::device_vector<double> d_testQuadWeights(m_testQuadWeights);
-  thrust::device_vector<double> d_trialQuadWeights;
-  testQuadData.weights = d_testQuadWeights.data();
-  if (m_testQuadWeights == m_trialQuadWeights) {
-    trialQuadData.weights = testQuadData.weights;
-  } else {
-    d_trialQuadWeights.resize(m_trialQuadWeights.size());
-    d_trialQuadWeights.assign(
-        m_trialQuadWeights.begin(), m_trialQuadWeights.end());
-    trialQuadData.weights = d_trialQuadWeights.data();
-  }
-  testQuadData.pointCount = testPointCount;
-  trialQuadData.pointCount = trialPointCount;
-
   // Copy element pair indices to device memory
   thrust::device_vector<int> d_elementPairTestIndices(elementPairTestIndices);
   thrust::device_vector<int> d_elementPairTrialIndices(elementPairTrialIndices);
 
   // Allocate device memory for the result
-  thrust::device_vector<double> d_result(
+  thrust::device_vector<CoordinateType> d_result(
       geometryPairCount * testDofCount * trialDofCount);
 
   // Measure time of the GPU execution (CUDA event based)
@@ -558,11 +178,11 @@ void CudaIntegrator<BasisFunctionType, ResultType>::integrate(
     m_testGrid->setupGeometry();
     m_trialGrid->setupGeometry();
 
-    ElemData testElemData, trialElemData;
+    ElemData<CoordinateType> testElemData, trialElemData;
 
-    thrust::device_vector<double> d_testGeomData, d_trialGeomData;
-    thrust::device_vector<double> d_testNormals, d_trialNormals;
-    thrust::device_vector<double> d_testIntegrationElements, d_trialIntegrationElements;
+    thrust::device_vector<CoordinateType> d_testGeomData, d_trialGeomData;
+    thrust::device_vector<CoordinateType> d_testNormals, d_trialNormals;
+    thrust::device_vector<CoordinateType> d_testIntegrationElements, d_trialIntegrationElements;
 
     // Calculate global points on the device
     m_testGrid->local2global(m_localTestQuadPoints, d_testGeomData);
@@ -593,21 +213,22 @@ void CudaIntegrator<BasisFunctionType, ResultType>::integrate(
     }
 
     // Each thread is working on one pair of elements
+    typedef CoordinateType KernelType;
     thrust::counting_iterator<int> iter(0);
     thrust::for_each(iter, iter+geometryPairCount,
-                     evaluateIntegralFunctorCached(
-                         d_elementPairTestIndices.data(),
-                         d_elementPairTrialIndices.data(),
-                         testQuadData, trialQuadData,
-                         testDofCount, trialDofCount,
-                         d_testBasisData.data(), d_trialBasisData.data(),
-                         testElemData, trialElemData,
-                         d_result.data()
-                         ));
+        EvaluateLaplace3dSingleLayerPotentialIntegralFunctorCached<
+        BasisFunctionType, KernelType, CoordinateType>(
+            d_elementPairTestIndices.data(),
+            d_elementPairTrialIndices.data(),
+            m_testQuadData, m_trialQuadData,
+            m_testBasisData, m_trialBasisData,
+            testElemData, trialElemData,
+            d_result.data()
+            ));
   } else {
 
     // Get raw geometry data
-    RawGeometryData testRawGeometryData, trialRawGeometryData;
+    RawGeometryData<double> testRawGeometryData, trialRawGeometryData;
     m_testGrid->getRawGeometryData(
         testRawGeometryData.vtxCount, testRawGeometryData.elemCount,
         testRawGeometryData.vertices, testRawGeometryData.elementCorners);
@@ -615,39 +236,39 @@ void CudaIntegrator<BasisFunctionType, ResultType>::integrate(
         trialRawGeometryData.vtxCount, trialRawGeometryData.elemCount,
         trialRawGeometryData.vertices, trialRawGeometryData.elementCorners);
 
-    thrust::host_vector<double> h_testFun0(testPointCount);
-    thrust::host_vector<double> h_testFun1(testPointCount);
-    thrust::host_vector<double> h_testFun2(testPointCount);
-    thrust::host_vector<double> h_trialFun0(trialPointCount);
-    thrust::host_vector<double> h_trialFun1(trialPointCount);
-    thrust::host_vector<double> h_trialFun2(trialPointCount);
+    thrust::host_vector<CoordinateType> h_testFun0(testPointCount);
+    thrust::host_vector<CoordinateType> h_testFun1(testPointCount);
+    thrust::host_vector<CoordinateType> h_testFun2(testPointCount);
+    thrust::host_vector<CoordinateType> h_trialFun0(trialPointCount);
+    thrust::host_vector<CoordinateType> h_trialFun1(trialPointCount);
+    thrust::host_vector<CoordinateType> h_trialFun2(trialPointCount);
 
     // Evaluate geometrical shape function values
     for (int testPoint = 0; testPoint < testPointCount; ++testPoint) {
-      const double r = m_localTestQuadPoints(0,testPoint);
-      const double s = m_localTestQuadPoints(1,testPoint);
+      const CoordinateType r = m_localTestQuadPoints(0,testPoint);
+      const CoordinateType s = m_localTestQuadPoints(1,testPoint);
       h_testFun0[testPoint] = 1.0 - r - s;
       h_testFun1[testPoint] = r;
       h_testFun2[testPoint] = s;
     }
     for (int trialPoint = 0; trialPoint < trialPointCount; ++trialPoint) {
-      const double r = m_localTrialQuadPoints(0,trialPoint);
-      const double s = m_localTrialQuadPoints(1,trialPoint);
+      const CoordinateType r = m_localTrialQuadPoints(0,trialPoint);
+      const CoordinateType s = m_localTrialQuadPoints(1,trialPoint);
       h_trialFun0[trialPoint] = 1.0 - r - s;
       h_trialFun1[trialPoint] = r;
       h_trialFun2[trialPoint] = s;
     }
 
     // Copy data to device
-    thrust::device_vector<double> d_testFun0 = h_testFun0;
-    thrust::device_vector<double> d_testFun1 = h_testFun1;
-    thrust::device_vector<double> d_testFun2 = h_testFun2;
-    thrust::device_vector<double> d_trialFun0 = h_trialFun0;
-    thrust::device_vector<double> d_trialFun1 = h_trialFun1;
-    thrust::device_vector<double> d_trialFun2 = h_trialFun2;
+    thrust::device_vector<CoordinateType> d_testFun0 = h_testFun0;
+    thrust::device_vector<CoordinateType> d_testFun1 = h_testFun1;
+    thrust::device_vector<CoordinateType> d_testFun2 = h_testFun2;
+    thrust::device_vector<CoordinateType> d_trialFun0 = h_trialFun0;
+    thrust::device_vector<CoordinateType> d_trialFun1 = h_trialFun1;
+    thrust::device_vector<CoordinateType> d_trialFun2 = h_trialFun2;
 
     // Collect geometrical shape function data
-    GeomShapeFunData testGeomShapeFunData, trialGeomShapeFunData;
+    GeomShapeFunData<CoordinateType> testGeomShapeFunData, trialGeomShapeFunData;
     testGeomShapeFunData.fun0 = d_testFun0.data();
     testGeomShapeFunData.fun1 = d_testFun1.data();
     testGeomShapeFunData.fun2 = d_testFun2.data();
@@ -655,19 +276,34 @@ void CudaIntegrator<BasisFunctionType, ResultType>::integrate(
     trialGeomShapeFunData.fun1 = d_trialFun1.data();
     trialGeomShapeFunData.fun2 = d_trialFun2.data();
 
+    // Copy geometrical shape function data to constant device memory
+    cudaMemcpyToSymbol(constTestGeomShapeFun0, h_testFun0.data(),
+        testPointCount*sizeof(CoordinateType));
+    cudaMemcpyToSymbol(constTestGeomShapeFun1, h_testFun1.data(),
+        testPointCount*sizeof(CoordinateType));
+    cudaMemcpyToSymbol(constTestGeomShapeFun2, h_testFun2.data(),
+        testPointCount*sizeof(CoordinateType));
+    cudaMemcpyToSymbol(constTrialGeomShapeFun0, h_trialFun0.data(),
+        trialPointCount*sizeof(CoordinateType));
+    cudaMemcpyToSymbol(constTrialGeomShapeFun1, h_trialFun1.data(),
+        trialPointCount*sizeof(CoordinateType));
+    cudaMemcpyToSymbol(constTrialGeomShapeFun2, h_trialFun2.data(),
+        trialPointCount*sizeof(CoordinateType));
+
     // Each thread is working on one pair of elements
+    typedef CoordinateType KernelType;
     thrust::counting_iterator<int> iter(0);
     thrust::for_each(iter, iter+geometryPairCount,
-                     evaluateIntegralFunctorNonCached(
-                         d_elementPairTestIndices.data(),
-                         d_elementPairTrialIndices.data(),
-                         testQuadData, trialQuadData,
-                         testDofCount, trialDofCount,
-                         d_testBasisData.data(), d_trialBasisData.data(),
-                         testRawGeometryData, trialRawGeometryData,
-                         testGeomShapeFunData, trialGeomShapeFunData,
-                         d_result.data()
-                         ));
+        EvaluateLaplace3dDoubleLayerPotentialIntegralFunctorNonCached<
+        BasisFunctionType, KernelType, CoordinateType>(
+            d_elementPairTestIndices.data(),
+            d_elementPairTrialIndices.data(),
+            m_testQuadData, m_trialQuadData,
+            m_testBasisData, m_trialBasisData,
+            testRawGeometryData, trialRawGeometryData,
+            testGeomShapeFunData, trialGeomShapeFunData,
+            d_result.data()
+            ));
   }
 
   cudaEventRecord(stop, 0);
@@ -680,7 +316,7 @@ void CudaIntegrator<BasisFunctionType, ResultType>::integrate(
   cudaEventRecord(start, 0);
 
   // Copy result back to host memory
-  thrust::host_vector<double> h_result = d_result;
+  thrust::host_vector<CoordinateType> h_result = d_result;
 
 //  std::cout << "h_result = " << std::endl;
 //  for (int i = 0; i < h_result.size(); ++i) {

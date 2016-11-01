@@ -60,6 +60,10 @@ public:
   void calculateNormalsAndIntegrationElements(
       thrust::device_vector<double> &normals,
       thrust::device_vector<double> &integrationElements) const;
+  /** \overload */
+  void calculateNormalsAndIntegrationElements(
+      thrust::device_vector<float> &normals,
+      thrust::device_vector<float> &integrationElements) const;
 
   void getRawGeometryData(unsigned int &vtxCount,
                           unsigned int &elemCount,
@@ -68,14 +72,25 @@ public:
 
   /**
    * \brief Convert local (logical) to global (physical) coordinates on the device
-   * \param[in] localPoints local coordinates
-   * \param[out] globalPoints global coordinates
+   * \param[in] localPoints Matrix whose \f$i\f$th column contains the
+      local coordinates of a point \f$x_i \in D\f$
+   * \param[out] globalPoints Vector containing the global coordinates
    */
   void local2global(const Matrix<double> &localPoints,
                     thrust::device_vector<double> &globalPoints) const;
+  /** \overload */
+  void local2global(const Matrix<float> &localPoints,
+                    thrust::device_vector<float> &globalPoints) const;
 
 private:
   /** \cond PRIVATE */
+
+  void calculateNormalsAndIntegrationElementsImpl(
+      thrust::device_vector<double> &normals,
+      thrust::device_vector<double> &integrationElements) const;
+
+  void local2globalImpl(const Matrix<double> &localPoints,
+                        thrust::device_vector<double> &globalPoints) const;
 
   // Mesh parameters
   unsigned int m_dim;
@@ -100,6 +115,10 @@ private:
   thrust::device_vector<double> m_vtx2z;
 
   bool m_setupDone;
+
+  // Helper functions for implementation
+  template <typename T1, typename T2>
+  void convertMat(const Matrix<T1> &in, Matrix<T2> &out) const;
 
   /** \endcond */
 };
