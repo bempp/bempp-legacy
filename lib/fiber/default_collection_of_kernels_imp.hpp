@@ -176,6 +176,13 @@ DefaultCollectionOfKernels<Functor>::estimateRelativeScale(
   return estimateRelativeScaleInternal(m_functor, distance);
 }
 
+template <typename Functor>
+//  TODO
+//  shared_ptr<CudaKernelFunctor<ValueType>>
+void DefaultCollectionOfKernels<Functor>::cudaKernels() const {
+//  return m_functor.cudaFunctor();
+}
+
 } // namespace Fiber
 
 #endif

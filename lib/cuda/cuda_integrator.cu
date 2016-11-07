@@ -26,14 +26,13 @@
 #include "../fiber/basis_data.hpp"
 #include "../fiber/scalar_traits.hpp"
 
-#include <complex>
 #include <chrono>
 #include <thrust/device_vector.h>
 
 namespace Fiber {
 
-template <typename BasisFunctionType, typename ResultType>
-CudaIntegrator<BasisFunctionType, ResultType>::CudaIntegrator(
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+CudaIntegrator<BasisFunctionType, KernelType, ResultType>::CudaIntegrator(
     const Matrix<CoordinateType> &localTestQuadPoints,
     const Matrix<CoordinateType> &localTrialQuadPoints,
     const std::vector<CoordinateType> &testQuadWeights,
@@ -42,11 +41,12 @@ CudaIntegrator<BasisFunctionType, ResultType>::CudaIntegrator(
     const Shapeset<BasisFunctionType> &trialShapeset,
     shared_ptr<Bempp::CudaGrid> testGrid,
     shared_ptr<Bempp::CudaGrid> trialGrid,
+    const CollectionOfKernels<KernelType> &kernels,
     bool cacheElemData)
     : m_localTestQuadPoints(localTestQuadPoints),
       m_localTrialQuadPoints(localTrialQuadPoints),
       m_testGrid(testGrid), m_trialGrid(trialGrid),
-      m_cacheElemData(cacheElemData) {
+      m_kernels(kernels), m_cacheElemData(cacheElemData) {
 
   const unsigned int testPointCount = localTestQuadPoints.cols();
   const unsigned int trialPointCount = localTrialQuadPoints.cols();
@@ -84,42 +84,48 @@ CudaIntegrator<BasisFunctionType, ResultType>::CudaIntegrator(
   m_trialBasisData.dofCount = trialShapeset.size();
   BasisData<BasisFunctionType> testBasisData, trialBasisData;
   size_t testBasisDeps = 0, trialBasisDeps = 0;
+  testBasisDeps |= VALUES;
+  trialBasisDeps |= VALUES;
   testShapeset.evaluate(testBasisDeps, m_localTestQuadPoints, ALL_DOFS,
                         testBasisData);
   trialShapeset.evaluate(trialBasisDeps, m_localTrialQuadPoints, ALL_DOFS,
                          trialBasisData);
-  m_testBasisData.basisData = thrust::device_malloc<BasisFunctionType>(
+  m_testBasisData.values = thrust::device_malloc<CudaBasisFunctionType>(
       testBasisData.componentCount() *
       testBasisData.functionCount() *
       testBasisData.pointCount());
-  m_trialBasisData.basisData = thrust::device_malloc<BasisFunctionType>(
+  m_trialBasisData.values = thrust::device_malloc<CudaBasisFunctionType>(
       trialBasisData.componentCount() *
       trialBasisData.functionCount() *
       trialBasisData.pointCount());
   thrust::copy(testBasisData.values.begin(), testBasisData.values.end(),
-      m_testBasisData.basisData);
+      m_testBasisData.values);
   thrust::copy(trialBasisData.values.begin(), trialBasisData.values.end(),
-      m_trialBasisData.basisData);
+      m_trialBasisData.values);
 }
 
-template <typename BasisFunctionType, typename ResultType>
-CudaIntegrator<BasisFunctionType, ResultType>::~CudaIntegrator() {
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+CudaIntegrator<BasisFunctionType, KernelType, ResultType>::~CudaIntegrator() {
 
   thrust::device_free(m_testQuadData.weights);
   if (m_testQuadData.weights.get() != m_testQuadData.weights.get())
     thrust::device_free(m_trialQuadData.weights);
 
-  thrust::device_free(m_testBasisData.basisData);
-  thrust::device_free(m_trialBasisData.basisData);
+  thrust::device_free(m_testBasisData.values);
+  thrust::device_free(m_trialBasisData.values);
 }
 
-template <typename BasisFunctionType, typename ResultType>
-void CudaIntegrator<BasisFunctionType, ResultType>::integrate(
-    const std::vector<int> &elementPairTestIndices,
-    const std::vector<int> &elementPairTrialIndices,
-    std::vector<Matrix<ResultType>*> &result) {
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+void CudaIntegrator<BasisFunctionType, KernelType, ResultType>::integrate(
+    std::vector<int>::iterator startElementPairTestIndices,
+    std::vector<int>::iterator endElementPairTestIndices,
+    std::vector<int>::iterator startElementPairTrialIndices,
+    std::vector<int>::iterator endElementPairTrialIndices,
+    typename thrust::host_vector<ResultType>::iterator startResult,
+    typename thrust::host_vector<ResultType>::iterator endResult) {
 
-  std::cout << "Hello, this is CudaIntegrator::integrate()!" << std::endl;
+  const int testDofCount = m_testBasisData.dofCount;
+  const int trialDofCount = m_trialBasisData.dofCount;
 
   const unsigned int testPointCount = m_localTestQuadPoints.cols();
   const unsigned int trialPointCount = m_localTrialQuadPoints.cols();
@@ -131,15 +137,17 @@ void CudaIntegrator<BasisFunctionType, ResultType>::integrate(
     throw std::invalid_argument("CudaIntegrator::integrate(): "
                                 "only valid for two-dimensional local points");
 
-  const unsigned int geometryPairCount = elementPairTestIndices.size();
+  const unsigned int geometryPairCount =
+      endElementPairTestIndices-startElementPairTestIndices;
 
-  if (elementPairTestIndices.size() != elementPairTrialIndices.size())
+  if (endElementPairTestIndices-startElementPairTestIndices
+      != endElementPairTrialIndices-startElementPairTrialIndices)
     throw std::invalid_argument(
         "CudaIntegrator::integrate(): "
         "arrays 'elementPairTestIndices' and 'elementPairTrialIndices' must "
         "have the same number of elements");
 
-  if (result.size() != geometryPairCount)
+  if (endResult-startResult != geometryPairCount*testDofCount*trialDofCount)
     throw std::invalid_argument(
         "CudaIntegrator::integrate(): "
         "arrays 'result' and 'elementPairIndices' must have the same number "
@@ -150,26 +158,29 @@ void CudaIntegrator<BasisFunctionType, ResultType>::integrate(
   // TODO: in the (pathological) case that pointCount == 0 but
   // geometryPairCount != 0, set elements of result to 0.
 
-  const int testDofCount = m_testBasisData.dofCount;
-  const int trialDofCount = m_trialBasisData.dofCount;
-
-  for (size_t i = 0; i < result.size(); ++i) {
-    assert(result[i]);
-    result[i]->resize(testDofCount, trialDofCount);
-  }
-
-  // Copy element pair indices to device memory
-  thrust::device_vector<int> d_elementPairTestIndices(elementPairTestIndices);
-  thrust::device_vector<int> d_elementPairTrialIndices(elementPairTrialIndices);
-
-  // Allocate device memory for the result
-  thrust::device_vector<CoordinateType> d_result(
-      geometryPairCount * testDofCount * trialDofCount);
-
   // Measure time of the GPU execution (CUDA event based)
   cudaEvent_t start, stop;
   cudaEventCreate(&start);
   cudaEventCreate(&stop);
+  cudaEventRecord(start, 0);
+
+  // Copy element pair indices to device memory
+  thrust::device_vector<int> d_elementPairTestIndices(
+      startElementPairTestIndices, endElementPairTestIndices);
+  thrust::device_vector<int> d_elementPairTrialIndices(
+      startElementPairTrialIndices, endElementPairTrialIndices);
+
+  cudaEventRecord(stop, 0);
+  cudaEventSynchronize(stop);
+  float elapsedTimeIndexCopy;
+  cudaEventElapsedTime(&elapsedTimeIndexCopy, start, stop);
+  std::cout << "Time for thrust::copy(elementPairIndices, 'HtD') "
+    << elapsedTimeIndexCopy << " ms" << std::endl;
+
+  // Allocate device memory for the result
+  thrust::device_vector<CudaResultType> d_result(
+      geometryPairCount * testDofCount * trialDofCount);
+
   cudaEventRecord(start, 0);
 
   if (m_cacheElemData == true) {
@@ -213,11 +224,10 @@ void CudaIntegrator<BasisFunctionType, ResultType>::integrate(
     }
 
     // Each thread is working on one pair of elements
-    typedef CoordinateType KernelType;
     thrust::counting_iterator<int> iter(0);
     thrust::for_each(iter, iter+geometryPairCount,
-        EvaluateLaplace3dSingleLayerPotentialIntegralFunctorCached<
-        BasisFunctionType, KernelType, CoordinateType>(
+        CudaEvaluateLaplace3dSingleLayerPotentialIntegralFunctorCached<
+        CudaBasisFunctionType, CudaKernelType, CudaResultType>(
             d_elementPairTestIndices.data(),
             d_elementPairTrialIndices.data(),
             m_testQuadData, m_trialQuadData,
@@ -291,11 +301,10 @@ void CudaIntegrator<BasisFunctionType, ResultType>::integrate(
         trialPointCount*sizeof(CoordinateType));
 
     // Each thread is working on one pair of elements
-    typedef CoordinateType KernelType;
     thrust::counting_iterator<int> iter(0);
     thrust::for_each(iter, iter+geometryPairCount,
-        EvaluateLaplace3dDoubleLayerPotentialIntegralFunctorNonCached<
-        BasisFunctionType, KernelType, CoordinateType>(
+        CudaEvaluateLaplace3dSingleLayerPotentialIntegralFunctorNonCached<
+        CudaBasisFunctionType, CudaKernelType, CudaResultType>(
             d_elementPairTestIndices.data(),
             d_elementPairTrialIndices.data(),
             m_testQuadData, m_trialQuadData,
@@ -310,13 +319,13 @@ void CudaIntegrator<BasisFunctionType, ResultType>::integrate(
   cudaEventSynchronize(stop);
   float elapsedTimeIntegral;
   cudaEventElapsedTime(&elapsedTimeIntegral , start, stop);
-  std::cout << "Time for integral evaluation is "
+  std::cout << "Time for CudaEvaluateIntegral() is "
     << elapsedTimeIntegral << " ms" << std::endl;
 
   cudaEventRecord(start, 0);
 
   // Copy result back to host memory
-  thrust::host_vector<CoordinateType> h_result = d_result;
+  thrust::copy(d_result.begin(), d_result.end(), startResult);
 
 //  std::cout << "h_result = " << std::endl;
 //  for (int i = 0; i < h_result.size(); ++i) {
@@ -328,29 +337,10 @@ void CudaIntegrator<BasisFunctionType, ResultType>::integrate(
   cudaEventSynchronize(stop);
   float elapsedTimeResultCopy;
   cudaEventElapsedTime(&elapsedTimeResultCopy, start, stop);
-  std::cout << "Time for result copy is "
+  std::cout << "Time for thrust::copy(result, 'DtH') "
     << elapsedTimeResultCopy << " ms" << std::endl;
-
-  std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-
-  // Assemble result
-  for (int geometryPair = 0; geometryPair < geometryPairCount; ++geometryPair) {
-    for (int testDof = 0; testDof < testDofCount; ++testDof) {
-      for (int trialDof = 0; trialDof < trialDofCount; ++trialDof) {
-        (*result[geometryPair])(testDof, trialDof) =
-            h_result[geometryPair * testDofCount * trialDofCount
-                   + testDof * trialDofCount
-                   + trialDof];
-      }
-    }
-  }
-
-  std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-  std::cout << "Time for local result assembly = "
-            << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()
-            << " ms" << std::endl;
 }
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(CudaIntegrator);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(CudaIntegrator);
 
 } // namespace Fiber

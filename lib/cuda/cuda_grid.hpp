@@ -82,6 +82,11 @@ public:
   void local2global(const Matrix<float> &localPoints,
                     thrust::device_vector<float> &globalPoints) const;
 
+  unsigned int dim() { return m_dim; }
+  unsigned int idxCount() { return m_IdxCount; }
+  unsigned int vtxCount() { return m_VtxCount; }
+  unsigned int elemCount() { return m_ElemCount; }
+
 private:
   /** \cond PRIVATE */
 

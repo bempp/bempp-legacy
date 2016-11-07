@@ -32,6 +32,10 @@
 #include "../fiber/shared_ptr.hpp"
 
 #include <thrust/device_ptr.h>
+#include <thrust/host_vector.h>
+#include <thrust/complex.h>
+
+#include <type_traits>
 
 namespace Bempp {
 
@@ -46,14 +50,30 @@ namespace Fiber {
 /** \cond FORWARD_DECL */
 template <typename BasisFunctionType> class Shapeset;
 template <typename BasisFunctionType> class BasisData;
+template <typename KernelType> class CollectionOfKernels;
 /** \endcond */
 
 /** \brief Regular integration over pairs of elements on the device. */
-template <typename BasisFunctionType, typename ResultType>
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
 class CudaIntegrator {
 public:
 
   typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
+
+  // TODO: Check if this is correct
+  typedef typename thrust::complex<CoordinateType> CudaComplexType;
+  typedef typename std::conditional<
+      std::is_same<BasisFunctionType,CoordinateType>::value,
+      BasisFunctionType, CudaComplexType>::type
+      CudaBasisFunctionType;
+  typedef typename std::conditional<
+      std::is_same<KernelType,CoordinateType>::value,
+      KernelType, CudaComplexType>::type
+      CudaKernelType;
+  typedef typename std::conditional<
+      std::is_same<ResultType,CoordinateType>::value,
+      ResultType, CudaComplexType>::type
+      CudaResultType;
 
   /** \brief Constructor */
   CudaIntegrator(
@@ -65,15 +85,19 @@ public:
       const Shapeset<BasisFunctionType> &trialShapeset,
       shared_ptr<Bempp::CudaGrid> testGrid,
       shared_ptr<Bempp::CudaGrid> trialGrid,
+      const CollectionOfKernels<KernelType> &kernels,
       bool cacheElemData = false);
 
   /** \brief Destructor. */
   virtual ~CudaIntegrator();
 
   void integrate(
-      const std::vector<int> &elementPairTestIndices,
-      const std::vector<int> &elementPairTrialIndices,
-      std::vector<Matrix<ResultType>*> &result);
+      std::vector<int>::iterator startElementPairTestIndices,
+      std::vector<int>::iterator endElementPairTestIndices,
+      std::vector<int>::iterator startElementPairTrialIndices,
+      std::vector<int>::iterator endElementPairTrialIndices,
+      typename thrust::host_vector<ResultType>::iterator startResult,
+      typename thrust::host_vector<ResultType>::iterator endResult);
 
 private:
   /** \cond PRIVATE */
@@ -81,14 +105,16 @@ private:
   QuadData<CoordinateType> m_testQuadData;
   QuadData<CoordinateType> m_trialQuadData;
 
-  BasisFunData<BasisFunctionType> m_testBasisData;
-  BasisFunData<BasisFunctionType> m_trialBasisData;
+  BasisFunData<CudaBasisFunctionType> m_testBasisData;
+  BasisFunData<CudaBasisFunctionType> m_trialBasisData;
 
   Matrix<CoordinateType> m_localTestQuadPoints;
   Matrix<CoordinateType> m_localTrialQuadPoints;
 
   shared_ptr<Bempp::CudaGrid> m_testGrid;
   shared_ptr<Bempp::CudaGrid> m_trialGrid;
+
+  const CollectionOfKernels<KernelType> &m_kernels;
 
   bool m_cacheElemData;
 

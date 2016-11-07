@@ -52,8 +52,9 @@ public:
 
   typedef Fiber::Shapeset<BasisFunctionType> Shapeset;
   typedef std::pair<const Shapeset*, const Shapeset*> ShapesetPair;
-  typedef std::pair<Matrix<CoordinateType>, std::vector<CoordinateType>> QuadData;
-  typedef std::pair<QuadData, QuadData> QuadDataPair;
+  typedef std::pair<Matrix<CoordinateType>, std::vector<CoordinateType>> QuadDataset;
+  typedef std::tuple<const QuadDataset*, const QuadDataset*, const bool> Integrator;
+  typedef std::pair<const Integrator*, ShapesetPair> QuadVariant;
 
   typedef Fiber::LocalAssemblerForIntegralOperators<ResultType>
       LocalAssemblerForIntegralOperators;

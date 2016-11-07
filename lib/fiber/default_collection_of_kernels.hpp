@@ -117,6 +117,11 @@ public:
 
   virtual CoordinateType estimateRelativeScale(CoordinateType distance) const;
 
+  virtual void
+//  TODO
+//  shared_ptr<CudaKernelFunctor<ValueType>>
+  cudaKernels() const;
+
 private:
   Functor m_functor;
 };

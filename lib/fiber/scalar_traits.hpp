@@ -25,6 +25,7 @@
 #include <type_traits>
 
 #include <complex>
+#include <thrust/complex.h>
 
 namespace Fiber {
 
@@ -32,7 +33,8 @@ namespace Fiber {
  *  \brief Traits of scalar types.
  *
  *  This struct is specialized for the scalar types \c float, \c double,
- *  <tt>std::complex<float></tt> and <tt>std::complex<double></tt>. Each
+ *  <tt>std::complex<float></tt>, <tt>std::complex<double></tt>,
+ *  <tt>thrust::complex<float></tt> and <tt>thrust::complex<double></tt>. Each
  *  specialization <tt>ScalarTraits<T></tt> provides the typedefs \c RealType
  *  (denoting the real type of the same precision as \c T) and \c ComplexType
  *  (denoting the complex type of the same precision as \c T). */
@@ -72,6 +74,18 @@ template <> struct ScalarTraits<std::complex<double>> {
   enum { NumpyTypeNum = 15 };
 };
 
+template <> struct ScalarTraits<thrust::complex<float>> {
+  typedef float RealType;
+  typedef thrust::complex<float> ComplexType;
+  enum { NumpyTypeNum = 14 };
+};
+
+template <> struct ScalarTraits<thrust::complex<double>> {
+  typedef double RealType;
+  typedef thrust::complex<double> ComplexType;
+  enum { NumpyTypeNum = 15 };
+};
+
 /** \brief "Larger" of the types U and V. */
 template <typename U, typename V> struct Coercion {
   // If you get a compilation error here, chances are that you are trying to
@@ -91,20 +105,44 @@ template <> struct Coercion<std::complex<double>, std::complex<double>> {
   typedef std::complex<double> Type;
 };
 
+template <> struct Coercion<thrust::complex<float>, thrust::complex<float>> {
+  typedef thrust::complex<float> Type;
+};
+
+template <> struct Coercion<thrust::complex<double>, thrust::complex<double>> {
+  typedef thrust::complex<double> Type;
+};
+
 template <> struct Coercion<float, std::complex<float>> {
   typedef std::complex<float> Type;
+};
+
+template <> struct Coercion<float, thrust::complex<float>> {
+  typedef thrust::complex<float> Type;
 };
 
 template <> struct Coercion<std::complex<float>, float> {
   typedef std::complex<float> Type;
 };
 
+template <> struct Coercion<thrust::complex<float>, float> {
+  typedef thrust::complex<float> Type;
+};
+
 template <> struct Coercion<double, std::complex<double>> {
   typedef std::complex<double> Type;
 };
 
+template <> struct Coercion<double, thrust::complex<double>> {
+  typedef thrust::complex<double> Type;
+};
+
 template <> struct Coercion<std::complex<double>, double> {
   typedef std::complex<double> Type;
+};
+
+template <> struct Coercion<thrust::complex<double>, double> {
+  typedef thrust::complex<double> Type;
 };
 
 } // namespace Fiber

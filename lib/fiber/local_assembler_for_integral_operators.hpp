@@ -44,9 +44,21 @@ namespace Fiber {
   The local assembler is responsible for choosing an appropriate way of
   evaluating
   the necessary integrals. */
+
+/** \cond FORWARD_DECL */
+template <typename CoordinateType> class DoubleQuadratureRuleFamily;
+template <typename CoordinateType>
+class QuadratureDescriptorSelectorForIntegralOperators;
+template <typename KernelType> class CollectionOfKernels;
+/** \endcond */
+
 template <typename ResultType> class LocalAssemblerForIntegralOperators {
 public:
   typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
+
+  // TODO: How to determine the correct kernel type?
+//  typedef CoordinateType KernelType;         // Real kernel
+//  typedef ResultType KernelType;             // Complex kernel
 
   virtual ~LocalAssemblerForIntegralOperators() {}
 
@@ -144,6 +156,16 @@ public:
    *  with 0. */
   virtual CoordinateType
   estimateRelativeScale(CoordinateType minDist) const = 0;
+
+  virtual shared_ptr<const QuadratureDescriptorSelectorForIntegralOperators<
+      CoordinateType>> quadDescSelector() const = 0;
+
+  virtual shared_ptr<const DoubleQuadratureRuleFamily<CoordinateType>>
+      quadRuleFamily() const = 0;
+
+//  TODO
+//  virtual void
+//  getKernels(shared_ptr<const CollectionOfKernels<KernelType>> kernels) const = 0;
 };
 
 } // namespace Fiber

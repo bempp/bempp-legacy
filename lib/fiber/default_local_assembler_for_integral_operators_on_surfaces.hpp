@@ -121,6 +121,15 @@ public:
 
   virtual CoordinateType estimateRelativeScale(CoordinateType minDist) const;
 
+  virtual shared_ptr<const QuadratureDescriptorSelectorForIntegralOperators<
+      CoordinateType>> quadDescSelector() const;
+
+  virtual shared_ptr<const DoubleQuadratureRuleFamily<CoordinateType>>
+      quadRuleFamily() const;
+
+  virtual void
+  getKernels(shared_ptr<const CollectionOfKernels<KernelType>> kernels) const;
+
 private:
   /** \cond PRIVATE */
   typedef TestKernelTrialIntegrator<BasisFunctionType, KernelType, ResultType>

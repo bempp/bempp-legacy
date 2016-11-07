@@ -421,6 +421,36 @@ DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType,
           typename GeometryFactory>
+shared_ptr<const DoubleQuadratureRuleFamily<
+    typename DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
+    BasisFunctionType, KernelType, ResultType, GeometryFactory>::CoordinateType>>
+DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
+    BasisFunctionType, KernelType, ResultType, GeometryFactory>::
+    quadRuleFamily() const {
+  return m_quadRuleFamily;
+}
+
+template <typename BasisFunctionType, typename KernelType, typename ResultType,
+          typename GeometryFactory>
+shared_ptr<const QuadratureDescriptorSelectorForIntegralOperators<
+    typename DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
+    BasisFunctionType, KernelType, ResultType, GeometryFactory>::CoordinateType>>
+DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
+    BasisFunctionType, KernelType, ResultType, GeometryFactory>::
+    quadDescSelector() const {
+  return m_quadDescSelector;
+}
+
+template <typename BasisFunctionType, typename KernelType, typename ResultType,
+          typename GeometryFactory>
+void DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
+BasisFunctionType, KernelType, ResultType, GeometryFactory>::getKernels(
+    shared_ptr<const CollectionOfKernels<KernelType>> kernels) const {
+  kernels = m_kernels;
+}
+
+template <typename BasisFunctionType, typename KernelType, typename ResultType,
+          typename GeometryFactory>
 void DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
     BasisFunctionType, KernelType, ResultType,
     GeometryFactory>::cacheSingularLocalWeakForms() {

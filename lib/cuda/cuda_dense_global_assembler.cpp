@@ -27,6 +27,9 @@
 #include "../fiber/raw_grid_geometry.hpp"
 #include "../fiber/local_assembler_for_integral_operators.hpp"
 #include "../fiber/numerical_quadrature.hpp"
+#include "../fiber/quadrature_descriptor_selector_for_integral_operators.hpp"
+#include "../fiber/double_quadrature_rule_family.hpp"
+#include "../fiber/serial_blas_region.hpp"
 
 #include "../grid/grid_view.hpp"
 #include "../grid/mapper.hpp"
@@ -34,9 +37,12 @@
 #include "../space/space.hpp"
 #include "../grid/grid.hpp"
 
-#include <tbb/tbb.h>
+#include <tbb/task_group.h>
+#include <tbb/parallel_for.h>
+#include <tbb/spin_mutex.h>
 #include <algorithm>
 #include <chrono>
+#include <cuda_profiler_api.h>
 
 namespace Bempp {
 
@@ -74,6 +80,141 @@ void gatherGlobalDofs(
   }
 }
 
+template <typename BasisFunctionType>
+class GetSortedElementPairsLoopBody {
+public:
+
+  typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
+//  typedef tbb::spin_mutex MutexType;
+  typedef tbb::mutex MutexType;
+
+  typedef std::pair<Matrix<CoordinateType>, std::vector<CoordinateType>> QuadDataset;
+  typedef std::tuple<const QuadDataset*, const QuadDataset*, const bool> Integrator;
+  typedef tbb::concurrent_unordered_map<
+      Fiber::DoubleQuadratureDescriptor, Integrator*> IntegratorMap;
+
+  typedef Fiber::Shapeset<BasisFunctionType> Shapeset;
+  typedef std::pair<const Shapeset*, const Shapeset*> ShapesetPair;
+
+  typedef std::pair<const Integrator*, ShapesetPair> QuadVariant;
+
+  GetSortedElementPairsLoopBody(
+      const std::vector<int> &testIndices, const std::vector<int> &trialIndices,
+      std::vector<const Shapeset*> &testShapesets,
+      std::vector<const Shapeset*> &trialShapesets,
+      shared_ptr<const Fiber::QuadratureDescriptorSelectorForIntegralOperators<
+      CoordinateType>> quadDescSelector,
+      shared_ptr<const Fiber::DoubleQuadratureRuleFamily<CoordinateType>>
+      quadRuleFamily,
+      tbb::concurrent_unordered_map<
+          Fiber::DoubleQuadratureDescriptor, Integrator*> integrators,
+      const CoordinateType nominalDistance,
+      std::vector<std::vector<QuadVariant>> &quadVariants,
+      MutexType &mutex)
+      : m_testIndices(testIndices), m_trialIndices(trialIndices),
+        m_testShapesets(testShapesets), m_trialShapesets(trialShapesets),
+        m_quadDescSelector(quadDescSelector), m_quadRuleFamily(quadRuleFamily),
+        m_integrators(integrators), m_nominalDistance(nominalDistance),
+        m_quadVariants(quadVariants), m_mutex(mutex) {}
+
+  void operator()(const tbb::blocked_range<int> &r) const {
+
+    const int trialIndexCount = m_trialIndices.size();
+    for (int i = r.begin(); i != r.end(); ++i) {
+      for (int j = 0; j < trialIndexCount; ++j) {
+
+        const int testIndex = m_testIndices[i];
+        const int trialIndex = m_trialIndices[j];
+
+        const Integrator *integrator = &selectIntegrator(testIndex, trialIndex);
+
+        const Shapeset* testShapeset = m_testShapesets[testIndex];
+        const Shapeset* trialShapeset = m_trialShapesets[trialIndex];
+
+        ShapesetPair* shapesetPair = new ShapesetPair(testShapeset, trialShapeset);
+        QuadVariant* quadVariant = new QuadVariant(integrator, *shapesetPair);
+        m_quadVariants[i][j] = *quadVariant;
+      }
+    }
+  }
+
+private:
+
+  const Integrator& selectIntegrator(
+      const int testIndex, const int trialIndex) const {
+
+    const Fiber::DoubleQuadratureDescriptor desc =
+        m_quadDescSelector->quadratureDescriptor(
+            testIndex, trialIndex, m_nominalDistance);
+    return getIntegrator(desc);
+  }
+
+  const Integrator& getIntegrator(
+      const Fiber::DoubleQuadratureDescriptor &desc) const {
+
+    typename IntegratorMap::iterator it = m_integrators.find(desc);
+    if (it == m_integrators.end()) {
+
+//      tbb::mutex::scoped_lock lock(m_integratorCreationMutex);
+      MutexType::scoped_lock lock(m_mutex);
+      it = m_integrators.find(desc);
+
+      if (it == m_integrators.end()) {
+
+        // Integrator doesn't exist yet and must be created
+        Matrix<CoordinateType> testPoints, trialPoints;
+        std::vector<CoordinateType> testWeights, trialWeights;
+        bool isTensor;
+        m_quadRuleFamily->fillQuadraturePointsAndWeights(
+            desc, testPoints, trialPoints, testWeights, trialWeights, isTensor);
+
+        const QuadDataset *testQuadDataset = new QuadDataset(testPoints, testWeights);
+        const QuadDataset *trialQuadDataset = new QuadDataset(trialPoints, trialWeights);
+        Integrator *integrator = new Integrator(
+            testQuadDataset, trialQuadDataset,
+            isTensor);
+
+        // Attempt to insert the newly created integrator into the map
+        std::pair<typename IntegratorMap::iterator, bool> result =
+            m_integrators.insert(std::make_pair(desc, integrator));
+
+        if (result.second)
+          // Insertion succeeded. The newly created integrator will be deleted in
+          // our own destructor
+          ;
+        else
+          // Insertion failed -- another thread was faster. Delete the newly
+          // created integrator
+          delete integrator;
+
+        // Return pointer to the integrator that ended up in the map
+        it = result.first;
+      }
+    }
+    return *it->second;
+  }
+
+  const std::vector<int> &m_testIndices;
+  const std::vector<int> &m_trialIndices;
+
+  std::vector<const Shapeset*> &m_testShapesets;
+  std::vector<const Shapeset*> &m_trialShapesets;
+
+  shared_ptr<const Fiber::QuadratureDescriptorSelectorForIntegralOperators<
+  CoordinateType>> &m_quadDescSelector;
+  shared_ptr<const Fiber::DoubleQuadratureRuleFamily<CoordinateType>>
+  &m_quadRuleFamily;
+
+  IntegratorMap &m_integrators;
+
+  const CoordinateType m_nominalDistance;
+
+  std::vector<std::vector<QuadVariant>> &m_quadVariants;
+
+  // mutex must be mutable because we need to lock and unlock it
+  MutexType &m_mutex;
+};
+
 // Get sorted element pair index vectors regarding regular and singular integrals
 // as well as quadrature order and shapeset combinations for regular ones
 template <typename BasisFunctionType>
@@ -82,28 +223,25 @@ void getSortedElementPairs(
     const Space<BasisFunctionType> &trialSpace,
     std::vector<int> &testIndices,
     std::vector<int> &trialIndices,
-    std::vector<std::vector<std::vector<int>>> &regularElemPairTestIndices,
-    std::vector<std::vector<std::vector<int>>> &regularElemPairTrialIndices,
-    std::vector<std::pair<
-    std::pair<Matrix<typename ScalarTraits<BasisFunctionType>::RealType>,
-    std::vector<typename ScalarTraits<BasisFunctionType>::RealType>>,
-    std::pair<Matrix<typename ScalarTraits<BasisFunctionType>::RealType>,
-    std::vector<typename ScalarTraits<BasisFunctionType>::RealType>>>>
-    &regularQuadOrderCombinations,
-    std::vector<std::vector<std::pair<
-    const Fiber::Shapeset<BasisFunctionType>*,
-    const Fiber::Shapeset<BasisFunctionType>*>>>
-    &regularShapesetCombinations,
+    shared_ptr<const Fiber::QuadratureDescriptorSelectorForIntegralOperators<
+    typename ScalarTraits<BasisFunctionType>::RealType>> quadDescSelector,
+    shared_ptr<const Fiber::DoubleQuadratureRuleFamily<
+    typename ScalarTraits<BasisFunctionType>::RealType>> quadRuleFamily,
+    std::vector<std::vector<int>> &regularElemPairTestIndices,
+    std::vector<std::vector<int>> &regularElemPairTrialIndices,
+    std::vector<std::pair<const std::tuple<const std::pair<Matrix<typename ScalarTraits<BasisFunctionType>::RealType>, std::vector<typename ScalarTraits<BasisFunctionType>::RealType>>*, const std::pair<Matrix<typename ScalarTraits<BasisFunctionType>::RealType>, std::vector<typename ScalarTraits<BasisFunctionType>::RealType>>*, const bool>*, std::pair<const Fiber::Shapeset<BasisFunctionType>*, const Fiber::Shapeset<BasisFunctionType>*>>>
+    &regularQuadVariants,
     std::vector<int> &singularElemPairTestIndices,
-    std::vector<int> &singularElemPairTrialIndices) {
+    std::vector<int> &singularElemPairTrialIndices,
+    typename ScalarTraits<BasisFunctionType>::RealType nominalDistance = -1.) {
+
+  const int testIndexCount = testIndices.size();
+  const int trialIndexCount = trialIndices.size();
 
   typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
 
   typedef Fiber::Shapeset<BasisFunctionType> Shapeset;
   typedef std::pair<const Shapeset*, const Shapeset*> ShapesetPair;
-  typedef std::pair<Matrix<CoordinateType>, std::vector<CoordinateType>> QuadData;
-  typedef std::pair<QuadData, QuadData> QuadDataPair;
-
   std::vector<const Shapeset*> testShapesets, trialShapesets;
   getAllShapesets(testSpace, testShapesets);
   if (&testSpace == &trialSpace) {
@@ -112,94 +250,152 @@ void getSortedElementPairs(
     getAllShapesets(trialSpace, trialShapesets);
   }
 
-  const int testIndexCount = testIndices.size();
-  const int trialIndexCount = trialIndices.size();
+  typedef std::pair<Matrix<CoordinateType>, std::vector<CoordinateType>> QuadDataset;
+  typedef std::tuple<const QuadDataset*, const QuadDataset*, const bool> Integrator;
 
-  unsigned int uniqueRegularQuadOrderCombinationCount = 0;
-  std::vector<unsigned int> uniqueRegularShapesetCombinationCount;
+  typedef std::pair<const Integrator*, ShapesetPair> QuadVariant;
+  std::vector<std::vector<QuadVariant>> quadVariants(testIndexCount);
+  for (int i = 0; i < testIndexCount; ++i)
+    quadVariants[i].resize(trialIndexCount);
 
-  regularElemPairTestIndices.resize(1);
-  regularElemPairTrialIndices.resize(1);
-  regularElemPairTestIndices[0].resize(1);
-  regularElemPairTrialIndices[0].resize(1);
-  regularElemPairTestIndices[0][0].reserve(testIndexCount * trialIndexCount);
-  regularElemPairTrialIndices[0][0].reserve(testIndexCount * trialIndexCount);
+  typedef tbb::concurrent_unordered_map<
+      Fiber::DoubleQuadratureDescriptor, Integrator*> IntegratorMap;
+  IntegratorMap integrators;
 
-  regularQuadOrderCombinations.reserve(1);
-  regularShapesetCombinations.resize(1);
-  regularShapesetCombinations[0].reserve(1);
+  std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
-  singularElemPairTestIndices.reserve(testIndexCount * trialIndexCount);
-  singularElemPairTrialIndices.reserve(testIndexCount * trialIndexCount);
+  typedef GetSortedElementPairsLoopBody<BasisFunctionType> Body;
+  typename Body::MutexType mutex;
+  {
+    Fiber::SerialBlasRegion region;
+    tbb::parallel_for(tbb::blocked_range<int>(0, testIndexCount),
+                      Body(testIndices, trialIndices,
+                           testShapesets, trialShapesets,
+                           quadDescSelector, quadRuleFamily, integrators,
+                           nominalDistance, quadVariants, mutex));
+  }
 
-  std::unique_ptr<GridView> testView = testSpace.grid()->leafView();
-  std::unique_ptr<GridView> trialView = trialSpace.grid()->leafView();
+  std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+  std::cout << "Time for GetSortedElementPairsLoopBody() = "
+            << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()
+            << " ms" << std::endl;
 
-  Fiber::RawGridGeometry<CoordinateType> testRawGeometry(
-      testSpace.grid()->dim(), testSpace.grid()->dimWorld());
-  Fiber::RawGridGeometry<CoordinateType> trialRawGeometry(
-      trialSpace.grid()->dim(), trialSpace.grid()->dimWorld());
+  // Integration will proceed in batches of element pairs having the same
+  // "quadrature variant", i.e. quadrature datasets and shapesets
 
-  testView->getRawElementData(
-      testRawGeometry.vertices(), testRawGeometry.elementCornerIndices(),
-      testRawGeometry.auxData(), testRawGeometry.domainIndices());
-  trialView->getRawElementData(
-      trialRawGeometry.vertices(), trialRawGeometry.elementCornerIndices(),
-      trialRawGeometry.auxData(), trialRawGeometry.domainIndices());
+  begin = std::chrono::steady_clock::now();
 
-  const Shapeset* testShapeset = testShapesets[testIndices[0]];
-  const Shapeset* trialShapeset = trialShapesets[trialIndices[0]];
-  ShapesetPair shapesetPair = std::make_pair(testShapeset, trialShapeset);
-  const int testBasisOrder = testShapeset->order();
-  const int trialBasisOrder = trialShapeset->order();
-  const int testQuadOrder = testBasisOrder+4;
-  const int trialQuadOrder = trialBasisOrder+4;
-  QuadDataPair quadDataPair;
-  Fiber::fillSingleQuadraturePointsAndWeights(
-      3, testQuadOrder, quadDataPair.first.first, quadDataPair.first.second);
-  Fiber::fillSingleQuadraturePointsAndWeights(
-      3, trialQuadOrder, quadDataPair.second.first, quadDataPair.second.second);
-  regularQuadOrderCombinations.push_back(quadDataPair);
-  regularShapesetCombinations[0].push_back(shapesetPair);
+  // Find all the unique quadrature variants present
+  typedef std::set<QuadVariant> QuadVariantSet;
+  // Set of unique quadrature variants
+  QuadVariantSet uniqueQuadVariants;
+  for (int i = 0; i < quadVariants.size(); ++i)
+    uniqueQuadVariants.insert(quadVariants[i].begin(), quadVariants[i].end());
 
-  // Sort element pairs regarding regular and singular integrals
-  for (int testIndex = 0; testIndex < testIndexCount; ++testIndex) {
-    for (int trialIndex = 0; trialIndex < trialIndexCount; ++trialIndex) {
+  end = std::chrono::steady_clock::now();
+  std::cout << "Time for creating set of unique quad variants = "
+            << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()
+            << " ms" << std::endl;
 
-      // Get corner indices of the specified elements
-      Vector<int> testElementCornerIndices =
-          testRawGeometry.elementCornerIndices(testIndices[testIndex]);
-      Vector<int> trialElementCornerIndices =
-          trialRawGeometry.elementCornerIndices(trialIndices[trialIndex]);
+  begin = std::chrono::steady_clock::now();
 
-      Fiber::ElementPairTopology topology;
-      if (testSpace.grid().get() == trialSpace.grid().get()) {
+  // Now loop over unique quadrature variants
+  unsigned int regularQuadVariantCount = 0;
+  for (typename QuadVariantSet::const_iterator it = uniqueQuadVariants.begin();
+       it != uniqueQuadVariants.end(); ++it) {
 
-        topology = Fiber::determineElementPairTopologyIn3D(
-            testElementCornerIndices,
-            trialElementCornerIndices);
+    const QuadVariant activeQuadVariant = *it;
+    const Integrator &activeIntegrator = *it->first;
+    ShapesetPair activeBasisPair = it->second;
+    const bool isRegular = std::get<2>(activeIntegrator);
 
-      } else {
+    // Find all the element pairs which should be considered according to the
+    // current quadrature variant
+    if (isRegular) {
 
-        topology.testVertexCount = testElementCornerIndices.rows();
-        topology.trialVertexCount = trialElementCornerIndices.rows();
-        topology.type = Fiber::ElementPairTopology::Disjoint;
-      }
+      regularQuadVariants.push_back(activeQuadVariant);
+      regularElemPairTestIndices.resize(regularQuadVariantCount+1);
+      regularElemPairTrialIndices.resize(regularQuadVariantCount+1);
 
-      if (topology.type == Fiber::ElementPairTopology::Disjoint) {
+      for (int i = 0; i < testIndexCount; ++i)
+        for (int j = 0; j < trialIndexCount; ++j)
+          if (quadVariants[i][j] == activeQuadVariant) {
 
-        // Element pair related to regular integrals
-        regularElemPairTestIndices[0][0].push_back(testIndices[testIndex]);
-        regularElemPairTrialIndices[0][0].push_back(trialIndices[trialIndex]);
+            // Element pair related to regular integrals
+            regularElemPairTestIndices[regularQuadVariantCount].push_back(testIndices[i]);
+            regularElemPairTrialIndices[regularQuadVariantCount].push_back(trialIndices[j]);
+          }
+      regularQuadVariantCount++;
 
-      } else {
+    } else {
 
-        // Element pair related to singular integrals
-        singularElemPairTestIndices.push_back(testIndices[testIndex]);
-        singularElemPairTrialIndices.push_back(trialIndices[trialIndex]);
-      }
+      for (int i = 0; i < testIndexCount; ++i)
+        for (int j = 0; j < trialIndexCount; ++j)
+          if (quadVariants[i][j] == activeQuadVariant) {
+            // Element pair related to singular integrals
+            singularElemPairTestIndices.push_back(testIndices[i]);
+            singularElemPairTrialIndices.push_back(trialIndices[j]);
+          }
     }
   }
+  end = std::chrono::steady_clock::now();
+  std::cout << "Time for looping over unique quad variants = "
+            << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()
+            << " ms" << std::endl;
+}
+
+// Determine the maximum number of element pairs in a chunk treated on the
+// device according to hardware specs
+template <typename ResultType>
+unsigned int getMaxActiveElemPairCount(shared_ptr<CudaGrid> testGrid,
+                                       shared_ptr<CudaGrid> trialGrid,
+                                       const unsigned int testDofCount,
+                                       const unsigned int trialDofCount,
+                                       const unsigned int testPointCount,
+                                       const unsigned int trialPointCount,
+                                       size_t reserveMem = 1e09,
+                                       bool cacheElemData = false) {
+
+  typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
+
+  const unsigned int testElemCount = testGrid->elemCount();
+  const unsigned int trialElemCount = trialGrid->elemCount();
+
+  const unsigned int testDim = testGrid->dim();
+  const unsigned int trialDim = trialGrid->dim();
+
+  cudaDeviceProp prop;
+  cudaGetDeviceProperties(&prop, 0);
+  size_t totalGlobalMem = prop.totalGlobalMem;
+  const int warpSize = prop.warpSize;
+
+  size_t gridMem = testElemCount * testGrid->idxCount() * sizeof(int)
+        + testGrid->vtxCount() * testDim * sizeof(CoordinateType);
+  if (testGrid.get() != trialGrid.get()) {
+    gridMem += trialElemCount * trialGrid->idxCount() * sizeof(int)
+        + trialGrid->vtxCount() * trialDim * sizeof(CoordinateType);
+  }
+
+  size_t elemMem = 0;
+  if (cacheElemData == true) {
+    elemMem +=
+        testElemCount * testDim * sizeof(CoordinateType) // normals
+        + testElemCount * sizeof(CoordinateType);        // integration elements
+        + testElemCount * testDim * testPointCount;      // global quad points
+    if (testGrid.get() != trialGrid.get() || testPointCount != trialPointCount) {
+      elemMem +=
+      trialElemCount * trialDim * sizeof(CoordinateType)
+      + trialElemCount * sizeof(CoordinateType);
+      + trialElemCount * trialDim * trialPointCount;
+    }
+  }
+
+  int maxActiveElemPairCount =
+      (totalGlobalMem - gridMem - elemMem - reserveMem) / (2 * sizeof(int)
+      + testDofCount * trialDofCount * sizeof(ResultType));
+
+  // Let the chunk size be a multiple of the warp size
+  return (maxActiveElemPairCount / warpSize) * warpSize;
 }
 
 } // namespace
@@ -211,8 +407,6 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakFor
     const Space<BasisFunctionType> &trialSpace,
     LocalAssemblerForIntegralOperators &assembler,
     const Context<BasisFunctionType, ResultType> &context) {
-
-  std::cout << "Hello, this is CudaDenseGlobalAssembler::assembleDetachedWeakForm()!" << std::endl;
 
   // Global DOF indices corresponding to local DOFs on elements
   std::vector<std::vector<GlobalDofIndex>> testGlobalDofs, trialGlobalDofs;
@@ -279,10 +473,9 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakFor
   result.setZero();
 
   // Get element pair index vectors and regular integration data
-  std::vector<std::vector<std::vector<int>>> regularElemPairTestIndices;
-  std::vector<std::vector<std::vector<int>>> regularElemPairTrialIndices;
-  std::vector<QuadDataPair> regularQuadOrderCombinations;
-  std::vector<std::vector<ShapesetPair>> regularShapesetCombinations;
+  std::vector<std::vector<int>> regularElemPairTestIndices;
+  std::vector<std::vector<int>> regularElemPairTrialIndices;
+  std::vector<QuadVariant> regularQuadVariants;
   std::vector<int> singularElemPairTestIndices;
   std::vector<int> singularElemPairTrialIndices;
 
@@ -290,8 +483,9 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakFor
 
   getSortedElementPairs(
       testSpace, trialSpace, testIndices, trialIndices,
+      assembler.quadDescSelector(), assembler.quadRuleFamily(),
       regularElemPairTestIndices, regularElemPairTrialIndices,
-      regularQuadOrderCombinations, regularShapesetCombinations,
+      regularQuadVariants,
       singularElemPairTestIndices, singularElemPairTrialIndices);
 
   std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
@@ -299,8 +493,11 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakFor
             << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()
             << " ms" << std::endl;
 
-//  std::cout << "number of singular element pairs: " << singularElemPairTestIndices.size() << std::endl;
-//  std::cout << "number of regular element pairs: " << regularElemPairTestIndices[0][0].size() << std::endl;
+  std::cout << "number of singular element pairs: " << singularElemPairTestIndices.size() << std::endl;
+  std::cout << "number of regular element pairs: " << std::flush;
+  for (int i = 0; i < regularElemPairTestIndices.size(); ++i)
+    std::cout << regularElemPairTestIndices[i].size() << " " << std::flush;
+  std::cout << std::endl;
 
 //  std::cout << "singularElemPairIndices = " << std::endl;
 //  for (int i = 0; i < singularElemPairTestIndices.size(); ++i) {
@@ -310,164 +507,58 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakFor
 //  std::cout << std::endl;
 //
 //  std::cout << "regularElemPairIndices = " << std::endl;
-//  for (int i = 0; i < regularElemPairTestIndices[0][0].size(); ++i) {
-//    std::cout << regularElemPairTestIndices[0][0][i] << " "
-//              << regularElemPairTrialIndices[0][0][i] << std::endl;
+//  for (int i = 0; i < regularElemPairTestIndices[0].size(); ++i) {
+//    std::cout << regularElemPairTestIndices[0][i] << " "
+//              << regularElemPairTrialIndices[0][i] << std::endl;
 //  }
 //  std::cout << std::endl;
 
-//  std::cout << "testQuadPoints = " << std::endl;
-//  std::cout << regularQuadOrderCombinations[0].first.first << std::endl;
-//  std::cout << "testQuadWeights = " << std::endl;
-//  for (int i = 0; i < regularQuadOrderCombinations[0].first.second.size(); ++i) {
-//    std::cout << regularQuadOrderCombinations[0].first.second[i] << " " << std::flush;
-//  }
-//  std::cout << std::endl;
-//  std::cout << "trialQuadPoints = " << std::endl;
-//  std::cout << regularQuadOrderCombinations[0].second.first << std::endl;
-//  std::cout << "trialQuadWeights = " << std::endl;
-//  for (int i = 0; i < regularQuadOrderCombinations[0].second.second.size(); ++i) {
-//    std::cout << regularQuadOrderCombinations[0].second.second[i] << " " << std::flush;
-//  }
-//  std::cout << std::endl;
-//
-//  std::cout << "number of test shape functions: " << regularShapesetCombinations[0][0].first->size() << std::endl;
-//  std::cout << "number of trial shape functions: " << regularShapesetCombinations[0][0].second->size() << std::endl;
-
-  begin = std::chrono::steady_clock::now();
-
-  // Evaluate singular integrals over selected element pairs
-  std::vector<Matrix<ResultType>> singularResult;
-  assembler.evaluateLocalWeakForms(singularElemPairTestIndices,
-                                   singularElemPairTrialIndices,
-                                   singularResult);
-
-  end = std::chrono::steady_clock::now();
-  std::cout << "Time for evaluateSingularWeakForms() = "
-            << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()
-            << " ms" << std::endl;
-
-  std::vector<std::vector<std::vector<Matrix<ResultType>>>> regularResult;
-
-  // Push raw grid data to the device
-  shared_ptr<CudaGrid> testGrid = testSpace.grid()->pushToDevice(0);
-  shared_ptr<CudaGrid> trialGrid = trialSpace.grid()->pushToDevice(0);
-
-  const unsigned int quadOrderCombinationCount = regularQuadOrderCombinations.size();
-
-  regularResult.resize(quadOrderCombinationCount);
-
-  begin = std::chrono::steady_clock::now();
-
-  for (int quadOrderCombination = 0; quadOrderCombination < quadOrderCombinationCount; ++quadOrderCombination) {
-
-    const unsigned int shapesetCombinationCount = regularShapesetCombinations[quadOrderCombination].size();
-
-    Matrix<CoordinateType> localTestQuadPoints =
-        regularQuadOrderCombinations[quadOrderCombination].first.first;
-    Matrix<CoordinateType> localTrialQuadPoints =
-        regularQuadOrderCombinations[quadOrderCombination].second.first;
-    std::vector<CoordinateType> testQuadWeights =
-        regularQuadOrderCombinations[quadOrderCombination].first.second;
-    std::vector<CoordinateType> trialQuadWeights =
-        regularQuadOrderCombinations[quadOrderCombination].second.second;
-
-    regularResult[quadOrderCombination].resize(shapesetCombinationCount);
-
-    for (int shapesetCombination = 0; shapesetCombination < shapesetCombinationCount; ++shapesetCombination) {
-
-      const unsigned int elemPairCount = regularElemPairTestIndices[quadOrderCombination][shapesetCombination].size();
-
-      const Shapeset &testShapeset = *(regularShapesetCombinations[quadOrderCombination][shapesetCombination].first);
-      const Shapeset &trialShapeset = *(regularShapesetCombinations[quadOrderCombination][shapesetCombination].second);
-
-      Fiber::CudaIntegrator<BasisFunctionType, ResultType> cudaIntegrator(
-          localTestQuadPoints,
-          localTrialQuadPoints,
-          testQuadWeights,
-          trialQuadWeights,
-          testShapeset,
-          trialShapeset,
-          testGrid,
-          trialGrid);
-
-      regularResult[quadOrderCombination][shapesetCombination].resize(elemPairCount);
-
-      // Create chunks of element pairs according to a maximum number of
-      // element pairs active on the device
-      const unsigned int maxActiveElemPairCount = 100e06;
-
-      std::vector<int> elemPairChunkTestIndices;
-      std::vector<int> elemPairChunkTrialIndices;
-      elemPairChunkTestIndices.reserve(maxActiveElemPairCount);
-      elemPairChunkTrialIndices.reserve(maxActiveElemPairCount);
-
-      std::vector<Matrix<ResultType>*> regularResultChunk;
-      regularResultChunk.reserve(maxActiveElemPairCount);
-
-      unsigned int activeElemPairCount = 0;
-
-      for (int elemPair = 0; elemPair < elemPairCount; ++elemPair) {
-
-//        std::cout << "elemPair = " << elemPair << std::endl;
-
-        const int elemPairTestIndex =
-            regularElemPairTestIndices[quadOrderCombination][shapesetCombination][elemPair];
-        const int elemPairTrialIndex =
-            regularElemPairTrialIndices[quadOrderCombination][shapesetCombination][elemPair];
-
-        if (activeElemPairCount < maxActiveElemPairCount) {
-
-          elemPairChunkTestIndices.push_back(elemPairTestIndex);
-          elemPairChunkTrialIndices.push_back(elemPairTrialIndex);
-          regularResultChunk.push_back(&regularResult[quadOrderCombination][shapesetCombination][elemPair]);
-          activeElemPairCount++;
-        }
-
-//        std::cout << "elemPairChunkIndices = " << std::endl;
-//        for (int i = 0; i < elemPairChunkTestIndices.size(); ++i) {
-//          std::cout << elemPairChunkTestIndices[i] << " "
-//                    << elemPairChunkTrialIndices[i] << std::endl;
-//        }
-
-        if (activeElemPairCount == maxActiveElemPairCount || elemPair == elemPairCount-1) {
-
-          end = std::chrono::steady_clock::now();
-          std::cout << "Time for creating chunk = "
-                    << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()
-                    << " ms" << std::endl;
-
-          begin = std::chrono::steady_clock::now();
-
-          // Evaluate regular integrals over selected element pairs
-          cudaIntegrator.integrate(elemPairChunkTestIndices,
-                                   elemPairChunkTrialIndices,
-                                   regularResultChunk);
-
-          end = std::chrono::steady_clock::now();
-          std::cout << "Time for integrate() = "
-                    << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()
-                    << " ms" << std::endl;
-
-//          std::cout << "regularResultChunk = " << std::endl;
-//          for (int i = 0; i < elemPairChunkTestIndices.size(); ++i) {
-//            std::cout << *(regularResultChunk[i]) << std::endl;
-//          }
-
-          elemPairChunkTestIndices.clear();
-          elemPairChunkTrialIndices.clear();
-          regularResultChunk.clear();
-          activeElemPairCount = 0;
-
-          begin = std::chrono::steady_clock::now();
-        }
-      }
-    }
+  std::cout << "number of quadrature points = " << std::endl;
+  for (int i = 0; i < regularQuadVariants.size(); ++i) {
+    std::cout << (std::get<0>(*(regularQuadVariants[i].first))->second).size() << " " << std::flush;
   }
+  std::cout << std::endl;
+  for (int i = 0; i < regularQuadVariants.size(); ++i) {
+    std::cout << (std::get<1>(*(regularQuadVariants[i].first))->second).size() << " " << std::flush;
+  }
+  std::cout << std::endl;
 
-  // Global assembly
-  {
+  std::cout << "number of shape functions: " << std::endl;
+  for (int i = 0; i < regularQuadVariants.size(); ++i) {
+    std::cout << regularQuadVariants[i].second.first->size() << " " << std::flush;
+  }
+  std::cout << std::endl;
+  for (int i = 0; i < regularQuadVariants.size(); ++i) {
+    std::cout << regularQuadVariants[i].second.second->size() << " " << std::flush;
+  }
+  std::cout << std::endl;
+
+  tbb::task_group taskGroupGlobal;
+  tbb::spin_mutex mutex;
+
+  taskGroupGlobal.run([&singularElemPairTestIndices, &singularElemPairTrialIndices,
+      &testGlobalDofs, &trialGlobalDofs,
+      &testLocalDofWeights, &trialLocalDofWeights,
+      &assembler, &result, &mutex]{
+
+    std::vector<Matrix<ResultType>> singularResult;
+
+    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+
+    // Evaluate singular integrals over selected element pairs
+    assembler.evaluateLocalWeakForms(singularElemPairTestIndices,
+                                     singularElemPairTrialIndices,
+                                     singularResult);
+
+    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+    std::cout << "Time for evaluateSingularWeakForms() = "
+              << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()
+              << " ms" << std::endl;
+
     begin = std::chrono::steady_clock::now();
+
+    // Global assembly
+    tbb::spin_mutex::scoped_lock lock(mutex);
 
     // Loop over singular element pairs
     for (int singularElemPair = 0; singularElemPair < singularElemPairTestIndices.size(); ++singularElemPair) {
@@ -502,54 +593,238 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakFor
       }
     }
 
+    end = std::chrono::steady_clock::now();
+    std::cout << "Time for singular global assembly = "
+              << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()
+              << " ms" << std::endl;
+  });
+
+  taskGroupGlobal.run([&regularElemPairTestIndices, &regularElemPairTrialIndices,
+      &testGlobalDofs, &trialGlobalDofs,
+      &testLocalDofWeights, &trialLocalDofWeights,
+      &testSpace, &trialSpace,
+      &regularQuadVariants, &assembler, &result, &mutex]{
+
+    std::vector<std::vector<Matrix<ResultType>>> regularResult;
+
+    cudaProfilerStart();
+
+    // TODO: How to determine the correct kernel type?
+    typedef CoordinateType KernelType;         // Real kernel
+//        typedef ResultType KernelType;             // Complex kernel
+    shared_ptr<const Fiber::CollectionOfKernels<KernelType>> kernels;
+//        assembler.getKernels(kernels);
+
+    // Push raw grid data to the device
+    shared_ptr<CudaGrid> testGrid = testSpace.grid()->pushToDevice(0);
+    shared_ptr<CudaGrid> trialGrid = trialSpace.grid()->pushToDevice(0);
+
+    const unsigned int quadVariantCount = regularQuadVariants.size();
+
+    regularResult.resize(quadVariantCount);
+
+    for (int quadVariant = 0; quadVariant < quadVariantCount; ++quadVariant) {
+
+      const unsigned int elemPairCount =
+          regularElemPairTestIndices[quadVariant].size();
+
+      regularResult[quadVariant].resize(elemPairCount);
+
+      Matrix<CoordinateType> localTestQuadPoints =
+          std::get<0>(*(regularQuadVariants[quadVariant].first))->first;
+      Matrix<CoordinateType> localTrialQuadPoints =
+          std::get<1>(*(regularQuadVariants[quadVariant].first))->first;
+      std::vector<CoordinateType> testQuadWeights =
+          std::get<0>(*(regularQuadVariants[quadVariant].first))->second;
+      std::vector<CoordinateType> trialQuadWeights =
+          std::get<1>(*(regularQuadVariants[quadVariant].first))->second;
+
+      const unsigned int testPointCount = testQuadWeights.size();
+      const unsigned int trialPointCount = trialQuadWeights.size();
+
+      const Shapeset &testShapeset =
+          *(regularQuadVariants[quadVariant].second.first);
+      const Shapeset &trialShapeset =
+          *(regularQuadVariants[quadVariant].second.second);
+
+      const unsigned int testDofCount = testShapeset.size();
+      const unsigned int trialDofCount = trialShapeset.size();
+
+      // Create chunks of element pairs according to a maximum number of
+      // element pairs active on the device
+      const unsigned int maxActiveElemPairCount =
+          getMaxActiveElemPairCount<ResultType>(
+              testGrid, trialGrid,
+              testDofCount, trialDofCount,
+              testPointCount, trialPointCount);
+
+      Fiber::CudaIntegrator<
+      BasisFunctionType, KernelType, ResultType> cudaIntegrator(
+          localTestQuadPoints, localTrialQuadPoints,
+          testQuadWeights, trialQuadWeights,
+          testShapeset, trialShapeset,
+          testGrid, trialGrid,
+          *kernels);
+
+      thrust::host_vector<ResultType> h_regularResult(elemPairCount*testDofCount*trialDofCount);
+
+      std::cout << "elemPairCount = " << elemPairCount << std::endl;
+      std::cout << "maxActiveElemPairCount = " << maxActiveElemPairCount << std::endl;
+      const unsigned int chunkCount = std::max(
+          static_cast<int>((elemPairCount-1)/maxActiveElemPairCount+1), 1);
+      std::cout << "chunkCount = " << chunkCount << std::endl;
+
+      tbb::task_group taskGroupRegular;
+
+      for (int chunk = 0; chunk < chunkCount; ++chunk) {
+
+        taskGroupRegular.run([quadVariant, chunk, chunkCount,
+             maxActiveElemPairCount, testDofCount, trialDofCount,
+             &regularElemPairTestIndices, &regularElemPairTrialIndices,
+             &cudaIntegrator, &h_regularResult]{
+
+          std::vector<int>::iterator startElemPairTestIndex =
+              regularElemPairTestIndices[quadVariant].begin()+chunk*maxActiveElemPairCount;
+          std::vector<int>::iterator startElemPairTrialIndex =
+              regularElemPairTrialIndices[quadVariant].begin()+chunk*maxActiveElemPairCount;
+          typename thrust::host_vector<ResultType>::iterator startRegularResult =
+              h_regularResult.begin()
+              + chunk * maxActiveElemPairCount * testDofCount * trialDofCount;
+
+          std::vector<int>::iterator endElemPairTestIndex;
+          std::vector<int>::iterator endElemPairTrialIndex;
+          typename thrust::host_vector<ResultType>::iterator endRegularResult;
+          if (chunk == chunkCount-1) {
+            endElemPairTestIndex =
+                regularElemPairTestIndices[quadVariant].end();
+            endElemPairTrialIndex =
+                regularElemPairTrialIndices[quadVariant].end();
+            endRegularResult = h_regularResult.end();
+          } else {
+            endElemPairTestIndex =
+                regularElemPairTestIndices[quadVariant].begin()+(chunk+1)*maxActiveElemPairCount;
+            endElemPairTrialIndex =
+                regularElemPairTrialIndices[quadVariant].begin()+(chunk+1)*maxActiveElemPairCount;
+            endRegularResult =
+                h_regularResult.begin()
+                + (chunk+1) * maxActiveElemPairCount * testDofCount * trialDofCount;
+          }
+
+          std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+
+          // Evaluate regular integrals over selected element pairs
+          cudaIntegrator.integrate(startElemPairTestIndex, endElemPairTestIndex,
+                                   startElemPairTrialIndex, endElemPairTrialIndex,
+                                   startRegularResult, endRegularResult);
+
+          std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+          std::cout << "Time for CudaIntegrator::integrate() = "
+                    << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()
+                    << " ms" << std::endl;
+        });
+
+        taskGroupRegular.wait();
+
+        taskGroupRegular.run([quadVariant, chunk, chunkCount,
+            maxActiveElemPairCount, testDofCount, trialDofCount,
+            &h_regularResult, &regularResult]{
+
+            std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+
+            typedef typename std::vector<Matrix<ResultType>>::iterator matrixIterator;
+            matrixIterator matricesBegin = regularResult[quadVariant].begin()
+                + chunk * maxActiveElemPairCount;
+            matrixIterator matricesEnd;
+            if (chunk == chunkCount-1) {
+              matricesEnd = regularResult[quadVariant].end();
+            } else {
+              matricesEnd = regularResult[quadVariant].begin()
+                  + (chunk+1) * maxActiveElemPairCount;
+            }
+
+            for (matrixIterator it = matricesBegin; it != matricesEnd; ++it) {
+              assert(it);
+              it->resize(testDofCount, trialDofCount);
+            }
+
+            // Assemble result
+            int geometryPair = 0;
+            const int offset = chunk * maxActiveElemPairCount;
+            for (matrixIterator it = matricesBegin; it != matricesEnd; ++it) {
+              for (int testDof = 0; testDof < testDofCount; ++testDof) {
+                for (int trialDof = 0; trialDof < trialDofCount; ++trialDof) {
+                  (*it)(testDof, trialDof) =
+                      h_regularResult[offset
+                                      + geometryPair * testDofCount * trialDofCount
+                                      + testDof * trialDofCount
+                                      + trialDof];
+                }
+              }
+              geometryPair++;
+            }
+
+            std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+            std::cout << "Time for chunk result assembly = "
+                      << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()
+                      << " ms" << std::endl;
+          });
+      }
+      taskGroupRegular.wait();
+    }
+
+    cudaProfilerStop();
+
+    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+
+    // Global assembly
+    tbb::spin_mutex::scoped_lock lock(mutex);
+
     // Loop over regular element pairs
-    for (int quadOrderCombination = 0; quadOrderCombination < quadOrderCombinationCount; ++quadOrderCombination) {
+    for (int quadVariant = 0; quadVariant < quadVariantCount; ++quadVariant) {
 
-      const unsigned int shapesetCombinationCount = regularResult[quadOrderCombination].size();
-      for (int shapesetCombination = 0; shapesetCombination < shapesetCombinationCount; ++shapesetCombination) {
+      const unsigned int elemPairCount = regularResult[quadVariant].size();
+      for (int elemPair = 0; elemPair < elemPairCount; ++elemPair) {
 
-        const unsigned int elemPairCount = regularResult[quadOrderCombination][shapesetCombination].size();
-        for (int elemPair = 0; elemPair < elemPairCount; ++elemPair) {
+        const int testIndex = regularElemPairTestIndices[quadVariant][elemPair];
+        const int trialIndex = regularElemPairTrialIndices[quadVariant][elemPair];
 
-          const int testIndex = regularElemPairTestIndices[quadOrderCombination][shapesetCombination][elemPair];
-          const int trialIndex = regularElemPairTrialIndices[quadOrderCombination][shapesetCombination][elemPair];
+        const int testDofCount = testGlobalDofs[testIndex].size();
+        const int trialDofCount = trialGlobalDofs[trialIndex].size();
 
-          const int testDofCount = testGlobalDofs[testIndex].size();
-          const int trialDofCount = trialGlobalDofs[trialIndex].size();
+        // Add the integrals to appropriate entries in the operator's matrix
+        for (int testDof = 0; testDof < testDofCount; ++testDof) {
 
-          // Add the integrals to appropriate entries in the operator's matrix
-          for (int testDof = 0; testDof < testDofCount; ++testDof) {
+          int testGlobalDof = testGlobalDofs[testIndex][testDof];
+          if (testGlobalDof < 0)
+            continue;
 
-            int testGlobalDof = testGlobalDofs[testIndex][testDof];
-            if (testGlobalDof < 0)
+          for (int trialDof = 0; trialDof < trialDofCount; ++trialDof) {
+
+            int trialGlobalDof = trialGlobalDofs[trialIndex][trialDof];
+            if (trialGlobalDof < 0)
               continue;
 
-            for (int trialDof = 0; trialDof < trialDofCount; ++trialDof) {
+            assert(std::abs(testLocalDofWeights[testIndex][testDof]) > 0.);
+            assert(std::abs(trialLocalDofWeights[trialIndex][trialDof]) > 0.);
 
-              int trialGlobalDof = trialGlobalDofs[trialIndex][trialDof];
-              if (trialGlobalDof < 0)
-                continue;
-
-              assert(std::abs(testLocalDofWeights[testIndex][testDof]) > 0.);
-              assert(std::abs(trialLocalDofWeights[trialIndex][trialDof]) > 0.);
-
-              result(testGlobalDof, trialGlobalDof) +=
-                conj(testLocalDofWeights[testIndex][testDof]) *
-                trialLocalDofWeights[trialIndex][trialDof] *
-                regularResult[quadOrderCombination][shapesetCombination][elemPair](testDof, trialDof);
-            }
+            result(testGlobalDof, trialGlobalDof) +=
+              conj(testLocalDofWeights[testIndex][testDof]) *
+              trialLocalDofWeights[trialIndex][trialDof] *
+              regularResult[quadVariant][elemPair](testDof, trialDof);
           }
         }
       }
     }
-    end = std::chrono::steady_clock::now();
-    std::cout << "Time for global assembly = "
+    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+    std::cout << "Time for regular global assembly = "
               << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()
               << " ms" << std::endl;
-  }
+  });
 
-  std::cout << "result (cudadense) = " << std::endl;
-  std::cout << result << std::endl;
+  taskGroupGlobal.wait();
+
+//  std::cout << "result (cudadense) = " << std::endl;
+//  std::cout << result << std::endl;
 
   // Create and return a discrete operator represented by the matrix that
   // has just been calculated
