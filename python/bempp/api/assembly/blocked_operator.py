@@ -73,9 +73,10 @@ class BlockedOperatorBase(object):
                 else:
                     from bempp.api.assembly import InverseSparseDiscreteBoundaryOperator
                     from bempp.api.operators.boundary.sparse import identity
+                    from bempp.api.assembly.boundary_operator import InverseLocalBoundaryOperator
 
                     _range_ops[index, index] = InverseLocalBoundaryOperator(
-                        identity(self.range, self.range, self.dual_to_range)).weak_form()
+                        identity(self.range_spaces[index], self.range_spaces[index], self.dual_to_range_spaces[index])).weak_form()
             
             self._range_map = BlockedDiscreteOperator(_range_ops)
 
@@ -673,7 +674,7 @@ class BlockedDiscreteOperatorProduct(BlockedDiscreteOperatorBase):
 
         from bempp.api.utils.data_types import combined_type
 
-        super(BlockedDiscreteOperatorProduct, self).__init__(self,
+        super(BlockedDiscreteOperatorProduct, self).__init__(
                 op1.ndims[0], op2.ndims[1], 
                 combined_type(op1.dtype, op2.dtype),
                 (op1.shape[0], op2.shape[1]))

@@ -176,3 +176,29 @@ def magnetic_field(domain, range_, dual_to_range,
             _magnetic_field_impl, domain, range_, hdiv_dual_to_range, 
             wave_number, label, symmetry, parameters, use_projection_spaces, assemble_only_singular_part),
             domain, range_, dual_to_range)
+
+def multitrace_operator(grid, wave_number, parameters=None):
+    """Assemble the multitrace operator for Maxwell."""
+
+    from bempp.api.assembly import BlockedOperator
+    from bempp.api.space import project_operator
+    import bempp.api
+
+    blocked_operator = BlockedOperator(2, 2)
+
+    rwg_space_fine = bempp.api.function_space(grid.barycentric_grid(), "RWG", 0)
+    rwg_space = bempp.api.function_space(grid, "B-RWG", 0)
+    bc_space = bempp.api.function_space(grid, "BC", 0)
+    rbc_space = bempp.api.function_space(grid, "RBC", 0)
+    snc_space = bempp.api.function_space(grid, "B-SNC", 0)
+    snc_space_fine = bempp.api.function_space(grid.barycentric_grid(), "SNC", 0)
+
+    efie_fine = electric_field(rwg_space_fine, rwg_space_fine, snc_space_fine, wave_number, parameters=parameters)
+    mfie_fine = magnetic_field(rwg_space_fine, rwg_space_fine, snc_space_fine, wave_number, parameters=parameters)
+
+    blocked_operator[0, 0] = project_operator(mfie_fine, rwg_space, rwg_space, rbc_space)
+    blocked_operator[0, 1] = project_operator(efie_fine, bc_space, rwg_space, rbc_space)
+    blocked_operator[1, 0] = -1 * project_operator(efie_fine, rwg_space, bc_space, snc_space)
+    blocked_operator[1, 1] = project_operator(mfie_fine, bc_space, bc_space, snc_space)
+
+    return blocked_operator
