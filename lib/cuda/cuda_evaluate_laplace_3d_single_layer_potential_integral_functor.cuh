@@ -37,9 +37,11 @@ RawCudaEvaluateLaplace3dSingleLayerPotentialIntegralFunctorNonCached(
     const unsigned int testDofCount, BasisFunctionType* testBasisValues,
     const unsigned int trialDofCount, BasisFunctionType* trialBasisValues,
     const unsigned int testElemCount, const unsigned int testVtxCount,
-    const double* testVertices, const int* testElementCorners,
+    const typename ScalarTraits<BasisFunctionType>::RealType* testVertices,
+    const int* testElementCorners,
     const unsigned int trialElemCount, const unsigned int trialVtxCount,
-    const double* trialVertices, const int* trialElementCorners,
+    const typename ScalarTraits<BasisFunctionType>::RealType* trialVertices,
+    const int* trialElementCorners,
     ResultType* result) {
 
   typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
@@ -69,18 +71,18 @@ RawCudaEvaluateLaplace3dSingleLayerPotentialIntegralFunctorNonCached(
     for (int coo = 0; coo < coordCount; ++coo) {
 
       testElemVtx0[coo] =
-          static_cast<CoordinateType>(testVertices[testElementCorners[testElemPosition]+coo*testVtxCount]);
+          testVertices[testElementCorners[testElemPosition]+coo*testVtxCount];
       testElemVtx1[coo] =
-          static_cast<CoordinateType>(testVertices[testElementCorners[testElemPosition+testElemCount]+coo*testVtxCount]);
+          testVertices[testElementCorners[testElemPosition+testElemCount]+coo*testVtxCount];
       testElemVtx2[coo] =
-          static_cast<CoordinateType>(testVertices[testElementCorners[testElemPosition+2*testElemCount]+coo*testVtxCount]);
+          testVertices[testElementCorners[testElemPosition+2*testElemCount]+coo*testVtxCount];
 
       trialElemVtx0[coo] =
-          static_cast<CoordinateType>(trialVertices[trialElementCorners[trialElemPosition]+coo*trialVtxCount]);
+          trialVertices[trialElementCorners[trialElemPosition]+coo*trialVtxCount];
       trialElemVtx1[coo] =
-          static_cast<CoordinateType>(trialVertices[trialElementCorners[trialElemPosition+trialElemCount]+coo*trialVtxCount]);
+          trialVertices[trialElementCorners[trialElemPosition+trialElemCount]+coo*trialVtxCount];
       trialElemVtx2[coo] =
-          static_cast<CoordinateType>(trialVertices[trialElementCorners[trialElemPosition+2*trialElemCount]+coo*trialVtxCount]);
+          trialVertices[trialElementCorners[trialElemPosition+2*trialElemCount]+coo*trialVtxCount];
     }
 
 //    clock_t stop_time = clock();
@@ -412,8 +414,8 @@ struct CudaEvaluateLaplace3dSingleLayerPotentialIntegralFunctorNonCached
       const QuadData<CoordinateType> _trialQuadData,
       const BasisFunData<BasisFunctionType> _testBasisData,
       const BasisFunData<BasisFunctionType> _trialBasisData,
-      const RawGeometryData<double> _testRawGeometryData,
-      const RawGeometryData<double> _trialRawGeometryData,
+      const RawGeometryData<CoordinateType> _testRawGeometryData,
+      const RawGeometryData<CoordinateType> _trialRawGeometryData,
       const GeomShapeFunData<CoordinateType> _testGeomShapeFunData,
       const GeomShapeFunData<CoordinateType> _trialGeomShapeFunData,
       thrust::device_ptr<ResultType> _result)
@@ -453,18 +455,18 @@ struct CudaEvaluateLaplace3dSingleLayerPotentialIntegralFunctorNonCached
     for (int coo = 0; coo < coordCount; ++coo) {
 
       testElemVtx0[coo] =
-          static_cast<CoordinateType>(Base::testRawGeometryData.vertices[Base::testRawGeometryData.elementCorners[testElemPosition]+coo*testVtxCount]);
+          Base::testRawGeometryData.vertices[Base::testRawGeometryData.elementCorners[testElemPosition]+coo*testVtxCount];
       testElemVtx1[coo] =
-          static_cast<CoordinateType>(Base::testRawGeometryData.vertices[Base::testRawGeometryData.elementCorners[testElemPosition+testElemCount]+coo*testVtxCount]);
+          Base::testRawGeometryData.vertices[Base::testRawGeometryData.elementCorners[testElemPosition+testElemCount]+coo*testVtxCount];
       testElemVtx2[coo] =
-          static_cast<CoordinateType>(Base::testRawGeometryData.vertices[Base::testRawGeometryData.elementCorners[testElemPosition+2*testElemCount]+coo*testVtxCount]);
+          Base::testRawGeometryData.vertices[Base::testRawGeometryData.elementCorners[testElemPosition+2*testElemCount]+coo*testVtxCount];
 
       trialElemVtx0[coo] =
-          static_cast<CoordinateType>(Base::trialRawGeometryData.vertices[Base::trialRawGeometryData.elementCorners[trialElemPosition]+coo*trialVtxCount]);
+          Base::trialRawGeometryData.vertices[Base::trialRawGeometryData.elementCorners[trialElemPosition]+coo*trialVtxCount];
       trialElemVtx1[coo] =
-          static_cast<CoordinateType>(Base::trialRawGeometryData.vertices[Base::trialRawGeometryData.elementCorners[trialElemPosition+trialElemCount]+coo*trialVtxCount]);
+          Base::trialRawGeometryData.vertices[Base::trialRawGeometryData.elementCorners[trialElemPosition+trialElemCount]+coo*trialVtxCount];
       trialElemVtx2[coo] =
-          static_cast<CoordinateType>(Base::trialRawGeometryData.vertices[Base::trialRawGeometryData.elementCorners[trialElemPosition+2*trialElemCount]+coo*trialVtxCount]);
+          Base::trialRawGeometryData.vertices[Base::trialRawGeometryData.elementCorners[trialElemPosition+2*trialElemCount]+coo*trialVtxCount];
     }
 
 //    clock_t stop_time = clock();

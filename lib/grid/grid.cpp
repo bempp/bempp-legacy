@@ -197,22 +197,48 @@ unsigned int Grid::vertexInsertionIndex(const Entity<2> &vertex) const {
                            "method not implemented.");
 }
 
-shared_ptr<CudaGrid> Grid::pushToDevice(unsigned int deviceId) const {
-  if (cudaGridPtr == NULL) {
-    cudaGridPtr = boost::make_shared<CudaGrid>();
+template<typename CoordinateType>
+shared_ptr<CudaGrid<CoordinateType>> Grid::pushToDevice(
+    unsigned int deviceId) const {
 
-    std::unique_ptr<GridView> view = leafView();
+  if (std::is_same<CoordinateType, double>::value) {
 
-    Fiber::RawGridGeometry<double> rawGeometry(dim(),dimWorld());
-    view->getRawElementData(
-        rawGeometry.vertices(), rawGeometry.elementCornerIndices(),
-        rawGeometry.auxData(), rawGeometry.domainIndices());
+    if (cudaDoubleGridPtr == NULL) {
 
-    cudaGridPtr->pushGeometry(
-        rawGeometry.vertices().transpose().eval(),
-        rawGeometry.elementCornerIndices().topRows(3).transpose().eval());
+      cudaDoubleGridPtr = boost::make_shared<CudaGrid<double>>();
+
+      std::unique_ptr<GridView> view = leafView();
+
+      Fiber::RawGridGeometry<double> rawGeometry(dim(),dimWorld());
+      view->getRawElementData(
+          rawGeometry.vertices(), rawGeometry.elementCornerIndices(),
+          rawGeometry.auxData(), rawGeometry.domainIndices());
+
+      cudaDoubleGridPtr->pushGeometry(
+          rawGeometry.vertices().transpose().eval(),
+          rawGeometry.elementCornerIndices().topRows(3).transpose().eval());
+    }
+    return cudaDoubleGridPtr;
+
+  } else {
+
+    if (cudaFloatGridPtr == NULL) {
+
+      cudaFloatGridPtr = boost::make_shared<CudaGrid<float>>();
+
+      std::unique_ptr<GridView> view = leafView();
+
+      Fiber::RawGridGeometry<float> rawGeometry(dim(),dimWorld());
+      view->getRawElementData(
+          rawGeometry.vertices(), rawGeometry.elementCornerIndices(),
+          rawGeometry.auxData(), rawGeometry.domainIndices());
+
+      cudaFloatGridPtr->pushGeometry(
+          rawGeometry.vertices().transpose().eval(),
+          rawGeometry.elementCornerIndices().topRows(3).transpose().eval());
+    }
+    return cudaFloatGridPtr;
   }
-  return cudaGridPtr;
 }
 
 } // namespace Bempp

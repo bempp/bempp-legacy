@@ -444,9 +444,17 @@ DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
 template <typename BasisFunctionType, typename KernelType, typename ResultType,
           typename GeometryFactory>
 void DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
-BasisFunctionType, KernelType, ResultType, GeometryFactory>::getKernels(
+    BasisFunctionType, KernelType, ResultType, GeometryFactory>::getKernels(
     shared_ptr<const CollectionOfKernels<KernelType>> kernels) const {
   kernels = m_kernels;
+}
+
+template <typename BasisFunctionType, typename KernelType, typename ResultType,
+          typename GeometryFactory>
+const _2dArray<std::pair<int, Matrix<ResultType>>>&
+DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
+    BasisFunctionType, KernelType, ResultType, GeometryFactory>::cache() const {
+  return m_cache;
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType,

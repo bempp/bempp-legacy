@@ -45,20 +45,9 @@ namespace Fiber {
   evaluating
   the necessary integrals. */
 
-/** \cond FORWARD_DECL */
-template <typename CoordinateType> class DoubleQuadratureRuleFamily;
-template <typename CoordinateType>
-class QuadratureDescriptorSelectorForIntegralOperators;
-template <typename KernelType> class CollectionOfKernels;
-/** \endcond */
-
 template <typename ResultType> class LocalAssemblerForIntegralOperators {
 public:
   typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
-
-  // TODO: How to determine the correct kernel type?
-//  typedef CoordinateType KernelType;         // Real kernel
-//  typedef ResultType KernelType;             // Complex kernel
 
   virtual ~LocalAssemblerForIntegralOperators() {}
 
@@ -157,15 +146,8 @@ public:
   virtual CoordinateType
   estimateRelativeScale(CoordinateType minDist) const = 0;
 
-  virtual shared_ptr<const QuadratureDescriptorSelectorForIntegralOperators<
-      CoordinateType>> quadDescSelector() const = 0;
-
-  virtual shared_ptr<const DoubleQuadratureRuleFamily<CoordinateType>>
-      quadRuleFamily() const = 0;
-
-//  TODO
-//  virtual void
-//  getKernels(shared_ptr<const CollectionOfKernels<KernelType>> kernels) const = 0;
+  typedef _2dArray<std::pair<int, Matrix<ResultType>>> Cache;
+  virtual const Cache& cache() const = 0;
 };
 
 } // namespace Fiber

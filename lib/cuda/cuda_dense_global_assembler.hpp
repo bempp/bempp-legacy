@@ -27,6 +27,8 @@
 #include "../common/eigen_support.hpp"
 #include "../common/scalar_traits.hpp"
 
+#include "../fiber/_2d_array.hpp"
+
 namespace Fiber {
 /** \cond FORWARD_DECL */
 template <typename ResultType> class LocalAssemblerForIntegralOperators;
@@ -51,10 +53,7 @@ public:
   typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
 
   typedef Fiber::Shapeset<BasisFunctionType> Shapeset;
-  typedef std::pair<const Shapeset*, const Shapeset*> ShapesetPair;
-  typedef std::pair<Matrix<CoordinateType>, std::vector<CoordinateType>> QuadDataset;
-  typedef std::tuple<const QuadDataset*, const QuadDataset*, const bool> Integrator;
-  typedef std::pair<const Integrator*, ShapesetPair> QuadVariant;
+  typedef Fiber::_2dArray<std::pair<int, Matrix<ResultType>>> Cache;
 
   typedef Fiber::LocalAssemblerForIntegralOperators<ResultType>
       LocalAssemblerForIntegralOperators;

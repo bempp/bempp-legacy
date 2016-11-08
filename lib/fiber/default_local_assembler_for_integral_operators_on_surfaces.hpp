@@ -130,6 +130,9 @@ public:
   virtual void
   getKernels(shared_ptr<const CollectionOfKernels<KernelType>> kernels) const;
 
+  typedef _2dArray<std::pair<int, Matrix<ResultType>>> Cache;
+  virtual const Cache& cache() const;
+
 private:
   /** \cond PRIVATE */
   typedef TestKernelTrialIntegrator<BasisFunctionType, KernelType, ResultType>
@@ -211,7 +214,6 @@ private:
   mutable tbb::mutex m_integratorCreationMutex;
 
   enum { INVALID_INDEX = INT_MAX };
-  typedef _2dArray<std::pair<int, Matrix<ResultType>>> Cache;
   /** \brief Singular integral cache.
    *
    *  This cache stores the preevaluated local weak forms expressed by

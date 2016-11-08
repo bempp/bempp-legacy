@@ -81,7 +81,7 @@ protected:
   BasisFunData<BasisFunctionType> testBasisData, trialBasisData;
   thrust::device_ptr<ResultType> result;
 
-  RawGeometryData<double> testRawGeometryData, trialRawGeometryData;
+  RawGeometryData<CoordinateType> testRawGeometryData, trialRawGeometryData;
   GeomShapeFunData<CoordinateType> testGeomShapeFunData, trialGeomShapeFunData;
 
 public:
@@ -92,8 +92,8 @@ public:
       const QuadData<CoordinateType> _trialQuadData,
       const BasisFunData<BasisFunctionType> _testBasisData,
       const BasisFunData<BasisFunctionType> _trialBasisData,
-      const RawGeometryData<double> _testRawGeometryData,
-      const RawGeometryData<double> _trialRawGeometryData,
+      const RawGeometryData<CoordinateType> _testRawGeometryData,
+      const RawGeometryData<CoordinateType> _trialRawGeometryData,
       const GeomShapeFunData<CoordinateType> _testGeomShapeFunData,
       const GeomShapeFunData<CoordinateType> _trialGeomShapeFunData,
       thrust::device_ptr<ResultType> _result)

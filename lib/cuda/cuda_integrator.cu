@@ -39,10 +39,10 @@ CudaIntegrator<BasisFunctionType, KernelType, ResultType>::CudaIntegrator(
     const std::vector<CoordinateType> &trialQuadWeights,
     const Shapeset<BasisFunctionType> &testShapeset,
     const Shapeset<BasisFunctionType> &trialShapeset,
-    shared_ptr<Bempp::CudaGrid> testGrid,
-    shared_ptr<Bempp::CudaGrid> trialGrid,
+    shared_ptr<Bempp::CudaGrid<CoordinateType>> testGrid,
+    shared_ptr<Bempp::CudaGrid<CoordinateType>> trialGrid,
     const CollectionOfKernels<KernelType> &kernels,
-    bool cacheElemData)
+    const bool cacheElemData, const int streamCount)
     : m_localTestQuadPoints(localTestQuadPoints),
       m_localTrialQuadPoints(localTrialQuadPoints),
       m_testGrid(testGrid), m_trialGrid(trialGrid),
@@ -102,6 +102,11 @@ CudaIntegrator<BasisFunctionType, KernelType, ResultType>::CudaIntegrator(
       m_testBasisData.values);
   thrust::copy(trialBasisData.values.begin(), trialBasisData.values.end(),
       m_trialBasisData.values);
+
+  // Create CUDA streams
+  m_streams.resize(streamCount);
+  for (int stream = 0; stream < streamCount; ++stream)
+    cudaStreamCreate(&m_streams[stream]);
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
@@ -146,37 +151,45 @@ void CudaIntegrator<BasisFunctionType, KernelType, ResultType>::integrate(
         "arrays 'elementPairTestIndices' and 'elementPairTrialIndices' must "
         "have the same number of elements");
 
+  const unsigned int streamCount = m_streams.size();
+  const unsigned int streamSize =
+      static_cast<unsigned int>((geometryPairCount-1)/streamCount + 1);
+
   if (testPointCount == 0 || trialPointCount == 0 || geometryPairCount == 0)
     return;
   // TODO: in the (pathological) case that pointCount == 0 but
   // geometryPairCount != 0, set elements of result to 0.
 
-  // Measure time of the GPU execution (CUDA event based)
-  cudaEvent_t start, stop;
-  cudaEventCreate(&start);
-  cudaEventCreate(&stop);
-  cudaEventRecord(start, 0);
-
-  // Copy element pair indices to device memory
-  thrust::device_vector<int> d_elementPairTestIndices(
-      startElementPairTestIndices, endElementPairTestIndices);
-  thrust::device_vector<int> d_elementPairTrialIndices(
-      startElementPairTrialIndices, endElementPairTrialIndices);
-
-  cudaEventRecord(stop, 0);
-  cudaEventSynchronize(stop);
-  float elapsedTimeIndexCopy;
-  cudaEventElapsedTime(&elapsedTimeIndexCopy, start, stop);
-  std::cout << "Time for thrust::copy(elementPairIndices, 'HtD') "
-    << elapsedTimeIndexCopy << " ms" << std::endl;
+  // Allocate device memory for element pair indices
+  thrust::device_vector<int> d_elementPairTestIndices(geometryPairCount);
+  thrust::device_vector<int> d_elementPairTrialIndices(geometryPairCount);
 
   // Allocate device memory for the result
   thrust::device_vector<CudaResultType> d_result(
       geometryPairCount * testDofCount * trialDofCount);
 
-  cudaEventRecord(start, 0);
-
   if (m_cacheElemData == true) {
+
+    // Measure time of the GPU execution (CUDA event based)
+    cudaEvent_t start, stop;
+    cudaEventCreate(&start);
+    cudaEventCreate(&stop);
+    cudaEventRecord(start, 0);
+
+    // Copy element pair indices to device memory
+    d_elementPairTestIndices.assign(
+        startElementPairTestIndices, endElementPairTestIndices);
+    d_elementPairTrialIndices.assign(
+        startElementPairTrialIndices, endElementPairTrialIndices);
+
+    cudaEventRecord(stop, 0);
+    cudaEventSynchronize(stop);
+    float elapsedTimeIndexCopy;
+    cudaEventElapsedTime(&elapsedTimeIndexCopy, start, stop);
+    std::cout << "Time for thrust::copy(elementPairIndices, 'HtD') "
+      << elapsedTimeIndexCopy << " ms" << std::endl;
+
+    cudaEventRecord(start, 0);
 
     // Setup geometry data for selected elements on the device
     m_testGrid->setupGeometry();
@@ -228,10 +241,30 @@ void CudaIntegrator<BasisFunctionType, KernelType, ResultType>::integrate(
             testElemData, trialElemData,
             d_result.data()
             ));
+
+    cudaEventRecord(stop, 0);
+    cudaEventSynchronize(stop);
+    float elapsedTimeIntegral;
+    cudaEventElapsedTime(&elapsedTimeIntegral , start, stop);
+    std::cout << "Time for CudaEvaluateIntegralCached() is "
+      << elapsedTimeIntegral << " ms" << std::endl;
+
+    cudaEventRecord(start, 0);
+
+    // Copy result back to host memory
+    thrust::copy(d_result.begin(), d_result.end(), startResult);
+
+    cudaEventRecord(stop, 0);
+    cudaEventSynchronize(stop);
+    float elapsedTimeResultCopy;
+    cudaEventElapsedTime(&elapsedTimeResultCopy, start, stop);
+    std::cout << "Time for thrust::copy(result, 'DtH') "
+      << elapsedTimeResultCopy << " ms" << std::endl;
+
   } else {
 
     // Get raw geometry data
-    RawGeometryData<double> testRawGeometryData, trialRawGeometryData;
+    RawGeometryData<CoordinateType> testRawGeometryData, trialRawGeometryData;
     m_testGrid->getRawGeometryData(
         testRawGeometryData.vtxCount, testRawGeometryData.elemCount,
         testRawGeometryData.vertices, testRawGeometryData.elementCorners);
@@ -293,70 +326,76 @@ void CudaIntegrator<BasisFunctionType, KernelType, ResultType>::integrate(
     cudaMemcpyToSymbol(constTrialGeomShapeFun2, h_trialFun2.data(),
         trialPointCount*sizeof(CoordinateType));
 
-    // Each thread is working on one pair of elements
-    thrust::counting_iterator<int> iter(0);
-    thrust::for_each(iter, iter+geometryPairCount,
-        CudaEvaluateLaplace3dSingleLayerPotentialIntegralFunctorNonCached<
-        CudaBasisFunctionType, CudaKernelType, CudaResultType>(
-            d_elementPairTestIndices.data(),
-            d_elementPairTrialIndices.data(),
-            m_testQuadData, m_trialQuadData,
-            m_testBasisData, m_trialBasisData,
-            testRawGeometryData, trialRawGeometryData,
-            testGeomShapeFunData, trialGeomShapeFunData,
-            d_result.data()
-            ));
+    unsigned int blockSze = 512;
+    dim3 blockSize(blockSze,1,1);
 
-//    unsigned int blockSze = 512;
-//    dim3 blockSize(blockSze,1,1);
-//    unsigned int gridSze = std::max(
-//        static_cast<unsigned int>((geometryPairCount-1)/blockSze+1),
-//        static_cast<unsigned int>(1));
-//    dim3 gridSize(gridSze,1,1);
-//    std::cout << "gridSize = " << gridSize.x << std::endl;
-//
-//    RawCudaEvaluateLaplace3dSingleLayerPotentialIntegralFunctorNonCached<
-//        CudaBasisFunctionType, CudaKernelType, CudaResultType>
-//        <<<gridSize,blockSize>>>(
-//        geometryPairCount,
-//        thrust::raw_pointer_cast(d_elementPairTestIndices.data()),
-//        thrust::raw_pointer_cast(d_elementPairTrialIndices.data()),
-//        m_testQuadData.pointCount, m_trialQuadData.pointCount,
-//        m_testBasisData.dofCount, thrust::raw_pointer_cast(m_testBasisData.values),
-//        m_trialBasisData.dofCount, thrust::raw_pointer_cast(m_trialBasisData.values),
-//        testRawGeometryData.elemCount, testRawGeometryData.vtxCount,
-//        thrust::raw_pointer_cast(testRawGeometryData.vertices),
-//        thrust::raw_pointer_cast(testRawGeometryData.elementCorners),
-//        trialRawGeometryData.elemCount, trialRawGeometryData.vtxCount,
-//        thrust::raw_pointer_cast(trialRawGeometryData.vertices),
-//        thrust::raw_pointer_cast(trialRawGeometryData.elementCorners),
-//        thrust::raw_pointer_cast(d_result.data()));
+    for (int stream = 0; stream < streamCount; ++stream) {
+
+      int offset = stream * streamSize;
+
+      int actualStreamSize;
+      if (stream == streamCount-1) {
+        actualStreamSize = geometryPairCount - (streamCount-1) * streamSize;
+      } else {
+        actualStreamSize = streamSize;
+      }
+
+      // Copy element pair indices to device memory
+      cudaMemcpyAsync(
+          thrust::raw_pointer_cast(d_elementPairTestIndices.data()+offset),
+          &(*(startElementPairTestIndices+offset)),
+          actualStreamSize*sizeof(int), cudaMemcpyHostToDevice, m_streams[stream]);
+      cudaMemcpyAsync(
+          thrust::raw_pointer_cast(d_elementPairTrialIndices.data()+offset),
+          &(*(startElementPairTrialIndices+offset)),
+          actualStreamSize*sizeof(int), cudaMemcpyHostToDevice, m_streams[stream]);
+
+      // Each thread is working on one pair of elements
+//      thrust::counting_iterator<int> iter(0);
+//      thrust::for_each(iter, iter+geometryPairCount,
+//          CudaEvaluateLaplace3dSingleLayerPotentialIntegralFunctorNonCached<
+//          CudaBasisFunctionType, CudaKernelType, CudaResultType>(
+//              d_elementPairTestIndices.data(),
+//              d_elementPairTrialIndices.data(),
+//              m_testQuadData, m_trialQuadData,
+//              m_testBasisData, m_trialBasisData,
+//              testRawGeometryData, trialRawGeometryData,
+//              testGeomShapeFunData, trialGeomShapeFunData,
+//              d_result.data()
+//              ));
+
+      unsigned int gridSze =
+          static_cast<unsigned int>((actualStreamSize-1)/blockSze+1);
+      dim3 gridSize(gridSze,1,1);
+      std::cout << "gridSize = " << gridSize.x << std::endl;
+
+      // Launch kernel
+      RawCudaEvaluateLaplace3dSingleLayerPotentialIntegralFunctorNonCached<
+          CudaBasisFunctionType, CudaKernelType, CudaResultType>
+          <<<gridSize, blockSize, 0, m_streams[stream]>>>(
+          actualStreamSize,
+          thrust::raw_pointer_cast(d_elementPairTestIndices.data()+offset),
+          thrust::raw_pointer_cast(d_elementPairTrialIndices.data()+offset),
+          m_testQuadData.pointCount, m_trialQuadData.pointCount,
+          m_testBasisData.dofCount, thrust::raw_pointer_cast(m_testBasisData.values),
+          m_trialBasisData.dofCount, thrust::raw_pointer_cast(m_trialBasisData.values),
+          testRawGeometryData.elemCount, testRawGeometryData.vtxCount,
+          thrust::raw_pointer_cast(testRawGeometryData.vertices),
+          thrust::raw_pointer_cast(testRawGeometryData.elementCorners),
+          trialRawGeometryData.elemCount, trialRawGeometryData.vtxCount,
+          thrust::raw_pointer_cast(trialRawGeometryData.vertices),
+          thrust::raw_pointer_cast(trialRawGeometryData.elementCorners),
+          thrust::raw_pointer_cast(d_result.data()+offset*testDofCount*trialDofCount));
+
+      // Copy result back to host memory
+      cudaMemcpyAsync(
+          &(*(startResult+offset*testDofCount*trialDofCount)),
+          thrust::raw_pointer_cast(d_result.data()+offset*testDofCount*trialDofCount),
+          actualStreamSize*testDofCount*trialDofCount*sizeof(int),
+          cudaMemcpyDeviceToHost, m_streams[stream]);
+    }
+
   }
-
-  cudaEventRecord(stop, 0);
-  cudaEventSynchronize(stop);
-  float elapsedTimeIntegral;
-  cudaEventElapsedTime(&elapsedTimeIntegral , start, stop);
-  std::cout << "Time for CudaEvaluateIntegral() is "
-    << elapsedTimeIntegral << " ms" << std::endl;
-
-  cudaEventRecord(start, 0);
-
-  // Copy result back to host memory
-  thrust::copy(d_result.begin(), d_result.end(), startResult);
-
-//  std::cout << "h_result = " << std::endl;
-//  for (int i = 0; i < h_result.size(); ++i) {
-//    std::cout << h_result[i] << " " << std::flush;
-//  }
-//  std::cout << std::endl;
-
-  cudaEventRecord(stop, 0);
-  cudaEventSynchronize(stop);
-  float elapsedTimeResultCopy;
-  cudaEventElapsedTime(&elapsedTimeResultCopy, start, stop);
-  std::cout << "Time for thrust::copy(result, 'DtH') "
-    << elapsedTimeResultCopy << " ms" << std::endl;
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(CudaIntegrator);

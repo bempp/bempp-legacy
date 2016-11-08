@@ -30,6 +30,7 @@
 
 namespace Bempp {
 
+template <typename CoordinateType>
 class CudaGrid {
 public:
 
@@ -58,16 +59,12 @@ public:
    * (factor appearing in the integral transformation formula) on the device
    */
   void calculateNormalsAndIntegrationElements(
-      thrust::device_vector<double> &normals,
-      thrust::device_vector<double> &integrationElements) const;
-  /** \overload */
-  void calculateNormalsAndIntegrationElements(
-      thrust::device_vector<float> &normals,
-      thrust::device_vector<float> &integrationElements) const;
+      thrust::device_vector<CoordinateType> &normals,
+      thrust::device_vector<CoordinateType> &integrationElements) const;
 
   void getRawGeometryData(unsigned int &vtxCount,
                           unsigned int &elemCount,
-                          thrust::device_ptr<const double> &vertices,
+                          thrust::device_ptr<const CoordinateType> &vertices,
                           thrust::device_ptr<const int> &elementCorners);
 
   /**
@@ -76,11 +73,8 @@ public:
       local coordinates of a point \f$x_i \in D\f$
    * \param[out] globalPoints Vector containing the global coordinates
    */
-  void local2global(const Matrix<double> &localPoints,
-                    thrust::device_vector<double> &globalPoints) const;
-  /** \overload */
-  void local2global(const Matrix<float> &localPoints,
-                    thrust::device_vector<float> &globalPoints) const;
+  void local2global(const Matrix<CoordinateType> &localPoints,
+                    thrust::device_vector<CoordinateType> &globalPoints) const;
 
   unsigned int dim() { return m_dim; }
   unsigned int idxCount() { return m_IdxCount; }
@@ -90,40 +84,29 @@ public:
 private:
   /** \cond PRIVATE */
 
-  void calculateNormalsAndIntegrationElementsImpl(
-      thrust::device_vector<double> &normals,
-      thrust::device_vector<double> &integrationElements) const;
-
-  void local2globalImpl(const Matrix<double> &localPoints,
-                        thrust::device_vector<double> &globalPoints) const;
-
   // Mesh parameters
   unsigned int m_dim;
   unsigned int m_IdxCount;
   unsigned int m_VtxCount;
   unsigned int m_ElemCount;
 
-  thrust::device_vector<double> m_vertices;
+  thrust::device_vector<CoordinateType> m_vertices;
   thrust::device_vector<int> m_elementCorners;
 
   // Element corner coordinates
-  thrust::device_vector<double> m_vtx0x;
-  thrust::device_vector<double> m_vtx0y;
-  thrust::device_vector<double> m_vtx0z;
+  thrust::device_vector<CoordinateType> m_vtx0x;
+  thrust::device_vector<CoordinateType> m_vtx0y;
+  thrust::device_vector<CoordinateType> m_vtx0z;
 
-  thrust::device_vector<double> m_vtx1x;
-  thrust::device_vector<double> m_vtx1y;
-  thrust::device_vector<double> m_vtx1z;
+  thrust::device_vector<CoordinateType> m_vtx1x;
+  thrust::device_vector<CoordinateType> m_vtx1y;
+  thrust::device_vector<CoordinateType> m_vtx1z;
 
-  thrust::device_vector<double> m_vtx2x;
-  thrust::device_vector<double> m_vtx2y;
-  thrust::device_vector<double> m_vtx2z;
+  thrust::device_vector<CoordinateType> m_vtx2x;
+  thrust::device_vector<CoordinateType> m_vtx2y;
+  thrust::device_vector<CoordinateType> m_vtx2z;
 
   bool m_setupDone;
-
-  // Helper functions for implementation
-  template <typename T1, typename T2>
-  void convertMat(const Matrix<T1> &in, Matrix<T2> &out) const;
 
   /** \endcond */
 };

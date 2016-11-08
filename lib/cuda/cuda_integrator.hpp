@@ -40,7 +40,7 @@
 namespace Bempp {
 
 /** \cond FORWARD_DECL */
-class CudaGrid;
+template <typename CoordinateType> class CudaGrid;
 /** \endcond */
 
 } // namespace Bempp
@@ -83,10 +83,10 @@ public:
       const std::vector<CoordinateType> &trialQuadWeights,
       const Shapeset<BasisFunctionType> &testShapeset,
       const Shapeset<BasisFunctionType> &trialShapeset,
-      shared_ptr<Bempp::CudaGrid> testGrid,
-      shared_ptr<Bempp::CudaGrid> trialGrid,
+      shared_ptr<Bempp::CudaGrid<CoordinateType>> testGrid,
+      shared_ptr<Bempp::CudaGrid<CoordinateType>> trialGrid,
       const CollectionOfKernels<KernelType> &kernels,
-      bool cacheElemData = false);
+      const bool cacheElemData, const int streamCount);
 
   /** \brief Destructor. */
   virtual ~CudaIntegrator();
@@ -110,12 +110,14 @@ private:
   Matrix<CoordinateType> m_localTestQuadPoints;
   Matrix<CoordinateType> m_localTrialQuadPoints;
 
-  shared_ptr<Bempp::CudaGrid> m_testGrid;
-  shared_ptr<Bempp::CudaGrid> m_trialGrid;
+  shared_ptr<Bempp::CudaGrid<CoordinateType>> m_testGrid;
+  shared_ptr<Bempp::CudaGrid<CoordinateType>> m_trialGrid;
 
   const CollectionOfKernels<KernelType> &m_kernels;
 
   bool m_cacheElemData;
+
+  std::vector<cudaStream_t> m_streams;
 
   /** \endcond */
 };

@@ -180,7 +180,7 @@ cdef class Grid:
     def push_to_device(self, device_id):
         """Push a grid to a Cuda device with a given id."""
 
-        cdef CudaGrid cuda_grid = CudaGrid()
+        cdef CudaGrid[double] cuda_grid = CudaGrid()
         cuda_grid.impl_.assign(deref(self.impl_).pushToDevice(device_id))
         return cuda_grid
 

@@ -25,13 +25,51 @@
 
 namespace Fiber {
 
-struct CUDAOptions {
+/** \brief CUDA operation settings. */
+class CudaOptions {
+public:
+  enum { AUTO = 1 };
 
-  CUDAOptions() { deviceUsed = 0; }
+  /** \brief Constructor. */
+  CudaOptions();
 
-  unsigned int deviceUsed;
-  // add more as required
+  /** \brief Enable element data caching on the device. */
+  void enableElemDataCaching();
+  /** \brief Disable element data caching on the device. */
+  void disableElemDataCaching();
+  /** \brief Return whether element data caching on the device is enabled. */
+  bool isElemDataCachingEnabled() const;
+
+  /** \brief Set the number of concurrent operation streams on the device.
+   *
+   *  \p streamCount must be a positive number or \p AUTO. In the latter
+   *  case only the default stream is used.*/
+  void setStreamCount(int streamCount = AUTO);
+
+  /** \brief Return the number of concurrent operation streams on the device.
+   *
+   *  The returned value can be a positive number or \p AUTO. In the latter
+   *  case only the default stream is used.*/
+  int streamCount() const;
+
+  /** \brief Set the devices used during the assembly.
+   *
+   *  \p deviceIds must be a vector of positive numbers including 0. If no
+   *  devices are specified, only device 0 is used by default.*/
+  void setDevices(std::vector<int> deviceIds = {0});
+
+  /** \brief Return the devices used during the assembly.
+   *
+   *  The returned vector can hold positive numbers including 0.  If no
+   *  devices are specified, only device 0 is used by default.*/
+  const std::vector<int>& devices() const;
+
+private:
+  bool m_elemDataCachingEnabled;
+  int m_streamCount;
+  std::vector<int> m_devices;
 };
+
 }
 
 #endif

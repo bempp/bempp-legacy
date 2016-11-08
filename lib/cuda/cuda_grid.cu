@@ -30,36 +30,40 @@
 
 namespace Bempp {
 
+  template <typename CoordinateType>
   struct calculateElementNormalAndIntegrationElementFunctor {
 
     __host__ __device__
-    thrust::tuple<double, double, double, double> operator()(
-      const thrust::tuple<double, double, double,
-                          double, double, double,
-                          double, double, double>& elementCornerCoo) const {
+    thrust::tuple<
+        CoordinateType, CoordinateType, CoordinateType, CoordinateType>
+    operator()(
+        const thrust::tuple<CoordinateType, CoordinateType, CoordinateType,
+                            CoordinateType, CoordinateType, CoordinateType,
+                            CoordinateType, CoordinateType, CoordinateType>&
+        elementCornerCoo) const {
 
-      const double vtx0x = thrust::get<0>(elementCornerCoo);
-      const double vtx0y = thrust::get<1>(elementCornerCoo);
-      const double vtx0z = thrust::get<2>(elementCornerCoo);
+      const CoordinateType vtx0x = thrust::get<0>(elementCornerCoo);
+      const CoordinateType vtx0y = thrust::get<1>(elementCornerCoo);
+      const CoordinateType vtx0z = thrust::get<2>(elementCornerCoo);
 
-      const double vtx1x = thrust::get<3>(elementCornerCoo);
-      const double vtx1y = thrust::get<4>(elementCornerCoo);
-      const double vtx1z = thrust::get<5>(elementCornerCoo);
+      const CoordinateType vtx1x = thrust::get<3>(elementCornerCoo);
+      const CoordinateType vtx1y = thrust::get<4>(elementCornerCoo);
+      const CoordinateType vtx1z = thrust::get<5>(elementCornerCoo);
 
-      const double vtx2x = thrust::get<6>(elementCornerCoo);
-      const double vtx2y = thrust::get<7>(elementCornerCoo);
-      const double vtx2z = thrust::get<8>(elementCornerCoo);
+      const CoordinateType vtx2x = thrust::get<6>(elementCornerCoo);
+      const CoordinateType vtx2y = thrust::get<7>(elementCornerCoo);
+      const CoordinateType vtx2z = thrust::get<8>(elementCornerCoo);
 
-      double nx = (vtx1y - vtx0y) * (vtx2z - vtx0z)
+      CoordinateType nx = (vtx1y - vtx0y) * (vtx2z - vtx0z)
                 - (vtx1z - vtx0z) * (vtx2y - vtx0y);
 
-      double ny = (vtx1z - vtx0z) * (vtx2x - vtx0x)
+      CoordinateType ny = (vtx1z - vtx0z) * (vtx2x - vtx0x)
                 - (vtx1x - vtx0x) * (vtx2z - vtx0z);
 
-      double nz = (vtx1x - vtx0x) * (vtx2y - vtx0y)
+      CoordinateType nz = (vtx1x - vtx0x) * (vtx2y - vtx0y)
                 - (vtx1y - vtx0y) * (vtx2x - vtx0x);
 
-      const double integrationElement = std::sqrt(nx*nx + ny*ny + nz*nz);
+      const CoordinateType integrationElement = std::sqrt(nx*nx + ny*ny + nz*nz);
 
       nx /= integrationElement;
       ny /= integrationElement;
@@ -69,40 +73,41 @@ namespace Bempp {
     }
   };
 
+  template <typename CoordinateType>
   struct local2globalFunctor {
 
     unsigned int elemCount;
 
-    thrust::device_ptr<const double> vtx0x;
-    thrust::device_ptr<const double> vtx0y;
-    thrust::device_ptr<const double> vtx0z;
+    thrust::device_ptr<const CoordinateType> vtx0x;
+    thrust::device_ptr<const CoordinateType> vtx0y;
+    thrust::device_ptr<const CoordinateType> vtx0z;
 
-    thrust::device_ptr<const double> vtx1x;
-    thrust::device_ptr<const double> vtx1y;
-    thrust::device_ptr<const double> vtx1z;
+    thrust::device_ptr<const CoordinateType> vtx1x;
+    thrust::device_ptr<const CoordinateType> vtx1y;
+    thrust::device_ptr<const CoordinateType> vtx1z;
 
-    thrust::device_ptr<const double> vtx2x;
-    thrust::device_ptr<const double> vtx2y;
-    thrust::device_ptr<const double> vtx2z;
+    thrust::device_ptr<const CoordinateType> vtx2x;
+    thrust::device_ptr<const CoordinateType> vtx2y;
+    thrust::device_ptr<const CoordinateType> vtx2z;
 
-    thrust::device_ptr<const double> fun0;
-    thrust::device_ptr<const double> fun1;
-    thrust::device_ptr<const double> fun2;
+    thrust::device_ptr<const CoordinateType> fun0;
+    thrust::device_ptr<const CoordinateType> fun1;
+    thrust::device_ptr<const CoordinateType> fun2;
 
     local2globalFunctor(
       const unsigned int _elemCount,
-      const thrust::device_ptr<const double> _vtx0x,
-      const thrust::device_ptr<const double> _vtx0y,
-      const thrust::device_ptr<const double> _vtx0z,
-      const thrust::device_ptr<const double> _vtx1x,
-      const thrust::device_ptr<const double> _vtx1y,
-      const thrust::device_ptr<const double> _vtx1z,
-      const thrust::device_ptr<const double> _vtx2x,
-      const thrust::device_ptr<const double> _vtx2y,
-      const thrust::device_ptr<const double> _vtx2z,
-      const thrust::device_ptr<const double> _fun0,
-      const thrust::device_ptr<const double> _fun1,
-      const thrust::device_ptr<const double> _fun2)
+      const thrust::device_ptr<const CoordinateType> _vtx0x,
+      const thrust::device_ptr<const CoordinateType> _vtx0y,
+      const thrust::device_ptr<const CoordinateType> _vtx0z,
+      const thrust::device_ptr<const CoordinateType> _vtx1x,
+      const thrust::device_ptr<const CoordinateType> _vtx1y,
+      const thrust::device_ptr<const CoordinateType> _vtx1z,
+      const thrust::device_ptr<const CoordinateType> _vtx2x,
+      const thrust::device_ptr<const CoordinateType> _vtx2y,
+      const thrust::device_ptr<const CoordinateType> _vtx2z,
+      const thrust::device_ptr<const CoordinateType> _fun0,
+      const thrust::device_ptr<const CoordinateType> _fun1,
+      const thrust::device_ptr<const CoordinateType> _fun2)
       : elemCount(_elemCount),
         vtx0x(_vtx0x), vtx0y(_vtx0y), vtx0z(_vtx0z),
         vtx1x(_vtx1x), vtx1y(_vtx1y), vtx1z(_vtx1z),
@@ -110,46 +115,44 @@ namespace Bempp {
         fun0(_fun0), fun1(_fun1), fun2(_fun2) {}
 
     __host__ __device__
-    thrust::tuple<double, double, double> operator()(
+    thrust::tuple<CoordinateType, CoordinateType, CoordinateType> operator()(
         const unsigned int i) const {
 
-      // Which memory mapping to go for?
-//      unsigned int localPointIdx = i % nLocalPoints;
-//      unsigned int elementIdx = i / nLocalPoints;
       const unsigned int localPointIdx = i / elemCount;
       const unsigned int elementIdx = i % elemCount;
 
-      const double elVtx0x = vtx0x[elementIdx];
-      const double elVtx0y = vtx0y[elementIdx];
-      const double elVtx0z = vtx0z[elementIdx];
+      const CoordinateType elVtx0x = vtx0x[elementIdx];
+      const CoordinateType elVtx0y = vtx0y[elementIdx];
+      const CoordinateType elVtx0z = vtx0z[elementIdx];
 
-      const double elVtx1x = vtx1x[elementIdx];
-      const double elVtx1y = vtx1y[elementIdx];
-      const double elVtx1z = vtx1z[elementIdx];
+      const CoordinateType elVtx1x = vtx1x[elementIdx];
+      const CoordinateType elVtx1y = vtx1y[elementIdx];
+      const CoordinateType elVtx1z = vtx1z[elementIdx];
 
-      const double elVtx2x = vtx2x[elementIdx];
-      const double elVtx2y = vtx2y[elementIdx];
-      const double elVtx2z = vtx2z[elementIdx];
+      const CoordinateType elVtx2x = vtx2x[elementIdx];
+      const CoordinateType elVtx2y = vtx2y[elementIdx];
+      const CoordinateType elVtx2z = vtx2z[elementIdx];
 
-      const double ptFun0 = fun0[localPointIdx];
-      const double ptFun1 = fun1[localPointIdx];
-      const double ptFun2 = fun2[localPointIdx];
+      const CoordinateType ptFun0 = fun0[localPointIdx];
+      const CoordinateType ptFun1 = fun1[localPointIdx];
+      const CoordinateType ptFun2 = fun2[localPointIdx];
 
-      const double xGlobal = ptFun0 * elVtx0x
-                     + ptFun1 * elVtx1x
-                     + ptFun2 * elVtx2x;
-      const double yGlobal = ptFun0 * elVtx0y
-                     + ptFun1 * elVtx1y
-                     + ptFun2 * elVtx2y;
-      const double zGlobal = ptFun0 * elVtx0z
-                     + ptFun1 * elVtx1z
-                     + ptFun2 * elVtx2z;
+      const CoordinateType xGlobal = ptFun0 * elVtx0x
+                                   + ptFun1 * elVtx1x
+                                   + ptFun2 * elVtx2x;
+      const CoordinateType yGlobal = ptFun0 * elVtx0y
+                                   + ptFun1 * elVtx1y
+                                   + ptFun2 * elVtx2y;
+      const CoordinateType zGlobal = ptFun0 * elVtx0z
+                                   + ptFun1 * elVtx1z
+                                   + ptFun2 * elVtx2z;
 
       return thrust::make_tuple(xGlobal, yGlobal, zGlobal);
     }
   };
 
-  CudaGrid::CudaGrid() {
+  template <typename CoordinateType>
+  CudaGrid<CoordinateType>::CudaGrid() {
 
     // Initialise member variables
     m_dim = 0;
@@ -175,12 +178,15 @@ namespace Bempp {
     m_setupDone = false;
   }
 
-  CudaGrid::~CudaGrid() {
+  template <typename CoordinateType>
+  CudaGrid<CoordinateType>::~CudaGrid() {
 
   }
 
-  void CudaGrid::pushGeometry(const Matrix<double> &vertices,
-                              const Matrix<int> &elementCorners) {
+  template <typename CoordinateType>
+  void CudaGrid<CoordinateType>::pushGeometry(
+      const Matrix<double> &vertices,
+      const Matrix<int> &elementCorners) {
 
     // Determine mesh parameters
     m_dim = vertices.cols();
@@ -221,7 +227,8 @@ namespace Bempp {
 //    std::cout << std::endl;
   }
 
-  void CudaGrid::setupGeometry() {
+  template <typename CoordinateType>
+  void CudaGrid<CoordinateType>::setupGeometry() {
 
     if (m_setupDone == false) {
 
@@ -303,10 +310,11 @@ namespace Bempp {
     }
   }
 
-  void CudaGrid::getRawGeometryData(
+  template <typename CoordinateType>
+  void CudaGrid<CoordinateType>::getRawGeometryData(
       unsigned int &vtxCount,
       unsigned int &elemCount,
-      thrust::device_ptr<const double> &vertices,
+      thrust::device_ptr<const CoordinateType> &vertices,
       thrust::device_ptr<const int> &elementCorners) {
 
     vtxCount = m_VtxCount;
@@ -315,29 +323,10 @@ namespace Bempp {
     elementCorners = m_elementCorners.data();
   }
 
-  void CudaGrid::calculateNormalsAndIntegrationElements(
-      thrust::device_vector<double> &normals,
-      thrust::device_vector<double> &integrationElements) const {
-    calculateNormalsAndIntegrationElementsImpl(normals, integrationElements);
-  }
-
-  void CudaGrid::calculateNormalsAndIntegrationElements(
-      thrust::device_vector<float> &normals,
-      thrust::device_vector<float> &integrationElements) const {
-    thrust::device_vector<double> normalsDouble;
-    thrust::device_vector<double> integrationElementsDouble;
-    calculateNormalsAndIntegrationElementsImpl(
-        normalsDouble, integrationElementsDouble);
-    normals.resize(normalsDouble.size());
-    integrationElements.resize(integrationElementsDouble.size());
-    thrust::copy(normalsDouble.begin(), normalsDouble.end(), normals.begin());
-    thrust::copy(integrationElementsDouble.begin(), integrationElementsDouble.end(),
-        integrationElements.begin());
-  }
-
-  void CudaGrid::calculateNormalsAndIntegrationElementsImpl(
-      thrust::device_vector<double> &normals,
-      thrust::device_vector<double> &integrationElements) const {
+  template <typename CoordinateType>
+  void CudaGrid<CoordinateType>::calculateNormalsAndIntegrationElements(
+      thrust::device_vector<CoordinateType> &normals,
+      thrust::device_vector<CoordinateType> &integrationElements) const {
 
     if (m_setupDone == true) {
 
@@ -364,7 +353,7 @@ namespace Bempp {
         thrust::make_zip_iterator(
           thrust::make_tuple(normals.begin(), normals.begin()+m_ElemCount,
                              normals.begin()+2*m_ElemCount, integrationElements.begin())),
-        calculateElementNormalAndIntegrationElementFunctor());
+        calculateElementNormalAndIntegrationElementFunctor<CoordinateType>());
 
       cudaEventRecord(stop, 0);
       cudaEventSynchronize(stop);
@@ -393,23 +382,10 @@ namespace Bempp {
     }
   }
 
-  void CudaGrid::local2global(const Matrix<double> &localPoints,
-                              thrust::device_vector<double> &globalPoints) const {
-    local2globalImpl(localPoints, globalPoints);
-  }
-
-  void CudaGrid::local2global(const Matrix<float> &localPoints,
-                              thrust::device_vector<float> &globalPoints) const {
-    Matrix<double> localPointsDouble;
-    convertMat(localPoints, localPointsDouble);
-    thrust::device_vector<double> globalPointsDouble;
-    local2globalImpl(localPointsDouble, globalPointsDouble);
-    globalPoints.resize(globalPointsDouble.size());
-    thrust::copy(globalPointsDouble.begin(), globalPointsDouble.end(), globalPoints.begin());
-  }
-
-  void CudaGrid::local2globalImpl(const Matrix<double> &localPoints,
-                                  thrust::device_vector<double> &globalPoints) const {
+  template <typename CoordinateType>
+  void CudaGrid<CoordinateType>::local2global(
+      const Matrix<CoordinateType> &localPoints,
+      thrust::device_vector<CoordinateType> &globalPoints) const {
 
     if (m_setupDone == true) {
 
@@ -426,24 +402,24 @@ namespace Bempp {
       //  yPt0el0 yPt0el1 ... yPt0elM | yPt1el0 ... yPt1elM | ... | ... yPtNelM |
       //  zPt0el0 zPt0el1 ... zPt0elM | zPt1el0 ... zPt1elM | ... | ... zPtNelM ]
 
-      thrust::host_vector<double> h_geomShapeFun0(localPointCount);
-      thrust::host_vector<double> h_geomShapeFun1(localPointCount);
-      thrust::host_vector<double> h_geomShapeFun2(localPointCount);
+      thrust::host_vector<CoordinateType> h_geomShapeFun0(localPointCount);
+      thrust::host_vector<CoordinateType> h_geomShapeFun1(localPointCount);
+      thrust::host_vector<CoordinateType> h_geomShapeFun2(localPointCount);
       // [pt0 pt1 ... ptN]
 
       // Evaluate geometrical shape function values
       for (int localPoint = 0; localPoint < localPointCount; ++localPoint) {
-        const double r = localPoints(0,localPoint);
-        const double s = localPoints(1,localPoint);
+        const CoordinateType r = localPoints(0,localPoint);
+        const CoordinateType s = localPoints(1,localPoint);
         h_geomShapeFun0[localPoint] = 1.0 - r - s;
         h_geomShapeFun1[localPoint] = r;
         h_geomShapeFun2[localPoint] = s;
       }
 
       // Copy data to device
-      thrust::device_vector<double> d_geomShapeFun0 = h_geomShapeFun0;
-      thrust::device_vector<double> d_geomShapeFun1 = h_geomShapeFun1;
-      thrust::device_vector<double> d_geomShapeFun2 = h_geomShapeFun2;
+      thrust::device_vector<CoordinateType> d_geomShapeFun0 = h_geomShapeFun0;
+      thrust::device_vector<CoordinateType> d_geomShapeFun1 = h_geomShapeFun1;
+      thrust::device_vector<CoordinateType> d_geomShapeFun2 = h_geomShapeFun2;
 
 //    std::cout << "d_geomShapeFun = " << std::endl;
 //    for (int i = 0; i < localPointCount; ++i) {
@@ -468,7 +444,7 @@ namespace Bempp {
           thrust::make_tuple(globalPoints.begin()+m_ElemCount*localPointCount,
                              globalPoints.begin()+2*m_ElemCount*localPointCount,
                              globalPoints.end())),
-        local2globalFunctor(m_ElemCount,
+        local2globalFunctor<CoordinateType>(m_ElemCount,
                             m_vtx0x.data(), m_vtx0y.data(), m_vtx0z.data(),
                             m_vtx1x.data(), m_vtx1y.data(), m_vtx1z.data(),
                             m_vtx2x.data(), m_vtx2y.data(), m_vtx2z.data(),
@@ -500,14 +476,6 @@ namespace Bempp {
       throw std::runtime_error("CudaGrid::local2globalImpl(): "
                                "setup required");
     }
-  }
-
-  template <typename T1, typename T2>
-  void CudaGrid::convertMat(const Matrix<T1> &in, Matrix<T2> &out) const {
-    out.resize(in.rows(), in.cols());
-    for (int j = 0; j < in.cols(); ++j)
-      for (int i = 0; i < in.rows(); ++i)
-        out(i, j) = in(i, j);
   }
 
 } // namespace Bempp

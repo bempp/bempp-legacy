@@ -44,7 +44,7 @@ template <typename BasisFunctionType> class Space;
 class GeometryFactory;
 class GridView;
 class IdSet;
-class CudaGrid;
+template <typename CoordinateType> class CudaGrid;
 /** \endcond */
 
 /** \ingroup grid
@@ -171,7 +171,8 @@ public:
 //  virtual shared_ptr<Grid> getBarycentricFather() = 0;
 
   /** \brief Push the mesh geometry to device memory */
-  shared_ptr<CudaGrid> pushToDevice(unsigned int deviceId) const;
+  template <typename CoordinateType>
+  shared_ptr<CudaGrid<CoordinateType>> pushToDevice(unsigned int deviceId) const;
 
 private:
   /** \cond PRIVATE */
@@ -179,7 +180,9 @@ private:
 
   mutable boost::signals2::signal<void()> gridUpdateSignal;
 
-  mutable shared_ptr<CudaGrid> cudaGridPtr;
+  mutable shared_ptr<CudaGrid<double>> cudaDoubleGridPtr;
+  mutable shared_ptr<CudaGrid<float>> cudaFloatGridPtr;
+
   /** \endcond */
 };
 
