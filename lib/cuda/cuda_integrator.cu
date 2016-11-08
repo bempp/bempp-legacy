@@ -121,8 +121,7 @@ void CudaIntegrator<BasisFunctionType, KernelType, ResultType>::integrate(
     std::vector<int>::iterator endElementPairTestIndices,
     std::vector<int>::iterator startElementPairTrialIndices,
     std::vector<int>::iterator endElementPairTrialIndices,
-    typename thrust::host_vector<ResultType>::iterator startResult,
-    typename thrust::host_vector<ResultType>::iterator endResult) {
+    typename thrust::host_vector<ResultType>::iterator startResult) {
 
   const int testDofCount = m_testBasisData.dofCount;
   const int trialDofCount = m_trialBasisData.dofCount;
@@ -146,12 +145,6 @@ void CudaIntegrator<BasisFunctionType, KernelType, ResultType>::integrate(
         "CudaIntegrator::integrate(): "
         "arrays 'elementPairTestIndices' and 'elementPairTrialIndices' must "
         "have the same number of elements");
-
-  if (endResult-startResult != geometryPairCount*testDofCount*trialDofCount)
-    throw std::invalid_argument(
-        "CudaIntegrator::integrate(): "
-        "arrays 'result' and 'elementPairIndices' must have the same number "
-        "of elements");
 
   if (testPointCount == 0 || trialPointCount == 0 || geometryPairCount == 0)
     return;
@@ -313,6 +306,31 @@ void CudaIntegrator<BasisFunctionType, KernelType, ResultType>::integrate(
             testGeomShapeFunData, trialGeomShapeFunData,
             d_result.data()
             ));
+
+//    unsigned int blockSze = 512;
+//    dim3 blockSize(blockSze,1,1);
+//    unsigned int gridSze = std::max(
+//        static_cast<unsigned int>((geometryPairCount-1)/blockSze+1),
+//        static_cast<unsigned int>(1));
+//    dim3 gridSize(gridSze,1,1);
+//    std::cout << "gridSize = " << gridSize.x << std::endl;
+//
+//    RawCudaEvaluateLaplace3dSingleLayerPotentialIntegralFunctorNonCached<
+//        CudaBasisFunctionType, CudaKernelType, CudaResultType>
+//        <<<gridSize,blockSize>>>(
+//        geometryPairCount,
+//        thrust::raw_pointer_cast(d_elementPairTestIndices.data()),
+//        thrust::raw_pointer_cast(d_elementPairTrialIndices.data()),
+//        m_testQuadData.pointCount, m_trialQuadData.pointCount,
+//        m_testBasisData.dofCount, thrust::raw_pointer_cast(m_testBasisData.values),
+//        m_trialBasisData.dofCount, thrust::raw_pointer_cast(m_trialBasisData.values),
+//        testRawGeometryData.elemCount, testRawGeometryData.vtxCount,
+//        thrust::raw_pointer_cast(testRawGeometryData.vertices),
+//        thrust::raw_pointer_cast(testRawGeometryData.elementCorners),
+//        trialRawGeometryData.elemCount, trialRawGeometryData.vtxCount,
+//        thrust::raw_pointer_cast(trialRawGeometryData.vertices),
+//        thrust::raw_pointer_cast(trialRawGeometryData.elementCorners),
+//        thrust::raw_pointer_cast(d_result.data()));
   }
 
   cudaEventRecord(stop, 0);

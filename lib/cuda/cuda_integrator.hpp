@@ -96,8 +96,7 @@ public:
       std::vector<int>::iterator endElementPairTestIndices,
       std::vector<int>::iterator startElementPairTrialIndices,
       std::vector<int>::iterator endElementPairTrialIndices,
-      typename thrust::host_vector<ResultType>::iterator startResult,
-      typename thrust::host_vector<ResultType>::iterator endResult);
+      typename thrust::host_vector<ResultType>::iterator startResult);
 
 private:
   /** \cond PRIVATE */

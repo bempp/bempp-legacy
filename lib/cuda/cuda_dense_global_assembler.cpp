@@ -40,7 +40,10 @@
 #include <tbb/task_group.h>
 #include <tbb/parallel_for.h>
 #include <tbb/spin_mutex.h>
+#include <tbb/queuing_mutex.h>
+#include <tbb/concurrent_vector.h>
 #include <algorithm>
+#include <numeric>
 #include <chrono>
 #include <cuda_profiler_api.h>
 
@@ -149,6 +152,7 @@ private:
     return getIntegrator(desc);
   }
 
+  // TODO: creates memory leak
   const Integrator& getIntegrator(
       const Fiber::DoubleQuadratureDescriptor &desc) const {
 
@@ -299,6 +303,12 @@ void getSortedElementPairs(
 
   begin = std::chrono::steady_clock::now();
 
+//  std::vector<tbb::concurrent_vector<int>> tbb_regularElemPairTestIndices;
+//  std::vector<tbb::concurrent_vector<int>> tbb_regularElemPairTrialIndices;
+//  tbb::concurrent_vector<int> tbb_singularElemPairTestIndices;
+//  tbb::concurrent_vector<int> tbb_singularElemPairTrialIndices;
+//  tbb::queuing_mutex pushBackMutex;
+
   // Now loop over unique quadrature variants
   unsigned int regularQuadVariantCount = 0;
   for (typename QuadVariantSet::const_iterator it = uniqueQuadVariants.begin();
@@ -318,26 +328,70 @@ void getSortedElementPairs(
       regularElemPairTrialIndices.resize(regularQuadVariantCount+1);
 
       for (int i = 0; i < testIndexCount; ++i)
-        for (int j = 0; j < trialIndexCount; ++j)
-          if (quadVariants[i][j] == activeQuadVariant) {
+//      tbb::parallel_for(tbb::blocked_range<int>(0, testIndexCount),
+//          [trialIndexCount, regularQuadVariantCount,
+//           &testIndices, &trialIndices,
+//           &quadVariants, &activeQuadVariant,
+//           &tbb_regularElemPairTestIndices, &tbb_regularElemPairTrialIndices,
+//           &pushBackMutex](const tbb::blocked_range<int>& r) {
+//
+//        for (int i = r.begin(); i != r.end(); ++i) {
+          for (int j = 0; j < trialIndexCount; ++j) {
+            if (quadVariants[i][j] == activeQuadVariant) {
 
-            // Element pair related to regular integrals
-            regularElemPairTestIndices[regularQuadVariantCount].push_back(testIndices[i]);
-            regularElemPairTrialIndices[regularQuadVariantCount].push_back(trialIndices[j]);
+              // Element pair related to regular integrals
+              regularElemPairTestIndices[regularQuadVariantCount].push_back(testIndices[i]);
+              regularElemPairTrialIndices[regularQuadVariantCount].push_back(trialIndices[j]);
+            }
           }
+//        }
+//      });
       regularQuadVariantCount++;
 
     } else {
 
       for (int i = 0; i < testIndexCount; ++i)
-        for (int j = 0; j < trialIndexCount; ++j)
-          if (quadVariants[i][j] == activeQuadVariant) {
-            // Element pair related to singular integrals
-            singularElemPairTestIndices.push_back(testIndices[i]);
-            singularElemPairTrialIndices.push_back(trialIndices[j]);
+//      tbb::parallel_for(tbb::blocked_range<int>(0, testIndexCount),
+//          [trialIndexCount,
+//           &testIndices, &trialIndices,
+//           &quadVariants, &activeQuadVariant,
+//           &tbb_singularElemPairTestIndices, &tbb_singularElemPairTrialIndices,
+//           &pushBackMutex](const tbb::blocked_range<int>& r) {
+//
+//        for (int i = r.begin(); i != r.end(); ++i) {
+          for (int j = 0; j < trialIndexCount; ++j) {
+            if (quadVariants[i][j] == activeQuadVariant) {
+
+              // Element pair related to singular integrals
+              singularElemPairTestIndices.push_back(testIndices[i]);
+              singularElemPairTrialIndices.push_back(trialIndices[j]);
+            }
           }
+//        }
+//      });
     }
   }
+//  regularElemPairTestIndices.resize(regularQuadVariantCount);
+//  regularElemPairTrialIndices.resize(regularQuadVariantCount);
+//  for (int regularQuadVariant = 0; regularQuadVariant < regularQuadVariantCount; ++regularQuadVariant) {
+//    regularElemPairTestIndices[regularQuadVariant].resize(
+//        tbb_regularElemPairTestIndices[regularQuadVariant].size());
+//    regularElemPairTrialIndices[regularQuadVariant].resize(
+//        tbb_regularElemPairTrialIndices[regularQuadVariant].size());
+//    regularElemPairTestIndices[regularQuadVariant].assign(
+//        tbb_regularElemPairTestIndices[regularQuadVariant].begin(),
+//        tbb_regularElemPairTestIndices[regularQuadVariant].end());
+//    regularElemPairTrialIndices[regularQuadVariant].assign(
+//        tbb_regularElemPairTrialIndices[regularQuadVariant].begin(),
+//        tbb_regularElemPairTrialIndices[regularQuadVariant].end());
+//  }
+//  singularElemPairTestIndices.resize(tbb_singularElemPairTestIndices.size());
+//  singularElemPairTrialIndices.resize(tbb_singularElemPairTrialIndices.size());
+//  singularElemPairTestIndices.assign(tbb_singularElemPairTestIndices.begin(),
+//      tbb_singularElemPairTestIndices.end());
+//  singularElemPairTrialIndices.assign(tbb_singularElemPairTrialIndices.begin(),
+//      tbb_singularElemPairTrialIndices.end());
+
   end = std::chrono::steady_clock::now();
   std::cout << "Time for looping over unique quad variants = "
             << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()
@@ -534,6 +588,7 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakFor
   std::cout << std::endl;
 
   tbb::task_group taskGroupGlobal;
+  // TODO: Most suitable mutex type?
   tbb::spin_mutex mutex;
 
   taskGroupGlobal.run([&singularElemPairTestIndices, &singularElemPairTrialIndices,
@@ -605,15 +660,13 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakFor
       &testSpace, &trialSpace,
       &regularQuadVariants, &assembler, &result, &mutex]{
 
-    std::vector<std::vector<Matrix<ResultType>>> regularResult;
-
-    cudaProfilerStart();
-
     // TODO: How to determine the correct kernel type?
     typedef CoordinateType KernelType;         // Real kernel
 //        typedef ResultType KernelType;             // Complex kernel
     shared_ptr<const Fiber::CollectionOfKernels<KernelType>> kernels;
 //        assembler.getKernels(kernels);
+
+    cudaProfilerStart();
 
     // Push raw grid data to the device
     shared_ptr<CudaGrid> testGrid = testSpace.grid()->pushToDevice(0);
@@ -621,210 +674,235 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakFor
 
     const unsigned int quadVariantCount = regularQuadVariants.size();
 
-    regularResult.resize(quadVariantCount);
+    std::vector<unsigned int> elemPairCounts(quadVariantCount, 0);
+    std::vector<unsigned int> maxActiveElemPairCounts(quadVariantCount, 0);
+    std::vector<unsigned int> chunkCounts(quadVariantCount, 0);
+
+    unsigned int maxTestDofCount = 0, maxTrialDofCount = 0;
 
     for (int quadVariant = 0; quadVariant < quadVariantCount; ++quadVariant) {
 
-      const unsigned int elemPairCount =
+      elemPairCounts[quadVariant] =
           regularElemPairTestIndices[quadVariant].size();
 
-      regularResult[quadVariant].resize(elemPairCount);
+      const unsigned int testPointCount =
+          (std::get<0>(*(regularQuadVariants[quadVariant].first))->second).size();
+      const unsigned int trialPointCount =
+          (std::get<1>(*(regularQuadVariants[quadVariant].first))->second).size();
 
-      Matrix<CoordinateType> localTestQuadPoints =
-          std::get<0>(*(regularQuadVariants[quadVariant].first))->first;
-      Matrix<CoordinateType> localTrialQuadPoints =
-          std::get<1>(*(regularQuadVariants[quadVariant].first))->first;
-      std::vector<CoordinateType> testQuadWeights =
-          std::get<0>(*(regularQuadVariants[quadVariant].first))->second;
-      std::vector<CoordinateType> trialQuadWeights =
-          std::get<1>(*(regularQuadVariants[quadVariant].first))->second;
+      const unsigned int testDofCount =
+          (*(regularQuadVariants[quadVariant].second.first)).size();
+      const unsigned int trialDofCount =
+          (*(regularQuadVariants[quadVariant].second.second)).size();
 
-      const unsigned int testPointCount = testQuadWeights.size();
-      const unsigned int trialPointCount = trialQuadWeights.size();
+      if (testDofCount > maxTestDofCount) maxTestDofCount = testDofCount;
+      if (trialDofCount > maxTrialDofCount) maxTrialDofCount = trialDofCount;
 
-      const Shapeset &testShapeset =
-          *(regularQuadVariants[quadVariant].second.first);
-      const Shapeset &trialShapeset =
-          *(regularQuadVariants[quadVariant].second.second);
-
-      const unsigned int testDofCount = testShapeset.size();
-      const unsigned int trialDofCount = trialShapeset.size();
-
-      // Create chunks of element pairs according to a maximum number of
-      // element pairs active on the device
-      const unsigned int maxActiveElemPairCount =
+      maxActiveElemPairCounts[quadVariant] =
           getMaxActiveElemPairCount<ResultType>(
               testGrid, trialGrid,
               testDofCount, trialDofCount,
               testPointCount, trialPointCount);
+//      maxActiveElemPairCounts[0] = 3;
 
-      Fiber::CudaIntegrator<
-      BasisFunctionType, KernelType, ResultType> cudaIntegrator(
-          localTestQuadPoints, localTrialQuadPoints,
-          testQuadWeights, trialQuadWeights,
-          testShapeset, trialShapeset,
-          testGrid, trialGrid,
-          *kernels);
+      chunkCounts[quadVariant] = std::max(
+          static_cast<int>((elemPairCounts[quadVariant]-1)
+              / maxActiveElemPairCounts[quadVariant]+1), 1);
+    }
+    thrust::host_vector<ResultType> h_regularResultEven(
+        *std::max_element(maxActiveElemPairCounts.begin(),
+            maxActiveElemPairCounts.end()) * maxTestDofCount * maxTrialDofCount);
+    thrust::host_vector<ResultType> h_regularResultOdd(
+        *std::max_element(maxActiveElemPairCounts.begin(),
+            maxActiveElemPairCounts.end()) * maxTestDofCount * maxTrialDofCount);
 
-      thrust::host_vector<ResultType> h_regularResult(elemPairCount*testDofCount*trialDofCount);
+    unsigned int maxActiveElemPairCount = 0;
+    unsigned int localChunkCount = 0;
+    unsigned int testDofCount = 0;
+    unsigned int trialDofCount = 0;
 
-      std::cout << "elemPairCount = " << elemPairCount << std::endl;
-      std::cout << "maxActiveElemPairCount = " << maxActiveElemPairCount << std::endl;
-      const unsigned int chunkCount = std::max(
-          static_cast<int>((elemPairCount-1)/maxActiveElemPairCount+1), 1);
-      std::cout << "chunkCount = " << chunkCount << std::endl;
+    shared_ptr<Fiber::CudaIntegrator<
+        BasisFunctionType, KernelType, ResultType>> cudaIntegrator;
 
-      tbb::task_group taskGroupRegular;
+    const unsigned int totalChunkCount =
+        std::accumulate(chunkCounts.begin(), chunkCounts.end(), 0);
+    std::cout << "totalChunkCount = " << totalChunkCount << std::endl;
 
-      for (int chunk = 0; chunk < chunkCount; ++chunk) {
+    tbb::task_group taskGroupRegular;
 
-        taskGroupRegular.run([quadVariant, chunk, chunkCount,
-             maxActiveElemPairCount, testDofCount, trialDofCount,
-             &regularElemPairTestIndices, &regularElemPairTrialIndices,
-             &cudaIntegrator, &h_regularResult]{
+    int quadVariant = 0, localChunk = 0;
+    for (int chunk = 0; chunk < totalChunkCount; ++chunk) {
 
-          std::vector<int>::iterator startElemPairTestIndex =
-              regularElemPairTestIndices[quadVariant].begin()+chunk*maxActiveElemPairCount;
-          std::vector<int>::iterator startElemPairTrialIndex =
-              regularElemPairTrialIndices[quadVariant].begin()+chunk*maxActiveElemPairCount;
-          typename thrust::host_vector<ResultType>::iterator startRegularResult =
-              h_regularResult.begin()
-              + chunk * maxActiveElemPairCount * testDofCount * trialDofCount;
+      std::cout << "chunk = " << chunk << std::endl;
+      std::cout << "quadVariant = " << quadVariant << std::endl;
+      std::cout << "localChunk = " << localChunk << std::endl;
 
-          std::vector<int>::iterator endElemPairTestIndex;
-          std::vector<int>::iterator endElemPairTrialIndex;
-          typename thrust::host_vector<ResultType>::iterator endRegularResult;
-          if (chunk == chunkCount-1) {
-            endElemPairTestIndex =
-                regularElemPairTestIndices[quadVariant].end();
-            endElemPairTrialIndex =
-                regularElemPairTrialIndices[quadVariant].end();
-            endRegularResult = h_regularResult.end();
+      thrust::host_vector<ResultType>* h_regularResult;
+      if (chunk % 2 == 0)
+        h_regularResult = &h_regularResultEven;
+      else
+        h_regularResult = &h_regularResultOdd;
+
+      // First time this quadrature variant is used; create new integrator
+      if (localChunk == 0) {
+
+        Matrix<CoordinateType> localTestQuadPoints =
+            std::get<0>(*(regularQuadVariants[quadVariant].first))->first;
+        Matrix<CoordinateType> localTrialQuadPoints =
+            std::get<1>(*(regularQuadVariants[quadVariant].first))->first;
+        std::vector<CoordinateType> testQuadWeights =
+            std::get<0>(*(regularQuadVariants[quadVariant].first))->second;
+        std::vector<CoordinateType> trialQuadWeights =
+            std::get<1>(*(regularQuadVariants[quadVariant].first))->second;
+
+        const Shapeset &testShapeset =
+            *(regularQuadVariants[quadVariant].second.first);
+        const Shapeset &trialShapeset =
+            *(regularQuadVariants[quadVariant].second.second);
+
+        testDofCount = testShapeset.size();
+        trialDofCount = trialShapeset.size();
+
+        // Create chunks of element pairs according to a maximum number of
+        // element pairs active on the device
+        maxActiveElemPairCount = maxActiveElemPairCounts[quadVariant];
+        std::cout << "maxActiveElemPairCount = " << maxActiveElemPairCount << std::endl;
+        std::cout << "localElemPairCount = " << elemPairCounts[quadVariant] << std::endl;
+
+        cudaIntegrator = boost::make_shared<Fiber::CudaIntegrator<
+            BasisFunctionType, KernelType, ResultType>>(
+                localTestQuadPoints, localTrialQuadPoints,
+                testQuadWeights, trialQuadWeights,
+                testShapeset, trialShapeset,
+                testGrid, trialGrid,
+                *kernels);
+
+        localChunkCount = chunkCounts[quadVariant];
+        std::cout << "localChunkCount = " << localChunkCount << std::endl;
+      }
+
+      taskGroupRegular.run([quadVariant, localChunk, localChunkCount,
+           maxActiveElemPairCount, testDofCount, trialDofCount,
+           &regularElemPairTestIndices, &regularElemPairTrialIndices,
+           &cudaIntegrator, h_regularResult]{
+
+        std::vector<int>::iterator startElemPairTestIndex =
+            regularElemPairTestIndices[quadVariant].begin()
+            + localChunk * maxActiveElemPairCount;
+        std::vector<int>::iterator startElemPairTrialIndex =
+            regularElemPairTrialIndices[quadVariant].begin()
+            + localChunk * maxActiveElemPairCount;
+
+        std::vector<int>::iterator endElemPairTestIndex;
+        std::vector<int>::iterator endElemPairTrialIndex;
+        if (localChunk == localChunkCount-1) {
+          endElemPairTestIndex =
+              regularElemPairTestIndices[quadVariant].end();
+          endElemPairTrialIndex =
+              regularElemPairTrialIndices[quadVariant].end();
+        } else {
+          endElemPairTestIndex =
+              regularElemPairTestIndices[quadVariant].begin()
+              + (localChunk+1) * maxActiveElemPairCount;
+          endElemPairTrialIndex =
+              regularElemPairTrialIndices[quadVariant].begin()
+              + (localChunk+1) * maxActiveElemPairCount;
+        }
+
+        std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+
+        // Evaluate regular integrals over selected element pairs
+        cudaIntegrator->integrate(startElemPairTestIndex, endElemPairTestIndex,
+                                  startElemPairTrialIndex, endElemPairTrialIndex,
+                                  h_regularResult->begin());
+
+        std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+        std::cout << "Time for CudaIntegrator::integrate() = "
+                  << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()
+                  << " ms" << std::endl;
+      });
+      taskGroupRegular.wait();
+
+      taskGroupRegular.run([quadVariant, localChunk, localChunkCount,
+          maxActiveElemPairCount, testDofCount, trialDofCount,
+          &regularElemPairTestIndices, &regularElemPairTrialIndices,
+          &testGlobalDofs, &trialGlobalDofs,
+          &testLocalDofWeights, &trialLocalDofWeights,
+          h_regularResult, &result, &mutex]{
+
+          const int offset = localChunk * maxActiveElemPairCount;
+          unsigned int chunkElemPairCount;
+          if (localChunk == localChunkCount-1) {
+            chunkElemPairCount = regularElemPairTestIndices[quadVariant].end()
+                - (regularElemPairTestIndices[quadVariant].begin()
+                   + localChunk * maxActiveElemPairCount);
           } else {
-            endElemPairTestIndex =
-                regularElemPairTestIndices[quadVariant].begin()+(chunk+1)*maxActiveElemPairCount;
-            endElemPairTrialIndex =
-                regularElemPairTrialIndices[quadVariant].begin()+(chunk+1)*maxActiveElemPairCount;
-            endRegularResult =
-                h_regularResult.begin()
-                + (chunk+1) * maxActiveElemPairCount * testDofCount * trialDofCount;
+            chunkElemPairCount = maxActiveElemPairCount;
           }
 
           std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
-          // Evaluate regular integrals over selected element pairs
-          cudaIntegrator.integrate(startElemPairTestIndex, endElemPairTestIndex,
-                                   startElemPairTrialIndex, endElemPairTrialIndex,
-                                   startRegularResult, endRegularResult);
+          // Global assembly
+          tbb::spin_mutex::scoped_lock lock(mutex);
 
+          for (int chunkElemPair = 0; chunkElemPair < chunkElemPairCount; ++chunkElemPair) {
+
+            const int testIndex =
+                regularElemPairTestIndices[quadVariant][offset + chunkElemPair];
+            const int trialIndex =
+                regularElemPairTrialIndices[quadVariant][offset + chunkElemPair];
+
+            const int testDofCount = testGlobalDofs[testIndex].size();
+            const int trialDofCount = trialGlobalDofs[trialIndex].size();
+
+            // Add the integrals to appropriate entries in the operator's matrix
+            for (int testDof = 0; testDof < testDofCount; ++testDof) {
+
+              int testGlobalDof = testGlobalDofs[testIndex][testDof];
+              if (testGlobalDof < 0)
+                continue;
+
+              for (int trialDof = 0; trialDof < trialDofCount; ++trialDof) {
+
+                int trialGlobalDof = trialGlobalDofs[trialIndex][trialDof];
+                if (trialGlobalDof < 0)
+                  continue;
+
+                assert(std::abs(testLocalDofWeights[testIndex][testDof]) > 0.);
+                assert(std::abs(trialLocalDofWeights[trialIndex][trialDof]) > 0.);
+
+                result(testGlobalDof, trialGlobalDof) +=
+                  conj(testLocalDofWeights[testIndex][testDof]) *
+                  trialLocalDofWeights[trialIndex][trialDof] *
+                  (*h_regularResult)[chunkElemPair * testDofCount * trialDofCount
+                                  + testDof * trialDofCount
+                                  + trialDof];
+              }
+            }
+          }
           std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-          std::cout << "Time for CudaIntegrator::integrate() = "
+          std::cout << "Time for regular global result assembly = "
                     << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()
                     << " ms" << std::endl;
         });
-
-        taskGroupRegular.wait();
-
-        taskGroupRegular.run([quadVariant, chunk, chunkCount,
-            maxActiveElemPairCount, testDofCount, trialDofCount,
-            &h_regularResult, &regularResult]{
-
-            std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-
-            typedef typename std::vector<Matrix<ResultType>>::iterator matrixIterator;
-            matrixIterator matricesBegin = regularResult[quadVariant].begin()
-                + chunk * maxActiveElemPairCount;
-            matrixIterator matricesEnd;
-            if (chunk == chunkCount-1) {
-              matricesEnd = regularResult[quadVariant].end();
-            } else {
-              matricesEnd = regularResult[quadVariant].begin()
-                  + (chunk+1) * maxActiveElemPairCount;
-            }
-
-            for (matrixIterator it = matricesBegin; it != matricesEnd; ++it) {
-              assert(it);
-              it->resize(testDofCount, trialDofCount);
-            }
-
-            // Assemble result
-            int geometryPair = 0;
-            const int offset = chunk * maxActiveElemPairCount;
-            for (matrixIterator it = matricesBegin; it != matricesEnd; ++it) {
-              for (int testDof = 0; testDof < testDofCount; ++testDof) {
-                for (int trialDof = 0; trialDof < trialDofCount; ++trialDof) {
-                  (*it)(testDof, trialDof) =
-                      h_regularResult[offset
-                                      + geometryPair * testDofCount * trialDofCount
-                                      + testDof * trialDofCount
-                                      + trialDof];
-                }
-              }
-              geometryPair++;
-            }
-
-            std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-            std::cout << "Time for chunk result assembly = "
-                      << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()
-                      << " ms" << std::endl;
-          });
+      if (localChunk == localChunkCount-1) {
+        localChunk = 0;
+        quadVariant++;
+      } else {
+        localChunk++;
       }
-      taskGroupRegular.wait();
     }
+    taskGroupRegular.wait();
 
     cudaProfilerStop();
-
-    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-
-    // Global assembly
-    tbb::spin_mutex::scoped_lock lock(mutex);
-
-    // Loop over regular element pairs
-    for (int quadVariant = 0; quadVariant < quadVariantCount; ++quadVariant) {
-
-      const unsigned int elemPairCount = regularResult[quadVariant].size();
-      for (int elemPair = 0; elemPair < elemPairCount; ++elemPair) {
-
-        const int testIndex = regularElemPairTestIndices[quadVariant][elemPair];
-        const int trialIndex = regularElemPairTrialIndices[quadVariant][elemPair];
-
-        const int testDofCount = testGlobalDofs[testIndex].size();
-        const int trialDofCount = trialGlobalDofs[trialIndex].size();
-
-        // Add the integrals to appropriate entries in the operator's matrix
-        for (int testDof = 0; testDof < testDofCount; ++testDof) {
-
-          int testGlobalDof = testGlobalDofs[testIndex][testDof];
-          if (testGlobalDof < 0)
-            continue;
-
-          for (int trialDof = 0; trialDof < trialDofCount; ++trialDof) {
-
-            int trialGlobalDof = trialGlobalDofs[trialIndex][trialDof];
-            if (trialGlobalDof < 0)
-              continue;
-
-            assert(std::abs(testLocalDofWeights[testIndex][testDof]) > 0.);
-            assert(std::abs(trialLocalDofWeights[trialIndex][trialDof]) > 0.);
-
-            result(testGlobalDof, trialGlobalDof) +=
-              conj(testLocalDofWeights[testIndex][testDof]) *
-              trialLocalDofWeights[trialIndex][trialDof] *
-              regularResult[quadVariant][elemPair](testDof, trialDof);
-          }
-        }
-      }
-    }
-    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-    std::cout << "Time for regular global assembly = "
-              << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()
-              << " ms" << std::endl;
   });
 
   taskGroupGlobal.wait();
 
-//  std::cout << "result (cudadense) = " << std::endl;
-//  std::cout << result << std::endl;
+  if (result.rows() < 10 && result.cols() < 10) {
+    std::cout << "result (cudadense) = " << std::endl;
+    std::cout << result << std::endl;
+  }
 
   // Create and return a discrete operator represented by the matrix that
   // has just been calculated
