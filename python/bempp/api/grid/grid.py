@@ -83,12 +83,12 @@ class Grid(object):
 
         return self._impl.barycentric_descendents_map()
 
-#    def push_to_device(self, device_id):
-#        """Push this grid to the Cuda device with the given id and return the Cuda grid object."""
-#
-#        from bempp.api.cuda.cuda_grid import CudaGrid
-#
-#        return CudaGrid(self._impl.push_to_device(device_id))
+    def push_to_device(self, device_id):
+        """Push this grid to the Cuda device with the given id and return the Cuda grid object."""
+
+        from bempp.api.cuda.cuda_grid import CudaGrid
+
+        return CudaGrid(self._impl.push_to_device(device_id))
 
     @property
     def dim(self):
