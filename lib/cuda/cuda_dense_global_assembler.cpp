@@ -235,13 +235,20 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakFor
 
   std::vector<shared_ptr<CudaGrid<CoordinateType>>> testGrids(deviceCount);
   std::vector<shared_ptr<CudaGrid<CoordinateType>>> trialGrids(deviceCount);
-  // Push raw grid data to the device
+  // TODO: Push raw grid data to devices
+  for (int device = 0; device < deviceCount; ++device) {
+    const int deviceId = devices[device];
+    testGrids[device] =
+        testSpace.grid()->template pushToDevice<CoordinateType>(deviceId);
+    trialGrids[device] =
+        trialSpace.grid()->template pushToDevice<CoordinateType>(deviceId);
+  }
   shared_ptr<CudaGrid<CoordinateType>> testGrid =
       testSpace.grid()->template pushToDevice<CoordinateType>(0);
   shared_ptr<CudaGrid<CoordinateType>> trialGrid =
       trialSpace.grid()->template pushToDevice<CoordinateType>(0);
 
-  // TODO
+  // TODO: Is it really necessary to specify the element pair indices?
   const unsigned int testIndexCount = testIndices.size();
   const unsigned int trialIndexCount = trialIndices.size();
   std::vector<int> testElemPairIndices(testIndexCount * trialIndexCount);
@@ -280,7 +287,7 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakFor
   std::cout << "testDofCount = " << testDofCount << ", " << std::flush;
   std::cout << "trialDofCount = " << trialDofCount << std::endl;
 
-  // TODO
+  // TODO: Get the quadrature order from CUDA options
   const auto parameterList = context.globalParameterList();
   auto nearDoubleQuadratureOrder =
       parameterList.template get<int>("options.quadrature.near.doubleOrder");

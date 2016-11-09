@@ -23,6 +23,8 @@
 
 #include "../common/common.hpp"
 
+#include <vector>
+
 namespace Fiber {
 
 /** \brief CUDA operation settings. */
