@@ -184,10 +184,10 @@ cdef class Grid:
         cdef CudaGridFloat cuda_grid_float = CudaGridFloat()
         cdef CudaGridDouble cuda_grid_double = CudaGridDouble()
         if precision == 'double':
-            cuda_grid_double.impl_.assign(deref(self.impl_).pushToDevice(device_id))
+            cuda_grid_double.impl_.assign(deref(self.impl_).pushToDeviceDouble(device_id))
             return cuda_grid_double
         elif precision == 'float':
-            cuda_grid_float.impl_.assign(deref(self.impl_).pushToDevice(device_id))
+            cuda_grid_float.impl_.assign(deref(self.impl_).pushToDeviceFloat(device_id))
             return cuda_grid_float
         else:
             raise ValueError("precision must be either 'double' or 'float'".)
