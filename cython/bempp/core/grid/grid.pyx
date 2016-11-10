@@ -12,7 +12,8 @@ from bempp.core.grid.entity cimport Entity0
 from bempp.core.grid.grid_view cimport c_GridView, GridView
 from bempp.core.grid.grid_view cimport _grid_view_from_unique_ptr
 from bempp.core.grid.id_set cimport IdSet
-from bempp.core.cuda cimport CudaGrid
+from bempp.core.cuda cimport CudaGridFloat
+from bempp.core.cuda cimport CudaGridDouble
 import numpy as _np
 cimport numpy as _np
 cimport cython
@@ -177,11 +178,19 @@ cdef class Grid:
 
         return eigen_matrix_to_np_int(deref(self.impl_).barycentricSonMap()) 
 
-    def push_to_device(self, device_id):
-        """Push a grid to a Cuda device with a given id."""
+    def push_to_device(self, device_id, precision='double'):
+        """Push a grid to a Cuda device with a given id and precision either 'float' or 'double'."""
 
-        cdef CudaGrid cuda_grid = CudaGrid()
-        cuda_grid.impl_.assign(deref(self.impl_).pushToDevice(device_id))
+        cdef CudaGridFloat cuda_grid_float = CudaGridFloat()
+        cdef CudaGridDouble cuda_grid_double = CudaGridDouble()
+        if precision == 'double':
+            cuda_grid_double.impl_.assign(deref(self.impl_).pushToDevice(device_id))
+            return cuda_grid_double
+        elif precision == 'float':
+            cuda_grid_float.impl_.assign(deref(self.impl_).pushToDevice(device_id))
+            return cuda_grid_float
+        else:
+            raise ValueError("precision must be either 'double' or 'float'".)
         return cuda_grid
 
     property dim:
