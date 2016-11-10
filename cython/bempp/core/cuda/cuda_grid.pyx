@@ -1,6 +1,6 @@
 from cython.operator cimport dereference as deref
 
-cdef class CudaGridFloat:
+cdef class CudaGridSingle:
     """A class for grids living on a CUDA capable device."""
    
     def __cinit__(self):

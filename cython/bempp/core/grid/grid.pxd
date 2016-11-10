@@ -1,7 +1,7 @@
 from bempp.core.utils cimport shared_ptr,unique_ptr
 from bempp.core.utils cimport Vector
 from bempp.core.utils cimport Matrix
-from bempp.core.cuda cimport c_CudaGridFloat
+from bempp.core.cuda cimport c_CudaGridSingle
 from bempp.core.cuda cimport c_CudaGridDouble
 from bempp.core.grid.grid_view cimport c_GridView, GridView
 from bempp.core.grid.entity cimport Entity0, Entity2
@@ -30,7 +30,7 @@ cdef extern from "bempp/grid/grid.hpp" namespace "Bempp" nogil:
         c_IdSet& globalIdSet() const
         shared_ptr[c_Grid] barycentricGrid() const
         Matrix[int] barycentricSonMap() const
-        shared_ptr[c_CudaGridFloat] pushToDeviceFloat "pushToDevice<float>"(unsigned int) const
+        shared_ptr[c_CudaGridSingle] pushToDeviceSingle "pushToDevice<float>"(unsigned int) const
         shared_ptr[c_CudaGridDouble] pushToDeviceDouble "pushToDevice<double>"(unsigned int) const
 
 
