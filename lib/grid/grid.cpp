@@ -22,11 +22,8 @@
 #include "entity.hpp"
 #include "entity_iterator.hpp"
 #include "geometry.hpp"
-#include "grid_view.hpp"
 #include "ray_triangle_intersection.hpp"
 #include "../space/space.hpp"
-#include "../cuda/cuda_grid.hpp"
-#include "../fiber/raw_grid_geometry.hpp"
 
 #include "../common/not_implemented_error.hpp"
 
@@ -94,6 +91,50 @@ void Grid::getBoundingBox(Vector<double> &lowerBound,
       vertices.rowwise().minCoeff(); // min. value in each row
   m_upperBound = upperBound =
       vertices.rowwise().maxCoeff(); // max. value in each row
+}
+
+template <>
+shared_ptr<CudaGrid<double>> Grid::pushToDevice<double>(
+    unsigned int deviceId) const {
+
+    if (cudaDoubleGridPtr == NULL) {
+
+      cudaDoubleGridPtr = boost::make_shared<CudaGrid<double>>();
+
+      std::unique_ptr<GridView> view = leafView();
+
+      Fiber::RawGridGeometry<double> rawGeometry(dim(),dimWorld());
+      view->getRawElementData(
+          rawGeometry.vertices(), rawGeometry.elementCornerIndices(),
+          rawGeometry.auxData(), rawGeometry.domainIndices());
+
+      cudaDoubleGridPtr->pushGeometry(
+          rawGeometry.vertices().transpose().eval(),
+          rawGeometry.elementCornerIndices().topRows(3).transpose().eval());
+    }
+    return cudaDoubleGridPtr;
+}
+
+template <>
+shared_ptr<CudaGrid<float>> Grid::pushToDevice<float>(
+    unsigned int deviceId) const {
+
+    if (cudaFloatGridPtr == NULL) {
+
+      cudaFloatGridPtr = boost::make_shared<CudaGrid<float>>();
+
+      std::unique_ptr<GridView> view = leafView();
+
+      Fiber::RawGridGeometry<float> rawGeometry(dim(),dimWorld());
+      view->getRawElementData(
+          rawGeometry.vertices(), rawGeometry.elementCornerIndices(),
+          rawGeometry.auxData(), rawGeometry.domainIndices());
+
+      cudaFloatGridPtr->pushGeometry(
+          rawGeometry.vertices().transpose().eval(),
+          rawGeometry.elementCornerIndices().topRows(3).transpose().eval());
+    }
+    return cudaFloatGridPtr;
 }
 
 std::vector<bool> areInside(const Grid &grid, const Matrix<double> &points) {
@@ -195,50 +236,6 @@ unsigned int Grid::elementInsertionIndex(const Entity<0> &element) const {
 unsigned int Grid::vertexInsertionIndex(const Entity<2> &vertex) const {
   throw std::runtime_error("Grid::vertexInsertionIndex(): "
                            "method not implemented.");
-}
-
-template<typename CoordinateType>
-shared_ptr<CudaGrid<CoordinateType>> Grid::pushToDevice(
-    unsigned int deviceId) const {
-
-  if (std::is_same<CoordinateType, double>::value) {
-
-    if (cudaDoubleGridPtr == NULL) {
-
-      cudaDoubleGridPtr = boost::make_shared<CudaGrid<double>>();
-
-      std::unique_ptr<GridView> view = leafView();
-
-      Fiber::RawGridGeometry<double> rawGeometry(dim(),dimWorld());
-      view->getRawElementData(
-          rawGeometry.vertices(), rawGeometry.elementCornerIndices(),
-          rawGeometry.auxData(), rawGeometry.domainIndices());
-
-      cudaDoubleGridPtr->pushGeometry(
-          rawGeometry.vertices().transpose().eval(),
-          rawGeometry.elementCornerIndices().topRows(3).transpose().eval());
-    }
-    return cudaDoubleGridPtr;
-
-  } else {
-
-    if (cudaFloatGridPtr == NULL) {
-
-      cudaFloatGridPtr = boost::make_shared<CudaGrid<float>>();
-
-      std::unique_ptr<GridView> view = leafView();
-
-      Fiber::RawGridGeometry<float> rawGeometry(dim(),dimWorld());
-      view->getRawElementData(
-          rawGeometry.vertices(), rawGeometry.elementCornerIndices(),
-          rawGeometry.auxData(), rawGeometry.domainIndices());
-
-      cudaFloatGridPtr->pushGeometry(
-          rawGeometry.vertices().transpose().eval(),
-          rawGeometry.elementCornerIndices().topRows(3).transpose().eval());
-    }
-    return cudaFloatGridPtr;
-  }
 }
 
 } // namespace Bempp

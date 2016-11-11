@@ -26,8 +26,14 @@
 #include "../common/common.hpp"
 #include "../common/shared_ptr.hpp"
 #include "../common/eigen_support.hpp"
+#include "../common/boost_make_shared_fwd.hpp"
 #include "grid_parameters.hpp"
+#include "grid_view.hpp"
 #include "entity.hpp"
+
+#include "../fiber/raw_grid_geometry.hpp"
+
+#include "../cuda/cuda_grid.hpp"
 
 #include <cstddef> // size_t
 #include <memory>
@@ -207,7 +213,6 @@ private:
  */
 std::vector<bool> areInside(const Grid &grid, const Matrix<double> &points);
 std::vector<bool> areInside(const Grid &grid, const Matrix<float> &points);
-
 
 } // namespace Bempp
 

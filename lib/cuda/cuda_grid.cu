@@ -21,6 +21,7 @@
 #include "cuda_grid.hpp"
 
 #include "../fiber/types.hpp"
+#include "../fiber/explicit_instantiation.hpp"
 
 #include <thrust/gather.h>
 #include <thrust/transform.h>
@@ -185,7 +186,7 @@ namespace Bempp {
 
   template <typename CoordinateType>
   void CudaGrid<CoordinateType>::pushGeometry(
-      const Matrix<double> &vertices,
+      const Matrix<CoordinateType> &vertices,
       const Matrix<int> &elementCorners) {
 
     // Determine mesh parameters
@@ -477,5 +478,9 @@ namespace Bempp {
                                "setup required");
     }
   }
+
+  // TODO: Instantiate class templared on coordinate type?
+  FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_DP_REAL(CudaGrid);
+  FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_SP_REAL(CudaGrid);
 
 } // namespace Bempp

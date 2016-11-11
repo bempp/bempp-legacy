@@ -45,7 +45,7 @@ public:
    * \param[in] vertices mesh vertices
    * \param[in] elementCorners element corner indices
    */
-  void pushGeometry(const Matrix<double> &vertices,
+  void pushGeometry(const Matrix<CoordinateType> &vertices,
                     const Matrix<int> &elementCorners);
 
   /**
