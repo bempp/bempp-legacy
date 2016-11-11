@@ -13,10 +13,12 @@ cdef extern from "bempp/common/types.hpp" namespace "Bempp":
         void put_string "put<std::string>" (char*, string)
         void put_int "put<int>" (char*, int)
         void put_double "put<double>" (char*, double)
+        void put_intvec "put<std::vector<int>>"(char*, vector[int])
         string get_string "get<std::string>" (char*)
         int get_int "get<int>" (char*)
         double get_double "get<double>" (char*)
         cbool get_bool "get<bool>" (char*)
+        vector[int] get_intvec "get<std::vector<int>>" (char*)
 
 
 cdef class _NearField:
@@ -32,6 +34,10 @@ cdef class _FarField:
     cdef _QuadratureParameterList base
 
 cdef class _AssemblyParameterList:
+    cdef c_ParameterList* impl_
+    cdef ParameterList base
+
+cdef class _CudaParameterList:
     cdef c_ParameterList* impl_
     cdef ParameterList base
 
@@ -55,3 +61,4 @@ cdef class ParameterList:
     cdef _QuadratureParameterList _quadrature
     cdef _HMatParameterList _hmat
     cdef _VerbosityParameterList _verbosity
+    cdef _CudaParameterList _cuda

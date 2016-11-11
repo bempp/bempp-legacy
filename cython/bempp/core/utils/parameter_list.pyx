@@ -316,6 +316,54 @@ cdef class _HMatParameterList:
             cdef char* s = b"options.hmat.matVecParallelLevels"
             deref(self.impl_).put_int(s,value)
 
+
+cdef class _CudaParameterList:
+
+    def __cinit__(self, ParameterList base):
+        self.base = base
+
+    def __init__(self, ParameterList base):
+        pass
+
+    property precision:
+
+        def __get__(self):
+            cdef char* s = b"options.cuda.precision"
+            return deref(self.impl_).get_string(s).decode("UTF-8")
+        def __set__(self,object value):
+            cdef char* s = b"options.cuda.precision"
+            deref(self.impl_).put_string(s,_convert_to_bytes(value))
+
+    property enable_element_data_caching:
+
+        def __get__(self):
+            cdef char* s = b"options.cuda.enableElementDataCaching"
+            return deref(self.impl_).get_bool(s)
+
+        def __set__(self, object value):
+            cdef char* s = b"options.cuda.enableElementDataCaching"
+            deref(self.impl_).put_bool(s, value)
+
+    property stream_count:
+
+        def __get__(self):
+            cdef char* s = b"options.cuda.streamCount"
+            return deref(self.impl_).get_int(s)
+
+        def __set__(self, int value):
+            cdef char* s = b"options.cuda.streamCount"
+            deref(self.impl_).put_int(s, value)
+
+#    property device_ids:
+#
+#        def __get__(self):
+#            cdef char* s = b"options.cuda.deviceIds"
+#            return deref(self.impl_).get_intvec(s)
+#
+#        def __set__(self, vector[int] value):
+#            cdef char* s = b"options.cuda.deviceIds"
+#            deref(self.impl_).put_intvec(s, value)
+
 cdef class ParameterList:
 
     def __cinit__(self):
@@ -323,6 +371,7 @@ cdef class ParameterList:
         self._assembly = _AssemblyParameterList(self)
         self._quadrature = _QuadratureParameterList(self)
         self._hmat = _HMatParameterList(self)
+        self._cuda = _CudaParameterList(self)
         self._verbosity = _VerbosityParameterList()
         (<_AssemblyParameterList>self._assembly).impl_ = self.impl_
         (<_QuadratureParameterList>self._quadrature).impl_ = self.impl_
@@ -330,6 +379,7 @@ cdef class ParameterList:
         (<_MediumField>self.quadrature.medium).impl_ = self.impl_
         (<_FarField>self.quadrature.far).impl_ = self.impl_
         (<_HMatParameterList>self._hmat).impl_ = self.impl_
+        (<_CudaParameterList>self._cuda).impl_ = self.impl_
 
     def __init__(self):
         pass
@@ -357,3 +407,7 @@ cdef class ParameterList:
         def __get__(self):
             return self._verbosity
 
+    property cuda:
+
+        def __get__(self):
+            return self._cuda

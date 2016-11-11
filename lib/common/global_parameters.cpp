@@ -19,6 +19,10 @@
 // THE SOFTWARE.
 
 #include "global_parameters.hpp"
+#include <iostream>
+#include <vector>
+#include <iterator>
+
 
 namespace Bempp {
 
@@ -120,6 +124,18 @@ ParameterList GlobalParameters::parameterList() {
   // Number of levels for matvec parallelisation
   // The total number of tasks is 4^matVecParallelLevels
   parameters.put("options.hmat.matVecParallelLevels", static_cast<int>(5));
+
+  // Cuda Precision
+  parameters.put("options.cuda.precision", std::string("double"));
+
+  // Cuda element data caching
+  parameters.put("options.cuda.enableElementDataCaching", false);
+
+  // Cuda stream count
+  parameters.put("options.cuda.streamCount", static_cast<int>(1));
+
+  // Cuda device ids
+  parameters.put("options.cuda.deviceIds", std::vector<int>({0}));
 
   return parameters;
 }

@@ -13,6 +13,6 @@ add_dependencies(cython-headers bempp.core.cuda-copied)
 
 add_python_module(bempp.core.cuda __init__.py
                   test_cuda.pyx 
-#                  cuda_grid.pyx
+                  cuda_grid.pyx
                   CPP LIBRARIES libbempp)
 

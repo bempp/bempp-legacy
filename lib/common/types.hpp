@@ -26,6 +26,7 @@
 #include "../fiber/types.hpp"
 #include "../grid/geometry_type.hpp"
 #include "../grid/index_set.hpp"
+#include <iostream>
 
 namespace Bempp {
 
@@ -59,5 +60,29 @@ struct LocalDof {
 template <typename ValueType> struct Point3D { ValueType x, y, z; };
 
 } // namespace Bempp
+
+// Overloads to handle vectors as parameters in PropertyTree
+
+namespace boost {
+
+    inline std::ostream& operator<<(std::ostream& os, const std::vector<int>& v)
+    {
+
+        int n = v.size();
+        if (n == 0) return os;
+
+        for (int i = 0; i < n-1; ++i)
+            os << v[i] << " ";
+        os << v[n-1];
+        return os;
+    }
+
+    inline std::istream& operator>>(std::istream& is, std::vector<int>& v)
+    {
+        v.insert(std::end(v), std::istream_iterator<int>(is), std::istream_iterator<int>());
+        return is;
+    }
+
+}
 
 #endif
