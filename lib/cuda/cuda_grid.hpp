@@ -35,7 +35,7 @@ class CudaGrid {
 public:
 
   /** \brief Constructor */
-  CudaGrid();
+  CudaGrid(const int deviceId = 0);
 
   /** \brief Destructor */
   virtual ~CudaGrid();
@@ -83,6 +83,8 @@ public:
 
 private:
   /** \cond PRIVATE */
+
+  int m_deviceId;
 
   // Mesh parameters
   unsigned int m_dim;

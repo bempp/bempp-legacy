@@ -25,51 +25,54 @@
 
 #include <vector>
 
-namespace Fiber {
+namespace Bempp {
 
 /** \brief CUDA operation settings. */
 class CudaOptions {
 public:
-  enum { AUTO = 1 };
 
   /** \brief Constructor. */
   CudaOptions();
 
+  /** \brief Set the data precision used on the device. */
+  void setPrecision(std::string precision);
+  /** \brief Return the data precision used on the device. */
+  std::string precision() const;
+
   /** \brief Enable element data caching on the device. */
-  void enableElemDataCaching();
+  void enableElementDataCaching();
   /** \brief Disable element data caching on the device. */
-  void disableElemDataCaching();
+  void disableElementDataCaching();
   /** \brief Return whether element data caching on the device is enabled. */
-  bool isElemDataCachingEnabled() const;
+  bool isElementDataCachingEnabled() const;
 
-  /** \brief Set the number of concurrent operation streams on the device.
-   *
-   *  \p streamCount must be a positive number or \p AUTO. In the latter
-   *  case only the default stream is used.*/
-  void setStreamCount(int streamCount = AUTO);
-
-  /** \brief Return the number of concurrent operation streams on the device.
-   *
-   *  The returned value can be a positive number or \p AUTO. In the latter
-   *  case only the default stream is used.*/
+  /** \brief Set the number of concurrent operation streams on the device. */
+  void setStreamCount(int streamCount);
+  /** \brief Return the number of concurrent operation streams on the device. */
   int streamCount() const;
 
-  /** \brief Set the devices used during the assembly.
-   *
-   *  \p deviceIds must be a vector of positive numbers including 0. If no
-   *  devices are specified, only device 0 is used by default.*/
+  /** \brief Set the devices used during the assembly. */
   void setDevices(std::vector<int> deviceIds = {0});
-
-  /** \brief Return the devices used during the assembly.
-   *
-   *  The returned vector can hold positive numbers including 0.  If no
-   *  devices are specified, only device 0 is used by default.*/
+  /** \brief Return the devices used during the assembly. */
   const std::vector<int>& devices() const;
 
+  /** \brief Set the order used for numerical quadrature on the device. */
+  void setQuadOrder(int quadOrder);
+  /** \brief Return the order used for numerical quadrature on the device. */
+  int quadOrder() const;
+
+  /** \brief Set the block size used for calculations on the device. */
+  void setBlockSize(int blockSize);
+  /** \brief Return the block size used for calculations on the device. */
+  int blockSize() const;
+
 private:
-  bool m_elemDataCachingEnabled;
+  std::string m_precision;
+  bool m_elementDataCachingEnabled;
   int m_streamCount;
   std::vector<int> m_devices;
+  int m_quadOrder;
+  int m_blockSize;
 };
 
 }

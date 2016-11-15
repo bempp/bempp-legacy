@@ -125,7 +125,7 @@ ParameterList GlobalParameters::parameterList() {
   // The total number of tasks is 4^matVecParallelLevels
   parameters.put("options.hmat.matVecParallelLevels", static_cast<int>(5));
 
-  // Cuda Precision
+  // Cuda precision
   parameters.put("options.cuda.precision", std::string("double"));
 
   // Cuda element data caching
@@ -135,7 +135,13 @@ ParameterList GlobalParameters::parameterList() {
   parameters.put("options.cuda.streamCount", static_cast<int>(1));
 
   // Cuda device ids
-  parameters.put("options.cuda.deviceIds", std::vector<int>({0}));
+  parameters.put("options.cuda.deviceIds", std::vector<int>({0, 1}));
+
+  // Cuda numerical quadrature order
+  parameters.put("options.cuda.quadOrder", static_cast<int>(4));
+
+  // Cuda block size
+  parameters.put("options.cuda.blockSize", static_cast<int>(512));
 
   return parameters;
 }

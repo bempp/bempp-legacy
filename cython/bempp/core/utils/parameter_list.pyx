@@ -364,6 +364,26 @@ cdef class _CudaParameterList:
 #            cdef char* s = b"options.cuda.deviceIds"
 #            deref(self.impl_).put_intvec(s, value)
 
+    property quad_order:
+
+        def __get__(self):
+            cdef char* s = b"options.cuda.quadOrder"
+            return deref(self.impl_).get_int(s)
+
+        def __set__(self, int value):
+            cdef char* s = b"options.cuda.quadOrder"
+            deref(self.impl_).put_int(s, value)
+            
+    property block_size:
+
+        def __get__(self):
+            cdef char* s = b"options.cuda.blockSize"
+            return deref(self.impl_).get_int(s)
+
+        def __set__(self, int value):
+            cdef char* s = b"options.cuda.blockSize"
+            deref(self.impl_).put_int(s, value)
+            
 cdef class ParameterList:
 
     def __cinit__(self):

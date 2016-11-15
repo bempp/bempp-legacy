@@ -93,6 +93,34 @@ Context<BasisFunctionType, ResultType>::Context(
 
   m_assemblyOptions.enableBlasInQuadrature(AssemblyOptions::AUTO);
 
+  // Cuda precision
+  m_cudaOptions.setPrecision(
+      parameters.get<std::string>("options.cuda.precision",
+          defaults.get<std::string>("options.cuda.precision")));
+
+  // Cuda element data caching
+  bool elementDataCachingEnabled = parameters.get<bool>(
+      "options.cuda.enableElementDataCaching",
+      defaults.get<bool>("options.cuda.enableElementDataCaching"));
+  if (elementDataCachingEnabled == true) {
+    m_cudaOptions.enableElementDataCaching();
+  } else {
+    m_cudaOptions.disableElementDataCaching();
+  }
+
+  // Cuda stream count
+  m_cudaOptions.setStreamCount(parameters.get<int>("options.cuda.streamCount",
+      defaults.get<int>("options.cuda.streamCount")));
+
+  // Cuda device ids
+//  m_cudaOptions.setDevices(
+//      parameters.get<std::vector<int>>("options.cuda.deviceIds",
+//          defaults.get<std::vector<int>>("options.cuda.deviceIds")));
+
+  // Cuda numerical quadrature order
+  m_cudaOptions.setQuadOrder(parameters.get<int>("options.cuda.quadOrder",
+      defaults.get<int>("options.cuda.quadOrder")));
+
   Fiber::AccuracyOptionsEx accuracyOptions;
 
   accuracyOptions.setSingleRegular(

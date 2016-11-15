@@ -153,9 +153,11 @@ namespace Bempp {
   };
 
   template <typename CoordinateType>
-  CudaGrid<CoordinateType>::CudaGrid() {
+  CudaGrid<CoordinateType>::CudaGrid(const int deviceId) {
 
     // Initialise member variables
+    m_deviceId = deviceId;
+
     m_dim = 0;
     m_IdxCount = 0;
     m_VtxCount = 0;
@@ -198,6 +200,8 @@ namespace Bempp {
     if (m_dim != 3 || m_IdxCount != 3)
       throw std::runtime_error("CudaGrid::pushGeometry(): "
                                "only valid for triangular meshes in three dimensions.");
+
+    cudaSetDevice(m_deviceId);
 
     // Allocate device memory
     m_vertices.resize(m_dim * m_VtxCount);
@@ -298,8 +302,8 @@ namespace Bempp {
       cudaEventSynchronize(stop);
       float elapsedTimeGather;
       cudaEventElapsedTime(&elapsedTimeGather , start, stop);
-      std::cout << "Time for gathering element corner coordinates is "
-        << elapsedTimeGather << " ms" << std::endl;
+//      std::cout << "Time for gathering element corner coordinates is "
+//        << elapsedTimeGather << " ms" << std::endl;
 
       m_setupDone = true;
 
@@ -360,8 +364,8 @@ namespace Bempp {
       cudaEventSynchronize(stop);
       float elapsedTimeNormals;
       cudaEventElapsedTime(&elapsedTimeNormals , start, stop);
-      std::cout << "Time for calculating normals and integration elements is "
-        << elapsedTimeNormals << " ms" << std::endl;
+//      std::cout << "Time for calculating normals and integration elements is "
+//        << elapsedTimeNormals << " ms" << std::endl;
 
 //    std::cout << "normals = " << std::endl;
 //    for (int i = 0; i < m_ElemCount; ++i) {
@@ -457,8 +461,8 @@ namespace Bempp {
       cudaEventSynchronize(stop);
       float elapsedTimeMapping;
       cudaEventElapsedTime(&elapsedTimeMapping , start, stop);
-      std::cout << "Time for mapping local to global coordinates is "
-        << elapsedTimeMapping << " ms" << std::endl;
+//      std::cout << "Time for mapping local to global coordinates is "
+//        << elapsedTimeMapping << " ms" << std::endl;
 
 //    std::cout << "globalPoints = " << std::endl;
 //    for (int i = 0; i < activeElemCount; ++i) {
@@ -479,8 +483,7 @@ namespace Bempp {
     }
   }
 
-  // TODO: Instantiate class templared on coordinate type?
-  FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_DP_REAL(CudaGrid);
-  FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_SP_REAL(CudaGrid);
+  template class CudaGrid<double>;
+  template class CudaGrid<float>;
 
 } // namespace Bempp

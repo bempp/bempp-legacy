@@ -22,32 +22,43 @@
 
 #include <stdexcept>
 
-namespace Fiber {
+namespace Bempp {
 
 CudaOptions::CudaOptions()
-    : m_elemDataCachingEnabled(false), m_streamCount(AUTO) {
-  m_devices.resize(1);
-  m_devices[0] = 0;
+    : m_precision("double"), m_elementDataCachingEnabled(false),
+      m_streamCount(1), m_devices({0, 1}), m_quadOrder(4), m_blockSize(512) {
 }
 
-void CudaOptions::enableElemDataCaching() {
-  m_elemDataCachingEnabled = true;
+void CudaOptions::setPrecision(std::string precision) {
+  if (precision == "double" || precision == "single")
+    m_precision = precision;
+  else
+    throw std::runtime_error(
+        "CudaOptions::setPrecision(): "
+        "precision must be ""double"" or ""single""");
 }
 
-void CudaOptions::disableElemDataCaching() {
-  m_elemDataCachingEnabled = false;
+std::string CudaOptions::precision() const { return m_precision; }
+
+void CudaOptions::enableElementDataCaching() {
+  m_elementDataCachingEnabled = true;
 }
 
-bool CudaOptions::isElemDataCachingEnabled() const {
-  return m_elemDataCachingEnabled;
+void CudaOptions::disableElementDataCaching() {
+  m_elementDataCachingEnabled = false;
+}
+
+bool CudaOptions::isElementDataCachingEnabled() const {
+  return m_elementDataCachingEnabled;
 }
 
 void CudaOptions::setStreamCount(int streamCount) {
-  if (streamCount < 1)
+  if (streamCount > 0)
+    m_streamCount = streamCount;
+  else
     throw std::runtime_error(
         "CudaOptions::setStreamCount(): "
         "streamCount must be positive integer greater zero");
-  m_streamCount = streamCount;
 }
 
 int CudaOptions::streamCount() const { return m_streamCount; }
@@ -59,5 +70,27 @@ void CudaOptions::setDevices(std::vector<int> deviceIds) {
 const std::vector<int>& CudaOptions::devices() const {
   return m_devices;
 }
+
+void CudaOptions::setQuadOrder(int quadOrder) {
+  if (quadOrder > 0)
+    m_quadOrder = quadOrder;
+  else
+    throw std::runtime_error(
+        "CudaOptions::setQuadOrder(): "
+        "quadOrder must be positive integer greater zero");
+}
+
+int CudaOptions::quadOrder() const { return m_quadOrder; }
+
+void CudaOptions::setBlockSize(int blockSize) {
+  if (blockSize > 0)
+    m_blockSize = blockSize;
+  else
+    throw std::runtime_error(
+        "CudaOptions::setBlockSize(): "
+        "blockSize must be positive integer greater zero");
+}
+
+int CudaOptions::blockSize() const { return m_blockSize; }
 
 } // namespace Fiber

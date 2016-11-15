@@ -97,9 +97,9 @@ template <>
 shared_ptr<CudaGrid<double>> Grid::pushToDevice<double>(
     unsigned int deviceId) const {
 
-    if (cudaDoubleGridPtr == NULL) {
+    if (cudaDoubleGridPtr.find(deviceId) == cudaDoubleGridPtr.end()) {
 
-      cudaDoubleGridPtr = boost::make_shared<CudaGrid<double>>();
+      cudaDoubleGridPtr[deviceId] = boost::make_shared<CudaGrid<double>>(deviceId);
 
       std::unique_ptr<GridView> view = leafView();
 
@@ -108,20 +108,20 @@ shared_ptr<CudaGrid<double>> Grid::pushToDevice<double>(
           rawGeometry.vertices(), rawGeometry.elementCornerIndices(),
           rawGeometry.auxData(), rawGeometry.domainIndices());
 
-      cudaDoubleGridPtr->pushGeometry(
+      cudaDoubleGridPtr[deviceId]->pushGeometry(
           rawGeometry.vertices().transpose().eval(),
           rawGeometry.elementCornerIndices().topRows(3).transpose().eval());
     }
-    return cudaDoubleGridPtr;
+    return cudaDoubleGridPtr[deviceId];
 }
 
 template <>
 shared_ptr<CudaGrid<float>> Grid::pushToDevice<float>(
     unsigned int deviceId) const {
 
-    if (cudaFloatGridPtr == NULL) {
+    if (cudaFloatGridPtr.find(deviceId) == cudaFloatGridPtr.end()) {
 
-      cudaFloatGridPtr = boost::make_shared<CudaGrid<float>>();
+      cudaFloatGridPtr[deviceId] = boost::make_shared<CudaGrid<float>>(deviceId);
 
       std::unique_ptr<GridView> view = leafView();
 
@@ -130,11 +130,11 @@ shared_ptr<CudaGrid<float>> Grid::pushToDevice<float>(
           rawGeometry.vertices(), rawGeometry.elementCornerIndices(),
           rawGeometry.auxData(), rawGeometry.domainIndices());
 
-      cudaFloatGridPtr->pushGeometry(
+      cudaFloatGridPtr[deviceId]->pushGeometry(
           rawGeometry.vertices().transpose().eval(),
           rawGeometry.elementCornerIndices().topRows(3).transpose().eval());
     }
-    return cudaFloatGridPtr;
+    return cudaFloatGridPtr[deviceId];
 }
 
 std::vector<bool> areInside(const Grid &grid, const Matrix<double> &points) {

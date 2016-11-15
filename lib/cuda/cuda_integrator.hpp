@@ -23,6 +23,7 @@
 
 #include "cuda_evaluate_laplace_3d_single_layer_potential_integral_functor.cuh"
 #include "cuda_evaluate_laplace_3d_double_layer_potential_integral_functor.cuh"
+#include "cuda_options.hpp"
 
 #include "../common/common.hpp"
 #include "../common/eigen_support.hpp"
@@ -31,7 +32,7 @@
 #include "../fiber/types.hpp"
 #include "../fiber/shared_ptr.hpp"
 
-#include <thrust/device_ptr.h>
+#include <thrust/device_vector.h>
 #include <thrust/host_vector.h>
 #include <thrust/complex.h>
 
@@ -85,21 +86,23 @@ public:
       const Shapeset<BasisFunctionType> &trialShapeset,
       shared_ptr<Bempp::CudaGrid<CoordinateType>> testGrid,
       shared_ptr<Bempp::CudaGrid<CoordinateType>> trialGrid,
+      const std::vector<int> &testIndices, const std::vector<int> &trialIndices,
       const CollectionOfKernels<KernelType> &kernels,
-      const bool cacheElemData, const int streamCount);
+      const int deviceId, const Bempp::CudaOptions &cudaOptions);
 
   /** \brief Destructor. */
   virtual ~CudaIntegrator();
 
-  void integrate(
-      std::vector<int>::iterator startElementPairTestIndices,
-      std::vector<int>::iterator endElementPairTestIndices,
-      std::vector<int>::iterator startElementPairTrialIndices,
-      std::vector<int>::iterator endElementPairTrialIndices,
-      typename thrust::host_vector<ResultType>::iterator startResult);
+  void integrate(const int elemPairIndexBegin, const int elemPairIndexEnd,
+      ResultType *result);
 
 private:
   /** \cond PRIVATE */
+
+  const int m_deviceId;
+
+  thrust::device_vector<int> m_d_testIndices;
+  thrust::device_vector<int> m_d_trialIndices;
 
   QuadData<CoordinateType> m_testQuadData;
   QuadData<CoordinateType> m_trialQuadData;
@@ -110,14 +113,26 @@ private:
   Matrix<CoordinateType> m_localTestQuadPoints;
   Matrix<CoordinateType> m_localTrialQuadPoints;
 
+  ElemData<CoordinateType> m_testElemData;
+  ElemData<CoordinateType> m_trialElemData;
+  thrust::device_vector<CoordinateType> m_d_testGeomData;
+  thrust::device_vector<CoordinateType> m_d_trialGeomData;
+  thrust::device_vector<CoordinateType> m_d_testNormals;
+  thrust::device_vector<CoordinateType> m_d_trialNormals;
+  thrust::device_vector<CoordinateType> m_d_testIntegrationElements;
+  thrust::device_vector<CoordinateType> m_d_trialIntegrationElements;
+
+  RawGeometryData<CoordinateType> m_testRawGeometryData;
+  RawGeometryData<CoordinateType> m_trialRawGeometryData;
+
   shared_ptr<Bempp::CudaGrid<CoordinateType>> m_testGrid;
   shared_ptr<Bempp::CudaGrid<CoordinateType>> m_trialGrid;
 
   const CollectionOfKernels<KernelType> &m_kernels;
 
-  bool m_cacheElemData;
-
   std::vector<cudaStream_t> m_streams;
+
+  Bempp::CudaOptions m_cudaOptions;
 
   /** \endcond */
 };

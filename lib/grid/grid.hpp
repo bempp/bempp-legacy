@@ -186,8 +186,8 @@ private:
 
   mutable boost::signals2::signal<void()> gridUpdateSignal;
 
-  mutable shared_ptr<CudaGrid<double>> cudaDoubleGridPtr;
-  mutable shared_ptr<CudaGrid<float>> cudaFloatGridPtr;
+  mutable std::map<int, shared_ptr<CudaGrid<double>>> cudaDoubleGridPtr;
+  mutable std::map<int, shared_ptr<CudaGrid<float>>> cudaFloatGridPtr;
 
   /** \endcond */
 };

@@ -27,7 +27,6 @@
 #include "../fiber/scalar_traits.hpp"
 
 #include <chrono>
-#include <thrust/device_vector.h>
 
 namespace Fiber {
 
@@ -41,12 +40,16 @@ CudaIntegrator<BasisFunctionType, KernelType, ResultType>::CudaIntegrator(
     const Shapeset<BasisFunctionType> &trialShapeset,
     shared_ptr<Bempp::CudaGrid<CoordinateType>> testGrid,
     shared_ptr<Bempp::CudaGrid<CoordinateType>> trialGrid,
+    const std::vector<int> &testIndices, const std::vector<int> &trialIndices,
     const CollectionOfKernels<KernelType> &kernels,
-    const bool cacheElemData, const int streamCount)
+    const int deviceId, const Bempp::CudaOptions &cudaOptions)
     : m_localTestQuadPoints(localTestQuadPoints),
       m_localTrialQuadPoints(localTrialQuadPoints),
       m_testGrid(testGrid), m_trialGrid(trialGrid),
-      m_kernels(kernels), m_cacheElemData(cacheElemData) {
+      m_kernels(kernels), m_deviceId(deviceId), m_cudaOptions(cudaOptions) {
+
+  const unsigned int testIndexCount = testIndices.size();
+  const unsigned int trialIndexCount = trialIndices.size();
 
   const unsigned int testPointCount = localTestQuadPoints.cols();
   const unsigned int trialPointCount = localTrialQuadPoints.cols();
@@ -59,6 +62,14 @@ CudaIntegrator<BasisFunctionType, KernelType, ResultType>::CudaIntegrator(
     throw std::invalid_argument(
         "CudaIntegrator::CudaIntegrator(): "
         "numbers of trial points and weights do not match");
+
+  cudaSetDevice(m_deviceId);
+
+  // Copy element indices to device memory
+  m_d_testIndices.resize(testIndexCount);
+  m_d_trialIndices.resize(trialIndexCount);
+  m_d_testIndices.assign(testIndices.begin(), testIndices.end());
+  m_d_trialIndices.assign(trialIndices.begin(), trialIndices.end());
 
   // Copy numerical quadrature weights to device memory
   m_testQuadData.weights = thrust::device_malloc<CoordinateType>(testPointCount);
@@ -103,174 +114,49 @@ CudaIntegrator<BasisFunctionType, KernelType, ResultType>::CudaIntegrator(
   thrust::copy(trialBasisData.values.begin(), trialBasisData.values.end(),
       m_trialBasisData.values);
 
-  // Create CUDA streams
-  m_streams.resize(streamCount);
-  for (int stream = 0; stream < streamCount; ++stream)
-    cudaStreamCreate(&m_streams[stream]);
-}
-
-template <typename BasisFunctionType, typename KernelType, typename ResultType>
-CudaIntegrator<BasisFunctionType, KernelType, ResultType>::~CudaIntegrator() {
-
-  thrust::device_free(m_testQuadData.weights);
-  if (m_testQuadData.weights.get() != m_testQuadData.weights.get())
-    thrust::device_free(m_trialQuadData.weights);
-
-  thrust::device_free(m_testBasisData.values);
-  thrust::device_free(m_trialBasisData.values);
-}
-
-template <typename BasisFunctionType, typename KernelType, typename ResultType>
-void CudaIntegrator<BasisFunctionType, KernelType, ResultType>::integrate(
-    std::vector<int>::iterator startElementPairTestIndices,
-    std::vector<int>::iterator endElementPairTestIndices,
-    std::vector<int>::iterator startElementPairTrialIndices,
-    std::vector<int>::iterator endElementPairTrialIndices,
-    typename thrust::host_vector<ResultType>::iterator startResult) {
-
-  const int testDofCount = m_testBasisData.dofCount;
-  const int trialDofCount = m_trialBasisData.dofCount;
-
-  const unsigned int testPointCount = m_localTestQuadPoints.cols();
-  const unsigned int trialPointCount = m_localTrialQuadPoints.cols();
-
-  const unsigned int testPointDim = m_localTestQuadPoints.rows();
-  const unsigned int trialPointDim = m_localTrialQuadPoints.rows();
-
-  if (testPointDim != 2 || trialPointDim != 2)
-    throw std::invalid_argument("CudaIntegrator::integrate(): "
-                                "only valid for two-dimensional local points");
-
-  const unsigned int geometryPairCount =
-      endElementPairTestIndices-startElementPairTestIndices;
-
-  if (endElementPairTestIndices-startElementPairTestIndices
-      != endElementPairTrialIndices-startElementPairTrialIndices)
-    throw std::invalid_argument(
-        "CudaIntegrator::integrate(): "
-        "arrays 'elementPairTestIndices' and 'elementPairTrialIndices' must "
-        "have the same number of elements");
-
-  const unsigned int streamCount = m_streams.size();
-  const unsigned int streamSize =
-      static_cast<unsigned int>((geometryPairCount-1)/streamCount + 1);
-
-  if (testPointCount == 0 || trialPointCount == 0 || geometryPairCount == 0)
-    return;
-  // TODO: in the (pathological) case that pointCount == 0 but
-  // geometryPairCount != 0, set elements of result to 0.
-
-  // Allocate device memory for element pair indices
-  thrust::device_vector<int> d_elementPairTestIndices(geometryPairCount);
-  thrust::device_vector<int> d_elementPairTrialIndices(geometryPairCount);
-
-  // Allocate device memory for the result
-  thrust::device_vector<CudaResultType> d_result(
-      geometryPairCount * testDofCount * trialDofCount);
-
-  if (m_cacheElemData == true) {
-
-    // Measure time of the GPU execution (CUDA event based)
-    cudaEvent_t start, stop;
-    cudaEventCreate(&start);
-    cudaEventCreate(&stop);
-    cudaEventRecord(start, 0);
-
-    // Copy element pair indices to device memory
-    d_elementPairTestIndices.assign(
-        startElementPairTestIndices, endElementPairTestIndices);
-    d_elementPairTrialIndices.assign(
-        startElementPairTrialIndices, endElementPairTrialIndices);
-
-    cudaEventRecord(stop, 0);
-    cudaEventSynchronize(stop);
-    float elapsedTimeIndexCopy;
-    cudaEventElapsedTime(&elapsedTimeIndexCopy, start, stop);
-    std::cout << "Time for thrust::copy(elementPairIndices, 'HtD') "
-      << elapsedTimeIndexCopy << " ms" << std::endl;
-
-    cudaEventRecord(start, 0);
+  if (cudaOptions.isElementDataCachingEnabled() == true) {
 
     // Setup geometry data for selected elements on the device
     m_testGrid->setupGeometry();
     m_trialGrid->setupGeometry();
 
-    ElemData<CoordinateType> testElemData, trialElemData;
-
-    thrust::device_vector<CoordinateType> d_testGeomData, d_trialGeomData;
-    thrust::device_vector<CoordinateType> d_testNormals, d_trialNormals;
-    thrust::device_vector<CoordinateType> d_testIntegrationElements, d_trialIntegrationElements;
-
     // Calculate global points on the device
-    m_testGrid->local2global(m_localTestQuadPoints, d_testGeomData);
-    testElemData.geomData = d_testGeomData.data();
+    m_testGrid->local2global(m_localTestQuadPoints, m_d_testGeomData);
+    m_testElemData.geomData = m_d_testGeomData.data();
     if (m_testGrid.get() == m_trialGrid.get() &&
         m_localTestQuadPoints == m_localTrialQuadPoints) {
-      trialElemData.geomData = testElemData.geomData;
+      m_trialElemData.geomData = m_testElemData.geomData;
     } else {
-      m_trialGrid->local2global(m_localTrialQuadPoints, d_trialGeomData);
-      trialElemData.geomData = d_trialGeomData.data();
+      m_trialGrid->local2global(m_localTrialQuadPoints, m_d_trialGeomData);
+      m_trialElemData.geomData = m_d_trialGeomData.data();
     }
 
     m_testGrid->calculateNormalsAndIntegrationElements(
-        d_testNormals, d_testIntegrationElements);
-    testElemData.normals = d_testNormals.data();
-    testElemData.integrationElements = d_testIntegrationElements.data();
-    testElemData.activeElemCount = d_testIntegrationElements.size();
+        m_d_testNormals, m_d_testIntegrationElements);
+    m_testElemData.normals = m_d_testNormals.data();
+    m_testElemData.integrationElements = m_d_testIntegrationElements.data();
+    m_testElemData.activeElemCount = m_d_testIntegrationElements.size();
     if (m_testGrid.get() == m_trialGrid.get()) {
-      trialElemData.normals = testElemData.normals;
-      trialElemData.integrationElements = testElemData.integrationElements;
-      trialElemData.activeElemCount = testElemData.activeElemCount;
+      m_trialElemData.normals = m_testElemData.normals;
+      m_trialElemData.integrationElements = m_testElemData.integrationElements;
+      m_trialElemData.activeElemCount = m_testElemData.activeElemCount;
     } else {
       m_trialGrid->calculateNormalsAndIntegrationElements(
-          d_trialNormals, d_trialIntegrationElements);
-      trialElemData.normals = d_trialNormals.data();
-      trialElemData.integrationElements = d_trialIntegrationElements.data();
-      trialElemData.activeElemCount = d_trialIntegrationElements.size();
+          m_d_trialNormals, m_d_trialIntegrationElements);
+      m_trialElemData.normals = m_d_trialNormals.data();
+      m_trialElemData.integrationElements = m_d_trialIntegrationElements.data();
+      m_trialElemData.activeElemCount = m_d_trialIntegrationElements.size();
     }
-
-    // Each thread is working on one pair of elements
-    thrust::counting_iterator<int> iter(0);
-    thrust::for_each(iter, iter+geometryPairCount,
-        CudaEvaluateLaplace3dSingleLayerPotentialIntegralFunctorCached<
-        CudaBasisFunctionType, CudaKernelType, CudaResultType>(
-            d_elementPairTestIndices.data(),
-            d_elementPairTrialIndices.data(),
-            m_testQuadData, m_trialQuadData,
-            m_testBasisData, m_trialBasisData,
-            testElemData, trialElemData,
-            d_result.data()
-            ));
-
-    cudaEventRecord(stop, 0);
-    cudaEventSynchronize(stop);
-    float elapsedTimeIntegral;
-    cudaEventElapsedTime(&elapsedTimeIntegral , start, stop);
-    std::cout << "Time for CudaEvaluateIntegralCached() is "
-      << elapsedTimeIntegral << " ms" << std::endl;
-
-    cudaEventRecord(start, 0);
-
-    // Copy result back to host memory
-    thrust::copy(d_result.begin(), d_result.end(), startResult);
-
-    cudaEventRecord(stop, 0);
-    cudaEventSynchronize(stop);
-    float elapsedTimeResultCopy;
-    cudaEventElapsedTime(&elapsedTimeResultCopy, start, stop);
-    std::cout << "Time for thrust::copy(result, 'DtH') "
-      << elapsedTimeResultCopy << " ms" << std::endl;
 
   } else {
 
     // Get raw geometry data
-    RawGeometryData<CoordinateType> testRawGeometryData, trialRawGeometryData;
     m_testGrid->getRawGeometryData(
-        testRawGeometryData.vtxCount, testRawGeometryData.elemCount,
-        testRawGeometryData.vertices, testRawGeometryData.elementCorners);
+        m_testRawGeometryData.vtxCount, m_testRawGeometryData.elemCount,
+        m_testRawGeometryData.vertices, m_testRawGeometryData.elementCorners);
     m_trialGrid->getRawGeometryData(
-        trialRawGeometryData.vtxCount, trialRawGeometryData.elemCount,
-        trialRawGeometryData.vertices, trialRawGeometryData.elementCorners);
+        m_trialRawGeometryData.vtxCount, m_trialRawGeometryData.elemCount,
+        m_trialRawGeometryData.vertices, m_trialRawGeometryData.elementCorners);
 
     thrust::host_vector<CoordinateType> h_testFun0(testPointCount);
     thrust::host_vector<CoordinateType> h_testFun1(testPointCount);
@@ -295,23 +181,6 @@ void CudaIntegrator<BasisFunctionType, KernelType, ResultType>::integrate(
       h_trialFun2[trialPoint] = s;
     }
 
-    // Copy data to device
-    thrust::device_vector<CoordinateType> d_testFun0 = h_testFun0;
-    thrust::device_vector<CoordinateType> d_testFun1 = h_testFun1;
-    thrust::device_vector<CoordinateType> d_testFun2 = h_testFun2;
-    thrust::device_vector<CoordinateType> d_trialFun0 = h_trialFun0;
-    thrust::device_vector<CoordinateType> d_trialFun1 = h_trialFun1;
-    thrust::device_vector<CoordinateType> d_trialFun2 = h_trialFun2;
-
-    // Collect geometrical shape function data
-    GeomShapeFunData<CoordinateType> testGeomShapeFunData, trialGeomShapeFunData;
-    testGeomShapeFunData.fun0 = d_testFun0.data();
-    testGeomShapeFunData.fun1 = d_testFun1.data();
-    testGeomShapeFunData.fun2 = d_testFun2.data();
-    trialGeomShapeFunData.fun0 = d_trialFun0.data();
-    trialGeomShapeFunData.fun1 = d_trialFun1.data();
-    trialGeomShapeFunData.fun2 = d_trialFun2.data();
-
     // Copy geometrical shape function data to constant device memory
     cudaMemcpyToSymbol(constTestGeomShapeFun0, h_testFun0.data(),
         testPointCount*sizeof(CoordinateType));
@@ -325,9 +194,70 @@ void CudaIntegrator<BasisFunctionType, KernelType, ResultType>::integrate(
         trialPointCount*sizeof(CoordinateType));
     cudaMemcpyToSymbol(constTrialGeomShapeFun2, h_trialFun2.data(),
         trialPointCount*sizeof(CoordinateType));
+  }
 
-    unsigned int blockSze = 512;
-    dim3 blockSize(blockSze,1,1);
+  // Create CUDA streams
+  const int streamCount = cudaOptions.streamCount();
+  m_streams.resize(streamCount);
+  for (int stream = 0; stream < streamCount; ++stream)
+    cudaStreamCreate(&m_streams[stream]);
+}
+
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+CudaIntegrator<BasisFunctionType, KernelType, ResultType>::~CudaIntegrator() {
+
+  cudaSetDevice(m_deviceId);
+
+  thrust::device_free(m_testQuadData.weights);
+  if (m_testQuadData.weights.get() != m_testQuadData.weights.get())
+    thrust::device_free(m_trialQuadData.weights);
+
+  thrust::device_free(m_testBasisData.values);
+  thrust::device_free(m_trialBasisData.values);
+
+  for (int stream = 0; stream < m_streams.size(); ++stream)
+    cudaStreamDestroy(m_streams[stream]);
+}
+
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+void CudaIntegrator<BasisFunctionType, KernelType, ResultType>::integrate(
+    const int elemPairIndexBegin, const int elemPairIndexEnd,
+    ResultType *result) {
+
+  const int testDofCount = m_testBasisData.dofCount;
+  const int trialDofCount = m_trialBasisData.dofCount;
+
+  const unsigned int testPointCount = m_localTestQuadPoints.cols();
+  const unsigned int trialPointCount = m_localTrialQuadPoints.cols();
+
+  const unsigned int testPointDim = m_localTestQuadPoints.rows();
+  const unsigned int trialPointDim = m_localTrialQuadPoints.rows();
+
+  if (testPointDim != 2 || trialPointDim != 2)
+    throw std::invalid_argument("CudaIntegrator::integrate(): "
+                                "only valid for two-dimensional local points");
+
+  const unsigned int elemPairCount = elemPairIndexEnd - elemPairIndexBegin;
+
+  const unsigned int streamCount = m_streams.size();
+  const unsigned int streamSize =
+      static_cast<unsigned int>((elemPairCount-1) / streamCount + 1);
+
+  if (testPointCount == 0 || trialPointCount == 0 || elemPairCount == 0)
+    return;
+  // TODO: in the (pathological) case that pointCount == 0 but
+  // geometryPairCount != 0, set elements of result to 0.
+
+  cudaSetDevice(m_deviceId);
+
+  // Allocate device memory for the result
+  thrust::device_vector<CudaResultType> d_result(
+      elemPairCount * testDofCount * trialDofCount);
+
+  unsigned int blockSze = m_cudaOptions.blockSize();
+  dim3 blockSize(blockSze,1,1);
+
+  if (m_cudaOptions.isElementDataCachingEnabled() == true) {
 
     for (int stream = 0; stream < streamCount; ++stream) {
 
@@ -335,20 +265,71 @@ void CudaIntegrator<BasisFunctionType, KernelType, ResultType>::integrate(
 
       int actualStreamSize;
       if (stream == streamCount-1) {
-        actualStreamSize = geometryPairCount - (streamCount-1) * streamSize;
+        actualStreamSize = elemPairCount - (streamCount-1) * streamSize;
       } else {
         actualStreamSize = streamSize;
       }
 
-      // Copy element pair indices to device memory
+//      // Each thread is working on one pair of elements
+//      thrust::counting_iterator<int> iter(0);
+//      thrust::for_each(iter, iter+geometryPairCount,
+//          CudaEvaluateLaplace3dSingleLayerPotentialIntegralFunctorCached<
+//          CudaBasisFunctionType, CudaKernelType, CudaResultType>(
+//              d_elementPairTestIndices.data(),
+//              d_elementPairTrialIndices.data(),
+//              m_testQuadData, m_trialQuadData,
+//              m_testBasisData, m_trialBasisData,
+//              testElemData, trialElemData,
+//              d_result.data()
+//              ));
+
+      unsigned int gridSze =
+          static_cast<unsigned int>((actualStreamSize-1)/blockSze+1);
+      dim3 gridSize(gridSze,1,1);
+
+      // Launch kernel
+      RawCudaEvaluateLaplace3dSingleLayerPotentialIntegralFunctorCached<
+          CudaBasisFunctionType, CudaKernelType, CudaResultType>
+          <<<gridSize, blockSize, 0, m_streams[stream]>>>(
+          elemPairIndexBegin, m_d_trialIndices.size(),
+          actualStreamSize, offset,
+          thrust::raw_pointer_cast(m_d_testIndices.data()),
+          thrust::raw_pointer_cast(m_d_trialIndices.data()),
+          m_testQuadData.pointCount, m_trialQuadData.pointCount,
+          m_testBasisData.dofCount,
+          thrust::raw_pointer_cast(m_testBasisData.values),
+          m_trialBasisData.dofCount,
+          thrust::raw_pointer_cast(m_trialBasisData.values),
+          m_testElemData.activeElemCount,
+          thrust::raw_pointer_cast(m_testElemData.geomData),
+          thrust::raw_pointer_cast(m_testElemData.normals),
+          thrust::raw_pointer_cast(m_testElemData.integrationElements),
+          m_trialElemData.activeElemCount,
+          thrust::raw_pointer_cast(m_trialElemData.geomData),
+          thrust::raw_pointer_cast(m_trialElemData.normals),
+          thrust::raw_pointer_cast(m_trialElemData.integrationElements),
+          thrust::raw_pointer_cast(d_result.data()+offset*testDofCount*trialDofCount));
+
+      // Copy result to host memory
       cudaMemcpyAsync(
-          thrust::raw_pointer_cast(d_elementPairTestIndices.data()+offset),
-          &(*(startElementPairTestIndices+offset)),
-          actualStreamSize*sizeof(int), cudaMemcpyHostToDevice, m_streams[stream]);
-      cudaMemcpyAsync(
-          thrust::raw_pointer_cast(d_elementPairTrialIndices.data()+offset),
-          &(*(startElementPairTrialIndices+offset)),
-          actualStreamSize*sizeof(int), cudaMemcpyHostToDevice, m_streams[stream]);
+          &result[offset*testDofCount*trialDofCount],
+          thrust::raw_pointer_cast(d_result.data()+offset*testDofCount*trialDofCount),
+          actualStreamSize*testDofCount*trialDofCount*sizeof(ResultType),
+          cudaMemcpyDeviceToHost, m_streams[stream]);
+    }
+
+  } else {
+
+    for (int stream = 0; stream < streamCount; ++stream) {
+
+      int offset = stream * streamSize;
+
+      int actualStreamSize;
+      if (stream == streamCount-1) {
+        actualStreamSize = elemPairCount - (streamCount-1) * streamSize;
+      } else {
+        actualStreamSize = streamSize;
+      }
 
       // Each thread is working on one pair of elements
 //      thrust::counting_iterator<int> iter(0);
@@ -367,34 +348,33 @@ void CudaIntegrator<BasisFunctionType, KernelType, ResultType>::integrate(
       unsigned int gridSze =
           static_cast<unsigned int>((actualStreamSize-1)/blockSze+1);
       dim3 gridSize(gridSze,1,1);
-      std::cout << "gridSize = " << gridSize.x << std::endl;
 
       // Launch kernel
       RawCudaEvaluateLaplace3dSingleLayerPotentialIntegralFunctorNonCached<
           CudaBasisFunctionType, CudaKernelType, CudaResultType>
           <<<gridSize, blockSize, 0, m_streams[stream]>>>(
-          actualStreamSize,
-          thrust::raw_pointer_cast(d_elementPairTestIndices.data()+offset),
-          thrust::raw_pointer_cast(d_elementPairTrialIndices.data()+offset),
+          elemPairIndexBegin, m_d_trialIndices.size(),
+          actualStreamSize, offset,
+          thrust::raw_pointer_cast(m_d_testIndices.data()),
+          thrust::raw_pointer_cast(m_d_trialIndices.data()),
           m_testQuadData.pointCount, m_trialQuadData.pointCount,
           m_testBasisData.dofCount, thrust::raw_pointer_cast(m_testBasisData.values),
           m_trialBasisData.dofCount, thrust::raw_pointer_cast(m_trialBasisData.values),
-          testRawGeometryData.elemCount, testRawGeometryData.vtxCount,
-          thrust::raw_pointer_cast(testRawGeometryData.vertices),
-          thrust::raw_pointer_cast(testRawGeometryData.elementCorners),
-          trialRawGeometryData.elemCount, trialRawGeometryData.vtxCount,
-          thrust::raw_pointer_cast(trialRawGeometryData.vertices),
-          thrust::raw_pointer_cast(trialRawGeometryData.elementCorners),
+          m_testRawGeometryData.elemCount, m_testRawGeometryData.vtxCount,
+          thrust::raw_pointer_cast(m_testRawGeometryData.vertices),
+          thrust::raw_pointer_cast(m_testRawGeometryData.elementCorners),
+          m_trialRawGeometryData.elemCount, m_trialRawGeometryData.vtxCount,
+          thrust::raw_pointer_cast(m_trialRawGeometryData.vertices),
+          thrust::raw_pointer_cast(m_trialRawGeometryData.elementCorners),
           thrust::raw_pointer_cast(d_result.data()+offset*testDofCount*trialDofCount));
 
-      // Copy result back to host memory
+      // Copy result to host memory
       cudaMemcpyAsync(
-          &(*(startResult+offset*testDofCount*trialDofCount)),
+          &result[offset*testDofCount*trialDofCount],
           thrust::raw_pointer_cast(d_result.data()+offset*testDofCount*trialDofCount),
-          actualStreamSize*testDofCount*trialDofCount*sizeof(int),
+          actualStreamSize*testDofCount*trialDofCount*sizeof(ResultType),
           cudaMemcpyDeviceToHost, m_streams[stream]);
     }
-
   }
 }
 

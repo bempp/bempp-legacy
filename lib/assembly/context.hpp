@@ -7,6 +7,7 @@
 #include "../common/global_parameters.hpp"
 #include "../common/types.hpp"
 #include "assembly_options.hpp"
+#include "../cuda/cuda_options.hpp"
 #include "discrete_boundary_operator_cache.hpp"
 
 namespace Bempp {
@@ -87,6 +88,9 @@ public:
     return m_quadStrategy;
   }
 
+  /** \brief Return a reference to a copy of the CudaOptions object */
+  const CudaOptions &cudaOptions() const { return m_cudaOptions; }
+
   /** \brief Const version of \p globalParameterList. */
 
   const ParameterList &globalParameterList() const {
@@ -96,6 +100,7 @@ public:
 private:
   shared_ptr<const QuadratureStrategy> m_quadStrategy;
   AssemblyOptions m_assemblyOptions;
+  CudaOptions m_cudaOptions;
   ParameterList m_globalParameterList;
 };
 
