@@ -344,16 +344,16 @@ cdef class _CudaParameterList:
             cdef char* s = b"options.cuda.enableElementDataCaching"
             deref(self.impl_).put_bool(s, value)
 
-    property stream_count:
+    property enable_kernel_data_caching:
 
         def __get__(self):
-            cdef char* s = b"options.cuda.streamCount"
-            return deref(self.impl_).get_int(s)
+            cdef char* s = b"options.cuda.enableKernelDataCaching"
+            return deref(self.impl_).get_bool(s)
 
-        def __set__(self, int value):
-            cdef char* s = b"options.cuda.streamCount"
-            deref(self.impl_).put_int(s, value)
-
+        def __set__(self, object value):
+            cdef char* s = b"options.cuda.enableKernelDataCaching"
+            deref(self.impl_).put_bool(s, value)
+            
 #    property device_ids:
 #
 #        def __get__(self):
@@ -383,7 +383,17 @@ cdef class _CudaParameterList:
         def __set__(self, int value):
             cdef char* s = b"options.cuda.blockSize"
             deref(self.impl_).put_int(s, value)
-            
+      
+    property chunk_size:
+
+        def __get__(self):
+            cdef char* s = b"options.cuda.chunkSize"
+            return deref(self.impl_).get_int(s)
+
+        def __set__(self, int value):
+            cdef char* s = b"options.cuda.chunkSize"
+            deref(self.impl_).put_int(s, value)
+                  
 cdef class ParameterList:
 
     def __cinit__(self):

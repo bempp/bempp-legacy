@@ -37,6 +37,7 @@ public:
                                   CoordinateType trialGeomData[3],
                                   ValueType &result) {
     ValueType sum = 0;
+#pragma unroll
     for (int coordIndex = 0; coordIndex < 3; ++coordIndex) {
       ValueType diff = testGeomData[coordIndex] - trialGeomData[coordIndex];
       sum += diff * diff;

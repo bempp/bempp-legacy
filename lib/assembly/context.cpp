@@ -108,9 +108,15 @@ Context<BasisFunctionType, ResultType>::Context(
     m_cudaOptions.disableElementDataCaching();
   }
 
-  // Cuda stream count
-  m_cudaOptions.setStreamCount(parameters.get<int>("options.cuda.streamCount",
-      defaults.get<int>("options.cuda.streamCount")));
+  // Cuda kernel data caching
+  bool kernelDataCachingEnabled = parameters.get<bool>(
+      "options.cuda.enableKernelDataCaching",
+      defaults.get<bool>("options.cuda.enableKernelDataCaching"));
+  if (kernelDataCachingEnabled == true) {
+    m_cudaOptions.enableKernelDataCaching();
+  } else {
+    m_cudaOptions.disableKernelDataCaching();
+  }
 
   // Cuda device ids
 //  m_cudaOptions.setDevices(
@@ -120,6 +126,14 @@ Context<BasisFunctionType, ResultType>::Context(
   // Cuda numerical quadrature order
   m_cudaOptions.setQuadOrder(parameters.get<int>("options.cuda.quadOrder",
       defaults.get<int>("options.cuda.quadOrder")));
+
+  // Cuda block size
+  m_cudaOptions.setBlockSize(parameters.get<int>("options.cuda.blockSize",
+      defaults.get<int>("options.cuda.blockSize")));
+
+  // Cuda chunk size
+  m_cudaOptions.setChunkElemPairCount(parameters.get<int>("options.cuda.chunkSize",
+      defaults.get<int>("options.cuda.chunkSize")));
 
   Fiber::AccuracyOptionsEx accuracyOptions;
 

@@ -30,6 +30,7 @@ namespace Bempp {
 /** \brief CUDA operation settings. */
 class CudaOptions {
 public:
+  enum Value { AUTO = -1 };
 
   /** \brief Constructor. */
   CudaOptions();
@@ -46,13 +47,15 @@ public:
   /** \brief Return whether element data caching on the device is enabled. */
   bool isElementDataCachingEnabled() const;
 
-  /** \brief Set the number of concurrent operation streams on the device. */
-  void setStreamCount(int streamCount);
-  /** \brief Return the number of concurrent operation streams on the device. */
-  int streamCount() const;
+  /** \brief Enable kernel data caching on the device. */
+  void enableKernelDataCaching();
+  /** \brief Disable kernel data caching on the device. */
+  void disableKernelDataCaching();
+  /** \brief Return whether kernel data caching on the device is enabled. */
+  bool isKernelDataCachingEnabled() const;
 
   /** \brief Set the devices used during the assembly. */
-  void setDevices(std::vector<int> deviceIds = {0});
+  void setDevices(std::vector<int> deviceIds);
   /** \brief Return the devices used during the assembly. */
   const std::vector<int>& devices() const;
 
@@ -66,13 +69,19 @@ public:
   /** \brief Return the block size used for calculations on the device. */
   int blockSize() const;
 
+  /** \brief Set the number of element pairs per chunk used during the assembly. */
+  void setChunkElemPairCount(int chunkElemPairCount);
+  /** \brief Return the number of element pairs per chunk used used during the assembly. */
+  int chunkElemPairCount() const;
+
 private:
   std::string m_precision;
   bool m_elementDataCachingEnabled;
-  int m_streamCount;
+  bool m_kernelDataCachingEnabled;
   std::vector<int> m_devices;
   int m_quadOrder;
   int m_blockSize;
+  int m_chunkElemPairCount;
 };
 
 }

@@ -79,21 +79,11 @@ namespace Bempp {
 
     unsigned int elemCount;
 
-    thrust::device_ptr<const CoordinateType> vtx0x;
-    thrust::device_ptr<const CoordinateType> vtx0y;
-    thrust::device_ptr<const CoordinateType> vtx0z;
+    thrust::device_ptr<const CoordinateType> vtx0x, vtx0y, vtx0z;
+    thrust::device_ptr<const CoordinateType> vtx1x, vtx1y, vtx1z;
+    thrust::device_ptr<const CoordinateType> vtx2x, vtx2y, vtx2z;
 
-    thrust::device_ptr<const CoordinateType> vtx1x;
-    thrust::device_ptr<const CoordinateType> vtx1y;
-    thrust::device_ptr<const CoordinateType> vtx1z;
-
-    thrust::device_ptr<const CoordinateType> vtx2x;
-    thrust::device_ptr<const CoordinateType> vtx2y;
-    thrust::device_ptr<const CoordinateType> vtx2z;
-
-    thrust::device_ptr<const CoordinateType> fun0;
-    thrust::device_ptr<const CoordinateType> fun1;
-    thrust::device_ptr<const CoordinateType> fun2;
+    thrust::device_ptr<const CoordinateType> fun0, fun1, fun2;
 
     local2globalFunctor(
       const unsigned int _elemCount,
@@ -149,6 +139,77 @@ namespace Bempp {
                                    + ptFun2 * elVtx2z;
 
       return thrust::make_tuple(xGlobal, yGlobal, zGlobal);
+    }
+  };
+
+  template <typename CoordinateType>
+  struct local2globalFunctorReordered {
+
+    unsigned int localPointCount, dim;
+
+    thrust::device_ptr<const CoordinateType> vtx0x, vtx0y, vtx0z;
+    thrust::device_ptr<const CoordinateType> vtx1x, vtx1y, vtx1z;
+    thrust::device_ptr<const CoordinateType> vtx2x, vtx2y, vtx2z;
+
+    thrust::device_ptr<const CoordinateType> fun0, fun1, fun2;
+
+    local2globalFunctorReordered(
+      const unsigned int _localPointCount, const unsigned int _dim,
+      const thrust::device_ptr<const CoordinateType> _vtx0x,
+      const thrust::device_ptr<const CoordinateType> _vtx0y,
+      const thrust::device_ptr<const CoordinateType> _vtx0z,
+      const thrust::device_ptr<const CoordinateType> _vtx1x,
+      const thrust::device_ptr<const CoordinateType> _vtx1y,
+      const thrust::device_ptr<const CoordinateType> _vtx1z,
+      const thrust::device_ptr<const CoordinateType> _vtx2x,
+      const thrust::device_ptr<const CoordinateType> _vtx2y,
+      const thrust::device_ptr<const CoordinateType> _vtx2z,
+      const thrust::device_ptr<const CoordinateType> _fun0,
+      const thrust::device_ptr<const CoordinateType> _fun1,
+      const thrust::device_ptr<const CoordinateType> _fun2)
+      : localPointCount(_localPointCount), dim(_dim),
+        vtx0x(_vtx0x), vtx0y(_vtx0y), vtx0z(_vtx0z),
+        vtx1x(_vtx1x), vtx1y(_vtx1y), vtx1z(_vtx1z),
+        vtx2x(_vtx2x), vtx2y(_vtx2y), vtx2z(_vtx2z),
+        fun0(_fun0), fun1(_fun1), fun2(_fun2) {}
+
+    __host__ __device__
+    CoordinateType operator()(
+        const unsigned int i) const {
+
+      const unsigned int elementIdx = i / (localPointCount * dim);
+      const unsigned int localPointIdx = (i % (localPointCount * dim)) / dim;
+      const unsigned int cooIdx = (i % (localPointCount * dim)) % dim;
+
+      CoordinateType elVtx0, elVtx1, elVtx2;
+      switch (cooIdx) {
+        case 0:
+          elVtx0 = vtx0x[elementIdx];
+          elVtx1 = vtx1x[elementIdx];
+          elVtx2 = vtx2x[elementIdx];
+          break;
+        case 1:
+          elVtx0 = vtx0y[elementIdx];
+          elVtx1 = vtx1y[elementIdx];
+          elVtx2 = vtx2y[elementIdx];
+          break;
+        case 2:
+          elVtx0 = vtx0z[elementIdx];
+          elVtx1 = vtx1z[elementIdx];
+          elVtx2 = vtx2z[elementIdx];
+          break;
+        default:
+          break;
+      }
+
+      const CoordinateType ptFun0 = fun0[localPointIdx];
+      const CoordinateType ptFun1 = fun1[localPointIdx];
+      const CoordinateType ptFun2 = fun2[localPointIdx];
+
+      const CoordinateType global = ptFun0 * elVtx0
+                                  + ptFun1 * elVtx1
+                                  + ptFun2 * elVtx2;
+      return global;
     }
   };
 
@@ -457,12 +518,21 @@ namespace Bempp {
                             d_geomShapeFun1.data(),
                             d_geomShapeFun2.data()));
 
+//      thrust::tabulate(globalPoints.begin(), globalPoints.end(),
+//        local2globalFunctorReordered<CoordinateType>(localPointCount, m_dim,
+//                            m_vtx0x.data(), m_vtx0y.data(), m_vtx0z.data(),
+//                            m_vtx1x.data(), m_vtx1y.data(), m_vtx1z.data(),
+//                            m_vtx2x.data(), m_vtx2y.data(), m_vtx2z.data(),
+//                            d_geomShapeFun0.data(),
+//                            d_geomShapeFun1.data(),
+//                            d_geomShapeFun2.data()));
+
       cudaEventRecord(stop, 0);
       cudaEventSynchronize(stop);
       float elapsedTimeMapping;
       cudaEventElapsedTime(&elapsedTimeMapping , start, stop);
-//      std::cout << "Time for mapping local to global coordinates is "
-//        << elapsedTimeMapping << " ms" << std::endl;
+      std::cout << "Time for mapping local to global coordinates is "
+        << elapsedTimeMapping << " ms" << std::endl;
 
 //    std::cout << "globalPoints = " << std::endl;
 //    for (int i = 0; i < activeElemCount; ++i) {

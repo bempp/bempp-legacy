@@ -25,8 +25,9 @@
 namespace Bempp {
 
 CudaOptions::CudaOptions()
-    : m_precision("double"), m_elementDataCachingEnabled(false),
-      m_streamCount(1), m_devices({0, 1}), m_quadOrder(4), m_blockSize(512) {
+    : m_precision("double"), m_elementDataCachingEnabled(true),
+      m_kernelDataCachingEnabled(false), m_devices({0,1}), m_quadOrder(4),
+      m_blockSize(512), m_chunkElemPairCount(AUTO) {
 }
 
 void CudaOptions::setPrecision(std::string precision) {
@@ -52,16 +53,17 @@ bool CudaOptions::isElementDataCachingEnabled() const {
   return m_elementDataCachingEnabled;
 }
 
-void CudaOptions::setStreamCount(int streamCount) {
-  if (streamCount > 0)
-    m_streamCount = streamCount;
-  else
-    throw std::runtime_error(
-        "CudaOptions::setStreamCount(): "
-        "streamCount must be positive integer greater zero");
+void CudaOptions::enableKernelDataCaching() {
+  m_kernelDataCachingEnabled = true;
 }
 
-int CudaOptions::streamCount() const { return m_streamCount; }
+void CudaOptions::disableKernelDataCaching() {
+  m_kernelDataCachingEnabled = false;
+}
+
+bool CudaOptions::isKernelDataCachingEnabled() const {
+  return m_kernelDataCachingEnabled;
+}
 
 void CudaOptions::setDevices(std::vector<int> deviceIds) {
   m_devices = deviceIds;
@@ -92,5 +94,16 @@ void CudaOptions::setBlockSize(int blockSize) {
 }
 
 int CudaOptions::blockSize() const { return m_blockSize; }
+
+void CudaOptions::setChunkElemPairCount(int chunkElemPairCount) {
+  if (chunkElemPairCount > 0 || chunkElemPairCount == AUTO)
+    m_chunkElemPairCount = chunkElemPairCount;
+  else
+    throw std::runtime_error(
+        "CudaOptions::setChunkElemPairCount(): "
+        "chunkElemPairCount must be positive integer greater zero or AUTO");
+}
+
+int CudaOptions::chunkElemPairCount() const { return m_chunkElemPairCount; }
 
 } // namespace Fiber

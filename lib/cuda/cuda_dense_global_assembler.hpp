@@ -52,6 +52,12 @@ class CudaDenseGlobalAssembler {
 public:
   typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
 
+  typedef typename thrust::complex<CoordinateType> CudaComplexType;
+  typedef typename std::conditional<
+      std::is_same<ResultType,CoordinateType>::value,
+      ResultType, CudaComplexType>::type
+      CudaResultType;
+
   typedef Fiber::Shapeset<BasisFunctionType> Shapeset;
   typedef Fiber::_2dArray<std::pair<int, Matrix<ResultType>>> Cache;
 

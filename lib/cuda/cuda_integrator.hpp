@@ -93,8 +93,9 @@ public:
   /** \brief Destructor. */
   virtual ~CudaIntegrator();
 
-  void integrate(const int elemPairIndexBegin, const int elemPairIndexEnd,
-      ResultType *result);
+  void integrate(const size_t elemPairIndexBegin,
+                 const size_t elemPairIndexEnd,
+                 CudaResultType *result);
 
 private:
   /** \cond PRIVATE */
@@ -109,9 +110,6 @@ private:
 
   BasisFunData<CudaBasisFunctionType> m_testBasisData;
   BasisFunData<CudaBasisFunctionType> m_trialBasisData;
-
-  Matrix<CoordinateType> m_localTestQuadPoints;
-  Matrix<CoordinateType> m_localTrialQuadPoints;
 
   ElemData<CoordinateType> m_testElemData;
   ElemData<CoordinateType> m_trialElemData;
@@ -130,9 +128,7 @@ private:
 
   const CollectionOfKernels<KernelType> &m_kernels;
 
-  std::vector<cudaStream_t> m_streams;
-
-  Bempp::CudaOptions m_cudaOptions;
+  const Bempp::CudaOptions m_cudaOptions;
 
   /** \endcond */
 };

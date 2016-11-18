@@ -129,10 +129,10 @@ ParameterList GlobalParameters::parameterList() {
   parameters.put("options.cuda.precision", std::string("double"));
 
   // Cuda element data caching
-  parameters.put("options.cuda.enableElementDataCaching", false);
+  parameters.put("options.cuda.enableElementDataCaching", true);
 
-  // Cuda stream count
-  parameters.put("options.cuda.streamCount", static_cast<int>(1));
+  // Cuda kernel data caching
+  parameters.put("options.cuda.enableKernelDataCaching", false);
 
   // Cuda device ids
   parameters.put("options.cuda.deviceIds", std::vector<int>({0, 1}));
@@ -142,6 +142,9 @@ ParameterList GlobalParameters::parameterList() {
 
   // Cuda block size
   parameters.put("options.cuda.blockSize", static_cast<int>(512));
+
+  // Cuda chunk size
+  parameters.put("options.cuda.chunkSize", static_cast<int>(-1));
 
   return parameters;
 }

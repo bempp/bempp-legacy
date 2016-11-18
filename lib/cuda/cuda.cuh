@@ -60,9 +60,14 @@ struct ElemData {
   thrust::device_ptr<const ValueType> integrationElements;
 };
 
+// Constant memory has a size of 64 KB
 // Most memory consuming possible data type to ensure enough space
 __constant__ double constTestQuadWeights[10];
 __constant__ double constTrialQuadWeights[10];
+
+//// Valid for up to 10 dofs and 10 points and complex basis function type (x2)
+//__constant__ double constTestBasisValues[10 * 10 * 2];
+//__constant__ double constTrialBasisValues[10 * 10 * 2];
 
 __constant__ double constTestGeomShapeFun0[10];
 __constant__ double constTestGeomShapeFun1[10];
@@ -71,6 +76,26 @@ __constant__ double constTestGeomShapeFun2[10];
 __constant__ double constTrialGeomShapeFun0[10];
 __constant__ double constTrialGeomShapeFun1[10];
 __constant__ double constTrialGeomShapeFun2[10];
+
+#define cu_verify(x) do {                                                \
+    cudaError_t result = x;                                              \
+    if (result != cudaSuccess) {                                         \
+      fprintf(stderr,"%s:%i: error: cuda function call failed:\n"        \
+              "  %s;\nmessage: %s\n",                                    \
+              __FILE__,__LINE__,#x,cudaGetErrorString(result));          \
+      exit(1);                                                           \
+    }                                                                    \
+  } while(0)
+#define cu_verify_void(x) do {                                           \
+    x;                                                                   \
+    cudaError_t result = cudaGetLastError();                             \
+    if (result != cudaSuccess) {                                         \
+      fprintf(stderr,"%s:%i: error: cuda function call failed:\n"        \
+              "  %s;\nmessage: %s\n",                                    \
+              __FILE__,__LINE__,#x,cudaGetErrorString(result));          \
+      exit(1);                                                           \
+    }                                                                    \
+  } while(0)
 
 } // namespace Fiber
 
