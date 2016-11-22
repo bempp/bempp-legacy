@@ -445,3 +445,11 @@ class GridFunction(object):
 
         return cls(space, coefficients=randn(ndofs))
 
+    @classmethod
+    def from_ones(cls, space):
+        """Create a grid function with all coefficients set to one. """
+
+        from numpy import ones
+        ndofs = space.global_dof_count
+
+        return cls(space, coefficients=ones(ndofs))
