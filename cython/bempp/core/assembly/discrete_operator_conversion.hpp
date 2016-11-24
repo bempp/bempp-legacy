@@ -2,6 +2,7 @@
 #define BEMPP_PYTHON_DISCRETE_OPERATOR_CONVERSION_HPP
 
 #include "bempp/core/utils/py_types.hpp"
+#include "bempp/common/eigen_support.hpp"
 #include "bempp/assembly/discrete_sparse_boundary_operator.hpp"
 #include "bempp/assembly/discrete_dense_boundary_operator.hpp"
 #include "bempp/assembly/discrete_hmat_boundary_operator.hpp"
@@ -101,12 +102,12 @@ PyObject *py_get_sparse_from_discrete_operator(
 }
 
 template <typename ValueType>
-PyObject *py_array_from_dense_operator(
+const Matrix<ValueType>& eigen_matrix_from_dense_operator(
     const shared_ptr<const DiscreteBoundaryOperator<ValueType>> &op) {
 
   return (*static_pointer_cast<const DiscreteDenseBoundaryOperator<ValueType>,
                                const DiscreteBoundaryOperator<ValueType>>(op))
-      .asNumpyObject();
+      .data();
 }
 
 template <typename ValueType>

@@ -2,7 +2,7 @@
 add_definitions(-DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION)
 
 #Configure All Option files
-foreach(config_file opencl data_types blas_and_lapack python grid_manager)
+foreach(config_file opencl data_types blas_and_lapack grid_manager)
     set(filename common/config_${config_file}.hpp)
     configure_file(${filename}.in
         ${PROJECT_BINARY_DIR}/include/bempp/${filename}
@@ -70,7 +70,6 @@ else()
 endif()
 change_tbb_install_name(libbempp)
 
-target_link_libraries(libbempp ${PYTHON_LIBRARY})
 target_link_libraries(libbempp ${ZLIB_LIBRARIES})
 
 if (WITH_CUDA)

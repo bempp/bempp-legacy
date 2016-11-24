@@ -6,6 +6,10 @@ from bempp.core.utils cimport catch_exception
 from bempp.core.space cimport Space, c_Space
 from cython.operator cimport dereference as deref
 
+cimport numpy as np
+np.import_array()
+
+
 cdef extern from "bempp/core/assembly/function_projector.hpp" namespace "Bempp":
     cdef object calculateProjections "Bempp::calculateProjections<double, std::complex<double>>"(
             const c_ParameterList&, object, const c_Space[double]&) except +catch_exception
