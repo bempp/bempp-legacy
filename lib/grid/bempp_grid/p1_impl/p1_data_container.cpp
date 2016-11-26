@@ -7,7 +7,7 @@ namespace BemppGrid {
     P1DataContainer::P1DataContainer() :
         m_levels(0), m_idCounter(0) {};
 
-    void P1DataContainer::addLevel(const shared_ptr<P1DataContainer::NodesContainer>& nodes,
+    void P1DataContainer::init(const shared_ptr<P1DataContainer::NodesContainer>& nodes,
                                      const shared_ptr<P1DataContainer::ElementsContainer>& elements){
 
         int nelements = elements->size();
@@ -23,12 +23,19 @@ namespace BemppGrid {
         element2Edges.resize(nelements);
         std::vector<std::vector<std::pair<std::size_t, std::size_t>>> nodes2EdgeIndexPair;
         nodes2EdgeIndexPair.resize(nodes->size());
+
+        // Numbering of edges in Dune is not standard.
+        // localEdgeNodes[i] has the reference element node numbers of the ith edge.
+        std::size_t localEdgeNodes[3][2]
+            {{0, 1}, 
+             {2, 0}, 
+             {1, 2}};
+
         for (int elementIndex = 0; elementIndex < nelements; ++elementIndex) {
             const auto& element = (*elements)[elementIndex];
-            for (int i = 3; i > 0; --i) { 
-                // Strange counting due to edge numbering in Dune
-                std::size_t n0 = element[i-1];
-                std::size_t n1 = element[i % 3];
+            for (int i = 0; i < 3; ++i) { 
+                std::size_t n0 = element[localEdgeNodes[i][0]];
+                std::size_t n1 = element[localEdgeNodes[i][1]];
                 if (n1 > n0) std::swap(n0, n1); // Number edges from smaller to larger vertex
                 // Check if vertex already exists
                 bool edgeExists = false;
@@ -94,6 +101,11 @@ namespace BemppGrid {
         m_levels++;
     }
 
+    int P1DataContainer::levels() const {
+
+        return m_levels;
+
+    }
 
     const P1DataContainer::NodesContainer& P1DataContainer::nodes(int level) const {
         assert(level < m_levels);
@@ -131,6 +143,24 @@ namespace BemppGrid {
 
     }
 
+
+    template<>
+    int P1DataContainer::numberOfEntities<0>(int level) const {
+
+        return numberOfElements(level);
+    }
+
+    template<>
+    int P1DataContainer::numberOfEntities<1>(int level) const {
+
+        return numberOfEdges(level);
+    }
+
+    template<>
+    int P1DataContainer::numberOfEntities<2>(int level) const {
+
+        return numberOfNodes(level);
+    }
 
     const std::array<std::size_t, 3>& P1DataContainer::element2Edges(
             int level, std::size_t elementIndex) const {
@@ -186,6 +216,23 @@ namespace BemppGrid {
 
         throw std::runtime_error("P1DataContainer::get_entity_nodes(): codim not valid.");
 
+
+    }
+
+    int P1DataContainer::getElementFatherIndex(int level, std::size_t elementIndex) const {
+
+        assert(level > 0);
+        assert(level < m_levels);
+
+        return m_fatherElements[level][elementIndex];
+
+    }
+    
+    const std::vector<size_t>& P1DataContainer::getElementSons(int level, std::size_t elementIndex) const {
+
+        assert(m_levels > 1);
+
+        return m_sonElements[level][elementIndex];
 
     }
 

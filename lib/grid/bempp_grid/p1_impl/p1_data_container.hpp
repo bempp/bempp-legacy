@@ -19,7 +19,7 @@ namespace BemppGrid {
 
             P1DataContainer();
 
-            void addLevel( const shared_ptr<NodesContainer>& nodes, 
+            void init( const shared_ptr<NodesContainer>& nodes, 
                     const shared_ptr<ElementsContainer>& elements);
 
             const NodesContainer& nodes(int level) const;
@@ -31,12 +31,18 @@ namespace BemppGrid {
             int numberOfEdges(int level) const;
             int levels() const;
 
+            template <int cd>
+            int numberOfEntities(int level) const;
+
             const std::array<std::size_t, 3>& element2Edges(int level, std::size_t elementIndex) const;
             const std::vector<size_t>& edge2Elements(int level, std::size_t edgeIndex) const;
             const std::vector<size_t>& node2Elements(int level, std::size_t nodeIndex) const;
             const std::vector<size_t>& node2Edges(int level, std::size_t nodeIndex) const; 
 
             const NodesContainer get_entity_nodes(int codim, int level, int index) const;
+
+            int getElementFatherIndex(int level, std::size_t elementIndex) const;
+            const std::vector<size_t>& getElementSons(int level, std::size_t elementIndex) const;
 
         private:
 
@@ -55,6 +61,9 @@ namespace BemppGrid {
             std::vector<std::vector<std::vector<std::size_t>>> m_edge2Elements;
             std::vector<std::vector<std::vector<std::size_t>>> m_node2Elements;
             std::vector<std::vector<std::vector<std::size_t>>> m_node2Edges;
+
+            std::vector<std::vector<std::size_t>> m_fatherElements;
+            std::vector<std::vector<std::vector<std::size_t>>> m_sonElements;
 
     }; 
 

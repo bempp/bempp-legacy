@@ -54,7 +54,7 @@ namespace BemppGrid {
 
     P1EntityImp<0, 2, P1Grid>::EntitySeed P1EntityImp<0, 2, P1Grid>::seed() const {
 
-        return P1EntityImp<0, 2, P1Grid>::EntitySeed(P1EntitySeedImp<0>(m_level, m_index));
+        return P1EntityImp<0, 2, P1Grid>::EntitySeed(P1EntitySeedImp<0, P1Grid>(m_level, m_index));
 
     }
 
@@ -82,7 +82,63 @@ namespace BemppGrid {
         return EntityPointer<0>(*this);
 
     }
+
+
+    P1EntityImp<0, 2, P1Grid>::EntityPointer<0> P1EntityImp<0, 2, P1Grid>::father() const {
+
+        int fatherIndex = m_data->getElementFatherIndex(m_level, m_index);
+        return EntityPointer<0>(
+                P1EntityImp<0, 2, P1Grid>(m_data, m_level, fatherIndex));
+
+    }
     
+    template<>
+    int P1EntityImp<0, 2, P1Grid>::count<0>() const {
+
+        return 1;
+
+    }
+
+    template<>
+    int P1EntityImp<0, 2, P1Grid>::count<1>() const {
+
+        return 3;
+
+    }
+
+    template<>
+    int P1EntityImp<0, 2, P1Grid>::count<2>() const {
+
+        return 3;
+
+    }
+
+    bool P1EntityImp<0, 2, P1Grid>::hasFather() const {
+
+        return (m_level > 0);
+
+    } 
+
+    bool P1EntityImp<0, 2, P1Grid>::isLeaf() const {
+
+        return (m_level == m_data->levels() - 1);
+
+    } 
+
+    bool P1EntityImp<0, 2, P1Grid>::isRegular() const {
+
+        return true;
+
+    } 
+
+    bool P1EntityImp<0, 2, P1Grid>::isNew() const {
+
+        if (m_level == 0) return false;
+
+        int fatherIndex = m_data->getElementFatherIndex(m_level, m_index);
+        return m_data->getElementSons(m_level - 1, fatherIndex).size() > 0;
+
+    }
 
     P1EntityImp<1, 2, P1Grid>::P1EntityImp(const shared_ptr<P1DataContainer>& data,
         int level, std::size_t index) : m_data(data), m_level(level), m_index(index)
@@ -130,7 +186,7 @@ namespace BemppGrid {
 
     P1EntityImp<1, 2, P1Grid>::EntitySeed P1EntityImp<1, 2, P1Grid>::seed() const {
 
-        return P1EntityImp<1, 2, P1Grid>::EntitySeed(P1EntitySeedImp<1>(m_level, m_index));
+        return P1EntityImp<1, 2, P1Grid>::EntitySeed(P1EntitySeedImp<1, P1Grid>(m_level, m_index));
 
     }
 
@@ -141,7 +197,7 @@ namespace BemppGrid {
 
     P1EntityImp<2, 2, P1Grid>::EntitySeed P1EntityImp<2, 2, P1Grid>::seed() const {
 
-        return P1EntityImp<2, 2, P1Grid>::EntitySeed(P1EntitySeedImp<2>(m_level, m_index));
+        return P1EntityImp<2, 2, P1Grid>::EntitySeed(P1EntitySeedImp<2, P1Grid>(m_level, m_index));
 
     }
 
@@ -153,7 +209,6 @@ namespace BemppGrid {
             geometryType.makeVertex();
             std::vector<Dune::FieldVector<double, 3>> vertices;
             vertices.push_back(node);
-            std::cout << "Output " << node << " " << vertices[0] << std::endl;
             m_geometry = shared_ptr<P1GridGeometry<0, 3, P1Grid>>(
                     new P1GridGeometry<0, 3, P1Grid>(geometryType, vertices));
         }

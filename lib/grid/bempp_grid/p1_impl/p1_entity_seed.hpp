@@ -7,7 +7,7 @@ namespace BemppGrid {
 
     template<int, int, class> class P1EntityImp;
 
-    template <int codim>
+    template <int codim, class>
     class P1EntitySeedImp {
 
         public:

@@ -16,11 +16,12 @@ namespace BemppGrid {
 
     class P1Grid;
     class P1DataContainer;
+    class LevelIndexSetImp;
 
     template <int cd, int dim, class GridImp>
     class P1EntityImp {};
 
-    template <int codim>
+    template <int codim, class>
     class P1EntityPointerImp;
 
     // Elements
@@ -28,14 +29,15 @@ namespace BemppGrid {
     class P1EntityImp<0, 2, P1Grid> : 
     public Dune::EntityDefaultImplementation<0, 2, P1Grid, P1EntityImp>  {
 
-        friend class P1EntitySeedImp<0>;
-        friend class P1EntityPointerImp<0>;
+        friend class P1EntitySeedImp<0, P1Grid>;
+        friend class P1EntityPointerImp<0, P1Grid>;
+        friend class LevelIndexSetImp;
 
         public:
 
-            typedef Dune::EntitySeed<P1Grid, P1EntitySeedImp<0>> EntitySeed;
+            typedef Dune::EntitySeed<P1Grid, P1EntitySeedImp<0, P1Grid>> EntitySeed;
             template <int codim> using 
-                EntityPointer = Dune::EntityPointer<P1Grid, P1EntityPointerImp<codim>>;
+                EntityPointer = Dune::EntityPointer<P1Grid, P1EntityPointerImp<codim, P1Grid>>;
 
             P1EntityImp(const shared_ptr<P1DataContainer>& data, 
                     int level, std::size_t index);
@@ -50,6 +52,15 @@ namespace BemppGrid {
             template<int cd>
             EntityPointer<cd> subEntity(int i) const;
 
+            template <int cc>
+            int count() const;
+
+            bool hasFather() const;
+            bool isLeaf() const;
+            bool isRegular() const;
+            bool isNew() const;
+
+            EntityPointer<0> father() const;
 
         private:
 
@@ -67,10 +78,11 @@ namespace BemppGrid {
     class P1EntityImp<1, 2, P1Grid> : 
     public Dune::EntityDefaultImplementation<1, 2, P1Grid, P1EntityImp> {
 
-        friend class P1EntityPointerImp<1>;
+        friend class P1EntityPointerImp<1, P1Grid>;
+        friend class LevelIndexSetImp;
 
         public:
-            typedef Dune::EntitySeed<P1Grid, P1EntitySeedImp<1>> EntitySeed;
+            typedef Dune::EntitySeed<P1Grid, P1EntitySeedImp<1, P1Grid>> EntitySeed;
 
             P1EntityImp(const shared_ptr<P1DataContainer>& data,
                     int level, std::size_t index);
@@ -98,10 +110,11 @@ namespace BemppGrid {
     class P1EntityImp<2, 2, P1Grid> :
     public Dune::EntityDefaultImplementation<2, 2, P1Grid, P1EntityImp> {
 
-        friend class P1EntityPointerImp<2>;
+        friend class P1EntityPointerImp<2, P1Grid>;
+        friend class LevelIndexSetImp;
 
         public:
-            typedef Dune::EntitySeed<P1Grid, P1EntitySeedImp<2>> EntitySeed;
+            typedef Dune::EntitySeed<P1Grid, P1EntitySeedImp<2, P1Grid>> EntitySeed;
 
             P1EntityImp(const shared_ptr<P1DataContainer>& data,
                     int level, std::size_t index);
