@@ -24,7 +24,7 @@ namespace BemppGrid {
     class P1LocalIdSetImp;
 
 
-    template <int mydim, int cdim, class> class P1GridGeometry;
+    template <int mydim, int cdim, class> class Geometry;
     template <int codim, int dim, class> class P1EntityImp;
     template <int, class> class P1EntityPointerImp;
     template <int, class> class P1EntitySeedImp;
@@ -42,7 +42,7 @@ namespace BemppGrid {
         typedef Dune::GridTraits<
             2, 3,
             P1Grid,
-            P1GridGeometry,
+            Geometry,
             P1EntityImp,
             P1EntityPointerImp,
             P1LevelIteratorImp,
@@ -69,6 +69,8 @@ namespace BemppGrid {
     class P1Grid 
         : public Dune::GridDefaultImplementation<2, 3, double, P1GridFamily> {
 
+            friend class P1LevelIndexSetImp;
+
         public: 
 
             typedef double ctype;
@@ -90,18 +92,18 @@ namespace BemppGrid {
             template <int cd>
             struct Codim
             {
-             typedef Dune::Geometry<2-cd, 3, P1Grid, P1GridGeometry> Geometry;
-             typedef Dune::EntitySeed<P1Grid, P1EntitySeedImp<cd, P1Grid>>  EntitySeed;
+             typedef Dune::Geometry<2-cd, 3, const P1Grid, Geometry> Geometry;
+             typedef Dune::EntitySeed<const P1Grid, P1EntitySeedImp<cd, const P1Grid>>  EntitySeed;
              typedef boost::none_t LocalGeometry;
-             typedef Dune::EntityPointer<P1Grid, P1EntityPointerImp<cd, P1Grid>> EntityPointer;
-             typedef Dune::EntityIterator<cd, P1Grid, P1LevelIteratorImp<cd, Dune::All_Partition, P1Grid>> Iterator;
-             typedef Dune::Entity<cd, 2, P1Grid, P1EntityImp> Entity;
+             typedef Dune::EntityPointer<const P1Grid, P1EntityPointerImp<cd, const P1Grid>> EntityPointer;
+             typedef Dune::EntityIterator<cd, const P1Grid, P1LevelIteratorImp<cd, Dune::All_Partition, const P1Grid>> Iterator;
+             typedef Dune::Entity<cd, 2, const P1Grid, P1EntityImp> Entity;
 
              template <Dune::PartitionIteratorType pitype>
              struct Partition {
 
-                 typedef typename Dune::EntityIterator<cd, P1Grid, P1LevelIteratorImp<cd, Dune::All_Partition, P1Grid>> LevelIterator;
-                 typedef typename Dune::EntityIterator<cd, P1Grid, P1LevelIteratorImp<cd, Dune::All_Partition, P1Grid>> LeafIterator;
+                 typedef typename Dune::EntityIterator<cd, const P1Grid, P1LevelIteratorImp<cd, Dune::All_Partition, const P1Grid>> LevelIterator;
+                 typedef typename Dune::EntityIterator<cd, const P1Grid, P1LevelIteratorImp<cd, Dune::All_Partition, const P1Grid>> LeafIterator;
 
 
              };             
@@ -122,7 +124,16 @@ namespace BemppGrid {
             template <int cd>
             typename Codim<cd>::template Partition<Dune::All_Partition>::LevelIterator lend(int level) const;
 
+
         private:
+
+            template <int cd>
+            static GridFamily::Traits::LevelIndexSet::IndexType entityIndex(
+                    const typename GridFamily::Traits::Codim<cd>::Entity& entity);
+
+            template <int cd>
+            static int entityLevel(
+                    const typename GridFamily::Traits::Codim<cd>::Entity& entity);
 
             shared_ptr<P1DataContainer> m_data;
     };

@@ -9,14 +9,14 @@
 namespace BemppGrid {
 
 template <int mydim, int cdim, class>
-class P1GridGeometry : public Dune::CachedMultiLinearGeometry<double, mydim, cdim>
+class Geometry : public Dune::CachedMultiLinearGeometry<double, mydim, cdim>
 {
 
     typedef Dune::CachedMultiLinearGeometry<double, mydim, cdim> Base;
 
     public:
 
-        P1GridGeometry(const Dune::GeometryType& type, 
+        Geometry(const Dune::GeometryType& type, 
                 const std::vector<Dune::FieldVector<double, 3>>& vertices)
             : Base(type, vertices) {}
 

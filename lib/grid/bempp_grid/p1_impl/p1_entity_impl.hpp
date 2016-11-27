@@ -9,37 +9,26 @@
 
 namespace BemppGrid {
 
-    P1EntityImp<0, 2, P1Grid>::P1EntityImp(const shared_ptr<P1DataContainer>& data,
+    P1EntityImp<0, 2, const P1Grid>::P1EntityImp(const shared_ptr<P1DataContainer>& data,
         int level, std::size_t index) : m_data(data), m_level(level), m_index(index)
     {}
 
-    Dune::Geometry<2, 3, P1Grid, P1GridGeometry> P1EntityImp<0, 2, P1Grid>::geometry() const {
+    P1EntityImp<0, 2, const P1Grid>::Geometry P1EntityImp<0, 2, const P1Grid>::geometry() const {
 
-        if (m_geometry == nullptr) {
-            const auto& nodeIndices = m_data->elements(m_level)[m_index]; 
-            Dune::GeometryType geometryType;
-            geometryType.makeTriangle();
-            std::vector<Dune::FieldVector<double, 3>> vertices;
-            for (int i = 0; i < 3; ++i) vertices.push_back(m_data->nodes(m_level)[nodeIndices[i]]);
-            m_geometry = shared_ptr<P1GridGeometry<2, 3, P1Grid>>(
-                    new P1GridGeometry<2, 3, P1Grid>(geometryType, vertices));
-        }
-
-        return Dune::Geometry<2, 3, P1Grid, P1GridGeometry>(*m_geometry);
-                
+               return m_data->geometry(Entity(*this)); 
     }
 
-    Dune::PartitionType P1EntityImp<0, 2, P1Grid>::partitionType() const {
+    Dune::PartitionType P1EntityImp<0, 2, const P1Grid>::partitionType() const {
 
         return Dune::InteriorEntity;
 
     }
 
-    int P1EntityImp<0, 2, P1Grid>::level() const {
+    int P1EntityImp<0, 2, const P1Grid>::level() const {
         return m_level;
     }     
 
-    Dune::GeometryType P1EntityImp<0, 2, P1Grid>::type() const {
+    Dune::GeometryType P1EntityImp<0, 2, const P1Grid>::type() const {
 
         Dune::GeometryType geometryType;
         geometryType.makeTriangle();
@@ -47,91 +36,91 @@ namespace BemppGrid {
 
     }
 
-    bool P1EntityImp<0, 2, P1Grid>::equals(const P1EntityImp<0, 2, P1Grid>& other) const {
+    bool P1EntityImp<0, 2, const P1Grid>::equals(const P1EntityImp<0, 2, const P1Grid>& other) const {
 
         return m_level == other.m_level && m_index == other.m_index;
     }
 
-    P1EntityImp<0, 2, P1Grid>::EntitySeed P1EntityImp<0, 2, P1Grid>::seed() const {
+    P1EntityImp<0, 2, const P1Grid>::EntitySeed P1EntityImp<0, 2, const P1Grid>::seed() const {
 
-        return P1EntityImp<0, 2, P1Grid>::EntitySeed(P1EntitySeedImp<0, P1Grid>(m_level, m_index));
+        return P1EntityImp<0, 2, const P1Grid>::EntitySeed(P1EntitySeedImp<0, const P1Grid>(m_level, m_index));
 
     }
 
     template<>
-    P1EntityImp<0, 2, P1Grid>::EntityPointer<1> P1EntityImp<0, 2, P1Grid>::subEntity<1>(int i) const {
+    P1EntityImp<0, 2, const P1Grid>::EntityPointer<1> P1EntityImp<0, 2, const P1Grid>::subEntity<1>(int i) const {
 
         return EntityPointer<1>(
-                P1EntityImp<1, 2, P1Grid>(m_data, m_level,
+                P1EntityImp<1, 2, const P1Grid>(m_data, m_level,
                     m_data->element2Edges(m_level, m_index)[i]));
 
     }
 
     template<>
-    P1EntityImp<0, 2, P1Grid>::EntityPointer<2> P1EntityImp<0, 2, P1Grid>::subEntity<2>(int i) const {
+    P1EntityImp<0, 2, const P1Grid>::EntityPointer<2> P1EntityImp<0, 2, const P1Grid>::subEntity<2>(int i) const {
 
         return EntityPointer<2>(
-                P1EntityImp<2, 2, P1Grid>(m_data, m_level,
+                P1EntityImp<2, 2, const P1Grid>(m_data, m_level,
                     m_data->elements(m_level)[m_index][i]));
 
     }
 
     template<>
-    P1EntityImp<0, 2, P1Grid>::EntityPointer<0> P1EntityImp<0, 2, P1Grid>::subEntity<0>(int i) const {
+    P1EntityImp<0, 2, const P1Grid>::EntityPointer<0> P1EntityImp<0, 2, const P1Grid>::subEntity<0>(int i) const {
 
         return EntityPointer<0>(*this);
 
     }
 
 
-    P1EntityImp<0, 2, P1Grid>::EntityPointer<0> P1EntityImp<0, 2, P1Grid>::father() const {
+    P1EntityImp<0, 2, const P1Grid>::EntityPointer<0> P1EntityImp<0, 2, const P1Grid>::father() const {
 
         int fatherIndex = m_data->getElementFatherIndex(m_level, m_index);
         return EntityPointer<0>(
-                P1EntityImp<0, 2, P1Grid>(m_data, m_level, fatherIndex));
+                P1EntityImp<0, 2, const P1Grid>(m_data, m_level, fatherIndex));
 
     }
     
     template<>
-    int P1EntityImp<0, 2, P1Grid>::count<0>() const {
+    int P1EntityImp<0, 2, const P1Grid>::count<0>() const {
 
         return 1;
 
     }
 
     template<>
-    int P1EntityImp<0, 2, P1Grid>::count<1>() const {
+    int P1EntityImp<0, 2, const P1Grid>::count<1>() const {
 
         return 3;
 
     }
 
     template<>
-    int P1EntityImp<0, 2, P1Grid>::count<2>() const {
+    int P1EntityImp<0, 2, const P1Grid>::count<2>() const {
 
         return 3;
 
     }
 
-    bool P1EntityImp<0, 2, P1Grid>::hasFather() const {
+    bool P1EntityImp<0, 2, const P1Grid>::hasFather() const {
 
         return (m_level > 0);
 
     } 
 
-    bool P1EntityImp<0, 2, P1Grid>::isLeaf() const {
+    bool P1EntityImp<0, 2, const P1Grid>::isLeaf() const {
 
         return (m_level == m_data->levels() - 1);
 
     } 
 
-    bool P1EntityImp<0, 2, P1Grid>::isRegular() const {
+    bool P1EntityImp<0, 2, const P1Grid>::isRegular() const {
 
         return true;
 
     } 
 
-    bool P1EntityImp<0, 2, P1Grid>::isNew() const {
+    bool P1EntityImp<0, 2, const P1Grid>::isNew() const {
 
         if (m_level == 0) return false;
 
@@ -140,32 +129,21 @@ namespace BemppGrid {
 
     }
 
-    P1EntityImp<1, 2, P1Grid>::P1EntityImp(const shared_ptr<P1DataContainer>& data,
+    P1EntityImp<1, 2, const P1Grid>::P1EntityImp(const shared_ptr<P1DataContainer>& data,
         int level, std::size_t index) : m_data(data), m_level(level), m_index(index)
     {}
 
 
-    Dune::Geometry<1, 3, P1Grid, P1GridGeometry> P1EntityImp<1, 2, P1Grid>::geometry() const {
+    P1EntityImp<1, 2, const P1Grid>::Geometry P1EntityImp<1, 2, const P1Grid>::geometry() const {
 
-        if (m_geometry == nullptr) {
-            const auto& nodeIndices = m_data->edges(m_level)[m_index]; 
-            Dune::GeometryType geometryType;
-            geometryType.makeLine();
-            std::vector<Dune::FieldVector<double, 3>> vertices;
-            for (int i = 0; i < 2; ++i) vertices.push_back(m_data->nodes(m_level)[nodeIndices[i]]);
-            m_geometry = shared_ptr<P1GridGeometry<1, 3, P1Grid>>(
-                    new P1GridGeometry<1, 3, P1Grid>(geometryType, vertices));
-
-        }
-        return Dune::Geometry<1, 3, P1Grid, P1GridGeometry>(*m_geometry);
-
+               return m_data->geometry(Entity(*this)); 
     }
 
-    int P1EntityImp<1, 2, P1Grid>::level() const {
+    int P1EntityImp<1, 2, const P1Grid>::level() const {
         return m_level;
     }     
 
-    Dune::GeometryType P1EntityImp<1, 2, P1Grid>::type() const {
+    Dune::GeometryType P1EntityImp<1, 2, const P1Grid>::type() const {
 
         Dune::GeometryType geometryType;
         geometryType.makeLine();
@@ -173,54 +151,44 @@ namespace BemppGrid {
 
     }
 
-    Dune::PartitionType P1EntityImp<1, 2, P1Grid>::partitionType() const {
+    Dune::PartitionType P1EntityImp<1, 2, const P1Grid>::partitionType() const {
 
         return Dune::InteriorEntity;
 
     }
 
-    bool P1EntityImp<1, 2, P1Grid>::equals(const P1EntityImp<1, 2, P1Grid>& other) const {
+    bool P1EntityImp<1, 2, const P1Grid>::equals(const P1EntityImp<1, 2, const P1Grid>& other) const {
 
         return m_level == other.m_level && m_index == other.m_index;
     }
 
-    P1EntityImp<1, 2, P1Grid>::EntitySeed P1EntityImp<1, 2, P1Grid>::seed() const {
+    P1EntityImp<1, 2, const P1Grid>::EntitySeed P1EntityImp<1, 2, const P1Grid>::seed() const {
 
-        return P1EntityImp<1, 2, P1Grid>::EntitySeed(P1EntitySeedImp<1, P1Grid>(m_level, m_index));
+        return P1EntityImp<1, 2, const P1Grid>::EntitySeed(P1EntitySeedImp<1, const P1Grid>(m_level, m_index));
 
     }
 
-    P1EntityImp<2, 2, P1Grid>::P1EntityImp(const shared_ptr<P1DataContainer>& data,
+    P1EntityImp<2, 2, const P1Grid>::P1EntityImp(const shared_ptr<P1DataContainer>& data,
         int level, std::size_t index) : m_data(data), m_level(level), m_index(index)
     {
     }
 
-    P1EntityImp<2, 2, P1Grid>::EntitySeed P1EntityImp<2, 2, P1Grid>::seed() const {
+    P1EntityImp<2, 2, const P1Grid>::EntitySeed P1EntityImp<2, 2, const P1Grid>::seed() const {
 
-        return P1EntityImp<2, 2, P1Grid>::EntitySeed(P1EntitySeedImp<2, P1Grid>(m_level, m_index));
-
-    }
-
-    Dune::Geometry<0, 3, P1Grid, P1GridGeometry> P1EntityImp<2, 2, P1Grid>::geometry() const {
-
-        if (m_geometry == nullptr) {
-            const auto& node = m_data->nodes(m_level)[m_index]; 
-            Dune::GeometryType geometryType;
-            geometryType.makeVertex();
-            std::vector<Dune::FieldVector<double, 3>> vertices;
-            vertices.push_back(node);
-            m_geometry = shared_ptr<P1GridGeometry<0, 3, P1Grid>>(
-                    new P1GridGeometry<0, 3, P1Grid>(geometryType, vertices));
-        }
-        return Dune::Geometry<0, 3, P1Grid, P1GridGeometry>(*m_geometry);
+        return P1EntityImp<2, 2, const P1Grid>::EntitySeed(P1EntitySeedImp<2, const P1Grid>(m_level, m_index));
 
     }
 
-    int P1EntityImp<2, 2, P1Grid>::level() const {
+    P1EntityImp<2, 2, const P1Grid>::Geometry P1EntityImp<2, 2, const P1Grid>::geometry() const {
+
+               return m_data->geometry(Entity(*this)); 
+    }
+
+    int P1EntityImp<2, 2, const P1Grid>::level() const {
         return m_level;
     }     
 
-    Dune::GeometryType P1EntityImp<2, 2, P1Grid>::type() const {
+    Dune::GeometryType P1EntityImp<2, 2, const P1Grid>::type() const {
 
         Dune::GeometryType geometryType;
         geometryType.makeVertex();
@@ -228,13 +196,13 @@ namespace BemppGrid {
 
     }
 
-    Dune::PartitionType P1EntityImp<2, 2, P1Grid>::partitionType() const {
+    Dune::PartitionType P1EntityImp<2, 2, const P1Grid>::partitionType() const {
 
         return Dune::InteriorEntity;
 
     }
 
-    bool P1EntityImp<2, 2, P1Grid>::equals(const P1EntityImp<2, 2, P1Grid>& other) const {
+    bool P1EntityImp<2, 2, const P1Grid>::equals(const P1EntityImp<2, 2, const P1Grid>& other) const {
 
         return m_level == other.m_level && m_index == other.m_index;
     }

@@ -1,4 +1,5 @@
 #include "p1_data_container.hpp"
+#include <dune/geometry/type.hh>
 #include <cassert>
 #include <utility>
 
@@ -97,6 +98,12 @@ namespace BemppGrid {
 
         for (std::size_t i = 0; i < m_edges[m_levels].size(); ++i)
             m_edgeIds[m_levels][i] = m_idCounter++;
+
+        // Compute Geometries
+
+        computeGeometries<0>(0);
+        computeGeometries<1>(0);
+        computeGeometries<2>(0);    
 
         m_levels++;
     }
@@ -234,6 +241,34 @@ namespace BemppGrid {
 
         return m_sonElements[level][elementIndex];
 
+    }
+
+
+    template <int cd>
+    Geometry<cd> P1DataContainer::geometry(const Entity<cd>& entity) {
+
+        return m_geometries.get<cd>()[P1Grid::entityLevel(entity)] [P1Grid::entityIndex<cd>(entity)];
+
+    }
+
+    template <int cd>
+    void P1DataContainer::computeGeometries(int level) {
+
+        m_geometries.get<cd>().push_back(
+                shared_ptr<std::vector<Geometry<cd>>>(
+                    new std::vector<Geometry<cd>>()));
+        const auto& levelGeometries = *(m_geometries.get<cd>[level]);
+        
+        int entityCount = numberOfEntities<cd>(level);
+        levelGeometries.reserve(entityCount);
+
+        for (int i = 0; i < entityCount; ++i){
+
+            Dune::GeometryType geometryType;
+            geometryType.makeSimplex<2-cd>
+            std::vector<Dune::FieldVector<double, 3>> vertices;
+            levelGeometries.push_back(Geometry<cd>(geometryType, getEntityNodes(cd, level, index)));
+        }
     }
 
 }

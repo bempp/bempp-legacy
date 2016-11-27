@@ -6,6 +6,7 @@
 #include <dune/common/fvector.hh>
 #include <vector>
 #include <array>
+#include <tuple>
 
 namespace BemppGrid {
 
@@ -16,6 +17,12 @@ namespace BemppGrid {
             typedef std::vector<Dune::FieldVector<double, 3>> NodesContainer;
             typedef std::vector<std::array<std::size_t, 3>> ElementsContainer;
             typedef std::vector<std::array<std::size_t, 2>> EdgesContainer;
+
+            template <int cd>
+            using Geometry = typename P1Grid::GridFamily::Traits::Codim<cd>::Geometry;
+
+            template <int cd>
+            using Entity = typename P1Grid::GridFamily::Traits::Codim<cd>::Entity;
 
             P1DataContainer();
 
@@ -34,6 +41,9 @@ namespace BemppGrid {
             template <int cd>
             int numberOfEntities(int level) const;
 
+            template <int cd>
+            Geometry<cd> geometry(const Entity<cd>& entity);
+
             const std::array<std::size_t, 3>& element2Edges(int level, std::size_t elementIndex) const;
             const std::vector<size_t>& edge2Elements(int level, std::size_t edgeIndex) const;
             const std::vector<size_t>& node2Elements(int level, std::size_t nodeIndex) const;
@@ -45,6 +55,9 @@ namespace BemppGrid {
             const std::vector<size_t>& getElementSons(int level, std::size_t elementIndex) const;
 
         private:
+
+            template <int cd>
+            void computeGeometries(int level);
 
             int m_levels;
             std::vector<shared_ptr<NodesContainer>> m_nodes;
@@ -64,6 +77,13 @@ namespace BemppGrid {
 
             std::vector<std::vector<std::size_t>> m_fatherElements;
             std::vector<std::vector<std::vector<std::size_t>>> m_sonElements;
+
+            std::tuple<
+                std::vector<shared_ptr<std::vector<Geometry<0>>>>,
+                std::vector<shared_ptr<std::vector<Geometry<1>>>>,
+                std::vector<shared_ptr<std::vector<Geometry<2>>>>
+                    > m_geometries;
+
 
     }; 
 

@@ -13,23 +13,23 @@ class P1Grid;
 template<int, int, class> class P1EntityImp;
 
 template <int codim, Dune::PartitionIteratorType, class> 
-class P1LevelIteratorImp : public P1EntityPointerImp<codim, P1Grid> {
+class P1LevelIteratorImp : public P1EntityPointerImp<codim, const P1Grid> {
 
     public:
 
-        typedef Dune::Entity<codim, 2, P1Grid, P1EntityImp> Entity;
-        typedef P1EntityPointerImp<codim, P1Grid> Base;
+        typedef Dune::Entity<codim, 2, const P1Grid, P1EntityImp> Entity;
+        typedef P1EntityPointerImp<codim, const P1Grid> Base;
 
         P1LevelIteratorImp(const shared_ptr<P1DataContainer>& data, int level, std::size_t index) :
             m_data(data), m_level(level), m_index(index), 
-            Base(P1EntityPointerImp<codim, P1Grid>(P1EntityImp<codim, 2, P1Grid>(data, level, index))) {};
+            Base(P1EntityPointerImp<codim, const P1Grid>(P1EntityImp<codim, 2, const P1Grid>(data, level, index))) {};
 
 
         void increment() const {
 
             m_index++;
             static_cast<const Base*>(this)->setEntity(
-                    P1EntityImp<codim, 2, P1Grid>(m_data, m_level, m_index));
+                    P1EntityImp<codim, 2, const P1Grid>(m_data, m_level, m_index));
 
         }
 

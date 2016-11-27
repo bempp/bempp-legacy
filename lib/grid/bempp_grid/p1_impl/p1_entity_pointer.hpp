@@ -16,17 +16,17 @@ namespace BemppGrid {
     template <int codim, class>
     class P1EntityPointerImp {
 
-        friend class P1LevelIteratorImp<codim, Dune::All_Partition, P1Grid >;
+        friend class P1LevelIteratorImp<codim, Dune::All_Partition, const P1Grid >;
 
         public:
 
             enum {codimension = codim};
-            typedef Dune::Entity<codim, 2, P1Grid, P1EntityImp> Entity;
+            typedef Dune::Entity<codim, 2, const P1Grid, P1EntityImp> Entity;
 
-            P1EntityPointerImp(const P1EntityImp<codim, 2, P1Grid>& entity) :
+            P1EntityPointerImp(const P1EntityImp<codim, 2, const P1Grid>& entity) :
                 m_entity(entity), m_duneEntity(new Entity(m_entity)) {}
 
-            P1EntityPointerImp(const P1EntityPointerImp<codim, P1Grid>& other) :
+            P1EntityPointerImp(const P1EntityPointerImp<codim, const P1Grid>& other) :
                 m_entity(other.m_entity), m_duneEntity(new Entity(m_entity)) {}
 
             virtual ~P1EntityPointerImp() {}
@@ -43,7 +43,7 @@ namespace BemppGrid {
 
             }
 
-            bool equals(const P1EntityPointerImp<codim, P1Grid>& other) const {
+            bool equals(const P1EntityPointerImp<codim, const P1Grid>& other) const {
 
                 return m_entity.equals(other.m_entity);
 
@@ -53,7 +53,7 @@ namespace BemppGrid {
 
         private:
 
-            void setEntity(const P1EntityImp<codim, 2, P1Grid>& entity) const {
+            void setEntity(const P1EntityImp<codim, 2, const P1Grid>& entity) const {
 
                     m_entity = entity;
 
@@ -62,7 +62,7 @@ namespace BemppGrid {
 
             } 
 
-            mutable P1EntityImp<codim, 2, P1Grid> m_entity;
+            mutable P1EntityImp<codim, 2, const P1Grid> m_entity;
             mutable std::unique_ptr<Entity> m_duneEntity;
 
 
