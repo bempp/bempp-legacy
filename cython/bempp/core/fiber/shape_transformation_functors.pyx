@@ -21,6 +21,9 @@ cdef extern from "bempp/core/fiber/shape_transformation_functors.hpp" namespace 
 cdef extern from "bempp/core/fiber/shape_transformation_functors.hpp" namespace "Fiber":
     cdef c_ShapeTransformationFunctorContainer* c_hcurlSurfaceCurlFunctor "Fiber::hcurlSurfaceCurlFunctor"()
 
+cdef extern from "bempp/core/fiber/shape_transformation_functors.hpp" namespace "Fiber":
+    cdef c_ShapeTransformationFunctorContainer* c_scalarFunctionValueTimesNormalFunctor "Fiber::scalarFunctionValueTimesNormalFunctor"()
+
 cdef class ShapeTransformationFunctorContainer:
 
     def __cinit__(self):
@@ -82,3 +85,8 @@ def scalar_surface_curl_functor_ext():
     container.impl_.reset(c_hcurlSurfaceCurlFunctor())
     return container
 
+def scalar_function_value_times_normal_functor_ext():
+
+    cdef ShapeTransformationFunctorContainer container = ShapeTransformationFunctorContainer()
+    container.impl_.reset(c_scalarFunctionValueTimesNormalFunctor())
+    return container

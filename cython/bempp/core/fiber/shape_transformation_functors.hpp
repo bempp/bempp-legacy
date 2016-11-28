@@ -13,6 +13,7 @@
 #include "bempp/fiber/hcurl_function_value_functor.hpp"
 #include "bempp/fiber/hdiv_function_value_functor.hpp"
 #include "bempp/fiber/hcurl_surface_curl_functor.hpp"
+#include "bempp/fiber/scalar_function_value_times_normal_functor.hpp"
 
 namespace Fiber {
 
@@ -204,6 +205,17 @@ inline ShapeTransformationFunctorContainer* hcurlSurfaceCurlFunctor(){
                 shared_ptr<ShapeTransformationFunctorBase>(
                     new ConcreteShapeTransformationFunctor<HcurlSurfaceCurlFunctor<double>>(
                         HcurlSurfaceCurlFunctor<double>())
+                    )
+                );
+
+}
+
+inline ShapeTransformationFunctorContainer* scalarFunctionValueTimesNormalFunctor(){
+
+    return new ShapeTransformationFunctorContainer(
+                shared_ptr<ShapeTransformationFunctorBase>(
+                    new ConcreteShapeTransformationFunctor<ScalarFunctionValueTimesNormalFunctor<double>>(
+                        ScalarFunctionValueTimesNormalFunctor<double>())
                     )
                 );
 

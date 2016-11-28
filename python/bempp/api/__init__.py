@@ -93,12 +93,14 @@ from bempp.api.space import function_space
 from bempp.api.space import project_operator
 from bempp.api.assembly import GridFunction
 from bempp.api.assembly import InverseSparseDiscreteBoundaryOperator
+from bempp.api.assembly import InverseLocalBoundaryOperator
 from bempp.api.assembly import ZeroBoundaryOperator
 from bempp.api.assembly import RankOneBoundaryOperator
 from bempp.api.assembly import as_matrix
 from bempp.api.assembly import assemble_dense_block
 from bempp.api.assembly import BlockedOperator
 from bempp.api.assembly import BlockedDiscreteOperator
+from bempp.api.assembly import functors
 from bempp.api import shapes
 from bempp.api.file_interfaces import import_grid
 from bempp.api.file_interfaces import export
@@ -112,6 +114,8 @@ from bempp.api.utils.logging import DEBUG, INFO, WARNING, ERROR, CRITICAL
 from bempp.api.utils.logging import enable_console_logging
 from bempp.api.utils.logging import enable_file_logging
 from bempp.api.utils.logging import set_logging_level
+from bempp.api.utils.logging import timeit
+from bempp.api.utils.logging import Timer
 
 ALL = -1  # Useful global identifier
 

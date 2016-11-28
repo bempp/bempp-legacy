@@ -46,9 +46,12 @@ cdef class _HMatParameterList:
     cdef c_ParameterList* impl_
     cdef ParameterList base
 
+cdef class _VerbosityParameterList:
+    cdef cbool _extended_verbosity
 
 cdef class ParameterList:
     cdef c_ParameterList* impl_
     cdef _AssemblyParameterList _assembly
     cdef _QuadratureParameterList _quadrature
     cdef _HMatParameterList _hmat
+    cdef _VerbosityParameterList _verbosity

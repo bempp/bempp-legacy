@@ -149,7 +149,7 @@ class TestAssembler(TestCase):
 
         from numpy.testing import assert_allclose
 
-        assert_allclose(actual, expected, rtol=1E-15)
+        assert_allclose(actual, expected, rtol=1E-13)
 
 
     def test_singular_assembly_of_maxwell_efie_operator(self):

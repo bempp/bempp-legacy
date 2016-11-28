@@ -1,5 +1,7 @@
 from bempp.core.utils cimport eigen_matrix_to_np_float64
 from bempp.core.utils cimport eigen_matrix_to_np_complex128
+from bempp.core.utils cimport np_to_eigen_matrix_float64
+from bempp.core.utils cimport np_to_eigen_matrix_complex128
 from bempp.core.utils cimport enum_types as enums
 from libcpp cimport bool as cbool
 from cython.operator cimport dereference as deref
@@ -7,7 +9,7 @@ from cython.operator cimport dereference as deref
 import numpy as np
 cimport numpy as np
 
-
+np.import_array()
 
 cdef class RealDiscreteBoundaryOperator:
 
@@ -70,7 +72,7 @@ cdef class RealDiscreteBoundaryOperator:
             return self.matvec(np.real(x))+1j*self.matvec(np.imag(x))
 
         cdef np.ndarray x_in
-        cdef np.ndarray y_inout
+        cdef np.ndarray y
 
         cdef int rows = self.shape[0]
         cdef int cols = self.shape[1]
@@ -89,7 +91,8 @@ cdef class RealDiscreteBoundaryOperator:
         if (x_in.shape[0]!=self.shape[1]):
             raise ValueError("Wrong dimensions.")
 
-        y = deref(self.impl_).apply(self.transpose_mode,x_in)
+        y = eigen_matrix_to_np_float64(
+                deref(self.impl_).apply(self.transpose_mode, np_to_eigen_matrix_float64(x_in)))
 
         if is_reshaped:
             y = y.ravel()
@@ -181,7 +184,7 @@ cdef class ComplexDiscreteBoundaryOperator:
     def matvec(self,np.ndarray x):
 
         cdef np.ndarray x_in
-        cdef np.ndarray y_inout
+        cdef np.ndarray y
 
         cdef int rows = self.shape[0]
         cdef int cols = self.shape[1]
@@ -200,7 +203,8 @@ cdef class ComplexDiscreteBoundaryOperator:
         if (x_in.shape[0]!=self.shape[1]):
             raise ValueError("Wrong dimensions.")
 
-        y = deref(self.impl_).apply(self.transpose_mode,x_in)
+        y = eigen_matrix_to_np_complex128(
+                deref(self.impl_).apply(self.transpose_mode, np_to_eigen_matrix_complex128(x_in)))
 
         if is_reshaped:
             y = y.ravel()
@@ -242,9 +246,11 @@ def convert_to_dense(op):
     """Convert dense discrete boundary operator to numpy array."""
     
     if isinstance(op, RealDiscreteBoundaryOperator):
-        return c_convert_to_dense_double((<RealDiscreteBoundaryOperator>op).impl_)
+        return eigen_matrix_to_np_float64(
+                c_convert_to_dense_double((<RealDiscreteBoundaryOperator>op).impl_))
     elif isinstance(op, ComplexDiscreteBoundaryOperator):
-        return c_convert_to_dense_complex((<ComplexDiscreteBoundaryOperator>op).impl_)
+        return eigen_matrix_to_np_complex128(
+                c_convert_to_dense_complex((<ComplexDiscreteBoundaryOperator>op).impl_))
     else:
         raise ValueError("Type not supported.")
 

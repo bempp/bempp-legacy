@@ -21,7 +21,7 @@ class TestLaplace(TestCase):
         parameters.assembly.boundary_operator_assembly_type = 'dense'
 
         standard_hypersingular = hypersingular(self._lin_space, self._const_space, self._lin_space,
-                                               parameters=parameters).weak_form()
+                                               parameters=parameters, use_slp=False).weak_form()
         compound_hypersingular = hypersingular(self._lin_space, self._const_space, self._lin_space,
                                                parameters=parameters, use_slp=True).weak_form()
 

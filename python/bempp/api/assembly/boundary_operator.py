@@ -135,11 +135,17 @@ class BoundaryOperator(object):
             self._range_map = None
 
         if self._range_map is None:
-            from bempp.api.assembly import InverseSparseDiscreteBoundaryOperator
-            from bempp.api.operators.boundary.sparse import identity
+           
+            # This is the most frequent case and we cache the mass
+            # matrix from the space object.
+            if self.range == self.dual_to_range:
+                self._range_map = self.dual_to_range.inverse_mass_matrix().weak_form()
+            else:
+                from bempp.api.assembly import InverseSparseDiscreteBoundaryOperator
+                from bempp.api.operators.boundary.sparse import identity
 
-            self._range_map = InverseSparseDiscreteBoundaryOperator(
-                identity(self.range, self.range, self.dual_to_range).weak_form())
+                self._range_map = InverseLocalBoundaryOperator(
+                    identity(self.range, self.range, self.dual_to_range)).weak_form()
 
         return self._range_map * self.weak_form(recompute)
 
@@ -172,6 +178,22 @@ class BoundaryOperator(object):
 
         """
         return _AdjointBoundaryOperator(self, range_)
+
+    def dual_product(self, other):
+        """Return the dual product with another boundary operator.
+
+           Notes
+           -----
+           The dual product B *_D A acts only only on the test functions
+           of A  and is defined as 
+           self.adjoint(other.range) * other
+
+        """
+
+        from bempp.api.space.projection import rewrite_operator_spaces
+
+        return self.adjoint(other.range) * rewrite_operator_spaces(other,
+                other.domain, self.dual_to_range, other.dual_to_range)
 
 class ZeroBoundaryOperator(BoundaryOperator):
     """A boundary operator that represents a zero operator.
@@ -371,7 +393,7 @@ class LocalBoundaryOperator(BoundaryOperator):
 class _ProjectionBoundaryOperator(BoundaryOperator):
     """Define the projection of an operator onto new spaces."""
 
-    def __init__(self, operator, domain=None, range_=None, dual_to_range=None):
+    def __init__(self, operator, domain, range_, dual_to_range):
 
         self._operator = operator
         self._domain = domain
@@ -392,14 +414,14 @@ class _ProjectionBoundaryOperator(BoundaryOperator):
 
         projected_weak_form = self._operator.weak_form()
 
-        if self._dual_to_range is not None:
+        if self._dual_to_range is not None and self._dual_to_range != self._operator.dual_to_range:
             ident = identity(self._operator.dual_to_range,
                              self._dual_to_range, self._dual_to_range).weak_form()
             projected_weak_form = ident * InverseSparseDiscreteBoundaryOperator(
                 identity(self._operator.dual_to_range, self._operator.dual_to_range,
                          self._operator.dual_to_range).weak_form()) * projected_weak_form
 
-        if self._domain is not None:
+        if self._domain is not None and self._domain != self._operator.domain:
             from bempp.api.space.projection import discrete_coefficient_projection
 
             projected_weak_form *= discrete_coefficient_projection(
@@ -504,75 +526,6 @@ class _AdjointBoundaryOperator(BoundaryOperator):
         return self._op.weak_form().adjoint()
 
 
-class CompoundBoundaryOperator(BoundaryOperator):
-    """Create a compound boundary operator."""
-
-    def __init__(self, test_local_ops, kernel_op, trial_local_ops,
-                 parameters=None, label=""):
-
-        import bempp
-
-        if len(test_local_ops) != len(trial_local_ops):
-            raise ValueError(
-                "There must be the same number of test and trial operators.")
-
-        number_of_ops = len(test_local_ops)
-
-        range_ = test_local_ops[0].range
-        dual_to_range = test_local_ops[0].dual_to_range
-        domain = trial_local_ops[0].domain
-        test_domain = test_local_ops[0].domain
-        trial_dual_to_range = trial_local_ops[0].dual_to_range
-
-        for i in range(number_of_ops):
-            if (not test_local_ops[i].range.is_compatible(range_) or
-                    not test_local_ops[i].dual_to_range.is_compatible(dual_to_range) or
-                    not trial_local_ops[i].domain.is_compatible(domain) or
-                    not test_domain.is_compatible(test_local_ops[i].domain) or
-                    not trial_dual_to_range.is_compatible(trial_local_ops[i].dual_to_range)):
-                raise ValueError("Incompatible spaces.")
-
-        if parameters is None:
-            from bempp.api import global_parameters
-
-            self._parameters = bempp.api.global_parameters
-        else:
-            self._parameters = parameters
-
-        super(CompoundBoundaryOperator, self).__init__(
-            domain, range_, dual_to_range, label=label)
-
-        self._test_local_ops = test_local_ops
-        self._trial_local_ops = trial_local_ops
-        self._kernel_op = kernel_op
-        self._number_of_ops = len(test_local_ops)
-
-    def _weak_form_impl(self):
-
-        from bempp.api.operators.boundary.sparse import identity
-
-        from .discrete_boundary_operator import ZeroDiscreteBoundaryOperator
-        from .discrete_boundary_operator import InverseSparseDiscreteBoundaryOperator
-
-        discrete_op = ZeroDiscreteBoundaryOperator(self.dual_to_range.global_dof_count,
-                                                   self.domain.global_dof_count)
-
-        test_inverse = InverseSparseDiscreteBoundaryOperator(
-            identity(self._test_local_ops[0].domain, self._kernel_op.domain,
-                     self._kernel_op.dual_to_range,
-                     parameters=self._parameters).weak_form())
-        trial_inverse = InverseSparseDiscreteBoundaryOperator(identity(self._kernel_op.domain, self._kernel_op.domain,
-                                                                       self._trial_local_ops[
-                                                                           0].dual_to_range,
-                                                                       parameters=self._parameters).weak_form())
-
-        kernel_discrete_op = self._kernel_op.weak_form()
-        for i in range(self._number_of_ops):
-            discrete_op += (self._test_local_ops[i].weak_form() * test_inverse * kernel_discrete_op *
-                            trial_inverse * self._trial_local_ops[i].weak_form())
-        return discrete_op
-
-
 class RankOneBoundaryOperator(BoundaryOperator):
     """Define a rank one boundary operator.
 
@@ -637,3 +590,83 @@ class RankOneBoundaryOperator(BoundaryOperator):
         row = one_domain.projections(self._domain)
 
         return bempp.api.assembly.DiscreteRankOneOperator(col, row)
+
+class InverseLocalBoundaryOperator(BoundaryOperator):
+
+    def __init__(self, operator):
+
+        import bempp.api
+
+        if not type(operator) == bempp.api.assembly.boundary_operator.LocalBoundaryOperator:
+            raise ValueError("Operator must be of type bempp.api.assembly.boundary_operator.LocalBoundaryOperator.")
+
+        super(InverseLocalBoundaryOperator, self).__init__(
+            operator.domain, operator.range, operator.dual_to_range,
+            label="INV_SPARSE")
+
+        self._domain = operator.domain
+        self._range = operator.range
+        self._dual_to_range = operator.dual_to_range
+        self._op = operator
+
+
+    def _weak_form_impl(self):
+
+        from bempp.api import InverseSparseDiscreteBoundaryOperator
+        from bempp.api.assembly.discrete_boundary_operator import SparseDiscreteBoundaryOperator
+        from bempp.api import as_matrix
+        from scipy.sparse import block_diag, csc_matrix
+        import numpy as np
+
+        if not (self._op.domain.has_local_support and self._op.dual_to_range.has_local_support):
+            return InverseSparseDiscreteBoundaryOperator(self._op.weak_form())
+
+        if self._op.domain != self._op.dual_to_range:
+            return InverseSparseDiscreteBoundaryOperator(self._op.weak_form())
+
+        # Operator has a block-diagonal form.
+        mat = as_matrix(self._op.weak_form()).sorted_indices()
+
+        if mat.getformat != 'csc':
+            mat = mat.tocsc()
+
+        if mat.getformat != 'csc':
+            mat = mat.tocsc()
+
+        # Figure out, where each block starts and ends
+
+        space = self._domain
+        rows = []
+        cols = []
+        data = []
+
+        indptr = mat.indptr
+        indices = mat.indices
+
+        i = 0
+        column_indices = []
+        diag_data = []
+
+        while i < mat.shape[1]:
+
+            column_indices.append(i)
+            block_size = indptr[i+1] - indptr[i]
+            block = mat.data[indptr[i]:indptr[i+block_size]]
+            diag_data.append(block.reshape((block_size, block_size), order='F'))
+            i += block_size
+
+        diag_data = [np.linalg.inv(block) for block in diag_data]
+
+        for i, block in enumerate(diag_data):
+            for m in range(block.shape[0]):
+                for n in range(block.shape[1]):
+                    rows.append(column_indices[i]+m)
+                    cols.append(column_indices[i]+n)
+                    data.append(block[m,n])
+
+
+        inv_mat = csc_matrix((data, (rows, cols)), shape=mat.shape,  dtype=np.float64)
+        return SparseDiscreteBoundaryOperator(inv_mat)
+
+
+

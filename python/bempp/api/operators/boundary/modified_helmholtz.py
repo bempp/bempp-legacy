@@ -201,6 +201,7 @@ def adjoint_double_layer(domain, range_, dual_to_range,
 def hypersingular(domain, range_, dual_to_range, wave_number,
                   label="HYP", symmetry='no_symmetry',
                   parameters=None, use_slp=False,
+                  use_projection_spaces=True,
                   assemble_only_singular_part=False):
     """Return the modified Helmholtz hypersingular boundary operator.
 
@@ -223,6 +224,10 @@ def hypersingular(domain, range_, dual_to_range, wave_number,
         Parameters for the operator. If none given the
         default global parameter object `bempp.api.global_parameters`
         is used.
+    use_projection_spaces : bool
+        Represent operator by projection from higher dimensional space
+        if available. This parameter can speed up fast assembly routines,
+        such as H-Matrices or FMM (default true).
     use_slp : True/False or boundary operator object
         The hypersingular operator can be represented as a sparse transformation
         of a single-layer operator. If `use_slp=True` this representation is used.
@@ -260,62 +265,51 @@ def hypersingular(domain, range_, dual_to_range, wave_number,
         from bempp.api.operators.boundary._common import get_wave_operator_with_space_preprocessing
 
         return get_wave_operator_with_space_preprocessing(_hypersingular_impl, domain, range_, dual_to_range, 
-                wave_number, label, symmetry, parameters, False, assemble_only_singular_part) 
+                wave_number, label, symmetry, parameters, use_projection_spaces, assemble_only_singular_part) 
     else:
 
+        if domain != dual_to_range:
+            raise ValueError("domain and dual_to_range spaces must be identical if use_slp=True")
+
         if not isinstance(use_slp, BoundaryOperator):
-            disc_domain = domain.discontinuous_space
-            disc_dual_to_range = dual_to_range.discontinuous_space
-            slp = single_layer(
-                disc_domain, range_, disc_dual_to_range, wave_number, parameters=parameters)
+            disc_space = domain.discontinuous_space
+            slp = single_layer(disc_space, range_,
+                               disc_space, wave_number, parameters=parameters)
         else:
             slp = use_slp
 
+
+        from bempp.api.assembly.functors import vector_surface_curl_functor
+        from bempp.api.assembly.functors import scalar_function_value_functor
+        from bempp.api.assembly.functors import scalar_function_value_times_normal_functor
+        from bempp.api.assembly.functors import single_component_test_trial_integrand_functor
+        from bempp.api.space.projection import rewrite_operator_spaces
+
+        D = bempp.api.ZeroBoundaryOperator(domain, slp.range, dual_to_range)
+
+        for i in range(3):
+            curl_value_op = bempp.api.operators.boundary.sparse.operator_from_functors(
+                    domain, slp.domain, slp.domain,
+                    scalar_function_value_functor(), vector_surface_curl_functor(),
+                    single_component_test_trial_integrand_functor(0, i),
+                    label="CURL_OP[{0}]".format(i),
+                    parameters=parameters)
+            D += curl_value_op.dual_product(slp) * curl_value_op
+
+            normal_op = bempp.api.operators.boundary.sparse.operator_from_functors(
+                    domain, slp.domain, slp.domain,
+                    scalar_function_value_functor(), scalar_function_value_times_normal_functor(),
+                    single_component_test_trial_integrand_functor(0, i),
+                    label="VALUE_TIMES_NORMAL[{0}]".format(i),
+                    parameters=parameters)
+            D += wave_number**2 * normal_op.dual_product(slp) * normal_op
+
+
         # Now generate the compound operator
 
-        test_local_ops = []
-        trial_local_ops = []
-
-        from bempp.api.assembly.boundary_operator import CompoundBoundaryOperator
-        from bempp.core.operators.boundary.sparse import curl_value_ext
-        from bempp.core.operators.boundary.sparse import value_times_normal_ext
-
-        for index in range(3):
-            # Definition of range_ does not matter in next operator
-            test_local_op = LocalBoundaryOperator(
-                ElementaryAbstractLocalOperator(
-                    curl_value_ext(slp.dual_to_range._impl,
-                                   range_._impl, dual_to_range._impl, index),
-                    slp.dual_to_range, range_, dual_to_range),
-                label='CURL')
-            test_local_ops.append(test_local_op)
-            trial_local_ops.append(test_local_op.transpose(
-                range_))  # Range parameter arbitrary
-
-        term1 = CompoundBoundaryOperator(
-            test_local_ops, slp, trial_local_ops, label=label + "_term1")
-
-        test_local_ops = []
-        trial_local_ops = []
-
-        for index in range(3):
-            # Definition of range_ does not matter in next operator
-            test_local_op = LocalBoundaryOperator(ElementaryAbstractLocalOperator(
-                value_times_normal_ext(
-                    slp.dual_to_range._impl, range_._impl, dual_to_range._impl, index),
-                slp.dual_to_range, range_, dual_to_range),
-                label='VALUE_TIMES_NORMAL')
-            test_local_ops.append(test_local_op)
-            trial_local_ops.append(test_local_op.transpose(
-                range_))  # Range parameter arbitrary
-
-        term2 = (wave_number * wave_number) * CompoundBoundaryOperator(test_local_ops, slp, trial_local_ops,
-                                                                       label=label + "_term2")
-
-        return term1 + term2
-
-
-def multitrace_operator(grid, wave_number, parameters=None, spaces='linear'):
+        return rewrite_operator_spaces(D, domain=domain, range_=range_, dual_to_range=dual_to_range)
+        
+def multitrace_operator(grid, wave_number, parameters=None, spaces='linear', target=None):
     """Return the modified Helmholtz multitrace operator.
 
     Parameters
@@ -335,6 +329,10 @@ def multitrace_operator(grid, wave_number, parameters=None, spaces='linear'):
         a dual pairing of a linear space for the Dirichlet
         data and piecewise constant space for the Neumann
         data choose 'dual'.
+    target: bempp.api.grid.Grid
+        Specifies a target grid. If it is different from
+        'grid' then the operator maps from 'grid' to
+        'target'.
 
     """
 
@@ -356,7 +354,7 @@ def multitrace_operator(grid, wave_number, parameters=None, spaces='linear'):
 
     from bempp.api.operators.boundary import _common
     return _common.multitrace_operator_impl(grid, op(single_layer), op(double_layer),
-                                            op(hypersingular), parameters, spaces)
+                                            op(hypersingular), parameters, spaces, target=target)
 
 
 def single_layer_and_hypersingular_pair(grid, wave_number, parameters=None, spaces='linear', base_slp=None, return_base_slp=False):

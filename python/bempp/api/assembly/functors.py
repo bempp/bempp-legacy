@@ -35,6 +35,13 @@ def scalar_function_value_functor():
     return ShapeTransformationFunctorContainer(
             scalar_function_value_functor_ext())
 
+def scalar_function_value_times_normal_functor():
+
+    from bempp.core.fiber.shape_transformation_functors import scalar_function_value_times_normal_functor_ext
+
+    return ShapeTransformationFunctorContainer(
+            scalar_function_value_times_normal_functor_ext())
+
 def surface_gradient_functor():
 
     from bempp.core.fiber.shape_transformation_functors import surface_gradient_functor_ext
@@ -83,6 +90,13 @@ def simple_test_trial_integrand_functor():
 
     return LocalIntegrandFunctorContainer(
             simple_test_trial_integrand_functor_ext())
+
+def single_component_test_trial_integrand_functor(test_component, trial_component):
+
+    from bempp.core.fiber.local_integrand_functors import single_component_test_trial_integrand_functor_ext
+
+    return LocalIntegrandFunctorContainer(
+            single_component_test_trial_integrand_functor_ext(test_component, trial_component))
 
 def maxwell_test_trial_integrand_functor():
 

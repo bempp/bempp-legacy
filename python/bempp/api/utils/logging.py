@@ -1,6 +1,7 @@
 """This module contains functions to initialize the Python logger"""
 from __future__ import absolute_import
 import logging as _logging
+import time as _time
 
 # Logging levels
 
@@ -47,3 +48,39 @@ def set_logging_level(level):
 
     from bempp.api import LOGGER
     LOGGER.setLevel(level)
+
+
+def timeit(message):
+    """Decorator to time a method in BEM++"""
+    import time
+    from bempp.api import LOGGER
+    from bempp.api import global_parameters
+
+    def timeit_impl(fun):
+
+        def timed_fun(*args, **kwargs):
+            if not global_parameters.verbosity.extended_verbosity:
+                return fun(*args, **kwargs)
+
+            st = time.time()
+            res = fun(*args, **kwargs)
+            et = time.time()
+            LOGGER.info(message + " : {0:.3e}s".format(et-st))
+            return res
+
+        return timed_fun
+
+    return timeit_impl
+
+class Timer:
+    """Context manager to measure time in BEM++."""
+
+    def __enter__(self):
+        self.start = _time.time()
+        return self
+    
+    def __exit__(self, *args):
+        self.end = _time.time()
+        self.interval = self.end - self.start
+
+

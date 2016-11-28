@@ -1,11 +1,10 @@
 """This modules contains the data structures for assembled boundary operators."""
 
 from scipy.sparse.linalg.interface import LinearOperator as _LinearOperator
+from bempp.api.utils.logging import timeit as _timeit
 import numpy as _np
 
 
-def _call_super(obj, dtype, shape):
-    """Call the correct super constructor depending on scipy version."""
 
 
 class DiscreteBoundaryOperator(_LinearOperator):
@@ -91,6 +90,12 @@ class DiscreteBoundaryOperator(_LinearOperator):
             return self._transpose()
         T = property(transpose)
 
+    @property
+    def memory(self):
+        """Return an estimate of the memory size in kb"""
+        ops = self.elementary_operators()
+        return sum([op._memory for op in ops])
+
 class DiscreteBoundaryOperatorSum(DiscreteBoundaryOperator):
 
     def __init__(self, op1, op2):
@@ -130,6 +135,11 @@ class DiscreteBoundaryOperatorSum(DiscreteBoundaryOperator):
     def _transpose(self):
 
         return self._op1.transpose() + self._op2.transpose()
+
+    def elementary_operators(self):
+        """Return a set of all elementary sparse or nonlocal operators that form this operator."""
+
+        return self._op1.elementary_operators() | self._op2.elementary_operators()
 
 
 class DiscreteBoundaryOperatorProduct(DiscreteBoundaryOperator):
@@ -172,6 +182,10 @@ class DiscreteBoundaryOperatorProduct(DiscreteBoundaryOperator):
 
         return self._op2.transpose() * self._op1.transpose()
 
+    def elementary_operators(self):
+        """Return a set of all elementary sparse or nonlocal operators that form this operator."""
+
+        return self._op1.elementary_operators() | self._op2.elementary_operators()
 
 class ScaledDiscreteBoundaryOperator(DiscreteBoundaryOperator):
 
@@ -208,6 +222,10 @@ class ScaledDiscreteBoundaryOperator(DiscreteBoundaryOperator):
 
         return self._alpha * self._op.transpose()
 
+    def elementary_operators(self):
+        """Return a set of all elementary sparse or nonlocal operators that form this operator."""
+
+        return self._op.elementary_operators()
 
 class GeneralNonlocalDiscreteBoundaryOperator(DiscreteBoundaryOperator):
     """Main class for the discrete form of general discrete nonlocal operators.
@@ -224,6 +242,7 @@ class GeneralNonlocalDiscreteBoundaryOperator(DiscreteBoundaryOperator):
 
         self._impl = impl
 
+    @_timeit("Nonlocal Operator matvec")
     def _matvec(self, vec):  # pylint: disable=method-hidden
         """Implements matrix-vector product."""
 
@@ -245,6 +264,16 @@ class GeneralNonlocalDiscreteBoundaryOperator(DiscreteBoundaryOperator):
     def _transpose(self):
         """Return the transposed operator."""
         return GeneralNonlocalDiscreteBoundaryOperator(self._impl.transpose())
+
+    @property
+    def _memory(self):
+        from bempp.api.hmat.hmatrix_interface import mem_size
+        return mem_size(self)
+
+    def elementary_operators(self):
+        """Return a set of all elementary sparse or nonlocal operators that form this operator."""
+
+        return {self}
 
 
 class DenseDiscreteBoundaryOperator(DiscreteBoundaryOperator):  # pylint: disable=too-few-public-methods
@@ -320,6 +349,14 @@ class DenseDiscreteBoundaryOperator(DiscreteBoundaryOperator):  # pylint: disabl
 
         return self._impl
 
+    @property
+    def _memory(self):
+        return self.A.nbytes / 1024.
+
+    def elementary_operators(self):
+        """Return a set of all elementary sparse or nonlocal operators that form this operator."""
+
+        return {self}
 
 class SparseDiscreteBoundaryOperator(DiscreteBoundaryOperator):
     """Main class for the discrete form of sparse operators.
@@ -336,6 +373,7 @@ class SparseDiscreteBoundaryOperator(DiscreteBoundaryOperator):
 
         self._impl = impl
 
+    @_timeit("Sparse Operator matvec")
     def _matvec(self, vec):
         """Multiply the operator with a numpy vector or matrix x."""
 
@@ -374,7 +412,10 @@ class SparseDiscreteBoundaryOperator(DiscreteBoundaryOperator):
 
     def __mul__(self, other):
 
-        return self.dot(other)
+        if isinstance(other, SparseDiscreteBoundaryOperator):
+            return SparseDiscreteBoundaryOperator(self.sparse_operator * other.sparse_operator)
+        else:
+            return self.dot(other)
 
     def dot(self, other):
 
@@ -397,6 +438,16 @@ class SparseDiscreteBoundaryOperator(DiscreteBoundaryOperator):
     def sparse_operator(self):
         """Return the underlying Scipy sparse matrix."""
         return self._impl
+
+    @property
+    def _memory(self):
+        mat = self.sparse_operator
+        return (mat.data.nbytes + mat.indices.nbytes + mat.indptr.nbytes) / 1024
+
+    def elementary_operators(self):
+        """Return a set of all elementary sparse or nonlocal operators that form this operator."""
+
+        return {self}
 
 
 class InverseSparseDiscreteBoundaryOperator(DiscreteBoundaryOperator):
@@ -493,6 +544,7 @@ class InverseSparseDiscreteBoundaryOperator(DiscreteBoundaryOperator):
         self._operator = operator
         super(InverseSparseDiscreteBoundaryOperator, self).__init__(self._solver.dtype, self._solver.shape)
 
+    @_timeit("Inverse Sparse Operator matvec ")
     def _matvec(self, vec):  # pylint: disable=method-hidden
         """Implemententation of matvec."""
 
@@ -510,6 +562,11 @@ class InverseSparseDiscreteBoundaryOperator(DiscreteBoundaryOperator):
     def _adjoint(self):
 
         return InverseSparseDiscreteBoundaryOperator(self._operator.adjoint())
+
+    def elementary_operators(self):
+        """Return a set of all elementary sparse or nonlocal operators that form this operator."""
+
+        return self._operator.elementary_operators()
 
 
 class ZeroDiscreteBoundaryOperator(DiscreteBoundaryOperator):
@@ -545,6 +602,11 @@ class ZeroDiscreteBoundaryOperator(DiscreteBoundaryOperator):
             return _np.zeros((self.shape[0], x.shape[1]), dtype='float64')
         else:
             return _np.zeros(self.shape[0], dtype='float64')
+
+    def elementary_operators(self):
+        """Return a set of all elementary sparse or nonlocal operators that form this operator."""
+
+        return {}
 
 
 class DiscreteRankOneOperator(DiscreteBoundaryOperator):
@@ -598,6 +660,11 @@ class DiscreteRankOneOperator(DiscreteBoundaryOperator):
     def _adjoint(self, x):
 
         return DiscreteRankOneOperator(row.conjugate(), column.conjugate())
+
+    def elementary_operators(self):
+        """Return a set of all elementary sparse or nonlocal operators that form this operator."""
+
+        return {}
 
 
 def as_matrix(operator):
