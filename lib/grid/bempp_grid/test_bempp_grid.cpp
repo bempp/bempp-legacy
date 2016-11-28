@@ -62,9 +62,9 @@ namespace Bempp {
         for (auto it = grid.lbegin<1>(0); it != grid.lend<1>(0); ++it)
             std::cout << it->geometry().center() << std::endl;;
 
-        LevelIndexSetImp indexSet;
-        for (auto it = grid.lbegin<1>(0); it != grid.lend<1>(0); ++it)
-            std::cout << indexSet.index(*it) << std::endl;
+        IdSetImp idSet;
+        for (auto it = grid.lbegin<0>(0); it != grid.lend<0>(0); ++it)
+            std::cout << idSet.subId(*it, 0, 2) << std::endl;
 
     }
 

@@ -51,6 +51,9 @@ namespace BemppGrid {
             template <int cd>
             DuneGeometry<cd> geometry(const Entity<cd>& entity);
 
+            template <int cd>
+            std::size_t id(const Entity<cd>& entity);
+
             const std::array<std::size_t, 3>& element2Edges(int level, std::size_t elementIndex) const;
             const std::vector<size_t>& edge2Elements(int level, std::size_t edgeIndex) const;
             const std::vector<size_t>& node2Elements(int level, std::size_t nodeIndex) const;

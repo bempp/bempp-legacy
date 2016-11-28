@@ -10,6 +10,7 @@
 #include "triangle_imp/bempp_grid_entity_pointer.hpp"
 #include "triangle_imp/bempp_grid_level_iterator.hpp"
 #include "triangle_imp/bempp_grid_index_set.hpp"
+#include "triangle_imp/bempp_grid_id_set.hpp"
 
 namespace BemppGrid {
 

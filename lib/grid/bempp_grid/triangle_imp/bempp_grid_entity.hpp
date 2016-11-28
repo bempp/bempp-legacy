@@ -65,6 +65,8 @@ namespace BemppGrid {
 
             EntityPointer<0> father() const;
 
+            std::size_t id() const;
+
         private:
 
             EntityImp() {}
@@ -98,6 +100,8 @@ namespace BemppGrid {
             bool equals(const EntityImp<1, 2, const TriangleGrid>& other) const;
             EntitySeed seed() const;
 
+            std::size_t id() const;
+
         private:
 
             EntityImp() {}
@@ -130,6 +134,8 @@ namespace BemppGrid {
             Dune::PartitionType partitionType() const;
             bool equals(const EntityImp<2, 2, const TriangleGrid>& other) const;
             EntitySeed seed() const;
+
+            std::size_t id() const;
 
         private:
 

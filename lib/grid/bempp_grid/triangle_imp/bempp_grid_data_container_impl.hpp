@@ -257,6 +257,30 @@ namespace BemppGrid {
         return DuneGeometry<cd>(levelNodes[TriangleGrid::entityIndex<cd>(entity)]);
 
     }
+    
+    template <>
+    std::size_t DataContainer::id<0>(const Entity<0>& entity){
+
+        const auto& realEntity = TriangleGrid::getEntityImp<0>(entity);
+        return m_elementIds[TriangleGrid::entityLevel<0>(entity)][TriangleGrid::entityIndex<0>(entity)];
+
+    }
+
+    template <>
+    std::size_t DataContainer::id<1>(const Entity<1>& entity){
+
+        const auto& realEntity = TriangleGrid::getEntityImp<1>(entity);
+        return m_edgeIds[TriangleGrid::entityLevel<1>(entity)][TriangleGrid::entityIndex<1>(entity)];
+
+    }
+
+    template <>
+    std::size_t DataContainer::id<2>(const Entity<2>& entity){
+
+        const auto& realEntity = TriangleGrid::getEntityImp<2>(entity);
+        return m_nodeIds[TriangleGrid::entityLevel<2>(entity)][TriangleGrid::entityIndex<2>(entity)];
+
+    }
 
     template <int cd>
     void DataContainer::computeGeometries(int level) {

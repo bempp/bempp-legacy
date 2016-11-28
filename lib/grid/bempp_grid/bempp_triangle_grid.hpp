@@ -20,9 +20,7 @@ namespace BemppGrid {
     class DataContainer;
     class LevelIndexSetImp;
 
-    class P1GlobalIdSetImp;
-    class P1LocalIdSetImp;
-
+    class IdSetImp;
 
     template <int mydim, int cdim, class> class Geometry;
     template <int codim, int dim, class> class EntityImp;
@@ -54,9 +52,9 @@ namespace BemppGrid {
             LevelIteratorImp,
             LevelIndexSetImp,
             LevelIndexSetImp,
-            P1GlobalIdSetImp,
+            IdSetImp,
             std::size_t,
-            P1LocalIdSetImp,
+            IdSetImp,
             std::size_t,
             Dune::CollectiveCommunication<TriangleGrid>,
             LevelGridViewTraits,
@@ -72,6 +70,7 @@ namespace BemppGrid {
         private:
 
             friend class LevelIndexSetImp;
+            friend class IdSetImp;
             friend class DataContainer;
 
             friend class EntityPointerImp<0, const TriangleGrid>;
@@ -134,6 +133,8 @@ namespace BemppGrid {
 
         private:
 
+            const DataContainer& data() const;
+
             template <int cd>
             static GridFamily::Traits::LevelIndexSet::IndexType entityIndex(
                     const typename GridFamily::Traits::Codim<cd>::Entity& entity);
@@ -145,6 +146,7 @@ namespace BemppGrid {
             template <int cd>
             static const EntityImp<cd, 2, const TriangleGrid>& getEntityImp(
                     const typename GridFamily::Traits::Codim<cd>::Entity& entity);
+
 
             shared_ptr<DataContainer> m_data;
     };

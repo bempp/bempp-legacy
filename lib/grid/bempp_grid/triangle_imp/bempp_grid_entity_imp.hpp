@@ -128,6 +128,7 @@ namespace BemppGrid {
 
     }
 
+
     EntityImp<1, 2, const TriangleGrid>::EntityImp(const shared_ptr<DataContainer>& data,
         int level, std::size_t index) : m_data(data), m_level(level), m_index(index)
     {}
@@ -204,6 +205,24 @@ namespace BemppGrid {
     bool EntityImp<2, 2, const TriangleGrid>::equals(const EntityImp<2, 2, const TriangleGrid>& other) const {
 
         return m_level == other.m_level && m_index == other.m_index;
+    }
+
+    std::size_t EntityImp<0, 2, const TriangleGrid>::id() const {
+
+        return m_data->id<0>(Entity(*this));
+
+    }
+
+    std::size_t EntityImp<1, 2, const TriangleGrid>::id() const {
+
+        return m_data->id<1>(Entity(*this));
+
+    }
+
+    std::size_t EntityImp<2, 2, const TriangleGrid>::id() const {
+
+        return m_data->id<2>(Entity(*this));
+
     }
 }
 
