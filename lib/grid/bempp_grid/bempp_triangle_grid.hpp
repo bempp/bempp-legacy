@@ -9,6 +9,7 @@
 #include <dune/grid/common/gridenums.hh>
 #include <dune/grid/common/entityiterator.hh>
 #include <dune/grid/common/grid.hh>
+#include <dune/grid/common/defaultgridview.hh>
 #include <dune/common/parallel/collectivecommunication.hh>
 #include <boost/none.hpp> 
 
