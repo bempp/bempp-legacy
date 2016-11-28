@@ -1,7 +1,7 @@
 #include "../../common/common.hpp"
 #include "../../common/shared_ptr.hpp"
 #include "../../common/boost_make_shared_fwd.hpp"
-#include "p1_grid.hpp"
+#include "bempp_triangle_grid.hpp"
 #include <dune/geometry/type.hh>
 #include <dune/grid/common/entity.hh>
 #include <iostream>
@@ -44,25 +44,25 @@ namespace Bempp {
         elements[1][1] = 1;
         elements[1][2] = 3;
 
-        auto data = boost::make_shared<P1DataContainer>();
+        auto data = boost::make_shared<DataContainer>();
         data->init(vertexContainer, elementContainer);
-        Dune::Entity<0, 2, const P1Grid, P1EntityImp> entity(P1EntityImp<0, 2, const P1Grid>(data, 0, 0));
+        Dune::Entity<0, 2, const TriangleGrid, EntityImp> entity(EntityImp<0, 2, const TriangleGrid>(data, 0, 0));
         for (int i = 0; i < 3; ++i){
             auto node = entity.subEntity<1>(i)->geometry().center(); 
             for (int j = 0; j < 3; ++j) std::cout << node[j] << " ";
             std::cout << std::endl;
         }
-        P1GridGeometry<2, 3, const P1Grid > geom(geometryType, vertices);
+        Geometry<2, 3, const TriangleGrid > geom(geometryType, vertices);
         std::cout << "Number of edges: " << data->numberOfEdges(0) << std::endl;
 
-        auto grid = P1Grid(data);
+        auto grid = TriangleGrid(data);
 
         std::cout << "Test the iterator" << std::endl;
 
         for (auto it = grid.lbegin<1>(0); it != grid.lend<1>(0); ++it)
             std::cout << it->geometry().center() << std::endl;;
 
-        P1LevelIndexSetImp indexSet;
+        LevelIndexSetImp indexSet;
         for (auto it = grid.lbegin<1>(0); it != grid.lend<1>(0); ++it)
             std::cout << indexSet.index(*it) << std::endl;
 

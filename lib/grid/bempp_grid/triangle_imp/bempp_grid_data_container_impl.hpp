@@ -1,15 +1,20 @@
-#include "p1_data_container.hpp"
+#ifndef bempp_grid_triangle_imp_data_container_impl_hpp
+#define bempp_grid_triangle_imp_data_container_impl_hpp
+
+#include "bempp_grid_data_container.hpp"
 #include <dune/geometry/type.hh>
 #include <cassert>
 #include <utility>
 
 namespace BemppGrid {
 
-    P1DataContainer::P1DataContainer() :
+    inline DataContainer::DataContainer() :
         m_levels(0), m_idCounter(0) {};
 
-    void P1DataContainer::init(const shared_ptr<P1DataContainer::NodesContainer>& nodes,
-                                     const shared_ptr<P1DataContainer::ElementsContainer>& elements){
+    inline DataContainer::~DataContainer() {};
+
+    inline void DataContainer::init(const shared_ptr<DataContainer::NodesContainer>& nodes,
+                                     const shared_ptr<DataContainer::ElementsContainer>& elements){
 
         int nelements = elements->size();
         int nnodes = nodes->size();
@@ -108,42 +113,42 @@ namespace BemppGrid {
         m_levels++;
     }
 
-    int P1DataContainer::levels() const {
+    inline int DataContainer::levels() const {
 
         return m_levels;
 
     }
 
-    const P1DataContainer::NodesContainer& P1DataContainer::nodes(int level) const {
+    inline const DataContainer::NodesContainer& DataContainer::nodes(int level) const {
         assert(level < m_levels);
         return *(m_nodes[level]);
     }
 
-    const P1DataContainer::ElementsContainer& P1DataContainer::elements(int level) const{
+    inline const DataContainer::ElementsContainer& DataContainer::elements(int level) const{
         assert(level < m_levels);
         return *(m_elements[level]);
     }
 
-    const P1DataContainer::EdgesContainer& P1DataContainer::edges(int level) const {
+    inline const DataContainer::EdgesContainer& DataContainer::edges(int level) const {
         assert(level < m_levels);
         return m_edges[level];
     }
 
-    int P1DataContainer::numberOfNodes(int level) const {
+    inline int DataContainer::numberOfNodes(int level) const {
 
         assert(level < m_levels);
         return m_nodes[level]->size();
 
     }
    
-    int P1DataContainer::numberOfElements(int level) const {
+    inline int DataContainer::numberOfElements(int level) const {
 
         assert(level < m_levels);
         return m_elements[level]->size();
 
     }
 
-    int P1DataContainer::numberOfEdges(int level) const {
+    inline int DataContainer::numberOfEdges(int level) const {
 
         assert(level < m_levels);
         return m_edges[level].size();
@@ -152,52 +157,53 @@ namespace BemppGrid {
 
 
     template<>
-    int P1DataContainer::numberOfEntities<0>(int level) const {
+    int DataContainer::numberOfEntities<0>(int level) const {
 
         return numberOfElements(level);
     }
 
     template<>
-    int P1DataContainer::numberOfEntities<1>(int level) const {
+    int DataContainer::numberOfEntities<1>(int level) const {
 
         return numberOfEdges(level);
     }
 
     template<>
-    int P1DataContainer::numberOfEntities<2>(int level) const {
+    int DataContainer::numberOfEntities<2>(int level) const {
 
         return numberOfNodes(level);
     }
 
-    const std::array<std::size_t, 3>& P1DataContainer::element2Edges(
+    inline const std::array<std::size_t, 3>& DataContainer::element2Edges(
             int level, std::size_t elementIndex) const {
         assert(level < m_levels);
         return m_element2Edges[level][elementIndex];
 
     }
 
-    const std::vector<size_t>& P1DataContainer::edge2Elements(int level, std::size_t edgeIndex) const {
+    inline const std::vector<size_t>& DataContainer::edge2Elements(int level, std::size_t edgeIndex) const {
         assert(level < m_levels);
         return m_edge2Elements[level][edgeIndex];
 
     }
-    const std::vector<size_t>& P1DataContainer::node2Elements(int level, std::size_t nodeIndex) const {
+
+    inline const std::vector<size_t>& DataContainer::node2Elements(int level, std::size_t nodeIndex) const {
         assert(level < m_levels);
         return m_node2Elements[level][nodeIndex];
 
     }
 
-    const std::vector<size_t>& P1DataContainer::node2Edges(int level, std::size_t nodeIndex) const {
+    inline const std::vector<size_t>& DataContainer::node2Edges(int level, std::size_t nodeIndex) const {
         assert(level < m_levels);
         return m_node2Edges[level][nodeIndex];
 
     }
 
 
-    const P1DataContainer::NodesContainer P1DataContainer::get_entity_nodes(int codim, int level, int index) const {
+    inline const DataContainer::NodesContainer DataContainer::getEntityNodes(int codim, int level, int index) const {
 
         assert(level < m_levels);
-        P1DataContainer::NodesContainer nodes;
+        DataContainer::NodesContainer nodes;
 
         if (codim == 0) {
             // Element
@@ -221,12 +227,12 @@ namespace BemppGrid {
             return nodes;
         }
 
-        throw std::runtime_error("P1DataContainer::get_entity_nodes(): codim not valid.");
+        throw std::runtime_error("DataContainer::getEntityNodes(): codim not valid.");
 
 
     }
 
-    int P1DataContainer::getElementFatherIndex(int level, std::size_t elementIndex) const {
+    inline int DataContainer::getElementFatherIndex(int level, std::size_t elementIndex) const {
 
         assert(level > 0);
         assert(level < m_levels);
@@ -235,7 +241,7 @@ namespace BemppGrid {
 
     }
     
-    const std::vector<size_t>& P1DataContainer::getElementSons(int level, std::size_t elementIndex) const {
+    inline const std::vector<size_t>& DataContainer::getElementSons(int level, std::size_t elementIndex) const {
 
         assert(m_levels > 1);
 
@@ -245,30 +251,32 @@ namespace BemppGrid {
 
 
     template <int cd>
-    Geometry<cd> P1DataContainer::geometry(const Entity<cd>& entity) {
+    DataContainer::DuneGeometry<cd> DataContainer::geometry(const Entity<cd>& entity) {
 
-        return m_geometries.get<cd>()[P1Grid::entityLevel(entity)] [P1Grid::entityIndex<cd>(entity)];
+        const auto& levelNodes = *(std::get<cd>(m_geometries)[TriangleGrid::entityLevel<cd>(entity)]);
+        return DuneGeometry<cd>(levelNodes[TriangleGrid::entityIndex<cd>(entity)]);
 
     }
 
     template <int cd>
-    void P1DataContainer::computeGeometries(int level) {
+    void DataContainer::computeGeometries(int level) {
 
-        m_geometries.get<cd>().push_back(
+        std::get<cd>(m_geometries).push_back(
                 shared_ptr<std::vector<Geometry<cd>>>(
                     new std::vector<Geometry<cd>>()));
-        const auto& levelGeometries = *(m_geometries.get<cd>[level]);
+        auto& levelGeometries = *(std::get<cd>(m_geometries)[level]);
         
         int entityCount = numberOfEntities<cd>(level);
         levelGeometries.reserve(entityCount);
 
-        for (int i = 0; i < entityCount; ++i){
+        for (int index = 0; index < entityCount; ++index){
 
             Dune::GeometryType geometryType;
-            geometryType.makeSimplex<2-cd>
-            std::vector<Dune::FieldVector<double, 3>> vertices;
+            geometryType.makeSimplex(2-cd);
             levelGeometries.push_back(Geometry<cd>(geometryType, getEntityNodes(cd, level, index)));
         }
     }
 
 }
+
+#endif

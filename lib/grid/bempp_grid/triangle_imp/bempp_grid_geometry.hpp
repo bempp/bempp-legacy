@@ -1,5 +1,5 @@
-#ifndef bempp_p1_geometry_hpp
-#define bempp_p1_geometry_hpp
+#ifndef bempp_grid_triangle_impl_geometry_hpp
+#define bempp_grid_triangle_impl_geometry_hpp
 
 #include "../../../common/common.hpp"
 #include <dune/geometry/multilineargeometry.hh>
@@ -9,10 +9,10 @@
 namespace BemppGrid {
 
 template <int mydim, int cdim, class>
-class Geometry : public Dune::CachedMultiLinearGeometry<double, mydim, cdim>
+class Geometry : public Dune::MultiLinearGeometry<double, mydim, cdim>
 {
 
-    typedef Dune::CachedMultiLinearGeometry<double, mydim, cdim> Base;
+    typedef Dune::MultiLinearGeometry<double, mydim, cdim> Base;
 
     public:
 

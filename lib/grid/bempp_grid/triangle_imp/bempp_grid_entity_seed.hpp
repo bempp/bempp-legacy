@@ -1,20 +1,20 @@
-#ifndef bempp_p1_entity_seed_hpp
-#define bempp_p1_entity_seed_hpp
+#ifndef bempp_grid_triangle_imp_entity_seed_hpp
+#define bempp_grid_triangle_imp_entity_seed_hpp
 
 namespace BemppGrid {
 
-    class P1Grid;
+    class TriangleGrid;
 
-    template<int, int, class> class P1EntityImp;
+    template<int, int, class> class EntityImp;
 
     template <int codim, class>
-    class P1EntitySeedImp {
+    class EntitySeedImp {
 
         public:
 
             enum {codimension = codim};
 
-            P1EntitySeedImp(int level, std::size_t index) : 
+            EntitySeedImp(int level, std::size_t index) : 
                 m_level(level), m_index(index) {}
 
             bool isValid() const {

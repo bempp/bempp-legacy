@@ -1,8 +1,9 @@
-#ifndef p1_data_container_hpp
-#define p1_data_container_hpp
+#ifndef bempp_grid_triangle_imp_data_container_hpp
+#define bempp_grid_triangle_imp_data_container_hpp
 
 #include "../../../common/common.hpp"
 #include "../bempp_grid_types.hpp"
+#include "bempp_grid_geometry.hpp"
 #include <dune/common/fvector.hh>
 #include <vector>
 #include <array>
@@ -10,7 +11,9 @@
 
 namespace BemppGrid {
 
-    class P1DataContainer {
+    class TriangleGrid;
+
+    class DataContainer {
 
         public:
 
@@ -19,12 +22,16 @@ namespace BemppGrid {
             typedef std::vector<std::array<std::size_t, 2>> EdgesContainer;
 
             template <int cd>
-            using Geometry = typename P1Grid::GridFamily::Traits::Codim<cd>::Geometry;
+            using DuneGeometry = typename TriangleGrid::GridFamily::Traits::Codim<cd>::Geometry;
 
             template <int cd>
-            using Entity = typename P1Grid::GridFamily::Traits::Codim<cd>::Entity;
+            using Geometry = BemppGrid::Geometry<2-cd, 3,const TriangleGrid>;
 
-            P1DataContainer();
+            template <int cd>
+            using Entity = typename TriangleGrid::GridFamily::Traits::Codim<cd>::Entity;
+
+            DataContainer();
+            ~DataContainer();
 
             void init( const shared_ptr<NodesContainer>& nodes, 
                     const shared_ptr<ElementsContainer>& elements);
@@ -42,14 +49,14 @@ namespace BemppGrid {
             int numberOfEntities(int level) const;
 
             template <int cd>
-            Geometry<cd> geometry(const Entity<cd>& entity);
+            DuneGeometry<cd> geometry(const Entity<cd>& entity);
 
             const std::array<std::size_t, 3>& element2Edges(int level, std::size_t elementIndex) const;
             const std::vector<size_t>& edge2Elements(int level, std::size_t edgeIndex) const;
             const std::vector<size_t>& node2Elements(int level, std::size_t nodeIndex) const;
             const std::vector<size_t>& node2Edges(int level, std::size_t nodeIndex) const; 
 
-            const NodesContainer get_entity_nodes(int codim, int level, int index) const;
+            const NodesContainer getEntityNodes(int codim, int level, int index) const;
 
             int getElementFatherIndex(int level, std::size_t elementIndex) const;
             const std::vector<size_t>& getElementSons(int level, std::size_t elementIndex) const;
@@ -89,5 +96,6 @@ namespace BemppGrid {
 
 }
 
+#include "bempp_grid_data_container_impl.hpp"
 
 #endif
