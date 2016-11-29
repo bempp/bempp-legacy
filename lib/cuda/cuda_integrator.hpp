@@ -52,10 +52,12 @@ namespace Fiber {
 template <typename BasisFunctionType> class Shapeset;
 template <typename BasisFunctionType> class BasisData;
 template <typename KernelType> class CollectionOfKernels;
+template <typename KernelType> class CudaKernelFunctor;
 /** \endcond */
 
 /** \brief Regular integration over pairs of elements on the device. */
-template <typename BasisFunctionType, typename KernelType, typename ResultType>
+template <typename BasisFunctionType, typename KernelType, typename ResultType,
+    typename KernelFunctor>
 class CudaIntegrator {
 public:
 
@@ -87,7 +89,7 @@ public:
       shared_ptr<Bempp::CudaGrid<CoordinateType>> testGrid,
       shared_ptr<Bempp::CudaGrid<CoordinateType>> trialGrid,
       const std::vector<int> &testIndices, const std::vector<int> &trialIndices,
-      const CollectionOfKernels<KernelType> &kernels,
+      const shared_ptr<const CollectionOfKernels<KernelType>> &kernel,
       const int deviceId, const Bempp::CudaOptions &cudaOptions);
 
   /** \brief Destructor. */
@@ -126,7 +128,9 @@ private:
   shared_ptr<Bempp::CudaGrid<CoordinateType>> m_testGrid;
   shared_ptr<Bempp::CudaGrid<CoordinateType>> m_trialGrid;
 
-  const CollectionOfKernels<KernelType> &m_kernels;
+  KernelFunctor *m_d_kernel;
+  size_t m_trialGeomDeps;
+  size_t m_testGeomDeps;
 
   const Bempp::CudaOptions m_cudaOptions;
 

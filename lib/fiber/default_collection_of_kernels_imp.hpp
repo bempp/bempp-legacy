@@ -177,10 +177,10 @@ DefaultCollectionOfKernels<Functor>::estimateRelativeScale(
 }
 
 template <typename Functor>
-//  TODO
-//  shared_ptr<CudaKernelFunctor<ValueType>>
-void DefaultCollectionOfKernels<Functor>::cudaKernels() const {
-//  return m_functor.cudaFunctor();
+shared_ptr<const CudaKernelFunctor<typename CollectionOfKernels<
+    typename Functor::ValueType>::ValueType>>
+DefaultCollectionOfKernels<Functor>::cudaFunctor() const {
+  return m_functor.cudaFunctor();
 }
 
 } // namespace Fiber

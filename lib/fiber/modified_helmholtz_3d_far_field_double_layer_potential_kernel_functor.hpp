@@ -22,6 +22,9 @@
 #define fiber_modified_helmholtz_3d_far_field_double_layer_potential_kernel_functor_hpp
 
 #include "../common/common.hpp"
+#include "../common/boost_make_shared_fwd.hpp"
+
+#include "../cuda/cuda_modified_helmholtz_3d_far_field_double_layer_potential_kernel_functor.hpp"
 
 #include "geometrical_data.hpp"
 #include "scalar_traits.hpp"
@@ -50,6 +53,13 @@ public:
   ModifiedHelmholtz3dFarFieldDoubleLayerPotentialKernelFunctor(
       ValueType waveNumber)
       : m_waveNumber(waveNumber) {}
+
+  shared_ptr<const CudaModifiedHelmholtz3dFarFieldDoubleLayerPotentialKernelFunctor<ValueType>>
+  cudaFunctor() {
+    m_cudaFunctor = boost::make_shared<
+        CudaModifiedHelmholtz3dFarFieldDoubleLayerPotentialKernelFunctor<ValueType>>();
+    return m_cudaFunctor;
+  }
 
   int kernelCount() const { return 1; }
   int kernelRowCount(int /* kernelIndex */) const { return 1; }
@@ -81,7 +91,11 @@ public:
   }
 
 private:
+  /** \cond PRIVATE */
   ValueType m_waveNumber;
+  shared_ptr<CudaModifiedHelmholtz3dFarFieldDoubleLayerPotentialKernelFunctor<ValueType>>
+  m_cudaFunctor;
+  /** \endcond */
 };
 
 } // namespace Fiber

@@ -20,29 +20,35 @@
 
 #include "cuda_integrator.hpp"
 #include "cuda_grid.hpp"
+#include "cuda_laplace_3d_single_layer_potential_kernel_functor.hpp"
+#include "cuda_laplace_3d_double_layer_potential_kernel_functor.hpp"
+#include "cuda_laplace_3d_adjoint_double_layer_potential_kernel_functor.hpp"
 
 #include "../fiber/explicit_instantiation.hpp"
 #include "../fiber/shapeset.hpp"
 #include "../fiber/basis_data.hpp"
 #include "../fiber/scalar_traits.hpp"
+#include "../fiber/collection_of_kernels.hpp"
 
 namespace Fiber {
 
-template <typename BasisFunctionType, typename KernelType, typename ResultType>
-CudaIntegrator<BasisFunctionType, KernelType, ResultType>::CudaIntegrator(
-    const Matrix<CoordinateType> &localTestQuadPoints,
-    const Matrix<CoordinateType> &localTrialQuadPoints,
-    const std::vector<CoordinateType> &testQuadWeights,
-    const std::vector<CoordinateType> &trialQuadWeights,
-    const Shapeset<BasisFunctionType> &testShapeset,
-    const Shapeset<BasisFunctionType> &trialShapeset,
-    shared_ptr<Bempp::CudaGrid<CoordinateType>> testGrid,
-    shared_ptr<Bempp::CudaGrid<CoordinateType>> trialGrid,
-    const std::vector<int> &testIndices, const std::vector<int> &trialIndices,
-    const CollectionOfKernels<KernelType> &kernels,
-    const int deviceId, const Bempp::CudaOptions &cudaOptions)
-    : m_testGrid(testGrid), m_trialGrid(trialGrid),
-      m_kernels(kernels), m_deviceId(deviceId), m_cudaOptions(cudaOptions) {
+template <typename BasisFunctionType, typename KernelType, typename ResultType,
+    typename KernelFunctor>
+CudaIntegrator<BasisFunctionType, KernelType, ResultType, KernelFunctor>::
+    CudaIntegrator(
+        const Matrix<CoordinateType> &localTestQuadPoints,
+        const Matrix<CoordinateType> &localTrialQuadPoints,
+        const std::vector<CoordinateType> &testQuadWeights,
+        const std::vector<CoordinateType> &trialQuadWeights,
+        const Shapeset<BasisFunctionType> &testShapeset,
+        const Shapeset<BasisFunctionType> &trialShapeset,
+        shared_ptr<Bempp::CudaGrid<CoordinateType>> testGrid,
+        shared_ptr<Bempp::CudaGrid<CoordinateType>> trialGrid,
+        const std::vector<int> &testIndices, const std::vector<int> &trialIndices,
+        const shared_ptr<const CollectionOfKernels<KernelType>> &kernel,
+        const int deviceId, const Bempp::CudaOptions &cudaOptions)
+        : m_testGrid(testGrid), m_trialGrid(trialGrid),
+          m_deviceId(deviceId), m_cudaOptions(cudaOptions) {
 
   const size_t trialIndexCount = trialIndices.size();
   const size_t testIndexCount = testIndices.size();
@@ -63,6 +69,12 @@ CudaIntegrator<BasisFunctionType, KernelType, ResultType>::CudaIntegrator(
         "numbers of test points and weights do not match");
 
   cu_verify( cudaSetDevice(m_deviceId) );
+
+  // Get device function pointer for kernel
+  cu_verify( cudaMalloc((void **)&m_d_kernel, sizeof(KernelFunctor)) );
+  cu_verify( cudaMemcpy(m_d_kernel, &(*(kernel->cudaFunctor())),
+      sizeof(KernelFunctor), cudaMemcpyHostToDevice) );
+  kernel->addGeometricalDependencies(m_testGeomDeps, m_trialGeomDeps);
 
   // Copy element indices to device memory
   m_d_trialIndices.resize(trialIndexCount);
@@ -210,19 +222,25 @@ CudaIntegrator<BasisFunctionType, KernelType, ResultType>::CudaIntegrator(
   }
 }
 
-template <typename BasisFunctionType, typename KernelType, typename ResultType>
-CudaIntegrator<BasisFunctionType, KernelType, ResultType>::~CudaIntegrator() {
+template <typename BasisFunctionType, typename KernelType, typename ResultType,
+    typename KernelFunctor>
+CudaIntegrator<BasisFunctionType, KernelType, ResultType, KernelFunctor>::
+    ~CudaIntegrator() {
 
   cu_verify( cudaSetDevice(m_deviceId) );
+
+  cudaFree(m_d_kernel);
 
   thrust::device_free(m_testBasisData.values);
   thrust::device_free(m_trialBasisData.values);
 }
 
-template <typename BasisFunctionType, typename KernelType, typename ResultType>
-void CudaIntegrator<BasisFunctionType, KernelType, ResultType>::integrate(
-    const size_t elemPairIndexBegin, const size_t elemPairIndexEnd,
-    CudaResultType *result) {
+template <typename BasisFunctionType, typename KernelType, typename ResultType,
+    typename KernelFunctor>
+void CudaIntegrator<BasisFunctionType, KernelType, ResultType, KernelFunctor>::
+    integrate(
+        const size_t elemPairIndexBegin, const size_t elemPairIndexEnd,
+        CudaResultType *result) {
 
   const size_t elemPairCount = elemPairIndexEnd - elemPairIndexBegin;
 
@@ -248,9 +266,7 @@ void CudaIntegrator<BasisFunctionType, KernelType, ResultType>::integrate(
 
   if (m_cudaOptions.isElementDataCachingEnabled() == true) {
 
-    const bool isKernelDataCachingEnabled = false;
-
-    if (isKernelDataCachingEnabled == true) {
+    if (m_cudaOptions.isKernelDataCachingEnabled() == true) {
 
       thrust::device_vector<CudaKernelType> d_kernelValues(
           elemPairCount * m_trialQuadData.pointCount * m_testQuadData.pointCount);
@@ -272,9 +288,12 @@ void CudaIntegrator<BasisFunctionType, KernelType, ResultType>::integrate(
           m_testQuadData.pointCount, m_trialQuadData.pointCount,
           m_testElemData.activeElemCount,
           thrust::raw_pointer_cast(m_testElemData.geomData),
+          thrust::raw_pointer_cast(m_testElemData.normals),
           m_trialElemData.activeElemCount,
           thrust::raw_pointer_cast(m_trialElemData.geomData),
-          thrust::raw_pointer_cast(d_kernelValues.data()))
+          thrust::raw_pointer_cast(m_trialElemData.normals),
+          thrust::raw_pointer_cast(d_kernelValues.data()),
+          *m_d_kernel, m_testGeomDeps, m_trialGeomDeps)
       ));
       cudaDeviceSynchronize();
 
@@ -328,6 +347,7 @@ void CudaIntegrator<BasisFunctionType, KernelType, ResultType>::integrate(
           thrust::raw_pointer_cast(m_trialElemData.geomData),
           thrust::raw_pointer_cast(m_trialElemData.normals),
           thrust::raw_pointer_cast(m_trialElemData.integrationElements),
+          *m_d_kernel, m_testGeomDeps, m_trialGeomDeps,
           d_result)
       ));
     }
@@ -353,12 +373,44 @@ void CudaIntegrator<BasisFunctionType, KernelType, ResultType>::integrate(
         m_trialRawGeometryData.elemCount, m_trialRawGeometryData.vtxCount,
         thrust::raw_pointer_cast(m_trialRawGeometryData.vertices),
         thrust::raw_pointer_cast(m_trialRawGeometryData.elementCorners),
+        *m_d_kernel, m_testGeomDeps, m_trialGeomDeps,
         d_result)
     ));
   }
   cudaDeviceSynchronize();
 }
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(CudaIntegrator);
+// Explicit instantiations
+template <typename KernelType> class CudaLaplace3dSingleLayerPotentialKernelFunctor;
+template class CudaIntegrator<double, double, double, CudaLaplace3dSingleLayerPotentialKernelFunctor<double>>;
+template class CudaIntegrator<double, std::complex<double>, std::complex<double>, CudaLaplace3dSingleLayerPotentialKernelFunctor<thrust::complex<double>>>;
+template class CudaIntegrator<std::complex<double>, std::complex<double>, std::complex<double>, CudaLaplace3dSingleLayerPotentialKernelFunctor<thrust::complex<double>>>;
+template class CudaIntegrator<float, float, float, CudaLaplace3dSingleLayerPotentialKernelFunctor<float>>;
+template class CudaIntegrator<float, std::complex<float>, std::complex<float>, CudaLaplace3dSingleLayerPotentialKernelFunctor<thrust::complex<float>>>;
+template class CudaIntegrator<std::complex<float>, std::complex<float>, std::complex<float>, CudaLaplace3dSingleLayerPotentialKernelFunctor<thrust::complex<float>>>;
+
+template <typename KernelType> class CudaLaplace3dDoubleLayerPotentialKernelFunctor;
+template class CudaIntegrator<double, double, double, CudaLaplace3dDoubleLayerPotentialKernelFunctor<double>>;
+//template class CudaIntegrator<double, double, std::complex<double>, CudaLaplace3dDoubleLayerPotentialKernelFunctor<double>>;
+//template class CudaIntegrator<double, std::complex<double>, std::complex<double>, CudaLaplace3dDoubleLayerPotentialKernelFunctor<thrust::complex<double>>>;
+//template class CudaIntegrator<std::complex<double>, double, std::complex<double>, CudaLaplace3dDoubleLayerPotentialKernelFunctor<double>>;
+//template class CudaIntegrator<std::complex<double>, std::complex<double>, std::complex<double>, CudaLaplace3dDoubleLayerPotentialKernelFunctor<thrust::complex<double>>>;
+template class CudaIntegrator<float, float, float, CudaLaplace3dDoubleLayerPotentialKernelFunctor<float>>;
+//template class CudaIntegrator<float, float, std::complex<float>, CudaLaplace3dDoubleLayerPotentialKernelFunctor<float>>;
+//template class CudaIntegrator<float, std::complex<float>, std::complex<float>, CudaLaplace3dDoubleLayerPotentialKernelFunctor<thrust::complex<float>>>;
+//template class CudaIntegrator<std::complex<float>, float, std::complex<float>, CudaLaplace3dDoubleLayerPotentialKernelFunctor<float>>;
+//template class CudaIntegrator<std::complex<float>, std::complex<float>, std::complex<float>, CudaLaplace3dDoubleLayerPotentialKernelFunctor<thrust::complex<float>>>;
+
+template <typename KernelType> class CudaLaplace3dAdjointDoubleLayerPotentialKernelFunctor;
+template class CudaIntegrator<double, double, double, CudaLaplace3dAdjointDoubleLayerPotentialKernelFunctor<double>>;
+//template class CudaIntegrator<double, double, std::complex<double>, CudaLaplace3dAdjointDoubleLayerPotentialKernelFunctor<double>>;
+//template class CudaIntegrator<double, std::complex<double>, std::complex<double>, CudaLaplace3dAdjointDoubleLayerPotentialKernelFunctor<thrust::complex<double>>>;
+//template class CudaIntegrator<std::complex<double>, double, std::complex<double>, CudaLaplace3dAdjointDoubleLayerPotentialKernelFunctor<double>>;
+//template class CudaIntegrator<std::complex<double>, std::complex<double>, std::complex<double>, CudaLaplace3dAdjointDoubleLayerPotentialKernelFunctor<thrust::complex<double>>>;
+template class CudaIntegrator<float, float, float, CudaLaplace3dAdjointDoubleLayerPotentialKernelFunctor<float>>;
+//template class CudaIntegrator<float, float, std::complex<float>, CudaLaplace3dAdjointDoubleLayerPotentialKernelFunctor<float>>;
+//template class CudaIntegrator<float, std::complex<float>, std::complex<float>, CudaLaplace3dAdjointDoubleLayerPotentialKernelFunctor<thrust::complex<float>>>;
+//template class CudaIntegrator<std::complex<float>, float, std::complex<float>, CudaLaplace3dAdjointDoubleLayerPotentialKernelFunctor<float>>;
+//template class CudaIntegrator<std::complex<float>, std::complex<float>, std::complex<float>, CudaLaplace3dAdjointDoubleLayerPotentialKernelFunctor<thrust::complex<float>>>;
 
 } // namespace Fiber

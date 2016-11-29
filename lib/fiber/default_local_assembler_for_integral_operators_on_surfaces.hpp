@@ -127,8 +127,14 @@ public:
   virtual shared_ptr<const DoubleQuadratureRuleFamily<CoordinateType>>
       quadRuleFamily() const;
 
-  virtual void
-  getKernels(shared_ptr<const CollectionOfKernels<KernelType>> kernels) const;
+  virtual shared_ptr<const CollectionOfKernels<KernelType>>
+  kernels() const;
+
+  virtual void getShapesets(
+      shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
+      &testShapesets,
+      shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
+      &trialShapesets) const;
 
   typedef _2dArray<std::pair<int, Matrix<ResultType>>> Cache;
   virtual const Cache& cache() const;

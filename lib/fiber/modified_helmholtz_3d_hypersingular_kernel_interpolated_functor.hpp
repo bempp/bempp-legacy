@@ -22,6 +22,9 @@
 #define fiber_modified_helmholtz_3d_hypersingular_kernel_interpolated_functor_hpp
 
 #include "../common/common.hpp"
+#include "../common/boost_make_shared_fwd.hpp"
+
+#include "../cuda/cuda_modified_helmholtz_3d_hypersingular_kernel_interpolated_functor.hpp"
 
 #include "geometrical_data.hpp"
 #include "scalar_traits.hpp"
@@ -58,6 +61,13 @@ public:
       ValueType waveNumber, CoordinateType maxDist, int interpPtsPerWavelength)
       : m_slpKernel(waveNumber, maxDist, interpPtsPerWavelength) {}
 
+  shared_ptr<const CudaModifiedHelmholtz3dHypersingularKernelInterpolatedFunctor<ValueType>>
+  cudaFunctor() {
+    m_cudaFunctor = boost::make_shared<
+        CudaModifiedHelmholtz3dHypersingularKernelInterpolatedFunctor<ValueType>>();
+    return m_cudaFunctor;
+  }
+
   int kernelCount() const { return 2; }
   int kernelRowCount(int /* kernelIndex */) const { return 1; }
   int kernelColCount(int /* kernelIndex */) const { return 1; }
@@ -87,6 +97,8 @@ private:
   /** \cond PRIVATE */
   ModifiedHelmholtz3dSingleLayerPotentialKernelInterpolatedFunctor<ValueType>
       m_slpKernel;
+  shared_ptr<CudaModifiedHelmholtz3dHypersingularKernelInterpolatedFunctor<ValueType>>
+  m_cudaFunctor;
   /** \endcond */
 };
 

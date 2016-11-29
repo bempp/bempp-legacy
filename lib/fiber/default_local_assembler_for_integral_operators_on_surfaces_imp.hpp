@@ -443,10 +443,24 @@ DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType,
           typename GeometryFactory>
-void DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
-    BasisFunctionType, KernelType, ResultType, GeometryFactory>::getKernels(
-    shared_ptr<const CollectionOfKernels<KernelType>> kernels) const {
-  kernels = m_kernels;
+shared_ptr<const CollectionOfKernels<KernelType>>
+DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
+    BasisFunctionType, KernelType, ResultType, GeometryFactory>::
+    kernels() const {
+  return m_kernels;
+}
+template <typename BasisFunctionType, typename KernelType, typename ResultType,
+          typename GeometryFactory>
+void
+DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
+    BasisFunctionType, KernelType, ResultType, GeometryFactory>::
+    getShapesets(
+        shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
+        &testShapesets,
+        shared_ptr<const std::vector<const Shapeset<BasisFunctionType> *>>
+        &trialShapesets) const {
+  testShapesets = m_testShapesets;
+  trialShapesets = m_trialShapesets;
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType,

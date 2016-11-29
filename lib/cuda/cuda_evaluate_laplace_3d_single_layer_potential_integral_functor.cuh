@@ -22,13 +22,16 @@
 #define fiber_cuda_evaluate_laplace_3d_single_layer_potential_integral_functor_cuh
 
 #include "cuda_evaluate_integral_functor.cuh"
-#include "cuda_laplace_3d_single_layer_potential_kernel_functor.hpp"
+#include "cuda_kernel_functor.hpp"
+
+#include "../fiber/geometrical_data.hpp"
 
 #include <device_launch_parameters.h>
 
 namespace Fiber {
 
-template <typename BasisFunctionType, typename KernelType, typename ResultType>
+template <typename BasisFunctionType, typename KernelType, typename ResultType,
+    typename KernelFunctor>
 __global__ void
 RawCudaEvaluateLaplace3dSingleLayerPotentialKernelFunctorCached(
     const int elemPairIndexBegin, const unsigned int elemPairCount,
@@ -36,10 +39,14 @@ RawCudaEvaluateLaplace3dSingleLayerPotentialKernelFunctorCached(
     const int* __restrict__ testIndices, const int* __restrict__ trialIndices,
     const unsigned int testPointCount, const unsigned int trialPointCount,
     const unsigned int testElemCount,
-    const typename ScalarTraits<BasisFunctionType>::RealType* testGeomData,
+    const typename ScalarTraits<BasisFunctionType>::RealType* testGlobalPoints,
+    const typename ScalarTraits<BasisFunctionType>::RealType* testElemNormals,
     const unsigned int trialElemCount,
-    const typename ScalarTraits<BasisFunctionType>::RealType* trialGeomData,
-    KernelType* __restrict__ kernelValues) {
+    const typename ScalarTraits<BasisFunctionType>::RealType* trialGlobalPoints,
+    const typename ScalarTraits<BasisFunctionType>::RealType* trialElemNormals,
+    KernelType* __restrict__ kernelValues,
+    KernelFunctor kernelFunctor,
+    const size_t testGeomDeps, const size_t trialGeomDeps) {
 
   typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
 
@@ -64,6 +71,23 @@ RawCudaEvaluateLaplace3dSingleLayerPotentialKernelFunctorCached(
 //    const int trialPoint = i / (elemPairCount * testPointCount);
 //    const int testPoint = (i % (elemPairCount * testPointCount)) / elemPairCount;
 
+    // Get normals
+    CoordinateType trialElemNormal[coordCount], testElemNormal[coordCount];
+    if (trialGeomDeps & Fiber::NORMALS) {
+#pragma unroll
+      for (size_t coo = 0; coo < coordCount; ++coo) {
+        trialElemNormal[coo] =
+            trialElemNormals[coo * trialElemCount + trialElemPosition];
+      }
+    }
+    if (testGeomDeps & Fiber::NORMALS) {
+#pragma unroll
+      for (size_t coo = 0; coo < coordCount; ++coo) {
+        testElemNormal[coo] =
+            testElemNormals[coo * testElemCount + testElemPosition];
+      }
+    }
+
     // Evaluate kernel
     KernelType kernelValue;
     CoordinateType trialPointCoo[coordCount], testPointCoo[coordCount];
@@ -72,16 +96,19 @@ RawCudaEvaluateLaplace3dSingleLayerPotentialKernelFunctorCached(
     #pragma unroll
         for (size_t coo = 0; coo < coordCount; ++coo) {
           trialPointCoo[coo] =
-              trialGeomData[coo * trialPointCount * trialElemCount
-                            + trialPoint * trialElemCount
-                            + trialElemPosition];
+              trialGlobalPoints[coo * trialPointCount * trialElemCount
+                                + trialPoint * trialElemCount
+                                + trialElemPosition];
           testPointCoo[coo] =
-              testGeomData[coo * testPointCount * testElemCount
-                           + testPoint * testElemCount
-                           + testElemPosition];
+              testGlobalPoints[coo * testPointCount * testElemCount
+                               + testPoint * testElemCount
+                               + testElemPosition];
         }
-        CudaLaplace3dSingleLayerPotentialKernelFunctor<KernelType>::evaluate(
-            testPointCoo, trialPointCoo, kernelValue);
+//        CudaLaplace3dSingleLayerPotentialKernelFunctor<KernelType>::evaluate(
+        kernelFunctor.evaluate(
+            testPointCoo, trialPointCoo,
+            testElemNormal, trialElemNormal,
+            kernelValue);
         const size_t index = trialPoint * testPointCount * elemPairCount
                              + testPoint * elemPairCount
                              + i;
@@ -99,14 +126,14 @@ RawCudaEvaluateLaplace3dSingleLayerPotentialIntegralFunctorKernelCached(
     const unsigned int testIndexCount,
     const int* __restrict__ testIndices, const int* __restrict__ trialIndices,
     const unsigned int testPointCount, const unsigned int trialPointCount,
-    const unsigned int testDofCount, const BasisFunctionType* __restrict__ testBasisValues,
-    const unsigned int trialDofCount, const BasisFunctionType* __restrict__ trialBasisValues,
+    const unsigned int testDofCount,
+    const BasisFunctionType* __restrict__ testBasisValues,
+    const unsigned int trialDofCount,
+    const BasisFunctionType* __restrict__ trialBasisValues,
     const unsigned int testElemCount,
-    const typename ScalarTraits<BasisFunctionType>::RealType*
-    testIntegrationElements,
+    const typename ScalarTraits<BasisFunctionType>::RealType* testIntegrationElements,
     const unsigned int trialElemCount,
-    const typename ScalarTraits<BasisFunctionType>::RealType*
-    trialIntegrationElements,
+    const typename ScalarTraits<BasisFunctionType>::RealType* trialIntegrationElements,
     const KernelType* __restrict__ kernelValues,
     ResultType* __restrict__ result) {
 
@@ -155,7 +182,8 @@ RawCudaEvaluateLaplace3dSingleLayerPotentialIntegralFunctorKernelCached(
   }
 }
 
-template <typename BasisFunctionType, typename KernelType, typename ResultType>
+template <typename BasisFunctionType, typename KernelType, typename ResultType,
+    typename KernelFunctor>
 __global__ void
 RawCudaEvaluateLaplace3dSingleLayerPotentialIntegralFunctorCached(
     const int elemPairIndexBegin, const unsigned int elemPairCount,
@@ -165,17 +193,15 @@ RawCudaEvaluateLaplace3dSingleLayerPotentialIntegralFunctorCached(
     const unsigned int testDofCount, const BasisFunctionType* __restrict__ testBasisValues,
     const unsigned int trialDofCount, const BasisFunctionType* __restrict__ trialBasisValues,
     const unsigned int testElemCount,
-    const typename ScalarTraits<BasisFunctionType>::RealType* testGeomData,
-    const typename ScalarTraits<BasisFunctionType>::RealType*
-    testElemNormals,
-    const typename ScalarTraits<BasisFunctionType>::RealType*
-    testIntegrationElements,
+    const typename ScalarTraits<BasisFunctionType>::RealType* testGlobalPoints,
+    const typename ScalarTraits<BasisFunctionType>::RealType* testElemNormals,
+    const typename ScalarTraits<BasisFunctionType>::RealType* testIntegrationElements,
     const unsigned int trialElemCount,
-    const typename ScalarTraits<BasisFunctionType>::RealType* trialGeomData,
-    const typename ScalarTraits<BasisFunctionType>::RealType*
-    trialElemNormals,
-    const typename ScalarTraits<BasisFunctionType>::RealType*
-    trialIntegrationElements,
+    const typename ScalarTraits<BasisFunctionType>::RealType* trialGlobalPoints,
+    const typename ScalarTraits<BasisFunctionType>::RealType* trialElemNormals,
+    const typename ScalarTraits<BasisFunctionType>::RealType* trialIntegrationElements,
+    KernelFunctor kernelFunctor,
+    const size_t testGeomDeps, const size_t trialGeomDeps,
     ResultType* __restrict__ result) {
 
   typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
@@ -197,6 +223,23 @@ RawCudaEvaluateLaplace3dSingleLayerPotentialIntegralFunctorCached(
     const CoordinateType testIntegrationElement =
         testIntegrationElements[testElemPosition];
 
+    // Get normals
+    CoordinateType trialElemNormal[coordCount], testElemNormal[coordCount];
+    if (trialGeomDeps & Fiber::NORMALS) {
+#pragma unroll
+      for (size_t coo = 0; coo < coordCount; ++coo) {
+        trialElemNormal[coo] =
+            trialElemNormals[coo * trialElemCount + trialElemPosition];
+      }
+    }
+    if (testGeomDeps & Fiber::NORMALS) {
+#pragma unroll
+      for (size_t coo = 0; coo < coordCount; ++coo) {
+        testElemNormal[coo] =
+            testElemNormals[coo * testElemCount + testElemPosition];
+      }
+    }
+
     // Evaluate kernel
     KernelType kernelValues[10 * 10];
     CoordinateType trialPointCoo[coordCount], testPointCoo[coordCount];
@@ -206,16 +249,19 @@ RawCudaEvaluateLaplace3dSingleLayerPotentialIntegralFunctorCached(
 #pragma unroll
         for (size_t coo = 0; coo < coordCount; ++coo) {
           trialPointCoo[coo] =
-              trialGeomData[coo * trialPointCount * trialElemCount
+              trialGlobalPoints[coo * trialPointCount * trialElemCount
                             + trialPoint * trialElemCount
                             + trialElemPosition];
           testPointCoo[coo] =
-              testGeomData[coo * testPointCount * testElemCount
+              testGlobalPoints[coo * testPointCount * testElemCount
                            + testPoint * testElemCount
                            + testElemPosition];
         }
-        CudaLaplace3dSingleLayerPotentialKernelFunctor<KernelType>::evaluate(
-            testPointCoo, trialPointCoo, kernelValue);
+//        CudaLaplace3dSingleLayerPotentialKernelFunctor<KernelType>::evaluate(
+        kernelFunctor.evaluate(
+            testPointCoo, trialPointCoo,
+            testElemNormal, trialElemNormal,
+            kernelValue);
         kernelValues[trialPoint * testPointCount + testPoint] = kernelValue;
       }
     }
@@ -248,7 +294,8 @@ RawCudaEvaluateLaplace3dSingleLayerPotentialIntegralFunctorCached(
   }
 }
 
-template <typename BasisFunctionType, typename KernelType, typename ResultType>
+template <typename BasisFunctionType, typename KernelType, typename ResultType,
+    typename KernelFunctor>
 __global__ void
 RawCudaEvaluateLaplace3dSingleLayerPotentialIntegralFunctorNonCached(
     const int elemPairIndexBegin, const unsigned int elemPairCount,
@@ -263,6 +310,8 @@ RawCudaEvaluateLaplace3dSingleLayerPotentialIntegralFunctorNonCached(
     const unsigned int trialElemCount, const unsigned int trialVtxCount,
     const typename ScalarTraits<BasisFunctionType>::RealType* trialVertices,
     const int* trialElementCorners,
+    KernelFunctor kernelFunctor,
+    const size_t testGeomDeps, const size_t trialGeomDeps,
     ResultType* __restrict__ result) {
 
   typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
@@ -337,14 +386,26 @@ RawCudaEvaluateLaplace3dSingleLayerPotentialIntegralFunctorNonCached(
                 + trialElemNormal[1]*trialElemNormal[1]
                 + trialElemNormal[2]*trialElemNormal[2]);
 
+    if (trialGeomDeps & Fiber::NORMALS) {
+      trialElemNormal[0] /= trialIntegrationElement;
+      trialElemNormal[1] /= trialIntegrationElement;
+      trialElemNormal[2] /= trialIntegrationElement;
+    }
+    if (testGeomDeps & Fiber::NORMALS) {
+      testElemNormal[0] /= testIntegrationElement;
+      testElemNormal[1] /= testIntegrationElement;
+      testElemNormal[2] /= testIntegrationElement;
+    }
+
     // Calculate global points
-    CoordinateType testElemGeomData[10 * coordCount], trialElemGeomData[10 * coordCount];
+    CoordinateType testElemGlobalPoints[10 * coordCount];
+    CoordinateType trialElemGlobalPoints[10 * coordCount];
     for (int testPoint = 0; testPoint < testPointCount; ++testPoint) {
       const CoordinateType ptFun0 = constTestGeomShapeFun0[testPoint];
       const CoordinateType ptFun1 = constTestGeomShapeFun1[testPoint];
       const CoordinateType ptFun2 = constTestGeomShapeFun2[testPoint];
       for (int i = 0; i < coordCount; ++i) {
-        testElemGeomData[coordCount * testPoint + i] =
+        testElemGlobalPoints[coordCount * testPoint + i] =
             ptFun0 * testElemVtx0[i]
           + ptFun1 * testElemVtx1[i]
           + ptFun2 * testElemVtx2[i];
@@ -355,7 +416,7 @@ RawCudaEvaluateLaplace3dSingleLayerPotentialIntegralFunctorNonCached(
       const CoordinateType ptFun1 = constTrialGeomShapeFun1[trialPoint];
       const CoordinateType ptFun2 = constTrialGeomShapeFun2[trialPoint];
       for (int i = 0; i < coordCount; ++i) {
-        trialElemGeomData[coordCount * trialPoint + i] =
+        trialElemGlobalPoints[coordCount * trialPoint + i] =
             ptFun0 * trialElemVtx0[i]
           + ptFun1 * trialElemVtx1[i]
           + ptFun2 * trialElemVtx2[i];
@@ -369,11 +430,16 @@ RawCudaEvaluateLaplace3dSingleLayerPotentialIntegralFunctorNonCached(
       for (size_t trialPoint = 0; trialPoint < trialPointCount; ++trialPoint) {
         KernelType kernelValue;
         for (int coordIndex = 0; coordIndex < coordCount; ++coordIndex) {
-          testPointCoo[coordIndex] = testElemGeomData[coordCount * testPoint + coordIndex];
-          trialPointCoo[coordIndex] = trialElemGeomData[coordCount * trialPoint + coordIndex];
+          testPointCoo[coordIndex] =
+              testElemGlobalPoints[coordCount * testPoint + coordIndex];
+          trialPointCoo[coordIndex] =
+              trialElemGlobalPoints[coordCount * trialPoint + coordIndex];
         }
-        CudaLaplace3dSingleLayerPotentialKernelFunctor<KernelType>::evaluate(
-            testPointCoo, trialPointCoo, kernelValue);
+//        CudaLaplace3dSingleLayerPotentialKernelFunctor<KernelType>::evaluate(
+        kernelFunctor.evaluate(
+            testPointCoo, trialPointCoo,
+            testElemNormal, trialElemNormal,
+            kernelValue);
         kernelValues[testPoint * trialPointCount + trialPoint] = kernelValue;
       }
     }

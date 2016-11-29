@@ -22,6 +22,9 @@
 #define fiber_laplace_3d_adjoint_double_layer_potential_kernel_functor_hpp
 
 #include "../common/common.hpp"
+#include "../common/boost_make_shared_fwd.hpp"
+
+#include "../cuda/cuda_laplace_3d_adjoint_double_layer_potential_kernel_functor.hpp"
 
 #include "geometrical_data.hpp"
 #include "scalar_traits.hpp"
@@ -45,6 +48,13 @@ class Laplace3dAdjointDoubleLayerPotentialKernelFunctor {
 public:
   typedef ValueType_ ValueType;
   typedef typename ScalarTraits<ValueType>::RealType CoordinateType;
+
+  shared_ptr<const CudaLaplace3dAdjointDoubleLayerPotentialKernelFunctor<ValueType>>
+  cudaFunctor() {
+    m_cudaFunctor = boost::make_shared<
+        CudaLaplace3dAdjointDoubleLayerPotentialKernelFunctor<ValueType>>();
+    return m_cudaFunctor;
+  }
 
   int kernelCount() const { return 1; }
   int kernelRowCount(int /* kernelIndex */) const { return 1; }
@@ -75,6 +85,12 @@ public:
     result[0](0, 0) = -numeratorSum / (static_cast<CoordinateType>(4. * M_PI) *
                                        distanceSq * distance);
   }
+
+private:
+  /** \cond PRIVATE */
+  shared_ptr<CudaLaplace3dAdjointDoubleLayerPotentialKernelFunctor<ValueType>>
+  m_cudaFunctor;
+  /** \endcond */
 };
 
 } // namespace Fiber

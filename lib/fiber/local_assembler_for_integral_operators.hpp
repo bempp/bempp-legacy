@@ -23,7 +23,8 @@
 
 #include "../common/common.hpp"
 
-#include "_2d_array.hpp"
+#include "../fiber/_2d_array.hpp"
+
 #include "scalar_traits.hpp"
 #include "types.hpp"
 
@@ -145,9 +146,6 @@ public:
    *  with 0. */
   virtual CoordinateType
   estimateRelativeScale(CoordinateType minDist) const = 0;
-
-  typedef _2dArray<std::pair<int, Matrix<ResultType>>> Cache;
-  virtual const Cache& cache() const = 0;
 };
 
 } // namespace Fiber

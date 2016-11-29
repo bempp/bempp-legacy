@@ -22,6 +22,9 @@
 #define fiber_modified_maxwell_3d_double_layer_operators_kernel_interpolated_functor_hpp
 
 #include "../common/common.hpp"
+#include "../common/boost_make_shared_fwd.hpp"
+
+#include "../cuda/cuda_modified_maxwell_3d_double_layer_operators_kernel_interpolated_functor.hpp"
 
 #include "geometrical_data.hpp"
 #include "hermite_interpolator.hpp"
@@ -57,6 +60,13 @@ public:
       : m_waveNumber(waveNumber) {
     initializeInterpolatorForModifiedHelmholtz3dKernels(
         waveNumber, maxDist, interpPtsPerWavelength, m_interpolator);
+  }
+
+  shared_ptr<const CudaModifiedMaxwell3dDoubleLayerOperatorsKernelInterpolatedFunctor<ValueType>>
+  cudaFunctor() {
+    m_cudaFunctor = boost::make_shared<
+        CudaModifiedMaxwell3dDoubleLayerOperatorsKernelInterpolatedFunctor<ValueType>>();
+    return m_cudaFunctor;
   }
 
   int kernelCount() const { return 1; }
@@ -103,6 +113,8 @@ private:
   /** \cond PRIVATE */
   ValueType m_waveNumber;
   HermiteInterpolator<ValueType> m_interpolator;
+  shared_ptr<CudaModifiedMaxwell3dDoubleLayerOperatorsKernelInterpolatedFunctor<ValueType>>
+  m_cudaFunctor;
   /** \endcond */
 };
 

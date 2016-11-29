@@ -21,30 +21,35 @@
 #ifndef fiber_cuda_laplace_3d_single_layer_potential_kernel_functor_hpp
 #define fiber_cuda_laplace_3d_single_layer_potential_kernel_functor_hpp
 
+#include "cuda_kernel_functor.hpp"
+
 #include "../common/scalar_traits.hpp"
 
 namespace Fiber {
 
 template <typename ValueType_>
-class CudaLaplace3dSingleLayerPotentialKernelFunctor {
+class CudaLaplace3dSingleLayerPotentialKernelFunctor :
+    public CudaKernelFunctor<ValueType_> {
 
 public:
   typedef ValueType_ ValueType;
   typedef typename ScalarTraits<ValueType>::RealType CoordinateType;
 
-#ifdef __CUDACC__
-  __device__ static void evaluate(CoordinateType testGeomData[3],
-                                  CoordinateType trialGeomData[3],
-                                  ValueType &result) {
+  CudaLaplace3dSingleLayerPotentialKernelFunctor() {}
+
+  __device__ virtual void evaluate(CoordinateType testPointCoo[3],
+                                   CoordinateType trialPointCoo[3],
+                                   CoordinateType testElemNormal[3],
+                                   CoordinateType trialElemNormal[3],
+                                   ValueType &result) const {
     ValueType sum = 0;
 #pragma unroll
     for (int coordIndex = 0; coordIndex < 3; ++coordIndex) {
-      ValueType diff = testGeomData[coordIndex] - trialGeomData[coordIndex];
+      ValueType diff = testPointCoo[coordIndex] - trialPointCoo[coordIndex];
       sum += diff * diff;
     }
     result = static_cast<CoordinateType>(1. / (4. * M_PI)) / sqrt(sum);
   }
-#endif
 };
 
 } // namespace Fiber

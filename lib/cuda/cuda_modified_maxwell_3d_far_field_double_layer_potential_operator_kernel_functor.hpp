@@ -18,26 +18,29 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_cuda_kernel_functor_hpp
-#define fiber_cuda_kernel_functor_hpp
+#ifndef fiber_cuda_modified_maxwell_3d_far_field_double_layer_potential_operator_kernel_functor_hpp
+#define fiber_cuda_modified_maxwell_3d_far_field_double_layer_potential_operator_kernel_functor_hpp
+
+#include "cuda_kernel_functor.hpp"
+
+#include "../common/scalar_traits.hpp"
 
 namespace Fiber {
 
 template <typename ValueType_>
-class CudaKernelFunctor {
+class CudaModifiedMaxwell3dFarFieldDoubleLayerPotentialOperatorKernelFunctor :
+  public CudaKernelFunctor<ValueType_> {
+
 
 public:
   typedef ValueType_ ValueType;
   typedef typename ScalarTraits<ValueType>::RealType CoordinateType;
 
-  CudaKernelFunctor() {}
-
+  // TODO: Adjust function to Maxwell
 #ifdef __CUDACC__
-  __device__ virtual void evaluate(CoordinateType testPointCoo[3],
-                                   CoordinateType trialPointCoo[3],
-                                   CoordinateType testElemNormal[3],
-                                   CoordinateType trialElemNormal[3],
-                                   ValueType &result) const = 0;
+  __device__ static void evaluate() {
+
+  }
 #endif
 };
 

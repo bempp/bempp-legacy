@@ -32,6 +32,8 @@
 namespace Fiber {
 /** \cond FORWARD_DECL */
 template <typename ResultType> class LocalAssemblerForIntegralOperators;
+template <typename BasisFunctionType, typename KernelType, typename ResultType,
+typename GeometryFactor> class DefaultLocalAssemblerForIntegralOperatorsOnSurfaces;
 template <typename BasisFunctionType> class Shapeset;
 /** \endcond */
 } // namespace Fiber
@@ -52,7 +54,19 @@ class CudaDenseGlobalAssembler {
 public:
   typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
 
+  // TODO: How to determine the correct kernel type?
+//  typedef CoordinateType KernelType;         // Real kernel
+        typedef ResultType KernelType;             // Complex kernel
+
   typedef typename thrust::complex<CoordinateType> CudaComplexType;
+  typedef typename std::conditional<
+      std::is_same<BasisFunctionType,CoordinateType>::value,
+      BasisFunctionType, CudaComplexType>::type
+      CudaBasisFunctionType;
+  typedef typename std::conditional<
+      std::is_same<KernelType,CoordinateType>::value,
+      KernelType, CudaComplexType>::type
+      CudaKernelType;
   typedef typename std::conditional<
       std::is_same<ResultType,CoordinateType>::value,
       ResultType, CudaComplexType>::type

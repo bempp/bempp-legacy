@@ -37,6 +37,7 @@ template <typename ValueType> class CollectionOfKernels;
 template <typename CoordinateType> class RawGridGeometry;
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 class TestKernelTrialIntegral;
+template <typename CoordinateType> class GeometricalData;
 /** \endcond */
 
 /** \brief Integration over pairs of elements on non-tensor-product point grids.

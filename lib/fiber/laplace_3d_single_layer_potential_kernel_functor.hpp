@@ -83,8 +83,10 @@ public:
   }
 
 private:
+  /** \cond PRIVATE */
   shared_ptr<CudaLaplace3dSingleLayerPotentialKernelFunctor<ValueType>>
   m_cudaFunctor;
+  /** \endcond */
 };
 
 } // namespace Fiber

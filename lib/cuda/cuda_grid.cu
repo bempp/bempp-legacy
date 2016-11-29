@@ -531,8 +531,8 @@ namespace Bempp {
       cudaEventSynchronize(stop);
       float elapsedTimeMapping;
       cudaEventElapsedTime(&elapsedTimeMapping , start, stop);
-      std::cout << "Time for mapping local to global coordinates is "
-        << elapsedTimeMapping << " ms" << std::endl;
+//      std::cout << "Time for mapping local to global coordinates is "
+//        << elapsedTimeMapping << " ms" << std::endl;
 
 //    std::cout << "globalPoints = " << std::endl;
 //    for (int i = 0; i < activeElemCount; ++i) {

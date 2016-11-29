@@ -22,6 +22,9 @@
 #define fiber_modified_maxwell_3d_far_field_single_layer_potential_operator_kernel_functor_hpp
 
 #include "../common/common.hpp"
+#include "../common/boost_make_shared_fwd.hpp"
+
+#include "../cuda/cuda_modified_maxwell_3d_far_field_single_layer_potential_operator_kernel_functor.hpp"
 
 #include "geometrical_data.hpp"
 #include "scalar_traits.hpp"
@@ -55,6 +58,13 @@ public:
       ValueType waveNumber)
       : m_waveNumber(waveNumber) {}
 
+  shared_ptr<const CudaModifiedMaxwell3dFarFieldSingleLayerPotentialOperatorKernelFunctor<ValueType>>
+  cudaFunctor() {
+    m_cudaFunctor = boost::make_shared<
+        CudaModifiedMaxwell3dFarFieldSingleLayerPotentialOperatorKernelFunctor<ValueType>>();
+    return m_cudaFunctor;
+  }
+
   int kernelCount() const { return 2; }
   int kernelRowCount(int kernelIndex) const { return kernelIndex == 0 ? 1 : 3; }
   int kernelColCount(int kernelIndex) const { return 1; }
@@ -87,6 +97,8 @@ public:
 private:
   /** \cond PRIVATE */
   ValueType m_waveNumber;
+  shared_ptr<CudaModifiedMaxwell3dFarFieldSingleLayerPotentialOperatorKernelFunctor<ValueType>>
+  m_cudaFunctor;
   /** \endcond */
 };
 

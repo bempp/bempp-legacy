@@ -117,13 +117,10 @@ public:
 
   virtual CoordinateType estimateRelativeScale(CoordinateType distance) const;
 
-  virtual void
-//  TODO
-//  shared_ptr<CudaKernelFunctor<ValueType>>
-  cudaKernels() const;
+  virtual shared_ptr<const CudaKernelFunctor<ValueType>> cudaFunctor() const;
 
 private:
-  Functor m_functor;
+  mutable Functor m_functor;
 };
 
 } // namespace Fiber

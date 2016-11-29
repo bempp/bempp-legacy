@@ -18,27 +18,41 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_cuda_kernel_functor_hpp
-#define fiber_cuda_kernel_functor_hpp
+#ifndef fiber_cuda_laplace_3d_adjoint_double_layer_potential_kernel_functor_hpp
+#define fiber_cuda_laplace_3d_adjoint_double_layer_potential_kernel_functor_hpp
+
+#include "cuda_kernel_functor.hpp"
+
+#include "../common/scalar_traits.hpp"
 
 namespace Fiber {
 
 template <typename ValueType_>
-class CudaKernelFunctor {
+class CudaLaplace3dAdjointDoubleLayerPotentialKernelFunctor :
+    public CudaKernelFunctor<ValueType_> {
 
 public:
   typedef ValueType_ ValueType;
   typedef typename ScalarTraits<ValueType>::RealType CoordinateType;
 
-  CudaKernelFunctor() {}
-
-#ifdef __CUDACC__
   __device__ virtual void evaluate(CoordinateType testPointCoo[3],
                                    CoordinateType trialPointCoo[3],
                                    CoordinateType testElemNormal[3],
                                    CoordinateType trialElemNormal[3],
-                                   ValueType &result) const = 0;
-#endif
+                                   ValueType &result) const {
+
+    CoordinateType numeratorSum = 0., distanceSq = 0.;
+    for (int coordIndex = 0; coordIndex < 3; ++coordIndex) {
+      CoordinateType diff =
+          testPointCoo[coordIndex] - trialPointCoo[coordIndex];
+      distanceSq += diff * diff;
+      numeratorSum += diff * testElemNormal[coordIndex];
+    }
+    CoordinateType distance = sqrt(distanceSq);
+    result = -numeratorSum / (static_cast<CoordinateType>(4. * M_PI) *
+                              distanceSq * distance);
+  }
+
 };
 
 } // namespace Fiber
