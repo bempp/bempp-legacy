@@ -144,7 +144,10 @@ class BlockedOperatorBase(object):
                 if not isinstance(item, GridFunction):
                     raise ValueError("All items in the input list must be grid functions.")
             weak_op = self.weak_form()
-            x = np.zeros(weak_op.shape[1], dtype=weak_op.dtype)
+            input_type = list_input[0].coefficients.dtype
+            for item in list_input:
+                input_type = np.promote_types(input_type, item.coefficients.dtype)
+            x = np.zeros(weak_op.shape[1], dtype=input_type)
             col_pos = np.hstack([[0], np.cumsum(weak_op.column_dimensions)])
             row_pos = np.hstack([[0], np.cumsum(weak_op.row_dimensions)])
             for index in range(weak_op.ndims[1]):

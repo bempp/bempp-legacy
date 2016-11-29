@@ -28,7 +28,6 @@
 #include <iostream>
 #include <stdexcept>
 #include <array>
-#include <numpy/npy_common.h>
 
 namespace Bempp {
 
