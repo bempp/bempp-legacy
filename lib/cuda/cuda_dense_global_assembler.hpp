@@ -60,14 +60,6 @@ public:
 
   typedef typename thrust::complex<CoordinateType> CudaComplexType;
   typedef typename std::conditional<
-      std::is_same<BasisFunctionType,CoordinateType>::value,
-      BasisFunctionType, CudaComplexType>::type
-      CudaBasisFunctionType;
-  typedef typename std::conditional<
-      std::is_same<KernelType,CoordinateType>::value,
-      KernelType, CudaComplexType>::type
-      CudaKernelType;
-  typedef typename std::conditional<
       std::is_same<ResultType,CoordinateType>::value,
       ResultType, CudaComplexType>::type
       CudaResultType;

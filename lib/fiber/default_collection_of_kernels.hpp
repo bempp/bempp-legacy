@@ -117,7 +117,9 @@ public:
 
   virtual CoordinateType estimateRelativeScale(CoordinateType distance) const;
 
-  virtual shared_ptr<const CudaKernelFunctor<ValueType>> cudaFunctor() const;
+  virtual const std::string name() const;
+
+  virtual const ValueType waveNumber() const;
 
 private:
   mutable Functor m_functor;

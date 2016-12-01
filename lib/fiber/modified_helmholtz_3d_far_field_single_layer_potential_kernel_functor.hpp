@@ -22,9 +22,6 @@
 #define fiber_modified_helmholtz_3d_far_field_single_layer_potential_kernel_functor_hpp
 
 #include "../common/common.hpp"
-#include "../common/boost_make_shared_fwd.hpp"
-
-#include "../cuda/cuda_modified_helmholtz_3d_far_field_single_layer_potential_kernel_functor.hpp"
 
 #include "geometrical_data.hpp"
 #include "scalar_traits.hpp"
@@ -54,11 +51,8 @@ public:
       ValueType waveNumber)
       : m_waveNumber(waveNumber) {}
 
-  shared_ptr<const CudaModifiedHelmholtz3dFarFieldSingleLayerPotentialKernelFunctor<ValueType>>
-  cudaFunctor() {
-    m_cudaFunctor = boost::make_shared<
-        CudaModifiedHelmholtz3dFarFieldSingleLayerPotentialKernelFunctor<ValueType>>();
-    return m_cudaFunctor;
+  const std::string name() {
+    return "ModifiedHelmholtz3dFarFieldSingleLayerPotential";
   }
 
   int kernelCount() const { return 1; }
@@ -89,8 +83,6 @@ public:
 private:
   /** \cond PRIVATE */
   ValueType m_waveNumber;
-  shared_ptr<CudaModifiedHelmholtz3dFarFieldSingleLayerPotentialKernelFunctor<ValueType>>
-  m_cudaFunctor;
   /** \endcond */
 };
 

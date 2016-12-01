@@ -22,9 +22,6 @@
 #define fiber_laplace_3d_single_layer_potential_kernel_functor_hpp
 
 #include "../common/common.hpp"
-#include "../common/boost_make_shared_fwd.hpp"
-
-#include "../cuda/cuda_laplace_3d_single_layer_potential_kernel_functor.hpp"
 
 #include "geometrical_data.hpp"
 #include "scalar_traits.hpp"
@@ -48,11 +45,8 @@ public:
   typedef ValueType_ ValueType;
   typedef typename ScalarTraits<ValueType>::RealType CoordinateType;
 
-  shared_ptr<CudaLaplace3dSingleLayerPotentialKernelFunctor<ValueType>>
-  cudaFunctor() {
-    m_cudaFunctor = boost::make_shared<
-        CudaLaplace3dSingleLayerPotentialKernelFunctor<ValueType>>();
-    return m_cudaFunctor;
+  const std::string name() {
+    return "Laplace3dSingleLayerPotential";
   }
 
   int kernelCount() const { return 1; }
@@ -63,6 +57,12 @@ public:
                                   size_t &trialGeomDeps) const {
     testGeomDeps |= GLOBALS;
     trialGeomDeps |= GLOBALS;
+  }
+
+  ValueType waveNumber() const {
+    throw std::runtime_error(
+      "Laplace3dSingleLayerPotentialKernelFunctor::waveNumber(): "
+      "no wave number for this type of kernel");
   }
 
   template <template <typename T> class CollectionOf2dSlicesOfNdArrays>
@@ -81,12 +81,6 @@ public:
     }
     result[0](0, 0) = static_cast<CoordinateType>(1. / (4. * M_PI)) / sqrt(sum);
   }
-
-private:
-  /** \cond PRIVATE */
-  shared_ptr<CudaLaplace3dSingleLayerPotentialKernelFunctor<ValueType>>
-  m_cudaFunctor;
-  /** \endcond */
 };
 
 } // namespace Fiber

@@ -23,9 +23,6 @@
 
 #include "../common/common.hpp"
 #include "../common/complex_aux.hpp"
-#include "../common/boost_make_shared_fwd.hpp"
-
-#include "../cuda/cuda_modified_maxwell_3d_single_layer_boundary_operator_kernel_interpolated_functor.hpp"
 
 #include "geometrical_data.hpp"
 #include "scalar_traits.hpp"
@@ -60,11 +57,8 @@ public:
       ValueType waveNumber, CoordinateType maxDist, int interpPtsPerWavelength)
       : m_slpKernel(waveNumber, maxDist, interpPtsPerWavelength) {}
 
-  shared_ptr<const CudaModifiedMaxwell3dSingleLayerBoundaryOperatorKernelInterpolatedFunctor<ValueType>>
-  cudaFunctor() {
-    m_cudaFunctor = boost::make_shared<
-        CudaModifiedMaxwell3dSingleLayerBoundaryOperatorKernelInterpolatedFunctor<ValueType>>();
-    return m_cudaFunctor;
+  const std::string name() {
+    return "ModifiedMaxwell3dSingleLayerBoundaryOperatorInterpolated";
   }
 
   int kernelCount() const { return 2; }
@@ -96,8 +90,6 @@ private:
   /** \cond PRIVATE */
   ModifiedHelmholtz3dSingleLayerPotentialKernelInterpolatedFunctor<ValueType>
       m_slpKernel;
-  shared_ptr<CudaModifiedMaxwell3dSingleLayerBoundaryOperatorKernelInterpolatedFunctor<ValueType>>
-  m_cudaFunctor;
   /** \endcond */
 };
 

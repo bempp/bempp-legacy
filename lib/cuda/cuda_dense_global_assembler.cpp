@@ -17,9 +17,6 @@
 #include "cuda_grid.hpp"
 #include "cuda_integrator.hpp"
 #include "cuda_options.hpp"
-#include "cuda_laplace_3d_single_layer_potential_kernel_functor.hpp"
-#include "cuda_laplace_3d_double_layer_potential_kernel_functor.hpp"
-#include "cuda_laplace_3d_adjoint_double_layer_potential_kernel_functor.hpp"
 
 #include "../assembly/discrete_dense_boundary_operator.hpp"
 #include "../assembly/assembly_options.hpp"
@@ -29,8 +26,6 @@
 #include "../common/complex_aux.hpp"
 #include "../common/global_parameters.hpp"
 
-#include "../fiber/explicit_instantiation.hpp"
-#include "../fiber/element_pair_topology.hpp"
 #include "../fiber/raw_grid_geometry.hpp"
 #include "../fiber/local_assembler_for_integral_operators.hpp"
 #include "../fiber/numerical_quadrature.hpp"
@@ -39,6 +34,7 @@
 #include "../fiber/serial_blas_region.hpp"
 #include "../fiber/default_local_assembler_for_integral_operators_on_surfaces.hpp"
 #include "../fiber/default_collection_of_kernels.hpp"
+#include "../fiber/explicit_instantiation.hpp"
 
 #include "../grid/grid_view.hpp"
 #include "../grid/mapper.hpp"
@@ -49,12 +45,10 @@
 #include <tbb/task_group.h>
 #include <tbb/parallel_for.h>
 #include <tbb/spin_mutex.h>
-#include <tbb/atomic.h>
 #include <algorithm>
 #include <numeric>
 #include <chrono>
 #include <cuda_profiler_api.h>
-#include <typeinfo>
 
 namespace Bempp {
 
@@ -167,11 +161,12 @@ size_t getMaxActiveElemPairCount(
 
 template <typename BasisFunctionType, typename ResultType>
 std::unique_ptr<DiscreteBoundaryOperator<ResultType>>
-CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
-    const Space<BasisFunctionType> &testSpace,
-    const Space<BasisFunctionType> &trialSpace,
-    LocalAssemblerForIntegralOperators &assembler,
-    const Context<BasisFunctionType, ResultType> &context) {
+CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::
+    assembleDetachedWeakForm(
+        const Space<BasisFunctionType> &testSpace,
+        const Space<BasisFunctionType> &trialSpace,
+        LocalAssemblerForIntegralOperators &assembler,
+        const Context<BasisFunctionType, ResultType> &context) {
 
   // Global DOF indices corresponding to local DOFs on elements
   std::vector<std::vector<GlobalDofIndex>> testGlobalDofs, trialGlobalDofs;
@@ -235,7 +230,7 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakFor
       reinterpret_cast<Fiber::DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
           BasisFunctionType, KernelType, ResultType, GeometryFactory> &>(assembler);
 
-  shared_ptr<const Fiber::CollectionOfKernels<KernelType>> kernels =
+  shared_ptr<const Fiber::CollectionOfKernels<KernelType>> kernel =
       defaultAssembler.kernels();
 
   // Get CUDA operation settings
@@ -358,27 +353,18 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakFor
 //            << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()
 //            << " ms" << std::endl;
 
-  // TODO: Create CUDA integrators on all active devices
-  typedef Fiber::CudaLaplace3dSingleLayerPotentialKernelFunctor<
-      CudaKernelType> KernelFunctor;
-//  typedef Fiber::CudaLaplace3dDoubleLayerPotentialKernelFunctor<
-//      CudaKernelType> KernelFunctor;
-//  typedef Fiber::CudaLaplace3dAdjointDoubleLayerPotentialKernelFunctor<
-//      CudaKernelType> KernelFunctor;
-  typedef decltype(*(kernels->cudaFunctor())) TestType;
-  auto cudaKernelObj = *(kernels->cudaFunctor());
-//  std::cout << "type = " << typeid(cudaKernelObj).name() << std::endl;
+  // Create CUDA integrators on all active devices
   std::vector<shared_ptr<Fiber::CudaIntegrator<
-      BasisFunctionType, KernelType, ResultType, KernelFunctor>>> cudaIntegrators(deviceCount);
+      BasisFunctionType, KernelType, ResultType>>> cudaIntegrators(deviceCount);
   for (int device = 0; device < deviceCount; ++device) {
     cudaIntegrators[device] = boost::make_shared<Fiber::CudaIntegrator<
-        BasisFunctionType, KernelType, ResultType, KernelFunctor>>(
+        BasisFunctionType, KernelType, ResultType>>(
             localTestQuadPoints, localTrialQuadPoints,
             testQuadWeights, trialQuadWeights,
             testShapeset, trialShapeset,
             testGrids[device], trialGrids[device],
             testIndices, trialIndices,
-            kernels,
+            kernel,
             deviceIds[device], cudaOptions);
   }
 
@@ -400,6 +386,8 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakFor
        &testGlobalDofs, &trialGlobalDofs,
        &testLocalDofWeights, &trialLocalDofWeights,
        cache, &result, &mutex](size_t device) {
+
+    double integration_timer = 0., assembly_timer = 0.;
 
     const unsigned int chunkCount = chunkCounts[device];
     size_t elemPairOffset = 0;
@@ -431,7 +419,7 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakFor
       taskGroupDevice.run_and_wait([device, chunk, chunkCount,
            elemPairOffset, &elemPairCounts, &maxActiveElemPairCounts,
            chunkElemPairCount, testDofCount, trialDofCount,
-           &cudaIntegrators, h_regularResult]{
+           &cudaIntegrators, h_regularResult, &integration_timer]{
 
         const size_t elemPairIndexBegin = elemPairOffset
             + chunk * maxActiveElemPairCounts[device];
@@ -449,6 +437,7 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakFor
             elemPairIndexBegin, elemPairIndexEnd,
             h_regularResult);
         std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+        integration_timer += std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count();
 //        std::cout << "Time for CudaIntegrator::integrate() = "
 //                  << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()
 //                  << " ms" << std::endl;
@@ -460,7 +449,7 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakFor
           &testIndices, &trialIndices,
           &testGlobalDofs, &trialGlobalDofs,
           &testLocalDofWeights, &trialLocalDofWeights,
-          h_regularResult, cache, &result, &mutex]{
+          h_regularResult, cache, &result, &mutex, &assembly_timer]{
 
         const size_t offset = elemPairOffset
             + chunk * maxActiveElemPairCounts[device];
@@ -528,16 +517,28 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakFor
           }
         });
         std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+        assembly_timer += std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count();
 //        std::cout << "Time for regular global result assembly = "
 //                  << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()
 //                  << " ms" << std::endl;
       });
     }
+    integration_timer /= chunkCount;
+    assembly_timer /= chunkCount;
+    if (integration_timer > assembly_timer)
+      std::cout << "INFO: Speedup is bound by integration (GPU) with "
+          "mean integration time " << integration_timer << " ms "
+          "and mean assembly time " << assembly_timer << " ms" << std::endl;
+    else
+      std::cout << "INFO: Speedup is bound by assembly (CPU) with "
+          "mean integration time " << integration_timer << " ms "
+          "and mean assembly time " << assembly_timer << " ms" << std::endl;
+
     taskGroupDevice.wait();
   });
   cudaProfilerStop();
 
-//  if (result.rows() < 10 && result.cols() < 10) {
+//  if (result.rows() < 25 && result.cols() < 25) {
 //    std::cout << "result (cudadense) = " << std::endl;
 //    std::cout << result << std::endl;
 //  }

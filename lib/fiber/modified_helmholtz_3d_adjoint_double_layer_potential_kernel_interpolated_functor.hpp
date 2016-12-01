@@ -22,9 +22,6 @@
 #define fiber_modified_helmholtz_3d_adjoint_double_layer_potential_interpolated_kernel_functor_hpp
 
 #include "../common/common.hpp"
-#include "../common/boost_make_shared_fwd.hpp"
-
-#include "../cuda/cuda_modified_helmholtz_3d_adjoint_double_layer_potential_kernel_interpolated_functor.hpp"
 
 #include "geometrical_data.hpp"
 #include "hermite_interpolator.hpp"
@@ -64,11 +61,8 @@ public:
         waveNumber, maxDist, interpPtsPerWavelength, m_interpolator);
   }
 
-  shared_ptr<const CudaModifiedHelmholtz3dAdjointDoubleLayerPotentialKernelInterpolatedFunctor<ValueType>>
-  cudaFunctor() {
-    m_cudaFunctor = boost::make_shared<
-        CudaModifiedHelmholtz3dAdjointDoubleLayerPotentialKernelInterpolatedFunctor<ValueType>>();
-    return m_cudaFunctor;
+  const std::string name() {
+    return "ModifiedHelmholtz3dAdjointDoubleLayerPotentialInterpolated";
   }
 
   int kernelCount() const { return 1; }
@@ -113,8 +107,6 @@ private:
   /** \cond PRIVATE */
   ValueType m_waveNumber;
   HermiteInterpolator<ValueType> m_interpolator;
-  shared_ptr<CudaModifiedHelmholtz3dAdjointDoubleLayerPotentialKernelInterpolatedFunctor<ValueType>>
-  m_cudaFunctor;
   /** \endcond */
 };
 

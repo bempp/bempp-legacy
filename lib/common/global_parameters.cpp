@@ -132,7 +132,7 @@ ParameterList GlobalParameters::parameterList() {
   parameters.put("options.cuda.enableElementDataCaching", true);
 
   // Cuda kernel data caching
-  parameters.put("options.cuda.enableKernelDataCaching", false);
+  parameters.put("options.cuda.enableKernelDataCaching", true);
 
   // Cuda device ids
   parameters.put("options.cuda.deviceIds", std::vector<int>({0, 1}));

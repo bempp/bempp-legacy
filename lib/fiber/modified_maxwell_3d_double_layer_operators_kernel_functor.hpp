@@ -23,9 +23,6 @@
 
 #include "../common/common.hpp"
 #include "../common/complex_aux.hpp"
-#include "../common/boost_make_shared_fwd.hpp"
-
-#include "../cuda/cuda_modified_maxwell_3d_double_layer_operators_kernel_functor.hpp"
 
 #include "geometrical_data.hpp"
 #include "scalar_traits.hpp"
@@ -61,11 +58,8 @@ public:
       ValueType waveNumber)
       : m_waveNumber(waveNumber) {}
 
-  shared_ptr<const CudaModifiedMaxwell3dDoubleLayerOperatorsKernelFunctor<ValueType>>
-  cudaFunctor() {
-    m_cudaFunctor = boost::make_shared<
-        CudaModifiedMaxwell3dDoubleLayerOperatorsKernelFunctor<ValueType>>();
-    return m_cudaFunctor;
+  const std::string name() {
+    return "ModifiedMaxwell3dDoubleLayerOperators";
   }
 
   int kernelCount() const { return 1; }
@@ -110,8 +104,6 @@ public:
 private:
   /** \cond PRIVATE */
   ValueType m_waveNumber;
-  shared_ptr<CudaModifiedMaxwell3dDoubleLayerOperatorsKernelFunctor<ValueType>>
-  m_cudaFunctor;
   /** \endcond */
 };
 

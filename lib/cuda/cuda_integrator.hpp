@@ -21,9 +21,9 @@
 #ifndef fiber_cuda_integrator_hpp
 #define fiber_cuda_integrator_hpp
 
-#include "cuda_evaluate_laplace_3d_single_layer_potential_integral_functor.cuh"
-#include "cuda_evaluate_laplace_3d_double_layer_potential_integral_functor.cuh"
 #include "cuda_options.hpp"
+
+#include "cuda.cuh"
 
 #include "../common/common.hpp"
 #include "../common/eigen_support.hpp"
@@ -52,12 +52,10 @@ namespace Fiber {
 template <typename BasisFunctionType> class Shapeset;
 template <typename BasisFunctionType> class BasisData;
 template <typename KernelType> class CollectionOfKernels;
-template <typename KernelType> class CudaKernelFunctor;
 /** \endcond */
 
 /** \brief Regular integration over pairs of elements on the device. */
-template <typename BasisFunctionType, typename KernelType, typename ResultType,
-    typename KernelFunctor>
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
 class CudaIntegrator {
 public:
 
@@ -86,8 +84,8 @@ public:
       const std::vector<CoordinateType> &trialQuadWeights,
       const Shapeset<BasisFunctionType> &testShapeset,
       const Shapeset<BasisFunctionType> &trialShapeset,
-      shared_ptr<Bempp::CudaGrid<CoordinateType>> testGrid,
-      shared_ptr<Bempp::CudaGrid<CoordinateType>> trialGrid,
+      const shared_ptr<Bempp::CudaGrid<CoordinateType>> &testGrid,
+      const shared_ptr<Bempp::CudaGrid<CoordinateType>> &trialGrid,
       const std::vector<int> &testIndices, const std::vector<int> &trialIndices,
       const shared_ptr<const CollectionOfKernels<KernelType>> &kernel,
       const int deviceId, const Bempp::CudaOptions &cudaOptions);
@@ -128,9 +126,9 @@ private:
   shared_ptr<Bempp::CudaGrid<CoordinateType>> m_testGrid;
   shared_ptr<Bempp::CudaGrid<CoordinateType>> m_trialGrid;
 
-  KernelFunctor *m_d_kernel;
-  size_t m_trialGeomDeps;
-  size_t m_testGeomDeps;
+  const std::string m_kernelName;
+
+  CudaKernelType m_waveNumber;
 
   const Bempp::CudaOptions m_cudaOptions;
 

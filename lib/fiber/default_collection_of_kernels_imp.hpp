@@ -177,10 +177,14 @@ DefaultCollectionOfKernels<Functor>::estimateRelativeScale(
 }
 
 template <typename Functor>
-shared_ptr<const CudaKernelFunctor<typename CollectionOfKernels<
-    typename Functor::ValueType>::ValueType>>
-DefaultCollectionOfKernels<Functor>::cudaFunctor() const {
-  return m_functor.cudaFunctor();
+const std::string DefaultCollectionOfKernels<Functor>::name() const {
+  return m_functor.name();
+}
+
+template <typename Functor>
+const typename CollectionOfKernels<typename Functor::ValueType>::ValueType
+DefaultCollectionOfKernels<Functor>::waveNumber() const {
+  return m_functor.waveNumber();
 }
 
 } // namespace Fiber

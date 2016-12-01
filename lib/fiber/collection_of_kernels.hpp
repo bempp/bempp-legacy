@@ -33,7 +33,6 @@ namespace Fiber {
 template <typename T> class CollectionOf3dArrays;
 template <typename T> class CollectionOf4dArrays;
 template <typename CoordinateType> class GeometricalData;
-template <typename ValueType_> class CudaKernelFunctor;
 /** \endcond */
 
 /** \ingroup weak_form_elements
@@ -149,7 +148,9 @@ public:
   virtual CoordinateType
   estimateRelativeScale(CoordinateType distance) const = 0;
 
-  virtual auto cudaFunctor() const -> shared_ptr<const CudaKernelFunctor<ValueType>> = 0;
+  virtual const std::string name() const = 0;
+
+  virtual const ValueType waveNumber() const = 0;
 };
 
 } // namespace Fiber
