@@ -34,36 +34,38 @@ namespace Bempp {
         vertices[3][2] = 0;
 
         auto elementContainer = 
-            boost::make_shared<std::vector<std::array<std::size_t, 3>>>(2);
+            boost::make_shared<std::vector<std::vector<unsigned int>>>(2);
         auto& elements = *elementContainer;
+        elements[0].resize(3);
         elements[0][0] = 0;
         elements[0][1] = 1;
         elements[0][2] = 2;
 
+        elements[1].resize(3);
         elements[1][0] = 2;
         elements[1][1] = 1;
         elements[1][2] = 3;
 
-        auto data = boost::make_shared<DataContainer>();
-        data->init(vertexContainer, elementContainer);
-        Dune::Entity<0, 2, const TriangleGrid, EntityImp> entity(EntityImp<0, 2, const TriangleGrid>(data, 0, 0));
-        for (int i = 0; i < 3; ++i){
-            auto node = entity.subEntity<1>(i)->geometry().center(); 
-            for (int j = 0; j < 3; ++j) std::cout << node[j] << " ";
-            std::cout << std::endl;
-        }
-        Geometry<2, 3, const TriangleGrid > geom(geometryType, vertices);
-        std::cout << "Number of edges: " << data->numberOfEdges(0) << std::endl;
+        GridFactory<Dune::Grid<2, 3, double, TriangleGridFamily>> factory;
+        for (int i = 0; i < vertices.size(); ++i) 
+            factory.insertVertex(vertices[i]);
 
-        TriangleGrid grid(data);
+        Dune::GeometryType type;
+        type.makeSimplex(2);
+        for (int i = 0; i < elements.size(); ++i)
+            factory.insertElement(type, elements[i]);
+
+        shared_ptr<Dune::Grid<2, 3, double, TriangleGridFamily>> grid(factory.createGrid());
 
         std::cout << "Test the iterator" << std::endl;
+        auto view = grid->leafGridView();
+        const auto& indexSet = view.indexSet();
 
-        for (auto it = grid.lbegin<1>(0); it != grid.lend<1>(0); ++it)
-            std::cout << it->geometry().center() << std::endl;;
+        for (auto it = grid->lbegin<1>(0); it != grid->lend<1>(0); ++it)
+            std::cout << indexSet.index<1>(*it);
 
         IdSetImp idSet;
-        for (auto it = grid.lbegin<0>(0); it != grid.lend<0>(0); ++it)
+        for (auto it = grid->lbegin<0>(0); it != grid->lend<0>(0); ++it)
             std::cout << idSet.subId(*it, 0, 2) << std::endl;
 
     }

@@ -43,7 +43,7 @@ namespace BemppGrid {
                 EntityPointer = Dune::EntityPointer<const TriangleGrid, EntityPointerImp<codim, const TriangleGrid>>;
 
             EntityImp(const shared_ptr<DataContainer>& data, 
-                    int level, std::size_t index);
+                    int level, unsigned int index);
 
             int level() const;
             Geometry geometry() const;
@@ -65,7 +65,7 @@ namespace BemppGrid {
 
             EntityPointer<0> father() const;
 
-            std::size_t id() const;
+            unsigned int id() const;
 
         private:
 
@@ -73,7 +73,7 @@ namespace BemppGrid {
 
             shared_ptr<DataContainer> m_data;
             int m_level;
-            std::size_t m_index;
+            unsigned int m_index;
 
     };
 
@@ -91,7 +91,7 @@ namespace BemppGrid {
             typedef typename TriangleGrid::GridFamily::Traits::Codim<1>::Entity Entity;    
 
             EntityImp(const shared_ptr<DataContainer>& data,
-                    int level, std::size_t index);
+                    int level, unsigned int index);
 
             int level() const;
             Geometry geometry() const;
@@ -100,7 +100,7 @@ namespace BemppGrid {
             bool equals(const EntityImp<1, 2, const TriangleGrid>& other) const;
             EntitySeed seed() const;
 
-            std::size_t id() const;
+            unsigned int id() const;
 
         private:
 
@@ -108,7 +108,7 @@ namespace BemppGrid {
 
             shared_ptr<DataContainer> m_data;
             int m_level;
-            std::size_t m_index;
+            unsigned int m_index;
 
     };
 
@@ -126,7 +126,7 @@ namespace BemppGrid {
             typedef typename TriangleGrid::GridFamily::Traits::Codim<2>::Entity Entity;    
 
             EntityImp(const shared_ptr<DataContainer>& data,
-                    int level, std::size_t index);
+                    int level, unsigned int index);
 
             int level() const;
             Geometry geometry() const;
@@ -135,7 +135,7 @@ namespace BemppGrid {
             bool equals(const EntityImp<2, 2, const TriangleGrid>& other) const;
             EntitySeed seed() const;
 
-            std::size_t id() const;
+            unsigned int id() const;
 
         private:
 
@@ -143,7 +143,7 @@ namespace BemppGrid {
 
             shared_ptr<DataContainer> m_data;
             int m_level;
-            std::size_t m_index;
+            unsigned int m_index;
     };
 
 }

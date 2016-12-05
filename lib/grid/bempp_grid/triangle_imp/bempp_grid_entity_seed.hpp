@@ -14,7 +14,7 @@ namespace BemppGrid {
 
             enum {codimension = codim};
 
-            EntitySeedImp(int level, std::size_t index) : 
+            EntitySeedImp(int level, unsigned int index) : 
                 m_level(level), m_index(index) {}
 
             bool isValid() const {
@@ -26,7 +26,7 @@ namespace BemppGrid {
         private:
 
             int m_level;
-            std::size_t m_index;
+            unsigned int m_index;
 
 
     };

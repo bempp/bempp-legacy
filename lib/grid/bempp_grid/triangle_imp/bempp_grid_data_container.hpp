@@ -18,8 +18,8 @@ namespace BemppGrid {
         public:
 
             typedef std::vector<Dune::FieldVector<double, 3>> NodesContainer;
-            typedef std::vector<std::array<std::size_t, 3>> ElementsContainer;
-            typedef std::vector<std::array<std::size_t, 2>> EdgesContainer;
+            typedef std::vector<std::vector<unsigned int>> ElementsContainer;
+            typedef std::vector<std::array<unsigned int, 2>> EdgesContainer;
 
             template <int cd>
             using DuneGeometry = typename TriangleGrid::GridFamily::Traits::Codim<cd>::Geometry;
@@ -52,17 +52,17 @@ namespace BemppGrid {
             DuneGeometry<cd> geometry(const Entity<cd>& entity);
 
             template <int cd>
-            std::size_t id(const Entity<cd>& entity);
+            unsigned int id(const Entity<cd>& entity);
 
-            const std::array<std::size_t, 3>& element2Edges(int level, std::size_t elementIndex) const;
-            const std::vector<size_t>& edge2Elements(int level, std::size_t edgeIndex) const;
-            const std::vector<size_t>& node2Elements(int level, std::size_t nodeIndex) const;
-            const std::vector<size_t>& node2Edges(int level, std::size_t nodeIndex) const; 
+            const std::array<unsigned int, 3>& element2Edges(int level, unsigned int elementIndex) const;
+            const std::vector<unsigned int>& edge2Elements(int level, unsigned int edgeIndex) const;
+            const std::vector<unsigned int>& node2Elements(int level, unsigned int nodeIndex) const;
+            const std::vector<unsigned int>& node2Edges(int level, unsigned int nodeIndex) const; 
 
             const NodesContainer getEntityNodes(int codim, int level, int index) const;
 
-            int getElementFatherIndex(int level, std::size_t elementIndex) const;
-            const std::vector<size_t>& getElementSons(int level, std::size_t elementIndex) const;
+            int getElementFatherIndex(int level, unsigned int elementIndex) const;
+            const std::vector<unsigned int>& getElementSons(int level, unsigned int elementIndex) const;
 
         private:
 
@@ -74,19 +74,19 @@ namespace BemppGrid {
             std::vector<shared_ptr<ElementsContainer>> m_elements;
             std::vector<EdgesContainer> m_edges;
 
-            std::vector<std::vector<std::size_t>> m_nodeIds;
-            std::vector<std::vector<std::size_t>> m_elementIds;
-            std::vector<std::vector<std::size_t>> m_edgeIds;
+            std::vector<std::vector<unsigned int>> m_nodeIds;
+            std::vector<std::vector<unsigned int>> m_elementIds;
+            std::vector<std::vector<unsigned int>> m_edgeIds;
 
-            std::size_t m_idCounter;
+            unsigned int m_idCounter;
 
-            std::vector<std::vector<std::array<std::size_t, 3>>> m_element2Edges;
-            std::vector<std::vector<std::vector<std::size_t>>> m_edge2Elements;
-            std::vector<std::vector<std::vector<std::size_t>>> m_node2Elements;
-            std::vector<std::vector<std::vector<std::size_t>>> m_node2Edges;
+            std::vector<std::vector<std::array<unsigned int, 3>>> m_element2Edges;
+            std::vector<std::vector<std::vector<unsigned int>>> m_edge2Elements;
+            std::vector<std::vector<std::vector<unsigned int>>> m_node2Elements;
+            std::vector<std::vector<std::vector<unsigned int>>> m_node2Edges;
 
-            std::vector<std::vector<std::size_t>> m_fatherElements;
-            std::vector<std::vector<std::vector<std::size_t>>> m_sonElements;
+            std::vector<std::vector<unsigned int>> m_fatherElements;
+            std::vector<std::vector<std::vector<unsigned int>>> m_sonElements;
 
             std::tuple<
                 std::vector<shared_ptr<std::vector<Geometry<0>>>>,

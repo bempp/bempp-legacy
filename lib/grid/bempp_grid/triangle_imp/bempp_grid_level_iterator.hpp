@@ -19,7 +19,7 @@ class LevelIteratorImp : public EntityPointerImp<codim, const TriangleGrid> {
         typedef Dune::Entity<codim, 2, const TriangleGrid, EntityImp> Entity;
         typedef EntityPointerImp<codim, const TriangleGrid> Base;
 
-        LevelIteratorImp(const shared_ptr<DataContainer>& data, int level, std::size_t index) :
+        LevelIteratorImp(const shared_ptr<DataContainer>& data, int level, unsigned int index) :
             m_data(data), m_level(level), m_index(index), 
             Base(EntityPointerImp<codim, const TriangleGrid>(EntityImp<codim, 2, const TriangleGrid>(data, level, index))) {};
 
@@ -38,7 +38,7 @@ class LevelIteratorImp : public EntityPointerImp<codim, const TriangleGrid> {
 
         shared_ptr<DataContainer> m_data;
         int m_level;
-        mutable std::size_t m_index;
+        mutable unsigned int m_index;
 
 
 

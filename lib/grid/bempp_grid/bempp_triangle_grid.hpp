@@ -33,8 +33,6 @@ namespace BemppGrid {
     template <class> class P1HierarchicIteratorImp;
     template <class> class P1LeafIntersectionIteratorImp;
     template <class> class P1LevelIntersectionIteratorImp;
-    template <class, Dune::PartitionIteratorType> class LevelGridViewTraits;
-    template <class, Dune::PartitionIteratorType> class LeafGridViewTraits;
 
     struct TriangleGridFamily {
 
@@ -54,12 +52,12 @@ namespace BemppGrid {
             LevelIndexSetImp,
             LevelIndexSetImp,
             IdSetImp,
-            std::size_t,
+            unsigned int,
             IdSetImp,
-            std::size_t,
+            unsigned int,
             Dune::CollectiveCommunication<TriangleGrid>,
-            LevelGridViewTraits,
-            LeafGridViewTraits,
+            Dune::DefaultLevelGridViewTraits,
+            Dune::DefaultLeafGridViewTraits,
             EntitySeedImp>
                 Traits;
 

@@ -9,12 +9,12 @@ namespace BemppGrid {
     class TriangleGrid;
     template<int, int, class> class EntityImp;
 
-    class LevelIndexSetImp : public Dune::IndexSetDefaultImplementation<TriangleGrid, LevelIndexSetImp>
+    class LevelIndexSetImp : public Dune::IndexSetDefaultImplementation<const TriangleGrid, LevelIndexSetImp>
     {
 
         public:
 
-        typedef std::size_t IndexType;
+        typedef unsigned int IndexType;
 
         template <int cd>
         IndexType index(const typename TriangleGrid::GridFamily::Traits::Codim<cd>::Entity& entity) const

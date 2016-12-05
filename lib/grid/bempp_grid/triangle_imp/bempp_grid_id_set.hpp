@@ -9,12 +9,12 @@ namespace BemppGrid {
     class TriangleGrid;
     template<int, int, class> class EntityImp;
 
-    class IdSetImp : public Dune::IdSet<const TriangleGrid, IdSetImp, std::size_t> 
+    class IdSetImp : public Dune::IdSet<const TriangleGrid, IdSetImp, unsigned int> 
     {
 
         public:
 
-        typedef std::size_t IdType;
+        typedef unsigned int IdType;
 
         template <int cd>
         IdType id(const typename TriangleGrid::GridFamily::Traits::Codim<cd>::Entity& entity) const
