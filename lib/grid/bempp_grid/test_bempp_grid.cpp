@@ -55,7 +55,7 @@ namespace Bempp {
         Geometry<2, 3, const TriangleGrid > geom(geometryType, vertices);
         std::cout << "Number of edges: " << data->numberOfEdges(0) << std::endl;
 
-        auto grid = TriangleGrid(data);
+        TriangleGrid grid(data);
 
         std::cout << "Test the iterator" << std::endl;
 

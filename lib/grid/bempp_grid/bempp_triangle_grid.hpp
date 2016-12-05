@@ -131,6 +131,17 @@ namespace BemppGrid {
             template <int cd>
             typename Codim<cd>::template Partition<Dune::All_Partition>::LevelIterator lend(int level) const;
 
+            template <int cd>
+            typename Codim<cd>::template Partition<Dune::All_Partition>::LevelIterator leafbegin() const;
+
+            template <int cd>
+            typename Codim<cd>::template Partition<Dune::All_Partition>::LevelIterator leafend() const;
+
+            const typename GridFamily::Traits::LevelIndexSet& levelIndexSet(int level) const;
+            const typename GridFamily::Traits::LeafIndexSet& leafIndexSet() const;
+
+            const typename GridFamily::Traits::GlobalIdSet& globalIdSet() const;
+            const typename GridFamily::Traits::LocalIdSet& localIdSet() const;
 
         private:
 
@@ -150,6 +161,12 @@ namespace BemppGrid {
 
 
             shared_ptr<DataContainer> m_data;
+
+            const typename GridFamily::Traits::LevelIndexSet m_levelIndexSet;
+            const typename GridFamily::Traits::LeafIndexSet m_leafIndexSet;
+
+            const typename GridFamily::Traits::GlobalIdSet m_globalIdSet;
+            const typename GridFamily::Traits::LocalIdSet m_localIdSet;
     };
 
     

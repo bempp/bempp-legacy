@@ -30,6 +30,47 @@ namespace BemppGrid {
                     m_data->numberOfEntities<cd>(level)));
 
     }
+
+    template <int cd>
+    typename TriangleGrid::Codim<cd>::template Partition<Dune::All_Partition>::LevelIterator TriangleGrid::leafbegin() const {
+
+        return typename TriangleGrid::Codim<cd>::Iterator(LevelIteratorImp<cd, Dune::All_Partition, const TriangleGrid>(
+                    m_data, m_data->levels() - 1, 0));
+
+    }
+
+    template <int cd>
+    typename TriangleGrid::Codim<cd>::template Partition<Dune::All_Partition>::LevelIterator TriangleGrid::leafend() const {
+
+        int level = m_data->levels() - 1;
+        return typename TriangleGrid::Codim<cd>::Iterator(LevelIteratorImp<cd, Dune::All_Partition, const TriangleGrid>(m_data, level, 
+                    m_data->numberOfEntities<cd>(level)));
+
+    }
+
+    inline const typename TriangleGrid::GridFamily::Traits::LevelIndexSet& TriangleGrid::levelIndexSet(int level) const {
+
+        return m_levelIndexSet;
+
+    }
+
+    inline const typename TriangleGrid::GridFamily::Traits::LeafIndexSet& TriangleGrid::leafIndexSet() const {
+
+        return m_leafIndexSet;
+
+    }
+
+    inline const typename TriangleGrid::GridFamily::Traits::GlobalIdSet& TriangleGrid::globalIdSet() const {
+
+        return m_globalIdSet;
+
+    }
+
+    inline const typename TriangleGrid::GridFamily::Traits::LocalIdSet& TriangleGrid::localIdSet() const {
+
+        return m_localIdSet;
+
+    }
     
     template <int cd>
     TriangleGrid::GridFamily::Traits::LevelIndexSet::IndexType TriangleGrid::entityIndex(
