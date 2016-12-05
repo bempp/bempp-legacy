@@ -11,6 +11,7 @@
 #include "triangle_imp/bempp_grid_level_iterator.hpp"
 #include "triangle_imp/bempp_grid_index_set.hpp"
 #include "triangle_imp/bempp_grid_id_set.hpp"
+#include "bempp_triangle_grid_factory.hpp"
 
 namespace BemppGrid {
 

@@ -46,7 +46,7 @@ namespace Bempp {
         elements[1][1] = 1;
         elements[1][2] = 3;
 
-        GridFactory<Dune::Grid<2, 3, double, TriangleGridFamily>> factory;
+        Dune::GridFactory<Dune::Grid<2, 3, double, TriangleGridFamily>> factory;
         for (int i = 0; i < vertices.size(); ++i) 
             factory.insertVertex(vertices[i]);
 
