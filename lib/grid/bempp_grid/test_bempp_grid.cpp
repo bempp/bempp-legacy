@@ -61,13 +61,6 @@ namespace Bempp {
         auto view = grid->leafGridView();
         const auto& indexSet = view.indexSet();
 
-        for (auto it = grid->lbegin<1>(0); it != grid->lend<1>(0); ++it)
-            std::cout << indexSet.index<1>(*it);
-
-        IdSetImp idSet;
-        for (auto it = grid->lbegin<0>(0); it != grid->lend<0>(0); ++it)
-            std::cout << idSet.subId(*it, 0, 2) << std::endl;
-
     }
 
 

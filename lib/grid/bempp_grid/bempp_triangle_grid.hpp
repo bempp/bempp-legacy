@@ -107,8 +107,8 @@ namespace BemppGrid {
              template <Dune::PartitionIteratorType pitype>
              struct Partition {
 
-                 typedef typename Dune::EntityIterator<cd, const TriangleGrid, LevelIteratorImp<cd, Dune::All_Partition, const TriangleGrid>> LevelIterator;
-                 typedef typename Dune::EntityIterator<cd, const TriangleGrid, LevelIteratorImp<cd, Dune::All_Partition, const TriangleGrid>> LeafIterator;
+                 typedef typename Dune::EntityIterator<cd, const TriangleGrid, LevelIteratorImp<cd, pitype, const TriangleGrid>> LevelIterator;
+                 typedef typename Dune::EntityIterator<cd, const TriangleGrid, LevelIteratorImp<cd, pitype, const TriangleGrid>> LeafIterator;
 
 
              };             
@@ -123,17 +123,17 @@ namespace BemppGrid {
 
             TriangleGrid(const shared_ptr<DataContainer>& data); 
 
-            template <int cd>
-            typename Codim<cd>::template Partition<Dune::All_Partition>::LevelIterator lbegin(int level) const;
+            template <int cd, Dune::PartitionType pitype>
+            typename Codim<cd>::template Partition<pitype>::LevelIterator lbegin(int level) const;
 
-            template <int cd>
-            typename Codim<cd>::template Partition<Dune::All_Partition>::LevelIterator lend(int level) const;
+            template <int cd, Dune::PartitionType pitype>
+            typename Codim<cd>::template Partition<pitype>::LevelIterator lend(int level) const;
 
-            template <int cd>
-            typename Codim<cd>::template Partition<Dune::All_Partition>::LevelIterator leafbegin() const;
+            template <int cd, Dune::PartitionIteratorType pitype>
+            typename Codim<cd>::template Partition<pitype>::LevelIterator leafbegin() const;
 
-            template <int cd>
-            typename Codim<cd>::template Partition<Dune::All_Partition>::LevelIterator leafend() const;
+            template <int cd, Dune::PartitionIteratorType pitype>
+            typename Codim<cd>::template Partition<pitype>::LevelIterator leafend() const;
 
             const typename GridFamily::Traits::LevelIndexSet& levelIndexSet(int level) const;
             const typename GridFamily::Traits::LeafIndexSet& leafIndexSet() const;
@@ -160,8 +160,7 @@ namespace BemppGrid {
 
             shared_ptr<DataContainer> m_data;
 
-            const typename GridFamily::Traits::LevelIndexSet m_levelIndexSet;
-            const typename GridFamily::Traits::LeafIndexSet m_leafIndexSet;
+            std::vector<shared_ptr<typename GridFamily::Traits::LevelIndexSet>> m_levelIndexSet;
 
             const typename GridFamily::Traits::GlobalIdSet m_globalIdSet;
             const typename GridFamily::Traits::LocalIdSet m_localIdSet;

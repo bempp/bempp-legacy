@@ -80,7 +80,7 @@ private:
   DuneGrid *m_dune_grid;
   bool m_owns_dune_grid;
   GridParameters::Topology m_topology;
-  ConcreteIdSet<DuneGrid, typename DuneGrid::Traits::GlobalIdSet>
+  ConcreteIdSet<DuneGrid, typename DuneGrid::GlobalIdSet>
       m_global_id_set;
   ConcreteDomainIndex<DuneGrid> m_domain_index;
   shared_ptr<const Dune::GridFactory<DuneGrid>> m_factory;

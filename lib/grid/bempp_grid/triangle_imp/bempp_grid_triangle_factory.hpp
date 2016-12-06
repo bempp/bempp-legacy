@@ -1,9 +1,9 @@
-#ifndef bempp_triangle_grid_factory_hpp
-#define bempp_triangle_grid_factory_hpp
+#ifndef bempp_grid_imp_triangle_factory_hpp
+#define bempp_grid_imp_triangle_factory_hpp
 
 #include <dune/grid/common/grid.hh>
 #include <dune/grid/common/gridfactory.hh>
-#include "./triangle_imp/bempp_grid_data_container.hpp"
+#include "bempp_grid_data_container.hpp"
 
 namespace Dune {
 

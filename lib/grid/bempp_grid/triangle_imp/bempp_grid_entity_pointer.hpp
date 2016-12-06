@@ -16,7 +16,8 @@ namespace BemppGrid {
     template <int codim, class>
     class EntityPointerImp {
 
-        friend class LevelIteratorImp<codim, Dune::All_Partition, const TriangleGrid>;
+        template <int cd, Dune::PartitionIteratorType pitype, class GridType>
+        friend class LevelIteratorImp;
 
         public:
 
