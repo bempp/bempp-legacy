@@ -15,7 +15,7 @@
 
 namespace BemppGrid {
 
-    TriangleGrid::TriangleGrid(const shared_ptr<DataContainer>& data) : m_data(data) {
+    inline TriangleGrid::TriangleGrid(const shared_ptr<DataContainer>& data) : m_data(data) {
 
         for (int i = 0; i < data->levels(); ++i) {
 

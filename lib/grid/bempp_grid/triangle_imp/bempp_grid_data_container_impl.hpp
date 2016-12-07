@@ -157,18 +157,21 @@ namespace BemppGrid {
 
 
     template<>
+    inline
     int DataContainer::numberOfEntities<0>(int level) const {
 
         return numberOfElements(level);
     }
 
     template<>
+    inline
     int DataContainer::numberOfEntities<1>(int level) const {
 
         return numberOfEdges(level);
     }
 
     template<>
+    inline
     int DataContainer::numberOfEntities<2>(int level) const {
 
         return numberOfNodes(level);
@@ -259,6 +262,7 @@ namespace BemppGrid {
     }
     
     template <>
+    inline
     unsigned int DataContainer::id<0>(const Entity<0>& entity){
 
         const auto& realEntity = TriangleGrid::getEntityImp<0>(entity);
@@ -267,6 +271,7 @@ namespace BemppGrid {
     }
 
     template <>
+    inline
     unsigned int DataContainer::id<1>(const Entity<1>& entity){
 
         const auto& realEntity = TriangleGrid::getEntityImp<1>(entity);
@@ -275,6 +280,7 @@ namespace BemppGrid {
     }
 
     template <>
+    inline
     unsigned int DataContainer::id<2>(const Entity<2>& entity){
 
         const auto& realEntity = TriangleGrid::getEntityImp<2>(entity);
