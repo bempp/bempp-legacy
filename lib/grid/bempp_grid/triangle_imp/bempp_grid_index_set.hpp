@@ -5,6 +5,7 @@
 #include "bempp_grid_data_container.hpp"
 #include <dune/grid/common/entity.hh>
 #include <dune/geometry/type.hh>
+#include <string>
 
 namespace BemppGrid {
 
@@ -19,7 +20,13 @@ namespace BemppGrid {
 
         typedef unsigned int IndexType;
 
-        LevelIndexSetImp(const shared_ptr<DataContainer>& data, unsigned int level) : m_data(data), m_level(level) {}
+        LevelIndexSetImp(const shared_ptr<DataContainer>& data, unsigned int level) : m_data(data), m_level(level),
+       m_types({{Dune::GeometryType(Dune::GeometryType::simplex, 2)}, 
+               {Dune::GeometryType(Dune::GeometryType::simplex, 1)}, 
+               {Dune::GeometryType(Dune::GeometryType::simplex, 0)}}) {}
+        
+        
+        
 
         template <int cd>
         IndexType index(const typename TriangleGrid::GridFamily::Traits::Codim<cd>::Entity& entity) const
@@ -33,11 +40,26 @@ namespace BemppGrid {
         IndexType subIndex(const typename TriangleGrid::GridFamily::Traits::Codim<cd>::Entity& entity,
                 int i, unsigned int codim) const{
 
-            if (codim > cd) 
-                throw std::runtime_error("LevelIndexSetImp::subIndex(): Error Must have 0 <=codim <= cd.");
+            if (codim < cd) 
+                throw std::runtime_error(
+                        "LevelIndexSetImp::subIndex(): Error: cd = " + std::to_string(cd) + ", codim = " +
+                        std::to_string(codim));
 
-            return index<cd>(*entity.template subEntity<cd>(i));
+            if (codim == 0)
+                return index<0>(*entity.template subEntity<0>(i));
+            if (codim == 1)
+                return index<1>(*entity.template subEntity<1>(i));
+            if (codim == 2)
+                return index<2>(*entity.template subEntity<2>(i));
+            throw std::runtime_error(
+                    "LevelIndexSetImp::subIndex(): Require 0 <= codim <= 2");
 
+
+        }
+
+        const std::vector<Dune::GeometryType>& geomTypes (int codim) const
+        {
+            return m_types[codim];
         }
 
         IndexType size(Dune::GeometryType type) const {
@@ -78,6 +100,7 @@ namespace BemppGrid {
         private:
 
         shared_ptr<DataContainer> m_data;
+        std::vector<std::vector<Dune::GeometryType>> m_types;
         unsigned int m_level;
 
     }; 

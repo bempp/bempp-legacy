@@ -108,6 +108,51 @@ namespace BemppGrid {
 
     }
 
+    inline int TriangleGrid::maxLevel() const {
+
+        return m_data->levels() - 1;
+
+    }
+
+    inline int TriangleGrid::size(int level, int codim) const {
+
+        if (codim == 0)
+            return m_data->numberOfEntities<0>(level);
+        if (codim == 1)
+            return m_data->numberOfEntities<1>(level);
+        if (codim ==2)
+            return m_data->numberOfEntities<2>(level);
+        throw std::runtime_error("TriangleGrid::size(): Need 0 <= codim <= 2");
+
+
+    }
+
+    inline int TriangleGrid::size(int codim) const {
+
+        return size(maxLevel(), codim);
+
+
+    }
+
+    inline int TriangleGrid::size(int level, Dune::GeometryType type) const {
+
+        if (type.isVertex())
+            return size(level, 2);
+        if (type.isLine())
+            return size(level, 1);
+        if (type.isTriangle())
+            return size(level, 0);
+        throw std::runtime_error("TriangleGrid::size(): unknwon type");
+
+
+    }
+
+    inline int TriangleGrid::size(Dune::GeometryType type) const {
+
+        return size(maxLevel(), type);
+
+    }
+
 }
 
 

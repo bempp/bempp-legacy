@@ -10,6 +10,7 @@
 #include <dune/grid/common/entityiterator.hh>
 #include <dune/grid/common/grid.hh>
 #include <dune/grid/common/defaultgridview.hh>
+#include <dune/geometry/type.hh>
 #include <dune/common/parallel/collectivecommunication.hh>
 #include <boost/none.hpp> 
 
@@ -140,6 +141,14 @@ namespace BemppGrid {
 
             const typename GridFamily::Traits::GlobalIdSet& globalIdSet() const;
             const typename GridFamily::Traits::LocalIdSet& localIdSet() const;
+
+            int maxLevel() const;
+            int size(int level, int codim) const;
+            int size(int codim) const;
+            int size(int level, Dune::GeometryType type) const;
+            int size(Dune::GeometryType type) const;
+
+
 
         private:
 

@@ -104,13 +104,15 @@ namespace BemppGrid {
         for (unsigned int i = 0; i < m_edges[m_levels].size(); ++i)
             m_edgeIds[m_levels][i] = m_idCounter++;
 
+
+        m_levels++;
+
         // Compute Geometries
 
         computeGeometries<0>(0);
         computeGeometries<1>(0);
         computeGeometries<2>(0);    
 
-        m_levels++;
     }
 
     inline int DataContainer::levels() const {
