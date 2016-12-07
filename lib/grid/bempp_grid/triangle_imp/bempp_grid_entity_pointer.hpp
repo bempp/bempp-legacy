@@ -30,6 +30,11 @@ namespace BemppGrid {
             EntityPointerImp(const EntityPointerImp<codim, const TriangleGrid>& other) :
                 m_entity(new Entity(TriangleGrid::getEntityImp<codim>(*other.m_entity))) {}
 
+            EntityPointerImp<codim, const TriangleGrid>& operator=(const EntityPointerImp<codim, const TriangleGrid>& other) {
+                setEntity(TriangleGrid::getEntityImp<codim>(*other.m_entity));
+                return *this;
+            }
+
             virtual ~EntityPointerImp() {}
 
             Entity& dereference() const {

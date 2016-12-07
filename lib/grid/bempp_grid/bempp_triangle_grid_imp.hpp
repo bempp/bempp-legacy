@@ -28,17 +28,17 @@ namespace BemppGrid {
 
     }
 
-    template <int cd, Dune::PartitionType pitype>
+    template <int cd, Dune::PartitionIteratorType pitype>
     typename TriangleGrid::Codim<cd>::template Partition<pitype>::LevelIterator TriangleGrid::lbegin(int level) const {
 
-        return typename TriangleGrid::Codim<cd>::Iterator(LevelIteratorImp<cd, pitype, const TriangleGrid>(m_data, level, 0));
+        return typename TriangleGrid::Codim<cd>::template Partition<pitype>::LevelIterator(LevelIteratorImp<cd, pitype, const TriangleGrid>(m_data, level, 0));
 
     }
 
-    template <int cd, Dune::PartitionType pitype>
+    template <int cd, Dune::PartitionIteratorType pitype>
     typename TriangleGrid::Codim<cd>::template Partition<pitype>::LevelIterator TriangleGrid::lend(int level) const {
 
-        return typename TriangleGrid::Codim<cd>::Iterator(LevelIteratorImp<cd, pitype, const TriangleGrid>(m_data, level, 
+        return typename TriangleGrid::Codim<cd>::template Partition<pitype>::LevelIterator(LevelIteratorImp<cd, pitype, const TriangleGrid>(m_data, level, 
                     m_data->numberOfEntities<cd>(level)));
 
     }
@@ -46,7 +46,7 @@ namespace BemppGrid {
     template <int cd, Dune::PartitionIteratorType pitype>
     typename TriangleGrid::Codim<cd>::template Partition<pitype>::LevelIterator TriangleGrid::leafbegin() const {
 
-        return typename TriangleGrid::Codim<cd>::Iterator(LevelIteratorImp<cd, pitype, const TriangleGrid>(
+        return typename TriangleGrid::Codim<cd>::template Partition<pitype>::LevelIterator(LevelIteratorImp<cd, pitype, const TriangleGrid>(
                     m_data, m_data->levels() - 1, 0));
 
     }
@@ -55,7 +55,7 @@ namespace BemppGrid {
     typename TriangleGrid::Codim<cd>::template Partition<pitype>::LevelIterator TriangleGrid::leafend() const {
 
         int level = m_data->levels() - 1;
-        return typename TriangleGrid::Codim<cd>::Iterator(LevelIteratorImp<cd, pitype, const TriangleGrid>(m_data, level, 
+        return typename TriangleGrid::Codim<cd>::template Partition<pitype>::LevelIterator(LevelIteratorImp<cd, pitype, const TriangleGrid>(m_data, level, 
                     m_data->numberOfEntities<cd>(level)));
 
     }

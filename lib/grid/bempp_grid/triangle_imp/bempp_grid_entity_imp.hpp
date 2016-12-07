@@ -12,6 +12,7 @@ namespace BemppGrid {
         int level, unsigned int index) : m_data(data), m_level(level), m_index(index)
     {}
 
+
     EntityImp<0, 2, const TriangleGrid>::Geometry EntityImp<0, 2, const TriangleGrid>::geometry() const {
 
                return m_data->geometry<0>(Entity(*this)); 

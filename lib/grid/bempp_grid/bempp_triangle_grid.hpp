@@ -87,8 +87,8 @@ namespace BemppGrid {
             template <Dune::PartitionIteratorType pitype>
             struct Partition
             {
-               typedef boost::none_t LevelGridView;
-               typedef boost::none_t LeafGridView;
+               typedef typename TriangleGridFamily::Traits::template Partition<pitype>::LevelGridView LevelGridView;
+               typedef typename TriangleGridFamily::Traits::template Partition<pitype>::LeafGridView LeafGridView;
             };
 
             typedef typename Partition<Dune::All_Partition>::LevelGridView LevelGridView;
@@ -123,10 +123,10 @@ namespace BemppGrid {
 
             TriangleGrid(const shared_ptr<DataContainer>& data); 
 
-            template <int cd, Dune::PartitionType pitype>
+            template <int cd, Dune::PartitionIteratorType pitype>
             typename Codim<cd>::template Partition<pitype>::LevelIterator lbegin(int level) const;
 
-            template <int cd, Dune::PartitionType pitype>
+            template <int cd, Dune::PartitionIteratorType pitype>
             typename Codim<cd>::template Partition<pitype>::LevelIterator lend(int level) const;
 
             template <int cd, Dune::PartitionIteratorType pitype>
