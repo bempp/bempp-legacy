@@ -148,6 +148,21 @@ namespace BemppGrid {
     }
 
 
+    inline unsigned int EntityImp<0, 2, const TriangleGrid>::subEntities(unsigned int codim) const {
+
+        if (codim == 0)
+            return 1;
+
+        if (codim == 1)
+            return 3;
+
+        if (codim == 2)
+            return 3;
+
+        throw std::runtime_error("Entity::subEntities(): Error. Require 0 <= codim <= 2.");
+
+    }
+
     inline
     EntityImp<1, 2, const TriangleGrid>::EntityImp(const shared_ptr<DataContainer>& data,
         int level, unsigned int index) : m_data(data), m_level(level), m_index(index)

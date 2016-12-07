@@ -3,17 +3,13 @@ if(TARGET Boost)
   set(depends_on Boost)
 endif()
 set(default_common_URL
-    http://www.dune-project.org/download/2.3.1/dune-common-2.3.1.tar.gz)
-set(default_common_MD5 16d442117d65be550d7831d96555acbd)
+    http://www.dune-project.org/download/2.4.1/dune-common-2.4.1.tar.gz)
 set(default_geometry_URL 
-    http://www.dune-project.org/download/2.3.1/dune-geometry-2.3.1.tar.gz)
-set(default_geometry_MD5 87ff1f4733c730ed48b1ea9546665f26)
+    http://www.dune-project.org/download/2.4.1/dune-geometry-2.4.1.tar.gz)
 set(default_grid_URL
-    http://www.dune-project.org/download/2.3.1/dune-grid-2.3.1.tar.gz)
-set(default_grid_MD5 1619d2adf6938ee2aa4ab4f76d7f5e95)
+    http://www.dune-project.org/download/2.4.1/dune-grid-2.4.1.tar.gz)
 set(default_localfunctions_URL
-    http://www.dune-project.org/download/2.3.1/dune-localfunctions-2.3.1.tar.gz)
-set(default_localfunctions_MD5 6d5de5dd2e50684c529db8616232c7ed)
+    http://www.dune-project.org/download/2.4.1/dune-localfunctions-2.4.1.tar.gz)
 
 
 # Create list of library paths.
@@ -104,42 +100,39 @@ create_patch_script(Dune-Grid dune_grid_patch_script
     WORKING_DIRECTORY "${EXTERNAL_ROOT}/src"
     "${patchdir}/dune_grid_cmake.patch"
 )
-_get_arguments(common)
+
 ExternalProject_Add(dune-common
     PREFIX ${EXTERNAL_ROOT}
     DEPENDS ${depends_on}
-    ${common_ARGUMENTS}
-    PATCH_COMMAND ${dune_common_patch_script}
+    URL http://www.dune-project.org/download/2.4.1/dune-common-2.4.1.tar.gz
+    # PATCH_COMMAND ${dune_common_patch_script}
     CMAKE_ARGS -C "${EXTERNAL_ROOT}/src/DuneVariables.cmake"
     LOG_DOWNLOAD ON LOG_CONFIGURE ON LOG_BUILD ON
 )
 
-_get_arguments(geometry)
 ExternalProject_Add(dune-geometry
     PREFIX ${EXTERNAL_ROOT}
     DEPENDS dune-common
-    ${geometry_ARGUMENTS}
-    PATCH_COMMAND ${dune_geometry_patch_script}
+    URL http://www.dune-project.org/download/2.4.1/dune-geometry-2.4.1.tar.gz
+    # PATCH_COMMAND ${dune_geometry_patch_script}
     CMAKE_ARGS -C "${EXTERNAL_ROOT}/src/DuneVariables.cmake"
     LOG_DOWNLOAD ON LOG_CONFIGURE ON LOG_BUILD ON
 )
 
 
-_get_arguments(grid)
 ExternalProject_Add(dune-grid
     PREFIX ${EXTERNAL_ROOT}
     DEPENDS dune-geometry dune-common ${grid_depends}
-    ${grid_ARGUMENTS}
-    PATCH_COMMAND ${dune_grid_patch_script}
+    URL http://www.dune-project.org/download/2.4.1/dune-grid-2.4.1.tar.gz
+    # PATCH_COMMAND ${dune_grid_patch_script}
     CMAKE_ARGS -C "${EXTERNAL_ROOT}/src/DuneVariables.cmake"
     LOG_DOWNLOAD ON LOG_CONFIGURE ON LOG_BUILD ON
 )
 
-_get_arguments(localfunctions)
 ExternalProject_Add(dune-localfunctions
     PREFIX ${EXTERNAL_ROOT}
     DEPENDS dune-geometry dune-common dune-grid
-    ${localfunctions_ARGUMENTS}
+    URL http://www.dune-project.org/download/2.4.1/dune-localfunctions-2.4.1.tar.gz
     CMAKE_ARGS -C "${EXTERNAL_ROOT}/src/DuneVariables.cmake"
     LOG_DOWNLOAD ON LOG_CONFIGURE ON LOG_BUILD ON
 )

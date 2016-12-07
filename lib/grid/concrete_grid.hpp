@@ -170,7 +170,7 @@ public:
   virtual std::unique_ptr<GridView> levelView(size_t level) const override {
     return std::unique_ptr<GridView>(
         new ConcreteGridView<typename DuneGrid::LevelGridView>(
-            m_dune_grid->levelView(level), m_domain_index));
+            m_dune_grid->levelGridView(level), m_domain_index));
   }
 
   virtual std::unique_ptr<GridView> leafView() const override {

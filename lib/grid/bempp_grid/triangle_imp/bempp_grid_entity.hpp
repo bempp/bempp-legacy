@@ -67,6 +67,8 @@ namespace BemppGrid {
 
             unsigned int id() const;
 
+            unsigned int subEntities(unsigned int codim) const;
+
         private:
 
             EntityImp() {}
