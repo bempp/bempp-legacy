@@ -43,7 +43,7 @@ namespace BemppGrid {
                 unsigned int n0 = element[localEdgeNodes[i][0]];
                 unsigned int n1 = element[localEdgeNodes[i][1]];
                 if (n1 > n0) std::swap(n0, n1); // Number edges from smaller to larger vertex
-                // Check if vertex already exists
+                // Check if edge already exists
                 bool edgeExists = false;
                 unsigned int edgeIndex;
                 for (const auto& indexPair: nodes2EdgeIndexPair[n0])
@@ -58,7 +58,7 @@ namespace BemppGrid {
                     nodes2EdgeIndexPair[n0].push_back(std::pair<unsigned int, unsigned int>(n1, edgeIndex));
                     edges.push_back(std::array<unsigned int, 2>({n0, n1}));
                 }
-                element2Edges[elementIndex][i-1] = edgeIndex;
+                element2Edges[elementIndex][i] = edgeIndex;
             }
         }
 
