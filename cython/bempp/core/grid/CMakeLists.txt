@@ -11,6 +11,7 @@ set(files entity.pxd entity.pyx
            py_sphere.hpp 
            py_entity_helper.hpp
            id_set.pxd id_set.pyx
+           test_grid.pyx
            __init__.pxd)
 
 
