@@ -25,6 +25,9 @@
 #include "cuda_evaluate_laplace_3d_double_layer_potential_integral.cuh"
 #include "cuda_evaluate_laplace_3d_adjoint_double_layer_potential_integral.cuh"
 #include "cuda_evaluate_modified_helmholtz_3d_single_layer_potential_integral.cuh"
+#include "cuda_evaluate_modified_helmholtz_3d_double_layer_potential_integral.cuh"
+#include "cuda_evaluate_modified_helmholtz_3d_adjoint_double_layer_potential_integral.cuh"
+#include "cuda_evaluate_modified_helmholtz_3d_hypersingular_integral.cuh"
 
 #include "../fiber/explicit_instantiation.hpp"
 #include "../fiber/shapeset.hpp"
@@ -32,10 +35,142 @@
 #include "../fiber/scalar_traits.hpp"
 #include "../fiber/collection_of_kernels.hpp"
 
+// Helper
+namespace {
+
+template <typename CudaBasisFunctionType, typename BasisFunctionType>
+struct SetupBasisDataHelper {
+  static void reorder(
+      std::vector<CudaBasisFunctionType> &basisValues,
+      std::vector<CudaBasisFunctionType> &basisDerivatives,
+      Fiber::BasisData<BasisFunctionType> &basisData,
+      const unsigned int dofCount, const unsigned int pointCount,
+      const unsigned int compCount,
+      const int dof, const int point, const int comp) {
+    throw std::invalid_argument(
+        "CudaIntegrator::setupBasisData(): "
+        "invalid BasisFunctionType");
+  }
+};
+
+template <typename CudaBasisFunctionType>
+struct SetupBasisDataHelper<CudaBasisFunctionType, float> {
+  static void reorder(
+      std::vector<CudaBasisFunctionType> &basisValues,
+      std::vector<CudaBasisFunctionType> &basisDerivatives,
+      Fiber::BasisData<float> &basisData,
+      const unsigned int dofCount, const unsigned int pointCount,
+      const unsigned int compCount,
+      const int dof, const int point, const int comp) {
+
+    const unsigned int localCoordCount = 2;
+
+    basisValues[dof * pointCount * compCount
+                + point * compCount
+                + comp] =
+        basisData.values(comp, dof, point);
+
+    for (unsigned int coordIndex = 0; coordIndex < localCoordCount; ++coordIndex) {
+      basisDerivatives[coordIndex * dofCount * pointCount * compCount
+                       + dof * pointCount * compCount
+                       + point * compCount
+                       + comp] =
+          basisData.derivatives(comp, coordIndex, dof, point);
+    }
+  }
+};
+
+template <typename CudaBasisFunctionType>
+struct SetupBasisDataHelper<CudaBasisFunctionType, double> {
+  static void reorder(
+      std::vector<CudaBasisFunctionType> &basisValues,
+      std::vector<CudaBasisFunctionType> &basisDerivatives,
+      Fiber::BasisData<double> &basisData,
+      const unsigned int dofCount, const unsigned int pointCount,
+      const unsigned int compCount,
+      const int dof, const int point, const int comp) {
+
+    const unsigned int localCoordCount = 2;
+
+    basisValues[dof * pointCount * compCount
+                + point * compCount
+                + comp] =
+        basisData.values(comp, dof, point);
+
+    for (unsigned int coordIndex = 0; coordIndex < localCoordCount; ++coordIndex) {
+      basisDerivatives[coordIndex * dofCount * pointCount * compCount
+                       + dof * pointCount * compCount
+                       + point * compCount
+                       + comp] =
+          basisData.derivatives(comp, coordIndex, dof, point);
+    }
+  }
+};
+
+template <typename CudaKernelType, typename KernelType>
+struct GetWaveNumberHelper {
+  static void getWaveNumber(
+      CudaKernelType &waveNumberReal, CudaKernelType &waveNumberImag,
+      const Fiber::shared_ptr<
+      const Fiber::CollectionOfKernels<KernelType>> &kernel) {
+    throw std::invalid_argument(
+        "CudaIntegrator::getWaveNumber(): "
+        "invalid KernelType");
+  }
+};
+
+template <typename CudaKernelType>
+struct GetWaveNumberHelper<CudaKernelType, float> {
+  static void getWaveNumber(
+      CudaKernelType &waveNumberReal, CudaKernelType &waveNumberImag,
+      const Fiber::shared_ptr<
+      const Fiber::CollectionOfKernels<float>> &kernel) {
+    waveNumberReal = static_cast<CudaKernelType>(0);
+    waveNumberImag = static_cast<CudaKernelType>(0);
+  }
+};
+
+template <typename CudaKernelType>
+struct GetWaveNumberHelper<CudaKernelType, double> {
+  static void getWaveNumber(
+      CudaKernelType &waveNumberReal, CudaKernelType &waveNumberImag,
+      const Fiber::shared_ptr<
+      const Fiber::CollectionOfKernels<double>> &kernel) {
+    waveNumberReal = static_cast<CudaKernelType>(0);
+    waveNumberImag = static_cast<CudaKernelType>(0);
+  }
+};
+
+template <typename CudaKernelType>
+struct GetWaveNumberHelper<CudaKernelType, std::complex<float>> {
+  static void getWaveNumber(
+      CudaKernelType &waveNumberReal, CudaKernelType &waveNumberImag,
+      const Fiber::shared_ptr<
+      const Fiber::CollectionOfKernels<std::complex<float>>> &kernel) {
+    waveNumberReal = kernel->waveNumber().real();
+    waveNumberImag = kernel->waveNumber().imag();
+  }
+};
+
+template <typename CudaKernelType>
+struct GetWaveNumberHelper<CudaKernelType, std::complex<double>> {
+  static void getWaveNumber(
+      CudaKernelType &waveNumberReal, CudaKernelType &waveNumberImag,
+      const Fiber::shared_ptr<
+      const Fiber::CollectionOfKernels<std::complex<double>>> &kernel) {
+    waveNumberReal = kernel->waveNumber().real();
+    waveNumberImag = kernel->waveNumber().imag();
+  }
+};
+
+} // namespace
+
 namespace Fiber {
 
-template <typename BasisFunctionType, typename KernelType, typename ResultType>
-CudaIntegrator<BasisFunctionType, KernelType, ResultType>::
+template <typename BasisFunctionType, typename KernelType, typename ResultType,
+typename CudaBasisFunctionType, typename CudaKernelType, typename CudaResultType>
+CudaIntegrator<BasisFunctionType, KernelType, ResultType,
+CudaBasisFunctionType, CudaKernelType, CudaResultType>::
     CudaIntegrator(
         const Matrix<CoordinateType> &localTestQuadPoints,
         const Matrix<CoordinateType> &localTrialQuadPoints,
@@ -43,8 +178,8 @@ CudaIntegrator<BasisFunctionType, KernelType, ResultType>::
         const std::vector<CoordinateType> &trialQuadWeights,
         const Shapeset<BasisFunctionType> &testShapeset,
         const Shapeset<BasisFunctionType> &trialShapeset,
-        const shared_ptr<Bempp::CudaGrid<CoordinateType>> &testGrid,
-        const shared_ptr<Bempp::CudaGrid<CoordinateType>> &trialGrid,
+        const shared_ptr<Bempp::CudaGrid<CudaCoordinateType>> &testGrid,
+        const shared_ptr<Bempp::CudaGrid<CudaCoordinateType>> &trialGrid,
         const std::vector<int> &testIndices, const std::vector<int> &trialIndices,
         const shared_ptr<const CollectionOfKernels<KernelType>> &kernel,
         const int deviceId, const Bempp::CudaOptions &cudaOptions)
@@ -52,9 +187,8 @@ CudaIntegrator<BasisFunctionType, KernelType, ResultType>::
           m_deviceId(deviceId), m_cudaOptions(cudaOptions) {
 
   // Get wave number
-  if (m_kernelName.find("Helmholtz") != std::string::npos ||
-      m_kernelName.find("Maxwell") != std::string::npos)
-    m_waveNumber = kernel->waveNumber();
+  GetWaveNumberHelper<CudaKernelType, KernelType>::getWaveNumber(
+      m_waveNumberReal, m_waveNumberImag, kernel);
 
   const size_t trialIndexCount = trialIndices.size();
   const size_t testIndexCount = testIndices.size();
@@ -91,52 +225,8 @@ CudaIntegrator<BasisFunctionType, KernelType, ResultType>::
       testPointCount * sizeof(CoordinateType)) );
 
   // Evaluate shapesets and copy basis data to device memory
-  m_trialBasisData.dofCount = trialDofCount;
-  m_testBasisData.dofCount = testDofCount;
-  const unsigned int trialCompCount = 1;
-  const unsigned int testCompCount = 1;
-  BasisData<BasisFunctionType> trialBasisData, testBasisData;
-  size_t trialBasisDeps = 0, testBasisDeps = 0;
-  trialBasisDeps |= VALUES;
-  testBasisDeps |= VALUES;
-  trialShapeset.evaluate(trialBasisDeps, localTrialQuadPoints, ALL_DOFS,
-                         trialBasisData);
-  testShapeset.evaluate(testBasisDeps, localTestQuadPoints, ALL_DOFS,
-                        testBasisData);
-  m_trialBasisData.values = thrust::device_malloc<CudaBasisFunctionType>(
-      trialCompCount * trialDofCount * trialPointCount);
-  m_testBasisData.values = thrust::device_malloc<CudaBasisFunctionType>(
-      testCompCount * testDofCount * testPointCount);
-//  thrust::copy(trialBasisData.values.begin(), trialBasisData.values.end(),
-//      m_trialBasisData.values);
-//  thrust::copy(testBasisData.values.begin(), testBasisData.values.end(),
-//      m_testBasisData.values);
-  std::vector<CudaBasisFunctionType> trialBasisValues(
-      trialCompCount * trialDofCount * trialPointCount);
-  std::vector<CudaBasisFunctionType> testBasisValues(
-      testCompCount * testDofCount * testPointCount);
-  for (int trialDof = 0; trialDof < trialDofCount; ++trialDof)
-    for (int trialPoint = 0; trialPoint < trialPointCount; ++trialPoint)
-      for (int trialComp = 0; trialComp < trialCompCount; ++trialComp)
-        trialBasisValues[trialDof * trialPointCount * trialCompCount
-                        + trialPoint * trialCompCount
-                        + trialComp] =
-            trialBasisData.values(trialComp, trialDof, trialPoint);
-  for (int testDof = 0; testDof < testDofCount; ++testDof)
-    for (int testPoint = 0; testPoint < testPointCount; ++testPoint)
-      for (int testComp = 0; testComp < testCompCount; ++testComp)
-        testBasisValues[testDof * testPointCount * testCompCount
-                        + testPoint * testCompCount
-                        + testComp] =
-            testBasisData.values(testComp, testDof, testPoint);
-  thrust::copy(trialBasisValues.begin(), trialBasisValues.end(),
-      m_trialBasisData.values);
-  thrust::copy(testBasisValues.begin(), testBasisValues.end(),
-      m_testBasisData.values);
-//  cu_verify( cudaMemcpyToSymbol(constTrialBasisValues, &(*(trialBasisValues.begin())),
-//      trialBasisValues.size() * sizeof(CudaBasisFunctionType)) );
-//  cu_verify( cudaMemcpyToSymbol(constTestBasisValues, &(*(testBasisValues.begin())),
-//      testBasisValues.size() * sizeof(CudaBasisFunctionType)) );
+  setupBasisData(testShapeset, trialShapeset,
+      localTestQuadPoints, localTrialQuadPoints);
 
   if (cudaOptions.isElementDataCachingEnabled() == true) {
 
@@ -145,13 +235,15 @@ CudaIntegrator<BasisFunctionType, KernelType, ResultType>::
     m_trialGrid->setupGeometry();
 
     // Precalculate global points on the device
-    m_testGrid->local2global(localTestQuadPoints, m_d_testGeomData);
+    m_testGrid->local2global(
+        localTestQuadPoints.template cast<CudaCoordinateType>(), m_d_testGeomData);
     m_testElemData.geomData = m_d_testGeomData.data();
     if (m_testGrid.get() == m_trialGrid.get() &&
         localTestQuadPoints == localTrialQuadPoints) {
       m_trialElemData.geomData = m_testElemData.geomData;
     } else {
-      m_trialGrid->local2global(localTrialQuadPoints, m_d_trialGeomData);
+      m_trialGrid->local2global(
+          localTrialQuadPoints.template cast<CudaCoordinateType>(), m_d_trialGeomData);
       m_trialElemData.geomData = m_d_trialGeomData.data();
     }
 
@@ -171,6 +263,26 @@ CudaIntegrator<BasisFunctionType, KernelType, ResultType>::
       m_trialElemData.normals = m_d_trialNormals.data();
       m_trialElemData.integrationElements = m_d_trialIntegrationElements.data();
       m_trialElemData.activeElemCount = m_d_trialIntegrationElements.size();
+    }
+
+    // Precalculate transposed Jacobian inverses on the device
+    if ((m_kernelName == "ModifiedHelmholtz3dHypersingular" ||
+        m_kernelName == "ModifiedHelmholtz3dHypersingularInterpolated")
+       && fabs(m_waveNumberReal) < 1.0e-10 ) {
+
+      m_testGrid->calculateJacobianInversesTransposed(
+          m_d_testJacobianInversesTransposed);
+      m_testElemData.jacobianInversesTransposed =
+          m_d_testJacobianInversesTransposed.data();
+      if (m_testGrid.get() == m_trialGrid.get()) {
+        m_trialElemData.jacobianInversesTransposed =
+            m_testElemData.jacobianInversesTransposed;
+      } else {
+        m_trialGrid->calculateJacobianInversesTransposed(
+            m_d_trialJacobianInversesTransposed);
+        m_trialElemData.jacobianInversesTransposed =
+            m_d_trialJacobianInversesTransposed.data();
+      }
     }
 
   } else {
@@ -222,18 +334,25 @@ CudaIntegrator<BasisFunctionType, KernelType, ResultType>::
   }
 }
 
-template <typename BasisFunctionType, typename KernelType, typename ResultType>
-CudaIntegrator<BasisFunctionType, KernelType, ResultType>::
+template <typename BasisFunctionType, typename KernelType, typename ResultType,
+typename CudaBasisFunctionType, typename CudaKernelType, typename CudaResultType>
+CudaIntegrator<BasisFunctionType, KernelType, ResultType,
+CudaBasisFunctionType, CudaKernelType, CudaResultType>::
     ~CudaIntegrator() {
 
   cu_verify( cudaSetDevice(m_deviceId) );
 
   thrust::device_free(m_testBasisData.values);
   thrust::device_free(m_trialBasisData.values);
+
+  thrust::device_free(m_testBasisData.derivatives);
+  thrust::device_free(m_trialBasisData.derivatives);
 }
 
-template <typename BasisFunctionType, typename KernelType, typename ResultType>
-void CudaIntegrator<BasisFunctionType, KernelType, ResultType>::
+template <typename BasisFunctionType, typename KernelType, typename ResultType,
+typename CudaBasisFunctionType, typename CudaKernelType, typename CudaResultType>
+void CudaIntegrator<BasisFunctionType, KernelType, ResultType,
+CudaBasisFunctionType, CudaKernelType, CudaResultType>::
     integrate(
         const size_t elemPairIndexBegin, const size_t elemPairIndexEnd,
         CudaResultType *result) {
@@ -264,8 +383,10 @@ void CudaIntegrator<BasisFunctionType, KernelType, ResultType>::
 
     if (m_cudaOptions.isKernelDataCachingEnabled() == true) {
 
-      thrust::device_vector<CudaKernelType> d_kernelValues(
-          elemPairCount * m_trialQuadData.pointCount * m_testQuadData.pointCount);
+      size_t size =
+          elemPairCount * m_trialQuadData.pointCount * m_testQuadData.pointCount;
+      if (ScalarTraits<KernelType>::isComplex) size *= 2;
+      thrust::device_vector<CudaKernelType> d_kernelValues(size);
 
       // Launch kernel
       if (m_kernelName == "Laplace3dSingleLayerPotential") {
@@ -285,6 +406,26 @@ void CudaIntegrator<BasisFunctionType, KernelType, ResultType>::
             thrust::raw_pointer_cast(d_kernelValues.data()))
         ));
 
+      } else if (
+          (m_kernelName == "ModifiedHelmholtz3dSingleLayerPotential" ||
+           m_kernelName == "ModifiedHelmholtz3dSingleLayerPotentialInterpolated")
+          && fabs(m_waveNumberReal) < 1.0e-10 ) {
+
+        cu_verify_void((
+            CudaEvaluateHelmholtz3dSingleLayerPotentialKernelFunctorCached<
+            CudaBasisFunctionType, CudaKernelType, CudaResultType>
+            <<<gridSize, blockSize>>>(
+            elemPairIndexBegin, elemPairCount, m_d_testIndices.size(),
+            thrust::raw_pointer_cast(m_d_testIndices.data()),
+            thrust::raw_pointer_cast(m_d_trialIndices.data()),
+            m_testQuadData.pointCount, m_trialQuadData.pointCount,
+            m_testElemData.activeElemCount,
+            thrust::raw_pointer_cast(m_testElemData.geomData),
+            m_trialElemData.activeElemCount,
+            thrust::raw_pointer_cast(m_trialElemData.geomData),
+            m_waveNumberImag, thrust::raw_pointer_cast(d_kernelValues.data()))
+        ));
+
       } else {
         throw std::runtime_error(
             "CudaIntegrator::integrate(): "
@@ -299,25 +440,58 @@ void CudaIntegrator<BasisFunctionType, KernelType, ResultType>::
       dim3 newGridSize(newGridSze,1,1);
 
       // Launch kernel
-      cu_verify_void((
-          CudaEvaluateLaplace3dSingleLayerPotentialIntegralFunctorKernelCached<
-          CudaBasisFunctionType, CudaKernelType, CudaResultType>
-          <<<newGridSize, blockSize>>>(
-          elemPairIndexBegin, elemPairCount, m_d_testIndices.size(),
-          thrust::raw_pointer_cast(m_d_testIndices.data()),
-          thrust::raw_pointer_cast(m_d_trialIndices.data()),
-          m_testQuadData.pointCount, m_trialQuadData.pointCount,
-          m_testBasisData.dofCount,
-          thrust::raw_pointer_cast(m_testBasisData.values),
-          m_trialBasisData.dofCount,
-          thrust::raw_pointer_cast(m_trialBasisData.values),
-          m_testElemData.activeElemCount,
-          thrust::raw_pointer_cast(m_testElemData.integrationElements),
-          m_trialElemData.activeElemCount,
-          thrust::raw_pointer_cast(m_trialElemData.integrationElements),
-          thrust::raw_pointer_cast(d_kernelValues.data()),
-          d_result)
-      ));
+      if (m_kernelName == "Laplace3dSingleLayerPotential") {
+
+        cu_verify_void((
+            CudaEvaluateLaplace3dSingleLayerPotentialIntegralFunctorKernelCached<
+            CudaBasisFunctionType, CudaKernelType, CudaResultType>
+            <<<newGridSize, blockSize>>>(
+            elemPairIndexBegin, elemPairCount, m_d_testIndices.size(),
+            thrust::raw_pointer_cast(m_d_testIndices.data()),
+            thrust::raw_pointer_cast(m_d_trialIndices.data()),
+            m_testQuadData.pointCount, m_trialQuadData.pointCount,
+            m_testBasisData.dofCount,
+            thrust::raw_pointer_cast(m_testBasisData.values),
+            m_trialBasisData.dofCount,
+            thrust::raw_pointer_cast(m_trialBasisData.values),
+            m_testElemData.activeElemCount,
+            thrust::raw_pointer_cast(m_testElemData.integrationElements),
+            m_trialElemData.activeElemCount,
+            thrust::raw_pointer_cast(m_trialElemData.integrationElements),
+            thrust::raw_pointer_cast(d_kernelValues.data()),
+            d_result)
+        ));
+
+      } else if (
+          (m_kernelName == "ModifiedHelmholtz3dSingleLayerPotential" ||
+           m_kernelName == "ModifiedHelmholtz3dSingleLayerPotentialInterpolated")
+          && fabs(m_waveNumberReal) < 1.0e-10 ) {
+
+        cu_verify_void((
+            CudaEvaluateHelmholtz3dSingleLayerPotentialIntegralFunctorKernelCached<
+            CudaBasisFunctionType, CudaKernelType, CudaResultType>
+            <<<newGridSize, blockSize>>>(
+            elemPairIndexBegin, elemPairCount, m_d_testIndices.size(),
+            thrust::raw_pointer_cast(m_d_testIndices.data()),
+            thrust::raw_pointer_cast(m_d_trialIndices.data()),
+            m_testQuadData.pointCount, m_trialQuadData.pointCount,
+            m_testBasisData.dofCount,
+            thrust::raw_pointer_cast(m_testBasisData.values),
+            m_trialBasisData.dofCount,
+            thrust::raw_pointer_cast(m_trialBasisData.values),
+            m_testElemData.activeElemCount,
+            thrust::raw_pointer_cast(m_testElemData.integrationElements),
+            m_trialElemData.activeElemCount,
+            thrust::raw_pointer_cast(m_trialElemData.integrationElements),
+            thrust::raw_pointer_cast(d_kernelValues.data()),
+            d_result)
+        ));
+
+      } else {
+        throw std::runtime_error(
+            "CudaIntegrator::integrate(): "
+            "kernel not implemented on the device");
+      }
 
     } else {
 
@@ -393,11 +567,13 @@ void CudaIntegrator<BasisFunctionType, KernelType, ResultType>::
             d_result)
         ));
 
-      } else if (m_kernelName == "ModifiedHelmholtz3dSingleLayerPotential" ||
-                 m_kernelName == "ModifiedHelmholtz3dSingleLayerPotentialInterpolated") {
+      } else if (
+          (m_kernelName == "ModifiedHelmholtz3dSingleLayerPotential" ||
+           m_kernelName == "ModifiedHelmholtz3dSingleLayerPotentialInterpolated")
+          && fabs(m_waveNumberReal) < 1.0e-10 ) {
 
         cu_verify_void((
-            CudaEvaluateModifiedHelmholtz3dSingleLayerPotentialIntegralFunctorCached<
+            CudaEvaluateHelmholtz3dSingleLayerPotentialIntegralFunctorCached<
             CudaBasisFunctionType, CudaKernelType, CudaResultType>
             <<<gridSize, blockSize>>>(
             elemPairIndexBegin, elemPairCount, m_d_testIndices.size(),
@@ -414,8 +590,93 @@ void CudaIntegrator<BasisFunctionType, KernelType, ResultType>::
             m_trialElemData.activeElemCount,
             thrust::raw_pointer_cast(m_trialElemData.geomData),
             thrust::raw_pointer_cast(m_trialElemData.integrationElements),
-            m_waveNumber,
-            d_result)
+            m_waveNumberImag, d_result)
+        ));
+
+      } else if (
+          (m_kernelName == "ModifiedHelmholtz3dDoubleLayerPotential" ||
+           m_kernelName == "ModifiedHelmholtz3dDoubleLayerPotentialInterpolated")
+          && fabs(m_waveNumberReal) < 1.0e-10 ) {
+
+        cu_verify_void((
+            CudaEvaluateHelmholtz3dDoubleLayerPotentialIntegralFunctorCached<
+            CudaBasisFunctionType, CudaKernelType, CudaResultType>
+            <<<gridSize, blockSize>>>(
+            elemPairIndexBegin, elemPairCount, m_d_testIndices.size(),
+            thrust::raw_pointer_cast(m_d_testIndices.data()),
+            thrust::raw_pointer_cast(m_d_trialIndices.data()),
+            m_testQuadData.pointCount, m_trialQuadData.pointCount,
+            m_testBasisData.dofCount,
+            thrust::raw_pointer_cast(m_testBasisData.values),
+            m_trialBasisData.dofCount,
+            thrust::raw_pointer_cast(m_trialBasisData.values),
+            m_testElemData.activeElemCount,
+            thrust::raw_pointer_cast(m_testElemData.geomData),
+            thrust::raw_pointer_cast(m_testElemData.integrationElements),
+            m_trialElemData.activeElemCount,
+            thrust::raw_pointer_cast(m_trialElemData.geomData),
+            thrust::raw_pointer_cast(m_trialElemData.normals),
+            thrust::raw_pointer_cast(m_trialElemData.integrationElements),
+            m_waveNumberImag, d_result)
+        ));
+
+      } else if (
+          (m_kernelName == "ModifiedHelmholtz3dAdjointDoubleLayerPotential" ||
+           m_kernelName == "ModifiedHelmholtz3dAdjointDoubleLayerPotentialInterpolated")
+          && fabs(m_waveNumberReal) < 1.0e-10 ) {
+
+        cu_verify_void((
+            CudaEvaluateHelmholtz3dAdjointDoubleLayerPotentialIntegralFunctorCached<
+            CudaBasisFunctionType, CudaKernelType, CudaResultType>
+            <<<gridSize, blockSize>>>(
+            elemPairIndexBegin, elemPairCount, m_d_testIndices.size(),
+            thrust::raw_pointer_cast(m_d_testIndices.data()),
+            thrust::raw_pointer_cast(m_d_trialIndices.data()),
+            m_testQuadData.pointCount, m_trialQuadData.pointCount,
+            m_testBasisData.dofCount,
+            thrust::raw_pointer_cast(m_testBasisData.values),
+            m_trialBasisData.dofCount,
+            thrust::raw_pointer_cast(m_trialBasisData.values),
+            m_testElemData.activeElemCount,
+            thrust::raw_pointer_cast(m_testElemData.geomData),
+            thrust::raw_pointer_cast(m_testElemData.normals),
+            thrust::raw_pointer_cast(m_testElemData.integrationElements),
+            m_trialElemData.activeElemCount,
+            thrust::raw_pointer_cast(m_trialElemData.geomData),
+            thrust::raw_pointer_cast(m_trialElemData.integrationElements),
+            m_waveNumberImag, d_result)
+        ));
+
+      } else if (
+          (m_kernelName == "ModifiedHelmholtz3dHypersingular" ||
+           m_kernelName == "ModifiedHelmholtz3dHypersingularInterpolated")
+          && fabs(m_waveNumberReal) < 1.0e-10 ) {
+
+        cu_verify_void((
+            CudaEvaluateHelmholtz3dHypersingularIntegralFunctorCached<
+            CudaBasisFunctionType, CudaKernelType, CudaResultType>
+            <<<gridSize, blockSize>>>(
+            elemPairIndexBegin, elemPairCount, m_d_testIndices.size(),
+            thrust::raw_pointer_cast(m_d_testIndices.data()),
+            thrust::raw_pointer_cast(m_d_trialIndices.data()),
+            m_testQuadData.pointCount, m_trialQuadData.pointCount,
+            m_testBasisData.dofCount,
+            thrust::raw_pointer_cast(m_testBasisData.values),
+            thrust::raw_pointer_cast(m_testBasisData.derivatives),
+            m_trialBasisData.dofCount,
+            thrust::raw_pointer_cast(m_trialBasisData.values),
+            thrust::raw_pointer_cast(m_trialBasisData.derivatives),
+            m_testElemData.activeElemCount,
+            thrust::raw_pointer_cast(m_testElemData.geomData),
+            thrust::raw_pointer_cast(m_testElemData.normals),
+            thrust::raw_pointer_cast(m_testElemData.integrationElements),
+            thrust::raw_pointer_cast(m_testElemData.jacobianInversesTransposed),
+            m_trialElemData.activeElemCount,
+            thrust::raw_pointer_cast(m_trialElemData.geomData),
+            thrust::raw_pointer_cast(m_trialElemData.normals),
+            thrust::raw_pointer_cast(m_trialElemData.integrationElements),
+            thrust::raw_pointer_cast(m_trialElemData.jacobianInversesTransposed),
+            m_waveNumberImag, d_result)
         ));
 
       } else {
@@ -451,6 +712,32 @@ void CudaIntegrator<BasisFunctionType, KernelType, ResultType>::
           d_result)
       ));
 
+    } else if (
+        (m_kernelName == "ModifiedHelmholtz3dSingleLayerPotential" ||
+         m_kernelName == "ModifiedHelmholtz3dSingleLayerPotentialInterpolated")
+        && fabs(m_waveNumberReal) < 1.0e-10 ) {
+
+        cu_verify_void((
+            CudaEvaluateHelmholtz3dSingleLayerPotentialIntegralFunctorNonCached<
+            CudaBasisFunctionType, CudaKernelType, CudaResultType>
+            <<<gridSize, blockSize>>>(
+            elemPairIndexBegin, elemPairCount, m_d_trialIndices.size(),
+            thrust::raw_pointer_cast(m_d_testIndices.data()),
+            thrust::raw_pointer_cast(m_d_trialIndices.data()),
+            m_testQuadData.pointCount, m_trialQuadData.pointCount,
+            m_testBasisData.dofCount,
+            thrust::raw_pointer_cast(m_testBasisData.values),
+            m_trialBasisData.dofCount,
+            thrust::raw_pointer_cast(m_trialBasisData.values),
+            m_testRawGeometryData.elemCount, m_testRawGeometryData.vtxCount,
+            thrust::raw_pointer_cast(m_testRawGeometryData.vertices),
+            thrust::raw_pointer_cast(m_testRawGeometryData.elementCorners),
+            m_trialRawGeometryData.elemCount, m_trialRawGeometryData.vtxCount,
+            thrust::raw_pointer_cast(m_trialRawGeometryData.vertices),
+            thrust::raw_pointer_cast(m_trialRawGeometryData.elementCorners),
+            m_waveNumberImag, d_result)
+        ));
+
     } else {
       throw std::runtime_error(
           "CudaIntegrator::integrate(): "
@@ -460,6 +747,108 @@ void CudaIntegrator<BasisFunctionType, KernelType, ResultType>::
   cudaDeviceSynchronize();
 }
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(CudaIntegrator);
+template <typename BasisFunctionType, typename KernelType, typename ResultType,
+typename CudaBasisFunctionType, typename CudaKernelType, typename CudaResultType>
+void CudaIntegrator<BasisFunctionType, KernelType, ResultType,
+CudaBasisFunctionType, CudaKernelType, CudaResultType>::
+    setupBasisData(const Shapeset<BasisFunctionType> &testShapeset,
+                   const Shapeset<BasisFunctionType> &trialShapeset,
+                   const Matrix<CoordinateType> &localTestQuadPoints,
+                   const Matrix<CoordinateType> &localTrialQuadPoints) {
+
+  const unsigned int testDofCount = testShapeset.size();
+  const unsigned int trialDofCount = trialShapeset.size();
+
+  const unsigned int testPointCount = localTestQuadPoints.cols();
+  const unsigned int trialPointCount = localTrialQuadPoints.cols();
+
+  // Evaluate shapesets and copy basis data to device memory
+  m_trialBasisData.dofCount = trialDofCount;
+  m_testBasisData.dofCount = testDofCount;
+  const unsigned int trialCompCount = 1;
+  const unsigned int testCompCount = 1;
+  Fiber::BasisData<BasisFunctionType> trialBasisData, testBasisData;
+  size_t trialBasisDeps = 0, testBasisDeps = 0;
+  trialBasisDeps |= VALUES | DERIVATIVES;
+  testBasisDeps |= VALUES | DERIVATIVES;
+  trialShapeset.evaluate(trialBasisDeps, localTrialQuadPoints, ALL_DOFS,
+                         trialBasisData);
+  testShapeset.evaluate(testBasisDeps, localTestQuadPoints, ALL_DOFS,
+                        testBasisData);
+
+  m_trialBasisData.values = thrust::device_malloc<CudaBasisFunctionType>(
+      trialCompCount * trialDofCount * trialPointCount);
+  m_testBasisData.values = thrust::device_malloc<CudaBasisFunctionType>(
+      testCompCount * testDofCount * testPointCount);
+  m_trialBasisData.derivatives = thrust::device_malloc<CudaBasisFunctionType>(
+      trialCompCount * trialDofCount * trialPointCount * 2);
+  m_testBasisData.derivatives = thrust::device_malloc<CudaBasisFunctionType>(
+      testCompCount * testDofCount * testPointCount * 2);
+
+  std::vector<CudaBasisFunctionType> trialBasisValues(
+      trialCompCount * trialDofCount * trialPointCount);
+  std::vector<CudaBasisFunctionType> testBasisValues(
+      testCompCount * testDofCount * testPointCount);
+  std::vector<CudaBasisFunctionType> trialBasisDerivatives(
+      trialCompCount * trialDofCount * trialPointCount * 2);
+  std::vector<CudaBasisFunctionType> testBasisDerivatives(
+      testCompCount * testDofCount * testPointCount * 2);
+
+  for (int trialDof = 0; trialDof < trialDofCount; ++trialDof)
+    for (int trialPoint = 0; trialPoint < trialPointCount; ++trialPoint)
+      for (int trialComp = 0; trialComp < trialCompCount; ++trialComp)
+        SetupBasisDataHelper<
+        CudaBasisFunctionType, BasisFunctionType>::reorder(
+            trialBasisValues, trialBasisDerivatives, trialBasisData,
+            trialDofCount, trialPointCount, trialCompCount,
+            trialDof, trialPoint, trialComp);
+  for (int testDof = 0; testDof < testDofCount; ++testDof)
+    for (int testPoint = 0; testPoint < testPointCount; ++testPoint)
+      for (int testComp = 0; testComp < testCompCount; ++testComp)
+        SetupBasisDataHelper<
+        CudaBasisFunctionType, BasisFunctionType>::reorder(
+            testBasisValues, testBasisDerivatives, testBasisData,
+            testDofCount, testPointCount, testCompCount,
+            testDof, testPoint, testComp);
+
+  thrust::copy(trialBasisValues.begin(), trialBasisValues.end(),
+      m_trialBasisData.values);
+  thrust::copy(testBasisValues.begin(), testBasisValues.end(),
+      m_testBasisData.values);
+  thrust::copy(trialBasisDerivatives.begin(), trialBasisDerivatives.end(),
+      m_trialBasisData.derivatives);
+  thrust::copy(testBasisDerivatives.begin(), testBasisDerivatives.end(),
+      m_testBasisData.derivatives);
+
+//  cu_verify( cudaMemcpyToSymbol(constTrialBasisValues, &(*(trialBasisValues.begin())),
+//      trialBasisValues.size() * sizeof(CudaBasisFunctionType)) );
+//  cu_verify( cudaMemcpyToSymbol(constTestBasisValues, &(*(testBasisValues.begin())),
+//      testBasisValues.size() * sizeof(CudaBasisFunctionType)) );
+}
+
+// Explicit instantiations
+template class CudaIntegrator<float, float, float, float, float, float>;
+template class CudaIntegrator<float, float, std::complex<float>, float, float, float>;
+template class CudaIntegrator<float, std::complex<float>, std::complex<float>, float, float, float>;
+template class CudaIntegrator<std::complex<float>, float, std::complex<float>, float, float, float>;
+template class CudaIntegrator<std::complex<float>, std::complex<float>, std::complex<float>, float, float, float>;
+
+template class CudaIntegrator<double, double, double, double, double, double>;
+template class CudaIntegrator<double, double, std::complex<double>, double, double, double>;
+template class CudaIntegrator<double, std::complex<double>, std::complex<double>, double, double, double>;
+template class CudaIntegrator<std::complex<double>, double, std::complex<double>, double, double, double>;
+template class CudaIntegrator<std::complex<double>, std::complex<double>, std::complex<double>, double, double, double>;
+
+template class CudaIntegrator<float, float, float, double, double, double>;
+template class CudaIntegrator<float, float, std::complex<float>, double, double, double>;
+template class CudaIntegrator<float, std::complex<float>, std::complex<float>, double, double, double>;
+template class CudaIntegrator<std::complex<float>, float, std::complex<float>, double, double, double>;
+template class CudaIntegrator<std::complex<float>, std::complex<float>, std::complex<float>, double, double, double>;
+
+template class CudaIntegrator<double, double, double, float, float, float>;
+template class CudaIntegrator<double, double, std::complex<double>, float, float, float>;
+template class CudaIntegrator<double, std::complex<double>, std::complex<double>, float, float, float>;
+template class CudaIntegrator<std::complex<double>, double, std::complex<double>, float, float, float>;
+template class CudaIntegrator<std::complex<double>, std::complex<double>, std::complex<double>, float, float, float>;
 
 } // namespace Fiber

@@ -16,7 +16,6 @@
 
 #include "cuda_grid.hpp"
 #include "cuda_integrator.hpp"
-#include "cuda_options.hpp"
 
 #include "../assembly/discrete_dense_boundary_operator.hpp"
 #include "../assembly/assembly_options.hpp"
@@ -55,6 +54,55 @@ namespace Bempp {
 // Helper functions and classes
 namespace {
 
+template <typename CudaResultType, typename ResultType>
+struct AssemblyHelper {
+  static ResultType value(
+      const CudaResultType *h_regularResult,
+      const size_t index, const size_t offset) {
+    throw std::invalid_argument(
+        "CudaDenseGlobalAssembler::assembleDetachedWeakForm(): "
+        "invalid ResultType");
+  }
+};
+
+template <typename CudaResultType>
+struct AssemblyHelper<CudaResultType, float> {
+  static float value(
+      const CudaResultType *h_regularResult,
+      const size_t index, const size_t offset) {
+    return static_cast<float>(h_regularResult[index]);
+  }
+};
+
+template <typename CudaResultType>
+struct AssemblyHelper<CudaResultType, double> {
+  static double value(
+      const CudaResultType *h_regularResult,
+      const size_t index, const size_t offset) {
+    return static_cast<double>(h_regularResult[index]);
+  }
+};
+
+template <typename CudaResultType>
+struct AssemblyHelper<CudaResultType, std::complex<float>> {
+  static std::complex<float> value(
+      const CudaResultType *h_regularResult,
+      const size_t index, const size_t offset) {
+    return std::complex<float>(
+        h_regularResult[index], h_regularResult[index+offset]);
+  }
+};
+
+template <typename CudaResultType>
+struct AssemblyHelper<CudaResultType, std::complex<double>> {
+  static std::complex<double> value(
+      const CudaResultType *h_regularResult,
+      const size_t index, const size_t offset) {
+    return std::complex<double>(
+        h_regularResult[index], h_regularResult[index+offset]);
+  }
+};
+
 /** Build a list of lists of global DOF indices corresponding to the local DOFs
  *  on each element of space.grid() */
 template <typename BasisFunctionType>
@@ -88,17 +136,15 @@ void gatherGlobalDofs(
 
 // Determine the maximum number of element pairs in a chunk treated on the
 // device according to hardware specs
-template <typename KernelType, typename ResultType>
+template <typename KernelType, typename CudaCoordinateType>
 size_t getMaxActiveElemPairCount(
-    const shared_ptr<CudaGrid<typename ScalarTraits<ResultType>::RealType>> testGrid,
-    const shared_ptr<CudaGrid<typename ScalarTraits<ResultType>::RealType>> trialGrid,
+    const shared_ptr<CudaGrid<CudaCoordinateType>> testGrid,
+    const shared_ptr<CudaGrid<CudaCoordinateType>> trialGrid,
     const size_t testIndexCount, const size_t trialIndexCount,
     const unsigned int testDofCount, const unsigned int trialDofCount,
     const unsigned int testPointCount, const unsigned int trialPointCount,
     const CudaOptions cudaOptions, const int deviceId,
     const size_t maxElemPairCountPerDevice, const size_t reserveMem = 1e09) {
-
-  typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
 
   const size_t testElemCount = testGrid->elemCount();
   const size_t trialElemCount = trialGrid->elemCount();
@@ -112,10 +158,10 @@ size_t getMaxActiveElemPairCount(
   const int warpSize = prop.warpSize;
 
   size_t gridMem = testElemCount * testGrid->idxCount() * sizeof(int)
-        + testGrid->vtxCount() * testDim * sizeof(CoordinateType);
+        + testGrid->vtxCount() * testDim * sizeof(CudaCoordinateType);
   if (testGrid.get() != trialGrid.get()) {
     gridMem += trialElemCount * trialGrid->idxCount() * sizeof(int)
-        + trialGrid->vtxCount() * trialDim * sizeof(CoordinateType);
+        + trialGrid->vtxCount() * trialDim * sizeof(CudaCoordinateType);
   }
 
   const size_t indexMem = (testIndexCount + trialIndexCount) * sizeof(int);
@@ -123,19 +169,24 @@ size_t getMaxActiveElemPairCount(
   size_t elemMem = 0;
   if (cudaOptions.isElementDataCachingEnabled()) {
     elemMem +=
-        testElemCount * testDim * sizeof(CoordinateType)                      // normals
-        + testElemCount * sizeof(CoordinateType);                             // integration elements
-        + testElemCount * testDim * testPointCount * sizeof(CoordinateType);  // global quad points
+        testElemCount * testDim * sizeof(CudaCoordinateType)                      // normals
+        + testElemCount * sizeof(CudaCoordinateType);                             // integration elements
+        + testElemCount * testDim * testPointCount * sizeof(CudaCoordinateType);  // global quad points
     if (testGrid.get() != trialGrid.get()) {
       elemMem +=
-        trialElemCount * trialDim * sizeof(CoordinateType)
-        + trialElemCount * sizeof(CoordinateType);
+        trialElemCount * trialDim * sizeof(CudaCoordinateType)
+        + trialElemCount * sizeof(CudaCoordinateType);
         if (testPointCount != trialPointCount) {
           elemMem +=
-              trialElemCount * trialDim * trialPointCount * sizeof(CoordinateType);
+              trialElemCount * trialDim * trialPointCount * sizeof(CudaCoordinateType);
         }
     }
   }
+
+  if (totalGlobalMem < (gridMem + indexMem + elemMem + reserveMem))
+    throw std::runtime_error(
+        "CudaDenseGlobalAssembler::getMaxActiveElemPairCount(): "
+        "grid and element data too large");
 
   size_t maxActiveElemPairCount;
   if (cudaOptions.chunkElemPairCount() == CudaOptions::AUTO) {
@@ -147,7 +198,18 @@ size_t getMaxActiveElemPairCount(
       maxActiveElemPairCount = maxElemPairCountPerDevice;
     }
   } else {
-    maxActiveElemPairCount = cudaOptions.chunkElemPairCount();
+    if (cudaOptions.isKernelDataCachingEnabled()) {
+      size_t upperBound  =
+          (totalGlobalMem - gridMem - indexMem - elemMem - reserveMem) /
+          (testPointCount * trialPointCount * sizeof(KernelType));
+      if (cudaOptions.chunkElemPairCount() > upperBound)
+        throw std::runtime_error(
+            "CudaDenseGlobalAssembler::getMaxActiveElemPairCount(): "
+            "chunk size too large");
+      maxActiveElemPairCount = cudaOptions.chunkElemPairCount();
+    } else {
+      maxActiveElemPairCount = cudaOptions.chunkElemPairCount();
+    }
   }
 
   // Let the chunk size be a multiple of the warp size
@@ -167,6 +229,99 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::
         const Space<BasisFunctionType> &trialSpace,
         LocalAssemblerForIntegralOperators &assembler,
         const Context<BasisFunctionType, ResultType> &context) {
+
+  std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+
+  // Cast assembler to default assembler
+  const Fiber::DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
+      BasisFunctionType, KernelType, ResultType, GeometryFactory>
+  &defaultAssembler =
+      reinterpret_cast<const Fiber::DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
+          BasisFunctionType, KernelType, ResultType, GeometryFactory> &>(assembler);
+
+  // Get kernel from assembler
+  shared_ptr<const Fiber::CollectionOfKernels<KernelType>> kernel =
+      defaultAssembler.kernels();
+
+  // Get shapesets from assembler
+  shared_ptr<const std::vector<const Shapeset*>>
+  testShapesets, trialShapesets;
+  defaultAssembler.getShapesets(testShapesets, trialShapesets);
+  const Shapeset &testShapeset = *(*testShapesets)[0];
+  const Shapeset &trialShapeset = *(*trialShapesets)[0];
+  std::cout << "NOTE: Shapesets have to be identical within one space" << std::endl;
+
+  // Get reference to singular integral cache and check if it's active
+  const Cache &cache = defaultAssembler.cache();
+  bool singularIntegralCachingEnabled =
+      context.assemblyOptions().isSingularIntegralCachingEnabled();
+  if (!singularIntegralCachingEnabled)
+    throw std::invalid_argument(
+        "CudaDenseGlobalAssembler::assembleDetachedWeakForm(): "
+        "singular integral caching must be enabled");
+
+  // Create a discrete operator represented by a matrix that has to be calculated
+  std::unique_ptr<DiscreteDenseBoundaryOperator<ResultType>>
+  discreteDenseBoundaryOperator(new DiscreteDenseBoundaryOperator<ResultType>());
+
+  // Create the operator's matrix
+  Matrix<ResultType>& result = discreteDenseBoundaryOperator->matrix();
+  result.resize(testSpace.globalDofCount(), trialSpace.globalDofCount());
+  result.setZero();
+    std::cout << "testGlobalDofCount = " << testSpace.globalDofCount()
+        << ", trialGlobalDofCount = " << trialSpace.globalDofCount() << std::endl;
+
+  // Calculate the matrix
+  if (context.cudaOptions().precision() == "single") {
+
+    typedef typename ScalarTraits<typename ScalarTraits<BasisFunctionType>::RealType>::SingleType CudaBasisFunctionType;
+    typedef typename ScalarTraits<typename ScalarTraits<KernelType>::RealType>::SingleType CudaKernelType;
+    typedef typename ScalarTraits<typename ScalarTraits<ResultType>::RealType>::SingleType CudaResultType;
+
+    assembleDetachedWeakFormImpl<
+    CudaBasisFunctionType, CudaKernelType, CudaResultType>(
+        testSpace, trialSpace,
+        kernel, testShapeset, trialShapeset, cache,
+        context.cudaOptions(), result);
+
+  } else {
+
+    typedef typename ScalarTraits<typename ScalarTraits<BasisFunctionType>::RealType>::DoubleType CudaBasisFunctionType;
+    typedef typename ScalarTraits<typename ScalarTraits<KernelType>::RealType>::DoubleType CudaKernelType;
+    typedef typename ScalarTraits<typename ScalarTraits<ResultType>::RealType>::DoubleType CudaResultType;
+
+    assembleDetachedWeakFormImpl<
+    CudaBasisFunctionType, CudaKernelType, CudaResultType>(
+        testSpace, trialSpace,
+        kernel, testShapeset, trialShapeset, cache,
+        context.cudaOptions(), result);
+  }
+
+  std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+  std::cout << "Time for CUDA dense assembly = "
+            << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()
+            << " ms" << std::endl;
+
+  // Return the discrete operator represented by the matrix that has just been
+  // calculated
+  return discreteDenseBoundaryOperator;
+}
+
+template <typename BasisFunctionType, typename ResultType>
+template<typename CudaBasisFunctionType, typename CudaKernelType,
+typename CudaResultType>
+void CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::
+    assembleDetachedWeakFormImpl(
+        const Space<BasisFunctionType> &testSpace,
+        const Space<BasisFunctionType> &trialSpace,
+        const shared_ptr<const Fiber::CollectionOfKernels<KernelType>> &kernel,
+        const Shapeset &testShapeset, const Shapeset &trialShapeset,
+        const Cache &cache,
+        const CudaOptions &cudaOptions,
+        Matrix<ResultType> &result) {
+
+  typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
+  typedef typename ScalarTraits<CudaBasisFunctionType>::RealType CudaCoordinateType;
 
   // Global DOF indices corresponding to local DOFs on elements
   std::vector<std::vector<GlobalDofIndex>> testGlobalDofs, trialGlobalDofs;
@@ -210,31 +365,12 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::
     }
   }
 
-  // Create the operator's matrix
-  Matrix<ResultType> result(testSpace.globalDofCount(),
-                            trialSpace.globalDofCount());
-  result.setZero();
-//  std::cout << "testGlobalDofCount = " << testSpace.globalDofCount()
-//      << ", trialGlobalDofCount = " << trialSpace.globalDofCount() << std::endl;
-
   // TODO: Find a smaller mutex data type
   typedef tbb::spin_mutex MutexType;
   Matrix<MutexType> mutex(testSpace.globalDofCount(),
                           trialSpace.globalDofCount());
 //  typedef tbb::speculative_spin_mutex MutexType;
 //  std::vector<MutexType> mutex(testSpace.globalDofCount());
-
-  Fiber::DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
-      BasisFunctionType, KernelType, ResultType, GeometryFactory>
-  &defaultAssembler =
-      reinterpret_cast<Fiber::DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
-          BasisFunctionType, KernelType, ResultType, GeometryFactory> &>(assembler);
-
-  shared_ptr<const Fiber::CollectionOfKernels<KernelType>> kernel =
-      defaultAssembler.kernels();
-
-  // Get CUDA operation settings
-  const CudaOptions cudaOptions = context.cudaOptions();
 
   const std::vector<int> &deviceIds = cudaOptions.devices();
   const unsigned int deviceCount = deviceIds.size();
@@ -268,23 +404,15 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::
   cudaProfilerStart();
 
   // TODO: Push raw grid data to all active devices (maybe in parallel)
-  std::vector<shared_ptr<CudaGrid<CoordinateType>>> trialGrids(deviceCount);
-  std::vector<shared_ptr<CudaGrid<CoordinateType>>> testGrids(deviceCount);
+  std::vector<shared_ptr<CudaGrid<CudaCoordinateType>>> trialGrids(deviceCount);
+  std::vector<shared_ptr<CudaGrid<CudaCoordinateType>>> testGrids(deviceCount);
   for (int device = 0; device < deviceCount; ++device) {
     trialGrids[device] =
-        trialSpace.grid()->template pushToDevice<CoordinateType>(deviceIds[device]);
+        trialSpace.grid()->template pushToDevice<CudaCoordinateType>(deviceIds[device]);
     testGrids[device] =
-        testSpace.grid()->template pushToDevice<CoordinateType>(deviceIds[device]);
+        testSpace.grid()->template pushToDevice<CudaCoordinateType>(deviceIds[device]);
   }
 
-  // Get shapesets from assembler
-  shared_ptr<const std::vector<const Shapeset*>>
-  testShapesets, trialShapesets;
-  defaultAssembler.getShapesets(testShapesets, trialShapesets);
-
-  // Note: Shapesets have to be identical within one space!
-  const Shapeset &trialShapeset = *(*trialShapesets)[0];
-  const Shapeset &testShapeset = *(*testShapesets)[0];
   const unsigned int trialDofCount = trialShapeset.size();
   const unsigned int testDofCount = testShapeset.size();
 //  std::cout << "trialDofCount = " << trialDofCount << ", " << std::flush;
@@ -310,7 +438,7 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::
   std::vector<size_t> maxActiveElemPairCounts(deviceCount);
   for (int device = 0; device < deviceCount; ++device) {
     maxActiveElemPairCounts[device] =
-        getMaxActiveElemPairCount<KernelType, ResultType>(
+        getMaxActiveElemPairCount<KernelType, CudaCoordinateType>(
             testGrids[device], trialGrids[device],
             testIndexCount, trialIndexCount,
             testDofCount, trialDofCount,
@@ -340,8 +468,9 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::
   std::vector<CudaResultType*> h_regularResultEven(deviceCount);
   std::vector<CudaResultType*> h_regularResultOdd(deviceCount);
   for (int device = 0; device < deviceCount; ++device) {
-    const size_t size = maxActiveElemPairCounts[device]
+    size_t size = maxActiveElemPairCounts[device]
         * trialDofCount * testDofCount * sizeof(CudaResultType);
+    if (ScalarTraits<ResultType>::isComplex) size *= 2;
     cudaSetDevice(deviceIds[device]);
     cu_verify( cudaHostAlloc((void**)&h_regularResultEven[device], size,
         cudaHostAllocMapped) );
@@ -355,10 +484,13 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::
 
   // Create CUDA integrators on all active devices
   std::vector<shared_ptr<Fiber::CudaIntegrator<
-      BasisFunctionType, KernelType, ResultType>>> cudaIntegrators(deviceCount);
+      BasisFunctionType, KernelType, ResultType,
+      CudaBasisFunctionType, CudaKernelType, CudaResultType>>>
+  cudaIntegrators(deviceCount);
   for (int device = 0; device < deviceCount; ++device) {
     cudaIntegrators[device] = boost::make_shared<Fiber::CudaIntegrator<
-        BasisFunctionType, KernelType, ResultType>>(
+        BasisFunctionType, KernelType, ResultType,
+        CudaBasisFunctionType, CudaKernelType, CudaResultType>>(
             localTestQuadPoints, localTrialQuadPoints,
             testQuadWeights, trialQuadWeights,
             testShapeset, trialShapeset,
@@ -367,15 +499,6 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::
             kernel,
             deviceIds[device], cudaOptions);
   }
-
-  // Get reference to singular integral cache and check if it's active
-  const Cache &cache = defaultAssembler.cache();
-  bool singularIntegralCachingEnabled =
-      context.assemblyOptions().isSingularIntegralCachingEnabled();
-  if (!singularIntegralCachingEnabled)
-    throw std::invalid_argument(
-        "CudaDenseGlobalAssembler::assembleDetachedWeakForm(): "
-        "singular integral caching has to be enabled");
 
   // Loop over devices
   tbb::parallel_for (size_t(0), size_t(deviceCount),[
@@ -438,9 +561,9 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::
             h_regularResult);
         std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
         integration_timer += std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count();
-//        std::cout << "Time for CudaIntegrator::integrate() = "
-//                  << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()
-//                  << " ms" << std::endl;
+        std::cout << "Time for CudaIntegrator::integrate() = "
+                  << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()
+                  << " ms" << std::endl;
       });
 
       taskGroupDevice.run([device, chunk, chunkCount,
@@ -460,10 +583,14 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::
         // Global assembly
         tbb::parallel_for(size_t(0), size_t(chunkElemPairCount), [
             device, chunkElemPairCount, offset, testIndexCount,
+            trialDofCount, testDofCount,
             &testIndices, &trialIndices,
             &testGlobalDofs, &trialGlobalDofs,
             &testLocalDofWeights, &trialLocalDofWeights,
             h_regularResult, cache, &result, &mutex](size_t chunkElemPair) {
+
+          const size_t offsetResultImag =
+              trialDofCount * testDofCount * chunkElemPairCount;
 
           const int trialIndex =
               trialIndices[(offset + chunkElemPair) / testIndexCount];
@@ -477,9 +604,6 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::
               cachedLocalWeakForm = &cache(n, trialIndex).second;
               break;
             }
-
-          const int trialDofCount = trialGlobalDofs[trialIndex].size();
-          const int testDofCount = testGlobalDofs[testIndex].size();
 
           // Add the integrals to appropriate entries in the operator's matrix
           for (int trialDof = 0; trialDof < trialDofCount; ++trialDof) {
@@ -511,16 +635,17 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::
                 result(testGlobalDof, trialGlobalDof) +=
                       conj(testLocalDofWeights[testIndex][testDof]) *
                       trialLocalDofWeights[trialIndex][trialDof] *
-                      static_cast<ResultType>(h_regularResult[index]);
+                      AssemblyHelper<CudaResultType, ResultType>::
+                      value(h_regularResult, index, offsetResultImag);
               }
             }
           }
         });
         std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
         assembly_timer += std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count();
-//        std::cout << "Time for regular global result assembly = "
-//                  << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()
-//                  << " ms" << std::endl;
+        std::cout << "Time for regular global result assembly = "
+                  << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()
+                  << " ms" << std::endl;
       });
     }
     integration_timer /= chunkCount;
@@ -538,10 +663,10 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::
   });
   cudaProfilerStop();
 
-//  if (result.rows() < 25 && result.cols() < 25) {
-//    std::cout << "result (cudadense) = " << std::endl;
-//    std::cout << result << std::endl;
-//  }
+  if (result.rows() < 25 && result.cols() < 25) {
+    std::cout << "result (cudadense) = " << std::endl;
+    std::cout << result << std::endl;
+  }
 
   // Free pinned host memory
   for (int device = 0; device < deviceCount; ++device) {
@@ -549,11 +674,6 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::
     cu_verify( cudaFreeHost(h_regularResultEven[device]) );
     cu_verify( cudaFreeHost(h_regularResultOdd[device]) );
   }
-
-  // Create and return a discrete operator represented by the matrix that
-  // has just been calculated
-  return std::unique_ptr<DiscreteBoundaryOperator<ResultType>>(
-      new DiscreteDenseBoundaryOperator<ResultType>(result));
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(CudaDenseGlobalAssembler);

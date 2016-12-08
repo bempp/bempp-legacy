@@ -58,6 +58,7 @@ struct ElemData {
   thrust::device_ptr<ValueType> geomData;
   thrust::device_ptr<const ValueType> normals;
   thrust::device_ptr<const ValueType> integrationElements;
+  thrust::device_ptr<const ValueType> jacobianInversesTransposed;
 };
 
 // Constant memory has a size of 64 KB

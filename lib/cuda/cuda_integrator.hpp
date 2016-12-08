@@ -55,26 +55,13 @@ template <typename KernelType> class CollectionOfKernels;
 /** \endcond */
 
 /** \brief Regular integration over pairs of elements on the device. */
-template <typename BasisFunctionType, typename KernelType, typename ResultType>
+template <typename BasisFunctionType, typename KernelType, typename ResultType,
+typename CudaBasisFunctionType, typename CudaKernelType, typename CudaResultType>
 class CudaIntegrator {
 public:
 
   typedef typename ScalarTraits<ResultType>::RealType CoordinateType;
-
-  // TODO: Check if this is correct
-  typedef typename thrust::complex<CoordinateType> CudaComplexType;
-  typedef typename std::conditional<
-      std::is_same<BasisFunctionType,CoordinateType>::value,
-      BasisFunctionType, CudaComplexType>::type
-      CudaBasisFunctionType;
-  typedef typename std::conditional<
-      std::is_same<KernelType,CoordinateType>::value,
-      KernelType, CudaComplexType>::type
-      CudaKernelType;
-  typedef typename std::conditional<
-      std::is_same<ResultType,CoordinateType>::value,
-      ResultType, CudaComplexType>::type
-      CudaResultType;
+  typedef typename ScalarTraits<CudaResultType>::RealType CudaCoordinateType;
 
   /** \brief Constructor */
   CudaIntegrator(
@@ -84,8 +71,8 @@ public:
       const std::vector<CoordinateType> &trialQuadWeights,
       const Shapeset<BasisFunctionType> &testShapeset,
       const Shapeset<BasisFunctionType> &trialShapeset,
-      const shared_ptr<Bempp::CudaGrid<CoordinateType>> &testGrid,
-      const shared_ptr<Bempp::CudaGrid<CoordinateType>> &trialGrid,
+      const shared_ptr<Bempp::CudaGrid<CudaCoordinateType>> &testGrid,
+      const shared_ptr<Bempp::CudaGrid<CudaCoordinateType>> &trialGrid,
       const std::vector<int> &testIndices, const std::vector<int> &trialIndices,
       const shared_ptr<const CollectionOfKernels<KernelType>> &kernel,
       const int deviceId, const Bempp::CudaOptions &cudaOptions);
@@ -100,35 +87,42 @@ public:
 private:
   /** \cond PRIVATE */
 
+  void setupBasisData(const Shapeset<BasisFunctionType> &testShapeset,
+                      const Shapeset<BasisFunctionType> &trialShapeset,
+                      const Matrix<CoordinateType> &localTestQuadPoints,
+                      const Matrix<CoordinateType> &localTrialQuadPoints);
+
   const int m_deviceId;
 
   thrust::device_vector<int> m_d_testIndices;
   thrust::device_vector<int> m_d_trialIndices;
 
-  QuadData<CoordinateType> m_testQuadData;
-  QuadData<CoordinateType> m_trialQuadData;
+  QuadData<CudaCoordinateType> m_testQuadData;
+  QuadData<CudaCoordinateType> m_trialQuadData;
 
   BasisFunData<CudaBasisFunctionType> m_testBasisData;
   BasisFunData<CudaBasisFunctionType> m_trialBasisData;
 
-  ElemData<CoordinateType> m_testElemData;
-  ElemData<CoordinateType> m_trialElemData;
-  thrust::device_vector<CoordinateType> m_d_testGeomData;
-  thrust::device_vector<CoordinateType> m_d_trialGeomData;
-  thrust::device_vector<CoordinateType> m_d_testNormals;
-  thrust::device_vector<CoordinateType> m_d_trialNormals;
-  thrust::device_vector<CoordinateType> m_d_testIntegrationElements;
-  thrust::device_vector<CoordinateType> m_d_trialIntegrationElements;
+  ElemData<CudaCoordinateType> m_testElemData;
+  ElemData<CudaCoordinateType> m_trialElemData;
+  thrust::device_vector<CudaCoordinateType> m_d_testGeomData;
+  thrust::device_vector<CudaCoordinateType> m_d_trialGeomData;
+  thrust::device_vector<CudaCoordinateType> m_d_testNormals;
+  thrust::device_vector<CudaCoordinateType> m_d_trialNormals;
+  thrust::device_vector<CudaCoordinateType> m_d_testIntegrationElements;
+  thrust::device_vector<CudaCoordinateType> m_d_trialIntegrationElements;
+  thrust::device_vector<CudaCoordinateType> m_d_testJacobianInversesTransposed;
+  thrust::device_vector<CudaCoordinateType> m_d_trialJacobianInversesTransposed;
 
-  RawGeometryData<CoordinateType> m_testRawGeometryData;
-  RawGeometryData<CoordinateType> m_trialRawGeometryData;
+  RawGeometryData<CudaCoordinateType> m_testRawGeometryData;
+  RawGeometryData<CudaCoordinateType> m_trialRawGeometryData;
 
-  shared_ptr<Bempp::CudaGrid<CoordinateType>> m_testGrid;
-  shared_ptr<Bempp::CudaGrid<CoordinateType>> m_trialGrid;
+  shared_ptr<Bempp::CudaGrid<CudaCoordinateType>> m_testGrid;
+  shared_ptr<Bempp::CudaGrid<CudaCoordinateType>> m_trialGrid;
 
   const std::string m_kernelName;
 
-  CudaKernelType m_waveNumber;
+  CudaKernelType m_waveNumberReal, m_waveNumberImag;
 
   const Bempp::CudaOptions m_cudaOptions;
 

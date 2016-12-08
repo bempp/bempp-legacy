@@ -86,6 +86,16 @@ public:
     // Return
     // K_0(x, y) curl u*(x) . curl v(y) + K_1(x, y) u*(x) v(y) n(x) . n(y)
 
+//    std::cout << "trialSurfaceCurls = " << std::endl;
+//    for (int dim = 0; dim < dimWorld; ++dim)
+//      std::cout << trialSurfaceCurls(dim) << " " << std::flush;
+//    std::cout << std::endl;
+//
+//    std::cout << "testSurfaceCurls = " << std::endl;
+//    for (int dim = 0; dim < dimWorld; ++dim)
+//      std::cout << testSurfaceCurls(dim) << " " << std::flush;
+//    std::cout << std::endl;
+
     BasisFunctionType dotProduct0 = 0.;
     for (int dim = 0; dim < dimWorld; ++dim)
       dotProduct0 += conjugate(testSurfaceCurls(dim)) * trialSurfaceCurls(dim);

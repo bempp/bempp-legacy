@@ -38,12 +38,20 @@ DiscreteDenseBoundaryOperator<ValueType>::DiscreteDenseBoundaryOperator(
     : m_mat(mat) {}
 
 template <typename ValueType>
+DiscreteDenseBoundaryOperator<ValueType>::DiscreteDenseBoundaryOperator() {}
+
+template <typename ValueType>
 void DiscreteDenseBoundaryOperator<ValueType>::dump() const {
   std::cout << m_mat << std::endl;
 }
 
 template <typename ValueType>
 Matrix<ValueType> DiscreteDenseBoundaryOperator<ValueType>::asMatrix() const {
+  return m_mat;
+}
+
+template <typename ValueType>
+Matrix<ValueType>& DiscreteDenseBoundaryOperator<ValueType>::matrix() const {
   return m_mat;
 }
 

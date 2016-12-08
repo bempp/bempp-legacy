@@ -62,6 +62,12 @@ public:
       thrust::device_vector<CoordinateType> &normals,
       thrust::device_vector<CoordinateType> &integrationElements) const;
 
+  /**
+   * \brief Calculate transposed element Jacobian inverses on the device
+   */
+  void calculateJacobianInversesTransposed(
+      thrust::device_vector<CoordinateType> &jacobianInversesTransposed) const;
+
   void getRawGeometryData(unsigned int &vtxCount,
                           unsigned int &elemCount,
                           thrust::device_ptr<const CoordinateType> &vertices,

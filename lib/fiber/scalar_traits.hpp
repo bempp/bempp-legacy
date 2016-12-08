@@ -39,9 +39,10 @@ namespace Fiber {
  *  (denoting the real type of the same precision as \c T) and \c ComplexType
  *  (denoting the complex type of the same precision as \c T). */
 template <typename T> struct ScalarTraits {
-
   typedef T RealType;
   typedef T ComplexType;
+  typedef T SingleType;
+  typedef T DoubleType;
 
   ScalarTraits() {
     static_assert(
@@ -53,37 +54,55 @@ template <typename T> struct ScalarTraits {
 template <> struct ScalarTraits<float> {
   typedef float RealType;
   typedef std::complex<float> ComplexType;
+  typedef float SingleType;
+  typedef double DoubleType;
   enum { NumpyTypeNum = 11 };
+  static const bool isComplex = false;
 };
 
 template <> struct ScalarTraits<double> {
   typedef double RealType;
   typedef std::complex<double> ComplexType;
+  typedef float SingleType;
+  typedef double DoubleType;
   enum { NumpyTypeNum = 12 };
+  static const bool isComplex = false;
 };
 
 template <> struct ScalarTraits<std::complex<float>> {
   typedef float RealType;
   typedef std::complex<float> ComplexType;
+  typedef std::complex<float> SingleType;
+  typedef std::complex<double> DoubleType;
   enum { NumpyTypeNum = 14 };
+  static const bool isComplex = true;
 };
 
 template <> struct ScalarTraits<std::complex<double>> {
   typedef double RealType;
   typedef std::complex<double> ComplexType;
+  typedef std::complex<float> SingleType;
+  typedef std::complex<double> DoubleType;
   enum { NumpyTypeNum = 15 };
+  static const bool isComplex = true;
 };
 
 template <> struct ScalarTraits<thrust::complex<float>> {
   typedef float RealType;
   typedef thrust::complex<float> ComplexType;
+  typedef thrust::complex<float> SingleType;
+  typedef thrust::complex<double> DoubleType;
   enum { NumpyTypeNum = 14 };
+  static const bool isComplex = true;
 };
 
 template <> struct ScalarTraits<thrust::complex<double>> {
   typedef double RealType;
   typedef thrust::complex<double> ComplexType;
+  typedef thrust::complex<float> SingleType;
+  typedef thrust::complex<double> DoubleType;
   enum { NumpyTypeNum = 15 };
+  static const bool isComplex = true;
 };
 
 /** \brief "Larger" of the types U and V. */

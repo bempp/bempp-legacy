@@ -20,6 +20,8 @@
 
 #include "cuda_grid.hpp"
 
+#include "../common/not_implemented_error.hpp"
+
 #include "../fiber/types.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 
@@ -71,6 +73,70 @@ namespace Bempp {
       nz /= integrationElement;
 
       return thrust::make_tuple(nx, ny, nz, integrationElement);
+    }
+  };
+
+  template <typename CoordinateType>
+  struct calculateJacobianInversesTransposedFunctor {
+
+    __host__ __device__
+    thrust::tuple<
+        CoordinateType, CoordinateType, CoordinateType,
+        CoordinateType, CoordinateType, CoordinateType>
+    operator()(
+        const thrust::tuple<CoordinateType, CoordinateType, CoordinateType,
+                            CoordinateType, CoordinateType, CoordinateType,
+                            CoordinateType, CoordinateType, CoordinateType>&
+        elementCornerCoo) const {
+
+      const CoordinateType vtx0x = thrust::get<0>(elementCornerCoo);
+      const CoordinateType vtx0y = thrust::get<1>(elementCornerCoo);
+      const CoordinateType vtx0z = thrust::get<2>(elementCornerCoo);
+
+      const CoordinateType vtx1x = thrust::get<3>(elementCornerCoo);
+      const CoordinateType vtx1y = thrust::get<4>(elementCornerCoo);
+      const CoordinateType vtx1z = thrust::get<5>(elementCornerCoo);
+
+      const CoordinateType vtx2x = thrust::get<6>(elementCornerCoo);
+      const CoordinateType vtx2y = thrust::get<7>(elementCornerCoo);
+      const CoordinateType vtx2z = thrust::get<8>(elementCornerCoo);
+
+      const CoordinateType x02 = vtx0x - vtx2x;
+      const CoordinateType x12 = vtx1x - vtx2x;
+
+      const CoordinateType y02 = vtx0y - vtx2y;
+      const CoordinateType y12 = vtx1y - vtx2y;
+
+      const CoordinateType z02 = vtx0z - vtx2z;
+      const CoordinateType z12 = vtx1z - vtx2z;
+
+      const CoordinateType a = x02 * x02 + y02 * y02 + z02 * z02;
+      const CoordinateType b = x02 * x12 + y02 * y12 + z02 * z12;
+      const CoordinateType c = b;
+      const CoordinateType d = x12 * x12 + y12 * y12 + z12 * z12;
+
+      const CoordinateType scalingFactor = a * d - b * c;
+
+      CoordinateType jacobianInvT00 = d * x02 - b * x12;
+      CoordinateType jacobianInvT01 = a * x12 - c * x02;
+
+      CoordinateType jacobianInvT10 = d * y02 - b * y12;
+      CoordinateType jacobianInvT11 = a * y12 - c * y02;
+
+      CoordinateType jacobianInvT20 = d * z02 - b * z12;
+      CoordinateType jacobianInvT21 = a * z12 - c * z02;
+
+      jacobianInvT00 /= scalingFactor;
+      jacobianInvT01 /= scalingFactor;
+
+      jacobianInvT10 /= scalingFactor;
+      jacobianInvT11 /= scalingFactor;
+
+      jacobianInvT20 /= scalingFactor;
+      jacobianInvT21 /= scalingFactor;
+
+      return thrust::make_tuple(jacobianInvT00, jacobianInvT10, jacobianInvT20,
+                                jacobianInvT01, jacobianInvT11, jacobianInvT21);
     }
   };
 
@@ -444,6 +510,61 @@ namespace Bempp {
 
     } else {
       throw std::runtime_error("CudaGrid::calculateNormalsAndIntegrationElements(): "
+                               "setup required");
+    }
+  }
+
+  template <typename CoordinateType>
+  void CudaGrid<CoordinateType>::calculateJacobianInversesTransposed(
+      thrust::device_vector<CoordinateType> &jacobianInversesTransposed) const {
+
+    if (m_setupDone == true) {
+
+      // Allocate device memory
+      jacobianInversesTransposed.resize(2 * m_dim * m_ElemCount);
+
+      // Measure time of the GPU execution (CUDA event based)
+      cudaEvent_t start, stop;
+      cudaEventCreate(&start);
+      cudaEventCreate(&stop);
+      cudaEventRecord(start, 0);
+
+      // Calculate transposed element Jacobian inverses
+      thrust::transform(
+        thrust::make_zip_iterator(
+          thrust::make_tuple(m_vtx0x.begin(), m_vtx0y.begin(), m_vtx0z.begin(),
+                             m_vtx1x.begin(), m_vtx1y.begin(), m_vtx1z.begin(),
+                             m_vtx2x.begin(), m_vtx2y.begin(), m_vtx2z.begin())),
+        thrust::make_zip_iterator(
+          thrust::make_tuple(m_vtx0x.end(), m_vtx0y.end(), m_vtx0z.end(),
+                             m_vtx1x.end(), m_vtx1y.end(), m_vtx1z.end(),
+                             m_vtx2x.end(), m_vtx2y.end(), m_vtx2z.end())),
+        thrust::make_zip_iterator(
+          thrust::make_tuple(jacobianInversesTransposed.begin(),
+                             jacobianInversesTransposed.begin()+m_ElemCount,
+                             jacobianInversesTransposed.begin()+2*m_ElemCount,
+                             jacobianInversesTransposed.begin()+3*m_ElemCount,
+                             jacobianInversesTransposed.begin()+4*m_ElemCount,
+                             jacobianInversesTransposed.begin()+5*m_ElemCount)),
+        calculateJacobianInversesTransposedFunctor<CoordinateType>());
+
+      cudaEventRecord(stop, 0);
+      cudaEventSynchronize(stop);
+      float elapsedTimeJacobianInversesTransposed;
+      cudaEventElapsedTime(&elapsedTimeJacobianInversesTransposed, start, stop);
+//      std::cout << "Time for calculating transposed Jacobian inverses is "
+//        << elapsedTimeJacobianInversesTransposed << " ms" << std::endl;
+
+//      std::cout << "jacobianInversesTransposed = " << std::endl;
+//      for (int i = 0; i < m_ElemCount; ++i) {
+//        for (int j = 0; j < m_dim; ++j) {
+//          std::cout << jacobianInversesTransposed[j * m_ElemCount + i] << " "
+//                    << jacobianInversesTransposed[(j + 3) * m_ElemCount + i] << std::endl;
+//        }
+//        std::cout << std::endl;
+//      }
+    } else {
+      throw std::runtime_error("CudaGrid::calculateJacobianInversesTransposed(): "
                                "setup required");
     }
   }

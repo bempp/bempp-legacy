@@ -56,9 +56,21 @@ template <typename BasisFunctionType, typename ResultType> class Context;
 template <typename BasisFunctionType, typename ResultType>
 class CudaDenseGlobalAssembler {
 public:
+  typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
 
   // TODO: How to determine the correct kernel type?
-  typedef ResultType KernelType;
+//  typedef CoordinateType KernelType;         // Real kernel
+        typedef ResultType KernelType;             // Complex kernel
+
+  typedef typename thrust::complex<CoordinateType> CudaComplexType;
+  typedef typename std::conditional<
+      std::is_same<ResultType,CoordinateType>::value,
+      ResultType, CudaComplexType>::type
+      CudaResultType;
+  typedef typename std::conditional<
+      std::is_same<KernelType,CoordinateType>::value,
+      KernelType, CudaComplexType>::type
+      CudaKernelType;
 
   typedef Fiber::Shapeset<BasisFunctionType> Shapeset;
   typedef Fiber::_2dArray<std::pair<int, Matrix<ResultType>>> Cache;
@@ -74,8 +86,7 @@ public:
       const Context<BasisFunctionType, ResultType> &context);
 
 private:
-  template<typename CudaBasisFunctionType, typename CudaKernelType,
-  typename CudaResultType>
+  template<typename CudaDataType>
   static void assembleDetachedWeakFormImpl(
       const Space<BasisFunctionType> &testSpace,
       const Space<BasisFunctionType> &trialSpace,

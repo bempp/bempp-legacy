@@ -44,11 +44,6 @@ __device__ void Laplace3dSingleLayerPotentialKernel(
     sum += diff * diff;
   }
   result = static_cast<CoordinateType>(1. / (4. * M_PI)) / sqrt(sum);
-
-//  result = static_cast<CoordinateType>(1. / (4. * M_PI)) * rnorm3df(
-//      testPointCoo[0] - trialPointCoo[0],
-//      testPointCoo[1] - trialPointCoo[1],
-//      testPointCoo[2] - trialPointCoo[2]);
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>

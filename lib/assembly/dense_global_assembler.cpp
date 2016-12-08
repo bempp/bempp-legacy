@@ -45,6 +45,7 @@
 #include "../common/eigen_support.hpp"
 #include <stdexcept>
 #include <iostream>
+#include <chrono>
 
 #include <tbb/parallel_for.h>
 #include <tbb/spin_mutex.h>
@@ -268,6 +269,8 @@ DenseGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
     LocalAssemblerForIntegralOperators &assembler,
     const Context<BasisFunctionType, ResultType> &context) {
 
+  std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+
   // Global DOF indices corresponding to local DOFs on elements
   std::vector<std::vector<GlobalDofIndex>> testGlobalDofs, trialGlobalDofs;
   std::vector<std::vector<BasisFunctionType>> testLocalDofWeights,
@@ -295,10 +298,16 @@ DenseGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
     }
   }
 
+  // Create a discrete operator represented by a matrix that has to be calculated
+  std::unique_ptr<DiscreteDenseBoundaryOperator<ResultType>>
+  discreteDenseBoundaryOperator(new DiscreteDenseBoundaryOperator<ResultType>());
+
   // Create the operator's matrix
-  Matrix<ResultType> result(testSpace.globalDofCount(),
-                            trialSpace.globalDofCount());
+  Matrix<ResultType>& result = discreteDenseBoundaryOperator->matrix();
+  result.resize(testSpace.globalDofCount(), trialSpace.globalDofCount());
   result.setZero();
+  std::cout << "testGlobalDofCount = " << testSpace.globalDofCount()
+      << ", trialGlobalDofCount = " << trialSpace.globalDofCount() << std::endl;
 
   typedef DenseWeakFormAssemblerLoopBody<BasisFunctionType, ResultType> Body;
   typename Body::MutexType mutex;
@@ -336,15 +345,19 @@ DenseGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
   //                        localResult[testIndex](testDof, trialDof);
   //    }
 
-//  if (result.rows() < 10 && result.cols() < 10) {
-//    std::cout << "result (dense) = " << std::endl;
-//    std::cout << result << std::endl;
-//  }
+  if (result.rows() < 10 && result.cols() < 10) {
+    std::cout << "result (dense) = " << std::endl;
+    std::cout << result << std::endl;
+  }
 
-  // Create and return a discrete operator represented by the matrix that
-  // has just been calculated
-  return std::unique_ptr<DiscreteBoundaryOperator<ResultType>>(
-      new DiscreteDenseBoundaryOperator<ResultType>(result));
+  std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+  std::cout << "Time for classical dense assembly = "
+            << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()
+            << " ms" << std::endl;
+
+  // Return the discrete operator represented by the matrix that has just been
+  // calculated
+  return discreteDenseBoundaryOperator;
 }
 
 template <typename BasisFunctionType, typename ResultType>

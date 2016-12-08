@@ -42,9 +42,13 @@ public:
    */
   explicit DiscreteDenseBoundaryOperator(const Matrix<ValueType> &mat);
 
+  explicit DiscreteDenseBoundaryOperator();
+
   virtual void dump() const;
 
   virtual Matrix<ValueType> asMatrix() const;
+
+  virtual Matrix<ValueType>& matrix() const;
 
   virtual unsigned int rowCount() const;
   virtual unsigned int columnCount() const;
