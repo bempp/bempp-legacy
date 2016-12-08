@@ -6,7 +6,7 @@ copy_files_on_change(${headers}
     TARGETNAME bempp.core.space-copied
 )
 
-install_python(FILES ${headers} DESTINATION bempp/include/bempp/core/space)
+#install_python(FILES ${headers} DESTINATION bempp/include/bempp/core/space)
 add_dependencies(cython-headers bempp.core.space-copied)
 
 add_python_module(bempp.core.space __init__.py space.pyx CPP LIBRARIES libbempp)

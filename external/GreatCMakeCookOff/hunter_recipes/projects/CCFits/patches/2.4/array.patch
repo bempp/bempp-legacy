@@ -1,0 +1,27 @@
+--- a/ColumnVectorData.h
++++ b/ColumnVectorData.h
+@@ -260,13 +260,16 @@
+           if ( that.m_data.size() != n ) return false;
+           for (size_t i = 0; i < n ; i++)
+           {
+-                size_t nn = m_data[i].size();
+-                // first check size (also, == on 2 valarrays is only defined if they
+-                // are equal in size).
+-                if (that.m_data[i].size() != nn ) return false;
+-
+-                std::valarray<bool> test = (m_data[i] == that.m_data[i]);
+-                for (size_t j = 0; j < nn ; j++ ) if ( !test[j] ) return false;
++                const std::valarray<T>& thisValArray=m_data[i];
++                const std::valarray<T>& thatValArray=that.m_data[i];
++                size_t nn = thisValArray.size();
++                if (thatValArray.size() != nn ) return false;
++
++                for (size_t j = 0; j < nn ; j++ ) 
++                {
++                   if (thisValArray[j] != thatValArray[j])
++                      return false;
++                }
+           }
+           return true;
+   }
+

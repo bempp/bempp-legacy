@@ -33,7 +33,8 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 # Download and installs the cookoff in the build tree
 # From here on we can use cookoff recipes
-include(LookUp-GreatCMakeCookOff)
+find_package(GreatCMakeCookOff NO_MODULE PATHS "${PROJECT_SOURCE_DIR}/external/GreatCMakeCookOff" QUIET)
+initialize_cookoff()
 include(utils)
 include(PythonInstall)
 
@@ -109,9 +110,9 @@ add_subdirectory("${PROJECT_BINARY_DIR}/post_install"
     "${PROJECT_BINARY_DIR}/post_install-build")
 
 # Create directory with shortcuts for Python
-file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
-file(WRITE ${PROJECT_BINARY_DIR}/bin/bempp "${PROJECT_BINARY_DIR}/localpython.sh \"$@\" ")
-file(WRITE ${PROJECT_BINARY_DIR}/bin/ibempp "${PROJECT_BINARY_DIR}/localpython.sh -m IPython \"$@\" ")
+# file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
+# file(WRITE ${PROJECT_BINARY_DIR}/bin/bempp "${PROJECT_BINARY_DIR}/localpython.sh \"$@\" ")
+# file(WRITE ${PROJECT_BINARY_DIR}/bin/ibempp "${PROJECT_BINARY_DIR}/localpython.sh -m IPython \"$@\" ")
 execute_process(COMMAND chmod +x ${PROJECT_BINARY_DIR}/bin/bempp)
 execute_process(COMMAND chmod +x ${PROJECT_BINARY_DIR}/bin/ibempp)
 

@@ -9,5 +9,5 @@ if (NOT (${CMAKE_CURRENT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR}))
     endforeach ()
 endif ()
 
-install(FILES ${EXAMPLE_MESHES} 
-    DESTINATION ${SHARE_INSTALL_PATH}/bempp/meshes)
+#install(FILES ${EXAMPLE_MESHES} 
+#    DESTINATION ${SHARE_INSTALL_PATH}/bempp/meshes)

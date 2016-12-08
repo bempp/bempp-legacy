@@ -9,8 +9,8 @@ copy_files_on_change(${headers}
     TARGETNAME bempp.core.operators.boundary-copied
 )
 
-install_python(FILES ${headers}
-    DESTINATION bempp/include/bempp/core/operators/boundary)
+#install_python(FILES ${headers}
+#    DESTINATION bempp/include/bempp/core/operators/boundary)
 add_dependencies(cython-headers bempp.core.operators.boundary-copied)
 
 add_python_module(bempp.core.operators.boundary __init__.py

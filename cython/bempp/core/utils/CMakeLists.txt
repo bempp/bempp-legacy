@@ -11,8 +11,8 @@ copy_files_on_change(${headers}
 )
 
 
-install_python(FILES ${headers} 
-               DESTINATION bempp/include/bempp/core/utils)
+#install_python(FILES ${headers} 
+#DESTINATION bempp/include/bempp/core/utils)
 
 add_python_module(bempp.core.utils
     parameter_list.pyx eigen.pyx enum_types.pyx __init__.py

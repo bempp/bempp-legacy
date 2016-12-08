@@ -1,14 +1,15 @@
-# This file is part of the GreatCMakeCookOff package and distributed under the
-# MIT Licences.  Upon inclusion in a cmake file, it will download the
-# GreatCMakeCookOff and make itself known to CMake. It should be added
-# explicitely to build systems that make use of recipes from the cook-off.  And
-# it should be included prior to using cook-off recipes:
+# This file is part of the GreatCMakeCookOff package and distributed under the MIT Licences.
+# Upon inclusion in a cmake file, it will download the GreatCMakeCookOff and make itself known to
+# CMake. It should be added explicitely to build systems that make use of recipes from the cook-off.
+# And it should be included prior to using cook-off recipes:
 #
-# ```{CMake} include(LookUp-GreatCMakeCookOff) ```
+# ```{CMake}
+# include(LookUp-GreatCMakeCookOff)
+# ```
 
 
 # First attempts to find the package
-set(COOKOFF_DOWNLOAD_DIR "${PROJECT_BINARY_DIR}/external/src/GreatCMakeCookOff")
+set(COOKOFF_DOWNLOAD_DIR "${CMAKE_BINARY_DIR}/external/src/GreatCMakeCookOff")
 find_package(GreatCMakeCookOff NO_MODULE PATHS "${COOKOFF_DOWNLOAD_DIR}" QUIET)
 
 # Otherwise attempts to download it.
@@ -29,9 +30,11 @@ if(NOT GreatCMakeCookOff_FOUND)
       OUTPUT_QUIET
     )
   endif()
+  if(NOT COOKOFF_GITREPO)
+      set(COOKOFF_GITREPO https://github.com/UCL/GreatCMakeCookOff.git)
+  endif()
   execute_process(
-    COMMAND ${GIT_EXECUTABLE} clone
-      https://github.com/UCL/GreatCMakeCookOff.git
+    COMMAND ${GIT_EXECUTABLE} clone "${COOKOFF_GITREPO}"
          "${COOKOFF_DOWNLOAD_DIR}"
     RESULT_VARIABLE CLONING_COOKOFF
     OUTPUT_QUIET
