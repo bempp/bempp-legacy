@@ -152,8 +152,8 @@ public:
    than \p maxlevel.
    \return Iterator to the first son (level is not greater than \p maxlevel)
    */
-  virtual std::unique_ptr<EntityIterator<0>>
-  sonIterator(int maxlevel) const = 0;
+  //virtual std::unique_ptr<EntityIterator<0>>
+  //sonIterator(int maxlevel) const = 0;
 
   /** \brief True if the entity has been created during the last call to
    * adapt().

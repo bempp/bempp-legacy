@@ -28,7 +28,6 @@
 #include <iostream>
 #include <stdexcept>
 #include <array>
-#include <numpy/npy_common.h>
 
 namespace Bempp {
 
@@ -69,29 +68,16 @@ template <typename ValueType>
 void DiscreteDenseBoundaryOperator<ValueType>::addBlock(
     const std::vector<int> &rows, const std::vector<int> &cols,
     const ValueType alpha, Matrix<ValueType> &block) const {
-  if (block.rows() != rows.size() || block.cols() != cols.size())
-    throw std::invalid_argument("DiscreteDenseBoundaryOperator::addBlock(): "
-                                "incorrect block size");
-  for (size_t col = 0; col < cols.size(); ++col)
-    for (size_t row = 0; row < rows.size(); ++row)
-      block(row, col) += alpha * m_mat(rows[row], cols[col]);
+    throw std::runtime_error("DiscreteDenseBoundaryOperator:addBlock(): Not implemented.");
 }
 
 template <typename ValueType>
-PyObject *DiscreteDenseBoundaryOperator<ValueType>::asNumpyObject() const {
+const Matrix<ValueType>& DiscreteDenseBoundaryOperator<ValueType>::data() const {
 
-  int nd = 2;
-  std::array<npy_intp, 2> dims{{this->rowCount(), this->columnCount()}};
+    return m_mat;
 
-  PyGILState_STATE gstate;
-  gstate = PyGILState_Ensure();
-  PyObject *out =
-      PyArray_New(&PyArray_Type, nd, dims.data(),
-                  Fiber::ScalarTraits<ValueType>::NumpyTypeNum, NULL,
-                  m_mat.data(), 0, NPY_ARRAY_F_CONTIGUOUS, NULL);
-  PyGILState_Release(gstate);
-  return out;
 }
+
 
 template <typename ValueType>
 void DiscreteDenseBoundaryOperator<ValueType>::applyBuiltInImpl(

@@ -16,10 +16,10 @@ if (SPHINX_FOUND)
         DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/conf.py
     )
     add_dependencies(documentation python_documentation)
-    if(EXISTS "${PROJECT_BINARY_DIR}/doc/python")
-        install(DIRECTORY "${PROJECT_BINARY_DIR}/doc/python"
-            DESTINATION ${DOC_INSTALL_PATH}/bempp/python)
-    endif()
+    #    if(EXISTS "${PROJECT_BINARY_DIR}/doc/python")
+    #    install(DIRECTORY "${PROJECT_BINARY_DIR}/doc/python"
+    #        DESTINATION ${DOC_INSTALL_PATH}/bempp/python)
+    #endif()
 else (SPHINX_FOUND)
     message(WARNING "Sphinx not found;"
         " Python documentation will not be created")

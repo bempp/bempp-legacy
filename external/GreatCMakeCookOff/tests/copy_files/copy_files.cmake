@@ -1,0 +1,11 @@
+foreach(filename hello world something.c andthis.c)
+    if(NOT EXISTS @PROJECT_BINARY_DIR@/here/${filename})
+        message(FATAL_ERROR "Did not copy ${filename}")
+    endif()
+endforeach()
+
+foreach(filename notthis.h)
+    if(EXISTS @PROJECT_BINARY_DIR@/here/${filename})
+        message(FATAL_ERROR "Should not have copied ${filename}")
+    endif()
+endforeach()

@@ -1,7 +1,6 @@
 from bempp.core.utils.shared_ptr cimport shared_ptr, static_pointer_cast, const_pointer_cast, reverse_const_pointer_cast
 from bempp.core.utils.unique_ptr cimport unique_ptr
 from bempp.core.utils.complex cimport complex_double, cpp_complex
-from bempp.core.utils.signal_slot_interface cimport Connection, SlotInterface
 
 from bempp.core.utils.parameter_list cimport ParameterList, c_ParameterList
 

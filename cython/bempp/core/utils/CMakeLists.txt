@@ -2,7 +2,7 @@ set(headers py_types.hpp py_utils.hpp
     parameter_list.pxd parameter_list.pyx
     __init__.pxd eigen.pxd eigen.pyx shared_ptr.pxd
     unique_ptr.pxd enum_types.pxd enum_types.pyx
-    signal_slot_interface.pxd complex.pxd)
+    complex.pxd)
 
 copy_files_on_change(${headers}
     OUTPUT_FILES copied
@@ -11,8 +11,8 @@ copy_files_on_change(${headers}
 )
 
 
-install_python(FILES ${headers} 
-               DESTINATION bempp/include/bempp/core/utils)
+#install_python(FILES ${headers} 
+#DESTINATION bempp/include/bempp/core/utils)
 
 add_python_module(bempp.core.utils
     parameter_list.pyx eigen.pyx enum_types.pyx __init__.py

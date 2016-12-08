@@ -57,11 +57,6 @@ lookup_package(Boost ${BOOST_MIN_VER} COMPONENTS unit_test_framework filesystem
                program_options system thread iostreams REQUIRED)
 lookup_package(TBB REQUIRED)
 lookup_package(Dune REQUIRED COMPONENTS geometry grid localfunctions devel )
-if (WITH_ALUGRID)
-    lookup_package(dune-alugrid REQUIRED HINTS $ENV{Dune_PREFIX})
-else()
-    lookup_package(dune-foamgrid REQUIRED HINTS $ENV{Dune_PREFIX})
-endif()
 include("${PROJECT_SOURCE_DIR}/cmake/Dune/local.cmake")
 
 # Using cmake_policy does not seem to work here.
@@ -126,23 +121,23 @@ add_to_ld_path(
 lookup_python_package(Cython VERSION 0.21 REQUIRED PATH "${EXTERNAL_ROOT}/python")
 
 # Now adds commands to install external packages
-if(EXISTS "${EXTERNAL_ROOT}/lib")
-    install(DIRECTORY "${EXTERNAL_ROOT}/lib/"
-        DESTINATION "${LIBRARY_INSTALL_PATH}")
-endif()
-if(EXISTS "${EXTERNAL_ROOT}/lib64")
-    install(DIRECTORY "${EXTERNAL_ROOT}/lib64/"
-        DESTINATION "${LIBRARY_INSTALL_PATH}")
-endif()
-if(EXISTS "${EXTERNAL_ROOT}/include")
-    install(DIRECTORY "${EXTERNAL_ROOT}/include/"
-        DESTINATION "${INCLUDE_INSTALL_PATH}")
-endif()
-if(EXISTS "${EXTERNAL_ROOT}/share")
-    install(DIRECTORY "${EXTERNAL_ROOT}/share/"
-        DESTINATION "${SHARE_INSTALL_PATH}"
-        PATTERN "doc" EXCLUDE)
-endif()
+#if(EXISTS "${EXTERNAL_ROOT}/lib")
+#    install(DIRECTORY "${EXTERNAL_ROOT}/lib/"
+#        DESTINATION "${LIBRARY_INSTALL_PATH}")
+#endif()
+#if(EXISTS "${EXTERNAL_ROOT}/lib64")
+#    install(DIRECTORY "${EXTERNAL_ROOT}/lib64/"
+#        DESTINATION "${LIBRARY_INSTALL_PATH}")
+#endif()
+#if(EXISTS "${EXTERNAL_ROOT}/include")
+#    install(DIRECTORY "${EXTERNAL_ROOT}/include/"
+#        DESTINATION "${INCLUDE_INSTALL_PATH}")
+#endif()
+#if(EXISTS "${EXTERNAL_ROOT}/share")
+#    install(DIRECTORY "${EXTERNAL_ROOT}/share/"
+#        DESTINATION "${SHARE_INSTALL_PATH}"
+#        PATTERN "doc" EXCLUDE)
+#endif()
 
 
 list(REMOVE_DUPLICATES BEMPP_INCLUDE_DIRS)

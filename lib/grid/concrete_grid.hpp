@@ -80,7 +80,7 @@ private:
   DuneGrid *m_dune_grid;
   bool m_owns_dune_grid;
   GridParameters::Topology m_topology;
-  ConcreteIdSet<DuneGrid, typename DuneGrid::Traits::GlobalIdSet>
+  ConcreteIdSet<DuneGrid, typename DuneGrid::GlobalIdSet>
       m_global_id_set;
   ConcreteDomainIndex<DuneGrid> m_domain_index;
   shared_ptr<const Dune::GridFactory<DuneGrid>> m_factory;
@@ -170,7 +170,7 @@ public:
   virtual std::unique_ptr<GridView> levelView(size_t level) const override {
     return std::unique_ptr<GridView>(
         new ConcreteGridView<typename DuneGrid::LevelGridView>(
-            m_dune_grid->levelView(level), m_domain_index));
+            m_dune_grid->levelGridView(level), m_domain_index));
   }
 
   virtual std::unique_ptr<GridView> leafView() const override {

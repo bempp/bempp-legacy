@@ -8,8 +8,8 @@ copy_files_on_change(${headers}
     TARGETNAME bempp.core.operators.potential-copied
 )
 
-install_python(FILES ${headers}
-    DESTINATION bempp/include/bempp/core/operators/potential)
+#install_python(FILES ${headers}
+#    DESTINATION bempp/include/bempp/core/operators/potential)
 add_dependencies(cython-headers bempp.core.operators.potential-copied)
 
 add_python_module(bempp.core.operators.potential __init__.py

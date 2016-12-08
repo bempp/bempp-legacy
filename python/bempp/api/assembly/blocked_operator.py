@@ -73,9 +73,10 @@ class BlockedOperatorBase(object):
                 else:
                     from bempp.api.assembly import InverseSparseDiscreteBoundaryOperator
                     from bempp.api.operators.boundary.sparse import identity
+                    from bempp.api.assembly.boundary_operator import InverseLocalBoundaryOperator
 
                     _range_ops[index, index] = InverseLocalBoundaryOperator(
-                        identity(self.range, self.range, self.dual_to_range)).weak_form()
+                        identity(self.range_spaces[index], self.range_spaces[index], self.dual_to_range_spaces[index])).weak_form()
             
             self._range_map = BlockedDiscreteOperator(_range_ops)
 
@@ -143,7 +144,10 @@ class BlockedOperatorBase(object):
                 if not isinstance(item, GridFunction):
                     raise ValueError("All items in the input list must be grid functions.")
             weak_op = self.weak_form()
-            x = np.zeros(weak_op.shape[1], dtype=weak_op.dtype)
+            input_type = list_input[0].coefficients.dtype
+            for item in list_input:
+                input_type = np.promote_types(input_type, item.coefficients.dtype)
+            x = np.zeros(weak_op.shape[1], dtype=input_type)
             col_pos = np.hstack([[0], np.cumsum(weak_op.column_dimensions)])
             row_pos = np.hstack([[0], np.cumsum(weak_op.row_dimensions)])
             for index in range(weak_op.ndims[1]):
@@ -673,7 +677,7 @@ class BlockedDiscreteOperatorProduct(BlockedDiscreteOperatorBase):
 
         from bempp.api.utils.data_types import combined_type
 
-        super(BlockedDiscreteOperatorProduct, self).__init__(self,
+        super(BlockedDiscreteOperatorProduct, self).__init__(
                 op1.ndims[0], op2.ndims[1], 
                 combined_type(op1.dtype, op2.dtype),
                 (op1.shape[0], op2.shape[1]))

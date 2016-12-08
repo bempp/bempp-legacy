@@ -19,7 +19,7 @@
 // THE SOFTWARE.
 
 #include "piecewise_constant_scalar_space_barycentric.hpp"
-#include "piecewise_constant_discontinuous_scalar_space_barycentric.hpp"
+#include "piecewise_constant_scalar_space.hpp"
 
 #include "space_helper.hpp"
 
@@ -61,11 +61,11 @@ PiecewiseConstantScalarSpaceBarycentric<BasisFunctionType>::discontinuousSpace(
     const shared_ptr<const Space<BasisFunctionType>> &self) const {
   if (!m_discontinuousSpace) {
     tbb::mutex::scoped_lock lock(m_discontinuousSpaceMutex);
-    typedef PiecewiseConstantDiscontinuousScalarSpaceBarycentric<
+    typedef PiecewiseConstantScalarSpace<
         BasisFunctionType> DiscontinuousSpace;
     if (!m_discontinuousSpace)
       m_discontinuousSpace.reset(
-          new DiscontinuousSpace(m_originalGrid, m_segment));
+          new DiscontinuousSpace(m_originalGrid->barycentricGrid()));
   }
   return m_discontinuousSpace;
 }

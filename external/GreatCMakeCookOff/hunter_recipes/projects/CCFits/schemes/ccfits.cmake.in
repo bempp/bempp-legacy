@@ -1,0 +1,119 @@
+
+# Copyright (c) 2013, 2015 Ruslan Baratov, Alexandre Pretyman
+# All rights reserved.
+
+cmake_minimum_required(VERSION 3.0)
+project(Hunter)
+
+list(APPEND CMAKE_MODULE_PATH "@HUNTER_SELF@/cmake/modules")
+
+include(hunter_fatal_error)
+include(hunter_status_debug)
+include(hunter_test_string_not_empty)
+include(hunter_autotools_project)
+
+hunter_status_debug("Scheme: url_sha1_autotools")
+
+if("@MSVC@")
+  hunter_fatal_error("Autotools scheme not supported with Visual Studio")
+endif()
+
+# Check preconditions
+hunter_test_string_not_empty("@HUNTER_SELF@")
+hunter_test_string_not_empty("@HUNTER_EP_NAME@")
+hunter_test_string_not_empty("@HUNTER_PACKAGE_URL@")
+hunter_test_string_not_empty("@HUNTER_PACKAGE_SHA1@")
+hunter_test_string_not_empty("@HUNTER_PACKAGE_DOWNLOAD_DIR@")
+hunter_test_string_not_empty("@HUNTER_PACKAGE_SOURCE_DIR@")
+hunter_test_string_not_empty("@HUNTER_PACKAGE_BUILD_DIR@")
+hunter_test_string_not_empty("@HUNTER_PACKAGE_INSTALL_PREFIX@")
+hunter_test_string_not_empty("@HUNTER_INSTALL_PREFIX@")
+
+hunter_autotools_project("@HUNTER_EP_NAME@"
+    HUNTER_SELF
+      "@HUNTER_SELF@"
+    URL
+      @HUNTER_PACKAGE_URL@
+    URL_HASH
+      SHA1=@HUNTER_PACKAGE_SHA1@
+    DOWNLOAD_DIR
+      "@HUNTER_PACKAGE_DOWNLOAD_DIR@"
+    SOURCE_DIR
+      "@HUNTER_PACKAGE_SOURCE_DIR@"
+    BUILD_DIR
+      "@HUNTER_PACKAGE_BUILD_DIR@"
+    INSTALL_DIR
+      "@HUNTER_PACKAGE_INSTALL_PREFIX@"
+    GLOBAL_INSTALL_DIR
+      "@HUNTER_INSTALL_PREFIX@"
+    PARALLEL_JOBS
+      "@HUNTER_JOBS_OPTION@"
+    CPPFLAGS
+      "-I@CFitsIO_INCLUDE_DIR@"
+    LDFLAGS
+      "-L@libcfitsio_dir@ -lcfitsio"
+)
+
+# Create patch script and command
+file(GLOB patches "@CMAKE_CURRENT_LIST_DIR@/patches/@HUNTER_PACKAGE_VERSION@/*.patch")
+if(NOT "${patches}" STREQUAL "")
+  set(patch_script "@HUNTER_PACKAGE_HOME_DIR@/patching_cmake_script.cmake")
+  find_program(PATCH_EXECUTABLE patch REQUIRED)
+  file(WRITE "${patch_script}" "execute_process(\n")
+  foreach(patch ${patches})
+    file(APPEND "${patch_script}" "  COMMAND ${PATCH_EXECUTABLE} -i ${patch}\n")
+  endforeach()
+  file(APPEND "${patch_script}"
+    "  WORKING_DIRECTORY @HUNTER_PACKAGE_SOURCE_DIR@\n"
+    ")\n"
+  )
+
+
+  ExternalProject_Add_Step("@HUNTER_EP_NAME@"
+    patching
+    DEPENDEES download
+    DEPENDERS configure
+    COMMENT "Patching @HUNTER_EP_NAME@"
+    COMMAND @CMAKE_COMMAND@ -P "${patch_script}"
+  )
+endif()
+
+# CCFits expects its source to be in a directory called CCFits whereas hunter
+# puts it in a directory called Source
+ExternalProject_Add_Step("@HUNTER_EP_NAME@"
+  header
+  DEPENDEES download
+  DEPENDERS configure
+  COMMENT "Adding CCFits header directory"
+  COMMAND @CMAKE_COMMAND@ -E make_directory "@HUNTER_PACKAGE_SOURCE_DIR@/../CCFits"
+  COMMAND @CMAKE_COMMAND@ -E copy "@HUNTER_PACKAGE_SOURCE_DIR@/AsciiTable.h" "@HUNTER_PACKAGE_SOURCE_DIR@/../CCfits"
+  COMMAND @CMAKE_COMMAND@ -E copy "@HUNTER_PACKAGE_SOURCE_DIR@/BinTable.h" "@HUNTER_PACKAGE_SOURCE_DIR@/../CCfits"
+  COMMAND @CMAKE_COMMAND@ -E copy "@HUNTER_PACKAGE_SOURCE_DIR@/CCfits.h" "@HUNTER_PACKAGE_SOURCE_DIR@/../CCfits"
+  COMMAND @CMAKE_COMMAND@ -E copy "@HUNTER_PACKAGE_SOURCE_DIR@/Column.h" "@HUNTER_PACKAGE_SOURCE_DIR@/../CCfits"
+  COMMAND @CMAKE_COMMAND@ -E copy "@HUNTER_PACKAGE_SOURCE_DIR@/ColumnCreator.h" "@HUNTER_PACKAGE_SOURCE_DIR@/../CCfits"
+  COMMAND @CMAKE_COMMAND@ -E copy "@HUNTER_PACKAGE_SOURCE_DIR@/ColumnData.h" "@HUNTER_PACKAGE_SOURCE_DIR@/../CCfits"
+  COMMAND @CMAKE_COMMAND@ -E copy "@HUNTER_PACKAGE_SOURCE_DIR@/ColumnT.h" "@HUNTER_PACKAGE_SOURCE_DIR@/../CCfits"
+  COMMAND @CMAKE_COMMAND@ -E copy "@HUNTER_PACKAGE_SOURCE_DIR@/ColumnVectorData.h" "@HUNTER_PACKAGE_SOURCE_DIR@/../CCfits"
+  COMMAND @CMAKE_COMMAND@ -E copy "@HUNTER_PACKAGE_SOURCE_DIR@/ExtHDU.h" "@HUNTER_PACKAGE_SOURCE_DIR@/../CCfits"
+  COMMAND @CMAKE_COMMAND@ -E copy "@HUNTER_PACKAGE_SOURCE_DIR@/ExtHDUT.h" "@HUNTER_PACKAGE_SOURCE_DIR@/../CCfits"
+  COMMAND @CMAKE_COMMAND@ -E copy "@HUNTER_PACKAGE_SOURCE_DIR@/FITS.h" "@HUNTER_PACKAGE_SOURCE_DIR@/../CCfits"
+  COMMAND @CMAKE_COMMAND@ -E copy "@HUNTER_PACKAGE_SOURCE_DIR@/FITSBase.h" "@HUNTER_PACKAGE_SOURCE_DIR@/../CCfits"
+  COMMAND @CMAKE_COMMAND@ -E copy "@HUNTER_PACKAGE_SOURCE_DIR@/FITSUtil.h" "@HUNTER_PACKAGE_SOURCE_DIR@/../CCfits"
+  COMMAND @CMAKE_COMMAND@ -E copy "@HUNTER_PACKAGE_SOURCE_DIR@/FITSUtilT.h" "@HUNTER_PACKAGE_SOURCE_DIR@/../CCfits"
+  COMMAND @CMAKE_COMMAND@ -E copy "@HUNTER_PACKAGE_SOURCE_DIR@/FitsError.h" "@HUNTER_PACKAGE_SOURCE_DIR@/../CCfits"
+  COMMAND @CMAKE_COMMAND@ -E copy "@HUNTER_PACKAGE_SOURCE_DIR@/HDU.h" "@HUNTER_PACKAGE_SOURCE_DIR@/../CCfits"
+  COMMAND @CMAKE_COMMAND@ -E copy "@HUNTER_PACKAGE_SOURCE_DIR@/HDUCreator.h" "@HUNTER_PACKAGE_SOURCE_DIR@/../CCfits"
+  COMMAND @CMAKE_COMMAND@ -E copy "@HUNTER_PACKAGE_SOURCE_DIR@/Image.h" "@HUNTER_PACKAGE_SOURCE_DIR@/../CCfits"
+  COMMAND @CMAKE_COMMAND@ -E copy "@HUNTER_PACKAGE_SOURCE_DIR@/ImageExt.h" "@HUNTER_PACKAGE_SOURCE_DIR@/../CCfits"
+  COMMAND @CMAKE_COMMAND@ -E copy "@HUNTER_PACKAGE_SOURCE_DIR@/KeyData.h" "@HUNTER_PACKAGE_SOURCE_DIR@/../CCfits"
+  COMMAND @CMAKE_COMMAND@ -E copy "@HUNTER_PACKAGE_SOURCE_DIR@/Keyword.h" "@HUNTER_PACKAGE_SOURCE_DIR@/../CCfits"
+  COMMAND @CMAKE_COMMAND@ -E copy "@HUNTER_PACKAGE_SOURCE_DIR@/KeywordCreator.h" "@HUNTER_PACKAGE_SOURCE_DIR@/../CCfits"
+  COMMAND @CMAKE_COMMAND@ -E copy "@HUNTER_PACKAGE_SOURCE_DIR@/KeywordT.h" "@HUNTER_PACKAGE_SOURCE_DIR@/../CCfits"
+  COMMAND @CMAKE_COMMAND@ -E copy "@HUNTER_PACKAGE_SOURCE_DIR@/MSconfig.h" "@HUNTER_PACKAGE_SOURCE_DIR@/../CCfits"
+  COMMAND @CMAKE_COMMAND@ -E copy "@HUNTER_PACKAGE_SOURCE_DIR@/NewColumn.h" "@HUNTER_PACKAGE_SOURCE_DIR@/../CCfits"
+  COMMAND @CMAKE_COMMAND@ -E copy "@HUNTER_PACKAGE_SOURCE_DIR@/NewKeyword.h" "@HUNTER_PACKAGE_SOURCE_DIR@/../CCfits"
+  COMMAND @CMAKE_COMMAND@ -E copy "@HUNTER_PACKAGE_SOURCE_DIR@/PHDU.h" "@HUNTER_PACKAGE_SOURCE_DIR@/../CCfits" 
+  COMMAND @CMAKE_COMMAND@ -E copy "@HUNTER_PACKAGE_SOURCE_DIR@/PHDUT.h" "@HUNTER_PACKAGE_SOURCE_DIR@/../CCfits"
+  COMMAND @CMAKE_COMMAND@ -E copy "@HUNTER_PACKAGE_SOURCE_DIR@/PrimaryHDU.h" "@HUNTER_PACKAGE_SOURCE_DIR@/../CCfits"
+  COMMAND @CMAKE_COMMAND@ -E copy "@HUNTER_PACKAGE_SOURCE_DIR@/Table.h" "@HUNTER_PACKAGE_SOURCE_DIR@/../CCfits"
+)

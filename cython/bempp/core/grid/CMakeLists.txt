@@ -11,6 +11,7 @@ set(files entity.pxd entity.pyx
            py_sphere.hpp 
            py_entity_helper.hpp
            id_set.pxd id_set.pyx
+           test_grid.pyx
            __init__.pxd)
 
 
@@ -22,7 +23,7 @@ copy_files_on_change(${headers}
            TARGETNAME bempp.core.grid-copied
            )
 
-install_python(FILES ${headers} DESTINATION bempp/include/bempp/core/grid)
+#install_python(FILES ${headers} DESTINATION bempp/include/bempp/core/grid)
 add_dependencies(cython-headers bempp.core.grid-copied)
 
 add_python_module(bempp.core.grid __init__.py ${sources} CPP LIBRARIES libbempp)

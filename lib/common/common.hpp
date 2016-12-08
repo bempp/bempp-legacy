@@ -49,14 +49,9 @@ inline complex<float> operator-(double const &&a, complex<float> const &b) {
 #pragma warning(disable : 279 186 858 262 1011 654 597)
 #endif
 
-#include <Python.h>
 // Yes, use the new syntax from Dune 2.2
 #define DUNE_COMMON_FIELDVECTOR_SIZE_IS_METHOD 1
 #include "bempp/common/bempp_dune_config.hpp"
-
-#define NO_IMPORT_ARRAY
-#define PY_ARRAY_UNIQUE_SYMBOL bempp_ARRAY_API
-#include "numpy/arrayobject.h"
 
 #include <stdexcept>
 

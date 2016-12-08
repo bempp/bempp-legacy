@@ -37,10 +37,6 @@ set(imported_targets
     # Dune targets
     dunecommon dunegeometry dunegrid 
 )
-if (WITH_ALUGRID)
-    list(APPEND imported_targets dunealugrid)
-endif()
-
 
 unset(library_files)
 foreach(library ${imported_targets})
@@ -70,7 +66,6 @@ else()
 endif()
 change_tbb_install_name(libbempp)
 
-target_link_libraries(libbempp ${PYTHON_LIBRARY})
 target_link_libraries(libbempp ${ZLIB_LIBRARIES})
 
 if (WITH_CUDA)
@@ -101,27 +96,27 @@ add_copy_directory(copy_headers
 add_dependencies(libbempp copy_headers)
 
 # Install headers
-set(incpath "${INCLUDE_INSTALL_PATH}/bempp")
-install(DIRECTORY "${PROJECT_SOURCE_DIR}/lib/"
-    DESTINATION "${incpath}"
-    FILES_MATCHING PATTERN "*.hpp"
-)
-install(FILES ${COMMON_HEADERS} DESTINATION "${incpath}/common")
-install(FILES ${CL_FILES} DESTINATION "${incpath}/fiber/CL")
-install(FILES ${CL_STRING_FILES} DESTINATION "${incpath}/fiber/CL")
+# set(incpath "${INCLUDE_INSTALL_PATH}/bempp")
+# install(DIRECTORY "${PROJECT_SOURCE_DIR}/lib/"
+#    DESTINATION "${incpath}"
+#    FILES_MATCHING PATTERN "*.hpp"
+#)
+#install(FILES ${COMMON_HEADERS} DESTINATION "${incpath}/common")
+#install(FILES ${CL_FILES} DESTINATION "${incpath}/fiber/CL")
+#install(FILES ${CL_STRING_FILES} DESTINATION "${incpath}/fiber/CL")
 
 # Add a target to generate API documentation with Doxygen
-if (DOXYGEN_FOUND)
-    configure_file("${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in"
-        "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile" @ONLY)
-    file(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/doc/cpp")
-    add_custom_target(cpp_documentation
-        ${DOXYGEN_EXECUTABLE} "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile"
-        WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/doc/cpp"
-        COMMENT "Generate API documentation with Doxygen" VERBATIM
-        DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile"
-    )
-    install(DIRECTORY "${PROJECT_BINARY_DIR}/doc/cpp"
-        DESTINATION ${DOC_INSTALL_PATH}/bempp/cpp)
-    add_dependencies(documentation cpp_documentation)
-endif(DOXYGEN_FOUND)
+#if (DOXYGEN_FOUND)
+#    configure_file("${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in"
+#        "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile" @ONLY)
+#    file(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/doc/cpp")
+#    add_custom_target(cpp_documentation
+#        ${DOXYGEN_EXECUTABLE} "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile"
+#        WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/doc/cpp"
+#        COMMENT "Generate API documentation with Doxygen" VERBATIM
+#        DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile"
+#    )
+#    install(DIRECTORY "${PROJECT_BINARY_DIR}/doc/cpp"
+#        DESTINATION ${DOC_INSTALL_PATH}/bempp/cpp)
+#    add_dependencies(documentation cpp_documentation)
+#endif(DOXYGEN_FOUND)

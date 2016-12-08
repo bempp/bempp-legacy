@@ -27,17 +27,10 @@
 #include <memory>
 #include <dune/geometry/multilineargeometry.hh>
 
-#ifdef WITH_ALUGRID
-#include <dune/alugrid/grid.hh>
+#include "./bempp_grid/bempp_triangle_grid.hpp"
 namespace Bempp {
-    typedef Dune::ALUGrid<2,3,Dune::simplex,Dune::conforming> Default2dIn3dDuneGrid;
+    typedef Dune::Grid<2, 3, double, BemppGrid::TriangleGridFamily> Default2dIn3dDuneGrid;
 }
-#else
-#include <dune/foamgrid/foamgrid.hh>
-namespace Bempp {
-    typedef Dune::FoamGrid<2, 3> Default2dIn3dDuneGrid;
-}
-#endif
 
 namespace Bempp {
 

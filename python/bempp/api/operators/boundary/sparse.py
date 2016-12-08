@@ -146,7 +146,8 @@ def multitrace_identity(grid, parameters=None, spaces='linear'):
         Dirichlet and Neumann component (default). For
         a dual pairing of a linear space for the Dirichlet
         data and piecewise constant space for the Neumann
-        data choose 'dual'.
+        data choose 'dual'. For the proper dual spaces in 
+        Maxwell problems choose 'maxwell'.
 
     """
 
@@ -167,5 +168,17 @@ def multitrace_identity(grid, parameters=None, spaces='linear'):
         blocked_operator[0, 0] = identity(
             space, space, space, parameters=parameters)
         blocked_operator[1, 1] = blocked_operator[0, 0]
+    elif spaces == 'maxwell':
+        rwg_space = bempp.api.function_space(grid, "B-RWG", 0)
+        snc_space = bempp.api.function_space(grid, "B-SNC", 0)
+        bc_space = bempp.api.function_space(grid, "BC", 0)
+        rbc_space = bempp.api.function_space(grid, "RBC", 0)
+
+        blocked_operator[0, 0] = identity(
+                rwg_space, rwg_space, rbc_space, parameters=parameters)
+        blocked_operator[1, 1] = identity(
+                bc_space, bc_space, snc_space, parameters=parameters)
+    else:
+        raise ValueError("'spaces' must be one of 'dual', 'linear', or 'maxwell'")
 
     return blocked_operator

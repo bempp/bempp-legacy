@@ -36,15 +36,15 @@ configure_File(cmake/BemppConfig.in.cmake
 )
 
 # Finally install all files
-install(FILES
-    "${PROJECT_BINARY_DIR}/CMakeFiles/BemppConfig.cmake"
-    "${PROJECT_BINARY_DIR}/BemppConfigVersion.cmake"
-    DESTINATION ${SHARE_INSTALL_PATH}/cmake/Bempp
-    COMPONENT dev
-)
+#install(FILES
+#    "${PROJECT_BINARY_DIR}/CMakeFiles/BemppConfig.cmake"
+#    "${PROJECT_BINARY_DIR}/BemppConfigVersion.cmake"
+#    DESTINATION ${SHARE_INSTALL_PATH}/cmake/Bempp
+#    COMPONENT dev
+#)
 
-install(EXPORT BemppTargets
-    DESTINATION ${SHARE_INSTALL_PATH}/cmake/Bempp
-    COMPONENT dev
-)
+#install(EXPORT BemppTargets
+#    DESTINATION ${SHARE_INSTALL_PATH}/cmake/Bempp
+#    COMPONENT dev
+#)
 
