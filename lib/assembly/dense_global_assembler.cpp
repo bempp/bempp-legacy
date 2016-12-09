@@ -345,10 +345,10 @@ DenseGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
   //                        localResult[testIndex](testDof, trialDof);
   //    }
 
-  if (result.rows() < 10 && result.cols() < 10) {
-    std::cout << "result (dense) = " << std::endl;
-    std::cout << result << std::endl;
-  }
+//  if (result.rows() < 10 && result.cols() < 10) {
+//    std::cout << "result (dense) = " << std::endl;
+//    std::cout << result << std::endl;
+//  }
 
   std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
   std::cout << "Time for classical dense assembly = "

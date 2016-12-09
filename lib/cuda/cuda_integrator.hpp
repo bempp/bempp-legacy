@@ -22,7 +22,6 @@
 #define fiber_cuda_integrator_hpp
 
 #include "cuda_options.hpp"
-
 #include "cuda.cuh"
 
 #include "../common/common.hpp"
@@ -34,12 +33,8 @@
 
 #include <thrust/device_vector.h>
 #include <thrust/host_vector.h>
-#include <thrust/complex.h>
-
-#include <type_traits>
 
 namespace Bempp {
-
 /** \cond FORWARD_DECL */
 template <typename CoordinateType> class CudaGrid;
 /** \endcond */
@@ -47,7 +42,6 @@ template <typename CoordinateType> class CudaGrid;
 } // namespace Bempp
 
 namespace Fiber {
-
 /** \cond FORWARD_DECL */
 template <typename BasisFunctionType> class Shapeset;
 template <typename BasisFunctionType> class BasisData;
@@ -74,6 +68,7 @@ public:
       const shared_ptr<Bempp::CudaGrid<CudaCoordinateType>> &testGrid,
       const shared_ptr<Bempp::CudaGrid<CudaCoordinateType>> &trialGrid,
       const std::vector<int> &testIndices, const std::vector<int> &trialIndices,
+      const size_t maxActiveElemPairCount,
       const shared_ptr<const CollectionOfKernels<KernelType>> &kernel,
       const int deviceId, const Bempp::CudaOptions &cudaOptions);
 
@@ -86,45 +81,55 @@ public:
 
 private:
   /** \cond PRIVATE */
-
   void setupBasisData(const Shapeset<BasisFunctionType> &testShapeset,
                       const Shapeset<BasisFunctionType> &trialShapeset,
                       const Matrix<CoordinateType> &localTestQuadPoints,
                       const Matrix<CoordinateType> &localTrialQuadPoints);
 
+  void cacheElementData(const Matrix<CoordinateType> &localTestQuadPoints,
+                        const Matrix<CoordinateType> &localTrialQuadPoints);
+
+  void setupRawData(const Matrix<CoordinateType> &localTestQuadPoints,
+                    const Matrix<CoordinateType> &localTrialQuadPoints);
+
+  void launchCudaEvaluateIntegralFunctorKernelDataCached(
+      const size_t elemPairIndexBegin, const size_t elemPairCount,
+      const dim3 gridSize, const dim3 blockSize,
+      CudaResultType *d_result);
+
+  void launchCudaEvaluateIntegralFunctorElementDataCached(
+      const size_t elemPairIndexBegin, const size_t elemPairCount,
+      const dim3 gridSize, const dim3 blockSize,
+      CudaResultType *d_result) const;
+
+  void launchCudaEvaluateIntegralFunctorNoDataCached(
+      const size_t elemPairIndexBegin, const size_t elemPairCount,
+      const dim3 gridSize, const dim3 blockSize,
+      CudaResultType *d_result) const;
+
   const int m_deviceId;
-
-  thrust::device_vector<int> m_d_testIndices;
-  thrust::device_vector<int> m_d_trialIndices;
-
-  QuadData<CudaCoordinateType> m_testQuadData;
-  QuadData<CudaCoordinateType> m_trialQuadData;
-
-  BasisFunData<CudaBasisFunctionType> m_testBasisData;
-  BasisFunData<CudaBasisFunctionType> m_trialBasisData;
-
-  ElemData<CudaCoordinateType> m_testElemData;
-  ElemData<CudaCoordinateType> m_trialElemData;
-  thrust::device_vector<CudaCoordinateType> m_d_testGeomData;
-  thrust::device_vector<CudaCoordinateType> m_d_trialGeomData;
-  thrust::device_vector<CudaCoordinateType> m_d_testNormals;
-  thrust::device_vector<CudaCoordinateType> m_d_trialNormals;
-  thrust::device_vector<CudaCoordinateType> m_d_testIntegrationElements;
-  thrust::device_vector<CudaCoordinateType> m_d_trialIntegrationElements;
-  thrust::device_vector<CudaCoordinateType> m_d_testJacobianInversesTransposed;
-  thrust::device_vector<CudaCoordinateType> m_d_trialJacobianInversesTransposed;
-
-  RawGeometryData<CudaCoordinateType> m_testRawGeometryData;
-  RawGeometryData<CudaCoordinateType> m_trialRawGeometryData;
-
-  shared_ptr<Bempp::CudaGrid<CudaCoordinateType>> m_testGrid;
-  shared_ptr<Bempp::CudaGrid<CudaCoordinateType>> m_trialGrid;
-
   const std::string m_kernelName;
+  const Bempp::CudaOptions m_cudaOptions;
+  const bool m_isElementDataCachingEnabled, m_isKernelDataCachingEnabled;
+  const shared_ptr<Bempp::CudaGrid<CudaCoordinateType>> m_testGrid, m_trialGrid;
 
   CudaKernelType m_waveNumberReal, m_waveNumberImag;
 
-  const Bempp::CudaOptions m_cudaOptions;
+  thrust::device_vector<int> m_d_testIndices, m_d_trialIndices;
+
+  QuadData<CudaCoordinateType> m_testQuadData, m_trialQuadData;
+  BasisFunData<CudaBasisFunctionType> m_testBasisData, m_trialBasisData;
+  ElemData<CudaCoordinateType> m_testElemData, m_trialElemData;
+  thrust::device_vector<CudaCoordinateType> m_d_testGeomData, m_d_trialGeomData;
+  thrust::device_vector<CudaCoordinateType> m_d_testNormals, m_d_trialNormals;
+  thrust::device_vector<CudaCoordinateType>
+  m_d_testIntegrationElements, m_d_trialIntegrationElements;
+  thrust::device_vector<CudaCoordinateType>
+  m_d_testJacobianInversesTransposed, m_d_trialJacobianInversesTransposed;
+  RawGeometryData<CudaCoordinateType>
+  m_testRawGeometryData, m_trialRawGeometryData;
+
+  thrust::device_vector<CudaKernelType> m_d_kernelValues;
 
   /** \endcond */
 };

@@ -101,6 +101,16 @@ CudaEvaluateHelmholtz3dHypersingularIntegralFunctorCached(
           testElemNormals[coordIndex * testElemCount + testElemPosition];
     }
 
+    // Get transposed Jacobian inverses
+    CoordinateType trialJacobianInverseTransposed[6], testJacobianInverseTransposed[6];
+#pragma unroll
+    for (int j = 0; j < 6; ++j) {
+      trialJacobianInverseTransposed[j] =
+          trialJacobianInversesTransposed[j * trialElemCount + trialElemPosition];
+      testJacobianInverseTransposed[j] =
+          testJacobianInversesTransposed[j * testElemCount + testElemPosition];
+    }
+
     // Evaluate kernel
     KernelType kernelValues0Real[10 * 10], kernelValues0Imag[10 * 10],
         kernelValues1Real[10 * 10], kernelValues1Imag[10 * 10];
@@ -142,61 +152,57 @@ CudaEvaluateHelmholtz3dHypersingularIntegralFunctorCached(
         for (size_t trialPoint = 0; trialPoint < trialPointCount; ++trialPoint) {
           const CoordinateType trialWeight =
               trialIntegrationElement * constTrialQuadWeights[trialPoint];
+
+          // Get surface curls
+          BasisFunctionType trialBasisDerivativeDir0 =
+              trialBasisDerivatives[0 * trialDofCount * trialPointCount
+                                    + trialDof * trialPointCount
+                                    + trialPoint];
+          BasisFunctionType trialBasisDerivativeDir1 =
+              trialBasisDerivatives[1 * trialDofCount * trialPointCount
+                                    + trialDof * trialPointCount
+                                    + trialPoint];
+          vec[0] =
+              trialBasisDerivativeDir0 * trialJacobianInverseTransposed[0] +
+              trialBasisDerivativeDir1 * trialJacobianInverseTransposed[1];
+          vec[1] =
+              trialBasisDerivativeDir0 * trialJacobianInverseTransposed[2] +
+              trialBasisDerivativeDir1 * trialJacobianInverseTransposed[3];
+          vec[2] =
+              trialBasisDerivativeDir0 * trialJacobianInverseTransposed[4] +
+              trialBasisDerivativeDir1 * trialJacobianInverseTransposed[5];
+
+          trialSurfaceCurls[0] = trialElemNormal[1] * vec[2] - trialElemNormal[2] * vec[1];
+          trialSurfaceCurls[1] = trialElemNormal[2] * vec[0] - trialElemNormal[0] * vec[2];
+          trialSurfaceCurls[2] = trialElemNormal[0] * vec[1] - trialElemNormal[1] * vec[0];
+
           ResultType partialSumReal = 0., partialSumImag = 0.;
           for (size_t testPoint = 0; testPoint < testPointCount; ++testPoint) {
             const CoordinateType testWeight =
                 testIntegrationElement * constTestQuadWeights[testPoint];
 
             // Get surface curls
-            BasisFunctionType trialBasisDerivative0 =
-                trialBasisDerivatives[trialDof * trialPointCount + trialPoint];
-            BasisFunctionType trialBasisDerivative1 =
-                trialBasisDerivatives[trialDofCount * trialPointCount
-                                      + trialDof * trialPointCount
-                                      + trialPoint];
+            BasisFunctionType testBasisDerivativeDir0 =
+                testBasisDerivatives[0 * testDofCount * testPointCount
+                                     + testDof * testPointCount
+                                     + testPoint];
+            BasisFunctionType testBasisDerivativeDir1 =
+                testBasisDerivatives[1 * testDofCount * testPointCount
+                                     + testDof * testPointCount
+                                     + testPoint];
             vec[0] =
-                trialBasisDerivative0 * trialJacobianInversesTransposed[trialElemPosition] +
-                trialBasisDerivative1 * trialJacobianInversesTransposed[3 * trialElemCount + trialElemPosition];
+                testBasisDerivativeDir0 * testJacobianInverseTransposed[0] +
+                testBasisDerivativeDir1 * testJacobianInverseTransposed[1];
             vec[1] =
-                trialBasisDerivative0 * trialJacobianInversesTransposed[trialElemCount + trialElemPosition] +
-                trialBasisDerivative1 * trialJacobianInversesTransposed[4 * trialElemCount + trialElemPosition];
+                testBasisDerivativeDir0 * testJacobianInverseTransposed[2] +
+                testBasisDerivativeDir1 * testJacobianInverseTransposed[3];
             vec[2] =
-                trialBasisDerivative0 * trialJacobianInversesTransposed[2 * trialElemCount + trialElemPosition] +
-                trialBasisDerivative1 * trialJacobianInversesTransposed[5 * trialElemCount + trialElemPosition];
-
-            trialSurfaceCurls[0] = trialElemNormal[1] * vec[2] - trialElemNormal[2] * vec[1];
-            trialSurfaceCurls[1] = trialElemNormal[2] * vec[0] - trialElemNormal[0] * vec[2];
-            trialSurfaceCurls[2] = trialElemNormal[0] * vec[1] - trialElemNormal[1] * vec[0];
-
-//            if (i == 0) {
-//              printf("trialSurfaceCurls = %f, %f, %f\n",
-//                  trialSurfaceCurls[0], trialSurfaceCurls[1], trialSurfaceCurls[2]);
-//            }
-
-            BasisFunctionType testBasisDerivative0 =
-                testBasisDerivatives[testDof * testPointCount + testPoint];
-            BasisFunctionType testBasisDerivative1 =
-                testBasisDerivatives[testDofCount * testPointCount
-                                      + testDof * testPointCount
-                                      + testPoint];
-            vec[0] =
-                testBasisDerivative0 * testJacobianInversesTransposed[testElemPosition] +
-                testBasisDerivative1 * testJacobianInversesTransposed[3 * testElemCount + testElemPosition];
-            vec[1] =
-                testBasisDerivative0 * testJacobianInversesTransposed[testElemCount + testElemPosition] +
-                testBasisDerivative1 * testJacobianInversesTransposed[4 * testElemCount + testElemPosition];
-            vec[2] =
-                testBasisDerivative0 * testJacobianInversesTransposed[2 * testElemCount + testElemPosition] +
-                testBasisDerivative1 * testJacobianInversesTransposed[5 * testElemCount + testElemPosition];
+                testBasisDerivativeDir0 * testJacobianInverseTransposed[4] +
+                testBasisDerivativeDir1 * testJacobianInverseTransposed[5];
 
             testSurfaceCurls[0] = testElemNormal[1] * vec[2] - testElemNormal[2] * vec[1];
             testSurfaceCurls[1] = testElemNormal[2] * vec[0] - testElemNormal[0] * vec[2];
             testSurfaceCurls[2] = testElemNormal[0] * vec[1] - testElemNormal[1] * vec[0];
-
-//            if (i == 0) {
-//              printf("testSurfaceCurls = %f, %f, %f\n",
-//                  testSurfaceCurls[0], testSurfaceCurls[1], testSurfaceCurls[2]);
-//            }
 
             const size_t indexKernelValues = trialPoint * testPointCount + testPoint;
             BasisFunctionType dotProduct0 = 0.;

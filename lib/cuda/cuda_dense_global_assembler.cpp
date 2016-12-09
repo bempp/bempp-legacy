@@ -496,6 +496,7 @@ void CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::
             testShapeset, trialShapeset,
             testGrids[device], trialGrids[device],
             testIndices, trialIndices,
+            maxActiveElemPairCounts[device],
             kernel,
             deviceIds[device], cudaOptions);
   }
@@ -663,10 +664,10 @@ void CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::
   });
   cudaProfilerStop();
 
-  if (result.rows() < 25 && result.cols() < 25) {
-    std::cout << "result (cudadense) = " << std::endl;
-    std::cout << result << std::endl;
-  }
+//  if (result.rows() < 10 && result.cols() < 10) {
+//    std::cout << "result (cudadense) = " << std::endl;
+//    std::cout << result << std::endl;
+//  }
 
   // Free pinned host memory
   for (int device = 0; device < deviceCount; ++device) {

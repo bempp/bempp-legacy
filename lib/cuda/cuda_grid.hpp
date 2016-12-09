@@ -68,6 +68,12 @@ public:
   void calculateJacobianInversesTransposed(
       thrust::device_vector<CoordinateType> &jacobianInversesTransposed) const;
 
+  /**
+   * \brief Calculate surface curls on the device
+   */
+  void calculateSurfaceCurls(
+      thrust::device_vector<CoordinateType> &surfaceCurls) const;
+
   void getRawGeometryData(unsigned int &vtxCount,
                           unsigned int &elemCount,
                           thrust::device_ptr<const CoordinateType> &vertices,

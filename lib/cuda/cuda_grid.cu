@@ -81,8 +81,9 @@ namespace Bempp {
 
     __host__ __device__
     thrust::tuple<
-        CoordinateType, CoordinateType, CoordinateType,
-        CoordinateType, CoordinateType, CoordinateType>
+        CoordinateType, CoordinateType,
+        CoordinateType, CoordinateType,
+        CoordinateType, CoordinateType>
     operator()(
         const thrust::tuple<CoordinateType, CoordinateType, CoordinateType,
                             CoordinateType, CoordinateType, CoordinateType,
@@ -101,30 +102,30 @@ namespace Bempp {
       const CoordinateType vtx2y = thrust::get<7>(elementCornerCoo);
       const CoordinateType vtx2z = thrust::get<8>(elementCornerCoo);
 
-      const CoordinateType x02 = vtx0x - vtx2x;
-      const CoordinateType x12 = vtx1x - vtx2x;
+      const CoordinateType x10 = vtx1x - vtx0x;
+      const CoordinateType x20 = vtx2x - vtx0x;
 
-      const CoordinateType y02 = vtx0y - vtx2y;
-      const CoordinateType y12 = vtx1y - vtx2y;
+      const CoordinateType y10 = vtx1y - vtx0y;
+      const CoordinateType y20 = vtx2y - vtx0y;
 
-      const CoordinateType z02 = vtx0z - vtx2z;
-      const CoordinateType z12 = vtx1z - vtx2z;
+      const CoordinateType z10 = vtx1z - vtx0z;
+      const CoordinateType z20 = vtx2z - vtx0z;
 
-      const CoordinateType a = x02 * x02 + y02 * y02 + z02 * z02;
-      const CoordinateType b = x02 * x12 + y02 * y12 + z02 * z12;
+      const CoordinateType a = x10 * x10 + y10 * y10 + z10 * z10;
+      const CoordinateType b = x10 * x20 + y10 * y20 + z10 * z20;
       const CoordinateType c = b;
-      const CoordinateType d = x12 * x12 + y12 * y12 + z12 * z12;
+      const CoordinateType d = x20 * x20 + y20 * y20 + z20 * z20;
 
       const CoordinateType scalingFactor = a * d - b * c;
 
-      CoordinateType jacobianInvT00 = d * x02 - b * x12;
-      CoordinateType jacobianInvT01 = a * x12 - c * x02;
+      CoordinateType jacobianInvT00 = d * x10 - c * x20;
+      CoordinateType jacobianInvT01 = a * x20 - b * x10;
 
-      CoordinateType jacobianInvT10 = d * y02 - b * y12;
-      CoordinateType jacobianInvT11 = a * y12 - c * y02;
+      CoordinateType jacobianInvT10 = d * y10 - c * y20;
+      CoordinateType jacobianInvT11 = a * y20 - b * y10;
 
-      CoordinateType jacobianInvT20 = d * z02 - b * z12;
-      CoordinateType jacobianInvT21 = a * z12 - c * z02;
+      CoordinateType jacobianInvT20 = d * z10 - c * z20;
+      CoordinateType jacobianInvT21 = a * z20 - b * z10;
 
       jacobianInvT00 /= scalingFactor;
       jacobianInvT01 /= scalingFactor;
@@ -135,8 +136,9 @@ namespace Bempp {
       jacobianInvT20 /= scalingFactor;
       jacobianInvT21 /= scalingFactor;
 
-      return thrust::make_tuple(jacobianInvT00, jacobianInvT10, jacobianInvT20,
-                                jacobianInvT01, jacobianInvT11, jacobianInvT21);
+      return thrust::make_tuple(jacobianInvT00, jacobianInvT01,
+                                jacobianInvT10, jacobianInvT11,
+                                jacobianInvT20, jacobianInvT21);
     }
   };
 
@@ -558,13 +560,28 @@ namespace Bempp {
 //      std::cout << "jacobianInversesTransposed = " << std::endl;
 //      for (int i = 0; i < m_ElemCount; ++i) {
 //        for (int j = 0; j < m_dim; ++j) {
-//          std::cout << jacobianInversesTransposed[j * m_ElemCount + i] << " "
-//                    << jacobianInversesTransposed[(j + 3) * m_ElemCount + i] << std::endl;
+//          std::cout << jacobianInversesTransposed[j * 2 * m_ElemCount + i] << " "
+//                    << jacobianInversesTransposed[((j * 2) + 1) * m_ElemCount + i] << std::endl;
 //        }
 //        std::cout << std::endl;
 //      }
     } else {
       throw std::runtime_error("CudaGrid::calculateJacobianInversesTransposed(): "
+                               "setup required");
+    }
+  }
+
+  template <typename CoordinateType>
+  void CudaGrid<CoordinateType>::calculateSurfaceCurls(
+      thrust::device_vector<CoordinateType> &surfaceCurls) const {
+
+    if (m_setupDone == true) {
+
+      throw NotImplementedError("CudaGrid::calculateSurfaceCurls(): "
+                                "not implemented yet");
+
+    } else {
+      throw std::runtime_error("CudaGrid::calculateSurfaceCurls(): "
                                "setup required");
     }
   }
