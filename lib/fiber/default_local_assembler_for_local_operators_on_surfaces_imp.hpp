@@ -60,18 +60,18 @@ DefaultLocalAssemblerForLocalOperatorsOnSurfaces<BasisFunctionType, ResultType,
       m_openClHandler(openClHandler), m_quadDescSelector(quadDescSelector),
       m_quadRuleFamily(quadRuleFamily) {}
 
-
 template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory>
-             DefaultLocalAssemblerForLocalOperatorsOnSurfaces<BasisFunctionType,
-         ResultType, GeometryFactory>::~DefaultLocalAssemblerForLocalOperatorsOnSurfaces(){
+DefaultLocalAssemblerForLocalOperatorsOnSurfaces<
+    BasisFunctionType, ResultType,
+    GeometryFactory>::~DefaultLocalAssemblerForLocalOperatorsOnSurfaces() {
 
   for (typename IntegratorMap::const_iterator it =
            m_testTrialIntegrators.begin();
        it != m_testTrialIntegrators.end(); ++it)
     delete it->second;
   m_testTrialIntegrators.clear();
-         }
+}
 
 template <typename BasisFunctionType, typename ResultType,
           typename GeometryFactory>
@@ -155,27 +155,28 @@ DefaultLocalAssemblerForLocalOperatorsOnSurfaces<
     GeometryFactory>::getIntegrator(const SingleQuadratureDescriptor &desc) {
   typename IntegratorMap::iterator it = m_testTrialIntegrators.find(desc);
   if (it == m_testTrialIntegrators.end()) {
-      tbb::mutex::scoped_lock lock(m_integratorCreationMutex);
-      it = m_testTrialIntegrators.find(desc);
-      if (it == m_testTrialIntegrators.end()) {
-          Matrix<CoordinateType> points;
-          std::vector<CoordinateType> weights;
-          m_quadRuleFamily->fillQuadraturePointsAndWeights(desc, points, weights);
+    tbb::mutex::scoped_lock lock(m_integratorCreationMutex);
+    it = m_testTrialIntegrators.find(desc);
+    if (it == m_testTrialIntegrators.end()) {
+      Matrix<CoordinateType> points;
+      std::vector<CoordinateType> weights;
+      m_quadRuleFamily->fillQuadraturePointsAndWeights(desc, points, weights);
 
-          typedef NumericalTestTrialIntegrator<BasisFunctionType, ResultType,
-                                               GeometryFactory> Integrator;
-          std::unique_ptr<TestTrialIntegrator<BasisFunctionType, ResultType>>
-              integrator(new Integrator(points, weights, *m_geometryFactory,
-                                        *m_rawGeometry, *m_testTransformations,
-                                        *m_trialTransformations, *m_integral,
-                                        *m_openClHandler));
-          // Attempt to insert the newly created integrator into the map
-          std::pair<typename IntegratorMap::iterator, bool> result =
-              m_testTrialIntegrators.insert(std::make_pair(desc, integrator.release()));
-          it = result.first;
-      }
+      typedef NumericalTestTrialIntegrator<BasisFunctionType, ResultType,
+                                           GeometryFactory> Integrator;
+      std::unique_ptr<TestTrialIntegrator<BasisFunctionType, ResultType>>
+          integrator(new Integrator(points, weights, *m_geometryFactory,
+                                    *m_rawGeometry, *m_testTransformations,
+                                    *m_trialTransformations, *m_integral,
+                                    *m_openClHandler));
+      // Attempt to insert the newly created integrator into the map
+      std::pair<typename IntegratorMap::iterator, bool> result =
+          m_testTrialIntegrators.insert(
+              std::make_pair(desc, integrator.release()));
+      it = result.first;
+    }
   }
-    return *it->second;
+  return *it->second;
 }
 
 } // namespace Fiber

@@ -33,8 +33,8 @@ public:
   typedef typename Basis<ValueType>::CoordinateType CoordinateType;
 
 public:
-  BuffaChristiansenShapeset(){}
-  BuffaChristiansenShapeset(Matrix<ValueType> coeffs) :m_coeffs(coeffs) {}
+  BuffaChristiansenShapeset() {}
+  BuffaChristiansenShapeset(Matrix<ValueType> coeffs) : m_coeffs(coeffs) {}
 
   virtual int size() const { return m_coeffs.cols(); }
 
@@ -47,67 +47,70 @@ public:
     BasisData<ValueType> temp;
     raviartBasis.evaluate(what, points, ALL_DOFS, temp);
 
-
     if (localDofIndex != ALL_DOFS) {
 
       if (what & VALUES) {
         data.values.set_size(temp.values.extent(0), 1, temp.values.extent(2));
         for (int i = 0; i < data.values.extent(2); ++i) {
-          for (int k=0; k < data.values.extent(0); ++k){
+          for (int k = 0; k < data.values.extent(0); ++k) {
             data.values(k, 0, i) = 0;
             for (int j = 0; j < temp.values.extent(1); ++j)
-              data.values(k, 0, i) += m_coeffs(j,localDofIndex) * temp.values(k, j, i);
+              data.values(k, 0, i) +=
+                  m_coeffs(j, localDofIndex) * temp.values(k, j, i);
           }
         }
       }
       if (what & DERIVATIVES) {
-        data.derivatives.set_size(temp.derivatives.extent(0), temp.derivatives.extent(1), 1,
+        data.derivatives.set_size(temp.derivatives.extent(0),
+                                  temp.derivatives.extent(1), 1,
                                   temp.derivatives.extent(3));
         for (int l = 0; l < data.derivatives.extent(0); ++l)
           for (int i = 0; i < data.derivatives.extent(1); ++i)
             for (int j = 0; j < data.derivatives.extent(3); ++j) {
               data.derivatives(l, i, 0, j) = 0;
               for (int k = 0; k < temp.derivatives.extent(2); ++k)
-                data.derivatives(l, i, 0, j) += m_coeffs(k,localDofIndex) * temp.derivatives(l, i, k, j);
+                data.derivatives(l, i, 0, j) +=
+                    m_coeffs(k, localDofIndex) * temp.derivatives(l, i, k, j);
             }
       }
 
     } else {
       if (what & VALUES) {
-        data.values.set_size(temp.values.extent(0), m_coeffs.cols(), temp.values.extent(2));
+        data.values.set_size(temp.values.extent(0), m_coeffs.cols(),
+                             temp.values.extent(2));
         for (int dofIndex = 0; dofIndex < m_coeffs.cols(); ++dofIndex) {
           for (int i = 0; i < data.values.extent(2); ++i) {
-            for (int k=0; k < data.values.extent(0); ++k){
+            for (int k = 0; k < data.values.extent(0); ++k) {
               data.values(k, dofIndex, i) = 0;
               for (int j = 0; j < temp.values.extent(1); ++j)
-                data.values(k, dofIndex, i) += m_coeffs(j,dofIndex) * temp.values(k, j, i);
+                data.values(k, dofIndex, i) +=
+                    m_coeffs(j, dofIndex) * temp.values(k, j, i);
             }
           }
         }
       }
 
       if (what & DERIVATIVES) {
-        data.derivatives.set_size(temp.derivatives.extent(0), temp.derivatives.extent(1), m_coeffs.cols(),
+        data.derivatives.set_size(temp.derivatives.extent(0),
+                                  temp.derivatives.extent(1), m_coeffs.cols(),
                                   temp.derivatives.extent(3));
         for (int l = 0; l < data.derivatives.extent(0); ++l)
           for (int dofIndex = 0; dofIndex < m_coeffs.cols(); ++dofIndex)
             for (int i = 0; i < data.derivatives.extent(1); ++i)
               for (int j = 0; j < data.derivatives.extent(3); ++j) {
                 data.derivatives(l, i, dofIndex, j) = 0;
-                for (int k = 0; k < temp.derivatives.extent(2); ++k){
-                  data.derivatives(l, i, dofIndex, j) += 
-                    m_coeffs(k,dofIndex) * 
-                    temp.derivatives(l, i, k, j);
-                    }
-            }
+                for (int k = 0; k < temp.derivatives.extent(2); ++k) {
+                  data.derivatives(l, i, dofIndex, j) +=
+                      m_coeffs(k, dofIndex) * temp.derivatives(l, i, k, j);
+                }
+              }
       }
     }
   }
 
   virtual std::pair<const char *, int> clCodeString(bool isTestBasis) const {
-    throw std::runtime_error(
-        "BuffaChristiansenBasis::clCodeString():"
-        "OpenCL not supported for this basis type.");
+    throw std::runtime_error("BuffaChristiansenBasis::clCodeString():"
+                             "OpenCL not supported for this basis type.");
   }
 
 private:
@@ -118,4 +121,3 @@ private:
 } // namespace Fiber
 
 #endif
-

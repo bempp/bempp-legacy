@@ -53,7 +53,7 @@ template <typename BasisFunctionType> class Space;
 /** \endcond */
 
 /** \ingroup weak_form_assembly_internal
- *  \brief Class whose methods are called by HMAT during the assembly. 
+ *  \brief Class whose methods are called by HMAT during the assembly.
  */
 template <typename BasisFunctionType, typename ResultType>
 class WeakFormHMatAssemblyHelper : public hmat::DataAccessor<ResultType, 2> {
@@ -80,8 +80,8 @@ public:
       const hmat::DefaultBlockClusterTreeNodeType &blockClusterTreeNode,
       Matrix<ResultType> &data) const override;
 
-  double scale(
-          const hmat::DefaultBlockClusterTreeNodeType& node) const override;
+  double
+  scale(const hmat::DefaultBlockClusterTreeNodeType &node) const override;
 
   // /** \brief Return the number of entries in the matrix that have been
   //  *  accessed so far. */

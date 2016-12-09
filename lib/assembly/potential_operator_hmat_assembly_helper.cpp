@@ -56,7 +56,6 @@ void PotentialOperatorHMatAssemblyHelper<BasisFunctionType, ResultType>::
   auto numberOfTestIndices = testIndexRange[1] - testIndexRange[0];
   auto numberOfTrialIndices = trialIndexRange[1] - trialIndexRange[0];
 
-
   const CoordinateType minDist = estimateMinimumDistance(blockClusterTreeNode);
 
   shared_ptr<const ComponentLists> componentLists =
@@ -147,7 +146,7 @@ void PotentialOperatorHMatAssemblyHelper<BasisFunctionType, ResultType>::
 
     Fiber::_2dArray<Matrix<ResultType>> localResult;
     m_assembler.evaluateLocalContributions(pointIndices, trialElementIndices,
-                                            localResult, minDist);
+                                           localResult, minDist);
     for (size_t nTrialElem = 0; nTrialElem < trialElementIndices.size();
          ++nTrialElem)
       for (size_t nTrialDof = 0; nTrialDof < trialLocalDofs[nTrialElem].size();
@@ -156,7 +155,7 @@ void PotentialOperatorHMatAssemblyHelper<BasisFunctionType, ResultType>::
           for (size_t nComponent = 0;
                nComponent < componentIndices[nPoint].size(); ++nComponent)
             data(blockRows[nPoint][nComponent],
-                   blockCols[nTrialElem][nTrialDof]) +=
+                 blockCols[nTrialElem][nTrialDof]) +=
                 trialLocalDofWeights[nTrialElem][nTrialDof] *
                 localResult(nPoint,
                             nTrialElem)(componentIndices[nPoint][nComponent],

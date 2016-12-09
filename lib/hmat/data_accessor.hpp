@@ -16,7 +16,7 @@ public:
                      const BlockClusterTreeNode<N> &blockClusterTreeNode,
                      Matrix<ValueType> &data) const = 0;
 
-  virtual double scale(const BlockClusterTreeNode<N>& node) const = 0;
+  virtual double scale(const BlockClusterTreeNode<N> &node) const = 0;
 };
 }
 

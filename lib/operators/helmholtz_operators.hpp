@@ -34,12 +34,16 @@
 
 namespace Bempp {
 
-template <typename BasisFunctionType, typename KernelType, typename ResultType> class ElementaryIntegralOperator;
-template <typename BasisFunctionType, typename ResultType> class PotentialOperator;
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+class ElementaryIntegralOperator;
+template <typename BasisFunctionType, typename ResultType>
+class PotentialOperator;
 template <typename BasisFunctionType> class Space;
 
-template<typename BasisFunctionType>
-shared_ptr<const ElementaryIntegralOperator<BasisFunctionType, typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType, 
+template <typename BasisFunctionType>
+shared_ptr<const ElementaryIntegralOperator<
+    BasisFunctionType,
+    typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType,
     typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType>>
 helmholtzSingleLayerBoundaryOperator(
     const ParameterList &parameterList,
@@ -47,21 +51,23 @@ helmholtzSingleLayerBoundaryOperator(
     const shared_ptr<const Space<BasisFunctionType>> &range,
     const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
     typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType waveNumber,
-    const std::string &label = "", int symmetry = NO_SYMMETRY)
-{
+    const std::string &label = "", int symmetry = NO_SYMMETRY) {
 
-    typedef typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType KernelType;
-    typedef typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType ResultType;
+  typedef
+      typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType KernelType;
+  typedef
+      typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType ResultType;
 
-
-    return modifiedHelmholtzSingleLayerBoundaryOperator<BasisFunctionType, KernelType, ResultType>(
-            parameterList, domain, range, dualToRange, waveNumber/KernelType(0,1), label, symmetry);
-
-
+  return modifiedHelmholtzSingleLayerBoundaryOperator<BasisFunctionType,
+                                                      KernelType, ResultType>(
+      parameterList, domain, range, dualToRange, waveNumber / KernelType(0, 1),
+      label, symmetry);
 }
 
-template<typename BasisFunctionType>
-shared_ptr<const ElementaryIntegralOperator<BasisFunctionType, typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType, 
+template <typename BasisFunctionType>
+shared_ptr<const ElementaryIntegralOperator<
+    BasisFunctionType,
+    typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType,
     typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType>>
 helmholtzDoubleLayerBoundaryOperator(
     const ParameterList &parameterList,
@@ -69,21 +75,23 @@ helmholtzDoubleLayerBoundaryOperator(
     const shared_ptr<const Space<BasisFunctionType>> &range,
     const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
     typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType waveNumber,
-    const std::string &label = "", int symmetry = NO_SYMMETRY)
-{
+    const std::string &label = "", int symmetry = NO_SYMMETRY) {
 
-    typedef typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType KernelType;
-    typedef typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType ResultType;
+  typedef
+      typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType KernelType;
+  typedef
+      typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType ResultType;
 
-
-    return modifiedHelmholtzDoubleLayerBoundaryOperator<BasisFunctionType, KernelType, ResultType>(
-            parameterList, domain, range, dualToRange, waveNumber/KernelType(0,1), label, symmetry);
-
-
+  return modifiedHelmholtzDoubleLayerBoundaryOperator<BasisFunctionType,
+                                                      KernelType, ResultType>(
+      parameterList, domain, range, dualToRange, waveNumber / KernelType(0, 1),
+      label, symmetry);
 }
 
-template<typename BasisFunctionType>
-shared_ptr<const ElementaryIntegralOperator<BasisFunctionType, typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType, 
+template <typename BasisFunctionType>
+shared_ptr<const ElementaryIntegralOperator<
+    BasisFunctionType,
+    typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType,
     typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType>>
 helmholtzAdjointDoubleLayerBoundaryOperator(
     const ParameterList &parameterList,
@@ -91,21 +99,23 @@ helmholtzAdjointDoubleLayerBoundaryOperator(
     const shared_ptr<const Space<BasisFunctionType>> &range,
     const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
     typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType waveNumber,
-    const std::string &label = "", int symmetry = NO_SYMMETRY)
-{
+    const std::string &label = "", int symmetry = NO_SYMMETRY) {
 
-    typedef typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType KernelType;
-    typedef typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType ResultType;
+  typedef
+      typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType KernelType;
+  typedef
+      typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType ResultType;
 
-
-    return modifiedHelmholtzAdjointDoubleLayerBoundaryOperator<BasisFunctionType, KernelType, ResultType>(
-            parameterList, domain, range, dualToRange, waveNumber/KernelType(0,1), label, symmetry);
-
-
+  return modifiedHelmholtzAdjointDoubleLayerBoundaryOperator<
+      BasisFunctionType, KernelType, ResultType>(
+      parameterList, domain, range, dualToRange, waveNumber / KernelType(0, 1),
+      label, symmetry);
 }
 
-template<typename BasisFunctionType>
-shared_ptr<const ElementaryIntegralOperator<BasisFunctionType, typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType, 
+template <typename BasisFunctionType>
+shared_ptr<const ElementaryIntegralOperator<
+    BasisFunctionType,
+    typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType,
     typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType>>
 helmholtzHypersingularBoundaryOperator(
     const ParameterList &parameterList,
@@ -113,81 +123,94 @@ helmholtzHypersingularBoundaryOperator(
     const shared_ptr<const Space<BasisFunctionType>> &range,
     const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
     typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType waveNumber,
-    const std::string &label = "", int symmetry = NO_SYMMETRY)
-{
+    const std::string &label = "", int symmetry = NO_SYMMETRY) {
 
-    typedef typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType KernelType;
-    typedef typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType ResultType;
+  typedef
+      typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType KernelType;
+  typedef
+      typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType ResultType;
 
-
-    return modifiedHelmholtzHypersingularBoundaryOperator<BasisFunctionType, KernelType, ResultType>(
-            parameterList, domain, range, dualToRange, waveNumber/KernelType(0,1), label, symmetry);
-
-
+  return modifiedHelmholtzHypersingularBoundaryOperator<BasisFunctionType,
+                                                        KernelType, ResultType>(
+      parameterList, domain, range, dualToRange, waveNumber / KernelType(0, 1),
+      label, symmetry);
 }
 
 template <typename BasisFunctionType>
-shared_ptr<const DiscreteBoundaryOperator<typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType>> helmholtzSingleLayerPotentialOperator(
-        const shared_ptr<const Space<BasisFunctionType>>& space,
-        const Matrix<typename Fiber::ScalarTraits<BasisFunctionType>::RealType>& evaluationPoints,
-        typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType waveNumber,
-        const ParameterList& parameterList)
-{
-    typedef typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType KernelType;
-    typedef typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType ResultType;
+shared_ptr<const DiscreteBoundaryOperator<
+    typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType>>
+helmholtzSingleLayerPotentialOperator(
+    const shared_ptr<const Space<BasisFunctionType>> &space,
+    const Matrix<typename Fiber::ScalarTraits<BasisFunctionType>::RealType>
+        &evaluationPoints,
+    typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType waveNumber,
+    const ParameterList &parameterList) {
+  typedef
+      typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType KernelType;
+  typedef
+      typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType ResultType;
 
-    return modifiedHelmholtzSingleLayerPotentialOperator(space, evaluationPoints, waveNumber/KernelType(0,1), parameterList);
-
+  return modifiedHelmholtzSingleLayerPotentialOperator(
+      space, evaluationPoints, waveNumber / KernelType(0, 1), parameterList);
 }
 
 template <typename BasisFunctionType>
-shared_ptr<const DiscreteBoundaryOperator<typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType>> helmholtzDoubleLayerPotentialOperator(
-        const shared_ptr<const Space<BasisFunctionType>>& space,
-        const Matrix<typename Fiber::ScalarTraits<BasisFunctionType>::RealType>& evaluationPoints,
-        typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType waveNumber,
-        const ParameterList& parameterList)
-{
-    typedef typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType KernelType;
-    typedef typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType ResultType;
+shared_ptr<const DiscreteBoundaryOperator<
+    typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType>>
+helmholtzDoubleLayerPotentialOperator(
+    const shared_ptr<const Space<BasisFunctionType>> &space,
+    const Matrix<typename Fiber::ScalarTraits<BasisFunctionType>::RealType>
+        &evaluationPoints,
+    typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType waveNumber,
+    const ParameterList &parameterList) {
+  typedef
+      typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType KernelType;
+  typedef
+      typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType ResultType;
 
-    return modifiedHelmholtzDoubleLayerPotentialOperator(space, evaluationPoints, waveNumber/KernelType(0,1), parameterList);
-
+  return modifiedHelmholtzDoubleLayerPotentialOperator(
+      space, evaluationPoints, waveNumber / KernelType(0, 1), parameterList);
 }
 
 template <typename BasisFunctionType>
-shared_ptr<const DiscreteBoundaryOperator<typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType>> helmholtzSingleLayerFarFieldOperator(
-        const shared_ptr<const Space<BasisFunctionType>>& space,
-        const Matrix<typename Fiber::ScalarTraits<BasisFunctionType>::RealType>& evaluationPoints,
-        typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType waveNumber,
-        const ParameterList& parameterList)
-{
+shared_ptr<const DiscreteBoundaryOperator<
+    typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType>>
+helmholtzSingleLayerFarFieldOperator(
+    const shared_ptr<const Space<BasisFunctionType>> &space,
+    const Matrix<typename Fiber::ScalarTraits<BasisFunctionType>::RealType>
+        &evaluationPoints,
+    typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType waveNumber,
+    const ParameterList &parameterList) {
 
-        shared_ptr<Matrix<BasisFunctionType>> pointsPtr(
-                new Matrix<BasisFunctionType>(evaluationPoints));
+  shared_ptr<Matrix<BasisFunctionType>> pointsPtr(
+      new Matrix<BasisFunctionType>(evaluationPoints));
 
-        shared_ptr<PotentialOperator<BasisFunctionType, typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType>> op(
-                new Helmholtz3dFarFieldSingleLayerPotentialOperator<double>(waveNumber));
-        return op->assemble(space, pointsPtr, parameterList).discreteOperator();
-
+  shared_ptr<PotentialOperator<
+      BasisFunctionType,
+      typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType>>
+  op(new Helmholtz3dFarFieldSingleLayerPotentialOperator<double>(waveNumber));
+  return op->assemble(space, pointsPtr, parameterList).discreteOperator();
 }
 
 template <typename BasisFunctionType>
-shared_ptr<const DiscreteBoundaryOperator<typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType>> helmholtzDoubleLayerFarFieldOperator(
-        const shared_ptr<const Space<BasisFunctionType>>& space,
-        const Matrix<typename Fiber::ScalarTraits<BasisFunctionType>::RealType>& evaluationPoints,
-        typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType waveNumber,
-        const ParameterList& parameterList)
-{
+shared_ptr<const DiscreteBoundaryOperator<
+    typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType>>
+helmholtzDoubleLayerFarFieldOperator(
+    const shared_ptr<const Space<BasisFunctionType>> &space,
+    const Matrix<typename Fiber::ScalarTraits<BasisFunctionType>::RealType>
+        &evaluationPoints,
+    typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType waveNumber,
+    const ParameterList &parameterList) {
 
-        shared_ptr<Matrix<BasisFunctionType>> pointsPtr(
-                new Matrix<BasisFunctionType>(evaluationPoints));
+  shared_ptr<Matrix<BasisFunctionType>> pointsPtr(
+      new Matrix<BasisFunctionType>(evaluationPoints));
 
-        shared_ptr<PotentialOperator<BasisFunctionType, typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType>> op(
-                new Helmholtz3dFarFieldDoubleLayerPotentialOperator<double>(waveNumber));
-        return op->assemble(space, pointsPtr, parameterList).discreteOperator();
-
+  shared_ptr<PotentialOperator<
+      BasisFunctionType,
+      typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType>>
+  op(new Helmholtz3dFarFieldDoubleLayerPotentialOperator<double>(waveNumber));
+  return op->assemble(space, pointsPtr, parameterList).discreteOperator();
 }
-
 }
 
 #endif

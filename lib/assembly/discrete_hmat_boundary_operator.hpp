@@ -56,8 +56,8 @@ private:
 };
 
 template <typename ValueType>
-shared_ptr<const hmat::DefaultHMatrixType<ValueType>> castToHMatrix(
-        const shared_ptr<const DiscreteBoundaryOperator<ValueType>>& op);
+shared_ptr<const hmat::DefaultHMatrixType<ValueType>>
+castToHMatrix(const shared_ptr<const DiscreteBoundaryOperator<ValueType>> &op);
 }
 
 #endif

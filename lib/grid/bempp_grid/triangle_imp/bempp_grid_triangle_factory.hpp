@@ -7,79 +7,79 @@
 
 namespace Dune {
 
-    template <>
-    class GridFactory<Dune::Grid<2, 3, double, BemppGrid::TriangleGridFamily>> : 
-        public Dune::GridFactoryInterface<Dune::Grid<2, 3, double, BemppGrid::TriangleGridFamily>> {
+template <>
+class GridFactory<Dune::Grid<2, 3, double, BemppGrid::TriangleGridFamily>>
+    : public Dune::GridFactoryInterface<
+          Dune::Grid<2, 3, double, BemppGrid::TriangleGridFamily>> {
 
+public:
+  enum { dimworld = 3 };
+  typedef double ctype;
 
-            public:
+  GridFactory()
+      : m_nodes(new std::vector<Dune::FieldVector<double, 3>>),
+        m_elements(new std::vector<std::vector<unsigned int>>) {}
 
-                enum {dimworld = 3};
-                typedef double ctype;
+  virtual void
+  insertVertex(const Dune::FieldVector<ctype, dimworld> &pos) override {
 
-                GridFactory() :
-                    m_nodes(new std::vector<Dune::FieldVector<double, 3>>),
-                    m_elements(new std::vector<std::vector<unsigned int>>) {}
+    m_nodes->push_back(pos);
+  }
 
-                virtual void insertVertex(const Dune::FieldVector<ctype, dimworld>& pos) override {
+  virtual void
+  insertElement(const Dune::GeometryType &type,
+                const std::vector<unsigned int> &vertices) override {
 
-                    m_nodes->push_back(pos);
+    m_elements->push_back(vertices);
+  }
 
-                }
+  virtual Dune::Grid<2, 3, double, BemppGrid::TriangleGridFamily> *
+  createGrid() override {
 
-                virtual void insertElement(const Dune::GeometryType& type, const std::vector<unsigned int>& vertices) override {
+    auto container = BemppGrid::shared_ptr<BemppGrid::DataContainer>(
+        new BemppGrid::DataContainer());
+    container->init(m_nodes, m_elements);
+    m_grid = new BemppGrid::TriangleGrid(container);
+    return m_grid;
+  }
 
+  virtual unsigned int insertionIndex(
+      const typename BemppGrid::TriangleGridFamily::Traits::Codim<0>::Entity
+          &entity) const override {
 
-                    m_elements->push_back(vertices);
+    assert(entity.level() == 0);
+    return m_grid->levelIndexSet(0).index<0>(entity);
+  }
 
-                }
+  virtual unsigned int insertionIndex(
+      const typename BemppGrid::TriangleGridFamily::Traits::Codim<2>::Entity
+          &entity) const override {
 
-                virtual Dune::Grid<2, 3, double, BemppGrid::TriangleGridFamily>* createGrid() override {
+    assert(entity.level() == 0);
+    return m_grid->levelIndexSet(0).index<2>(entity);
+  }
 
+  virtual void
+  insertBoundarySegment(const std::vector<unsigned int> &vertices) override {
 
-                    auto container = BemppGrid::shared_ptr<BemppGrid::DataContainer>(new BemppGrid::DataContainer());
-                    container->init(m_nodes, m_elements);
-                    m_grid = new BemppGrid::TriangleGrid(container);
-                    return m_grid;
-                }
+    throw std::runtime_error(
+        "GridFactory::insertBoundarySegment(): Not implemented.");
+  }
 
-                virtual unsigned int insertionIndex(const typename BemppGrid::TriangleGridFamily::Traits::Codim<0>::Entity& entity) const override {
+  virtual void
+  insertBoundarySegment(const std::vector<unsigned int> &vertices,
+                        const shared_ptr<BoundarySegment<dimension, dimworld>>
+                            &boundarySegment) override {
 
-                    assert(entity.level() == 0);
-                    return m_grid->levelIndexSet(0).index<0>(entity);
+    std::runtime_error(
+        "Gridfactory::insertBoundarySegment(): not implemented.");
+  }
 
-                }
-
-                virtual unsigned int insertionIndex(const typename BemppGrid::TriangleGridFamily::Traits::Codim<2>::Entity& entity) const override {
-
-                    assert(entity.level() == 0);
-                    return m_grid->levelIndexSet(0).index<2>(entity);
-
-                }
-
-                virtual void insertBoundarySegment(const std::vector<unsigned int>& vertices) override {
-
-                    throw std::runtime_error("GridFactory::insertBoundarySegment(): Not implemented.");
-
-                }
-
-                virtual void insertBoundarySegment(const std::vector<unsigned int>& vertices,
-                                                   const shared_ptr<BoundarySegment<dimension,dimworld> >& boundarySegment) override {
-
-                    std::runtime_error("Gridfactory::insertBoundarySegment(): not implemented.");
-
-                }
-
-            private:
-
-                BemppGrid::shared_ptr<std::vector<Dune::FieldVector<double, 3>>> m_nodes;
-                BemppGrid::shared_ptr<std::vector<std::vector<unsigned int>>> m_elements;
-                Dune::Grid<2, 3, double, BemppGrid::TriangleGridFamily>* m_grid;
-
-        };
-
-
+private:
+  BemppGrid::shared_ptr<std::vector<Dune::FieldVector<double, 3>>> m_nodes;
+  BemppGrid::shared_ptr<std::vector<std::vector<unsigned int>>> m_elements;
+  Dune::Grid<2, 3, double, BemppGrid::TriangleGridFamily> *m_grid;
+};
 }
-
 
 #endif

@@ -26,11 +26,10 @@ struct CompareSharedPtrsToConstAbstractBoundaryOperatorIds {
 };
 struct AbstractBoundaryOperatorIdHash {
 
-    std::size_t operator()(const shared_ptr<const AbstractBoundaryOperatorId>& key) const
-    {
-        return tbb::tbb_hasher(key.get());
-    }
-
+  std::size_t
+  operator()(const shared_ptr<const AbstractBoundaryOperatorId> &key) const {
+    return tbb::tbb_hasher(key.get());
+  }
 };
 
 } // namespace

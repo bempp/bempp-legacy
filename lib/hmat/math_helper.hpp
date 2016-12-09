@@ -29,8 +29,8 @@ void randomizedLowRankApproximation(const matApply_t<ValueType> &applyFun,
                                     Matrix<ValueType> &B);
 
 template <typename ValueType>
-std::size_t computeRank(const Eigen::JacobiSVD<Matrix<ValueType>>& svd, double threshold);
-
+std::size_t computeRank(const Eigen::JacobiSVD<Matrix<ValueType>> &svd,
+                        double threshold);
 }
 
 #include "math_helper_impl.hpp"

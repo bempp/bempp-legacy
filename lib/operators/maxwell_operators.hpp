@@ -29,12 +29,17 @@
 
 namespace Bempp {
 
-template <typename BasisFunctionType, typename KernelType, typename ResultType> class ElementaryIntegralOperator;
-template <typename BasisFunctionType, typename ResultType> class PotentialOperator;
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+class ElementaryIntegralOperator;
+template <typename BasisFunctionType, typename ResultType>
+class PotentialOperator;
 template <typename BasisFunctionType> class Space;
 
-template<typename BasisFunctionType>
-shared_ptr<const ElementaryIntegralOperator<BasisFunctionType, typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType, typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType>>
+template <typename BasisFunctionType>
+shared_ptr<const ElementaryIntegralOperator<
+    BasisFunctionType,
+    typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType,
+    typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType>>
 maxwellElectricFieldBoundaryOperator(
     const ParameterList &parameterList,
     const shared_ptr<const Space<BasisFunctionType>> &domain,
@@ -43,8 +48,11 @@ maxwellElectricFieldBoundaryOperator(
     typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType waveNumber,
     const std::string &label = "", int symmetry = NO_SYMMETRY);
 
-template<typename BasisFunctionType>
-shared_ptr<const ElementaryIntegralOperator<BasisFunctionType, typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType, typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType>>
+template <typename BasisFunctionType>
+shared_ptr<const ElementaryIntegralOperator<
+    BasisFunctionType,
+    typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType,
+    typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType>>
 maxwellMagneticFieldBoundaryOperator(
     const ParameterList &parameterList,
     const shared_ptr<const Space<BasisFunctionType>> &domain,
@@ -54,38 +62,44 @@ maxwellMagneticFieldBoundaryOperator(
     const std::string &label = "", int symmetry = NO_SYMMETRY);
 
 template <typename BasisFunctionType>
-shared_ptr<const DiscreteBoundaryOperator<typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType>> 
+shared_ptr<const DiscreteBoundaryOperator<
+    typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType>>
 electricFieldPotentialOperator(
-        const shared_ptr<const Space<BasisFunctionType>>& space,
-        const Matrix<typename Fiber::ScalarTraits<BasisFunctionType>::RealType>& evaluationPoints,
-        typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType waveNumber,
-        const ParameterList& parameterList);
+    const shared_ptr<const Space<BasisFunctionType>> &space,
+    const Matrix<typename Fiber::ScalarTraits<BasisFunctionType>::RealType>
+        &evaluationPoints,
+    typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType waveNumber,
+    const ParameterList &parameterList);
 
 template <typename BasisFunctionType>
-shared_ptr<const DiscreteBoundaryOperator<typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType>> 
+shared_ptr<const DiscreteBoundaryOperator<
+    typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType>>
 magneticFieldPotentialOperator(
-        const shared_ptr<const Space<BasisFunctionType>>& space,
-        const Matrix<typename Fiber::ScalarTraits<BasisFunctionType>::RealType>& evaluationPoints,
-        typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType waveNumber,
-        const ParameterList& parameterList);
+    const shared_ptr<const Space<BasisFunctionType>> &space,
+    const Matrix<typename Fiber::ScalarTraits<BasisFunctionType>::RealType>
+        &evaluationPoints,
+    typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType waveNumber,
+    const ParameterList &parameterList);
 
 template <typename BasisFunctionType>
-shared_ptr<const DiscreteBoundaryOperator<typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType>> 
+shared_ptr<const DiscreteBoundaryOperator<
+    typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType>>
 electricFieldFarFieldOperator(
-        const shared_ptr<const Space<BasisFunctionType>>& space,
-        const Matrix<typename Fiber::ScalarTraits<BasisFunctionType>::RealType>& evaluationPoints,
-        typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType waveNumber,
-        const ParameterList& parameterList);
+    const shared_ptr<const Space<BasisFunctionType>> &space,
+    const Matrix<typename Fiber::ScalarTraits<BasisFunctionType>::RealType>
+        &evaluationPoints,
+    typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType waveNumber,
+    const ParameterList &parameterList);
 
 template <typename BasisFunctionType>
-shared_ptr<const DiscreteBoundaryOperator<typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType>> 
+shared_ptr<const DiscreteBoundaryOperator<
+    typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType>>
 magneticFieldFarFieldOperator(
-        const shared_ptr<const Space<BasisFunctionType>>& space,
-        const Matrix<typename Fiber::ScalarTraits<BasisFunctionType>::RealType>& evaluationPoints,
-        typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType waveNumber,
-        const ParameterList& parameterList);
-
-
+    const shared_ptr<const Space<BasisFunctionType>> &space,
+    const Matrix<typename Fiber::ScalarTraits<BasisFunctionType>::RealType>
+        &evaluationPoints,
+    typename Fiber::ScalarTraits<BasisFunctionType>::ComplexType waveNumber,
+    const ParameterList &parameterList);
 }
 
 #include "maxwell_operators_imp.hpp"

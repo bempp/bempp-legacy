@@ -45,9 +45,11 @@ class AbstractIdentityOperator;
 /** \endcond */
 
 template <typename BasisFunctionType, typename ResultType>
-class BEMPP_DEPRECATED AbstractIdentityOperatorId : public AbstractBoundaryOperatorId {
+class BEMPP_DEPRECATED AbstractIdentityOperatorId
+    : public AbstractBoundaryOperatorId {
 public:
-  AbstractIdentityOperatorId(const AbstractIdentityOperator<BasisFunctionType, ResultType> &op);
+  AbstractIdentityOperatorId(
+      const AbstractIdentityOperator<BasisFunctionType, ResultType> &op);
   virtual size_t hash() const;
   virtual bool isEqual(const AbstractBoundaryOperatorId &other) const;
 
@@ -61,7 +63,8 @@ private:
  *  \brief Identity operator.
  *
  *  Let \f$X\f$ and \f$Y\f$ be two function spaces defined on the same grid. If
- *  \f$X \supset Y\f$, an instance of AbstractIdentityOperator with domain \f$X\f$
+ *  \f$X \supset Y\f$, an instance of AbstractIdentityOperator with domain
+ * \f$X\f$
  *  and range \f$Y\f$ represents the orthogonal projection operator from
  *  \f$X\f$ to \f$Y\f$. If \f$X \subset Y\f$, it represents the inclusion
  *  operator from \f$X\f$ to \f$Y\f$. In the special case of \f$X = Y\f$, we
@@ -148,7 +151,6 @@ private:
   shared_ptr<TestTrialIntegral> m_integral;
   shared_ptr<const AbstractBoundaryOperatorId> m_id;
 };
-
 
 } // namespace Bempp
 

@@ -18,8 +18,6 @@ inline void fillGeometry(Geometry &geometry,
   while ((it = geometryInterface.next()))
     geometry.push_back(it);
 }
-
-
 }
 
 #endif

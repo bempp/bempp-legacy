@@ -51,7 +51,7 @@ static const unsigned int totalNumberTensor = 2870;
 const unsigned int gTensorAddress[numberOfTensorRules] = {
     // order of rule:
     // 1 2   3   4   5   6   7    8    9   10
-    0,   1,   5,   14,  30,   55,   91,   140,  204,  285,
+    0, 1, 5, 14, 30, 55, 91, 140, 204, 285,
     // 11  12   13   14    15    16    17    18    19    20
     385, 506, 650, 819, 1015, 1240, 1496, 1785, 2109, 2470};
 

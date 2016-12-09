@@ -104,7 +104,8 @@ public:
              const ValueType beta) const;
 
   /** \overload */
-  Matrix<ValueType> apply(const TranspositionMode trans, const Matrix<ValueType>& x_in) const;
+  Matrix<ValueType> apply(const TranspositionMode trans,
+                          const Matrix<ValueType> &x_in) const;
 
   /** \brief Write a textual representation of the operator to standard output.
    *

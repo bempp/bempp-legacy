@@ -18,7 +18,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-
 #include <iostream>
 
 #include "discrete_boundary_operator.hpp"
@@ -98,20 +97,18 @@ void DiscreteBoundaryOperator<ValueType>::apply(const TranspositionMode trans,
 }
 
 template <typename ValueType>
-Matrix<ValueType> 
-DiscreteBoundaryOperator<ValueType>::apply(const TranspositionMode trans, const Matrix<ValueType>& x_in) const
-{
+Matrix<ValueType> DiscreteBoundaryOperator<ValueType>::apply(
+    const TranspositionMode trans, const Matrix<ValueType> &x_in) const {
 
-    bool transposed = (trans == TRANSPOSE || trans == CONJUGATE_TRANSPOSE);
-    
-    unsigned int rows = (transposed ? columnCount() : rowCount());
-    unsigned int cols = (transposed ? rowCount() : columnCount());
+  bool transposed = (trans == TRANSPOSE || trans == CONJUGATE_TRANSPOSE);
 
-    Matrix<ValueType> result(rows, x_in.cols());
+  unsigned int rows = (transposed ? columnCount() : rowCount());
+  unsigned int cols = (transposed ? rowCount() : columnCount());
 
-    apply(trans, x_in, result, 1.0, 0.0);
-    return result;
+  Matrix<ValueType> result(rows, x_in.cols());
 
+  apply(trans, x_in, result, 1.0, 0.0);
+  return result;
 }
 
 template <typename ValueType>
@@ -128,8 +125,6 @@ void DiscreteBoundaryOperator<ValueType>::dump() const {
   std::cout << asMatrix() << std::endl;
 }
 
-
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(DiscreteBoundaryOperator);
-
 
 } // namespace Bempp

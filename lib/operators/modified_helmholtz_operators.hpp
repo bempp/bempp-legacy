@@ -30,65 +30,71 @@
 
 namespace Bempp {
 
-template <typename BasisFunctionType, typename KernelType, typename ResultType> class ElementaryIntegralOperator;
-template <typename BasisFunctionType, typename ResultType> class PotentialOperator;
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+class ElementaryIntegralOperator;
+template <typename BasisFunctionType, typename ResultType>
+class PotentialOperator;
 template <typename BasisFunctionType> class Space;
 
-template<typename BasisFunctionType, typename KernelType, typename ResultType>
-shared_ptr<const ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>>
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+shared_ptr<
+    const ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>>
 modifiedHelmholtzSingleLayerBoundaryOperator(
     const ParameterList &parameterList,
     const shared_ptr<const Space<BasisFunctionType>> &domain,
     const shared_ptr<const Space<BasisFunctionType>> &range,
     const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
-    KernelType waveNumber,
-    const std::string &label = "", int symmetry = NO_SYMMETRY);
+    KernelType waveNumber, const std::string &label = "",
+    int symmetry = NO_SYMMETRY);
 
-
-template<typename BasisFunctionType, typename KernelType, typename ResultType>
-shared_ptr<const ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>>
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+shared_ptr<
+    const ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>>
 modifiedHelmholtzDoubleLayerBoundaryOperator(
     const ParameterList &parameterList,
     const shared_ptr<const Space<BasisFunctionType>> &domain,
     const shared_ptr<const Space<BasisFunctionType>> &range,
     const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
-    KernelType waveNumber,
-    const std::string &label = "", int symmetry = NO_SYMMETRY);
+    KernelType waveNumber, const std::string &label = "",
+    int symmetry = NO_SYMMETRY);
 
-template<typename BasisFunctionType, typename KernelType, typename ResultType>
-shared_ptr<const ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>>
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+shared_ptr<
+    const ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>>
 modifiedHelmholtzAdjointDoubleLayerBoundaryOperator(
     const ParameterList &parameterList,
     const shared_ptr<const Space<BasisFunctionType>> &domain,
     const shared_ptr<const Space<BasisFunctionType>> &range,
     const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
-    KernelType waveNumber,
-    const std::string &label = "", int symmetry = NO_SYMMETRY);
+    KernelType waveNumber, const std::string &label = "",
+    int symmetry = NO_SYMMETRY);
 
-template<typename BasisFunctionType, typename KernelType, typename ResultType>
-shared_ptr<const ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>>
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+shared_ptr<
+    const ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>>
 modifiedHelmholtzHypersingularBoundaryOperator(
     const ParameterList &parameterList,
     const shared_ptr<const Space<BasisFunctionType>> &domain,
     const shared_ptr<const Space<BasisFunctionType>> &range,
     const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
-    KernelType waveNumber,
-    const std::string &label = "", int symmetry = NO_SYMMETRY);
+    KernelType waveNumber, const std::string &label = "",
+    int symmetry = NO_SYMMETRY);
 
 template <typename BasisFunctionType, typename ResultType>
-shared_ptr<const DiscreteBoundaryOperator<ResultType>> modifiedHelmholtzSingleLayerPotentialOperator(
-        const shared_ptr<const Space<BasisFunctionType>>& space,
-        const Matrix<typename Fiber::ScalarTraits<BasisFunctionType>::RealType>& evaluationPoints,
-        ResultType waveNumber,
-        const ParameterList& parameterList);
+shared_ptr<const DiscreteBoundaryOperator<ResultType>>
+modifiedHelmholtzSingleLayerPotentialOperator(
+    const shared_ptr<const Space<BasisFunctionType>> &space,
+    const Matrix<typename Fiber::ScalarTraits<BasisFunctionType>::RealType>
+        &evaluationPoints,
+    ResultType waveNumber, const ParameterList &parameterList);
 
 template <typename BasisFunctionType, typename ResultType>
-shared_ptr<const DiscreteBoundaryOperator<ResultType>> modifiedHelmholtzDoubleLayerPotentialOperator(
-        const shared_ptr<const Space<BasisFunctionType>>& space,
-        const Matrix<typename Fiber::ScalarTraits<BasisFunctionType>::RealType>& evaluationPoints,
-        ResultType waveNumber,
-        const ParameterList& parameterList);
-
+shared_ptr<const DiscreteBoundaryOperator<ResultType>>
+modifiedHelmholtzDoubleLayerPotentialOperator(
+    const shared_ptr<const Space<BasisFunctionType>> &space,
+    const Matrix<typename Fiber::ScalarTraits<BasisFunctionType>::RealType>
+        &evaluationPoints,
+    ResultType waveNumber, const ParameterList &parameterList);
 }
 
 #include "modified_helmholtz_operators_imp.hpp"

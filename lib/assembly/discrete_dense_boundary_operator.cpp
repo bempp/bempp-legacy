@@ -60,16 +60,16 @@ template <typename ValueType>
 void DiscreteDenseBoundaryOperator<ValueType>::addBlock(
     const std::vector<int> &rows, const std::vector<int> &cols,
     const ValueType alpha, Matrix<ValueType> &block) const {
-    throw std::runtime_error("DiscreteDenseBoundaryOperator:addBlock(): Not implemented.");
+  throw std::runtime_error(
+      "DiscreteDenseBoundaryOperator:addBlock(): Not implemented.");
 }
 
 template <typename ValueType>
-const Matrix<ValueType>& DiscreteDenseBoundaryOperator<ValueType>::data() const {
+const Matrix<ValueType> &
+DiscreteDenseBoundaryOperator<ValueType>::data() const {
 
-    return m_mat;
-
+  return m_mat;
 }
-
 
 template <typename ValueType>
 void DiscreteDenseBoundaryOperator<ValueType>::applyBuiltInImpl(

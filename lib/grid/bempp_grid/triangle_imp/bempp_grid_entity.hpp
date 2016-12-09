@@ -14,140 +14,138 @@
 
 namespace BemppGrid {
 
-    class TriangleGrid;
-    class DataContainer;
-    class LevelIndexSetImp;
+class TriangleGrid;
+class DataContainer;
+class LevelIndexSetImp;
 
-    template <int cd, int dim, class GridImp>
-    class EntityImp {};
+template <int cd, int dim, class GridImp> class EntityImp {};
 
-    template <int codim, class>
-    class EntityPointerImp;
+template <int codim, class> class EntityPointerImp;
 
-    // Elements
-    template<>
-    class EntityImp<0, 2, const TriangleGrid> : 
-    public Dune::EntityDefaultImplementation<0, 2, const TriangleGrid, EntityImp>  {
+// Elements
+template <>
+class EntityImp<0, 2, const TriangleGrid>
+    : public Dune::EntityDefaultImplementation<0, 2, const TriangleGrid,
+                                               EntityImp> {
 
-        friend class EntitySeedImp<0, const TriangleGrid>;
-        friend class EntityPointerImp<0, const TriangleGrid>;
-        friend class TriangleGrid;
+  friend class EntitySeedImp<0, const TriangleGrid>;
+  friend class EntityPointerImp<0, const TriangleGrid>;
+  friend class TriangleGrid;
 
-        public:
+public:
+  typedef
+      typename TriangleGrid::GridFamily::Traits::Codim<0>::Geometry Geometry;
+  typedef typename TriangleGrid::GridFamily::Traits::Codim<0>::Entity Entity;
+  typedef typename TriangleGrid::GridFamily::Traits::Codim<0>::EntitySeed
+      EntitySeed;
 
-            typedef typename TriangleGrid::GridFamily::Traits::Codim<0>::Geometry Geometry;
-            typedef typename TriangleGrid::GridFamily::Traits::Codim<0>::Entity Entity;    
-            typedef typename TriangleGrid::GridFamily::Traits::Codim<0>::EntitySeed EntitySeed;
+  template <int codim>
+  using EntityPointer =
+      Dune::EntityPointer<const TriangleGrid,
+                          EntityPointerImp<codim, const TriangleGrid>>;
 
-            template <int codim> using 
-                EntityPointer = Dune::EntityPointer<const TriangleGrid, EntityPointerImp<codim, const TriangleGrid>>;
+  EntityImp(const shared_ptr<DataContainer> &data, int level,
+            unsigned int index);
 
-            EntityImp(const shared_ptr<DataContainer>& data, 
-                    int level, unsigned int index);
+  int level() const;
+  Geometry geometry() const;
+  Dune::GeometryType type() const;
+  Dune::PartitionType partitionType() const;
+  bool equals(const EntityImp<0, 2, const TriangleGrid> &other) const;
+  EntitySeed seed() const;
 
-            int level() const;
-            Geometry geometry() const;
-            Dune::GeometryType type() const;
-            Dune::PartitionType partitionType() const;
-            bool equals(const EntityImp<0, 2, const TriangleGrid>& other) const;
-            EntitySeed seed() const; 
+  template <int cd> EntityPointer<cd> subEntity(int i) const;
 
-            template<int cd>
-            EntityPointer<cd> subEntity(int i) const;
+  template <int cc> int count() const;
 
-            template <int cc>
-            int count() const;
+  bool hasFather() const;
+  bool isLeaf() const;
+  bool isRegular() const;
+  bool isNew() const;
 
-            bool hasFather() const;
-            bool isLeaf() const;
-            bool isRegular() const;
-            bool isNew() const;
+  EntityPointer<0> father() const;
 
-            EntityPointer<0> father() const;
+  unsigned int id() const;
 
-            unsigned int id() const;
+  unsigned int subEntities(unsigned int codim) const;
 
-            unsigned int subEntities(unsigned int codim) const;
+private:
+  EntityImp() {}
 
-        private:
+  shared_ptr<DataContainer> m_data;
+  int m_level;
+  unsigned int m_index;
+};
 
-            EntityImp() {}
+// Edges
+template <>
+class EntityImp<1, 2, const TriangleGrid>
+    : public Dune::EntityDefaultImplementation<1, 2, const TriangleGrid,
+                                               EntityImp> {
 
-            shared_ptr<DataContainer> m_data;
-            int m_level;
-            unsigned int m_index;
+  friend class EntityPointerImp<1, const TriangleGrid>;
+  friend class TriangleGrid;
 
-    };
+public:
+  typedef TriangleGrid::GridFamily::Traits::Codim<1>::EntitySeed EntitySeed;
+  typedef
+      typename TriangleGrid::GridFamily::Traits::Codim<1>::Geometry Geometry;
+  typedef typename TriangleGrid::GridFamily::Traits::Codim<1>::Entity Entity;
 
-    // Edges
-    template<>
-    class EntityImp<1, 2, const TriangleGrid> : 
-    public Dune::EntityDefaultImplementation<1, 2, const TriangleGrid, EntityImp> {
+  EntityImp(const shared_ptr<DataContainer> &data, int level,
+            unsigned int index);
 
-        friend class EntityPointerImp<1, const TriangleGrid>;
-        friend class TriangleGrid;
+  int level() const;
+  Geometry geometry() const;
+  Dune::GeometryType type() const;
+  Dune::PartitionType partitionType() const;
+  bool equals(const EntityImp<1, 2, const TriangleGrid> &other) const;
+  EntitySeed seed() const;
 
-        public:
-            typedef TriangleGrid::GridFamily::Traits::Codim<1>::EntitySeed EntitySeed;
-            typedef typename TriangleGrid::GridFamily::Traits::Codim<1>::Geometry Geometry;
-            typedef typename TriangleGrid::GridFamily::Traits::Codim<1>::Entity Entity;    
+  unsigned int id() const;
 
-            EntityImp(const shared_ptr<DataContainer>& data,
-                    int level, unsigned int index);
+private:
+  EntityImp() {}
 
-            int level() const;
-            Geometry geometry() const;
-            Dune::GeometryType type() const;
-            Dune::PartitionType partitionType() const;
-            bool equals(const EntityImp<1, 2, const TriangleGrid>& other) const;
-            EntitySeed seed() const;
+  shared_ptr<DataContainer> m_data;
+  int m_level;
+  unsigned int m_index;
+};
 
-            unsigned int id() const;
+// Vertices
+template <>
+class EntityImp<2, 2, const TriangleGrid>
+    : public Dune::EntityDefaultImplementation<2, 2, const TriangleGrid,
+                                               EntityImp> {
 
-        private:
+  friend class EntityPointerImp<2, const TriangleGrid>;
+  friend class TriangleGrid;
 
-            EntityImp() {}
+public:
+  typedef TriangleGrid::GridFamily::Traits::Codim<2>::EntitySeed EntitySeed;
+  typedef
+      typename TriangleGrid::GridFamily::Traits::Codim<2>::Geometry Geometry;
+  typedef typename TriangleGrid::GridFamily::Traits::Codim<2>::Entity Entity;
 
-            shared_ptr<DataContainer> m_data;
-            int m_level;
-            unsigned int m_index;
+  EntityImp(const shared_ptr<DataContainer> &data, int level,
+            unsigned int index);
 
-    };
+  int level() const;
+  Geometry geometry() const;
+  Dune::GeometryType type() const;
+  Dune::PartitionType partitionType() const;
+  bool equals(const EntityImp<2, 2, const TriangleGrid> &other) const;
+  EntitySeed seed() const;
 
-    // Vertices
-    template<>
-    class EntityImp<2, 2, const TriangleGrid> :
-    public Dune::EntityDefaultImplementation<2, 2, const TriangleGrid, EntityImp> {
+  unsigned int id() const;
 
-        friend class EntityPointerImp<2, const TriangleGrid>;
-        friend class TriangleGrid;
+private:
+  EntityImp() {}
 
-        public:
-            typedef TriangleGrid::GridFamily::Traits::Codim<2>::EntitySeed EntitySeed;
-            typedef typename TriangleGrid::GridFamily::Traits::Codim<2>::Geometry Geometry;
-            typedef typename TriangleGrid::GridFamily::Traits::Codim<2>::Entity Entity;    
-
-            EntityImp(const shared_ptr<DataContainer>& data,
-                    int level, unsigned int index);
-
-            int level() const;
-            Geometry geometry() const;
-            Dune::GeometryType type() const;
-            Dune::PartitionType partitionType() const;
-            bool equals(const EntityImp<2, 2, const TriangleGrid>& other) const;
-            EntitySeed seed() const;
-
-            unsigned int id() const;
-
-        private:
-
-            EntityImp() {}
-
-            shared_ptr<DataContainer> m_data;
-            int m_level;
-            unsigned int m_index;
-    };
-
+  shared_ptr<DataContainer> m_data;
+  int m_level;
+  unsigned int m_index;
+};
 }
 
 #include "bempp_grid_entity_imp.hpp"

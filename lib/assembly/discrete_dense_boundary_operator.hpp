@@ -53,7 +53,7 @@ public:
                         const std::vector<int> &cols, const ValueType alpha,
                         Matrix<ValueType> &block) const;
 
-  const Matrix<ValueType>& data() const;
+  const Matrix<ValueType> &data() const;
 
 private:
   virtual void applyBuiltInImpl(const TranspositionMode trans,

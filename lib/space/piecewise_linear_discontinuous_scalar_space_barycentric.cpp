@@ -47,17 +47,18 @@ namespace Bempp {
 namespace {
 
 template <typename BasisFunctionType>
-class LinearDiscontinuousBarycentricSpaceFactory : public SpaceFactory<BasisFunctionType> {
-    public:
-       shared_ptr<Space<BasisFunctionType>> create(const shared_ptr<const Grid> &grid,
-                               const GridSegment &segment) const override{
-           
-           return shared_ptr<Space<BasisFunctionType>>(new PiecewiseLinearDiscontinuousScalarSpaceBarycentric<BasisFunctionType>(grid, segment));
-       }
-           
+class LinearDiscontinuousBarycentricSpaceFactory
+    : public SpaceFactory<BasisFunctionType> {
+public:
+  shared_ptr<Space<BasisFunctionType>>
+  create(const shared_ptr<const Grid> &grid,
+         const GridSegment &segment) const override {
+
+    return shared_ptr<Space<BasisFunctionType>>(
+        new PiecewiseLinearDiscontinuousScalarSpaceBarycentric<
+            BasisFunctionType>(grid, segment));
+  }
 };
-
-
 }
 
 template <typename BasisFunctionType>
@@ -106,11 +107,11 @@ PiecewiseLinearDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::
         const shared_ptr<const Space<BasisFunctionType>> &self) const {
   if (!m_discontinuousSpace) {
     tbb::mutex::scoped_lock lock(m_discontinuousSpaceMutex);
-    typedef PiecewiseLinearDiscontinuousScalarSpace<
-        BasisFunctionType> DiscontinuousSpace;
+    typedef PiecewiseLinearDiscontinuousScalarSpace<BasisFunctionType>
+        DiscontinuousSpace;
     if (!m_discontinuousSpace)
-      m_discontinuousSpace.reset(new DiscontinuousSpace(
-          this->grid(), m_segment, m_strictlyOnSegment));
+      m_discontinuousSpace.reset(
+          new DiscontinuousSpace(this->grid(), m_segment, m_strictlyOnSegment));
   }
   return m_discontinuousSpace;
 }
@@ -122,9 +123,9 @@ PiecewiseLinearDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::
         const shared_ptr<const Space<BasisFunctionType>> &self) const {
 
   if (self.get() != this)
-    throw std::invalid_argument(
-        "PiecewiseLinearDiscontinuousScalarSpaceBarycentric::barycentricSpace(): "
-        "argument should be a shared pointer to *this");
+    throw std::invalid_argument("PiecewiseLinearDiscontinuousScalarSpaceBarycen"
+                                "tric::barycentricSpace(): "
+                                "argument should be a shared pointer to *this");
   return self;
 }
 
@@ -171,24 +172,22 @@ void PiecewiseLinearDiscontinuousScalarSpaceBarycentric<
   std::unique_ptr<GridView> coarseView = m_originalGrid->leafView();
   const IndexSet &index = coarseView->indexSet();
   int elementCount = this->gridView().entityCount(0);
-//  int vertexCount = view.entityCount(gridDim);
+  //  int vertexCount = view.entityCount(gridDim);
   int vertexCountCoarseGrid = coarseView->entityCount(gridDim);
   int elementCountCoarseGrid = coarseView->entityCount(0);
 
-
-//  const GridView &view = this->gridView();
-//  int elementCountCoarseGrid = viewCoarseGrid.entityCount(0);
+  //  const GridView &view = this->gridView();
+  //  int elementCountCoarseGrid = viewCoarseGrid.entityCount(0);
 
   // Assign gdofs to grid vertices (choosing only those that belong to
   // the selected grid segment)
   std::vector<int> globalDofIndices(3 * elementCountCoarseGrid, 0);
   int globalDofCount_ = 0;
-  for (int elementIndex = 0; elementIndex < 3 * elementCountCoarseGrid; ++elementIndex)
-      acc(globalDofIndices, elementIndex) = globalDofCount_++;
+  for (int elementIndex = 0; elementIndex < 3 * elementCountCoarseGrid;
+       ++elementIndex)
+    acc(globalDofIndices, elementIndex) = globalDofCount_++;
 
   int flatLocalDofCount_ = 0;
-
-
 
   // (Re)initialise DOF maps
   m_local2globalDofs.clear();
@@ -197,29 +196,24 @@ void PiecewiseLinearDiscontinuousScalarSpaceBarycentric<
   m_global2localDofs.resize(globalDofCount_);
   m_elementIndex2Type.resize(elementCount);
 
-  const int element2Basis[6][3] = {
-                                   {0, 1, 2},
-                                   {0, 1, 2},
-                                   {2, 0, 1},
-                                   {2, 0, 1},
-                                   {1, 2, 0},
-                                   {1, 2, 0}
-                                            }; // element2Basis[i][j]
-                                               // is the basis fct.
-                                               // associated with the
-                                               // jth vertex
-                                               // on element i.*/
+  const int element2Basis[6][3] = {{0, 1, 2}, {0, 1, 2}, {2, 0, 1}, {2, 0, 1},
+                                   {1, 2, 0}, {1, 2, 0}}; // element2Basis[i][j]
+                                                          // is the basis fct.
+                                                          // associated with the
+                                                          // jth vertex
+                                                          // on element i.*/
 
   // Iterate over elements
-  
+
   globalDofCount_ = 0;
-  for (std::unique_ptr<EntityIterator<0>> it = coarseView->entityIterator<0>();!it->finished();it->next()) {
+  for (std::unique_ptr<EntityIterator<0>> it = coarseView->entityIterator<0>();
+       !it->finished(); it->next()) {
     const Entity<0> &entity = it->entity();
-    EntityIndex ent0Number = index.subEntityIndex(entity,0,0);
+    EntityIndex ent0Number = index.subEntityIndex(entity, 0, 0);
 
     // Iterate through refined elements
-    for(int i=0;i!=6;++i){
-      int sonIndex = m_sonMap(ent0Number,i);
+    for (int i = 0; i != 6; ++i) {
+      int sonIndex = m_sonMap(ent0Number, i);
 
       if (i % 2 == 0) {
         acc(m_elementIndex2Type, sonIndex) = Shapeset::TYPE1;
@@ -227,17 +221,17 @@ void PiecewiseLinearDiscontinuousScalarSpaceBarycentric<
         acc(m_elementIndex2Type, sonIndex) = Shapeset::TYPE2;
       }
 
-      std::vector<GlobalDofIndex> &globalDofs = acc(m_local2globalDofs, sonIndex);
+      std::vector<GlobalDofIndex> &globalDofs =
+          acc(m_local2globalDofs, sonIndex);
       globalDofs.resize(3);
 
-
-
-      for(int j=0;j!=3;++j){
+      for (int j = 0; j != 3; ++j) {
         int basisNumber = element2Basis[i][j];
         int globalDofIndex = acc(globalDofIndices, globalDofCount_ + j);
         acc(globalDofs, basisNumber) = globalDofIndex; /// THIS LINE
-//        acc(globalDofs, j) = globalDofIndex; /// THIS LINE
-        acc(m_global2localDofs, globalDofIndex).push_back(LocalDof(sonIndex, basisNumber));//basisNumber
+        //        acc(globalDofs, j) = globalDofIndex; /// THIS LINE
+        acc(m_global2localDofs, globalDofIndex)
+            .push_back(LocalDof(sonIndex, basisNumber)); // basisNumber
         ++flatLocalDofCount_;
       }
     }
@@ -441,7 +435,8 @@ void PiecewiseLinearDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::
         normals[g].x += elementNormals(0, m_global2localDofs[g][l].entityIndex);
         normals[g].y += elementNormals(1, m_global2localDofs[g][l].entityIndex);
       }
-      auto len = std::sqrt(normals[g].x * normals[g].x + normals[g].y * normals[g].y);
+      auto len =
+          std::sqrt(normals[g].x * normals[g].x + normals[g].y * normals[g].y);
       normals[g].x /= len;
       normals[g].y /= len;
     }
@@ -454,8 +449,9 @@ void PiecewiseLinearDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::
         normals[g].y += elementNormals(1, m_global2localDofs[g][l].entityIndex);
         normals[g].z += elementNormals(2, m_global2localDofs[g][l].entityIndex);
       }
-      auto len = std::sqrt(normals[g].x * normals[g].x + normals[g].y * normals[g].y +
-              normals[g].z * normals[g].z);
+      auto len =
+          std::sqrt(normals[g].x * normals[g].x + normals[g].y * normals[g].y +
+                    normals[g].z * normals[g].z);
       normals[g].x /= len;
       normals[g].y /= len;
       normals[g].z /= len;
@@ -564,21 +560,21 @@ void PiecewiseLinearDiscontinuousScalarSpaceBarycentric<BasisFunctionType>::
   }
 }
 
-
 template <typename BasisFunctionType>
-shared_ptr<Space<BasisFunctionType>> adaptivePiecewiseLinearDiscontinuousScalarSpaceBarycentric(const shared_ptr<const Grid>& grid)
-{
+shared_ptr<Space<BasisFunctionType>>
+adaptivePiecewiseLinearDiscontinuousScalarSpaceBarycentric(
+    const shared_ptr<const Grid> &grid) {
 
-    shared_ptr<SpaceFactory<BasisFunctionType>> factory(
-            new LinearDiscontinuousBarycentricSpaceFactory<BasisFunctionType>());
-    return shared_ptr<Space<BasisFunctionType>>(
-            new AdaptiveSpace<BasisFunctionType>(factory, grid));
-
+  shared_ptr<SpaceFactory<BasisFunctionType>> factory(
+      new LinearDiscontinuousBarycentricSpaceFactory<BasisFunctionType>());
+  return shared_ptr<Space<BasisFunctionType>>(
+      new AdaptiveSpace<BasisFunctionType>(factory, grid));
 }
 
-#define INSTANTIATE_FREE_FUNCTIONS(BASIS)   \
-    template shared_ptr<Space<BASIS>> adaptivePiecewiseLinearDiscontinuousScalarSpaceBarycentric<BASIS>( \
-            const shared_ptr<const Grid>&)
+#define INSTANTIATE_FREE_FUNCTIONS(BASIS)                                      \
+  template shared_ptr<Space<BASIS>>                                            \
+  adaptivePiecewiseLinearDiscontinuousScalarSpaceBarycentric<BASIS>(           \
+      const shared_ptr<const Grid> &)
 
 FIBER_ITERATE_OVER_BASIS_TYPES(INSTANTIATE_FREE_FUNCTIONS);
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(

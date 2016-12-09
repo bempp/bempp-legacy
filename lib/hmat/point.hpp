@@ -5,26 +5,24 @@
 
 namespace hmat {
 
-class Point
-{
+class Point {
 public:
-    Point();
-    Point(double x, double y, double z);
+  Point();
+  Point(double x, double y, double z);
 
-    const double& x() const;
-    double& x();
+  const double &x() const;
+  double &x();
 
-    const double& y() const;
-    double& y();
+  const double &y() const;
+  double &y();
 
-    const double& z() const;
-    double& z();
+  const double &z() const;
+  double &z();
 
 private:
-    double m_x;
-    double m_y;
-    double m_z;
-
+  double m_x;
+  double m_y;
+  double m_z;
 };
 }
 

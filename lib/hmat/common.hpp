@@ -27,7 +27,6 @@ enum DataBlockType {
 };
 
 IndexSetType fillIndexRange(std::size_t start, std::size_t stop);
-
 }
 
 #include "common_impl.hpp"

@@ -18,7 +18,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-
 #include "hmat_global_assembler.hpp"
 
 #include "potential_operator_hmat_assembly_helper.hpp"
@@ -86,7 +85,7 @@ public:
                           points(1, p), points(2, p), points(2, p)),
         std::array<double, 3>({{points(0, p), points(1, p), points(2, p)}})));
 
-    if (c == m_componentCount-1) {
+    if (c == m_componentCount - 1) {
       c = 0;
       p++;
     } else
@@ -160,7 +159,8 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
   auto matVecParallelLevels =
       parameterList.template get<int>("options.hmat.matVecParallelLevels");
   if (coarseningAccuracy == 0)
-    coarseningAccuracy = 0.1 * eps; // Default is finer tol for coarsening than eps
+    coarseningAccuracy =
+        0.1 * eps; // Default is finer tol for coarsening than eps
 
   shared_ptr<hmat::DefaultHMatrixType<ResultType>> hMatrix;
 
@@ -231,7 +231,6 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assemblePotentialOperator(
 
   auto blockClusterTree =
       generateBlockClusterTree(testGeometry, trialGeometry, parameterList);
-
 
   PotentialOperatorHMatAssemblyHelper<BasisFunctionType, ResultType> helper(
       points, trialSpace, blockClusterTree, localAssembler, parameterList);

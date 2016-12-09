@@ -53,16 +53,11 @@ bool isNew(Vector<double> &intersection,
 
 } // namespace
 
-void Grid::sendUpdateSignal() const
-{
+void Grid::sendUpdateSignal() const { gridUpdateSignal(); }
 
-    gridUpdateSignal();
-
-}
-
-boost::signals2::connection Grid::connect(const std::function<void()>& f) const
-{
-    return gridUpdateSignal.connect(f);
+boost::signals2::connection
+Grid::connect(const std::function<void()> &f) const {
+  return gridUpdateSignal.connect(f);
 }
 
 bool Grid::isBarycentricRepresentationOf(const Grid &other) const {

@@ -86,8 +86,8 @@ public:
 
   virtual bool isBarycentric() const { return false; }
 
-//  virtual shared_ptr<const Space<BasisFunctionType>> barycentricSpace(
-//      const shared_ptr<const Space<BasisFunctionType>> &self) const;
+  //  virtual shared_ptr<const Space<BasisFunctionType>> barycentricSpace(
+  //      const shared_ptr<const Space<BasisFunctionType>> &self) const;
 
   virtual bool spaceIsCompatible(const Space<BasisFunctionType> &other) const;
 
@@ -153,20 +153,28 @@ private:
   /** \endcond */
 };
 
-/** \brief Define a PiecewiseLinearDiscontinuousScalarSpace that has an update method for grid refinement. */
+/** \brief Define a PiecewiseLinearDiscontinuousScalarSpace that has an update
+ * method for grid refinement. */
 template <typename BasisFunctionType>
-shared_ptr<Space<BasisFunctionType>> adaptivePiecewiseLinearDiscontinuousScalarSpace(const shared_ptr<const Grid>& grid);
+shared_ptr<Space<BasisFunctionType>>
+adaptivePiecewiseLinearDiscontinuousScalarSpace(
+    const shared_ptr<const Grid> &grid);
 
-/** \brief Overload to define a set of domains for the space and whether the space contains boundary entities
+/** \brief Overload to define a set of domains for the space and whether the
+ space contains boundary entities
  (\p open = true) or not. */
 template <typename BasisFunctionType>
-shared_ptr<Space<BasisFunctionType>> adaptivePiecewiseLinearDiscontinuousScalarSpace(const shared_ptr<const Grid>& grid,
-        const std::vector<int>& domains, bool open, bool strictlyOnSegment=false);
+shared_ptr<Space<BasisFunctionType>>
+adaptivePiecewiseLinearDiscontinuousScalarSpace(
+    const shared_ptr<const Grid> &grid, const std::vector<int> &domains,
+    bool open, bool strictlyOnSegment = false);
 
 /** \brief Overlad. */
 template <typename BasisFunctionType>
-shared_ptr<Space<BasisFunctionType>> adaptivePiecewiseLinearDiscontinuousScalarSpace(const shared_ptr<const Grid>& grid,
-        int domain, bool open, bool strictlyOnSegment=false);
+shared_ptr<Space<BasisFunctionType>>
+adaptivePiecewiseLinearDiscontinuousScalarSpace(
+    const shared_ptr<const Grid> &grid, int domain, bool open,
+    bool strictlyOnSegment = false);
 
 } // namespace Bempp
 

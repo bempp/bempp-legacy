@@ -17,17 +17,17 @@ namespace hmat {
 
 template <typename ValueType, int N>
 HMatrix<ValueType, N>::HMatrix(
-    const shared_ptr<BlockClusterTree<N>> &blockClusterTree, int applyParallelLevels)
-    : m_applyParallelLevels(applyParallelLevels), 
+    const shared_ptr<BlockClusterTree<N>> &blockClusterTree,
+    int applyParallelLevels)
+    : m_applyParallelLevels(applyParallelLevels),
       m_blockClusterTree(blockClusterTree), m_numberOfDenseBlocks(0),
       m_numberOfLowRankBlocks(0), m_memSizeKb(0.0) {}
 
 template <typename ValueType, int N>
 HMatrix<ValueType, N>::HMatrix(
     const shared_ptr<BlockClusterTree<N>> &blockClusterTree,
-    const HMatrixCompressor<ValueType, N> &hMatrixCompressor, 
-    int applyParallelLevels, bool coarsening,
-    double coarsening_accuracy)
+    const HMatrixCompressor<ValueType, N> &hMatrixCompressor,
+    int applyParallelLevels, bool coarsening, double coarsening_accuracy)
     : HMatrix<ValueType, N>(blockClusterTree, applyParallelLevels) {
   initialize(hMatrixCompressor, coarsening, coarsening_accuracy);
 }
@@ -76,25 +76,25 @@ void HMatrix<ValueType, N>::initialize(
 
   typedef decltype(m_blockClusterTree->root()) node_t;
 
-  std::function<void(const node_t &node)> compressFun =
-      [&](const node_t &node) {
-        if (node->isLeaf()) {
-          shared_ptr<HMatrixData<ValueType>> nodeData;
-          hMatrixCompressor.compressBlock(*node, nodeData);
-          m_hMatrixData[node] = nodeData;
-        } else {
-          tbb::task_group g;
-          g.run([&] { compressFun(node->child(0)); });
-          g.run([&] { compressFun(node->child(1)); });
-          g.run([&] { compressFun(node->child(2)); });
-          g.run_and_wait([&] { compressFun(node->child(3)); });
+  std::function<void(const node_t &node)> compressFun = [&](
+      const node_t &node) {
+    if (node->isLeaf()) {
+      shared_ptr<HMatrixData<ValueType>> nodeData;
+      hMatrixCompressor.compressBlock(*node, nodeData);
+      m_hMatrixData[node] = nodeData;
+    } else {
+      tbb::task_group g;
+      g.run([&] { compressFun(node->child(0)); });
+      g.run([&] { compressFun(node->child(1)); });
+      g.run([&] { compressFun(node->child(2)); });
+      g.run_and_wait([&] { compressFun(node->child(3)); });
 
-          // Now do a coarsen step
-          if (coarsening)
-            coarsen_impl(node, coarsening_accuracy);
-        }
+      // Now do a coarsen step
+      if (coarsening)
+        coarsen_impl(node, coarsening_accuracy);
+    }
 
-      };
+  };
 
   // Start the compression
   compressFun(m_blockClusterTree->root());
@@ -110,7 +110,6 @@ void HMatrix<ValueType, N>::initialize(
       m_numberOfLowRankBlocks++;
     m_memSizeKb += elem.second->memSizeKb();
   }
-
 }
 
 template <typename ValueType, int N> void HMatrix<ValueType, N>::reset() {
@@ -209,14 +208,14 @@ void HMatrix<ValueType, N>::apply(const Eigen::Ref<Matrix<ValueType>> &X,
   }
 
   if (levelCount > 0)
-  apply_impl_parallel(this->m_blockClusterTree->root(),
-             Eigen::Ref<Matrix<ValueType>>(xPermuted),
-             Eigen::Ref<Matrix<ValueType>>(yPermuted), trans, levelCount);
+    apply_impl_parallel(this->m_blockClusterTree->root(),
+                        Eigen::Ref<Matrix<ValueType>>(xPermuted),
+                        Eigen::Ref<Matrix<ValueType>>(yPermuted), trans,
+                        levelCount);
   else
-  apply_impl_serial(this->m_blockClusterTree->root(),
-             Eigen::Ref<Matrix<ValueType>>(xPermuted),
-             Eigen::Ref<Matrix<ValueType>>(yPermuted), trans);
-
+    apply_impl_serial(this->m_blockClusterTree->root(),
+                      Eigen::Ref<Matrix<ValueType>>(xPermuted),
+                      Eigen::Ref<Matrix<ValueType>>(yPermuted), trans);
 
   if (trans == TransposeMode::NOTRANS || trans == TransposeMode::CONJ)
     Y = this->permuteMatToOriginalDofs(yPermuted, ROW);
@@ -273,57 +272,61 @@ void HMatrix<ValueType, N>::apply_impl_parallel(
 
     tbb::task_group g;
 
-    if (levelCount>1){
+    if (levelCount > 1) {
 
-    if (trans == TransposeMode::NOTRANS || trans == TransposeMode::CONJ) {
+      if (trans == TransposeMode::NOTRANS || trans == TransposeMode::CONJ) {
 
-      g.run([&] {
-        this->apply_impl_parallel(child0, xData1, yData1, trans, levelCount-1);
-        this->apply_impl_parallel(child1, xData2, yData1, trans, levelCount-1);
-      });
-      g.run_and_wait([&] {
-        this->apply_impl_parallel(child2, xData1, yData2, trans, levelCount-1);
-        this->apply_impl_parallel(child3, xData2, yData2, trans, levelCount-1);
-      });
+        g.run([&] {
+          this->apply_impl_parallel(child0, xData1, yData1, trans,
+                                    levelCount - 1);
+          this->apply_impl_parallel(child1, xData2, yData1, trans,
+                                    levelCount - 1);
+        });
+        g.run_and_wait([&] {
+          this->apply_impl_parallel(child2, xData1, yData2, trans,
+                                    levelCount - 1);
+          this->apply_impl_parallel(child3, xData2, yData2, trans,
+                                    levelCount - 1);
+        });
+      } else {
+        g.run([&] {
+          this->apply_impl_parallel(child0, xData1, yData1, trans,
+                                    levelCount - 1);
+          this->apply_impl_parallel(child2, xData2, yData1, trans,
+                                    levelCount - 1);
+        });
+        g.run_and_wait([&] {
+          this->apply_impl_parallel(child1, xData1, yData2, trans,
+                                    levelCount - 1);
+          this->apply_impl_parallel(child3, xData2, yData2, trans,
+                                    levelCount - 1);
+        });
+      }
     } else {
-      g.run([&] {
-        this->apply_impl_parallel(child0, xData1, yData1, trans, levelCount-1);
-        this->apply_impl_parallel(child2, xData2, yData1, trans, levelCount-1);
-      });
-      g.run_and_wait([&] {
-        this->apply_impl_parallel(child1, xData1, yData2, trans, levelCount-1);
-        this->apply_impl_parallel(child3, xData2, yData2, trans, levelCount-1);
-      });
-    }
-    }
-    else{
 
-    if (trans == TransposeMode::NOTRANS || trans == TransposeMode::CONJ) {
+      if (trans == TransposeMode::NOTRANS || trans == TransposeMode::CONJ) {
 
-      g.run([&] {
-        this->apply_impl_serial(child0, xData1, yData1, trans);
-        this->apply_impl_serial(child1, xData2, yData1, trans);
-      });
-      g.run_and_wait([&] {
-        this->apply_impl_serial(child2, xData1, yData2, trans);
-        this->apply_impl_serial(child3, xData2, yData2, trans);
-      });
-    } else {
-      g.run([&] {
-        this->apply_impl_serial(child0, xData1, yData1, trans);
-        this->apply_impl_serial(child2, xData2, yData1, trans);
-      });
-      g.run_and_wait([&] {
-        this->apply_impl_serial(child1, xData1, yData2, trans);
-        this->apply_impl_serial(child3, xData2, yData2, trans);
-      });
-    }
-
+        g.run([&] {
+          this->apply_impl_serial(child0, xData1, yData1, trans);
+          this->apply_impl_serial(child1, xData2, yData1, trans);
+        });
+        g.run_and_wait([&] {
+          this->apply_impl_serial(child2, xData1, yData2, trans);
+          this->apply_impl_serial(child3, xData2, yData2, trans);
+        });
+      } else {
+        g.run([&] {
+          this->apply_impl_serial(child0, xData1, yData1, trans);
+          this->apply_impl_serial(child2, xData2, yData1, trans);
+        });
+        g.run_and_wait([&] {
+          this->apply_impl_serial(child1, xData1, yData2, trans);
+          this->apply_impl_serial(child3, xData2, yData2, trans);
+        });
+      }
     }
   }
-
 }
-
 
 template <typename ValueType, int N>
 void HMatrix<ValueType, N>::apply_impl_serial(
@@ -378,18 +381,17 @@ void HMatrix<ValueType, N>::apply_impl_serial(
 
     if (trans == TransposeMode::NOTRANS || trans == TransposeMode::CONJ) {
 
-        this->apply_impl_serial(child0, xData1, yData1, trans);
-        this->apply_impl_serial(child1, xData2, yData1, trans);
-        this->apply_impl_serial(child2, xData1, yData2, trans);
-        this->apply_impl_serial(child3, xData2, yData2, trans);
+      this->apply_impl_serial(child0, xData1, yData1, trans);
+      this->apply_impl_serial(child1, xData2, yData1, trans);
+      this->apply_impl_serial(child2, xData1, yData2, trans);
+      this->apply_impl_serial(child3, xData2, yData2, trans);
     } else {
-        this->apply_impl_serial(child0, xData1, yData1, trans);
-        this->apply_impl_serial(child2, xData2, yData1, trans);
-        this->apply_impl_serial(child1, xData1, yData2, trans);
-        this->apply_impl_serial(child3, xData2, yData2, trans);
+      this->apply_impl_serial(child0, xData1, yData1, trans);
+      this->apply_impl_serial(child2, xData2, yData1, trans);
+      this->apply_impl_serial(child1, xData1, yData2, trans);
+      this->apply_impl_serial(child3, xData2, yData2, trans);
     }
   }
-
 }
 
 template <typename ValueType, int N>

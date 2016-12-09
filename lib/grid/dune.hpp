@@ -29,7 +29,8 @@
 
 #include "./bempp_grid/bempp_triangle_grid.hpp"
 namespace Bempp {
-    typedef Dune::Grid<2, 3, double, BemppGrid::TriangleGridFamily> Default2dIn3dDuneGrid;
+typedef Dune::Grid<2, 3, double, BemppGrid::TriangleGridFamily>
+    Default2dIn3dDuneGrid;
 }
 
 namespace Bempp {

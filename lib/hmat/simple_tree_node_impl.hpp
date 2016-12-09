@@ -127,16 +127,15 @@ SimpleTreeNode<T, N>::leafNodes() {
 template <typename T, int N>
 std::size_t SimpleTreeNode<T, N>::numberOfLeafs() const {
 
-  if (this->isLeaf()) return 1;
+  if (this->isLeaf())
+    return 1;
 
   std::size_t res = 0;
-  for (auto child : m_children){
+  for (auto child : m_children) {
     if (child)
       res += child->numberOfLeafs();
   }
   return res;
-  
 }
-
 }
 #endif

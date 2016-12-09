@@ -26,11 +26,11 @@ public:
       shared_ptr_hash<BlockClusterTreeNode<N>>> ParallelDataContainer;
 
   HMatrix(const shared_ptr<BlockClusterTree<N>> &blockClusterTree,
-      int applyParallelLevels = 3);
+          int applyParallelLevels = 3);
   HMatrix(const shared_ptr<BlockClusterTree<N>> &blockClusterTree,
           const HMatrixCompressor<ValueType, N> &hMatrixCompressor,
-          int applyParallelLevels = 3,
-          bool coarsening = false, double coarsening_accuracy = 0);
+          int applyParallelLevels = 3, bool coarsening = false,
+          double coarsening_accuracy = 0);
 
   std::size_t rows() const;
   std::size_t columns() const;
@@ -65,12 +65,14 @@ public:
 
 private:
   void apply_impl_parallel(const shared_ptr<BlockClusterTreeNode<N>> &node,
-                  const Eigen::Ref<Matrix<ValueType>> &X,
-                  Eigen::Ref<Matrix<ValueType>> Y, TransposeMode trans, int levelCount) const;
+                           const Eigen::Ref<Matrix<ValueType>> &X,
+                           Eigen::Ref<Matrix<ValueType>> Y, TransposeMode trans,
+                           int levelCount) const;
 
   void apply_impl_serial(const shared_ptr<BlockClusterTreeNode<N>> &node,
-                  const Eigen::Ref<Matrix<ValueType>> &X,
-                  Eigen::Ref<Matrix<ValueType>> Y, TransposeMode trans) const;
+                         const Eigen::Ref<Matrix<ValueType>> &X,
+                         Eigen::Ref<Matrix<ValueType>> Y,
+                         TransposeMode trans) const;
 
   double
   frobeniusNorm_impl(const shared_ptr<BlockClusterTreeNode<N>> &node) const;

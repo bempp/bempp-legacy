@@ -63,12 +63,10 @@ void SpaceHMatGeometryInterface<BasisFunctionType>::reset() {
   m_counter = 0;
 }
 
-
 shared_ptr<hmat::DefaultBlockClusterTreeType>
-generateBlockClusterTree(const hmat::Geometry& testGeometry,
-                         const hmat::Geometry& trialGeometry,
-                         const ParameterList &parameterList)
-{
+generateBlockClusterTree(const hmat::Geometry &testGeometry,
+                         const hmat::Geometry &trialGeometry,
+                         const ParameterList &parameterList) {
 
   auto admissibility =
       parameterList.template get<std::string>("options.hmat.admissibility");
@@ -100,8 +98,6 @@ generateBlockClusterTree(const hmat::Geometry& testGeometry,
                                             admissibilityFunction));
 
   return blockClusterTree;
-
-
 }
 
 template <typename BasisFunctionType>
@@ -122,9 +118,7 @@ generateBlockClusterTree(const Space<BasisFunctionType> &testSpace,
   hmat::fillGeometry(testGeometry, *testSpaceGeometryInterface);
   hmat::fillGeometry(trialGeometry, *trialSpaceGeometryInterface);
 
-  return generateBlockClusterTree(testGeometry, trialGeometry,
-          parameterList);
-
+  return generateBlockClusterTree(testGeometry, trialGeometry, parameterList);
 }
 
 #define INSTANTIATE_NONMEMBER_FUNCTION(VALUE)                                  \

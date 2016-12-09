@@ -34,7 +34,7 @@ public:
   enum BasisType { TYPE1, TYPE2 };
 
 public:
-  Nedelec0ShapesetBarycentric(BasisType type) : m_type(type){}
+  Nedelec0ShapesetBarycentric(BasisType type) : m_type(type) {}
 
   virtual int size() const { return 3; }
 
@@ -46,35 +46,40 @@ public:
 
     BasisData<ValueType> temp;
     if (what & VALUES) {
-        if (m_type == TYPE1) raviartBasis1.evaluate(what, points, localDofIndex, temp);
-        else                 raviartBasis2.evaluate(what, points, localDofIndex, temp);
+      if (m_type == TYPE1)
+        raviartBasis1.evaluate(what, points, localDofIndex, temp);
+      else
+        raviartBasis2.evaluate(what, points, localDofIndex, temp);
 
-        data.values.set_size(temp.values.extent(0),temp.values.extent(1),temp.values.extent(2));
-        for (int i=0; i!=temp.values.extent(1); ++i)
-          for (int j=0; j!=temp.values.extent(2); ++j) {
-            data.values(0,i,j) = -temp.values(1,i,j);
-            data.values(1,i,j) = temp.values(0,i,j);
-          }
+      data.values.set_size(temp.values.extent(0), temp.values.extent(1),
+                           temp.values.extent(2));
+      for (int i = 0; i != temp.values.extent(1); ++i)
+        for (int j = 0; j != temp.values.extent(2); ++j) {
+          data.values(0, i, j) = -temp.values(1, i, j);
+          data.values(1, i, j) = temp.values(0, i, j);
+        }
     }
     if (what & DERIVATIVES) {
-        if (m_type == TYPE1) raviartBasis1.evaluate(what, points, localDofIndex, temp);
-        else                 raviartBasis2.evaluate(what, points, localDofIndex, temp);
+      if (m_type == TYPE1)
+        raviartBasis1.evaluate(what, points, localDofIndex, temp);
+      else
+        raviartBasis2.evaluate(what, points, localDofIndex, temp);
 
-        data.derivatives.set_size(temp.derivatives.extent(0),temp.derivatives.extent(1),temp.derivatives.extent(2),temp.derivatives.extent(3));
-        for (int i=0; i!=temp.derivatives.extent(1); ++i)
-          for (int j=0; j!=temp.derivatives.extent(2); ++j)
-            for (int k=0; k!=temp.derivatives.extent(3); ++k) {
-              data.derivatives(0,i,j,k) = -temp.derivatives(1,i,j,k);
-              data.derivatives(1,i,j,k) = temp.derivatives(0,i,j,k);
-            }
+      data.derivatives.set_size(
+          temp.derivatives.extent(0), temp.derivatives.extent(1),
+          temp.derivatives.extent(2), temp.derivatives.extent(3));
+      for (int i = 0; i != temp.derivatives.extent(1); ++i)
+        for (int j = 0; j != temp.derivatives.extent(2); ++j)
+          for (int k = 0; k != temp.derivatives.extent(3); ++k) {
+            data.derivatives(0, i, j, k) = -temp.derivatives(1, i, j, k);
+            data.derivatives(1, i, j, k) = temp.derivatives(0, i, j, k);
+          }
     }
-
   }
 
   virtual std::pair<const char *, int> clCodeString(bool isTestBasis) const {
-    throw std::runtime_error(
-        "Nedelec0BasisBarycentric::clCodeString():"
-        "OpenCL not supported for this basis type.");
+    throw std::runtime_error("Nedelec0BasisBarycentric::clCodeString():"
+                             "OpenCL not supported for this basis type.");
   }
 
 private:

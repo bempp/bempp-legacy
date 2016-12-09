@@ -3,34 +3,24 @@
 
 namespace BemppGrid {
 
-    class TriangleGrid;
+class TriangleGrid;
 
-    template<int, int, class> class EntityImp;
+template <int, int, class> class EntityImp;
 
-    template <int codim, class>
-    class EntitySeedImp {
+template <int codim, class> class EntitySeedImp {
 
-        public:
+public:
+  enum { codimension = codim };
 
-            enum {codimension = codim};
+  EntitySeedImp(int level, unsigned int index)
+      : m_level(level), m_index(index) {}
 
-            EntitySeedImp(int level, unsigned int index) : 
-                m_level(level), m_index(index) {}
+  bool isValid() const { return true; }
 
-            bool isValid() const {
-
-                return true;
-
-            }
-
-        private:
-
-            int m_level;
-            unsigned int m_index;
-
-
-    };
-
+private:
+  int m_level;
+  unsigned int m_index;
+};
 }
 
-#endif 
+#endif

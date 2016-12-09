@@ -43,15 +43,15 @@ namespace {
 
 template <typename BasisFunctionType>
 class PiecewiseConstantSpaceFactory : public SpaceFactory<BasisFunctionType> {
-    public:
-       shared_ptr<Space<BasisFunctionType>> create(const shared_ptr<const Grid> &grid,
-                               const GridSegment &segment) const override{
-           
-           return shared_ptr<Space<BasisFunctionType>>(new PiecewiseConstantScalarSpace<BasisFunctionType>(grid, segment));
-       }
-           
+public:
+  shared_ptr<Space<BasisFunctionType>>
+  create(const shared_ptr<const Grid> &grid,
+         const GridSegment &segment) const override {
+
+    return shared_ptr<Space<BasisFunctionType>>(
+        new PiecewiseConstantScalarSpace<BasisFunctionType>(grid, segment));
+  }
 };
-    
 }
 
 template <typename BasisFunctionType>
@@ -367,50 +367,48 @@ void PiecewiseConstantScalarSpace<BasisFunctionType>::dumpClusterIdsEx(
 }
 
 template <typename BasisFunctionType>
-shared_ptr<Space<BasisFunctionType>> adaptivePiecewiseConstantScalarSpace(const shared_ptr<const Grid>& grid)
-{
+shared_ptr<Space<BasisFunctionType>>
+adaptivePiecewiseConstantScalarSpace(const shared_ptr<const Grid> &grid) {
 
-    shared_ptr<SpaceFactory<BasisFunctionType>> factory(
-            new PiecewiseConstantSpaceFactory<BasisFunctionType>());
-    return shared_ptr<Space<BasisFunctionType>>(
-            new AdaptiveSpace<BasisFunctionType>(factory, grid));
-
+  shared_ptr<SpaceFactory<BasisFunctionType>> factory(
+      new PiecewiseConstantSpaceFactory<BasisFunctionType>());
+  return shared_ptr<Space<BasisFunctionType>>(
+      new AdaptiveSpace<BasisFunctionType>(factory, grid));
 }
 
 template <typename BasisFunctionType>
-shared_ptr<Space<BasisFunctionType>> adaptivePiecewiseConstantScalarSpace(const shared_ptr<const Grid>& grid,
-        const std::vector<int>& domains, bool open)
-{
+shared_ptr<Space<BasisFunctionType>>
+adaptivePiecewiseConstantScalarSpace(const shared_ptr<const Grid> &grid,
+                                     const std::vector<int> &domains,
+                                     bool open) {
 
-    shared_ptr<SpaceFactory<BasisFunctionType>> factory(
-            new PiecewiseConstantSpaceFactory<BasisFunctionType>());
-    return shared_ptr<Space<BasisFunctionType>>(
-            new AdaptiveSpace<BasisFunctionType>(factory, grid, domains, open));
-
+  shared_ptr<SpaceFactory<BasisFunctionType>> factory(
+      new PiecewiseConstantSpaceFactory<BasisFunctionType>());
+  return shared_ptr<Space<BasisFunctionType>>(
+      new AdaptiveSpace<BasisFunctionType>(factory, grid, domains, open));
 }
 
 template <typename BasisFunctionType>
-shared_ptr<Space<BasisFunctionType>> adaptivePiecewiseConstantScalarSpace(const shared_ptr<const Grid>& grid,
-        int domain, bool open)
-{
-    
-    shared_ptr<SpaceFactory<BasisFunctionType>> factory(
-            new PiecewiseConstantSpaceFactory<BasisFunctionType>());
-    return shared_ptr<Space<BasisFunctionType>>(
-            new AdaptiveSpace<BasisFunctionType>(factory, grid,
-                std::vector<int>({domain}),open));
+shared_ptr<Space<BasisFunctionType>>
+adaptivePiecewiseConstantScalarSpace(const shared_ptr<const Grid> &grid,
+                                     int domain, bool open) {
+
+  shared_ptr<SpaceFactory<BasisFunctionType>> factory(
+      new PiecewiseConstantSpaceFactory<BasisFunctionType>());
+  return shared_ptr<Space<BasisFunctionType>>(
+      new AdaptiveSpace<BasisFunctionType>(factory, grid,
+                                           std::vector<int>({domain}), open));
 }
 
-#define INSTANTIATE_FREE_FUNCTIONS(BASIS)   \
-    template shared_ptr<Space<BASIS>> adaptivePiecewiseConstantScalarSpace<BASIS>( \
-            const shared_ptr<const Grid>&); \
-    template shared_ptr<Space<BASIS>> adaptivePiecewiseConstantScalarSpace<BASIS>( \
-            const shared_ptr<const Grid>&, \
-            const std::vector<int>&, bool); \
-    template shared_ptr<Space<BASIS>> adaptivePiecewiseConstantScalarSpace<BASIS>( \
-            const shared_ptr<const Grid>&, \
-            int, bool) 
-
+#define INSTANTIATE_FREE_FUNCTIONS(BASIS)                                      \
+  template shared_ptr<Space<BASIS>>                                            \
+  adaptivePiecewiseConstantScalarSpace<BASIS>(const shared_ptr<const Grid> &); \
+  template shared_ptr<Space<BASIS>>                                            \
+  adaptivePiecewiseConstantScalarSpace<BASIS>(const shared_ptr<const Grid> &,  \
+                                              const std::vector<int> &, bool); \
+  template shared_ptr<Space<BASIS>>                                            \
+  adaptivePiecewiseConstantScalarSpace<BASIS>(const shared_ptr<const Grid> &,  \
+                                              int, bool)
 
 FIBER_ITERATE_OVER_BASIS_TYPES(INSTANTIATE_FREE_FUNCTIONS);
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(PiecewiseConstantScalarSpace);

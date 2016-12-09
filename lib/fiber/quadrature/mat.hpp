@@ -729,7 +729,7 @@ template <typename T, int NUM_ROWS, int NUM_COLS>
 std::ostream &operator<<(std::ostream &out,
                          const Mat<T, NUM_ROWS, NUM_COLS> &m) {
   if (m.is_vector) {
-    out << '[' << NUM_ROWS *NUM_COLS << "](";
+    out << '[' << NUM_ROWS * NUM_COLS << "](";
     if (NUM_ROWS * NUM_COLS > 0)
       out << m[0];
     for (unsigned int i = 1; i < NUM_ROWS * NUM_COLS; ++i)

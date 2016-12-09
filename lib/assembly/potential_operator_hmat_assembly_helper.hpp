@@ -66,8 +66,7 @@ public:
       const Space<BasisFunctionType> &trialSpace,
       const shared_ptr<const hmat::DefaultBlockClusterTreeType>
           &blockClusterTree,
-      LocalAssembler &assembler,
-      const ParameterList& parameterList);
+      LocalAssembler &assembler, const ParameterList &parameterList);
 
   void computeMatrixBlock(
       const hmat::IndexRangeType &testIndexRange,
@@ -86,12 +85,11 @@ private:
   const Space<BasisFunctionType> &m_trialSpace;
   const shared_ptr<const hmat::DefaultBlockClusterTreeType> m_blockClusterTree;
   LocalAssembler &m_assembler;
-  const ParameterList& m_parameterList;
+  const ParameterList &m_parameterList;
   int m_componentCount;
 
   shared_ptr<LocalDofListsCache<BasisFunctionType>> m_trialDofListsCache;
   shared_ptr<ComponentListsCache> m_componentListsCache;
-
 };
 
 } // namespace Bempp

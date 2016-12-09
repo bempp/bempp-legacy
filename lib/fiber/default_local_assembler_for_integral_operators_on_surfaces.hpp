@@ -107,11 +107,10 @@ public:
                          Fiber::_2dArray<Matrix<ResultType>> &result,
                          CoordinateType nominalDistance = -1.);
 
-  virtual void
-  evaluateLocalWeakForms(int testElementIndex,
-                         int trialElementIndex,
-                         Matrix<ResultType> &result,
-                         CoordinateType nominalDistance = -1.);
+  virtual void evaluateLocalWeakForms(int testElementIndex,
+                                      int trialElementIndex,
+                                      Matrix<ResultType> &result,
+                                      CoordinateType nominalDistance = -1.);
 
   virtual void
   evaluateLocalWeakForms(const std::vector<int> &testElementIndices,

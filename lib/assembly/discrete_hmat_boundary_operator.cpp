@@ -84,20 +84,21 @@ void DiscreteHMatBoundaryOperator<ValueType>::applyBuiltInImpl(
 }
 
 template <typename ValueType>
-shared_ptr<const hmat::DefaultHMatrixType<ValueType>> castToHMatrix(
-        const shared_ptr<const DiscreteBoundaryOperator<ValueType>>& op)
-{
-    shared_ptr<const DiscreteHMatBoundaryOperator<ValueType>> discreteHMatOperator;
-    discreteHMatOperator = dynamic_pointer_cast<const DiscreteHMatBoundaryOperator<ValueType>>(
-            op);
-    if (!discreteHMatOperator.get())
-        throw std::runtime_error("castToHMatrix(): Conversion to DiscreteHMatBoundaryOperator failed.");
-    return discreteHMatOperator->hMatrix();
+shared_ptr<const hmat::DefaultHMatrixType<ValueType>>
+castToHMatrix(const shared_ptr<const DiscreteBoundaryOperator<ValueType>> &op) {
+  shared_ptr<const DiscreteHMatBoundaryOperator<ValueType>>
+      discreteHMatOperator;
+  discreteHMatOperator =
+      dynamic_pointer_cast<const DiscreteHMatBoundaryOperator<ValueType>>(op);
+  if (!discreteHMatOperator.get())
+    throw std::runtime_error(
+        "castToHMatrix(): Conversion to DiscreteHMatBoundaryOperator failed.");
+  return discreteHMatOperator->hMatrix();
 }
 
-#define INSTANTIATE_NONMEMBER_FUNCTION(VALUE)                               \
-  template shared_ptr<const hmat::DefaultHMatrixType<VALUE>> castToHMatrix(     \
-    const shared_ptr<const DiscreteBoundaryOperator<VALUE>>&)
+#define INSTANTIATE_NONMEMBER_FUNCTION(VALUE)                                  \
+  template shared_ptr<const hmat::DefaultHMatrixType<VALUE>> castToHMatrix(    \
+      const shared_ptr<const DiscreteBoundaryOperator<VALUE>> &)
 FIBER_ITERATE_OVER_VALUE_TYPES(INSTANTIATE_NONMEMBER_FUNCTION);
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(DiscreteHMatBoundaryOperator);

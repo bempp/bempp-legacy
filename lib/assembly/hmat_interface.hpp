@@ -71,8 +71,8 @@ generateBlockClusterTree(const Space<BasisFunctionType> &testSpace,
                          const ParameterList &parameterList);
 
 shared_ptr<hmat::DefaultBlockClusterTreeType>
-generateBlockClusterTree(const hmat::Geometry& testGeometry,
-                         const hmat::Geometry& trialGeometry,
+generateBlockClusterTree(const hmat::Geometry &testGeometry,
+                         const hmat::Geometry &trialGeometry,
                          const ParameterList &parameterList);
 }
 

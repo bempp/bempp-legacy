@@ -59,24 +59,25 @@ public:
     Eigen::Matrix<ValueType, cdim, 1> curlValue;
 
     for (int i = 0; i < cdim; ++i)
-        for (int j = 0; j < mydim; ++j)
-            jacobianInverseTransposed(i, j) = geomData.jacobianInverseTransposed(i, j);
-    
-    for (int i = 0; i < mydim; ++i)
-        for (int j = 0; j < mydim; ++j)
-            referenceDerivative(i, j) = basisData.derivatives(i, j);
+      for (int j = 0; j < mydim; ++j)
+        jacobianInverseTransposed(i, j) =
+            geomData.jacobianInverseTransposed(i, j);
 
-    derivative = jacobianInverseTransposed * referenceDerivative * jacobianInverseTransposed.transpose();
+    for (int i = 0; i < mydim; ++i)
+      for (int j = 0; j < mydim; ++j)
+        referenceDerivative(i, j) = basisData.derivatives(i, j);
+
+    derivative = jacobianInverseTransposed * referenceDerivative *
+                 jacobianInverseTransposed.transpose();
 
     curlValue(0) = derivative(2, 1) - derivative(1, 2);
     curlValue(1) = derivative(0, 2) - derivative(2, 0);
     curlValue(2) = derivative(1, 0) - derivative(0, 1);
 
-    result(0) = curlValue(0) * geomData.normal(0) + curlValue(1) * geomData.normal(1)
-        + curlValue(2) * geomData.normal(2);
-
+    result(0) = curlValue(0) * geomData.normal(0) +
+                curlValue(1) * geomData.normal(1) +
+                curlValue(2) * geomData.normal(2);
   }
-
 };
 // Note: in C++11 we'll be able to make a "template typedef", or more precisely
 // a using declaration, instead of this spurious inheritance

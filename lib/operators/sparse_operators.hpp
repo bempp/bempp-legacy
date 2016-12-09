@@ -41,51 +41,47 @@
 
 namespace Bempp {
 
-template <typename BasisFunctionType, typename ResultType> class ElementaryLocalOperator;
+template <typename BasisFunctionType, typename ResultType>
+class ElementaryLocalOperator;
 template <typename BasisFunctionType> class Space;
 
 template <typename BasisFunctionType, typename ResultType>
-shared_ptr<const ElementaryLocalOperator<BasisFunctionType,ResultType>>
-identityOperator(
-    const ParameterList &parameterList,
-    const shared_ptr<const Space<BasisFunctionType>> &domain,
-    const shared_ptr<const Space<BasisFunctionType>> &range,
-    const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
-    const std::string &label = "", int symmetry = NO_SYMMETRY)
-{
+shared_ptr<const ElementaryLocalOperator<BasisFunctionType, ResultType>>
+identityOperator(const ParameterList &parameterList,
+                 const shared_ptr<const Space<BasisFunctionType>> &domain,
+                 const shared_ptr<const Space<BasisFunctionType>> &range,
+                 const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
+                 const std::string &label = "", int symmetry = NO_SYMMETRY) {
 
-    return shared_ptr<const ElementaryLocalOperator<BasisFunctionType,ResultType>>
-        (new AbstractIdentityOperator<BasisFunctionType,ResultType>(
-                                 domain, range, dualToRange, label, symmetry));
-
+  return shared_ptr<
+      const ElementaryLocalOperator<BasisFunctionType, ResultType>>(
+      new AbstractIdentityOperator<BasisFunctionType, ResultType>(
+          domain, range, dualToRange, label, symmetry));
 }
 
 template <typename BasisFunctionType, typename ResultType>
-shared_ptr<const ElementaryLocalOperator<BasisFunctionType,ResultType>>
+shared_ptr<const ElementaryLocalOperator<BasisFunctionType, ResultType>>
 maxwellIdentityOperator(
     const ParameterList &parameterList,
     const shared_ptr<const Space<BasisFunctionType>> &domain,
     const shared_ptr<const Space<BasisFunctionType>> &range,
     const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
-    const std::string &label = "", int symmetry = NO_SYMMETRY)
-{
+    const std::string &label = "", int symmetry = NO_SYMMETRY) {
 
-    return shared_ptr<const ElementaryLocalOperator<BasisFunctionType,ResultType>>
-        (new AbstractMaxwellIdentityOperator<BasisFunctionType,ResultType>(
-                                 domain, range, dualToRange, label, symmetry));
-
+  return shared_ptr<
+      const ElementaryLocalOperator<BasisFunctionType, ResultType>>(
+      new AbstractMaxwellIdentityOperator<BasisFunctionType, ResultType>(
+          domain, range, dualToRange, label, symmetry));
 }
 
-
 template <typename BasisFunctionType, typename ResultType>
-shared_ptr<const ElementaryLocalOperator<BasisFunctionType,ResultType>>
+shared_ptr<const ElementaryLocalOperator<BasisFunctionType, ResultType>>
 laplaceBeltramiOperator(
     const ParameterList &parameterList,
     const shared_ptr<const Space<BasisFunctionType>> &domain,
     const shared_ptr<const Space<BasisFunctionType>> &range,
     const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
-    const std::string &label = "", int symmetry = NO_SYMMETRY)
-{
+    const std::string &label = "", int symmetry = NO_SYMMETRY) {
 
   if (domain->codomainDimension() != 1)
     throw std::invalid_argument(
@@ -107,14 +103,12 @@ laplaceBeltramiOperator(
       IntegrandFunctor;
 
   typedef GeneralElementaryLocalOperator<BasisFunctionType, ResultType> Op;
-  return
-      shared_ptr<const ElementaryLocalOperator<BasisFunctionType,ResultType>>(
-              new GeneralElementaryLocalOperator<BasisFunctionType,ResultType>(domain, range, dualToRange, label, symmetry,
-                             TransformationFunctor(), TransformationFunctor(),
-                             IntegrandFunctor()));
-
+  return shared_ptr<
+      const ElementaryLocalOperator<BasisFunctionType, ResultType>>(
+      new GeneralElementaryLocalOperator<BasisFunctionType, ResultType>(
+          domain, range, dualToRange, label, symmetry, TransformationFunctor(),
+          TransformationFunctor(), IntegrandFunctor()));
 }
-
 }
 
 #endif

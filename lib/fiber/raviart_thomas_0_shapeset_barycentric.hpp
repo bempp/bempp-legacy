@@ -34,7 +34,7 @@ public:
   enum BasisType { TYPE1, TYPE2 };
 
 public:
-  RaviartThomas0ShapesetBarycentric(BasisType type) : m_type(type){}
+  RaviartThomas0ShapesetBarycentric(BasisType type) : m_type(type) {}
 
   virtual int size() const { return 3; }
 
@@ -44,19 +44,21 @@ public:
                         LocalDofIndex localDofIndex,
                         BasisData<ValueType> &data) const {
 
-   const ValueType coeffs[2][3][3] = {
-        {{1./3, 0, -1./6}, {-1./3, 1./2, 0}, {0, 0, 1./6}},
-        {{1./2, -1./3, 0}, {0, 1./3, -1./6}, {0, 0, 1./6}}};
-//        coeffs(0,0)=1./3.;     coeffs(0,1)=0.;        coeffs(0,2)=-1./6.;
-//        coeffs(1,0)=-1./3.;    coeffs(1,1)=1./2.;     coeffs(1,2)=0.;
-//        coeffs(2,0)=0.;        coeffs(2,1)=0.;        coeffs(2,2)=1./6.;
+    const ValueType coeffs[2][3][3] = {
+        {{1. / 3, 0, -1. / 6}, {-1. / 3, 1. / 2, 0}, {0, 0, 1. / 6}},
+        {{1. / 2, -1. / 3, 0}, {0, 1. / 3, -1. / 6}, {0, 0, 1. / 6}}};
+    //        coeffs(0,0)=1./3.;     coeffs(0,1)=0.;        coeffs(0,2)=-1./6.;
+    //        coeffs(1,0)=-1./3.;    coeffs(1,1)=1./2.;     coeffs(1,2)=0.;
+    //        coeffs(2,0)=0.;        coeffs(2,1)=0.;        coeffs(2,2)=1./6.;
 
-//        coeffs(0,0)=1./2.;     coeffs(0,1)=-1./3.;    coeffs(0,2)=0.;
-//        coeffs(1,0)=0.;        coeffs(1,1)=1./3.;     coeffs(1,2)=-1./6.;
-//        coeffs(2,0)=0.;        coeffs(2,1)=0.;        coeffs(2,2)=1./6.;
+    //        coeffs(0,0)=1./2.;     coeffs(0,1)=-1./3.;    coeffs(0,2)=0.;
+    //        coeffs(1,0)=0.;        coeffs(1,1)=1./3.;     coeffs(1,2)=-1./6.;
+    //        coeffs(2,0)=0.;        coeffs(2,1)=0.;        coeffs(2,2)=1./6.;
     int typeIndex;
-    if (m_type == TYPE1) typeIndex = 0;
-    else typeIndex = 1;
+    if (m_type == TYPE1)
+      typeIndex = 0;
+    else
+      typeIndex = 1;
 
     BasisData<ValueType> temp;
     raviartBasis.evaluate(what, points, ALL_DOFS, temp);
@@ -66,7 +68,7 @@ public:
       if (what & VALUES) {
         data.values.set_size(temp.values.extent(0), 1, temp.values.extent(2));
         for (int i = 0; i < data.values.extent(2); ++i) {
-          for (int k=0; k < data.values.extent(0); ++k){
+          for (int k = 0; k < data.values.extent(0); ++k) {
             data.values(k, 0, i) = 0;
             for (int j = 0; j < 3; ++j)
               data.values(k, 0, i) +=
@@ -75,9 +77,10 @@ public:
         }
       }
       if (what & DERIVATIVES) {
-        data.derivatives.set_size(temp.derivatives.extent(0), temp.derivatives.extent(1), 1,
+        data.derivatives.set_size(temp.derivatives.extent(0),
+                                  temp.derivatives.extent(1), 1,
                                   temp.derivatives.extent(3));
-        for (int l=0; l<temp.derivatives.extent(0); ++l)
+        for (int l = 0; l < temp.derivatives.extent(0); ++l)
           for (int i = 0; i < data.derivatives.extent(1); ++i)
             for (int j = 0; j < data.derivatives.extent(3); ++j) {
               data.derivatives(l, i, 0, j) = 0;
@@ -85,7 +88,7 @@ public:
                 data.derivatives(l, i, 0, j) +=
                     coeffs[typeIndex][localDofIndex][k] *
                     temp.derivatives(l, i, k, j);
-          }
+            }
       }
 
     } else {
@@ -93,7 +96,7 @@ public:
         data.values.set_size(temp.values.extent(0), 3, temp.values.extent(2));
         for (int dofIndex = 0; dofIndex < 3; ++dofIndex) {
           for (int i = 0; i < data.values.extent(2); ++i) {
-            for (int k=0; k < data.values.extent(0); ++k){
+            for (int k = 0; k < data.values.extent(0); ++k) {
               data.values(k, dofIndex, i) = 0;
               for (int j = 0; j < 3; ++j)
                 data.values(k, dofIndex, i) +=
@@ -104,9 +107,10 @@ public:
       }
 
       if (what & DERIVATIVES) {
-        data.derivatives.set_size(temp.derivatives.extent(0), temp.derivatives.extent(1), 3,
+        data.derivatives.set_size(temp.derivatives.extent(0),
+                                  temp.derivatives.extent(1), 3,
                                   temp.derivatives.extent(3));
-        for (int l=0; l<temp.derivatives.extent(0); ++l)
+        for (int l = 0; l < temp.derivatives.extent(0); ++l)
           for (int dofIndex = 0; dofIndex < 3; ++dofIndex)
             for (int i = 0; i < data.derivatives.extent(1); ++i)
               for (int j = 0; j < data.derivatives.extent(3); ++j) {
@@ -115,15 +119,14 @@ public:
                   data.derivatives(l, i, dofIndex, j) +=
                       coeffs[typeIndex][dofIndex][k] *
                       temp.derivatives(l, i, k, j);
-            }
+              }
       }
     }
   }
 
   virtual std::pair<const char *, int> clCodeString(bool isTestBasis) const {
-    throw std::runtime_error(
-        "RaviartThomas0BasisBarycentric::clCodeString():"
-        "OpenCL not supported for this basis type.");
+    throw std::runtime_error("RaviartThomas0BasisBarycentric::clCodeString():"
+                             "OpenCL not supported for this basis type.");
   }
 
 private:
@@ -134,4 +137,3 @@ private:
 } // namespace Fiber
 
 #endif
-

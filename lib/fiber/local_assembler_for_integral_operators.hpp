@@ -99,22 +99,22 @@ public:
   /** \brief Assemble local weak forms.
 
   This overload computes a single local weak form from the test element
-  with index \p testElementIndex and the trial element with index \p trialElementIndex.
+  with index \p testElementIndex and the trial element with index \p
+  trialElementIndex.
 
   If \p nominalDistance is nonnegative, it is taken as the distance between
-  between the element pair. Otherwise the interelement distance is calculated 
+  between the element pair. Otherwise the interelement distance is calculated
   internally. */
-  virtual void
-  evaluateLocalWeakForms(int testElementIndex,
-                         int trialElementIndex,
-                         Matrix<ResultType> &result,
-                         CoordinateType nominalDistance = -1.) = 0;
+  virtual void evaluateLocalWeakForms(int testElementIndex,
+                                      int trialElementIndex,
+                                      Matrix<ResultType> &result,
+                                      CoordinateType nominalDistance = -1.) = 0;
 
   /** \brief Assemble local weak forms.
 
   This overload computes and assigns to the output parameter \p result
   pairs of local weak forms such that result[j] is the weak form computed
-  for the pair (\p testElement[\p testElementIndices[j]], 
+  for the pair (\p testElement[\p testElementIndices[j]],
   \p trialElement[\p trialElementIndices[j]]).
 
   If \p nominalDistance is nonnegative, it is taken as the distance between
@@ -126,8 +126,6 @@ public:
                          const std::vector<int> &trialElementIndices,
                          std::vector<Matrix<ResultType>> &result,
                          CoordinateType nominalDistance = -1.) = 0;
-
-
 
   /** \brief Estimate how fast the entries in the matrix of
    *  this operator decay with interelement distance.

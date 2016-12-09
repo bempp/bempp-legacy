@@ -42,7 +42,8 @@ template <typename BasisFunctionType>
 PiecewiseConstantScalarSpaceBarycentric<BasisFunctionType>::
     PiecewiseConstantScalarSpaceBarycentric(const shared_ptr<const Grid> &grid)
     : ScalarSpace<BasisFunctionType>(grid->barycentricGrid()),
-      m_segment(GridSegment::wholeGrid(*grid)), m_originalGrid(grid), m_sonMap(grid->barycentricSonMap()) {
+      m_segment(GridSegment::wholeGrid(*grid)), m_originalGrid(grid),
+      m_sonMap(grid->barycentricSonMap()) {
   assignDofsImpl(m_segment);
 }
 
@@ -51,7 +52,8 @@ PiecewiseConstantScalarSpaceBarycentric<BasisFunctionType>::
     PiecewiseConstantScalarSpaceBarycentric(const shared_ptr<const Grid> &grid,
                                             const GridSegment &segment)
     : ScalarSpace<BasisFunctionType>(grid->barycentricGrid()),
-      m_segment(segment), m_originalGrid(grid), m_sonMap(grid->barycentricSonMap()) {
+      m_segment(segment), m_originalGrid(grid),
+      m_sonMap(grid->barycentricSonMap()) {
   assignDofsImpl(m_segment);
 }
 
@@ -61,8 +63,7 @@ PiecewiseConstantScalarSpaceBarycentric<BasisFunctionType>::discontinuousSpace(
     const shared_ptr<const Space<BasisFunctionType>> &self) const {
   if (!m_discontinuousSpace) {
     tbb::mutex::scoped_lock lock(m_discontinuousSpaceMutex);
-    typedef PiecewiseConstantScalarSpace<
-        BasisFunctionType> DiscontinuousSpace;
+    typedef PiecewiseConstantScalarSpace<BasisFunctionType> DiscontinuousSpace;
     if (!m_discontinuousSpace)
       m_discontinuousSpace.reset(
           new DiscontinuousSpace(m_originalGrid->barycentricGrid()));
@@ -150,7 +151,7 @@ void PiecewiseConstantScalarSpaceBarycentric<
 template <typename BasisFunctionType>
 void PiecewiseConstantScalarSpaceBarycentric<BasisFunctionType>::assignDofsImpl(
     const GridSegment &segment) {
-const int gridDim = this->domainDimension();
+  const int gridDim = this->domainDimension();
 
   std::unique_ptr<GridView> coarseView = m_originalGrid->leafView();
   const IndexSet &index = coarseView->indexSet();
@@ -168,23 +169,26 @@ const int gridDim = this->domainDimension();
   m_global2localDofs.clear();
   m_global2localDofs.resize(globalDofCount_);
 
-  for(std::unique_ptr<EntityIterator<0>> it = coarseView->entityIterator<0>();!it->finished();it->next()) {
+  for (std::unique_ptr<EntityIterator<0>> it = coarseView->entityIterator<0>();
+       !it->finished(); it->next()) {
     const Entity<0> &entity = it->entity();
-    int ent0Number = index.subEntityIndex(entity,0,0);
+    int ent0Number = index.subEntityIndex(entity, 0, 0);
     const EntityIndex faceIndex = index.subEntityIndex(entity, 0, 0);
-    for(int i=0;i!=6;++i){
-        EntityIndex sonIndex = m_sonMap(ent0Number,i);
+    for (int i = 0; i != 6; ++i) {
+      EntityIndex sonIndex = m_sonMap(ent0Number, i);
 
-        std::vector<GlobalDofIndex> &globalDof = acc(m_local2globalDofs, sonIndex);
-        globalDof.resize(1);
+      std::vector<GlobalDofIndex> &globalDof =
+          acc(m_local2globalDofs, sonIndex);
+      globalDof.resize(1);
 
-        GlobalDofIndex globalDofIndex;
-        globalDofIndex = acc(globalDofIndices,  faceIndex);
-        globalDof[0] = globalDofIndex;
-        if (globalDofIndex >= 0) {
-          acc(m_global2localDofs, globalDofIndex).push_back(LocalDof(sonIndex, 0));
-          ++flatLocalDofCount_;
-        }
+      GlobalDofIndex globalDofIndex;
+      globalDofIndex = acc(globalDofIndices, faceIndex);
+      globalDof[0] = globalDofIndex;
+      if (globalDofIndex >= 0) {
+        acc(m_global2localDofs, globalDofIndex)
+            .push_back(LocalDof(sonIndex, 0));
+        ++flatLocalDofCount_;
+      }
     }
   }
   SpaceHelper<BasisFunctionType>::initializeLocal2FlatLocalDofMap(

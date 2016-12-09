@@ -234,9 +234,8 @@ void DefaultLocalAssemblerForPotentialOperatorsOnSurfaces<
     for (int pointIndex = 0; pointIndex < pointCount; ++pointIndex) {
       const int activePointIndex = pointIndices[pointIndex];
       const int activeTrialElementIndex = trialElementIndices[trialIndex];
-      const Integrator *integrator =
-          &selectIntegrator(activePointIndex, activeTrialElementIndex,
-                            nominalDistance);
+      const Integrator *integrator = &selectIntegrator(
+          activePointIndex, activeTrialElementIndex, nominalDistance);
       quadVariants(pointIndex, trialIndex) =
           QuadVariant(integrator, (*m_trialShapesets)[activeTrialElementIndex]);
     }

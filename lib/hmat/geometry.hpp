@@ -16,7 +16,6 @@ struct GeometryDataType;
 typedef std::vector<shared_ptr<const GeometryDataType>> Geometry;
 
 void fillGeometry(Geometry &geometry, GeometryInterface &geometryInterface);
-
 }
 
 #include "geometry_impl.hpp"

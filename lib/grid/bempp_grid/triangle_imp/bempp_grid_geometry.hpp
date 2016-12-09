@@ -9,20 +9,15 @@
 namespace BemppGrid {
 
 template <int mydim, int cdim, class>
-class Geometry : public Dune::MultiLinearGeometry<double, mydim, cdim>
-{
+class Geometry : public Dune::MultiLinearGeometry<double, mydim, cdim> {
 
-    typedef Dune::MultiLinearGeometry<double, mydim, cdim> Base;
+  typedef Dune::MultiLinearGeometry<double, mydim, cdim> Base;
 
-    public:
-
-        Geometry(const Dune::GeometryType& type, 
-                const std::vector<Dune::FieldVector<double, 3>>& vertices)
-            : Base(type, vertices) {}
-
-
+public:
+  Geometry(const Dune::GeometryType &type,
+           const std::vector<Dune::FieldVector<double, 3>> &vertices)
+      : Base(type, vertices) {}
 };
-
 }
 
 #endif

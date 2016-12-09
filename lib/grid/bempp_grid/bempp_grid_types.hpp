@@ -3,12 +3,9 @@
 
 #include "../../common/shared_ptr.hpp"
 
-
 namespace BemppGrid {
 
-    using Bempp::shared_ptr;
-
+using Bempp::shared_ptr;
 }
-
 
 #endif
