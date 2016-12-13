@@ -21,6 +21,8 @@
 #ifndef fiber_cuda_cuh
 #define fiber_cuda_cuh
 
+#include "cuda_3d_array.hpp"
+
 #include <thrust/device_ptr.h>
 
 namespace Fiber {
@@ -61,22 +63,18 @@ struct ElemData {
   thrust::device_ptr<const ValueType> jacobianInversesTransposed;
 };
 
-// Constant memory has a size of 64 KB
-// Most memory consuming possible data type to ensure enough space
-__constant__ double constTestQuadWeights[10];
-__constant__ double constTrialQuadWeights[10];
+// Constant memory is typically 64 KB
+// Use double as most memory consuming possible data type to ensure enough space
+__constant__ double constTestQuadWeights[6];
+__constant__ double constTrialQuadWeights[6];
 
-//// Valid for up to 10 dofs and 10 points and complex basis function type (x2)
-//__constant__ double constTestBasisValues[10 * 10 * 2];
-//__constant__ double constTrialBasisValues[10 * 10 * 2];
+__constant__ double constTestGeomShapeFun0[6];
+__constant__ double constTestGeomShapeFun1[6];
+__constant__ double constTestGeomShapeFun2[6];
 
-__constant__ double constTestGeomShapeFun0[10];
-__constant__ double constTestGeomShapeFun1[10];
-__constant__ double constTestGeomShapeFun2[10];
-
-__constant__ double constTrialGeomShapeFun0[10];
-__constant__ double constTrialGeomShapeFun1[10];
-__constant__ double constTrialGeomShapeFun2[10];
+__constant__ double constTrialGeomShapeFun0[6];
+__constant__ double constTrialGeomShapeFun1[6];
+__constant__ double constTrialGeomShapeFun2[6];
 
 #define cu_verify(x) do {                                                \
     cudaError_t result = x;                                              \

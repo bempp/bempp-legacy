@@ -21,7 +21,7 @@
 #ifndef fiber_cuda_3d_array_hpp
 #define fiber_cuda_3d_array_hpp
 
-#include <thrust/host_vector.h>
+#include <thrust/device_vector.h>
 
 namespace Fiber {
 
@@ -30,61 +30,50 @@ class Cuda3dArray {
 
 public:
 
-  Cuda3dArray() : dim1size(0), dim2size(0), dim3size(0) { }
+  Cuda3dArray() : m_extent0(0), m_extent1(0), m_extent2(0) { }
 
-  Cuda3dArray(const unsigned int _dim1size,
-              const unsigned int _dim2size,
-              const unsigned int _dim3size)
-              : dim1size(_dim1size),
-                dim2size(_dim2size),
-                dim3size(_dim3size) { resize(dim1size, dim2size, dim3size); }
+  Cuda3dArray(const size_t extent0, const size_t extent1, const size_t extent2)
+              : m_extent0(extent0), m_extent1(extent1), m_extent2(extent2) {
+
+    resize(m_extent0, m_extent1, m_extent2);
+  }
 
   ~Cuda3dArray() { }
 
-  void resize(const unsigned int _dim1size,
-              const unsigned int _dim2size,
-              const unsigned int _dim3size) {
+  void resize(const size_t newExtent0,
+              const size_t newExtent1,
+              const size_t newExtent2) {
 
-    dim1size = _dim1size;
-    dim2size = _dim2size;
-    dim2size = _dim2size;
+    m_extent0 = newExtent0;
+    m_extent1 = newExtent1;
+    m_extent2 = newExtent2;
 
-    data.resize(dim1size * dim2size * dim3size);
+    m_data.resize(m_extent0 * m_extent1 * m_extent2);
   }
 
-  void clear() { data.clear(); }
+  T operator()(const size_t index0, const size_t index1, const size_t index2) const {
 
-  T operator()(const unsigned int _dim1,
-               const unsigned int _dim2,
-               const unsigned int _dim3) const {
-
-    return data[getIndex(_dim1, _dim2, _dim3)];
+    return m_data[getIndex(index0, index1, index2)];
   }
 
-  T& operator()(const unsigned int _dim1,
-                const unsigned int _dim2,
-                const unsigned int _dim3) {
+  T& operator()(const size_t index0, const size_t index1, const size_t index2) {
 
-    return data[getIndex(_dim1, _dim2, _dim3)];
+    return m_data[getIndex(index0, index1, index2)];
   }
 
 private:
 
-  unsigned int dim1size;
-  unsigned int dim2size;
-  unsigned int dim3size;
+  size_t getIndex(const size_t index0, const size_t index1, const size_t index2) const {
 
-  thrust::host_vector<T> data;
-
-  unsigned int getIndex(const unsigned int _dim1,
-                        const unsigned int _dim2,
-                        const unsigned int _dim3) const {
-
-    // Index dim3 varies fastest in data array
-    return _dim1 * dim2size * dim3size
-         + _dim2 * dim3size
-         + _dim3;
+    // Index dim2 varies fastest in data array
+    return index0 * m_extent1 * m_extent2
+         + index1 * m_extent2
+         + index2;
   }
+
+  size_t m_extent0, m_extent1, m_extent2;
+
+  thrust::device_vector<T> m_data;
 };
 
 } // namespace Fiber

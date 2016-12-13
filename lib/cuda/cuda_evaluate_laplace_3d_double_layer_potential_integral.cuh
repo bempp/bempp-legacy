@@ -99,7 +99,7 @@ CudaEvaluateLaplace3dDoubleLayerPotentialIntegralFunctorCached(
     }
 
     // Evaluate kernel
-    KernelType kernelValues[10 * 10];
+    KernelType kernelValues[6 * 6];
     CoordinateType trialPointCoo[coordCount], testPointCoo[coordCount];
     for (size_t trialPoint = 0; trialPoint < trialPointCount; ++trialPoint) {
       for (size_t testPoint = 0; testPoint < testPointCount; ++testPoint) {

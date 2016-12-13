@@ -205,6 +205,15 @@ CudaBasisFunctionType, CudaKernelType, CudaResultType>::
         "CudaIntegrator::CudaIntegrator(): "
         "numbers of test points and weights do not match");
 
+  if (trialPointCount > 6)
+    throw std::invalid_argument(
+        "CudaIntegrator::CudaIntegrator(): "
+        "number of trial points too high in terms of device memory");
+  if (testPointCount > 6)
+    throw std::invalid_argument(
+        "CudaIntegrator::CudaIntegrator(): "
+        "number of test points too high in terms of device memory");
+
   cu_verify( cudaSetDevice(m_deviceId) );
 
   // Copy element indices to device memory
@@ -839,7 +848,7 @@ CudaBasisFunctionType, CudaKernelType, CudaResultType>::
         CudaEvaluateLaplace3dSingleLayerPotentialIntegralFunctorNonCached<
         CudaBasisFunctionType, CudaKernelType, CudaResultType>
         <<<gridSize, blockSize>>>(
-        elemPairIndexBegin, elemPairCount, m_d_trialIndices.size(),
+        elemPairIndexBegin, elemPairCount, m_d_testIndices.size(),
         thrust::raw_pointer_cast(m_d_testIndices.data()),
         thrust::raw_pointer_cast(m_d_trialIndices.data()),
         m_testQuadData.pointCount, m_trialQuadData.pointCount,
@@ -865,7 +874,7 @@ CudaBasisFunctionType, CudaKernelType, CudaResultType>::
           CudaEvaluateHelmholtz3dSingleLayerPotentialIntegralFunctorNonCached<
           CudaBasisFunctionType, CudaKernelType, CudaResultType>
           <<<gridSize, blockSize>>>(
-          elemPairIndexBegin, elemPairCount, m_d_trialIndices.size(),
+          elemPairIndexBegin, elemPairCount, m_d_testIndices.size(),
           thrust::raw_pointer_cast(m_d_testIndices.data()),
           thrust::raw_pointer_cast(m_d_trialIndices.data()),
           m_testQuadData.pointCount, m_trialQuadData.pointCount,

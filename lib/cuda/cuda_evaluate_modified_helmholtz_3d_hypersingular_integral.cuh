@@ -112,8 +112,8 @@ CudaEvaluateHelmholtz3dHypersingularIntegralFunctorCached(
     }
 
     // Evaluate kernel
-    KernelType kernelValues0Real[10 * 10], kernelValues0Imag[10 * 10],
-        kernelValues1Real[10 * 10], kernelValues1Imag[10 * 10];
+    KernelType kernelValues0Real[6 * 6], kernelValues0Imag[6 * 6],
+        kernelValues1Real[6 * 6], kernelValues1Imag[6 * 6];
     CoordinateType trialPointCoo[coordCount], testPointCoo[coordCount];
     for (size_t trialPoint = 0; trialPoint < trialPointCount; ++trialPoint) {
       for (size_t testPoint = 0; testPoint < testPointCount; ++testPoint) {

@@ -106,7 +106,7 @@ CudaEvaluateHelmholtz3dDoubleLayerPotentialIntegralFunctorCached(
     }
 
     // Evaluate kernel
-    KernelType kernelValues[10 * 10 * 2];
+    KernelType kernelValues[6 * 6 * 2];
     const size_t offsetKernelValuesImag = trialPointCount * testPointCount;
     CoordinateType trialPointCoo[coordCount], testPointCoo[coordCount];
     for (size_t trialPoint = 0; trialPoint < trialPointCount; ++trialPoint) {
