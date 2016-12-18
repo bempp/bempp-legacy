@@ -44,6 +44,7 @@ class TestLaplace(TestCase):
         space = bempp.api.function_space(grid, "P", 2)
 
         parameters = bempp.api.common.global_parameters()
+        parameters.hmat.eps = 1E-5
         parameters.quadrature.medium.double_order = 4
         parameters.quadrature.far.double_order = 4
 
