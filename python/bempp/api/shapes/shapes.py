@@ -162,6 +162,43 @@ def ellipsoid(r1=1, r2=1, r3=1, origin=(0, 0, 0), h=0.1):
 
     return __generate_grid_from_geo_string(sphere_geometry)
 
+def rectangle_with_hole(a=1, b=1, hole_radius=0.2, h=0.1):
+    """Return a square shaped screen with a hole in the middle. """
+    import subprocess
+    import os
+
+    stub = """
+    Point(1) = {-a / 2., -b / 2., 0, cl};
+    Point(2) = {a / 2., -b / 2., 0, cl};
+    Point(3) = {a / 2., b / 2., 0, cl};
+    Point(4) = {-a / 2., b / 2., 0, cl};
+    Line(1) = {1, 2};
+    Line(2) = {2, 3};
+    Line(3) = {3, 4};
+    Line(4) = {4, 1};
+    Point(5) = {0, 0, 0, cl};
+    Point(6) = {r, 0, 0, cl};
+    Point(7) = {0, r, 0, cl};
+    Point(8) = {-r, 0, 0, cl};
+    Point(9) = {0, -r, 0, cl};
+    Circle(5) = {6, 5, 7};
+    Circle(6) = {7, 5, 8};
+    Circle(7) = {8, 5, 9};
+    Circle(8) = {9, 5, 6};
+    Line Loop(9) = {1, 2, 3, 4};
+    Line Loop(10) = {5, 6, 7, 8};
+    Plane Surface(11) = {9, 10};
+    Mesh.Algorithm = 6;
+    """
+
+    geometry = (
+        "a = " + str(a) + ";\n" +
+        "b = " + str(b) + ";\n" +
+        "r = " + str(hole_radius) + ";\n" +
+        "cl = " + str(h) + ";\n" + stub)
+
+    return __generate_grid_from_geo_string(geometry)
+
 
 def sphere(r=1, origin=(0, 0, 0), h=0.1):
     """Return an sphere grid. """
@@ -196,7 +233,7 @@ def reentrant_cube(h=0.1, refinement_factor=0.2):
     Line(7) = {2, 3};
     Line(8) = {3, 7};
     Line(9) = {7, 6};
-    
+
     Line(10) = {3, 4};
     Line(11) = {4, 8};
     Line(12) = {8, 7};
@@ -749,4 +786,3 @@ Line Loop(749) = {118, 276, 289, -291};
 Ruled Surface(750) = {-749};
 Physical Surface(1) = {518, 520, 750, 718, 516, 714, 748, 603, 491, 489, 487, 601, 710, 746, 477, 475, 479, 599, 485, 493, 514, 481, 473, 522, 706, 569, 744, 720, 597, 459, 471, 571, 716, 469, 483, 495, 573, 467, 712, 461, 465, 463, 704, 742, 595, 575, 512, 708, 524, 497, 505, 499, 567, 730, 577, 501, 503, 702, 700, 740, 526, 593, 509, 565, 732, 528, 579, 694, 563, 660, 530, 734, 507, 532, 561, 658, 668, 698, 738, 662, 591, 624, 606, 692, 581, 534, 559, 670, 656, 664, 626, 608, 557, 672, 536, 654, 666, 696, 736, 589, 555, 690, 674, 583, 628, 610, 684, 539, 585, 680, 553, 676, 652, 722, 678, 551, 682, 587, 549, 687, 642, 622, 640, 728, 724, 630, 547, 541, 612, 726, 650, 644, 638, 620, 545, 543, 646, 648, 632, 614, 636, 618, 634, 616};
 """
-

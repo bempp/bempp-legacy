@@ -135,7 +135,7 @@ class BoundaryOperator(object):
             self._range_map = None
 
         if self._range_map is None:
-           
+
             # This is the most frequent case and we cache the mass
             # matrix from the space object.
             if self.range == self.dual_to_range:
@@ -185,7 +185,7 @@ class BoundaryOperator(object):
            Notes
            -----
            The dual product B *_D A acts only only on the test functions
-           of A  and is defined as 
+           of A  and is defined as
            self.adjoint(other.range) * other
 
         """
@@ -250,9 +250,9 @@ class ElementaryBoundaryOperator(BoundaryOperator):
     label: string
         An optional operator label (default is "").
     represent_only_singular_part : bool
-        When assembled the operator will only contain components for adjacent or 
+        When assembled the operator will only contain components for adjacent or
         overlapping test and trial functions (default false).
-        
+
     Attributes
     ----------
     parameters : bempp.api.common.global_parameters
@@ -667,6 +667,3 @@ class InverseLocalBoundaryOperator(BoundaryOperator):
 
         inv_mat = csc_matrix((data, (rows, cols)), shape=mat.shape,  dtype=np.float64)
         return SparseDiscreteBoundaryOperator(inv_mat)
-
-
-
