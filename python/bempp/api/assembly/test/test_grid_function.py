@@ -18,7 +18,7 @@ class TestGridFunction(TestCase):
         coefficients = np.ones(n)
         grid_fun = bempp.api.GridFunction(self._space, coefficients=coefficients)
 
-        self.assertAlmostEquals(np.linalg.norm(coefficients - grid_fun.coefficients), 0)
+        self.assertAlmostEqual(np.linalg.norm(coefficients - grid_fun.coefficients), 0)
 
     def test_set_coefficients(self):
         import numpy as np
@@ -27,7 +27,7 @@ class TestGridFunction(TestCase):
         coefficients = np.ones(n)
         grid_fun = bempp.api.GridFunction(self._space, coefficients=coefficients)
         grid_fun.coefficients *= 2
-        self.assertAlmostEquals(np.linalg.norm(2 * coefficients - grid_fun.coefficients), 0)
+        self.assertAlmostEqual(np.linalg.norm(2 * coefficients - grid_fun.coefficients), 0)
 
     def test_initialize_from_real_function(self):
         import numpy as np
@@ -38,7 +38,7 @@ class TestGridFunction(TestCase):
         grid_fun = bempp.api.GridFunction(self._space, fun=fun)
         actual = grid_fun.coefficients
         expected = self._space.global_dof_interpolation_points[0, :]
-        self.assertAlmostEquals(np.linalg.norm(actual - expected), 0)
+        self.assertAlmostEqual(np.linalg.norm(actual - expected), 0)
         self.assertEqual(grid_fun.dtype, 'float64')
 
     def test_initialize_from_complex_function(self):
@@ -50,7 +50,7 @@ class TestGridFunction(TestCase):
         grid_fun = bempp.api.GridFunction(self._space, fun=fun)
         actual = grid_fun.coefficients
         expected = self._space.global_dof_interpolation_points[0, :]
-        self.assertAlmostEquals(np.linalg.norm(actual - 1j * expected), 0)
+        self.assertAlmostEqual(np.linalg.norm(actual - 1j * expected), 0)
         self.assertEqual(grid_fun.dtype, 'complex128')
 
     def test_initialize_from_projections(self):
@@ -63,7 +63,7 @@ class TestGridFunction(TestCase):
 
         grid_fun = bempp.api.GridFunction(self._space, projections=projections)
 
-        self.assertAlmostEquals(np.linalg.norm(coefficients - grid_fun.coefficients), 0)
+        self.assertAlmostEqual(np.linalg.norm(coefficients - grid_fun.coefficients), 0)
 
     def test_add_two_grid_functions(self):
         import numpy as np
@@ -80,7 +80,7 @@ class TestGridFunction(TestCase):
         expected = 2 * grid_fun.coefficients
         actual = grid_fun2.coefficients
 
-        self.assertAlmostEquals(np.linalg.norm(expected - actual), 0)
+        self.assertAlmostEqual(np.linalg.norm(expected - actual), 0)
 
     def test_scalar_multiply_grid_function(self):
         import numpy as np
@@ -97,7 +97,7 @@ class TestGridFunction(TestCase):
         expected = 2 * grid_fun.coefficients
         actual = grid_fun2.coefficients
 
-        self.assertAlmostEquals(np.linalg.norm(expected - actual), 0)
+        self.assertAlmostEqual(np.linalg.norm(expected - actual), 0)
 
     def test_scalar_divide_grid_function(self):
         import numpy as np
@@ -114,7 +114,7 @@ class TestGridFunction(TestCase):
         expected = grid_fun.coefficients/2
         actual = grid_fun2.coefficients
 
-        self.assertAlmostEquals(np.linalg.norm(expected - actual), 0)
+        self.assertAlmostEqual(np.linalg.norm(expected - actual), 0)
 
     def test_negate_grid_function(self):
         import numpy as np
@@ -131,7 +131,7 @@ class TestGridFunction(TestCase):
         expected = -grid_fun.coefficients
         actual = grid_fun2.coefficients
 
-        self.assertAlmostEquals(np.linalg.norm(expected - actual), 0)
+        self.assertAlmostEqual(np.linalg.norm(expected - actual), 0)
 
     def test_l2_norm(self):
 
