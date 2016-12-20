@@ -1,3 +1,4 @@
+cimport numpy
 from libcpp cimport bool as cbool
 from bempp.core.utils cimport Matrix, RowVector
 

@@ -1,3 +1,4 @@
+cimport numpy
 from bempp.core.utils cimport c_ParameterList, ParameterList
 from cython.operator cimport dereference as deref
 

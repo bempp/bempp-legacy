@@ -1,3 +1,4 @@
+cimport numpy
 from bempp.core.utils cimport Matrix
 from bempp.core.utils cimport eigen_matrix_to_np_float64
 from libcpp.vector cimport vector

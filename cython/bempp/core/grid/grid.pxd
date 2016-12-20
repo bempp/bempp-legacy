@@ -1,3 +1,4 @@
+cimport numpy
 from bempp.core.utils cimport shared_ptr,unique_ptr
 from bempp.core.utils cimport Vector
 from bempp.core.utils cimport Matrix

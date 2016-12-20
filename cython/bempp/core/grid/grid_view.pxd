@@ -1,3 +1,6 @@
+import numpy as np
+cimport numpy as np
+
 from bempp.core.utils cimport unique_ptr
 from bempp.core.grid.codim_template cimport codim_zero,codim_one,codim_two
 from bempp.core.grid.grid cimport Grid
@@ -11,9 +14,6 @@ from bempp.core.utils cimport Matrix, Vector
 from bempp.core.grid.entity_iterator cimport EntityIterator0
 from bempp.core.grid.entity_iterator cimport EntityIterator1
 from bempp.core.grid.entity_iterator cimport EntityIterator2
-
-import numpy as np
-cimport numpy as np
 
 cdef extern from "bempp/grid/grid_view.hpp" namespace "Bempp":
     cdef cppclass c_GridView "Bempp::GridView":

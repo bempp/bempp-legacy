@@ -1,3 +1,4 @@
+cimport numpy
 from bempp.core.utils cimport catch_exception
 from bempp.core.utils cimport shared_ptr
 from bempp.core.grid.grid cimport c_Grid

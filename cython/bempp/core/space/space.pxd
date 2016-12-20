@@ -1,3 +1,4 @@
+cimport numpy
 from bempp.core.utils cimport Matrix, Vector
 from bempp.core.utils cimport eigen_matrix_to_np_float64
 from bempp.core.utils cimport catch_exception

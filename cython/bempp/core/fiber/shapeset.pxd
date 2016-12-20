@@ -1,3 +1,4 @@
+cimport numpy
 from bempp.core.utils cimport Matrix
 from bempp.core.fiber.arrays cimport _3dArray
 from bempp.core.fiber.arrays cimport _4dArray

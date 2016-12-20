@@ -1,3 +1,4 @@
+cimport numpy
 from bempp.core.utils cimport Matrix
 from bempp.core.utils.enum_types cimport TranspositionMode
 from bempp.core.utils cimport shared_ptr

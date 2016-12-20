@@ -1,3 +1,4 @@
+cimport numpy
 from bempp.core.utils.enum_types cimport HMatBlockType
 from bempp.core.utils cimport shared_ptr
 from bempp.core.utils cimport complex_double
