@@ -1,3 +1,4 @@
+cimport numpy
 from bempp.core.utils cimport unique_ptr, catch_exception
 from libcpp cimport bool as cbool
 from bempp.core.grid.codim_template cimport codim_zero,codim_one,codim_two

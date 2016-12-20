@@ -1,4 +1,4 @@
-
+cimport numpy
 
 cdef extern from "bempp/common/multidimensional_arrays.hpp" namespace "Fiber":
     cdef cppclass _4dArray "Fiber::_4dArray<double>":

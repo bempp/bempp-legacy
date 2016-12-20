@@ -1,3 +1,4 @@
+cimport numpy
 from bempp.core.grid.codim_template cimport codim_zero,codim_one,codim_two
 from bempp.core.grid.entity cimport c_Entity
 from bempp.core.grid.entity cimport Entity0, Entity1, Entity2

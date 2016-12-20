@@ -1,3 +1,4 @@
+cimport numpy
 from bempp.core.utils cimport unique_ptr
 from bempp.core.utils cimport complex_double
 from bempp.core.utils cimport Matrix

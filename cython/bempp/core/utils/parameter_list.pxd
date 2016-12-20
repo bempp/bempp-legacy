@@ -1,3 +1,4 @@
+cimport numpy
 from bempp.core.utils cimport shared_ptr
 from libcpp.string cimport string 
 from libcpp cimport bool as cbool

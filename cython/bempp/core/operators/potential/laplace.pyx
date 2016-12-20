@@ -1,5 +1,8 @@
 __all__=['single_layer','double_layer']
 
+cimport numpy as _np
+import numpy as _np
+
 from bempp.core.utils cimport shared_ptr
 from bempp.core.utils cimport catch_exception
 from bempp.core.assembly.discrete_boundary_operator cimport c_DiscreteBoundaryOperator
@@ -8,9 +11,6 @@ from bempp.core.space cimport Space, c_Space
 from bempp.core.utils cimport np_to_eigen_matrix_float64, Matrix
 from bempp.core.utils cimport c_ParameterList, ParameterList
 from cython.operator cimport dereference as deref
-
-cimport numpy as _np
-import numpy as _np
 
 cdef extern from "bempp/operators/laplace_operators.hpp" namespace "Bempp":
     cdef shared_ptr[const c_DiscreteBoundaryOperator[double]] laplace_single_layer_potential_operator "Bempp::laplaceSingleLayerPotentialOperator<double,double>"(

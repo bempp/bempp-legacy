@@ -1,10 +1,9 @@
 from unittest import TestCase
+import bempp.api
 
 
 class TestBoundaryOperator(TestCase):
     def setUp(self):
-        import bempp
-
         grid = bempp.api.shapes.regular_sphere(2)
         self.domain = bempp.api.function_space(grid, "DP", 0)
         self.range_ = bempp.api.function_space(grid, "DP", 1)
@@ -45,7 +44,6 @@ class TestBoundaryOperator(TestCase):
                               "Sum of operators should be of type _ScaledBoundaryOperator.")
 
     def test_product_of_two_operators_is_product_operator(self):
-        import bempp
         from bempp.api.assembly.boundary_operator import _ProductBoundaryOperator
 
         op = bempp.api.operators.boundary.laplace.single_layer(self.domain, self.domain, self.domain)
@@ -55,11 +53,9 @@ class TestBoundaryOperator(TestCase):
 
     def test_weak_form_of_local_operator_is_sparse_discrete_operator(self):
         from bempp.api.assembly.discrete_boundary_operator import SparseDiscreteBoundaryOperator
-
         self.assertIsInstance(self._local_operator.weak_form(), SparseDiscreteBoundaryOperator)
 
     def test_weak_form_of_dense_operator_is_dense_discrete_operator(self):
-        import bempp
         from bempp.api.assembly.discrete_boundary_operator import DenseDiscreteBoundaryOperator
 
         assembly_mode = bempp.api.global_parameters.assembly.boundary_operator_assembly_type
