@@ -1,3 +1,7 @@
+cimport numpy
+import numpy
+numpy.import_array()
+
 from bempp.core.utils cimport Vector
 from bempp.core.utils cimport complex_double
 from bempp.core.utils cimport c_ParameterList

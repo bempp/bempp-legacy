@@ -1,13 +1,12 @@
+import numpy as np
+cimport numpy as np
+np.import_array()
+
 from bempp.core.utils cimport eigen_matrix_to_np_float64
 from bempp.core.utils cimport eigen_matrix_to_np_complex128
 from bempp.core.utils cimport enum_types as enums
 from libcpp cimport bool as cbool
 from cython.operator cimport dereference as deref
-
-import numpy as np
-cimport numpy as np
-
-
 
 cdef class RealDiscreteBoundaryOperator:
 
