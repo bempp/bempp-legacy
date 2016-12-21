@@ -8,6 +8,7 @@ class TestGridFactory(unittest.TestCase):
     """Unit Tests for the GridFactory."""
 
     def setUp(self):
+        """Setup the unit test."""
         from bempp.api.shapes import regular_sphere
         from bempp.api import GridFactory
 
@@ -36,12 +37,12 @@ class TestGridFactory(unittest.TestCase):
         self.grid = factory.finalize()
 
     def test_grid_size(self):
-
+        """Test the size of grid obtained from a GridFactory."""
         self.assertEqual(self.grid.leaf_view.entity_count(0), self.n_elements)
         self.assertEqual(self.grid.leaf_view.entity_count(2), self.n_vertices)
 
     def test_element_insertion_indices(self):
-
+        """Test the element insertion index."""
         for elem in self.grid.leaf_view.entity_iterator(0):
             insertion_index = self.grid.element_insertion_index(elem)
             original_element_index = self.n_elements - insertion_index - 1
@@ -50,18 +51,22 @@ class TestGridFactory(unittest.TestCase):
                 original_vertex_index = self.elements[
                     i, original_element_index]
                 self.assertAlmostEqual(
-                    np.max(np.abs(corners[:, i] - self.vertices[:, original_vertex_index])), 0, 13)
+                    np.max(np.abs(
+                        corners[:, i] - self.vertices[
+                            :, original_vertex_index])), 0, 13)
 
     def test_vertex_insertion_indices(self):
-
+        """Test the vertex insertion index."""
         for vertex in self.grid.leaf_view.entity_iterator(2):
             insertion_index = self.grid.vertex_insertion_index(vertex)
             original_index = self.n_vertices - insertion_index - 1
-            self.assertAlmostEqual(np.max(np.abs(vertex.geometry.corners[:, 0] - self.vertices[:, original_index])), 0,
-                                   13)
+            self.assertAlmostEqual(
+                np.max(np.abs(
+                    vertex.geometry.corners[:, 0] - self.vertices[
+                        :, original_index])), 0, 13)
 
     def test_domain_indices(self):
-
+        """Test the domain index."""
         for elem in self.grid.leaf_view.entity_iterator(0):
             insertion_index = self.grid.element_insertion_index(elem)
             self.assertEqual(elem.domain, self.domain_indices[insertion_index])

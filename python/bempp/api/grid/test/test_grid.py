@@ -12,6 +12,7 @@ ELEMENTS = np.array([[0, 1],
 
 
 class TestGrid(unittest.TestCase):
+    """Test the Grid implementation."""
 
     def test_structured_grid(self):
         """Test structured grid generation."""
@@ -33,8 +34,7 @@ class TestGrid(unittest.TestCase):
 
     def test_grid_from_element_data(self):
         """Test grid generation from element data."""
-
-        from bempp.api import grid_from_element_data
+        from bempp.api.grid.grid import grid_from_element_data
 
         grid = grid_from_element_data(VERTICES, ELEMENTS)
 
