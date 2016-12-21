@@ -359,6 +359,9 @@ DenseGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
             << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()
             << " ms" << std::endl;
 
+  std::ofstream file("dense_assembly_timer.dat", std::ios::out | std::ios::app);
+  file << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << std::endl;
+
   // Return the discrete operator represented by the matrix that has just been
   // calculated
   return discreteDenseBoundaryOperator;

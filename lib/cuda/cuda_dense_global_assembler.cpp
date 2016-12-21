@@ -207,6 +207,8 @@ size_t getMaxActiveElemPairCount(
   // Let the chunk size be a multiple of the number of test elements
   return std::max((maxActiveElemPairCount / testIndexCount) * testIndexCount,
                   testIndexCount);
+  // Let the chunk size be a multiple of the warp size
+//  return std::max((maxActiveElemPairCount / warpSize) * warpSize, size_t(warpSize));
 }
 
 template <typename BasisFunctionType>
@@ -675,6 +677,9 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::
   std::cout << "Time for CUDA dense assembly = "
             << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()
             << " ms" << std::endl;
+
+  std::ofstream file("cuda_dense_assembly_timer.dat", std::ios::out | std::ios::app);
+  file << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << std::endl;
 
   // Return the discrete operator represented by the matrix that has just been
   // calculated
