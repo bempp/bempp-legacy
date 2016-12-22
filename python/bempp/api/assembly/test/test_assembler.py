@@ -34,8 +34,7 @@ class TestAssembler(TestCase):
 
         operator = self._real_operator
 
-        actual = as_matrix(assemble_dense_block(self._real_operator, bempp.api.ALL, bempp.api.ALL,
-                                                operator.domain, operator.dual_to_range))
+        actual = as_matrix(assemble_dense_block(self._real_operator, bempp.api.ALL, bempp.api.ALL))
 
 
         expected = as_matrix(operator.weak_form())
@@ -54,8 +53,7 @@ class TestAssembler(TestCase):
 
         operator = self._real_operator_2
 
-        actual = as_matrix(assemble_dense_block(operator, bempp.api.ALL, bempp.api.ALL,
-                                                operator.domain, operator.dual_to_range))
+        actual = as_matrix(assemble_dense_block(operator, bempp.api.ALL, bempp.api.ALL))
 
         expected = as_matrix(operator.weak_form())
 
@@ -72,8 +70,7 @@ class TestAssembler(TestCase):
 
         operator = self._real_operator
 
-        actual = as_matrix(assemble_dense_block(self._real_operator, self._rows, self._cols,
-                                                operator.domain, operator.dual_to_range))
+        actual = as_matrix(assemble_dense_block(self._real_operator, self._rows, self._cols))
 
         expected = as_matrix(operator.weak_form())[self._rows[
             0]:self._rows[1], self._cols[0]:self._cols[1]]
@@ -88,8 +85,7 @@ class TestAssembler(TestCase):
         bempp.api.global_parameters.assembly.boundary_operator_assembly_type = 'dense'
 
         operator = self._complex_operator
-        actual = as_matrix(assemble_dense_block(self._complex_operator, bempp.api.ALL, bempp.api.ALL,
-                                                operator.domain, operator.dual_to_range))
+        actual = as_matrix(assemble_dense_block(self._complex_operator, bempp.api.ALL, bempp.api.ALL))
 
         expected = as_matrix(operator.weak_form())
 
@@ -104,8 +100,7 @@ class TestAssembler(TestCase):
 
         operator = self._complex_operator
 
-        actual = as_matrix(assemble_dense_block(self._complex_operator, self._rows, self._cols,
-                                                operator.domain, operator.dual_to_range))
+        actual = as_matrix(assemble_dense_block(self._complex_operator, self._rows, self._cols))
 
         expected = as_matrix(operator.weak_form())[self._rows[
             0]:self._rows[1], self._cols[0]:self._cols[1]]
