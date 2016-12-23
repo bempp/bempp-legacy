@@ -3,7 +3,7 @@
 import unittest
 import numpy as np
 
-
+#pylint: disable=too-many-instance-attributes
 class TestGridFactory(unittest.TestCase):
     """Unit Tests for the GridFactory."""
 
@@ -23,6 +23,7 @@ class TestGridFactory(unittest.TestCase):
         self.elem_permutation = range(self.n_elements)[::-1]
         self.vertex_permutation = range(self.n_vertices)[::-1]
 
+        #pylint: disable=no-member
         self.domain_indices = np.random.randint(10, size=self.n_elements)
 
         factory = GridFactory()

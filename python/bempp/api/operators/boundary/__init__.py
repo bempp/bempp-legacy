@@ -1,7 +1,7 @@
 """This module contains all boundary operators available in BEM++."""
 
-from . import laplace
-from . import helmholtz
-from . import modified_helmholtz
-from . import maxwell
-from . import sparse
+from bempp.api.operators.boundary import laplace
+from bempp.api.operators.boundary import helmholtz
+from bempp.api.operators.boundary import modified_helmholtz
+from bempp.api.operators.boundary import maxwell
+from bempp.api.operators.boundary import sparse

@@ -1,4 +1,4 @@
-
+"""Define interfaces to external viewers."""
 
 def visualize_with_gmsh(obj):
     """
@@ -12,10 +12,9 @@ def visualize_with_gmsh(obj):
     Notes
     -----
     This function writes the data into a temp file and
-    visualizes it. 
+    visualizes it.
 
     """
-
     import tempfile
     import subprocess
     from bempp.api import export, GMSH_PATH, TMP_PATH, GridFunction
@@ -26,11 +25,12 @@ def visualize_with_gmsh(obj):
         print("Gmsh not available for visualization.")
         return None
 
-    f = tempfile.NamedTemporaryFile(suffix=".msh", dir=TMP_PATH, delete=False)
+    outfile = tempfile.NamedTemporaryFile(
+        suffix=".msh", dir=TMP_PATH, delete=False)
     if isinstance(obj, Grid):
-        export(grid=obj, file_name=f.name)
+        export(grid=obj, file_name=outfile.name)
     elif isinstance(obj, GridFunction):
-        export(grid_function=obj, file_name=f.name, transformation=real)
-    f.close()
+        export(grid_function=obj, file_name=outfile.name, transformation=real)
+    outfile.close()
 
-    subprocess.Popen([GMSH_PATH, f.name])
+    subprocess.Popen([GMSH_PATH, outfile.name])

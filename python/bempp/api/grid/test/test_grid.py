@@ -49,6 +49,7 @@ class TestGrid(unittest.TestCase):
         self.assertEqual(actual_vertices.shape[1], 4)
         self.assertEqual(actual_elements.shape[1], 2)
 
+        #pylint: disable=no-member
         for vert in VERTICES.T:
             self.assertIn(vert, actual_vertices.T)
 

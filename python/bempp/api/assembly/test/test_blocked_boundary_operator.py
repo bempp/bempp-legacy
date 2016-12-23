@@ -1,35 +1,42 @@
+"""Test module for blocked boundary operator."""
+
 from unittest import TestCase
 
+#pylint: disable=invalid-name
 
 class TestBlockedBoundaryOperator(TestCase):
+    """Test blocked boundary operators."""
 
     def setUp(self):
+        """Setup the test cases."""
         import bempp.api
 
         grid = bempp.api.shapes.regular_sphere(2)
         self._const_space = bempp.api.function_space(grid, "DP", 0)
         self._lin_space = bempp.api.function_space(grid, "P", 1)
-        
-        self._slp = bempp.api.operators.boundary.laplace.single_layer(self._const_space,
-                self._lin_space, self._const_space)
 
-        self._hyp = bempp.api.operators.boundary.laplace.hypersingular(self._lin_space,
-                self._const_space, self._lin_space)
+        self._slp = bempp.api.operators.boundary.laplace.single_layer(
+            self._const_space, self._lin_space, self._const_space)
 
-    def test_assembly_of_blocked_operator_fails_for_incompatible_dimensions(self):
+        self._hyp = bempp.api.operators.boundary.laplace.hypersingular(
+            self._lin_space, self._const_space, self._lin_space)
+
+    def test_assembly_fails_for_incompatible_dimensions(self):
+        """Assembly fails for incompatible dimensions."""
 
         from bempp.api import BlockedOperator
 
-        op = BlockedOperator(2,1)
+        op = BlockedOperator(2, 1)
         op[0, 0] = self._slp
         with self.assertRaises(ValueError):
             op[1, 0] = self._hyp
 
-    def test_assembly_of_blocked_operator_succeeds_for_ompatible_dimensions(self):
+    def test_assembly_succeeds_for_compatible_dimensions(self):
+        """Assembly succeeds for compatible dimensions."""
 
         from bempp.api import BlockedOperator
 
-        op = BlockedOperator(2,1)
+        op = BlockedOperator(2, 1)
         op[0, 0] = self._slp
         op[1, 0] = self._slp
 
@@ -40,9 +47,9 @@ class TestBlockedBoundaryOperator(TestCase):
         self.assertEqual(shape[1], self._slp.weak_form().shape[1])
 
     def test_matvec_with_pair_of_spaces(self):
+        """Matvec gives the correct result."""
 
         from bempp.api import BlockedOperator
-        from bempp.api import GridFunction
         import bempp.api
         import numpy as np
 
@@ -52,23 +59,15 @@ class TestBlockedBoundaryOperator(TestCase):
                 op[i, j] = self._slp
 
         dof_count = self._const_space.global_dof_count
-        grid_fun = bempp.api.GridFunction(self._const_space,
-                coefficients=np.ones(dof_count))
+        grid_fun = bempp.api.GridFunction(
+            self._const_space, coefficients=np.ones(dof_count))
         res = op * [grid_fun, grid_fun]
-        proj = res[0].projections()
 
         single_res = self._slp * grid_fun
 
-        np.testing.assert_allclose(res[0].projections(),
-                2 * single_res.projections())
-
-
-
-
-
-
-
-
+        #pylint: disable=no-member
+        np.testing.assert_allclose(
+            res[0].projections(), 2 * single_res.projections())
 
 
 if __name__ == "__main__":
