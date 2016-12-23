@@ -8,10 +8,11 @@ underlying concepts see therefore also the tutorials at
 https://dune-project.original
 
 """
-from .entity import Entity as _Entity
-from .grid_view import GridView as _GridView
-from .id_set import IdSet as _IdSet
+from bempp.api.grid.entity import Entity as _Entity
+from bempp.api.grid.grid_view import GridView as _GridView
+from bempp.api.grid.id_set import IdSet as _IdSet
 
+#pylint: disable=protected-access
 
 class Grid(object):
     """The basic grid class in BEM++.
@@ -145,7 +146,7 @@ class Grid(object):
         return _IdSet(self._impl.id_set)
 
 
-def grid_from_element_data(vertices, elements, domain_indices=[]):
+def grid_from_element_data(vertices, elements, domain_indices=None):
     """Create a grid from a given set of vertices and elements.
 
     This function takes a list of vertices and a list of elements
@@ -178,14 +179,18 @@ def grid_from_element_data(vertices, elements, domain_indices=[]):
 
     """
     from bempp.api import LOGGER
+    #pylint: disable=no-name-in-module
     from bempp.core.grid.grid import grid_from_element_data as grid_fun
+
+    if domain_indices is None:
+        domain_indices = []
 
     grid = Grid(grid_fun(vertices, elements, domain_indices))
     LOGGER.info(
-        "Created grid with {0} elements, {1} nodes and {2} edges.".format(
-            grid.leaf_view.entity_count(0),
-            grid.leaf_view.entity_count(2),
-            grid.leaf_view.entity_count(1)))
+        "Created grid with %i elements, %i nodes and %i edges.",
+        grid.leaf_view.entity_count(0),
+        grid.leaf_view.entity_count(2),
+        grid.leaf_view.entity_count(1))
     return grid
 
 
@@ -223,14 +228,17 @@ def structured_grid(lower_left, upper_right,
     >>> grid = structured_grid((0,0),(1,1),(100,100))
 
     """
-    from bempp.core.grid.grid import structured_grid as grid_fun
     import numpy as np
+    #pylint: disable=no-name-in-module
+    from bempp.core.grid.grid import structured_grid as grid_fun
 
     # Get a grid along the xy axis
     grid = Grid(grid_fun(lower_left, upper_right, subdivisions))
 
     vertices = grid.leaf_view.vertices
     elements = grid.leaf_view.elements
+
+    #pylint: disable=no-member
 
     if axis == "xy":
         # Nothing to be done

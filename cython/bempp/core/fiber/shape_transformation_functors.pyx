@@ -35,11 +35,11 @@ cdef class ShapeTransformationFunctorContainer:
     def __dealloc__(self):
         self.impl_.reset()
 
-    def argumentDimension(self):
+    def argument_dimension(self):
 
         return deref(self.impl_).argumentDimension()
 
-    def resultDimension(self):
+    def result_dimension(self):
 
         return deref(self.impl_).resultDimension(0)
 

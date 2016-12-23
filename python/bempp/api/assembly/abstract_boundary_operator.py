@@ -29,25 +29,25 @@ class ElementaryAbstractIntegralOperator(object):
             from bempp.api.assembly.boundary_operator import \
                 ElementaryBoundaryOperator
             # assemble_singular_part expects boundary operator, so create one
-            op = ElementaryBoundaryOperator(self, parameters=parameters)
+            sing_op = ElementaryBoundaryOperator(self, parameters=parameters)
 
-            return assemble_singular_part(op)
+            return assemble_singular_part(sing_op)
 
         if parameters.assembly.boundary_operator_assembly_type == 'dense':
             from bempp.api.assembly.discrete_boundary_operator import \
                 DenseDiscreteBoundaryOperator
 
-            discrete_operator = DenseDiscreteBoundaryOperator(
+            dense_discrete_operator = DenseDiscreteBoundaryOperator(
                 self._impl.assemble_weak_form(parameters).as_matrix())
+            return dense_discrete_operator
 
         else:
             from bempp.api.assembly.discrete_boundary_operator import \
                 GeneralNonlocalDiscreteBoundaryOperator
 
-            discrete_operator = GeneralNonlocalDiscreteBoundaryOperator(
+            general_discrete_operator = GeneralNonlocalDiscreteBoundaryOperator(
                 self._impl.assemble_weak_form(parameters))
-
-        return discrete_operator
+            return general_discrete_operator
 
     @property
     def domain(self):
@@ -77,12 +77,13 @@ class ElementaryAbstractLocalOperator(object):
 
     def make_local_assembler(self, parameters):
         """Create a local assembler object from the abstract operator."""
-        from .assembler import LocalOperatorLocalAssembler
+        from bempp.api.assembly.assembler import LocalOperatorLocalAssembler
         return LocalOperatorLocalAssembler(
             self._impl.make_local_assembler(parameters))
 
     def assemble_weak_form(self, parameters):
         """Assemble the local operator and return the assembled operator."""
+        #pylint: disable=no-name-in-module
         from bempp.core.assembly.discrete_boundary_operator import \
             convert_to_sparse
         from bempp.api.assembly.discrete_boundary_operator import \

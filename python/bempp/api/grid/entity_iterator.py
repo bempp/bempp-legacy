@@ -1,7 +1,7 @@
 """Define the EntityIterator class."""
 
-from .entity import Entity as _Entity
 
+#pylint: disable=too-few-public-methods
 
 class EntityIterator(object):
     """Implements iterators over entities."""
@@ -13,8 +13,9 @@ class EntityIterator(object):
 
     def next(self):
         """Return the next element."""
-        return _Entity(self._codimension,
-                       self._impl.__next__())
+        import bempp.api.grid.entity as _entity
+        return _entity.Entity(self._codimension,
+                              self._impl.__next__())
 
     def __next__(self):
         """Special method. Return the next element."""

@@ -12,8 +12,7 @@ class GridView(object):
         self._elements = None
         self._vertices = None
         self._edges = None
-        self._vertex_to_element_matrix = None
-        self._edge_to_element_matrix = None
+        self._connectivity = None
 
     def _create_connectivity_matrices(self):
         """
@@ -26,9 +25,9 @@ class GridView(object):
         import numpy as np
         from scipy.sparse import csc_matrix
 
-        number_of_elements = self.entity_count(0)
-        number_of_edges = self.entity_count(1)
-        number_of_vertices = self.entity_count(2)
+        entity_count = {0: self.entity_count(0),
+                        1: self.entity_count(1),
+                        2: self.entity_count(2)}
 
         edge_indices = []
         edge_element_indices = []
@@ -55,17 +54,19 @@ class GridView(object):
 
         # Now create the matrices
 
-        self._vertex_to_element_matrix = csc_matrix(
-                (np.ones(len(vertex_indices), dtype='int64'),
-                 (vertex_indices, vertex_element_indices)),
-                shape=(number_of_vertices, number_of_elements),
-                dtype=np.int64)
+        self._connectivity = {}
 
-        self._edge_to_element_matrix = csc_matrix(
-                (np.ones(len(edge_indices), dtype='int64'),
-                 (edge_indices, edge_element_indices)),
-                shape=(number_of_edges, number_of_elements),
-                dtype=np.int64)
+        self._connectivity['vertices'] = csc_matrix(
+            (np.ones(len(vertex_indices), dtype='int64'),
+             (vertex_indices, vertex_element_indices)),
+            shape=(entity_count[2], entity_count[0]),
+            dtype=np.int64)
+
+        self._connectivity['edges'] = csc_matrix(
+            (np.ones(len(edge_indices), dtype='int64'),
+             (edge_indices, edge_element_indices)),
+            shape=(entity_count[1], entity_count[0]),
+            dtype=np.int64)
 
     def entity_count(self, codimension):
         """Return the number of entities of a given codimension."""
@@ -74,29 +75,27 @@ class GridView(object):
     def index_set(self):
         """Return an IndexSet object for the GridView."""
         if self._index_set is None:
-            from .index_set import IndexSet
+            from bempp.api.grid.index_set import IndexSet
             self._index_set = IndexSet(self._impl.index_set())
         return self._index_set
 
     def entity_iterator(self, codimension):
         """Return an entity iterator for a given codimension."""
+        from bempp.api.grid.entity_iterator import EntityIterator
         if codimension == 0:
             if self._elements is None:
-                from .entity_iterator import EntityIterator
                 self._elements = list(
                     EntityIterator(codimension, self._impl.entity_iterator(
                         codimension)))
             return iter(self._elements)
         if codimension == 1:
             if self._edges is None:
-                from .entity_iterator import EntityIterator
                 self._edges = list(
                     EntityIterator(codimension, self._impl.entity_iterator(
                         codimension)))
             return iter(self._edges)
         if codimension == 2:
             if self._vertices is None:
-                from .entity_iterator import EntityIterator
                 self._vertices = list(
                     EntityIterator(codimension, self._impl.entity_iterator(
                         codimension)))
@@ -123,9 +122,9 @@ class GridView(object):
         is 1 if vertex i is associated with element j, otherwise A[i, j] = 0.
 
         """
-        if self._vertex_to_element_matrix is None:
+        if self._connectivity is None:
             self._create_connectivity_matrices()
-        return self._vertex_to_element_matrix
+        return self._connectivity['vertices']
 
     @property
     def edge_to_element_matrix(self):
@@ -136,9 +135,9 @@ class GridView(object):
         is 1 if edge i is associated with element j, otherwise A[i, j] = 0.
 
         """
-        if self._edge_to_element_matrix is None:
+        if self._connectivity is None:
             self._create_connectivity_matrices()
-        return self._edge_to_element_matrix
+        return self._connectivity['edges']
 
     @property
     def dim(self):

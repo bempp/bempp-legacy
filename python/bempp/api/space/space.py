@@ -102,15 +102,17 @@ class Space(object):
 
         if self._mass_matrix is None:
             from bempp.api.operators.boundary.sparse import identity
-            self._mass_matrix = identity(self, self, self)
+            self._mass_matrix = identity(self, self, self).weak_form()
 
         return self._mass_matrix
 
     def inverse_mass_matrix(self):
-	
-        import bempp.api
+
+        from bempp.api.assembly.discrete_boundary_operator import \
+            InverseSparseDiscreteBoundaryOperator
+
         if self._inverse_mass_matrix is None:
-            self._inverse_mass_matrix = bempp.api.InverseLocalBoundaryOperator(
+            self._inverse_mass_matrix = InverseSparseDiscreteBoundaryOperator(
                     self.mass_matrix())
         return self._inverse_mass_matrix
 
@@ -418,7 +420,7 @@ class BarycentricRTSpace(Space):
         self._has_non_barycentric_space = True
         self._non_barycentric_space = function_space(grid, "RT", 0)
         self._discontinuous_space = function_space(grid.barycentric_grid(), "DP", 1)
-        self._super_space = function_space(grid.barycentric_grid(), "RT", 0) 
+        self._super_space = function_space(grid.barycentric_grid(), "RT", 0)
         self._evaluation_functor = hdiv_function_value_functor()
         self._is_barycentric = True
         self._grid = grid.barycentric_grid()
@@ -686,4 +688,3 @@ def function_space(grid, kind, order, domains=None, closed=True, strictly_on_seg
         return RotatedBuffaChristiansenSpace(grid, comp_key)
     else:
         raise ValueError("Unknown space type.")
-

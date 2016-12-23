@@ -1,7 +1,8 @@
 """Definition of blocked operator structures."""
 
 import numpy as _np
-from .discrete_boundary_operator import DiscreteBoundaryOperator
+from bempp.api.assembly.discrete_boundary_operator import \
+    DiscreteBoundaryOperator
 
 
 def _sum(op1, op2):
@@ -27,8 +28,7 @@ class BlockedOperatorBase(object):
 
     def __init__(self, m, n):
         """Construct an m x n blocked operator."""
-        self._m = m
-        self._n = n
+        self._ndims = (m, n)
         self._weak_form = None
         self._range_map = None
 
@@ -74,17 +74,18 @@ class BlockedOperatorBase(object):
                 if self.range_spaces[index] == \
                         self.dual_to_range_spaces[index]:
                     _range_ops[index, index] = \
-                        self.dual_to_range_spaces[index].inverse_mass_matrix()\
-                            .weak_form()
+                        self.dual_to_range_spaces[index].inverse_mass_matrix()
                 else:
                     from bempp.api.operators.boundary.sparse import identity
-                    from bempp.api.assembly.boundary_operator import \
-                        InverseLocalBoundaryOperator
+                    from bempp.api.assembly.discrete_boundary_operator import \
+                        InverseSparseDiscreteBoundaryOperator
 
-                    _range_ops[index, index] = InverseLocalBoundaryOperator(
-                        identity(self.range_spaces[index],
-                                 self.range_spaces[index],
-                                 self.dual_to_range_spaces[index])).weak_form()
+                    _range_ops[index, index] = \
+                        InverseSparseDiscreteBoundaryOperator(
+                            identity(
+                                self.range_spaces[index],
+                                self.range_spaces[index],
+                                self.dual_to_range_spaces[index]).weak_form())
 
             self._range_map = BlockedDiscreteOperator(_range_ops)
 
@@ -94,10 +95,14 @@ class BlockedOperatorBase(object):
         """Return an operator indexed by a key of the form (i, j)."""
         raise NotImplementedError()
 
+    def _weak_form_impl(self):
+        """Implement the actual weak form computation."""
+        raise NotImplementedError()
+
     @property
     def ndims(self):
         """Number of block rows and block columns."""
-        return (self._m, self._n)
+        return self._ndims
 
     @property
     def range_spaces(self):
@@ -131,10 +136,9 @@ class BlockedOperatorBase(object):
 
     def __mul__(self, other):
         """Multiply two blocked operators."""
-        import numpy as np
         import collections
 
-        if np.isscalar(other):
+        if _np.isscalar(other):
             # Multiplication with scalar
             return ScaledBlockedOperator(self, other)
         elif isinstance(other, BlockedOperatorBase):
@@ -156,15 +160,15 @@ class BlockedOperatorBase(object):
             weak_op = self.weak_form()
             input_type = list_input[0].coefficients.dtype
             for item in list_input:
-                input_type = np.promote_types(input_type,
-                                              item.coefficients.dtype)
-            x = np.zeros(weak_op.shape[1], dtype=input_type)
-            col_pos = np.hstack([[0], np.cumsum(weak_op.column_dimensions)])
-            row_pos = np.hstack([[0], np.cumsum(weak_op.row_dimensions)])
+                input_type = _np.promote_types(input_type,
+                                               item.coefficients.dtype)
+            x_in = _np.zeros(weak_op.shape[1], dtype=input_type)
+            col_pos = _np.hstack([[0], _np.cumsum(weak_op.column_dimensions)])
+            row_pos = _np.hstack([[0], _np.cumsum(weak_op.row_dimensions)])
             for index in range(weak_op.ndims[1]):
-                x[col_pos[index]:col_pos[index+1]] = \
+                x_in[col_pos[index]:col_pos[index+1]] = \
                     list_input[index].coefficients
-            res = weak_op * x
+            res = weak_op * x_in
 
             # Now assemble the output grid functions back together.
             output_list = []
@@ -181,8 +185,7 @@ class BlockedOperatorBase(object):
 
     def __rmul__(self, other):
         """Right multiplication."""
-        import numpy as np
-        if np.isscalar(other):
+        if _np.isscalar(other):
             return self.__mul__(other)
         else:
             return NotImplementedError
@@ -209,9 +212,9 @@ class BlockedOperator(BlockedOperatorBase):
 
         if self._operators[key] is None:
             return bempp.api.ZeroBoundaryOperator(
-                    self.domain_spaces[key[1]],
-                    self.range_spaces[key[0]],
-                    self.dual_to_range_spaces[key[0]])
+                self.domain_spaces[key[1]],
+                self.range_spaces[key[0]],
+                self.dual_to_range_spaces[key[0]])
         else:
             return self._operators[key]
 
@@ -223,20 +226,20 @@ class BlockedOperator(BlockedOperatorBase):
         if self.range_spaces[row] is not None:
             if operator.range != self.range_spaces[row]:
                 raise ValueError(
-                        "Range space not compatible with " +
-                        "self.range_spaces[{0}]".format(row))
+                    "Range space not compatible with " +
+                    "self.range_spaces[{0}]".format(row))
 
         if self.dual_to_range_spaces[row] is not None:
             if operator.dual_to_range != self.dual_to_range_spaces[row]:
                 raise ValueError(
-                        "Dual to range space not compatible with " +
-                        "self.dual_to_range_spaces[{0}]".format(row))
+                    "Dual to range space not compatible with " +
+                    "self.dual_to_range_spaces[{0}]".format(row))
 
         if self.domain_spaces[col] is not None:
             if operator.domain != self.domain_spaces[col]:
                 raise ValueError(
-                        "Domain space {0} not compatible with " +
-                        "self.domain_spaces[{0}] = {2}".format(col))
+                    "Domain space not compatible with " +
+                    "self.domain_spaces[{0}]".format(col))
 
         self._range_spaces[row] = operator.range
         self._dual_to_range_spaces[row] = operator.dual_to_range
@@ -378,15 +381,15 @@ class ProductBlockedOperator(BlockedOperatorBase):
         i = key[0]
         j = key[1]
 
-        op = bempp.api.ZeroBoundaryOperator(
+        res = bempp.api.ZeroBoundaryOperator(
             self.domain_spaces[j],
             self.range_spaces[i],
             self.dual_to_range_spaces[i])
 
         for k in range(self._op1.ndims[1]):
-            op = _sum(op, _prod(self._op1[i, k], self._op2[k, j]))
+            res = _sum(res, _prod(self._op1[i, k], self._op2[k, j]))
 
-        return op
+        return res
 
     @property
     def range_spaces(self):
@@ -423,9 +426,9 @@ class ScaledBlockedOperator(BlockedOperatorBase):
 
         if self._op[key] is None:
             return bempp.api.ZeroBoundaryOperator(
-                    self.domain_spaces[key[1]],
-                    self.range_spaces[key[0]],
-                    self.dual_to_range_spaces[key[0]])
+                self.domain_spaces[key[1]],
+                self.range_spaces[key[0]],
+                self.dual_to_range_spaces[key[0]])
         else:
             return self._op[key] * self._alpha
 
@@ -465,14 +468,13 @@ class BlockedDiscreteOperatorBase(DiscreteBoundaryOperator):
             resulting discrete operator.
 
         """
-        self._m = m
-        self._n = n
+        self._ndims = (m, n)
         super(BlockedDiscreteOperatorBase, self).__init__(dtype, shape)
 
     @property
     def ndims(self):
         """Tuple with the number of row and column dimensions."""
-        return (self._m, self._n)
+        return self._ndims
 
     @property
     def row_dimensions(self):
@@ -519,11 +521,11 @@ class BlockedDiscreteOperatorBase(DiscreteBoundaryOperator):
         elif isinstance(other, _LinearOperator):
             return super(BlockedDiscreteOperatorBase, self).dot(other)
         else:
-            x = _np.asarray(other)
-            if x.ndim == 1 or (x.ndim == 2 and x.shape[1] == 1):
-                return self._matvec(x)
-            elif x.ndim == 2:
-                return self._matmat(x)
+            x_in = _np.asarray(other)
+            if x_in.ndim == 1 or (x_in.ndim == 2 and x_in.shape[1] == 1):
+                return self._matvec(x_in)
+            elif x_in.ndim == 2:
+                return self._matmat(x_in)
             else:
                 raise ValueError("Expect a 1d or 2d array or matrix.")
 
@@ -583,18 +585,19 @@ class BlockedDiscreteOperator(BlockedDiscreteOperatorBase):
         A None entry is equivalent to a zero discrete boundary operator.
 
         """
+        #pylint: disable=too-many-branches
         if not isinstance(ops, _np.ndarray):
             ops = _np.array(ops)
 
-        m = ops.shape[0]
-        n = ops.shape[1]
+        rows = ops.shape[0]
+        cols = ops.shape[1]
 
-        self._operators = _np.empty((m, n), dtype=_np.object)
-        self._rows = -_np.ones(m, dtype=int)
-        self._cols = -_np.ones(n, dtype=int)
+        self._operators = _np.empty((rows, cols), dtype=_np.object)
+        self._rows = -_np.ones(rows, dtype=int)
+        self._cols = -_np.ones(cols, dtype=int)
 
-        for i in range(m):
-            for j in range(n):
+        for i in range(rows):
+            for j in range(cols):
                 if ops[i, j] is None:
                     continue
                 if self._rows[i] != -1:
@@ -621,8 +624,8 @@ class BlockedDiscreteOperator(BlockedDiscreteOperatorBase):
         from bempp.api.assembly.discrete_boundary_operator import \
             ZeroDiscreteBoundaryOperator
 
-        for i in range(m):
-            for j in range(n):
+        for i in range(rows):
+            for j in range(cols):
                 if self._operators[i, j] is None:
                     self._operators[i, j] = ZeroDiscreteBoundaryOperator(
                         self._rows[i], self._cols[j])
@@ -673,9 +676,9 @@ class BlockedDiscreteOperator(BlockedDiscreteOperatorBase):
                     self._operators[i, j].dtype.type(1))
                 if _np.iscomplexobj(x) and not op_is_complex:
                     local_res[:] += (self._operators[i, j].dot(
-                                        _np.real(local_x)) +
+                        _np.real(local_x)) +
                                      1j * self._operators[i, j].dot(
-                                        _np.imag(local_x)))
+                                         _np.imag(local_x)))
                 else:
                     local_res[:] += self._operators[i, j].dot(local_x)
                 col_dim += self._cols[j]
@@ -699,6 +702,14 @@ class BlockedDiscreteOperator(BlockedDiscreteOperatorBase):
                 row.append(self[i, j].as_matrix())
             rows.append(_np.hstack(row))
         return _np.vstack(rows)
+
+    def _transpose(self):
+        """Implement the transpose."""
+        raise NotImplementedError()
+
+    def _adjoint(self):
+        """Implement the adjoint."""
+        raise NotImplementedError()
 
     row_dimensions = property(_get_row_dimensions)
     column_dimensions = property(_get_column_dimensions)
@@ -724,9 +735,9 @@ class BlockedDiscreteOperatorSum(BlockedDiscreteOperatorBase):
         from bempp.api.utils.data_types import combined_type
 
         super(BlockedDiscreteOperatorSum, self).__init__(
-                op1.ndims[0], op1.ndims[1],
-                combined_type(op1.dtype, op2.dtype),
-                (op1.shape[0], op1.shape[1]))
+            op1.ndims[0], op1.ndims[1],
+            combined_type(op1.dtype, op2.dtype),
+            (op1.shape[0], op1.shape[1]))
 
     def _matvec(self, x):
         return self._op1 * x + self._op2 * x
@@ -734,6 +745,14 @@ class BlockedDiscreteOperatorSum(BlockedDiscreteOperatorBase):
     def __getitem__(self, key):
         """Return item (i, j)."""
         return self._op1[key] + self._op2[key]
+
+    def _transpose(self):
+        """Transpose of sum."""
+        raise NotImplementedError()
+
+    def _adjoint(self):
+        """Adjoint of sum."""
+        raise NotImplementedError()
 
     @property
     def row_dimensions(self):
@@ -761,9 +780,9 @@ class BlockedDiscreteOperatorProduct(BlockedDiscreteOperatorBase):
         from bempp.api.utils.data_types import combined_type
 
         super(BlockedDiscreteOperatorProduct, self).__init__(
-                op1.ndims[0], op2.ndims[1],
-                combined_type(op1.dtype, op2.dtype),
-                (op1.shape[0], op2.shape[1]))
+            op1.ndims[0], op2.ndims[1],
+            combined_type(op1.dtype, op2.dtype),
+            (op1.shape[0], op2.shape[1]))
 
     def _matvec(self, x):
         return self._op1 * (self._op2 * x)
@@ -776,14 +795,22 @@ class BlockedDiscreteOperatorProduct(BlockedDiscreteOperatorBase):
         i = key[0]
         j = key[1]
 
-        op = ZeroDiscreteBoundaryOperator(
+        res = ZeroDiscreteBoundaryOperator(
             self.row_dimensions[i],
             self.column_dimensions[j])
 
         for k in range(self._op1.ndims[1]):
-            op += self._op1[i, k] * self._op2[k, j]
+            res += self._op1[i, k] * self._op2[k, j]
 
-        return op
+        return res
+
+    def _adjoint(self):
+        """Implement the product adjoint."""
+        raise NotImplementedError()
+
+    def _transpose(self):
+        """Implement the product transpose."""
+        raise NotImplementedError()
 
     @property
     def row_dimensions(self):
@@ -805,13 +832,13 @@ class BlockedScaledDiscreteOperator(BlockedDiscreteOperatorBase):
         self._alpha = alpha
 
         if _np.iscomplex(alpha):
-            d = _np.dtype('complex128')
+            dtype = _np.dtype('complex128')
         else:
-            d = op.dtype
+            dtype = op.dtype
 
         super(BlockedScaledDiscreteOperator, self).__init__(
-                op.ndims[0], op.ndims[1], d,
-                (op.shape[0], op.shape[1]))
+            op.ndims[0], op.ndims[1], dtype,
+            (op.shape[0], op.shape[1]))
 
     def _matvec(self, x):
         return self._alpha * (self._op * x)
@@ -819,6 +846,14 @@ class BlockedScaledDiscreteOperator(BlockedDiscreteOperatorBase):
     def __getitem__(self, key):
         """Return the item at position (i, j)."""
         return self._op[key] * self._alpha
+
+    def _adjoint(self):
+        """Implement the scaled adjoint."""
+        raise NotImplementedError()
+
+    def _transpose(self):
+        """Implement the scaled transpose."""
+        raise NotImplementedError()
 
     @property
     def row_dimensions(self):

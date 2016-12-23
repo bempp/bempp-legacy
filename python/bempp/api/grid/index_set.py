@@ -9,6 +9,7 @@ but may change between different refinement levels.
 
 """
 
+#pylint: disable=protected-access
 
 class IndexSet(object):
     """Query the index set of a grid view."""

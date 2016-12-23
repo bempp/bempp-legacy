@@ -34,14 +34,15 @@ class Entity(object):
         >>>     print(vertex.geometry.corners)
 
         """
+        import bempp.api.grid.entity_iterator as _entity_iterator
         if self.codimension != 0:
             raise Exception(
                 "Error. Codimension is {0}".format(self.codimension) +
                 ", but method can only be called for entities of codim 0.")
 
-        from .entity_iterator import EntityIterator
-        return EntityIterator(codimension,
-                              self._impl.sub_entity_iterator(codimension))
+        return _entity_iterator.EntityIterator(
+            codimension,
+            self._impl.sub_entity_iterator(codimension))
 
     @property
     def domain(self):

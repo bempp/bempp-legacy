@@ -5,10 +5,10 @@ class PotentialOperator:
     """Provides an interface to potential operators.
 
     This class is not supposed to be instantiated directly.
-
     """
 
     def __init__(self, op, component_count, space, evaluation_points):
+        """Constructor. Should not be called by the user."""
 
         self._op = op
         self._component_count = component_count
@@ -16,7 +16,8 @@ class PotentialOperator:
         self._evaluation_points = evaluation_points
 
     def evaluate(self, grid_fun):
-        """Apply the potential operator to a grid function.
+        """
+        Apply the potential operator to a grid function.
 
         Parameters
         ----------
@@ -62,7 +63,7 @@ class PotentialOperator:
             return self.evaluate(obj)
         else:
             raise NotImplementedError(
-                "Cannot multiply with object of type {0}".format(str(type(obj))))
+                "Cannot multiply with object of type %s", str(type(obj)))
 
     def __neg__(self):
 
@@ -79,7 +80,7 @@ class PotentialOperator:
 
     @property
     def component_count(self):
-        """Return number of components of the potential (e.g. 1 or scalar potentials)."""
+        """Number of components of the potential (1 for scalar potentials)."""
         return self._component_count
 
     @property
@@ -89,9 +90,10 @@ class PotentialOperator:
 
     @property
     def discrete_operator(self):
-        """Return the underlying discrete operator that represents the potential."""
+        """Return the underlying discrete operator."""
         return self._op
 
     @property
     def dtype(self):
+        """Data type of the potential."""
         return self._op.dtype

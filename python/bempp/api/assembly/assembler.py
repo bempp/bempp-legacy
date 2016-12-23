@@ -1,5 +1,52 @@
 """Various assemblers for integral operators."""
 
+def _matrix_from_integration_pairs(
+        assembler,
+        all_test_trial_function_pairs,
+        dof_map, dof_count, weak_form_lookup):
+    """Create a sparse matrix from integration pairs."""
+    #pylint: disable=too-many-locals
+    import numpy as np
+    from scipy.sparse import csc_matrix
+    from bempp.api.assembly.discrete_boundary_operator import \
+        SparseDiscreteBoundaryOperator
+
+    data = np.zeros(len(all_test_trial_function_pairs),
+                    dtype=assembler.dtype)
+    row_indices = np.zeros(len(all_test_trial_function_pairs),
+                           dtype=np.int)
+    col_indices = np.zeros(len(all_test_trial_function_pairs),
+                           dtype=np.int)
+
+    for index, (test_index, trial_index) in enumerate(
+            all_test_trial_function_pairs):
+
+        row_indices[index] = test_index
+        col_indices[index] = trial_index
+
+        # Get local dofs and dof_weights
+        test_dofs, test_weights = (dof_map['test'][0][test_index],
+                                   dof_map['test'][1][test_index])
+        trial_dofs, trial_weights = (dof_map['trial'][0][trial_index],
+                                     dof_map['trial'][1][trial_index])
+
+        for i, test_dof in enumerate(test_dofs):
+            for j, trial_dof in enumerate(trial_dofs):
+                element_pair = (test_dof.entity_index,
+                                trial_dof.entity_index)
+                weak_form_data = weak_form_lookup.get(element_pair)
+                data[index] += (weak_form_data[test_dof.dof_index,
+                                               trial_dof.dof_index] *
+                                #pylint: disable=no-member
+                                np.conj(test_weights[i]) *
+                                #pylint: disable=no-member
+                                np.conj(trial_weights[j]))
+
+    return SparseDiscreteBoundaryOperator(
+        csc_matrix((data, (row_indices, col_indices)),
+                   shape=(dof_count['test'], dof_count['trial'])))
+
+
 
 class LocalOperatorLocalAssembler(object):
     """This assembler evaluates local weak forms for local operators."""
@@ -46,8 +93,10 @@ class IntegralOperatorLocalAssembler(object):
 
 def assemble_dense_block(operator, rows, cols, parameters=None):
     """Assemble a dense (sub)-block of an elementary integral operator."""
-    from .boundary_operator import ElementaryBoundaryOperator
-    from .discrete_boundary_operator import DenseDiscreteBoundaryOperator
+    from bempp.api.assembly.boundary_operator import ElementaryBoundaryOperator
+    from bempp.api.assembly.discrete_boundary_operator import \
+        DenseDiscreteBoundaryOperator
+    #pylint: disable=no-name-in-module
     from bempp.core.assembly.assembler import assemble_dense_block_ext
 
     if not isinstance(operator, ElementaryBoundaryOperator):
@@ -57,6 +106,7 @@ def assemble_dense_block(operator, rows, cols, parameters=None):
     if parameters is None:
         parameters = operator.parameters
 
+    #pylint: disable=protected-access
     return DenseDiscreteBoundaryOperator(
         assemble_dense_block_ext(rows, cols,
                                  operator.domain._impl,
@@ -67,47 +117,10 @@ def assemble_dense_block(operator, rows, cols, parameters=None):
 
 def assemble_singular_part(operator):
     """Assemble the singular part of an integral operator."""
-    def create_sparse_matrix_from_integration_pairs(
-            all_test_trial_function_pairs,
-            test_dof_map, trial_dof_map, test_dof_count, trial_dof_count):
-
-        data = np.zeros(len(all_test_trial_function_pairs),
-                        dtype=assembler.dtype)
-        row_indices = np.zeros(len(all_test_trial_function_pairs),
-                               dtype=np.int)
-        col_indices = np.zeros(len(all_test_trial_function_pairs),
-                               dtype=np.int)
-
-        for index, (test_index, trial_index) in enumerate(
-                all_test_trial_function_pairs):
-
-            row_indices[index] = test_index
-            col_indices[index] = trial_index
-
-            # Get local dofs and dof_weights
-            test_dofs, test_weights = (test_dof_map[0][test_index],
-                                       test_dof_map[1][test_index])
-            trial_dofs, trial_weights = (trial_dof_map[0][trial_index],
-                                         trial_dof_map[1][trial_index])
-
-            for i, test_dof in enumerate(test_dofs):
-                for j, trial_dof in enumerate(trial_dofs):
-                    element_pair = (test_dof.entity_index,
-                                    trial_dof.entity_index)
-                    weak_form_data = weak_form_lookup.get(element_pair)
-                    data[index] += (weak_form_data[test_dof.dof_index,
-                                    trial_dof.dof_index] * np.conj(
-                                     test_weights[i]) * np.conj(
-                                      trial_weights[j]))
-
-        return SparseDiscreteBoundaryOperator(
-            csc_matrix((data, (row_indices, col_indices)),
-                       shape=(test_dof_count, trial_dof_count)))
-
+    #pylint: disable=too-many-locals
     from scipy.sparse import csc_matrix
     from bempp.api.assembly.discrete_boundary_operator import \
         SparseDiscreteBoundaryOperator
-    import numpy as np
 
     test_space = operator.dual_to_range
     trial_space = operator.domain
@@ -171,7 +184,7 @@ def assemble_singular_part(operator):
         for test_dof in test_local_dofs:
             for trial_dof in trial_local_dofs:
                 all_integration_element_pairs.append(
-                        (test_dof.entity_index, trial_dof.entity_index))
+                    (test_dof.entity_index, trial_dof.entity_index))
 
     # Remove duplicates
     all_integration_element_pairs = list(set(all_integration_element_pairs))
@@ -189,6 +202,9 @@ def assemble_singular_part(operator):
 
     # Now need to create the sparse matrix
 
-    return create_sparse_matrix_from_integration_pairs(
-            all_test_trial_function_pairs,
-            test_dof_map, trial_dof_map, test_dof_count, trial_dof_count)
+    return _matrix_from_integration_pairs(
+        operator.local_assembler,
+        all_test_trial_function_pairs,
+        {'test': test_dof_map, 'trial': trial_dof_map},
+        {'test': test_dof_count, 'trial': trial_dof_count},
+        weak_form_lookup)

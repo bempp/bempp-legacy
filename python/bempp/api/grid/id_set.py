@@ -7,6 +7,7 @@ entity does not change.
 
 """
 
+#pylint: disable=protected-access
 
 class IdSet(object):
     """Query the id set of a grid."""
