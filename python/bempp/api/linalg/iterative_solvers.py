@@ -25,7 +25,7 @@ class _it_counter(object):
         return self._residuals
 
 
-def gmres(A, b, tol=1E-5, restart=None, maxiter=None, use_strong_form=False, return_residuals=False):
+def gmres(A, b, tol=1E-5, restart=None, maxiter=None, use_strong_form=False, return_residuals=False, return_iterations=False):
     """Interface to the scipy.sparse.linalg.gmres function.
 
     This function behaves like the scipy.sparse.linalg.gmres function. But
@@ -67,14 +67,18 @@ def gmres(A, b, tol=1E-5, restart=None, maxiter=None, use_strong_form=False, ret
 
     res_fun = GridFunction(A.domain, coefficients=x.ravel())
 
-    if return_residuals:
+    if return_residuals and return_iterations:
+        return res_fun, info, callback.residuals, callback.count
+    elif return_iterations:
+        return res_fun, info, callback.count
+    elif return_residuals:
         return res_fun, info, callback.residuals
     else:
         return res_fun, info
 
 
 def cg(A, b, tol=1E-5, maxiter=None,
-        use_strong_form=False, return_residuals=False):
+        use_strong_form=False, return_residuals=False, return_iterations=False):
     """Interface to the scipy.sparse.linalg.cg function.
 
     This function behaves like the scipy.sparse.linalg.cg function. But
@@ -113,7 +117,11 @@ def cg(A, b, tol=1E-5, maxiter=None,
 
     res_fun = GridFunction(A.domain, coefficients=x.ravel())
 
-    if return_residuals:
+    if return_residuals and return_iterations:
+        return res_fun, info, callback.residuals, callback.count
+    elif return_iterations:
+        return res_fun, info, callback.count
+    elif return_residuals:
         return res_fun, info, callback.residuals
     else:
         return res_fun, info
