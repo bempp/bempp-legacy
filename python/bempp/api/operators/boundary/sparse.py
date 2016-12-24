@@ -2,24 +2,29 @@
 
 """Definition of sparse boundary operators."""
 
-def operator_from_functors(domain, range_, dual_to_range,
+def operator_from_functors(
+        domain, range_, dual_to_range,
         test_functor, trial_functor, integrand_functor,
         label='', symmetry='no_symmetry', parameters=None):
-
+    """Define sparse operator from functors."""
+    #pylint: disable=no-name-in-module
     import bempp.api
-    from bempp.core.assembly.abstract_boundary_operator import abstract_local_operator_from_functors_ext
+    from bempp.core.assembly.abstract_boundary_operator import \
+        abstract_local_operator_from_functors_ext
     from bempp.api.assembly import LocalBoundaryOperator
-    from bempp.api.assembly.abstract_boundary_operator import ElementaryAbstractLocalOperator
+    from bempp.api.assembly.abstract_boundary_operator import \
+        ElementaryAbstractLocalOperator
 
     if parameters is None:
         parameters = bempp.api.global_parameters
 
+    #pylint: disable=protected-access
     return LocalBoundaryOperator(
         ElementaryAbstractLocalOperator(
             abstract_local_operator_from_functors_ext(
                 domain._impl, range_._impl,
-                dual_to_range._impl, 
-                test_functor._impl, trial_functor._impl, 
+                dual_to_range._impl,
+                test_functor._impl, trial_functor._impl,
                 integrand_functor._impl, label, symmetry),
             domain, range_, dual_to_range),
         parameters=parameters, label=label)
@@ -49,17 +54,17 @@ def identity(domain, range_, dual_to_range,
         is used.
 
     """
-
     from bempp.api.assembly.functors import simple_test_trial_integrand_functor
-    return operator_from_functors(domain, range_, dual_to_range,
-            dual_to_range.evaluation_functor,
-            domain.evaluation_functor,
-            simple_test_trial_integrand_functor(),
-            label, symmetry, parameters)
+    return operator_from_functors(
+        domain, range_, dual_to_range,
+        dual_to_range.evaluation_functor,
+        domain.evaluation_functor,
+        simple_test_trial_integrand_functor(),
+        label, symmetry, parameters)
 
 def _maxwell_identity(domain, range_, dual_to_range,
-                     label="MAXWELL_IDENTITY", symmetry='no_symmetry',
-                     parameters=None):
+                      label="MAXWELL_IDENTITY", symmetry='no_symmetry',
+                      parameters=None):
     """Return the Maxwell identity operator.
 
     Parameters
@@ -81,13 +86,13 @@ def _maxwell_identity(domain, range_, dual_to_range,
         is used.
 
     """
-
     from bempp.api.assembly.functors import maxwell_test_trial_integrand_functor
-    id_op = operator_from_functors(domain, range_, dual_to_range,
-            dual_to_range.evaluation_functor,
-            domain.evaluation_functor,
-            maxwell_test_trial_integrand_functor(),
-            label, symmetry, parameters)
+    id_op = operator_from_functors(
+        domain, range_, dual_to_range,
+        dual_to_range.evaluation_functor,
+        domain.evaluation_functor,
+        maxwell_test_trial_integrand_functor(),
+        label, symmetry, parameters)
     return id_op
 
 
@@ -119,15 +124,15 @@ def laplace_beltrami(domain, range_, dual_to_range,
     The spaces for this operator must be spaces of continuous functions.
 
     """
-
     from bempp.api.assembly.functors import simple_test_trial_integrand_functor
     from bempp.api.assembly.functors import surface_gradient_functor
 
-    return operator_from_functors(domain, range_, dual_to_range,
-            surface_gradient_functor(),
-            surface_gradient_functor(),
-            simple_test_trial_integrand_functor(),
-            label, symmetry, parameters)
+    return operator_from_functors(
+        domain, range_, dual_to_range,
+        surface_gradient_functor(),
+        surface_gradient_functor(),
+        simple_test_trial_integrand_functor(),
+        label, symmetry, parameters)
 
 def multitrace_identity(grid, parameters=None, spaces='linear'):
     """Return the multitrace identity operator.
@@ -146,11 +151,10 @@ def multitrace_identity(grid, parameters=None, spaces='linear'):
         Dirichlet and Neumann component (default). For
         a dual pairing of a linear space for the Dirichlet
         data and piecewise constant space for the Neumann
-        data choose 'dual'. For the proper dual spaces in 
+        data choose 'dual'. For the proper dual spaces in
         Maxwell problems choose 'maxwell'.
 
     """
-
     from bempp.api.assembly import BlockedOperator
     import bempp.api
 
@@ -175,10 +179,11 @@ def multitrace_identity(grid, parameters=None, spaces='linear'):
         rbc_space = bempp.api.function_space(grid, "RBC", 0)
 
         blocked_operator[0, 0] = identity(
-                rwg_space, rwg_space, rbc_space, parameters=parameters)
+            rwg_space, rwg_space, rbc_space, parameters=parameters)
         blocked_operator[1, 1] = identity(
-                bc_space, bc_space, snc_space, parameters=parameters)
+            bc_space, bc_space, snc_space, parameters=parameters)
     else:
-        raise ValueError("'spaces' must be one of 'dual', 'linear', or 'maxwell'")
+        raise ValueError(
+            "'spaces' must be one of 'dual', 'linear', or 'maxwell'")
 
     return blocked_operator

@@ -1,3 +1,5 @@
+"""Maxwell test cases."""
+
 from unittest import TestCase
 import bempp
 
