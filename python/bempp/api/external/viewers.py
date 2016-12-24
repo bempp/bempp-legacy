@@ -18,7 +18,7 @@ def visualize_with_gmsh(obj):
     import tempfile
     import subprocess
     from bempp.api import export, GMSH_PATH, TMP_PATH, GridFunction
-    from bempp.api.grid import Grid
+    from bempp.api.grid.grid import Grid
     from numpy import real
 
     if GMSH_PATH is None:

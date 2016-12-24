@@ -1,6 +1,7 @@
 """Definition of single and double layer Laplace potential operators."""
 from . import _common
 
+#pylint: disable=protected-access
 
 @_common.potential_logger
 def single_layer(space, evaluation_points, parameters=None):
@@ -22,7 +23,9 @@ def single_layer(space, evaluation_points, parameters=None):
 
     import bempp
     from bempp.api.assembly.potential_operator import PotentialOperator
-    from bempp.api.assembly.discrete_boundary_operator import GeneralNonlocalDiscreteBoundaryOperator
+    from bempp.api.assembly.discrete_boundary_operator import \
+        GeneralNonlocalDiscreteBoundaryOperator
+    #pylint: disable=no-name-in-module
     from bempp.core.operators.potential.laplace import single_layer_ext
 
     if space.has_non_barycentric_space:
@@ -31,9 +34,10 @@ def single_layer(space, evaluation_points, parameters=None):
     if parameters is None:
         parameters = bempp.api.global_parameters
 
-    return PotentialOperator(GeneralNonlocalDiscreteBoundaryOperator(single_layer_ext(space._impl, evaluation_points,
-                                                                                      parameters)),
-                             1, space, evaluation_points)
+    return PotentialOperator(
+        GeneralNonlocalDiscreteBoundaryOperator(
+            single_layer_ext(space._impl, evaluation_points, parameters)),
+        1, space, evaluation_points)
 
 
 @_common.potential_logger
@@ -56,7 +60,9 @@ def double_layer(space, evaluation_points, parameters=None):
 
     import bempp
     from bempp.api.assembly.potential_operator import PotentialOperator
-    from bempp.api.assembly.discrete_boundary_operator import GeneralNonlocalDiscreteBoundaryOperator
+    from bempp.api.assembly.discrete_boundary_operator import \
+        GeneralNonlocalDiscreteBoundaryOperator
+    #pylint: disable=no-name-in-module
     from bempp.core.operators.potential.laplace import double_layer_ext
 
     if space.has_non_barycentric_space:
@@ -65,6 +71,7 @@ def double_layer(space, evaluation_points, parameters=None):
     if parameters is None:
         parameters = bempp.api.global_parameters
 
-    return PotentialOperator(GeneralNonlocalDiscreteBoundaryOperator(double_layer_ext(space._impl, evaluation_points,
-                                                                                      parameters)),
-                             1, space, evaluation_points)
+    return PotentialOperator(
+        GeneralNonlocalDiscreteBoundaryOperator(
+            double_layer_ext(space._impl, evaluation_points, parameters)),
+        1, space, evaluation_points)

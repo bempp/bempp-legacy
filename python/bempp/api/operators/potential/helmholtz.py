@@ -20,9 +20,11 @@ def single_layer(space, evaluation_points, wave_number, parameters=None):
 
     """
 
-    from .modified_helmholtz import single_layer
+    from bempp.api.operators.potential.modified_helmholtz \
+        import single_layer as slp
 
-    return single_layer(space, evaluation_points, wave_number / (1j), parameters)
+    return slp(
+        space, evaluation_points, wave_number / (1j), parameters)
 
 
 def double_layer(space, evaluation_points, wave_number, parameters=None):
@@ -44,6 +46,7 @@ def double_layer(space, evaluation_points, wave_number, parameters=None):
 
     """
 
-    from .modified_helmholtz import double_layer
+    from bempp.api.operators.potential.modified_helmholtz \
+        import double_layer as dlp
 
-    return double_layer(space, evaluation_points, wave_number / (1j), parameters)
+    return dlp(space, evaluation_points, wave_number / (1j), parameters)
