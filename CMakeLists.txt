@@ -5,6 +5,11 @@ project(Bempp CXX)
 file(STRINGS "VERSION" Bempp_VERSION LIMIT_COUNT 1)
 message("BEM++ Version ${Bempp_VERSION}")
 
+string(REPLACE "." ";" VERSION_LIST ${Bempp_VERSION})
+list(GET VERSION_LIST 0 BEMPP_VERSION_MAJOR)
+list(GET VERSION_LIST 1 BEMPP_VERSION_MINOR)
+list(GET VERSION_LIST 2 BEMPP_VERSION_PATCH)
+
 # Set a default build type if none was specified
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   message(STATUS "Setting build type to 'RelWithDebInfo' as none was specified.")
@@ -113,8 +118,8 @@ add_subdirectory("${PROJECT_BINARY_DIR}/post_install"
 # file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 # file(WRITE ${PROJECT_BINARY_DIR}/bin/bempp "${PROJECT_BINARY_DIR}/localpython.sh \"$@\" ")
 # file(WRITE ${PROJECT_BINARY_DIR}/bin/ibempp "${PROJECT_BINARY_DIR}/localpython.sh -m IPython \"$@\" ")
-execute_process(COMMAND chmod +x ${PROJECT_BINARY_DIR}/bin/bempp)
-execute_process(COMMAND chmod +x ${PROJECT_BINARY_DIR}/bin/ibempp)
+# execute_process(COMMAND chmod +x ${PROJECT_BINARY_DIR}/bin/bempp)
+# execute_process(COMMAND chmod +x ${PROJECT_BINARY_DIR}/bin/ibempp)
 
 add_custom_target(bempp DEPENDS libbempp cython-headers cython)
 
