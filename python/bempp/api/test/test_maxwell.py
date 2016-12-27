@@ -1,23 +1,34 @@
+"""Validation tests for Maxwell problems."""
+
 from unittest import TestCase
-import unittest
 import bempp.api
 import numpy as np
 
+#pylint: disable=invalid-name
+#pylint: disable=missing-docstring
+#pylint: disable=unused-argument
+#pylint: disable=too-many-locals
+
 
 class TestMaxwell(TestCase):
+    """Maxwell validation tests."""
 
     def test_efie_unit_sphere_rt_functions(self):
-        """Solve an exterior EFIE problem un the unit sphere with Raviart-Thomas functions."""
+        """Exterior EFIE problem un the unit sphere with RT functions."""
 
-        # This script solves the Maxwell equations in the region exterior to a bounded
+        # This script solves the Maxwell equations in the region exterior
+        # to a bounded
         # object, with Dirichlet boundary conditions given by the exact solution
         # (satisfying the Silver-Mueller radiation conditions)
         #
         #     \vec u(\vec x) = h_1^{(1)}(k r) \hat phi,
         #
-        # where (r, theta, phi) are the radial, zenith angle and azimuthal spherical
-        # coordinates in the system anchored at the point (0.1, 0.1, 0.1), h_1^{(1)}(r)
-        # is the spherical Hankel function of the first kind and order 1 and \hat phi is
+        # where (r, theta, phi) are the radial, zenith angle and azimuthal
+        # spherical
+        # coordinates in the system anchored at the point
+        # (0.1, 0.1, 0.1), h_1^{(1)}(r)
+        # is the spherical Hankel function of the first kind and order
+        # 1 and \hat phi is
         # the unit vector oriented along d(\vec x)/d\phi.
 
         k = 1
@@ -46,17 +57,18 @@ class TestMaxwell(TestCase):
             xy_factor = (h1kr - r * h1kr_deriv) / (r * r * r)
             curl = [x * z * xy_factor,
                     y * z * xy_factor,
-                    ((x * x + y * y + 2 * z * z) * h1kr + r * (x * x + y * y) * h1kr_deriv) /
+                    ((x * x + y * y + 2 * z * z) * h1kr + r *
+                     (x * x + y * y) * h1kr_deriv) /
                     (r * r * r)]
             result[:] = np.cross(curl, normal) / (1j * k)
 
-        def eval_exact_solution(point):
-            x, y, z = point - source
-            r = np.sqrt(x**2 + y**2 + z**2)
-            kr = k * r
-            h1kr = (-1j - kr) * exp(1j * kr) / (kr * kr)
-            scale = h1kr / r
-            return np.array([-y * scale, x * scale, 0.])
+#        def eval_exact_solution(point):
+#            x, y, z = point - source
+#            r = np.sqrt(x**2 + y**2 + z**2)
+#            kr = k * r
+#            h1kr = (-1j - kr) * np.exp(1j * kr) / (kr * kr)
+#            scale = h1kr / r
+#            return np.array([-y * scale, x * scale, 0.])
 
         rt_space = bempp.api.function_space(grid, "RT", 0)
         nc_space = bempp.api.function_space(grid, "NC", 0)
@@ -80,27 +92,34 @@ class TestMaxwell(TestCase):
             rt_space, fun=eval_exact_neumann_data)
         rel_error = (sol - exact_solution).l2_norm() / exact_solution.l2_norm()
         self.assertTrue(
-            rel_error < 2E-2, msg="Actual error: {0}. Expected error: 2E-2".format(rel_error))
+            rel_error < 2E-2,
+            msg="Actual error: {0}. Expected error: 2E-2".format(rel_error))
 
     def test_efie_calderon_unit_sphere(self):
-        """Solve an exterior EFIE problem on the unit sphere with Calderon preconditioning."""
+        """Exterior EFIE problem with Calderon preconditioning."""
 
-        # This script solves the Maxwell equations in the region exterior to a bounded
+        # This script solves the Maxwell equations in the region exterior
+        # to a bounded
         # object, with Dirichlet boundary conditions given by the exact solution
         # (satisfying the Silver-Mueller radiation conditions)
         #
         #     \vec u(\vec x) = h_1^{(1)}(k r) \hat phi,
         #
-        # where (r, theta, phi) are the radial, zenith angle and azimuthal spherical
-        # coordinates in the system anchored at the point (0.1, 0.1, 0.1), h_1^{(1)}(r)
-        # is the spherical Hankel function of the first kind and order 1 and \hat phi is
+        # where (r, theta, phi) are the radial, zenith angle and azimuthal
+        # spherical coordinates in the system anchored at the point
+        # (0.1, 0.1, 0.1), h_1^{(1)}(r)
+        # is the spherical Hankel function of the first kind and order
+        # 1 and \hat phi is
         # the unit vector oriented along d(\vec x)/d\phi.
 
         k = 1
         source = 0.1
 
+        from bempp.api.operators.boundary.maxwell import \
+            calderon_electric_field
+
         grid = bempp.api.shapes.regular_sphere(3)
-        efie_squared, efie = bempp.api.operators.boundary.maxwell.calderon_electric_field(
+        efie_squared, efie = calderon_electric_field(
             grid, k)
         rwg_space = efie_squared.domain
         snc_space = bempp.api.function_space(grid, "B-SNC", 0)
@@ -125,17 +144,18 @@ class TestMaxwell(TestCase):
             xy_factor = (h1kr - r * h1kr_deriv) / (r * r * r)
             curl = [x * z * xy_factor,
                     y * z * xy_factor,
-                    ((x * x + y * y + 2 * z * z) * h1kr + r * (x * x + y * y) * h1kr_deriv) /
+                    ((x * x + y * y + 2 * z * z) * h1kr +
+                     r * (x * x + y * y) * h1kr_deriv) /
                     (r * r * r)]
             result[:] = np.cross(curl, normal) / (1j * k)
 
-        def eval_exact_solution(point):
-            x, y, z = point - source
-            r = np.sqrt(x**2 + y**2 + z**2)
-            kr = k * r
-            h1kr = (-1j - kr) * exp(1j * kr) / (kr * kr)
-            scale = h1kr / r
-            return np.array([-y * scale, x * scale, 0.])
+#        def eval_exact_solution(point):
+#            x, y, z = point - source
+#            r = np.sqrt(x**2 + y**2 + z**2)
+#            kr = k * r
+#            h1kr = (-1j - kr) * np.exp(1j * kr) / (kr * kr)
+#            scale = h1kr / r
+#            return np.array([-y * scale, x * scale, 0.])
 
         mfie = bempp.api.operators.boundary.maxwell.magnetic_field(
             rwg_space, bc_space, snc_space, k)
@@ -146,29 +166,37 @@ class TestMaxwell(TestCase):
             rwg_space, fun=eval_dirichlet_data)
         rhs = - efie * (.5 * ident + mfie) * dirichlet_grid_fun
 
-        sol, info, residuals = bempp.api.linalg.gmres(efie_squared, rhs,
-                                                      use_strong_form=True, return_residuals=True)
+        sol, _, residuals = bempp.api.linalg.gmres(
+            efie_squared, rhs,
+            use_strong_form=True, return_residuals=True)
 
         exact_solution = bempp.api.GridFunction(
             rwg_space, fun=eval_exact_neumann_data)
         rel_error = (sol - exact_solution).l2_norm() / exact_solution.l2_norm()
         self.assertTrue(
-            rel_error < 5E-2, msg="Actual error: {0}. Expected error: 5E-2".format(rel_error))
-        self.assertTrue(len(
-            residuals) < 7, msg="Needed {0} iterations to solve system. Expected not more than 6 iterations.".format(len(residuals)))
+            rel_error < 5E-2,
+            msg="Actual error: {0}. Expected error: 5E-2".format(rel_error))
+        self.assertTrue(
+            len(residuals) < 7,
+            msg="Needed {0} iterations to ".format(len(residuals)) +
+            "solve the system. Expected not more than 6 iterations.")
 
     def test_efie_unit_sphere_rwg_functions(self):
-        """Solve an exterior EFIE problem un the unit sphere with RWG functions."""
+        """Exterior EFIE problem on the unit sphere with RWG functions."""
 
-        # This script solves the Maxwell equations in the region exterior to a bounded
+        # This script solves the Maxwell equations in the region exterior
+        # to a bounded
         # object, with Dirichlet boundary conditions given by the exact solution
         # (satisfying the Silver-Mueller radiation conditions)
         #
         #     \vec u(\vec x) = h_1^{(1)}(k r) \hat phi,
         #
-        # where (r, theta, phi) are the radial, zenith angle and azimuthal spherical
-        # coordinates in the system anchored at the point (0.1, 0.1, 0.1), h_1^{(1)}(r)
-        # is the spherical Hankel function of the first kind and order 1 and \hat phi is
+        # where (r, theta, phi) are the radial, zenith angle and
+        #  azimuthal spherical
+        # coordinates in the system anchored at the point
+        #  (0.1, 0.1, 0.1), h_1^{(1)}(r)
+        # is the spherical Hankel function of the first kind
+        #  and order 1 and \hat phi is
         # the unit vector oriented along d(\vec x)/d\phi.
 
         k = 1
@@ -179,6 +207,7 @@ class TestMaxwell(TestCase):
         parameters.assembly.boundary_operator_assembly_type = 'dense'
 
         def eval_dirichlet_data(point, normal, domain_index, result):
+            """Evaluate the Dirichlet data."""
             x, y, z = point - source
             r = np.sqrt(x**2 + y**2 + z**2)
             kr = k * r
@@ -188,6 +217,7 @@ class TestMaxwell(TestCase):
             result[:] = np.cross(field, normal)
 
         def eval_exact_neumann_data(point, normal, domain_index, result):
+            """Evaluate the exact Neumann data."""
             x, y, z = point - source
             r = np.sqrt(x**2 + y**2 + z**2)
             kr = k * r
@@ -197,17 +227,18 @@ class TestMaxwell(TestCase):
             xy_factor = (h1kr - r * h1kr_deriv) / (r * r * r)
             curl = [x * z * xy_factor,
                     y * z * xy_factor,
-                    ((x * x + y * y + 2 * z * z) * h1kr + r * (x * x + y * y) * h1kr_deriv) /
+                    ((x * x + y * y + 2 * z * z) * h1kr + r *
+                     (x * x + y * y) * h1kr_deriv) /
                     (r * r * r)]
             result[:] = np.cross(curl, normal) / (1j * k)
 
-        def eval_exact_solution(point):
-            x, y, z = point - source
-            r = np.sqrt(x**2 + y**2 + z**2)
-            kr = k * r
-            h1kr = (-1j - kr) * exp(1j * kr) / (kr * kr)
-            scale = h1kr / r
-            return np.array([-y * scale, x * scale, 0.])
+#        def eval_exact_solution(point):
+#            x, y, z = point - source
+#            r = np.sqrt(x**2 + y**2 + z**2)
+#            kr = k * r
+#            h1kr = (-1j - kr) * np.exp(1j * kr) / (kr * kr)
+#            scale = h1kr / r
+#            return np.array([-y * scale, x * scale, 0.])
 
         rwg_space = bempp.api.function_space(grid, "RWG", 0)
         snc_space = bempp.api.function_space(grid, "SNC", 0)
@@ -224,7 +255,7 @@ class TestMaxwell(TestCase):
         dirichlet_grid_fun = bempp.api.GridFunction(
             rwg_space, fun=eval_dirichlet_data)
         rhs_coeffs = -(.5 * ident.weak_form() + mfie.weak_form()
-                       ) * dirichlet_grid_fun.coefficients
+                      ) * dirichlet_grid_fun.coefficients
 
         from scipy.linalg import solve
         sol_coefficients = solve(
@@ -235,20 +266,25 @@ class TestMaxwell(TestCase):
             rwg_space, fun=eval_exact_neumann_data)
         rel_error = (sol - exact_solution).l2_norm() / exact_solution.l2_norm()
         self.assertTrue(
-            rel_error < 2E-2, msg="Actual error: {0}. Expected error: 2E-2".format(rel_error))
+            rel_error < 2E-2,
+            msg="Actual error: {0}. Expected error: 2E-2".format(rel_error))
 
     def test_maxwell_potential_operators(self):
-        """Solve an exterior EFIE problem un the unit sphere with RWG functions."""
+        """Exterior EFIE problem on the unit sphere with RWG functions."""
 
-        # This script solves the Maxwell equations in the region exterior to a bounded
+        # This script solves the Maxwell equations in the region exterior to a
+        # bounded
         # object, with Dirichlet boundary conditions given by the exact solution
         # (satisfying the Silver-Mueller radiation conditions)
         #
         #     \vec u(\vec x) = h_1^{(1)}(k r) \hat phi,
         #
-        # where (r, theta, phi) are the radial, zenith angle and azimuthal spherical
-        # coordinates in the system anchored at the point (0.1, 0.1, 0.1), h_1^{(1)}(r)
-        # is the spherical Hankel function of the first kind and order 1 and \hat phi is
+        # where (r, theta, phi) are the radial, zenith angle and azimuthal
+        # spherical
+        # coordinates in the system anchored at the point
+        # (0.1, 0.1, 0.1), h_1^{(1)}(r)
+        # is the spherical Hankel function of the first kind and order
+        # 1 and \hat phi is
         # the unit vector oriented along d(\vec x)/d\phi.
 
         k = 1
@@ -278,7 +314,8 @@ class TestMaxwell(TestCase):
             xy_factor = (h1kr - r * h1kr_deriv) / (r * r * r)
             curl = [x * z * xy_factor,
                     y * z * xy_factor,
-                    ((x * x + y * y + 2 * z * z) * h1kr + r * (x * x + y * y) * h1kr_deriv) /
+                    ((x * x + y * y + 2 * z * z) * h1kr + r *
+                     (x * x + y * y) * h1kr_deriv) /
                     (r * r * r)]
             result[:] = np.cross(curl, normal) / (1j * k)
 
@@ -296,19 +333,23 @@ class TestMaxwell(TestCase):
         neumann_data = bempp.api.GridFunction(
             space, fun=eval_exact_neumann_data)
 
+        #pylint: disable=no-member
         eval_point = np.array([[3, 2, 1]]).T
 
-        efie_pot = bempp.api.operators.potential.maxwell.electric_field(space, eval_point, k,
-                                                                        parameters=parameters)
-        mfie_pot = bempp.api.operators.potential.maxwell.magnetic_field(space, eval_point, k,
-                                                                        parameters=parameters)
+        efie_pot = bempp.api.operators.potential.maxwell.electric_field(
+            space, eval_point, k, parameters=parameters)
+        mfie_pot = bempp.api.operators.potential.maxwell.magnetic_field(
+            space, eval_point, k, parameters=parameters)
 
         expected = eval_exact_solution(eval_point[:, 0])
+        #pylint: disable=unsubscriptable-object
         actual = (-efie_pot * neumann_data - mfie_pot * dirichlet_data)[:, 0]
         rel_error = np.linalg.norm(expected - actual) / np.linalg.norm(actual)
 
         self.assertTrue(
-            rel_error < 1E-3, msg="Actual error: {0}. Expected error: 1E-3".format(rel_error))
+            rel_error < 1E-3,
+            msg="Actual error: {0}".format(rel_error) +
+            ". Expected error: 1E-3")
 
     def test_electric_far_field(self):
         """Test the electric far field operator."""
@@ -317,11 +358,14 @@ class TestMaxwell(TestCase):
         # $$
         # \text{curl}~\text{curl} E - k^2 E = 0
         # $$
-        # with boundary data given from an analytic Maxwell solution in the exterior of the sphere as
+        # with boundary data given from an analytic Maxwell solution
+        # in the exterior of the sphere as
         # $$
         # E\times n = h_1^{(1)}(kr)e_{\phi}\times n
         # $$
-        # Here, $e_{\phi}$ is the unit vector along the $\phi$ derivative $\frac{dx}{d\phi}$ in spherical $(r,\theta,\phi)$ coordinates.
+        # Here, $e_{\phi}$ is the unit vector along the $\phi$
+        # derivative $\frac{dx}{d\phi}$ in spherical $(r,\theta,\phi)$
+        # coordinates.
         #
         # The far-field pattern is given analytically by $-e_{\phi}$.
 
@@ -352,18 +396,21 @@ class TestMaxwell(TestCase):
 
         sol = bempp.api.linalg.lu(efie, ident * grid_fun)
 
-        from bempp.api.operators.far_field.maxwell import electric_field as electric_far_field
+        from bempp.api.operators.far_field.maxwell import \
+            electric_field as electric_far_field
         npoints = 100
         theta = np.linspace(0, 2 * np.pi, npoints)
         points = np.vstack([np.cos(theta), np.sin(
             theta), np.zeros(100, dtype='float64')])
 
-        far_field = electric_far_field(rwg_space, points, k, parameters=parameters) * sol
+        far_field = electric_far_field(
+            rwg_space, points, k, parameters=parameters) * sol
         exact = np.vstack([points[1], -points[0], np.zeros(100)])
 
         rel_error = np.linalg.norm(far_field - exact) / np.linalg.norm(exact)
         self.assertTrue(
-            rel_error < 1E-5, msg="Actual error: {0}. Expected error: 1E-5".format(rel_error))
+            rel_error < 1E-5,
+            msg="Actual error: {0}. Expected error: 1E-5".format(rel_error))
 
 if __name__ == "__main__":
 

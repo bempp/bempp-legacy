@@ -1,39 +1,53 @@
 """Definition of a Bem++ space object and the associated factory function."""
 
+#pylint: disable=protected-access
+#pylint: disable=no-member
+#pylint: disable=too-many-instance-attributes
+#pylint: disable=too-many-arguments
+
+#pylint: disable=too-many-public-methods
+#pylint: disable=no-name-in-module
 
 class Space(object):
-    """ Space of functions defined on a grid
+    """
+    Space of functions defined on a grid.
 
-        Attributes
-        ----------
-        grid : bempp.api.grid.Grid
-            Grid over which to discretize the space.
+    Attributes
+    ----------
+    grid : bempp.api.grid.Grid
+        Grid over which to discretize the space.
 
-        dtype : numpy.dtype
-            Type of the basis functions in this space.
+    dtype : numpy.dtype
+        Type of the basis functions in this space.
 
-        codomain_dimension : int
-            Number of components of values of functions in this space.
+    codomain_dimension : int
+        Number of components of values of functions in this space.
 
-        domain_dimension : int
-            Dimension of the domain on which the space is defined.
+    domain_dimension : int
+        Dimension of the domain on which the space is defined.
 
-        global_dof_count : int
-            Number of global degrees of freedom.
+    global_dof_count : int
+        Number of global degrees of freedom.
 
-        flat_local_dof_count : int
-            Total number of local degrees of freedom.
+    flat_local_dof_count : int
+        Total number of local degrees of freedom.
 
-        global_dof_interpolation_points : np.ndarray
-            (3xN) matrix of global interpolation points for the space,
-            where each column is the coordinate of an interpolation point.
+    global_dof_interpolation_points : np.ndarray
+        (3xN) matrix of global interpolation points for the space,
+        where each column is the coordinate of an interpolation point.
 
-        global_dof_interpolation_points : np.ndarray
-            (3xN) matrix of normal directions associated with the interpolation points.
+    global_dof_interpolation_points : np.ndarray
+        (3xN) matrix of normal directions associated with the interpolation
+        points.
 
     """
-
     def __init__(self, impl, comp_key):
+        """
+        Construct a space object. Should not be called directly.
+
+        To construct a space use the function bempp.api.function_space.
+
+        """
         self._impl = impl
         self._global_to_local_dofs = None
         self._mass_matrix = None
@@ -55,7 +69,7 @@ class Space(object):
         return self == other
 
     def get_global_dofs(self, element, dof_weights=False):
-        """Return the global dofs associated with the local dofs on the given element.
+        """Global dofs associated with the local dofs on the given element.
 
         If `dof_weights=True` also return the associated dof_weights
 
@@ -77,28 +91,36 @@ class Space(object):
                                                local_coefficients)
 
     def global_to_local_dofs(self, global_dofs):
-        """Return the local dofs and weights for the given list of global dofs."""
+        """Local dofs and weights for the given list of global dofs."""
 
         if self._global_to_local_dofs is None:
-            self._global_to_local_dofs = self._impl.global_to_local_dofs(range(self.global_dof_count))
+            self._global_to_local_dofs = self._impl.global_to_local_dofs(
+                range(self.global_dof_count))
 
         dofs = [self._global_to_local_dofs[0][index] for index in global_dofs]
-        weights = [self._global_to_local_dofs[1][index] for index in global_dofs]
+        weights = [self._global_to_local_dofs[1][index]
+                   for index in global_dofs]
 
         return dofs, weights
 
-    def evaluate_surface_gradient(self, element, local_coordinates, local_coefficients):
+    def evaluate_surface_gradient(
+            self,
+            element,
+            local_coordinates,
+            local_coefficients):
         """Evaluate the local surface gradient on a given element."""
 
         if self.codomain_dimension > 1:
             raise ValueError("Method only implemented for scalar spaces.")
 
+        #pylint: disable=no-name-in-module
         from bempp.core.space.space import evaluate_local_surface_gradient_ext
         return evaluate_local_surface_gradient_ext(self._impl, element._impl,
                                                    local_coordinates,
                                                    local_coefficients)
 
     def mass_matrix(self):
+        """Return the mass matrix associated with this space."""
 
         if self._mass_matrix is None:
             from bempp.api.operators.boundary.sparse import identity
@@ -107,19 +129,19 @@ class Space(object):
         return self._mass_matrix
 
     def inverse_mass_matrix(self):
+        """Return the inverse mass matrix for this space."""
 
         from bempp.api.assembly.discrete_boundary_operator import \
             InverseSparseDiscreteBoundaryOperator
 
         if self._inverse_mass_matrix is None:
             self._inverse_mass_matrix = InverseSparseDiscreteBoundaryOperator(
-                    self.mass_matrix())
+                self.mass_matrix())
         return self._inverse_mass_matrix
 
     @property
     def evaluation_functor(self):
-        """Returns the functor transformation of shapesets from the reference element."""
-
+        """Functor transformation of shapesets from the reference element."""
         return self._evaluation_functor
 
     @property
@@ -129,7 +151,11 @@ class Space(object):
 
     @property
     def codomain_dimension(self):
-        """Return the number of components of values of functions in this space (e.g. 1 for scalar functions)."""
+        """
+        Number of components of values of functions in this space.
+
+        For a scalar space this is one. For a vector space it is three.
+        """
         return self._impl.codomain_dimension
 
     @property
@@ -159,58 +185,81 @@ class Space(object):
 
     @property
     def global_dof_interpolation_points(self):
-        """ Return a (3xN) matrix of the N global interpolation points for the space.
-        """
+        """(3xN) matrix of the N global interpolation points for the space."""
         return self._impl.global_dof_interpolation_points
 
     @property
     def global_dof_normals(self):
-        """ Return a (3xN) matrix of normal directions associated with the interpolation points.
-        """
+        """(3xN) matrix of normal directions at interp. points."""
         return self._impl.global_dof_normals
 
     @property
     def has_non_barycentric_space(self):
-        """ Return if the space has an equivalent space that lives on the original grid."""
+        """True if space has an equivalent non-barycentric space."""
         return self._has_non_barycentric_space
 
     @property
     def is_barycentric(self):
-        """ REturn if the space is defined over a barycentric refinement."""
-
+        """ True if the space is defined over a barycentric refinement."""
         return self._is_barycentric
 
     @property
     def non_barycentric_space(self):
+        """The associated non-barycentric space if it exists."""
         return self._non_barycentric_space
 
     @property
     def order(self):
+        """Return the order of the space."""
         return self._order
 
     @property
     def super_space(self):
-        """ A super space that contains the space as subspace. Can be identical to space."""
+        """
+        A super space that contains the space as subspace.
+
+        This attribute is useful for the compressed assembly of operators.
+        The super space is typically a more local space (often discontinuous,
+        elementwise defined) that is easier to compress than the actual space.
+        The actual space is then obtained via projection.
+
+        """
         return self._super_space
 
     @property
     def has_local_support(self):
-        """Return true of the support of each basis function is restricted to a single element."""
+        """True if support of each basis fct. is restricted to one element."""
         return self == self.discontinuous_space
 
 
 class DiscontinuousPolynomialSpace(Space):
     """Represents a space of discontinuous, polynomial functions."""
 
-    def __init__(self, grid, order, domains=None, closed=True, reference_point_on_segment=True,
-                 element_on_segment=False, comp_key=None):
-
+    def __init__(
+            self,
+            grid,
+            order,
+            domains=None,
+            closed=True,
+            reference_point_on_segment=True,
+            element_on_segment=False,
+            comp_key=None):
         from bempp.core.space.space import function_space as _function_space
         from bempp.api.assembly.functors import scalar_function_value_functor
 
-        super(DiscontinuousPolynomialSpace, self).__init__(
-            _function_space(grid._impl, "DP", order, domains, closed,
-                            False, reference_point_on_segment, element_on_segment), comp_key=comp_key)
+        super(
+            DiscontinuousPolynomialSpace,
+            self).__init__(
+                _function_space(
+                    grid._impl,
+                    "DP",
+                    order,
+                    domains,
+                    closed,
+                    False,
+                    reference_point_on_segment,
+                    element_on_segment),
+                comp_key=comp_key)
 
         self._order = order
         self._has_non_barycentric_space = True
@@ -221,8 +270,9 @@ class DiscontinuousPolynomialSpace(Space):
         self._is_barycentric = False
         self._grid = grid
 
+
 class BarycentricDiscontinuousPolynomialSpace(Space):
-    """Represents a space of discontinuous, polynomial functions over a barycentric grid."""
+    """Represents a space of disc., polynomial fct. over a barycentric grid."""
 
     def __init__(self, grid, order, comp_key=None):
 
@@ -235,7 +285,8 @@ class BarycentricDiscontinuousPolynomialSpace(Space):
         self._order = order
         self._has_non_barycentric_space = True
         self._non_barycentric_space = function_space(grid, "DP", order)
-        self._discontinuous_space = function_space(grid.barycentric_grid(), "DP", order)
+        self._discontinuous_space = function_space(
+            grid.barycentric_grid(), "DP", order)
         self._super_space = self._discontinuous_space
         self._evaluation_functor = scalar_function_value_functor()
         self._is_barycentric = True
@@ -245,32 +296,63 @@ class BarycentricDiscontinuousPolynomialSpace(Space):
 class ContinuousPolynomialSpace(Space):
     """Represents a space of continuous, polynomial functions."""
 
-    def __init__(self, grid, order, domains=None, closed=True, strictly_on_segment=False,
-                 element_on_segment=False, comp_key=None):
+    def __init__(
+            self,
+            grid,
+            order,
+            domains=None,
+            closed=True,
+            strictly_on_segment=False,
+            element_on_segment=False,
+            comp_key=None):
 
         from bempp.core.space.space import function_space as _function_space
         from bempp.api.assembly.functors import scalar_function_value_functor
 
-        super(ContinuousPolynomialSpace, self).__init__(
-            _function_space(grid._impl, "P", order, domains, closed,
-                            strictly_on_segment, True, element_on_segment), comp_key)
-
+        super(
+            ContinuousPolynomialSpace,
+            self).__init__(
+                _function_space(
+                    grid._impl,
+                    "P",
+                    order,
+                    domains,
+                    closed,
+                    strictly_on_segment,
+                    True,
+                    element_on_segment),
+                comp_key)
 
         self._order = order
         self._has_non_barycentric_space = True
         self._non_barycentric_space = self
         if not closed:
-            self._discontinuous_space = function_space(grid, "DP", order, domains=domains, closed=closed, reference_point_on_segment=False, element_on_segment=True)
+            self._discontinuous_space = function_space(
+                grid,
+                "DP",
+                order,
+                domains=domains,
+                closed=closed,
+                reference_point_on_segment=False,
+                element_on_segment=True)
         else:
-            self._discontinuous_space = function_space(grid, "DP", order, domains=domains, closed=closed, reference_point_on_segment=True, element_on_segment=strictly_on_segment)
+            self._discontinuous_space = function_space(
+                grid,
+                "DP",
+                order,
+                domains=domains,
+                closed=closed,
+                reference_point_on_segment=True,
+                element_on_segment=strictly_on_segment)
 
         self._super_space = self._discontinuous_space
         self._evaluation_functor = scalar_function_value_functor()
         self._is_barycentric = False
         self._grid = grid
 
+
 class BarycentricContinuousPolynomialSpace(Space):
-    """Represents a space of continuous, polynomial functions on a barycentric grid."""
+    """Represents a space of cont., polynomial fct. on a barycentric grid."""
 
     def __init__(self, grid, order, comp_key=None):
 
@@ -283,7 +365,8 @@ class BarycentricContinuousPolynomialSpace(Space):
         self._order = order
         self._has_non_barycentric_space = True
         self._non_barycentric_space = function_space(grid, "P", order)
-        self._discontinuous_space = function_space(grid.barycentric_grid(), "DP", order)
+        self._discontinuous_space = function_space(
+            grid.barycentric_grid(), "DP", order)
         self._super_space = self._discontinuous_space
         self._evaluation_functor = scalar_function_value_functor()
         self._is_barycentric = True
@@ -304,7 +387,8 @@ class DualSpace(Space):
         self._order = 0
         self._has_non_barycentric_space = False
         self._non_barycentric_space = None
-        self._discontinuous_space = function_space(grid.barycentric_grid(), "DP", 0)
+        self._discontinuous_space = function_space(
+            grid.barycentric_grid(), "DP", 0)
         self._super_space = self._discontinuous_space
         self._evaluation_functor = scalar_function_value_functor()
         self._is_barycentric = True
@@ -326,13 +410,28 @@ class RTSpace(Space):
         self._has_non_barycentric_space = True
         self._non_barycentric_space = self
         if not closed:
-            self._discontinuous_space = function_space(grid, "DP", 1, domains=domains, closed=closed, reference_point_on_segment=False, element_on_segment=True)
+            self._discontinuous_space = function_space(
+                grid,
+                "DP",
+                1,
+                domains=domains,
+                closed=closed,
+                reference_point_on_segment=False,
+                element_on_segment=True)
         else:
-            self._discontinuous_space = function_space(grid, "DP", 1, domains=domains, closed=closed, reference_point_on_segment=True, element_on_segment=False)
+            self._discontinuous_space = function_space(
+                grid,
+                "DP",
+                1,
+                domains=domains,
+                closed=closed,
+                reference_point_on_segment=True,
+                element_on_segment=False)
         self._super_space = self
         self._evaluation_functor = hdiv_function_value_functor()
         self._is_barycentric = False
         self._grid = grid
+
 
 class NCSpace(Space):
     """A space of Nedelec functions."""
@@ -349,14 +448,30 @@ class NCSpace(Space):
         self._has_non_barycentric_space = True
         self._non_barycentric_space = self
         if not closed:
-            self._discontinuous_space = function_space(grid, "DP", 1, domains=domains, closed=closed, reference_point_on_segment=False, element_on_segment=True)
+            self._discontinuous_space = function_space(
+                grid,
+                "DP",
+                1,
+                domains=domains,
+                closed=closed,
+                reference_point_on_segment=False,
+                element_on_segment=True)
         else:
-            self._discontinuous_space = function_space(grid, "DP", 1, domains=domains, closed=closed, reference_point_on_segment=True, element_on_segment=False)
+            self._discontinuous_space = function_space(
+                grid,
+                "DP",
+                1,
+                domains=domains,
+                closed=closed,
+                reference_point_on_segment=True,
+                element_on_segment=False)
         self._evaluation_functor = hcurl_function_value_functor()
         self._super_space = self
-        self._hdiv_space = function_space(grid, "RT", 0, domains=domains, closed=closed)
+        self._hdiv_space = function_space(
+            grid, "RT", 0, domains=domains, closed=closed)
         self._is_barycentric = False
         self._grid = grid
+
 
 class RWGSpace(Space):
     """A space of RWG functions."""
@@ -373,13 +488,28 @@ class RWGSpace(Space):
         self._has_non_barycentric_space = True
         self._non_barycentric_space = self
         if not closed:
-            self._discontinuous_space = function_space(grid, "DP", 1, domains=domains, closed=closed, reference_point_on_segment=False, element_on_segment=True)
+            self._discontinuous_space = function_space(
+                grid,
+                "DP",
+                1,
+                domains=domains,
+                closed=closed,
+                reference_point_on_segment=False,
+                element_on_segment=True)
         else:
-            self._discontinuous_space = function_space(grid, "DP", 1, domains=domains, closed=closed, reference_point_on_segment=True, element_on_segment=False)
+            self._discontinuous_space = function_space(
+                grid,
+                "DP",
+                1,
+                domains=domains,
+                closed=closed,
+                reference_point_on_segment=True,
+                element_on_segment=False)
         self._super_space = self
         self._evaluation_functor = hdiv_function_value_functor()
         self._is_barycentric = False
         self._grid = grid
+
 
 class SNCSpace(Space):
     """A space of scaled Nedelec functions."""
@@ -396,14 +526,29 @@ class SNCSpace(Space):
         self._has_non_barycentric_space = True
         self._non_barycentric_space = self
         if not closed:
-            self._discontinuous_space = function_space(grid, "DP", 1, domains=domains, closed=closed, reference_point_on_segment=False, element_on_segment=True)
+            self._discontinuous_space = function_space(
+                grid,
+                "DP",
+                1,
+                domains=domains,
+                closed=closed,
+                reference_point_on_segment=False,
+                element_on_segment=True)
         else:
-            self._discontinuous_space = function_space(grid, "DP", 1, domains=domains, closed=closed, reference_point_on_segment=True, element_on_segment=False)
+            self._discontinuous_space = function_space(
+                grid,
+                "DP",
+                1,
+                domains=domains,
+                closed=closed,
+                reference_point_on_segment=True,
+                element_on_segment=False)
         self._evaluation_functor = hcurl_function_value_functor()
         self._super_space = self
         self._hdiv_space = function_space(grid, "RWG", 0, domains, closed)
         self._is_barycentric = False
         self._grid = grid
+
 
 class BarycentricRTSpace(Space):
     """A space of Raviart-Thomas functions on a barycentric grid."""
@@ -419,11 +564,13 @@ class BarycentricRTSpace(Space):
         self._order = 0
         self._has_non_barycentric_space = True
         self._non_barycentric_space = function_space(grid, "RT", 0)
-        self._discontinuous_space = function_space(grid.barycentric_grid(), "DP", 1)
+        self._discontinuous_space = function_space(
+            grid.barycentric_grid(), "DP", 1)
         self._super_space = function_space(grid.barycentric_grid(), "RT", 0)
         self._evaluation_functor = hdiv_function_value_functor()
         self._is_barycentric = True
         self._grid = grid.barycentric_grid()
+
 
 class BarycentricNCSpace(Space):
     """A space of Nedelec functions on a barycentric grid."""
@@ -439,13 +586,13 @@ class BarycentricNCSpace(Space):
         self._order = 0
         self._has_non_barycentric_space = True
         self._non_barycentric_space = function_space(grid, "NC", 0)
-        self._discontinuous_space = function_space(grid.barycentric_grid(), "DP", 1)
+        self._discontinuous_space = function_space(
+            grid.barycentric_grid(), "DP", 1)
         self._evaluation_functor = hcurl_function_value_functor()
         self._super_space = function_space(grid.barycentric_grid(), "NC", 0)
         self._hdiv_space = function_space(grid, "B-RT", 0)
         self._is_barycentric = True
         self._grid = grid.barycentric_grid()
-
 
 
 class BarycentricRWGSpace(Space):
@@ -462,11 +609,13 @@ class BarycentricRWGSpace(Space):
         self._order = 0
         self._has_non_barycentric_space = True
         self._non_barycentric_space = function_space(grid, "RWG", 0)
-        self._discontinuous_space = function_space(grid.barycentric_grid(), "DP", 1)
+        self._discontinuous_space = function_space(
+            grid.barycentric_grid(), "DP", 1)
         self._super_space = function_space(grid.barycentric_grid(), "RWG", 0)
         self._evaluation_functor = hdiv_function_value_functor()
         self._is_barycentric = True
         self._grid = grid.barycentric_grid()
+
 
 class BarycentricSNCSpace(Space):
     """A space of scaled Nedelec functions on a barycentric grid."""
@@ -482,7 +631,8 @@ class BarycentricSNCSpace(Space):
         self._order = 0
         self._has_non_barycentric_space = True
         self._non_barycentric_space = function_space(grid, "SNC", 0)
-        self._discontinuous_space = function_space(grid.barycentric_grid(), "DP", 1)
+        self._discontinuous_space = function_space(
+            grid.barycentric_grid(), "DP", 1)
         self._evaluation_functor = hcurl_function_value_functor()
         self._super_space = function_space(grid.barycentric_grid(), "SNC", 0)
         self._hdiv_space = function_space(grid, "B-RWG", 0)
@@ -504,14 +654,16 @@ class BuffaChristiansenSpace(Space):
         self._order = 0
         self._has_non_barycentric_space = False
         self._non_barycentric_space = None
-        self._discontinuous_space = function_space(grid.barycentric_grid(), "DP", 1)
+        self._discontinuous_space = function_space(
+            grid.barycentric_grid(), "DP", 1)
         self._super_space = function_space(grid.barycentric_grid(), "RWG", 0)
         self._evaluation_functor = hdiv_function_value_functor()
         self._is_barycentric = True
         self._grid = grid.barycentric_grid()
 
+
 class RotatedBuffaChristiansenSpace(Space):
-    """A space of rotated Buffa-Christiansen curl conforming basis functions on a barycentrid grid."""
+    """A space of rotated Buffa-Christiansen curl conforming basis functions."""
 
     def __init__(self, grid, comp_key=None):
 
@@ -524,15 +676,26 @@ class RotatedBuffaChristiansenSpace(Space):
         self._order = 0
         self._has_non_barycentric_space = False
         self._non_barycentric_space = None
-        self._discontinuous_space = function_space(grid.barycentric_grid(), "DP", 1)
+        self._discontinuous_space = function_space(
+            grid.barycentric_grid(), "DP", 1)
         self._evaluation_functor = hcurl_function_value_functor()
         self._super_space = function_space(grid.barycentric_grid(), "SNC", 0)
         self._hdiv_space = BuffaChristiansenSpace(grid)
         self._is_barycentric = True
         self._grid = grid.barycentric_grid()
 
-def function_space(grid, kind, order, domains=None, closed=True, strictly_on_segment=False,
-                   reference_point_on_segment=True, element_on_segment=False):
+
+#pylint: disable=too-many-return-statements
+#pylint: disable=too-many-branches
+def function_space(
+        grid,
+        kind,
+        order,
+        domains=None,
+        closed=True,
+        strictly_on_segment=False,
+        reference_point_on_segment=True,
+        element_on_segment=False):
     """ Return a space defined over a given grid.
 
     Parameters
@@ -620,18 +783,37 @@ def function_space(grid, kind, order, domains=None, closed=True, strictly_on_seg
 
     """
 
-
-    comp_key = (grid, kind, order, None if domains is None else tuple(sorted(domains)),
-            closed, strictly_on_segment, reference_point_on_segment, element_on_segment)
+    comp_key = (
+        grid,
+        kind,
+        order,
+        None if domains is None else tuple(
+            sorted(domains)),
+        closed,
+        strictly_on_segment,
+        reference_point_on_segment,
+        element_on_segment)
 
     if kind == "DP":
-        return DiscontinuousPolynomialSpace(grid, order, domains, closed, reference_point_on_segment,
-                                            element_on_segment, comp_key)
+        return DiscontinuousPolynomialSpace(
+            grid,
+            order,
+            domains,
+            closed,
+            reference_point_on_segment,
+            element_on_segment,
+            comp_key)
     elif kind == "B-DP":
         return BarycentricDiscontinuousPolynomialSpace(grid, order, comp_key)
     elif kind == "P":
-        return ContinuousPolynomialSpace(grid, order, domains, closed, strictly_on_segment,
-                                         element_on_segment, comp_key)
+        return ContinuousPolynomialSpace(
+            grid,
+            order,
+            domains,
+            closed,
+            strictly_on_segment,
+            element_on_segment,
+            comp_key)
     elif kind == "B-P":
         return BarycentricContinuousPolynomialSpace(grid, order, comp_key)
     elif kind == "DUAL":

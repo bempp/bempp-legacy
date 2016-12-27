@@ -1,10 +1,13 @@
+"""Varius validation tests for Helmholtz problems."""
+
 from unittest import TestCase
-import unittest
 import bempp.api
 import numpy as np
 
+#pylint: disable=invalid-name
 
 class TestHelmholtz(TestCase):
+    """Validation tests for Helmholtz."""
 
     def test_solve_low_order_helmholtz_dirichlet_problem_on_sphere(self):
         """Solve an exterior Helmholtz problem on the unit sphere."""
@@ -14,10 +17,14 @@ class TestHelmholtz(TestCase):
         wave_number = 1
 
         def sol_fun(x):
+            """Analytic solution."""
             r = np.linalg.norm(x)
-            return np.exp(wave_number * 1j * r) * (1j * wave_number * r - 1) / r**2
+            return np.exp(
+                wave_number * 1j * r) * (1j * wave_number * r - 1) / r**2
 
+        #pylint: disable=unused-argument
         def fun(x, n, domain_index, res):
+            """Outgoing wave."""
             r = np.linalg.norm(x)
             res[0] = np.exp(wave_number * 1j * r) / r
 
@@ -34,13 +41,13 @@ class TestHelmholtz(TestCase):
 
         rhs = (-.5 * ident + dlp) * grid_fun
 
-        sol_grid_fun, info = bempp.api.linalg.gmres(slp, rhs)
+        sol_grid_fun, _ = bempp.api.linalg.gmres(slp, rhs)
 
         rel_error = sol_grid_fun.relative_error(sol_fun)
         self.assertTrue(rel_error < 1E-2)
 
     def test_solve_high_order_helmholtz_dirichlet_problem_on_sphere(self):
-        """Solve an exterior Helmholtz Dirichlet problem on the unit sphere using quadratic basis functions."""
+        """Exterior Dirichlet problem with P2 basis functions."""
 
         grid = bempp.api.shapes.regular_sphere(4)
         space = bempp.api.function_space(grid, "P", 2)
@@ -50,10 +57,14 @@ class TestHelmholtz(TestCase):
         wave_number = 1
 
         def sol_fun(x):
+            """Analytic solution."""
             r = np.linalg.norm(x)
-            return np.exp(wave_number * 1j * r) * (1j * wave_number * r - 1) / r**2
+            return np.exp(
+                wave_number * 1j * r) * (1j * wave_number * r - 1) / r**2
 
+        #pylint: disable=unused-argument
         def fun(x, n, domain_index, res):
+            """Outgoing wave."""
             r = np.linalg.norm(x)
             res[0] = np.exp(wave_number * 1j * r) / r
 
@@ -70,12 +81,13 @@ class TestHelmholtz(TestCase):
 
         rhs = (-.5 * ident + dlp) * grid_fun
 
-        sol_grid_fun, info = bempp.api.linalg.gmres(slp, rhs)
+        sol_grid_fun, _ = bempp.api.linalg.gmres(slp, rhs)
 
         rel_error = sol_grid_fun.relative_error(sol_fun)
         self.assertTrue(rel_error < 1E-2)
 
     def test_solve_helmholtz_neumann_problem_on_sphere(self):
+        """Solve Helmholtz Neumann problem on unti sphere."""
 
         grid = bempp.api.shapes.regular_sphere(4)
         space = bempp.api.function_space(grid, "P", 2)
@@ -86,12 +98,15 @@ class TestHelmholtz(TestCase):
         parameters.quadrature.far.double_order = 3
         wave_number = 1
 
+        #pylint: disable=unused-argument
         def fun(x, n, domain_index, res):
+            """Neumann data."""
             r = np.linalg.norm(x)
             res[0] = np.exp(wave_number * 1j * r) * \
                 (1j * wave_number * r - 1) / r**2
 
         def sol_fun(x):
+            """Exact solution."""
             r = np.linalg.norm(x)
             return np.exp(wave_number * 1j * r) / r
 
@@ -109,27 +124,33 @@ class TestHelmholtz(TestCase):
 
         rhs = (-.5 * ident - adlp) * grid_fun
 
-        sol_grid_fun, info = bempp.api.linalg.gmres(hyp, rhs)
+        sol_grid_fun, _ = bempp.api.linalg.gmres(hyp, rhs)
 
         rel_error = sol_grid_fun.relative_error(sol_fun)
         self.assertTrue(rel_error < 1E-2)
 
+    #pylint: disable=too-many-locals
     def test_operator_preconditioned_dirichlet_solve_dual(self):
-        """Solve an operator preconditioned Helmholtz Dirichlet problem with dual spaces."""
-
+        """Solve an operator prec. Helmholtz problem with dual spaces."""
         grid = bempp.api.shapes.regular_sphere(3)
 
         k = 1
 
         def sol_fun(x):
+            """Analytic solution."""
             r = np.linalg.norm(x)
             return np.exp(1j * k * r) / r**2 * (1j * k * r - 1)
 
+        #pylint: disable=unused-argument
         def fun(x, n, domain_index, res):
+            """Outgoing wave."""
             r = np.linalg.norm(x)
             res[0] = np.exp(1j * k * r)
 
-        slp, hyp = bempp.api.operators.boundary.helmholtz.single_layer_and_hypersingular_pair(
+        from bempp.api.operators.boundary.helmholtz import \
+            single_layer_and_hypersingular_pair
+
+        slp, hyp = single_layer_and_hypersingular_pair(
             grid, k, spaces='dual')
 
         const_space = slp.domain
@@ -146,31 +167,39 @@ class TestHelmholtz(TestCase):
 
         rhs = hyp * (-.5 * ident + dlp) * grid_fun
 
-        sol_grid_fun, info, res = bempp.api.linalg.gmres(
+        sol_grid_fun, _, res = bempp.api.linalg.gmres(
             hyp * slp, rhs, return_residuals=True)
 
         rel_error = sol_grid_fun.relative_error(sol_fun)
         self.assertTrue(
-            rel_error < 2E-2, msg="Actual error: {0}. Expected error: 1E-2".format(rel_error))
-        self.assertTrue(len(
-            res) < 9, msg="Needed {0} iterations to solve system. Expected not more than 8 iterations.".format(len(res)))
+            rel_error < 2E-2,
+            msg="Actual error: {0}. Expected error: 1E-2".format(rel_error))
+        self.assertTrue(
+            len(res) < 9,
+            msg="Needed {0} iterations to solve system. ".format(len(res)) +
+            "Expected not more than 8 iterations.")
 
     def test_operator_preconditioned_dirichlet_solve_lin(self):
-        """Solve an operator preconditioned Helmholtz Dirichlet problem with linear spaces."""
-
+        """Solve operator prec. Helmholtz problem with linear spaces."""
         grid = bempp.api.shapes.regular_sphere(3)
 
         k = 1
 
         def sol_fun(x):
+            """Analytic solution."""
             r = np.linalg.norm(x)
             return np.exp(1j * k * r) / r**2 * (1j * k * r - 1)
 
+        #pylint: disable=unused-argument
         def fun(x, n, domain_index, res):
+            """Outgoing wave."""
             r = np.linalg.norm(x)
             res[0] = np.exp(1j * k * r)
 
-        slp, hyp = bempp.api.operators.boundary.helmholtz.single_layer_and_hypersingular_pair(
+        from bempp.api.operators.boundary.helmholtz import \
+            single_layer_and_hypersingular_pair
+
+        slp, hyp = single_layer_and_hypersingular_pair(
             grid, k, spaces='linear')
 
         const_space = slp.domain
@@ -187,14 +216,17 @@ class TestHelmholtz(TestCase):
 
         rhs = hyp * (-.5 * ident + dlp) * grid_fun
 
-        sol_grid_fun, info, res = bempp.api.linalg.gmres(
+        sol_grid_fun, _, res = bempp.api.linalg.gmres(
             hyp * slp, rhs, return_residuals=True)
 
         rel_error = sol_grid_fun.relative_error(sol_fun)
         self.assertTrue(
-            rel_error < 2E-2, msg="Actual error: {0}. Expected error: 1E-2".format(rel_error))
-        self.assertTrue(len(
-            res) < 10, msg="Needed {0} iterations to solve system. Expected not more than 9 iterations.".format(len(res)))
+            rel_error < 2E-2,
+            msg="Actual error: {0}. Expected error: 1E-2".format(rel_error))
+        self.assertTrue(
+            len(res) < 10,
+            msg="Needed {0} iterations to solve system. ".format(len(res)) +
+            "Expected not more than 9 iterations.")
 
     def test_helmholtz_potentials(self):
         """Test the Helmholtz potential operators."""
@@ -204,30 +236,38 @@ class TestHelmholtz(TestCase):
         space = bempp.api.function_space(grid, "P", 1)
 
         def dirichlet_fun(x):
+            """Analytic solution."""
             return np.exp(1j * x[0])
 
+        #pylint: disable=unused-argument
         def dirichlet_data(x, n, domain_index, res):
+            """Dirichlet data."""
             res[0] = dirichlet_fun(x)
 
+        #pylint: disable=unused-argument
         def neumann_data(x, n, domain_index, res):
+            """Neumann data."""
             res[0] = 1j * np.exp(1j * x[0]) * n[0]
 
         dirichlet_grid_fun = bempp.api.GridFunction(space, fun=dirichlet_data)
         neumann_grid_fun = bempp.api.GridFunction(space, fun=neumann_data)
 
+        #pylint: disable=no-member
         point = np.array([[0, 0.2, 0.3]]).T
 
-        sl = bempp.api.operators.potential.helmholtz.single_layer(
+        slp = bempp.api.operators.potential.helmholtz.single_layer(
             space, point, 1)
-        dl = bempp.api.operators.potential.helmholtz.double_layer(
+        dlp = bempp.api.operators.potential.helmholtz.double_layer(
             space, point, 1)
 
-        actual = (sl * neumann_grid_fun - dl * dirichlet_grid_fun)[0, 0]
+        #pylint: disable=unsubscriptable-object
+        actual = (slp * neumann_grid_fun - dlp * dirichlet_grid_fun)[0, 0]
         expected = dirichlet_fun(point[:, 0])
 
         rel_error = np.abs(actual - expected) / np.abs(expected)
         self.assertTrue(
-            rel_error < 1E-6, msg="Actual error: {0}. Expected error: 1E-2".format(rel_error))
+            rel_error < 1E-6,
+            msg="Actual error: {0}. Expected error: 1E-2".format(rel_error))
 
 if __name__ == "__main__":
 

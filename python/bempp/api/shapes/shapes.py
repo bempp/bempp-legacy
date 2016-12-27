@@ -1,28 +1,12 @@
-# Copyright (C) 2011-2012 by the BEM++ Authors
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
+"""Definitions of some standard shapes and helper routines."""
 
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
-
-import numpy as np
-import bempp
+import bempp.api
+#pylint: disable=invalid-name
 
 def get_gmsh_file():
     """
+    Create a new temporary gmsh file.
+
     Return a 3-tuple (geo_file,geo_name,msh_name), where
     geo_file is a file descriptor to an empty .geo file, geo_name is
     the corresponding filename and msh_name is the name of the
@@ -41,7 +25,6 @@ def get_gmsh_file():
 
 def __generate_grid_from_gmsh_string(gmsh_string):
     """Return a grid from a string containing a gmsh mesh"""
-
     import os
     import tempfile
 
@@ -57,11 +40,11 @@ def __generate_grid_from_gmsh_string(gmsh_string):
 def __generate_grid_from_geo_string(geo_string):
     """Helper routine that implements the grid generation
     """
-
     import os
     import subprocess
 
     def msh_from_string(geo_string):
+        """Create a mesh from a string."""
         gmsh_command = bempp.api.GMSH_PATH
         if gmsh_command is None:
             raise RuntimeError("Gmsh is not found. Cannot generate mesh")
@@ -89,7 +72,15 @@ def __generate_grid_from_geo_string(geo_string):
 
 
 def regular_sphere(n):
-    """Return a regular sphere."""
+    """
+    Return a regular sphere.
+
+    Parameters
+    ----------
+    n : int
+        Refinement level of the sphere.
+
+    """
 
     from bempp.core.grid import grid_from_sphere
     from bempp.api.grid.grid import Grid
@@ -98,11 +89,23 @@ def regular_sphere(n):
 
 
 def ellipsoid(r1=1, r2=1, r3=1, origin=(0, 0, 0), h=0.1):
-    """Return an ellipsoid grid. """
-    import subprocess
-    import os
+    """
+    Return an ellipsoid grid.
 
-    sphere_stub = """
+    Parameters
+    ----------
+    r1 : float
+        Radius of first major axis
+    r2 : float
+        Radius of second major axis
+    r3 : float
+        Radius of third major axis
+    origin : tuple
+        Tuple specifying the origin of the ellipsoid
+    h : float
+        Element size.
+    """
+    stub = """
     Point(1) = {orig0,orig1,orig2,cl};
     Point(2) = {orig0+r1,orig1,orig2,cl};
     Point(3) = {orig0,orig1+r2,orig2,cl};
@@ -151,22 +154,32 @@ def ellipsoid(r1=1, r2=1, r3=1, origin=(0, 0, 0), h=0.1):
     Mesh.Algorithm = 6;
     """
 
-    sphere_geometry = (
+    geometry = (
         "r1 = " + str(r1) + ";\n" +
         "r2 = " + str(r2) + ";\n" +
         "r3 = " + str(r3) + ";\n" +
         "orig0 = " + str(origin[0]) + ";\n" +
         "orig1 = " + str(origin[1]) + ";\n" +
         "orig2 = " + str(origin[2]) + ";\n" +
-        "cl = " + str(h) + ";\n" + sphere_stub)
+        "cl = " + str(h) + ";\n" + stub)
 
-    return __generate_grid_from_geo_string(sphere_geometry)
+    return __generate_grid_from_geo_string(geometry)
+
 
 def rectangle_with_hole(a=1, b=1, hole_radius=0.2, h=0.1):
-    """Return a square shaped screen with a hole in the middle. """
-    import subprocess
-    import os
+    """
+    Return a square shaped screen with a hole in the middle.
 
+    a : float
+        Length of rectangle in the x-plane.
+    b : float
+        Length of rectange in the y-plane.
+    hole_radius : float
+        Radius of the hole.
+    h : float
+        Element size.
+
+    """
     stub = """
     Point(1) = {-a / 2., -b / 2., 0, cl};
     Point(2) = {a / 2., -b / 2., 0, cl};
@@ -201,11 +214,34 @@ def rectangle_with_hole(a=1, b=1, hole_radius=0.2, h=0.1):
 
 
 def sphere(r=1, origin=(0, 0, 0), h=0.1):
-    """Return an sphere grid. """
+    """
+    Return a sphere grid.
+
+    Parameters
+    ----------
+    r : float
+        Radius of the sphere.
+    origin : tuple
+        Center of the sphere.
+    h : float
+        Element size.
+
+    """
     return ellipsoid(r1=r, r2=r, r3=r, origin=origin, h=h)
 
 
 def reentrant_cube(h=0.1, refinement_factor=0.2):
+    """
+    A reentrant corner in 3d.
+
+    Parameters
+    ----------
+    h : float
+        Element size.
+    refinement_factor : float
+        Fractional size with respect to h of elements close to reentrant
+        corner.
+    """
     reentrant_cube_stub = """
     Point(1) = {0, 0, 0, h};
     Point(2) = {1, 0, 0, h};
@@ -282,6 +318,19 @@ def reentrant_cube(h=0.1, refinement_factor=0.2):
 
 
 def cube(length=1, origin=(0, 0, 0), h=0.1):
+    """
+    Return a cube mesh.
+
+    Parameters
+    ----------
+    length : float
+        Side length of the cube.
+    origin : tuple
+        Coordinates of the origin (bottom left corner)
+    h : float
+        Element size.
+
+    """
     cube_stub = """
     Point(1) = {orig0,orig1,orig2,cl};
     Point(2) = {orig0+l,orig1,orig2,cl};
@@ -344,10 +393,7 @@ def cube(length=1, origin=(0, 0, 0), h=0.1):
 
 
 def almond(h=0.01):
-    """
-    Return a grid discretizing the Nasa almond shape.
-
-    """
+    """Return the Nasa almond shape with element size h."""
     almond_geometry = "cl = {0};\n".format(h) + _almond_geo
     return __generate_grid_from_geo_string(almond_geometry)
 

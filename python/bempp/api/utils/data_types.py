@@ -1,3 +1,5 @@
+"""Data type checks."""
+
 import numpy as np
 
 
@@ -14,8 +16,7 @@ def check_type(name, default='float64'):
 def combined_type(dtype1, dtype2):
     """ Return a type that is compatible with dtype1 and dtype2 """
 
-    import numpy as np
-    d1 = check_type(dtype1)
-    d2 = check_type(dtype2)
+    new_d1 = check_type(dtype1)
+    new_d2 = check_type(dtype2)
 
-    return (d1.type(1) * d2.type(1)).dtype
+    return (new_d1.type(1) * new_d2.type(1)).dtype
