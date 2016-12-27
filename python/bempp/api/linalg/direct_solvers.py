@@ -1,3 +1,20 @@
+"""BEM++ Direct solver interface."""
+
+# pylint: disable=invalid-name
+
+def compute_lu_factors(A):
+    """
+    Precompute the LU factors of a dense operator A.
+
+    This function returns a tuple of LU factors of A.
+    This tuple can be used in the `lu_factor` attribute
+    of the lu function so that the LU decomposition is
+    not recomputed at each call to lu.
+
+    """
+    from scipy.linalg import lu_factor
+    return lu_factor(A.weak_form())
+
 
 def lu(A, b, lu_factor=None):
     """Simple direct solver interface.

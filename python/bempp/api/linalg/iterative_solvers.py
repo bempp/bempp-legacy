@@ -1,31 +1,49 @@
+"""Iterative solver interfaces."""
+
 import scipy.sparse.linalg
 import numpy as np
 from bempp.api.assembly import GridFunction
 from bempp.api.assembly import BoundaryOperator
 
+#pylint: disable=invalid-name
+#pylint: disable=too-many-arguments
+#pylint: disable=too-many-locals
 
 class _it_counter(object):
+    """Iteration Counter class."""
 
-    def __init__(self, store_residuals):
+    def __init__(self, store_residuals,
+                 iteration_is_cg=False, operator=None, rhs=None):
         self._count = 0
         self._store_residuals = store_residuals
         self._residuals = []
+        self._iteration_is_cg = iteration_is_cg
+        self._operator = operator
+        self._rhs = rhs
 
     def __call__(self, x):
         self._count += 1
         if self._store_residuals:
-            self._residuals.append(np.linalg.norm(x))
+            if self._iteration_is_cg:
+                res = self._rhs - self._operator * x
+            else:
+                res = x
+            self._residuals.append(np.linalg.norm(res))
 
     @property
     def count(self):
+        """Return the number of iterations."""
         return self._count
 
     @property
     def residuals(self):
+        """Return the vector of residuals."""
         return self._residuals
 
 
-def gmres(A, b, tol=1E-5, restart=None, maxiter=None, use_strong_form=False, return_residuals=False):
+def gmres(A, b, tol=1E-5,
+          restart=None, maxiter=None,
+          use_strong_form=False, return_residuals=False):
     """Interface to the scipy.sparse.linalg.gmres function.
 
     This function behaves like the scipy.sparse.linalg.gmres function. But
@@ -48,7 +66,8 @@ def gmres(A, b, tol=1E-5, restart=None, maxiter=None, use_strong_form=False, ret
     if use_strong_form:
         if not A.range.is_compatible(b.space):
             raise ValueError(
-                "The range of A and the space of A must have the same number of unknowns if the strong form is used.")
+                "The range of A and the domain of A must have" +
+                "the same number of unknowns if the strong form is used.")
         A_op = A.strong_form()
         b_vec = b.coefficients
     else:
@@ -59,11 +78,13 @@ def gmres(A, b, tol=1E-5, restart=None, maxiter=None, use_strong_form=False, ret
 
     bempp.api.LOGGER.info("Starting GMRES iteration")
     start_time = time.time()
-    x, info = scipy.sparse.linalg.gmres(A_op, b_vec,
-                                        tol=tol, restart=restart, maxiter=maxiter, callback=callback)
+    x, info = scipy.sparse.linalg.gmres(
+        A_op, b_vec,
+        tol=tol, restart=restart, maxiter=maxiter, callback=callback)
     end_time = time.time()
-    bempp.api.LOGGER.info("GMRES finished in {0} iterations and took {1:.2E} sec.".format(
-        callback.count, end_time - start_time))
+    bempp.api.LOGGER.info(
+        "GMRES finished in %i iterations and took %.2E sec.",
+        callback.count, end_time - start_time)
 
     res_fun = GridFunction(A.domain, coefficients=x.ravel())
 
@@ -74,7 +95,7 @@ def gmres(A, b, tol=1E-5, restart=None, maxiter=None, use_strong_form=False, ret
 
 
 def cg(A, b, tol=1E-5, maxiter=None,
-        use_strong_form=False, return_residuals=False):
+       use_strong_form=False, return_residuals=False):
     """Interface to the scipy.sparse.linalg.cg function.
 
     This function behaves like the scipy.sparse.linalg.cg function. But
@@ -95,21 +116,24 @@ def cg(A, b, tol=1E-5, maxiter=None,
     if use_strong_form:
         if not A.range.is_compatible(b.space):
             raise ValueError(
-                "The range of A and the space of A must have the same number of unknowns if the strong form is used.")
+                "The range of A and the domain of A must " +
+                "have the same number of unknowns if the strong form is used.")
         A_op = A.strong_form()
         b_vec = b.coefficients
     else:
         A_op = A.weak_form()
         b_vec = b.projections(A.dual_to_range)
 
-    callback = _it_counter(return_residuals)
+    callback = _it_counter(return_residuals, True, A_op, b_vec)
     bempp.api.LOGGER.info("Starting CG iteration")
     start_time = time.time()
-    x, info = scipy.sparse.linalg.cg(A_op, b_vec,
-                                     tol=tol, maxiter=maxiter, callback=callback)
+    x, info = scipy.sparse.linalg.cg(
+        A_op, b_vec,
+        tol=tol, maxiter=maxiter, callback=callback)
     end_time = time.time()
-    bempp.api.LOGGER.info("CG finished in {0} iterations and took {1:.2E} sec.".format(
-        callback.count, end_time - start_time))
+    bempp.api.LOGGER.info(
+        "CG finished in %i iterations and took %.2E sec.",
+        callback.count, end_time - start_time)
 
     res_fun = GridFunction(A.domain, coefficients=x.ravel())
 

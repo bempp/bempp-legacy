@@ -1,7 +1,10 @@
+"""Test scalar barycentric spaces."""
+
 from unittest import TestCase
 import unittest
 import bempp.api
 
+#pylint: disable=invalid-name
 
 class TestBarycentricLinearSpace(TestCase):
     """Test linear spaces on barycentric grids."""
@@ -17,17 +20,20 @@ class TestBarycentricLinearSpace(TestCase):
 
     @requiresgmsh
     def test_global_dof_count_agrees_with_non_barycentric_space(self):
+        """Global dof count on barycentric space is correct."""
 
         self.assertEqual(self._bary_space.global_dof_count,
                          self._space.global_dof_count)
 
     @requiresgmsh
-    def test_mass_matrix_of_barycentric_space_agrees_with_non_barycentric_space(self):
+    def test_mass_matrix_of_barycentric_space(self):
+        """Test barycentric mass matrix."""
 
         from bempp.api.operators.boundary.sparse import identity
 
         barycentric_ident = identity(
-            self._bary_space, self._bary_space, self._bary_space).weak_form().sparse_operator
+            self._bary_space, self._bary_space,
+            self._bary_space).weak_form().sparse_operator
         ident = identity(self._space, self._space,
                          self._space).weak_form().sparse_operator
 
@@ -37,7 +43,8 @@ class TestBarycentricLinearSpace(TestCase):
         self.assertAlmostEqual(diff.min(), 0, 15)
 
     @requiresgmsh
-    def test_slp_operator_on_barycentric_space_agrees_with_slp_on_non_barycentric_space(self):
+    def test_slp_operator_on_barycentric_space(self):
+        """Test SLP assembly on barycentric space."""
 
         import numpy as np
         slp = bempp.api.operators.boundary.laplace.single_layer
@@ -50,7 +57,8 @@ class TestBarycentricLinearSpace(TestCase):
         discrete_barycentric_slp = bempp.api.as_matrix(
             slp(space, space, space, parameters=parameters).weak_form())
         discrete_slp = bempp.api.as_matrix(
-            slp(bary_space, bary_space, bary_space, parameters=parameters).weak_form())
+            slp(bary_space, bary_space, bary_space,
+                parameters=parameters).weak_form())
 
         diff = np.linalg.norm(discrete_barycentric_slp - discrete_slp,
                               np.inf) / np.linalg.norm(discrete_slp, np.inf)
@@ -58,15 +66,17 @@ class TestBarycentricLinearSpace(TestCase):
         self.assertAlmostEqual(diff, 0, 4)
 
     @requiresgmsh
-    def test_mass_matrix_of_barycentric_discontinuous_space_agrees_with_non_barycentric_discontinuous_space(self):
+    def test_mass_matrix_of_barycentric_discontinuous_space(self):
+        """Test mass matrix on barycentric discontinuous space."""
 
         from bempp.api.operators.boundary.sparse import identity
 
         disc_space_bary = bempp.api.function_space(self._grid, "B-DP", 1)
         disc_space = bempp.api.function_space(self._grid, "DP", 1)
 
-        barycentric_ident = identity(disc_space_bary, disc_space_bary,
-                                     disc_space_bary).weak_form().sparse_operator
+        barycentric_ident = identity(
+            disc_space_bary, disc_space_bary,
+            disc_space_bary).weak_form().sparse_operator
         ident = identity(disc_space, disc_space,
                          disc_space).weak_form().sparse_operator
 
@@ -76,7 +86,8 @@ class TestBarycentricLinearSpace(TestCase):
         self.assertAlmostEqual(diff.min(), 0, 15)
 
     @requiresgmsh
-    def test_slp_operator_on_barycentric_discontinuous_space_agrees_with_slp_on_non_barycentric_disc_space(self):
+    def test_slp_operator_on_barycentric_discontinuous_space(self):
+        """Assembly SLP on barycentric discontinuous space."""
 
         import numpy as np
         slp = bempp.api.operators.boundary.laplace.single_layer
@@ -89,7 +100,8 @@ class TestBarycentricLinearSpace(TestCase):
         discrete_barycentric_slp = bempp.api.as_matrix(
             slp(space, space, space, parameters=parameters).weak_form())
         discrete_slp = bempp.api.as_matrix(
-            slp(bary_space, bary_space, bary_space, parameters=parameters).weak_form())
+            slp(bary_space, bary_space, bary_space,
+                parameters=parameters).weak_form())
 
         diff = np.linalg.norm(discrete_barycentric_slp - discrete_slp,
                               np.inf) / np.linalg.norm(discrete_slp, np.inf)
