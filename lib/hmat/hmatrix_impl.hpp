@@ -78,7 +78,7 @@ void HMatrix<ValueType, N>::initialize(
 
   typedef decltype(m_blockClusterTree->root()) node_t;
 
-  std::function<void(const node_t &node)> compressFun =
+  std::function<void(const node_t &node)> compressFunTree =
       [&](const node_t &node) {
         if (node->isLeaf()) {
           shared_ptr<HMatrixData<ValueType>> nodeData;
@@ -86,10 +86,10 @@ void HMatrix<ValueType, N>::initialize(
           m_hMatrixData[node] = nodeData;
         } else {
           tbb::task_group g;
-          g.run([&] { compressFun(node->child(0)); });
-          g.run([&] { compressFun(node->child(1)); });
-          g.run([&] { compressFun(node->child(2)); });
-          g.run_and_wait([&] { compressFun(node->child(3)); });
+          g.run([&] { compressFunTree(node->child(0)); });
+          g.run([&] { compressFunTree(node->child(1)); });
+          g.run([&] { compressFunTree(node->child(2)); });
+          g.run_and_wait([&] { compressFunTree(node->child(3)); });
 
           // Now do a coarsen step
           if (coarsening)
@@ -98,8 +98,22 @@ void HMatrix<ValueType, N>::initialize(
 
       };
 
-  // Start the compression
-  compressFun(m_blockClusterTree->root());
+  if (coarsening)
+    compressFunTree(m_blockClusterTree->root());
+  else {
+    // Use a simple TBB loop if no coarsening is necessary
+    auto leafNodes = this->m_blockClusterTree->leafNodes();
+    std::size_t numberOfLeafs = leafNodes.size();
+    tbb::parallel_for(
+        tbb::blocked_range<std::size_t>(0, numberOfLeafs),
+        [&](const tbb::blocked_range<std::size_t> &r) {
+          for (auto index = r.begin(); index != r.end(); index++) {
+            shared_ptr<HMatrixData<ValueType>> nodeData;
+            hMatrixCompressor.compressBlock(*leafNodes[index], nodeData);
+            m_hMatrixData[leafNodes[index]] = nodeData;
+          }
+        });
+  }
 
   // Compute statistics
 
@@ -216,8 +230,8 @@ void HMatrix<ValueType, N>::apply(const Eigen::Ref<Matrix<ValueType>> &X,
   auto cols = xPermuted.cols();
 
   // Hack because Eigen ref does not like const.
-  Eigen::Ref<Matrix<ValueType>> x_no_const =
-      const_cast<Eigen::Ref<Matrix<ValueType>> &>(X);
+  // Eigen::Ref<Matrix<ValueType>> x_no_const =
+  // const_cast<Eigen::Ref<Matrix<ValueType>> &>(xPermuted);
 
   // Initialize one mutex for each output row
   Matrix<tbb::spin_mutex> mutex(Y.rows(), 1);
@@ -232,7 +246,7 @@ void HMatrix<ValueType, N>::apply(const Eigen::Ref<Matrix<ValueType>> &X,
               leafNodes[index]->data().columnClusterTreeNode->data().indexRange;
 
           if (trans == TransposeMode::NOTRANS || trans == TransposeMode::CONJ) {
-            Matrix<ValueType> x_data = x_no_const.block(
+            Matrix<ValueType> x_data = xPermuted.block(
                 colRange[0], 0, colRange[1] - colRange[0], cols);
             Matrix<ValueType> result =
                 Matrix<ValueType>::Zero(rowRange[1] - rowRange[0], cols);
@@ -245,7 +259,7 @@ void HMatrix<ValueType, N>::apply(const Eigen::Ref<Matrix<ValueType>> &X,
                 yPermuted(i, j) += result(i - rowRange[0], j);
             }
           } else {
-            Eigen::Ref<Matrix<ValueType>> x_data = x_no_const.block(
+            Eigen::Ref<Matrix<ValueType>> x_data = xPermuted.block(
                 rowRange[0], 0, rowRange[1] - rowRange[0], cols);
             Matrix<ValueType> result =
                 Matrix<ValueType>::Zero(colRange[1] - colRange[0], cols);
