@@ -8,7 +8,9 @@
 #include "hmatrix_dense_data.hpp"
 #include "hmatrix_low_rank_data.hpp"
 #include "math_helper.hpp"
+#include <tbb/parallel_for.h>
 #include <tbb/parallel_for_each.h>
+#include <tbb/spin_mutex.h>
 #include <tbb/task_group.h>
 
 #include <algorithm>
@@ -76,25 +78,25 @@ void HMatrix<ValueType, N>::initialize(
 
   typedef decltype(m_blockClusterTree->root()) node_t;
 
-  std::function<void(const node_t &node)> compressFun = [&](
-      const node_t &node) {
-    if (node->isLeaf()) {
-      shared_ptr<HMatrixData<ValueType>> nodeData;
-      hMatrixCompressor.compressBlock(*node, nodeData);
-      m_hMatrixData[node] = nodeData;
-    } else {
-      tbb::task_group g;
-      g.run([&] { compressFun(node->child(0)); });
-      g.run([&] { compressFun(node->child(1)); });
-      g.run([&] { compressFun(node->child(2)); });
-      g.run_and_wait([&] { compressFun(node->child(3)); });
+  std::function<void(const node_t &node)> compressFun =
+      [&](const node_t &node) {
+        if (node->isLeaf()) {
+          shared_ptr<HMatrixData<ValueType>> nodeData;
+          hMatrixCompressor.compressBlock(*node, nodeData);
+          m_hMatrixData[node] = nodeData;
+        } else {
+          tbb::task_group g;
+          g.run([&] { compressFun(node->child(0)); });
+          g.run([&] { compressFun(node->child(1)); });
+          g.run([&] { compressFun(node->child(2)); });
+          g.run_and_wait([&] { compressFun(node->child(3)); });
 
-      // Now do a coarsen step
-      if (coarsening)
-        coarsen_impl(node, coarsening_accuracy);
-    }
+          // Now do a coarsen step
+          if (coarsening)
+            coarsen_impl(node, coarsening_accuracy);
+        }
 
-  };
+      };
 
   // Start the compression
   compressFun(m_blockClusterTree->root());
@@ -202,27 +204,67 @@ void HMatrix<ValueType, N>::apply(const Eigen::Ref<Matrix<ValueType>> &X,
 
     xPermuted = alpha * permuteMatToHMatDofs(X, COL);
     yPermuted = permuteMatToHMatDofs(Y, ROW);
+
   } else {
+
     xPermuted = alpha * permuteMatToHMatDofs(X, ROW);
     yPermuted = permuteMatToHMatDofs(Y, COL);
   }
 
-  if (levelCount > 0)
-    apply_impl_parallel(this->m_blockClusterTree->root(),
-                        Eigen::Ref<Matrix<ValueType>>(xPermuted),
-                        Eigen::Ref<Matrix<ValueType>>(yPermuted), trans,
-                        levelCount);
-  else
-    apply_impl_serial(this->m_blockClusterTree->root(),
-                      Eigen::Ref<Matrix<ValueType>>(xPermuted),
-                      Eigen::Ref<Matrix<ValueType>>(yPermuted), trans);
+  auto leafNodes = this->m_blockClusterTree->leafNodes();
+  std::size_t numberOfLeafs = leafNodes.size();
+  auto cols = xPermuted.cols();
+
+  // Hack because Eigen ref does not like const.
+  Eigen::Ref<Matrix<ValueType>> x_no_const =
+      const_cast<Eigen::Ref<Matrix<ValueType>> &>(X);
+
+  // Initialize one mutex for each output row
+  Matrix<tbb::spin_mutex> mutex(Y.rows(), 1);
+
+  tbb::parallel_for(
+      tbb::blocked_range<std::size_t>(0, numberOfLeafs),
+      [&](const tbb::blocked_range<std::size_t> &r) {
+        for (auto index = r.begin(); index != r.end(); ++index) {
+          auto rowRange =
+              leafNodes[index]->data().rowClusterTreeNode->data().indexRange;
+          auto colRange =
+              leafNodes[index]->data().columnClusterTreeNode->data().indexRange;
+
+          if (trans == TransposeMode::NOTRANS || trans == TransposeMode::CONJ) {
+            Matrix<ValueType> x_data = x_no_const.block(
+                colRange[0], 0, colRange[1] - colRange[0], cols);
+            Matrix<ValueType> result =
+                Matrix<ValueType>::Zero(rowRange[1] - rowRange[0], cols);
+            this->m_hMatrixData.at(leafNodes[index])
+                ->apply(x_data, result, trans, 1, 1);
+
+            for (int i = rowRange[0]; i < rowRange[1]; ++i) {
+              tbb::spin_mutex::scoped_lock lock(mutex(i, 0));
+              for (int j = 0; j < cols; ++j)
+                yPermuted(i, j) = result(i - rowRange[0], j);
+            }
+          } else {
+            Eigen::Ref<Matrix<ValueType>> x_data = x_no_const.block(
+                rowRange[0], 0, rowRange[1] - rowRange[0], cols);
+            Matrix<ValueType> result =
+                Matrix<ValueType>::Zero(colRange[1] - colRange[0], cols);
+            this->m_hMatrixData.at(leafNodes[index])
+                ->apply(x_data, result, trans, 1, 1);
+
+            for (int i = colRange[0]; i < colRange[1]; ++i) {
+              tbb::spin_mutex::scoped_lock lock(mutex(i, 0));
+              for (int j = 0; j < cols; ++j)
+                yPermuted(i, j) = result(i - colRange[0], j);
+            }
+          }
+        }
+      });
 
   if (trans == TransposeMode::NOTRANS || trans == TransposeMode::CONJ)
     Y = this->permuteMatToOriginalDofs(yPermuted, ROW);
   else
     Y = this->permuteMatToOriginalDofs(yPermuted, COL);
-
-  // Y = this->permuteMatToOriginalDofs(yPermuted, ROW);
 }
 
 template <typename ValueType, int N>
