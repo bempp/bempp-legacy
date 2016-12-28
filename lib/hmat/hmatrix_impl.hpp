@@ -242,7 +242,7 @@ void HMatrix<ValueType, N>::apply(const Eigen::Ref<Matrix<ValueType>> &X,
             for (int i = rowRange[0]; i < rowRange[1]; ++i) {
               tbb::spin_mutex::scoped_lock lock(mutex(i, 0));
               for (int j = 0; j < cols; ++j)
-                yPermuted(i, j) = result(i - rowRange[0], j);
+                yPermuted(i, j) += result(i - rowRange[0], j);
             }
           } else {
             Eigen::Ref<Matrix<ValueType>> x_data = x_no_const.block(
@@ -255,7 +255,7 @@ void HMatrix<ValueType, N>::apply(const Eigen::Ref<Matrix<ValueType>> &X,
             for (int i = colRange[0]; i < colRange[1]; ++i) {
               tbb::spin_mutex::scoped_lock lock(mutex(i, 0));
               for (int j = 0; j < cols; ++j)
-                yPermuted(i, j) = result(i - colRange[0], j);
+                yPermuted(i, j) += result(i - colRange[0], j);
             }
           }
         }
