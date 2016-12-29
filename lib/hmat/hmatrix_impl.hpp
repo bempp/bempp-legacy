@@ -137,7 +137,6 @@ void HMatrix<ValueType, N>::initialize(
     m_myLeafs.push_back(leafNodes[index]);
 
   std::size_t numberOfLeafs = m_myLeafs.size();
-  std::cout << "Node " << m_rank << " " << "has " << numberOfLeafs << " leafs." << std::endl;
 
   tbb::parallel_for(tbb::blocked_range<std::size_t>(0, numberOfLeafs),
                     [&](const tbb::blocked_range<std::size_t> &r) {
@@ -160,9 +159,7 @@ void HMatrix<ValueType, N>::initialize(
       m_numberOfLowRankBlocks++;
     m_memSizeKb += elem.second->memSizeKb();
   }
-  std::cout << "Approaching barrier on " << m_rank << std::endl;
   MPI_Barrier(m_comm);
-  std::cout << "Passed barrier on " << m_rank << std::endl;
 }
 
 template <typename ValueType, int N> void HMatrix<ValueType, N>::reset() {
@@ -313,8 +310,6 @@ void HMatrix<ValueType, N>::apply(const Eigen::Ref<Matrix<ValueType>> &X,
   else
     Y = this->permuteMatToOriginalDofs(yPermuted, COL);
 
-  std::cout << "Enter all reduce on " << m_rank << std::endl;
-
   if (m_nproc > 1) {
     // Perform an all reduce operation if there is more than one proc
     Matrix<ValueType> globalY(Y.rows(), Y.cols());
@@ -322,7 +317,6 @@ void HMatrix<ValueType, N>::apply(const Eigen::Ref<Matrix<ValueType>> &X,
                   MpiTrait<ValueType>().type, MPI_SUM, m_comm);
     Y = globalY;
   }
-  std::cout << "Exit all reduce on " << m_rank << std::endl;
 }
 
 template <typename ValueType, int N>
