@@ -19,18 +19,20 @@ namespace hmat {
 
 template <typename ValueType, int N>
 HMatrix<ValueType, N>::HMatrix(
-    const shared_ptr<BlockClusterTree<N>> &blockClusterTree,
-    int applyParallelLevels)
-    : m_applyParallelLevels(applyParallelLevels),
-      m_blockClusterTree(blockClusterTree), m_numberOfDenseBlocks(0),
-      m_numberOfLowRankBlocks(0), m_memSizeKb(0.0) {}
+    const shared_ptr<BlockClusterTree<N>> &blockClusterTree, MPI_Comm comm)
+    : m_blockClusterTree(blockClusterTree), m_numberOfDenseBlocks(0),
+      m_numberOfLowRankBlocks(0), m_memSizeKb(0.0), m_comm(comm) {
+
+  MPI_Comm_size(comm, &m_nproc);
+  MPI_Comm_rank(comm, &m_rank);
+}
 
 template <typename ValueType, int N>
 HMatrix<ValueType, N>::HMatrix(
     const shared_ptr<BlockClusterTree<N>> &blockClusterTree,
-    const HMatrixCompressor<ValueType, N> &hMatrixCompressor,
-    int applyParallelLevels, bool coarsening, double coarsening_accuracy)
-    : HMatrix<ValueType, N>(blockClusterTree, applyParallelLevels) {
+    const HMatrixCompressor<ValueType, N> &hMatrixCompressor, bool coarsening,
+    double coarsening_accuracy, MPI_Comm comm)
+    : HMatrix<ValueType, N>(blockClusterTree, comm) {
   initialize(hMatrixCompressor, coarsening, coarsening_accuracy);
 }
 
@@ -76,44 +78,75 @@ void HMatrix<ValueType, N>::initialize(
 
   reset();
 
+  /*
+    typedef decltype(m_blockClusterTree->root()) node_t;
+
+    std::function<void(const node_t &node)> compressFunTree =
+        [&](const node_t &node) {
+          if (node->isLeaf()) {
+            shared_ptr<HMatrixData<ValueType>> nodeData;
+            hMatrixCompressor.compressBlock(*node, nodeData);
+            m_hMatrixData[node] = nodeData;
+          } else {
+            tbb::task_group g;
+            g.run([&] { compressFunTree(node->child(0)); });
+            g.run([&] { compressFunTree(node->child(1)); });
+            g.run([&] { compressFunTree(node->child(2)); });
+            g.run_and_wait([&] { compressFunTree(node->child(3)); });
+
+            // Now do a coarsen step
+            if (coarsening)
+              coarsen_impl(node, coarsening_accuracy);
+          }
+
+        };
+
+    if (coarsening)
+      compressFunTree(m_blockClusterTree->root());
+    else {
+
+    */
+
+  // Use a simple TBB loop if no coarsening is necessary
+  auto leafNodes = this->m_blockClusterTree->leafNodes();
+
+  // Type of a block cluster tree node.
   typedef decltype(m_blockClusterTree->root()) node_t;
 
-  std::function<void(const node_t &node)> compressFunTree =
-      [&](const node_t &node) {
-        if (node->isLeaf()) {
-          shared_ptr<HMatrixData<ValueType>> nodeData;
-          hMatrixCompressor.compressBlock(*node, nodeData);
-          m_hMatrixData[node] = nodeData;
-        } else {
-          tbb::task_group g;
-          g.run([&] { compressFunTree(node->child(0)); });
-          g.run([&] { compressFunTree(node->child(1)); });
-          g.run([&] { compressFunTree(node->child(2)); });
-          g.run_and_wait([&] { compressFunTree(node->child(3)); });
+  // Sort the leaf nodes by size.
 
-          // Now do a coarsen step
-          if (coarsening)
-            coarsen_impl(node, coarsening_accuracy);
-        }
+  std::stable_sort(
+      leafNodes.begin(), leafNodes.end(),
+      [&](const node_t &a, const node_t &b) -> bool {
+        auto rowRange_a = a->data().rowClusterTreeNode->data().indexRange;
+        auto colRange_a = a->data().columnClusterTreeNode->data().indexRange;
+        auto rowRange_b = b->data().rowClusterTreeNode->data().indexRange;
+        auto colRange_b = b->data().columnClusterTreeNode->data().indexRange;
 
-      };
+        std::size_t size_a = std::max(rowRange_a[1] - rowRange_a[0],
+                                      colRange_a[1] - colRange_a[0]);
+        std::size_t size_b = std::max(rowRange_b[1] - rowRange_b[0],
+                                      colRange_b[1] - colRange_b[0]);
 
-  if (coarsening)
-    compressFunTree(m_blockClusterTree->root());
-  else {
-    // Use a simple TBB loop if no coarsening is necessary
-    auto leafNodes = this->m_blockClusterTree->leafNodes();
-    std::size_t numberOfLeafs = leafNodes.size();
-    tbb::parallel_for(
-        tbb::blocked_range<std::size_t>(0, numberOfLeafs),
-        [&](const tbb::blocked_range<std::size_t> &r) {
-          for (auto index = r.begin(); index != r.end(); index++) {
-            shared_ptr<HMatrixData<ValueType>> nodeData;
-            hMatrixCompressor.compressBlock(*leafNodes[index], nodeData);
-            m_hMatrixData[leafNodes[index]] = nodeData;
-          }
-        });
-  }
+        // Sort in descending order
+        return size_a > size_b;
+
+      });
+
+  for (int index = m_rank; index < leafNodes.size(); index += m_nproc)
+    m_myLeafs.push_back(leafNodes[index]);
+
+  std::size_t numberOfLeafs = m_myLeafs.size();
+
+  tbb::parallel_for(tbb::blocked_range<std::size_t>(0, numberOfLeafs),
+                    [&](const tbb::blocked_range<std::size_t> &r) {
+                      for (auto index = r.begin(); index != r.end(); index++) {
+                        shared_ptr<HMatrixData<ValueType>> nodeData;
+                        hMatrixCompressor.compressBlock(*m_myLeafs[index],
+                                                        nodeData);
+                        m_hMatrixData[m_myLeafs[index]] = nodeData;
+                      }
+                    });
 
   // Compute statistics
 
@@ -201,15 +234,12 @@ void HMatrix<ValueType, N>::apply(const Eigen::Ref<Matrix<ValueType>> &X,
                                   Eigen::Ref<Matrix<ValueType>> Y,
                                   TransposeMode trans, ValueType alpha,
                                   ValueType beta) const {
-  // Specify the number of task splits.
-  // Create overall 4^(levelCount) tasks.
-  // Choose levelCount = 0 for no paralellism.
-  int levelCount = m_applyParallelLevels;
 
-  if (beta == ValueType(0))
+  if (beta == ValueType(0) || m_rank != 0)
     Y.setZero();
-  else
+  else {
     Y *= beta;
+  }
 
   Matrix<ValueType> xPermuted;
   Matrix<ValueType> yPermuted;
@@ -225,8 +255,7 @@ void HMatrix<ValueType, N>::apply(const Eigen::Ref<Matrix<ValueType>> &X,
     yPermuted = permuteMatToHMatDofs(Y, COL);
   }
 
-  auto leafNodes = this->m_blockClusterTree->leafNodes();
-  std::size_t numberOfLeafs = leafNodes.size();
+  std::size_t numberOfLeafs = m_myLeafs.size();
   auto cols = xPermuted.cols();
 
   // Hack because Eigen ref does not like const.
@@ -241,16 +270,16 @@ void HMatrix<ValueType, N>::apply(const Eigen::Ref<Matrix<ValueType>> &X,
       [&](const tbb::blocked_range<std::size_t> &r) {
         for (auto index = r.begin(); index != r.end(); ++index) {
           auto rowRange =
-              leafNodes[index]->data().rowClusterTreeNode->data().indexRange;
+              m_myLeafs[index]->data().rowClusterTreeNode->data().indexRange;
           auto colRange =
-              leafNodes[index]->data().columnClusterTreeNode->data().indexRange;
+              m_myLeafs[index]->data().columnClusterTreeNode->data().indexRange;
 
           if (trans == TransposeMode::NOTRANS || trans == TransposeMode::CONJ) {
             Matrix<ValueType> x_data = xPermuted.block(
                 colRange[0], 0, colRange[1] - colRange[0], cols);
             Matrix<ValueType> result =
                 Matrix<ValueType>::Zero(rowRange[1] - rowRange[0], cols);
-            this->m_hMatrixData.at(leafNodes[index])
+            this->m_hMatrixData.at(m_myLeafs[index])
                 ->apply(x_data, result, trans, 1, 1);
 
             for (int i = rowRange[0]; i < rowRange[1]; ++i) {
@@ -263,7 +292,7 @@ void HMatrix<ValueType, N>::apply(const Eigen::Ref<Matrix<ValueType>> &X,
                 rowRange[0], 0, rowRange[1] - rowRange[0], cols);
             Matrix<ValueType> result =
                 Matrix<ValueType>::Zero(colRange[1] - colRange[0], cols);
-            this->m_hMatrixData.at(leafNodes[index])
+            this->m_hMatrixData.at(m_myLeafs[index])
                 ->apply(x_data, result, trans, 1, 1);
 
             for (int i = colRange[0]; i < colRange[1]; ++i) {
@@ -279,6 +308,14 @@ void HMatrix<ValueType, N>::apply(const Eigen::Ref<Matrix<ValueType>> &X,
     Y = this->permuteMatToOriginalDofs(yPermuted, ROW);
   else
     Y = this->permuteMatToOriginalDofs(yPermuted, COL);
+
+  if (m_nproc > 1) {
+    // Perform an all reduce operation if there is more than one proc
+    Matrix<ValueType> globalY(Y.rows(), Y.cols());
+    MPI_Allreduce(Y.data(), globalY.data(), Y.rows() * Y.cols(),
+                  MpiTrait<ValueType>().type, MPI_SUM, m_comm);
+    Y = globalY;
+  }
 }
 
 template <typename ValueType, int N>

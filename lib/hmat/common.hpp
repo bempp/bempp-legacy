@@ -5,9 +5,11 @@
 
 #include "shared_ptr.hpp"
 
+#include "point.hpp"
 #include <array>
 #include <vector>
-#include "point.hpp"
+
+#include <mpi.h>
 
 namespace hmat {
 
@@ -28,6 +30,45 @@ enum DataBlockType {
 
 IndexSetType fillIndexRange(std::size_t start, std::size_t stop);
 }
+
+// MPI Types
+
+template <typename T> struct MpiTrait {};
+
+template <> struct MpiTrait<int> {
+
+  inline MpiTrait() : type(MPI_INT) {}
+
+  MPI_Datatype type;
+};
+
+template <> struct MpiTrait<float> {
+
+  inline MpiTrait() : type(MPI_FLOAT) {}
+
+  MPI_Datatype type;
+};
+
+template <> struct MpiTrait<double> {
+
+  inline MpiTrait() : type(MPI_DOUBLE) {}
+
+  MPI_Datatype type;
+};
+
+template <> struct MpiTrait<std::complex<float>> {
+
+  inline MpiTrait() : type(MPI_C_FLOAT_COMPLEX) {}
+
+  MPI_Datatype type;
+};
+
+template <> struct MpiTrait<std::complex<double>> {
+
+  inline MpiTrait() : type(MPI_C_DOUBLE_COMPLEX) {}
+
+  MPI_Datatype type;
+};
 
 #include "common_impl.hpp"
 

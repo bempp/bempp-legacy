@@ -119,10 +119,6 @@ ParameterList GlobalParameters::parameterList() {
   // 0: Use same as options.hmat.eps
   parameters.put("options.hmat.coarseningAccuracy", static_cast<double>(0));
 
-  // Number of levels for matvec parallelisation
-  // The total number of tasks is 4^matVecParallelLevels
-  parameters.put("options.hmat.matVecParallelLevels", static_cast<int>(5));
-
   return parameters;
 }
 }

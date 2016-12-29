@@ -5,6 +5,7 @@ option(WITH_OPENCL "Add OpenCL support for Fiber module" OFF)
 option(WITH_CUDA "Add CUDA support for Fiber module" OFF)
 option(WITH_MPI "Whether to compile with MPI" OFF)
 option(WITH_FENICS "Whether to compile with FEniCS support" OFF)
+option(WITH_MPI "Enable MPI support." OFF)
 
 option(ENABLE_SINGLE_PRECISION "Enable support for single-precision calculations" ON)
 option(ENABLE_DOUBLE_PRECISION "Enable support for double-precision calculations" ON)

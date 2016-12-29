@@ -20,44 +20,44 @@
 
 #include "hmat_global_assembler.hpp"
 
-#include "potential_operator_hmat_assembly_helper.hpp"
 #include "assembly_options.hpp"
 #include "context.hpp"
-#include "evaluation_options.hpp"
-#include "discrete_sparse_boundary_operator.hpp"
-#include "weak_form_hmat_assembly_helper.hpp"
 #include "discrete_hmat_boundary_operator.hpp"
+#include "discrete_sparse_boundary_operator.hpp"
+#include "evaluation_options.hpp"
 #include "hmat_interface.hpp"
+#include "potential_operator_hmat_assembly_helper.hpp"
+#include "weak_form_hmat_assembly_helper.hpp"
 
 #include "../common/auto_timer.hpp"
+#include "../common/bounding_box.hpp"
 #include "../common/chunk_statistics.hpp"
 #include "../common/to_string.hpp"
 #include "../fiber/explicit_instantiation.hpp"
 #include "../fiber/local_assembler_for_integral_operators.hpp"
+#include "../fiber/local_assembler_for_potential_operators.hpp"
 #include "../fiber/scalar_traits.hpp"
 #include "../fiber/shared_ptr.hpp"
-#include "../fiber/local_assembler_for_potential_operators.hpp"
 #include "../space/space.hpp"
-#include "../common/bounding_box.hpp"
 
 #include "../hmat/block_cluster_tree.hpp"
-#include "../hmat/geometry_interface.hpp"
-#include "../hmat/geometry_data_type.hpp"
-#include "../hmat/geometry.hpp"
-#include "../hmat/hmatrix.hpp"
 #include "../hmat/data_accessor.hpp"
-#include "../hmat/hmatrix_dense_compressor.hpp"
+#include "../hmat/geometry.hpp"
+#include "../hmat/geometry_data_type.hpp"
+#include "../hmat/geometry_interface.hpp"
+#include "../hmat/hmatrix.hpp"
 #include "../hmat/hmatrix_aca_compressor.hpp"
+#include "../hmat/hmatrix_dense_compressor.hpp"
 
-#include <stdexcept>
 #include <fstream>
 #include <iostream>
+#include <stdexcept>
 
 #include <boost/type_traits/is_complex.hpp>
 
 #include <tbb/atomic.h>
-#include <tbb/parallel_for.h>
 #include <tbb/concurrent_queue.h>
+#include <tbb/parallel_for.h>
 
 namespace Bempp {
 
@@ -156,8 +156,6 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
   auto coarsening = parameterList.template get<bool>("options.hmat.coarsening");
   auto coarseningAccuracy =
       parameterList.template get<double>("options.hmat.coarseningAccuracy");
-  auto matVecParallelLevels =
-      parameterList.template get<int>("options.hmat.matVecParallelLevels");
   if (coarseningAccuracy == 0)
     coarseningAccuracy =
         0.1 * eps; // Default is finer tol for coarsening than eps
@@ -168,12 +166,11 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
 
     hmat::HMatrixAcaCompressor<ResultType, 2> compressor(helper, eps, maxRank);
     hMatrix.reset(new hmat::DefaultHMatrixType<ResultType>(
-        blockClusterTree, compressor, matVecParallelLevels, coarsening,
-        coarseningAccuracy));
+        blockClusterTree, compressor, coarsening, coarseningAccuracy));
   } else if (compressionAlgorithm == "dense") {
     hmat::HMatrixDenseCompressor<ResultType, 2> compressor(helper);
-    hMatrix.reset(new hmat::DefaultHMatrixType<ResultType>(
-        blockClusterTree, compressor, matVecParallelLevels));
+    hMatrix.reset(
+        new hmat::DefaultHMatrixType<ResultType>(blockClusterTree, compressor));
   } else
     throw std::runtime_error("HMatGlobalAssember::assembleDetachedWeakForm: "
                              "Unknown compression algorithm");
@@ -243,8 +240,6 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assemblePotentialOperator(
   auto coarsening = parameterList.template get<bool>("options.hmat.coarsening");
   auto coarseningAccuracy =
       parameterList.template get<double>("options.hmat.coarseningAccuracy");
-  auto matVecParallelLevels =
-      parameterList.template get<int>("options.hmat.matVecParallelLevels");
   if (coarseningAccuracy == 0)
     coarseningAccuracy = eps;
 
@@ -254,12 +249,11 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assemblePotentialOperator(
 
     hmat::HMatrixAcaCompressor<ResultType, 2> compressor(helper, eps, maxRank);
     hMatrix.reset(new hmat::DefaultHMatrixType<ResultType>(
-        blockClusterTree, compressor, matVecParallelLevels, coarsening,
-        coarseningAccuracy));
+        blockClusterTree, compressor, coarsening, coarseningAccuracy));
   } else if (compressionAlgorithm == "dense") {
     hmat::HMatrixDenseCompressor<ResultType, 2> compressor(helper);
-    hMatrix.reset(new hmat::DefaultHMatrixType<ResultType>(
-        blockClusterTree, compressor, matVecParallelLevels));
+    hMatrix.reset(
+        new hmat::DefaultHMatrixType<ResultType>(blockClusterTree, compressor));
   } else
     throw std::runtime_error("HMatGlobalAssember::assembleDetachedWeakForm: "
                              "Unknown compression algorithm");

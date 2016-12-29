@@ -39,7 +39,7 @@ find_package(Sphinx)
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
   set(BOOST_MIN_VER 1.57)
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-  set(BOOST_MIN_VER 1.53) 
+  set(BOOST_MIN_VER 1.53)
 else()
   message(FATAL_ERROR "Windows installation not supported.")
 endif()
@@ -79,6 +79,11 @@ find_package(Numpy REQUIRED)
 # Adds fake FC.h file cos dune incorrectly includes it in dune_config.h
 if(NOT EXISTS "${PROJECT_BINARY_DIR}/include/FC.h")
     file(WRITE "${PROJECT_BINARY_DIR}/include/FC.h" "// fake Fortran-C file")
+endif()
+
+# Include MPI
+if (WITH_MPI)
+    find_package(MPI REQUIRED)
 endif()
 
 

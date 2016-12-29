@@ -35,7 +35,7 @@ set_target_properties(libbempp PROPERTIES PREFIX "")
 # Add targets that may not yet exist, if they are being built as lookups
 set(imported_targets
     # Dune targets
-    dunecommon dunegeometry dunegrid 
+    dunecommon dunegeometry dunegrid
 )
 
 unset(library_files)
@@ -71,6 +71,20 @@ target_link_libraries(libbempp ${ZLIB_LIBRARIES})
 if (WITH_CUDA)
    include(FindCUDA)
 endif ()
+
+if (WITH_MPI)
+    include_directories(${MPI_INCLUDE_PATH})
+    target_link_libraries(libbempp ${MPI_LIBRARIES})
+
+    if(MPI_COMPILE_FLAGS)
+        target_compile_options(libbempp PUBLIC "${MPI_COMPILE_FLAGS}")
+    endif()
+
+    if(MPI_LINK_FLAGS)
+        set_target_properties(libbempp PROPERTIES
+                              LINK_FLAGS "${MPI_LINK_FLAGS}")
+    endif()
+endif()
 
 # Install library
 install(TARGETS libbempp

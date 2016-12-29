@@ -2,6 +2,8 @@
 from __future__ import print_function
 import os
 
+from mpi4py import MPI as _
+
 #pylint: disable=bare-except
 #pylint: disable=wrong-import-position
 #pylint: disable=invalid-name
