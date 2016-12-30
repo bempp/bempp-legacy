@@ -472,85 +472,10 @@ class InverseSparseDiscreteBoundaryOperator(DiscreteBoundaryOperator):
 
     """
 
-    class _Solver(object):  # pylint: disable=too-few-public-methods
-        """Actual solver class."""
-
-        def __init__(self, operator):
-
-            from scipy.sparse import csc_matrix
-
-            if isinstance(operator, SparseDiscreteBoundaryOperator):
-                mat = operator.sparse_operator
-            elif isinstance(operator, csc_matrix):
-                mat = operator
-            else:
-                raise ValueError("op must be either of type " +
-                                 "SparseDiscreteBoundaryOperator or of type " +
-                                 "csc_matrix. Actual type: " +
-                                 str(type(operator)))
-
-            from scipy.sparse.linalg import factorized
-            from scipy.sparse.linalg import splu
-            self._solve_fun = None
-            self._shape = (mat.shape[1], mat.shape[0])
-            self._dtype = mat.dtype
-
-            import time
-            import bempp.api
-
-            bempp.api.LOGGER.info(
-                "Start computing LU " +
-                "(pseudo)-inverse of ({0}, {1}) matrix.".format(
-                    mat.shape[0], mat.shape[1]))
-
-            start_time = time.time()
-            if mat.shape[0] == mat.shape[1]:
-                # Square matrix case
-                self._solve_fun = factorized(mat)
-            elif mat.shape[0] > mat.shape[1]:
-                # Thin matrix case
-                mat_hermitian = mat.conjugate().transpose()
-                solver = splu((mat_hermitian * mat).tocsc())
-                self._solve_fun = lambda x: solver.solve(mat_hermitian * x)
-            else:
-                # Thick matrix case
-
-                mat_hermitian = mat.conjugate().transpose()
-                solver = splu((mat * mat_hermitian).tocsc())
-                self._solve_fun = lambda x: mat_hermitian * solver.solve(x)
-
-            end_time = time.time()
-            bempp.api.LOGGER.info(
-                "Finished computation of inverse in %.2E seconds.",
-                end_time - start_time)
-
-        def solve(self, vec):
-            """Solve with right-hand side vec."""
-
-            if self._dtype == 'float64' and _np.iscomplexobj(vec):
-                return (self.solve(_np.real(vec)) +
-                        1j * self.solve(_np.imag(vec)))
-
-            result = self._solve_fun(vec.squeeze())
-
-            if vec.ndim > 1:
-                return result.reshape(self.shape[0], 1)
-            else:
-                return result
-
-        @property
-        def shape(self):
-            """Return the shape of the inverse operator."""
-            return self._shape
-
-        @property
-        def dtype(self):
-            """Return the dtype."""
-            return self._dtype
 
     def __init__(self, operator):
 
-        self._solver = InverseSparseDiscreteBoundaryOperator._Solver(operator)
+        self._solver = _Solver(operator)
         self._adjoint_op = None
         self._operator = operator
         super(InverseSparseDiscreteBoundaryOperator, self).__init__(
@@ -705,3 +630,104 @@ def as_matrix(operator):
         return operator.sparse_operator
     else:
         return operator * eye(cols, cols)
+
+class _Solver(object):  # pylint: disable=too-few-public-methods
+    """Actual solve of a sparse linear system."""
+
+    #pylint: disable=too-many-locals
+    def __init__(self, operator):
+
+        from scipy.sparse import csc_matrix
+
+
+        if isinstance(operator, SparseDiscreteBoundaryOperator):
+            mat = operator.sparse_operator
+        elif isinstance(operator, csc_matrix):
+            mat = operator
+        else:
+            raise ValueError("op must be either of type " +
+                             "SparseDiscreteBoundaryOperator or of type " +
+                             "csc_matrix. Actual type: " +
+                             str(type(operator)))
+
+        from scipy.sparse.linalg import splu
+        self._solve_fun = None
+        self._shape = (mat.shape[1], mat.shape[0])
+        self._dtype = mat.dtype
+
+        import time
+        import bempp.api
+
+        use_mkl_pardiso = False
+
+        #pylint: disable=bare-except
+        try:
+            from mkl_pardiso_solve import PardisoInterface
+            #pylint: disable=invalid-name
+            SolverInterface = PardisoInterface
+            actual_mat = mat.tocsr()
+            use_mkl_pardiso = True
+        except:
+            # MKL Pardiso Solver not present
+            #pylint: disable=invalid-name
+            #pylint: disable=redefined-variable-type
+            SolverInterface = splu
+            actual_mat = mat
+
+        bempp.api.LOGGER.info(
+            "Start computing LU " +
+            "(pseudo)-inverse of ({0}, {1}) matrix.".format(
+                mat.shape[0], mat.shape[1]))
+
+        start_time = time.time()
+        if mat.shape[0] == mat.shape[1]:
+            # Square matrix case
+            solver = SolverInterface(actual_mat)
+            self._solve_fun = solver.solve
+        elif mat.shape[0] > mat.shape[1]:
+            # Thin matrix case
+            mat_hermitian = actual_mat.conjugate().transpose()
+            if use_mkl_pardiso:
+                solver = SolverInterface((mat_hermitian * mat).tocsr())
+            else:
+                solver = SolverInterface((mat_hermitian * mat).tocsc())
+            #pylint: disable=redefined-variable-type
+            self._solve_fun = lambda x: solver.solve(mat_hermitian * x)
+        else:
+            # Thick matrix case
+
+            mat_hermitian = actual_mat.conjugate().transpose()
+            if use_mkl_pardiso:
+                solver = SolverInterface((mat * mat_hermitian).tocsr())
+            else:
+                solver = SolverInterface((mat * mat_hermitian).tocsc())
+            self._solve_fun = lambda x: mat_hermitian * solver.solve(x)
+
+        end_time = time.time()
+        bempp.api.LOGGER.info(
+            "Finished computation of inverse in %.2E seconds.",
+            end_time - start_time)
+
+    def solve(self, vec):
+        """Solve with right-hand side vec."""
+
+        if self._dtype == 'float64' and _np.iscomplexobj(vec):
+            return (self.solve(_np.real(vec)) +
+                    1j * self.solve(_np.imag(vec)))
+
+        result = self._solve_fun(vec.squeeze())
+
+        if vec.ndim > 1:
+            return result.reshape(self.shape[0], 1)
+        else:
+            return result
+
+    @property
+    def shape(self):
+        """Return the shape of the inverse operator."""
+        return self._shape
+
+    @property
+    def dtype(self):
+        """Return the dtype."""
+        return self._dtype
