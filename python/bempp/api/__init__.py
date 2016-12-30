@@ -2,12 +2,19 @@
 from __future__ import print_function
 import os
 
-from mpi4py import MPI as _
+from mpi4py import MPI
+
 
 #pylint: disable=bare-except
 #pylint: disable=wrong-import-position
 #pylint: disable=invalid-name
 #pylint: disable=ungrouped-imports
+
+mpi_comm = MPI.COMM_WORLD #pylint: disable=no-member
+mpi_rank = mpi_comm.Get_rank() #pylint: disable=no-member
+mpi_size = mpi_comm.Get_size() #pylint: disable=no-member
+mpi_name = MPI.Get_processor_name() #pylint: disable=no-member
+
 
 # import the version string
 from bempp import config as _config

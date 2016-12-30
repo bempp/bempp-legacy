@@ -113,25 +113,30 @@ void HMatrix<ValueType, N>::initialize(
   // Type of a block cluster tree node.
   typedef decltype(m_blockClusterTree->root()) node_t;
 
-  // Sort the leaf nodes by size.
+  // Sorting by size not necessary any more as a natural size
+  // ordering is induced by the breadth-first search of the
+  // leafs function that returns the leaf vector.
+  /*
 
-  std::stable_sort(
-      leafNodes.begin(), leafNodes.end(),
-      [&](const node_t &a, const node_t &b) -> bool {
-        auto rowRange_a = a->data().rowClusterTreeNode->data().indexRange;
-        auto colRange_a = a->data().columnClusterTreeNode->data().indexRange;
-        auto rowRange_b = b->data().rowClusterTreeNode->data().indexRange;
-        auto colRange_b = b->data().columnClusterTreeNode->data().indexRange;
+    // Sort the leaf nodes by size.
+    std::stable_sort(
+        leafNodes.begin(), leafNodes.end(),
+        [&](const node_t &a, const node_t &b) -> bool {
+          auto rowRange_a = a->data().rowClusterTreeNode->data().indexRange;
+          auto colRange_a = a->data().columnClusterTreeNode->data().indexRange;
+          auto rowRange_b = b->data().rowClusterTreeNode->data().indexRange;
+          auto colRange_b = b->data().columnClusterTreeNode->data().indexRange;
 
-        std::size_t size_a = std::max(rowRange_a[1] - rowRange_a[0],
-                                      colRange_a[1] - colRange_a[0]);
-        std::size_t size_b = std::max(rowRange_b[1] - rowRange_b[0],
-                                      colRange_b[1] - colRange_b[0]);
+          std::size_t size_a = std::max(rowRange_a[1] - rowRange_a[0],
+                                        colRange_a[1] - colRange_a[0]);
+          std::size_t size_b = std::max(rowRange_b[1] - rowRange_b[0],
+                                        colRange_b[1] - colRange_b[0]);
 
-        // Sort in descending order
-        return size_a > size_b;
+          // Sort in descending order
+          return size_a > size_b;
 
-      });
+        });
+  */
 
   for (int index = m_rank; index < leafNodes.size(); index += m_nproc)
     m_myLeafs.push_back(leafNodes[index]);

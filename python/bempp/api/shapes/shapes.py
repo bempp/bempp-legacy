@@ -28,12 +28,16 @@ def __generate_grid_from_gmsh_string(gmsh_string):
     import os
     import tempfile
 
-    handle, fname = tempfile.mkstemp(
-        suffix='.msh', dir=bempp.api.TMP_PATH, text=True)
-    with os.fdopen(handle, "w") as f:
-        f.write(gmsh_string)
+    if bempp.api.mpi_rank == 0:
+        # First create the grid.
+        handle, fname = tempfile.mkstemp(
+            suffix='.msh', dir=bempp.api.TMP_PATH, text=True)
+        with os.fdopen(handle, "w") as f:
+            f.write(gmsh_string)
     grid = bempp.api.import_grid(fname)
-    os.remove(fname)
+    bempp.api.mpi_comm.Barrier()
+    if bempp.api.mpi_rank == 0:
+        os.remove(fname)
     return grid
 
 

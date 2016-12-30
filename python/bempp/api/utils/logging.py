@@ -3,10 +3,11 @@
 #pylint: disable=no-member
 #pylint: disable=redefined-builtin
 #pylint: disable=invalid-name
-
 from __future__ import absolute_import
 import logging as _logging
 import time as _time
+from mpi4py import MPI as _MPI
+
 
 # Logging levels
 
@@ -16,7 +17,10 @@ WARNING = _logging.WARNING
 ERROR = _logging.ERROR
 CRITICAL = _logging.CRITICAL
 
-DEFAULT_FORMAT = '%(asctime)s:%(name)s:%(levelname)s: %(message)s'
+
+DEFAULT_FORMAT = ("%(asctime)s:Host {0}:Rank {1}:".format(
+    _MPI.Get_processor_name(), _MPI.COMM_WORLD.Get_rank()) +
+                  "%(name)s:%(levelname)s: %(message)s")
 
 def _init_logger():
     """Initialize the BEM++ logger."""
@@ -33,7 +37,7 @@ def enable_console_logging(level=DEBUG, format=DEFAULT_FORMAT):
     from bempp.api import LOGGER
     ch = _logging.StreamHandler()
     ch.setLevel(level)
-    ch.setFormatter(_logging.Formatter(format))
+    ch.setFormatter(_logging.Formatter(format, "%H:%M:%S"))
     LOGGER.addHandler(ch)
     return ch
 
@@ -44,7 +48,7 @@ def enable_file_logging(file_name, level=DEBUG, format=DEFAULT_FORMAT):
     from bempp.api import LOGGER
     fh = _logging.FileHandler(file_name)
     fh.setLevel(level)
-    fh.setFormatter(_logging.Formatter(format))
+    fh.setFormatter(_logging.Formatter(format, "%H:%M:%S"))
     LOGGER.addHandler(fh)
     return fh
 
