@@ -30,10 +30,9 @@ HMatrix<ValueType, N>::HMatrix(
 template <typename ValueType, int N>
 HMatrix<ValueType, N>::HMatrix(
     const shared_ptr<BlockClusterTree<N>> &blockClusterTree,
-    const HMatrixCompressor<ValueType, N> &hMatrixCompressor, bool coarsening,
-    double coarsening_accuracy, MPI_Comm comm)
+    const HMatrixCompressor<ValueType, N> &hMatrixCompressor, MPI_Comm comm)
     : HMatrix<ValueType, N>(blockClusterTree, comm) {
-  initialize(hMatrixCompressor, coarsening, coarsening_accuracy);
+  initialize(hMatrixCompressor);
 }
 
 template <typename ValueType, int N>
@@ -73,41 +72,10 @@ double HMatrix<ValueType, N>::memSizeKb() const {
 
 template <typename ValueType, int N>
 void HMatrix<ValueType, N>::initialize(
-    const HMatrixCompressor<ValueType, N> &hMatrixCompressor, bool coarsening,
-    double coarsening_accuracy) {
+    const HMatrixCompressor<ValueType, N> &hMatrixCompressor) {
 
   reset();
 
-  /*
-    typedef decltype(m_blockClusterTree->root()) node_t;
-
-    std::function<void(const node_t &node)> compressFunTree =
-        [&](const node_t &node) {
-          if (node->isLeaf()) {
-            shared_ptr<HMatrixData<ValueType>> nodeData;
-            hMatrixCompressor.compressBlock(*node, nodeData);
-            m_hMatrixData[node] = nodeData;
-          } else {
-            tbb::task_group g;
-            g.run([&] { compressFunTree(node->child(0)); });
-            g.run([&] { compressFunTree(node->child(1)); });
-            g.run([&] { compressFunTree(node->child(2)); });
-            g.run_and_wait([&] { compressFunTree(node->child(3)); });
-
-            // Now do a coarsen step
-            if (coarsening)
-              coarsen_impl(node, coarsening_accuracy);
-          }
-
-        };
-
-    if (coarsening)
-      compressFunTree(m_blockClusterTree->root());
-    else {
-
-    */
-
-  // Use a simple TBB loop if no coarsening is necessary
   auto leafNodes = this->m_blockClusterTree->leafNodes();
 
   // Type of a block cluster tree node.
@@ -325,175 +293,6 @@ void HMatrix<ValueType, N>::apply(const Eigen::Ref<Matrix<ValueType>> &X,
 }
 
 template <typename ValueType, int N>
-void HMatrix<ValueType, N>::apply_impl_parallel(
-    const shared_ptr<BlockClusterTreeNode<N>> &node,
-    const Eigen::Ref<Matrix<ValueType>> &X, Eigen::Ref<Matrix<ValueType>> Y,
-    TransposeMode trans, int levelCount) const {
-
-  if (node->isLeaf()) {
-    this->m_hMatrixData.at(node)->apply(X, Y, trans, 1, 1);
-  } else {
-
-    auto child0 = node->child(0);
-    auto child1 = node->child(1);
-    auto child2 = node->child(2);
-    auto child3 = node->child(3);
-
-    IndexRangeType childRowRange =
-        child0->data().rowClusterTreeNode->data().indexRange;
-    IndexRangeType childColRange =
-        child0->data().columnClusterTreeNode->data().indexRange;
-
-    int rowSplit = childRowRange[1] - childRowRange[0];
-    int colSplit = childColRange[1] - childColRange[0];
-
-    // Ugly hack since Eigen::Ref constructor does not like const objects
-    Eigen::Ref<Matrix<ValueType>> x_no_const =
-        const_cast<Eigen::Ref<Matrix<ValueType>> &>(X);
-
-    int x_split;
-    int y_split;
-
-    if (trans == TransposeMode::NOTRANS || trans == TransposeMode::CONJ) {
-      x_split = colSplit;
-      y_split = rowSplit;
-    } else {
-      x_split = rowSplit;
-      y_split = colSplit;
-    }
-
-    Eigen::Ref<Matrix<ValueType>> xData1(x_no_const.topRows(x_split));
-    Eigen::Ref<Matrix<ValueType>> xData2(
-        x_no_const.bottomRows(X.rows() - x_split));
-
-    Eigen::Ref<Matrix<ValueType>> yData1(Y.topRows(y_split));
-    Eigen::Ref<Matrix<ValueType>> yData2(Y.bottomRows(Y.rows() - y_split));
-
-    tbb::task_group g;
-
-    if (levelCount > 1) {
-
-      if (trans == TransposeMode::NOTRANS || trans == TransposeMode::CONJ) {
-
-        g.run([&] {
-          this->apply_impl_parallel(child0, xData1, yData1, trans,
-                                    levelCount - 1);
-          this->apply_impl_parallel(child1, xData2, yData1, trans,
-                                    levelCount - 1);
-        });
-        g.run_and_wait([&] {
-          this->apply_impl_parallel(child2, xData1, yData2, trans,
-                                    levelCount - 1);
-          this->apply_impl_parallel(child3, xData2, yData2, trans,
-                                    levelCount - 1);
-        });
-      } else {
-        g.run([&] {
-          this->apply_impl_parallel(child0, xData1, yData1, trans,
-                                    levelCount - 1);
-          this->apply_impl_parallel(child2, xData2, yData1, trans,
-                                    levelCount - 1);
-        });
-        g.run_and_wait([&] {
-          this->apply_impl_parallel(child1, xData1, yData2, trans,
-                                    levelCount - 1);
-          this->apply_impl_parallel(child3, xData2, yData2, trans,
-                                    levelCount - 1);
-        });
-      }
-    } else {
-
-      if (trans == TransposeMode::NOTRANS || trans == TransposeMode::CONJ) {
-
-        g.run([&] {
-          this->apply_impl_serial(child0, xData1, yData1, trans);
-          this->apply_impl_serial(child1, xData2, yData1, trans);
-        });
-        g.run_and_wait([&] {
-          this->apply_impl_serial(child2, xData1, yData2, trans);
-          this->apply_impl_serial(child3, xData2, yData2, trans);
-        });
-      } else {
-        g.run([&] {
-          this->apply_impl_serial(child0, xData1, yData1, trans);
-          this->apply_impl_serial(child2, xData2, yData1, trans);
-        });
-        g.run_and_wait([&] {
-          this->apply_impl_serial(child1, xData1, yData2, trans);
-          this->apply_impl_serial(child3, xData2, yData2, trans);
-        });
-      }
-    }
-  }
-}
-
-template <typename ValueType, int N>
-void HMatrix<ValueType, N>::apply_impl_serial(
-    const shared_ptr<BlockClusterTreeNode<N>> &node,
-    const Eigen::Ref<Matrix<ValueType>> &X, Eigen::Ref<Matrix<ValueType>> Y,
-    TransposeMode trans) const {
-
-  if (node->isLeaf()) {
-    this->m_hMatrixData.at(node)->apply(X, Y, trans, 1, 1);
-  } else {
-
-    auto child0 = node->child(0);
-    auto child1 = node->child(1);
-    auto child2 = node->child(2);
-    auto child3 = node->child(3);
-
-    IndexRangeType childRowRange =
-        child0->data().rowClusterTreeNode->data().indexRange;
-    IndexRangeType childColRange =
-        child0->data().columnClusterTreeNode->data().indexRange;
-
-    int rowSplit = childRowRange[1] - childRowRange[0];
-    int colSplit = childColRange[1] - childColRange[0];
-
-    IndexRangeType inputRange;
-    IndexRangeType outputRange;
-
-    int x_size = X.rows();
-    int y_size = Y.rows();
-
-    // Ugly hack since Eigen::Ref constructor does not like const objects
-    Eigen::Ref<Matrix<ValueType>> x_no_const =
-        const_cast<Eigen::Ref<Matrix<ValueType>> &>(X);
-
-    int x_split;
-    int y_split;
-
-    if (trans == TransposeMode::NOTRANS || trans == TransposeMode::CONJ) {
-      x_split = colSplit;
-      y_split = rowSplit;
-    } else {
-      x_split = rowSplit;
-      y_split = colSplit;
-    }
-
-    Eigen::Ref<Matrix<ValueType>> xData1(x_no_const.topRows(x_split));
-    Eigen::Ref<Matrix<ValueType>> xData2(
-        x_no_const.bottomRows(X.rows() - x_split));
-
-    Eigen::Ref<Matrix<ValueType>> yData1(Y.topRows(y_split));
-    Eigen::Ref<Matrix<ValueType>> yData2(Y.bottomRows(Y.rows() - y_split));
-
-    if (trans == TransposeMode::NOTRANS || trans == TransposeMode::CONJ) {
-
-      this->apply_impl_serial(child0, xData1, yData1, trans);
-      this->apply_impl_serial(child1, xData2, yData1, trans);
-      this->apply_impl_serial(child2, xData1, yData2, trans);
-      this->apply_impl_serial(child3, xData2, yData2, trans);
-    } else {
-      this->apply_impl_serial(child0, xData1, yData1, trans);
-      this->apply_impl_serial(child2, xData2, yData1, trans);
-      this->apply_impl_serial(child1, xData1, yData2, trans);
-      this->apply_impl_serial(child3, xData2, yData2, trans);
-    }
-  }
-}
-
-template <typename ValueType, int N>
 double HMatrix<ValueType, N>::frobeniusNorm_impl(
     const shared_ptr<BlockClusterTreeNode<N>> &node) const {
 
@@ -517,87 +316,6 @@ double HMatrix<ValueType, N>::frobeniusNorm_impl(
   result = std::sqrt(res0 * res0 + res1 * res1 + res2 * res2 + res3 * res3);
 
   return result;
-}
-
-template <typename ValueType, int N>
-bool HMatrix<ValueType, N>::coarsen_impl(
-    const shared_ptr<BlockClusterTreeNode<N>> &node, double coarsen_accuracy) {
-
-  // Exit if children are not leafs or not all admissible
-
-  bool isLeaf = true;
-  for (int i = 0; i < 4; ++i) {
-    if (!node->child(i)->isLeaf())
-      isLeaf = false;
-  }
-
-  if (!isLeaf) {
-    return false;
-  }
-
-  // Get dimensions of current block
-
-  IndexRangeType rowIndexRange =
-      node->data().rowClusterTreeNode->data().indexRange;
-  IndexRangeType columnIndexRange =
-      node->data().columnClusterTreeNode->data().indexRange;
-  int rows = rowIndexRange[1] - rowIndexRange[0];
-  int cols = columnIndexRange[1] - columnIndexRange[0];
-
-  // Compute maximum possible rank for coarsening
-
-  int storage = 0;
-  for (int i = 0; i < 4; ++i) {
-    auto data = m_hMatrixData.at(node->child(i));
-    storage += data->numberOfElements();
-  }
-
-  int maxk = 1 + std::trunc((1.0 * storage) / (rows + cols));
-
-  // Now coarsen the current node
-
-  bool success;
-  Matrix<ValueType> A;
-  Matrix<ValueType> B;
-
-  int p = 4; // Oversampling parameter (k+p) random cols are used to determine
-             // range space.
-
-  matApply_t<ValueType> fun = [this, node, rows, cols](
-      const Eigen::Ref<Matrix<ValueType>> &mat, TransposeMode trans) {
-
-    Matrix<ValueType> result = Matrix<ValueType>::Zero(rows, mat.cols());
-    if (trans == NOTRANS)
-      result = Matrix<ValueType>::Zero(rows, mat.cols());
-    else
-      result = Matrix<ValueType>::Zero(cols, mat.cols());
-
-    apply_impl_serial(node, mat, Eigen::Ref<Matrix<ValueType>>(result), trans);
-    return result;
-  };
-
-  randomizedLowRankApproximation(fun, rows, cols, coarsen_accuracy, maxk,
-                                 maxk + p, success, A, B);
-
-  if (success) {
-    // Remove data associated with children
-    for (int i = 0; i < 4; ++i)
-      m_hMatrixData.at(node->child(i)).reset();
-
-    // Remove children from block cluster tree
-
-    node->removeChildren();
-
-    // Add new data block and set node to admissible
-
-    shared_ptr<HMatrixData<ValueType>> nodeData(
-        new HMatrixLowRankData<ValueType>(A, B));
-    m_hMatrixData[node] = nodeData;
-    node->data().admissible = true;
-    return true;
-  } else {
-    return false;
-  }
 }
 }
 

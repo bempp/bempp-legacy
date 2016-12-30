@@ -31,7 +31,6 @@ public:
           MPI_Comm comm = MPI_COMM_WORLD);
   HMatrix(const shared_ptr<BlockClusterTree<N>> &blockClusterTree,
           const HMatrixCompressor<ValueType, N> &hMatrixCompressor,
-          bool coarsening = false, double coarsening_accuracy = 0,
           MPI_Comm comm = MPI_COMM_WORLD);
 
   std::size_t rows() const;
@@ -39,8 +38,7 @@ public:
 
   double frobeniusNorm() const;
 
-  void initialize(const HMatrixCompressor<ValueType, N> &hMatrixCompressor,
-                  bool coarsening = false, double coarsening_accuracy = 0);
+  void initialize(const HMatrixCompressor<ValueType, N> &hMatrixCompressor);
   bool isInitialized() const;
   void reset();
 

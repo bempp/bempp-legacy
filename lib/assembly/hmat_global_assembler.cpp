@@ -153,20 +153,14 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
 
   auto maxRank = parameterList.template get<int>("options.hmat.maxRank");
   auto eps = parameterList.template get<double>("options.hmat.eps");
-  auto coarsening = parameterList.template get<bool>("options.hmat.coarsening");
-  auto coarseningAccuracy =
-      parameterList.template get<double>("options.hmat.coarseningAccuracy");
-  if (coarseningAccuracy == 0)
-    coarseningAccuracy =
-        0.1 * eps; // Default is finer tol for coarsening than eps
 
   shared_ptr<hmat::DefaultHMatrixType<ResultType>> hMatrix;
 
   if (compressionAlgorithm == "aca") {
 
     hmat::HMatrixAcaCompressor<ResultType, 2> compressor(helper, eps, maxRank);
-    hMatrix.reset(new hmat::DefaultHMatrixType<ResultType>(
-        blockClusterTree, compressor, coarsening, coarseningAccuracy));
+    hMatrix.reset(
+        new hmat::DefaultHMatrixType<ResultType>(blockClusterTree, compressor));
   } else if (compressionAlgorithm == "dense") {
     hmat::HMatrixDenseCompressor<ResultType, 2> compressor(helper);
     hMatrix.reset(
@@ -237,19 +231,14 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assemblePotentialOperator(
 
   auto maxRank = parameterList.template get<int>("options.hmat.maxRank");
   auto eps = parameterList.template get<double>("options.hmat.eps");
-  auto coarsening = parameterList.template get<bool>("options.hmat.coarsening");
-  auto coarseningAccuracy =
-      parameterList.template get<double>("options.hmat.coarseningAccuracy");
-  if (coarseningAccuracy == 0)
-    coarseningAccuracy = eps;
 
   shared_ptr<hmat::DefaultHMatrixType<ResultType>> hMatrix;
 
   if (compressionAlgorithm == "aca") {
 
     hmat::HMatrixAcaCompressor<ResultType, 2> compressor(helper, eps, maxRank);
-    hMatrix.reset(new hmat::DefaultHMatrixType<ResultType>(
-        blockClusterTree, compressor, coarsening, coarseningAccuracy));
+    hMatrix.reset(
+        new hmat::DefaultHMatrixType<ResultType>(blockClusterTree, compressor));
   } else if (compressionAlgorithm == "dense") {
     hmat::HMatrixDenseCompressor<ResultType, 2> compressor(helper);
     hMatrix.reset(
