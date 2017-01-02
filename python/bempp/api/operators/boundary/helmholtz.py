@@ -320,7 +320,7 @@ def exterior_calderon_projector(grid, wave_number, parameters=None):
     return .5 * multitrace_identity(grid, parameters) - multitrace_operator(grid, wave_number, parameters)
 
 
-def osrc_dtn(space, wave_number, npade=2, theta=_np.pi / 3,
+def osrc_dtn(space, wave_number, npade=2, theta=_np.pi / 3, damped_wavenumber=None,
              parameters=None, label="osrc_dtn"):
     """Return the OSRC approximation to the DtN map.
 
@@ -334,6 +334,8 @@ def osrc_dtn(space, wave_number, npade=2, theta=_np.pi / 3,
         Number of Pade terms to be used in the approximation
     theta : float64
         Angle of the branch cut of the square root operator.
+    damped_wavenumber : complex
+        Damped wavenumber of the OSRC operator.
     parameters : bempp.api.common.ParameterList
         Parameters for the operator. If none given
         the default global parameter object
@@ -343,12 +345,12 @@ def osrc_dtn(space, wave_number, npade=2, theta=_np.pi / 3,
 
     """
 
-    return _OsrcDtn(space, wave_number, npade, theta, label=label)
+    return _OsrcDtn(space, wave_number, npade, theta, damped_wavenumber, label=label)
 
 
 class _OsrcDtn(_BoundaryOperator):
 
-    def __init__(self, space, wave_number, npade=2, theta=_np.pi / 3.,
+    def __init__(self, space, wave_number, npade=2, theta=_np.pi / 3., damped_wavenumber=None,
                  parameters=None, label="osrc_dtn"):
         super(_OsrcDtn, self).__init__(space, space, space, label=label)
 
@@ -356,6 +358,7 @@ class _OsrcDtn(_BoundaryOperator):
         self._wave_number = wave_number
         self._npade = npade
         self._theta = theta
+        self._damped_wavenumber = damped_wavenumber
         self._parameters = parameters
 
     def _weak_form_impl(self):
@@ -376,10 +379,11 @@ class _OsrcDtn(_BoundaryOperator):
 
         # Compute damped wavenumber
 
-        bbox = self._space.grid.bounding_box
-        rad = np.linalg.norm(bbox[1, :] - bbox[0, :]) / 2
-        dk = self._wave_number + 1j * 0.4 * \
-            self._wave_number ** (1.0 / 3.0) * rad ** (-2.0 / 3.0)
+        if self._damped_wavenumber is None:
+            bbox = self._space.grid.bounding_box
+            rad = np.linalg.norm(bbox[1, :] - bbox[0, :]) / 2
+            self._damped_wavenumber = self._wave_number + 1j * 0.4 * \
+                self._wave_number ** (1.0 / 3.0) * rad ** (-2.0 / 3.0)
 
         # Get the Pade coefficients
 
@@ -390,15 +394,15 @@ class _OsrcDtn(_BoundaryOperator):
         term = ZeroBoundaryOperator(space, space, space).weak_form()
 
         for i in range(self._npade):
-            term -= (alpha[i] / (dk ** 2) * stiff *
+            term -= (alpha[i] / (self._damped_wavenumber ** 2) * stiff *
                      InverseSparseDiscreteBoundaryOperator(
-                         mass - beta[i] / (dk ** 2) * stiff))
+                         mass - beta[i] / (self._damped_wavenumber ** 2) * stiff))
         result = 1j * self._wave_number * (c0 * mass + term * mass)
 
         return result
 
 
-def osrc_ntd(space, wave_number, npade=2, theta=_np.pi / 3, parameters=None, label="osrc_ntd"):
+def osrc_ntd(space, wave_number, npade=2, theta=_np.pi / 3, damped_wavenumber=None, parameters=None, label="osrc_ntd"):
     """Return the OSRC approximation to the NtD map.
 
     Parameters
@@ -411,6 +415,8 @@ def osrc_ntd(space, wave_number, npade=2, theta=_np.pi / 3, parameters=None, lab
         Number of Pade terms to be used in the approximation
     theta : float64
         Angle of the branch cut of the square root operator.
+    damped_wavenumber : complex
+        Damped wavenumber of the OSRC operator.
     parameters : bempp.api.common.ParameterList
         Parameters for the operator. If none given
         the default global parameter object
@@ -419,12 +425,12 @@ def osrc_ntd(space, wave_number, npade=2, theta=_np.pi / 3, parameters=None, lab
         Label for the operator.
 
     """
-    return _OsrcNtd(space, wave_number, npade, theta, label=label)
+    return _OsrcNtd(space, wave_number, npade, theta, damped_wavenumber, label=label)
 
 
 class _OsrcNtd(_BoundaryOperator):
 
-    def __init__(self, space, wave_number, npade=2, theta=_np.pi / 3.,
+    def __init__(self, space, wave_number, npade=2, theta=_np.pi / 3., damped_wavenumber=None,
                  parameters=None, label="osrc_ntd"):
         super(_OsrcNtd, self).__init__(space, space, space, label=label)
 
@@ -432,6 +438,7 @@ class _OsrcNtd(_BoundaryOperator):
         self._wave_number = wave_number
         self._npade = npade
         self._theta = theta
+        self._damped_wavenumber = damped_wavenumber
         self._parameters = parameters
 
     def _weak_form_impl(self):
@@ -452,10 +459,11 @@ class _OsrcNtd(_BoundaryOperator):
 
         # Compute damped wavenumber
 
-        bbox = self._space.grid.bounding_box
-        rad = np.linalg.norm(bbox[1, :] - bbox[0, :]) / 2
-        dk = self._wave_number + 1j * 0.4 * \
-            self._wave_number ** (1.0 / 3.0) * rad ** (-2.0 / 3.0)
+        if self._damped_wavenumber is None:
+            bbox = self._space.grid.bounding_box
+            rad = np.linalg.norm(bbox[1, :] - bbox[0, :]) / 2
+            self._damped_wavenumber = self._wave_number + 1j * 0.4 * \
+                self._wave_number ** (1.0 / 3.0) * rad ** (-2.0 / 3.0)
 
         # Get the Pade coefficients
 
@@ -466,11 +474,11 @@ class _OsrcNtd(_BoundaryOperator):
         term = ZeroBoundaryOperator(space, space, space).weak_form()
 
         for i in range(self._npade):
-            term -= (alpha[i] / (dk ** 2) * stiff *
+            term -= (alpha[i] / (self._damped_wavenumber ** 2) * stiff *
                      InverseSparseDiscreteBoundaryOperator(
-                         mass - beta[i] / (dk ** 2) * stiff))
+                         mass - beta[i] / (self._damped_wavenumber ** 2) * stiff))
         result = 1. / (1j * self._wave_number) * (
-            mass * InverseSparseDiscreteBoundaryOperator(mass - 1. / (dk ** 2) * stiff) * (c0 * mass + term * mass))
+            mass * InverseSparseDiscreteBoundaryOperator(mass - 1. / (self._damped_wavenumber ** 2) * stiff) * (c0 * mass + term * mass))
 
         return result
 
