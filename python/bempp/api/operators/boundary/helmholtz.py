@@ -285,7 +285,8 @@ def single_layer_and_hypersingular_pair(
 
 
 def osrc_dtn(space, wave_number, npade=2, theta=_np.pi / 3,
-             parameters=None, label="osrc_dtn"):
+             parameters=None, label="osrc_dtn",
+             damped_wavenumber=None):
     """
     Return the OSRC approximation to the DtN map.
 
@@ -305,17 +306,21 @@ def osrc_dtn(space, wave_number, npade=2, theta=_np.pi / 3,
         `bempp.api.global_parameters` is used.
     label : string
         Label for the operator.
+    damped_wavenumber : complex
+        Explicitly specify the damped wavenumber of the OSRC operator.
 
     """
     return _OsrcDtn(space, wave_number, npade, theta,
-                    label=label, parameters=parameters)
+                    label=label, parameters=parameters,
+                    damped_wavenumber=damped_wavenumber)
 
 #pylint: disable=too-many-locals
 class _OsrcDtn(_BoundaryOperator):
     """Implementation of the OSRC DtN operator."""
 
     def __init__(self, space, wave_number, npade=2, theta=_np.pi / 3.,
-                 parameters=None, label="osrc_dtn"):
+                 parameters=None, label="osrc_dtn",
+                 damped_wavenumber=None):
         """Construct the OSRC DtN operator."""
         super(_OsrcDtn, self).__init__(space, space, space, label=label)
 
@@ -324,6 +329,7 @@ class _OsrcDtn(_BoundaryOperator):
         self._npade = npade
         self._theta = theta
         self._parameters = parameters
+        self._damped_wavenumber = damped_wavenumber
 
     def _weak_form_impl(self):
         from bempp.api.operators.boundary.sparse import identity
@@ -341,10 +347,13 @@ class _OsrcDtn(_BoundaryOperator):
 
         # Compute damped wavenumber
 
-        bbox = self._space.grid.bounding_box
-        rad = _np.linalg.norm(bbox[1, :] - bbox[0, :]) / 2
-        dk = self._wave_number + 1j * 0.4 * \
-            self._wave_number ** (1.0 / 3.0) * rad ** (-2.0 / 3.0)
+        if self._damped_wavenumber is None:
+            bbox = self._space.grid.bounding_box
+            rad = _np.linalg.norm(bbox[1, :] - bbox[0, :]) / 2
+            dk = self._wave_number + 1j * 0.4 * \
+                self._wave_number ** (1.0 / 3.0) * rad ** (-2.0 / 3.0)
+        else:
+            dk = self._damped_wavenumber
 
         # Get the Pade coefficients
 
@@ -364,7 +373,8 @@ class _OsrcDtn(_BoundaryOperator):
 
 
 def osrc_ntd(space, wave_number, npade=2,
-             theta=_np.pi / 3, parameters=None, label="osrc_ntd"):
+             theta=_np.pi / 3, parameters=None, label="osrc_ntd",
+             damped_wavenumber=None):
     """
     Return the OSRC approximation to the NtD map.
 
@@ -384,16 +394,20 @@ def osrc_ntd(space, wave_number, npade=2,
         `bempp.api.global_parameters` is used.
     label : string
         Label for the operator.
+    damped_wavenumber : complex
+        Explicitly specify the damped wavenumber of the OSRC operator.
 
     """
     return _OsrcNtd(space, wave_number, npade, theta, label=label,
-                    parameters=parameters)
+                    parameters=parameters,
+                    damped_wavenumber=damped_wavenumber)
 
 
 class _OsrcNtd(_BoundaryOperator):
 
     def __init__(self, space, wave_number, npade=2, theta=_np.pi / 3.,
-                 parameters=None, label="osrc_ntd"):
+                 parameters=None, label="osrc_ntd",
+                 damped_wavenumber=None):
         """Construct the OSRC NtD Operator."""
         super(_OsrcNtd, self).__init__(space, space, space, label=label)
 
@@ -402,6 +416,7 @@ class _OsrcNtd(_BoundaryOperator):
         self._npade = npade
         self._theta = theta
         self._parameters = parameters
+        self._damped_wavenumber = damped_wavenumber
 
     def _weak_form_impl(self):
         from bempp.api.operators.boundary.sparse import identity
@@ -419,10 +434,13 @@ class _OsrcNtd(_BoundaryOperator):
 
         # Compute damped wavenumber
 
-        bbox = self._space.grid.bounding_box
-        rad = _np.linalg.norm(bbox[1, :] - bbox[0, :]) / 2
-        dk = self._wave_number + 1j * 0.4 * \
-            self._wave_number ** (1.0 / 3.0) * rad ** (-2.0 / 3.0)
+        if self._damped_wavenumber is None:
+            bbox = self._space.grid.bounding_box
+            rad = _np.linalg.norm(bbox[1, :] - bbox[0, :]) / 2
+            dk = self._wave_number + 1j * 0.4 * \
+                self._wave_number ** (1.0 / 3.0) * rad ** (-2.0 / 3.0)
+        else:
+            dk = self._damped_wavenumber
 
         # Get the Pade coefficients
 
