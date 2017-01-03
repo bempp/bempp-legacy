@@ -17,7 +17,7 @@ def potential_logger(fun):
         mode = parameters.assembly.potential_operator_assembly_type
         bempp.api.LOGGER.info(
             "POTENTIAL OPERATOR ASSEMBLY START. Number of points: %i." +
-            "Space dimension: %i. Assembly type: %i ",
+            "Space dimension: %i. Assembly type: %s ",
             len(args[1][0]), args[0].global_dof_count, mode)
         start = time.time()
         operator = fun(*args, **kwargs)

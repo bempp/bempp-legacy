@@ -96,6 +96,7 @@ set(BEMPP_INCLUDE_DIRS
    ${NUMPY_INCLUDE_DIRS}
    ${dune-alugrid_INCLUDE_DIRS}
    ${dune-foamgrid_INCLUDE_DIRS}
+   ${MPI_INCLUDE_PATH}
 )
 
 foreach(component Boost TBB EIGEN3)

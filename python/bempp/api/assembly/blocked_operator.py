@@ -948,4 +948,5 @@ def grid_function_list_from_coefficients(coefficients, spaces):
         dof_count = space.global_dof_count
         res_list.append(GridFunction(
             space, coefficients=coefficients[pos:pos + dof_count]))
+        pos += dof_count
     return res_list

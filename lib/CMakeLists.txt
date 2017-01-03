@@ -73,7 +73,6 @@ if (WITH_CUDA)
 endif ()
 
 if (WITH_MPI)
-    include_directories(${MPI_INCLUDE_PATH})
     target_link_libraries(libbempp ${MPI_LIBRARIES})
 
     if(MPI_COMPILE_FLAGS)
