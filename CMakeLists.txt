@@ -67,12 +67,6 @@ if(DOXYGEN_FOUND OR SPHINX_FOUND)
 endif()
 
 
-# Tests
-# if(WITH_TESTS)
-#    enable_testing()
-#    add_subdirectory(tests)
-# endif(WITH_TESTS)
-
 add_subdirectory(lib)
 add_subdirectory(cython)
 add_subdirectory(meshes)
@@ -114,25 +108,7 @@ file(WRITE "${PROJECT_BINARY_DIR}/post_install/CMakeLists.txt"
 add_subdirectory("${PROJECT_BINARY_DIR}/post_install"
     "${PROJECT_BINARY_DIR}/post_install-build")
 
-# Create directory with shortcuts for Python
-# file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
-# file(WRITE ${PROJECT_BINARY_DIR}/bin/bempp "${PROJECT_BINARY_DIR}/localpython.sh \"$@\" ")
-# file(WRITE ${PROJECT_BINARY_DIR}/bin/ibempp "${PROJECT_BINARY_DIR}/localpython.sh -m IPython \"$@\" ")
-# execute_process(COMMAND chmod +x ${PROJECT_BINARY_DIR}/bin/bempp)
-# execute_process(COMMAND chmod +x ${PROJECT_BINARY_DIR}/bin/ibempp)
-
 add_custom_target(bempp DEPENDS libbempp cython-headers cython)
 
 include(CPackConfig)
 
-
-
-# Prepare the debian build script
-# configure_file(${PROJECT_SOURCE_DIR}/create_debian_package.sh.in ${PROJECT_BINARY_DIR}/create_debian_package.sh)
-
-# add_custom_target(debian sh ${PROJECT_BINARY_DIR}/create_debian_package.sh DEPENDS bempp)
-
-# Prepare the tarball build script
-# configure_file(${PROJECT_SOURCE_DIR}/create_tar.sh.in ${PROJECT_BINARY_DIR}/create_tar.sh)
-
-# add_custom_target(tar sh ${PROJECT_BINARY_DIR}/create_tar.sh DEPENDS bempp)
