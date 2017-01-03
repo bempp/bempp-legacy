@@ -864,3 +864,88 @@ class BlockedScaledDiscreteOperator(BlockedDiscreteOperatorBase):
     def column_dimensions(self):
         """Return the column dimensions."""
         return self._op.column_dimensions
+
+#pylint: disable=invalid-name
+def coefficients_of_grid_function_list(grid_funs):
+    """
+    Return a vector of coefficients of a list of grid functions.
+
+    Given a list [f0, f1, f2, ...] this function returns a
+    single Numpy vector containing [f1.coefficients, f2.coefficients, ...].
+
+    Parameters
+    ----------
+    grid_funs : list of GridFunction objects
+        A list containing the grid functions
+    """
+    vec_len = 0
+    input_type = _np.dtype('float64')
+    for item in grid_funs:
+        input_type = _np.promote_types(input_type,
+                                       item.coefficients.dtype)
+        vec_len += item.space.global_dof_count
+    res = _np.zeros(vec_len, dtype=input_type)
+    pos = 0
+    for item in grid_funs:
+        dof_count = item.space.global_dof_count
+        res[pos:pos + dof_count] = item.coefficients
+        pos += dof_count
+    return res
+
+def projections_of_grid_function_list(grid_funs, projection_spaces):
+    """
+    Return a vector of projections of a list of grid functions.
+
+    Given a list [f0, f1, f2, ...] this function returns a
+    single Numpy vector containing
+    [f0.projections(projection_spaces[0]),
+     f1.projections(projection_spaces[1])],
+     ...].
+
+    Parameters
+    ----------
+    grid_funs : list of GridFunction objects
+        A list containing the grid functions
+    projection_spaces : list of projection spaces
+        A list of projection spaces. Must have the same
+        length as grid_funs.
+    """
+    projections = []
+    for item, proj_space in zip(grid_funs, projection_spaces):
+        projections.append(item.projections(proj_space))
+    vec_len = 0
+    input_type = _np.dtype('float64')
+    for item in projections:
+        input_type = _np.promote_types(input_type,
+                                       item.dtype)
+        vec_len += len(item)
+    res = _np.zeros(vec_len, dtype=input_type)
+    pos = 0
+    for item in projections:
+        dof_count = len(item)
+        res[pos:pos + dof_count] = item
+        pos += dof_count
+    return res
+
+#pylint: disable=invalid-name
+def grid_function_list_from_coefficients(coefficients, spaces):
+    """
+    Create a list of grid functions from a long vector of coefficients.
+
+    Parameters
+    ----------
+    coefficients : np.ndarray
+        One-dimensional array of coefficients
+    spaces : list of Space objects
+        The sum of the global dofs of the spaces must be equal to the
+        length of the coefficients vector.
+    """
+    from bempp.api import GridFunction
+
+    pos = 0
+    res_list = []
+    for space in spaces:
+        dof_count = space.global_dof_count
+        res_list.append(GridFunction(
+            space, coefficients=coefficients[pos:pos + dof_count]))
+    return res_list

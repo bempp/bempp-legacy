@@ -80,7 +80,7 @@ def _hypersingular_impl(
 
 def single_layer(domain, range_, dual_to_range,
                  label="SLP", symmetry='no_symmetry',
-                 parameters=None, use_projection_spaces=False,
+                 parameters=None, use_projection_spaces=True,
                  assemble_only_singular_part=False):
     """Return the Laplace single-layer boundary operator.
 
