@@ -7,6 +7,16 @@ www.bempp.org
 
 History
 =======
+3.1.0 (4 January 2017)
+----------------------
+Released version 3.1
+
+* Various smaller and larger bug fies
+* A new assembly mechanism baed on projection_spaces
+* Redesigned Maxwell operators including stable Maxwell Calderon projectors
+* MPI support for H-Matrix discretization
+* Rewritten Grid manager to remove dependency on Dune-Foamgrid
+
 
 3.0.3 (28 January 2016)
 ------------------------
