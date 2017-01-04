@@ -1,0 +1,5 @@
+python-bempp (3.1.0-0ubuntu1) xenial; urgency=medium
+
+  * Initial release. 
+
+ -- Timo Betcke <timo.betcke@gmail.com>  Wed, 04 Jan 2017 22:59:23 +0100
