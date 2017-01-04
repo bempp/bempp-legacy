@@ -250,10 +250,10 @@ class SDist(dSDist):
             dist.packages, dist.package_dir = old_values[2:]
 setup(
     name = "bempp",
-    version = "3.0.3",
+    version = "3.1.0",
 
-    setup_requires = ['numpy', 'pytest', 'cython>=0.21'],
-    install_requires = ['numpy', 'pytest', 'cython>=0.21'],
+    setup_requires = ['numpy', 'scipy', 'cython>=0.23', 'mpi4py'],
+    install_requires = ['numpy', 'scipy', 'cython>=0.23', 'mpi4py'],
     platforms = ['GNU/Linux','Unix','Mac OS-X'],
 
     zip_safe = False,
@@ -264,11 +264,11 @@ setup(
     },
 
     author = "Timo Betcke",
-    author_email = "t.betcke@ucl.ac.uk",
-    description = "BEMPP does what it does well",
+    author_email = "timo.betcke@gmail.com",
+    description = "The BEM++ boundary element library",
     license = "MIT",
-    url = "https://github.com/bempp/bempp",
-    ext_modules = [Extension('bempp._core', [])],
+    url = "https://bitbucket.com/bemppsolutions/bempp",
+    ext_modules = [Extension('bempp.core', [])],
     ext_package = 'bempp',
     packages = ['bempp'],
     package_dir = {
@@ -276,13 +276,14 @@ setup(
     },
     include_package_data=True,
 
-    keywords= "mathology",
+    keywords= "boundary element method",
     classifiers = [
-         'Development Status :: 0 - Beta',
+         'Development Status :: 5 - Production/Stable',
          'Intended Audience :: Developers',
          'Intended Audience :: Science/Research',
-         'License :: OSI Approved :: GPL v2',
-         'Operating System :: OS Independent',
+         'License :: OSI Approved :: MIT License',
+         'Operating System :: MacOS X',
+         'Operating System :: Linux',
          'Programming Language :: Python :: 2.7',
          'Programming Language :: Python :: 3.4',
          'Topic :: Scientific/Engineering',
