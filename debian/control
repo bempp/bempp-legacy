@@ -18,10 +18,9 @@ Build-Depends: gcc, g++, gfortran, libeigen3-dev, python-dev,
 Package: python-bempp
 Architecture: amd64
 Depends: ${python:Depends}, ${misc:Depends}, libtbb2, libstdc++6,
-         python-numpy, python-scipy, libdune-common, libdune-geometry,
-         libdune-grid, libdune-localfunctions, mpi-default-bin,
+         python-numpy, python-scipy, mpi-default-bin,
          python-mpi4py
-Suggests: gmsh
+Recommends: gmsh
 X-Python-Version: >= 2.7
 Description: The BEM++ boundary element library (Python 2).
  This package installs the library for Python 2.
@@ -30,9 +29,8 @@ Package: python3-bempp
 Architecture: amd64
 Depends: ${python3:Depends}, ${misc:Depends}, libtbb2, libstdc++6,
          python3-numpy, python3-scipy, libdune-common, libdune-geometry,
-         libdune-grid, libdune-localfunctions, mpi-default-bin,
-         python3-mpi4py
-Suggests: gmsh
+         python3-mpi4py, mpi-default-bin
+Recommends: gmsh
 X-Python3-Version: >= 3.4
 Description: The BEM++ boundary element library (Python 3).
  This package installs the library for Python 3.
