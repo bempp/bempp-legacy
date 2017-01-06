@@ -8,8 +8,12 @@ from setuptools.command.sdist import sdist as dSDist
 from setuptools.command.egg_info import egg_info as dEggInfo
 from distutils.dir_util import mkpath
 
+import sys
+
+py_major = sys.version_info.major
+
 source_dir = dirname(abspath(__file__))
-package_dir = join(source_dir, 'pkg_install')
+package_dir = join(source_dir, 'pkg_install' + str(py_major))
 mkpath(package_dir)
 
 def cmake_cache_line(variable, value, type='STRING'):
@@ -75,7 +79,8 @@ class Build(dBuild):
         other_args = [
             cmake_cache_line('PYTHON_EXECUTABLE', executable, 'PATH'),
             cmake_cache_line('NOEXPORT', 'TRUE', 'BOOL'),
-            cmake_cache_line('PYPACKED', 'TRUE', 'BOOL')
+            cmake_cache_line('PYPACKED', 'TRUE', 'BOOL'),
+            cmake_cache_line('CMAKE_INSTALL_PREFIX', '/usr', 'STRING')
         ]
         if(self.external):
             other_args.extend([
@@ -122,6 +127,8 @@ class Build(dBuild):
 
     def run(self):
         from os.path import abspath
+	
+        self.build_base = self.build_base + str(py_major)
 
         build_dir = join(dirname(abspath(__file__)), self.build_base)
         self._configure(build_dir)
