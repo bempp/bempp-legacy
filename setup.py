@@ -80,7 +80,7 @@ class Build(dBuild):
             cmake_cache_line('PYTHON_EXECUTABLE', executable, 'PATH'),
             cmake_cache_line('NOEXPORT', 'TRUE', 'BOOL'),
             cmake_cache_line('PYPACKED', 'TRUE', 'BOOL'),
-            cmake_cache_line('CMAKE_INSTALL_PREFIX', '/usr', 'STRING')
+            cmake_cache_line('CMAKE_BUILD_TYPE', 'Release', 'STRING')
         ]
         if(self.external):
             other_args.extend([
@@ -176,6 +176,7 @@ class Install(dInstall):
         from os import chdir, getcwd
         self.distribution.run_command('build')
         current_cwd = getcwd()
+        self.build_base = self.build_base + str(py_major)
         build_dir = join(dirname(abspath(__file__)), self.build_base)
         cmake = cmake_executable()
         pkg = abspath(self.install_lib)

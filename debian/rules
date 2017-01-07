@@ -2,17 +2,21 @@
 
 BASE = $(shell pwd)
 
-#export DH_VERBOSE = 1
-export PYBUILD_NAME = bempp
-export PYBUILD_SYSTEM=custom
-export PYBUILD_CLEAN_ARGS=rm -rf build && rm -rf build{version} && rm -rf pkg_install{version}
-export PYBUILD_CONFIGURE_ARGS=
-export PYBUILD_BUILD_ARGS=
-export PYBUILD_INSTALL_ARGS_python2=python setup.py install --prefix=/usr --root=$(BASE)/debian/tmp
-export PYBUILD_INSTALL_ARGS_python3=python3 setup.py install --prefix=/usr --root=$(BASE)/debian/tmp
-export PYBUILD_TEST_ARGS_python2=
-export PYBUILD_TEST_ARGS_python3=
+#%:
+#	dh $@ --with python2,python3 --buildsystem=pybuild
 
 %:
-	dh $@ --with python2,python3 --buildsystem=pybuild
+	dh $@ --buildsystem=pybuild
+
+override_dh_auto_build:
+
+override_dh_auto_clean:
+
+override_dh_auto_configure:
+
+override_dh_auto_install:
+	python setup.py install --install-layout=deb --root=$(BASE)/debian/python-bempp --prefix=/usr
+	python3 setup.py install --install-layout=deb --root=$(BASE)/debian/python3-bempp --prefix=/usr
+
+override_dh_strip:
 
