@@ -2,7 +2,7 @@ Source: python-bempp
 Maintainer: Timo Betcke <timo.betcke@gmail.com>
 Section: python
 Priority: extra
-Build-Depends: gcc, g++, gfortran, libeigen3-dev, python-dev,
+Build-Depends: dh-make, gcc, g++, gfortran, libeigen3-dev, python-dev,
                python3-dev, python-numpy, python3-numpy,
                patchelf, libtbb-dev, zlib1g-dev,
                libboost-all-dev, cmake, cpio, 
