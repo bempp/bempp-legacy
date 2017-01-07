@@ -296,6 +296,6 @@ setup(
          'Programming Language :: Python :: 3.4',
          'Topic :: Scientific/Engineering',
          'Topic :: Scientific/Engineering :: Mathematics',
-    ],
-    long_description = open(join(dirname(__file__), 'README'), 'r').read()
-)
+    ])
+    #long_description = open(join(dirname(__file__), 'README'), 'r').read()
+
