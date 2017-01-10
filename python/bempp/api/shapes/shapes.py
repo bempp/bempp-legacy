@@ -85,11 +85,18 @@ def regular_sphere(n):
         Refinement level of the sphere.
 
     """
-
     from bempp.core.grid import grid_from_sphere
     from bempp.api.grid.grid import Grid
+    from bempp.api import LOGGER
 
-    return Grid(grid_from_sphere(n))
+    grid = Grid(grid_from_sphere(n))
+    LOGGER.info(
+        "Created grid with %i elements, %i nodes and %i edges.",
+        grid.leaf_view.entity_count(0),
+        grid.leaf_view.entity_count(2),
+        grid.leaf_view.entity_count(1))
+
+    return grid
 
 
 def ellipsoid(r1=1, r2=1, r3=1, origin=(0, 0, 0), h=0.1):
