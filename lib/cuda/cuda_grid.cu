@@ -24,6 +24,7 @@
 
 #include "../fiber/types.hpp"
 #include "../fiber/explicit_instantiation.hpp"
+#include "../fiber/scalar_traits.hpp"
 
 #include <thrust/gather.h>
 #include <thrust/transform.h>
@@ -278,6 +279,67 @@ namespace Bempp {
                                   + ptFun1 * elVtx1
                                   + ptFun2 * elVtx2;
       return global;
+    }
+  };
+
+  template <typename BasisFunctionType>
+  struct surfaceCurlsFunctor {
+
+    typedef typename Fiber::ScalarTraits<BasisFunctionType>::RealType CoordinateType;
+
+    unsigned int elemCount, localPointCount, localDofCount;
+
+    thrust::device_ptr<const BasisFunctionType> basisDerivatives;
+    thrust::device_ptr<const CoordinateType> normals;
+    thrust::device_ptr<const CoordinateType> jacobianInversesTransposed;
+
+    surfaceCurlsFunctor(
+      const unsigned int _elemCount, const unsigned int _localPointCount,
+      const unsigned int _localDofCount,
+      const thrust::device_ptr<const BasisFunctionType> _basisDerivatives,
+      const thrust::device_ptr<const CoordinateType> _normals,
+      const thrust::device_ptr<const CoordinateType> _jacobianInversesTransposed)
+      : elemCount(_elemCount), localPointCount(_localPointCount),
+        localDofCount(_localDofCount), basisDerivatives(_basisDerivatives),
+        normals(_normals), jacobianInversesTransposed(_jacobianInversesTransposed) {}
+
+    __host__ __device__
+    thrust::tuple<BasisFunctionType, BasisFunctionType, BasisFunctionType>
+    operator()(const unsigned int i) const {
+
+      const unsigned int localDofIdx = i / (elemCount * localPointCount);
+      const unsigned int localPointIdx = (i % (elemCount * localPointCount)) / elemCount;
+      const unsigned int elementIdx = i % elemCount;
+
+      // Get element normal
+      const CoordinateType nx = normals[0 * elemCount + elementIdx];
+      const CoordinateType ny = normals[1 * elemCount + elementIdx];
+      const CoordinateType nz = normals[2 * elemCount + elementIdx];
+
+      const BasisFunctionType basisDerivativeDir0 =
+          basisDerivatives[0 * localDofCount * localPointCount
+                           + localDofIdx * localPointCount
+                           + localPointIdx];
+      const BasisFunctionType basisDerivativeDir1 =
+          basisDerivatives[1 * localDofCount * localPointCount
+                           + localDofIdx * localPointCount
+                           + localPointIdx];
+
+      const BasisFunctionType tempVal0 =
+          basisDerivativeDir0 * jacobianInversesTransposed[0 * elemCount + elementIdx] +
+          basisDerivativeDir1 * jacobianInversesTransposed[1 * elemCount + elementIdx];
+      const BasisFunctionType tempVal1 =
+          basisDerivativeDir0 * jacobianInversesTransposed[2 * elemCount + elementIdx] +
+          basisDerivativeDir1 * jacobianInversesTransposed[3 * elemCount + elementIdx];
+      const BasisFunctionType tempVal2 =
+          basisDerivativeDir0 * jacobianInversesTransposed[4 * elemCount + elementIdx] +
+          basisDerivativeDir1 * jacobianInversesTransposed[5 * elemCount + elementIdx];
+
+      const BasisFunctionType xSurfaceCurl = ny * tempVal2 - nz * tempVal1;
+      const BasisFunctionType ySurfaceCurl = nz * tempVal0 - nx * tempVal2;
+      const BasisFunctionType zSurfaceCurl = nx * tempVal1 - ny * tempVal0;
+
+      return thrust::make_tuple(xSurfaceCurl, ySurfaceCurl, zSurfaceCurl);
     }
   };
 
@@ -572,13 +634,48 @@ namespace Bempp {
   }
 
   template <typename CoordinateType>
+  template <typename BasisFunctionType>
   void CudaGrid<CoordinateType>::calculateSurfaceCurls(
-      thrust::device_vector<CoordinateType> &surfaceCurls) const {
+      const unsigned int localPointCount, const unsigned int localDofCount,
+      const thrust::device_ptr<BasisFunctionType> &basisDerivatives,
+      const thrust::device_ptr<const CoordinateType> &normals,
+      thrust::device_vector<BasisFunctionType> &surfaceCurls) const {
 
     if (m_setupDone == true) {
 
-      throw NotImplementedError("CudaGrid::calculateSurfaceCurls(): "
-                                "not implemented yet");
+      // Allocate device memory
+      surfaceCurls.resize(localDofCount * localPointCount * m_dim * m_ElemCount);
+
+      // Calculate transposed element Jacobian inverses
+      thrust::device_vector<CoordinateType> jacobianInversesTransposed;
+      calculateJacobianInversesTransposed(jacobianInversesTransposed);
+
+      // Measure time of the GPU execution (CUDA event based)
+      cudaEvent_t start, stop;
+      cudaEventCreate(&start);
+      cudaEventCreate(&stop);
+      cudaEventRecord(start, 0);
+
+      // Calculate surface curls
+      thrust::tabulate(
+        thrust::make_zip_iterator(
+          thrust::make_tuple(surfaceCurls.begin(),
+                             surfaceCurls.begin()+m_ElemCount*localPointCount*localDofCount,
+                             surfaceCurls.begin()+2*m_ElemCount*localPointCount*localDofCount)),
+        thrust::make_zip_iterator(
+          thrust::make_tuple(surfaceCurls.begin()+m_ElemCount*localPointCount*localDofCount,
+                             surfaceCurls.begin()+2*m_ElemCount*localPointCount*localDofCount,
+                             surfaceCurls.end())),
+        surfaceCurlsFunctor<BasisFunctionType>(m_ElemCount, localPointCount,
+                             localDofCount, basisDerivatives, normals,
+                             jacobianInversesTransposed.data()));
+
+      cudaEventRecord(stop, 0);
+      cudaEventSynchronize(stop);
+      float elapsedTimeSurfaceCurls;
+      cudaEventElapsedTime(&elapsedTimeSurfaceCurls, start, stop);
+//      std::cout << "Time for calculating surface curls is "
+//        << elapsedTimeSurfaceCurls << " ms" << std::endl;
 
     } else {
       throw std::runtime_error("CudaGrid::calculateSurfaceCurls(): "
@@ -693,5 +790,12 @@ namespace Bempp {
 
   template class CudaGrid<double>;
   template class CudaGrid<float>;
+
+  template void CudaGrid<double>::calculateSurfaceCurls<double>(
+      const unsigned int, const unsigned int, const thrust::device_ptr<double>&,
+      const thrust::device_ptr<const double>&, thrust::device_vector<double>&) const;
+  template void CudaGrid<float>::calculateSurfaceCurls<float>(
+      const unsigned int, const unsigned int, const thrust::device_ptr<float>&,
+      const thrust::device_ptr<const float>&, thrust::device_vector<float>&) const;
 
 } // namespace Bempp

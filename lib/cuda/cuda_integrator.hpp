@@ -119,13 +119,13 @@ private:
 
   QuadData<CudaCoordinateType> m_testQuadData, m_trialQuadData;
   BasisFunData<CudaBasisFunctionType> m_testBasisData, m_trialBasisData;
-  ElemData<CudaCoordinateType> m_testElemData, m_trialElemData;
+  ElemData<CudaBasisFunctionType> m_testElemData, m_trialElemData;
   thrust::device_vector<CudaCoordinateType> m_d_testGeomData, m_d_trialGeomData;
   thrust::device_vector<CudaCoordinateType> m_d_testNormals, m_d_trialNormals;
   thrust::device_vector<CudaCoordinateType>
   m_d_testIntegrationElements, m_d_trialIntegrationElements;
   thrust::device_vector<CudaCoordinateType>
-  m_d_testJacobianInversesTransposed, m_d_trialJacobianInversesTransposed;
+  m_d_testSurfaceCurls, m_d_trialSurfaceCurls;
   RawGeometryData<CudaCoordinateType>
   m_testRawGeometryData, m_trialRawGeometryData;
 

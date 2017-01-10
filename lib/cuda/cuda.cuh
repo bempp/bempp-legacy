@@ -23,6 +23,8 @@
 
 #include "cuda_3d_array.hpp"
 
+#include "../fiber/scalar_traits.hpp"
+
 #include <thrust/device_ptr.h>
 
 namespace Fiber {
@@ -57,10 +59,10 @@ struct RawGeometryData {
 template <typename ValueType>
 struct ElemData {
   unsigned int activeElemCount;
-  thrust::device_ptr<ValueType> geomData;
-  thrust::device_ptr<const ValueType> normals;
-  thrust::device_ptr<const ValueType> integrationElements;
-  thrust::device_ptr<const ValueType> jacobianInversesTransposed;
+  thrust::device_ptr<typename ScalarTraits<ValueType>::RealType> geomData;
+  thrust::device_ptr<const typename ScalarTraits<ValueType>::RealType> normals;
+  thrust::device_ptr<const typename ScalarTraits<ValueType>::RealType> integrationElements;
+  thrust::device_ptr<const ValueType> surfaceCurls;
 };
 
 // Constant memory is typically 64 KB

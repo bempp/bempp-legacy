@@ -442,23 +442,26 @@ CudaBasisFunctionType, CudaKernelType, CudaResultType>::
     m_trialElemData.activeElemCount = m_d_trialIntegrationElements.size();
   }
 
-  // Precalculate transposed Jacobian inverses on the device
+  // Precalculate surface curls on the device
   if ((m_kernelName == "ModifiedHelmholtz3dHypersingular" ||
       m_kernelName == "ModifiedHelmholtz3dHypersingularInterpolated")
      && fabs(m_waveNumberReal) < 1.0e-10 ) {
 
-    m_testGrid->calculateJacobianInversesTransposed(
-        m_d_testJacobianInversesTransposed);
-    m_testElemData.jacobianInversesTransposed =
-        m_d_testJacobianInversesTransposed.data();
-    if (m_testGrid.get() == m_trialGrid.get()) {
-      m_trialElemData.jacobianInversesTransposed =
-          m_testElemData.jacobianInversesTransposed;
+    m_testGrid->calculateSurfaceCurls(
+        m_testQuadData.pointCount, m_testBasisData.dofCount,
+        m_testBasisData.derivatives, m_testElemData.normals,
+        m_d_testSurfaceCurls);
+    m_testElemData.surfaceCurls = m_d_testSurfaceCurls.data();
+    if (m_testGrid.get() == m_trialGrid.get() &&
+        m_testBasisData.dofCount == m_trialBasisData.dofCount &&
+        m_testQuadData.pointCount == m_trialQuadData.pointCount) {
+      m_trialElemData.surfaceCurls = m_testElemData.surfaceCurls;
     } else {
-      m_trialGrid->calculateJacobianInversesTransposed(
-          m_d_trialJacobianInversesTransposed);
-      m_trialElemData.jacobianInversesTransposed =
-          m_d_trialJacobianInversesTransposed.data();
+      m_trialGrid->calculateSurfaceCurls(
+          m_trialQuadData.pointCount, m_trialBasisData.dofCount,
+          m_trialBasisData.derivatives, m_trialElemData.normals,
+          m_d_trialSurfaceCurls);
+      m_trialElemData.surfaceCurls = m_d_trialSurfaceCurls.data();
     }
   }
 }
@@ -644,6 +647,38 @@ CudaBasisFunctionType, CudaKernelType, CudaResultType>::
   // Launch kernel
   if (m_kernelName == "Laplace3dSingleLayerPotential") {
 
+//    // Experimental: Get optimal block size in terms of occupancy
+//    int blockSizeOpt; // The launch configurator returned block size
+//    int minGridSize;  // The minimum grid size needed to achieve the
+//                      // maximum occupancy for a full device launch
+//    int gridSizeOpt;  // The actual grid size needed, based on input size
+//
+//    cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSizeOpt,
+//        CudaEvaluateLaplace3dSingleLayerPotentialIntegralFunctorCached<
+//        CudaBasisFunctionType, CudaKernelType, CudaResultType>, 0, 0);
+//
+//    // Round up according to array size
+//    gridSizeOpt = (elemPairCount + blockSizeOpt - 1) / blockSizeOpt;
+//
+//    // calculate theoretical occupancy
+//    int maxActiveBlocks;
+//    cudaOccupancyMaxActiveBlocksPerMultiprocessor(&maxActiveBlocks,
+//        CudaEvaluateLaplace3dSingleLayerPotentialIntegralFunctorCached<
+//        CudaBasisFunctionType, CudaKernelType, CudaResultType>,
+//        blockSizeOpt, 0);
+//
+//    int device;
+//    cudaDeviceProp props;
+//    cudaGetDevice(&device);
+//    cudaGetDeviceProperties(&props, device);
+//
+//    const double occupancy = (maxActiveBlocks * blockSizeOpt / props.warpSize) /
+//                             (double)(props.maxThreadsPerMultiProcessor /
+//                                      props.warpSize);
+//
+//    std::cout << "Launch blocks of size " << blockSizeOpt
+//              << ", Theoretical occupancy: " << occupancy << std::endl;
+
     cu_verify_void((
         CudaEvaluateLaplace3dSingleLayerPotentialIntegralFunctorCached<
         CudaBasisFunctionType, CudaKernelType, CudaResultType>
@@ -816,12 +851,12 @@ CudaBasisFunctionType, CudaKernelType, CudaResultType>::
         thrust::raw_pointer_cast(m_testElemData.geomData),
         thrust::raw_pointer_cast(m_testElemData.normals),
         thrust::raw_pointer_cast(m_testElemData.integrationElements),
-        thrust::raw_pointer_cast(m_testElemData.jacobianInversesTransposed),
+        thrust::raw_pointer_cast(m_testElemData.surfaceCurls),
         m_trialElemData.activeElemCount,
         thrust::raw_pointer_cast(m_trialElemData.geomData),
         thrust::raw_pointer_cast(m_trialElemData.normals),
         thrust::raw_pointer_cast(m_trialElemData.integrationElements),
-        thrust::raw_pointer_cast(m_trialElemData.jacobianInversesTransposed),
+        thrust::raw_pointer_cast(m_trialElemData.surfaceCurls),
         m_waveNumberImag, d_result)
     ));
 

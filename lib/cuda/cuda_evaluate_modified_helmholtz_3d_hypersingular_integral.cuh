@@ -64,12 +64,12 @@ CudaEvaluateHelmholtz3dHypersingularIntegralFunctorCached(
     const typename ScalarTraits<BasisFunctionType>::RealType* testGlobalPoints,
     const typename ScalarTraits<BasisFunctionType>::RealType* testElemNormals,
     const typename ScalarTraits<BasisFunctionType>::RealType* testIntegrationElements,
-    const typename ScalarTraits<BasisFunctionType>::RealType* testJacobianInversesTransposed,
+    const BasisFunctionType* testSurfaceCurls,
     const unsigned int trialElemCount,
     const typename ScalarTraits<BasisFunctionType>::RealType* trialGlobalPoints,
     const typename ScalarTraits<BasisFunctionType>::RealType* trialElemNormals,
     const typename ScalarTraits<BasisFunctionType>::RealType* trialIntegrationElements,
-    const typename ScalarTraits<BasisFunctionType>::RealType* trialJacobianInversesTransposed,
+    const BasisFunctionType* trialSurfaceCurls,
     const KernelType waveNumberImag, ResultType* __restrict__ result) {
 
   typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
@@ -99,16 +99,6 @@ CudaEvaluateHelmholtz3dHypersingularIntegralFunctorCached(
           trialElemNormals[coordIndex * trialElemCount + trialElemPosition];
       testElemNormal[coordIndex] =
           testElemNormals[coordIndex * testElemCount + testElemPosition];
-    }
-
-    // Get transposed Jacobian inverses
-    CoordinateType trialJacobianInverseTransposed[6], testJacobianInverseTransposed[6];
-#pragma unroll
-    for (int j = 0; j < 6; ++j) {
-      trialJacobianInverseTransposed[j] =
-          trialJacobianInversesTransposed[j * trialElemCount + trialElemPosition];
-      testJacobianInverseTransposed[j] =
-          testJacobianInversesTransposed[j * testElemCount + testElemPosition];
     }
 
     // Evaluate kernel
@@ -143,8 +133,7 @@ CudaEvaluateHelmholtz3dHypersingularIntegralFunctorCached(
     }
 
     // Perform numerical integration
-    BasisFunctionType testSurfaceCurls[3], trialSurfaceCurls[3];
-    BasisFunctionType vec[3];
+    CoordinateType trialElemSurfaceCurls[3];
     const size_t offsetResultImag = elemPairCount * trialDofCount * testDofCount;
     for (size_t trialDof = 0; trialDof < trialDofCount; ++trialDof) {
       for (size_t testDof = 0; testDof < testDofCount; ++testDof) {
@@ -152,65 +141,29 @@ CudaEvaluateHelmholtz3dHypersingularIntegralFunctorCached(
         for (size_t trialPoint = 0; trialPoint < trialPointCount; ++trialPoint) {
           const CoordinateType trialWeight =
               trialIntegrationElement * constTrialQuadWeights[trialPoint];
-
-          // Get surface curls
-          BasisFunctionType trialBasisDerivativeDir0 =
-              trialBasisDerivatives[0 * trialDofCount * trialPointCount
-                                    + trialDof * trialPointCount
-                                    + trialPoint];
-          BasisFunctionType trialBasisDerivativeDir1 =
-              trialBasisDerivatives[1 * trialDofCount * trialPointCount
-                                    + trialDof * trialPointCount
-                                    + trialPoint];
-          vec[0] =
-              trialBasisDerivativeDir0 * trialJacobianInverseTransposed[0] +
-              trialBasisDerivativeDir1 * trialJacobianInverseTransposed[1];
-          vec[1] =
-              trialBasisDerivativeDir0 * trialJacobianInverseTransposed[2] +
-              trialBasisDerivativeDir1 * trialJacobianInverseTransposed[3];
-          vec[2] =
-              trialBasisDerivativeDir0 * trialJacobianInverseTransposed[4] +
-              trialBasisDerivativeDir1 * trialJacobianInverseTransposed[5];
-
-          trialSurfaceCurls[0] = trialElemNormal[1] * vec[2] - trialElemNormal[2] * vec[1];
-          trialSurfaceCurls[1] = trialElemNormal[2] * vec[0] - trialElemNormal[0] * vec[2];
-          trialSurfaceCurls[2] = trialElemNormal[0] * vec[1] - trialElemNormal[1] * vec[0];
-
           ResultType partialSumReal = 0., partialSumImag = 0.;
+#pragma unroll
+	  for (size_t coordIndex = 0; coordIndex < coordCount; ++coordIndex) {
+              trialElemSurfaceCurls[coordIndex] =
+                  trialSurfaceCurls[coordIndex * trialDofCount * trialPointCount * trialElemCount
+                                    + trialDof * trialPointCount * trialElemCount
+                                    + trialPoint * trialElemCount
+                                    + trialElemPosition];
+          } 
           for (size_t testPoint = 0; testPoint < testPointCount; ++testPoint) {
             const CoordinateType testWeight =
                 testIntegrationElement * constTestQuadWeights[testPoint];
-
-            // Get surface curls
-            BasisFunctionType testBasisDerivativeDir0 =
-                testBasisDerivatives[0 * testDofCount * testPointCount
-                                     + testDof * testPointCount
-                                     + testPoint];
-            BasisFunctionType testBasisDerivativeDir1 =
-                testBasisDerivatives[1 * testDofCount * testPointCount
-                                     + testDof * testPointCount
-                                     + testPoint];
-            vec[0] =
-                testBasisDerivativeDir0 * testJacobianInverseTransposed[0] +
-                testBasisDerivativeDir1 * testJacobianInverseTransposed[1];
-            vec[1] =
-                testBasisDerivativeDir0 * testJacobianInverseTransposed[2] +
-                testBasisDerivativeDir1 * testJacobianInverseTransposed[3];
-            vec[2] =
-                testBasisDerivativeDir0 * testJacobianInverseTransposed[4] +
-                testBasisDerivativeDir1 * testJacobianInverseTransposed[5];
-
-            testSurfaceCurls[0] = testElemNormal[1] * vec[2] - testElemNormal[2] * vec[1];
-            testSurfaceCurls[1] = testElemNormal[2] * vec[0] - testElemNormal[0] * vec[2];
-            testSurfaceCurls[2] = testElemNormal[0] * vec[1] - testElemNormal[1] * vec[0];
-
             const size_t indexKernelValues = trialPoint * testPointCount + testPoint;
             BasisFunctionType dotProduct0 = 0.;
             CoordinateType dotProduct1 = 0.;
 #pragma unroll
             for (size_t coordIndex = 0; coordIndex < coordCount; ++coordIndex) {
               dotProduct0 +=
-                  testSurfaceCurls[coordIndex] * trialSurfaceCurls[coordIndex];
+                  testSurfaceCurls[coordIndex * testDofCount * testPointCount * testElemCount
+                                   + testDof * testPointCount * testElemCount
+                                   + testPoint * testElemCount
+                                   + testElemPosition] *
+                  trialElemSurfaceCurls[coordIndex];
               dotProduct1 +=
                   testElemNormal[coordIndex] * trialElemNormal[coordIndex];
             }

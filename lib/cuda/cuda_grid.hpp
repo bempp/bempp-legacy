@@ -71,8 +71,12 @@ public:
   /**
    * \brief Calculate surface curls on the device
    */
+  template <typename BasisFunctionType>
   void calculateSurfaceCurls(
-      thrust::device_vector<CoordinateType> &surfaceCurls) const;
+      const unsigned int localPointCount, const unsigned int localDofCount,
+      const thrust::device_ptr<BasisFunctionType> &basisDerivatives,
+      const thrust::device_ptr<const CoordinateType> &normals,
+      thrust::device_vector<BasisFunctionType> &surfaceCurls) const;
 
   void getRawGeometryData(unsigned int &vtxCount,
                           unsigned int &elemCount,

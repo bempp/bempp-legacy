@@ -639,13 +639,13 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::
   // Create a discrete operator represented by a matrix that has to be calculated
   std::unique_ptr<DiscreteDenseBoundaryOperator<ResultType>>
   discreteDenseBoundaryOperator(new DiscreteDenseBoundaryOperator<ResultType>());
+  std::cout << "testGlobalDofCount = " << testSpace.globalDofCount()
+      << ", trialGlobalDofCount = " << trialSpace.globalDofCount() << std::endl;
 
   // Create the operator's matrix
   Matrix<ResultType>& result = discreteDenseBoundaryOperator->matrix();
   result.resize(testSpace.globalDofCount(), trialSpace.globalDofCount());
   result.setZero();
-    std::cout << "testGlobalDofCount = " << testSpace.globalDofCount()
-        << ", trialGlobalDofCount = " << trialSpace.globalDofCount() << std::endl;
 
   // Calculate the matrix in single or double precision
   if (context.cudaOptions().precision() == "single") {
