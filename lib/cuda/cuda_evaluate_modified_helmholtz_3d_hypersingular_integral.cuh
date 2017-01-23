@@ -21,7 +21,7 @@
 #ifndef fiber_cuda_evaluate_modified_helmholtz_3d_hypersingular_integral_cuh
 #define fiber_cuda_evaluate_modified_helmholtz_3d_hypersingular_integral_cuh
 
-#include "cuda.cuh"
+#include "cuda.hpp"
 #include "cuda_evaluate_modified_helmholtz_3d_single_layer_potential_integral.cuh"
 
 #include "../common/scalar_traits.hpp"

@@ -184,6 +184,35 @@ CudaBasisFunctionType, CudaKernelType, CudaResultType>::
         const size_t maxActiveElemPairCount,
         const shared_ptr<const CollectionOfKernels<KernelType>> &kernel,
         const int deviceId, const Bempp::CudaOptions &cudaOptions)
+        : CudaIntegrator(localTestQuadPoints, localTrialQuadPoints,
+            testQuadWeights, trialQuadWeights, testShapeset, trialShapeset,
+            testGrid, trialGrid, maxActiveElemPairCount, kernel, deviceId, cudaOptions) {
+
+  cu_verify( cudaSetDevice(m_deviceId) );
+
+  // Copy element indices to device memory
+  m_d_trialIndices.resize(trialIndices.size());
+  m_d_testIndices.resize(testIndices.size());
+  m_d_trialIndices.assign(trialIndices.begin(), trialIndices.end());
+  m_d_testIndices.assign(testIndices.begin(), testIndices.end());
+}
+
+template <typename BasisFunctionType, typename KernelType, typename ResultType,
+typename CudaBasisFunctionType, typename CudaKernelType, typename CudaResultType>
+CudaIntegrator<BasisFunctionType, KernelType, ResultType,
+CudaBasisFunctionType, CudaKernelType, CudaResultType>::
+    CudaIntegrator(
+        const Matrix<CoordinateType> &localTestQuadPoints,
+        const Matrix<CoordinateType> &localTrialQuadPoints,
+        const std::vector<CoordinateType> &testQuadWeights,
+        const std::vector<CoordinateType> &trialQuadWeights,
+        const Shapeset<BasisFunctionType> &testShapeset,
+        const Shapeset<BasisFunctionType> &trialShapeset,
+        const shared_ptr<Bempp::CudaGrid<CudaCoordinateType>> &testGrid,
+        const shared_ptr<Bempp::CudaGrid<CudaCoordinateType>> &trialGrid,
+        const size_t maxActiveElemPairCount,
+        const shared_ptr<const CollectionOfKernels<KernelType>> &kernel,
+        const int deviceId, const Bempp::CudaOptions &cudaOptions)
         : m_testGrid(testGrid), m_trialGrid(trialGrid), m_kernelName(kernel->name()),
           m_deviceId(deviceId), m_cudaOptions(cudaOptions),
           m_isElementDataCachingEnabled(cudaOptions.isElementDataCachingEnabled()),
@@ -216,11 +245,9 @@ CudaBasisFunctionType, CudaKernelType, CudaResultType>::
 
   cu_verify( cudaSetDevice(m_deviceId) );
 
-  // Copy element indices to device memory
-  m_d_trialIndices.resize(trialIndices.size());
-  m_d_testIndices.resize(testIndices.size());
-  m_d_trialIndices.assign(trialIndices.begin(), trialIndices.end());
-  m_d_testIndices.assign(testIndices.begin(), testIndices.end());
+  // Allocate element pair indices device memory
+  m_d_trialIndices.resize(maxActiveElemPairCount);
+  m_d_testIndices.resize(maxActiveElemPairCount);
 
   // Copy numerical quadrature weights to constant device memory
   m_trialQuadData.pointCount = trialPointCount;
@@ -324,6 +351,86 @@ CudaBasisFunctionType, CudaKernelType, CudaResultType>::
   cudaDeviceSynchronize();
 }
 
+template <typename BasisFunctionType, typename KernelType, typename ResultType,
+typename CudaBasisFunctionType, typename CudaKernelType, typename CudaResultType>
+void CudaIntegrator<BasisFunctionType, KernelType, ResultType,
+CudaBasisFunctionType, CudaKernelType, CudaResultType>::
+    integrate(
+        const size_t elemPairCount,
+        CudaResultType *result) {
+
+  if (elemPairCount == 0)
+    return;
+
+  cu_verify( cudaSetDevice(m_deviceId) );
+
+  // Get device pointer from host memory, no allocation or memcpy
+  CudaResultType *d_result;
+  cudaHostGetDevicePointer((void **)&d_result, (void *)result, 0);
+
+  // TODO: cudaHostGetDevicePointer return non zero error code?
+//  cu_verify( cudaHostGetDevicePointer((void **)&d_result, (void *)result, 0) );
+
+  // Set kernel launch parameters
+  const dim3 blockSize(m_cudaOptions.blockSize(),1,1);
+
+  const unsigned int blockCount =
+      static_cast<unsigned int>((elemPairCount-1) / blockSize.x + 1);
+  const dim3 gridSize(blockCount,1,1);
+
+  if (m_isElementDataCachingEnabled == true) {
+
+    if (m_isKernelDataCachingEnabled == true) {
+
+      launchCudaEvaluateIntegralFunctorKernelDataCached(
+          elemPairCount,
+          gridSize, blockSize,
+          d_result);
+
+    } else {
+
+      launchCudaEvaluateIntegralFunctorElementDataCached(
+          elemPairCount,
+          gridSize, blockSize,
+          d_result);
+    }
+
+  } else {
+
+    launchCudaEvaluateIntegralFunctorNoDataCached(
+        elemPairCount,
+        gridSize, blockSize,
+        d_result);
+  }
+  cudaDeviceSynchronize();
+}
+
+template <typename BasisFunctionType, typename KernelType, typename ResultType,
+typename CudaBasisFunctionType, typename CudaKernelType, typename CudaResultType>
+void CudaIntegrator<BasisFunctionType, KernelType, ResultType,
+CudaBasisFunctionType, CudaKernelType, CudaResultType>::
+    pushElemPairIndicesToDevice(
+        const std::vector<int> &testElemPairIndices,
+        const std::vector<int> &trialElemPairIndices,
+        const size_t elemPairCount) {
+
+  if (elemPairCount > trialElemPairIndices.size() ||
+      elemPairCount > testElemPairIndices.size())
+    throw std::invalid_argument(
+        "CudaIntegrator::integrate(): "
+        "number of element pairs does not match index vector size");
+
+  if (elemPairCount == 0)
+    return;
+
+  cu_verify( cudaSetDevice(m_deviceId) );
+
+  // Copy element pair indices to device memory
+  m_d_trialIndices.assign(trialElemPairIndices.begin(),
+      trialElemPairIndices.begin() + elemPairCount);
+  m_d_testIndices.assign(testElemPairIndices.begin(),
+      testElemPairIndices.begin() + elemPairCount);
+}
 template <typename BasisFunctionType, typename KernelType, typename ResultType,
 typename CudaBasisFunctionType, typename CudaKernelType, typename CudaResultType>
 void CudaIntegrator<BasisFunctionType, KernelType, ResultType,
@@ -569,7 +676,7 @@ CudaBasisFunctionType, CudaKernelType, CudaResultType>::
 
   } else {
     throw std::runtime_error(
-        "CudaIntegrator::integrate(): "
+        "CudaIntegrator::launchCudaEvaluateIntegralFunctorKernelDataCached(): "
         "kernel not implemented on the device");
   }
   cudaDeviceSynchronize();
@@ -630,7 +737,7 @@ CudaBasisFunctionType, CudaKernelType, CudaResultType>::
 
   } else {
     throw std::runtime_error(
-        "CudaIntegrator::integrate(): "
+        "CudaIntegrator::launchCudaEvaluateIntegralFunctorKernelDataCached(): "
         "kernel not implemented on the device");
   }
 }
@@ -862,7 +969,7 @@ CudaBasisFunctionType, CudaKernelType, CudaResultType>::
 
   } else {
     throw std::runtime_error(
-        "CudaIntegrator::integrate(): "
+        "CudaIntegrator::launchCudaEvaluateIntegralFunctorElementDataCached(): "
         "kernel not implemented on the device");
   }
 }
@@ -928,7 +1035,113 @@ CudaBasisFunctionType, CudaKernelType, CudaResultType>::
 
   } else {
     throw std::runtime_error(
-        "CudaIntegrator::integrate(): "
+        "CudaIntegrator::launchCudaEvaluateIntegralFunctorNoDataCached(): "
+        "kernel not implemented on the device");
+  }
+}
+
+template <typename BasisFunctionType, typename KernelType, typename ResultType,
+typename CudaBasisFunctionType, typename CudaKernelType, typename CudaResultType>
+void CudaIntegrator<BasisFunctionType, KernelType, ResultType,
+CudaBasisFunctionType, CudaKernelType, CudaResultType>::
+    launchCudaEvaluateIntegralFunctorKernelDataCached(
+        const size_t elemPairCount,
+        const dim3 gridSize, const dim3 blockSize,
+        CudaResultType *d_result) {
+
+  // Launch kernel
+  if (m_kernelName == "Laplace3dSingleLayerPotential") {
+
+    throw std::runtime_error(
+        "CudaIntegrator::launchCudaEvaluateIntegralFunctorKernelDataCached(): "
+        "kernel not implemented on the device");
+
+  } else {
+    throw std::runtime_error(
+        "CudaIntegrator::launchCudaEvaluateIntegralFunctorKernelDataCached(): "
+        "kernel not implemented on the device");
+  }
+  cudaDeviceSynchronize();
+
+  unsigned int newGridSze =
+      static_cast<unsigned int>(
+          (elemPairCount*m_trialBasisData.dofCount*m_testBasisData.dofCount-1)
+          / blockSize.x + 1);
+  dim3 newGridSize(newGridSze,1,1);
+
+  // Launch kernel
+  if (m_kernelName == "Laplace3dSingleLayerPotential") {
+
+    throw std::runtime_error(
+        "CudaIntegrator::launchCudaEvaluateIntegralFunctorKernelDataCached(): "
+        "kernel not implemented on the device");
+
+  } else {
+    throw std::runtime_error(
+        "CudaIntegrator::launchCudaEvaluateIntegralFunctorKernelDataCached(): "
+        "kernel not implemented on the device");
+  }
+}
+
+template <typename BasisFunctionType, typename KernelType, typename ResultType,
+typename CudaBasisFunctionType, typename CudaKernelType, typename CudaResultType>
+void CudaIntegrator<BasisFunctionType, KernelType, ResultType,
+CudaBasisFunctionType, CudaKernelType, CudaResultType>::
+    launchCudaEvaluateIntegralFunctorElementDataCached(
+        const size_t elemPairCount,
+        const dim3 gridSize, const dim3 blockSize,
+        CudaResultType *d_result) const {
+
+  // Launch kernel
+  if (m_kernelName == "Laplace3dSingleLayerPotential") {
+
+    cu_verify_void((
+        CudaEvaluateLaplace3dSingleLayerPotentialIntegralFunctorCached<
+        CudaBasisFunctionType, CudaKernelType, CudaResultType>
+        <<<gridSize, blockSize>>>(
+        elemPairCount,
+        thrust::raw_pointer_cast(m_d_testIndices.data()),
+        thrust::raw_pointer_cast(m_d_trialIndices.data()),
+        m_testQuadData.pointCount, m_trialQuadData.pointCount,
+        m_testBasisData.dofCount,
+        thrust::raw_pointer_cast(m_testBasisData.values),
+        m_trialBasisData.dofCount,
+        thrust::raw_pointer_cast(m_trialBasisData.values),
+        m_testElemData.activeElemCount,
+        thrust::raw_pointer_cast(m_testElemData.geomData),
+        thrust::raw_pointer_cast(m_testElemData.integrationElements),
+        m_trialElemData.activeElemCount,
+        thrust::raw_pointer_cast(m_trialElemData.geomData),
+        thrust::raw_pointer_cast(m_trialElemData.integrationElements),
+        d_result)
+    ));
+
+  } else {
+    throw std::runtime_error(
+        "CudaIntegrator::launchCudaEvaluateIntegralFunctorElementDataCached(): "
+        "kernel not implemented on the device");
+  }
+}
+
+template <typename BasisFunctionType, typename KernelType, typename ResultType,
+typename CudaBasisFunctionType, typename CudaKernelType, typename CudaResultType>
+void CudaIntegrator<BasisFunctionType, KernelType, ResultType,
+CudaBasisFunctionType, CudaKernelType, CudaResultType>::
+    launchCudaEvaluateIntegralFunctorNoDataCached(
+        const size_t elemPairCount,
+        const dim3 gridSize, const dim3 blockSize,
+        CudaResultType *d_result) const {
+
+  // Launch kernel
+  if (m_kernelName == "Laplace3dSingleLayerPotential") {
+
+    throw std::runtime_error(
+        "CudaIntegrator::launchCudaEvaluateIntegralFunctorNoDataCached(): "
+        "kernel not implemented on the device");
+
+  } else {
+    throw std::runtime_error(
+        "CudaIntegrator::launchCudaEvaluateIntegralFunctorNoDataCached(): "
         "kernel not implemented on the device");
   }
 }

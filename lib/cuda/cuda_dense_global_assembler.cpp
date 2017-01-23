@@ -349,11 +349,12 @@ void AssemblyTask(tbb::task_group &taskGroupDevice,
 
       // Try to find matrix in singular integral cache
       const Matrix<ResultType> *cachedLocalWeakForm = 0;
-      for (size_t n = 0; n < cache.extent(0); ++n)
+      for (size_t n = 0; n < cache.extent(0); ++n) {
         if (cache(n, trialIndex).first == testIndex) {
           cachedLocalWeakForm = &cache(n, trialIndex).second;
           break;
         }
+      }
 
       // Add the integrals to appropriate entries in the operator's matrix
       for (int trialDof = 0; trialDof < trialDofCount; ++trialDof) {

@@ -22,7 +22,7 @@
 #define fiber_cuda_integrator_hpp
 
 #include "cuda_options.hpp"
-#include "cuda.cuh"
+#include "cuda.hpp"
 
 #include "../common/common.hpp"
 #include "../common/eigen_support.hpp"
@@ -72,12 +72,33 @@ public:
       const shared_ptr<const CollectionOfKernels<KernelType>> &kernel,
       const int deviceId, const Bempp::CudaOptions &cudaOptions);
 
+  CudaIntegrator(
+      const Matrix<CoordinateType> &localTestQuadPoints,
+      const Matrix<CoordinateType> &localTrialQuadPoints,
+      const std::vector<CoordinateType> &testQuadWeights,
+      const std::vector<CoordinateType> &trialQuadWeights,
+      const Shapeset<BasisFunctionType> &testShapeset,
+      const Shapeset<BasisFunctionType> &trialShapeset,
+      const shared_ptr<Bempp::CudaGrid<CudaCoordinateType>> &testGrid,
+      const shared_ptr<Bempp::CudaGrid<CudaCoordinateType>> &trialGrid,
+      const size_t maxActiveElemPairCount,
+      const shared_ptr<const CollectionOfKernels<KernelType>> &kernel,
+      const int deviceId, const Bempp::CudaOptions &cudaOptions);
+
   /** \brief Destructor. */
   virtual ~CudaIntegrator();
 
   void integrate(const size_t elemPairIndexBegin,
                  const size_t elemPairIndexEnd,
                  CudaResultType *result);
+
+  void integrate(const size_t elemPairCount,
+                 CudaResultType *result);
+
+  void pushElemPairIndicesToDevice(
+      const std::vector<int> &testElemPairIndices,
+      const std::vector<int> &trialElemPairIndices,
+      const size_t elemPairCount);
 
 private:
   /** \cond PRIVATE */
@@ -97,13 +118,28 @@ private:
       const dim3 gridSize, const dim3 blockSize,
       CudaResultType *d_result);
 
+  void launchCudaEvaluateIntegralFunctorKernelDataCached(
+      const size_t elemPairCount,
+      const dim3 gridSize, const dim3 blockSize,
+      CudaResultType *d_result);
+
   void launchCudaEvaluateIntegralFunctorElementDataCached(
       const size_t elemPairIndexBegin, const size_t elemPairCount,
       const dim3 gridSize, const dim3 blockSize,
       CudaResultType *d_result) const;
 
+  void launchCudaEvaluateIntegralFunctorElementDataCached(
+      const size_t elemPairCount,
+      const dim3 gridSize, const dim3 blockSize,
+      CudaResultType *d_result) const;
+
   void launchCudaEvaluateIntegralFunctorNoDataCached(
       const size_t elemPairIndexBegin, const size_t elemPairCount,
+      const dim3 gridSize, const dim3 blockSize,
+      CudaResultType *d_result) const;
+
+  void launchCudaEvaluateIntegralFunctorNoDataCached(
+      const size_t elemPairCount,
       const dim3 gridSize, const dim3 blockSize,
       CudaResultType *d_result) const;
 

@@ -21,7 +21,7 @@
 #ifndef fiber_cuda_evaluate_laplace_3d_double_layer_potential_integral_cuh
 #define fiber_cuda_evaluate_laplace_3d_double_layer_potential_integral_cuh
 
-#include "cuda.cuh"
+#include "cuda.hpp"
 
 #include "../common/scalar_traits.hpp"
 

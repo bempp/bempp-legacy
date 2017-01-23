@@ -36,6 +36,8 @@ void AssemblyOptions::switchToHMatMode() { m_assemblyMode = HMAT; }
 
 void AssemblyOptions::switchToCudaDenseMode() { m_assemblyMode = CUDADENSE; }
 
+void AssemblyOptions::switchToCudaHmatMode() { m_assemblyMode = CUDAHMAT; }
+
 void AssemblyOptions::switchToDense() { switchToDenseMode(); }
 
 AssemblyOptions::Mode AssemblyOptions::assemblyMode() const {

@@ -21,11 +21,20 @@
 #ifndef fiber_cuda_evaluate_laplace_3d_single_layer_potential_integral_cuh
 #define fiber_cuda_evaluate_laplace_3d_single_layer_potential_integral_cuh
 
-#include "cuda.cuh"
-
 #include "../common/scalar_traits.hpp"
 
 #include <device_launch_parameters.h>
+
+__constant__ double constTestQuadWeights[6];
+__constant__ double constTrialQuadWeights[6];
+
+__constant__ double constTestGeomShapeFun0[6];
+__constant__ double constTestGeomShapeFun1[6];
+__constant__ double constTestGeomShapeFun2[6];
+
+__constant__ double constTrialGeomShapeFun0[6];
+__constant__ double constTrialGeomShapeFun1[6];
+__constant__ double constTrialGeomShapeFun2[6];
 
 namespace Fiber {
 
@@ -195,6 +204,95 @@ CudaEvaluateLaplace3dSingleLayerPotentialIntegralFunctorCached(
     const int elemPairIndex = elemPairIndexBegin + i;
     const int trialElemPosition = trialIndices[elemPairIndex / testIndexCount];
     const int testElemPosition = testIndices[elemPairIndex % testIndexCount];
+
+    // Gather integration elements
+    const CoordinateType trialIntegrationElement =
+        trialIntegrationElements[trialElemPosition];
+    const CoordinateType testIntegrationElement =
+        testIntegrationElements[testElemPosition];
+
+    // Evaluate kernel
+    KernelType kernelValues[6 * 6];
+    CoordinateType trialPointCoo[coordCount], testPointCoo[coordCount];
+    for (size_t trialPoint = 0; trialPoint < trialPointCount; ++trialPoint) {
+      for (size_t testPoint = 0; testPoint < testPointCount; ++testPoint) {
+        KernelType kernelValue;
+#pragma unroll
+        for (size_t coordIndex = 0; coordIndex < coordCount; ++coordIndex) {
+          trialPointCoo[coordIndex] =
+              trialGlobalPoints[coordIndex * trialPointCount * trialElemCount
+                            + trialPoint * trialElemCount
+                            + trialElemPosition];
+          testPointCoo[coordIndex] =
+              testGlobalPoints[coordIndex * testPointCount * testElemCount
+                           + testPoint * testElemCount
+                           + testElemPosition];
+        }
+        Laplace3dSingleLayerPotentialKernel(
+            testPointCoo, trialPointCoo,
+            kernelValue);
+        kernelValues[trialPoint * testPointCount + testPoint] = kernelValue;
+      }
+    }
+
+    // Perform numerical integration
+    for (size_t trialDof = 0; trialDof < trialDofCount; ++trialDof) {
+      for (size_t testDof = 0; testDof < testDofCount; ++testDof) {
+        ResultType sum = 0.;
+        for (size_t trialPoint = 0; trialPoint < trialPointCount; ++trialPoint) {
+          const CoordinateType trialWeight =
+              trialIntegrationElement * constTrialQuadWeights[trialPoint];
+          ResultType partialSum = 0.;
+          for (size_t testPoint = 0; testPoint < testPointCount; ++testPoint) {
+            const CoordinateType testWeight =
+                testIntegrationElement * constTestQuadWeights[testPoint];
+            partialSum +=
+                kernelValues[trialPoint * testPointCount + testPoint]
+                * testBasisValues[testDof * testPointCount + testPoint]
+                * trialBasisValues[trialDof * trialPointCount + trialPoint]
+                * testWeight;
+          }
+          sum += partialSum * trialWeight;
+        }
+        const size_t index = trialDof * testDofCount * elemPairCount
+                             + testDof * elemPairCount
+                             + i;
+        result[index] = sum;
+      }
+    }
+  }
+}
+
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+__global__ void
+CudaEvaluateLaplace3dSingleLayerPotentialIntegralFunctorCached(
+    const unsigned int elemPairCount,
+    const int* __restrict__ testElemPairIndices,
+    const int* __restrict__ trialElemPairIndices,
+    const unsigned int testPointCount, const unsigned int trialPointCount,
+    const unsigned int testDofCount,
+    const BasisFunctionType* __restrict__ testBasisValues,
+    const unsigned int trialDofCount,
+    const BasisFunctionType* __restrict__ trialBasisValues,
+    const unsigned int testElemCount,
+    const typename ScalarTraits<BasisFunctionType>::RealType* testGlobalPoints,
+    const typename ScalarTraits<BasisFunctionType>::RealType* testIntegrationElements,
+    const unsigned int trialElemCount,
+    const typename ScalarTraits<BasisFunctionType>::RealType* trialGlobalPoints,
+    const typename ScalarTraits<BasisFunctionType>::RealType* trialIntegrationElements,
+    ResultType* __restrict__ result) {
+
+  typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
+
+  const unsigned int i = blockIdx.x * blockDim.x + threadIdx.x;
+
+  if (i < elemPairCount) {
+
+    const int coordCount = 3;
+
+    // Determine trial and test element indices
+    const int trialElemPosition = trialElemPairIndices[i];
+    const int testElemPosition = testElemPairIndices[i];
 
     // Gather integration elements
     const CoordinateType trialIntegrationElement =
