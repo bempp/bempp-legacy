@@ -55,11 +55,13 @@ ParameterList GlobalParameters::parameterList() {
 
   // Use polynomial interpolation instead of exponentials to assemble
   // Helmholtz or Maxwell type kernels.
-  parameters.put("options.assembly.enableInterpolationForOscillatoryKernels", true);
+  parameters.put("options.assembly.enableInterpolationForOscillatoryKernels",
+                 true);
 
   // Number of interpolation points per wavelength for oscillatory kernels.
-  parameters.put("options.assembly.interpolationPointsPerWavelength", static_cast<int>(5000));
-   
+  parameters.put("options.assembly.interpolationPointsPerWavelength",
+                 static_cast<int>(5000));
+
   // Order for singular double integrals.
   parameters.put("options.quadrature.doubleSingular", static_cast<int>(6));
 
@@ -113,17 +115,6 @@ ParameterList GlobalParameters::parameterList() {
 
   // Compression algorithm
   parameters.put("options.hmat.compressionAlgorithm", std::string("aca"));
-
-  // Enable coarsening
-  parameters.put("options.hmat.coarsening", false);
-
-  // Accuracy for coarsening
-  // 0: Use same as options.hmat.eps
-  parameters.put("options.hmat.coarseningAccuracy", static_cast<double>(0));
-
-  // Number of levels for matvec parallelisation
-  // The total number of tasks is 4^matVecParallelLevels
-  parameters.put("options.hmat.matVecParallelLevels", static_cast<int>(5));
 
   // Cuda precision
   parameters.put("options.cuda.precision", std::string("double"));

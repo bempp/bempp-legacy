@@ -219,8 +219,8 @@ public:
       const Context<BasisFunctionType_, ResultType_> &context) const;
 
   /** \brief Overlad. */
-  shared_ptr<DiscreteBoundaryOperator<ResultType_>> assembleWeakForm(
-          const ParameterList& parameterList) const;
+  shared_ptr<DiscreteBoundaryOperator<ResultType_>>
+  assembleWeakForm(const ParameterList &parameterList) const;
 
 protected:
   /** \brief Given an AssemblyOptions object, construct objects necessary for

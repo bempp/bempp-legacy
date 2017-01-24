@@ -34,8 +34,9 @@ inline bool
 shouldUseBlasInQuadrature(const AssemblyOptions &assemblyOptions,
                           const Space<BasisFunctionType> &domain,
                           const Space<BasisFunctionType> &dualToRange) {
-// Disabled as BLAS quadrature causes crashes in the hypersingular operator for
-// unknown reasons.
+  // Disabled as BLAS quadrature causes crashes in the hypersingular operator
+  // for
+  // unknown reasons.
   return assemblyOptions.isBlasEnabledInQuadrature() == AssemblyOptions::YES ||
          (assemblyOptions.isBlasEnabledInQuadrature() ==
               AssemblyOptions::AUTO &&

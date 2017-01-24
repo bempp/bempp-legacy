@@ -59,12 +59,12 @@ public:
   typedef typename Base::CollectionOfBasisTransformations
       CollectionOfBasisTransformations;
 
-  explicit ScaledNedelec0VectorSpaceBarycentric(const shared_ptr<const Grid> &grid,
-                                     bool putDofsOnBoundaries = false);
+  explicit ScaledNedelec0VectorSpaceBarycentric(
+      const shared_ptr<const Grid> &grid, bool putDofsOnBoundaries = false);
   ScaledNedelec0VectorSpaceBarycentric(const shared_ptr<const Grid> &grid,
-                            const GridSegment &segment,
-                            bool putDofsOnBoundaries = false,
-                            int dofMode = EDGE_ON_SEGMENT);
+                                       const GridSegment &segment,
+                                       bool putDofsOnBoundaries = false,
+                                       int dofMode = EDGE_ON_SEGMENT);
   virtual ~ScaledNedelec0VectorSpaceBarycentric();
 
   virtual shared_ptr<const Space<BasisFunctionType>> discontinuousSpace(
@@ -162,20 +162,27 @@ private:
   /** \endcond */
 };
 
-/** \brief Define a ScaledNedelec0VectorSpaceBarycentric that has an update method for grid refinement. */
+/** \brief Define a ScaledNedelec0VectorSpaceBarycentric that has an update
+ * method for grid refinement. */
 template <typename BasisFunctionType>
-shared_ptr<Space<BasisFunctionType>> adaptiveScaledNedelec0VectorSpaceBarycentric(const shared_ptr<const Grid>& grid);
+shared_ptr<Space<BasisFunctionType>>
+adaptiveScaledNedelec0VectorSpaceBarycentric(
+    const shared_ptr<const Grid> &grid);
 
-/** \brief Overload to define a set of domains for the space and whether the space contains boundary entities
+/** \brief Overload to define a set of domains for the space and whether the
+ space contains boundary entities
  (\p open = true) or not. */
 template <typename BasisFunctionType>
-shared_ptr<Space<BasisFunctionType>> adaptiveScaledNedelec0VectorSpaceBarycentric(const shared_ptr<const Grid>& grid,
-        const std::vector<int>& domains, bool open);
+shared_ptr<Space<BasisFunctionType>>
+adaptiveScaledNedelec0VectorSpaceBarycentric(const shared_ptr<const Grid> &grid,
+                                             const std::vector<int> &domains,
+                                             bool open);
 
 /** \brief Overlad. */
 template <typename BasisFunctionType>
-shared_ptr<Space<BasisFunctionType>> adaptiveScaledNedelec0VectorSpaceBarycentric(const shared_ptr<const Grid>& grid,
-        int domain, bool open);
+shared_ptr<Space<BasisFunctionType>>
+adaptiveScaledNedelec0VectorSpaceBarycentric(const shared_ptr<const Grid> &grid,
+                                             int domain, bool open);
 
 } // namespace Bempp
 

@@ -114,9 +114,10 @@ public:
   makeAssembler(const QuadratureStrategy &quadStrategy,
                 const AssemblyOptions &options) const;
 
-  /** \brief Overload that takes a parameter list instead of a context object. */
+  /** \brief Overload that takes a parameter list instead of a context object.
+   */
   std::unique_ptr<LocalAssembler>
-  makeAssembler(const ParameterList& parameterList) const;
+  makeAssembler(const ParameterList &parameterList) const;
 
   /** \brief Assemble the operator's weak form using a specified local
    *assembler.

@@ -58,12 +58,12 @@ public:
   typedef typename Base::CollectionOfBasisTransformations
       CollectionOfBasisTransformations;
 
-  explicit RaviartThomas0VectorSpaceBarycentric(const shared_ptr<const Grid> &grid,
-                                     bool putDofsOnBoundaries = false);
+  explicit RaviartThomas0VectorSpaceBarycentric(
+      const shared_ptr<const Grid> &grid, bool putDofsOnBoundaries = false);
   RaviartThomas0VectorSpaceBarycentric(const shared_ptr<const Grid> &grid,
-                            const GridSegment &segment,
-                            bool putDofsOnBoundaries = false,
-                            int dofMode = EDGE_ON_SEGMENT);
+                                       const GridSegment &segment,
+                                       bool putDofsOnBoundaries = false,
+                                       int dofMode = EDGE_ON_SEGMENT);
   virtual ~RaviartThomas0VectorSpaceBarycentric();
 
   virtual shared_ptr<const Space<BasisFunctionType>> discontinuousSpace(
@@ -161,20 +161,27 @@ private:
   /** \endcond */
 };
 
-/** \brief Define a RaviartThomas0VectorSpaceBarycentric that has an update method for grid refinement. */
+/** \brief Define a RaviartThomas0VectorSpaceBarycentric that has an update
+ * method for grid refinement. */
 template <typename BasisFunctionType>
-shared_ptr<Space<BasisFunctionType>> adaptiveRaviartThomas0VectorSpaceBarycentric(const shared_ptr<const Grid>& grid);
+shared_ptr<Space<BasisFunctionType>>
+adaptiveRaviartThomas0VectorSpaceBarycentric(
+    const shared_ptr<const Grid> &grid);
 
-/** \brief Overload to define a set of domains for the space and whether the space contains boundary entities
+/** \brief Overload to define a set of domains for the space and whether the
+ space contains boundary entities
  (\p open = true) or not. */
 template <typename BasisFunctionType>
-shared_ptr<Space<BasisFunctionType>> adaptiveRaviartThomas0VectorSpaceBarycentric(const shared_ptr<const Grid>& grid,
-        const std::vector<int>& domains, bool open);
+shared_ptr<Space<BasisFunctionType>>
+adaptiveRaviartThomas0VectorSpaceBarycentric(const shared_ptr<const Grid> &grid,
+                                             const std::vector<int> &domains,
+                                             bool open);
 
 /** \brief Overlad. */
 template <typename BasisFunctionType>
-shared_ptr<Space<BasisFunctionType>> adaptiveRaviartThomas0VectorSpaceBarycentric(const shared_ptr<const Grid>& grid,
-        int domain, bool open);
+shared_ptr<Space<BasisFunctionType>>
+adaptiveRaviartThomas0VectorSpaceBarycentric(const shared_ptr<const Grid> &grid,
+                                             int domain, bool open);
 
 } // namespace Bempp
 

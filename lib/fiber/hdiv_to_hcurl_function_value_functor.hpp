@@ -30,7 +30,8 @@
 
 namespace Fiber {
 
-template <typename CoordinateType_> class HdvivToHcurlFunctionValueElementaryFunctor {
+template <typename CoordinateType_>
+class HdvivToHcurlFunctionValueElementaryFunctor {
 public:
   typedef CoordinateType_ CoordinateType;
 
@@ -60,7 +61,6 @@ public:
     result(1) = piola[2] * geomData.normal(0) - piola[0] * geomData.normal(2);
     result(2) = piola[0] * geomData.normal(1) - piola[1] * geomData.normal(0);
   }
-
 };
 // Note: in C++11 we'll be able to make a "template typedef", or more precisely
 // a using declaration, instead of this spurious inheritance

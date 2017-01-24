@@ -38,9 +38,7 @@
 #include "../hmat/cluster_tree.hpp"
 #include <boost/signals2/signal.hpp>
 
-
 #include <vector>
-
 
 /** \cond FORWARD_DECL */
 namespace Fiber {
@@ -48,9 +46,7 @@ template <typename ValueType> class BasisData;
 template <typename CoordinateType> class GeometricalData;
 } // namespace Fiber
 
-
 /** \endcond */
-
 
 namespace Bempp {
 
@@ -557,21 +553,23 @@ public:
   /** @}
       @name H-Matrix support
       @} */
-  
+
   /** \brief Initialize the cluster tree associated with this space. */
-  virtual void initializeClusterTree(const ParameterList& parameterList);
+  virtual void initializeClusterTree(const ParameterList &parameterList);
 
   /** \brief Return the cluster tree associated with this space. */
   virtual shared_ptr<const hmat::DefaultClusterTreeType> clusterTree() const;
 
   /** @} */
 
-  /** @} 
+  /** @}
       @name Signal Handling
       @} */
 
-  /** \brief Connect objects that need to be notified when a space is updated. */
-  virtual boost::signals2::connection connect(const std::function<void()>& f) const;
+  /** \brief Connect objects that need to be notified when a space is updated.
+   */
+  virtual boost::signals2::connection
+  connect(const std::function<void()> &f) const;
 
   /** @} */
 
@@ -631,7 +629,6 @@ public:
   /** @} */
 
 protected:
-
   void sendUpdateSignal() const;
 
 private:

@@ -63,6 +63,7 @@ ConcreteEntity<0, DuneEntity>::father() const {
     return nullptr;
 }
 
+/*
 template <typename DuneEntity>
 std::unique_ptr<EntityIterator<0>>
 ConcreteEntity<0, DuneEntity>::sonIterator(int maxlevel) const {
@@ -74,6 +75,7 @@ ConcreteEntity<0, DuneEntity>::sonIterator(int maxlevel) const {
       new ConcIterator(m_dune_entity->hbegin(maxlevel),
                        m_dune_entity->hend(maxlevel), m_domain_index));
 }
+*/
 
 } // namespace Bempp
 

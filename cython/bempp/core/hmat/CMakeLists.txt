@@ -9,7 +9,7 @@ copy_files_on_change(${headers}
     TARGETNAME bempp.core.hmat-copied
 )
 
-install_python(FILES ${headers} DESTINATION bempp/include/bempp/core/hmat)
+#install_python(FILES ${headers} DESTINATION bempp/include/bempp/core/hmat)
 add_dependencies(cython-headers bempp.core.hmat-copied)
 
 add_python_module(bempp.core.hmat __init__.py block_cluster_tree.pyx 

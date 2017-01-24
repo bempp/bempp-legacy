@@ -162,7 +162,6 @@ private:
   std::vector<std::vector<LocalDof>> m_global2localDofs;
   std::vector<LocalDof> m_flatLocal2localDofs;
 
-
   Shapeset m_linearBasisType1;
   Shapeset m_linearBasisType2;
 
@@ -176,9 +175,12 @@ private:
   /** \endcond */
 };
 
-/** \brief Define a PiecewiseLinearDiscontinuousScalarSpaceBarycentric that has an update method for grid refinement. */
+/** \brief Define a PiecewiseLinearDiscontinuousScalarSpaceBarycentric that has
+ * an update method for grid refinement. */
 template <typename BasisFunctionType>
-shared_ptr<Space<BasisFunctionType>> adaptivePiecewiseLinearDiscontinuousScalarSpaceBarycentric(const shared_ptr<const Grid>& grid);
+shared_ptr<Space<BasisFunctionType>>
+adaptivePiecewiseLinearDiscontinuousScalarSpaceBarycentric(
+    const shared_ptr<const Grid> &grid);
 
 } // namespace Bempp
 

@@ -161,20 +161,28 @@ private:
   /** \endcond */
 };
 
-/** \brief Define a PiecewisePolynomialContinuousScalarSpace that has an update method for grid refinement. */
+/** \brief Define a PiecewisePolynomialContinuousScalarSpace that has an update
+ * method for grid refinement. */
 template <typename BasisFunctionType>
-shared_ptr<Space<BasisFunctionType>> adaptivePiecewisePolynomialContinuousScalarSpace(const shared_ptr<const Grid>& grid, int order);
+shared_ptr<Space<BasisFunctionType>>
+adaptivePiecewisePolynomialContinuousScalarSpace(
+    const shared_ptr<const Grid> &grid, int order);
 
-/** \brief Overload to define a set of domains for the space and whether the space contains boundary entities
+/** \brief Overload to define a set of domains for the space and whether the
+ space contains boundary entities
  (\p open = true) or not. */
 template <typename BasisFunctionType>
-shared_ptr<Space<BasisFunctionType>> adaptivePiecewisePolynomialContinuousScalarSpace(const shared_ptr<const Grid>& grid, int order,
-        const std::vector<int>& domains, bool open, bool strictlyOnSegment=false);
+shared_ptr<Space<BasisFunctionType>>
+adaptivePiecewisePolynomialContinuousScalarSpace(
+    const shared_ptr<const Grid> &grid, int order,
+    const std::vector<int> &domains, bool open, bool strictlyOnSegment = false);
 
 /** \brief Overlad. */
 template <typename BasisFunctionType>
-shared_ptr<Space<BasisFunctionType>> adaptivePiecewisePolynomialContinuousScalarSpace(const shared_ptr<const Grid>& grid, int order, 
-        int domain, bool open, bool strictlyOnSegment=false);
+shared_ptr<Space<BasisFunctionType>>
+adaptivePiecewisePolynomialContinuousScalarSpace(
+    const shared_ptr<const Grid> &grid, int order, int domain, bool open,
+    bool strictlyOnSegment = false);
 
 } // namespace Bempp
 

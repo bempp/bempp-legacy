@@ -78,8 +78,7 @@ public:
           &trialLocalDofWeights,
       Fiber::LocalAssemblerForIntegralOperators<ResultType> &assembler,
       Matrix<ResultType> &result, MutexType &mutex)
-      : m_rowStart(rowStart), m_colStart(colStart),
-        m_testIndices(testIndices),
+      : m_rowStart(rowStart), m_colStart(colStart), m_testIndices(testIndices),
         m_testGlobalDofs(testGlobalDofs), m_trialGlobalDofs(trialGlobalDofs),
         m_testLocalDofWeights(testLocalDofWeights),
         m_trialLocalDofWeights(trialLocalDofWeights), m_assembler(assembler),
@@ -160,13 +159,14 @@ void gatherElementInformation(
   std::vector<std::vector<BasisFunctionType>> weights; // Not needed
   space.global2localDofs(globalDofs, global2localDofs, weights);
 
-  const ReverseElementMapper& reverseMapper = gridView->reverseElementMapper();
+  const ReverseElementMapper &reverseMapper = gridView->reverseElementMapper();
 
   for (const auto &localDofs : global2localDofs)
     for (const auto &localDof : localDofs) {
       int elementIndex = localDof.entityIndex;
       if (!indexMap.count(elementIndex)) {
-        const auto& element = reverseMapper.entityPointer(elementIndex).entity();
+        const auto &element =
+            reverseMapper.entityPointer(elementIndex).entity();
         indexMap[elementIndex] = std::vector<GlobalDofIndex>();
         dofWeights[elementIndex] = std::vector<BasisFunctionType>();
         space.getGlobalDofs(element, indexMap.at(elementIndex),
@@ -181,12 +181,11 @@ void gatherElementInformation(
 } // namespace
 
 template <typename BasisFunctionType, typename ResultType>
-shared_ptr<const DiscreteBoundaryOperator<ResultType>>
-assembleDenseBlock(
+shared_ptr<const DiscreteBoundaryOperator<ResultType>> assembleDenseBlock(
     int rowStart, int rowEnd, int colStart, int colEnd,
     const Space<BasisFunctionType> &testSpace,
     const Space<BasisFunctionType> &trialSpace,
-    Fiber::LocalAssemblerForIntegralOperators<ResultType>& assembler,
+    Fiber::LocalAssemblerForIntegralOperators<ResultType> &assembler,
     const ParameterList &parameterList) {
 
   int numberOfRows = rowEnd - rowStart;
@@ -235,12 +234,12 @@ assembleDenseBlock(
       new DiscreteDenseBoundaryOperator<ResultType>(result));
 }
 
-#define INSTANTIATE_FREE_FUNCTIONS(BASIS, RESULT) \
-    template shared_ptr<const DiscreteBoundaryOperator<RESULT>>  \
-    assembleDenseBlock(int, int, int, int, \
-            const Space<BASIS>&, const Space<BASIS>&, \
-            Fiber::LocalAssemblerForIntegralOperators<RESULT>&, \
-            const ParameterList&)
+#define INSTANTIATE_FREE_FUNCTIONS(BASIS, RESULT)                              \
+  template shared_ptr<const DiscreteBoundaryOperator<RESULT>>                  \
+  assembleDenseBlock(int, int, int, int, const Space<BASIS> &,                 \
+                     const Space<BASIS> &,                                     \
+                     Fiber::LocalAssemblerForIntegralOperators<RESULT> &,      \
+                     const ParameterList &)
 
 FIBER_ITERATE_OVER_BASIS_AND_RESULT_TYPES(INSTANTIATE_FREE_FUNCTIONS);
 

@@ -22,15 +22,12 @@ template <typename BasisFunctionType> class Space;
 template <typename BasisFunctionType, typename ResultType> class Context;
 
 template <typename BasisFunctionType, typename ResultType>
-shared_ptr<const DiscreteBoundaryOperator<ResultType>>
-assembleDenseBlock(int rowStart, int rowEnd, int colStart, int colEnd,
-        const Space<BasisFunctionType>& testSpace,
-        const Space<BasisFunctionType>& trialSpace,
-        Fiber::LocalAssemblerForIntegralOperators<ResultType>& assembler,
-        const ParameterList& parameterList);
-
-
-
+shared_ptr<const DiscreteBoundaryOperator<ResultType>> assembleDenseBlock(
+    int rowStart, int rowEnd, int colStart, int colEnd,
+    const Space<BasisFunctionType> &testSpace,
+    const Space<BasisFunctionType> &trialSpace,
+    Fiber::LocalAssemblerForIntegralOperators<ResultType> &assembler,
+    const ParameterList &parameterList);
 
 } // namespace Bempp
 

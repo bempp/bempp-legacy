@@ -44,27 +44,30 @@
 
 #include <boost/array.hpp>
 
-
 namespace Bempp {
 
 namespace {
 
 template <typename BasisFunctionType>
-class PolynomialContinuousSpaceFactory : public SpaceFactory<BasisFunctionType> {
+class PolynomialContinuousSpaceFactory
+    : public SpaceFactory<BasisFunctionType> {
 
-    public:
-       PolynomialContinuousSpaceFactory(int order, bool strictlyOnSegment) :
-           m_order(order), m_strictlyOnSegment(strictlyOnSegment){}
+public:
+  PolynomialContinuousSpaceFactory(int order, bool strictlyOnSegment)
+      : m_order(order), m_strictlyOnSegment(strictlyOnSegment) {}
 
-       shared_ptr<Space<BasisFunctionType>> create(const shared_ptr<const Grid> &grid,
-                               const GridSegment &segment) const override{
-           
-           return shared_ptr<Space<BasisFunctionType>>(new PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>(grid, m_order, segment, m_strictlyOnSegment));
-       }
-    private:
-       int m_order;
-       bool m_strictlyOnSegment;
-           
+  shared_ptr<Space<BasisFunctionType>>
+  create(const shared_ptr<const Grid> &grid,
+         const GridSegment &segment) const override {
+
+    return shared_ptr<Space<BasisFunctionType>>(
+        new PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>(
+            grid, m_order, segment, m_strictlyOnSegment));
+  }
+
+private:
+  int m_order;
+  bool m_strictlyOnSegment;
 };
 }
 
@@ -717,49 +720,53 @@ void PiecewisePolynomialContinuousScalarSpace<BasisFunctionType>::
 }
 
 template <typename BasisFunctionType>
-shared_ptr<Space<BasisFunctionType>> adaptivePiecewisePolynomialContinuousScalarSpace(const shared_ptr<const Grid>& grid,
-        int order)
-{
+shared_ptr<Space<BasisFunctionType>>
+adaptivePiecewisePolynomialContinuousScalarSpace(
+    const shared_ptr<const Grid> &grid, int order) {
 
-    shared_ptr<SpaceFactory<BasisFunctionType>> factory(
-            new PolynomialContinuousSpaceFactory<BasisFunctionType>(order, false));
-    return shared_ptr<Space<BasisFunctionType>>(
-            new AdaptiveSpace<BasisFunctionType>(factory, grid));
-
+  shared_ptr<SpaceFactory<BasisFunctionType>> factory(
+      new PolynomialContinuousSpaceFactory<BasisFunctionType>(order, false));
+  return shared_ptr<Space<BasisFunctionType>>(
+      new AdaptiveSpace<BasisFunctionType>(factory, grid));
 }
 
 template <typename BasisFunctionType>
-shared_ptr<Space<BasisFunctionType>> adaptivePiecewisePolynomialContinuousScalarSpace(const shared_ptr<const Grid>& grid, int order,
-        const std::vector<int>& domains, bool open, bool strictlyOnSegment)
-{
+shared_ptr<Space<BasisFunctionType>>
+adaptivePiecewisePolynomialContinuousScalarSpace(
+    const shared_ptr<const Grid> &grid, int order,
+    const std::vector<int> &domains, bool open, bool strictlyOnSegment) {
 
-    shared_ptr<SpaceFactory<BasisFunctionType>> factory(
-            new PolynomialContinuousSpaceFactory<BasisFunctionType>(order, strictlyOnSegment));
-    return shared_ptr<Space<BasisFunctionType>>(
-            new AdaptiveSpace<BasisFunctionType>(factory, grid, domains, open));
-
+  shared_ptr<SpaceFactory<BasisFunctionType>> factory(
+      new PolynomialContinuousSpaceFactory<BasisFunctionType>(
+          order, strictlyOnSegment));
+  return shared_ptr<Space<BasisFunctionType>>(
+      new AdaptiveSpace<BasisFunctionType>(factory, grid, domains, open));
 }
 
 template <typename BasisFunctionType>
-shared_ptr<Space<BasisFunctionType>> adaptivePiecewisePolynomialContinuousScalarSpace(const shared_ptr<const Grid>& grid, int order, 
-        int domain, bool open, bool strictlyOnSegment)
-{
-    shared_ptr<SpaceFactory<BasisFunctionType>> factory(
-            new PolynomialContinuousSpaceFactory<BasisFunctionType>(order, strictlyOnSegment));
-    return shared_ptr<Space<BasisFunctionType>>(
-            new AdaptiveSpace<BasisFunctionType>(factory, grid, std::vector<int>({domain}), open));
+shared_ptr<Space<BasisFunctionType>>
+adaptivePiecewisePolynomialContinuousScalarSpace(
+    const shared_ptr<const Grid> &grid, int order, int domain, bool open,
+    bool strictlyOnSegment) {
+  shared_ptr<SpaceFactory<BasisFunctionType>> factory(
+      new PolynomialContinuousSpaceFactory<BasisFunctionType>(
+          order, strictlyOnSegment));
+  return shared_ptr<Space<BasisFunctionType>>(
+      new AdaptiveSpace<BasisFunctionType>(factory, grid,
+                                           std::vector<int>({domain}), open));
 }
 
-#define INSTANTIATE_FREE_FUNCTIONS(BASIS)   \
-    template shared_ptr<Space<BASIS>> adaptivePiecewisePolynomialContinuousScalarSpace<BASIS>( \
-            const shared_ptr<const Grid>&, int); \
-    template shared_ptr<Space<BASIS>> adaptivePiecewisePolynomialContinuousScalarSpace<BASIS>( \
-            const shared_ptr<const Grid>&, int, \
-            const std::vector<int>&, bool, bool); \
-    template shared_ptr<Space<BASIS>> adaptivePiecewisePolynomialContinuousScalarSpace<BASIS>( \
-            const shared_ptr<const Grid>&, int, \
-            int, bool, bool) 
-
+#define INSTANTIATE_FREE_FUNCTIONS(BASIS)                                      \
+  template shared_ptr<Space<BASIS>>                                            \
+  adaptivePiecewisePolynomialContinuousScalarSpace<BASIS>(                     \
+      const shared_ptr<const Grid> &, int);                                    \
+  template shared_ptr<Space<BASIS>>                                            \
+  adaptivePiecewisePolynomialContinuousScalarSpace<BASIS>(                     \
+      const shared_ptr<const Grid> &, int, const std::vector<int> &, bool,     \
+      bool);                                                                   \
+  template shared_ptr<Space<BASIS>>                                            \
+  adaptivePiecewisePolynomialContinuousScalarSpace<BASIS>(                     \
+      const shared_ptr<const Grid> &, int, int, bool, bool)
 
 FIBER_ITERATE_OVER_BASIS_TYPES(INSTANTIATE_FREE_FUNCTIONS);
 

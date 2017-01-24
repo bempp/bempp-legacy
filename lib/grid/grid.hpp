@@ -102,8 +102,10 @@ public:
   @name Others
   @{ */
 
-  /** \brief Return a barycentrically refined grid based on the LeafView and the son map */
-  virtual std::pair<shared_ptr<Grid>,Matrix<int>> barycentricGridSonPair() const = 0;
+  /** \brief Return a barycentrically refined grid based on the LeafView and the
+   * son map */
+  virtual std::pair<shared_ptr<Grid>, Matrix<int>>
+  barycentricGridSonPair() const = 0;
 
   /** \brief Return a barycentrically refined grid based on the LeafView */
   virtual shared_ptr<Grid> barycentricGrid() const = 0;
@@ -115,7 +117,7 @@ public:
    *  been created. */
   virtual bool hasBarycentricGrid() const = 0;
 
-//  virtual bool isBarycentricGrid() const = 0;
+  //  virtual bool isBarycentricGrid() const = 0;
 
   /** \brief Return \p true if this grid is a barycentric representation of
    *  \p other, i.e. if this grid was created by \p other.barycentricGrid(). */
@@ -142,11 +144,11 @@ public:
 
   /** \brief Mark element for refinement. */
 
-  virtual bool mark(int refCount, const Entity<0>& element) = 0;
+  virtual bool mark(int refCount, const Entity<0> &element) = 0;
 
   /** \brief Return mark status of element. */
-  
-  virtual int getMark(const Entity<0>& element) const = 0;
+
+  virtual int getMark(const Entity<0> &element) const = 0;
 
   /** \brief Pre-Adaption step */
 
@@ -168,17 +170,17 @@ public:
   void sendUpdateSignal() const;
 
   /** \brief Connect entity to be notified when grid updates */
-  boost::signals2::connection connect(const std::function<void()>& f) const;
-
-//  /** \brief set father of barycentric refinement */
-//  virtual void setBarycentricFather(shared_ptr<Grid> fatherGrid) = 0;
-//
-//  /** \brief get father of barycentric refinement */
-//  virtual shared_ptr<Grid> getBarycentricFather() = 0;
+  boost::signals2::connection connect(const std::function<void()> &f) const;
 
   /** \brief Push the mesh geometry to device memory */
   template <typename CoordinateType>
   shared_ptr<CudaGrid<CoordinateType>> pushToDevice(unsigned int deviceId) const;
+
+  //  /** \brief set father of barycentric refinement */
+  //  virtual void setBarycentricFather(shared_ptr<Grid> fatherGrid) = 0;
+  //
+  //  /** \brief get father of barycentric refinement */
+  //  virtual shared_ptr<Grid> getBarycentricFather() = 0;
 
 private:
   /** \cond PRIVATE */

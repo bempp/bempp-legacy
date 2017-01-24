@@ -71,16 +71,16 @@ ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
         "equal to the dimension of the space containing the surface "
         "on which the function space 'space' is defined");
 
-
-  auto quadStrategy = Context<BasisFunctionType, ResultType>(parameterList).
-      quadStrategy();
+  auto quadStrategy =
+      Context<BasisFunctionType, ResultType>(parameterList).quadStrategy();
 
   EvaluationOptions options(parameterList);
 
   std::unique_ptr<LocalAssembler> assembler =
       makeAssembler(*space, *evaluationPoints, *quadStrategy, options);
   shared_ptr<DiscreteBoundaryOperator<ResultType>> discreteOperator =
-      assembleOperator(*space, *evaluationPoints /*TODO*/, *assembler, parameterList);
+      assembleOperator(*space, *evaluationPoints /*TODO*/, *assembler,
+                       parameterList);
   return AssembledPotentialOperator<BasisFunctionType, ResultType>(
       space, evaluationPoints, discreteOperator, componentCount());
 }
@@ -139,7 +139,8 @@ ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
             .release());
   case EvaluationOptions::HMAT:
     return shared_ptr<DiscreteBoundaryOperator<ResultType>>(
-        assembleOperatorInHMatMode(space, evaluationPoints, assembler, parameterList)
+        assembleOperatorInHMatMode(space, evaluationPoints, assembler,
+                                   parameterList)
             .release());
   default:
     throw std::runtime_error(
@@ -164,11 +165,12 @@ template <typename BasisFunctionType, typename KernelType, typename ResultType>
 std::unique_ptr<DiscreteBoundaryOperator<ResultType>>
 ElementaryPotentialOperator<BasisFunctionType, KernelType, ResultType>::
     assembleOperatorInHMatMode(const Space<BasisFunctionType> &space,
-                              const Matrix<CoordinateType> &evaluationPoints,
-                              LocalAssembler &assembler,
-                              const ParameterList &parameterList) const {
+                               const Matrix<CoordinateType> &evaluationPoints,
+                               LocalAssembler &assembler,
+                               const ParameterList &parameterList) const {
   return HMatGlobalAssembler<BasisFunctionType, ResultType>::
-      assemblePotentialOperator(evaluationPoints, space, assembler, parameterList);
+      assemblePotentialOperator(evaluationPoints, space, assembler,
+                                parameterList);
 }
 
 /** \endcond */

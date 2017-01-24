@@ -1,0 +1,24 @@
+#! /usr/bin/make -f
+
+BASE = $(shell pwd)
+
+#%:
+#	dh $@ --with python2,python3 --buildsystem=pybuild
+
+%:
+	dh $@ --buildsystem=pybuild
+
+override_dh_auto_build:
+
+override_dh_auto_clean:
+	rm -rf build*
+	rm -rf pkg_install*
+
+override_dh_auto_configure:
+
+override_dh_auto_install:
+	python setup.py install --install-layout=deb --root=$(BASE)/debian/python-bempp --prefix=/usr
+	python3 setup.py install --install-layout=deb --root=$(BASE)/debian/python3-bempp --prefix=/usr
+
+override_dh_strip:
+

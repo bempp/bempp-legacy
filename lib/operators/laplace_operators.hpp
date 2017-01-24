@@ -27,12 +27,15 @@
 
 namespace Bempp {
 
-template <typename BasisFunctionType, typename KernelType, typename ResultType> class ElementaryIntegralOperator;
-template <typename BasisFunctionType, typename ResultType> class PotentialOperator;
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+class ElementaryIntegralOperator;
+template <typename BasisFunctionType, typename ResultType>
+class PotentialOperator;
 template <typename BasisFunctionType> class Space;
 
-template<typename BasisFunctionType, typename KernelType, typename ResultType>
-shared_ptr<const ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>>
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+shared_ptr<
+    const ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>>
 laplaceSingleLayerBoundaryOperator(
     const ParameterList &parameterList,
     const shared_ptr<const Space<BasisFunctionType>> &domain,
@@ -40,9 +43,9 @@ laplaceSingleLayerBoundaryOperator(
     const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
     const std::string &label = "", int symmetry = NO_SYMMETRY);
 
-
-template<typename BasisFunctionType, typename KernelType, typename ResultType>
-shared_ptr<const ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>>
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+shared_ptr<
+    const ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>>
 laplaceDoubleLayerBoundaryOperator(
     const ParameterList &parameterList,
     const shared_ptr<const Space<BasisFunctionType>> &domain,
@@ -50,8 +53,9 @@ laplaceDoubleLayerBoundaryOperator(
     const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
     const std::string &label = "", int symmetry = NO_SYMMETRY);
 
-template<typename BasisFunctionType, typename KernelType, typename ResultType>
-shared_ptr<const ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>>
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+shared_ptr<
+    const ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>>
 laplaceAdjointDoubleLayerBoundaryOperator(
     const ParameterList &parameterList,
     const shared_ptr<const Space<BasisFunctionType>> &domain,
@@ -59,8 +63,9 @@ laplaceAdjointDoubleLayerBoundaryOperator(
     const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
     const std::string &label = "", int symmetry = NO_SYMMETRY);
 
-template<typename BasisFunctionType, typename KernelType, typename ResultType>
-shared_ptr<const ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>>
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+shared_ptr<
+    const ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>>
 laplaceHypersingularBoundaryOperator(
     const ParameterList &parameterList,
     const shared_ptr<const Space<BasisFunctionType>> &domain,
@@ -69,17 +74,20 @@ laplaceHypersingularBoundaryOperator(
     const std::string &label = "", int symmetry = NO_SYMMETRY);
 
 template <typename BasisFunctionType, typename ResultType>
-shared_ptr<const DiscreteBoundaryOperator<ResultType>> laplaceSingleLayerPotentialOperator(
-        const shared_ptr<const Space<BasisFunctionType>>& space,
-        const Matrix<typename Fiber::ScalarTraits<BasisFunctionType>::RealType>& evaluationPoints,
-        const ParameterList& parameterList);
+shared_ptr<const DiscreteBoundaryOperator<ResultType>>
+laplaceSingleLayerPotentialOperator(
+    const shared_ptr<const Space<BasisFunctionType>> &space,
+    const Matrix<typename Fiber::ScalarTraits<BasisFunctionType>::RealType>
+        &evaluationPoints,
+    const ParameterList &parameterList);
 
 template <typename BasisFunctionType, typename ResultType>
-shared_ptr<const DiscreteBoundaryOperator<ResultType>> laplaceDoubleLayerPotentialOperator(
-        const shared_ptr<const Space<BasisFunctionType>>& space,
-        const Matrix<typename Fiber::ScalarTraits<BasisFunctionType>::RealType>& evaluationPoints,
-        const ParameterList& parameterList);
-
+shared_ptr<const DiscreteBoundaryOperator<ResultType>>
+laplaceDoubleLayerPotentialOperator(
+    const shared_ptr<const Space<BasisFunctionType>> &space,
+    const Matrix<typename Fiber::ScalarTraits<BasisFunctionType>::RealType>
+        &evaluationPoints,
+    const ParameterList &parameterList);
 }
 
 #include "laplace_operators_imp.hpp"

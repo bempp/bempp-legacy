@@ -81,7 +81,7 @@ public:
     if (what & VALUES)
       evaluateShapeFunctionsWithDune<CoordinateType, ValueType, DuneBasis>(
           points, localDofIndex, data.values);
-    if (what & DERIVATIVES){
+    if (what & DERIVATIVES) {
       evaluateShapeFunctionDerivativesWithDune<CoordinateType, ValueType,
                                                DuneBasis>(points, localDofIndex,
                                                           data.derivatives);

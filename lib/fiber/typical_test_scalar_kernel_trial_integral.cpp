@@ -299,13 +299,13 @@ void evaluateWithTensorQuadratureRuleImpl(
       tmpIntermediate.resize(matTrial.rows() * matKernel.rows());
 
       {
-          Eigen::Map<Matrix<ResultType>> matTmp(
-              &tmpIntermediate[0], trialDofCount * transDim, testPointCount);
-          matTmp = matTrial * matKernel.adjoint();
+        Eigen::Map<Matrix<ResultType>> matTmp(
+            &tmpIntermediate[0], trialDofCount * transDim, testPointCount);
+        matTmp = matTrial * matKernel.adjoint();
       }
 
       Eigen::Map<Matrix<ResultType>> shuffledMatTmp(
-              &tmpIntermediate[0], trialDofCount, transDim * testPointCount);
+          &tmpIntermediate[0], trialDofCount, transDim * testPointCount);
 
       // Result += Test * Tmp
       outOfPlaceMultiplyByWeightsAndConjugateTransposeDimAndDofDimensions(
@@ -322,13 +322,13 @@ void evaluateWithTensorQuadratureRuleImpl(
       tmpIntermediate.resize(matTest.rows() * matKernel.cols());
 
       {
-          Eigen::Map<Matrix<IntermediateType>> matTmp(
-              &tmpIntermediate[0], testDofCount * transDim, trialPointCount);
-          matTmp = matTest * matKernel;
+        Eigen::Map<Matrix<IntermediateType>> matTmp(
+            &tmpIntermediate[0], testDofCount * transDim, trialPointCount);
+        matTmp = matTest * matKernel;
       }
 
       Eigen::Map<Matrix<ResultType>> shuffledMatTmp(
-              &tmpIntermediate[0], testDofCount, transDim * trialPointCount);
+          &tmpIntermediate[0], testDofCount, transDim * trialPointCount);
 
       // Result += Tmp * Trial
       outOfPlaceMultiplyByWeightsAndConjugateTransposeDimAndDofDimensions(
@@ -549,7 +549,7 @@ void TypicalTestScalarKernelTrialIntegral<std::complex<CoordinateType>,
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(
     TypicalTestScalarKernelTrialIntegral);
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_KERNEL_AND_RESULT(
-        TypicalTestScalarKernelTrialIntegralBase);
+    TypicalTestScalarKernelTrialIntegralBase);
 
 } // namespace Fiber
 

@@ -39,7 +39,7 @@ public:
 
   void addDependencies(size_t &basisDeps, size_t &geomDeps) const {
     basisDeps |= VALUES;
-    geomDeps |= JACOBIAN_INVERSES_TRANSPOSED; 
+    geomDeps |= JACOBIAN_INVERSES_TRANSPOSED;
   }
 
   template <typename ValueType>
@@ -54,7 +54,6 @@ public:
           (geomData.jacobianInverseTransposed(rdim, 0) * basisData.values(0) +
            geomData.jacobianInverseTransposed(rdim, 1) * basisData.values(1));
   }
-
 };
 // Note: in C++11 we'll be able to make a "template typedef", or more precisely
 // a using declaration, instead of this spurious inheritance

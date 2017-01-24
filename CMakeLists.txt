@@ -5,6 +5,11 @@ project(Bempp CXX)
 file(STRINGS "VERSION" Bempp_VERSION LIMIT_COUNT 1)
 message("BEM++ Version ${Bempp_VERSION}")
 
+string(REPLACE "." ";" VERSION_LIST ${Bempp_VERSION})
+list(GET VERSION_LIST 0 BEMPP_VERSION_MAJOR)
+list(GET VERSION_LIST 1 BEMPP_VERSION_MINOR)
+list(GET VERSION_LIST 2 BEMPP_VERSION_PATCH)
+
 # Set a default build type if none was specified
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   message(STATUS "Setting build type to 'RelWithDebInfo' as none was specified.")
@@ -33,7 +38,8 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 # Download and installs the cookoff in the build tree
 # From here on we can use cookoff recipes
-include(LookUp-GreatCMakeCookOff)
+find_package(GreatCMakeCookOff NO_MODULE PATHS "${PROJECT_SOURCE_DIR}/external/GreatCMakeCookOff" QUIET)
+initialize_cookoff()
 include(utils)
 include(PythonInstall)
 
@@ -61,12 +67,6 @@ if(DOXYGEN_FOUND OR SPHINX_FOUND)
 endif()
 
 
-# Tests
-# if(WITH_TESTS)
-#    enable_testing()
-#    add_subdirectory(tests)
-# endif(WITH_TESTS)
-
 add_subdirectory(lib)
 add_subdirectory(cython)
 add_subdirectory(meshes)
@@ -81,7 +81,7 @@ configure_file("${CMAKE_CURRENT_SOURCE_DIR}/cmake/uninstall.in.cmake"
 )
 
 add_custom_target(uninstall
-    COMMAND ${CMAKE_COMMAND} 
+    COMMAND ${CMAKE_COMMAND}
         -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake
 )
 
@@ -108,23 +108,7 @@ file(WRITE "${PROJECT_BINARY_DIR}/post_install/CMakeLists.txt"
 add_subdirectory("${PROJECT_BINARY_DIR}/post_install"
     "${PROJECT_BINARY_DIR}/post_install-build")
 
-# Create directory with shortcuts for Python
-file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
-file(WRITE ${PROJECT_BINARY_DIR}/bin/bempp "${PROJECT_BINARY_DIR}/localpython.sh \"$@\" ")
-file(WRITE ${PROJECT_BINARY_DIR}/bin/ibempp "${PROJECT_BINARY_DIR}/localpython.sh -m IPython \"$@\" ")
-execute_process(COMMAND chmod +x ${PROJECT_BINARY_DIR}/bin/bempp)
-execute_process(COMMAND chmod +x ${PROJECT_BINARY_DIR}/bin/ibempp)
-
 add_custom_target(bempp DEPENDS libbempp cython-headers cython)
 
-# Prepare the debian build script
-configure_file(${PROJECT_SOURCE_DIR}/create_debian_package.sh.in ${PROJECT_BINARY_DIR}/create_debian_package.sh)
-
-add_custom_target(debian sh ${PROJECT_BINARY_DIR}/create_debian_package.sh DEPENDS bempp)
-
-# Prepare the tarball build script
-configure_file(${PROJECT_SOURCE_DIR}/create_tar.sh.in ${PROJECT_BINARY_DIR}/create_tar.sh)
-
-add_custom_target(tar sh ${PROJECT_BINARY_DIR}/create_tar.sh DEPENDS bempp)
-
+include(CPackConfig)
 

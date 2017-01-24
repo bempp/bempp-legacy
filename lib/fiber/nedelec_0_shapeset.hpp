@@ -45,7 +45,7 @@ public:
 
 private:
   typedef typename Nedelec0BasisTraits<elementVertexCount, CoordinateType,
-                                             ValueType>::DuneBasis DuneBasis;
+                                       ValueType>::DuneBasis DuneBasis;
 
 public:
   virtual int size() const {
@@ -61,31 +61,33 @@ public:
 
     BasisData<ValueType> temp;
     if (what & VALUES) {
-        raviartBasis.evaluate(what, points, localDofIndex, temp);
+      raviartBasis.evaluate(what, points, localDofIndex, temp);
 
-        data.values.set_size(temp.values.extent(0),temp.values.extent(1),temp.values.extent(2));
-        for (int i=0; i!=temp.values.extent(1); ++i)
-          for (int j=0; j!=temp.values.extent(2); ++j) {
-            data.values(0,i,j) = -temp.values(1,i,j);
-            data.values(1,i,j) = temp.values(0,i,j);
-          }
+      data.values.set_size(temp.values.extent(0), temp.values.extent(1),
+                           temp.values.extent(2));
+      for (int i = 0; i != temp.values.extent(1); ++i)
+        for (int j = 0; j != temp.values.extent(2); ++j) {
+          data.values(0, i, j) = -temp.values(1, i, j);
+          data.values(1, i, j) = temp.values(0, i, j);
+        }
     }
     if (what & DERIVATIVES) {
-        raviartBasis.evaluate(what, points, localDofIndex, temp);
+      raviartBasis.evaluate(what, points, localDofIndex, temp);
 
-        data.derivatives.set_size(temp.derivatives.extent(0),temp.derivatives.extent(1),temp.derivatives.extent(2),temp.derivatives.extent(3));
-        for (int i=0; i!=temp.derivatives.extent(1); ++i)
-          for (int j=0; j!=temp.derivatives.extent(2); ++j)
-            for (int k=0; k!=temp.derivatives.extent(3); ++k) {
-              data.derivatives(0,i,j,k) = -temp.derivatives(1,i,j,k);
-              data.derivatives(1,i,j,k) = temp.derivatives(0,i,j,k);
-            }
+      data.derivatives.set_size(
+          temp.derivatives.extent(0), temp.derivatives.extent(1),
+          temp.derivatives.extent(2), temp.derivatives.extent(3));
+      for (int i = 0; i != temp.derivatives.extent(1); ++i)
+        for (int j = 0; j != temp.derivatives.extent(2); ++j)
+          for (int k = 0; k != temp.derivatives.extent(3); ++k) {
+            data.derivatives(0, i, j, k) = -temp.derivatives(1, i, j, k);
+            data.derivatives(1, i, j, k) = temp.derivatives(0, i, j, k);
+          }
     }
-
   }
-private:
-    Fiber::RaviartThomas0Shapeset<3, ValueType> raviartBasis;
 
+private:
+  Fiber::RaviartThomas0Shapeset<3, ValueType> raviartBasis;
 };
 
 } // namespace Fiber

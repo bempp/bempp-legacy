@@ -2,7 +2,7 @@
 add_definitions(-DNPY_NO_DEPRECATED_API=NPY_1_7_API_VERSION)
 
 #Configure All Option files
-foreach(config_file opencl data_types blas_and_lapack python grid_manager cuda)
+foreach(config_file opencl data_types blas_and_lapack grid_manager cuda)
     set(filename common/config_${config_file}.hpp)
     configure_file(${filename}.in
         ${PROJECT_BINARY_DIR}/include/bempp/${filename}
@@ -35,12 +35,8 @@ set_target_properties(libbempp PROPERTIES PREFIX "")
 # Add targets that may not yet exist, if they are being built as lookups
 set(imported_targets
     # Dune targets
-    dunecommon dunegeometry dunegrid 
+    dunecommon dunegeometry dunegrid
 )
-if (WITH_ALUGRID)
-    list(APPEND imported_targets dunealugrid)
-endif()
-
 
 unset(library_files)
 foreach(library ${imported_targets})
@@ -70,12 +66,24 @@ else()
 endif()
 change_tbb_install_name(libbempp)
 
-target_link_libraries(libbempp ${PYTHON_LIBRARY})
 target_link_libraries(libbempp ${ZLIB_LIBRARIES})
 
 if (WITH_CUDA)
    include(FindCUDA)
 endif ()
+
+if (WITH_MPI)
+    target_link_libraries(libbempp ${MPI_LIBRARIES})
+
+    if(MPI_COMPILE_FLAGS)
+        target_compile_options(libbempp PUBLIC "${MPI_COMPILE_FLAGS}")
+    endif()
+
+    if(MPI_LINK_FLAGS)
+        set_target_properties(libbempp PROPERTIES
+                              LINK_FLAGS "${MPI_LINK_FLAGS}")
+    endif()
+endif()
 
 # Install library
 install(TARGETS libbempp
@@ -101,27 +109,27 @@ add_copy_directory(copy_headers
 add_dependencies(libbempp copy_headers)
 
 # Install headers
-set(incpath "${INCLUDE_INSTALL_PATH}/bempp")
-install(DIRECTORY "${PROJECT_SOURCE_DIR}/lib/"
-    DESTINATION "${incpath}"
-    FILES_MATCHING PATTERN "*.hpp"
-)
-install(FILES ${COMMON_HEADERS} DESTINATION "${incpath}/common")
-install(FILES ${CL_FILES} DESTINATION "${incpath}/fiber/CL")
-install(FILES ${CL_STRING_FILES} DESTINATION "${incpath}/fiber/CL")
+# set(incpath "${INCLUDE_INSTALL_PATH}/bempp")
+# install(DIRECTORY "${PROJECT_SOURCE_DIR}/lib/"
+#    DESTINATION "${incpath}"
+#    FILES_MATCHING PATTERN "*.hpp"
+#)
+#install(FILES ${COMMON_HEADERS} DESTINATION "${incpath}/common")
+#install(FILES ${CL_FILES} DESTINATION "${incpath}/fiber/CL")
+#install(FILES ${CL_STRING_FILES} DESTINATION "${incpath}/fiber/CL")
 
 # Add a target to generate API documentation with Doxygen
-if (DOXYGEN_FOUND)
-    configure_file("${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in"
-        "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile" @ONLY)
-    file(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/doc/cpp")
-    add_custom_target(cpp_documentation
-        ${DOXYGEN_EXECUTABLE} "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile"
-        WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/doc/cpp"
-        COMMENT "Generate API documentation with Doxygen" VERBATIM
-        DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile"
-    )
-    install(DIRECTORY "${PROJECT_BINARY_DIR}/doc/cpp"
-        DESTINATION ${DOC_INSTALL_PATH}/bempp/cpp)
-    add_dependencies(documentation cpp_documentation)
-endif(DOXYGEN_FOUND)
+#if (DOXYGEN_FOUND)
+#    configure_file("${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in"
+#        "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile" @ONLY)
+#    file(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/doc/cpp")
+#    add_custom_target(cpp_documentation
+#        ${DOXYGEN_EXECUTABLE} "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile"
+#        WORKING_DIRECTORY "${PROJECT_BINARY_DIR}/doc/cpp"
+#        COMMENT "Generate API documentation with Doxygen" VERBATIM
+#        DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/Doxyfile"
+#    )
+#    install(DIRECTORY "${PROJECT_BINARY_DIR}/doc/cpp"
+#        DESTINATION ${DOC_INSTALL_PATH}/bempp/cpp)
+#    add_dependencies(documentation cpp_documentation)
+#endif(DOXYGEN_FOUND)

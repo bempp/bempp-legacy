@@ -125,7 +125,6 @@ private:
   /** \endcond */
 };
 
-
 } // namespace Bempp
 
 #endif

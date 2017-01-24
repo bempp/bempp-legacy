@@ -95,7 +95,6 @@ public:
    */
   void switchToDenseMode();
 
-
   /** \brief Return current evaluation mode.
    *
    *  The evaluation mode can be changed by calling switchToDenseMode() or

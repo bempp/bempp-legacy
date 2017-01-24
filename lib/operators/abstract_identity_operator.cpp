@@ -34,8 +34,9 @@ namespace Bempp {
 // AbstractIdentityOperatorId
 
 template <typename BasisFunctionType, typename ResultType>
-AbstractIdentityOperatorId<BasisFunctionType, ResultType>::AbstractIdentityOperatorId(
-    const AbstractIdentityOperator<BasisFunctionType, ResultType> &op)
+AbstractIdentityOperatorId<BasisFunctionType, ResultType>::
+    AbstractIdentityOperatorId(
+        const AbstractIdentityOperator<BasisFunctionType, ResultType> &op)
     : m_domain(op.domain().get()), m_range(op.range().get()),
       m_dualToRange(op.dualToRange().get()) {}
 
@@ -68,11 +69,12 @@ bool AbstractIdentityOperatorId<BasisFunctionType, ResultType>::isEqual(
 // AbstractIdentityOperator
 
 template <typename BasisFunctionType, typename ResultType>
-AbstractIdentityOperator<BasisFunctionType, ResultType>::AbstractIdentityOperator(
-    const shared_ptr<const Space<BasisFunctionType>> &domain,
-    const shared_ptr<const Space<BasisFunctionType>> &range,
-    const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
-    const std::string &label, int symmetry)
+AbstractIdentityOperator<BasisFunctionType, ResultType>::
+    AbstractIdentityOperator(
+        const shared_ptr<const Space<BasisFunctionType>> &domain,
+        const shared_ptr<const Space<BasisFunctionType>> &range,
+        const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
+        const std::string &label, int symmetry)
     : Base(domain, range, dualToRange, label,
            (symmetry & AUTO_SYMMETRY
                 ? (domain == dualToRange
@@ -81,9 +83,8 @@ AbstractIdentityOperator<BasisFunctionType, ResultType>::AbstractIdentityOperato
                               : SYMMETRIC | HERMITIAN)
                        : NO_SYMMETRY)
                 : symmetry)),
-      m_id(
-          boost::make_shared<AbstractIdentityOperatorId<BasisFunctionType, ResultType>>(
-              *this)) {
+      m_id(boost::make_shared<
+           AbstractIdentityOperatorId<BasisFunctionType, ResultType>>(*this)) {
   typedef Fiber::SimpleTestTrialIntegrandFunctor<BasisFunctionType, ResultType>
       IntegrandFunctor;
   typedef Fiber::DefaultTestTrialIntegral<IntegrandFunctor> Integral;
@@ -91,7 +92,8 @@ AbstractIdentityOperator<BasisFunctionType, ResultType>::AbstractIdentityOperato
 }
 
 template <typename BasisFunctionType, typename ResultType>
-AbstractIdentityOperator<BasisFunctionType, ResultType>::~AbstractIdentityOperator() {}
+AbstractIdentityOperator<BasisFunctionType,
+                         ResultType>::~AbstractIdentityOperator() {}
 
 template <typename BasisFunctionType, typename ResultType>
 shared_ptr<const AbstractBoundaryOperatorId>
@@ -102,20 +104,22 @@ AbstractIdentityOperator<BasisFunctionType, ResultType>::id() const {
 template <typename BasisFunctionType, typename ResultType>
 const typename AbstractIdentityOperator<
     BasisFunctionType, ResultType>::CollectionOfShapesetTransformations &
-AbstractIdentityOperator<BasisFunctionType, ResultType>::testTransformations() const {
+AbstractIdentityOperator<BasisFunctionType, ResultType>::testTransformations()
+    const {
   return this->dualToRange()->basisFunctionValue();
 }
 
 template <typename BasisFunctionType, typename ResultType>
 const typename AbstractIdentityOperator<
     BasisFunctionType, ResultType>::CollectionOfShapesetTransformations &
-AbstractIdentityOperator<BasisFunctionType, ResultType>::trialTransformations() const {
+AbstractIdentityOperator<BasisFunctionType, ResultType>::trialTransformations()
+    const {
   return this->domain()->basisFunctionValue();
 }
 
 template <typename BasisFunctionType, typename ResultType>
 const typename AbstractIdentityOperator<BasisFunctionType,
-                                ResultType>::TestTrialIntegral &
+                                        ResultType>::TestTrialIntegral &
 AbstractIdentityOperator<BasisFunctionType, ResultType>::integral() const {
   return *m_integral;
 }

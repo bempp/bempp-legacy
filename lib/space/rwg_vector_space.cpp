@@ -49,15 +49,15 @@ namespace {
 
 template <typename BasisFunctionType>
 class RWGSpaceFactory : public SpaceFactory<BasisFunctionType> {
-    public:
-       shared_ptr<Space<BasisFunctionType>> create(const shared_ptr<const Grid> &grid,
-                               const GridSegment &segment) const override{
-           
-           return shared_ptr<Space<BasisFunctionType>>(new RWGVectorSpace<BasisFunctionType>(grid, segment));
-       }
-           
-};
+public:
+  shared_ptr<Space<BasisFunctionType>>
+  create(const shared_ptr<const Grid> &grid,
+         const GridSegment &segment) const override {
 
+    return shared_ptr<Space<BasisFunctionType>>(
+        new RWGVectorSpace<BasisFunctionType>(grid, segment));
+  }
+};
 }
 
 /** \cond PRIVATE */
@@ -154,8 +154,7 @@ int RWGVectorSpace<BasisFunctionType>::codomainDimension() const {
 
 template <typename BasisFunctionType>
 const Fiber::Shapeset<BasisFunctionType> &
-RWGVectorSpace<BasisFunctionType>::shapeset(
-    const Entity<0> &element) const {
+RWGVectorSpace<BasisFunctionType>::shapeset(const Entity<0> &element) const {
   switch (elementVariant(element)) {
   case 3:
     return m_triangleShapeset;
@@ -297,9 +296,9 @@ void RWGVectorSpace<BasisFunctionType>::assignDofsImpl() {
     auto edgeIt = element.subEntityIterator<1>();
     std::vector<BasisFunctionType> edgeVolumes;
     edgeVolumes.reserve(3);
-    while (!edgeIt->finished()){
-        edgeVolumes.push_back(edgeIt->entity().geometry().volume());
-        edgeIt->next();
+    while (!edgeIt->finished()) {
+      edgeVolumes.push_back(edgeIt->entity().geometry().volume());
+      edgeIt->next();
     }
 
     for (int i = 0; i < edgeCount; ++i) {
@@ -579,7 +578,8 @@ void RWGVectorSpace<BasisFunctionType>::getGlobalDofNormals(
       normal.y += elementNormals(1, m_global2localDofs[g][l].entityIndex);
       normal.z += elementNormals(2, m_global2localDofs[g][l].entityIndex);
     }
-    auto len = std::sqrt(normal.x * normal.x + normal.y * normal.y + normal.z * normal.z);
+    auto len = std::sqrt(normal.x * normal.x + normal.y * normal.y +
+                         normal.z * normal.z);
     normal.x /= len;
     normal.y /= len;
     normal.z /= len;
@@ -643,8 +643,8 @@ template <typename BasisFunctionType>
 shared_ptr<Space<BasisFunctionType>>
 adaptiveRWGVectorSpace(const shared_ptr<const Grid> &grid) {
 
-    shared_ptr<SpaceFactory<BasisFunctionType>> factory(
-            new RWGSpaceFactory<BasisFunctionType>());
+  shared_ptr<SpaceFactory<BasisFunctionType>> factory(
+      new RWGSpaceFactory<BasisFunctionType>());
   return shared_ptr<Space<BasisFunctionType>>(
       new AdaptiveSpace<BasisFunctionType>(factory, grid));
 }
@@ -652,35 +652,33 @@ adaptiveRWGVectorSpace(const shared_ptr<const Grid> &grid) {
 template <typename BasisFunctionType>
 shared_ptr<Space<BasisFunctionType>>
 adaptiveRWGVectorSpace(const shared_ptr<const Grid> &grid,
-                                     const std::vector<int> &domains,
-                                     bool open) {
+                       const std::vector<int> &domains, bool open) {
 
-    shared_ptr<SpaceFactory<BasisFunctionType>> factory(
-            new RWGSpaceFactory<BasisFunctionType>());
+  shared_ptr<SpaceFactory<BasisFunctionType>> factory(
+      new RWGSpaceFactory<BasisFunctionType>());
   return shared_ptr<Space<BasisFunctionType>>(
       new AdaptiveSpace<BasisFunctionType>(factory, grid, domains, open));
 }
 
 template <typename BasisFunctionType>
 shared_ptr<Space<BasisFunctionType>>
-adaptiveRWGVectorSpace(const shared_ptr<const Grid> &grid,
-                                     int domain, bool open) {
+adaptiveRWGVectorSpace(const shared_ptr<const Grid> &grid, int domain,
+                       bool open) {
 
-    shared_ptr<SpaceFactory<BasisFunctionType>> factory(
-            new RWGSpaceFactory<BasisFunctionType>());
+  shared_ptr<SpaceFactory<BasisFunctionType>> factory(
+      new RWGSpaceFactory<BasisFunctionType>());
   return shared_ptr<Space<BasisFunctionType>>(
-      new AdaptiveSpace<BasisFunctionType>(factory, grid, std::vector<int>({domain}), open));
+      new AdaptiveSpace<BasisFunctionType>(factory, grid,
+                                           std::vector<int>({domain}), open));
 }
 
 #define INSTANTIATE_FREE_FUNCTIONS(BASIS)                                      \
-  template shared_ptr<Space<BASIS>>                                            \
-  adaptiveRWGVectorSpace<BASIS>(const shared_ptr<const Grid> &); \
-  template shared_ptr<Space<BASIS>>                                            \
-  adaptiveRWGVectorSpace<BASIS>(const shared_ptr<const Grid> &,  \
-                                              const std::vector<int> &, bool); \
-  template shared_ptr<Space<BASIS>>                                            \
-  adaptiveRWGVectorSpace<BASIS>(const shared_ptr<const Grid> &,  \
-                                              int, bool)
+  template shared_ptr<Space<BASIS>> adaptiveRWGVectorSpace<BASIS>(             \
+      const shared_ptr<const Grid> &);                                         \
+  template shared_ptr<Space<BASIS>> adaptiveRWGVectorSpace<BASIS>(             \
+      const shared_ptr<const Grid> &, const std::vector<int> &, bool);         \
+  template shared_ptr<Space<BASIS>> adaptiveRWGVectorSpace<BASIS>(             \
+      const shared_ptr<const Grid> &, int, bool)
 
 FIBER_ITERATE_OVER_BASIS_TYPES(INSTANTIATE_FREE_FUNCTIONS);
 

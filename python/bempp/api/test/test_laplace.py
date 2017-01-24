@@ -1,10 +1,16 @@
-import unittest
+"""Various validation tests for Laplace problems."""
 from unittest import TestCase
 import bempp.api
 import numpy as np
 
+#pylint: disable=invalid-name
+#pylint: disable=unused-argument
+#pylint: disable=missing-docstring
+#pylint: disable=too-many-locals
+
 
 class TestLaplace(TestCase):
+    """Laplace test cases."""
 
     def test_solve_low_order_laplace_dirichlet_problem_on_sphere(self):
         """Solve an exterior Laplace problem on the unit sphere."""
@@ -31,19 +37,21 @@ class TestLaplace(TestCase):
 
         rhs = (-.5 * ident + dlp) * grid_fun
 
-        sol_grid_fun, info = bempp.api.linalg.cg(slp, rhs)
+        sol_grid_fun, _ = bempp.api.linalg.cg(slp, rhs)
 
         rel_error = sol_grid_fun.relative_error(sol_fun)
         self.assertTrue(
-            rel_error < 1E-2, msg="Actual error: {0}. Expected error: 1E-2".format(rel_error))
+            rel_error < 1E-2,
+            msg="Actual error: {0}. Expected error: 1E-2".format(rel_error))
 
     def test_solve_high_order_laplace_dirichlet_problem_on_sphere(self):
-        """Solve an exterior Laplace Dirichlet problem on the unit sphere using quadratic basis functions."""
+        """Exterior Dirichlet problem with quadratic basis functions."""
 
         grid = bempp.api.shapes.regular_sphere(4)
         space = bempp.api.function_space(grid, "P", 2)
 
         parameters = bempp.api.common.global_parameters()
+        parameters.hmat.eps = 1E-5
         parameters.quadrature.medium.double_order = 4
         parameters.quadrature.far.double_order = 4
 
@@ -66,11 +74,12 @@ class TestLaplace(TestCase):
 
         rhs = (-.5 * ident + dlp) * grid_fun
 
-        sol_grid_fun, info = bempp.api.linalg.cg(slp, rhs)
+        sol_grid_fun, _ = bempp.api.linalg.cg(slp, rhs)
 
         rel_error = sol_grid_fun.relative_error(sol_fun)
         self.assertTrue(
-            rel_error < 1E-2, msg="Actual error: {0}. Expected error: 1E-2".format(rel_error))
+            rel_error < 1E-2,
+            msg="Actual error: {0}. Expected error: 1E-2".format(rel_error))
 
     def test_null_space_of_hypersingular_operator(self):
         """Test the null space of a hypersingular operator."""
@@ -90,10 +99,11 @@ class TestLaplace(TestCase):
 
         rel_error = res.l2_norm() / grid_fun.l2_norm()
         self.assertTrue(
-            rel_error < 3E-3, msg="Actual error: {0}. Expected error: 3E-3".format(rel_error))
+            rel_error < 3E-3,
+            msg="Actual error: {0}. Expected error: 3E-3".format(rel_error))
 
-    def test_mixed_laplace_dirichlet_problem(self):
-        """Solve a mixed Neumann / Dirichlet Laplace problem with higher order basis functions."""
+    def test_mixed_laplace_problem(self):
+        """Mixed Laplace problem with higher order basis functions."""
 
         grid = bempp.api.shapes.cube()
         dirichlet_segments = [1, 3]
@@ -107,64 +117,77 @@ class TestLaplace(TestCase):
         order_neumann = 1
         order_dirichlet = 2
 
-        global_neumann_space = bempp.api.function_space(
-            grid, "DP", order_neumann)
         global_dirichlet_space = bempp.api.function_space(
             grid, "P", order_dirichlet)
 
-        neumann_space_dirichlet_segment = bempp.api.function_space(grid, "DP", order_neumann,
-                                                                   domains=dirichlet_segments, closed=True,
-                                                                   element_on_segment=True)
-        neumann_space_neumann_segment = bempp.api.function_space(grid, "DP", order_neumann,
-                                                                 domains=neumann_segments, closed=False,
-                                                                 element_on_segment=True,
-                                                                 reference_point_on_segment=False)
-        dirichlet_space_dirichlet_segment = bempp.api.function_space(grid, "P", order_dirichlet,
-                                                                     domains=dirichlet_segments, closed=True)
-        dirichlet_space_neumann_segment = bempp.api.function_space(grid, "P", order_dirichlet,
-                                                                   domains=neumann_segments, closed=False)
-        dual_dirichlet_space = bempp.api.function_space(grid, "P", order_dirichlet, domains=dirichlet_segments,
-                                                        closed=True, strictly_on_segment=True)
-        slp_DD = bempp.api.operators.boundary.laplace.single_layer(neumann_space_dirichlet_segment,
-                                                                   dirichlet_space_dirichlet_segment,
-                                                                   neumann_space_dirichlet_segment,
-                                                                   parameters=parameters)
-        dlp_DN = bempp.api.operators.boundary.laplace.double_layer(dirichlet_space_neumann_segment,
-                                                                   dirichlet_space_dirichlet_segment,
-                                                                   neumann_space_dirichlet_segment,
-                                                                   parameters=parameters)
-        adlp_ND = bempp.api.operators.boundary.laplace.adjoint_double_layer(neumann_space_dirichlet_segment,
-                                                                            neumann_space_neumann_segment,
-                                                                            dirichlet_space_neumann_segment,
-                                                                            parameters=parameters)
-        hyp_NN = bempp.api.operators.boundary.laplace.hypersingular(dirichlet_space_neumann_segment,
-                                                                    neumann_space_neumann_segment,
-                                                                    dirichlet_space_neumann_segment,
-                                                                    parameters=parameters)
-        slp_DN = bempp.api.operators.boundary.laplace.single_layer(neumann_space_neumann_segment,
-                                                                   dirichlet_space_dirichlet_segment,
-                                                                   neumann_space_dirichlet_segment,
-                                                                   parameters=parameters)
-        dlp_DD = bempp.api.operators.boundary.laplace.double_layer(dirichlet_space_dirichlet_segment,
-                                                                   dirichlet_space_dirichlet_segment,
-                                                                   neumann_space_dirichlet_segment,
-                                                                   parameters=parameters)
-        id_DD = bempp.api.operators.boundary.sparse.identity(dirichlet_space_dirichlet_segment,
-                                                             dirichlet_space_dirichlet_segment,
-                                                             neumann_space_dirichlet_segment,
-                                                             parameters=parameters)
-        adlp_NN = bempp.api.operators.boundary.laplace.adjoint_double_layer(neumann_space_neumann_segment,
-                                                                            neumann_space_neumann_segment,
-                                                                            dirichlet_space_neumann_segment,
-                                                                            parameters=parameters)
-        id_NN = bempp.api.operators.boundary.sparse.identity(neumann_space_neumann_segment,
-                                                             neumann_space_neumann_segment,
-                                                             dirichlet_space_neumann_segment,
-                                                             parameters=parameters)
-        hyp_ND = bempp.api.operators.boundary.laplace.hypersingular(dirichlet_space_dirichlet_segment,
-                                                                    neumann_space_neumann_segment,
-                                                                    dirichlet_space_neumann_segment,
-                                                                    parameters=parameters)
+        neumann_space_dirichlet_segment = bempp.api.function_space(
+            grid, "DP", order_neumann,
+            domains=dirichlet_segments, closed=True,
+            element_on_segment=True)
+        neumann_space_neumann_segment = bempp.api.function_space(
+            grid, "DP", order_neumann,
+            domains=neumann_segments, closed=False,
+            element_on_segment=True,
+            reference_point_on_segment=False)
+        dirichlet_space_dirichlet_segment = bempp.api.function_space(
+            grid, "P", order_dirichlet,
+            domains=dirichlet_segments, closed=True)
+        dirichlet_space_neumann_segment = bempp.api.function_space(
+            grid, "P", order_dirichlet,
+            domains=neumann_segments, closed=False)
+        dual_dirichlet_space = bempp.api.function_space(
+            grid, "P", order_dirichlet, domains=dirichlet_segments,
+            closed=True, strictly_on_segment=True)
+        slp_DD = bempp.api.operators.boundary.laplace.single_layer(
+            neumann_space_dirichlet_segment,
+            dirichlet_space_dirichlet_segment,
+            neumann_space_dirichlet_segment,
+            parameters=parameters)
+        dlp_DN = bempp.api.operators.boundary.laplace.double_layer(
+            dirichlet_space_neumann_segment,
+            dirichlet_space_dirichlet_segment,
+            neumann_space_dirichlet_segment,
+            parameters=parameters)
+        adlp_ND = bempp.api.operators.boundary.laplace.adjoint_double_layer(
+            neumann_space_dirichlet_segment,
+            neumann_space_neumann_segment,
+            dirichlet_space_neumann_segment,
+            parameters=parameters)
+        hyp_NN = bempp.api.operators.boundary.laplace.hypersingular(
+            dirichlet_space_neumann_segment,
+            neumann_space_neumann_segment,
+            dirichlet_space_neumann_segment,
+            parameters=parameters)
+        slp_DN = bempp.api.operators.boundary.laplace.single_layer(
+            neumann_space_neumann_segment,
+            dirichlet_space_dirichlet_segment,
+            neumann_space_dirichlet_segment,
+            parameters=parameters)
+        dlp_DD = bempp.api.operators.boundary.laplace.double_layer(
+            dirichlet_space_dirichlet_segment,
+            dirichlet_space_dirichlet_segment,
+            neumann_space_dirichlet_segment,
+            parameters=parameters)
+        id_DD = bempp.api.operators.boundary.sparse.identity(
+            dirichlet_space_dirichlet_segment,
+            dirichlet_space_dirichlet_segment,
+            neumann_space_dirichlet_segment,
+            parameters=parameters)
+        adlp_NN = bempp.api.operators.boundary.laplace.adjoint_double_layer(
+            neumann_space_neumann_segment,
+            neumann_space_neumann_segment,
+            dirichlet_space_neumann_segment,
+            parameters=parameters)
+        id_NN = bempp.api.operators.boundary.sparse.identity(
+            neumann_space_neumann_segment,
+            neumann_space_neumann_segment,
+            dirichlet_space_neumann_segment,
+            parameters=parameters)
+        hyp_ND = bempp.api.operators.boundary.laplace.hypersingular(
+            dirichlet_space_dirichlet_segment,
+            neumann_space_neumann_segment,
+            dirichlet_space_neumann_segment,
+            parameters=parameters)
         blocked = bempp.api.BlockedOperator(2, 2)
         blocked[0, 0] = slp_DD
         blocked[0, 1] = -dlp_DN
@@ -182,13 +205,15 @@ class TestLaplace(TestCase):
                              np.exp(x[0]) * np.cos(x[1]), 0])
             res[0] = np.dot(grad, n)
 
-        dirichlet_grid_fun = bempp.api.GridFunction(dirichlet_space_dirichlet_segment,
-                                                    fun=dirichlet_data,
-                                                    dual_space=dual_dirichlet_space)
+        dirichlet_grid_fun = bempp.api.GridFunction(
+            dirichlet_space_dirichlet_segment,
+            fun=dirichlet_data,
+            dual_space=dual_dirichlet_space)
 
-        neumann_grid_fun = bempp.api.GridFunction(neumann_space_neumann_segment,
-                                                  fun=neumann_data,
-                                                  dual_space=dirichlet_space_neumann_segment)
+        neumann_grid_fun = bempp.api.GridFunction(
+            neumann_space_neumann_segment,
+            fun=neumann_data,
+            dual_space=dirichlet_space_neumann_segment)
 
         rhs_fun1 = (.5 * id_DD + dlp_DD) * dirichlet_grid_fun - \
             slp_DN * neumann_grid_fun
@@ -200,31 +225,35 @@ class TestLaplace(TestCase):
                          rhs_fun2.projections(dirichlet_space_neumann_segment)])
 
         from scipy.sparse.linalg import gmres
-        x, info = gmres(lhs, rhs)
+        x, _ = gmres(lhs, rhs)
 
         nx0 = neumann_space_dirichlet_segment.global_dof_count
-        neumann_solution = bempp.api.GridFunction(
-            neumann_space_dirichlet_segment, coefficients=x[:nx0])
         dirichlet_solution = bempp.api.GridFunction(
             dirichlet_space_neumann_segment, coefficients=x[nx0:])
 
-        dirichlet_imbedding_dirichlet_segment = bempp.api.operators.boundary.sparse.identity(dirichlet_space_dirichlet_segment,
-                                                                                             global_dirichlet_space,
-                                                                                             global_dirichlet_space)
+        dirichlet_imbedding_dirichlet_segment = \
+            bempp.api.operators.boundary.sparse.identity(
+                dirichlet_space_dirichlet_segment,
+                global_dirichlet_space,
+                global_dirichlet_space)
 
-        dirichlet_imbedding_neumann_segment = bempp.api.operators.boundary.sparse.identity(dirichlet_space_neumann_segment,
-                                                                                           global_dirichlet_space,
-                                                                                           global_dirichlet_space)
+        dirichlet_imbedding_neumann_segment = \
+            bempp.api.operators.boundary.sparse.identity(
+                dirichlet_space_neumann_segment,
+                global_dirichlet_space,
+                global_dirichlet_space)
 
-        dirichlet = (dirichlet_imbedding_dirichlet_segment * dirichlet_grid_fun +
+        dirichlet = (dirichlet_imbedding_dirichlet_segment *
+                     dirichlet_grid_fun +
                      dirichlet_imbedding_neumann_segment * dirichlet_solution)
 
         rel_error = dirichlet.relative_error(dirichlet_data_fun)
         self.assertTrue(
-            rel_error < 2E-3, msg="Actual error: {0}. Expected error: 2E-3".format(rel_error))
+            rel_error < 2E-3,
+            msg="Actual error: {0}. Expected error: 2E-3".format(rel_error))
 
     def test_operator_preconditioned_dirichlet_solve_dual(self):
-        """Solve an operator preconditioned Laplace Dirichlet problem with dual spaces."""
+        """Operator preconditioned Dirichlet problem with dual spaces."""
 
         grid = bempp.api.shapes.regular_sphere(4)
 
@@ -234,7 +263,10 @@ class TestLaplace(TestCase):
         def fun(x, n, domain_index, res):
             res[0] = 1
 
-        slp, hyp = bempp.api.operators.boundary.laplace.single_layer_and_hypersingular_pair(
+        from bempp.api.operators.boundary.laplace import \
+            single_layer_and_hypersingular_pair
+
+        slp, hyp = single_layer_and_hypersingular_pair(
             grid, spaces='dual', stabilization_factor=1)
 
         const_space = slp.domain
@@ -251,17 +283,20 @@ class TestLaplace(TestCase):
 
         rhs = hyp * (-.5 * ident + dlp) * grid_fun
 
-        sol_grid_fun, info, res = bempp.api.linalg.cg(
+        sol_grid_fun, _, res = bempp.api.linalg.cg(
             hyp * slp, rhs, return_residuals=True)
 
         rel_error = sol_grid_fun.relative_error(sol_fun)
         self.assertTrue(
-            rel_error < 1E-2, msg="Actual error: {0}. Expected error: 1E-2".format(rel_error))
-        self.assertTrue(len(
-            res) < 9, msg="Needed {0} iterations to solve system. Expected not more than 8 iterations.".format(len(res)))
+            rel_error < 1E-2,
+            msg="Actual error: {0}. Expected error: 1E-2".format(rel_error))
+        self.assertTrue(
+            len(res) < 9,
+            msg="Needed {0} iterations to solve system. ".format(len(res)) +
+            "Expected not more than 8 iterations.")
 
     def test_operator_preconditioned_dirichlet_solve_lin(self):
-        """Solve an operator preconditioned Laplace Dirichlet problem with linear spaces."""
+        """Operator preconditioned Dirichlet problem with linear spaces."""
 
         grid = bempp.api.shapes.regular_sphere(4)
 
@@ -271,7 +306,10 @@ class TestLaplace(TestCase):
         def fun(x, n, domain_index, res):
             res[0] = 1
 
-        slp, hyp = bempp.api.operators.boundary.laplace.single_layer_and_hypersingular_pair(
+        from bempp.api.operators.boundary.laplace import \
+            single_layer_and_hypersingular_pair
+
+        slp, hyp = single_layer_and_hypersingular_pair(
             grid, spaces='linear', stabilization_factor=1)
 
         const_space = slp.domain
@@ -288,14 +326,17 @@ class TestLaplace(TestCase):
 
         rhs = hyp * (-.5 * ident + dlp) * grid_fun
 
-        sol_grid_fun, info, res = bempp.api.linalg.cg(
+        sol_grid_fun, _, res = bempp.api.linalg.cg(
             hyp * slp, rhs, return_residuals=True)
 
         rel_error = sol_grid_fun.relative_error(sol_fun)
         self.assertTrue(
-            rel_error < 1E-2, msg="Actual error: {0}. Expected error: 1E-2".format(rel_error))
-        self.assertTrue(len(
-            res) < 10, msg="Needed {0} iterations to solve system. Expected not more than 9 iterations.".format(len(res)))
+            rel_error < 1E-2,
+            msg="Actual error: {0}. Expected error: 1E-2".format(rel_error))
+        self.assertTrue(
+            len(res) < 10,
+            msg="Needed {0} iterations to solve system.".format(len(res)) +
+            "Expected not more than 9 iterations.")
 
     def test_laplace_potentials(self):
         """Test the Laplace potential operators."""
@@ -318,17 +359,20 @@ class TestLaplace(TestCase):
         dirichlet_grid_fun = bempp.api.GridFunction(space, fun=dirichlet_data)
         neumann_grid_fun = bempp.api.GridFunction(space, fun=neumann_data)
 
+        #pylint: disable=no-member
         point = np.array([[0, 0.2, 0.3]]).T
 
         sl = bempp.api.operators.potential.laplace.single_layer(space, point)
         dl = bempp.api.operators.potential.laplace.double_layer(space, point)
 
+        #pylint: disable=unsubscriptable-object
         actual = (sl * neumann_grid_fun - dl * dirichlet_grid_fun)[0, 0]
         expected = dirichlet_fun(point[:, 0])
 
         rel_error = np.abs(actual - expected) / np.abs(expected)
         self.assertTrue(
-            rel_error < 1E-6, msg="Actual error: {0}. Expected error: 1E-2".format(rel_error))
+            rel_error < 1E-6,
+            msg="Actual error: {0}. Expected error: 1E-6".format(rel_error))
 
 
 if __name__ == "__main__":

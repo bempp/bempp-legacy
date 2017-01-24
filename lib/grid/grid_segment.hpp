@@ -56,8 +56,8 @@ public:
   static GridSegment openDomain(const Grid &grid, int domain, int level = 0);
 
   /** \brief Overload to specify multiple domains. */
-  static GridSegment openDomain(const Grid &grid, 
-          const std::vector<int>& domains, int level = 0);
+  static GridSegment openDomain(const Grid &grid,
+                                const std::vector<int> &domains, int level = 0);
 
   /** \brief Return a GridSegment representing a closed domain of a grid.
    *
@@ -67,8 +67,9 @@ public:
   static GridSegment closedDomain(const Grid &grid, int domain, int level = 0);
 
   /** \brief Overload to specify multiple domains. */
-  static GridSegment closedDomain(const Grid &grid, 
-          const std::vector<int>& domains, int level = 0);
+  static GridSegment closedDomain(const Grid &grid,
+                                  const std::vector<int> &domains,
+                                  int level = 0);
 
   /** \brief Constructor.
    *
@@ -155,36 +156,32 @@ GridSegment gridSegmentWithPositiveX(const Grid &grid, int level = 0);
 
 class AdaptiveGridSegmentFactory {
 
-/** \brief Factory object that allows to create new segments once
- * a grid has been refined. */
+  /** \brief Factory object that allows to create new segments once
+   * a grid has been refined. */
 
 public:
+  /** \brief Initialize using the whole grid. */
+  AdaptiveGridSegmentFactory(const shared_ptr<const Grid> &grid);
 
-    /** \brief Initialize using the whole grid. */
-    AdaptiveGridSegmentFactory(const shared_ptr<const Grid>& grid);
+  /** \brief Initialize with a single subdomain given by
+   * \p domain, and specifying whether it is closed. */
+  AdaptiveGridSegmentFactory(const shared_ptr<const Grid> &grid, int domain,
+                             bool closed);
 
-    /** \brief Initialize with a single subdomain given by
-     * \p domain, and specifying whether it is closed. */
-    AdaptiveGridSegmentFactory(const shared_ptr<const Grid>& grid, int domain,
-            bool closed);
+  /** \brief As above but with a list of subdomains. */
+  AdaptiveGridSegmentFactory(const shared_ptr<const Grid> &grid,
+                             const std::vector<int> &domains, bool closed);
 
-    /** \brief As above but with a list of subdomains. */
-    AdaptiveGridSegmentFactory(const shared_ptr<const Grid>& grid, 
-            const std::vector<int>& domains, bool closed);
-
-    /** Return a new GridSegment based on the leafView of the
-     * Grid Object. */
-    GridSegment update() const;
+  /** Return a new GridSegment based on the leafView of the
+   * Grid Object. */
+  GridSegment update() const;
 
 private:
-
-    
-    const shared_ptr<const Grid> m_grid;
-    bool m_whole_grid;
-    const std::vector<int> m_domains;
-    bool m_closed;
+  const shared_ptr<const Grid> m_grid;
+  bool m_whole_grid;
+  const std::vector<int> m_domains;
+  bool m_closed;
 };
-
 
 } // namespace Bempp
 

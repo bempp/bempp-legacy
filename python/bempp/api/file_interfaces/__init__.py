@@ -1,3 +1,6 @@
-__all__ = ['FileReader', 'import_grid', 'export', 'three_planes_view']
+"""Classes and functions for import and export."""
 
-from .general_interface import FileReader, import_grid, export, three_planes_view
+from bempp.api.file_interfaces.general_interface import \
+    FileReader, import_grid, export, three_planes_view
+
+__all__ = ['FileReader', 'import_grid', 'export', 'three_planes_view']

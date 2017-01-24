@@ -37,26 +37,21 @@ namespace Bempp {
  *
  *  This base class provides a unified interface for different space
  *  constructors to be called inside the adaptive space class. */
-template <typename BasisFunctionType_>
-class SpaceFactory {
-    public:
-
-       virtual shared_ptr<Space<BasisFunctionType_>> create(const shared_ptr<const Grid> &grid,
-                               const GridSegment &segment) const = 0;
-
+template <typename BasisFunctionType_> class SpaceFactory {
+public:
+  virtual shared_ptr<Space<BasisFunctionType_>>
+  create(const shared_ptr<const Grid> &grid,
+         const GridSegment &segment) const = 0;
 };
-
-
 
 /** \ingroup space
  *  \brief Adaptive Function space interface.
  *
  *  This class provides a wrapper to implement a hierarchy of
  *  adaptive function spaces. */
-template <typename BasisFunctionType_> 
+template <typename BasisFunctionType_>
 class AdaptiveSpace : public Space<BasisFunctionType_> {
 public:
-
   typedef BasisFunctionType_ BasisFunctionType;
 
   typedef
@@ -71,22 +66,25 @@ public:
   typedef Fiber::CollectionOfBasisTransformations<CoordinateType>
       CollectionOfBasisTransformations;
 
-  AdaptiveSpace(const shared_ptr<const SpaceFactory<BasisFunctionType_>>& factory, const shared_ptr<const Grid>& grid, 
-          const std::vector<int>& domains, bool closed);
+  AdaptiveSpace(
+      const shared_ptr<const SpaceFactory<BasisFunctionType_>> &factory,
+      const shared_ptr<const Grid> &grid, const std::vector<int> &domains,
+      bool closed);
 
-  AdaptiveSpace(const shared_ptr<const SpaceFactory<BasisFunctionType_>>& factory, const shared_ptr<const Grid>& grid);
+  AdaptiveSpace(
+      const shared_ptr<const SpaceFactory<BasisFunctionType_>> &factory,
+      const shared_ptr<const Grid> &grid);
 
-  AdaptiveSpace(const AdaptiveSpace& other);
+  AdaptiveSpace(const AdaptiveSpace &other);
 
   ~AdaptiveSpace() override;
 
   shared_ptr<const Space<BasisFunctionType>> discontinuousSpace(
       const shared_ptr<const Space<BasisFunctionType>> &self) const override;
 
-  const GridView & gridView() const override;
+  const GridView &gridView() const override;
 
   shared_ptr<const Grid> grid() const override;
-
 
   bool isDiscontinuous() const override;
 
@@ -97,19 +95,19 @@ public:
   int codomainDimension() const override;
 
   BEMPP_DEPRECATED const Fiber::Shapeset<BasisFunctionType> &
-      shapeset(const Entity<0> &element) const override;
+  shapeset(const Entity<0> &element) const override;
 
   BEMPP_DEPRECATED const CollectionOfBasisTransformations &
-      shapeFunctionValue() const override;
+  shapeFunctionValue() const override;
 
   shared_ptr<const Space<BasisFunctionType>> barycentricSpace(
       const shared_ptr<const Space<BasisFunctionType>> &self) const override;
 
-
-  const CollectionOfShapesetTransformations & basisFunctionValue() const override;
+  const CollectionOfShapesetTransformations &
+  basisFunctionValue() const override;
 
   void setElementVariant(const Entity<0> &element,
-                                 ElementVariant variant) override;
+                         ElementVariant variant) override;
 
   ElementVariant elementVariant(const Entity<0> &element) const override;
 
@@ -118,40 +116,39 @@ public:
   size_t globalDofCount() const override;
 
   void getGlobalDofs(const Entity<0> &element,
-          std::vector<GlobalDofIndex> &dofs) const override;
+                     std::vector<GlobalDofIndex> &dofs) const override;
 
   void
-  getGlobalDofs(const Entity<0> &element, std::vector<GlobalDofIndex> &dofs, std::vector<BasisFunctionType> &localDofWeights) const override;
+  getGlobalDofs(const Entity<0> &element, std::vector<GlobalDofIndex> &dofs,
+                std::vector<BasisFunctionType> &localDofWeights) const override;
 
   bool gridIsIdentical(const Space<BasisFunctionType> &other) const override;
 
   SpaceIdentifier spaceIdentifier() const override;
-  
-  bool
-  spaceIsCompatible(const Space<BasisFunctionType> &other) const override;
 
-  void
-  global2localDofs(const std::vector<GlobalDofIndex> &globalDofs,
-                   std::vector<std::vector<LocalDof>> &localDofs) const override;
+  bool spaceIsCompatible(const Space<BasisFunctionType> &other) const override;
 
   void global2localDofs(
       const std::vector<GlobalDofIndex> &globalDofs,
-      std::vector<std::vector<LocalDof>> &localDofs,
-      std::vector<std::vector<BasisFunctionType>> &localDofWeights) const override;
+      std::vector<std::vector<LocalDof>> &localDofs) const override;
 
-  void
-  flatLocal2localDofs(const std::vector<FlatLocalDofIndex> &flatLocalDofs,
-                      std::vector<LocalDof> &localDofs) const override;
+  void global2localDofs(const std::vector<GlobalDofIndex> &globalDofs,
+                        std::vector<std::vector<LocalDof>> &localDofs,
+                        std::vector<std::vector<BasisFunctionType>>
+                            &localDofWeights) const override;
 
-  void
-  getGlobalDofInterpolationPoints(Matrix<CoordinateType> &points) const override;
+  void flatLocal2localDofs(const std::vector<FlatLocalDofIndex> &flatLocalDofs,
+                           std::vector<LocalDof> &localDofs) const override;
+
+  void getGlobalDofInterpolationPoints(
+      Matrix<CoordinateType> &points) const override;
 
   void getNormalsAtGlobalDofInterpolationPoints(
       Matrix<CoordinateType> &normals) const override;
 
   void getGlobalDofInterpolationDirections(
       Matrix<CoordinateType> &directions) const override;
-  
+
   void getGlobalDofBoundingBoxes(
       std::vector<BoundingBox<CoordinateType>> &boundingBoxes) const override;
 
@@ -164,22 +161,21 @@ public:
   void getFlatLocalDofPositions(
       std::vector<Point3D<CoordinateType>> &positions) const override;
 
-  void
-  getGlobalDofNormals(std::vector<Point3D<CoordinateType>> &normals) const override;
+  void getGlobalDofNormals(
+      std::vector<Point3D<CoordinateType>> &normals) const override;
 
-  void
-  getFlatLocalDofNormals(std::vector<Point3D<CoordinateType>> &normals) const override;
+  void getFlatLocalDofNormals(
+      std::vector<Point3D<CoordinateType>> &normals) const override;
 
   BEMPP_DEPRECATED void dumpClusterIds(
       const char *fileName,
       const std::vector<unsigned int> &clusterIdsOfGlobalDofs) const override;
 
-  void
-  dumpClusterIdsEx(const char *fileName,
-                   const std::vector<unsigned int> &clusterIdsOfGlobalDofs,
-                   DofType dofType) const override;
+  void dumpClusterIdsEx(const char *fileName,
+                        const std::vector<unsigned int> &clusterIdsOfGlobalDofs,
+                        DofType dofType) const override;
 
-  void initializeClusterTree(const ParameterList& parameterList) override;
+  void initializeClusterTree(const ParameterList &parameterList) override;
 
   /** \brief Adaptively refine the space. */
   void update() override;
@@ -188,14 +184,11 @@ public:
   int currentLevel();
 
 protected:
-
-
 private:
   void initialize();
 
-  const Space<BasisFunctionType_>& currentSpace() const;
-  Space<BasisFunctionType_>& currentSpace();
-    
+  const Space<BasisFunctionType_> &currentSpace() const;
+  Space<BasisFunctionType_> &currentSpace();
 
   boost::signals2::connection m_connection;
   AdaptiveGridSegmentFactory m_gridSegmentFactory;
@@ -203,9 +196,7 @@ private:
   shared_ptr<const Grid> m_grid;
   shared_ptr<Space<BasisFunctionType>> m_space;
   shared_ptr<const SpaceFactory<BasisFunctionType_>> m_factory;
-
 };
-
 }
 
 #include "adaptive_space_impl.hpp"

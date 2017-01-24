@@ -1,10 +1,19 @@
-"""Implement interfaces to id sets."""
+"""
+Implement the interface to id sets.
 
+Id Sets are a map from all the entities of a mesh to a unique identifier.
+Upon refinement an id does not change between levels if the corresponding
+entity does not change.
+
+"""
+
+#pylint: disable=protected-access
 
 class IdSet(object):
     """Query the id set of a grid."""
 
     def __init__(self, impl):
+        """Will be called by GridView object."""
         self._impl = impl
 
     def entity_id(self, entity):

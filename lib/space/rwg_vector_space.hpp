@@ -58,11 +58,10 @@ public:
       CollectionOfBasisTransformations;
 
   explicit RWGVectorSpace(const shared_ptr<const Grid> &grid,
-                                     bool putDofsOnBoundaries = false);
-  RWGVectorSpace(const shared_ptr<const Grid> &grid,
-                            const GridSegment &segment,
-                            bool putDofsOnBoundaries = false,
-                            int dofMode = EDGE_ON_SEGMENT);
+                          bool putDofsOnBoundaries = false);
+  RWGVectorSpace(const shared_ptr<const Grid> &grid, const GridSegment &segment,
+                 bool putDofsOnBoundaries = false,
+                 int dofMode = EDGE_ON_SEGMENT);
   virtual ~RWGVectorSpace();
 
   virtual shared_ptr<const Space<BasisFunctionType>> discontinuousSpace(
@@ -78,9 +77,7 @@ public:
 
   virtual bool spaceIsCompatible(const Space<BasisFunctionType> &other) const;
 
-  virtual SpaceIdentifier spaceIdentifier() const {
-    return RWG_VECTOR;
-  }
+  virtual SpaceIdentifier spaceIdentifier() const { return RWG_VECTOR; }
 
   /** \brief Return the variant of element \p element.
    *
@@ -153,20 +150,25 @@ private:
   /** \endcond */
 };
 
-/** \brief Define a RWGVectorSpace that has an update method for grid refinement. */
+/** \brief Define a RWGVectorSpace that has an update method for grid
+ * refinement. */
 template <typename BasisFunctionType>
-shared_ptr<Space<BasisFunctionType>> adaptiveRWGVectorSpace(const shared_ptr<const Grid>& grid);
+shared_ptr<Space<BasisFunctionType>>
+adaptiveRWGVectorSpace(const shared_ptr<const Grid> &grid);
 
-/** \brief Overload to define a set of domains for the space and whether the space contains boundary entities
+/** \brief Overload to define a set of domains for the space and whether the
+ space contains boundary entities
  (\p open = true) or not. */
 template <typename BasisFunctionType>
-shared_ptr<Space<BasisFunctionType>> adaptiveRWGVectorSpace(const shared_ptr<const Grid>& grid,
-        const std::vector<int>& domains, bool open);
+shared_ptr<Space<BasisFunctionType>>
+adaptiveRWGVectorSpace(const shared_ptr<const Grid> &grid,
+                       const std::vector<int> &domains, bool open);
 
 /** \brief Overlad. */
 template <typename BasisFunctionType>
-shared_ptr<Space<BasisFunctionType>> adaptiveRWGVectorSpace(const shared_ptr<const Grid>& grid,
-        int domain, bool open);
+shared_ptr<Space<BasisFunctionType>>
+adaptiveRWGVectorSpace(const shared_ptr<const Grid> &grid, int domain,
+                       bool open);
 
 } // namespace Bempp
 

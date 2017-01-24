@@ -104,7 +104,7 @@ public:
 
   /** \brief Overload. */
   std::unique_ptr<LocalAssembler>
-  makeAssembler(const ParameterList& parameterList) const;
+  makeAssembler(const ParameterList &parameterList) const;
 
 protected:
   virtual shared_ptr<DiscreteBoundaryOperator<ResultType_>>
@@ -112,7 +112,6 @@ protected:
       const Context<BasisFunctionType, ResultType> &context) const;
 
 private:
-
   /** \brief Return the collection of test function transformations occurring
    *  in the weak form of this operator. */
   virtual const CollectionOfShapesetTransformations &
@@ -144,7 +143,6 @@ private:
   std::unique_ptr<DiscreteBoundaryOperator<ResultType_>>
   assembleWeakFormInSparseMode(LocalAssembler &assembler,
                                const AssemblyOptions &options) const;
-
 
 private:
   shared_ptr<const AbstractBoundaryOperatorId> m_id;

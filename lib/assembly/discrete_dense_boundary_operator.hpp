@@ -57,7 +57,7 @@ public:
                         const std::vector<int> &cols, const ValueType alpha,
                         Matrix<ValueType> &block) const;
 
-  PyObject *asNumpyObject() const;
+  const Matrix<ValueType> &data() const;
 
 private:
   virtual void applyBuiltInImpl(const TranspositionMode trans,
@@ -68,7 +68,7 @@ private:
 
 private:
   /** \cond PRIVATE */
-  mutable Matrix<ValueType> m_mat;
+  Matrix<ValueType> m_mat;
   /** \endcond */
 };
 

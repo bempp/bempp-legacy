@@ -46,28 +46,33 @@ namespace Bempp {
 namespace {
 
 template <typename BasisFunctionType>
-class PiecewiseConstantDualGridSpaceFactory : public SpaceFactory<BasisFunctionType> {
-    public:
-       shared_ptr<Space<BasisFunctionType>> create(const shared_ptr<const Grid> &grid,
-                               const GridSegment &segment) const override{
-           
-           return shared_ptr<Space<BasisFunctionType>>(new PiecewiseConstantDualGridScalarSpace<BasisFunctionType>(grid, segment));
-       }
-           
-};
+class PiecewiseConstantDualGridSpaceFactory
+    : public SpaceFactory<BasisFunctionType> {
+public:
+  shared_ptr<Space<BasisFunctionType>>
+  create(const shared_ptr<const Grid> &grid,
+         const GridSegment &segment) const override {
 
+    return shared_ptr<Space<BasisFunctionType>>(
+        new PiecewiseConstantDualGridScalarSpace<BasisFunctionType>(grid,
+                                                                    segment));
+  }
+};
 }
 
 template <typename BasisFunctionType>
 PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::
     PiecewiseConstantDualGridScalarSpace(const shared_ptr<const Grid> &grid)
-    : ScalarSpace<BasisFunctionType>(grid->barycentricGrid()), m_originalGrid(grid),m_sonMap(grid->barycentricSonMap()) {
+    : ScalarSpace<BasisFunctionType>(grid->barycentricGrid()),
+      m_originalGrid(grid), m_sonMap(grid->barycentricSonMap()) {
   initialize();
 }
 template <typename BasisFunctionType>
 PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::
-    PiecewiseConstantDualGridScalarSpace(const shared_ptr<const Grid> &grid, const GridSegment &segment)
-    : ScalarSpace<BasisFunctionType>(grid->barycentricGrid()), m_originalGrid(grid),m_sonMap(grid->barycentricSonMap()) {
+    PiecewiseConstantDualGridScalarSpace(const shared_ptr<const Grid> &grid,
+                                         const GridSegment &segment)
+    : ScalarSpace<BasisFunctionType>(grid->barycentricGrid()),
+      m_originalGrid(grid), m_sonMap(grid->barycentricSonMap()) {
   initialize();
 }
 
@@ -189,24 +194,27 @@ void PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::assignDofsImpl() {
   m_global2localDofs.clear();
   m_global2localDofs.resize(globalDofCount_);
 
-  for(std::unique_ptr<EntityIterator<0>> it = coarseView->entityIterator<0>();!it->finished();it->next()) {
+  for (std::unique_ptr<EntityIterator<0>> it = coarseView->entityIterator<0>();
+       !it->finished(); it->next()) {
     const Entity<0> &entity = it->entity();
-    int ent0Number = index.subEntityIndex(entity,0,0);
-    for(int i=0;i!=6;++i){
-        EntityIndex sonIndex = m_sonMap(ent0Number,i);
+    int ent0Number = index.subEntityIndex(entity, 0, 0);
+    for (int i = 0; i != 6; ++i) {
+      EntityIndex sonIndex = m_sonMap(ent0Number, i);
 
-        std::vector<GlobalDofIndex> &globalDof = acc(m_local2globalDofs, sonIndex);
-        globalDof.resize(1);//3
+      std::vector<GlobalDofIndex> &globalDof =
+          acc(m_local2globalDofs, sonIndex);
+      globalDof.resize(1); // 3
 
-        EntityIndex vertexIndex = index.subEntityIndex(entity, i / 2, gridDim);
-        GlobalDofIndex globalDofIndex;
-        globalDofIndex = acc(globalDofIndices,  vertexIndex);
-//        globalDof.push_back(globalDofIndex);
-        globalDof[0] = globalDofIndex;
-        if (globalDofIndex >= 0) {
-          acc(m_global2localDofs, globalDofIndex).push_back(LocalDof(sonIndex, 0));
-          ++flatLocalDofCount_;
-        }
+      EntityIndex vertexIndex = index.subEntityIndex(entity, i / 2, gridDim);
+      GlobalDofIndex globalDofIndex;
+      globalDofIndex = acc(globalDofIndices, vertexIndex);
+      //        globalDof.push_back(globalDofIndex);
+      globalDof[0] = globalDofIndex;
+      if (globalDofIndex >= 0) {
+        acc(m_global2localDofs, globalDofIndex)
+            .push_back(LocalDof(sonIndex, 0));
+        ++flatLocalDofCount_;
+      }
     }
   }
   SpaceHelper<BasisFunctionType>::initializeLocal2FlatLocalDofMap(
@@ -434,26 +442,27 @@ void PiecewiseConstantDualGridScalarSpace<BasisFunctionType>::dumpClusterIdsEx(
       else
         ++row;
     }
-    //std::cout << "about to write" << std::endl;
+    // std::cout << "about to write" << std::endl;
     vtkWriter->addVertexData(data, "ids");
     vtkWriter->write(fileName);
   }
 }
 
 template <typename BasisFunctionType>
-shared_ptr<Space<BasisFunctionType>> adaptivePiecewiseConstantDualGridScalarSpace(const shared_ptr<const Grid>& grid)
-{
+shared_ptr<Space<BasisFunctionType>>
+adaptivePiecewiseConstantDualGridScalarSpace(
+    const shared_ptr<const Grid> &grid) {
 
-    shared_ptr<SpaceFactory<BasisFunctionType>> factory(
-            new PiecewiseConstantDualGridSpaceFactory<BasisFunctionType>());
-    return shared_ptr<Space<BasisFunctionType>>(
-            new AdaptiveSpace<BasisFunctionType>(factory, grid));
-
+  shared_ptr<SpaceFactory<BasisFunctionType>> factory(
+      new PiecewiseConstantDualGridSpaceFactory<BasisFunctionType>());
+  return shared_ptr<Space<BasisFunctionType>>(
+      new AdaptiveSpace<BasisFunctionType>(factory, grid));
 }
 
-#define INSTANTIATE_FREE_FUNCTIONS(BASIS)   \
-    template shared_ptr<Space<BASIS>> adaptivePiecewiseConstantDualGridScalarSpace<BASIS>( \
-            const shared_ptr<const Grid>&)
+#define INSTANTIATE_FREE_FUNCTIONS(BASIS)                                      \
+  template shared_ptr<Space<BASIS>>                                            \
+  adaptivePiecewiseConstantDualGridScalarSpace<BASIS>(                         \
+      const shared_ptr<const Grid> &)
 FIBER_ITERATE_OVER_BASIS_TYPES(INSTANTIATE_FREE_FUNCTIONS);
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(

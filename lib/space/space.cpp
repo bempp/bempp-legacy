@@ -198,11 +198,8 @@ void Space<BasisFunctionType>::getGlobalDofs(
       "three-argument variant instead");
 }
 
-template <typename BasisFunctionType>
-void Space<BasisFunctionType>::update()
-{
-    throw std::runtime_error("Space::update(): Not implemented.");
-
+template <typename BasisFunctionType> void Space<BasisFunctionType>::update() {
+  throw std::runtime_error("Space::update(): Not implemented.");
 }
 
 template <typename BasisFunctionType>
@@ -237,49 +234,41 @@ void Space<BasisFunctionType>::global2localDofs(
 }
 
 template <typename BasisFunctionType>
-boost::signals2::connection Space<BasisFunctionType>::connect(const std::function<void()>& f) const
-{
+boost::signals2::connection
+Space<BasisFunctionType>::connect(const std::function<void()> &f) const {
 
-    return m_spaceUpdateSignal.connect(f);
-
+  return m_spaceUpdateSignal.connect(f);
 }
 
 template <typename BasisFunctionType>
-void Space<BasisFunctionType>::sendUpdateSignal() const
-{
+void Space<BasisFunctionType>::sendUpdateSignal() const {
 
-    m_spaceUpdateSignal();
-
+  m_spaceUpdateSignal();
 }
 
 template <typename BasisFunctionType>
 void Space<BasisFunctionType>::initializeClusterTree(
-        const ParameterList& parameterList)
-{
-   if (m_clusterTree)
-      throw std::runtime_error("Space::initializeClusterTree(): "
-                               "ClusterTree is already initialized.");
+    const ParameterList &parameterList) {
+  if (m_clusterTree)
+    throw std::runtime_error("Space::initializeClusterTree(): "
+                             "ClusterTree is already initialized.");
 
-   hmat::Geometry geometry;
+  hmat::Geometry geometry;
 
-   auto interface = shared_ptr<hmat::GeometryInterface>(
-           new SpaceHMatGeometryInterface<BasisFunctionType>(*this));
-   hmat::fillGeometry(geometry,*interface);
+  auto interface = shared_ptr<hmat::GeometryInterface>(
+      new SpaceHMatGeometryInterface<BasisFunctionType>(*this));
+  hmat::fillGeometry(geometry, *interface);
 
-
-   auto minBlockSize =
-       parameterList.template get<int>("options.hmat.minBlockSize");
-    m_clusterTree.reset(new hmat::DefaultClusterTreeType(
-                geometry,minBlockSize));
-    
-
+  auto minBlockSize =
+      parameterList.template get<int>("options.hmat.minBlockSize");
+  m_clusterTree.reset(new hmat::DefaultClusterTreeType(geometry, minBlockSize));
 }
 
 template <typename BasisFunctionType>
-shared_ptr<const hmat::DefaultClusterTreeType> 
-Space<BasisFunctionType>::clusterTree() const{
+shared_ptr<const hmat::DefaultClusterTreeType>
+Space<BasisFunctionType>::clusterTree() const {
 
-    return m_clusterTree;
+  return m_clusterTree;
 }
 
 template <typename BasisFunctionType>
@@ -329,7 +318,6 @@ int maximumShapesetOrder(const Space<BasisFunctionType> &space) {
   return maxOrder;
 }
 
-
 template <typename BasisFunctionType, typename ResultType>
 shared_ptr<DiscreteSparseBoundaryOperator<ResultType>>
 constructOperatorMappingGlobalToFlatLocalDofs(
@@ -348,7 +336,6 @@ constructOperatorMappingFlatLocalToGlobalDofs(
   return boost::make_shared<DiscreteSparseBoundaryOperator<ResultType>>(
       mat, NO_SYMMETRY, TRANSPOSE);
 }
-
 
 BEMPP_GCC_DIAG_OFF(deprecated - declarations);
 

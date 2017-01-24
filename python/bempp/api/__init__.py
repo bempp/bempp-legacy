@@ -1,5 +1,19 @@
 """ Boundary Element Method package BEM++ """
 from __future__ import print_function
+import os
+
+from mpi4py import MPI
+
+
+#pylint: disable=bare-except
+#pylint: disable=wrong-import-position
+#pylint: disable=invalid-name
+#pylint: disable=ungrouped-imports
+
+mpi_comm = MPI.COMM_WORLD #pylint: disable=no-member
+mpi_rank = mpi_comm.Get_rank() #pylint: disable=no-member
+mpi_size = mpi_comm.Get_size() #pylint: disable=no-member
+mpi_name = MPI.Get_processor_name() #pylint: disable=no-member
 
 
 # import the version string
@@ -13,7 +27,6 @@ from bempp.api.utils.logging import _init_logger
 
 LOGGER = _init_logger()
 
-import os
 try:
     if os.environ['BEMPP_CONSOLE_LOGGING'] == '1':
         from bempp.api.utils.logging import enable_console_logging
@@ -24,11 +37,13 @@ except:
 # Check for FEniCS
 
 try:
+    #pylint: disable=import-error
     import dolfin as _
 except:
     HAVE_DOLFIN = False
     LOGGER.info(
-        "Dolfin could not be imported. FEM/BEM coupling with FEniCS not available.")
+        "Dolfin could not be imported." +
+        "FEM/BEM coupling with FEniCS not available.")
 else:
     HAVE_DOLFIN = True
     LOGGER.info("Found Dolfin. FEM/BEM coupling with FEniCS enabled.")
@@ -67,11 +82,13 @@ CONFIG_PATH, TMP_PATH = _check_create_init_dir()
 
 def _gmsh_path():
     """Find Gmsh."""
-    from .utils import which
+    from bempp.api.utils import which
 
     gmp = which("gmsh")
     if gmp is None:
-        print("Could not find Gmsh. Interactive plotting and shapes module not available.")
+        print(
+            "Could not find Gmsh." +
+            "Interactive plotting and shapes module not available.")
     return gmp
 
 
@@ -81,8 +98,6 @@ GMSH_PATH = _gmsh_path()
 # Define the global default options
 
 from bempp.api.common import global_parameters as __global_parameters
-
-
 global_parameters = __global_parameters()
 
 # Now all the module imports
@@ -93,7 +108,6 @@ from bempp.api.space import function_space
 from bempp.api.space import project_operator
 from bempp.api.assembly import GridFunction
 from bempp.api.assembly import InverseSparseDiscreteBoundaryOperator
-from bempp.api.assembly import InverseLocalBoundaryOperator
 from bempp.api.assembly import ZeroBoundaryOperator
 from bempp.api.assembly import RankOneBoundaryOperator
 from bempp.api.assembly import as_matrix

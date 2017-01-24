@@ -49,15 +49,15 @@ namespace {
 
 template <typename BasisFunctionType>
 class RaviartThomas0SpaceFactory : public SpaceFactory<BasisFunctionType> {
-    public:
-       shared_ptr<Space<BasisFunctionType>> create(const shared_ptr<const Grid> &grid,
-                               const GridSegment &segment) const override{
-           
-           return shared_ptr<Space<BasisFunctionType>>(new RaviartThomas0VectorSpace<BasisFunctionType>(grid, segment));
-       }
-           
-};
+public:
+  shared_ptr<Space<BasisFunctionType>>
+  create(const shared_ptr<const Grid> &grid,
+         const GridSegment &segment) const override {
 
+    return shared_ptr<Space<BasisFunctionType>>(
+        new RaviartThomas0VectorSpace<BasisFunctionType>(grid, segment));
+  }
+};
 }
 
 /** \cond PRIVATE */
@@ -571,7 +571,8 @@ void RaviartThomas0VectorSpace<BasisFunctionType>::getGlobalDofNormals(
       normal.y += elementNormals(1, m_global2localDofs[g][l].entityIndex);
       normal.z += elementNormals(2, m_global2localDofs[g][l].entityIndex);
     }
-    auto len = std::sqrt(normal.x * normal.x + normal.y * normal.y + normal.z * normal.z);
+    auto len = std::sqrt(normal.x * normal.x + normal.y * normal.y +
+                         normal.z * normal.z);
     normal.x /= len;
     normal.y /= len;
     normal.z /= len;
@@ -635,8 +636,8 @@ template <typename BasisFunctionType>
 shared_ptr<Space<BasisFunctionType>>
 adaptiveRaviartThomas0VectorSpace(const shared_ptr<const Grid> &grid) {
 
-    shared_ptr<SpaceFactory<BasisFunctionType>> factory(
-            new RaviartThomas0SpaceFactory<BasisFunctionType>());
+  shared_ptr<SpaceFactory<BasisFunctionType>> factory(
+      new RaviartThomas0SpaceFactory<BasisFunctionType>());
   return shared_ptr<Space<BasisFunctionType>>(
       new AdaptiveSpace<BasisFunctionType>(factory, grid));
 }
@@ -644,11 +645,10 @@ adaptiveRaviartThomas0VectorSpace(const shared_ptr<const Grid> &grid) {
 template <typename BasisFunctionType>
 shared_ptr<Space<BasisFunctionType>>
 adaptiveRaviartThomas0VectorSpace(const shared_ptr<const Grid> &grid,
-                                     const std::vector<int> &domains,
-                                     bool open) {
+                                  const std::vector<int> &domains, bool open) {
 
-    shared_ptr<SpaceFactory<BasisFunctionType>> factory(
-            new RaviartThomas0SpaceFactory<BasisFunctionType>());
+  shared_ptr<SpaceFactory<BasisFunctionType>> factory(
+      new RaviartThomas0SpaceFactory<BasisFunctionType>());
   return shared_ptr<Space<BasisFunctionType>>(
       new AdaptiveSpace<BasisFunctionType>(factory, grid, domains, open));
 }
@@ -656,23 +656,22 @@ adaptiveRaviartThomas0VectorSpace(const shared_ptr<const Grid> &grid,
 template <typename BasisFunctionType>
 shared_ptr<Space<BasisFunctionType>>
 adaptiveRaviartThomas0VectorSpace(const shared_ptr<const Grid> &grid,
-                                     int domain, bool open) {
+                                  int domain, bool open) {
 
-    shared_ptr<SpaceFactory<BasisFunctionType>> factory(
-            new RaviartThomas0SpaceFactory<BasisFunctionType>());
+  shared_ptr<SpaceFactory<BasisFunctionType>> factory(
+      new RaviartThomas0SpaceFactory<BasisFunctionType>());
   return shared_ptr<Space<BasisFunctionType>>(
-      new AdaptiveSpace<BasisFunctionType>(factory, grid, std::vector<int>({domain}), open));
+      new AdaptiveSpace<BasisFunctionType>(factory, grid,
+                                           std::vector<int>({domain}), open));
 }
 
 #define INSTANTIATE_FREE_FUNCTIONS(BASIS)                                      \
-  template shared_ptr<Space<BASIS>>                                            \
-  adaptiveRaviartThomas0VectorSpace<BASIS>(const shared_ptr<const Grid> &); \
-  template shared_ptr<Space<BASIS>>                                            \
-  adaptiveRaviartThomas0VectorSpace<BASIS>(const shared_ptr<const Grid> &,  \
-                                              const std::vector<int> &, bool); \
-  template shared_ptr<Space<BASIS>>                                            \
-  adaptiveRaviartThomas0VectorSpace<BASIS>(const shared_ptr<const Grid> &,  \
-                                              int, bool)
+  template shared_ptr<Space<BASIS>> adaptiveRaviartThomas0VectorSpace<BASIS>(  \
+      const shared_ptr<const Grid> &);                                         \
+  template shared_ptr<Space<BASIS>> adaptiveRaviartThomas0VectorSpace<BASIS>(  \
+      const shared_ptr<const Grid> &, const std::vector<int> &, bool);         \
+  template shared_ptr<Space<BASIS>> adaptiveRaviartThomas0VectorSpace<BASIS>(  \
+      const shared_ptr<const Grid> &, int, bool)
 
 FIBER_ITERATE_OVER_BASIS_TYPES(INSTANTIATE_FREE_FUNCTIONS);
 

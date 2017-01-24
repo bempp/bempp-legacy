@@ -1,0 +1,36 @@
+Source: python-bempp
+Maintainer: Timo Betcke <timo.betcke@gmail.com>
+Section: python
+Priority: extra
+Build-Depends: dh-make, gcc, g++, gfortran, libeigen3-dev, python-dev,
+               python3-dev, python-numpy, python3-numpy,
+               patchelf, libtbb-dev, zlib1g-dev,
+               libboost-all-dev, cmake, cpio, 
+               libdune-common-dev, libdune-geometry-dev,
+               libdune-grid-dev, libdune-localfunctions-dev,
+               mpi-default-dev, cython, cython3,
+               python-setuptools, python3-setuptools,
+               python-mpi4py, python3-mpi4py, python-scipy,
+               python3-scipy, dh-python, python-all, 
+               python3-all
+
+
+Package: python-bempp
+Architecture: amd64
+Depends: python-all, libtbb2, libstdc++6,
+         python-numpy, python-scipy, mpi-default-bin,
+         python-mpi4py
+Recommends: gmsh
+X-Python-Version: >= 2.7
+Description: The BEM++ boundary element library (Python 2).
+ This package installs the library for Python 2.
+
+Package: python3-bempp
+Architecture: amd64
+Depends: python3-all, libtbb2, libstdc++6,
+         python3-numpy, python3-scipy,
+         python3-mpi4py, mpi-default-bin
+Recommends: gmsh
+X-Python3-Version: >= 3.4
+Description: The BEM++ boundary element library (Python 3).
+ This package installs the library for Python 3.

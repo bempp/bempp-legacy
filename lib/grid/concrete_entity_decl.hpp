@@ -152,7 +152,7 @@ public:
 
   virtual bool isRegular() const { return m_dune_entity->isRegular(); }
 
-  virtual std::unique_ptr<EntityIterator<0>> sonIterator(int maxlevel) const;
+  // virtual std::unique_ptr<EntityIterator<0>> sonIterator(int maxlevel) const;
 
   virtual bool isNew() const { return m_dune_entity->isNew(); }
 

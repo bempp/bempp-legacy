@@ -89,11 +89,12 @@ private:
   getIntegrator(const SingleQuadratureDescriptor &desc);
 
 private:
-  //typedef boost::ptr_map<SingleQuadratureDescriptor,
+  // typedef boost::ptr_map<SingleQuadratureDescriptor,
   //                       TestTrialIntegrator<BasisFunctionType, ResultType>>
   //    IntegratorMap;
-  typedef tbb::concurrent_unordered_map<SingleQuadratureDescriptor, 
-          TestTrialIntegrator<BasisFunctionType, ResultType>*> IntegratorMap;
+  typedef tbb::concurrent_unordered_map<
+      SingleQuadratureDescriptor,
+      TestTrialIntegrator<BasisFunctionType, ResultType> *> IntegratorMap;
   typedef DefaultLocalAssemblerForOperatorsOnSurfacesUtilities<
       BasisFunctionType> Utilities;
 

@@ -153,20 +153,25 @@ private:
   /** \endcond */
 };
 
-/** \brief Define a RaviartThomas0VectorSpace that has an update method for grid refinement. */
+/** \brief Define a RaviartThomas0VectorSpace that has an update method for grid
+ * refinement. */
 template <typename BasisFunctionType>
-shared_ptr<Space<BasisFunctionType>> adaptiveScaledNedelec0VectorSpace(const shared_ptr<const Grid>& grid);
+shared_ptr<Space<BasisFunctionType>>
+adaptiveScaledNedelec0VectorSpace(const shared_ptr<const Grid> &grid);
 
-/** \brief Overload to define a set of domains for the space and whether the space contains boundary entities
+/** \brief Overload to define a set of domains for the space and whether the
+ space contains boundary entities
  (\p open = true) or not. */
 template <typename BasisFunctionType>
-shared_ptr<Space<BasisFunctionType>> adaptiveScaledNedelec0VectorSpace(const shared_ptr<const Grid>& grid,
-        const std::vector<int>& domains, bool open);
+shared_ptr<Space<BasisFunctionType>>
+adaptiveScaledNedelec0VectorSpace(const shared_ptr<const Grid> &grid,
+                                  const std::vector<int> &domains, bool open);
 
 /** \brief Overlad. */
 template <typename BasisFunctionType>
-shared_ptr<Space<BasisFunctionType>> adaptiveScaledNedelec0VectorSpace(const shared_ptr<const Grid>& grid,
-        int domain, bool open);
+shared_ptr<Space<BasisFunctionType>>
+adaptiveScaledNedelec0VectorSpace(const shared_ptr<const Grid> &grid,
+                                  int domain, bool open);
 
 } // namespace Bempp
 

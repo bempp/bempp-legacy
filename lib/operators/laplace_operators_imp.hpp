@@ -48,18 +48,18 @@
 
 namespace Bempp {
 
-template<typename BasisFunctionType, typename KernelType, typename ResultType>
-shared_ptr<const ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>>
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+shared_ptr<
+    const ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>>
 laplaceSingleLayerBoundaryOperator(
     const ParameterList &parameterList,
     const shared_ptr<const Space<BasisFunctionType>> &domain,
     const shared_ptr<const Space<BasisFunctionType>> &range,
     const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
-    const std::string &label, int symmetry)
-{
-    Context<BasisFunctionType, ResultType> context(parameterList);
+    const std::string &label, int symmetry) {
+  Context<BasisFunctionType, ResultType> context(parameterList);
 
-    auto assemblyOptions = context.assemblyOptions();
+  auto assemblyOptions = context.assemblyOptions();
   typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
 
   typedef Fiber::Laplace3dSingleLayerPotentialKernelFunctor<KernelType>
@@ -75,28 +75,28 @@ laplaceSingleLayerBoundaryOperator(
                                             ResultType>> integral;
   if (shouldUseBlasInQuadrature(assemblyOptions, *domain, *dualToRange))
     integral.reset(new Fiber::TypicalTestScalarKernelTrialIntegral<
-        BasisFunctionType, KernelType, ResultType>());
+                   BasisFunctionType, KernelType, ResultType>());
   else
     integral.reset(new Fiber::DefaultTestKernelTrialIntegral<IntegrandFunctor>(
         IntegrandFunctor()));
-  shared_ptr<ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>> newOp(new Op(domain, range, dualToRange, label, symmetry,
-                              KernelFunctor(), TransformationFunctor(),
-                              TransformationFunctor(), integral));
+  shared_ptr<
+      ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>>
+      newOp(new Op(domain, range, dualToRange, label, symmetry, KernelFunctor(),
+                   TransformationFunctor(), TransformationFunctor(), integral));
   return newOp;
-
 }
 
-template<typename BasisFunctionType, typename KernelType, typename ResultType>
-shared_ptr<const ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>>
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+shared_ptr<
+    const ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>>
 laplaceDoubleLayerBoundaryOperator(
     const ParameterList &parameterList,
     const shared_ptr<const Space<BasisFunctionType>> &domain,
     const shared_ptr<const Space<BasisFunctionType>> &range,
     const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
-    const std::string &label, int symmetry)
-{
+    const std::string &label, int symmetry) {
 
-    Context<BasisFunctionType, ResultType> context(parameterList);
+  Context<BasisFunctionType, ResultType> context(parameterList);
 
   const AssemblyOptions &assemblyOptions = context.assemblyOptions();
 
@@ -115,7 +115,7 @@ laplaceDoubleLayerBoundaryOperator(
                                             ResultType>> integral;
   if (shouldUseBlasInQuadrature(assemblyOptions, *domain, *dualToRange))
     integral.reset(new Fiber::TypicalTestScalarKernelTrialIntegral<
-        BasisFunctionType, KernelType, ResultType>());
+                   BasisFunctionType, KernelType, ResultType>());
   else
     integral.reset(new Fiber::DefaultTestKernelTrialIntegral<IntegrandFunctor>(
         IntegrandFunctor()));
@@ -127,16 +127,16 @@ laplaceDoubleLayerBoundaryOperator(
   return newOp;
 }
 
-template<typename BasisFunctionType, typename KernelType, typename ResultType>
-shared_ptr<const ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>>
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+shared_ptr<
+    const ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>>
 laplaceAdjointDoubleLayerBoundaryOperator(
     const ParameterList &parameterList,
     const shared_ptr<const Space<BasisFunctionType>> &domain,
     const shared_ptr<const Space<BasisFunctionType>> &range,
     const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
-    const std::string &label, int symmetry)
-{
-    Context<BasisFunctionType, ResultType> context(parameterList);
+    const std::string &label, int symmetry) {
+  Context<BasisFunctionType, ResultType> context(parameterList);
 
   const AssemblyOptions &assemblyOptions = context.assemblyOptions();
 
@@ -153,7 +153,7 @@ laplaceAdjointDoubleLayerBoundaryOperator(
                                             ResultType>> integral;
   if (shouldUseBlasInQuadrature(assemblyOptions, *domain, *dualToRange))
     integral.reset(new Fiber::TypicalTestScalarKernelTrialIntegral<
-        BasisFunctionType, KernelType, ResultType>());
+                   BasisFunctionType, KernelType, ResultType>());
   else
     integral.reset(new Fiber::DefaultTestKernelTrialIntegral<IntegrandFunctor>(
         IntegrandFunctor()));
@@ -164,18 +164,17 @@ laplaceAdjointDoubleLayerBoundaryOperator(
                               KernelFunctor(), TransformationFunctor(),
                               TransformationFunctor(), integral));
   return newOp;
-
 }
 
-template<typename BasisFunctionType, typename KernelType, typename ResultType>
-shared_ptr<const ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>>
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+shared_ptr<
+    const ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>>
 laplaceHypersingularBoundaryOperator(
     const ParameterList &parameterList,
     const shared_ptr<const Space<BasisFunctionType>> &domain,
     const shared_ptr<const Space<BasisFunctionType>> &range,
     const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
-    const std::string &label, int symmetry)
-{
+    const std::string &label, int symmetry) {
 
   Context<BasisFunctionType, ResultType> context(parameterList);
   const AssemblyOptions &assemblyOptions = context.assemblyOptions();
@@ -188,60 +187,63 @@ laplaceHypersingularBoundaryOperator(
   typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctorExt<
       BasisFunctionType, KernelType, ResultType, 3> IntegrandFunctor;
 
-  typedef GeneralElementarySingularIntegralOperator<BasisFunctionType, KernelType,
-                                               ResultType> Op;
+  typedef GeneralElementarySingularIntegralOperator<BasisFunctionType,
+                                                    KernelType, ResultType> Op;
 
   shared_ptr<Fiber::TestKernelTrialIntegral<BasisFunctionType, KernelType,
                                             ResultType>> integral;
 
   if (shouldUseBlasInQuadrature(assemblyOptions, *domain, *dualToRange)) {
     integral.reset(new Fiber::TypicalTestScalarKernelTrialIntegral<
-        BasisFunctionType, KernelType, ResultType>());
+                   BasisFunctionType, KernelType, ResultType>());
   } else {
     integral.reset(new Fiber::DefaultTestKernelTrialIntegral<IntegrandFunctor>(
         IntegrandFunctor()));
   }
 
-  shared_ptr<Op> newOp(
-      new Op(domain, range, dualToRange, label, symmetry, KernelFunctor(),
-             TransformationFunctor(), TransformationFunctor(), integral));
+  shared_ptr<Op> newOp(new Op(domain, range, dualToRange, label, symmetry,
+                              KernelFunctor(), TransformationFunctor(),
+                              TransformationFunctor(), integral));
   return newOp;
-
 }
 
 template <typename BasisFunctionType, typename ResultType>
-shared_ptr<const DiscreteBoundaryOperator<ResultType>> laplaceSingleLayerPotentialOperator(
-        const shared_ptr<const Space<BasisFunctionType>>& space,
-        const Matrix<typename Fiber::ScalarTraits<BasisFunctionType>::RealType>& evaluationPoints,
-        const ParameterList& parameterList)
-{
+shared_ptr<const DiscreteBoundaryOperator<ResultType>>
+laplaceSingleLayerPotentialOperator(
+    const shared_ptr<const Space<BasisFunctionType>> &space,
+    const Matrix<typename Fiber::ScalarTraits<BasisFunctionType>::RealType>
+        &evaluationPoints,
+    const ParameterList &parameterList) {
 
-        typedef typename Fiber::ScalarTraits<BasisFunctionType>::RealType CoordinateType;
-        shared_ptr<Matrix<CoordinateType>> pointsPtr(
-                new Matrix<CoordinateType>(evaluationPoints));
+  typedef
+      typename Fiber::ScalarTraits<BasisFunctionType>::RealType CoordinateType;
+  shared_ptr<Matrix<CoordinateType>> pointsPtr(
+      new Matrix<CoordinateType>(evaluationPoints));
 
-        shared_ptr<PotentialOperator<BasisFunctionType, ResultType>> op(
-                new Laplace3dSingleLayerPotentialOperator<BasisFunctionType, ResultType>());
-        return op->assemble(space, pointsPtr, parameterList).discreteOperator();
+  shared_ptr<PotentialOperator<BasisFunctionType, ResultType>> op(
+      new Laplace3dSingleLayerPotentialOperator<BasisFunctionType,
+                                                ResultType>());
+  return op->assemble(space, pointsPtr, parameterList).discreteOperator();
 }
 
 template <typename BasisFunctionType, typename ResultType>
-shared_ptr<const DiscreteBoundaryOperator<ResultType>> laplaceDoubleLayerPotentialOperator(
-        const shared_ptr<const Space<BasisFunctionType>>& space,
-        const Matrix<typename Fiber::ScalarTraits<BasisFunctionType>::RealType>& evaluationPoints,
-        const ParameterList& parameterList)
-{
+shared_ptr<const DiscreteBoundaryOperator<ResultType>>
+laplaceDoubleLayerPotentialOperator(
+    const shared_ptr<const Space<BasisFunctionType>> &space,
+    const Matrix<typename Fiber::ScalarTraits<BasisFunctionType>::RealType>
+        &evaluationPoints,
+    const ParameterList &parameterList) {
 
-        typedef typename Fiber::ScalarTraits<BasisFunctionType>::RealType CoordinateType;
-        shared_ptr<Matrix<CoordinateType>> pointsPtr(
-                new Matrix<CoordinateType>(evaluationPoints));
+  typedef
+      typename Fiber::ScalarTraits<BasisFunctionType>::RealType CoordinateType;
+  shared_ptr<Matrix<CoordinateType>> pointsPtr(
+      new Matrix<CoordinateType>(evaluationPoints));
 
-        shared_ptr<PotentialOperator<BasisFunctionType, ResultType>> op(
-                new Laplace3dDoubleLayerPotentialOperator<BasisFunctionType, ResultType>());
-        return op->assemble(space, pointsPtr, parameterList).discreteOperator();
+  shared_ptr<PotentialOperator<BasisFunctionType, ResultType>> op(
+      new Laplace3dDoubleLayerPotentialOperator<BasisFunctionType,
+                                                ResultType>());
+  return op->assemble(space, pointsPtr, parameterList).discreteOperator();
 }
-
 }
 
 #endif
-

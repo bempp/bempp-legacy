@@ -60,8 +60,8 @@ public:
   explicit PiecewiseConstantDualGridScalarSpace(
       const shared_ptr<const Grid> &grid);
 
-  PiecewiseConstantDualGridScalarSpace(
-      const shared_ptr<const Grid> &grid, const GridSegment &segment);
+  PiecewiseConstantDualGridScalarSpace(const shared_ptr<const Grid> &grid,
+                                       const GridSegment &segment);
 
   virtual ~PiecewiseConstantDualGridScalarSpace();
 
@@ -148,8 +148,9 @@ private:
 };
 
 template <typename BasisFunctionType>
-shared_ptr<Space<BasisFunctionType>> adaptivePiecewiseConstantDualGridScalarSpace(const shared_ptr<const Grid>& grid);
-
+shared_ptr<Space<BasisFunctionType>>
+adaptivePiecewiseConstantDualGridScalarSpace(
+    const shared_ptr<const Grid> &grid);
 
 } // namespace Bempp
 

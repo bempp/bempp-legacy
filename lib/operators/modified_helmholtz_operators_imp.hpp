@@ -58,22 +58,23 @@
 
 namespace Bempp {
 
-template<typename BasisFunctionType, typename KernelType, typename ResultType>
-shared_ptr<const ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>>
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+shared_ptr<
+    const ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>>
 modifiedHelmholtzSingleLayerBoundaryOperator(
     const ParameterList &parameterList,
     const shared_ptr<const Space<BasisFunctionType>> &domain,
     const shared_ptr<const Space<BasisFunctionType>> &range,
     const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
-    KernelType waveNumber,
-    const std::string &label, int symmetry)
-{
-    Context<BasisFunctionType, ResultType> context(parameterList);
+    KernelType waveNumber, const std::string &label, int symmetry) {
+  Context<BasisFunctionType, ResultType> context(parameterList);
 
   const AssemblyOptions &assemblyOptions = context.assemblyOptions();
 
-  int interpPtsPerWavelength = parameterList.get<int>("options.assembly.interpolationPointsPerWavelength");
-  bool useInterpolation = parameterList.get<bool>("options.assembly.enableInterpolationForOscillatoryKernels");
+  int interpPtsPerWavelength = parameterList.get<int>(
+      "options.assembly.interpolationPointsPerWavelength");
+  bool useInterpolation = parameterList.get<bool>(
+      "options.assembly.enableInterpolationForOscillatoryKernels");
 
   typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
 
@@ -93,7 +94,7 @@ modifiedHelmholtzSingleLayerBoundaryOperator(
                                             ResultType>> integral;
   if (shouldUseBlasInQuadrature(assemblyOptions, *domain, *dualToRange))
     integral.reset(new Fiber::TypicalTestScalarKernelTrialIntegral<
-        BasisFunctionType, KernelType, ResultType>());
+                   BasisFunctionType, KernelType, ResultType>());
   else
     integral.reset(new Fiber::DefaultTestKernelTrialIntegral<IntegrandFunctor>(
         IntegrandFunctor()));
@@ -113,25 +114,25 @@ modifiedHelmholtzSingleLayerBoundaryOperator(
                        TransformationFunctor(), TransformationFunctor(),
                        integral));
   return newOp;
-
 }
 
-template<typename BasisFunctionType, typename KernelType, typename ResultType>
-shared_ptr<const ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>>
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+shared_ptr<
+    const ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>>
 modifiedHelmholtzDoubleLayerBoundaryOperator(
     const ParameterList &parameterList,
     const shared_ptr<const Space<BasisFunctionType>> &domain,
     const shared_ptr<const Space<BasisFunctionType>> &range,
     const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
-    KernelType waveNumber,
-    const std::string &label, int symmetry)
-{
+    KernelType waveNumber, const std::string &label, int symmetry) {
   Context<BasisFunctionType, ResultType> context(parameterList);
 
   const AssemblyOptions &assemblyOptions = context.assemblyOptions();
 
-  int interpPtsPerWavelength = parameterList.get<int>("options.assembly.interpolationPointsPerWavelength");
-  bool useInterpolation = parameterList.get<bool>("options.assembly.enableInterpolationForOscillatoryKernels");
+  int interpPtsPerWavelength = parameterList.get<int>(
+      "options.assembly.interpolationPointsPerWavelength");
+  bool useInterpolation = parameterList.get<bool>(
+      "options.assembly.enableInterpolationForOscillatoryKernels");
 
   typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
 
@@ -152,7 +153,7 @@ modifiedHelmholtzDoubleLayerBoundaryOperator(
                                             ResultType>> integral;
   if (shouldUseBlasInQuadrature(assemblyOptions, *domain, *dualToRange))
     integral.reset(new Fiber::TypicalTestScalarKernelTrialIntegral<
-        BasisFunctionType, KernelType, ResultType>());
+                   BasisFunctionType, KernelType, ResultType>());
   else
     integral.reset(new Fiber::DefaultTestKernelTrialIntegral<IntegrandFunctor>(
         IntegrandFunctor()));
@@ -173,26 +174,26 @@ modifiedHelmholtzDoubleLayerBoundaryOperator(
                        integral));
 
   return newOp;
-
 }
 
-template<typename BasisFunctionType, typename KernelType, typename ResultType>
-shared_ptr<const ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>>
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+shared_ptr<
+    const ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>>
 modifiedHelmholtzAdjointDoubleLayerBoundaryOperator(
     const ParameterList &parameterList,
     const shared_ptr<const Space<BasisFunctionType>> &domain,
     const shared_ptr<const Space<BasisFunctionType>> &range,
     const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
-    KernelType waveNumber,
-    const std::string &label, int symmetry)
-{
+    KernelType waveNumber, const std::string &label, int symmetry) {
 
   Context<BasisFunctionType, ResultType> context(parameterList);
 
   const AssemblyOptions &assemblyOptions = context.assemblyOptions();
 
-  int interpPtsPerWavelength = parameterList.get<int>("options.assembly.interpolationPointsPerWavelength");
-  bool useInterpolation = parameterList.get<bool>("options.assembly.enableInterpolationForOscillatoryKernels");
+  int interpPtsPerWavelength = parameterList.get<int>(
+      "options.assembly.interpolationPointsPerWavelength");
+  bool useInterpolation = parameterList.get<bool>(
+      "options.assembly.enableInterpolationForOscillatoryKernels");
 
   typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
 
@@ -210,7 +211,7 @@ modifiedHelmholtzAdjointDoubleLayerBoundaryOperator(
                                             ResultType>> integral;
   if (shouldUseBlasInQuadrature(assemblyOptions, *domain, *dualToRange))
     integral.reset(new Fiber::TypicalTestScalarKernelTrialIntegral<
-        BasisFunctionType, KernelType, ResultType>());
+                   BasisFunctionType, KernelType, ResultType>());
   else
     integral.reset(new Fiber::DefaultTestKernelTrialIntegral<IntegrandFunctor>(
         IntegrandFunctor()));
@@ -232,26 +233,26 @@ modifiedHelmholtzAdjointDoubleLayerBoundaryOperator(
                        TransformationFunctor(), TransformationFunctor(),
                        integral));
   return newOp;
-
 }
 
-template<typename BasisFunctionType, typename KernelType, typename ResultType>
-shared_ptr<const ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>>
+template <typename BasisFunctionType, typename KernelType, typename ResultType>
+shared_ptr<
+    const ElementaryIntegralOperator<BasisFunctionType, KernelType, ResultType>>
 modifiedHelmholtzHypersingularBoundaryOperator(
     const ParameterList &parameterList,
     const shared_ptr<const Space<BasisFunctionType>> &domain,
     const shared_ptr<const Space<BasisFunctionType>> &range,
     const shared_ptr<const Space<BasisFunctionType>> &dualToRange,
-    KernelType waveNumber,
-    const std::string &label, int symmetry)
-{
+    KernelType waveNumber, const std::string &label, int symmetry) {
 
   Context<BasisFunctionType, ResultType> context(parameterList);
 
   const AssemblyOptions &assemblyOptions = context.assemblyOptions();
 
-  int interpPtsPerWavelength = parameterList.get<int>("options.assembly.interpolationPointsPerWavelength");
-  bool useInterpolation = parameterList.get<bool>("options.assembly.enableInterpolationForOscillatoryKernels");
+  int interpPtsPerWavelength = parameterList.get<int>(
+      "options.assembly.interpolationPointsPerWavelength");
+  bool useInterpolation = parameterList.get<bool>(
+      "options.assembly.enableInterpolationForOscillatoryKernels");
 
   typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
 
@@ -275,86 +276,85 @@ modifiedHelmholtzHypersingularBoundaryOperator(
                                             ResultType>> integral;
   if (shouldUseBlasInQuadrature(assemblyOptions, *domain, *dualToRange)) {
     integral.reset(new Fiber::TypicalTestScalarKernelTrialIntegral<
-        BasisFunctionType, KernelType, ResultType>());
+                   BasisFunctionType, KernelType, ResultType>());
   } else {
     integral.reset(new Fiber::DefaultTestKernelTrialIntegral<IntegrandFunctor>(
         IntegrandFunctor()));
   }
 
-  typedef GeneralElementarySingularIntegralOperator<BasisFunctionType, KernelType,
-                                               ResultType> Op;
+  typedef GeneralElementarySingularIntegralOperator<BasisFunctionType,
+                                                    KernelType, ResultType> Op;
   shared_ptr<Op> newOp;
   if (shouldUseBlasInQuadrature(assemblyOptions, *domain, *dualToRange)) {
     shared_ptr<Fiber::TestKernelTrialIntegral<BasisFunctionType, KernelType,
                                               ResultType>> integral;
     integral.reset(new Fiber::TypicalTestScalarKernelTrialIntegral<
-        BasisFunctionType, KernelType, ResultType>());
+                   BasisFunctionType, KernelType, ResultType>());
     if (useInterpolation)
-      newOp.reset(new Op(
-          domain, range, dualToRange, label, symmetry,
-          InterpolatedKernelFunctor(waveNumber, maxDistance_,
-                                    interpPtsPerWavelength),
-          TransformationFunctorWithBlas(), TransformationFunctorWithBlas(),
-          integral));     
+      newOp.reset(new Op(domain, range, dualToRange, label, symmetry,
+                         InterpolatedKernelFunctor(waveNumber, maxDistance_,
+                                                   interpPtsPerWavelength),
+                         TransformationFunctorWithBlas(),
+                         TransformationFunctorWithBlas(), integral));
     else
-      newOp.reset(new Op(
-          domain, range, dualToRange, label, symmetry,
-          NoninterpolatedKernelFunctor(waveNumber),
-          TransformationFunctorWithBlas(), TransformationFunctorWithBlas(),
-          integral));
+      newOp.reset(new Op(domain, range, dualToRange, label, symmetry,
+                         NoninterpolatedKernelFunctor(waveNumber),
+                         TransformationFunctorWithBlas(),
+                         TransformationFunctorWithBlas(), integral));
   } else { // no blas
     if (useInterpolation)
-      newOp.reset(new Op(
-          domain, range, dualToRange, label, symmetry,
-          InterpolatedKernelFunctor(waveNumber, maxDistance_,
-                                    interpPtsPerWavelength),
-          TransformationFunctor(), TransformationFunctor(), IntegrandFunctor()));
+      newOp.reset(new Op(domain, range, dualToRange, label, symmetry,
+                         InterpolatedKernelFunctor(waveNumber, maxDistance_,
+                                                   interpPtsPerWavelength),
+                         TransformationFunctor(), TransformationFunctor(),
+                         IntegrandFunctor()));
     else
-      newOp.reset(new Op(
-          domain, range, dualToRange, label, symmetry,
-          NoninterpolatedKernelFunctor(waveNumber), TransformationFunctor(),
-          TransformationFunctor(), IntegrandFunctor()));
+      newOp.reset(new Op(domain, range, dualToRange, label, symmetry,
+                         NoninterpolatedKernelFunctor(waveNumber),
+                         TransformationFunctor(), TransformationFunctor(),
+                         IntegrandFunctor()));
   }
 
   return newOp;
-
 }
 
 template <typename BasisFunctionType, typename ResultType>
-shared_ptr<const DiscreteBoundaryOperator<ResultType>> modifiedHelmholtzSingleLayerPotentialOperator(
-        const shared_ptr<const Space<BasisFunctionType>>& space,
-        const Matrix<typename Fiber::ScalarTraits<BasisFunctionType>::RealType>& evaluationPoints,
-        ResultType waveNumber,
-        const ParameterList& parameterList)
-{
+shared_ptr<const DiscreteBoundaryOperator<ResultType>>
+modifiedHelmholtzSingleLayerPotentialOperator(
+    const shared_ptr<const Space<BasisFunctionType>> &space,
+    const Matrix<typename Fiber::ScalarTraits<BasisFunctionType>::RealType>
+        &evaluationPoints,
+    ResultType waveNumber, const ParameterList &parameterList) {
 
-        typedef typename Fiber::ScalarTraits<BasisFunctionType>::RealType CoordinateType;
-        shared_ptr<Matrix<CoordinateType>> pointsPtr(
-                new Matrix<CoordinateType>(evaluationPoints));
+  typedef
+      typename Fiber::ScalarTraits<BasisFunctionType>::RealType CoordinateType;
+  shared_ptr<Matrix<CoordinateType>> pointsPtr(
+      new Matrix<CoordinateType>(evaluationPoints));
 
-        shared_ptr<PotentialOperator<BasisFunctionType, ResultType>> op(
-                new ModifiedHelmholtz3dSingleLayerPotentialOperator<BasisFunctionType>(waveNumber));
-        return op->assemble(space, pointsPtr, parameterList).discreteOperator();
+  shared_ptr<PotentialOperator<BasisFunctionType, ResultType>> op(
+      new ModifiedHelmholtz3dSingleLayerPotentialOperator<BasisFunctionType>(
+          waveNumber));
+  return op->assemble(space, pointsPtr, parameterList).discreteOperator();
 }
 
 template <typename BasisFunctionType, typename ResultType>
-shared_ptr<const DiscreteBoundaryOperator<ResultType>> modifiedHelmholtzDoubleLayerPotentialOperator(
-        const shared_ptr<const Space<BasisFunctionType>>& space,
-        const Matrix<typename Fiber::ScalarTraits<BasisFunctionType>::RealType>& evaluationPoints,
-        ResultType waveNumber,
-        const ParameterList& parameterList)
-{
+shared_ptr<const DiscreteBoundaryOperator<ResultType>>
+modifiedHelmholtzDoubleLayerPotentialOperator(
+    const shared_ptr<const Space<BasisFunctionType>> &space,
+    const Matrix<typename Fiber::ScalarTraits<BasisFunctionType>::RealType>
+        &evaluationPoints,
+    ResultType waveNumber, const ParameterList &parameterList) {
 
-        typedef typename Fiber::ScalarTraits<BasisFunctionType>::RealType CoordinateType;
-        shared_ptr<Matrix<CoordinateType>> pointsPtr(
-                new Matrix<CoordinateType>(evaluationPoints));
+  typedef
+      typename Fiber::ScalarTraits<BasisFunctionType>::RealType CoordinateType;
+  shared_ptr<Matrix<CoordinateType>> pointsPtr(
+      new Matrix<CoordinateType>(evaluationPoints));
 
-        shared_ptr<PotentialOperator<BasisFunctionType, ResultType>> op(
-                new ModifiedHelmholtz3dDoubleLayerPotentialOperator<BasisFunctionType>(waveNumber));
-        return op->assemble(space, pointsPtr, parameterList).discreteOperator();
+  shared_ptr<PotentialOperator<BasisFunctionType, ResultType>> op(
+      new ModifiedHelmholtz3dDoubleLayerPotentialOperator<BasisFunctionType>(
+          waveNumber));
+  return op->assemble(space, pointsPtr, parameterList).discreteOperator();
 }
-
 }
 
 #endif
-

@@ -18,7 +18,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-
 #include "elementary_local_operator.hpp"
 
 #include "assembly_options.hpp"
@@ -307,20 +306,21 @@ ElementaryLocalOperator<BasisFunctionType, ResultType>::
     elementIndices[i] = i;
   std::vector<Matrix<ResultType>> localResult(elementCount);
   tbb::parallel_for(tbb::blocked_range<size_t>(0, elementCount),
-          [&assembler,&localResult](tbb::blocked_range<size_t>& r){
-          size_t numElements = r.end() - r.begin();
-          std::vector<int> myIndices(numElements);
-          std::vector<Matrix<ResultType>> myLocalResult;
-          myLocalResult.reserve(numElements);
-          int count = 0;
-          for (size_t i = r.begin(); i!= r.end(); ++i)
-            myIndices[count++] = i;
-          assembler.evaluateLocalWeakForms(myIndices, myLocalResult);
-          for (size_t i = 0; i < numElements; ++i)
-            localResult[myIndices[i]] = myLocalResult[i];
-            });
-          
-  //assembler.evaluateLocalWeakForms(elementIndices, localResult);
+                    [&assembler, &localResult](tbb::blocked_range<size_t> &r) {
+                      size_t numElements = r.end() - r.begin();
+                      std::vector<int> myIndices(numElements);
+                      std::vector<Matrix<ResultType>> myLocalResult;
+                      myLocalResult.reserve(numElements);
+                      int count = 0;
+                      for (size_t i = r.begin(); i != r.end(); ++i)
+                        myIndices[count++] = i;
+                      assembler.evaluateLocalWeakForms(myIndices,
+                                                       myLocalResult);
+                      for (size_t i = 0; i < numElements; ++i)
+                        localResult[myIndices[i]] = myLocalResult[i];
+                    });
+
+  // assembler.evaluateLocalWeakForms(elementIndices, localResult);
 
   // Global DOF indices corresponding to local DOFs on elements
   std::vector<std::vector<GlobalDofIndex>> testGdofs(elementCount);
@@ -389,11 +389,10 @@ template <typename BasisFunctionType, typename ResultType>
 std::unique_ptr<typename ElementaryLocalOperator<BasisFunctionType,
                                                  ResultType>::LocalAssembler>
 ElementaryLocalOperator<BasisFunctionType, ResultType>::makeAssembler(
-        const ParameterList& parameterList) const
-{
-    Context<BasisFunctionType, ResultType> context(parameterList);
-    return this->makeAssembler(*context.quadStrategy(),context.assemblyOptions());
-
+    const ParameterList &parameterList) const {
+  Context<BasisFunctionType, ResultType> context(parameterList);
+  return this->makeAssembler(*context.quadStrategy(),
+                             context.assemblyOptions());
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(ElementaryLocalOperator);

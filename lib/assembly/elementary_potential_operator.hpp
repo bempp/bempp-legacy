@@ -174,9 +174,9 @@ private:
 
   std::unique_ptr<DiscreteBoundaryOperator<ResultType_>>
   assembleOperatorInHMatMode(const Space<BasisFunctionType> &space,
-                            const Matrix<CoordinateType> &evaluationPoints,
-                            LocalAssembler &assembler,
-                            const ParameterList &parameterList) const;
+                             const Matrix<CoordinateType> &evaluationPoints,
+                             LocalAssembler &assembler,
+                             const ParameterList &parameterList) const;
   /** \endcond */
 };
 

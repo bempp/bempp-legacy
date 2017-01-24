@@ -243,8 +243,9 @@ void DiscreteSparseBoundaryOperator<ValueType>::addBlock(
 
 template <typename ValueType>
 shared_ptr<const DiscreteSparseBoundaryOperator<ValueType>>
-DiscreteSparseBoundaryOperator<ValueType>::castToSparse(const shared_ptr<
-    const DiscreteBoundaryOperator<ValueType>> &discreteOperator) {
+DiscreteSparseBoundaryOperator<ValueType>::castToSparse(
+    const shared_ptr<const DiscreteBoundaryOperator<ValueType>>
+        &discreteOperator) {
   shared_ptr<const DiscreteSparseBoundaryOperator<ValueType>> result =
       boost::dynamic_pointer_cast<
           const DiscreteSparseBoundaryOperator<ValueType>>(discreteOperator);

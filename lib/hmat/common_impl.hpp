@@ -14,7 +14,6 @@ inline IndexSetType fillIndexRange(std::size_t start, std::size_t stop) {
     result.push_back(i);
   return result;
 }
-
 }
 
 #endif

@@ -1,72 +1,85 @@
-# pylint: disable-msg=too-many-arguments
-
 """Definition of the modified Helmholtz boundary operators."""
 
+# pylint: disable-msg=too-many-arguments
 
-def _single_layer_impl(domain, range_, dual_to_range, wave_number,
+
+def _single_layer_impl(
+        domain, range_, dual_to_range, wave_number,
         label, symmetry, parameters, assemble_only_singular_part):
     """ Return the actual modified Helmholtz single layer operator. """
-
-    from bempp.core.operators.boundary.modified_helmholtz import single_layer_ext
+    from bempp.core.operators.boundary.modified_helmholtz import \
+        single_layer_ext
     from bempp.api.assembly import ElementaryBoundaryOperator
-    from bempp.api.assembly.abstract_boundary_operator import ElementaryAbstractIntegralOperator
+    from bempp.api.assembly.abstract_boundary_operator import \
+        ElementaryAbstractIntegralOperator
 
+    #pylint: disable=protected-access
     return ElementaryBoundaryOperator(
         ElementaryAbstractIntegralOperator(
             single_layer_ext(parameters, domain._impl, range_._impl,
-                             dual_to_range._impl, 
+                             dual_to_range._impl,
                              wave_number, "", symmetry),
             domain, range_, dual_to_range),
         parameters=parameters, label=label,
         assemble_only_singular_part=assemble_only_singular_part)
-    
-def _double_layer_impl(domain, range_, dual_to_range, wave_number,
+
+def _double_layer_impl(
+        domain, range_, dual_to_range, wave_number,
         label, symmetry, parameters, assemble_only_singular_part):
     """ Return the actual modified Helmholtz double layer operator. """
-
-    from bempp.core.operators.boundary.modified_helmholtz import double_layer_ext
+    from bempp.core.operators.boundary.modified_helmholtz import \
+        double_layer_ext
     from bempp.api.assembly import ElementaryBoundaryOperator
-    from bempp.api.assembly.abstract_boundary_operator import ElementaryAbstractIntegralOperator
+    from bempp.api.assembly.abstract_boundary_operator import \
+        ElementaryAbstractIntegralOperator
 
+    #pylint: disable=protected-access
     return ElementaryBoundaryOperator(
         ElementaryAbstractIntegralOperator(
             double_layer_ext(parameters, domain._impl, range_._impl,
-                             dual_to_range._impl, 
+                             dual_to_range._impl,
                              wave_number, "", symmetry),
             domain, range_, dual_to_range),
-        parameters=parameters, label=label, assemble_only_singular_part=assemble_only_singular_part)
+        parameters=parameters,
+        label=label, assemble_only_singular_part=assemble_only_singular_part)
 
-def _adjoint_double_layer_impl(domain, range_, dual_to_range, wave_number,
+def _adjoint_double_layer_impl(
+        domain, range_, dual_to_range, wave_number,
         label, symmetry, parameters, assemble_only_singular_part):
     """ Return the actual modifed Helmholtz adjoint double layer operator. """
-
-    from bempp.core.operators.boundary.modified_helmholtz import adjoint_double_layer_ext
+    from bempp.core.operators.boundary.modified_helmholtz import \
+        adjoint_double_layer_ext
     from bempp.api.assembly import ElementaryBoundaryOperator
-    from bempp.api.assembly.abstract_boundary_operator import ElementaryAbstractIntegralOperator
+    from bempp.api.assembly.abstract_boundary_operator import \
+        ElementaryAbstractIntegralOperator
 
+    #pylint: disable=protected-access
     return ElementaryBoundaryOperator(
         ElementaryAbstractIntegralOperator(
             adjoint_double_layer_ext(parameters, domain._impl, range_._impl,
-                             dual_to_range._impl, wave_number,
-                             "", symmetry),
+                                     dual_to_range._impl, wave_number,
+                                     "", symmetry),
             domain, range_, dual_to_range),
         parameters=parameters, label=label,
         assemble_only_singular_part=assemble_only_singular_part)
 
-def _hypersingular_impl(domain, range_, dual_to_range, wave_number,
+def _hypersingular_impl(
+        domain, range_, dual_to_range, wave_number,
         label, symmetry, parameters,
         assemble_only_singular_part):
     """ Return the actual modified Helmholtz hypersingular operator. """
-
-    from bempp.core.operators.boundary.modified_helmholtz import hypersingular_ext
+    from bempp.core.operators.boundary.modified_helmholtz import \
+        hypersingular_ext
     from bempp.api.assembly import ElementaryBoundaryOperator
-    from bempp.api.assembly.abstract_boundary_operator import ElementaryAbstractIntegralOperator
+    from bempp.api.assembly.abstract_boundary_operator import \
+        ElementaryAbstractIntegralOperator
 
+    #pylint: disable=protected-access
     return ElementaryBoundaryOperator(
         ElementaryAbstractIntegralOperator(
             hypersingular_ext(parameters, domain._impl, range_._impl,
-                             dual_to_range._impl, 
-                             wave_number, "", symmetry),
+                              dual_to_range._impl,
+                              wave_number, "", symmetry),
             domain, range_, dual_to_range),
         parameters=parameters, label=label,
         assemble_only_singular_part=assemble_only_singular_part)
@@ -102,15 +115,18 @@ def single_layer(domain, range_, dual_to_range,
         if available. This parameter can speed up fast assembly routines,
         such as H-Matrices or FMM (default true).
     assemble_only_singular_part : bool
-        When assembled the operator will only contain components for adjacent or 
+        When assembled the operator will only contain components for adjacent or
         overlapping test and trial functions (default false).
 
     """
 
-    from bempp.api.operators.boundary._common import get_wave_operator_with_space_preprocessing
+    from bempp.api.operators.boundary._common import \
+        get_wave_operator_with_space_preprocessing
 
-    return get_wave_operator_with_space_preprocessing(_single_layer_impl, domain, range_, dual_to_range, 
-            wave_number, label, symmetry, parameters, use_projection_spaces, assemble_only_singular_part) 
+    return get_wave_operator_with_space_preprocessing(
+        _single_layer_impl, domain, range_, dual_to_range,
+        wave_number, label, symmetry, parameters,
+        use_projection_spaces, assemble_only_singular_part)
 
 
 def double_layer(domain, range_, dual_to_range,
@@ -144,15 +160,17 @@ def double_layer(domain, range_, dual_to_range,
         if available. This parameter can speed up fast assembly routines,
         such as H-Matrices or FMM (default true).
     assemble_only_singular_part : bool
-        When assembled the operator will only contain components for adjacent or 
+        When assembled the operator will only contain components for adjacent or
         overlapping test and trial functions (default false).
 
     """
+    from bempp.api.operators.boundary._common import \
+        get_wave_operator_with_space_preprocessing
 
-    from bempp.api.operators.boundary._common import get_wave_operator_with_space_preprocessing
-
-    return get_wave_operator_with_space_preprocessing(_double_layer_impl, domain, range_, dual_to_range, 
-            wave_number, label, symmetry, parameters, use_projection_spaces, assemble_only_singular_part) 
+    return get_wave_operator_with_space_preprocessing(
+        _double_layer_impl, domain, range_, dual_to_range,
+        wave_number, label, symmetry, parameters,
+        use_projection_spaces, assemble_only_singular_part)
 
 
 def adjoint_double_layer(domain, range_, dual_to_range,
@@ -187,17 +205,19 @@ def adjoint_double_layer(domain, range_, dual_to_range,
         if available. This parameter can speed up fast assembly routines,
         such as H-Matrices or FMM (default true).
     assemble_only_singular_part : bool
-        When assembled the operator will only contain components for adjacent or 
+        When assembled the operator will only contain components for adjacent or
         overlapping test and trial functions (default false).
 
     """
+    from bempp.api.operators.boundary._common import \
+        get_wave_operator_with_space_preprocessing
 
-    from bempp.api.operators.boundary._common import get_wave_operator_with_space_preprocessing
+    return get_wave_operator_with_space_preprocessing(
+        _adjoint_double_layer_impl, domain, range_, dual_to_range,
+        wave_number, label, symmetry, parameters,
+        use_projection_spaces, assemble_only_singular_part)
 
-    return get_wave_operator_with_space_preprocessing(_adjoint_double_layer_impl, domain, range_, dual_to_range, 
-            wave_number, label, symmetry, parameters, use_projection_spaces, assemble_only_singular_part) 
-
-
+#pylint: disable=too-many-locals
 def hypersingular(domain, range_, dual_to_range, wave_number,
                   label="HYP", symmetry='no_symmetry',
                   parameters=None, use_slp=False,
@@ -230,46 +250,42 @@ def hypersingular(domain, range_, dual_to_range, wave_number,
         such as H-Matrices or FMM (default true).
     use_slp : True/False or boundary operator object
         The hypersingular operator can be represented as a sparse transformation
-        of a single-layer operator. If `use_slp=True` this representation is used.
-        If `use_slp=op` for a single-layer boundary operator assembled on a
-        suitable space this operator is used to assemble the hypersingular operator.
-        Note that if `use_slp=op` is used no checks are performed if the slp operator
-        is correctly defined for representing the hypersingular operator. Hence,
-        if no care is taken this option can lead to a wrong operator. Also,
-        `use_slp=True` or `use_slp=op` is only valid if the `domain` and `dual_to_range`
-        spaces are identical.
+        of a single-layer operator. If `use_slp=True` this representation
+        is used. If `use_slp=op` for a single-layer boundary operator assembled
+        on a suitable space this operator is used to assemble the hypersingular
+        operator. Note that if `use_slp=op` is used no checks are performed
+        if the slp operator is correctly defined for representing the
+        hypersingular operator. Hence, if no care is taken this option can
+        lead to a wrong operator. Also, `use_slp=True` or `use_slp=op` is
+        only valid if the `domain` and `dual_to_range` spaces are identical.
     assemble_only_singular_part : bool
-        When assembled the operator will only contain components for adjacent or 
+        When assembled the operator will only contain components for adjacent or
         overlapping test and trial functions (default false).
         Note. This option is only used if `use_slp` is not specified.
     """
-
     import bempp
-    from bempp.core.operators.boundary.modified_helmholtz import hypersingular_ext
     from bempp.api.assembly.boundary_operator import BoundaryOperator
-    from bempp.api.assembly import ElementaryBoundaryOperator
-    from bempp.api.assembly import LocalBoundaryOperator
-    from bempp.api.assembly.abstract_boundary_operator import ElementaryAbstractIntegralOperator
-    from bempp.api.assembly.abstract_boundary_operator import ElementaryAbstractLocalOperator
-    from bempp.api.operators.boundary._common import update_to_non_barycentric_space
 
     if parameters is None:
         parameters = bempp.api.global_parameters
 
     if domain != dual_to_range and use_slp:
-        print("Compound assembly based on slp operator requires 'domain' and 'dual_to_range' space to be identical." +
-              " Switching to standard assembly.")
         use_slp = False
 
     if not use_slp:
-        from bempp.api.operators.boundary._common import get_wave_operator_with_space_preprocessing
+        from bempp.api.operators.boundary._common import \
+            get_wave_operator_with_space_preprocessing
 
-        return get_wave_operator_with_space_preprocessing(_hypersingular_impl, domain, range_, dual_to_range, 
-                wave_number, label, symmetry, parameters, use_projection_spaces, assemble_only_singular_part) 
+        return get_wave_operator_with_space_preprocessing(
+            _hypersingular_impl, domain, range_, dual_to_range,
+            wave_number, label, symmetry, parameters,
+            use_projection_spaces, assemble_only_singular_part)
     else:
 
         if domain != dual_to_range:
-            raise ValueError("domain and dual_to_range spaces must be identical if use_slp=True")
+            raise ValueError(
+                "domain and dual_to_range spaces must be identical " +
+                "if use_slp=True")
 
         if not isinstance(use_slp, BoundaryOperator):
             disc_space = domain.discontinuous_space
@@ -281,35 +297,45 @@ def hypersingular(domain, range_, dual_to_range, wave_number,
 
         from bempp.api.assembly.functors import vector_surface_curl_functor
         from bempp.api.assembly.functors import scalar_function_value_functor
-        from bempp.api.assembly.functors import scalar_function_value_times_normal_functor
-        from bempp.api.assembly.functors import single_component_test_trial_integrand_functor
+        from bempp.api.assembly.functors import \
+            scalar_function_value_times_normal_functor
+        from bempp.api.assembly.functors import \
+            single_component_test_trial_integrand_functor
         from bempp.api.space.projection import rewrite_operator_spaces
 
-        D = bempp.api.ZeroBoundaryOperator(domain, slp.range, dual_to_range)
+        compound_op = bempp.api.ZeroBoundaryOperator(
+            domain, slp.range, dual_to_range)
 
         for i in range(3):
-            curl_value_op = bempp.api.operators.boundary.sparse.operator_from_functors(
+            curl_value_op = \
+                bempp.api.operators.boundary.sparse.operator_from_functors(
                     domain, slp.domain, slp.domain,
-                    scalar_function_value_functor(), vector_surface_curl_functor(),
+                    scalar_function_value_functor(),
+                    vector_surface_curl_functor(),
                     single_component_test_trial_integrand_functor(0, i),
                     label="CURL_OP[{0}]".format(i),
                     parameters=parameters)
-            D += curl_value_op.dual_product(slp) * curl_value_op
+            compound_op += curl_value_op.dual_product(slp) * curl_value_op
 
-            normal_op = bempp.api.operators.boundary.sparse.operator_from_functors(
+            normal_op = \
+                bempp.api.operators.boundary.sparse.operator_from_functors(
                     domain, slp.domain, slp.domain,
-                    scalar_function_value_functor(), scalar_function_value_times_normal_functor(),
+                    scalar_function_value_functor(),
+                    scalar_function_value_times_normal_functor(),
                     single_component_test_trial_integrand_functor(0, i),
                     label="VALUE_TIMES_NORMAL[{0}]".format(i),
                     parameters=parameters)
-            D += wave_number**2 * normal_op.dual_product(slp) * normal_op
-
+            compound_op += (wave_number**2 * normal_op.dual_product(slp) *
+                            normal_op)
 
         # Now generate the compound operator
 
-        return rewrite_operator_spaces(D, domain=domain, range_=range_, dual_to_range=dual_to_range)
-        
-def multitrace_operator(grid, wave_number, parameters=None, spaces='linear', target=None):
+        return rewrite_operator_spaces(
+            compound_op, domain=domain, range_=range_,
+            dual_to_range=dual_to_range)
+
+def multitrace_operator(
+        grid, wave_number, parameters=None, spaces='linear', target=None):
     """Return the modified Helmholtz multitrace operator.
 
     Parameters
@@ -335,29 +361,40 @@ def multitrace_operator(grid, wave_number, parameters=None, spaces='linear', tar
         'target'.
 
     """
-
+    #pylint: disable=invalid-name
     def op(operator):
+        """Partial lambda that removes the wavenumber."""
         if operator == hypersingular:
-            def op_impl(domain, range_, dual_to_range, label="HYP", symmetry="no_symmetry",
-                        parameters=None, use_slp=False):
-                return hypersingular(domain, range_, dual_to_range, wave_number, label, symmetry, parameters,
-                                     use_slp)
+            def op_impl(
+                    domain, range_, dual_to_range, label="HYP",
+                    symmetry="no_symmetry", parameters=None, use_slp=False):
+                """Implementation of operator without wavenumber param."""
+                return hypersingular(
+                    domain, range_, dual_to_range,
+                    wave_number, label, symmetry, parameters, use_slp)
             return op_impl
         else:
             import inspect
+            #pylint: disable=deprecated-method
             defaults = inspect.getargspec(operator).defaults
 
-            def op_impl(domain, range_, dual_to_range, label=defaults[0], symmetry=defaults[1],
+            def op_impl(domain, range_, dual_to_range,
+                        label=defaults[0], symmetry=defaults[1],
                         parameters=None):
-                return operator(domain, range_, dual_to_range, wave_number, label, symmetry, parameters)
+                """Implementation of operator without wavenumber param."""
+                return operator(domain, range_, dual_to_range,
+                                wave_number, label, symmetry, parameters)
             return op_impl
 
     from bempp.api.operators.boundary import _common
-    return _common.multitrace_operator_impl(grid, op(single_layer), op(double_layer),
-                                            op(hypersingular), parameters, spaces, target=target)
+    return _common.multitrace_operator_impl(
+        grid, op(single_layer), op(double_layer),
+        op(hypersingular), parameters, spaces, target=target)
 
-
-def single_layer_and_hypersingular_pair(grid, wave_number, parameters=None, spaces='linear', base_slp=None, return_base_slp=False):
+#pylint: disable=invalid-name
+def single_layer_and_hypersingular_pair(
+        grid, wave_number, parameters=None,
+        spaces='linear', base_slp=None, return_base_slp=False):
     """Return a pair of hypersingular and single layer operator.
 
     This function creates a pair of a single-layer and a hypersingular
@@ -404,21 +441,31 @@ def single_layer_and_hypersingular_pair(grid, wave_number, parameters=None, spac
     from bempp.api.operators.boundary import _common
 
     def op(operator):
+        """Partial lambda that removes wavenumber."""
         if operator == hypersingular:
-            def op_impl(domain, range_, dual_to_range, label="HYP", symmetry="no_symmetry",
+            def op_impl(domain, range_, dual_to_range,
+                        label="HYP", symmetry="no_symmetry",
                         parameters=None, use_slp=False):
-                return hypersingular(domain, range_, dual_to_range, wave_number, label, symmetry, parameters,
-                                     use_slp)
+                """Implementation without wavenumber."""
+                return hypersingular(
+                    domain, range_, dual_to_range, wave_number, label,
+                    symmetry, parameters, use_slp)
             return op_impl
         else:
             import inspect
+            #pylint: disable=deprecated-method
             defaults = inspect.getargspec(operator).defaults
 
-            def op_impl(domain, range_, dual_to_range, label=defaults[0], symmetry=defaults[1],
-                        parameters=None):
-                return operator(domain, range_, dual_to_range, wave_number, label, symmetry, parameters)
+            def op_impl(
+                    domain, range_, dual_to_range,
+                    label=defaults[0], symmetry=defaults[1], parameters=None):
+                """Implementation without wavenumber."""
+                return operator(
+                    domain, range_, dual_to_range,
+                    wave_number, label, symmetry, parameters)
             return op_impl
 
     ops = _common.slp_and_hyp_impl(
-        grid, op(single_layer), op(hypersingular), parameters, spaces, base_slp, return_base_slp, laplace=False)
+        grid, op(single_layer), op(hypersingular),
+        parameters, spaces, base_slp, return_base_slp, laplace=False)
     return ops

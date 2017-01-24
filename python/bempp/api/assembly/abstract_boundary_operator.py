@@ -9,6 +9,7 @@ class ElementaryAbstractIntegralOperator(object):
     """
 
     def __init__(self, impl, domain, range_, dual_to_range):
+        """Constructor. Should not be called directly."""
         self._impl = impl
         self._domain = domain
         self._range = range_
@@ -17,34 +18,36 @@ class ElementaryAbstractIntegralOperator(object):
     def make_local_assembler(self, parameters):
         """Create a local assembler object from the abstract operator."""
         from bempp.api.assembly.assembler import IntegralOperatorLocalAssembler
-        return IntegralOperatorLocalAssembler(self._impl.make_local_assembler(parameters))
+        return IntegralOperatorLocalAssembler(
+            self._impl.make_local_assembler(parameters))
 
-    def assemble_weak_form(self, parameters, assemble_only_singular_part=False):
+    def assemble_weak_form(self, parameters,
+                           assemble_only_singular_part=False):
         """Assemble a boundary integral operator and return the weak form."""
-
         if assemble_only_singular_part:
             from bempp.api.assembly.assembler import assemble_singular_part
-            from bempp.api.assembly.boundary_operator import ElementaryBoundaryOperator
+            from bempp.api.assembly.boundary_operator import \
+                ElementaryBoundaryOperator
             # assemble_singular_part expects boundary operator, so create one
-            op = ElementaryBoundaryOperator(self, parameters=parameters)
+            sing_op = ElementaryBoundaryOperator(self, parameters=parameters)
 
-            return assemble_singular_part(op)
+            return assemble_singular_part(sing_op)
 
         if parameters.assembly.boundary_operator_assembly_type == 'dense':
             from bempp.api.assembly.discrete_boundary_operator import \
                 DenseDiscreteBoundaryOperator
 
-            discrete_operator = DenseDiscreteBoundaryOperator(
+            dense_discrete_operator = DenseDiscreteBoundaryOperator(
                 self._impl.assemble_weak_form(parameters).as_matrix())
+            return dense_discrete_operator
 
         else:
             from bempp.api.assembly.discrete_boundary_operator import \
                 GeneralNonlocalDiscreteBoundaryOperator
 
-            discrete_operator = GeneralNonlocalDiscreteBoundaryOperator(
+            general_discrete_operator = GeneralNonlocalDiscreteBoundaryOperator(
                 self._impl.assemble_weak_form(parameters))
-
-        return discrete_operator
+            return general_discrete_operator
 
     @property
     def domain(self):
@@ -66,6 +69,7 @@ class ElementaryAbstractLocalOperator(object):
     """An interface to abstract elementary local operators."""
 
     def __init__(self, impl, domain, range_, dual_to_range):
+        """Constructor. Should not be called by the user."""
         self._impl = impl
         self._domain = domain
         self._range = range_
@@ -73,15 +77,17 @@ class ElementaryAbstractLocalOperator(object):
 
     def make_local_assembler(self, parameters):
         """Create a local assembler object from the abstract operator."""
-        from .assembler import LocalOperatorLocalAssembler
-        return LocalOperatorLocalAssembler(self._impl.make_local_assembler(parameters))
+        from bempp.api.assembly.assembler import LocalOperatorLocalAssembler
+        return LocalOperatorLocalAssembler(
+            self._impl.make_local_assembler(parameters))
 
     def assemble_weak_form(self, parameters):
         """Assemble the local operator and return the assembled operator."""
-        from bempp.core.assembly.discrete_boundary_operator import convert_to_sparse
-        from bempp.api.assembly.discrete_boundary_operator import SparseDiscreteBoundaryOperator
-
-        import bempp.api
+        #pylint: disable=no-name-in-module
+        from bempp.core.assembly.discrete_boundary_operator import \
+            convert_to_sparse
+        from bempp.api.assembly.discrete_boundary_operator import \
+            SparseDiscreteBoundaryOperator
 
         discrete_operator = SparseDiscreteBoundaryOperator(
             convert_to_sparse(self._impl.assemble_weak_form(parameters)))

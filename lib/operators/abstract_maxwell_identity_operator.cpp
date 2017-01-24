@@ -45,32 +45,32 @@ AbstractMaxwellIdentityOperator<BasisFunctionType, ResultType>::
 }
 
 template <typename BasisFunctionType, typename ResultType>
-AbstractMaxwellIdentityOperator<BasisFunctionType,
-                          ResultType>::~AbstractMaxwellIdentityOperator() {}
+AbstractMaxwellIdentityOperator<
+    BasisFunctionType, ResultType>::~AbstractMaxwellIdentityOperator() {}
 
 template <typename BasisFunctionType, typename ResultType>
 const typename AbstractMaxwellIdentityOperator<
     BasisFunctionType, ResultType>::CollectionOfBasisTransformations &
-AbstractMaxwellIdentityOperator<BasisFunctionType, ResultType>::testTransformations()
-    const {
+AbstractMaxwellIdentityOperator<BasisFunctionType,
+                                ResultType>::testTransformations() const {
   return this->dualToRange()->basisFunctionValue();
 }
 
 template <typename BasisFunctionType, typename ResultType>
 const typename AbstractMaxwellIdentityOperator<
     BasisFunctionType, ResultType>::CollectionOfBasisTransformations &
-AbstractMaxwellIdentityOperator<BasisFunctionType, ResultType>::trialTransformations()
-    const {
+AbstractMaxwellIdentityOperator<BasisFunctionType,
+                                ResultType>::trialTransformations() const {
   return this->domain()->basisFunctionValue();
 }
 
 template <typename BasisFunctionType, typename ResultType>
 const typename AbstractMaxwellIdentityOperator<BasisFunctionType,
-                                         ResultType>::TestTrialIntegral &
-AbstractMaxwellIdentityOperator<BasisFunctionType, ResultType>::integral() const {
+                                               ResultType>::TestTrialIntegral &
+AbstractMaxwellIdentityOperator<BasisFunctionType, ResultType>::integral()
+    const {
   return *m_integral;
 }
-
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(
     AbstractMaxwellIdentityOperator);

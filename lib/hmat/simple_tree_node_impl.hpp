@@ -5,9 +5,10 @@
 
 #include "common.hpp"
 #include <array>
-#include <stdexcept>
 #include <cassert>
 #include <functional>
+#include <queue>
+#include <stdexcept>
 
 #include "simple_tree_node.hpp"
 
@@ -86,6 +87,59 @@ template <typename T, int N>
 const std::vector<shared_ptr<const SimpleTreeNode<T, N>>>
 SimpleTreeNode<T, N>::leafNodes() const {
 
+  // Implements a breadth-first search for leafs. Leafs high up in
+  // the tree are added to the leafVector first, creating a natural
+  // partial ordering by level.
+  std::vector<shared_ptr<const SimpleTreeNode<T, N>>> leafVector;
+  std::queue<shared_ptr<const SimpleTreeNode<T, N>>> nodeQueue;
+
+  nodeQueue.push(this->shared_from_this());
+
+  while (!nodeQueue.empty()) {
+
+    auto current = nodeQueue.front();
+    nodeQueue.pop();
+    if (current->isLeaf())
+      leafVector.push_back(current);
+    else
+      for (auto child : current->m_children)
+        if (child)
+          nodeQueue.push(child);
+  }
+  return leafVector;
+}
+
+template <typename T, int N>
+const std::vector<shared_ptr<SimpleTreeNode<T, N>>>
+SimpleTreeNode<T, N>::leafNodes() {
+
+  // Implements a breadth-first search for leafs. Leafs high up in
+  // the tree are added to the leafVector first, creating a natural
+  // partial ordering by level.
+  std::vector<shared_ptr<SimpleTreeNode<T, N>>> leafVector;
+  std::queue<shared_ptr<SimpleTreeNode<T, N>>> nodeQueue;
+
+  nodeQueue.push(this->shared_from_this());
+
+  while (!nodeQueue.empty()) {
+
+    auto current = nodeQueue.front();
+    nodeQueue.pop();
+    if (current->isLeaf())
+      leafVector.push_back(current);
+    else
+      for (auto child : current->m_children)
+        if (child)
+          nodeQueue.push(child);
+  }
+  return leafVector;
+}
+
+/*
+template <typename T, int N>
+const std::vector<shared_ptr<const SimpleTreeNode<T, N>>>
+SimpleTreeNode<T, N>::leafNodes() const {
+
   std::function<void(SimpleTreeNode<T, N> &)> getLeafsImpl;
 
   std::vector<shared_ptr<const SimpleTreeNode<T, N>>> leafVector;
@@ -123,20 +177,19 @@ SimpleTreeNode<T, N>::leafNodes() {
   getLeafsImpl(*this);
   return leafVector;
 }
-
+*/
 template <typename T, int N>
 std::size_t SimpleTreeNode<T, N>::numberOfLeafs() const {
 
-  if (this->isLeaf()) return 1;
+  if (this->isLeaf())
+    return 1;
 
   std::size_t res = 0;
-  for (auto child : m_children){
+  for (auto child : m_children) {
     if (child)
       res += child->numberOfLeafs();
   }
   return res;
-  
 }
-
 }
 #endif

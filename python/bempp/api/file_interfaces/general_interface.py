@@ -1,8 +1,12 @@
+"""Definition of general file interface routines."""
+
 import numpy as _np
 
-
+#pylint: disable=too-many-instance-attributes
+#pylint: disable=too-few-public-methods
 class FileReader(object):
     """
+    Generic interface to read data from different file sources.
 
     This class represents a generic interface to read data from different
     file sources. Currently it supports the following types:
@@ -12,13 +16,6 @@ class FileReader(object):
     The class creates a grid object from the data and provides maps
     that translate between the internal BEM++ numbering for elements
     and vertices and the file numbering.
-
-    All parameters for the constructor are keyword arguments.
-
-    Parameters
-    ----------
-    file_name : string
-        Name of the input file.
 
     Attributes
     ----------
@@ -41,10 +38,22 @@ class FileReader(object):
     """
 
     def __init__(self, **kwargs):
-        import os.path
+        """
+        Construct a FileReader object.
+
+        All parameters are keyword arguments.
+
+        Parameters
+        ----------
+        file_name : string
+            Name of the input file.
+
+        """
         from collections import OrderedDict
 
         self._impl = None
+
+        #pylint: disable=invalid-name
         self._vertex_file_to_insertion_indices = None
         self._element_file_to_insertion_indices = None
         self._vertex_insertion_indices_to_file = []
@@ -55,8 +64,15 @@ class FileReader(object):
         self._element_indices_to_file = None
         self._file_to_element_indices = OrderedDict()
 
-        if 'file_name' in kwargs:
-            fname = kwargs['file_name']
+        self._read_grid(kwargs)
+        self._setup_mappers()
+
+            # Setup the mappers
+
+    def _read_grid(self, options):
+        import os.path
+        if 'file_name' in options:
+            fname = options['file_name']
             extension = os.path.splitext(fname)[1].lower()
 
             if extension == '.msh':
@@ -65,34 +81,34 @@ class FileReader(object):
 
             self._grid = self._create_grid()
 
-            # Setup the mappers
+    def _setup_mappers(self):
+        from collections import OrderedDict
+        self._file_to_vertex_indices = OrderedDict.fromkeys(
+            self._impl.vertices.keys(), value=-1)
+        self._file_to_element_indices = OrderedDict.fromkeys(
+            self._impl.elements.keys(), value=-1)
 
-            self._file_to_vertex_indices = OrderedDict.fromkeys(
-                self._impl.vertices.keys(), value=-1)
-            self._file_to_element_indices = OrderedDict.fromkeys(
-                self._impl.elements.keys(), value=-1)
+        self._vertex_indices_to_file = self._grid.leaf_view.entity_count(
+            2) * [None]
+        self._element_indices_to_file = self._grid.leaf_view.entity_count(
+            0) * [None]
 
-            self._vertex_indices_to_file = self._grid.leaf_view.entity_count(
-                2) * [None]
-            self._element_indices_to_file = self._grid.leaf_view.entity_count(
-                0) * [None]
+        index_set = self._grid.leaf_view.index_set()
+        for elem in self._grid.leaf_view.entity_iterator(0):
+            index = index_set.entity_index(elem)
+            insertion_index = self._grid.element_insertion_index(elem)
+            file_key = self._element_insertion_indices_to_file[insertion_index]
+            self._element_indices_to_file[index] = file_key
+            self._file_to_element_indices[file_key] = index
 
-            index_set = self._grid.leaf_view.index_set()
-            for elem in self._grid.leaf_view.entity_iterator(0):
-                index = index_set.entity_index(elem)
-                insertion_index = self._grid.element_insertion_index(elem)
-                file_key = self._element_insertion_indices_to_file[
-                    insertion_index]
-                self._element_indices_to_file[index] = file_key
-                self._file_to_element_indices[file_key] = index
+        for vertex in self._grid.leaf_view.entity_iterator(2):
+            index = index_set.entity_index(vertex)
+            insertion_index = self._grid.vertex_insertion_index(vertex)
+            file_key = self._vertex_insertion_indices_to_file[
+                insertion_index]
+            self._vertex_indices_to_file[index] = file_key
+            self._file_to_vertex_indices[file_key] = index
 
-            for vertex in self._grid.leaf_view.entity_iterator(2):
-                index = index_set.entity_index(vertex)
-                insertion_index = self._grid.vertex_insertion_index(vertex)
-                file_key = self._vertex_insertion_indices_to_file[
-                    insertion_index]
-                self._vertex_indices_to_file[index] = file_key
-                self._file_to_vertex_indices[file_key] = index
 
     def _create_grid(self):
 
@@ -148,6 +164,7 @@ class FileReader(object):
 
 def import_grid(file_name):
     """
+    Import grids into BEM++
 
     A simple grid importer. Use this instead of FileReader if
     information about the numbering of vertices and elements
@@ -170,19 +187,19 @@ def import_grid(file_name):
     >>> grid = import_grid('grid_file.msh')
 
     """
-
     return FileReader(file_name=file_name).grid
 
-
+#pylint: disable=too-many-locals
+#pylint: disable=too-many-branches
+#pylint: disable=too-many-statements
 def export(**kwargs):
     """
-
     This funtion can export grids and gridfunctions into external file formats.
     Supported formats are:
 
     * Gmsh ASCII v2.2 files
 
-    The function only takes keyword arguments. 
+    The function only takes keyword arguments.
 
     Parameters
     ----------
@@ -225,17 +242,19 @@ def export(**kwargs):
     To save the grid_function object 'gridfun' in Gmsh format
     with data associated to elements use
 
-    >>> export(grid_function=gridfun, file_name='output.msh', data_type='element')
+    >>> export(grid_function=gridfun,
+            file_name='output.msh', data_type='element')
 
     To save the real part of a complex grid function in Gmsh format use
 
-    >>> export(grid_function=gridfun, file_name='output.msh', transformation=lambda x: np.real(x))
+    >>> export(grid_function=gridfun, file_name='output.msh',
+            transformation=lambda x: np.real(x))
 
     """
-
     import os
 
-    interface = None  # Holds the actual FileInterface for the specified data format
+    # Holds the actual FileInterface for the specified data format
+    interface = None
     vertex_index_to_file_key_map = None
     element_index_to_file_key_map = None
 
@@ -282,11 +301,16 @@ def export(**kwargs):
     element_iterator = grid.leaf_view.entity_iterator(0)
     index_set = grid.leaf_view.index_set()
 
-    vertices = OrderedDict([(vertex_index_to_file_key_map[index_set.entity_index(vertex)], vertex.geometry.corners[:, 0])
-                            for vertex in vertex_iterator])
-    elements = OrderedDict([(element_index_to_file_key_map[index_set.entity_index(element)],
-                             {'data': [vertex_index_to_file_key_map[index_set.sub_entity_index(element, n, 2)] for n in range(3)],
-                              'domain_index':element.domain}) for element in element_iterator])
+    vertices = OrderedDict(
+        [(vertex_index_to_file_key_map[index_set.entity_index(vertex)],
+          vertex.geometry.corners[:, 0]) for vertex in vertex_iterator])
+    elements = OrderedDict(
+        [(element_index_to_file_key_map[index_set.entity_index(element)],
+          {'data':[vertex_index_to_file_key_map[
+              index_set.sub_entity_index(
+                  element, n, 2)] for n in range(3)],
+           'domain_index':element.domain})
+         for element in element_iterator])
 
     interface.add_grid_data(vertices, elements)
 
@@ -308,8 +332,10 @@ def export(**kwargs):
             data = OrderedDict.fromkeys(element_index_to_file_key_map)
 
             for element in grid.leaf_view.entity_iterator(0):
-                data[element_index_to_file_key_map[index_set.entity_index(element)]] = transformation(
-                    fun.evaluate(element, local_coordinates))
+                data[
+                    element_index_to_file_key_map[
+                        index_set.entity_index(element)]] = transformation(
+                            fun.evaluate(element, local_coordinates))
             interface.add_element_node_data(
                 data, kwargs.get('label', 'element_node_data'))
         elif data_type == 'node':
@@ -320,15 +346,17 @@ def export(**kwargs):
                     fun.evaluate(element, local_coordinates))
                 for i in range(3):
                     data[vertex_index_to_file_key_map[
-                        index_set.sub_entity_index(element, i, 2)]] = local_data[:, i]
+                        index_set.sub_entity_index(element, i, 2)]] = \
+                            local_data[:, i]
             interface.add_node_data(data, kwargs.get('label', 'node_data'))
         elif data_type == 'element':
             local_coordinates = _np.array([[1. / 3], [1. / 3]])
             data = OrderedDict.fromkeys(element_index_to_file_key_map)
 
             for element in grid.leaf_view.entity_iterator(0):
-                data[element_index_to_file_key_map[index_set.entity_index(element)]] = transformation(
-                    fun.evaluate(element, local_coordinates).ravel())
+                data[element_index_to_file_key_map[
+                    index_set.entity_index(element)]] = transformation(
+                        fun.evaluate(element, local_coordinates).ravel())
             interface.add_element_data(
                 data, kwargs.get('label', 'element_data'))
         else:
@@ -339,8 +367,10 @@ def export(**kwargs):
 
 
 class FileInterfaceImpl(object):
+    """Abstract implementation of a file interface."""
 
     def __init__(self):
+        """Constructor."""
         from collections import OrderedDict
 
         self.__vertices = OrderedDict()
@@ -348,30 +378,38 @@ class FileInterfaceImpl(object):
 
     @classmethod
     def read(cls, file_name):
+        """Read a file."""
         pass
 
     def write(self, file_name):
+        """Write a file."""
         pass
 
     def add_grid_data(self, vertices, elements):
+        """Add grid data."""
         self.__vertices = vertices
         self.__elements = elements
 
     def add_node_data(self, data, label):
+        """Add node data."""
         pass
 
     def add_element_data(self, data, label):
+        """Add element data."""
         pass
 
     def add_element_node_data(self, data, label):
+        """Add element node data."""
         pass
 
     @property
     def index_offset(self):
+        """Index offset."""
         return 1
 
     @property
     def default_data_type(self):
+        """Default type."""
         return 'node'
 
     vertices = property(lambda self: self.__vertices)
@@ -379,15 +417,20 @@ class FileInterfaceImpl(object):
 
 
 class Vertex(object):
+    """Definition of a vertex."""
 
     def __init__(self, index, x, y, z):
+        """Construct a vertex."""
         self.index = index
         self.data = _np.array([x, y, z], dtype='float64')
 
 
 class Element(object):
+    """Definition of an element."""
 
+    #pylint: disable=too-many-arguments
     def __init__(self, index, v0, v1, v2, domain_index=0):
+        """Construct an element."""
         self.index = index
         self.data = [v0, v1, v2]
         self.domain_index = domain_index
@@ -412,7 +455,7 @@ def three_planes_view(file_name, lower_left, upper_right, ndims, evaluator):
         dimension.
     evaluator : callable
         A function res = callable(points) that takes an 3 x n
-        numpy array of point coordinates and returns a real scalar 
+        numpy array of point coordinates and returns a real scalar
         numpy array of dimension n with the function values at the
         given points.
 
@@ -422,6 +465,7 @@ def three_planes_view(file_name, lower_left, upper_right, ndims, evaluator):
 
     fname, extension = os.path.splitext(file_name)
 
+    #pylint: disable=invalid-name
     ll = {"xy": (lower_left[0], lower_left[1]),
           "xz": (lower_left[0], lower_left[2]),
           "yz": (lower_left[1], lower_left[2])}
@@ -453,6 +497,7 @@ def three_planes_view(file_name, lower_left, upper_right, ndims, evaluator):
                          data_type='node',
                          vertex_index_to_file_key_map=range(
                              node_offset, node_offset + nnodes),
-                         element_index_to_file_key_map=range(element_offset, element_offset + nelements))
+                         element_index_to_file_key_map=range(
+                             element_offset, element_offset + nelements))
         node_offset += nnodes
         element_offset += nelements

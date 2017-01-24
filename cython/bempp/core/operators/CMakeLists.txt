@@ -7,8 +7,8 @@ copy_files_on_change(${headers}
     TARGETNAME bempp.core.operators-copied
 )
 
-install_python(FILES ${headers}
-    DESTINATION bempp/include/bempp/core/operators)
+#install_python(FILES ${headers}
+#    DESTINATION bempp/include/bempp/core/operators)
 add_dependencies(cython-headers bempp.core.operators-copied)
 
 add_python_module(bempp.core.operators __init__.py

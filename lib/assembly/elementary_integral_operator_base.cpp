@@ -103,17 +103,14 @@ ElementaryIntegralOperatorBase<BasisFunctionType, ResultType>::makeAssembler(
                            options.verbosityLevel(), cacheSingularIntegrals);
 }
 
-
 template <typename BasisFunctionType, typename ResultType>
 std::unique_ptr<typename ElementaryIntegralOperatorBase<
     BasisFunctionType, ResultType>::LocalAssembler>
-ElementaryIntegralOperatorBase<BasisFunctionType, ResultType>::makeAssembler(const ParameterList& parameterList) const
-{
+ElementaryIntegralOperatorBase<BasisFunctionType, ResultType>::makeAssembler(
+    const ParameterList &parameterList) const {
 
-    Context<BasisFunctionType,ResultType> context(parameterList);
-    return makeAssembler(*context.quadStrategy(),
-            context.assemblyOptions());
-
+  Context<BasisFunctionType, ResultType> context(parameterList);
+  return makeAssembler(*context.quadStrategy(), context.assemblyOptions());
 }
 
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS_AND_RESULT(

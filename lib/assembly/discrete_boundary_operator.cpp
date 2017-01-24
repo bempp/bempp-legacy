@@ -18,7 +18,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-
 #include <iostream>
 
 #include "discrete_boundary_operator.hpp"
@@ -98,6 +97,21 @@ void DiscreteBoundaryOperator<ValueType>::apply(const TranspositionMode trans,
 }
 
 template <typename ValueType>
+Matrix<ValueType> DiscreteBoundaryOperator<ValueType>::apply(
+    const TranspositionMode trans, const Matrix<ValueType> &x_in) const {
+
+  bool transposed = (trans == TRANSPOSE || trans == CONJUGATE_TRANSPOSE);
+
+  unsigned int rows = (transposed ? columnCount() : rowCount());
+  unsigned int cols = (transposed ? rowCount() : columnCount());
+
+  Matrix<ValueType> result(rows, x_in.cols());
+
+  apply(trans, x_in, result, 1.0, 0.0);
+  return result;
+}
+
+template <typename ValueType>
 void DiscreteBoundaryOperator<ValueType>::apply(
     const TranspositionMode trans, const Eigen::Ref<Vector<ValueType>> &x_in,
     Eigen::Ref<Vector<ValueType>> y_inout, const ValueType alpha,
@@ -107,91 +121,10 @@ void DiscreteBoundaryOperator<ValueType>::apply(
 }
 
 template <typename ValueType>
-PyObject *
-DiscreteBoundaryOperator<ValueType>::apply(const TranspositionMode trans,
-                                           const PyObject *x_in) const {
-
-  PyObject *x = const_cast<PyObject *>(x_in);
-
-  Py_INCREF(x); // Increase reference count while in function
-
-  if (!PyArray_Check(x)) {
-    Py_DECREF(x);
-    throw std::invalid_argument("DiscreteBoundaryOperator::apply(): "
-                                "Python object is not of PyArray type");
-  }
-
-  int typenum = PyArray_TYPE(reinterpret_cast<PyArrayObject *>(x));
-  if (typenum != Fiber::ScalarTraits<ValueType>::NumpyTypeNum) {
-    Py_DECREF(x);
-    throw std::invalid_argument("DiscreteBoundaryOperator::apply() "
-                                "Python Array has wrong type.");
-  }
-
-  if (!PyArray_ISALIGNED(reinterpret_cast<PyArrayObject *>(x))) {
-    Py_DECREF(x);
-    throw std::invalid_argument("DiscreteBoundaryOperator::apply(): "
-                                "Python array must be aligned.");
-  }
-
-  PyObject *x_f;
-
-  if (!PyArray_IS_F_CONTIGUOUS(reinterpret_cast<PyArrayObject *>(x)))
-    x_f =
-        PyArray_NewCopy(reinterpret_cast<PyArrayObject *>(x), NPY_FORTRANORDER);
-  else
-    x_f = x;
-
-  int ndim = PyArray_NDIM(reinterpret_cast<PyArrayObject *>(x_f));
-
-  if (ndim != 2) {
-    Py_DECREF(x_f);
-    throw std::invalid_argument("DiscreteBoundaryOperator::apply(): "
-                                "PyArray x_in must have two dimensions.");
-  }
-
-  npy_intp nrows = PyArray_DIM(reinterpret_cast<PyArrayObject *>(x_f), 0);
-  npy_intp ncols = PyArray_DIM(reinterpret_cast<PyArrayObject *>(x_f), 1);
-
-  bool transposed = (trans == TRANSPOSE || trans == CONJUGATE_TRANSPOSE);
-  if (nrows != (transposed ? rowCount() : columnCount())) {
-    Py_DECREF(x_f);
-    throw std::invalid_argument("DiscreteBoundaryOperator::apply(): "
-                                "PyArray x_in has invalid number of rows");
-  }
-  int resultRows = transposed ? columnCount() : rowCount();
-
-  npy_intp dims[2] = {resultRows, ncols};
-  PyObject *y_inout = PyArray_ZEROS(2, dims, typenum, true);
-
-  // Create Maps to the underlying data
-
-  Eigen::Map<Matrix<ValueType>> x_mat(
-      reinterpret_cast<ValueType *>(
-          PyArray_DATA(reinterpret_cast<PyArrayObject *>(x_f))),
-      nrows, ncols);
-
-  Eigen::Map<Matrix<ValueType>> y_mat(
-      reinterpret_cast<ValueType *>(
-          PyArray_DATA(reinterpret_cast<PyArrayObject *>(y_inout))),
-      resultRows, ncols);
-
-  for (int i = 0; i < ncols; ++i)
-    this->apply(trans, Eigen::Ref<Vector<ValueType>>(x_mat.col(i)),
-                Eigen::Ref<Vector<ValueType>>(y_mat.col(i)), 1.0, 0.0);
-
-  Py_DECREF(x_f);
-  return y_inout;
-}
-
-
-template <typename ValueType>
 void DiscreteBoundaryOperator<ValueType>::dump() const {
   std::cout << asMatrix() << std::endl;
 }
 
-
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_RESULT(DiscreteBoundaryOperator);
-
 
 } // namespace Bempp

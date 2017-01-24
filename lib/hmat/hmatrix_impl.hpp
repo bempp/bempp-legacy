@@ -8,7 +8,9 @@
 #include "hmatrix_dense_data.hpp"
 #include "hmatrix_low_rank_data.hpp"
 #include "math_helper.hpp"
+#include <tbb/parallel_for.h>
 #include <tbb/parallel_for_each.h>
+#include <tbb/spin_mutex.h>
 #include <tbb/task_group.h>
 
 #include <algorithm>
@@ -17,19 +19,20 @@ namespace hmat {
 
 template <typename ValueType, int N>
 HMatrix<ValueType, N>::HMatrix(
-    const shared_ptr<BlockClusterTree<N>> &blockClusterTree, int applyParallelLevels)
-    : m_applyParallelLevels(applyParallelLevels), 
-      m_blockClusterTree(blockClusterTree), m_numberOfDenseBlocks(0),
-      m_numberOfLowRankBlocks(0), m_memSizeKb(0.0) {}
+    const shared_ptr<BlockClusterTree<N>> &blockClusterTree, MPI_Comm comm)
+    : m_blockClusterTree(blockClusterTree), m_numberOfDenseBlocks(0),
+      m_numberOfLowRankBlocks(0), m_memSizeKb(0.0), m_comm(comm) {
+
+  MPI_Comm_size(comm, &m_nproc);
+  MPI_Comm_rank(comm, &m_rank);
+}
 
 template <typename ValueType, int N>
 HMatrix<ValueType, N>::HMatrix(
     const shared_ptr<BlockClusterTree<N>> &blockClusterTree,
-    const HMatrixCompressor<ValueType, N> &hMatrixCompressor, 
-    int applyParallelLevels, bool coarsening,
-    double coarsening_accuracy)
-    : HMatrix<ValueType, N>(blockClusterTree, applyParallelLevels) {
-  initialize(hMatrixCompressor, coarsening, coarsening_accuracy);
+    const HMatrixCompressor<ValueType, N> &hMatrixCompressor, MPI_Comm comm)
+    : HMatrix<ValueType, N>(blockClusterTree, comm) {
+  initialize(hMatrixCompressor);
 }
 
 template <typename ValueType, int N>
@@ -69,35 +72,54 @@ double HMatrix<ValueType, N>::memSizeKb() const {
 
 template <typename ValueType, int N>
 void HMatrix<ValueType, N>::initialize(
-    const HMatrixCompressor<ValueType, N> &hMatrixCompressor, bool coarsening,
-    double coarsening_accuracy) {
+    const HMatrixCompressor<ValueType, N> &hMatrixCompressor) {
 
   reset();
 
+  auto leafNodes = this->m_blockClusterTree->leafNodes();
+
+  // Type of a block cluster tree node.
   typedef decltype(m_blockClusterTree->root()) node_t;
 
-  std::function<void(const node_t &node)> compressFun =
-      [&](const node_t &node) {
-        if (node->isLeaf()) {
-          shared_ptr<HMatrixData<ValueType>> nodeData;
-          hMatrixCompressor.compressBlock(*node, nodeData);
-          m_hMatrixData[node] = nodeData;
-        } else {
-          tbb::task_group g;
-          g.run([&] { compressFun(node->child(0)); });
-          g.run([&] { compressFun(node->child(1)); });
-          g.run([&] { compressFun(node->child(2)); });
-          g.run_and_wait([&] { compressFun(node->child(3)); });
+  // Sorting by size not necessary any more as a natural size
+  // ordering is induced by the breadth-first search of the
+  // leafs function that returns the leaf vector.
+  /*
 
-          // Now do a coarsen step
-          if (coarsening)
-            coarsen_impl(node, coarsening_accuracy);
-        }
+    // Sort the leaf nodes by size.
+    std::stable_sort(
+        leafNodes.begin(), leafNodes.end(),
+        [&](const node_t &a, const node_t &b) -> bool {
+          auto rowRange_a = a->data().rowClusterTreeNode->data().indexRange;
+          auto colRange_a = a->data().columnClusterTreeNode->data().indexRange;
+          auto rowRange_b = b->data().rowClusterTreeNode->data().indexRange;
+          auto colRange_b = b->data().columnClusterTreeNode->data().indexRange;
 
-      };
+          std::size_t size_a = std::max(rowRange_a[1] - rowRange_a[0],
+                                        colRange_a[1] - colRange_a[0]);
+          std::size_t size_b = std::max(rowRange_b[1] - rowRange_b[0],
+                                        colRange_b[1] - colRange_b[0]);
 
-  // Start the compression
-  compressFun(m_blockClusterTree->root());
+          // Sort in descending order
+          return size_a > size_b;
+
+        });
+  */
+
+  for (int index = m_rank; index < leafNodes.size(); index += m_nproc)
+    m_myLeafs.push_back(leafNodes[index]);
+
+  std::size_t numberOfLeafs = m_myLeafs.size();
+
+  tbb::parallel_for(tbb::blocked_range<std::size_t>(0, numberOfLeafs),
+                    [&](const tbb::blocked_range<std::size_t> &r) {
+                      for (auto index = r.begin(); index != r.end(); index++) {
+                        shared_ptr<HMatrixData<ValueType>> nodeData;
+                        hMatrixCompressor.compressBlock(*m_myLeafs[index],
+                                                        nodeData);
+                        m_hMatrixData[m_myLeafs[index]] = nodeData;
+                      }
+                    });
 
   // Compute statistics
 
@@ -110,7 +132,7 @@ void HMatrix<ValueType, N>::initialize(
       m_numberOfLowRankBlocks++;
     m_memSizeKb += elem.second->memSizeKb();
   }
-
+  MPI_Barrier(m_comm);
 }
 
 template <typename ValueType, int N> void HMatrix<ValueType, N>::reset() {
@@ -186,15 +208,12 @@ void HMatrix<ValueType, N>::apply(const Eigen::Ref<Matrix<ValueType>> &X,
                                   Eigen::Ref<Matrix<ValueType>> Y,
                                   TransposeMode trans, ValueType alpha,
                                   ValueType beta) const {
-  // Specify the number of task splits.
-  // Create overall 4^(levelCount) tasks.
-  // Choose levelCount = 0 for no paralellism.
-  int levelCount = m_applyParallelLevels;
 
-  if (beta == ValueType(0))
+  if (beta == ValueType(0) || m_rank != 0)
     Y.setZero();
-  else
+  else {
     Y *= beta;
+  }
 
   Matrix<ValueType> xPermuted;
   Matrix<ValueType> yPermuted;
@@ -203,193 +222,74 @@ void HMatrix<ValueType, N>::apply(const Eigen::Ref<Matrix<ValueType>> &X,
 
     xPermuted = alpha * permuteMatToHMatDofs(X, COL);
     yPermuted = permuteMatToHMatDofs(Y, ROW);
+
   } else {
+
     xPermuted = alpha * permuteMatToHMatDofs(X, ROW);
     yPermuted = permuteMatToHMatDofs(Y, COL);
   }
 
-  if (levelCount > 0)
-  apply_impl_parallel(this->m_blockClusterTree->root(),
-             Eigen::Ref<Matrix<ValueType>>(xPermuted),
-             Eigen::Ref<Matrix<ValueType>>(yPermuted), trans, levelCount);
-  else
-  apply_impl_serial(this->m_blockClusterTree->root(),
-             Eigen::Ref<Matrix<ValueType>>(xPermuted),
-             Eigen::Ref<Matrix<ValueType>>(yPermuted), trans);
+  std::size_t numberOfLeafs = m_myLeafs.size();
+  auto cols = xPermuted.cols();
 
+  // Hack because Eigen ref does not like const.
+  // Eigen::Ref<Matrix<ValueType>> x_no_const =
+  // const_cast<Eigen::Ref<Matrix<ValueType>> &>(xPermuted);
+
+  // Initialize one mutex for each output row
+  Matrix<tbb::spin_mutex> mutex(Y.rows(), 1);
+
+  tbb::parallel_for(
+      tbb::blocked_range<std::size_t>(0, numberOfLeafs),
+      [&](const tbb::blocked_range<std::size_t> &r) {
+        for (auto index = r.begin(); index != r.end(); ++index) {
+          auto rowRange =
+              m_myLeafs[index]->data().rowClusterTreeNode->data().indexRange;
+          auto colRange =
+              m_myLeafs[index]->data().columnClusterTreeNode->data().indexRange;
+
+          if (trans == TransposeMode::NOTRANS || trans == TransposeMode::CONJ) {
+            Matrix<ValueType> x_data = xPermuted.block(
+                colRange[0], 0, colRange[1] - colRange[0], cols);
+            Matrix<ValueType> result =
+                Matrix<ValueType>::Zero(rowRange[1] - rowRange[0], cols);
+            this->m_hMatrixData.at(m_myLeafs[index])
+                ->apply(x_data, result, trans, 1, 1);
+
+            for (int i = rowRange[0]; i < rowRange[1]; ++i) {
+              tbb::spin_mutex::scoped_lock lock(mutex(i, 0));
+              for (int j = 0; j < cols; ++j)
+                yPermuted(i, j) += result(i - rowRange[0], j);
+            }
+          } else {
+            Eigen::Ref<Matrix<ValueType>> x_data = xPermuted.block(
+                rowRange[0], 0, rowRange[1] - rowRange[0], cols);
+            Matrix<ValueType> result =
+                Matrix<ValueType>::Zero(colRange[1] - colRange[0], cols);
+            this->m_hMatrixData.at(m_myLeafs[index])
+                ->apply(x_data, result, trans, 1, 1);
+
+            for (int i = colRange[0]; i < colRange[1]; ++i) {
+              tbb::spin_mutex::scoped_lock lock(mutex(i, 0));
+              for (int j = 0; j < cols; ++j)
+                yPermuted(i, j) += result(i - colRange[0], j);
+            }
+          }
+        }
+      });
 
   if (trans == TransposeMode::NOTRANS || trans == TransposeMode::CONJ)
     Y = this->permuteMatToOriginalDofs(yPermuted, ROW);
   else
     Y = this->permuteMatToOriginalDofs(yPermuted, COL);
 
-  // Y = this->permuteMatToOriginalDofs(yPermuted, ROW);
-}
-
-template <typename ValueType, int N>
-void HMatrix<ValueType, N>::apply_impl_parallel(
-    const shared_ptr<BlockClusterTreeNode<N>> &node,
-    const Eigen::Ref<Matrix<ValueType>> &X, Eigen::Ref<Matrix<ValueType>> Y,
-    TransposeMode trans, int levelCount) const {
-
-  if (node->isLeaf()) {
-    this->m_hMatrixData.at(node)->apply(X, Y, trans, 1, 1);
-  } else {
-
-    auto child0 = node->child(0);
-    auto child1 = node->child(1);
-    auto child2 = node->child(2);
-    auto child3 = node->child(3);
-
-    IndexRangeType childRowRange =
-        child0->data().rowClusterTreeNode->data().indexRange;
-    IndexRangeType childColRange =
-        child0->data().columnClusterTreeNode->data().indexRange;
-
-    int rowSplit = childRowRange[1] - childRowRange[0];
-    int colSplit = childColRange[1] - childColRange[0];
-
-    // Ugly hack since Eigen::Ref constructor does not like const objects
-    Eigen::Ref<Matrix<ValueType>> x_no_const =
-        const_cast<Eigen::Ref<Matrix<ValueType>> &>(X);
-
-    int x_split;
-    int y_split;
-
-    if (trans == TransposeMode::NOTRANS || trans == TransposeMode::CONJ) {
-      x_split = colSplit;
-      y_split = rowSplit;
-    } else {
-      x_split = rowSplit;
-      y_split = colSplit;
-    }
-
-    Eigen::Ref<Matrix<ValueType>> xData1(x_no_const.topRows(x_split));
-    Eigen::Ref<Matrix<ValueType>> xData2(
-        x_no_const.bottomRows(X.rows() - x_split));
-
-    Eigen::Ref<Matrix<ValueType>> yData1(Y.topRows(y_split));
-    Eigen::Ref<Matrix<ValueType>> yData2(Y.bottomRows(Y.rows() - y_split));
-
-    tbb::task_group g;
-
-    if (levelCount>1){
-
-    if (trans == TransposeMode::NOTRANS || trans == TransposeMode::CONJ) {
-
-      g.run([&] {
-        this->apply_impl_parallel(child0, xData1, yData1, trans, levelCount-1);
-        this->apply_impl_parallel(child1, xData2, yData1, trans, levelCount-1);
-      });
-      g.run_and_wait([&] {
-        this->apply_impl_parallel(child2, xData1, yData2, trans, levelCount-1);
-        this->apply_impl_parallel(child3, xData2, yData2, trans, levelCount-1);
-      });
-    } else {
-      g.run([&] {
-        this->apply_impl_parallel(child0, xData1, yData1, trans, levelCount-1);
-        this->apply_impl_parallel(child2, xData2, yData1, trans, levelCount-1);
-      });
-      g.run_and_wait([&] {
-        this->apply_impl_parallel(child1, xData1, yData2, trans, levelCount-1);
-        this->apply_impl_parallel(child3, xData2, yData2, trans, levelCount-1);
-      });
-    }
-    }
-    else{
-
-    if (trans == TransposeMode::NOTRANS || trans == TransposeMode::CONJ) {
-
-      g.run([&] {
-        this->apply_impl_serial(child0, xData1, yData1, trans);
-        this->apply_impl_serial(child1, xData2, yData1, trans);
-      });
-      g.run_and_wait([&] {
-        this->apply_impl_serial(child2, xData1, yData2, trans);
-        this->apply_impl_serial(child3, xData2, yData2, trans);
-      });
-    } else {
-      g.run([&] {
-        this->apply_impl_serial(child0, xData1, yData1, trans);
-        this->apply_impl_serial(child2, xData2, yData1, trans);
-      });
-      g.run_and_wait([&] {
-        this->apply_impl_serial(child1, xData1, yData2, trans);
-        this->apply_impl_serial(child3, xData2, yData2, trans);
-      });
-    }
-
-    }
+  if (m_nproc > 1) {
+    // Perform an all reduce operation if there is more than one proc
+    Matrix<ValueType> globalY(Y.rows(), Y.cols());
+    MPI_Allreduce(Y.data(), globalY.data(), Y.rows() * Y.cols(),
+                  MpiTrait<ValueType>().type, MPI_SUM, m_comm);
+    Y = globalY;
   }
-
-}
-
-
-template <typename ValueType, int N>
-void HMatrix<ValueType, N>::apply_impl_serial(
-    const shared_ptr<BlockClusterTreeNode<N>> &node,
-    const Eigen::Ref<Matrix<ValueType>> &X, Eigen::Ref<Matrix<ValueType>> Y,
-    TransposeMode trans) const {
-
-  if (node->isLeaf()) {
-    this->m_hMatrixData.at(node)->apply(X, Y, trans, 1, 1);
-  } else {
-
-    auto child0 = node->child(0);
-    auto child1 = node->child(1);
-    auto child2 = node->child(2);
-    auto child3 = node->child(3);
-
-    IndexRangeType childRowRange =
-        child0->data().rowClusterTreeNode->data().indexRange;
-    IndexRangeType childColRange =
-        child0->data().columnClusterTreeNode->data().indexRange;
-
-    int rowSplit = childRowRange[1] - childRowRange[0];
-    int colSplit = childColRange[1] - childColRange[0];
-
-    IndexRangeType inputRange;
-    IndexRangeType outputRange;
-
-    int x_size = X.rows();
-    int y_size = Y.rows();
-
-    // Ugly hack since Eigen::Ref constructor does not like const objects
-    Eigen::Ref<Matrix<ValueType>> x_no_const =
-        const_cast<Eigen::Ref<Matrix<ValueType>> &>(X);
-
-    int x_split;
-    int y_split;
-
-    if (trans == TransposeMode::NOTRANS || trans == TransposeMode::CONJ) {
-      x_split = colSplit;
-      y_split = rowSplit;
-    } else {
-      x_split = rowSplit;
-      y_split = colSplit;
-    }
-
-    Eigen::Ref<Matrix<ValueType>> xData1(x_no_const.topRows(x_split));
-    Eigen::Ref<Matrix<ValueType>> xData2(
-        x_no_const.bottomRows(X.rows() - x_split));
-
-    Eigen::Ref<Matrix<ValueType>> yData1(Y.topRows(y_split));
-    Eigen::Ref<Matrix<ValueType>> yData2(Y.bottomRows(Y.rows() - y_split));
-
-    if (trans == TransposeMode::NOTRANS || trans == TransposeMode::CONJ) {
-
-        this->apply_impl_serial(child0, xData1, yData1, trans);
-        this->apply_impl_serial(child1, xData2, yData1, trans);
-        this->apply_impl_serial(child2, xData1, yData2, trans);
-        this->apply_impl_serial(child3, xData2, yData2, trans);
-    } else {
-        this->apply_impl_serial(child0, xData1, yData1, trans);
-        this->apply_impl_serial(child2, xData2, yData1, trans);
-        this->apply_impl_serial(child1, xData1, yData2, trans);
-        this->apply_impl_serial(child3, xData2, yData2, trans);
-    }
-  }
-
 }
 
 template <typename ValueType, int N>
@@ -416,87 +316,6 @@ double HMatrix<ValueType, N>::frobeniusNorm_impl(
   result = std::sqrt(res0 * res0 + res1 * res1 + res2 * res2 + res3 * res3);
 
   return result;
-}
-
-template <typename ValueType, int N>
-bool HMatrix<ValueType, N>::coarsen_impl(
-    const shared_ptr<BlockClusterTreeNode<N>> &node, double coarsen_accuracy) {
-
-  // Exit if children are not leafs or not all admissible
-
-  bool isLeaf = true;
-  for (int i = 0; i < 4; ++i) {
-    if (!node->child(i)->isLeaf())
-      isLeaf = false;
-  }
-
-  if (!isLeaf) {
-    return false;
-  }
-
-  // Get dimensions of current block
-
-  IndexRangeType rowIndexRange =
-      node->data().rowClusterTreeNode->data().indexRange;
-  IndexRangeType columnIndexRange =
-      node->data().columnClusterTreeNode->data().indexRange;
-  int rows = rowIndexRange[1] - rowIndexRange[0];
-  int cols = columnIndexRange[1] - columnIndexRange[0];
-
-  // Compute maximum possible rank for coarsening
-
-  int storage = 0;
-  for (int i = 0; i < 4; ++i) {
-    auto data = m_hMatrixData.at(node->child(i));
-    storage += data->numberOfElements();
-  }
-
-  int maxk = 1 + std::trunc((1.0 * storage) / (rows + cols));
-
-  // Now coarsen the current node
-
-  bool success;
-  Matrix<ValueType> A;
-  Matrix<ValueType> B;
-
-  int p = 4; // Oversampling parameter (k+p) random cols are used to determine
-             // range space.
-
-  matApply_t<ValueType> fun = [this, node, rows, cols](
-      const Eigen::Ref<Matrix<ValueType>> &mat, TransposeMode trans) {
-
-    Matrix<ValueType> result = Matrix<ValueType>::Zero(rows, mat.cols());
-    if (trans == NOTRANS)
-      result = Matrix<ValueType>::Zero(rows, mat.cols());
-    else
-      result = Matrix<ValueType>::Zero(cols, mat.cols());
-
-    apply_impl_serial(node, mat, Eigen::Ref<Matrix<ValueType>>(result), trans);
-    return result;
-  };
-
-  randomizedLowRankApproximation(fun, rows, cols, coarsen_accuracy, maxk,
-                                 maxk + p, success, A, B);
-
-  if (success) {
-    // Remove data associated with children
-    for (int i = 0; i < 4; ++i)
-      m_hMatrixData.at(node->child(i)).reset();
-
-    // Remove children from block cluster tree
-
-    node->removeChildren();
-
-    // Add new data block and set node to admissible
-
-    shared_ptr<HMatrixData<ValueType>> nodeData(
-        new HMatrixLowRankData<ValueType>(A, B));
-    m_hMatrixData[node] = nodeData;
-    node->data().admissible = true;
-    return true;
-  } else {
-    return false;
-  }
 }
 }
 
