@@ -228,6 +228,9 @@ public:
    *  See makeQuadratureOrderUniformInEachCluster() for more information. */
   bool isQuadratureOrderUniformInEachCluster() const;
 
+  void enableCuda(bool value = true);
+  bool isCudaEnabled() const;
+
   /** @} */
 
 private:
@@ -239,6 +242,7 @@ private:
   bool m_sparseStorageOfLocalOperators;
   bool m_jointAssembly;
   bool m_uniformQuadrature;
+  bool m_cuda;
   Value m_blasInQuadrature;
   /** \endcond */
 };

@@ -33,11 +33,14 @@
 #include "../common/bounding_box.hpp"
 #include "../common/chunk_statistics.hpp"
 #include "../common/to_string.hpp"
+
 #include "../fiber/explicit_instantiation.hpp"
 #include "../fiber/local_assembler_for_integral_operators.hpp"
 #include "../fiber/local_assembler_for_potential_operators.hpp"
 #include "../fiber/scalar_traits.hpp"
 #include "../fiber/shared_ptr.hpp"
+#include "../fiber/default_local_assembler_for_integral_operators_on_surfaces.hpp"
+
 #include "../space/space.hpp"
 
 #include "../hmat/block_cluster_tree.hpp"
@@ -52,6 +55,7 @@
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
+#include <chrono>
 
 #include <boost/type_traits/is_complex.hpp>
 
@@ -116,6 +120,8 @@ std::unique_ptr<DiscreteBoundaryOperator<ResultType>>
 HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
     const Space<BasisFunctionType> &testSpace,
     const Space<BasisFunctionType> &trialSpace,
+    const shared_ptr<const Fiber::CollectionOfKernels<KernelType>> &kernel,
+    const Shapeset &testShapeset, const Shapeset &trialShapeset,
     const std::vector<LocalAssemblerForIntegralOperators *> &localAssemblers,
     const std::vector<LocalAssemblerForIntegralOperators *>
         &localAssemblersForAdmissibleBlocks,
@@ -144,30 +150,115 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
   auto blockClusterTree = generateBlockClusterTree(
       *actualTestSpace, *actualTrialSpace, parameterList);
 
-  WeakFormHMatAssemblyHelper<BasisFunctionType, ResultType> helper(
-      *actualTestSpace, *actualTrialSpace, blockClusterTree, localAssemblers,
-      sparseTermsToAdd, denseTermMultipliers, sparseTermMultipliers);
-
   auto compressionAlgorithm = parameterList.template get<std::string>(
       "options.hmat.compressionAlgorithm");
 
   auto maxRank = parameterList.template get<int>("options.hmat.maxRank");
   auto eps = parameterList.template get<double>("options.hmat.eps");
 
+  // Create the operator's hierarchical matrix
   shared_ptr<hmat::DefaultHMatrixType<ResultType>> hMatrix;
 
-  if (compressionAlgorithm == "aca") {
+  std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
-    hmat::HMatrixAcaCompressor<ResultType, 2> compressor(helper, eps, maxRank);
-    hMatrix.reset(
-        new hmat::DefaultHMatrixType<ResultType>(blockClusterTree, compressor));
-  } else if (compressionAlgorithm == "dense") {
-    hmat::HMatrixDenseCompressor<ResultType, 2> compressor(helper);
-    hMatrix.reset(
-        new hmat::DefaultHMatrixType<ResultType>(blockClusterTree, compressor));
-  } else
-    throw std::runtime_error("HMatGlobalAssember::assembleDetachedWeakForm: "
-                             "Unknown compression algorithm");
+  if (context.cudaOptions().precision() == "single") {
+
+    typedef typename Fiber::ScalarTraits<typename Fiber::ScalarTraits<BasisFunctionType>::RealType>::SingleType CudaBasisFunctionType;
+    typedef typename Fiber::ScalarTraits<typename Fiber::ScalarTraits<KernelType>::RealType>::SingleType CudaKernelType;
+    typedef typename Fiber::ScalarTraits<typename Fiber::ScalarTraits<ResultType>::RealType>::SingleType CudaResultType;
+
+    WeakFormHMatAssemblyHelper<BasisFunctionType, KernelType, ResultType,
+        CudaBasisFunctionType, CudaKernelType, CudaResultType> helper(
+        *actualTestSpace, *actualTrialSpace, kernel, testShapeset,
+        trialShapeset, blockClusterTree, localAssemblers, sparseTermsToAdd,
+        denseTermMultipliers, sparseTermMultipliers, context);
+
+    if (compressionAlgorithm == "aca") {
+
+      hmat::HMatrixAcaCompressor<ResultType, 2> compressor(helper, eps, maxRank);
+      hMatrix.reset(
+          new hmat::DefaultHMatrixType<ResultType>(blockClusterTree, compressor));
+
+    } else if (compressionAlgorithm == "dense") {
+
+      hmat::HMatrixDenseCompressor<ResultType, 2> compressor(helper);
+      hMatrix.reset(
+          new hmat::DefaultHMatrixType<ResultType>(blockClusterTree, compressor));
+
+//    } else if (compressionAlgorithm == "precond") {
+//
+//      hmat::HMatrixPrecondCompressor<ResultType, 2> compressor(helper);
+//      hMatrix.reset(
+//          new hmat::DefaultHMatrixType<ResultType>(blockClusterTree, compressor));
+
+    } else
+      throw std::runtime_error("HMatGlobalAssember::assembleDetachedWeakForm: "
+                               "Unknown compression algorithm");
+
+    size_t cudaBlockCount, cpuBlockCount,
+        accessedCudaEntryCount, accessedCpuEntryCount;
+    helper.getStatistics(cudaBlockCount, cpuBlockCount,
+        accessedCudaEntryCount, accessedCpuEntryCount);
+    std::cout << cudaBlockCount << " blocks and "
+              << accessedCudaEntryCount << " matrix entries have been treated on the device,"
+              << std::endl;
+    std::cout << cpuBlockCount << " blocks and "
+              << accessedCpuEntryCount << " matrix entries have been treated on the CPU."
+              << std::endl;
+  } else {
+
+    typedef typename Fiber::ScalarTraits<typename Fiber::ScalarTraits<BasisFunctionType>::RealType>::DoubleType CudaBasisFunctionType;
+    typedef typename Fiber::ScalarTraits<typename Fiber::ScalarTraits<KernelType>::RealType>::DoubleType CudaKernelType;
+    typedef typename Fiber::ScalarTraits<typename Fiber::ScalarTraits<ResultType>::RealType>::DoubleType CudaResultType;
+
+    WeakFormHMatAssemblyHelper<BasisFunctionType, KernelType, ResultType,
+        CudaBasisFunctionType, CudaKernelType, CudaResultType> helper(
+        *actualTestSpace, *actualTrialSpace, kernel, testShapeset,
+        trialShapeset, blockClusterTree, localAssemblers, sparseTermsToAdd,
+        denseTermMultipliers, sparseTermMultipliers, context);
+
+    if (compressionAlgorithm == "aca") {
+
+      hmat::HMatrixAcaCompressor<ResultType, 2> compressor(helper, eps, maxRank);
+      hMatrix.reset(
+          new hmat::DefaultHMatrixType<ResultType>(blockClusterTree, compressor));
+
+    } else if (compressionAlgorithm == "dense") {
+
+      hmat::HMatrixDenseCompressor<ResultType, 2> compressor(helper);
+      hMatrix.reset(
+          new hmat::DefaultHMatrixType<ResultType>(blockClusterTree, compressor));
+
+//    } else if (compressionAlgorithm == "precond") {
+//
+//      hmat::HMatrixPrecondCompressor<ResultType, 2> compressor(helper);
+//      hMatrix.reset(
+//          new hmat::DefaultHMatrixType<ResultType>(blockClusterTree, compressor));
+
+    } else
+      throw std::runtime_error("HMatGlobalAssember::assembleDetachedWeakForm: "
+                               "Unknown compression algorithm");
+
+    size_t cudaBlockCount, cpuBlockCount,
+        accessedCudaEntryCount, accessedCpuEntryCount;
+    helper.getStatistics(cudaBlockCount, cpuBlockCount,
+        accessedCudaEntryCount, accessedCpuEntryCount);
+    std::cout << cudaBlockCount << " blocks and "
+              << accessedCudaEntryCount << " matrix entries have been treated on the device,"
+              << std::endl;
+    std::cout << cpuBlockCount << " blocks and "
+              << accessedCpuEntryCount << " matrix entries have been treated on the CPU."
+              << std::endl;
+  }
+
+  std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+  std::cout << "Time for H-matrix assembly = "
+            << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()
+            << " ms" << std::endl;
+
+  std::ofstream file("hmat_assembly_timer.dat", std::ios::out | std::ios::app);
+  file << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << std::endl;
+
   return std::unique_ptr<DiscreteBoundaryOperator<ResultType>>(
       static_cast<DiscreteBoundaryOperator<ResultType> *>(
           new DiscreteHMatBoundaryOperator<ResultType>(hMatrix)));
@@ -181,7 +272,9 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
     LocalAssemblerForIntegralOperators &localAssembler,
     LocalAssemblerForIntegralOperators &localAssemblerForAdmissibleBlocks,
     const Context<BasisFunctionType, ResultType> &context, int symmetry) {
+
   typedef LocalAssemblerForIntegralOperators Assembler;
+
   std::vector<Assembler *> localAssemblers(1, &localAssembler);
   std::vector<Assembler *> localAssemblersForAdmissibleBlocks(
       1, &localAssemblerForAdmissibleBlocks);
@@ -189,10 +282,27 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
   std::vector<ResultType> denseTermsMultipliers(1, 1.0);
   std::vector<ResultType> sparseTermsMultipliers;
 
-  return assembleDetachedWeakForm(testSpace, trialSpace, localAssemblers,
-                                  localAssemblersForAdmissibleBlocks,
-                                  sparseTermsToAdd, denseTermsMultipliers,
-                                  sparseTermsMultipliers, context, symmetry);
+  // Cast assembler to default assembler
+  const Fiber::DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
+      BasisFunctionType, KernelType, ResultType, GeometryFactory>
+  &defaultAssembler = reinterpret_cast<const Fiber::DefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
+          BasisFunctionType, KernelType, ResultType, GeometryFactory> &>(localAssembler);
+
+  // Get kernel from assembler
+  shared_ptr<const Fiber::CollectionOfKernels<KernelType>> kernel =
+      defaultAssembler.kernels();
+
+  // Get shapesets from assembler
+  shared_ptr<const std::vector<const Shapeset*>> testShapesets, trialShapesets;
+  defaultAssembler.getShapesets(testShapesets, trialShapesets);
+  const Shapeset &testShapeset = *(*testShapesets)[0];
+  const Shapeset &trialShapeset = *(*trialShapesets)[0];
+
+  return assembleDetachedWeakForm(
+      testSpace, trialSpace, kernel, testShapeset, trialShapeset,
+      localAssemblers, localAssemblersForAdmissibleBlocks,
+      sparseTermsToAdd, denseTermsMultipliers, sparseTermsMultipliers,
+      context, symmetry);
 }
 
 template <typename BasisFunctionType, typename ResultType>

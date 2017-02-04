@@ -68,7 +68,7 @@ private:
 
 private:
   /** \cond PRIVATE */
-  Matrix<ValueType> m_mat;
+  mutable Matrix<ValueType> m_mat;
   /** \endcond */
 };
 

@@ -62,6 +62,9 @@ ParameterList GlobalParameters::parameterList() {
   parameters.put("options.assembly.interpolationPointsPerWavelength",
                  static_cast<int>(5000));
 
+  // Cuda support
+  parameters.put("options.assembly.enableCuda", true);
+
   // Order for singular double integrals.
   parameters.put("options.quadrature.doubleSingular", static_cast<int>(6));
 
@@ -115,6 +118,9 @@ ParameterList GlobalParameters::parameterList() {
 
   // Compression algorithm
   parameters.put("options.hmat.compressionAlgorithm", std::string("aca"));
+
+  // Specifies the minimum block size for blocks to be treated on the device
+  parameters.put("options.hmat.cudaMinBlockSize", static_cast<int>(100000));
 
   // Cuda precision
   parameters.put("options.cuda.precision", std::string("double"));

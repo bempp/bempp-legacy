@@ -21,7 +21,7 @@
 #ifndef fiber_cuda_evaluate_modified_helmholtz_3d_hypersingular_integral_cuh
 #define fiber_cuda_evaluate_modified_helmholtz_3d_hypersingular_integral_cuh
 
-#include "cuda.hpp"
+#include "cuda.cuh"
 #include "cuda_evaluate_modified_helmholtz_3d_single_layer_potential_integral.cuh"
 
 #include "../common/scalar_traits.hpp"
@@ -64,12 +64,12 @@ CudaEvaluateHelmholtz3dHypersingularIntegralFunctorCached(
     const typename ScalarTraits<BasisFunctionType>::RealType* testGlobalPoints,
     const typename ScalarTraits<BasisFunctionType>::RealType* testElemNormals,
     const typename ScalarTraits<BasisFunctionType>::RealType* testIntegrationElements,
-    const BasisFunctionType* testSurfaceCurls,
+    const typename ScalarTraits<BasisFunctionType>::RealType* testJacobianInversesTransposed,
     const unsigned int trialElemCount,
     const typename ScalarTraits<BasisFunctionType>::RealType* trialGlobalPoints,
     const typename ScalarTraits<BasisFunctionType>::RealType* trialElemNormals,
     const typename ScalarTraits<BasisFunctionType>::RealType* trialIntegrationElements,
-    const BasisFunctionType* trialSurfaceCurls,
+    const typename ScalarTraits<BasisFunctionType>::RealType* trialJacobianInversesTransposed,
     const KernelType waveNumberImag, ResultType* __restrict__ result) {
 
   typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
@@ -102,8 +102,8 @@ CudaEvaluateHelmholtz3dHypersingularIntegralFunctorCached(
     }
 
     // Evaluate kernel
-    KernelType kernelValues0Real[6 * 6], kernelValues0Imag[6 * 6],
-        kernelValues1Real[6 * 6], kernelValues1Imag[6 * 6];
+    KernelType kernelValues0Real[10 * 10], kernelValues0Imag[10 * 10],
+        kernelValues1Real[10 * 10], kernelValues1Imag[10 * 10];
     CoordinateType trialPointCoo[coordCount], testPointCoo[coordCount];
     for (size_t trialPoint = 0; trialPoint < trialPointCount; ++trialPoint) {
       for (size_t testPoint = 0; testPoint < testPointCount; ++testPoint) {
@@ -133,7 +133,8 @@ CudaEvaluateHelmholtz3dHypersingularIntegralFunctorCached(
     }
 
     // Perform numerical integration
-    CoordinateType trialElemSurfaceCurls[3];
+    BasisFunctionType testSurfaceCurls[3], trialSurfaceCurls[3];
+    BasisFunctionType vec[3];
     const size_t offsetResultImag = elemPairCount * trialDofCount * testDofCount;
     for (size_t trialDof = 0; trialDof < trialDofCount; ++trialDof) {
       for (size_t testDof = 0; testDof < testDofCount; ++testDof) {
@@ -142,28 +143,68 @@ CudaEvaluateHelmholtz3dHypersingularIntegralFunctorCached(
           const CoordinateType trialWeight =
               trialIntegrationElement * constTrialQuadWeights[trialPoint];
           ResultType partialSumReal = 0., partialSumImag = 0.;
-#pragma unroll
-	  for (size_t coordIndex = 0; coordIndex < coordCount; ++coordIndex) {
-              trialElemSurfaceCurls[coordIndex] =
-                  trialSurfaceCurls[coordIndex * trialDofCount * trialPointCount * trialElemCount
-                                    + trialDof * trialPointCount * trialElemCount
-                                    + trialPoint * trialElemCount
-                                    + trialElemPosition];
-          } 
           for (size_t testPoint = 0; testPoint < testPointCount; ++testPoint) {
             const CoordinateType testWeight =
                 testIntegrationElement * constTestQuadWeights[testPoint];
+
+            // Get surface curls
+            BasisFunctionType trialBasisDerivative0 =
+                trialBasisDerivatives[trialDof * trialPointCount + trialPoint];
+            BasisFunctionType trialBasisDerivative1 =
+                trialBasisDerivatives[trialDofCount * trialPointCount
+                                      + trialDof * trialPointCount
+                                      + trialPoint];
+            vec[0] =
+                trialBasisDerivative0 * trialJacobianInversesTransposed[trialElemPosition] +
+                trialBasisDerivative1 * trialJacobianInversesTransposed[3 * trialElemCount + trialElemPosition];
+            vec[1] =
+                trialBasisDerivative0 * trialJacobianInversesTransposed[trialElemCount + trialElemPosition] +
+                trialBasisDerivative1 * trialJacobianInversesTransposed[4 * trialElemCount + trialElemPosition];
+            vec[2] =
+                trialBasisDerivative0 * trialJacobianInversesTransposed[2 * trialElemCount + trialElemPosition] +
+                trialBasisDerivative1 * trialJacobianInversesTransposed[5 * trialElemCount + trialElemPosition];
+
+            trialSurfaceCurls[0] = trialElemNormal[1] * vec[2] - trialElemNormal[2] * vec[1];
+            trialSurfaceCurls[1] = trialElemNormal[2] * vec[0] - trialElemNormal[0] * vec[2];
+            trialSurfaceCurls[2] = trialElemNormal[0] * vec[1] - trialElemNormal[1] * vec[0];
+
+//            if (i == 0) {
+//              printf("trialSurfaceCurls = %f, %f, %f\n",
+//                  trialSurfaceCurls[0], trialSurfaceCurls[1], trialSurfaceCurls[2]);
+//            }
+
+            BasisFunctionType testBasisDerivative0 =
+                testBasisDerivatives[testDof * testPointCount + testPoint];
+            BasisFunctionType testBasisDerivative1 =
+                testBasisDerivatives[testDofCount * testPointCount
+                                      + testDof * testPointCount
+                                      + testPoint];
+            vec[0] =
+                testBasisDerivative0 * testJacobianInversesTransposed[testElemPosition] +
+                testBasisDerivative1 * testJacobianInversesTransposed[3 * testElemCount + testElemPosition];
+            vec[1] =
+                testBasisDerivative0 * testJacobianInversesTransposed[testElemCount + testElemPosition] +
+                testBasisDerivative1 * testJacobianInversesTransposed[4 * testElemCount + testElemPosition];
+            vec[2] =
+                testBasisDerivative0 * testJacobianInversesTransposed[2 * testElemCount + testElemPosition] +
+                testBasisDerivative1 * testJacobianInversesTransposed[5 * testElemCount + testElemPosition];
+
+            testSurfaceCurls[0] = testElemNormal[1] * vec[2] - testElemNormal[2] * vec[1];
+            testSurfaceCurls[1] = testElemNormal[2] * vec[0] - testElemNormal[0] * vec[2];
+            testSurfaceCurls[2] = testElemNormal[0] * vec[1] - testElemNormal[1] * vec[0];
+
+//            if (i == 0) {
+//              printf("testSurfaceCurls = %f, %f, %f\n",
+//                  testSurfaceCurls[0], testSurfaceCurls[1], testSurfaceCurls[2]);
+//            }
+
             const size_t indexKernelValues = trialPoint * testPointCount + testPoint;
             BasisFunctionType dotProduct0 = 0.;
             CoordinateType dotProduct1 = 0.;
 #pragma unroll
             for (size_t coordIndex = 0; coordIndex < coordCount; ++coordIndex) {
               dotProduct0 +=
-                  testSurfaceCurls[coordIndex * testDofCount * testPointCount * testElemCount
-                                   + testDof * testPointCount * testElemCount
-                                   + testPoint * testElemCount
-                                   + testElemPosition] *
-                  trialElemSurfaceCurls[coordIndex];
+                  testSurfaceCurls[coordIndex] * trialSurfaceCurls[coordIndex];
               dotProduct1 +=
                   testElemNormal[coordIndex] * trialElemNormal[coordIndex];
             }

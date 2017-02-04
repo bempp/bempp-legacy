@@ -21,11 +21,20 @@
 #ifndef fiber_cuda_evaluate_laplace_3d_single_layer_potential_integral_cuh
 #define fiber_cuda_evaluate_laplace_3d_single_layer_potential_integral_cuh
 
-#include "cuda.cuh"
-
 #include "../common/scalar_traits.hpp"
 
 #include <device_launch_parameters.h>
+
+__constant__ double constTestQuadWeights[6];
+__constant__ double constTrialQuadWeights[6];
+
+__constant__ double constTestGeomShapeFun0[6];
+__constant__ double constTestGeomShapeFun1[6];
+__constant__ double constTestGeomShapeFun2[6];
+
+__constant__ double constTrialGeomShapeFun0[6];
+__constant__ double constTrialGeomShapeFun1[6];
+__constant__ double constTrialGeomShapeFun2[6];
 
 namespace Fiber {
 
@@ -203,7 +212,7 @@ CudaEvaluateLaplace3dSingleLayerPotentialIntegralFunctorCached(
         testIntegrationElements[testElemPosition];
 
     // Evaluate kernel
-    KernelType kernelValues[10 * 10];
+    KernelType kernelValues[6 * 6];
     CoordinateType trialPointCoo[coordCount], testPointCoo[coordCount];
     for (size_t trialPoint = 0; trialPoint < trialPointCount; ++trialPoint) {
       for (size_t testPoint = 0; testPoint < testPointCount; ++testPoint) {
@@ -258,7 +267,7 @@ template <typename BasisFunctionType, typename KernelType, typename ResultType>
 __global__ void
 CudaEvaluateLaplace3dSingleLayerPotentialIntegralFunctorNonCached(
     const int elemPairIndexBegin, const unsigned int elemPairCount,
-    const unsigned int trialIndexCount,
+    const unsigned int testIndexCount,
     const int* __restrict__ testIndices, const int* __restrict__ trialIndices,
     const unsigned int testPointCount, const unsigned int trialPointCount,
     const unsigned int testDofCount, BasisFunctionType* testBasisValues,
@@ -279,10 +288,10 @@ CudaEvaluateLaplace3dSingleLayerPotentialIntegralFunctorNonCached(
 
     const int coordCount = 3;
 
-    // Determine test and trial element indices
+    // Determine trial and test element indices
     const int elemPairIndex = elemPairIndexBegin + i;
-    const int testElemPosition = testIndices[elemPairIndex / trialIndexCount];
-    const int trialElemPosition = trialIndices[elemPairIndex % trialIndexCount];
+    const int trialElemPosition = trialIndices[elemPairIndex / testIndexCount];
+    const int testElemPosition = testIndices[elemPairIndex % testIndexCount];
 
     // Gather coordinates
     CoordinateType testElemVtx0[coordCount];
@@ -349,8 +358,8 @@ CudaEvaluateLaplace3dSingleLayerPotentialIntegralFunctorNonCached(
                 + trialElemNormal[2]*trialElemNormal[2]);
 
     // Calculate global points
-    CoordinateType trialElemGlobalPoints[10 * coordCount];
-    CoordinateType testElemGlobalPoints[10 * coordCount];
+    CoordinateType trialElemGlobalPoints[6 * coordCount];
+    CoordinateType testElemGlobalPoints[6 * coordCount];
     for (int trialPoint = 0; trialPoint < trialPointCount; ++trialPoint) {
       const CoordinateType ptFun0 = constTrialGeomShapeFun0[trialPoint];
       const CoordinateType ptFun1 = constTrialGeomShapeFun1[trialPoint];
@@ -375,7 +384,7 @@ CudaEvaluateLaplace3dSingleLayerPotentialIntegralFunctorNonCached(
     }
 
     // Evaluate kernel
-    KernelType kernelValues[10 * 10];
+    KernelType kernelValues[6 * 6];
     CoordinateType trialPointCoo[coordCount], testPointCoo[coordCount];
     for (size_t trialPoint = 0; trialPoint < trialPointCount; ++trialPoint) {
       for (size_t testPoint = 0; testPoint < testPointCount; ++testPoint) {

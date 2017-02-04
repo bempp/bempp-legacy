@@ -21,17 +21,23 @@
 #ifndef bempp_weak_form_hmat_assembly_helper_hpp
 #define bempp_weak_form_hmat_assembly_helper_hpp
 
+#include "context.hpp"
+
 #include "../common/common.hpp"
 #include "../common/eigen_support.hpp"
-
 #include "../common/shared_ptr.hpp"
 #include "../common/types.hpp"
+
 #include "../fiber/scalar_traits.hpp"
+#include "../fiber/collection_of_kernels.hpp"
+#include "../fiber/shapeset.hpp"
+
 #include "../hmat/common.hpp"
 #include "../hmat/block_cluster_tree.hpp"
 #include "../hmat/data_accessor.hpp"
 
 #include <tbb/atomic.h>
+#include <tbb/spin_mutex.h>
 #include <tbb/concurrent_unordered_map.h>
 #include <vector>
 
@@ -39,6 +45,9 @@ namespace Fiber {
 
 /** \cond FORWARD_DECL */
 template <typename ResultType> class LocalAssemblerForIntegralOperators;
+template <typename BasisFunctionType, typename KernelType, typename ResultType,
+typename CudaBasisFunctionType, typename CudaKernelType, typename CudaResultType>
+class CudaDefaultLocalAssemblerForIntegralOperatorsOnSurfaces;
 /** \endcond */
 
 } // namespace Fiber
@@ -55,25 +64,37 @@ template <typename BasisFunctionType> class Space;
 /** \ingroup weak_form_assembly_internal
  *  \brief Class whose methods are called by HMAT during the assembly.
  */
-template <typename BasisFunctionType, typename ResultType>
+template <typename BasisFunctionType, typename KernelType, typename ResultType,
+typename CudaBasisFunctionType, typename CudaKernelType, typename CudaResultType>
 class WeakFormHMatAssemblyHelper : public hmat::DataAccessor<ResultType, 2> {
 public:
+
+  typedef tbb::spin_mutex MutexType;
+
   typedef DiscreteBoundaryOperator<ResultType> DiscreteLinOp;
   typedef Fiber::LocalAssemblerForIntegralOperators<ResultType> LocalAssembler;
+  typedef Fiber::CudaDefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
+      BasisFunctionType, KernelType, ResultType,
+      CudaBasisFunctionType, CudaKernelType, CudaResultType> CudaLocalAssembler;
   typedef typename Fiber::ScalarTraits<ResultType>::RealType CoordinateType;
   typedef typename Fiber::ScalarTraits<ResultType>::RealType MagnitudeType;
 
   WeakFormHMatAssemblyHelper(
       const Space<BasisFunctionType> &testSpace,
       const Space<BasisFunctionType> &trialSpace,
+      const shared_ptr<const Fiber::CollectionOfKernels<KernelType>> &kernel,
+      const Fiber::Shapeset<BasisFunctionType> &testShapeset,
+      const Fiber::Shapeset<BasisFunctionType> &trialShapeset,
       const shared_ptr<hmat::DefaultBlockClusterTreeType> blockClusterTree,
       const std::vector<LocalAssembler *> &assemblers,
       const std::vector<const DiscreteLinOp *> &sparseTermsToAdd,
       const std::vector<ResultType> &denseTermsMultipliers,
-      const std::vector<ResultType> &sparseTermsMultipliers);
+      const std::vector<ResultType> &sparseTermsMultipliers,
+      const Context<BasisFunctionType, ResultType> &context);
+
+  virtual ~WeakFormHMatAssemblyHelper();
 
   /** \brief Evaluate entries of a general block. */
-
   void computeMatrixBlock(
       const hmat::IndexRangeType &testIndexRange,
       const hmat::IndexRangeType &trialIndexRange,
@@ -82,6 +103,10 @@ public:
 
   double
   scale(const hmat::DefaultBlockClusterTreeNodeType &node) const override;
+
+  void getStatistics(
+      size_t &cudaBlockCount, size_t &cpuBlockCount,
+      size_t &accessedCudaEntryCount, size_t &accessedCpuEntryCount) const;
 
   // /** \brief Return the number of entries in the matrix that have been
   //  *  accessed so far. */
@@ -116,6 +141,14 @@ private:
       DistanceMap;
   mutable DistanceMap m_distancesCache;
 
+  const bool m_isCudaEnabled;
+  const size_t m_cudaMinBlockSize;
+  const unsigned int m_deviceCount;
+  CudaLocalAssembler *m_cudaAssembler;
+  mutable unsigned int m_nextDevice;
+  mutable MutexType m_deviceMutex;
+  mutable tbb::atomic<size_t> m_cudaBlockCount, m_cpuBlockCount,
+      m_accessedCudaEntryCount, m_accessedCpuEntryCount;
   /** \endcond */
 };
 

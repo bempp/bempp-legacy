@@ -21,7 +21,7 @@
 #ifndef fiber_cuda_evaluate_modified_helmholtz_3d_adjoint_double_layer_potential_integral_cuh
 #define fiber_cuda_evaluate_modified_helmholtz_3d_adjoint_double_layer_potential_integral_cuh
 
-#include "cuda.cuh"
+#include "cuda.hpp"
 
 #include "../common/scalar_traits.hpp"
 
@@ -106,7 +106,7 @@ CudaEvaluateHelmholtz3dAdjointDoubleLayerPotentialIntegralFunctorCached(
     }
 
     // Evaluate kernel
-    KernelType kernelValues[10 * 10 * 2];
+    KernelType kernelValues[6 * 6 * 2];
     const size_t offsetKernelValuesImag = trialPointCount * testPointCount;
     CoordinateType trialPointCoo[coordCount], testPointCoo[coordCount];
     for (size_t trialPoint = 0; trialPoint < trialPointCount; ++trialPoint) {

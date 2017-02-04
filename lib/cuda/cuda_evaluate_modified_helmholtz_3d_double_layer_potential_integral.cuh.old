@@ -18,10 +18,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_cuda_evaluate_laplace_3d_double_layer_potential_integral_cuh
-#define fiber_cuda_evaluate_laplace_3d_double_layer_potential_integral_cuh
+#ifndef fiber_cuda_evaluate_modified_helmholtz_3d_double_layer_potential_integral_cuh
+#define fiber_cuda_evaluate_modified_helmholtz_3d_double_layer_potential_integral_cuh
 
-#include "cuda.hpp"
+#include "cuda.cuh"
 
 #include "../common/scalar_traits.hpp"
 
@@ -30,30 +30,37 @@
 namespace Fiber {
 
 template<typename ValueType>
-__device__ void Laplace3dDoubleLayerPotentialKernel(
+__device__ void Helmholtz3dDoubleLayerPotentialKernel(
     typename ScalarTraits<ValueType>::RealType testPointCoo[3],
     typename ScalarTraits<ValueType>::RealType trialPointCoo[3],
     typename ScalarTraits<ValueType>::RealType trialElemNormal[3],
-    ValueType &result) {
+    const ValueType waveNumberImag,
+    ValueType &resultReal, ValueType &resultImag) {
 
   typedef typename ScalarTraits<ValueType>::RealType CoordinateType;
 
-  CoordinateType numeratorSum = 0., distanceSq = 0.;
+  CoordinateType numeratorSum = 0., denominatorSum = 0.;
 #pragma unroll
   for (int coordIndex = 0; coordIndex < 3; ++coordIndex) {
     CoordinateType diff =
         trialPointCoo[coordIndex] - testPointCoo[coordIndex];
-    distanceSq += diff * diff;
+    denominatorSum += diff * diff;
     numeratorSum += diff * trialElemNormal[coordIndex];
   }
-  CoordinateType distance = sqrt(distanceSq);
-  result = -numeratorSum / (static_cast<CoordinateType>(4. * M_PI) *
-                            distance * distanceSq);
+  CoordinateType distance = sqrt(denominatorSum);
+  CoordinateType factor = -numeratorSum /
+      (static_cast<CoordinateType>(4.0 * M_PI) * denominatorSum);
+  CoordinateType sinValue, cosValue;
+  sincos(-waveNumberImag * distance, &sinValue, &cosValue);
+  resultReal = factor * (static_cast<CoordinateType>(1.0) / distance * cosValue
+      - waveNumberImag * sinValue);
+  resultImag = factor * (static_cast<CoordinateType>(1.0) / distance * sinValue
+      + waveNumberImag * cosValue);
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 __global__ void
-CudaEvaluateLaplace3dDoubleLayerPotentialIntegralFunctorCached(
+CudaEvaluateHelmholtz3dDoubleLayerPotentialIntegralFunctorCached(
     const int elemPairIndexBegin, const unsigned int elemPairCount,
     const unsigned int testIndexCount,
     const int* __restrict__ testIndices, const int* __restrict__ trialIndices,
@@ -69,7 +76,7 @@ CudaEvaluateLaplace3dDoubleLayerPotentialIntegralFunctorCached(
     const typename ScalarTraits<BasisFunctionType>::RealType* trialGlobalPoints,
     const typename ScalarTraits<BasisFunctionType>::RealType* trialElemNormals,
     const typename ScalarTraits<BasisFunctionType>::RealType* trialIntegrationElements,
-    ResultType* __restrict__ result) {
+    const KernelType waveNumberImag, ResultType* __restrict__ result) {
 
   typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
 
@@ -99,11 +106,12 @@ CudaEvaluateLaplace3dDoubleLayerPotentialIntegralFunctorCached(
     }
 
     // Evaluate kernel
-    KernelType kernelValues[6 * 6];
+    KernelType kernelValues[10 * 10 * 2];
+    const size_t offsetKernelValuesImag = trialPointCount * testPointCount;
     CoordinateType trialPointCoo[coordCount], testPointCoo[coordCount];
     for (size_t trialPoint = 0; trialPoint < trialPointCount; ++trialPoint) {
       for (size_t testPoint = 0; testPoint < testPointCount; ++testPoint) {
-        KernelType kernelValue;
+        KernelType kernelValueReal, kernelValueImag;
 #pragma unroll
         for (size_t coordIndex = 0; coordIndex < coordCount; ++coordIndex) {
           trialPointCoo[coordIndex] =
@@ -115,36 +123,44 @@ CudaEvaluateLaplace3dDoubleLayerPotentialIntegralFunctorCached(
                            + testPoint * testElemCount
                            + testElemPosition];
         }
-        Laplace3dDoubleLayerPotentialKernel(
-            testPointCoo, trialPointCoo, trialElemNormal,
-            kernelValue);
-        kernelValues[trialPoint * testPointCount + testPoint] = kernelValue;
+        Helmholtz3dDoubleLayerPotentialKernel(
+            testPointCoo, trialPointCoo, trialElemNormal, waveNumberImag,
+            kernelValueReal, kernelValueImag);
+        const size_t indexKernelValues = trialPoint * testPointCount + testPoint;
+        kernelValues[indexKernelValues] = kernelValueReal;
+        kernelValues[indexKernelValues + offsetKernelValuesImag] = kernelValueImag;
       }
     }
 
     // Perform numerical integration
+    const size_t offsetResultImag = elemPairCount * trialDofCount * testDofCount;
     for (size_t trialDof = 0; trialDof < trialDofCount; ++trialDof) {
       for (size_t testDof = 0; testDof < testDofCount; ++testDof) {
-        ResultType sum = 0.;
+        ResultType sumReal = 0., sumImag = 0.;
         for (size_t trialPoint = 0; trialPoint < trialPointCount; ++trialPoint) {
           const CoordinateType trialWeight =
               trialIntegrationElement * constTrialQuadWeights[trialPoint];
-          ResultType partialSum = 0.;
+          ResultType partialSumReal = 0., partialSumImag = 0.;
           for (size_t testPoint = 0; testPoint < testPointCount; ++testPoint) {
             const CoordinateType testWeight =
                 testIntegrationElement * constTestQuadWeights[testPoint];
-            partialSum +=
-                kernelValues[trialPoint * testPointCount + testPoint]
-                * testBasisValues[testDof * testPointCount + testPoint]
-                * trialBasisValues[trialDof * trialPointCount + trialPoint]
-                * testWeight;
+            ResultType factor = testBasisValues[testDof * testPointCount + testPoint]
+                                * trialBasisValues[trialDof * trialPointCount + trialPoint]
+                                * testWeight;
+            const size_t indexKernelValues = trialPoint * testPointCount + testPoint;
+            partialSumReal +=
+                kernelValues[indexKernelValues] * factor;
+            partialSumImag +=
+                kernelValues[indexKernelValues + offsetKernelValuesImag] * factor;
           }
-          sum += partialSum * trialWeight;
+          sumReal += partialSumReal * trialWeight;
+          sumImag += partialSumImag * trialWeight;
         }
-        const size_t index = trialDof * testDofCount * elemPairCount
-                             + testDof * elemPairCount
-                             + i;
-        result[index] = sum;
+        const size_t indexResult = trialDof * testDofCount * elemPairCount
+                                   + testDof * elemPairCount
+                                   + i;
+        result[indexResult] = sumReal;
+        result[indexResult + offsetResultImag] = sumImag;
       }
     }
   }

@@ -27,7 +27,7 @@ namespace Bempp {
 AssemblyOptions::AssemblyOptions()
     : m_assemblyMode(DENSE), m_verbosityLevel(VerbosityLevel::DEFAULT),
       m_singularIntegralCaching(true), m_sparseStorageOfLocalOperators(true),
-      m_jointAssembly(false), m_uniformQuadrature(true),
+      m_jointAssembly(false), m_uniformQuadrature(true), m_cuda(true),
       m_blasInQuadrature(AUTO) {}
 
 void AssemblyOptions::switchToDenseMode() { m_assemblyMode = DENSE; }
@@ -115,5 +115,11 @@ void AssemblyOptions::makeQuadratureOrderUniformInEachCluster(bool value) {
 bool AssemblyOptions::isQuadratureOrderUniformInEachCluster() const {
   return m_uniformQuadrature;
 }
+
+void AssemblyOptions::enableCuda(bool value) {
+  m_cuda = value;
+}
+
+bool AssemblyOptions::isCudaEnabled() const { return m_cuda; }
 
 } // namespace Bempp

@@ -18,8 +18,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_cuda_cuh
-#define fiber_cuda_cuh
+#ifndef fiber_cuda_hpp
+#define fiber_cuda_hpp
+
+#include "../fiber/scalar_traits.hpp"
 
 #include <thrust/device_ptr.h>
 
@@ -55,28 +57,11 @@ struct RawGeometryData {
 template <typename ValueType>
 struct ElemData {
   unsigned int activeElemCount;
-  thrust::device_ptr<ValueType> geomData;
-  thrust::device_ptr<const ValueType> normals;
-  thrust::device_ptr<const ValueType> integrationElements;
-  thrust::device_ptr<const ValueType> jacobianInversesTransposed;
+  thrust::device_ptr<typename ScalarTraits<ValueType>::RealType> geomData;
+  thrust::device_ptr<const typename ScalarTraits<ValueType>::RealType> normals;
+  thrust::device_ptr<const typename ScalarTraits<ValueType>::RealType> integrationElements;
+  thrust::device_ptr<const ValueType> surfaceCurls;
 };
-
-// Constant memory has a size of 64 KB
-// Most memory consuming possible data type to ensure enough space
-__constant__ double constTestQuadWeights[10];
-__constant__ double constTrialQuadWeights[10];
-
-//// Valid for up to 10 dofs and 10 points and complex basis function type (x2)
-//__constant__ double constTestBasisValues[10 * 10 * 2];
-//__constant__ double constTrialBasisValues[10 * 10 * 2];
-
-__constant__ double constTestGeomShapeFun0[10];
-__constant__ double constTestGeomShapeFun1[10];
-__constant__ double constTestGeomShapeFun2[10];
-
-__constant__ double constTrialGeomShapeFun0[10];
-__constant__ double constTrialGeomShapeFun1[10];
-__constant__ double constTrialGeomShapeFun2[10];
 
 #define cu_verify(x) do {                                                \
     cudaError_t result = x;                                              \

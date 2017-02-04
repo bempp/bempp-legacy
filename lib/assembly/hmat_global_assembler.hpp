@@ -22,11 +22,13 @@
 #define bempp_hmat_global_assembler_hpp
 
 #include "../common/common.hpp"
-
 #include "../common/shared_ptr.hpp"
-#include "../fiber/scalar_traits.hpp"
 #include "../common/eigen_support.hpp"
 #include "../common/types.hpp"
+
+#include "../fiber/scalar_traits.hpp"
+#include "../fiber/shapeset.hpp"
+#include "../fiber/collection_of_kernels.hpp"
 
 #include <memory>
 #include <vector>
@@ -58,6 +60,11 @@ class HMatGlobalAssembler {
   typedef typename Fiber::ScalarTraits<ResultType>::RealType CoordinateType;
 
 public:
+
+  // TODO: How to determine the correct kernel type?
+  typedef ResultType KernelType;
+
+  typedef Fiber::Shapeset<BasisFunctionType> Shapeset;
   typedef DiscreteBoundaryOperator<ResultType> DiscreteBndOp;
   typedef Fiber::LocalAssemblerForIntegralOperators<ResultType>
       LocalAssemblerForIntegralOperators;
@@ -70,6 +77,8 @@ public:
   static std::unique_ptr<DiscreteBndOp> assembleDetachedWeakForm(
       const Space<BasisFunctionType> &testSpace,
       const Space<BasisFunctionType> &trialSpace,
+      const shared_ptr<const Fiber::CollectionOfKernels<KernelType>> &kernel,
+      const Shapeset &testShapeset, const Shapeset &trialShapeset,
       const std::vector<LocalAssemblerForIntegralOperators *> &localAssemblers,
       const std::vector<LocalAssemblerForIntegralOperators *>
           &localAssemblersForAdmissibleBlocks,

@@ -14,6 +14,8 @@
 #include <tbb/task_group.h>
 
 #include <algorithm>
+#include <chrono>
+#include <cuda_profiler_api.h>
 
 namespace hmat {
 
@@ -111,6 +113,8 @@ void HMatrix<ValueType, N>::initialize(
 
   std::size_t numberOfLeafs = m_myLeafs.size();
 
+  cudaProfilerStart();
+
   tbb::parallel_for(tbb::blocked_range<std::size_t>(0, numberOfLeafs),
                     [&](const tbb::blocked_range<std::size_t> &r) {
                       for (auto index = r.begin(); index != r.end(); index++) {
@@ -121,8 +125,9 @@ void HMatrix<ValueType, N>::initialize(
                       }
                     });
 
-  // Compute statistics
+  cudaProfilerStop();
 
+  // Compute statistics
   for (auto &elem : m_hMatrixData) {
     if (!elem.second)
       continue;

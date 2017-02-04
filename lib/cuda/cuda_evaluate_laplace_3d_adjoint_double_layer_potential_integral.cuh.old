@@ -18,10 +18,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef fiber_cuda_evaluate_laplace_3d_double_layer_potential_integral_cuh
-#define fiber_cuda_evaluate_laplace_3d_double_layer_potential_integral_cuh
+#ifndef fiber_cuda_evaluate_laplace_3d_adjoint_double_layer_potential_integral_cuh
+#define fiber_cuda_evaluate_laplace_3d_adjoint_double_layer_potential_integral_cuh
 
-#include "cuda.hpp"
+#include "cuda.cuh"
 
 #include "../common/scalar_traits.hpp"
 
@@ -30,10 +30,10 @@
 namespace Fiber {
 
 template<typename ValueType>
-__device__ void Laplace3dDoubleLayerPotentialKernel(
+__device__ void Laplace3dAdjointDoubleLayerPotentialKernel(
     typename ScalarTraits<ValueType>::RealType testPointCoo[3],
     typename ScalarTraits<ValueType>::RealType trialPointCoo[3],
-    typename ScalarTraits<ValueType>::RealType trialElemNormal[3],
+    typename ScalarTraits<ValueType>::RealType testElemNormal[3],
     ValueType &result) {
 
   typedef typename ScalarTraits<ValueType>::RealType CoordinateType;
@@ -42,18 +42,18 @@ __device__ void Laplace3dDoubleLayerPotentialKernel(
 #pragma unroll
   for (int coordIndex = 0; coordIndex < 3; ++coordIndex) {
     CoordinateType diff =
-        trialPointCoo[coordIndex] - testPointCoo[coordIndex];
+        testPointCoo[coordIndex] - trialPointCoo[coordIndex];
     distanceSq += diff * diff;
-    numeratorSum += diff * trialElemNormal[coordIndex];
+    numeratorSum += diff * testElemNormal[coordIndex];
   }
   CoordinateType distance = sqrt(distanceSq);
   result = -numeratorSum / (static_cast<CoordinateType>(4. * M_PI) *
-                            distance * distanceSq);
+                            distanceSq * distance);
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType>
 __global__ void
-CudaEvaluateLaplace3dDoubleLayerPotentialIntegralFunctorCached(
+CudaEvaluateLaplace3dAdjointDoubleLayerPotentialIntegralFunctorCached(
     const int elemPairIndexBegin, const unsigned int elemPairCount,
     const unsigned int testIndexCount,
     const int* __restrict__ testIndices, const int* __restrict__ trialIndices,
@@ -64,10 +64,10 @@ CudaEvaluateLaplace3dDoubleLayerPotentialIntegralFunctorCached(
     const BasisFunctionType* __restrict__ trialBasisValues,
     const unsigned int testElemCount,
     const typename ScalarTraits<BasisFunctionType>::RealType* testGlobalPoints,
+    const typename ScalarTraits<BasisFunctionType>::RealType* testElemNormals,
     const typename ScalarTraits<BasisFunctionType>::RealType* testIntegrationElements,
     const unsigned int trialElemCount,
     const typename ScalarTraits<BasisFunctionType>::RealType* trialGlobalPoints,
-    const typename ScalarTraits<BasisFunctionType>::RealType* trialElemNormals,
     const typename ScalarTraits<BasisFunctionType>::RealType* trialIntegrationElements,
     ResultType* __restrict__ result) {
 
@@ -91,15 +91,15 @@ CudaEvaluateLaplace3dDoubleLayerPotentialIntegralFunctorCached(
         testIntegrationElements[testElemPosition];
 
     // Get normals
-    CoordinateType trialElemNormal[coordCount];
+    CoordinateType testElemNormal[coordCount];
 #pragma unroll
     for (size_t coordIndex = 0; coordIndex < coordCount; ++coordIndex) {
-      trialElemNormal[coordIndex] =
-          trialElemNormals[coordIndex * trialElemCount + trialElemPosition];
+      testElemNormal[coordIndex] =
+          testElemNormals[coordIndex * testElemCount + testElemPosition];
     }
 
     // Evaluate kernel
-    KernelType kernelValues[6 * 6];
+    KernelType kernelValues[10 * 10];
     CoordinateType trialPointCoo[coordCount], testPointCoo[coordCount];
     for (size_t trialPoint = 0; trialPoint < trialPointCount; ++trialPoint) {
       for (size_t testPoint = 0; testPoint < testPointCount; ++testPoint) {
@@ -115,8 +115,8 @@ CudaEvaluateLaplace3dDoubleLayerPotentialIntegralFunctorCached(
                            + testPoint * testElemCount
                            + testElemPosition];
         }
-        Laplace3dDoubleLayerPotentialKernel(
-            testPointCoo, trialPointCoo, trialElemNormal,
+        Laplace3dAdjointDoubleLayerPotentialKernel(
+            testPointCoo, trialPointCoo, testElemNormal,
             kernelValue);
         kernelValues[trialPoint * testPointCount + testPoint] = kernelValue;
       }

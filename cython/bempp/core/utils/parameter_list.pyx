@@ -105,6 +105,18 @@ cdef class _AssemblyParameterList:
             cdef char* s = b"options.assembly.interpolationPointsPerWavelength"
             deref(self.impl_).put_int(s,value)
 
+    property enable_cuda:
+
+        def __get__(self):
+
+            cdef char* s = b"options.assembly.enableCuda"
+            return (deref(self.impl_).get_bool(s))
+
+        def __set__(self,cbool value):
+
+            cdef char* s = b"options.assembly.enableCuda"
+            deref(self.impl_).put_bool(s,value)
+            
 cdef class _NearField:
 
     def __init__(self,_QuadratureParameterList base):
@@ -291,6 +303,14 @@ cdef class _HMatParameterList:
         def __set__(self,object value):
             cdef char* s = b"options.hmat.admissibility"
             deref(self.impl_).put_string(s,_convert_to_bytes(value))
+            
+    property cuda_min_block_size:
+        def __get__(self):
+            cdef char* s = b"options.hmat.cudaMinBlockSize"
+            return deref(self.impl_).get_int(s)
+        def __set__(self,int value):
+            cdef char* s = b"options.hmat.cudaMinBlockSize"
+            deref(self.impl_).put_int(s,value)
 
 cdef class _CudaParameterList:
 

@@ -71,7 +71,7 @@ public:
       const std::vector<std::vector<BasisFunctionType>> &testLocalDofWeights,
       const std::vector<std::vector<BasisFunctionType>> &trialLocalDofWeights,
       Fiber::LocalAssemblerForIntegralOperators<ResultType> &assembler,
-      Matrix<ResultType> &result, MutexType &mutex)
+      Matrix<ResultType> &result, Matrix<MutexType> &mutex)
       : m_testIndices(testIndices), m_testGlobalDofs(testGlobalDofs),
         m_trialGlobalDofs(trialGlobalDofs),
         m_testLocalDofWeights(testLocalDofWeights),
@@ -102,7 +102,7 @@ public:
 
       // Global assembly
       {
-        MutexType::scoped_lock lock(m_mutex);
+//        MutexType::scoped_lock lock(m_mutex);
         // Loop over test indices
         for (int row = 0; row < testElementCount; ++row) {
           const int testIndex = m_testIndices[row];
@@ -119,6 +119,7 @@ public:
               assert(std::abs(m_testLocalDofWeights[testIndex][testDof]) > 0.);
               assert(std::abs(m_trialLocalDofWeights[trialIndex][trialDof]) >
                      0.);
+              MutexType::scoped_lock lock(m_mutex(testGlobalDof, trialGlobalDof));
               m_result(testGlobalDof, trialGlobalDof) +=
                   conj(m_testLocalDofWeights[testIndex][testDof]) *
                   m_trialLocalDofWeights[trialIndex][trialDof] *
@@ -144,7 +145,7 @@ private:
   Matrix<ResultType> &m_result;
 
   // mutex must be mutable because we need to lock and unlock it
-  MutexType &m_mutex;
+  Matrix<MutexType> &m_mutex;
 };
 
 template <typename BasisFunctionType, typename ResultType>
@@ -310,8 +311,11 @@ DenseGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
       << ", trialGlobalDofCount = " << trialSpace.globalDofCount() << std::endl;
 
   typedef DenseWeakFormAssemblerLoopBody<BasisFunctionType, ResultType> Body;
-  typename Body::MutexType mutex;
+//  typename Body::MutexType mutex;
 
+  // Create a mutex matrix for parallel assembly
+  Matrix<typename Body::MutexType> mutex(testSpace.globalDofCount(),
+                                         trialSpace.globalDofCount());
   {
     Fiber::SerialBlasRegion region;
     tbb::parallel_for(tbb::blocked_range<int>(0, trialElementCount),
@@ -345,15 +349,13 @@ DenseGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
   //                        localResult[testIndex](testDof, trialDof);
   //    }
 
-  if (result.rows() < 10 && result.cols() < 10) {
-    std::cout << "result (dense) = " << std::endl;
-    std::cout << result << std::endl;
-  }
-
   std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
   std::cout << "Time for classical dense assembly = "
             << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()
             << " ms" << std::endl;
+
+  std::ofstream file("dense_assembly_timer.dat", std::ios::out | std::ios::app);
+  file << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << std::endl;
 
   // Return the discrete operator represented by the matrix that has just been
   // calculated

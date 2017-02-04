@@ -93,6 +93,10 @@ Context<BasisFunctionType, ResultType>::Context(
 
   m_assemblyOptions.enableBlasInQuadrature(AssemblyOptions::AUTO);
 
+  m_assemblyOptions.enableCuda(parameters.get<bool>(
+      "options.assembly.enableCuda",
+      defaults.get<bool>("options.assembly.enableCuda")));
+
   // Cuda precision
   m_cudaOptions.setPrecision(
       parameters.get<std::string>("options.cuda.precision",

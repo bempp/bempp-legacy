@@ -21,7 +21,7 @@
 #ifndef fiber_cuda_evaluate_laplace_3d_adjoint_double_layer_potential_integral_cuh
 #define fiber_cuda_evaluate_laplace_3d_adjoint_double_layer_potential_integral_cuh
 
-#include "cuda.cuh"
+#include "cuda.hpp"
 
 #include "../common/scalar_traits.hpp"
 
@@ -99,7 +99,7 @@ CudaEvaluateLaplace3dAdjointDoubleLayerPotentialIntegralFunctorCached(
     }
 
     // Evaluate kernel
-    KernelType kernelValues[10 * 10];
+    KernelType kernelValues[6 * 6];
     CoordinateType trialPointCoo[coordCount], testPointCoo[coordCount];
     for (size_t trialPoint = 0; trialPoint < trialPointCount; ++trialPoint) {
       for (size_t testPoint = 0; testPoint < testPointCount; ++testPoint) {
