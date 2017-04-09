@@ -50,6 +50,11 @@ inline complex<float> operator-(double const &&a, complex<float> const &b) {
 #define DUNE_COMMON_FIELDVECTOR_SIZE_IS_METHOD 1
 #include "bempp/common/bempp_dune_config.hpp"
 
+#define DUNE_VERSION (DUNE_COMMON_VERSION_MAJOR * 100 \
+                 + DUNE_COMMON_VERSION_MINOR * 10 \
+                 + DUNE_COMMON_VERSION_REVISION)
+
+
 #include <stdexcept>
 
 #endif

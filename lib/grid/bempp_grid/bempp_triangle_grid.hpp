@@ -36,15 +36,19 @@ template <class> class P1LevelIntersectionIteratorImp;
 
 struct TriangleGridFamily {
 
-//  typedef Dune::GridTraits<
-//      2, 3, TriangleGrid, Geometry, EntityImp, EntityPointerImp,
-//      LevelIteratorImp, P1LeafIntersectionImp, P1LevelIntersectionImp,
-//      P1LeafIntersectionIteratorImp, P1LevelIntersectionIteratorImp,
-//      P1HierarchicIteratorImp, LevelIteratorImp, LevelIndexSetImp,
-//      LevelIndexSetImp, IdSetImp, unsigned int, IdSetImp, unsigned int,
-//      Dune::CollectiveCommunication<TriangleGrid>,
-//      Dune::DefaultLevelGridViewTraits, Dune::DefaultLeafGridViewTraits,
-//      EntitySeedImp> Traits;
+#if DUNE_VERSION <= 241
+
+  typedef Dune::GridTraits<
+      2, 3, TriangleGrid, Geometry, EntityImp, EntityPointerImp,
+      LevelIteratorImp, P1LeafIntersectionImp, P1LevelIntersectionImp,
+      P1LeafIntersectionIteratorImp, P1LevelIntersectionIteratorImp,
+      P1HierarchicIteratorImp, LevelIteratorImp, LevelIndexSetImp,
+      LevelIndexSetImp, IdSetImp, unsigned int, IdSetImp, unsigned int,
+      Dune::CollectiveCommunication<TriangleGrid>,
+      Dune::DefaultLevelGridViewTraits, Dune::DefaultLeafGridViewTraits,
+      EntitySeedImp> Traits;
+
+#else 
 
       typedef Dune::GridTraits<
           2, 3, TriangleGrid, Geometry, EntityImp,
@@ -55,7 +59,7 @@ struct TriangleGridFamily {
           Dune::CollectiveCommunication<TriangleGrid>,
           Dune::DefaultLevelGridViewTraits, Dune::DefaultLeafGridViewTraits,
           EntitySeedImp> Traits;
-
+#endif
 
 };
 
@@ -78,18 +82,24 @@ public:
   enum { dimension = 2 };
   enum { dimensionworld = 3 };
 
-//  template <Dune::PartitionIteratorType pitype> struct Partition {
-//    typedef typename TriangleGridFamily::Traits::template Partition<
-//        pitype>::LevelGridView LevelGridView;
-//    typedef typename TriangleGridFamily::Traits::template Partition<
-//        pitype>::LeafGridView LeafGridView;
-//  };
+#if DUNE_VERSION <= 241
 
-//  typedef typename Partition<Dune::All_Partition>::LevelGridView LevelGridView;
-//  typedef typename Partition<Dune::All_Partition>::LeafGridView LeafGridView;
+  template <Dune::PartitionIteratorType pitype> struct Partition {
+    typedef typename TriangleGridFamily::Traits::template Partition<
+        pitype>::LevelGridView LevelGridView;
+    typedef typename TriangleGridFamily::Traits::template Partition<
+        pitype>::LeafGridView LeafGridView;
+  };
+
+  typedef typename Partition<Dune::All_Partition>::LevelGridView LevelGridView;
+  typedef typename Partition<Dune::All_Partition>::LeafGridView LeafGridView;
+
+#else
 
   typedef typename TriangleGridFamily::Traits::LevelGridView LevelGridView;
   typedef typename TriangleGridFamily::Traits::LeafGridView LeafGridView;
+
+#endif
 
   template <int cd> struct Codim {
     typedef Dune::Geometry<2 - cd, 3, const TriangleGrid, Geometry> Geometry;
