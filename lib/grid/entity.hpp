@@ -25,7 +25,6 @@
 
 #include "dune.hpp"
 #include <boost/utility/enable_if.hpp>
-#include <dune/common/static_assert.hh>
 #include <memory>
 #include <stdexcept>
 

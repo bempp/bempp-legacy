@@ -4,6 +4,7 @@
 #include <dune/grid/common/grid.hh>
 #include <dune/grid/common/gridfactory.hh>
 #include "bempp_grid_data_container.hpp"
+#include <memory>
 
 namespace Dune {
 
@@ -68,7 +69,7 @@ public:
 
   virtual void
   insertBoundarySegment(const std::vector<unsigned int> &vertices,
-                        const shared_ptr<BoundarySegment<dimension, dimworld>>
+                        const std::shared_ptr<BoundarySegment<dimension, dimworld>>
                             &boundarySegment) override {
 
     std::runtime_error(

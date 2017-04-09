@@ -53,7 +53,7 @@ permuteInsertionDomainIndices(const std::vector<int> &domainIndices,
   std::vector<int> output(domainIndices.size());
   auto view = grid.leafGridView();
   const auto &indexSet = view.indexSet();
-  for (auto it = grid.template leafbegin<0>(); it != grid.template leafend<0>();
+  for (auto it = grid.leafGridView().template begin<0>(); it != grid.leafGridView().template end<0>();
        ++it) {
     const typename DuneGrid::template Codim<0>::Entity &element = *it;
     int insertionIndex = factory.insertionIndex(element);

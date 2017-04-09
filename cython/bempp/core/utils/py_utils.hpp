@@ -19,9 +19,9 @@ namespace Bempp {
         // latest Python exn passes through, ignore the current one
         if (not PyErr_Occurred()) throw;
       } catch (const Dune::IOError& exn) {
-        PyErr_SetString(PyExc_IOError, exn.what().c_str());
+        PyErr_SetString(PyExc_IOError, exn.what());
       } catch (const Dune::Exception& exn) {
-        PyErr_SetString(PyExc_RuntimeError, exn.what().c_str());
+        PyErr_SetString(PyExc_RuntimeError, exn.what());
       } catch (const std::bad_alloc& exn) {
         PyErr_SetString(PyExc_MemoryError, exn.what());
       } catch (const std::bad_cast& exn) {
@@ -93,7 +93,6 @@ namespace Bempp {
         return p;
 
     }
-    
+
 }
 #endif
-

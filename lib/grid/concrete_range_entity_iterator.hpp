@@ -38,18 +38,19 @@ type \p DuneEntityIt.
 read from the DuneEntityIt::Base typedef, but, alas, this typedef is
 private...).
 */
-template <typename DuneEntityIt, typename DuneEntityPointer>
+template <typename DuneEntityIt>
 class ConcreteRangeEntityIterator
     : public EntityIterator<DuneEntityIt::codimension> {
 private:
   DuneEntityIt m_begin, m_end, m_cur;
-  ConcreteEntity<ConcreteRangeEntityIterator::codimension,
-                 typename DuneEntityIt::Entity> m_entity;
+  std::unique_ptr<ConcreteEntity<ConcreteRangeEntityIterator::codimension,
+                 typename DuneEntityIt::Entity>> m_entity;
   const DomainIndex &m_domain_index;
 
   void updateEntity() {
     if (!this->finished())
-      m_entity.setDuneEntity(&*m_cur);
+      m_entity.reset(new ConcreteEntity<ConcreteRangeEntityIterator::codimension,
+                                 typename DuneEntityIt::Entity>(*m_cur, m_domain_index));
   }
 
   void updateFinished() { this->m_finished = (m_cur == m_end); }
@@ -60,10 +61,11 @@ public:
   ConcreteRangeEntityIterator(const DuneEntityIt &begin,
                               const DuneEntityIt &end,
                               const DomainIndex &domain_index)
-      : m_begin(begin), m_end(end), m_cur(begin), m_entity(domain_index),
+      : m_begin(begin), m_end(end), m_cur(begin),
+        m_entity(new ConcreteEntity<ConcreteRangeEntityIterator::codimension,
+                 typename DuneEntityIt::Entity>(*begin, domain_index)),
         m_domain_index(domain_index) {
     updateFinished();
-    updateEntity();
   }
 
   virtual void next() {
@@ -74,7 +76,7 @@ public:
 
   virtual const Entity<ConcreteRangeEntityIterator::codimension> &
   entity() const {
-    return m_entity;
+    return *m_entity;
   }
 
   virtual std::unique_ptr<
@@ -82,7 +84,7 @@ public:
   frozen() const {
     const int codim = ConcreteRangeEntityIterator::codimension;
     return std::unique_ptr<EntityPointer<codim>>(
-        new ConcreteEntityPointer<DuneEntityPointer>(*m_cur, m_domain_index));
+        new ConcreteEntityPointer<typename DuneEntityIt::Entity>(*m_cur, m_domain_index));
   }
 };
 

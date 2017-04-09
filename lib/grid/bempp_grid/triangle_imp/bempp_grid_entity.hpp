@@ -35,7 +35,6 @@ class EntityImp<0, 2, const TriangleGrid>
 public:
   typedef
       typename TriangleGrid::GridFamily::Traits::Codim<0>::Geometry Geometry;
-  typedef typename TriangleGrid::GridFamily::Traits::Codim<0>::Entity Entity;
   typedef typename TriangleGrid::GridFamily::Traits::Codim<0>::EntitySeed
       EntitySeed;
 
@@ -43,6 +42,10 @@ public:
   using EntityPointer =
       Dune::EntityPointer<const TriangleGrid,
                           EntityPointerImp<codim, const TriangleGrid>>;
+
+  template <int codim>
+  using Entity =
+    typename TriangleGrid::GridFamily::Traits::Codim<codim>::Entity;
 
   EntityImp(const shared_ptr<DataContainer> &data, int level,
             unsigned int index);
@@ -54,7 +57,9 @@ public:
   bool equals(const EntityImp<0, 2, const TriangleGrid> &other) const;
   EntitySeed seed() const;
 
-  template <int cd> EntityPointer<cd> subEntity(int i) const;
+  //template <int cd> EntityPointer<cd> subEntity(int i) const;
+  template <int cd>
+  Entity<cd> subEntity(int i) const;
 
   template <int cc> int count() const;
 
@@ -63,7 +68,7 @@ public:
   bool isRegular() const;
   bool isNew() const;
 
-  EntityPointer<0> father() const;
+  Entity<0> father() const;
 
   unsigned int id() const;
 
@@ -90,10 +95,14 @@ public:
   typedef TriangleGrid::GridFamily::Traits::Codim<1>::EntitySeed EntitySeed;
   typedef
       typename TriangleGrid::GridFamily::Traits::Codim<1>::Geometry Geometry;
-  typedef typename TriangleGrid::GridFamily::Traits::Codim<1>::Entity Entity;
 
   EntityImp(const shared_ptr<DataContainer> &data, int level,
             unsigned int index);
+
+  template <int codim>
+  using Entity =
+    typename TriangleGrid::GridFamily::Traits::Codim<codim>::Entity;
+
 
   int level() const;
   Geometry geometry() const;
@@ -101,6 +110,9 @@ public:
   Dune::PartitionType partitionType() const;
   bool equals(const EntityImp<1, 2, const TriangleGrid> &other) const;
   EntitySeed seed() const;
+
+  template <int cd>
+  Entity<cd> subEntity(int i) const;
 
   unsigned int id() const;
 
@@ -125,10 +137,14 @@ public:
   typedef TriangleGrid::GridFamily::Traits::Codim<2>::EntitySeed EntitySeed;
   typedef
       typename TriangleGrid::GridFamily::Traits::Codim<2>::Geometry Geometry;
-  typedef typename TriangleGrid::GridFamily::Traits::Codim<2>::Entity Entity;
 
   EntityImp(const shared_ptr<DataContainer> &data, int level,
             unsigned int index);
+
+  template <int codim>
+  using Entity =
+    typename TriangleGrid::GridFamily::Traits::Codim<codim>::Entity;
+
 
   int level() const;
   Geometry geometry() const;
@@ -136,6 +152,9 @@ public:
   Dune::PartitionType partitionType() const;
   bool equals(const EntityImp<2, 2, const TriangleGrid> &other) const;
   EntitySeed seed() const;
+
+  template <int cd>
+  Entity<cd> subEntity(int i) const;
 
   unsigned int id() const;
 
