@@ -20,13 +20,13 @@ namespace Bempp {
         // latest Python exn passes through, ignore the current one
         if (not PyErr_Occurred()) throw;
       } catch (const Dune::IOError& exn) {
-#ifdef DUNE_VERSION <= 241
+#if DUNE_VERSION <= 241
         PyErr_SetString(PyExc_IOError, exn.what().c_str());
 #else 
         PyErr_SetString(PyExc_IOError, exn.what());
 #endif
       } catch (const Dune::Exception& exn) {
-#ifdef DUNE_VERSION <= 241
+#if DUNE_VERSION <= 241
         PyErr_SetString(PyExc_RuntimeError, exn.what().c_str());
 #else
         PyErr_SetString(PyExc_RuntimeError, exn.what());
