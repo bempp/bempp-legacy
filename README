@@ -7,6 +7,20 @@ www.bempp.org
 
 History
 =======
+3.1.2 (14 April 2017)
+---------------------
+Released version 3.1.2
+
+* Enabled compatibility with Dune 2.5.0
+
+
+3.1.1 (10 January 2017)
+-----------------------
+Released version 3.1.1
+
+* Small bug fixes
+* Disabled projection mode for dense assembly
+
 3.1.0 (4 January 2017)
 ----------------------
 Released version 3.1

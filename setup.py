@@ -258,7 +258,7 @@ class SDist(dSDist):
             dist.packages, dist.package_dir = old_values[2:]
 setup(
     name = "bempp",
-    version = "3.1.1",
+    version = "3.1.2",
 
     setup_requires = ['numpy', 'scipy', 'cython>=0.23', 'mpi4py'],
     install_requires = ['numpy', 'scipy', 'cython>=0.23', 'mpi4py'],

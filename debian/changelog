@@ -1,6 +1,5 @@
-python-bempp (3.1.1-0ubuntu1~yakkety) yakkety; urgency=medium
+python-bempp (3.1.2-0ubuntu1~xenial) xenial; urgency=medium
 
-  * Small bug fixes.
-  * Disabled projection mode for dense assembly
+  * Enabled compatibility with Dune 2.5.0
 
- -- Timo Betcke <timo.betcke@gmail.com>  Wed, 10 Jan 2017 22:11:23 +0100
+ -- Timo Betcke <timo.betcke@gmail.com>  Wed, 14 Apr 2017 12:00:00 +0200
