@@ -19,7 +19,8 @@ Package: python-bempp
 Architecture: amd64
 Depends: python-all, libtbb2, libstdc++6,
          python-numpy, python-scipy, mpi-default-bin,
-         python-mpi4py
+         python-mpi4py, libdune-geometry-dev, libdune-common-dev,
+         libdune-localfunctions-dev, libdune-grid-dev
 Recommends: gmsh
 X-Python-Version: >= 2.7
 Description: The BEM++ boundary element library (Python 2).
