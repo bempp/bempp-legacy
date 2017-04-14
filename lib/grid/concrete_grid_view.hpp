@@ -152,9 +152,7 @@ private:
                               std::unique_ptr<EntityIterator<codim>>>::type
   entityCodimNIterator() const {
     typedef typename DuneGridView::template Codim<codim>::Iterator DuneIterator;
-    typedef typename DuneGridView::template Codim<codim>::EntityPointer
-        DuneEntityPointer;
-    typedef ConcreteRangeEntityIterator<DuneIterator, DuneEntityPointer>
+    typedef ConcreteRangeEntityIterator<DuneIterator>
         ConcIterator;
     typedef typename DuneGridView::Grid::LevelGridView DuneLevelGridView;
 

@@ -55,10 +55,9 @@ inline
 template <typename DuneEntity>
 std::unique_ptr<EntityPointer<0>>
 ConcreteEntity<0, DuneEntity>::father() const {
-  typedef ConcreteEntityPointer<typename DuneEntity::EntityPointer> ConcPointer;
-  if (m_dune_entity->hasFather())
+  if (m_dune_entity.hasFather())
     return std::unique_ptr<EntityPointer<0>>(
-        new ConcPointer(m_dune_entity->father(), m_domain_index));
+        new ConcreteEntityPointer<DuneEntity>(m_dune_entity.father(), m_domain_index));
   else
     return nullptr;
 }

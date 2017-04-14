@@ -76,10 +76,11 @@ public:
   //! evaluate
   virtual double evaluate(int comp, const Entity &e,
                           const Dune::FieldVector<ctype, dim> &xi) const {
+    const int dim_ = dim;
     double min = 1E100;
     int imin = -1;
     Dune::GeometryType gt = e.type();
-    for (int i = 0; i < e.template count<dim>(); ++i) {
+    for (int i = 0; i < e.subEntities(dim_); ++i) {
       Dune::FieldVector<ctype, dim> local =
           Dune::ReferenceElements<ctype, dim>::general(gt).position(i, dim);
       local -= xi;
@@ -88,7 +89,7 @@ public:
         imin = i;
       }
     }
-    return v(mapper.map(e, imin, dim) * ncomps_ + comp);
+    return v(mapper.subIndex(e, imin, dim) * ncomps_ + comp);
   }
 
   //! get name

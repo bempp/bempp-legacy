@@ -14,7 +14,7 @@ inline EntityImp<0, 2, const TriangleGrid>::EntityImp(
 inline EntityImp<0, 2, const TriangleGrid>::Geometry
 EntityImp<0, 2, const TriangleGrid>::geometry() const {
 
-  return m_data->geometry<0>(Entity(*this));
+  return m_data->geometry<0>(Entity<0>(*this));
 }
 
 inline Dune::PartitionType
@@ -48,33 +48,33 @@ EntityImp<0, 2, const TriangleGrid>::seed() const {
 }
 
 template <>
-inline EntityImp<0, 2, const TriangleGrid>::EntityPointer<1>
+inline EntityImp<0, 2, const TriangleGrid>::Entity<1>
 EntityImp<0, 2, const TriangleGrid>::subEntity<1>(int i) const {
 
-  return EntityPointer<1>(EntityImp<1, 2, const TriangleGrid>(
+  return Entity<1>(EntityImp<1, 2, const TriangleGrid>(
       m_data, m_level, m_data->element2Edges(m_level, m_index)[i]));
 }
 
 template <>
-inline EntityImp<0, 2, const TriangleGrid>::EntityPointer<2>
+inline EntityImp<0, 2, const TriangleGrid>::Entity<2>
 EntityImp<0, 2, const TriangleGrid>::subEntity<2>(int i) const {
 
-  return EntityPointer<2>(EntityImp<2, 2, const TriangleGrid>(
+  return Entity<2>(EntityImp<2, 2, const TriangleGrid>(
       m_data, m_level, m_data->elements(m_level)[m_index][i]));
 }
 
 template <>
-inline EntityImp<0, 2, const TriangleGrid>::EntityPointer<0>
+inline EntityImp<0, 2, const TriangleGrid>::Entity<0>
 EntityImp<0, 2, const TriangleGrid>::subEntity<0>(int i) const {
 
-  return EntityPointer<0>(*this);
+  return Entity<0>(*this);
 }
 
-inline EntityImp<0, 2, const TriangleGrid>::EntityPointer<0>
+inline EntityImp<0, 2, const TriangleGrid>::Entity<0>
 EntityImp<0, 2, const TriangleGrid>::father() const {
 
   int fatherIndex = m_data->getElementFatherIndex(m_level, m_index);
-  return EntityPointer<0>(
+  return Entity<0>(
       EntityImp<0, 2, const TriangleGrid>(m_data, m_level, fatherIndex));
 }
 
@@ -140,7 +140,7 @@ inline EntityImp<1, 2, const TriangleGrid>::EntityImp(
 inline EntityImp<1, 2, const TriangleGrid>::Geometry
 EntityImp<1, 2, const TriangleGrid>::geometry() const {
 
-  return m_data->geometry<1>(Entity(*this));
+  return m_data->geometry<1>(Entity<1>(*this));
 }
 
 inline int EntityImp<1, 2, const TriangleGrid>::level() const {
@@ -173,6 +173,31 @@ EntityImp<1, 2, const TriangleGrid>::seed() const {
       EntitySeedImp<1, const TriangleGrid>(m_level, m_index));
 }
 
+template <>
+inline EntityImp<1, 2, const TriangleGrid>::Entity<0>
+EntityImp<1, 2, const TriangleGrid>::subEntity<0>(int i) const {
+
+  throw std::runtime_error("Subentities of edges not defined for codim 0.");
+}
+
+template <>
+inline EntityImp<1, 2, const TriangleGrid>::Entity<2>
+EntityImp<1, 2, const TriangleGrid>::subEntity<2>(int i) const {
+
+  return Entity<2>(EntityImp<2, 2, const TriangleGrid>(
+      m_data, m_level, m_data->edges(m_level)[m_index][i]));
+}
+
+
+
+template <>
+inline EntityImp<1, 2, const TriangleGrid>::Entity<1>
+EntityImp<1, 2, const TriangleGrid>::subEntity<1>(int i) const {
+
+  return Entity<1>(*this);
+}
+
+
 inline EntityImp<2, 2, const TriangleGrid>::EntityImp(
     const shared_ptr<DataContainer> &data, int level, unsigned int index)
     : m_data(data), m_level(level), m_index(index) {}
@@ -187,7 +212,7 @@ EntityImp<2, 2, const TriangleGrid>::seed() const {
 inline EntityImp<2, 2, const TriangleGrid>::Geometry
 EntityImp<2, 2, const TriangleGrid>::geometry() const {
 
-  return m_data->geometry<2>(Entity(*this));
+  return m_data->geometry<2>(Entity<2>(*this));
 }
 
 inline int EntityImp<2, 2, const TriangleGrid>::level() const {
@@ -213,19 +238,42 @@ inline bool EntityImp<2, 2, const TriangleGrid>::equals(
   return m_level == other.m_level && m_index == other.m_index;
 }
 
+template <>
+inline EntityImp<2, 2, const TriangleGrid>::Entity<0>
+EntityImp<2, 2, const TriangleGrid>::subEntity<0>(int i) const {
+
+  throw std::runtime_error("Subentities of vertices not defined for codim 0.");
+}
+
+template <>
+inline EntityImp<2, 2, const TriangleGrid>::Entity<1>
+EntityImp<2, 2, const TriangleGrid>::subEntity<1>(int i) const {
+
+  throw std::runtime_error("Subentities of vertices not defined for codim 1.");
+}
+
+
+template <>
+inline EntityImp<2, 2, const TriangleGrid>::Entity<2>
+EntityImp<2, 2, const TriangleGrid>::subEntity<2>(int i) const {
+
+  return Entity<2>(*this);
+}
+
+
 inline unsigned int EntityImp<0, 2, const TriangleGrid>::id() const {
 
-  return m_data->id<0>(Entity(*this));
+  return m_data->id<0>(Entity<0>(*this));
 }
 
 inline unsigned int EntityImp<1, 2, const TriangleGrid>::id() const {
 
-  return m_data->id<1>(Entity(*this));
+  return m_data->id<1>(Entity<1>(*this));
 }
 
 inline unsigned int EntityImp<2, 2, const TriangleGrid>::id() const {
 
-  return m_data->id<2>(Entity(*this));
+  return m_data->id<2>(Entity<2>(*this));
 }
 }
 

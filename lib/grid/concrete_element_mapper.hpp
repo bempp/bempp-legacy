@@ -48,7 +48,7 @@ public:
     typedef typename DuneGridView::template Codim<0>::Entity DuneEntity;
     typedef ConcreteEntity<0, DuneEntity> ConcEntity;
     const ConcEntity &ce = dynamic_cast<const ConcEntity &>(e);
-    return m_dune_mapper.map(ce.duneEntity());
+    return m_dune_mapper.index(ce.duneEntity());
   }
 
   virtual size_t entityIndex(const Entity<1> &e) const {
@@ -74,7 +74,7 @@ public:
     typedef typename DuneGridView::template Codim<0>::Entity DuneEntity;
     typedef ConcreteEntity<0, DuneEntity> ConcEntity;
     const ConcEntity &ce = dynamic_cast<const ConcEntity &>(e);
-    return m_dune_mapper.map(ce.duneEntity(), i, codimSub);
+    return m_dune_mapper.subIndex(ce.duneEntity(), i, codimSub);
   }
 };
 

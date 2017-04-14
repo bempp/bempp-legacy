@@ -29,9 +29,9 @@ public:
     if (codim == 0)
       return id<0>(entity);
     if (codim == 1)
-      return id<1>(*entity.template subEntity<1>(i));
+      return id<1>(entity.template subEntity<1>(i));
     if (codim == 2)
-      return id<2>(*entity.template subEntity<2>(i));
+      return id<2>(entity.template subEntity<2>(i));
     throw std::runtime_error(
         "IdSetImp::subId(): Error. Must have 0 <= codim <= 2.");
   }
