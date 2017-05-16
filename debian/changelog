@@ -1,5 +1,5 @@
 python-bempp (3.1.5-0ubuntu1~xenial) xenial; urgency=medium
 
-  * Added mpi-default-dev package to fix MPI loading problem on fresh Ubuntu install
+  * Fixed delayed logging messages in Jupyter Notebook
 
  -- Timo Betcke <timo.betcke@gmail.com>  Tue, 16 May 2017 15:00:00 +0100
