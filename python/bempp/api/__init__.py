@@ -24,8 +24,11 @@ __version__ = _config.version
 # Initialize logger
 
 from bempp.api.utils.logging import _init_logger
+from bempp.api.utils.logging import log
 
-LOGGER = _init_logger()
+_console_logging_handler = None
+_LOGGER = _init_logger()
+
 
 try:
     if os.environ['BEMPP_CONSOLE_LOGGING'] == '1':
@@ -41,12 +44,12 @@ try:
     import dolfin as _
 except:
     HAVE_DOLFIN = False
-    LOGGER.info(
+    log(
         "Dolfin could not be imported." +
         "FEM/BEM coupling with FEniCS not available.")
 else:
     HAVE_DOLFIN = True
-    LOGGER.info("Found Dolfin. FEM/BEM coupling with FEniCS enabled.")
+    log("Found Dolfin. FEM/BEM coupling with FEniCS enabled.")
 
 
 # Check if config directory exists. If not create it.
@@ -124,8 +127,8 @@ from bempp.api import linalg
 from bempp.api import hmat
 from bempp.api.hmat import hmatrix_interface
 
-from bempp.api.utils.logging import DEBUG, INFO, WARNING, ERROR, CRITICAL
 from bempp.api.utils.logging import enable_console_logging
+from bempp.api.utils.logging import flush_log
 from bempp.api.utils.logging import enable_file_logging
 from bempp.api.utils.logging import set_logging_level
 from bempp.api.utils.logging import timeit

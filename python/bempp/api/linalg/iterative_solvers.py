@@ -102,15 +102,15 @@ def cg(A, b, tol=1E-5, maxiter=None,
         b_vec = b.projections(A.dual_to_range)
 
     callback = _it_counter(return_residuals, True, A_op, b_vec)
-    bempp.api.LOGGER.info("Starting CG iteration")
+    bempp.api.log("Starting CG iteration")
     start_time = time.time()
     x, info = scipy.sparse.linalg.cg(
         A_op, b_vec,
         tol=tol, maxiter=maxiter, callback=callback)
     end_time = time.time()
-    bempp.api.LOGGER.info(
-        "CG finished in %i iterations and took %.2E sec.",
-        callback.count, end_time - start_time)
+    bempp.api.log(
+        "CG finished in %i iterations and took %.2E sec." %(
+        callback.count, end_time - start_time))
 
     res_fun = GridFunction(A.domain, coefficients=x.ravel())
 
@@ -153,15 +153,15 @@ def _gmres_single_op_imp(
 
     callback = _it_counter(return_residuals)
 
-    bempp.api.LOGGER.info("Starting GMRES iteration")
+    bempp.api.log("Starting GMRES iteration")
     start_time = time.time()
     x, info = scipy.sparse.linalg.gmres(
         A_op, b_vec,
         tol=tol, restart=restart, maxiter=maxiter, callback=callback)
     end_time = time.time()
-    bempp.api.LOGGER.info(
-        "GMRES finished in %i iterations and took %.2E sec.",
-        callback.count, end_time - start_time)
+    bempp.api.log(
+        "GMRES finished in %i iterations and took %.2E sec." %(
+        callback.count, end_time - start_time))
 
     res_fun = GridFunction(A.domain, coefficients=x.ravel())
 
@@ -202,15 +202,15 @@ def _gmres_block_op_imp(
 
     callback = _it_counter(return_residuals)
 
-    bempp.api.LOGGER.info("Starting GMRES iteration")
+    bempp.api.log("Starting GMRES iteration")
     start_time = time.time()
     x, info = scipy.sparse.linalg.gmres(
         A_op, b_vec,
         tol=tol, restart=restart, maxiter=maxiter, callback=callback)
     end_time = time.time()
-    bempp.api.LOGGER.info(
-        "GMRES finished in %i iterations and took %.2E sec.",
-        callback.count, end_time - start_time)
+    bempp.api.log(
+        "GMRES finished in %i iterations and took %.2E sec." %(
+        callback.count, end_time - start_time))
 
     res_fun = grid_function_list_from_coefficients(
         x.ravel(), A.domain_spaces)

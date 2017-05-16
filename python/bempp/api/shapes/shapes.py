@@ -87,14 +87,14 @@ def regular_sphere(n):
     """
     from bempp.core.grid import grid_from_sphere
     from bempp.api.grid.grid import Grid
-    from bempp.api import LOGGER
+    from bempp.api import log
 
     grid = Grid(grid_from_sphere(n))
-    LOGGER.info(
-        "Created grid with %i elements, %i nodes and %i edges.",
+    log(
+        "Created grid with %i elements, %i nodes and %i edges." % (
         grid.leaf_view.entity_count(0),
         grid.leaf_view.entity_count(2),
-        grid.leaf_view.entity_count(1))
+        grid.leaf_view.entity_count(1)))
 
     return grid
 

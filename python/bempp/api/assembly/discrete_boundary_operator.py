@@ -674,7 +674,7 @@ class _Solver(object):  # pylint: disable=too-few-public-methods
             SolverInterface = splu
             actual_mat = mat
 
-        bempp.api.LOGGER.info(
+        bempp.api.log(
             "Start computing LU " +
             "(pseudo)-inverse of ({0}, {1}) matrix.".format(
                 mat.shape[0], mat.shape[1]))
@@ -704,9 +704,9 @@ class _Solver(object):  # pylint: disable=too-few-public-methods
             self._solve_fun = lambda x: mat_hermitian * solver.solve(x)
 
         end_time = time.time()
-        bempp.api.LOGGER.info(
-            "Finished computation of inverse in %.2E seconds.",
-            end_time - start_time)
+        bempp.api.log(
+            "Finished computation of inverse in %.2E seconds." % (
+            end_time - start_time))
 
     def solve(self, vec):
         """Solve with right-hand side vec."""

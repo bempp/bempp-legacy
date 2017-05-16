@@ -305,7 +305,7 @@ class ElementaryBoundaryOperator(BoundaryOperator):
         assembly_mode = \
             self._parameters.assembly.boundary_operator_assembly_type
 
-        bempp.api.LOGGER.info(_start_assembly_message(
+        bempp.api.log(_start_assembly_message(
             self.domain,
             self.dual_to_range,
             assembly_mode, self.label))
@@ -321,10 +321,10 @@ class ElementaryBoundaryOperator(BoundaryOperator):
             from bempp.api.hmat import hmatrix_interface
             mem_size = hmatrix_interface.mem_size(weak_form) / (1.0 * 1024)
             compression_rate = hmatrix_interface.compression_rate(weak_form)
-            bempp.api.LOGGER.info(_end_hmat_assembly_message(
+            bempp.api.log(_end_hmat_assembly_message(
                 self.label, end_time - start_time, compression_rate, mem_size))
         else:
-            bempp.api.LOGGER.info(_end_assembly_message(
+            bempp.api.log(_end_assembly_message(
                 self.label, end_time - start_time))
 
         return weak_form
@@ -386,7 +386,7 @@ class LocalBoundaryOperator(BoundaryOperator):
         import time
         import bempp.api
 
-        bempp.api.LOGGER.info(_start_assembly_message(self.domain,
+        bempp.api.log(_start_assembly_message(self.domain,
                                                       self.dual_to_range,
                                                       'sparse', self.label))
         start_time = time.time()
@@ -394,7 +394,7 @@ class LocalBoundaryOperator(BoundaryOperator):
         weak_form = self._impl.assemble_weak_form(self._parameters)
 
         end_time = time.time()
-        bempp.api.LOGGER.info(_end_assembly_message(
+        bempp.api.log(_end_assembly_message(
             self.label, end_time - start_time))
 
         return weak_form

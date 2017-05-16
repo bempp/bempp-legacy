@@ -35,9 +35,9 @@ def get_operator_with_space_preprocessing(
         parameters = bempp.api.global_parameters
 
     if parameters.assembly.boundary_operator_assembly_type == 'dense':
-        from bempp.api import LOGGER
+        from bempp.api import log
         use_projection_spaces = False
-        LOGGER.info("Projection space mode disabled for dense assembly.")
+        log("Projection space mode disabled for dense assembly.")
 
     if check_for_non_barycentric_spaces(domain, dual_to_range):
         return rewrite_operator_spaces(
