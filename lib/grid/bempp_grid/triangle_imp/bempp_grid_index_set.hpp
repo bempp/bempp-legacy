@@ -45,12 +45,14 @@ public:
                                std::to_string(cd) + ", codim = " +
                                std::to_string(codim));
 
+    const auto& entityImpl = TriangleGrid::getEntityImp<cd>(entity);
+
     if (codim == 0)
-      return index<0>(*entity.template subEntity<0>(i));
+      return index<0>(entityImpl.template subEntity<0>(i));
     if (codim == 1)
-      return index<1>(*entity.template subEntity<1>(i));
+      return index<1>(entityImpl.template subEntity<1>(i));
     if (codim == 2)
-      return index<2>(*entity.template subEntity<2>(i));
+      return index<2>(entityImpl.template subEntity<2>(i));
     throw std::runtime_error(
         "LevelIndexSetImp::subIndex(): Require 0 <= codim <= 2");
   }

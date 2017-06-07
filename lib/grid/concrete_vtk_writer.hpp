@@ -94,7 +94,7 @@ private:
                              "of 'data' different from the number of cells");
 
     typedef P0VectorVTKFunction<DuneGridView, Matrix<ValueType>> Function;
-    typedef Dune::shared_ptr<Dune::VTKFunction<DuneGridView>> VTKFunctionPtr;
+    typedef std::shared_ptr<Dune::VTKFunction<DuneGridView>> VTKFunctionPtr;
     VTKFunctionPtr p(new Function(*m_dune_gv, data, name, ncomp));
     m_dune_vtk_writer.addCellData(p);
   }
@@ -121,7 +121,7 @@ private:
                              "of 'data' different from the number of vertices");
 
     typedef P1VectorVTKFunction<DuneGridView, Matrix<ValueType>> Function;
-    typedef Dune::shared_ptr<Dune::VTKFunction<DuneGridView>> VTKFunctionPtr;
+    typedef std::shared_ptr<Dune::VTKFunction<DuneGridView>> VTKFunctionPtr;
     VTKFunctionPtr p(new Function(*m_dune_gv, data, name, ncomp));
     m_dune_vtk_writer.addVertexData(p);
 

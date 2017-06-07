@@ -1,6 +1,7 @@
 #ifndef BEMPP_PYTHON_UTILS_HPP
 #define BEMPP_PYTHON_UTILS_HPP
 
+#include "bempp/common/common.hpp"
 #include <new>
 #include <typeinfo>
 #include <stdexcept>
@@ -19,9 +20,17 @@ namespace Bempp {
         // latest Python exn passes through, ignore the current one
         if (not PyErr_Occurred()) throw;
       } catch (const Dune::IOError& exn) {
+#if DUNE_VERSION <= 241
         PyErr_SetString(PyExc_IOError, exn.what().c_str());
+#else 
+        PyErr_SetString(PyExc_IOError, exn.what());
+#endif
       } catch (const Dune::Exception& exn) {
+#if DUNE_VERSION <= 241
         PyErr_SetString(PyExc_RuntimeError, exn.what().c_str());
+#else
+        PyErr_SetString(PyExc_RuntimeError, exn.what());
+#endif
       } catch (const std::bad_alloc& exn) {
         PyErr_SetString(PyExc_MemoryError, exn.what());
       } catch (const std::bad_cast& exn) {
@@ -93,7 +102,6 @@ namespace Bempp {
         return p;
 
     }
-    
+
 }
 #endif
-

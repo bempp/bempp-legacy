@@ -8,7 +8,6 @@ import logging as _logging
 import time as _time
 from mpi4py import MPI as _MPI
 
-
 # Logging levels
 
 DEBUG = _logging.DEBUG
@@ -25,44 +24,58 @@ DEFAULT_FORMAT = ("%(asctime)s:Host {0}:Rank {1}:".format(
 def _init_logger():
     """Initialize the BEM++ logger."""
 
-    logger = _logging.getLogger('BEMPP')
+    logger = _logging.getLogger()
     logger.setLevel(_logging.DEBUG)
     logger.addHandler(_logging.NullHandler())
     return logger
 
+def log(message, level=INFO, flush=True):
+    """Log including default flushing for IPython."""
+    from bempp.api import _LOGGER
+    _LOGGER.log(level, message)
+    if flush:
+        flush_log()
 
-def enable_console_logging(level=DEBUG, format=DEFAULT_FORMAT):
+def flush_log():
+    """Flush all handlers. Necessary for Jupyter."""
+    from bempp.api import _LOGGER
+    for handler in _LOGGER.handlers:
+        handler.flush()
+
+
+def enable_console_logging(level=DEBUG):
     """Enable console logging and return the console handler."""
 
-    from bempp.api import LOGGER
-    ch = _logging.StreamHandler()
-    ch.setLevel(level)
-    ch.setFormatter(_logging.Formatter(format, "%H:%M:%S"))
-    LOGGER.addHandler(ch)
-    return ch
+    import bempp.api
+    if not bempp.api._console_logging_handler:
+        ch = _logging.StreamHandler()
+        ch.setLevel(level)
+        ch.setFormatter(_logging.Formatter(DEFAULT_FORMAT, "%H:%M:%S"))
+        bempp.api._LOGGER.addHandler(ch)
+        bempp.api._console_logging_handler = ch
+    return bempp.api._console_logging_handler
 
 
 def enable_file_logging(file_name, level=DEBUG, format=DEFAULT_FORMAT):
     """Enable logging to a specific file."""
 
-    from bempp.api import LOGGER
+    from bempp.api import _LOGGER
     fh = _logging.FileHandler(file_name)
     fh.setLevel(level)
     fh.setFormatter(_logging.Formatter(format, "%H:%M:%S"))
-    LOGGER.addHandler(fh)
+    _LOGGER.addHandler(fh)
     return fh
 
 
 def set_logging_level(level):
     """Set the logging level."""
 
-    from bempp.api import LOGGER
-    LOGGER.setLevel(level)
+    from bempp.api import _LOGGER
+    _LOGGER.setLevel(level)
 
 
 def timeit(message):
     """Decorator to time a method in BEM++"""
-    from bempp.api import LOGGER
     from bempp.api import global_parameters
 
     def timeit_impl(fun):
@@ -75,7 +88,7 @@ def timeit(message):
             st = _time.time()
             res = fun(*args, **kwargs)
             et = _time.time()
-            LOGGER.info(message + " : {0:.3e}s".format(et-st))
+            bempp.api.log(message + " : {0:.3e}s".format(et-st))
             return res
 
         return timed_fun

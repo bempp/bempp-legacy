@@ -1,6 +1,5 @@
-python-bempp (3.1.1-0ubuntu1~yakkety) yakkety; urgency=medium
+python-bempp (3.1.5-0ubuntu1~xenial) xenial; urgency=medium
 
-  * Small bug fixes.
-  * Disabled projection mode for dense assembly
+  * Added mpi-default-dev package to fix MPI loading problem on fresh Ubuntu install
 
- -- Timo Betcke <timo.betcke@gmail.com>  Wed, 10 Jan 2017 22:11:23 +0100
+ -- Timo Betcke <timo.betcke@gmail.com>  Tue, 16 May 2017 15:00:00 +0100

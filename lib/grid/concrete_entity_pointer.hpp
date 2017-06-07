@@ -31,26 +31,25 @@ namespace Bempp {
 /**
  \ingroup grid_internal
  \brief Wrapper of a Dune entity pointer of type \p DuneEntityPointer.
- */
-template <typename DuneEntityPointer>
-class ConcreteEntityPointer
-    : public EntityPointer<DuneEntityPointer::codimension> {
-private:
-  typedef typename DuneEntityPointer::Entity DuneEntity;
-  DuneEntityPointer m_dune_entity_ptr;
-  ConcreteEntity<ConcreteEntityPointer::codimension, DuneEntity> m_entity;
 
-  void updateEntity() { m_entity.setDuneEntity(&*m_dune_entity_ptr); }
+ EntityPointers have been removed in newer Dune versions. This class is only
+ left for compatibility.
+ */
+template <typename DuneEntity_>
+class ConcreteEntityPointer
+    : public EntityPointer<DuneEntity_::codimension> {
+private:
+  typedef DuneEntity_ DuneEntity;
+  ConcreteEntity<DuneEntity::codimension, DuneEntity> m_entity;
 
 public:
   /** \brief Constructor */
-  ConcreteEntityPointer(const DuneEntityPointer &dune_entity_pointer,
+  ConcreteEntityPointer(const DuneEntity &dune_entity,
                         const DomainIndex &domain_index)
-      : m_dune_entity_ptr(dune_entity_pointer), m_entity(domain_index) {
-    updateEntity();
+      : m_entity(dune_entity, domain_index) {
   }
 
-  virtual const Entity<DuneEntityPointer::codimension> &entity() const {
+  virtual const Entity<DuneEntity::codimension> &entity() const {
     return m_entity;
   }
 };

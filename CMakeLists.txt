@@ -45,8 +45,8 @@ include(PythonInstall)
 
 # These are the original flags given by the user when compiling Bempp
 set(ORIGINAL_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-# Makes this a c++11 project
-include(cpp11_project)
+# Makes this a c++14 project
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
 
 # Macros to install python
