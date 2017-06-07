@@ -267,11 +267,12 @@ void IntegrationTask(tbb::task_group &taskGroupDevice,
     const size_t maxActiveElemPairCount,
     shared_ptr<Fiber::CudaIntegrator<BasisFunctionType, KernelType, ResultType,
         CudaBasisFunctionType, CudaKernelType, CudaResultType>> &cudaIntegrator,
-    CudaResultType *h_regularResult, float &integrationTimer) {
+    CudaResultType *h_regularResult, CudaResultType *d_regularResult,
+    float &integrationTimer) {
 
   taskGroupDevice.run_and_wait([
        chunk, isLastChunk, elemPairOffset, elemPairCount, maxActiveElemPairCount,
-       &cudaIntegrator, h_regularResult, &integrationTimer] {
+       &cudaIntegrator, h_regularResult, d_regularResult, &integrationTimer] {
 
     const size_t elemPairIndexBegin = elemPairOffset
         + chunk * maxActiveElemPairCount;
@@ -286,7 +287,7 @@ void IntegrationTask(tbb::task_group &taskGroupDevice,
 
     // Evaluate regular integrals over selected element pairs
     cudaIntegrator->integrate(elemPairIndexBegin, elemPairIndexEnd,
-        h_regularResult);
+        d_regularResult, h_regularResult);
 
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
     if (chunk != 0 && !isLastChunk)
@@ -495,21 +496,38 @@ void ParallelDeviceLoop(
     // Get number of element pair chunks
     const unsigned int chunkCount = static_cast<unsigned int>(
         (elemPairCount-1) / maxActiveElemPairCount + 1);
+    std::cout << "chunkCount = " << chunkCount << std::endl;
 
     // Get element pair offset for the current device
     const size_t elemPairOffset = device * maxElemPairCountPerDevice;
 
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
-    // Allocate pinned host memory on the device
-    CudaResultType *h_regularResultEven, *h_regularResultOdd;
-    size_t size = maxActiveElemPairCount
-        * trialDofCount * testDofCount * sizeof(CudaResultType);
-    if (ScalarTraits<ResultType>::isComplex) size *= 2;
-    cu_verify( cudaHostAlloc((void**)&h_regularResultEven, size,
-        cudaHostAllocMapped) );
-    cu_verify( cudaHostAlloc((void**)&h_regularResultOdd, size,
-        cudaHostAllocMapped) );
+    CudaResultType *h_regularResultEven, *h_regularResultOdd,
+                   *d_regularResultEven, *d_regularResultOdd;
+    size_t resultArraySize;
+    if (chunkCount == 1) {
+
+      resultArraySize = elemPairCount
+          * trialDofCount * testDofCount * sizeof(CudaResultType);
+      if (Bempp::ScalarTraits<ResultType>::isComplex) resultArraySize *= 2;
+
+      // Allocate mapped pinned host memory
+      cu_verify( cudaHostAlloc((void**)&h_regularResultEven, resultArraySize,
+          cudaHostAllocMapped) );
+
+    } else {
+
+      resultArraySize = maxActiveElemPairCount
+          * trialDofCount * testDofCount * sizeof(CudaResultType);
+      if (Bempp::ScalarTraits<ResultType>::isComplex) resultArraySize *= 2;
+
+      // Allocate mapped pinned host memory
+      cu_verify( cudaHostAlloc((void**)&h_regularResultEven, resultArraySize,
+          cudaHostAllocMapped) );
+      cu_verify( cudaHostAlloc((void**)&h_regularResultOdd, resultArraySize,
+          cudaHostAllocMapped) );
+    }
 
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 //    std::cout << "Time for host vector allocation = "
@@ -537,16 +555,18 @@ void ParallelDeviceLoop(
 
     // Loop over chunks of element pairs
     for (size_t chunk = 0; chunk < chunkCount; ++chunk) {
-
 //      std::cout << "chunk = " << chunk << std::endl;
 
       const bool isLastChunk = (chunk == chunkCount - 1);
 
-      CudaResultType *h_regularResult;
-      if (chunk % 2 == 0)
+      CudaResultType *h_regularResult, *d_regularResult;
+      if (chunk % 2 == 0) {
         h_regularResult = h_regularResultEven;
-      else
+        d_regularResult = d_regularResultEven;
+      } else {
         h_regularResult = h_regularResultOdd;
+        d_regularResult = d_regularResultOdd;
+      }
 
       size_t chunkElemPairCount;
       if (isLastChunk)
@@ -558,7 +578,7 @@ void ParallelDeviceLoop(
       IntegrationTask(taskGroupDevice,
           chunk, isLastChunk,
           elemPairOffset, elemPairCount, maxActiveElemPairCount,
-          cudaIntegrator, h_regularResult, integrationTimer);
+          cudaIntegrator, h_regularResult, d_regularResult, integrationTimer);
 
       // Perfrom assembly for current element pair chunk on the CPU
       AssemblyTask(taskGroupDevice,

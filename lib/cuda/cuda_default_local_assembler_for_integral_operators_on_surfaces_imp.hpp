@@ -94,8 +94,8 @@ void IntegrationTask(tbb::task_group &taskGroupDevice,
     const thrust::device_vector<int> &d_trialElementIndices,
     shared_ptr<Fiber::CudaIntegrator<BasisFunctionType, KernelType, ResultType,
         CudaBasisFunctionType, CudaKernelType, CudaResultType>> &cudaIntegrator,
-    CudaResultType *h_result, CudaResultType *d_result, size_t resultArraySize,
-    float &integrationTimer) {
+    CudaResultType *h_result, CudaResultType *d_result,
+    const size_t resultArraySize, float &integrationTimer) {
 
   taskGroupDevice.run_and_wait([
        chunk, isLastChunk, elemPairCount, maxActiveElemPairCount,
@@ -383,21 +383,6 @@ void CudaDefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
         m_testDofCount, m_trialDofCount, testElementIndices, trialElementIndices,
         testLocalDofs, trialLocalDofs, testLocalDofWeights, trialLocalDofWeights,
         blockRows, blockCols, h_result, result, mutex, assemblyTimer);
-  }
-
-  // Print information about mean integration and assembly time
-  if (chunkCount > 2) {
-
-    integrationTimer /= (chunkCount - 2);
-    assemblyTimer /= (chunkCount - 2);
-    if (integrationTimer > assemblyTimer)
-      std::cout << "INFO: Speedup is bound by integration (GPU) with "
-          "mean integration time " << integrationTimer << " ms "
-          "and mean assembly time " << assemblyTimer << " ms" << std::endl;
-    else
-      std::cout << "INFO: Speedup is bound by assembly (CPU) with "
-          "mean integration time " << integrationTimer << " ms "
-          "and mean assembly time " << assemblyTimer << " ms" << std::endl;
   }
 
   // Wait until last chunk assembly has finished

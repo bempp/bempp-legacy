@@ -37,7 +37,8 @@ endif()
 # CUDA
 if (WITH_CUDA)
     find_package(CUDA REQUIRED)
-    set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "--default-stream per-thread -gencode arch=compute_35,code=sm_35")
+    set(CUDA_NVCC_FLAGS ${CUDA_NVCC_FLAGS} "-std=c++11 -lineinfo --default-stream per-thread -gencode arch=compute_35,code=sm_35")
+    set(CUDA_PROPAGATE_HOST_FLAGS OFF)
 endif()
 
 find_package(Sphinx)

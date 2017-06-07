@@ -90,7 +90,7 @@ public:
 
   void integrate(const size_t elemPairIndexBegin,
                  const size_t elemPairIndexEnd,
-                 CudaResultType *result);
+                 CudaResultType *d_result, CudaResultType *h_result);
 
   void integrate(const thrust::device_vector<int> &d_testIndices,
                  const thrust::device_vector<int> &d_trialIndices,

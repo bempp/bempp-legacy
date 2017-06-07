@@ -25,6 +25,7 @@
 #include "cuda_evaluate_laplace_3d_single_layer_potential_integral.cuh"
 #include "cuda_evaluate_laplace_3d_double_layer_potential_integral.cuh"
 #include "cuda_evaluate_laplace_3d_adjoint_double_layer_potential_integral.cuh"
+#include "cuda_evaluate_laplace_3d_hypersingular_integral.cuh"
 #include "cuda_evaluate_modified_helmholtz_3d_single_layer_potential_integral.cuh"
 #include "cuda_evaluate_modified_helmholtz_3d_double_layer_potential_integral.cuh"
 #include "cuda_evaluate_modified_helmholtz_3d_adjoint_double_layer_potential_integral.cuh"
@@ -296,16 +297,15 @@ typename CudaBasisFunctionType, typename CudaKernelType, typename CudaResultType
 void CudaIntegrator<BasisFunctionType, KernelType, ResultType,
 CudaBasisFunctionType, CudaKernelType, CudaResultType>::
     integrate(const size_t elemPairIndexBegin, const size_t elemPairIndexEnd,
-              CudaResultType *result) {
+              CudaResultType *d_result, CudaResultType *h_result) {
 
   cu_verify( cudaSetDevice(m_deviceId) );
 
-  // Get device pointer from host memory, no allocation or memcpy
-  CudaResultType *d_result;
-  cudaHostGetDevicePointer((void **)&d_result, (void *)result, 0);
+  // Get device pointer from pinned host memory
+  cudaHostGetDevicePointer((void **)&d_result, (void *)h_result, 0);
 
   // TODO: cudaHostGetDevicePointer return non zero error code?
-//  cu_verify( cudaHostGetDevicePointer((void **)&d_result, (void *)result, 0) );
+//  cu_verify( cudaHostGetDevicePointer((void **)&d_result, (void *)h_result, 0) );
 
   integrate(m_d_testIndices, m_d_trialIndices,
       elemPairIndexBegin, elemPairIndexEnd, d_result);
@@ -317,11 +317,11 @@ void CudaIntegrator<BasisFunctionType, KernelType, ResultType,
 CudaBasisFunctionType, CudaKernelType, CudaResultType>::
     integrate(const thrust::device_vector<int> &d_testIndices,
               const thrust::device_vector<int> &d_trialIndices,
-              const size_t elemPairIndexBegin,
-              const size_t elemPairIndexEnd,
+              const size_t elemPairIndexBegin, const size_t elemPairIndexEnd,
               CudaResultType *d_result) {
 
   const size_t elemPairCount = elemPairIndexEnd - elemPairIndexBegin;
+//  std::cout << "elemPairCount = " << elemPairCount << std::endl;
 
   if (elemPairCount == 0)
     return;
@@ -329,11 +329,12 @@ CudaBasisFunctionType, CudaKernelType, CudaResultType>::
   cu_verify( cudaSetDevice(m_deviceId) );
 
   // Set kernel launch parameters
-  const dim3 blockSize(m_cudaOptions.blockSize(),1,1);
+  const dim3 blockSize(m_cudaOptions.blockSize(), 1, 1);
 
   const unsigned int blockCount =
       static_cast<unsigned int>((elemPairCount-1) / blockSize.x + 1);
-  const dim3 gridSize(blockCount,1,1);
+  const dim3 gridSize(blockCount, 1, 1);
+//  std::cout << "gridSize = " << blockCount << std::endl;
 
   if (m_isElementDataCachingEnabled == true) {
 
@@ -356,7 +357,6 @@ CudaBasisFunctionType, CudaKernelType, CudaResultType>::
         d_testIndices, d_trialIndices, elemPairIndexBegin, elemPairCount,
         gridSize, blockSize, d_result);
   }
-//  cudaDeviceSynchronize();
   cudaStreamSynchronize(0);
 }
 
@@ -497,9 +497,12 @@ CudaBasisFunctionType, CudaKernelType, CudaResultType>::
   }
 
   // Precalculate surface curls on the device
-  if ((m_kernelName == "ModifiedHelmholtz3dHypersingular" ||
-      m_kernelName == "ModifiedHelmholtz3dHypersingularInterpolated")
-     && fabs(m_waveNumberReal) < 1.0e-10 ) {
+  // TODO: Switch at compile time since Laplace SLP and Hypersingular both
+  // use SLP kernel
+  if (((m_kernelName == "ModifiedHelmholtz3dHypersingular" ||
+        m_kernelName == "ModifiedHelmholtz3dHypersingularInterpolated") &&
+       fabs(m_waveNumberReal) < 1.0e-10) ||
+      m_kernelName == /*"Laplace3dSingleLayerPotential"*/"Laplace3dHypersingular") {
 
     m_testGrid->calculateSurfaceCurls(
         m_testQuadData.pointCount, m_testBasisData.dofCount,
@@ -703,7 +706,9 @@ CudaBasisFunctionType, CudaKernelType, CudaResultType>::
         CudaResultType *d_result) const {
 
   // Launch kernel
-  if (m_kernelName == "Laplace3dSingleLayerPotential") {
+  // TODO: Switch at compile time since Laplace SLP and Hypersingular both
+  // use SLP kernel
+  if (m_kernelName == "Laplace3dSingleLayerPotential"/*false*/) {
 
 //    // Experimental: Get optimal block size in terms of occupancy
 //    int blockSizeOpt; // The launch configurator returned block size
@@ -718,7 +723,7 @@ CudaBasisFunctionType, CudaKernelType, CudaResultType>::
 //    // Round up according to array size
 //    gridSizeOpt = (elemPairCount + blockSizeOpt - 1) / blockSizeOpt;
 //
-//    // calculate theoretical occupancy
+//    // Calculate theoretical occupancy
 //    int maxActiveBlocks;
 //    cudaOccupancyMaxActiveBlocksPerMultiprocessor(&maxActiveBlocks,
 //        CudaEvaluateLaplace3dSingleLayerPotentialIntegralFunctorCached<
@@ -803,6 +808,35 @@ CudaBasisFunctionType, CudaKernelType, CudaResultType>::
         m_trialElemData.activeElemCount,
         thrust::raw_pointer_cast(m_trialElemData.geomData),
         thrust::raw_pointer_cast(m_trialElemData.integrationElements),
+        d_result)
+    ));
+
+  // TODO: Switch at compile time since Laplace SLP and Hypersingular both
+  // use SLP kernel
+  } else if (m_kernelName == /*"Laplace3dSingleLayerPotential"*/"Laplace3dHypersingular") {
+
+    cu_verify_void((
+        CudaEvaluateLaplace3dHypersingularIntegralFunctorCached<
+        CudaBasisFunctionType, CudaKernelType, CudaResultType>
+        <<<gridSize, blockSize>>>(
+        elemPairIndexBegin, elemPairCount, d_testIndices.size(),
+        thrust::raw_pointer_cast(d_testIndices.data()),
+        thrust::raw_pointer_cast(d_trialIndices.data()),
+        m_testQuadData.pointCount, m_trialQuadData.pointCount,
+        m_testBasisData.dofCount,
+        thrust::raw_pointer_cast(m_testBasisData.values),
+        thrust::raw_pointer_cast(m_testBasisData.derivatives),
+        m_trialBasisData.dofCount,
+        thrust::raw_pointer_cast(m_trialBasisData.values),
+        thrust::raw_pointer_cast(m_trialBasisData.derivatives),
+        m_testElemData.activeElemCount,
+        thrust::raw_pointer_cast(m_testElemData.geomData),
+        thrust::raw_pointer_cast(m_testElemData.integrationElements),
+        thrust::raw_pointer_cast(m_testElemData.surfaceCurls),
+        m_trialElemData.activeElemCount,
+        thrust::raw_pointer_cast(m_trialElemData.geomData),
+        thrust::raw_pointer_cast(m_trialElemData.integrationElements),
+        thrust::raw_pointer_cast(m_trialElemData.surfaceCurls),
         d_result)
     ));
 

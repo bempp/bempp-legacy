@@ -98,8 +98,7 @@ CudaEvaluateLaplace3dSingleLayerPotentialKernelFunctorCached(
                                + testPoint * testElemCount
                                + testElemPosition];
         }
-        Laplace3dSingleLayerPotentialKernel(
-            testPointCoo, trialPointCoo,
+        Laplace3dSingleLayerPotentialKernel(testPointCoo, trialPointCoo,
             kernelValue);
         const size_t index = trialPoint * testPointCount * elemPairCount
                              + testPoint * elemPairCount
@@ -228,8 +227,7 @@ CudaEvaluateLaplace3dSingleLayerPotentialIntegralFunctorCached(
                            + testPoint * testElemCount
                            + testElemPosition];
         }
-        Laplace3dSingleLayerPotentialKernel(
-            testPointCoo, trialPointCoo,
+        Laplace3dSingleLayerPotentialKernel(testPointCoo, trialPointCoo,
             kernelValue);
         kernelValues[trialPoint * testPointCount + testPoint] = kernelValue;
       }
