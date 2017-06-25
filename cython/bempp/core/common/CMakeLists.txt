@@ -1,10 +1,10 @@
-set(headers __init__.pxd)
+set(headers __init__.pxd point.pxd bounding_box.pxd)
 
 copy_files_on_change(${headers}
     OUTPUT_FILES copied
     DESTINATION "${PYTHON_BINARY_DIR}/bempp/include/bempp/core/common"
     TARGETNAME bempp.core.common-copied
-)
+    )
 
 #install_python(FILES __init__.pxd DESTINATION bempp/include/bempp/core/common)
 add_dependencies(cython-headers bempp.core.common-copied)

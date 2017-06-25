@@ -23,24 +23,27 @@
 
 /** \file . */
 
+#include "../common/bounding_box.hpp"
 #include "../common/common.hpp"
-#include "../common/shared_ptr.hpp"
 #include "../common/eigen_support.hpp"
-#include "grid_parameters.hpp"
+#include "../common/shared_ptr.hpp"
 #include "entity.hpp"
+#include "grid_parameters.hpp"
 
-#include <cstddef> // size_t
-#include <memory>
-#include <vector>
-#include <tbb/mutex.h>
 #include <boost/signals2/signal.hpp>
+#include <cstddef> // size_t
 #include <functional>
+#include <memory>
+#include <tbb/mutex.h>
+#include <vector>
 
 namespace Bempp {
 
 /** \cond FORWARD_DECL */
-template <int codim> class Entity;
-template <typename BasisFunctionType> class Space;
+template <int codim>
+class Entity;
+template <typename BasisFunctionType>
+class Space;
 class GeometryFactory;
 class GridView;
 class IdSet;
@@ -51,133 +54,136 @@ class IdSet;
  */
 class Grid {
 public:
-  /** \brief Destructor */
-  virtual ~Grid() {}
+    /** \brief Destructor */
+    virtual ~Grid() {}
 
-  /** @name Grid parameters
+    /** @name Grid parameters
   @{ */
 
-  /** \brief Dimension of the grid. */
-  virtual int dim() const = 0;
+    /** \brief Dimension of the grid. */
+    virtual int dim() const = 0;
 
-  /** \brief Dimension of the space containing the grid. */
-  virtual int dimWorld() const = 0;
+    /** \brief Dimension of the space containing the grid. */
+    virtual int dimWorld() const = 0;
 
-  /** \brief Maximum level defined in this grid.
+    /** \brief Maximum level defined in this grid.
 
    Levels are numbered 0 ... maxLevel() with 0 the coarsest level.
    */
-  virtual int maxLevel() const = 0;
+    virtual int maxLevel() const = 0;
 
-  /** @}
+    /** @}
   @name Views
   @{ */
 
-  /** \brief View of the entities on grid level \p level. */
-  virtual std::unique_ptr<GridView> levelView(size_t level) const = 0;
+    /** \brief View of the entities on grid level \p level. */
+    virtual std::unique_ptr<GridView> levelView(size_t level) const = 0;
 
-  /** \brief View of the leaf entities. */
-  virtual std::unique_ptr<GridView> leafView() const = 0;
+    /** \brief View of the leaf entities. */
+    virtual std::unique_ptr<GridView> leafView() const = 0;
 
-  /** \brief Return the topology of the grid */
+    /** \brief Return the topology of the grid */
 
-  virtual GridParameters::Topology topology() const = 0;
+    virtual GridParameters::Topology topology() const = 0;
 
-  /** \brief Factory able to construct empty geometries of codimension 0
+    /** \brief Factory able to construct empty geometries of codimension 0
    compatible with this grid.
 
    \note For internal use.
 
    \todo Provide implementations for other codimensions. */
-  virtual std::unique_ptr<GeometryFactory> elementGeometryFactory() const = 0;
+    virtual std::unique_ptr<GeometryFactory> elementGeometryFactory() const = 0;
 
-  /** @}
+    /** @}
   @name Others
   @{ */
 
-  /** \brief Return a barycentrically refined grid based on the LeafView and the
+    /** \brief Return a barycentrically refined grid based on the LeafView and the
    * son map */
-  virtual std::pair<shared_ptr<Grid>, Matrix<int>>
-  barycentricGridSonPair() const = 0;
+    virtual std::pair<shared_ptr<Grid>, Matrix<int> >
+    barycentricGridSonPair() const = 0;
 
-  /** \brief Return a barycentrically refined grid based on the LeafView */
-  virtual shared_ptr<Grid> barycentricGrid() const = 0;
+    /** \brief Return a barycentrically refined grid based on the LeafView */
+    virtual shared_ptr<Grid> barycentricGrid() const = 0;
 
-  /** \brief Return the son map for the barycentrically refined grid */
-  virtual Matrix<int> barycentricSonMap() const = 0;
+    /** \brief Return the son map for the barycentrically refined grid */
+    virtual Matrix<int> barycentricSonMap() const = 0;
 
-  /** \brief Return \p true if a barycentric refinement of this grid has
+    /** \brief Return \p true if a barycentric refinement of this grid has
    *  been created. */
-  virtual bool hasBarycentricGrid() const = 0;
+    virtual bool hasBarycentricGrid() const = 0;
 
-  //  virtual bool isBarycentricGrid() const = 0;
+    //  virtual bool isBarycentricGrid() const = 0;
 
-  /** \brief Return \p true if this grid is a barycentric representation of
+    /** \brief Return \p true if this grid is a barycentric representation of
    *  \p other, i.e. if this grid was created by \p other.barycentricGrid(). */
-  virtual bool isBarycentricRepresentationOf(const Grid &other) const;
+    virtual bool isBarycentricRepresentationOf(const Grid& other) const;
 
-  /** \brief Reference to the grid's global id set. */
-  virtual const IdSet &globalIdSet() const = 0;
+    /** \brief Reference to the grid's global id set. */
+    virtual const IdSet& globalIdSet() const = 0;
 
-  /** \brief Get bounding box.
+    /** \brief Get bounding box.
    *
    *  The grid lies in the box defined by the inequalities
    *  <tt>lowerBound(i) <= x_i <= upperBound(i)</tt>, where x_i is the ith
    *  coordinate. */
-  void getBoundingBox(Vector<double> &lowerBound,
-                      Vector<double> &upperBound) const;
+    void getBoundingBox(Vector<double>& lowerBound,
+        Vector<double>& upperBound) const;
 
-  /** \brief Get insertion index of an element. */
+    /** \brief Overload */
+    void getBoundingBox(BoundingBox<double>& boundingBox) const;
 
-  virtual unsigned int elementInsertionIndex(const Entity<0> &element) const;
+    /** \brief Get insertion index of an element. */
 
-  /** \brief Get insertion index of a vertex for a 2d in 3d grid */
+    virtual unsigned int elementInsertionIndex(const Entity<0>& element) const;
 
-  virtual unsigned int vertexInsertionIndex(const Entity<2> &vertex) const;
+    /** \brief Get insertion index of a vertex for a 2d in 3d grid */
 
-  /** \brief Mark element for refinement. */
+    virtual unsigned int vertexInsertionIndex(const Entity<2>& vertex) const;
 
-  virtual bool mark(int refCount, const Entity<0> &element) = 0;
+    /** \brief Mark element for refinement. */
 
-  /** \brief Return mark status of element. */
+    virtual bool mark(int refCount, const Entity<0>& element) = 0;
 
-  virtual int getMark(const Entity<0> &element) const = 0;
+    /** \brief Return mark status of element. */
 
-  /** \brief Pre-Adaption step */
+    virtual int getMark(const Entity<0>& element) const = 0;
 
-  virtual bool preAdapt() = 0;
+    /** \brief Pre-Adaption step */
 
-  /** \brief Refine mesh */
+    virtual bool preAdapt() = 0;
 
-  virtual bool adapt() = 0;
+    /** \brief Refine mesh */
 
-  /** \brief Clean up after refinement */
+    virtual bool adapt() = 0;
 
-  virtual void postAdapt() = 0;
+    /** \brief Clean up after refinement */
 
-  /** \brief Refine all elements refCount times. */
+    virtual void postAdapt() = 0;
 
-  virtual void globalRefine(int refCount) = 0;
+    /** \brief Refine all elements refCount times. */
 
-  /** \brief Signal grid change to registered objects */
-  void sendUpdateSignal() const;
+    virtual void globalRefine(int refCount) = 0;
 
-  /** \brief Connect entity to be notified when grid updates */
-  boost::signals2::connection connect(const std::function<void()> &f) const;
+    /** \brief Signal grid change to registered objects */
+    void sendUpdateSignal() const;
 
-  //  /** \brief set father of barycentric refinement */
-  //  virtual void setBarycentricFather(shared_ptr<Grid> fatherGrid) = 0;
-  //
-  //  /** \brief get father of barycentric refinement */
-  //  virtual shared_ptr<Grid> getBarycentricFather() = 0;
+    /** \brief Connect entity to be notified when grid updates */
+    boost::signals2::connection connect(const std::function<void()>& f) const;
+
+    //  /** \brief set father of barycentric refinement */
+    //  virtual void setBarycentricFather(shared_ptr<Grid> fatherGrid) = 0;
+    //
+    //  /** \brief get father of barycentric refinement */
+    //  virtual shared_ptr<Grid> getBarycentricFather() = 0;
 
 private:
-  /** \cond PRIVATE */
-  mutable Vector<double> m_lowerBound, m_upperBound;
+    /** \cond PRIVATE */
+    mutable Vector<double> m_lowerBound, m_upperBound;
 
-  mutable boost::signals2::signal<void()> gridUpdateSignal;
+    mutable boost::signals2::signal<void()> gridUpdateSignal;
 
-  /** \endcond */
+    /** \endcond */
 };
 
 /** \relates Grid
@@ -199,8 +205,8 @@ private:
  *  \note The implementation assumes that no grid vertices are separated by less
  *    than 1e-9.
  */
-std::vector<bool> areInside(const Grid &grid, const Matrix<double> &points);
-std::vector<bool> areInside(const Grid &grid, const Matrix<float> &points);
+std::vector<bool> areInside(const Grid& grid, const Matrix<double>& points);
+std::vector<bool> areInside(const Grid& grid, const Matrix<float>& points);
 
 } // namespace Bempp
 

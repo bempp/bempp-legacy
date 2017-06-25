@@ -21,14 +21,35 @@
 #ifndef bempp_bounding_box_helpers_hpp
 #define bempp_bounding_box_helpers_hpp
 
-#include "common.hpp"
-#include "bounding_box.hpp"
 #include "../common/eigen_support.hpp"
+#include "bounding_box.hpp"
+#include "common.hpp"
 
 #include <cassert>
 #include <cmath>
+#include <iostream>
 
 namespace Bempp {
+
+/** \brief Create bounding box with reference set to mid point */
+template <typename CoordinateType>
+BoundingBox<CoordinateType> createBoundingBox(
+    CoordinateType xmin, CoordinateType ymin, CoordinateType zmin,
+    CoordinateType xmax, CoordinateType ymax, CoordinateType zmax)
+{
+
+    BoundingBox<CoordinateType> bbox;
+    bbox.lbound.x = xmin;
+    bbox.lbound.y = ymin;
+    bbox.lbound.z = zmin;
+    bbox.ubound.x = xmax;
+    bbox.ubound.y = ymax;
+    bbox.ubound.z = zmax;
+    bbox.reference.x = (xmax - xmin) / 2;
+    bbox.reference.y = (ymax - ymin) / 2;
+    bbox.reference.z = (zmax - zmin) / 2;
+    return bbox;
+}
 
 /** \relates BoundingBox
  *  \brief Extend the bounding box \p bbox to include all points contained in
@@ -37,17 +58,18 @@ namespace Bempp {
  *  \note The array \p points needs to have three rows.
  */
 template <typename CoordinateType>
-void extendBoundingBox(BoundingBox<CoordinateType> &bbox,
-                       const Matrix<CoordinateType> &points) {
-  assert(points.rows() == 3);
-  for (size_t j = 0; j < points.cols(); ++j) {
-    bbox.lbound.x = std::min(bbox.lbound.x, points(0, j));
-    bbox.lbound.y = std::min(bbox.lbound.y, points(1, j));
-    bbox.lbound.z = std::min(bbox.lbound.z, points(2, j));
-    bbox.ubound.x = std::max(bbox.ubound.x, points(0, j));
-    bbox.ubound.y = std::max(bbox.ubound.y, points(1, j));
-    bbox.ubound.z = std::max(bbox.ubound.z, points(2, j));
-  }
+void extendBoundingBox(BoundingBox<CoordinateType>& bbox,
+    const Matrix<CoordinateType>& points)
+{
+    assert(points.rows() == 3);
+    for (size_t j = 0; j < points.cols(); ++j) {
+        bbox.lbound.x = std::min(bbox.lbound.x, points(0, j));
+        bbox.lbound.y = std::min(bbox.lbound.y, points(1, j));
+        bbox.lbound.z = std::min(bbox.lbound.z, points(2, j));
+        bbox.ubound.x = std::max(bbox.ubound.x, points(0, j));
+        bbox.ubound.y = std::max(bbox.ubound.y, points(1, j));
+        bbox.ubound.z = std::max(bbox.ubound.z, points(2, j));
+    }
 }
 
 /** \relates BoundingBox
@@ -56,12 +78,13 @@ void extendBoundingBox(BoundingBox<CoordinateType> &bbox,
  *  \note \p point must be a three-component column vector.
  */
 template <typename CoordinateType>
-void setBoundingBoxReference(BoundingBox<CoordinateType> &bbox,
-                             const Vector<CoordinateType> &point) {
-  assert(point.rows() == 3);
-  bbox.reference.x = point(0);
-  bbox.reference.y = point(1);
-  bbox.reference.z = point(2);
+void setBoundingBoxReference(BoundingBox<CoordinateType>& bbox,
+    const Vector<CoordinateType>& point)
+{
+    assert(point.rows() == 3);
+    bbox.reference.x = point(0);
+    bbox.reference.y = point(1);
+    bbox.reference.z = point(2);
 }
 
 } // namespace Bempp
