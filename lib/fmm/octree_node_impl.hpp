@@ -6,13 +6,12 @@
 namespace Fmm {
 
 template <typename CoordinateType>
-OctreeNode<CoordinateType>::OctreeNode(unsigned long number, unsigned int level,
-    const BoundingBox<CoordinateType>& boundingBox)
-    : m_number(number)
-    , m_level(level)
-    , m_boundingBox(boundingBox)
-{
-}
+OctreeNode<CoordinateType>::OctreeNode(
+    unsigned long number, unsigned int level,
+    const BoundingBox<CoordinateType> &boundingBox,
+    const Octree<CoordinateType> &octree)
+    : m_number(number), m_level(level), m_boundingBox(boundingBox),
+      m_octree(octree) {}
 }
 
 #endif
