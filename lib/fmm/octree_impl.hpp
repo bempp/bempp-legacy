@@ -11,6 +11,44 @@ Octree<CoordinateType>::Octree(const shared_ptr<const Bempp::Grid>& grid, unsign
     , m_levels(levels)
 {
     m_grid->getBoundingBox(m_boundingBox);
+    m_boundingBoxSize = Bempp::getBoundingBoxSize(m_boundingBox);
+    m_lbound.resize(3);
+    m_ubound.resize(3);
+
+    m_lbound(0) = m_boundingBox.lbound.x;
+    m_lbound(1) = m_boundingBox.lbound.y;
+    m_lbound(2) = m_boundingBox.lbound.z;
+
+    m_ubound(0) = m_boundingBox.ubound.x;
+    m_ubound(1) = m_boundingBox.ubound.y;
+    m_ubound(2) = m_boundingBox.ubound.z;
+
+    m_OctreeNodes.resize(m_levels);
+
+    auto boxSize = getBoundingBoxSize(m_boundingBox);
+
+    // initialise octree stucture (don't bother storing the lowest two levels)
+    for (unsigned int level = 1; level <= m_levels; ++level) {
+        unsigned int nNodesOnSide = getNodesPerSide(level);
+        unsigned int nNodes = getNodesPerLevel(level);
+        m_OctreeNodes[level - 1].reserve(nNodes);
+        for (unsigned int nodeNumber = 0; nodeNumber < nNodes; ++nodeNumber) {
+            unsigned long ind[3];
+            deMorton(&ind[0], &ind[1], &ind[2], nodeNumber);
+
+            double xmin = ind[0] * boxSize(0) + m_boundingBox.lbound.x;
+            double ymin = ind[1] * boxSize(1) + m_boundingBox.lbound.y;
+            double zmin = ind[2] * boxSize(2) + m_boundingBox.lbound.z;
+
+            double xmax = (ind[0] + 1) * boxSize(0) + m_boundingBox.lbound.x;
+            double ymax = (ind[1] + 1) * boxSize(1) + m_boundingBox.lbound.y;
+            double zmax = (ind[2] + 1) * boxSize(2) + m_boundingBox.lbound.z;
+
+            m_OctreeNodes[level - 1].push_back(
+                OctreeNode<CoordinateType>(nodeNumber, level,
+                    Bempp::createBoundingBox<CoordinateType>(xmin, ymin, zmin, xmax, ymax, zmax)));
+        }
+    }
 }
 
 template <typename CoordinateType>
@@ -48,6 +86,27 @@ template <typename CoordinateType>
 unsigned long Octree<CoordinateType>::getNodesPerLevel(unsigned long level) const
 {
     return 1 << 3 * level; // 8^level;
+}
+
+template <typename CoordinateType>
+unsigned long Octree<CoordinateType>::getLeafContainingPoint(
+    const Point3D<CoordinateType>& point) const
+{
+    int invleafsize = getNodesPerSide(m_levels);
+
+    // be careful of precision, outside allocation bad
+    Vector<CoordinateType> pt(3);
+    for (int i = 0; i < 3; ++i)
+        pt(i) = (point(i) - m_lbound(i)) / m_boundingBoxSize(i);
+
+    CoordinateType zero = CoordinateType(0);
+
+    std::vector<unsigned long> ind;
+    for (int i = 0; i < 3; ++i)
+        ind.push_back(std::min(int(std::max(zero, pt(i)) * invleafsize),
+            invleafsize - 1));
+
+    return morton(ind);
 }
 
 // Dilate an integer, in between each and every bit of the number inserting

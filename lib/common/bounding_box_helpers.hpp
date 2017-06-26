@@ -87,6 +87,17 @@ void setBoundingBoxReference(BoundingBox<CoordinateType>& bbox,
     bbox.reference.z = point(2);
 }
 
+template <typename CoordinateType>
+Vector<CoordinateType> getBoundingBoxSize(const BoundingBox<CoordinateType>& boundingBox)
+{
+    Vector<CoordinateType> result;
+    result[0] = boundingBox.ubound.x - boundingBox.lbound.x;
+    result[1] = boundingBox.ubound.y - boundingBox.lbound.y;
+    result[2] = boundingBox.ubound.z - boundingBox.lbound.z;
+
+    return result;
+}
+
 } // namespace Bempp
 
 #endif

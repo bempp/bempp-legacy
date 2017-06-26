@@ -19,14 +19,17 @@ class Octree;
 template <typename CoordinateType>
 class OctreeNode {
 
+    friend class Octree<CoordinateType>;
+
 public:
-    OctreeNode(unsigned long number, unsigned int level);
+    OctreeNode(unsigned long number, unsigned int level,
+        const BoundingBox<CoordinateType>& boundingBox);
 
 private:
     unsigned long m_number;
     unsigned long m_level;
-
-    std::vector<CoordinateType> bounds;
+    BoundingBox<CoordinateType> m_boundingBox;
+    std::vector<int> m_entities;
 };
 
 /*

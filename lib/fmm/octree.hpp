@@ -8,7 +8,6 @@
 #include "../fiber/scalar_traits.hpp"
 #include "fmm_common.hpp"
 
-#include "dof_permutation.hpp"
 #include "octree_node.hpp"
 
 #include "../assembly/transposition_mode.hpp"
@@ -45,6 +44,10 @@ public:
     /** \brief Nodes per level (3^level) */
     unsigned long getNodesPerLevel(unsigned long level) const;
 
+    /** \brief Get the number of the octree leaf node that contains the pont. */
+    unsigned long getLeafContainingPoint(
+        const Point3D<CoordinateType>& point) const;
+
 private:
     /** \brief return the Morton index of a leaf node */
     unsigned long morton(unsigned long x, unsigned long y, unsigned long z) const;
@@ -70,6 +73,9 @@ private:
     std::vector<std::vector<OctreeNode<CoordinateType> > > m_OctreeNodes;
 
     BoundingBox<CoordinateType> m_boundingBox;
+    Vector<double> m_boundingBoxSize;
+    Vector<double> m_lbound;
+    Vector<double> m_ubound;
 };
 }
 
