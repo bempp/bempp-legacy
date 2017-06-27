@@ -17,9 +17,11 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
+#ifndef bempp_concrete_grid_view_imp_hpp
+#define bempp_concrete_grid_view_imp_hpp
 
-#include "../common/common.hpp"
 #include "../common/acc.hpp"
+#include "../common/common.hpp"
 #include "../common/eigen_support.hpp"
 
 #include "concrete_grid_view.hpp" // to make IDEs happy
@@ -51,8 +53,9 @@ void ConcreteGridView<DuneGridView>::getRawElementDataImpl(
   const int dimWorld = DuneGrid::dimensionworld;
   const int codimVertex = dimGrid;
   const int codimElement = 0;
-  typedef Dune::LeafMultipleCodimMultipleGeomTypeMapper<
-      DuneGrid, Dune::MCMGElementLayout> DuneElementMapper;
+  typedef Dune::LeafMultipleCodimMultipleGeomTypeMapper<DuneGrid,
+                                                        Dune::MCMGElementLayout>
+      DuneElementMapper;
   typedef typename DuneGridView::template Codim<codimVertex>::Iterator
       DuneVertexIterator;
   typedef typename DuneGridView::template Codim<codimElement>::Iterator
@@ -111,3 +114,4 @@ void ConcreteGridView<DuneGridView>::getRawElementDataImpl(
 }
 
 } // namespace Bempp
+#endif

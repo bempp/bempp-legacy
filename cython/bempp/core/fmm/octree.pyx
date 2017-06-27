@@ -3,18 +3,6 @@ from cython.operator cimport address
 from bempp.core.utils.shared_ptr cimport shared_ptr
 from bempp.core.grid.grid cimport Grid, c_Grid
 
-cdef class OctreeNode:
-    """Node of an octree."""
-
-    def __cinit__(self):
-        pass
-
-    def __init__(self):
-        pass
-
-    def __dealloc__(self):
-        self.impl_.reset()
-
 cdef class Octree:
     """Define an Octree over a given grid."""
 

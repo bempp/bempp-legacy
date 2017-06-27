@@ -67,6 +67,12 @@ public:
   /** \brief Number of entities with geometry type \p type. */
   virtual size_t entityCount(const GeometryType &type) const = 0;
 
+  /** \brief Minimum element diameter (via circumcircle). */
+  // virtual double minimumElementDiameter() const = 0;
+
+  /** \brief Maximum element diameter (via circumcircle). */
+  // virtual double maximumElementDiameter() const = 0;
+
   /** \brief True if the entity \p e of codimension 0 is contained in this grid
     *view.
      *
@@ -164,6 +170,11 @@ public:
 
   // Deferred for later implementation:
   // * Iteration over neighbours: Dune methods ibegin() and iend().
+
+  // \* brief Minimum element diameter */
+  virtual double minimumElementDiameter() const = 0;
+  // \* brief Maximum element diameter */
+  virtual double maximumElementDiameter() const = 0;
 
 private:
   virtual void getRawElementDataDoubleImpl(

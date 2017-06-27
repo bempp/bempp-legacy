@@ -8,10 +8,10 @@
 #include "../fiber/scalar_traits.hpp"
 #include "fmm_common.hpp"
 
-#include "octree_node.hpp"
-
 #include "../assembly/transposition_mode.hpp"
 #include <iostream>
+#include <unordered_map>
+#include <unordered_set>
 
 namespace Bempp {
 
@@ -23,6 +23,13 @@ namespace Fmm {
 template <typename CoordinateType> class Octree {
 
 public:
+  // If h is the diameter of the largest element in the grid. Then
+  // extend each leaf box on each size by RESIZE_FACTOR * h.
+  static constexpr double RESIZE_FACTOR = 1.3;
+
+  // Minimum width of a box relative to the maximum element width h.
+  static const int MIN_WIDTH = 3;
+
   Octree(const shared_ptr<const Bempp::Grid> &grid, unsigned int levels);
 
   /** \brief Return the bounding box of the grid. */
@@ -73,14 +80,14 @@ private:
   // The number of levels in the Octree
   unsigned int m_levels;
 
-  // Container for Octree nodes
-  std::vector<std::vector<OctreeNode<CoordinateType>>> m_OctreeNodes;
+  // Maximum element size in the grid
+  double m_maxElementDiam;
+
+  // Store the non empty octree node ids for each level
+  std::vector<std::vector<unsigned long>> m_Nodes;
 
   // Global bounding box of grid
   BoundingBox<CoordinateType> m_boundingBox;
-
-  // Size of bounding box across each dimension
-  Vector<double> m_boundingBoxSize;
 
   // Lower bounds of global bounding box
   Vector<double> m_lbound;
@@ -88,11 +95,9 @@ private:
   // Upper bounds of global bounding box
   Vector<double> m_ubound;
 
-  // Stores for each leaf box the associated grid entities
-  std::vector<std::vector<unsigned int>> m_leafBoxToEntities;
-
-  // Bitfield, which is 1 if a node is empty
-  std::vector<std::vector<bool>> m_nodeEmpty;
+  // Stores for each non-empty leaf box the associated grid entities
+  std::unordered_map<unsigned long, std::vector<unsigned int>>
+      m_leafsToEntities;
 };
 }
 

@@ -27,6 +27,7 @@
 #include "p0_vector_vtk_function.hpp"
 #include "p1_vector_vtk_function.hpp"
 #include "vtk_writer.hpp"
+#include <dune/grid/io/file/vtk/vtkwriter.hh>
 
 #include <memory>
 #include <string>

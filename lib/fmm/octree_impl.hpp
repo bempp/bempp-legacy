@@ -10,107 +10,121 @@ template <typename CoordinateType>
 Octree<CoordinateType>::Octree(const shared_ptr<const Bempp::Grid> &grid,
                                unsigned int levels)
     : m_grid(grid), m_levels(levels) {
-  m_grid->getBoundingBox(m_boundingBox);
-  m_boundingBoxSize = Bempp::getBoundingBoxSize(m_boundingBox);
+
+  auto gridView = m_grid->leafView();
+
+  // Compute the grid bounding box.
   m_lbound.resize(3);
   m_ubound.resize(3);
 
-  m_lbound(0) = m_boundingBox.lbound.x;
-  m_lbound(1) = m_boundingBox.lbound.y;
-  m_lbound(2) = m_boundingBox.lbound.z;
+  m_grid->getBoundingBox(m_lbound, m_ubound);
 
-  m_ubound(0) = m_boundingBox.ubound.x;
-  m_ubound(1) = m_boundingBox.ubound.y;
-  m_ubound(2) = m_boundingBox.ubound.z;
+  m_maxElementDiam = gridView->maximumElementDiameter();
 
-  // Fix bounding box in the case of a screen (one dimension zero)
+  /*
+    m_grid->getBoundingBox(m_boundingBox);
+    m_boundingBoxSize = Bempp::getBoundingBoxSize(m_boundingBox);
+    m_lbound.resize(3);
+    m_ubound.resize(3);
 
-  double diam = m_boundingBoxSize.norm();
-  if (diam == 0)
-    throw std::runtime_error("Grid has zero diameter.");
+    m_lbound(0) = m_boundingBox.lbound.x;
+    m_lbound(1) = m_boundingBox.lbound.y;
+    m_lbound(2) = m_boundingBox.lbound.z;
 
-  for (int i = 0; i < 3; ++i)
-    if (m_boundingBoxSize[i] == 0) {
-      m_lbound(i) = -.5 * diam;
-      m_ubound(i) = .5 * diam;
-      m_boundingBoxSize[i] = diam;
-      Bempp::accessPointByIndex(m_boundingBox.lbound, i) = -.5 * diam;
-      Bempp::accessPointByIndex(m_boundingBox.ubound, i) = .5 * diam;
+    m_ubound(0) = m_boundingBox.ubound.x;
+    m_ubound(1) = m_boundingBox.ubound.y;
+    m_ubound(2) = m_boundingBox.ubound.z;
+
+    // Fix bounding box in the case of a screen (one dimension zero)
+
+    double diam = m_boundingBoxSize.norm();
+    if (diam == 0)
+      throw std::runtime_error("Grid has zero diameter.");
+
+    for (int i = 0; i < 3; ++i)
+      if (m_boundingBoxSize[i] == 0) {
+        m_lbound(i) = -.5 * diam;
+        m_ubound(i) = .5 * diam;
+        m_boundingBoxSize[i] = diam;
+        Bempp::accessPointByIndex(m_boundingBox.lbound, i) = -.5 * diam;
+        Bempp::accessPointByIndex(m_boundingBox.ubound, i) = .5 * diam;
+      }
+
+    m_OctreeNodes.resize(m_levels); // Vector storing nodes
+    m_nodeEmpty.resize(m_levels);   // Vector storing if nodes contain triangles
+
+    auto boxSize = getBoundingBoxSize(m_boundingBox);
+
+    // initialise octree stucture
+    for (unsigned int level = 1; level <= m_levels; ++level) {
+      unsigned int nNodesOnSide = getNodesPerSide(level);
+      unsigned int nNodes = getNodesPerLevel(level);
+      m_OctreeNodes[level - 1].reserve(nNodes);
+      m_nodeEmpty[level - 1].resize(nNodes, true);
+      for (unsigned int nodeNumber = 0; nodeNumber < nNodes; ++nodeNumber) {
+        unsigned long ind[3];
+        deMorton(&ind[0], &ind[1], &ind[2], nodeNumber);
+
+        double xmin = ind[0] * boxSize(0) + m_boundingBox.lbound.x;
+        double ymin = ind[1] * boxSize(1) + m_boundingBox.lbound.y;
+        double zmin = ind[2] * boxSize(2) + m_boundingBox.lbound.z;
+
+        double xmax = (ind[0] + 1) * boxSize(0) + m_boundingBox.lbound.x;
+        double ymax = (ind[1] + 1) * boxSize(1) + m_boundingBox.lbound.y;
+        double zmax = (ind[2] + 1) * boxSize(2) + m_boundingBox.lbound.z;
+
+        m_OctreeNodes[level - 1].push_back(OctreeNode<CoordinateType>(
+            nodeNumber, level, Bempp::createBoundingBox<CoordinateType>(
+                                   xmin, ymin, zmin, xmax, ymax, zmax),
+            *this));
+      }
     }
 
-  m_OctreeNodes.resize(m_levels); // Vector storing nodes
-  m_nodeEmpty.resize(m_levels);   // Vector storing if nodes contain triangles
+    // Now assign triangles to leaf boxes and extend bounding boxes.
 
-  auto boxSize = getBoundingBoxSize(m_boundingBox);
+    m_leafBoxToEntities.resize(getNodesPerLevel(m_levels));
+    auto view = grid->leafView();
+    const auto &indexSet = view->indexSet();
 
-  // initialise octree stucture
-  for (unsigned int level = 1; level <= m_levels; ++level) {
-    unsigned int nNodesOnSide = getNodesPerSide(level);
-    unsigned int nNodes = getNodesPerLevel(level);
-    m_OctreeNodes[level - 1].reserve(nNodes);
-    m_nodeEmpty[level - 1].resize(nNodes, true);
-    for (unsigned int nodeNumber = 0; nodeNumber < nNodes; ++nodeNumber) {
-      unsigned long ind[3];
-      deMorton(&ind[0], &ind[1], &ind[2], nodeNumber);
+    for (auto it = view->entityIterator<0>(); !it->finished(); it->next()) {
+      const auto &entity = it->entity();
+      int entityIndex = indexSet.entityIndex(entity);
 
-      double xmin = ind[0] * boxSize(0) + m_boundingBox.lbound.x;
-      double ymin = ind[1] * boxSize(1) + m_boundingBox.lbound.y;
-      double zmin = ind[2] * boxSize(2) + m_boundingBox.lbound.z;
+      Vector<CoordinateType> centroid(3);
+      Matrix<CoordinateType> corners;
 
-      double xmax = (ind[0] + 1) * boxSize(0) + m_boundingBox.lbound.x;
-      double ymax = (ind[1] + 1) * boxSize(1) + m_boundingBox.lbound.y;
-      double zmax = (ind[2] + 1) * boxSize(2) + m_boundingBox.lbound.z;
+      // Get the center and corners of the entity.
+      entity.geometry().getCenter(centroid);
+      entity.geometry().getCorners(corners);
 
-      m_OctreeNodes[level - 1].push_back(OctreeNode<CoordinateType>(
-          nodeNumber, level, Bempp::createBoundingBox<CoordinateType>(
-                                 xmin, ymin, zmin, xmax, ymax, zmax),
-          *this));
+      // Find out in which leaf node the element lives
+      unsigned int nodeIndex =
+          getLeafContainingPoint({centroid(0), centroid(1), centroid(2)});
+      auto &nodeBoundingBox =
+          m_OctreeNodes[m_levels - 1][nodeIndex].m_boundingBox;
+
+      // Now extend the bounding box
+      Bempp::extendBoundingBox(nodeBoundingBox, corners);
+      nodeBoundingBox.reference.x =
+          (nodeBoundingBox.ubound.x - nodeBoundingBox.lbound.x) / 2.;
+      nodeBoundingBox.reference.y =
+          (nodeBoundingBox.ubound.y - nodeBoundingBox.lbound.y) / 2.;
+      nodeBoundingBox.reference.y =
+          (nodeBoundingBox.ubound.y - nodeBoundingBox.lbound.y) / 2.;
+
+      // Add the entity index to the entity list of the node and set node to
+      // non-empty
+      m_leafBoxToEntities[nodeIndex].push_back(entityIndex);
+      m_nodeEmpty[m_levels - 1][nodeIndex] = false;
     }
-  }
-
-  // Now assign triangles to leaf boxes and extend bounding boxes.
-
-  m_leafBoxToEntities.resize(getNodesPerLevel(m_levels));
-  auto view = grid->leafView();
-  const auto &indexSet = view->indexSet();
-
-  for (auto it = view->entityIterator<0>(); !it->finished(); it->next()) {
-    const auto &entity = it->entity();
-    int entityIndex = indexSet.entityIndex(entity);
-
-    Vector<CoordinateType> centroid(3);
-    Matrix<CoordinateType> corners;
-
-    // Get the center and corners of the entity.
-    entity.geometry().getCenter(centroid);
-    entity.geometry().getCorners(corners);
-
-    // Find out in which leaf node the element lives
-    unsigned int nodeIndex =
-        getLeafContainingPoint({centroid(0), centroid(1), centroid(2)});
-    auto &nodeBoundingBox =
-        m_OctreeNodes[m_levels - 1][nodeIndex].m_boundingBox;
-
-    // Now extend the bounding box
-    Bempp::extendBoundingBox(nodeBoundingBox, corners);
-    nodeBoundingBox.reference.x =
-        (nodeBoundingBox.ubound.x - nodeBoundingBox.lbound.x) / 2.;
-    nodeBoundingBox.reference.y =
-        (nodeBoundingBox.ubound.y - nodeBoundingBox.lbound.y) / 2.;
-    nodeBoundingBox.reference.y =
-        (nodeBoundingBox.ubound.y - nodeBoundingBox.lbound.y) / 2.;
-
-    // Add the entity index to the entity list of the node and set node to
-    // non-empty
-    m_leafBoxToEntities[nodeIndex].push_back(entityIndex);
-    m_nodeEmpty[m_levels - 1][nodeIndex] = false;
-  }
+      */
 }
 
 template <typename CoordinateType>
 BoundingBox<CoordinateType> Octree<CoordinateType>::getBoundingBox() const {
 
-  return m_boundingBox;
+  return Bempp::createBoundingBox(m_lbound(0), m_lbound(1), m_lbound(2),
+                                  m_ubound(0), m_ubound(1), m_ubound(2));
 }
 
 template <typename CoordinateType>
@@ -145,11 +159,13 @@ unsigned long Octree<CoordinateType>::getLeafContainingPoint(
     const Point3D<CoordinateType> &point) const {
   int invleafsize = getNodesPerSide(m_levels);
 
+  Vector<CoordinateType> boxSize = m_ubound - m_lbound;
+
   // be careful of precision, outside allocation bad
   Vector<CoordinateType> pt(3);
-  pt(0) = (point.x - m_lbound(0)) / m_boundingBoxSize(0);
-  pt(1) = (point.y - m_lbound(1)) / m_boundingBoxSize(1);
-  pt(2) = (point.z - m_lbound(2)) / m_boundingBoxSize(2);
+  pt(0) = (point.x - m_lbound(0)) / boxSize(0);
+  pt(1) = (point.y - m_lbound(1)) / boxSize(1);
+  pt(2) = (point.z - m_lbound(2)) / boxSize(2);
 
   CoordinateType zero = CoordinateType(0);
 
