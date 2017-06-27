@@ -31,6 +31,14 @@ cdef class Octree:
         """ Get the total number of nodes in the level."""
         return deref(self.impl_).getNodesPerLevel(level)
 
+    def cube_width(self, level):
+        """ Get the width of a cube on a given level."""
+        return deref(self.impl_).cubeWidth(level)
+
+    def extended_cube_width(self, level):
+        """ Get the extended width of a cube on a given level."""
+        return deref(self.impl_).extendedCubeWidth(level)
+
     property bounding_box:
 
         def __get__(self):
@@ -39,3 +47,8 @@ cdef class Octree:
                     'ubound':[bbox.ubound.x, bbox.ubound.y, bbox.ubound.z]}
             return res
 
+    property levels:
+        """Return the number of levels."""
+
+        def __get__(self):
+            return deref(self.impl_).levels()

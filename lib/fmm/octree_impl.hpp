@@ -6,168 +6,120 @@
 
 namespace Fmm {
 
-template <typename CoordinateType>
-Octree<CoordinateType>::Octree(const shared_ptr<const Bempp::Grid> &grid,
-                               unsigned int levels)
+inline Octree::Octree(const shared_ptr<const Bempp::Grid> &grid,
+                      unsigned int levels)
     : m_grid(grid), m_levels(levels) {
+
+  // Compute maximum allowed level
 
   auto gridView = m_grid->leafView();
 
   // Compute the grid bounding box.
-  m_lbound.resize(3);
-  m_ubound.resize(3);
+  Vector<double> lbound(3);
+  Vector<double> ubound(3);
 
   m_grid->getBoundingBox(m_lbound, m_ubound);
 
+  // Compute width
+
+  double width = (m_ubound - m_lbound).maxCoeff();
+
+  // Extend ubound to the maximum width in each dimension
+
+  m_ubound = m_lbound + width * Vector<double>::Ones(3);
+
+  // Get the maximum allowed level
+
   m_maxElementDiam = gridView->maximumElementDiameter();
+  m_extensionSize = m_maxElementDiam * Octree::RESIZE_FACTOR;
 
-  /*
-    m_grid->getBoundingBox(m_boundingBox);
-    m_boundingBoxSize = Bempp::getBoundingBoxSize(m_boundingBox);
-    m_lbound.resize(3);
-    m_ubound.resize(3);
+  int maxLevels = (int)std::trunc(
+      std::log2(width / (Octree::WIDTH_MULTIPLIER * m_maxElementDiam)));
 
-    m_lbound(0) = m_boundingBox.lbound.x;
-    m_lbound(1) = m_boundingBox.lbound.y;
-    m_lbound(2) = m_boundingBox.lbound.z;
+  if (levels < 0 || levels > maxLevels)
+    m_levels = maxLevels;
 
-    m_ubound(0) = m_boundingBox.ubound.x;
-    m_ubound(1) = m_boundingBox.ubound.y;
-    m_ubound(2) = m_boundingBox.ubound.z;
+  // Compute node assignments
 
-    // Fix bounding box in the case of a screen (one dimension zero)
+  m_Nodes.resize(m_levels);
 
-    double diam = m_boundingBoxSize.norm();
-    if (diam == 0)
-      throw std::runtime_error("Grid has zero diameter.");
+  auto view = grid->leafView();
+  const auto &indexSet = view->indexSet();
 
-    for (int i = 0; i < 3; ++i)
-      if (m_boundingBoxSize[i] == 0) {
-        m_lbound(i) = -.5 * diam;
-        m_ubound(i) = .5 * diam;
-        m_boundingBoxSize[i] = diam;
-        Bempp::accessPointByIndex(m_boundingBox.lbound, i) = -.5 * diam;
-        Bempp::accessPointByIndex(m_boundingBox.ubound, i) = .5 * diam;
-      }
+  for (auto it = view->entityIterator<0>(); !it->finished(); it->next()) {
+    const auto &entity = it->entity();
+    int entityIndex = indexSet.entityIndex(entity);
 
-    m_OctreeNodes.resize(m_levels); // Vector storing nodes
-    m_nodeEmpty.resize(m_levels);   // Vector storing if nodes contain triangles
+    Vector<double> centroid(3);
 
-    auto boxSize = getBoundingBoxSize(m_boundingBox);
+    // Get the center and corners of the entity.
+    entity.geometry().getCenter(centroid);
 
-    // initialise octree stucture
-    for (unsigned int level = 1; level <= m_levels; ++level) {
-      unsigned int nNodesOnSide = getNodesPerSide(level);
-      unsigned int nNodes = getNodesPerLevel(level);
-      m_OctreeNodes[level - 1].reserve(nNodes);
-      m_nodeEmpty[level - 1].resize(nNodes, true);
-      for (unsigned int nodeNumber = 0; nodeNumber < nNodes; ++nodeNumber) {
-        unsigned long ind[3];
-        deMorton(&ind[0], &ind[1], &ind[2], nodeNumber);
+    // Find out in which leaf node the element lives
+    unsigned long nodeIndex =
+        getLeafContainingPoint({centroid(0), centroid(1), centroid(2)});
 
-        double xmin = ind[0] * boxSize(0) + m_boundingBox.lbound.x;
-        double ymin = ind[1] * boxSize(1) + m_boundingBox.lbound.y;
-        double zmin = ind[2] * boxSize(2) + m_boundingBox.lbound.z;
-
-        double xmax = (ind[0] + 1) * boxSize(0) + m_boundingBox.lbound.x;
-        double ymax = (ind[1] + 1) * boxSize(1) + m_boundingBox.lbound.y;
-        double zmax = (ind[2] + 1) * boxSize(2) + m_boundingBox.lbound.z;
-
-        m_OctreeNodes[level - 1].push_back(OctreeNode<CoordinateType>(
-            nodeNumber, level, Bempp::createBoundingBox<CoordinateType>(
-                                   xmin, ymin, zmin, xmax, ymax, zmax),
-            *this));
+    // Check if box is empty.
+    if (m_Nodes[m_levels - 1].count(nodeIndex) == 0) {
+      // Box has not yet been inserted as nonzero
+      m_Nodes[m_levels - 1].insert(nodeIndex);
+      // Mark all parents as nonzero
+      unsigned long parent = nodeIndex;
+      for (int level = m_levels; level >= 1; level--) {
+        parent = getParent(parent);
+        m_Nodes[level - 1].insert(parent);
       }
     }
 
-    // Now assign triangles to leaf boxes and extend bounding boxes.
+    // Add entity index to the list of entities associated with the leaf box.
+    if (m_leafsToEntities.count(nodeIndex) == 0)
+      m_leafsToEntities[nodeIndex] == std::vector<unsigned int>();
 
-    m_leafBoxToEntities.resize(getNodesPerLevel(m_levels));
-    auto view = grid->leafView();
-    const auto &indexSet = view->indexSet();
-
-    for (auto it = view->entityIterator<0>(); !it->finished(); it->next()) {
-      const auto &entity = it->entity();
-      int entityIndex = indexSet.entityIndex(entity);
-
-      Vector<CoordinateType> centroid(3);
-      Matrix<CoordinateType> corners;
-
-      // Get the center and corners of the entity.
-      entity.geometry().getCenter(centroid);
-      entity.geometry().getCorners(corners);
-
-      // Find out in which leaf node the element lives
-      unsigned int nodeIndex =
-          getLeafContainingPoint({centroid(0), centroid(1), centroid(2)});
-      auto &nodeBoundingBox =
-          m_OctreeNodes[m_levels - 1][nodeIndex].m_boundingBox;
-
-      // Now extend the bounding box
-      Bempp::extendBoundingBox(nodeBoundingBox, corners);
-      nodeBoundingBox.reference.x =
-          (nodeBoundingBox.ubound.x - nodeBoundingBox.lbound.x) / 2.;
-      nodeBoundingBox.reference.y =
-          (nodeBoundingBox.ubound.y - nodeBoundingBox.lbound.y) / 2.;
-      nodeBoundingBox.reference.y =
-          (nodeBoundingBox.ubound.y - nodeBoundingBox.lbound.y) / 2.;
-
-      // Add the entity index to the entity list of the node and set node to
-      // non-empty
-      m_leafBoxToEntities[nodeIndex].push_back(entityIndex);
-      m_nodeEmpty[m_levels - 1][nodeIndex] = false;
-    }
-      */
+    m_leafsToEntities[nodeIndex].push_back(entityIndex);
+  }
 }
 
-template <typename CoordinateType>
-BoundingBox<CoordinateType> Octree<CoordinateType>::getBoundingBox() const {
+inline BoundingBox<double> Octree::getBoundingBox() const {
 
   return Bempp::createBoundingBox(m_lbound(0), m_lbound(1), m_lbound(2),
                                   m_ubound(0), m_ubound(1), m_ubound(2));
 }
 
-template <typename CoordinateType>
-unsigned long Octree<CoordinateType>::getParent(unsigned long n) const {
-  return n >> 3;
+inline unsigned int Octree::levels() const { return m_levels; }
+
+inline unsigned long Octree::getParent(unsigned long nodeIndex) const {
+  return nodeIndex >> 3;
 }
 
-template <typename CoordinateType>
-unsigned long Octree<CoordinateType>::getFirstChild(unsigned long n) const {
-  return n << 3;
+inline unsigned long Octree::getFirstChild(unsigned long nodeIndex) const {
+  return nodeIndex << 3;
 }
 
-template <typename CoordinateType>
-unsigned long Octree<CoordinateType>::getLastChild(unsigned long n) const {
-  return (n << 3) + 7;
+inline unsigned long Octree::getLastChild(unsigned long nodeIndex) const {
+  return (nodeIndex << 3) + 7;
 }
 
-template <typename CoordinateType>
-unsigned long
-Octree<CoordinateType>::getNodesPerSide(unsigned long level) const {
+inline unsigned long Octree::getNodesPerSide(unsigned int level) const {
   return 1 << level; // 2^level
 }
 
-template <typename CoordinateType>
-unsigned long
-Octree<CoordinateType>::getNodesPerLevel(unsigned long level) const {
+inline unsigned long Octree::getNodesPerLevel(unsigned int level) const {
   return 1 << 3 * level; // 8^level;
 }
 
-template <typename CoordinateType>
-unsigned long Octree<CoordinateType>::getLeafContainingPoint(
-    const Point3D<CoordinateType> &point) const {
+inline unsigned long
+Octree::getLeafContainingPoint(const Point3D<double> &point) const {
   int invleafsize = getNodesPerSide(m_levels);
 
-  Vector<CoordinateType> boxSize = m_ubound - m_lbound;
+  Vector<double> boxSize = m_ubound - m_lbound;
 
   // be careful of precision, outside allocation bad
-  Vector<CoordinateType> pt(3);
+  Vector<double> pt(3);
   pt(0) = (point.x - m_lbound(0)) / boxSize(0);
   pt(1) = (point.y - m_lbound(1)) / boxSize(1);
   pt(2) = (point.z - m_lbound(2)) / boxSize(2);
 
-  CoordinateType zero = CoordinateType(0);
+  double zero = 0;
 
   std::vector<unsigned long> ind;
   for (int i = 0; i < 3; ++i)
@@ -177,10 +129,71 @@ unsigned long Octree<CoordinateType>::getLeafContainingPoint(
   return morton(ind);
 }
 
+inline bool Octree::isEmpty(unsigned long nodeIndex, unsigned int level) const {
+
+  return (m_Nodes[level - 1].count(nodeIndex) == 0);
+}
+
+inline double Octree::cubeWidth(unsigned int level) const {
+
+  double width = m_ubound(0) - m_lbound(0);
+
+  return width / (1 << level);
+}
+
+inline double Octree::extendedCubeWidth(unsigned int level) const {
+
+  double width = m_ubound(0) - m_lbound(0);
+
+  return width / (1 << level) + 2 * m_extensionSize;
+}
+
+inline void Octree::cubeBounds(unsigned long nodeIndex, unsigned int level,
+                               Vector<double> &lbound,
+                               Vector<double> &ubound) const {
+
+  unsigned long indx, indy, indz;
+  deMorton(&indx, &indy, &indz, nodeIndex);
+
+  double width = cubeWidth(level);
+
+  lbound.resize(3);
+  ubound.resize(3);
+  lbound(0) = m_lbound(0) + indx * width;
+  lbound(1) = m_lbound(1) + indy * width;
+  lbound(2) = m_lbound(2) + indz * width;
+
+  ubound(0) = m_lbound(0) + (indx + 1) * width;
+  ubound(1) = m_lbound(1) + (indy + 1) * width;
+  ubound(2) = m_lbound(2) + (indz + 1) * width;
+}
+
+inline void Octree::extendedCubeBounds(unsigned long nodeIndex,
+                                       unsigned int level,
+                                       Vector<double> &lbound,
+                                       Vector<double> &ubound) const {
+
+  cubeBounds(nodeIndex, level, lbound, ubound);
+
+  lbound.resize(3);
+  ubound.resize(3);
+
+  lbound(0) -= m_extensionSize;
+  lbound(1) -= m_extensionSize;
+  lbound(2) -= m_extensionSize;
+
+  ubound(0) += m_extensionSize;
+  ubound(1) += m_extensionSize;
+  ubound(2) += m_extensionSize;
+}
+
+// template <typename CoordinateType> double cubeWidth(unsigned int level)
+// const
+// {}
+
 // Dilate an integer, in between each and every bit of the number inserting
 // two zero bits
-template <typename CoordinateType>
-unsigned long Octree<CoordinateType>::dilate3(unsigned long x) const {
+inline unsigned long Octree::dilate3(unsigned long x) const {
   if (x > 0x000003FF)
     throw std::invalid_argument("dilate3(x): argument x"
                                 "exceeds maximum allowed (1023)");
@@ -198,8 +211,7 @@ unsigned long Octree<CoordinateType>::dilate3(unsigned long x) const {
 }
 
 // undo Dilate, trashing padding bits
-template <typename CoordinateType>
-unsigned long Octree<CoordinateType>::contract3(unsigned long x) const {
+inline unsigned long Octree::contract3(unsigned long x) const {
   x &= 0x09249249; // x = ---- 9--8 --7- -6-- 5--4 --3- -2-- 1--0
   x = (x | (x >> 2)) &
       0x030C30C3; // x = ---- --98 ---- 76-- --54 ---- 32-- --10
@@ -213,22 +225,17 @@ unsigned long Octree<CoordinateType>::contract3(unsigned long x) const {
   return x;
 }
 
-template <typename CoordinateType>
-unsigned long Octree<CoordinateType>::morton(unsigned long x, unsigned long y,
-                                             unsigned long z) const {
+inline unsigned long Octree::morton(unsigned long x, unsigned long y,
+                                    unsigned long z) const {
   return dilate3(x) | (dilate3(y) << 1) | (dilate3(z) << 2);
 }
 
-template <typename CoordinateType>
-unsigned long
-Octree<CoordinateType>::morton(std::vector<unsigned long> v) const {
+inline unsigned long Octree::morton(std::vector<unsigned long> v) const {
   return morton(v[0], v[1], v[2]);
 }
 
-template <typename CoordinateType>
-void Octree<CoordinateType>::deMorton(unsigned long *indx, unsigned long *indy,
-                                      unsigned long *indz,
-                                      unsigned long n) const {
+inline void Octree::deMorton(unsigned long *indx, unsigned long *indy,
+                             unsigned long *indz, unsigned long n) const {
   *indx = contract3(n);
   *indy = contract3(n >> 1);
   *indz = contract3(n >> 2);

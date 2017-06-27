@@ -22,6 +22,11 @@ class Octree(object):
         """Return grid bounding box."""
         return self._impl.bounding_box
 
+    @property
+    def levels(self):
+        """Return the number of levels."""
+        return self._impl.levels
+
     def parent(self, n):
         """Return Morton index of parent node."""
         return self._impl.parent(n)
@@ -37,5 +42,13 @@ class Octree(object):
     def nodes_per_level(self, level):
         """Return number of nodes per level."""
         return self._impl.nodes_per_level(level)
+
+    def cube_width(self, level):
+        """ Get the width of a cube on a given level."""
+        return self._impl.cube_width(level)
+
+    def extended_cube_width(self, level):
+        """ Get the extended width of a cube on a given level."""
+        return self._impl.extended_cube_width(level)
 
 

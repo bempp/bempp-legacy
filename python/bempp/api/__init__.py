@@ -92,7 +92,7 @@ def _gmsh_path():
         print(
                 "Could not find Gmsh." +
                 "Interactive plotting and shapes module not available.")
-        return gmp
+    return gmp
 
 
 GMSH_PATH = _gmsh_path()

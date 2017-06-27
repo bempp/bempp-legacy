@@ -20,39 +20,59 @@ class Grid;
 
 namespace Fmm {
 
-template <typename CoordinateType> class Octree {
+class Octree {
 
 public:
   // If h is the diameter of the largest element in the grid. Then
   // extend each leaf box on each size by RESIZE_FACTOR * h.
   static constexpr double RESIZE_FACTOR = 1.3;
 
-  // Minimum width of a box relative to the maximum element width h.
-  static const int MIN_WIDTH = 3;
+  // Width of a box relative to the maximum element width h.
+  static const int WIDTH_MULTIPLIER = 3;
 
   Octree(const shared_ptr<const Bempp::Grid> &grid, unsigned int levels);
 
+  /** \brief Return the number of levels in the grid. */
+  unsigned int levels() const;
+
   /** \brief Return the bounding box of the grid. */
-  BoundingBox<CoordinateType> getBoundingBox() const;
+  BoundingBox<double> getBoundingBox() const;
 
   /** \brief Index of parent box */
-  unsigned long getParent(unsigned long n) const;
+  unsigned long getParent(unsigned long nodeIndex) const;
 
   /** \brief Index of first child */
-  unsigned long getFirstChild(unsigned long n) const;
+  unsigned long getFirstChild(unsigned long nodeIndex) const;
 
   /** \brief Index of last child */
-  unsigned long getLastChild(unsigned long n) const;
+  unsigned long getLastChild(unsigned long nodeIndex) const;
 
   /** \brief Nodes per side (2^level) */
-  unsigned long getNodesPerSide(unsigned long level) const;
+  unsigned long getNodesPerSide(unsigned int level) const;
 
   /** \brief Nodes per level (3^level) */
-  unsigned long getNodesPerLevel(unsigned long level) const;
+  unsigned long getNodesPerLevel(unsigned int level) const;
 
-  /** \brief Get the number of the octree leaf node that contains the pont. */
-  unsigned long
-  getLeafContainingPoint(const Point3D<CoordinateType> &point) const;
+  /** \brief Get the number of the octree leaf node that contains the point. */
+  unsigned long getLeafContainingPoint(const Point3D<double> &point) const;
+
+  /** \brief Return of a node on a given level is empty. */
+  bool isEmpty(unsigned long nodeIndex, unsigned int level) const;
+
+  /** \brief Return the cube width on a given level. */
+  double cubeWidth(unsigned int level) const;
+
+  /** \brief Return the extended cube width on a given level. */
+  double extendedCubeWidth(unsigned int level) const;
+
+  /** \brief Return the bounds of a specific cube on a given level */
+  void cubeBounds(unsigned long nodeIndex, unsigned int level,
+                  Vector<double> &lbound, Vector<double> &ubound) const;
+
+  /** \brief Return the extended cube bounds of a specific cube on a given level
+   */
+  void extendedCubeBounds(unsigned long nodeIndex, unsigned int level,
+                          Vector<double> &lbound, Vector<double> &ubound) const;
 
 private:
   /** \brief return the Morton index of a leaf node */
@@ -84,20 +104,21 @@ private:
   double m_maxElementDiam;
 
   // Store the non empty octree node ids for each level
-  std::vector<std::vector<unsigned long>> m_Nodes;
+  std::vector<std::unordered_set<unsigned long>> m_Nodes;
 
-  // Global bounding box of grid
-  BoundingBox<CoordinateType> m_boundingBox;
-
-  // Lower bounds of global bounding box
+  // Lower bound of global bounding cube
   Vector<double> m_lbound;
 
-  // Upper bounds of global bounding box
+  // Upper bounds of global bounding cube
   Vector<double> m_ubound;
 
   // Stores for each non-empty leaf box the associated grid entities
   std::unordered_map<unsigned long, std::vector<unsigned int>>
       m_leafsToEntities;
+
+  // Value by which the boundaries of boxes are extended to accommodate
+  // overhanging triangles. Set to RESIZE_FACTOR * m_maxElementDiam
+  double m_extensionSize;
 };
 }
 
