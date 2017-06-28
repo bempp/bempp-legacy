@@ -6,8 +6,7 @@
 
 namespace Fmm {
 
-inline Octree::Octree(const shared_ptr<const Bempp::Grid> &grid,
-                      unsigned int levels)
+inline Octree::Octree(const shared_ptr<const Bempp::Grid> &grid, int levels)
     : m_grid(grid), m_levels(levels) {
 
   // Compute maximum allowed level
@@ -185,6 +184,12 @@ inline void Octree::extendedCubeBounds(unsigned long nodeIndex,
   ubound(0) += m_extensionSize;
   ubound(1) += m_extensionSize;
   ubound(2) += m_extensionSize;
+}
+
+inline const std::vector<unsigned int> &
+Octree::getLeafCubeEntities(unsigned long nodeIndex) const {
+
+  return m_leafsToEntities.at(nodeIndex);
 }
 
 // template <typename CoordinateType> double cubeWidth(unsigned int level)

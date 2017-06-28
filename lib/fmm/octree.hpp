@@ -25,12 +25,12 @@ class Octree {
 public:
   // If h is the diameter of the largest element in the grid. Then
   // extend each leaf box on each size by RESIZE_FACTOR * h.
-  static constexpr double RESIZE_FACTOR = 1.3;
+  static constexpr double RESIZE_FACTOR = 1.1;
 
   // Width of a box relative to the maximum element width h.
-  static const int WIDTH_MULTIPLIER = 3;
+  static const int WIDTH_MULTIPLIER = 2.5;
 
-  Octree(const shared_ptr<const Bempp::Grid> &grid, unsigned int levels);
+  Octree(const shared_ptr<const Bempp::Grid> &grid, int levels);
 
   /** \brief Return the number of levels in the grid. */
   unsigned int levels() const;
@@ -73,6 +73,9 @@ public:
    */
   void extendedCubeBounds(unsigned long nodeIndex, unsigned int level,
                           Vector<double> &lbound, Vector<double> &ubound) const;
+
+  const std::vector<unsigned int> &
+  getLeafCubeEntities(unsigned long nodeIndex) const;
 
 private:
   /** \brief return the Morton index of a leaf node */

@@ -51,4 +51,19 @@ class Octree(object):
         """ Get the extended width of a cube on a given level."""
         return self._impl.extended_cube_width(level)
 
+    def cube_bounds(self, node_index, level):
+        """Return lower and upper bounds for a given cube."""
+        return self._impl.cube_bounds(node_index, level)
+
+    def extended_cube_bounds(self, node_index, level):
+        """Return lower and upper bounds for a given cube."""
+        return self._impl.extended_cube_bounds(node_index, level)
+
+    def is_empty(self, node_index, level):
+        """Return true if a given node has no grid components."""
+        return self._impl.is_empty(node_index, level)
+
+    def leaf_cube_entities(self, node_index):
+        """Return all element indices associated with a leaf cube."""
+        return self._impl.leaf_cube_entities(node_index)
 

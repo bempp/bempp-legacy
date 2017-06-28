@@ -33,6 +33,8 @@ cdef extern from "bempp/grid/grid_view.hpp" namespace "Bempp":
             entityIterator1 "entityIterator<1>"() const
         unique_ptr[c_EntityIterator[codim_two]]\
             entityIterator2 "entityIterator<2>"() const
+        double minimumElementDiameter() const
+        double maximumElementDiameter() const
         
 
 cdef class GridView:
