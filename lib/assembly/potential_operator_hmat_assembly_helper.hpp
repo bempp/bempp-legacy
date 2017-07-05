@@ -22,8 +22,8 @@
 #define bempp_potential_operator_hmat_assembly_helper_hpp
 
 #include "../common/common.hpp"
-#include "../common/types.hpp"
 #include "../common/eigen_support.hpp"
+#include "../common/types.hpp"
 #include "../hmat/hmatrix.hpp"
 
 #include "../common/shared_ptr.hpp"
@@ -36,7 +36,8 @@
 namespace Fiber {
 
 /** \cond FORWARD_DECL */
-template <typename ResultType> class LocalAssemblerForPotentialOperators;
+template <typename ResultType>
+class LocalAssemblerForPotentialOperators;
 /** \endcond */
 }
 
@@ -44,9 +45,12 @@ namespace Bempp {
 
 /** \cond FORWARD_DECL */
 class ComponentListsCache;
-template <typename ResultType> class DiscreteBoundaryOperator;
-template <typename BasisFunctionType> class LocalDofListsCache;
-template <typename BasisFunctionType> class Space;
+template <typename ResultType>
+class DiscreteBoundaryOperator;
+template <typename BasisFunctionType>
+class LocalDofListsCache;
+template <typename BasisFunctionType>
+class Space;
 /** \endcond */
 
 /** \ingroup weak_form_assembly_internal
@@ -57,39 +61,40 @@ template <typename BasisFunctionType, typename ResultType>
 class PotentialOperatorHMatAssemblyHelper
     : public hmat::DataAccessor<ResultType, 2> {
 public:
-  typedef Fiber::LocalAssemblerForPotentialOperators<ResultType> LocalAssembler;
-  typedef typename Fiber::ScalarTraits<ResultType>::RealType CoordinateType;
-  typedef CoordinateType MagnitudeType;
+    typedef Fiber::LocalAssemblerForPotentialOperators<ResultType> LocalAssembler;
+    typedef typename Fiber::ScalarTraits<ResultType>::RealType CoordinateType;
+    typedef CoordinateType MagnitudeType;
 
-  PotentialOperatorHMatAssemblyHelper(
-      const Matrix<CoordinateType> &points,
-      const Space<BasisFunctionType> &trialSpace,
-      const shared_ptr<const hmat::DefaultBlockClusterTreeType>
-          &blockClusterTree,
-      LocalAssembler &assembler, const ParameterList &parameterList);
+    PotentialOperatorHMatAssemblyHelper(
+        const Matrix<CoordinateType>& points,
+        const Space<BasisFunctionType>& trialSpace,
+        const shared_ptr<const hmat::DefaultBlockClusterTreeType>& blockClusterTree,
+        LocalAssembler& assembler, const ParameterList& parameterList);
 
-  void computeMatrixBlock(
-      const hmat::IndexRangeType &testIndexRange,
-      const hmat::IndexRangeType &trialIndexRange,
-      const hmat::DefaultBlockClusterTreeNodeType &blockClusterTreeNode,
-      Matrix<ResultType> &data) const override;
+    void computeMatrixBlock(
+        const hmat::IndexRangeType& testIndexRange,
+        const hmat::IndexRangeType& trialIndexRange,
+        const hmat::DefaultBlockClusterTreeNodeType& blockClusterTreeNode,
+        Matrix<ResultType>& data) const override;
 
-  double
-  scale(const hmat::DefaultBlockClusterTreeNodeType &node) const override;
+    double
+    scale(const hmat::DefaultBlockClusterTreeNodeType& node) const override;
+
+    void dofVolumes(Vector<double>& testVolumes, Vector<double>& trialVolumes) const override;
 
 private:
-  MagnitudeType estimateMinimumDistance(
-      const hmat::DefaultBlockClusterTreeNodeType &blockClusterTreeNode) const;
+    MagnitudeType estimateMinimumDistance(
+        const hmat::DefaultBlockClusterTreeNodeType& blockClusterTreeNode) const;
 
-  const Matrix<CoordinateType> &m_points;
-  const Space<BasisFunctionType> &m_trialSpace;
-  const shared_ptr<const hmat::DefaultBlockClusterTreeType> m_blockClusterTree;
-  LocalAssembler &m_assembler;
-  const ParameterList &m_parameterList;
-  int m_componentCount;
+    const Matrix<CoordinateType>& m_points;
+    const Space<BasisFunctionType>& m_trialSpace;
+    const shared_ptr<const hmat::DefaultBlockClusterTreeType> m_blockClusterTree;
+    LocalAssembler& m_assembler;
+    const ParameterList& m_parameterList;
+    int m_componentCount;
 
-  shared_ptr<LocalDofListsCache<BasisFunctionType>> m_trialDofListsCache;
-  shared_ptr<ComponentListsCache> m_componentListsCache;
+    shared_ptr<LocalDofListsCache<BasisFunctionType> > m_trialDofListsCache;
+    shared_ptr<ComponentListsCache> m_componentListsCache;
 };
 
 } // namespace Bempp

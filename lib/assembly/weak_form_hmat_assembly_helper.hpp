@@ -27,8 +27,8 @@
 #include "../common/shared_ptr.hpp"
 #include "../common/types.hpp"
 #include "../fiber/scalar_traits.hpp"
-#include "../hmat/common.hpp"
 #include "../hmat/block_cluster_tree.hpp"
+#include "../hmat/common.hpp"
 #include "../hmat/data_accessor.hpp"
 
 #include <tbb/atomic.h>
@@ -38,7 +38,8 @@
 namespace Fiber {
 
 /** \cond FORWARD_DECL */
-template <typename ResultType> class LocalAssemblerForIntegralOperators;
+template <typename ResultType>
+class LocalAssemblerForIntegralOperators;
 /** \endcond */
 
 } // namespace Fiber
@@ -47,9 +48,12 @@ namespace Bempp {
 
 /** \cond FORWARD_DECL */
 class AssemblyOptions;
-template <typename ResultType> class DiscreteBoundaryOperator;
-template <typename BasisFunctionType> class LocalDofListsCache;
-template <typename BasisFunctionType> class Space;
+template <typename ResultType>
+class DiscreteBoundaryOperator;
+template <typename BasisFunctionType>
+class LocalDofListsCache;
+template <typename BasisFunctionType>
+class Space;
 /** \endcond */
 
 /** \ingroup weak_form_assembly_internal
@@ -58,65 +62,68 @@ template <typename BasisFunctionType> class Space;
 template <typename BasisFunctionType, typename ResultType>
 class WeakFormHMatAssemblyHelper : public hmat::DataAccessor<ResultType, 2> {
 public:
-  typedef DiscreteBoundaryOperator<ResultType> DiscreteLinOp;
-  typedef Fiber::LocalAssemblerForIntegralOperators<ResultType> LocalAssembler;
-  typedef typename Fiber::ScalarTraits<ResultType>::RealType CoordinateType;
-  typedef typename Fiber::ScalarTraits<ResultType>::RealType MagnitudeType;
+    typedef DiscreteBoundaryOperator<ResultType> DiscreteLinOp;
+    typedef Fiber::LocalAssemblerForIntegralOperators<ResultType> LocalAssembler;
+    typedef typename Fiber::ScalarTraits<ResultType>::RealType CoordinateType;
+    typedef typename Fiber::ScalarTraits<ResultType>::RealType MagnitudeType;
 
-  WeakFormHMatAssemblyHelper(
-      const Space<BasisFunctionType> &testSpace,
-      const Space<BasisFunctionType> &trialSpace,
-      const shared_ptr<hmat::DefaultBlockClusterTreeType> blockClusterTree,
-      const std::vector<LocalAssembler *> &assemblers,
-      const std::vector<const DiscreteLinOp *> &sparseTermsToAdd,
-      const std::vector<ResultType> &denseTermsMultipliers,
-      const std::vector<ResultType> &sparseTermsMultipliers);
+    WeakFormHMatAssemblyHelper(
+        const Space<BasisFunctionType>& testSpace,
+        const Space<BasisFunctionType>& trialSpace,
+        const shared_ptr<hmat::DefaultBlockClusterTreeType> blockClusterTree,
+        const std::vector<LocalAssembler*>& assemblers,
+        const std::vector<const DiscreteLinOp*>& sparseTermsToAdd,
+        const std::vector<ResultType>& denseTermsMultipliers,
+        const std::vector<ResultType>& sparseTermsMultipliers);
 
-  /** \brief Evaluate entries of a general block. */
+    /** \brief Evaluate entries of a general block. */
 
-  void computeMatrixBlock(
-      const hmat::IndexRangeType &testIndexRange,
-      const hmat::IndexRangeType &trialIndexRange,
-      const hmat::DefaultBlockClusterTreeNodeType &blockClusterTreeNode,
-      Matrix<ResultType> &data) const override;
+    void computeMatrixBlock(
+        const hmat::IndexRangeType& testIndexRange,
+        const hmat::IndexRangeType& trialIndexRange,
+        const hmat::DefaultBlockClusterTreeNodeType& blockClusterTreeNode,
+        Matrix<ResultType>& data) const override;
 
-  double
-  scale(const hmat::DefaultBlockClusterTreeNodeType &node) const override;
+    double
+    scale(const hmat::DefaultBlockClusterTreeNodeType& node) const override;
 
-  // /** \brief Return the number of entries in the matrix that have been
-  //  *  accessed so far. */
-  // size_t accessedEntryCount() const;
+    // \brief Return a measure of the triangle areas associated with the dofs
 
-  // /** \brief Reset the number of entries in the matrix that have been
-  //  *  accessed so far. */
-  // void resetAccessedEntryCount();
+    void dofVolumes(Vector<double>& testVolumes, Vector<double>& trialVolumes) const override;
+
+    // /** \brief Return the number of entries in the matrix that have been
+    //  *  accessed so far. */
+    // size_t accessedEntryCount() const;
+
+    // /** \brief Reset the number of entries in the matrix that have been
+    //  *  accessed so far. */
+    // void resetAccessedEntryCount();
 
 private:
-  MagnitudeType estimateMinimumDistance(
-      const hmat::DefaultBlockClusterTreeNodeType &blockClusterTreeNode) const;
+    MagnitudeType estimateMinimumDistance(
+        const hmat::DefaultBlockClusterTreeNodeType& blockClusterTreeNode) const;
 
 private:
-  /** \cond PRIVATE */
-  const Space<BasisFunctionType> &m_testSpace;
-  const Space<BasisFunctionType> &m_trialSpace;
-  const shared_ptr<const hmat::DefaultBlockClusterTreeType> m_blockClusterTree;
-  const std::vector<LocalAssembler *> &m_assemblers;
-  const std::vector<const DiscreteLinOp *> &m_sparseTermsToAdd;
-  const std::vector<ResultType> &m_denseTermsMultipliers;
-  const std::vector<ResultType> &m_sparseTermsMultipliers;
+    /** \cond PRIVATE */
+    const Space<BasisFunctionType>& m_testSpace;
+    const Space<BasisFunctionType>& m_trialSpace;
+    const shared_ptr<const hmat::DefaultBlockClusterTreeType> m_blockClusterTree;
+    const std::vector<LocalAssembler*>& m_assemblers;
+    const std::vector<const DiscreteLinOp*>& m_sparseTermsToAdd;
+    const std::vector<ResultType>& m_denseTermsMultipliers;
+    const std::vector<ResultType>& m_sparseTermsMultipliers;
 
-  shared_ptr<LocalDofListsCache<BasisFunctionType>> m_testDofListsCache,
-      m_trialDofListsCache;
+    shared_ptr<LocalDofListsCache<BasisFunctionType> > m_testDofListsCache,
+        m_trialDofListsCache;
 
-  mutable tbb::atomic<size_t> m_accessedEntryCount;
+    mutable tbb::atomic<size_t> m_accessedEntryCount;
 
-  typedef tbb::concurrent_unordered_map<
-      shared_ptr<const hmat::DefaultBlockClusterTreeNodeType>, CoordinateType,
-      std::hash<shared_ptr<const hmat::DefaultBlockClusterTreeNodeType>>>
-      DistanceMap;
-  mutable DistanceMap m_distancesCache;
+    typedef tbb::concurrent_unordered_map<shared_ptr<const hmat::DefaultBlockClusterTreeNodeType>, CoordinateType,
+        std::hash<shared_ptr<const hmat::DefaultBlockClusterTreeNodeType> > >
+        DistanceMap;
+    mutable DistanceMap m_distancesCache;
 
-  /** \endcond */
+    /** \endcond */
 };
 
 } // namespace Bempp
