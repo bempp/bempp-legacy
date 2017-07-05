@@ -45,8 +45,8 @@ try:
 except:
     HAVE_DOLFIN = False
     log(
-        "Dolfin could not be imported." +
-        "FEM/BEM coupling with FEniCS not available.")
+            "Dolfin could not be imported." +
+            "FEM/BEM coupling with FEniCS not available.")
 else:
     HAVE_DOLFIN = True
     log("Found Dolfin. FEM/BEM coupling with FEniCS enabled.")
@@ -69,8 +69,8 @@ def _check_create_init_dir():
     except OSError:  # Read only file system try a tmp dir
         import warnings
         warnings.warn("Could not create BEM++ config dir."
-                      "Falling back to a temorary dir."
-                      "Your config will not be stored")
+                "Falling back to a temorary dir."
+                "Your config will not be stored")
         config_path = tempfile.mkdtemp()
 
     tmp_path = tempfile.mkdtemp()
@@ -90,8 +90,8 @@ def _gmsh_path():
     gmp = which("gmsh")
     if gmp is None:
         print(
-            "Could not find Gmsh." +
-            "Interactive plotting and shapes module not available.")
+                "Could not find Gmsh." +
+                "Interactive plotting and shapes module not available.")
     return gmp
 
 
@@ -125,6 +125,7 @@ from bempp.api.file_interfaces import three_planes_view
 from bempp.api import operators
 from bempp.api import linalg
 from bempp.api import hmat
+from bempp.api import fmm
 from bempp.api.hmat import hmatrix_interface
 
 from bempp.api.utils.logging import enable_console_logging

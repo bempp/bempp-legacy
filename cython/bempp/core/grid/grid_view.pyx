@@ -126,6 +126,17 @@ cdef class GridView:
             self._compute_raw_element_data()
             return self._domain_indices
 
+    property minimum_element_diameter:
+        """Return the minimum element diameter"""
+
+        def __get__(self):
+            return deref(self.impl_).minimumElementDiameter()
+
+    property maximum_element_diameter:
+        """Return the maximum element diameter"""
+
+        def __get__(self):
+            return deref(self.impl_).maximumElementDiameter()
 
 
 cdef GridView _grid_view_from_unique_ptr(unique_ptr[c_GridView]& c_view):

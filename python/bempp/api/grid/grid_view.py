@@ -13,6 +13,8 @@ class GridView(object):
         self._vertices = None
         self._edges = None
         self._connectivity = None
+        self._minimum_diameter = None
+        self._maximum_diameter = None
 
     def _create_connectivity_matrices(self):
         """
@@ -163,3 +165,17 @@ class GridView(object):
     def domain_indices(self):
         """Return a list of domain indices."""
         return self._impl.domain_indices
+
+    @property
+    def minimum_element_diameter(self):
+        """Return minimum element diameter."""
+        if self._minimum_diameter is None:
+            self._minimum_diameter = self._impl.minimum_element_diameter
+        return self._minimum_diameter
+
+    @property
+    def maximum_element_diameter(self):
+        """Return maximum element diameter."""
+        if self._maximum_diameter is None:
+            self._maximum_diameter = self._impl.maximum_element_diameter
+        return self._maximum_diameter

@@ -7,6 +7,12 @@ www.bempp.org
 
 History
 =======
+3.1.5 (16 May 2017)
+--------------------
+Released version 3.1.5
+
+* Fixed delayed logging messages in Jupyter Notebook
+
 3.1.4 (19 April 2017)
 ---------------------
 Released version 3.1.4
@@ -270,7 +276,7 @@ The first official version of the library, including the following features:
 
 - Assembly of H-matrix representations of boundary integral operators via
   adaptive cross approximation (ACA) supported thanks to an interface to
-  M. Bebendorf’s AHMED library.
+  M. Bebendorfï¿½s AHMED library.
 
 - H-matrix-based preconditioners (via AHMED).
 

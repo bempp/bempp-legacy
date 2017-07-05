@@ -22,13 +22,14 @@
 
 #include "../common/common.hpp"
 #include "dune.hpp"
+#include <dune/grid/io/file/vtk/vtkwriter.hh>
 
-#include "grid_view.hpp"
 #include "concrete_element_mapper.hpp"
 #include "concrete_entity.hpp"
 #include "concrete_index_set.hpp"
 #include "concrete_range_entity_iterator.hpp"
 #include "concrete_vtk_writer.hpp"
+#include "grid_view.hpp"
 #include "reverse_element_mapper.hpp"
 
 namespace Bempp {
@@ -109,6 +110,46 @@ public:
         new ConcreteVtkWriter<DuneGridView>(m_dune_gv, dm));
   }
 
+  virtual double minimumElementDiameter() const {
+
+    double result = std::numeric_limits<double>::infinity();
+
+    for (auto it = this->entityIterator<0>(); !it->finished(); it->next()) {
+      const auto &elem = it->entity();
+      Matrix<double> corners;
+      elem.geometry().getCorners(corners);
+      Eigen::Vector3d a = (corners.col(1) - corners.col(0));
+      Eigen::Vector3d b = (corners.col(2) - corners.col(0));
+      double diam = a.norm() * b.norm() * (a - b).norm() / a.cross(b).norm();
+
+      if (diam < result)
+        result = diam;
+    }
+
+    return result;
+  }
+
+  virtual double maximumElementDiameter() const {
+
+    double result = 0;
+
+    for (auto it = this->entityIterator<0>(); !it->finished(); it->next()) {
+      const auto &elem = it->entity();
+      Matrix<double> corners;
+      elem.geometry().getCorners(corners);
+
+      Eigen::Vector3d a = corners.col(1) - corners.col(0);
+      Eigen::Vector3d b = corners.col(2) - corners.col(0);
+
+      double diam = a.norm() * b.norm() * (a - b).norm() / a.cross(b).norm();
+
+      if (diam > result)
+        result = diam;
+    }
+
+    return result;
+  }
+
 private:
   virtual std::unique_ptr<EntityIterator<0>> entityCodim0Iterator() const {
     return entityCodimNIterator<0>();
@@ -152,8 +193,7 @@ private:
                               std::unique_ptr<EntityIterator<codim>>>::type
   entityCodimNIterator() const {
     typedef typename DuneGridView::template Codim<codim>::Iterator DuneIterator;
-    typedef ConcreteRangeEntityIterator<DuneIterator>
-        ConcIterator;
+    typedef ConcreteRangeEntityIterator<DuneIterator> ConcIterator;
     typedef typename DuneGridView::Grid::LevelGridView DuneLevelGridView;
 
     return std::unique_ptr<EntityIterator<codim>>(

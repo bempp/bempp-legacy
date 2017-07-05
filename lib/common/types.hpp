@@ -22,10 +22,10 @@
 #define bempp_types_hpp
 
 /** \file common/types.hpp Types and headers used in various parts of BEM++ */
-#include "common.hpp"
 #include "../fiber/types.hpp"
 #include "../grid/geometry_type.hpp"
 #include "../grid/index_set.hpp"
+#include "common.hpp"
 
 namespace Bempp {
 
@@ -57,6 +57,25 @@ struct LocalDof {
 /** \ingroup weak_form_assembly_internal
  *  \brief Point in a three-dimensional space. */
 template <typename ValueType> struct Point3D { ValueType x, y, z; };
+template <typename ValueType>
+ValueType &accessPointByIndex(Point3D<ValueType> &point, int i) {
+  if (i == 0)
+    return point.x;
+  if (i == 1)
+    return point.y;
+  if (i == 2)
+    return point.z;
+}
+
+template <typename ValueType>
+const ValueType &accessPointByIndex(const Point3D<ValueType> &point, int i) {
+  if (i == 0)
+    return point.x;
+  if (i == 1)
+    return point.y;
+  if (i == 2)
+    return point.z;
+}
 
 } // namespace Bempp
 

@@ -21,14 +21,35 @@
 #ifndef bempp_bounding_box_helpers_hpp
 #define bempp_bounding_box_helpers_hpp
 
-#include "common.hpp"
-#include "bounding_box.hpp"
 #include "../common/eigen_support.hpp"
+#include "bounding_box.hpp"
+#include "common.hpp"
 
 #include <cassert>
 #include <cmath>
+#include <iostream>
 
 namespace Bempp {
+
+/** \brief Create bounding box with reference set to mid point */
+template <typename CoordinateType>
+BoundingBox<CoordinateType>
+createBoundingBox(CoordinateType xmin, CoordinateType ymin, CoordinateType zmin,
+                  CoordinateType xmax, CoordinateType ymax,
+                  CoordinateType zmax) {
+
+  BoundingBox<CoordinateType> bbox;
+  bbox.lbound.x = xmin;
+  bbox.lbound.y = ymin;
+  bbox.lbound.z = zmin;
+  bbox.ubound.x = xmax;
+  bbox.ubound.y = ymax;
+  bbox.ubound.z = zmax;
+  bbox.reference.x = (xmax - xmin) / 2;
+  bbox.reference.y = (ymax - ymin) / 2;
+  bbox.reference.z = (zmax - zmin) / 2;
+  return bbox;
+}
 
 /** \relates BoundingBox
  *  \brief Extend the bounding box \p bbox to include all points contained in
@@ -62,6 +83,17 @@ void setBoundingBoxReference(BoundingBox<CoordinateType> &bbox,
   bbox.reference.x = point(0);
   bbox.reference.y = point(1);
   bbox.reference.z = point(2);
+}
+
+template <typename CoordinateType>
+Vector<CoordinateType>
+getBoundingBoxSize(const BoundingBox<CoordinateType> &boundingBox) {
+  Vector<CoordinateType> result(3);
+  result[0] = boundingBox.ubound.x - boundingBox.lbound.x;
+  result[1] = boundingBox.ubound.y - boundingBox.lbound.y;
+  result[2] = boundingBox.ubound.z - boundingBox.lbound.z;
+
+  return result;
 }
 
 } // namespace Bempp
