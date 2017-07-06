@@ -74,8 +74,13 @@ public:
   void extendedCubeBounds(unsigned long nodeIndex, unsigned int level,
                           Vector<double> &lbound, Vector<double> &ubound) const;
 
+  /** \brief Get all leaf cubes */
   const std::vector<unsigned int> &
   getLeafCubeEntities(unsigned long nodeIndex) const;
+
+  /** \brief Get the neighbors of the cube on a given level. */
+  void getNeighbors(std::vector<unsigned long> &neighbors,
+                    unsigned long nodeIndex, unsigned int level) const;
 
 private:
   /** \brief return the Morton index of a leaf node */

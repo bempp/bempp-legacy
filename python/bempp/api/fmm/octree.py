@@ -67,3 +67,8 @@ class Octree(object):
         """Return all element indices associated with a leaf cube."""
         return self._impl.leaf_cube_entities(node_index)
 
+    def neighbors(self, node_index, level):
+        """Return all neighboring cubes on the same level."""
+        return self._impl.neighbors(node_index, level)
+
+

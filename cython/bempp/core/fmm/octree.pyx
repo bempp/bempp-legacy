@@ -3,6 +3,7 @@ from cython.operator cimport address
 from bempp.core.utils.shared_ptr cimport shared_ptr
 from bempp.core.grid.grid cimport Grid, c_Grid
 from bempp.core.utils cimport eigen_vector_to_np_float64
+from libcpp.vector cimport vector
 
 cdef class Octree:
     """Define an Octree over a given grid."""
@@ -69,6 +70,14 @@ cdef class Octree:
 
         return deref(self.impl_).getLeafCubeEntities(node_index)
 
+    def neighbors(self, unsigned long node_index, unsigned int level):
+        """Return all neighbors of a given cube."""
+
+        cdef vector[unsigned long] neighbors
+
+        deref(self.impl_).getNeighbors(neighbors, node_index, level)
+
+        return neighbors
 
     property bounding_box:
 

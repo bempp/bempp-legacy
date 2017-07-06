@@ -24,6 +24,7 @@ cdef extern from "bempp/fmm/octree.hpp":
                 Vector[double]& lbound, Vector[double]& ubound)
         bool isEmpty(unsigned long nodeIndex, unsigned int level) const 
         const vector[unsigned int] getLeafCubeEntities(unsigned long) except +
+        void getNeighbors(vector[unsigned long]&, unsigned long, unsigned int)
         
 
 cdef class Octree:

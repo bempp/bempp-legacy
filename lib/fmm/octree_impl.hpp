@@ -192,6 +192,33 @@ Octree::getLeafCubeEntities(unsigned long nodeIndex) const {
   return m_leafsToEntities.at(nodeIndex);
 }
 
+inline void Octree::getNeighbors(std::vector<unsigned long> &neighbors,
+                                 unsigned long nodeIndex,
+                                 unsigned int level) const {
+
+  unsigned long indx, indy, indz;
+  deMorton(&indx, &indy, &indz, nodeIndex);
+
+  unsigned long sides = getNodesPerSide(level);
+
+  std::function<bool(long, long, long)> inRange = [sides](long n1, long n2,
+                                                          long n3) {
+
+    return (n1 >= 0 && n1 < sides) && (n2 >= 0 && n2 < sides) &&
+           (n3 >= 0 && n3 < sides);
+
+  };
+
+  for (int i = -1; i < 2; i++)
+    for (int j = -1; j < 2; j++)
+      for (int k = -1; k < 2; k++) {
+        if (i == 0 && j == 0 && k == 0)
+          continue;
+        if (inRange(indx + i, indy + j, indz + k))
+          neighbors.push_back(morton(indx + i, indy + j, indz + k));
+      }
+}
+
 // template <typename CoordinateType> double cubeWidth(unsigned int level)
 // const
 // {}
