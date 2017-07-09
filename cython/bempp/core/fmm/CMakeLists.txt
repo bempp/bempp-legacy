@@ -1,5 +1,5 @@
 set(headers __init__.pxd
-    octree.pxd interaction_list.pxd)
+    octree.pxd interaction_list.pxd chebychev_tools.pxd)
 
 copy_files_on_change(${headers}
     OUTPUT_FILES copied
@@ -11,6 +11,7 @@ copy_files_on_change(${headers}
 add_dependencies(cython-headers bempp.core.fmm-copied)
 
 add_python_module(bempp.core.fmm __init__.py octree.pyx interaction_list.pyx
+    chebychev_tools.pyx
     CPP LIBRARIES libbempp)
 add_dependencies(bempp.core.fmm cython-headers)
 add_dependencies(bempp.core.fmm bempp.core.grid)
