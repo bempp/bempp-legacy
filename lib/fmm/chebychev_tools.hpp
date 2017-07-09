@@ -10,10 +10,14 @@ class ChebychevTools {
 public:
   ChebychevTools(int order);
 
-  void chebychevNodes(Vector<double> &nodes) const;
+  const Vector<double> &chebychevNodes() const;
+
+  const Matrix<double> &chebychevPolValuesAtNodes() const;
 
 private:
-  int m_order;
+  int m_terms;
+  Vector<double> m_nodes;
+  Matrix<double> m_chebychevPolValuesAtNodes;
 };
 }
 

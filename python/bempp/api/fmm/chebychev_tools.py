@@ -13,3 +13,15 @@ class ChebychevTools(object):
         """Return the Chebychev nodes on the interval [-1, 1]."""
 
         return self._impl.chebychev_nodes()
+
+    @property
+    def chebychev_values(self):
+        """
+        Evaluate the Cheb. Polynomials at the interpolation nodes.
+
+        Return a Numpy matrix of size (order + 1) x (order + 1), where the element
+        at position (i, j) contains the jth Chebychev Polynomial evaluated
+        at the ith Chebychev Point.
+        """
+
+        return self._impl.chebychev_values()

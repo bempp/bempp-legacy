@@ -7,13 +7,31 @@
 
 namespace Fmm {
 
-inline ChebychevTools::ChebychevTools(int order) : m_order(order) {}
+inline ChebychevTools::ChebychevTools(int order) : m_terms(1 + order) {
 
-inline void ChebychevTools::chebychevNodes(Vector<double> &nodes) const {
+  m_nodes.resize(m_terms);
+  for (int m = 0; m < m_terms; ++m)
+    m_nodes(m) = cos(M_PI * double(2 * m + 1) / double(2 * m_terms));
 
-  nodes.resize(m_order);
-  for (int m = 0; m < m_order; ++m)
-    nodes(m) = cos(M_PI * double(2 * m + 1) / double(2 * m_order));
+  m_chebychevPolValuesAtNodes.resize(m_terms, m_terms);
+  // compute T_k(x) for k between 0 and N-1 inclusive.
+  for (unsigned int m = 0; m < m_terms; m++) {
+    m_chebychevPolValuesAtNodes(m, 0) = 1;
+    m_chebychevPolValuesAtNodes(m, 1) = m_nodes[m];
+    for (unsigned int k = 2; k < m_terms; k++)
+      m_chebychevPolValuesAtNodes(m, k) =
+          2 * m_nodes[m] * m_chebychevPolValuesAtNodes(m, k - 1) -
+          m_chebychevPolValuesAtNodes(m, k - 2);
+  }
+}
+
+inline const Vector<double> &ChebychevTools::chebychevNodes() const {
+  return m_nodes;
+}
+
+const Matrix<double> &ChebychevTools::chebychevPolValuesAtNodes() const {
+
+  return m_chebychevPolValuesAtNodes;
 }
 }
 
