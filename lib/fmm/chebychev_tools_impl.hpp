@@ -15,6 +15,16 @@ inline ChebychevTools::ChebychevTools(int order) : m_terms(1 + order) {
 
   m_chebychevPolValuesAtNodes.resize(m_terms, m_terms);
   // compute T_k(x) for k between 0 and N-1 inclusive.
+
+  m_chebychevPolValuesAtNodes.col(0).array() = 1;
+  m_chebychevPolValuesAtNodes.col(1).array() = m_nodes.array();
+
+  for (int k = 2; k < m_terms; k++)
+    m_chebychevPolValuesAtNodes.col(k).array() =
+        2 * m_nodes.array() * m_chebychevPolValuesAtNodes.col(k - 1).array() -
+        m_chebychevPolValuesAtNodes.col(k - 2).array();
+
+  /*
   for (unsigned int m = 0; m < m_terms; m++) {
     m_chebychevPolValuesAtNodes(m, 0) = 1;
     m_chebychevPolValuesAtNodes(m, 1) = m_nodes[m];
@@ -23,6 +33,7 @@ inline ChebychevTools::ChebychevTools(int order) : m_terms(1 + order) {
           2 * m_nodes[m] * m_chebychevPolValuesAtNodes(m, k - 1) -
           m_chebychevPolValuesAtNodes(m, k - 2);
   }
+  */
 }
 
 inline const Vector<double> &ChebychevTools::chebychevNodes() const {
