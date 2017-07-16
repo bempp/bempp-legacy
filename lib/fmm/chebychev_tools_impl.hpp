@@ -14,20 +14,6 @@ inline ChebychevTools::ChebychevTools(int order) : m_terms(1 + order) {
   for (int m = 0; m < m_terms; ++m)
     m_nodes(m) = cos(M_PI * double(m) / double(order));
 
-  m_chebychevPolValuesAtNodes.resize(m_terms, m_terms);
-  // compute T_k(x) for k between 0 and N-1 inclusive.
-
-  m_chebychevPolValuesAtNodes.col(0).array() = 1;
-
-  if (m_terms > 1) {
-    m_chebychevPolValuesAtNodes.col(1).array() = m_nodes.array();
-
-    for (int k = 2; k < m_terms; k++)
-      m_chebychevPolValuesAtNodes.col(k).array() =
-          2 * m_nodes.array() * m_chebychevPolValuesAtNodes.col(k - 1).array() -
-          m_chebychevPolValuesAtNodes.col(k - 2).array();
-  }
-
   m_barycentricWeights.resize(m_terms);
   int sign = 1;
   for (int k = 0; k < m_terms; ++k) {
@@ -36,15 +22,22 @@ inline ChebychevTools::ChebychevTools(int order) : m_terms(1 + order) {
   }
   m_barycentricWeights[0] = double(1) / 2;
   m_barycentricWeights[order] *= double(1) / 2;
+
+  Vector<double> diffWeights = m_barycentricWeights;
+  diffWeights[0] *= 4;
+  diffWeights[order] *= 4;
+  Vector<double> invDiffWeights = Vector<double>::Zero(m_terms);
+  invDiffWeights.array() = 1. / diffWeights.array();
+  Matrix<double> X = m_nodes.replicate(1, m_terms);
+  Matrix<double> dX = X - X.transpose();
+  m_chebDiffMatrix = (diffWeights * invDiffWeights.transpose()).eval().array() /
+                     (dX + Matrix<double>::Identity(m_terms, m_terms)).array();
+  Matrix<double> diag = m_chebDiffMatrix.rowwise().sum().asDiagonal();
+  m_chebDiffMatrix.array() -= diag.array();
 }
 
 inline const Vector<double> &ChebychevTools::chebychevNodes() const {
   return m_nodes;
-}
-
-inline const Matrix<double> &ChebychevTools::chebychevPolValuesAtNodes() const {
-
-  return m_chebychevPolValuesAtNodes;
 }
 
 inline void ChebychevTools::evaluateInterpolationPolynomial(
@@ -77,10 +70,9 @@ inline void ChebychevTools::evaluateInterpolationPolynomial(
 }
 
 inline Matrix<double>
-ChebychevTools::interpolateToChildren(double parentLength,
-                                      double childLength) const {
+ChebychevTools::childInterpolationMatrix(double ratio) const {
 
-  double r = 2 * childLength / parentLength;
+  double r = 2 * ratio;
   Vector<double> points(2 * m_terms);
   for (int j = 0; j < m_terms; ++j)
     points(j) = -1 + r * (1 + cos(M_PI * double(j) / double(m_terms - 1))) / 2;
@@ -100,6 +92,54 @@ ChebychevTools::interpolateToChildren(double parentLength,
   }
   return mat;
 }
+
+inline Vector<double>
+ChebychevTools::derivativeWeights(const Vector<double> &weights) const {
+
+  return m_chebDiffMatrix * weights;
 }
 
+inline Vector<double>
+ChebychevTools::derivativeWeights3d(const Vector<double> &weights,
+                                    int direction) const {
+
+  Vector<double> result(m_terms * m_terms * m_terms);
+  if (direction == 0) {
+    for (int i = 0; i < m_terms; ++i)
+      for (int j = 0; j < m_terms; ++j) {
+        int index = i * m_terms * m_terms + j * m_terms;
+        result.segment(index, m_terms) =
+            derivativeWeights(weights.segment(index, m_terms));
+      }
+  } else if (direction == 1) {
+    Vector<double> coeffs(m_terms);
+    Vector<double> tmp(m_terms);
+    for (int i = 0; i < m_terms; ++i) {
+      for (int k = 0; k < m_terms; ++k) {
+        int index = i * m_terms * m_terms + k;
+        for (int j = 0; j < m_terms; ++j)
+          coeffs(j) = weights(index + j * m_terms);
+        tmp = derivativeWeights(coeffs);
+        for (int j = 0; j < m_terms; ++j)
+          result(index + j * m_terms) = tmp(j);
+      }
+    }
+  } else if (direction == 2) {
+
+    Vector<double> coeffs(m_terms);
+    Vector<double> tmp(m_terms);
+    for (int j = 0; j < m_terms; ++j) {
+      for (int k = 0; k < m_terms; ++k) {
+        int index = j * m_terms + k;
+        for (int i = 0; i < m_terms; ++i)
+          coeffs(i) = weights(index + i * m_terms * m_terms);
+        tmp = derivativeWeights(coeffs);
+        for (int i = 0; i < m_terms; ++i)
+          result(index + i * m_terms * m_terms) = tmp(i);
+      }
+    }
+  }
+  return result;
+}
+}
 #endif

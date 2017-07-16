@@ -8,10 +8,11 @@ cdef extern from "bempp/fmm/chebychev_tools.hpp":
     cdef cppclass c_ChebychevTools "Fmm::ChebychevTools":
         c_ChebychevTools(int order)
         const Vector[double]& chebychevNodes() const
-        const Matrix[double]& chebychevPolValuesAtNodes() const
         void evaluateInterpolationPolynomial(const Vector[double]& weights, const Vector[double]& evaluationPoints,
                                              Vector[double] result) const
-        Matrix[double] interpolateToChildren(double parentLength, double childLength)
+        Matrix[double] childInterpolationMatrix(double ratio) const
+        Vector[double] derivativeWeights(const Vector[double]& weights) const
+        Vector[double] derivativeWeights3d(const Vector[double]& weights, int direction) const
 
 
 cdef class ChebychevTools:
