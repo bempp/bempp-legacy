@@ -104,7 +104,8 @@ ChebychevTools::derivativeWeights3d(const Vector<double> &weights,
                                     int direction) const {
 
   Vector<double> result(m_terms * m_terms * m_terms);
-  if (direction == 0) {
+  if (direction == 2) {
+    // inner most variable (z)
     for (int i = 0; i < m_terms; ++i)
       for (int j = 0; j < m_terms; ++j) {
         int index = i * m_terms * m_terms + j * m_terms;
@@ -112,6 +113,7 @@ ChebychevTools::derivativeWeights3d(const Vector<double> &weights,
             derivativeWeights(weights.segment(index, m_terms));
       }
   } else if (direction == 1) {
+    // Middle variable (y)
     Vector<double> coeffs(m_terms);
     Vector<double> tmp(m_terms);
     for (int i = 0; i < m_terms; ++i) {
@@ -124,8 +126,8 @@ ChebychevTools::derivativeWeights3d(const Vector<double> &weights,
           result(index + j * m_terms) = tmp(j);
       }
     }
-  } else if (direction == 2) {
-
+  } else if (direction == 0) {
+    // outer most variable (x)
     Vector<double> coeffs(m_terms);
     Vector<double> tmp(m_terms);
     for (int j = 0; j < m_terms; ++j) {
