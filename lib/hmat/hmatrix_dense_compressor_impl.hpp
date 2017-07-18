@@ -10,11 +10,11 @@ namespace hmat {
 
 template <typename ValueType, int N>
 HMatrixDenseCompressor<ValueType, N>::HMatrixDenseCompressor(
-    const DataAccessor<ValueType, N> &dataAccessor)
-    : m_dataAccessor(dataAccessor) {}
+    const DataAccessor<ValueType, N> &dataAccessor, double cutoff)
+    : HMatrixCompressor<ValueType, N>(cutoff), m_dataAccessor(dataAccessor) {}
 
 template <typename ValueType, int N>
-void HMatrixDenseCompressor<ValueType, N>::compressBlock(
+void HMatrixDenseCompressor<ValueType, N>::compressBlockImpl(
     const BlockClusterTreeNode<N> &blockClusterTreeNode,
     shared_ptr<HMatrixData<ValueType>> &hMatrixData) const {
 

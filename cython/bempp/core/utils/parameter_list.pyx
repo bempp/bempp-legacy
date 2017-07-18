@@ -292,6 +292,14 @@ cdef class _HMatParameterList:
             cdef char* s = b"options.hmat.admissibility"
             deref(self.impl_).put_string(s,_convert_to_bytes(value))
 
+    property cutoff:
+        def __get__(self):
+            cdef char* s = b"options.hmat.cutoff"
+            return deref(self.impl_).get_double(s)
+        def __set__(self,double value):
+            cdef char* s = b"options.hmat.cutoff"
+            deref(self.impl_).put_double(s,value)
+
 cdef class ParameterList:
 
     def __cinit__(self):

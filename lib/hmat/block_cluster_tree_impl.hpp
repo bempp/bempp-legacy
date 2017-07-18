@@ -4,8 +4,8 @@
 #define HMAT_BLOCK_CLUSTER_TREE_IMPL_HPP
 
 #include "block_cluster_tree.hpp"
-#include <tbb/parallel_for.h>
 #include <tbb/blocked_range.h>
+#include <tbb/parallel_for.h>
 
 //#include "cairo/cairo.h"
 //#include "cairo/cairo-pdf.h"
@@ -158,8 +158,8 @@ void BlockClusterTree<N>::initializeBlockClusterTree(
     if (nodeData.admissible)
       return;
 
-    auto rowClusterData = nodeData.rowClusterTreeNode->data();
-    auto columnClusterData = nodeData.columnClusterTreeNode->data();
+    const auto &rowClusterData = nodeData.rowClusterTreeNode->data();
+    const auto &columnClusterData = nodeData.columnClusterTreeNode->data();
 
     // If row or column cluster is leaf do not refine further
 

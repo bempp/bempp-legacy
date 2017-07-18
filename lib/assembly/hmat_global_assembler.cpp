@@ -51,6 +51,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <limits>
 #include <stdexcept>
 
 #include <boost/type_traits/is_complex.hpp>
@@ -156,13 +157,16 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
 
   shared_ptr<hmat::DefaultHMatrixType<ResultType>> hMatrix;
 
+  double cutoff = std::numeric_limits<double>::infinity();
+
   if (compressionAlgorithm == "aca") {
 
-    hmat::HMatrixAcaCompressor<ResultType, 2> compressor(helper, eps, maxRank);
+    hmat::HMatrixAcaCompressor<ResultType, 2> compressor(helper, eps, maxRank,
+                                                         cutoff);
     hMatrix.reset(
         new hmat::DefaultHMatrixType<ResultType>(blockClusterTree, compressor));
   } else if (compressionAlgorithm == "dense") {
-    hmat::HMatrixDenseCompressor<ResultType, 2> compressor(helper);
+    hmat::HMatrixDenseCompressor<ResultType, 2> compressor(helper, cutoff);
     hMatrix.reset(
         new hmat::DefaultHMatrixType<ResultType>(blockClusterTree, compressor));
   } else
@@ -234,13 +238,15 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assemblePotentialOperator(
 
   shared_ptr<hmat::DefaultHMatrixType<ResultType>> hMatrix;
 
+  double cutoff = parameterList.template get<double>("options.hmat.cutoff");
   if (compressionAlgorithm == "aca") {
 
-    hmat::HMatrixAcaCompressor<ResultType, 2> compressor(helper, eps, maxRank);
+    hmat::HMatrixAcaCompressor<ResultType, 2> compressor(helper, eps, maxRank,
+                                                         cutoff);
     hMatrix.reset(
         new hmat::DefaultHMatrixType<ResultType>(blockClusterTree, compressor));
   } else if (compressionAlgorithm == "dense") {
-    hmat::HMatrixDenseCompressor<ResultType, 2> compressor(helper);
+    hmat::HMatrixDenseCompressor<ResultType, 2> compressor(helper, cutoff);
     hMatrix.reset(
         new hmat::DefaultHMatrixType<ResultType>(blockClusterTree, compressor));
   } else

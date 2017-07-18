@@ -19,6 +19,7 @@
 // THE SOFTWARE.
 
 #include "global_parameters.hpp"
+#include <limits>
 
 namespace Bempp {
 
@@ -111,6 +112,10 @@ ParameterList GlobalParameters::parameterList() {
 
   // Compression algorithm
   parameters.put("options.hmat.compressionAlgorithm", std::string("aca"));
+
+  // Specifies distance of clusters beyond which they are not assembled
+  parameters.put("options.hmat.cutoff",
+                 static_cast<double>(std::numeric_limits<double>::max()));
 
   return parameters;
 }

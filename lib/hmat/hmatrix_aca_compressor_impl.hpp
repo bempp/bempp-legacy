@@ -18,10 +18,9 @@ namespace hmat {
 
 template <typename ValueType, int N>
 bool HMatrixAcaCompressor<ValueType, N>::selectMinPivot(
-    const Matrix<ValueType>& vec,
-    const std::vector<std::size_t>& approximationCount, std::size_t& pivot,
-    ModeType modus) const
-{
+    const Matrix<ValueType> &vec,
+    const std::vector<std::size_t> &approximationCount, std::size_t &pivot,
+    ModeType modus) const {
 
   int n = std::max(vec.rows(), vec.cols());
   pivot = n;
@@ -44,18 +43,19 @@ bool HMatrixAcaCompressor<ValueType, N>::selectMinPivot(
 template <typename ValueType, int N>
 typename HMatrixAcaCompressor<ValueType, N>::CrossStatusType
 HMatrixAcaCompressor<ValueType, N>::computeCross(
-    const BlockClusterTreeNode<N>& blockClusterTreeNode,
-    const Matrix<ValueType>& A, const Matrix<ValueType>& B,
-    std::size_t& nextPivot, Matrix<ValueType>& origRow,
-    Matrix<ValueType>& origCol, Matrix<ValueType>& row, Matrix<ValueType>& col,
-    std::vector<std::size_t>& rowApproxCounter,
-    std::vector<std::size_t>& colApproxCounter, ModeType mode,
-    double zeroTol) const
-{
+    const BlockClusterTreeNode<N> &blockClusterTreeNode,
+    const Matrix<ValueType> &A, const Matrix<ValueType> &B,
+    std::size_t &nextPivot, Matrix<ValueType> &origRow,
+    Matrix<ValueType> &origCol, Matrix<ValueType> &row, Matrix<ValueType> &col,
+    std::vector<std::size_t> &rowApproxCounter,
+    std::vector<std::size_t> &colApproxCounter, ModeType mode,
+    double zeroTol) const {
 
-  const auto& rowClusterRange = blockClusterTreeNode.data().rowClusterTreeNode->data().indexRange;
+  const auto &rowClusterRange =
+      blockClusterTreeNode.data().rowClusterTreeNode->data().indexRange;
 
-  const auto& columnClusterRange = blockClusterTreeNode.data().columnClusterTreeNode->data().indexRange;
+  const auto &columnClusterRange =
+      blockClusterTreeNode.data().columnClusterTreeNode->data().indexRange;
 
   std::size_t rowIndex;
   std::size_t columnIndex;
@@ -71,23 +71,25 @@ HMatrixAcaCompressor<ValueType, N>::computeCross(
   if (mode == ModeType::ROW) {
 
     rowIndex = rowClusterRange[0] + nextPivot;
-    rowIndexRange = { { rowIndex, rowIndex + 1 } };
+    rowIndexRange = {{rowIndex, rowIndex + 1}};
     m_dataAccessor.computeMatrixBlock(rowIndexRange, columnClusterRange,
-        blockClusterTreeNode, origRow);
+                                      blockClusterTreeNode, origRow);
     row = origRow;
     if (A.cols() > 0 && B.rows() > 0)
       row -= A.row(rowIndex - rowClusterRange[0]) * B;
 
     row.cwiseAbs().maxCoeff(&maxRowInd, &maxColInd);
     pivotValue = row(0, maxColInd);
-    columnIndex = boost::numeric_cast<std::size_t>(maxColInd) + columnClusterRange[0];
+    columnIndex =
+        boost::numeric_cast<std::size_t>(maxColInd) + columnClusterRange[0];
 
-    if (std::abs(pivotValue) < zeroTol * m_testVolumes[rowIndex] * m_trialVolumes[columnIndex])
+    if (std::abs(pivotValue) <
+        zeroTol * m_testVolumes[rowIndex] * m_trialVolumes[columnIndex])
       return CrossStatusType::ZERO;
 
-    columnIndexRange = { { columnIndex, columnIndex + 1 } };
+    columnIndexRange = {{columnIndex, columnIndex + 1}};
     m_dataAccessor.computeMatrixBlock(rowClusterRange, columnIndexRange,
-        blockClusterTreeNode, origCol);
+                                      blockClusterTreeNode, origCol);
 
     col = origCol;
     if (A.cols() > 0 && B.rows() > 0)
@@ -107,9 +109,9 @@ HMatrixAcaCompressor<ValueType, N>::computeCross(
 
   else {
     columnIndex = columnClusterRange[0] + nextPivot;
-    columnIndexRange = { { columnIndex, columnIndex + 1 } };
+    columnIndexRange = {{columnIndex, columnIndex + 1}};
     m_dataAccessor.computeMatrixBlock(rowClusterRange, columnIndexRange,
-        blockClusterTreeNode, origCol);
+                                      blockClusterTreeNode, origCol);
     col = origCol;
     if (A.cols() > 0 && B.rows() > 0)
       col -= A * B.col(columnIndex - columnClusterRange[0]);
@@ -118,12 +120,13 @@ HMatrixAcaCompressor<ValueType, N>::computeCross(
     pivotValue = col(maxRowInd, 0);
     rowIndex = boost::numeric_cast<std::size_t>(maxRowInd) + rowClusterRange[0];
 
-    if (std::abs(pivotValue) < zeroTol * m_testVolumes[rowIndex] * m_trialVolumes[columnIndex])
+    if (std::abs(pivotValue) <
+        zeroTol * m_testVolumes[rowIndex] * m_trialVolumes[columnIndex])
       return CrossStatusType::ZERO;
 
-    rowIndexRange = { { rowIndex, rowIndex + 1 } };
+    rowIndexRange = {{rowIndex, rowIndex + 1}};
     m_dataAccessor.computeMatrixBlock(rowIndexRange, columnClusterRange,
-        blockClusterTreeNode, origRow);
+                                      blockClusterTreeNode, origRow);
 
     row = origRow;
     if (A.cols() > 0 && B.rows() > 0)
@@ -148,16 +151,16 @@ HMatrixAcaCompressor<ValueType, N>::computeCross(
 
 template <typename ValueType, int N>
 double HMatrixAcaCompressor<ValueType, N>::updateLowRankBlocksAndNorm(
-    const Matrix<ValueType>& newRow, const Matrix<ValueType>& newCol,
-    Matrix<ValueType>& A, Matrix<ValueType>& B, double currentBlockNorm) const
-{
+    const Matrix<ValueType> &newRow, const Matrix<ValueType> &newCol,
+    Matrix<ValueType> &A, Matrix<ValueType> &B, double currentBlockNorm) const {
 
   // Compute norm update
 
   double newNormSquared = newRow.squaredNorm() * newCol.squaredNorm();
 
   if (A.cols() > 0 && B.rows() > 0) {
-    double val1 = 2 * (newRow * (B.adjoint() * (A.adjoint() * newCol))).real()(0, 0);
+    double val1 =
+        2 * (newRow * (B.adjoint() * (A.adjoint() * newCol))).real()(0, 0);
     double val2 = currentBlockNorm * currentBlockNorm;
     newNormSquared += val1 + val2;
   }
@@ -179,18 +182,16 @@ double HMatrixAcaCompressor<ValueType, N>::updateLowRankBlocksAndNorm(
 
 template <typename ValueType, int N>
 bool HMatrixAcaCompressor<ValueType, N>::checkConvergence(
-    const Matrix<ValueType>& row, const Matrix<ValueType>& col,
-    double tol) const
-{
+    const Matrix<ValueType> &row, const Matrix<ValueType> &col,
+    double tol) const {
 
   return row.norm() * col.norm() < tol;
 }
 
 template <typename ValueType, int N>
-void HMatrixAcaCompressor<ValueType, N>::compressBlock(
-    const BlockClusterTreeNode<N>& blockClusterTreeNode,
-    shared_ptr<HMatrixData<ValueType> >& hMatrixData) const
-{
+void HMatrixAcaCompressor<ValueType, N>::compressBlockImpl(
+    const BlockClusterTreeNode<N> &blockClusterTreeNode,
+    shared_ptr<HMatrixData<ValueType>> &hMatrixData) const {
 
   if (!blockClusterTreeNode.data().admissible) {
     m_hMatrixDenseCompressor.compressBlock(blockClusterTreeNode, hMatrixData);
@@ -208,8 +209,8 @@ void HMatrixAcaCompressor<ValueType, N>::compressBlock(
   Matrix<ValueType> origRow, origCol;
 
   getBlockClusterTreeNodeDimensions(blockClusterTreeNode, rowClusterRange,
-      columnClusterRange, numberOfRows,
-      numberOfColumns);
+                                    columnClusterRange, numberOfRows,
+                                    numberOfColumns);
 
   hMatrixData.reset(new HMatrixLowRankData<ValueType>());
 
@@ -221,7 +222,7 @@ void HMatrixAcaCompressor<ValueType, N>::compressBlock(
 
   double blockNorm = 0;
   std::size_t maxIterations = std::min(static_cast<std::size_t>(m_maxRank),
-      std::min(numberOfRows, numberOfColumns));
+                                       std::min(numberOfRows, numberOfColumns));
 
   bool finished = false;
   AcaAlgorithmStateType state = AcaAlgorithmStateType::START;
@@ -247,8 +248,8 @@ void HMatrixAcaCompressor<ValueType, N>::compressBlock(
   while (!finished) {
     // First run the ACA
     acaStatus = aca(blockClusterTreeNode, nextPivot, A, B, maxIterations,
-        rowApproxCounter, colApproxCounter, origRow, origCol,
-        blockNorm, m_eps, 1E-12, mode);
+                    rowApproxCounter, colApproxCounter, origRow, origCol,
+                    blockNorm, m_eps, 1E-12, mode);
     // Now test the status for different cases
     if (acaStatus == AcaStatusType::RANK_LIMIT_REACHED) {
       finished = true; // Approximation does not work. So just stop.
@@ -269,7 +270,8 @@ void HMatrixAcaCompressor<ValueType, N>::compressBlock(
         finished = true;
     }
     // The next is the normal case after running ACA
-    if (acaStatus == AcaStatusType::CONVERGED_AFTER_ITERATION || acaStatus == AcaStatusType::ZERO_TERMINATION_AFTER_ITERATION) {
+    if (acaStatus == AcaStatusType::CONVERGED_AFTER_ITERATION ||
+        acaStatus == AcaStatusType::ZERO_TERMINATION_AFTER_ITERATION) {
       // Have to rexecute row trial and column trial
       rowTrialPassed = false;
       columnTrialPassed = false;
@@ -291,7 +293,8 @@ void HMatrixAcaCompressor<ValueType, N>::compressBlock(
         finished = true;
     }
     if (!finished && state == AcaAlgorithmStateType::ROW_TRIAL) {
-      if ((rowTrialCount < MAX_ROW_TRIAL_COUNT) && selectMinPivot(origRow, colApproxCounter, nextPivot, ModeType::ROW)) {
+      if ((rowTrialCount < MAX_ROW_TRIAL_COUNT) &&
+          selectMinPivot(origRow, colApproxCounter, nextPivot, ModeType::ROW)) {
         mode = ModeType::COL;
         rowTrialCount++;
       } else {
@@ -300,7 +303,8 @@ void HMatrixAcaCompressor<ValueType, N>::compressBlock(
       }
     }
     if (!finished && state == AcaAlgorithmStateType::COLUMN_TRIAL) {
-      if ((columnTrialCount < MAX_COLUMN_TRIAL_COUNT) && selectMinPivot(origCol, rowApproxCounter, nextPivot, ModeType::COL)) {
+      if ((columnTrialCount < MAX_COLUMN_TRIAL_COUNT) &&
+          selectMinPivot(origCol, rowApproxCounter, nextPivot, ModeType::COL)) {
         mode = ModeType::ROW;
         columnTrialCount++;
       } else {
@@ -309,20 +313,19 @@ void HMatrixAcaCompressor<ValueType, N>::compressBlock(
       }
     }
   }
-  static_cast<HMatrixLowRankData<ValueType>*>(hMatrixData.get())->A().swap(A);
-  static_cast<HMatrixLowRankData<ValueType>*>(hMatrixData.get())->B().swap(B);
+  static_cast<HMatrixLowRankData<ValueType> *>(hMatrixData.get())->A().swap(A);
+  static_cast<HMatrixLowRankData<ValueType> *>(hMatrixData.get())->B().swap(B);
 }
 
 template <typename ValueType, int N>
 typename HMatrixAcaCompressor<ValueType, N>::AcaStatusType
 HMatrixAcaCompressor<ValueType, N>::aca(
-    const BlockClusterTreeNode<N>& blockClusterTreeNode, std::size_t startPivot,
-    Matrix<ValueType>& A, Matrix<ValueType>& B, std::size_t& maxIterations,
-    std::vector<size_t>& rowApproxCounter,
-    std::vector<size_t>& colApproxCounter, Matrix<ValueType>& origRow,
-    Matrix<ValueType>& origCol, double& blockNorm, double eps, double zeroTol,
-    ModeType mode) const
-{
+    const BlockClusterTreeNode<N> &blockClusterTreeNode, std::size_t startPivot,
+    Matrix<ValueType> &A, Matrix<ValueType> &B, std::size_t &maxIterations,
+    std::vector<size_t> &rowApproxCounter,
+    std::vector<size_t> &colApproxCounter, Matrix<ValueType> &origRow,
+    Matrix<ValueType> &origCol, double &blockNorm, double eps, double zeroTol,
+    ModeType mode) const {
 
   IndexRangeType rowClusterRange;
   IndexRangeType columnClusterRange;
@@ -330,8 +333,8 @@ HMatrixAcaCompressor<ValueType, N>::aca(
   std::size_t numberOfColumns;
 
   getBlockClusterTreeNodeDimensions(blockClusterTreeNode, rowClusterRange,
-      columnClusterRange, numberOfRows,
-      numberOfColumns);
+                                    columnClusterRange, numberOfRows,
+                                    numberOfColumns);
 
   bool converged = false;
   std::size_t nextPivot = startPivot;
@@ -342,12 +345,12 @@ HMatrixAcaCompressor<ValueType, N>::aca(
 
   while (maxIterations > 0) {
     crossStatus = computeCross(blockClusterTreeNode, A, B, nextPivot, origRow,
-        origCol, row, col, rowApproxCounter,
-        colApproxCounter, mode, zeroTol);
+                               origCol, row, col, rowApproxCounter,
+                               colApproxCounter, mode, zeroTol);
     if (crossStatus == CrossStatusType::ZERO)
       return (iterationCount == 0)
-          ? AcaStatusType::ZERO_TERMINATION_WITHOUT_ITERATION
-          : AcaStatusType::CONVERGED_AFTER_ITERATION;
+                 ? AcaStatusType::ZERO_TERMINATION_WITHOUT_ITERATION
+                 : AcaStatusType::CONVERGED_AFTER_ITERATION;
     converged = checkConvergence(row, col, eps * blockNorm);
     if (converged)
       break;
@@ -369,23 +372,21 @@ HMatrixAcaCompressor<ValueType, N>::aca(
 
 template <typename ValueType, int N>
 HMatrixAcaCompressor<ValueType, N>::HMatrixAcaCompressor(
-    const DataAccessor<ValueType, N>& dataAccessor, double eps,
-    unsigned int maxRank)
-    : m_dataAccessor(dataAccessor)
-    , m_eps(eps)
-    , m_maxRank(maxRank)
-    , m_hMatrixDenseCompressor(dataAccessor)
-{
+    const DataAccessor<ValueType, N> &dataAccessor, double eps,
+    unsigned int maxRank, double cutoff)
+    : HMatrixCompressor<ValueType, N>(cutoff), m_dataAccessor(dataAccessor),
+      m_eps(eps), m_maxRank(maxRank),
+      m_hMatrixDenseCompressor(dataAccessor, cutoff) {
 
   dataAccessor.dofVolumes(m_testVolumes, m_trialVolumes);
 }
 
 template <typename ValueType, int N>
 std::size_t HMatrixAcaCompressor<ValueType, N>::randomIndex(
-    const IndexRangeType& range, std::set<std::size_t>& previousIndices)
-{
+    const IndexRangeType &range, std::set<std::size_t> &previousIndices) {
 
-  std::size_t numberOfPossibleIndices = range[1] - range[0] - previousIndices.size();
+  std::size_t numberOfPossibleIndices =
+      range[1] - range[0] - previousIndices.size();
   static std::random_device generator;
   std::uniform_int_distribution<std::size_t> distribution(
       0, numberOfPossibleIndices - 1);
