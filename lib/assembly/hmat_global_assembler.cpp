@@ -157,7 +157,7 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
 
   shared_ptr<hmat::DefaultHMatrixType<ResultType>> hMatrix;
 
-  double cutoff = std::numeric_limits<double>::infinity();
+  double cutoff = parameterList.template get<double>("options.hmat.cutoff");
 
   if (compressionAlgorithm == "aca") {
 
