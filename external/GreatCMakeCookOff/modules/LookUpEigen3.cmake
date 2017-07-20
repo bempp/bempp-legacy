@@ -12,7 +12,7 @@ if(NOT Eigen3_HG_REPOSITORY AND NOT Eigen3_URL)
   # with SSL
   set(file_found FALSE)
   set(Eigen3_URL "${EXTERNAL_ROOT}/eigen.tgz")
-  set(Eigen3_MD5 6a578dba42d1c578d531ab5b6fa3f741)
+  set(Eigen3_MD5 1a47e78efe365a97de0c022d127607c3)
   if(EXISTS "${EXTERNAL_ROOT}/eigen.tgz")
       file(MD5 "${EXTERNAL_ROOT}/eigen.tgz" file_md5)
       if(file_md5 EQUAL "${Eigen3_MD5}")
@@ -24,13 +24,13 @@ if(NOT Eigen3_HG_REPOSITORY AND NOT Eigen3_URL)
       find_package(Wget)
       if(WGET_FOUND)
           execute_process(COMMAND ${WGET_EXECUTABLE}
-            http://bitbucket.org/eigen/eigen/get/3.2.9.tar.gz
+            http://bitbucket.org/eigen/eigen/get/3.3.4.tar.gz
             -O ${EXTERNAL_ROOT}/eigen.tgz
           )
       else()
           find_program(CURL_EXECUTABLE curl)
           execute_process(COMMAND ${CURL_EXECUTABLE}
-            -L http://bitbucket.org/eigen/eigen/get/3.2.9.tar.gz
+            -L http://bitbucket.org/eigen/eigen/get/3.3.4.tar.gz
             -o ${EXTERNAL_ROOT}/eigen.tgz
           )
       endif()
