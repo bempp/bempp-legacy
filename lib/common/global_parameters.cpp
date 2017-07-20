@@ -115,7 +115,7 @@ ParameterList GlobalParameters::parameterList() {
 
   // Specifies distance of clusters beyond which they are not assembled
   parameters.put("options.hmat.cutoff",
-                 static_cast<double>(std::numeric_limits<double>::max()));
+                 static_cast<double>(1.797693134862315e+308));
 
   return parameters;
 }
