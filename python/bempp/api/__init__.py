@@ -15,6 +15,7 @@ mpi_rank = mpi_comm.Get_rank() #pylint: disable=no-member
 mpi_size = mpi_comm.Get_size() #pylint: disable=no-member
 mpi_name = MPI.Get_processor_name() #pylint: disable=no-member
 
+PLOT_BACKEND = 'gmsh'
 
 # import the version string
 from bempp import config as _config
@@ -122,6 +123,8 @@ from bempp.api import shapes
 from bempp.api.file_interfaces import import_grid
 from bempp.api.file_interfaces import export
 from bempp.api.file_interfaces import three_planes_view
+from bempp.api.external.viewers import set_gmsh_viewer
+from bempp.api.external.viewers import set_ipython_notebook_viewer
 from bempp.api import operators
 from bempp.api import linalg
 from bempp.api import hmat

@@ -42,8 +42,8 @@ class Grid(object):
 
     def plot(self):
         """Plot the grid with Gmsh."""
-        from bempp.api.external.viewers import visualize_with_gmsh
-        visualize_with_gmsh(self)
+        from bempp.api.external.viewers import visualize
+        visualize(self)
 
     def vertex_insertion_index(self, vertex):
         """Return the vertex insertion index of the given vertex."""

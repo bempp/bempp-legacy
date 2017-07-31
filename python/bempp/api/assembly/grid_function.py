@@ -156,10 +156,11 @@ class GridFunction(object):
 
         return inv_ident * projections
 
-    def plot(self):
+    def plot(self, mode='faces'):
         """Plot the grid function."""
-        from bempp.api.external.viewers import visualize_with_gmsh
-        visualize_with_gmsh(self)
+        import bempp.api
+        from bempp.api.external.viewers import visualize
+        visualize(self)
 
     def projections(self, dual_space=None):
         """
