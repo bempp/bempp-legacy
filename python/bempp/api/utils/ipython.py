@@ -63,7 +63,8 @@ class IPyNotebookSurfaceViewer(object):
         from pythreejs import PlainGeometry, Mesh, LambertMaterial, \
                 PhongMaterial, DirectionalLight, \
                 PerspectiveCamera, Scene, AmbientLight, \
-                Renderer, OrbitControls
+                Renderer, OrbitControls, Line, \
+                LineBasicMaterial, BoxGeometry, make_text
         from matplotlib import colors
         from matplotlib import cm
         from IPython.display import display
@@ -72,11 +73,29 @@ class IPyNotebookSurfaceViewer(object):
 
 
         bbox = self._compute_bounding_box()
-
-        center = .5 * _np.sum(bbox, axis=0)
         diam =  bbox[1, :] - bbox[0, :]
+        center = .5 * _np.sum(bbox, axis=0)
+
+        xmin, ymin, zmin = bbox[0, :] 
+        xmax, ymax, zmax = bbox[1, :]
+
 
         position = (center + 2.5 * diam).tolist()
+
+        # Generate coordinate system base
+
+        box = PlainGeometry(vertices=_np.array([[xmin, ymin, zmin],
+                                     [xmax, ymin, zmin],
+                                     [xmin, ymin, zmin],
+                                     [xmin, ymax, zmin],
+                                     [xmin, ymin, zmin],
+                                     [xmin, ymin, zmax]]), 
+                           colors = ['red', 'red', 'green', 'green', 'blue', 'blue'])
+
+
+        bbox_mesh = Line(geometry=box,
+                         material=LineBasicMaterial(linewidth=10, vertexColors='VertexColors'), 
+                         type='LinePieces')
 
         if self.data is not None:
             vis_data = self.data
@@ -98,11 +117,13 @@ class IPyNotebookSurfaceViewer(object):
         self._wireframe = Mesh(geometry=self._geom, material = PhongMaterial(wireframe=True, color='black'))
         light = DirectionalLight(color='white', position=position, intensity=0.5)
         camera = PerspectiveCamera(position=position, fov=20)
-        self._scene = Scene(children=[self._mesh, self._wireframe, AmbientLight(color='white')])
+        self._scene = Scene(children=[bbox_mesh, self._mesh, self._wireframe, AmbientLight(color='white')])
 
         self._renderer = Renderer(camera=camera, background='white', background_opacity=1,
                                 scene = self._scene, controls=[OrbitControls(controlling=camera)])
 
+        axes_info = widgets.Label(
+                value="x: red; y: green; z: blue")
         if self.data is not None:
  
             # Enable/Disable wireframe
@@ -135,10 +156,10 @@ class IPyNotebookSurfaceViewer(object):
 
             range_info_box = widgets.VBox([vmin_info, vmax_info])
             range_change = widgets.HBox([vmin_box, vmax_box])
-            vbox = widgets.VBox([range_info_box, range_change, wireframe_toggle])
+            vbox = widgets.VBox([axes_info, range_info_box, range_change, wireframe_toggle])
             display(self._renderer, vbox)       
         else:
-            display(self._renderer) 
+            display(self._renderer, axes_info) 
 
 
     def update_geometry_color(self):
@@ -183,12 +204,4 @@ class IPyNotebookSurfaceViewer(object):
         zmax = self.vertices[:, 2].max()
 
         return _np.array([[xmin, ymin, zmin], [xmax, ymax, zmax]])
-
-
-
-
-
-
-
-
 

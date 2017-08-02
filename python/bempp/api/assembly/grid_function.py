@@ -156,11 +156,31 @@ class GridFunction(object):
 
         return inv_ident * projections
 
-    def plot(self, mode='faces'):
-        """Plot the grid function."""
+    def plot(self, mode='vertices', transformation='real'):
+        """
+        Plot the grid function.
+        
+        Attributes
+        ----------
+        mode : string
+            One of 'faces' or 'vertices'. If 'faces' is chosen
+            the color is determined by the mid-point of the faces
+            of the grid. For 'vertices' the vertex values are
+            chosen (default: 'element')
+        transformation : string or object
+            One of 'real', 'imag', 'abs', 'log_abs' or
+            'abs_squared' or a callable object. 
+            Describes the data transformation
+            before plotting. For functions with vector values
+            only 'abs', 'log_abs' or 'abs_squared' are allowed.
+            If a callable object is given this is applied instead.
+            It is important that the callable returns numpy arrays
+            with the same number of dimensions as before.
+        
+        """
         import bempp.api
         from bempp.api.external.viewers import visualize
-        visualize(self)
+        visualize(self, mode, transformation)
 
     def projections(self, dual_space=None):
         """

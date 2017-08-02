@@ -214,16 +214,25 @@ def export(**kwargs):
     element_index_to_file_key_map : list
         (optional) A list that maps BEM++ indices to element indices in the file
     data_type : string
-        (optional) One of 'node', 'element' or 'element_node' and specifies if
+        (optional) One of 'node', 'element', 'element_node', 'vertices',
+        or 'faces' and specifies if
         data in grid functions is associated with nodes, elements or elementwise
         nodes in the data file. The default behavior is given by the specific
         file writer for the datatype (e.g. 'element_node' for Gmsh) but can
-        be overridden here.
+        be overridden here. The option 'faces' is equivalent to 'element' and
+        'vertices' is equivalent to 'element_node' to correspond to the
+        corresponding options in the plot routines.
     label : string
         (optional) A string labelling grid function data in the file.
     transformation : function object
-        (optional) A function object that is applied to the data before
-        writing it out.
+        (optional) One of 'real', 'imag', 'abs', 'log_abs' or
+        'abs_squared' or a callable object. 
+        Describes the data transformation
+        before plotting. For functions with vector values
+        only 'abs', 'log_abs' or 'abs_squared' are allowed.
+        If a callable object is given this is applied instead.
+        It is important that the callable returns numpy arrays
+        with the same number of dimensions as before.
 
     Notes
     -----
@@ -248,10 +257,11 @@ def export(**kwargs):
     To save the real part of a complex grid function in Gmsh format use
 
     >>> export(grid_function=gridfun, file_name='output.msh',
-            transformation=lambda x: np.real(x))
+            transformation='real')
 
     """
     import os
+    import numpy as np
 
     # Holds the actual FileInterface for the specified data format
     interface = None
@@ -320,10 +330,30 @@ def export(**kwargs):
         fun = kwargs['grid_function']
         data_type = kwargs.get('data_type', interface.default_data_type)
 
+        if data_type == 'vertices':
+            data_type = 'element_node'
+        if data_type == 'faces':
+            data_type = 'element'
+
         if 'transformation' in kwargs:
             transformation = kwargs['transformation']
         else:
-            transformation = lambda x: x
+            transformation = 'real'
+
+        transform = None
+        if transformation == 'real':
+            transform = np.real
+        elif transformation == 'imag':
+            transform = np.imag
+        elif transformation == 'abs':
+            transform = lambda x: np.sqrt(np.sum(np.abs(x)**2, axis=0, keepdims=True))
+        elif transformation == 'log_abs':
+            transform = lambda x: np.log(np.sqrt(
+                np.sum(np.abs(x)**2, axis=0, keepdims=True)))
+        elif transformation == 'abs_squared':
+            transform = lambda x: np.sum(np.abs(x)**2, axis=0, keepdims=True)
+        else:
+            transform = transformation
 
         index_set = grid.leaf_view.index_set()
 
@@ -334,7 +364,7 @@ def export(**kwargs):
             for element in grid.leaf_view.entity_iterator(0):
                 data[
                     element_index_to_file_key_map[
-                        index_set.entity_index(element)]] = transformation(
+                        index_set.entity_index(element)]] = transform(
                             fun.evaluate(element, local_coordinates))
             interface.add_element_node_data(
                 data, kwargs.get('label', 'element_node_data'))
@@ -342,7 +372,7 @@ def export(**kwargs):
             local_coordinates = _np.array([[0, 1, 0], [0, 0, 1]])
             data = OrderedDict.fromkeys(vertex_index_to_file_key_map)
             for element in grid.leaf_view.entity_iterator(0):
-                local_data = transformation(
+                local_data = transform(
                     fun.evaluate(element, local_coordinates))
                 for i in range(3):
                     data[vertex_index_to_file_key_map[
@@ -355,8 +385,8 @@ def export(**kwargs):
 
             for element in grid.leaf_view.entity_iterator(0):
                 data[element_index_to_file_key_map[
-                    index_set.entity_index(element)]] = transformation(
-                        fun.evaluate(element, local_coordinates).ravel())
+                    index_set.entity_index(element)]] = transform(
+                        fun.evaluate(element, local_coordinates)).ravel()
             interface.add_element_data(
                 data, kwargs.get('label', 'element_data'))
         else:
