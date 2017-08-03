@@ -86,12 +86,16 @@ public:
       factor += normal[coordIndex] * diff[coordIndex] * 3. / sum;
 
     for (int coordIndex = 0; coordIndex < coordCount; ++coordIndex) {
-      term1[coordIndex] = testGlobal[coordIndex] * normal[coordIndex];
+      term1[coordIndex] = normal[coordIndex];
       term2[coordIndex] = factor * diff[coordIndex];
     }
 
     result[0](0, 0) = static_cast<CoordinateType>(1. / (4. * M_PI)) *
-                      (term1 - term2) / (sum * sqrt_sum);
+                      (term1[0] - term2[0]) / (sum * sqrt_sum);
+    result[0](1, 0) = static_cast<CoordinateType>(1. / (4. * M_PI)) *
+                      (term1[1] - term2[1]) / (sum * sqrt_sum);
+    result[0](2, 0) = static_cast<CoordinateType>(1. / (4. * M_PI)) *
+                      (term1[2] - term2[2]) / (sum * sqrt_sum);
   }
 };
 
