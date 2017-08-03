@@ -32,6 +32,8 @@ class IPyNotebookSurfaceViewer(object):
         self._vis_data = None
         self._vmin = None
         self._vmax = None
+        self._coord_box = None
+        self._axes_info = None
                 
     @property
     def data(self):
@@ -93,9 +95,9 @@ class IPyNotebookSurfaceViewer(object):
                            colors = ['red', 'red', 'green', 'green', 'blue', 'blue'])
 
 
-        bbox_mesh = Line(geometry=box,
-                         material=LineBasicMaterial(linewidth=10, vertexColors='VertexColors'), 
-                         type='LinePieces')
+        self._coord_box = Line(geometry=box,
+                material=LineBasicMaterial(linewidth=10, vertexColors='VertexColors'), 
+                type='LinePieces')
 
         if self.data is not None:
             vis_data = self.data
@@ -117,13 +119,21 @@ class IPyNotebookSurfaceViewer(object):
         self._wireframe = Mesh(geometry=self._geom, material = PhongMaterial(wireframe=True, color='black'))
         light = DirectionalLight(color='white', position=position, intensity=0.5)
         camera = PerspectiveCamera(position=position, fov=20)
-        self._scene = Scene(children=[bbox_mesh, self._mesh, self._wireframe, AmbientLight(color='white')])
+        self._scene = Scene(children=[self._coord_box, self._mesh, self._wireframe, AmbientLight(color='white')])
 
         self._renderer = Renderer(camera=camera, background='white', background_opacity=1,
                                 scene = self._scene, controls=[OrbitControls(controlling=camera)])
 
-        axes_info = widgets.Label(
+        self._axes_info = widgets.Label(
                 value="x: red; y: green; z: blue")
+
+
+        coord_system_toggle = widgets.Checkbox(
+                value=self._coord_box.visible,
+                description='Show coordinate axes',
+                disabled=False)
+        coord_system_toggle.observe(self.on_toggle_coord_system, names='value')
+
         if self.data is not None:
  
             # Enable/Disable wireframe
@@ -156,10 +166,11 @@ class IPyNotebookSurfaceViewer(object):
 
             range_info_box = widgets.VBox([vmin_info, vmax_info])
             range_change = widgets.HBox([vmin_box, vmax_box])
-            vbox = widgets.VBox([axes_info, range_info_box, range_change, wireframe_toggle])
+            toggles = widgets.HBox([wireframe_toggle, coord_system_toggle])
+            vbox = widgets.VBox([self._axes_info, range_info_box, range_change, toggles])
             display(self._renderer, vbox)       
         else:
-            display(self._renderer, axes_info) 
+            display(self._renderer, self._axes_info, coord_system_toggle) 
 
 
     def update_geometry_color(self):
@@ -189,6 +200,14 @@ class IPyNotebookSurfaceViewer(object):
     def on_toggle_wireframe(self, change):
         """Toggle wireframe change."""
         self._wireframe.visible = change.new
+
+    def on_toggle_coord_system(self, change):
+        """Toggle coordinate axes."""
+        self._coord_box.visible = change.new
+        if change.new:
+            self._axes_info.value = "x: red; y: green; z: blue"
+        else:
+            self._axes_info.value = ""
 
     def _convert_data_to_colors(self, cmap, cnorm, data):
         return [[cmap(cnorm(value))[:3] for value in elem.flat] for elem in self.data]
