@@ -27,8 +27,8 @@
 #include "../fiber/scalar_function_value_functor.hpp"
 #include "../fiber/simple_scalar_kernel_trial_integrand_functor.hpp"
 
-#include "../fiber/default_collection_of_kernels.hpp"
 #include "../fiber/default_collection_of_basis_transformations.hpp"
+#include "../fiber/default_collection_of_kernels.hpp"
 #include "../fiber/default_kernel_trial_integral.hpp"
 
 namespace Bempp {
@@ -37,7 +37,8 @@ namespace Bempp {
 template <typename BasisFunctionType, typename ResultType>
 struct Laplace3dSingleLayerPotentialOperatorImpl {
   typedef Laplace3dSingleLayerPotentialOperatorImpl<BasisFunctionType,
-                                                    ResultType> This;
+                                                    ResultType>
+      This;
   typedef Laplace3dPotentialOperatorBase<This, BasisFunctionType, ResultType>
       PotentialOperatorBase;
   typedef typename PotentialOperatorBase::KernelType KernelType;
@@ -47,8 +48,9 @@ struct Laplace3dSingleLayerPotentialOperatorImpl {
       KernelFunctor;
   typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
       TransformationFunctor;
-  typedef Fiber::SimpleScalarKernelTrialIntegrandFunctor<
-      BasisFunctionType, KernelType, ResultType> IntegrandFunctor;
+  typedef Fiber::SimpleScalarKernelTrialIntegrandFunctor<BasisFunctionType,
+                                                         KernelType, ResultType>
+      IntegrandFunctor;
 
   Laplace3dSingleLayerPotentialOperatorImpl()
       : kernels(KernelFunctor()), transformations(TransformationFunctor()),

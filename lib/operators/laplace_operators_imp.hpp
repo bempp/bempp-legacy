@@ -23,24 +23,26 @@
 
 #include "laplace_operators.hpp"
 
+#include "../assembly/assembled_potential_operator.hpp"
 #include "../assembly/blas_quadrature_helper.hpp"
 #include "../assembly/context.hpp"
 #include "../assembly/general_elementary_singular_integral_operator_imp.hpp"
-#include "laplace_3d_single_layer_potential_operator.hpp"
-#include "laplace_3d_double_layer_potential_operator.hpp"
 #include "../assembly/potential_operator.hpp"
-#include "../assembly/assembled_potential_operator.hpp"
 #include "../common/boost_make_shared_fwd.hpp"
+#include "laplace_3d_double_layer_gradient_potential_operator.hpp"
+#include "laplace_3d_double_layer_potential_operator.hpp"
+#include "laplace_3d_single_layer_gradient_potential_operator.hpp"
+#include "laplace_3d_single_layer_potential_operator.hpp"
 
 #include "../fiber/explicit_instantiation.hpp"
 
-#include "../fiber/laplace_3d_single_layer_potential_kernel_functor.hpp"
 #include "../fiber/laplace_3d_adjoint_double_layer_potential_kernel_functor.hpp"
-#include "../fiber/surface_curl_3d_functor.hpp"
 #include "../fiber/laplace_3d_double_layer_potential_kernel_functor.hpp"
+#include "../fiber/laplace_3d_single_layer_potential_kernel_functor.hpp"
 #include "../fiber/scalar_function_value_functor.hpp"
-#include "../fiber/simple_test_scalar_kernel_trial_integrand_functor.hpp"
 #include "../fiber/scalar_traits.hpp"
+#include "../fiber/simple_test_scalar_kernel_trial_integrand_functor.hpp"
+#include "../fiber/surface_curl_3d_functor.hpp"
 
 #include "../fiber/typical_test_scalar_kernel_trial_integral.hpp"
 
@@ -67,12 +69,15 @@ laplaceSingleLayerBoundaryOperator(
   typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
       TransformationFunctor;
   typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctorExt<
-      BasisFunctionType, KernelType, ResultType, 1> IntegrandFunctor;
+      BasisFunctionType, KernelType, ResultType, 1>
+      IntegrandFunctor;
   typedef GeneralElementarySingularIntegralOperator<BasisFunctionType,
-                                                    KernelType, ResultType> Op;
+                                                    KernelType, ResultType>
+      Op;
 
-  shared_ptr<Fiber::TestKernelTrialIntegral<BasisFunctionType, KernelType,
-                                            ResultType>> integral;
+  shared_ptr<
+      Fiber::TestKernelTrialIntegral<BasisFunctionType, KernelType, ResultType>>
+      integral;
   if (shouldUseBlasInQuadrature(assemblyOptions, *domain, *dualToRange))
     integral.reset(new Fiber::TypicalTestScalarKernelTrialIntegral<
                    BasisFunctionType, KernelType, ResultType>());
@@ -107,12 +112,15 @@ laplaceDoubleLayerBoundaryOperator(
   typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
       TransformationFunctor;
   typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctorExt<
-      BasisFunctionType, KernelType, ResultType, 1> IntegrandFunctor;
+      BasisFunctionType, KernelType, ResultType, 1>
+      IntegrandFunctor;
 
   typedef GeneralElementarySingularIntegralOperator<BasisFunctionType,
-                                                    KernelType, ResultType> Op;
-  shared_ptr<Fiber::TestKernelTrialIntegral<BasisFunctionType, KernelType,
-                                            ResultType>> integral;
+                                                    KernelType, ResultType>
+      Op;
+  shared_ptr<
+      Fiber::TestKernelTrialIntegral<BasisFunctionType, KernelType, ResultType>>
+      integral;
   if (shouldUseBlasInQuadrature(assemblyOptions, *domain, *dualToRange))
     integral.reset(new Fiber::TypicalTestScalarKernelTrialIntegral<
                    BasisFunctionType, KernelType, ResultType>());
@@ -147,10 +155,12 @@ laplaceAdjointDoubleLayerBoundaryOperator(
   typedef Fiber::ScalarFunctionValueFunctor<CoordinateType>
       TransformationFunctor;
   typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctorExt<
-      BasisFunctionType, KernelType, ResultType, 1> IntegrandFunctor;
+      BasisFunctionType, KernelType, ResultType, 1>
+      IntegrandFunctor;
 
-  shared_ptr<Fiber::TestKernelTrialIntegral<BasisFunctionType, KernelType,
-                                            ResultType>> integral;
+  shared_ptr<
+      Fiber::TestKernelTrialIntegral<BasisFunctionType, KernelType, ResultType>>
+      integral;
   if (shouldUseBlasInQuadrature(assemblyOptions, *domain, *dualToRange))
     integral.reset(new Fiber::TypicalTestScalarKernelTrialIntegral<
                    BasisFunctionType, KernelType, ResultType>());
@@ -159,7 +169,8 @@ laplaceAdjointDoubleLayerBoundaryOperator(
         IntegrandFunctor()));
 
   typedef GeneralElementarySingularIntegralOperator<BasisFunctionType,
-                                                    KernelType, ResultType> Op;
+                                                    KernelType, ResultType>
+      Op;
   shared_ptr<Op> newOp(new Op(domain, range, dualToRange, label, symmetry,
                               KernelFunctor(), TransformationFunctor(),
                               TransformationFunctor(), integral));
@@ -185,13 +196,16 @@ laplaceHypersingularBoundaryOperator(
       KernelFunctor;
   typedef Fiber::SurfaceCurl3dFunctor<CoordinateType> TransformationFunctor;
   typedef Fiber::SimpleTestScalarKernelTrialIntegrandFunctorExt<
-      BasisFunctionType, KernelType, ResultType, 3> IntegrandFunctor;
+      BasisFunctionType, KernelType, ResultType, 3>
+      IntegrandFunctor;
 
   typedef GeneralElementarySingularIntegralOperator<BasisFunctionType,
-                                                    KernelType, ResultType> Op;
+                                                    KernelType, ResultType>
+      Op;
 
-  shared_ptr<Fiber::TestKernelTrialIntegral<BasisFunctionType, KernelType,
-                                            ResultType>> integral;
+  shared_ptr<
+      Fiber::TestKernelTrialIntegral<BasisFunctionType, KernelType, ResultType>>
+      integral;
 
   if (shouldUseBlasInQuadrature(assemblyOptions, *domain, *dualToRange)) {
     integral.reset(new Fiber::TypicalTestScalarKernelTrialIntegral<
@@ -242,6 +256,44 @@ laplaceDoubleLayerPotentialOperator(
   shared_ptr<PotentialOperator<BasisFunctionType, ResultType>> op(
       new Laplace3dDoubleLayerPotentialOperator<BasisFunctionType,
                                                 ResultType>());
+  return op->assemble(space, pointsPtr, parameterList).discreteOperator();
+}
+
+template <typename BasisFunctionType, typename ResultType>
+shared_ptr<const DiscreteBoundaryOperator<ResultType>>
+laplaceSingleLayerGradientPotentialOperator(
+    const shared_ptr<const Space<BasisFunctionType>> &space,
+    const Matrix<typename Fiber::ScalarTraits<BasisFunctionType>::RealType>
+        &evaluationPoints,
+    const ParameterList &parameterList) {
+
+  typedef
+      typename Fiber::ScalarTraits<BasisFunctionType>::RealType CoordinateType;
+  shared_ptr<Matrix<CoordinateType>> pointsPtr(
+      new Matrix<CoordinateType>(evaluationPoints));
+
+  shared_ptr<PotentialOperator<BasisFunctionType, ResultType>> op(
+      new Laplace3dSingleLayerGradientPotentialOperator<BasisFunctionType,
+                                                        ResultType>());
+  return op->assemble(space, pointsPtr, parameterList).discreteOperator();
+}
+
+template <typename BasisFunctionType, typename ResultType>
+shared_ptr<const DiscreteBoundaryOperator<ResultType>>
+laplaceDoubleLayerGradientPotentialOperator(
+    const shared_ptr<const Space<BasisFunctionType>> &space,
+    const Matrix<typename Fiber::ScalarTraits<BasisFunctionType>::RealType>
+        &evaluationPoints,
+    const ParameterList &parameterList) {
+
+  typedef
+      typename Fiber::ScalarTraits<BasisFunctionType>::RealType CoordinateType;
+  shared_ptr<Matrix<CoordinateType>> pointsPtr(
+      new Matrix<CoordinateType>(evaluationPoints));
+
+  shared_ptr<PotentialOperator<BasisFunctionType, ResultType>> op(
+      new Laplace3dDoubleLayerGradientPotentialOperator<BasisFunctionType,
+                                                        ResultType>());
   return op->assemble(space, pointsPtr, parameterList).discreteOperator();
 }
 }

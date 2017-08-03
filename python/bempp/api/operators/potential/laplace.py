@@ -75,3 +75,75 @@ def double_layer(space, evaluation_points, parameters=None):
         GeneralNonlocalDiscreteBoundaryOperator(
             double_layer_ext(space._impl, evaluation_points, parameters)),
         1, space, evaluation_points)
+
+@_common.potential_logger
+def single_layer_gradient(space, evaluation_points, parameters=None):
+    """Return the Laplace single-layer gradient potential operator
+
+    Parameters
+    ----------
+    space : bempp.api.space.Space
+        The function space over which to assemble the potential.
+    evaluation_points : numpy.ndarray
+        A (3 x N) array of N evaluation points, where each column corresponds to
+        the coordinates of one evaluation point.
+    parameters : bempp.api.common.ParameterList
+        Parameters for the operator. If none given
+        the default global parameter object
+        `bempp.api.global_parameters` is used.
+
+    """
+
+    import bempp
+    from bempp.api.assembly.potential_operator import PotentialOperator
+    from bempp.api.assembly.discrete_boundary_operator import \
+        GeneralNonlocalDiscreteBoundaryOperator
+    #pylint: disable=no-name-in-module
+    from bempp.core.operators.potential.laplace import single_layer_gradient_ext
+
+    if space.has_non_barycentric_space:
+        space = space.non_barycentric_space
+
+    if parameters is None:
+        parameters = bempp.api.global_parameters
+
+    return PotentialOperator(
+        GeneralNonlocalDiscreteBoundaryOperator(
+            single_layer_gradient_ext(space._impl, evaluation_points, parameters)),
+        3, space, evaluation_points)
+
+@_common.potential_logger
+def double_layer_gradient(space, evaluation_points, parameters=None):
+    """Return the Laplace double-layer gradient potential operator
+
+    Parameters
+    ----------
+    space : bempp.api.space.Space
+        The function space over which to assemble the potential.
+    evaluation_points : numpy.ndarray
+        A (3 x N) array of N evaluation points, where each column corresponds to
+        the coordinates of one evaluation point.
+    parameters : bempp.api.common.ParameterList
+        Parameters for the operator. If none given
+        the default global parameter object
+        `bempp.api.global_parameters` is used.
+
+    """
+
+    import bempp
+    from bempp.api.assembly.potential_operator import PotentialOperator
+    from bempp.api.assembly.discrete_boundary_operator import \
+        GeneralNonlocalDiscreteBoundaryOperator
+    #pylint: disable=no-name-in-module
+    from bempp.core.operators.potential.laplace import double_layer_gradient_ext
+
+    if space.has_non_barycentric_space:
+        space = space.non_barycentric_space
+
+    if parameters is None:
+        parameters = bempp.api.global_parameters
+
+    return PotentialOperator(
+        GeneralNonlocalDiscreteBoundaryOperator(
+            double_layer_gradient_ext(space._impl, evaluation_points, parameters)),
+        3, space, evaluation_points)

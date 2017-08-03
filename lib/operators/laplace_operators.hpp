@@ -22,8 +22,8 @@
 #define bempp_laplace_operators_hpp
 
 #include "../assembly/symmetry.hpp"
-#include "../common/types.hpp"
 #include "../common/shared_ptr.hpp"
+#include "../common/types.hpp"
 
 namespace Bempp {
 
@@ -84,6 +84,22 @@ laplaceSingleLayerPotentialOperator(
 template <typename BasisFunctionType, typename ResultType>
 shared_ptr<const DiscreteBoundaryOperator<ResultType>>
 laplaceDoubleLayerPotentialOperator(
+    const shared_ptr<const Space<BasisFunctionType>> &space,
+    const Matrix<typename Fiber::ScalarTraits<BasisFunctionType>::RealType>
+        &evaluationPoints,
+    const ParameterList &parameterList);
+
+template <typename BasisFunctionType, typename ResultType>
+shared_ptr<const DiscreteBoundaryOperator<ResultType>>
+laplaceSingleLayerGradientPotentialOperator(
+    const shared_ptr<const Space<BasisFunctionType>> &space,
+    const Matrix<typename Fiber::ScalarTraits<BasisFunctionType>::RealType>
+        &evaluationPoints,
+    const ParameterList &parameterList);
+
+template <typename BasisFunctionType, typename ResultType>
+shared_ptr<const DiscreteBoundaryOperator<ResultType>>
+laplaceDoubleLayerGradientPotentialOperator(
     const shared_ptr<const Space<BasisFunctionType>> &space,
     const Matrix<typename Fiber::ScalarTraits<BasisFunctionType>::RealType>
         &evaluationPoints,

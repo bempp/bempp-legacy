@@ -23,6 +23,16 @@ cdef extern from "bempp/operators/laplace_operators.hpp" namespace "Bempp":
                 const Matrix[double]& evaluation_points,
                 const c_ParameterList& parameterList) except +catch_exception
 
+    cdef shared_ptr[const c_DiscreteBoundaryOperator[double]] laplace_single_layer_gradient_potential_operator "Bempp::laplaceSingleLayerGradientPotentialOperator<double,double>"(
+                const shared_ptr[const c_Space[double]]& space,
+                const Matrix[double]& evaluation_points,
+                const c_ParameterList& parameterList) except +catch_exception
+
+    cdef shared_ptr[const c_DiscreteBoundaryOperator[double]] laplace_double_layer_gradient_potential_operator "Bempp::laplaceDoubleLayerGradientPotentialOperator<double,double>"(
+                const shared_ptr[const c_Space[double]]& space,
+                const Matrix[double]& evaluation_points,
+                const c_ParameterList& parameterList) except +catch_exception
+
 
 def single_layer_ext(Space space not None,
         _np.ndarray evaluation_points not None, ParameterList parameters not None):
@@ -39,6 +49,21 @@ def single_layer_ext(Space space not None,
                  space.impl_,np_to_eigen_matrix_float64(points),deref(parameters.impl_)))
         return op
 
+def single_layer_gradient_ext(Space space not None,
+        _np.ndarray evaluation_points not None, ParameterList parameters not None):
+
+        if not (evaluation_points.ndim==2 and evaluation_points.shape[0]==3):
+            raise ValueError("Wrong format for input points")
+
+        points = _np.require(evaluation_points,"double","F")
+
+        cdef RealDiscreteBoundaryOperator op = RealDiscreteBoundaryOperator()
+
+        op.impl_.assign(
+             laplace_single_layer_gradient_potential_operator(
+                 space.impl_,np_to_eigen_matrix_float64(points),deref(parameters.impl_)))
+        return op
+
                 
 def double_layer_ext(Space space not None,
         _np.ndarray evaluation_points not None, ParameterList parameters not None):
@@ -52,5 +77,20 @@ def double_layer_ext(Space space not None,
 
         op.impl_.assign(
              laplace_double_layer_potential_operator(
+                 space.impl_,np_to_eigen_matrix_float64(points),deref(parameters.impl_)))
+        return op
+
+def double_layer_gradient_ext(Space space not None,
+        _np.ndarray evaluation_points not None, ParameterList parameters not None):
+
+        if not (evaluation_points.ndim==2 and evaluation_points.shape[0]==3):
+            raise ValueError("Wrong format for input points")
+
+        points = _np.require(evaluation_points,"double","F")
+
+        cdef RealDiscreteBoundaryOperator op = RealDiscreteBoundaryOperator()
+
+        op.impl_.assign(
+             laplace_double_layer_gradient_potential_operator(
                  space.impl_,np_to_eigen_matrix_float64(points),deref(parameters.impl_)))
         return op

@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_laplace_3d_double_layer_potential_operator_hpp
-#define bempp_laplace_3d_double_layer_potential_operator_hpp
+#ifndef bempp_laplace_3d_double_layer_gradient_potential_operator_hpp
+#define bempp_laplace_3d_double_layer_gradient_potential_operator_hpp
 
 #include "laplace_3d_potential_operator_base.hpp"
 
@@ -27,11 +27,12 @@ namespace Bempp {
 
 /** \cond PRIVATE */
 template <typename BasisFunctionType, typename ResultType>
-struct Laplace3dDoubleLayerPotentialOperatorImpl;
+struct Laplace3dDoubleLayerGradientPotentialOperatorImpl;
 /** \endcond */
 
 /** \ingroup laplace_3d
- *  \brief Double-layer potential operator for the Laplace equation in 3D.
+ *  \brief Double-layer gradient potential operator for the Laplace equation in
+ * 3D.
  *
  *  \tparam BasisFunctionType_
  *    Type of the values of the basis functions into
@@ -50,14 +51,14 @@ struct Laplace3dDoubleLayerPotentialOperatorImpl;
  *  \see laplace_3d */
 template <typename BasisFunctionType_,
           typename ResultType_ = BasisFunctionType_>
-class Laplace3dDoubleLayerPotentialOperator
+class Laplace3dDoubleLayerGradientPotentialOperator
     : public Laplace3dPotentialOperatorBase<
-          Laplace3dDoubleLayerPotentialOperatorImpl<BasisFunctionType_,
-                                                    ResultType_>,
+          Laplace3dDoubleLayerGradientPotentialOperatorImpl<BasisFunctionType_,
+                                                            ResultType_>,
           BasisFunctionType_, ResultType_> {
   typedef Laplace3dPotentialOperatorBase<
-      Laplace3dDoubleLayerPotentialOperatorImpl<BasisFunctionType_,
-                                                ResultType_>,
+      Laplace3dDoubleLayerGradientPotentialOperatorImpl<BasisFunctionType_,
+                                                        ResultType_>,
       BasisFunctionType_, ResultType_>
       Base;
 
@@ -80,10 +81,10 @@ public:
   typedef typename Base::KernelTrialIntegral KernelTrialIntegral;
 
   /** \copydoc Laplace3dPotentialOperatorBase::Laplace3dPotentialOperatorBase */
-  Laplace3dDoubleLayerPotentialOperator();
+  Laplace3dDoubleLayerGradientPotentialOperator();
   /** \copydoc Laplace3dPotentialOperatorBase::~Laplace3dPotentialOperatorBase
    */
-  virtual ~Laplace3dDoubleLayerPotentialOperator();
+  virtual ~Laplace3dDoubleLayerGradientPotentialOperator();
 };
 
 } // namespace Bempp
