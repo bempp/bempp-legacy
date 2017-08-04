@@ -128,7 +128,7 @@ from bempp.api.external.viewers import set_ipython_notebook_viewer
 from bempp.api import operators
 from bempp.api import linalg
 from bempp.api import hmat
-from bempp.api import fmm
+from bempp.api import _fmm
 from bempp.api.hmat import hmatrix_interface
 
 from bempp.api.utils.logging import enable_console_logging
