@@ -13,7 +13,7 @@ class EntityIterator(object):
 
     def next(self):
         """Return the next element."""
-        import bempp.api.grid.entity as _entity
+        from bempp.api.grid import entity as _entity
         return _entity.Entity(self._codimension,
                               self._impl.__next__())
 
