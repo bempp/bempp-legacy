@@ -74,6 +74,38 @@ def __generate_grid_from_geo_string(geo_string):
     os.remove(msh_name)
     return grid
 
+def union(grids, domain_indices=None):
+    """
+    Return the union of a given list of grids.
+
+    Parameters
+    ----------
+    grids: list
+        A list of grid objects.
+    domain_indices : list
+        Attach a list of domain indices to the new
+        grid such that grid[j] received the domain
+        index domain_indices[j]
+
+    This method returns a new grid object, which is
+    the union of the input grid objects.
+
+    """
+    from bempp.api.grid import GridFactory
+    vertex_offset = 0
+
+    if domain_indices is None:
+        domain_indices = len(grids) * [0]
+
+    factory = GridFactory()
+    for index, grid in enumerate(grids):
+        for vertex in grid.leaf_view.vertices.T:
+            factory.insert_vertex(vertex)
+        for element in grid.leaf_view.elements.T:
+            factory.insert_element(element + vertex_offset,
+                    domain_index=domain_indices[index])
+        vertex_offset += grid.leaf_view.entity_count(2)
+    return factory.finalize()
 
 def regular_sphere(n):
     """
