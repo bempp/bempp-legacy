@@ -49,9 +49,13 @@ cdef class _HMatParameterList:
 cdef class _VerbosityParameterList:
     cdef cbool _extended_verbosity
 
+cdef class _OutputParameterList:
+    cdef cbool _gmsh_use_binary
+
 cdef class ParameterList:
     cdef c_ParameterList* impl_
     cdef _AssemblyParameterList _assembly
     cdef _QuadratureParameterList _quadrature
     cdef _HMatParameterList _hmat
     cdef _VerbosityParameterList _verbosity
+    cdef _OutputParameterList _output

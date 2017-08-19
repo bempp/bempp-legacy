@@ -1,179 +1,151 @@
-"""Definition of general file interface routines."""
-
+"""The core module containing format independent routines."""
 import numpy as _np
 
-#pylint: disable=too-many-instance-attributes
-#pylint: disable=too-few-public-methods
-class FileReader(object):
-    """
-    Generic interface to read data from different file sources.
+# Numpy data requirements
+_np_require = ['A', 'O', 'C']
 
-    This class represents a generic interface to read data from different
-    file sources. Currently it supports the following types:
+
+def bempp_grid_from_data_set(grid_data_set):
+    """Convert a grid data set to Bempp grid."""
+    from bempp.api import grid_from_element_data
+
+    return grid_from_element_data(grid_data_set.grid.vertices,
+            grid_data_set.grid.elements, grid_data_set.grid.domain_indices)
+
+
+def export(file_name, **kwargs):
+    """
+    Simple exporter for a grid or grid function.
+
+    This funtion can export grids and gridfunctions into external file formats.
+    Supported formats are:
 
     * Gmsh ASCII v2.2 files
+    * JSON Dictonaries
 
-    The class creates a grid object from the data and provides maps
-    that translate between the internal BEM++ numbering for elements
-    and vertices and the file numbering.
-
-    Attributes
-    ----------
-    grid : bempp.api.Grid
-        Returns a grid object, representing the element and node data
-        in the file.
-    vertex_index_to_file_key_map : list
-        vertex_index_to_file_key_map[i] returns the associated file key
-        of the ith vertex in BEM++.
-    vertex_file_key_to_index_map : dictionary
-        vertex_file_key_to_index_map[key] returns the BEM++ index of the
-        vertex with name 'key' in the file.
-    element_index_to_file_key_map : list
-        element_index_to_file_key_map[i] returns the associated file key
-        of the ith element in BEM++.
-    element_file_key_to_index_map : dictionary
-        element_file_key_to_index_map[key] returns the BEM++ index of the
-        element with name 'key' in the file.
-
-    """
-
-    def __init__(self, **kwargs):
-        """
-        Construct a FileReader object.
-
-        All parameters are keyword arguments.
-
-        Parameters
-        ----------
-        file_name : string
-            Name of the input file.
-
-        """
-        from collections import OrderedDict
-
-        self._impl = None
-
-        #pylint: disable=invalid-name
-        self._vertex_file_to_insertion_indices = None
-        self._element_file_to_insertion_indices = None
-        self._vertex_insertion_indices_to_file = []
-        self._element_insertion_indices_to_file = []
-
-        self._vertex_indices_to_file = None
-        self._file_to_vertex_indices = OrderedDict()
-        self._element_indices_to_file = None
-        self._file_to_element_indices = OrderedDict()
-
-        self._read_grid(kwargs)
-        self._setup_mappers()
-
-            # Setup the mappers
-
-    def _read_grid(self, options):
-        import os.path
-        if 'file_name' in options:
-            fname = options['file_name']
-            extension = os.path.splitext(fname)[1].lower()
-
-            if extension == '.msh':
-                from bempp.api.file_interfaces import gmsh
-                self._impl = gmsh.GmshInterface.read(fname)
-
-            self._grid = self._create_grid()
-
-    def _setup_mappers(self):
-        from collections import OrderedDict
-        self._file_to_vertex_indices = OrderedDict.fromkeys(
-            self._impl.vertices.keys(), value=-1)
-        self._file_to_element_indices = OrderedDict.fromkeys(
-            self._impl.elements.keys(), value=-1)
-
-        self._vertex_indices_to_file = self._grid.leaf_view.entity_count(
-            2) * [None]
-        self._element_indices_to_file = self._grid.leaf_view.entity_count(
-            0) * [None]
-
-        index_set = self._grid.leaf_view.index_set()
-        for elem in self._grid.leaf_view.entity_iterator(0):
-            index = index_set.entity_index(elem)
-            insertion_index = self._grid.element_insertion_index(elem)
-            file_key = self._element_insertion_indices_to_file[insertion_index]
-            self._element_indices_to_file[index] = file_key
-            self._file_to_element_indices[file_key] = index
-
-        for vertex in self._grid.leaf_view.entity_iterator(2):
-            index = index_set.entity_index(vertex)
-            insertion_index = self._grid.vertex_insertion_index(vertex)
-            file_key = self._vertex_insertion_indices_to_file[
-                insertion_index]
-            self._vertex_indices_to_file[index] = file_key
-            self._file_to_vertex_indices[file_key] = index
-
-
-    def _create_grid(self):
-
-        from bempp.api import GridFactory
-        from collections import OrderedDict
-
-        vertices = self._impl.vertices
-        elements = self._impl.elements
-
-        factory = GridFactory()
-
-        self._element_file_to_insertion_indices = OrderedDict.fromkeys(
-            elements.keys(), value=-1)
-        self._vertex_file_to_insertion_indices = OrderedDict.fromkeys(
-            vertices.keys(), value=-1)
-
-        vertex_insertion_count = 0
-        element_insertion_count = 0
-
-        for key in elements:
-            elem = elements[key]
-            elem_vertex_keys = []
-            for vertex_key in elem['data']:
-                if self._vertex_file_to_insertion_indices[vertex_key] == -1:
-                    factory.insert_vertex(vertices[vertex_key])
-                    self._vertex_file_to_insertion_indices[
-                        vertex_key] = vertex_insertion_count
-                    self._vertex_insertion_indices_to_file.append(vertex_key)
-                    vertex_insertion_count += 1
-                elem_vertex_keys.append(
-                    self._vertex_file_to_insertion_indices[vertex_key])
-            factory.insert_element(
-                elem_vertex_keys, domain_index=elem['domain_index'])
-            self._element_file_to_insertion_indices[
-                key] = element_insertion_count
-            self._element_insertion_indices_to_file.append(key)
-            element_insertion_count += 1
-
-        return factory.finalize()
-
-    vertex_index_to_file_key_map = property(
-        lambda self: self._vertex_indices_to_file)
-    vertex_file_key_to_index_map = property(
-        lambda self: self._file_to_vertex_indices)
-
-    element_index_to_file_key_map = property(
-        lambda self: self._element_indices_to_file)
-    element_file_key_to_index_map = property(
-        lambda self: self._file_to_element_indices)
-
-    grid = property(lambda self: self._grid)
-
-
-def import_grid(file_name):
-    """
-    Import grids into BEM++
-
-    A simple grid importer. Use this instead of FileReader if
-    information about the numbering of vertices and elements
-    from the grid file needs not be preserved.
+    The function only takes keyword arguments.
 
     Parameters
     ----------
     file_name : string
-       Name of the file from which to read the grid.
+        Filename to use.
+    grid : Bempp Grid object
+        A Bempp grid object to export
+    grid_function : Bempp GridFunction object
+        A Bempp grid function to export
+    description : string
+        A description of the GridDataSet object
+    data_type : string
+        One of 'node' or 'element'. Describes
+        wheter vertex values or element center values
+        are stored (default 'node').
+    transformation : string or function object
+        One of 'real', 'imag', 'abs', 'log_abs',
+        None or a callable object. Transforms the
+        data on input. A callable must return numpy
+        arrays with the same number of dimensions as
+        the input. If transformation is None the data
+        is not modified.
+    vertex_ids : np.ndarray
+        An optional uint32 array of vertex ids
+    element_ids : np.ndarray
+        An optional uint32 array of element ids
+
+    Exactly one of 'grid' or 'grid_function' is allowed as keyword argument
+
+    """
+    import bempp.api
+    import os
+
+    export_fun = None
+
+    _, extension = os.path.splitext(file_name)
+
+    if extension == '.msh':
+        # Format is Gmsh
+        from bempp.api.file_interfaces.gmsh import \
+                export_data_sets
+        export_fun = export_data_sets
+
+    elif extension == '.json':
+        # Format is JSON
+        from bempp.api.file_interfaces.json import \
+                export_data_sets
+        export_fun = export_data_sets
+    else:
+        raise ValueError('Unsupported file format.')
+
+    
+    if sum(['grid' in kwargs, 'grid_function' in kwargs]) != 1:
+        raise ValueError("Exactly one of 'grid' or 'grid_function' must be provided.""")
+
+    if 'transformation' in kwargs:
+        transform = kwargs['transformation']
+    else:
+        transform = None
+
+    if 'description' in kwargs:
+        description = kwargs['description']
+    else:
+        description = ''
+
+    if 'vertex_ids' in kwargs:
+        vertex_ids = kwargs['vertex_ids']
+    else:
+        vertex_ids = None
+
+    if 'element_ids' in kwargs:
+        element_ids = kwargs['element_ids']
+    else:
+        element_ids = None
+
+    if 'data_type' in kwargs:
+        mode = kwargs['data_type']
+    else:
+        mode = 'node'
+
+    if 'grid' in kwargs:
+        dataset = bempp_object_to_grid_data_set(kwargs['grid'], vertex_ids=vertex_ids,
+                element_ids=element_ids, description=description)
+
+        export_fun(file_name, [dataset])
+
+    if 'grid_function' in kwargs:
+        fun = kwargs['grid_function']
+        if mode == 'node':
+            dataset = bempp_object_to_grid_data_set(fun.space.grid, vertex_funs=[fun],
+                    vertex_ids=vertex_ids, element_ids=element_ids,
+                    description=description, transformation=transform)
+            export_fun(file_name, [dataset])
+        if mode == 'element':
+            dataset = bempp_object_to_grid_data_set(fun.space.grid, element_funs=[fun],
+                    vertex_ids=vertex_ids, element_ids=element_ids,
+                    description=description, transformation=transform)
+            export_fun(file_name, [dataset])
+
+
+def import_grid(file_name, return_id_maps=False):
+    """
+    Import grids into BEM++
+
+    The file ending is used by Bempp to recognize the
+    format. Currently supported are:
+
+    .msh    : Gmsh Version 2.2 ASCII or Binary files
+    .json   : A JSON file that stores data arrays
+              using a base64 encoding.
+
+    Parameters
+    ----------
+    file_name : string
+        Name of the file from which to read the grid.
+    return_id_maps : bool
+        If True return a triple consisting of
+        (grid, vertex_ids, element_ids), where the vertex_ids
+        and element_ids are maps such that for element i
+        the associated file index is element_ids[i], and
+        similar for the vertex ids. This helps to translate
+        date between files and Bempp's internal format.
 
     Returns
     -------
@@ -186,284 +158,666 @@ def import_grid(file_name):
 
     >>> grid = import_grid('grid_file.msh')
 
-    """
-    return FileReader(file_name=file_name).grid
+    To also obtain the vertex and element ids use
 
-#pylint: disable=too-many-locals
-#pylint: disable=too-many-branches
-#pylint: disable=too-many-statements
-def export(**kwargs):
-    """
-    This funtion can export grids and gridfunctions into external file formats.
-    Supported formats are:
-
-    * Gmsh ASCII v2.2 files
-
-    The function only takes keyword arguments.
-
-    Parameters
-    ----------
-    file_name : string
-        Name of the output file.
-    grid : bempp.api.Grid
-        A grid object to write out
-    grid_function : bempp.api.GridFunction
-        A gridfunction to write out
-    vertex_index_to_file_key_map :  list
-        (optional) A list that maps BEM++ indices to vertex indices in the file
-    element_index_to_file_key_map : list
-        (optional) A list that maps BEM++ indices to element indices in the file
-    data_type : string
-        (optional) One of 'node', 'element', 'element_node', 'vertices',
-        or 'faces' and specifies if
-        data in grid functions is associated with nodes, elements or elementwise
-        nodes in the data file. The default behavior is given by the specific
-        file writer for the datatype (e.g. 'element_node' for Gmsh) but can
-        be overridden here. The option 'faces' is equivalent to 'element' and
-        'vertices' is equivalent to 'element_node' to correspond to the
-        corresponding options in the plot routines.
-    label : string
-        (optional) A string labelling grid function data in the file.
-    transformation : function object
-        (optional) One of 'real', 'imag', 'abs', 'log_abs' or
-        'abs_squared' or a callable object. 
-        Describes the data transformation
-        before plotting. For functions with vector values
-        only 'abs', 'log_abs' or 'abs_squared' are allowed.
-        If a callable object is given this is applied instead.
-        It is important that the callable returns numpy arrays
-        with the same number of dimensions as before.
-
-    Notes
-    -----
-    * A grid or grid_function object must always be specified.
-    * Depending on the file format an offset of 1 is added to the indices if
-      no index_to_file_key_map is provided. The reason is that some
-      file formats such as Gmsh start counting nodes and elements from 1
-      instead of zero.
-
-    Examples
-    --------
-    To save the grid object 'mygrid' in Gmsh format use
-
-    >>> export(grid=mygrid, file_name='output.msh')
-
-    To save the grid_function object 'gridfun' in Gmsh format
-    with data associated to elements use
-
-    >>> export(grid_function=gridfun,
-            file_name='output.msh', data_type='element')
-
-    To save the real part of a complex grid function in Gmsh format use
-
-    >>> export(grid_function=gridfun, file_name='output.msh',
-            transformation='real')
+    >>> grid, vertex_ids, element_ids = import_grid(
+            'grid_file.msh', return_id_maps=True)
 
     """
     import os
-    import numpy as np
 
-    # Holds the actual FileInterface for the specified data format
-    interface = None
-    vertex_index_to_file_key_map = None
-    element_index_to_file_key_map = None
+    _, extension = os.path.splitext(file_name)
 
-    if 'file_name' in kwargs:
-        fname = kwargs['file_name']
-    else:
-        raise ValueError("file_name must be specified.")
-
-    extension = os.path.splitext(fname)[1].lower()
+    data_sets = None
 
     if extension == '.msh':
-        from bempp.api.file_interfaces import gmsh
-        interface = gmsh.GmshInterface()
+        # Format is Gmsh
+        from bempp.api.file_interfaces.gmsh import \
+                import_data_sets
 
-    if int('grid' in kwargs) + int('grid_function' in kwargs) != 1:
-        raise ValueError(
-            "Exactly one of 'grid' or 'grid_function' must be specified")
-
-    if 'grid' in kwargs:
-        grid = kwargs['grid']
-    elif 'grid_function' in kwargs:
-        grid = kwargs['grid_function'].grid
-
-    number_of_vertices = grid.leaf_view.entity_count(2)
-    number_of_elements = grid.leaf_view.entity_count(0)
-
-    offset = interface.index_offset
-    if 'vertex_index_to_file_key_map' in kwargs:
-        vertex_index_to_file_key_map = kwargs['vertex_index_to_file_key_map']
+        data_sets = import_data_sets(file_name)
+    elif extension == '.json':
+        # Format is JSON
+        from bempp.api.file_interfaces.json import \
+                import_data_sets
+        data_sets = import_data_sets(file_name)
     else:
-        vertex_index_to_file_key_map = range(
-            offset, number_of_vertices + offset)
-    if 'element_index_to_file_key_map' in kwargs:
-        element_index_to_file_key_map = kwargs['element_index_to_file_key_map']
+        raise ValueError('Unsupported file format.')
+
+    grid = bempp_grid_from_data_set(data_sets['grid_data_sets'][0])
+
+    if return_id_maps:
+        return (grid, data_sets['grid_data_sets'][0].grid.vertex_ids,
+                data_sets['grid_data_sets'][0].grid.element_ids)
     else:
-        element_index_to_file_key_map = range(
-            offset, number_of_elements + offset)
+        return grid
 
-    # Create the vertex and element structure
 
-    from collections import OrderedDict
+class GenericGrid(object):
+    """
+    A simple object describing a grid.
 
-    vertex_iterator = grid.leaf_view.entity_iterator(2)
-    element_iterator = grid.leaf_view.entity_iterator(0)
-    index_set = grid.leaf_view.index_set()
+    Attributes
+    ----------
+    vertices : np.ndarray
+        A 3 x N Numpy array of N vertices describing the grid.
+        The type of this array is 'float64'
+    elements : np.ndarray
+        A 3 x M Numpy array of M elements. The type of this array
+        is 'uint32'
+    vertex_ids : np.ndarray
+        A uint32 array of vertex ids. By default vertex_ids is
+        identical to range(0, N). Useful if vertices should
+        be stored under specific ids within a given file format.
+        The vertex id of vertex j is given by vertex_ids[j]
+    element_ids : np.ndarray
+        A uint32 array of element ids. By default element_ids
+        is identical to range(0, M). Useful if elements
+        should be stored under specific ids withing a given file
+        format. The element id of element j is given by
+        element_ids[j]
+    description : string
+        A description or identifier of the grid.
+    domain_indices : np.ndarray
+        A uint32 array of domain indices. These are used to 
+        group elements into physical regions.
+    number_of_vertices : int
+        The number of vertices
+    number_of_elements : int
+        The number of elements
 
-    vertices = OrderedDict(
-        [(vertex_index_to_file_key_map[index_set.entity_index(vertex)],
-          vertex.geometry.corners[:, 0]) for vertex in vertex_iterator])
-    elements = OrderedDict(
-        [(element_index_to_file_key_map[index_set.entity_index(element)],
-          {'data':[vertex_index_to_file_key_map[
-              index_set.sub_entity_index(
-                  element, n, 2)] for n in range(3)],
-           'domain_index':element.domain})
-         for element in element_iterator])
+    Remarks
+    -------
+    All Numpy arrays will be stored in C (row-major) order.
 
-    interface.add_grid_data(vertices, elements)
+    No sanity check will be performed on the input data. It is assumed that
+    it describes valid grid data.
 
-    # Evaluate data
+    """
 
-    if 'grid_function' in kwargs:
-        fun = kwargs['grid_function']
-        data_type = kwargs.get('data_type', interface.default_data_type)
+    def __init__(self, vertices, elements, vertex_ids = None, element_ids=None,
+            description='', domain_indices=None):
+        """
+        Construct a grid object.
 
-        if data_type == 'vertices':
-            data_type = 'element_node'
-        if data_type == 'faces':
-            data_type = 'element'
+        Parameters
+        ----------
+        vertices : np.ndarray
+            A 3 x N Numpy array of N vertices describing the grid.
+            The type of this array is 'float64'
+        elements : np.ndarray
+            A 3 x M Numpy array of M elements. The type of this array
+            is 'uint32'
+        vertex_ids : np.ndarray
+            A uint32 array of vertex ids. By default vertex_ids is
+            identical to range(0, N). Useful if vertices should
+            be stored under specific ids within a given file format.
+            The vertex id of vertex j is given by vertex_ids[j]
+        element_ids : np.ndarray
+            A uint32 array of element ids. By default element_ids
+            is identical to range(0, M). Useful if elements
+            should be stored under specific ids withing a given file
+            format. The element id of element j is given by
+            element_ids[j]
+        description : string
+            A description or identifier of the grid.
+        domain_indices : np.ndarray
+            An uint32 array of domain indices for the elements. If 
+            domain_indices is None each element is associated 
+            the default index 0.
 
-        if 'transformation' in kwargs:
-            transformation = kwargs['transformation']
+        Remarks
+        -------
+        If input arrays are not in the specified formats a conversion
+        of the data is attempted.
+
+        """
+        self._vertices = _np.require(vertices, 'float64', _np_require)
+        self._elements = _np.require(elements, 'uint32', _np_require)
+
+        if self._vertices.shape[0] != 3:
+            raise ValueError("Axis 0 of 'vertices' must have length 3.")
+
+        if self._elements.shape[0] != 3:
+            raise ValueError("Axis 0 of 'elements' must have length 3.")
+
+        self._number_of_vertices = self._vertices.shape[1]
+        self._number_of_elements = self._elements.shape[1]
+        
+        if vertex_ids is None:
+            self._vertex_ids = _np.arange(self._number_of_vertices, dtype='uint32')
         else:
-            transformation = 'real'
+            if len(vertex_ids) != self._number_of_vertices:
+                raise ValueError("Length of vertex_ids != number of vertices")
+            self._vertex_ids = _np.require(vertex_ids, 'uint32', _np_require)
 
-        transform = None
-        if transformation == 'real':
-            transform = np.real
-        elif transformation == 'imag':
-            transform = np.imag
-        elif transformation == 'abs':
-            transform = lambda x: np.sqrt(np.sum(np.abs(x)**2, axis=0, keepdims=True))
-        elif transformation == 'log_abs':
-            transform = lambda x: np.log(np.sqrt(
-                np.sum(np.abs(x)**2, axis=0, keepdims=True)))
-        elif transformation == 'abs_squared':
-            transform = lambda x: np.sum(np.abs(x)**2, axis=0, keepdims=True)
+        if element_ids is None:
+            self._element_ids = _np.arange(self._number_of_elements, dtype='uint32')
         else:
-            transform = transformation
+            self._element_ids = _np.require(element_ids, 'uint32', _np_require)
 
-        index_set = grid.leaf_view.index_set()
+        self._description = description
 
-        if data_type == 'element_node':
-            local_coordinates = _np.array([[0, 1, 0], [0, 0, 1]])
-            data = OrderedDict.fromkeys(element_index_to_file_key_map)
-
-            for element in grid.leaf_view.entity_iterator(0):
-                data[
-                    element_index_to_file_key_map[
-                        index_set.entity_index(element)]] = transform(
-                            fun.evaluate(element, local_coordinates))
-            interface.add_element_node_data(
-                data, kwargs.get('label', 'element_node_data'))
-        elif data_type == 'node':
-            local_coordinates = _np.array([[0, 1, 0], [0, 0, 1]])
-            data = OrderedDict.fromkeys(vertex_index_to_file_key_map)
-            for element in grid.leaf_view.entity_iterator(0):
-                local_data = transform(
-                    fun.evaluate(element, local_coordinates))
-                for i in range(3):
-                    data[vertex_index_to_file_key_map[
-                        index_set.sub_entity_index(element, i, 2)]] = \
-                            local_data[:, i]
-            interface.add_node_data(data, kwargs.get('label', 'node_data'))
-        elif data_type == 'element':
-            local_coordinates = _np.array([[1. / 3], [1. / 3]])
-            data = OrderedDict.fromkeys(element_index_to_file_key_map)
-
-            for element in grid.leaf_view.entity_iterator(0):
-                data[element_index_to_file_key_map[
-                    index_set.entity_index(element)]] = transform(
-                        fun.evaluate(element, local_coordinates)).ravel()
-            interface.add_element_data(
-                data, kwargs.get('label', 'element_data'))
+        if domain_indices is None:
+            self._domain_indices = _np.zeros(self._number_of_elements, dtype='uint32')
         else:
-            raise ValueError(
-                "data_type must be one of 'node', 'element', or 'element_node'")
+            if len(domain_indices) != self._number_of_elements:
+                raise ValueError("Length of 'domain_indices' must be equal to the number of elements.")
+            self._domain_indices = _np.require(domain_indices, 'uint32', _np_require)
 
-    interface.write(kwargs['file_name'])
 
 
-class FileInterfaceImpl(object):
-    """Abstract implementation of a file interface."""
+    @property
+    def vertices(self):
+        """Return vertices."""
+        return self._vertices
 
-    def __init__(self):
-        """Constructor."""
-        from collections import OrderedDict
+    @property
+    def elements(self):
+        """Return elements."""
+        return self._elements
 
-        self.__vertices = OrderedDict()
-        self.__elements = OrderedDict()
+    @property
+    def description(self):
+        """Return description"""
+        return self._description
+    
+    @property
+    def number_of_vertices(self):
+        """Return number of vertices"""
+        return self._number_of_vertices
+
+    @property
+    def number_of_elements(self):
+        """Return number of elements."""
+        return self._number_of_elements
+
+    @property
+    def vertex_ids(self):
+        """Return vertex ids"""
+        return self._vertex_ids
+
+    @property
+    def element_ids(self):
+        """Return element ids"""
+        return self._element_ids
+
+    @property
+    def domain_indices(self):
+        """Return domain indices."""
+        return self._domain_indices
+       
+    def as_dict(self):
+        """
+        Return a serializable dictionary with the class data.
+        
+        All Numpy arrays are converted to base64 encoded strings. 
+        """
+        return {'vertices': numpy_to_base64(self.vertices),
+                'elements': numpy_to_base64(self.elements),
+                'number_of_vertices': self.number_of_vertices,
+                'number_of_elements': self.number_of_elements,
+                'vertex_ids': numpy_to_base64(self.vertex_ids),
+                'element_ids': numpy_to_base64(self.element_ids),
+                'description': self.description,
+                'domain_indices': numpy_to_base64(self.domain_indices)}
 
     @classmethod
-    def read(cls, file_name):
-        """Read a file."""
-        pass
+    def from_dict(cls, d):
+        """Recover the object from a dictionary of serialized data fields."""
+        return GenericGrid(base64_to_numpy(d['vertices'], 'float64', (3, d['number_of_vertices'])),
+                base64_to_numpy(d['elements'], 'uint32', (3, d['number_of_elements'])),
+                base64_to_numpy(d['vertex_ids'], 'uint32', (d['number_of_vertices'],)),
+                base64_to_numpy(d['element_ids'], 'uint32', (d['number_of_elements'],)),
+                d['description'],
+                base64_to_numpy(d['domain_indices'], 'uint32', (d['number_of_elements'],)))
 
-    def write(self, file_name):
-        """Write a file."""
-        pass
 
-    def add_grid_data(self, vertices, elements):
-        """Add grid data."""
-        self.__vertices = vertices
-        self.__elements = elements
+class Data(object):
+    """
+    A set that describes a single or multiple data arrays.
 
-    def add_node_data(self, data, label):
-        """Add node data."""
-        pass
+    A Data object describes set of assocated data arrays,
+    such as data outputs resulting from a frequency sweep
+    or different time steps.
 
-    def add_element_data(self, data, label):
-        """Add element data."""
-        pass
+    Attributes
+    ----------
+    real : list of arrays
+        A list of nc x N arrays of type 'float64'. Here, nc
+        denotes the number of components of each data point and
+        N is identical to the number of data points. It stores the
+        real part of the given data.
+    imag : list of arrays or None
+        if dtype == 'complex' a list of nc x N arrays of type 'float64'.
+        It stores the imaginary part of the given data.
+    description : string
+        A string describing the data.
+    number_of_arrays : integer
+        The number of data arrays in 'data'
+    number_of_components : integer
+        The number of components in the data sets.
+    number_of_data_points : integer
+        The number of data points
+    dtype: string
+        Either 'float' for real double precision data or
+        'complex' for complex double precision data.
+    timesteps : np.ndarray
+        A 'float64' array of real time values associated with
+        each of the data array. By default the values
+        [0, 1, 2, ...] are associated.
 
-    def add_element_node_data(self, data, label):
-        """Add element node data."""
-        pass
+    """
+
+    def __init__(self, components, npoints, description='', data=None,
+            dtype=None, timesteps=None):
+        """
+        Initialize a data array.
+
+        Parameters
+        ----------
+        components : integer
+            The number of components in each data point
+        npoints : integer
+            The number of points in each stored data array
+        data : list of ndarrays
+            Optional list of data arrays of type 'float' 
+            or 'complex' in C ordering and of dimension 
+            (components x npoints).
+        description : string
+            A description of the data
+        dtype: string
+            Either 'float' for real double precision data or
+            'complex' for complex double precision data. 'dtype'
+            can be None if the 'data' parameter is provided. Then
+            the type is determined from the input data.
+        timesteps : np.ndarray
+            A 'float64' array of real time values associated with
+            each of the data array. By default the values
+            [0, 1, 2, ...] are associated. Can be modified to reflect
+            data arrays that have been added.
+        """
+        self._components = components
+        self._npoints = npoints
+        self._description = description
+        self._real = None
+        self._imag = None
+        self._timesteps = None
+
+        if data is None:
+            if dtype not in ['complex', 'float']:
+                raise ValueError("'dtype' must be either real or 'complex'")
+            else: 
+                self._dtype = dtype
+                self._real = []
+                if dtype == 'complex':
+                    self._imag = []
+        else:
+            iscomplex = _np.any([_np.iscomplexobj(a) for a in data])
+            if iscomplex:
+                self._dtype = 'complex'
+            else:
+                self._dtype = 'float'
+            for a in data:
+                if a.shape != (components, npoints):
+                    raise ValueError('Wrong shape. {0} != {1}'.format(a.shape, (components, npoints)))
+            if self._dtype == 'float':
+                self._real = [_np.require(a, 'float64', _np_require) for a in data]
+            else:
+                self._real = [_np.require(_np.real(a), 'float64', _np_require) for a in data]
+                self._imag = [_np.require(_np.imag(a), 'float64', _np_require) for a in data]
+
+    def add_data(self, data_array):
+        """
+        Add a data array.
+
+        The data array must have the dimension components x npoints
+        and must be convertible to self.dtype
+
+        """
+        d = _np.require(data, self.dtype, _np_require)
+        if d.shape != (self.components, self.npoints):
+            raise ValueError("'data' has wrong dimensions.")
+        if self.dtype == 'float':
+            self._real.append(_np.require(data_array, 'float64', _np_require))
+        else:
+            self._real.append(_np.require(_np.real(data_array), 'float64', _np_require))
+            self._imag.append(_np.require(_np.imag(data_array), 'float64', _np_require))
 
     @property
-    def index_offset(self):
-        """Index offset."""
-        return 1
+    def real(self):
+        """Return real part"""
+        return self._real
 
     @property
-    def default_data_type(self):
-        """Default type."""
-        return 'node'
+    def imag(self):
+        """
+        Return imaginary part.
+        
+        If self.dtype == 'float' this attribute returns None 
 
-    vertices = property(lambda self: self.__vertices)
-    elements = property(lambda self: self.__elements)
+        """
+        return self._imag
+
+    @property
+    def dtype(self):
+        """Return data type."""
+        return self._dtype
+
+    @property
+    def description(self):
+        """Return description"""
+        return self._description
+
+    @property
+    def components(self):
+        """Return number of components"""
+        return self._components
+
+    @property
+    def number_of_data_points(self):
+        """Return the number of data points"""
+        return self._npoints
+
+    @property
+    def number_of_arrays(self):
+        """Return the number of arrays"""
+        return len(self.real)
+
+    @property
+    def timesteps(self):
+        """Return the time steps."""
+        if self._timesteps is None:
+            return _np.arange(self.number_of_arrays)
+        return self._timesteps
+
+    @timesteps.setter
+    def timesteps(self, values):
+        """Set the timestep values."""
+        if len(values) != self.number_of_arrays:
+            raise ValueError('Number of arrays must be identical to number of time steps.')
+        self._timesteps = _np.require(values, 'float64', _np_require)
+
+    def as_dict(self):
+        """
+        Return a serializable dictionary with the class data.
+        
+        All Numpy arrays are converted to base64 encoded strings. 
+        """
+        return {'real': [numpy_to_base64(a) for a in self.real],
+                'imag': [numpy_to_base64(a) for a in self.imag] if self.imag is not None else None,
+                'dtype': self.dtype,
+                'description': self.description,
+                'components': self.components,
+                'number_of_data_points': self.number_of_data_points,
+                'number_of_arrays': self.number_of_arrays,
+                'timesteps': numpy_to_base64(self.timesteps)}
+
+    @classmethod
+    def from_dict(cls, d):
+        """Recover the object from a dictionary of serialized data fields."""
+        if d['dtype'] == 'float':
+            return Data(d['components'], d['number_of_data_points'],
+                    d['description'],
+                    [base64_to_numpy(a, 'float64',(d['components'],d['number_of_data_points'])) for a in d['real']],
+                    timesteps=base64_to_numpy(d['timesteps'], 'float64',(d['number_of_arrays'],)))
+        if d['dtype'] == 'complex':
+            return Data(d['components'], d['number_of_data_points'],
+                    d['description'],
+                    [(base64_to_numpy(a, 'float64',(d['components'],d['number_of_data_points'])) + 
+                        1j * base64_to_numpy(b, 'float64', 
+                            (d['components'],d['number_of_data_points']))) for a,b in zip(d['real'], d['imag'])], timesteps=base64_to_numpy(d['timesteps'], 'float64',(d['number_of_arrays'],)))
+        
 
 
-class Vertex(object):
-    """Definition of a vertex."""
+class GridDataSet(object):
+    """
+    A complete dataset consisting of a grid and associated data
+    
+    Attributes
+    ----------
+    grid : GenericGrid
+        Return the grid containing vertices and
+        elements
+    element_data : list of Data
+        List of Data objects associated with the elements
+    vertex_data : list of Data
+        List of Data objects associated with the nodes
+    description : string
+        A description of the data
 
-    def __init__(self, index, x, y, z):
-        """Construct a vertex."""
-        self.index = index
-        self.data = _np.array([x, y, z], dtype='float64')
+    """
+
+    def __init__(self, grid, description='', element_data=None, vertex_data=None):
+        """
+        Initialize a GridDataSet object
+
+        Paramters
+        ---------
+        grid : GenericGrid
+            The Grid object describing the grid
+        description : string
+            A description string for the GridDataSet
+        element_data : list of Data objects
+            Various data objects associated with the elements
+        vertex_data : list of Data objects
+            Various data objects associated with the vertices
+            
+        """
+        self._grid = grid
+        self._element_data = [] if element_data is None else element_data
+        self._vertex_data = [] if vertex_data is None else vertex_data
+        self._description = description
+
+    def add_element_data(self, data):
+        """Add an element data set."""
+        if data.number_of_data_points != grid.number_of_elements:
+            raise ValueError("Number of data points not equal to number of elements.")
+        self._element_data.append(data)
+
+    def add_vertex_data(self, data):
+        """Add a vertex data set."""
+        if data.number_of_data_points != grid.number_of_vertices:
+            raise ValueError("Number of data points not equal to number of vertices.")
+        self._vertex_data.append(data)
+
+    @property
+    def grid(self):
+        """Return the grid."""
+        return self._grid
+
+    @property
+    def element_data(self):
+        """Return the element data."""
+        return self._element_data
+
+    @property
+    def vertex_data(self):
+        """Return the vertex data."""
+        return self._vertex_data
+
+    @property
+    def description(self):
+        """Return the description of this grid dataset."""
+        return self._description
+
+    def as_dict(self):
+        """
+        Return a serializable dictionary with the class data.
+        
+        All Numpy arrays are converted to base64 encoded strings. 
+        """
+        return {'grid': self.grid.as_dict(),
+                'element_data': [data.as_dict() for data in self.element_data],
+                'vertex_data': [data.as_dict() for data in self.vertex_data],
+                'description': self.description
+                }
+
+    @classmethod
+    def from_dict(cls, d):
+        """Recover the object from a dictionary of serialized data fields."""
+        return GridDataSet(Grid.from_dict(d['grid']),
+                description=d['description'],
+                vertex_data=[Data.from_dict(d) for d in d['vertex_data']],
+                element_data=[Data.from_dict(d) for d in d['element_data']]
+                )
 
 
-class Element(object):
-    """Definition of an element."""
+def numpy_to_base64(data):
+    """
+    Convert binary array data to a string.
 
-    #pylint: disable=too-many-arguments
-    def __init__(self, index, v0, v1, v2, domain_index=0):
-        """Construct an element."""
-        self.index = index
-        self.data = [v0, v1, v2]
-        self.domain_index = domain_index
+    Convert a numpy array to a UTF-8 string using base64
+    encoding and decoding to UTF-8.
+
+    Data is assumed to be C contiguous.
+    """
+    import base64
+
+    if not data.flags['C_CONTIGUOUS']:
+        raise ValueError("data must be contiguous in memory.")
+    return base64.b64encode(data).decode("utf-8")
+
+def base64_to_numpy(data, dtype, dims):
+    """
+    Convert string to array data
+
+    Convert a base64 UTF-8 decoded string to a numpy array  
+    given type and dimensions.
+    """
+    import base64
+
+    a = _np.frombuffer(base64.decodebytes(data.encode("utf-8")), dtype=dtype)
+    return _np.asfortranarray(a.reshape(dims))
+
+def transform_array(a, mode=None):
+    """
+    Transform a data array.
+
+    Parameters
+    ----------
+    a : np.ndarray
+        Either a scalar array or a two dimensional data array.
+    mode : string, callable or None
+        One of 'real', 'imag', 'abs', 'log_abs', 'abs_squared',
+        a transformation callable or None. The callable needs to take
+        an input array of dimension 2 and return an array of
+        dimension 2. If mode is None the input array is not modified.
+
+    """
+    if mode is None:
+        return a
+
+    ndim = a.ndim
+    if ndim == 1: 
+        _np.expand_dims(a, 1)
+
+    if mode == 'real':
+        res = _np.real(a)
+    elif mode == 'imag':
+        res = _np.imag(a)
+    elif mode == 'abs':
+        res = _np.sqrt(_np.sum(_np.abs(a)**2, axis=0, keepdims=True))
+    elif mode == 'abs_squared':
+        res = _np.sum(_np.abs(a)**2, axis=0, keepdims=True)
+    elif mode =='log_abs':
+        res = _np.log(_np.sqrt(
+            _np.sum(_np.abs(a)**2, axis=0, keepdims=True)))
+    else:
+        res = mode(a)
+
+    if ndim == 1:
+        return _np.squeeze(res, axis=0)
+    else:
+        return res
+
+
+def bempp_object_to_grid_data_set(bempp_grid, **kwargs):
+    """
+
+    Parameters
+    ----------
+    bempp_grid : A Bempp grid object
+    vertex_funs : list of Bempp GridFunction objects
+        The grid functions are evaluated at the nodes
+        and the nodal data is stored.
+    element_funs : list of Bempp GridFunction objects
+        The grid functions are evaluated at the element
+        centers and the element data is stored.
+    transformation : string or function object
+        One of 'real', 'imag', 'abs', 'log_abs',
+        None or a callable object. Transforms the
+        data on input. A callable must return numpy
+        arrays with the same number of dimensions as
+        the input. If transformation is None the data
+        is not modified.
+    description : string
+        A description of the GridDataSet object
+    vertex_ids : np.ndarray
+        An optional uint32 array of vertex ids
+    element_ids : np.ndarray
+        An optional uint32 array of element ids
+
+    Remarks
+    -------
+    All given input data must be associated with the same grid.
+
+    """
+    import bempp.api
+
+    if 'transformation' in kwargs:
+        mode = kwargs['transformation']
+    else:
+        mode = None
+
+    if 'description' in kwargs:
+        description = kwargs['description']
+    else:
+        description = ''
+
+    if 'vertex_ids' in kwargs:
+        vertex_ids = kwargs['vertex_ids']
+    else:
+        vertex_ids = None
+
+    if 'element_ids' in kwargs:
+        element_ids = kwargs['element_ids']
+    else:
+        element_ids = None
+
+
+    grid = GenericGrid(bempp_grid.leaf_view.vertices, bempp_grid.leaf_view.elements,
+            vertex_ids, element_ids, description='')
+
+    vertex_data = None
+    element_data = None
+
+    if 'vertex_funs' in kwargs:
+        for fun in kwargs['vertex_funs']:
+            if fun.space.grid != bempp_grid:
+                raise ValueError("Grids do not agree.")
+        components = kwargs['vertex_funs'][0].component_count
+        npoints = bempp_grid.leaf_view.entity_count(2)
+        vertex_data = []
+        for fun in kwargs['vertex_funs']:
+            vertex_data.append(Data(components, npoints,
+                data=[transform_array(fun.evaluate_on_vertices(), mode)]))
+    if 'element_funs' in kwargs:
+        for fun in kwargs['element_funs']:
+            if fun.space.grid != bempp_grid:
+                raise ValueError("Grids do not agree.")
+        components = kwargs['element_funs'][0].component_count
+        npoints = bempp_grid.leaf_view.entity_count(0)
+        element_data = []
+        for fun in kwargs['element_funs']:
+            element_data.append(Data(components, npoints,
+                data=[transform_array(fun.evaluate_on_element_centers(), mode)]))
+    return GridDataSet(grid, description, element_data, vertex_data)
+
+def timestamp():
+    """Return a current time stamp."""
+    import datetime
+    return '{:%Y-%m-%d %H:%M:%S}'.format(datetime.datetime.now())
 
 
 def three_planes_view(file_name, lower_left, upper_right, ndims, evaluator):

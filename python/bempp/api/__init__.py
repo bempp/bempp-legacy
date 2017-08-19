@@ -122,7 +122,6 @@ from bempp.api.assembly import functors
 from bempp.api import shapes
 from bempp.api.file_interfaces import import_grid
 from bempp.api.file_interfaces import export
-from bempp.api.file_interfaces import three_planes_view
 from bempp.api.external.viewers import set_gmsh_viewer
 from bempp.api.external.viewers import set_ipython_notebook_viewer
 from bempp.api import operators
