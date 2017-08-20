@@ -156,14 +156,14 @@ class GridFunction(object):
 
         return inv_ident * projections
 
-    def plot(self, mode='vertices', transformation='real'):
+    def plot(self, mode='element', transformation='real'):
         """
         Plot the grid function.
         
         Attributes
         ----------
         mode : string
-            One of 'faces' or 'vertices'. If 'faces' is chosen
+            One of 'element' or 'node'. If 'element' is chosen
             the color is determined by the mid-point of the faces
             of the grid. For 'vertices' the vertex values are
             chosen (default: 'element')

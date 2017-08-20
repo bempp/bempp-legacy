@@ -123,6 +123,7 @@ from bempp.api import shapes
 from bempp.api.file_interfaces import import_grid
 from bempp.api.file_interfaces import export
 from bempp.api.external.viewers import set_gmsh_viewer
+from bempp.api.external.viewers import set_paraview_viewer
 from bempp.api.external.viewers import set_ipython_notebook_viewer
 from bempp.api import operators
 from bempp.api import linalg

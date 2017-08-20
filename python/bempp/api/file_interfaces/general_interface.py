@@ -22,6 +22,7 @@ def export(file_name, **kwargs):
 
     * Gmsh ASCII v2.2 files
     * JSON Dictonaries
+    * VTK Legacy ASCII files
 
     The function only takes keyword arguments.
 
@@ -33,6 +34,14 @@ def export(file_name, **kwargs):
         A Bempp grid object to export
     grid_function : Bempp GridFunction object
         A Bempp grid function to export
+    data_series : A list of list of grid functions
+        A two dimensional list of grid functions, 
+        where the entry (i, j) is the jth time data
+        in the ith data series.
+    timesteps : If a data series is given this is
+        an optional array of time values associated
+        with time series objects. If None is given the
+        steps [0, 1, ...] are assumed.
     description : string
         A description of the GridDataSet object
     data_type : string
@@ -51,7 +60,8 @@ def export(file_name, **kwargs):
     element_ids : np.ndarray
         An optional uint32 array of element ids
 
-    Exactly one of 'grid' or 'grid_function' is allowed as keyword argument
+    Exactly one of 'grid', 'grid_function' or data series 
+    is allowed as keyword argument
 
     """
     import bempp.api
@@ -66,18 +76,23 @@ def export(file_name, **kwargs):
         from bempp.api.file_interfaces.gmsh import \
                 export_data_sets
         export_fun = export_data_sets
-
     elif extension == '.json':
         # Format is JSON
         from bempp.api.file_interfaces.json import \
+                export_data_sets
+        export_fun = export_data_sets
+    elif extension == '.vtk':
+        # Format is VTK
+        from bempp.api.file_interfaces.vtk import \
                 export_data_sets
         export_fun = export_data_sets
     else:
         raise ValueError('Unsupported file format.')
 
     
-    if sum(['grid' in kwargs, 'grid_function' in kwargs]) != 1:
-        raise ValueError("Exactly one of 'grid' or 'grid_function' must be provided.""")
+    if sum(['grid' in kwargs, 'grid_function' in kwargs,
+        'data_series' in kwargs]) != 1:
+        raise ValueError("Exactly one of 'grid', 'grid_function' or 'data_series'  must be provided.""")
 
     if 'transformation' in kwargs:
         transform = kwargs['transformation']
@@ -104,24 +119,38 @@ def export(file_name, **kwargs):
     else:
         mode = 'node'
 
+    if 'timesteps' in kwargs:
+        timesteps = kwargs['timesteps']
+    else:
+        timesteps = None
+
+    funs = None
+
     if 'grid' in kwargs:
         dataset = bempp_object_to_grid_data_set(kwargs['grid'], vertex_ids=vertex_ids,
                 element_ids=element_ids, description=description)
 
         export_fun(file_name, [dataset])
+        return
+
+    if 'data_series' in kwargs:
+        funs = kwargs['data_series']
 
     if 'grid_function' in kwargs:
-        fun = kwargs['grid_function']
-        if mode == 'node':
-            dataset = bempp_object_to_grid_data_set(fun.space.grid, vertex_funs=[fun],
-                    vertex_ids=vertex_ids, element_ids=element_ids,
-                    description=description, transformation=transform)
-            export_fun(file_name, [dataset])
-        if mode == 'element':
-            dataset = bempp_object_to_grid_data_set(fun.space.grid, element_funs=[fun],
-                    vertex_ids=vertex_ids, element_ids=element_ids,
-                    description=description, transformation=transform)
-            export_fun(file_name, [dataset])
+        funs = [[kwargs['grid_function']]]
+
+    if mode == 'node':
+        dataset = bempp_object_to_grid_data_set(funs[0][0].space.grid, vertex_funs=funs,
+                vertex_ids=vertex_ids, element_ids=element_ids,
+                description=description, transformation=transform,
+                timesteps=timesteps)
+        export_fun(file_name, [dataset])
+    if mode == 'element':
+        dataset = bempp_object_to_grid_data_set(funs[0][0].space.grid, element_funs=funs,
+                vertex_ids=vertex_ids, element_ids=element_ids,
+                description=description, transformation=transform,
+                timesteps=timesteps)
+        export_fun(file_name, [dataset])
 
 
 def import_grid(file_name, return_id_maps=False):
@@ -402,15 +431,11 @@ class Data(object):
     dtype: string
         Either 'float' for real double precision data or
         'complex' for complex double precision data.
-    timesteps : np.ndarray
-        A 'float64' array of real time values associated with
-        each of the data array. By default the values
-        [0, 1, 2, ...] are associated.
 
     """
 
     def __init__(self, components, npoints, description='', data=None,
-            dtype=None, timesteps=None):
+            dtype=None):
         """
         Initialize a data array.
 
@@ -431,18 +456,12 @@ class Data(object):
             'complex' for complex double precision data. 'dtype'
             can be None if the 'data' parameter is provided. Then
             the type is determined from the input data.
-        timesteps : np.ndarray
-            A 'float64' array of real time values associated with
-            each of the data array. By default the values
-            [0, 1, 2, ...] are associated. Can be modified to reflect
-            data arrays that have been added.
         """
         self._components = components
         self._npoints = npoints
         self._description = description
         self._real = None
         self._imag = None
-        self._timesteps = None
 
         if data is None:
             if dtype not in ['complex', 'float']:
@@ -475,8 +494,8 @@ class Data(object):
         and must be convertible to self.dtype
 
         """
-        d = _np.require(data, self.dtype, _np_require)
-        if d.shape != (self.components, self.npoints):
+        d = _np.require(data_array, self.dtype, _np_require)
+        if d.shape != (self.components, self.number_of_data_points):
             raise ValueError("'data' has wrong dimensions.")
         if self.dtype == 'float':
             self._real.append(_np.require(data_array, 'float64', _np_require))
@@ -524,19 +543,6 @@ class Data(object):
         """Return the number of arrays"""
         return len(self.real)
 
-    @property
-    def timesteps(self):
-        """Return the time steps."""
-        if self._timesteps is None:
-            return _np.arange(self.number_of_arrays)
-        return self._timesteps
-
-    @timesteps.setter
-    def timesteps(self, values):
-        """Set the timestep values."""
-        if len(values) != self.number_of_arrays:
-            raise ValueError('Number of arrays must be identical to number of time steps.')
-        self._timesteps = _np.require(values, 'float64', _np_require)
 
     def as_dict(self):
         """
@@ -550,8 +556,8 @@ class Data(object):
                 'description': self.description,
                 'components': self.components,
                 'number_of_data_points': self.number_of_data_points,
-                'number_of_arrays': self.number_of_arrays,
-                'timesteps': numpy_to_base64(self.timesteps)}
+                'number_of_arrays': self.number_of_arrays
+                }
 
     @classmethod
     def from_dict(cls, d):
@@ -559,14 +565,13 @@ class Data(object):
         if d['dtype'] == 'float':
             return Data(d['components'], d['number_of_data_points'],
                     d['description'],
-                    [base64_to_numpy(a, 'float64',(d['components'],d['number_of_data_points'])) for a in d['real']],
-                    timesteps=base64_to_numpy(d['timesteps'], 'float64',(d['number_of_arrays'],)))
+                    [base64_to_numpy(a, 'float64',(d['components'],d['number_of_data_points'])) for a in d['real']])
         if d['dtype'] == 'complex':
             return Data(d['components'], d['number_of_data_points'],
                     d['description'],
                     [(base64_to_numpy(a, 'float64',(d['components'],d['number_of_data_points'])) + 
                         1j * base64_to_numpy(b, 'float64', 
-                            (d['components'],d['number_of_data_points']))) for a,b in zip(d['real'], d['imag'])], timesteps=base64_to_numpy(d['timesteps'], 'float64',(d['number_of_arrays'],)))
+                            (d['components'],d['number_of_data_points']))) for a,b in zip(d['real'], d['imag'])])
         
 
 
@@ -585,10 +590,18 @@ class GridDataSet(object):
         List of Data objects associated with the nodes
     description : string
         A description of the data
+    timesteps : np.ndarray
+        A 'float64' array of real time values associated with
+        each of the data array. By default no timesteps are assumed.
+        The number of timesteps must be identical to the number of data
+        arrays in each data section.
+    number_of_time_steps : uint32
+        The number of timesteps in the dataset.
 
     """
 
-    def __init__(self, grid, description='', element_data=None, vertex_data=None):
+    def __init__(self, grid, description='', element_data=None, vertex_data=None,
+            timesteps=None):
         """
         Initialize a GridDataSet object
 
@@ -602,12 +615,18 @@ class GridDataSet(object):
             Various data objects associated with the elements
         vertex_data : list of Data objects
             Various data objects associated with the vertices
+        timesteps : np.ndarray
+            A 'float64' array of real time values associated with
+            each of the data array. By default the values
+            [0, 1, 2, ...] are associated. Can be modified to reflect
+            data arrays that have been added.
             
         """
         self._grid = grid
         self._element_data = [] if element_data is None else element_data
         self._vertex_data = [] if vertex_data is None else vertex_data
         self._description = description
+        self._timesteps = _np.array([0], dtype='float64') if timesteps is None else timesteps
 
     def add_element_data(self, data):
         """Add an element data set."""
@@ -641,6 +660,23 @@ class GridDataSet(object):
         """Return the description of this grid dataset."""
         return self._description
 
+    @property
+    def timesteps(self):
+        """Return the time steps."""
+        return self._timesteps
+
+    @timesteps.setter
+    def timesteps(self, values):
+        """Set the timestep values."""
+        if len(values) != self.number_of_arrays:
+            raise ValueError('Number of arrays must be identical to number of time steps.')
+        self._timesteps = _np.require(values, 'float64', _np_require)
+
+    @property
+    def number_of_timesteps(self):
+        """Return the number of timesteps."""
+        return len(self.timesteps)
+
     def as_dict(self):
         """
         Return a serializable dictionary with the class data.
@@ -650,16 +686,19 @@ class GridDataSet(object):
         return {'grid': self.grid.as_dict(),
                 'element_data': [data.as_dict() for data in self.element_data],
                 'vertex_data': [data.as_dict() for data in self.vertex_data],
-                'description': self.description
+                'description': self.description,
+                'timesteps': numpy_to_base64(self.timesteps),
+                'number_of_timesteps': self.number_of_timesteps
                 }
 
     @classmethod
     def from_dict(cls, d):
         """Recover the object from a dictionary of serialized data fields."""
-        return GridDataSet(Grid.from_dict(d['grid']),
+        return GridDataSet(GenericGrid.from_dict(d['grid']),
                 description=d['description'],
                 vertex_data=[Data.from_dict(d) for d in d['vertex_data']],
-                element_data=[Data.from_dict(d) for d in d['element_data']]
+                element_data=[Data.from_dict(d) for d in d['element_data']],
+                timesteps=base64_to_numpy(d['timesteps'], 'float64', (d['number_of_timesteps'],))
                 )
 
 
@@ -738,12 +777,22 @@ def bempp_object_to_grid_data_set(bempp_grid, **kwargs):
     Parameters
     ----------
     bempp_grid : A Bempp grid object
-    vertex_funs : list of Bempp GridFunction objects
+    vertex_funs : list of list of Bempp GridFunction objects
+        This is a two-dimensional list of grid function objects.
+        The grid function (i, j) is represented as the function
+        at the jth time-point for the ith data series.
         The grid functions are evaluated at the nodes
-        and the nodal data is stored.
-    element_funs : list of Bempp GridFunction objects
+        and the nodal data is stored. 
+    element_funs : list of list of Bempp GridFunction objects
+        This is a two-dimensional list of grid function objects.
+        The grid function (i, j) is represented as the function
+        at the jth time-point for the ith data series.
         The grid functions are evaluated at the element
-        centers and the element data is stored.
+        centers and this data stored.
+    timesteps : If a data series is given this is
+        an optional array of time values associated
+        with time series objects. If None is given the
+        steps [0, 1, ...] are assumed.
     transformation : string or function object
         One of 'real', 'imag', 'abs', 'log_abs',
         None or a callable object. Transforms the
@@ -785,6 +834,11 @@ def bempp_object_to_grid_data_set(bempp_grid, **kwargs):
     else:
         element_ids = None
 
+    if 'timesteps' in kwargs:
+        timesteps = kwargs['timesteps']
+    else:
+        timesteps = None
+
 
     grid = GenericGrid(bempp_grid.leaf_view.vertices, bempp_grid.leaf_view.elements,
             vertex_ids, element_ids, description='')
@@ -793,26 +847,39 @@ def bempp_object_to_grid_data_set(bempp_grid, **kwargs):
     element_data = None
 
     if 'vertex_funs' in kwargs:
-        for fun in kwargs['vertex_funs']:
-            if fun.space.grid != bempp_grid:
-                raise ValueError("Grids do not agree.")
-        components = kwargs['vertex_funs'][0].component_count
-        npoints = bempp_grid.leaf_view.entity_count(2)
         vertex_data = []
-        for fun in kwargs['vertex_funs']:
-            vertex_data.append(Data(components, npoints,
-                data=[transform_array(fun.evaluate_on_vertices(), mode)]))
+        for data_series in kwargs['vertex_funs']:
+            components = data_series[0].component_count
+            npoints = bempp_grid.leaf_view.entity_count(2)
+            if data_series[0].dtype == 'float':
+                dtype = 'float'
+            else:
+                dtype = 'complex'
+            data_container = Data(components, npoints, dtype=dtype)
+            vertex_data.append(data_container)
+            for fun in data_series:
+                if fun.space.grid != bempp_grid:
+                    raise ValueError("Grids do not agree.")
+                data_container.add_data(
+                        transform_array(fun.evaluate_on_vertices(), mode))
     if 'element_funs' in kwargs:
-        for fun in kwargs['element_funs']:
-            if fun.space.grid != bempp_grid:
-                raise ValueError("Grids do not agree.")
-        components = kwargs['element_funs'][0].component_count
-        npoints = bempp_grid.leaf_view.entity_count(0)
         element_data = []
-        for fun in kwargs['element_funs']:
-            element_data.append(Data(components, npoints,
-                data=[transform_array(fun.evaluate_on_element_centers(), mode)]))
-    return GridDataSet(grid, description, element_data, vertex_data)
+        for data_series in kwargs['element_funs']:
+            components = data_series[0].component_count
+            npoints = bempp_grid.leaf_view.entity_count(0)
+            if data_series[0].dtype == 'float':
+                dtype = 'float'
+            else:
+                dtype = 'complex'
+            data_container = Data(components, npoints, dtype=dtype)
+            element_data.append(data_container)
+            for fun in data_series:
+                if fun.space.grid != bempp_grid:
+                    raise ValueError("Grids do not agree.")
+                data_container.add_data(
+                        transform_array(fun.evaluate_on_element_centers(), mode))
+    return GridDataSet(grid, description, element_data, vertex_data,
+            timesteps=timesteps)
 
 def timestamp():
     """Return a current time stamp."""

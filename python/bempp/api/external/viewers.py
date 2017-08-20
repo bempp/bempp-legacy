@@ -10,9 +10,9 @@ def visualize(obj, mode='vertices', transformation=None):
     obj : Grid or GridFunction object
         A grid or grid function to plot
     mode : string
-        One of 'faces' or 'vertices'. If 'faces' is chosen
+        One of 'element' or 'node'. If 'element' is chosen
         the color is determined by the mid-point of the faces
-        of the grid. For 'vertices' the vertex values are
+        of the grid. For 'node' the vertex values are
         chosen (default: 'element'). Only used for
         grid functions.
     transformation : string or object
@@ -47,10 +47,12 @@ def visualize(obj, mode='vertices', transformation=None):
 
     if bempp.api.PLOT_BACKEND == 'gmsh':
         visualize_with_gmsh(obj, mode, transform)
+    if bempp.api.PLOT_BACKEND == 'paraview':
+        visualize_with_paraview(obj, mode, transform)
     if bempp.api.PLOT_BACKEND == 'ipython_notebook':
         visualize_with_ipython_notebook(obj, mode, transform)
 
-def visualize_with_gmsh(obj, mode='vertices', transformation=None):
+def visualize_with_gmsh(obj, mode='element', transformation=None):
     """
     View a grid or grid function with Gmsh
 
@@ -59,7 +61,7 @@ def visualize_with_gmsh(obj, mode='vertices', transformation=None):
     obj : bempp.api.Grid or bempp.api.GridFunction
         Grid or grid function to visualize.
     mode : string
-        One of 'faces' or 'vertices'
+        One of 'element' or 'node'
         (default 'vertices')
     transformation : callable
         A function object that is applied to the data before
@@ -84,11 +86,6 @@ def visualize_with_gmsh(obj, mode='vertices', transformation=None):
         print("Gmsh not available for visualization.")
         return None
 
-    if mode == 'vertices':
-        data_type = 'element_node'
-    elif mode =='faces':
-        data_type = 'element'
-        
 
     outfile = tempfile.NamedTemporaryFile(
         suffix=".msh", dir=TMP_PATH, delete=False)
@@ -96,12 +93,61 @@ def visualize_with_gmsh(obj, mode='vertices', transformation=None):
         export(grid=obj, file_name=outfile.name)
     elif isinstance(obj, GridFunction):
         export(grid_function=obj, file_name=outfile.name, 
-                transformation=transformation, data_type=data_type)
+                transformation=transformation, data_type=mode)
     outfile.close()
 
     subprocess.Popen([GMSH_PATH, outfile.name])
 
-def visualize_with_ipython_notebook(obj, mode='vertices', transformation=None):
+def visualize_with_paraview(obj, mode='element', transformation=None):
+    """
+    View a grid or grid function with Paraview
+
+    Parameters
+    ----------
+    obj : bempp.api.Grid or bempp.api.GridFunction
+        Grid or grid function to visualize.
+    mode : string
+        One of 'element' or 'node'
+        (default 'vertices')
+    transformation : callable
+        A function object that is applied to the data before
+        writing it out
+
+    Notes
+    -----
+    This function writes the data into a temp file and
+    visualizes it.
+
+    """
+    import tempfile
+    import subprocess
+    from bempp.api import export, GMSH_PATH, TMP_PATH, GridFunction
+    from bempp.api.grid.grid import Grid
+    import numpy as np
+    from bempp.api.utils import which
+
+    pview = which("paraview")
+    if pview is None:
+        raise EnvironmentError(
+                "Could not find Paraview." +
+                "Interactive plotting with Paraview not available.")
+
+    if transformation is None:
+        transformation = np.real
+
+    outfile = tempfile.NamedTemporaryFile(
+        suffix=".vtk", dir=TMP_PATH, delete=False)
+    print(outfile)
+    if isinstance(obj, Grid):
+        export(grid=obj, file_name=outfile.name)
+    elif isinstance(obj, GridFunction):
+        export(grid_function=obj, file_name=outfile.name, 
+                transformation=transformation, data_type=mode)
+    outfile.close()
+
+    subprocess.Popen([pview, outfile.name])
+
+def visualize_with_ipython_notebook(obj, mode='element', transformation=None):
     """View a grid or grid function in an IPython Notebook"""
     from bempp.api.utils.ipython import IPyNotebookSurfaceViewer
     from bempp.api import GridFunction
@@ -118,7 +164,7 @@ def visualize_with_ipython_notebook(obj, mode='vertices', transformation=None):
     elif isinstance(obj, GridFunction):
         grid = obj.space.grid
         index_set = grid.leaf_view.index_set()
-        if mode == 'vertices':
+        if mode == 'element':
             local_coordinates = _np.array([[0, 1, 0], [0, 0, 1]])
         else:
             local_coordinates = _np.array([[1./3, 1./3, 1./3],
@@ -137,6 +183,11 @@ def set_gmsh_viewer():
     """Change plotting default to Gmsh."""
     import bempp.api
     bempp.api.PLOT_BACKEND = 'gmsh'
+
+def set_paraview_viewer():
+    """Change plotting default to Paraview."""
+    import bempp.api
+    bempp.api.PLOT_BACKEND = 'paraview'
 
 def set_ipython_notebook_viewer():
     """Change plotting default to IPython"""

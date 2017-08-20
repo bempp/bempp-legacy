@@ -239,7 +239,7 @@ def export_data_sets(file_name, grid_data_sets, description='',
         binary = bempp.api.global_parameters.output.gmsh_use_binary
 
     def write_data(f, id_transformation,
-            data, data_type='vertex'):
+            data, timesteps, data_type='vertex'):
 
         def write_actual_data(identifier, data_array,
                 time_value, time_step):
@@ -283,7 +283,7 @@ def export_data_sets(file_name, grid_data_sets, description='',
 
         for index in range(data.number_of_arrays):
             write_actual_data(identifier, data.real[index],
-                    data.timesteps[index], index)
+                    timesteps[index], index)
 
         # Write the imaginary time steps
         if data.imag is not None:
@@ -382,11 +382,11 @@ def export_data_sets(file_name, grid_data_sets, description='',
             if data_set.vertex_data:
                 for data in data_set.vertex_data:
                     write_data(f, vertex_ids,
-                            data, 'vertex')
+                            data, data_set.timesteps, 'vertex')
             if data_set.element_data:
                 for data in data_set.element_data:
                     write_data(f, element_ids,
-                            data, 'element')
+                            data, data_set.timesteps, 'element')
 
 
 def create_grid_structure(all_vertices, all_vertex_ids,
