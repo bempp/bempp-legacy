@@ -137,7 +137,6 @@ def visualize_with_paraview(obj, mode='element', transformation=None):
 
     outfile = tempfile.NamedTemporaryFile(
         suffix=".vtk", dir=TMP_PATH, delete=False)
-    print(outfile)
     if isinstance(obj, Grid):
         export(grid=obj, file_name=outfile.name)
     elif isinstance(obj, GridFunction):
