@@ -1,6 +1,0 @@
-# Figures out where to install python stuff
-
-add_python_module(bempp.core __init__.py TARGETNAME bempp.core CPP LIBRARIES libbempp)
-
-add_subdirectory(core)
-

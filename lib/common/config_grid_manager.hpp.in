@@ -1,6 +1,0 @@
-#ifndef BEMPP_CONFIG_GRID_MANAGER_HPP
-#define BEMPP_CONFIG_GRID_MANAGER_HPP
-
-#cmakedefine WITH_ALUGRID
-
-#endif
