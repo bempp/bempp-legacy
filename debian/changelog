@@ -1,7 +1,5 @@
-python-bempp (3.2.0-0ubuntu1~xenial) xenial; urgency=medium
+python-bempp (3.2.0dev20170905-0ubuntu1~xenial) xenial; urgency=medium
 
-  * Various bug fixes
-  * Interactive 3d visualization in IPython Notebooks
-  * Domain potentials for electrostatic field computations
+  * Added new import/export mechanics
 
- -- Timo Betcke <timo.betcke@gmail.com>  Tue, 04 Aug 2017 08:00:00 +0100
+ -- Timo Betcke <timo.betcke@gmail.com>  Tue, 05 Sep 2017 08:00:00 +0100
