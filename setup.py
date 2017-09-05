@@ -16,6 +16,9 @@ source_dir = dirname(abspath(__file__))
 package_dir = join(source_dir, 'pkg_install' + str(py_major))
 mkpath(package_dir)
 
+with open(source_dir + "/VERSION") as f:
+    VERSION = f.readline().rstrip()
+
 def cmake_cache_line(variable, value, type='STRING'):
     return "set(%s \"%s\" CACHE %s \"\")\n" % (variable, value, type)
 
@@ -258,7 +261,7 @@ class SDist(dSDist):
             dist.packages, dist.package_dir = old_values[2:]
 setup(
     name = "bempp",
-    version = "3.2.0",
+    version = VERSION,
 
     setup_requires = ['numpy', 'scipy', 'cython>=0.23', 'mpi4py'],
     install_requires = ['numpy', 'scipy', 'cython>=0.23', 'mpi4py'],
