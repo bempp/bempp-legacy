@@ -30,7 +30,7 @@ def export_data_sets(file_name, grid_data_sets, description=''):
                 sort_keys = True, indent = 4, ensure_ascii = False)
 
 
-def import_data_sets(**kwargs):
+def import_data_sets(file_name=None, data_string=None):
     """
     Import data sets from a JSON string or file.
 
@@ -50,14 +50,14 @@ def import_data_sets(**kwargs):
     import json
     from bempp.api.file_interfaces.general_interface import GridDataSet
 
-    if sum(['file_name' in kwargs,'data_string' in kwargs]) != 1:
+    if file_name is None and data_string is None:
         raise ValueError("Exactly one of 'file_name' or 'data_string' must be provided.")
 
-    if 'file_name' in kwargs:
-        with open(kwargs['file_name'], 'r') as infile:
+    if 'file_name' is not None:
+        with open(file_name, 'r') as infile:
             data_dict = json.load(infile)
     else:
-        data_dict = json.loads(kwargs['data_string'])
+        data_dict = json.loads(data_string)
 
 
     data_dict['grid_data_sets'] = [GridDataSet.from_dict(dataset) 
