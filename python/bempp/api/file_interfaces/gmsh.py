@@ -418,7 +418,7 @@ def create_grid_structure(all_vertices, all_vertex_ids,
     # Now choose the vertices in the right order
     # np.argsort reverses a permutation
 
-    index_set = np.argsort(vertex_used[np.where(vertex_used>-1)])
+    index_set = np.argsort(vertex_used)[-vertex_count:]
     vertices[:,:] = all_vertices[:, index_set]
     vertex_ids = np.zeros(vertex_count, dtype='uint32')
     vertex_ids[:] = all_vertex_ids[index_set]
