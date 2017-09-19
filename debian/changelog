@@ -1,5 +1,5 @@
-python-bempp (3.2.0dev20170905-0ubuntu1~xenial) xenial; urgency=medium
+python-bempp (3.2.0dev20170919-0ubuntu1~xenial) xenial; urgency=medium
 
   * Added new import/export mechanics
 
- -- Timo Betcke <timo.betcke@gmail.com>  Tue, 05 Sep 2017 08:00:00 +0100
+ -- Timo Betcke <timo.betcke@gmail.com>  Sun, 10 Sep 2017 08:00:00 +0100
