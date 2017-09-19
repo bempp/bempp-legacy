@@ -152,15 +152,6 @@ def menger_sponge(h=0.1, level=2):
 
     eg = EdgeGenerator()
 
-    for x in range(-1,N+1):
-        out = ""
-        for y in range(-1,N+1):
-            if is_solid(x,y,0):
-                out += "X"
-            else:
-                out += "-"
-        print(out)
-
     for x,y,z in product(range(N), repeat=3):
         if is_solid(x, y, z):
             if not is_solid(x-1, y, z):
@@ -233,8 +224,6 @@ def menger_sponge(h=0.1, level=2):
     geo += geo_surfaces + "\n"
 
     geo += "\nMesh.Algorithm = 6;"
-    with open("/home/matt/python/bempp-test/mesh.geo","w") as f:
-        f.write(geo)
     return __generate_grid_from_geo_string(geo)
 
 
