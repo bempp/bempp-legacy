@@ -194,7 +194,8 @@ def magnetic_field(domain, range_, dual_to_range,
         use_projection_spaces, assemble_only_singular_part),
                                    domain, range_, dual_to_range)
 
-def multitrace_operator(grid, wave_number, parameters=None):
+def multitrace_operator(grid, wave_number, 
+        parameters=None, target=None):
     """Assemble the multitrace operator for Maxwell."""
 
     from bempp.api.assembly import BlockedOperator
@@ -210,20 +211,47 @@ def multitrace_operator(grid, wave_number, parameters=None):
     snc_space = bempp.api.function_space(grid, "B-SNC", 0)
     snc_space_fine = bempp.api.function_space(grid.barycentric_grid(), "SNC", 0)
 
-    efie_fine = electric_field(
-        rwg_space_fine, rwg_space_fine,
-        snc_space_fine, wave_number, parameters=parameters)
-    mfie_fine = magnetic_field(
-        rwg_space_fine, rwg_space_fine,
-        snc_space_fine, wave_number, parameters=parameters)
+    if target is None:
 
-    blocked_operator[0, 0] = project_operator(
-        mfie_fine, rwg_space, rwg_space, rbc_space)
-    blocked_operator[0, 1] = project_operator(
-        efie_fine, bc_space, rwg_space, rbc_space)
-    blocked_operator[1, 0] = -1 * project_operator(
-        efie_fine, rwg_space, bc_space, snc_space)
-    blocked_operator[1, 1] = project_operator(
-        mfie_fine, bc_space, bc_space, snc_space)
+        efie_fine = electric_field(
+            rwg_space_fine, rwg_space_fine,
+            snc_space_fine, wave_number, parameters=parameters)
+        mfie_fine = magnetic_field(
+            rwg_space_fine, rwg_space_fine,
+            snc_space_fine, wave_number, parameters=parameters)
+
+        blocked_operator[0, 0] = project_operator(
+            mfie_fine, rwg_space, rwg_space, rbc_space)
+        blocked_operator[0, 1] = project_operator(
+            efie_fine, bc_space, rwg_space, rbc_space)
+        blocked_operator[1, 0] = -1 * project_operator(
+            efie_fine, rwg_space, bc_space, snc_space)
+        blocked_operator[1, 1] = project_operator(
+            mfie_fine, bc_space, bc_space, snc_space)
+
+    else:
+
+        rwg_space_fine_target = bempp.api.function_space(target.barycentric_grid(), "RWG", 0)
+        rwg_space_target = bempp.api.function_space(target, "B-RWG", 0)
+        bc_space_target = bempp.api.function_space(target, "BC", 0)
+        rbc_space_target = bempp.api.function_space(target, "RBC", 0)
+        snc_space_target = bempp.api.function_space(target, "B-SNC", 0)
+        snc_space_fine_target = bempp.api.function_space(target.barycentric_grid(), "SNC", 0)
+
+        efie_fine = electric_field(
+            rwg_space_fine, rwg_space_fine_target,
+            snc_space_fine_target, wave_number, parameters=parameters)
+        mfie_fine = magnetic_field(
+            rwg_space_fine, rwg_space_fine_target,
+            snc_space_fine_target, wave_number, parameters=parameters)
+
+        blocked_operator[0, 0] = project_operator(
+            mfie_fine, rwg_space, rwg_space_target, rbc_space_target)
+        blocked_operator[0, 1] = project_operator(
+            efie_fine, bc_space, rwg_space_target, rbc_space_target)
+        blocked_operator[1, 0] = -1 * project_operator(
+            efie_fine, rwg_space, bc_space_target, snc_space_target)
+        blocked_operator[1, 1] = project_operator(
+            mfie_fine, bc_space, bc_space_target, snc_space_target)
 
     return blocked_operator
