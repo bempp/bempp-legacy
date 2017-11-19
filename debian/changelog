@@ -1,5 +1,8 @@
-python-bempp (3.2.0dev20170919-0ubuntu1~xenial) xenial; urgency=medium
+python-bempp (3.3.0-0ubuntu1~xenial) xenial; urgency=medium
 
-  * Added new import/export mechanics
+	* Added new import/export mechanics
+	* Import/Export of binary gmsh files
+	* Export of vtk files
+	* Paraview can be enabled as external viewer
 
- -- Timo Betcke <timo.betcke@gmail.com>  Sun, 10 Sep 2017 08:00:00 +0100
+ -- Timo Betcke <timo.betcke@gmail.com>  Sun, 19 Nov 2017 13:25:00 +0000
