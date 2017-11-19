@@ -7,6 +7,13 @@ www.bempp.org
 
 History
 =======
+3.3.0 (19 Nov 2017)
+--------------------
+* Added new import/export mechanics
+* Import/Export of binary gmsh files
+* Export of VTK files
+* Paraview can be enabled as external viewer
+
 3.2.0 (04 Aug 2017)
 -------------------
 Released version 3.2.0
