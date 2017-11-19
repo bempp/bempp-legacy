@@ -290,7 +290,7 @@ def export_data_sets(file_name, grid_data_sets, description='',
             identifier = data.description.rstrip() + ' (imag)'
             for index in range(data.number_of_arrays):
                 write_actual_data(identifier, data.imag[index],
-                        data.timesteps[index], index)
+                        timesteps[index], index)
 
     nsets = len(grid_data_sets)
     if nsets == 1:
