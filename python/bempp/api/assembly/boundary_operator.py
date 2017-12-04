@@ -187,17 +187,12 @@ class BoundaryOperator(object):
            Notes
            -----
            The dual product B *_D A acts only only on the test functions
-           of A  and is defined as
-           self.adjoint(other.range) * other
+           of A  and its weak form is defined as
+           self.strong_form().adjoint() * other.weak_form()
 
         """
 
-        from bempp.api.space.projection import rewrite_operator_spaces
-
-        return self.adjoint(other.range) * \
-                rewrite_operator_spaces(other, other.domain,
-                                        self.dual_to_range,
-                                        other.dual_to_range)
+        return _DualProductBoundaryOperator(self, other)              
 
 class ZeroBoundaryOperator(BoundaryOperator):
     """A boundary operator that represents a zero operator.
@@ -534,6 +529,28 @@ class _ProductBoundaryOperator(BoundaryOperator):
     def _weak_form_impl(self):
         """Implement the weak form."""
         return self._op1.weak_form() * self._op2.strong_form()
+
+
+class _DualProductBoundaryOperator(BoundaryOperator):
+    """Form the dual product of two boundary operators."""
+
+    def __init__(self, op1, op2):
+        """Construct a dual product boundary operator."""
+        if not op2.dual_to_range.is_compatible(op1.range):
+            raise ValueError(
+                "Range space of first operator must be compatible to " +
+                "dual to range space of second operator.")
+
+        super(_DualProductBoundaryOperator, self).__init__(
+            op2.domain, op2.range, op1.domain,
+            label=op1.label + " *_D " + op2.label)
+
+        self._op1 = op1
+        self._op2 = op2
+
+    def _weak_form_impl(self):
+        """Implement the weak form."""
+        return self._op1.strong_form().adjoint() * self._op2.weak_form()
 
 
 class _TransposeBoundaryOperator(BoundaryOperator):
