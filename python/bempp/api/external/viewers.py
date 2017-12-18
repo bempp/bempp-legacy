@@ -169,10 +169,10 @@ def visualize_with_ipython_notebook(obj, mode='element', transformation=None):
             local_coordinates = _np.array([[1./3, 1./3, 1./3],
                 [1./3, 1./3, 1./3]])
         values = _np.zeros((grid.leaf_view.entity_count(0), 3, 
-                            obj.component_count), dtype=obj.dtype)
+                            obj.component_count), dtype='float64')
         for element in grid.leaf_view.entity_iterator(0):
             index = index_set.entity_index(element)
-            local_values = transformation(obj.evaluate(element, local_coordinates))
+            local_values = np.real(transformation(obj.evaluate(element, local_coordinates)))
             values[index,:,:] = local_values.T
         viewer = IPyNotebookSurfaceViewer(grid.leaf_view.vertices,
             grid.leaf_view.elements, values)

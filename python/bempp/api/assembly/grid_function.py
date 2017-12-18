@@ -513,6 +513,35 @@ class GridFunction(object):
         else:
             return self._dual_coefficients.dtype
 
+    @property
+    def real(self):
+        """Return a new grid function consisting of the real part of this function."""
+        import numpy as np
+        import bempp.api
+        if self.representation == 'primal':
+            return bempp.api.GridFunction(
+                space=self.space, dual_space=self.dual_space,
+                coefficients=np.real(self.coefficients))
+        else:
+            return bempp.api.GridFunction(
+                space=self.space, dual_space=self.dual_space,
+                projections=np.real(self.projections()))
+
+    @property
+    def imag(self):
+        """Return a new grid function consisting of the imaginary part of this function."""
+        import numpy as np
+        import bempp.api
+        if self.representation == 'primal':
+            return bempp.api.GridFunction(
+                space=self.space, dual_space=self.dual_space,
+                coefficients=np.imag(self.coefficients))
+        else:
+            return bempp.api.GridFunction(
+                space=self.space, dual_space=self.dual_space,
+                projections=np.imag(self.projections()))
+
+        
     @classmethod
     def from_random(cls, space):
         """Create a random grid function normalized to unit norm. """
