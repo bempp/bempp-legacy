@@ -7,6 +7,11 @@ www.bempp.org
 
 History
 =======
+3.3.1 (18 Dec 2017)
+-------------------
+* Fixed bug in IPython viewer for complex data
+* Fixed the dual_product method
+
 3.3.0 (19 Nov 2017)
 --------------------
 * Added new import/export mechanics
