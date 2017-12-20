@@ -39,6 +39,7 @@ class Grid(object):
         self._impl = impl
         self._barycentric_grid = None
         self._view = None
+        self._marked_set = {}
 
     def plot(self):
         """Plot the grid with Gmsh."""
@@ -67,15 +68,19 @@ class Grid(object):
 
     def get_mark(self, element):
         """Return the mark status of a given element."""
-        return self._impl.get_mark(element._impl)
+        return self.leaf_view.get_mark(element._impl)
 
     def mark(self, element):
         """Mark an element for refinement."""
-        self._impl.mark(element._impl)
+        self.leaf_view.mark(element)
 
     def refine(self):
         """Refine grid."""
-        self._impl.refine()
+        return self.leaf_view.refine()
+
+    def clear_marks(self):
+        """Clear all marks."""
+        self.leaf_view.clear_marks()
 
     def barycentric_grid(self):
         """Return a barycentrically refine grid."""

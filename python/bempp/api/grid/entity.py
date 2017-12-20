@@ -30,7 +30,7 @@ class Entity(object):
         The following iterates through the vertices of an element and
         prints their coordinates.
 
-        >>> for edge in element.sub_entity_iterator(2):
+        >>> for vertex in element.sub_entity_iterator(2):
         >>>     print(vertex.geometry.corners)
 
         """
