@@ -7,6 +7,10 @@ www.bempp.org
 
 History
 =======
+3.3.2 (20 Dec 2017)
+-------------------
+* Added experimental support for grid refinement.
+
 3.3.1 (18 Dec 2017)
 -------------------
 * Fixed bug in IPython viewer for complex data
