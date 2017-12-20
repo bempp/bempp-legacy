@@ -260,6 +260,8 @@ class GridView(object):
         import numpy as np
         import bempp.api
 
+        bempp.api.log("Grid refinement is experimental and may contain bugs.")
+        
         # Create the initial refinement list
         number_of_elements = self.entity_count(0)
         number_of_vertices = self.entity_count(2)
