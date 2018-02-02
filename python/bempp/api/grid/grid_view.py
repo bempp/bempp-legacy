@@ -279,35 +279,37 @@ class GridView(object):
         edge_connectivity = self.edge_to_element_matrix.tolil().rows
         vertex_number = number_of_vertices
         new_vertices = []
-        
-
+       
         while len(marked) != 0:
             index = marked.pop()
             element = self.element_from_index(index)
-            # Add reference edge to refinement list
-            refinement_list[index, self.reference_edges[index]] = vertex_number
-            edge_index = index_set.sub_entity_index(
-                element, self.reference_edges[index], 1)
-            # Get the coordinate of the mid-point of the reference edge
-            edge = self.edge_from_index(edge_index)
-            new_vertices.append(
-                .5 * np.sum(edge.geometry.corners, axis=1))
-            # Do nothing more if there is no neighboring element at reference edge
-            if len(edge_connectivity[edge_index]) == 1:
-                continue
-            # Get the neighbor
-            neighbors = edge_connectivity[edge_index]
-            other = neighbors[0] if neighbors[0] != index else neighbors[1]
-            # If reference edge not yet marked, add to refinement list
-            if refinement_list[other, self.reference_edges[other]] == -1:
-                marked.add(other)
+            # Check if reference edge is not yet refined:
+            if refinement_list[index, self.reference_edges[index]] == -1:
+                # Add reference edge to refinement list
+                refinement_list[index, self.reference_edges[index]] = vertex_number
+                edge_index = index_set.sub_entity_index(
+                    element, self.reference_edges[index], 1)
+                # Get the coordinate of the mid-point of the reference edge
+                edge = self.edge_from_index(edge_index)
+                new_vertices.append(
+                    .5 * np.sum(edge.geometry.corners, axis=1))
+                # Do nothing more if there is no neighboring element at reference edge
+                if len(edge_connectivity[edge_index]) == 1:
+                    vertex_number += 1
+                    continue
+                # Get the neighbor
+                neighbors = edge_connectivity[edge_index]
+                other = neighbors[0] if neighbors[0] != index else neighbors[1]
+                # If reference edge not yet marked, add to refinement list
+                if refinement_list[other, self.reference_edges[other]] == -1:
+                    marked.add(other)
 
-            other_element = self.element_from_index(other)
-            for other_edge_index, other_edge in \
-                enumerate(other_element.sub_entity_iterator(1)):
-                if index_set.entity_index(other_edge) == edge_index:
-                    refinement_list[other, other_edge_index] = vertex_number
-            vertex_number += 1
+                other_element = self.element_from_index(other)
+                for other_edge_index, other_edge in \
+                    enumerate(other_element.sub_entity_iterator(1)):
+                    if index_set.entity_index(other_edge) == edge_index:
+                        refinement_list[other, other_edge_index] = vertex_number
+                vertex_number += 1
         # Now create the new vertices and elements.
 
         vertices = np.zeros((3, number_of_vertices + len(new_vertices)),
@@ -321,6 +323,7 @@ class GridView(object):
         elements = []
         domain_indices = []
         new_reference_edges = []
+
 
         # Mapping of edges to the corresponding node pairs
         edge_to_local_vertices = [[0, 1], [2, 0], [1, 2]]
