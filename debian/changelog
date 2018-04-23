@@ -1,5 +1,6 @@
-python-bempp (3.3.2-0ubuntu1~xenial) xenial; urgency=medium
+python-bempp (3.3.3-0ubuntu1~xenial) xenial; urgency=medium
 
-    * Added experimental support for grid refinement.
+    * Fixed grid refinement
+    * Notebook plotting via plotly
 
- -- Timo Betcke <timo.betcke@gmail.com>  Wed, 20 Dec 2017 22:50:00 +0000
+ -- Timo Betcke <timo.betcke@gmail.com>  Wed, 23 Apr 2018 22:10:00 +0000
