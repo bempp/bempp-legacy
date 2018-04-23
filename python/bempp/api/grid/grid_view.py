@@ -378,7 +378,7 @@ class GridView(object):
                              refinement_list[i, ref_index]])
                         new_reference_edges.append(0)
                         domain_indices.append(element.domain)
-                        continue
+                    continue
                 if refinement_list[i, ref_index] != -1:
                     # Only reference edge to refine
                     v1 = edge_to_local_vertices[ref_index]
