@@ -148,7 +148,8 @@ def visualize_with_paraview(obj, mode='element', transformation=None):
 
 def visualize_with_ipython_notebook(obj, mode='element', transformation=None):
     """View a grid or grid function in an IPython Notebook"""
-    from bempp.api.utils.ipython import IPyNotebookSurfaceViewer
+    import plotly
+    import plotly.figure_factory as ff
     from bempp.api import GridFunction
     from bempp.api.grid.grid import Grid
     import numpy as np
@@ -156,27 +157,41 @@ def visualize_with_ipython_notebook(obj, mode='element', transformation=None):
     if transformation is None:
         transformation = np.real
 
+    plotly.offline.init_notebook_mode()
+
     if isinstance(obj, Grid):
-        viewer = IPyNotebookSurfaceViewer(obj.leaf_view.vertices,
-            obj.leaf_view.elements)
-        viewer.visualize()
+        vertices = obj.leaf_view.vertices
+        elements = obj.leaf_view.elements
+        fig = ff.create_trisurf(
+                x=vertices[0, :], y=vertices[1, :], z=vertices[2, :],
+                simplices=elements.T, color_func=elements.shape[1] * ['rgb(255, 222, 173)'])
+        plotly.offline.iplot(fig)
+
     elif isinstance(obj, GridFunction):
+        import matplotlib as mpl
+        from matplotlib import pyplot as plt
+        cmap = plt.get_cmap('jet')
+
         grid = obj.space.grid
+        vertices = grid.leaf_view.vertices
+        elements = grid.leaf_view.elements
         index_set = grid.leaf_view.index_set()
-        if mode == 'element':
-            local_coordinates = _np.array([[0, 1, 0], [0, 0, 1]])
-        else:
-            local_coordinates = _np.array([[1./3, 1./3, 1./3],
-                [1./3, 1./3, 1./3]])
-        values = _np.zeros((grid.leaf_view.entity_count(0), 3, 
-                            obj.component_count), dtype='float64')
+
+        local_coordinates = _np.array([[1./3],[1./3]])
+        values = _np.zeros(grid.leaf_view.entity_count(0), 
+                            dtype='float64')
         for element in grid.leaf_view.entity_iterator(0):
             index = index_set.entity_index(element)
             local_values = np.real(transformation(obj.evaluate(element, local_coordinates)))
-            values[index,:,:] = local_values.T
-        viewer = IPyNotebookSurfaceViewer(grid.leaf_view.vertices,
-            grid.leaf_view.elements, values)
-        viewer.visualize()
+            values[index] = local_values.flatten()
+
+        norm = mpl.colors.Normalize(vmin=_np.min(values), vmax=_np.max(values))
+        colorfun = lambda x: _np.rint(_np.array(cmap(norm(x))) * 255)
+        color_codes = ['rgb({0}, {1}, {2})'.format(*colorfun(x)) for x in values]
+        fig = ff.create_trisurf(
+                x=vertices[0, :], y=vertices[1, :], z=vertices[2, :],
+                simplices=elements.T, color_func=color_codes)
+        plotly.offline.iplot(fig)
 
 def set_gmsh_viewer():
     """Change plotting default to Gmsh."""
