@@ -95,12 +95,14 @@ void IntegrationTask(tbb::task_group &taskGroupDevice,
     shared_ptr<Fiber::CudaIntegrator<BasisFunctionType, KernelType, ResultType,
         CudaBasisFunctionType, CudaKernelType, CudaResultType>> &cudaIntegrator,
     CudaResultType *h_result, CudaResultType *d_result,
-    const size_t resultArraySize, float &integrationTimer) {
+    const size_t resultArraySize, double &integrationTimer) {
 
   taskGroupDevice.run_and_wait([
        chunk, isLastChunk, elemPairCount, maxActiveElemPairCount,
        &d_testElementIndices, &d_trialElementIndices,
        &cudaIntegrator, h_result, d_result, resultArraySize, &integrationTimer] {
+
+//    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
     const size_t elemPairIndexBegin = chunk * maxActiveElemPairCount;
 
@@ -110,8 +112,6 @@ void IntegrationTask(tbb::task_group &taskGroupDevice,
     else
       elemPairIndexEnd = (chunk + 1) * maxActiveElemPairCount;
 
-    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-
     // Evaluate regular integrals over selected element pairs
     cudaIntegrator->integrate(d_testElementIndices, d_trialElementIndices,
         elemPairIndexBegin, elemPairIndexEnd, d_result);
@@ -120,13 +120,8 @@ void IntegrationTask(tbb::task_group &taskGroupDevice,
     cu_verify( cudaMemcpy(h_result, d_result, resultArraySize,
         cudaMemcpyDeviceToHost) );
 
-    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-    if (chunk != 0 && !isLastChunk)
-      integrationTimer += std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count();
-    if (false)
-      std::cout << "Time for CudaIntegrator::integrate() = "
-                << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()
-                << " ms" << std::endl;
+//    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+//    integrationTimer += std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count();
   });
 }
 
@@ -144,26 +139,20 @@ void AssemblyTask(tbb::task_group &taskGroupDevice,
     const std::vector<std::vector<int>> &blockRows,
     const std::vector<std::vector<int>> &blockCols,
     CudaResultType *h_result, Matrix<ResultType> &result,
-    Matrix<tbb::spin_mutex> &mutex, float &assemblyTimer) {
+    double &assemblyTimer) {
 
-  typedef tbb::spin_mutex MutexType;
+//  typedef tbb::spin_mutex MutexType;
 
   taskGroupDevice.run([
       chunk, isLastChunk, chunkElemPairCount, maxActiveElemPairCount,
       testDofCount, trialDofCount, &testElementIndices, &trialElementIndices,
       &testLocalDofs, &trialLocalDofs, &testLocalDofWeights, &trialLocalDofWeights,
-      &blockRows, &blockCols, h_result, &result, &mutex, &assemblyTimer] {
+      &blockRows, &blockCols, h_result, &result/*, &mutex*/, &assemblyTimer] {
 
-    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+//    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
-    // Parallel global assembly
-    tbb::parallel_for(size_t(0), size_t(chunkElemPairCount), [
-        chunk, isLastChunk, chunkElemPairCount, maxActiveElemPairCount,
-        testDofCount, trialDofCount, &testElementIndices, &trialElementIndices,
-        &testLocalDofs, &trialLocalDofs, &testLocalDofWeights, &trialLocalDofWeights,
-        &blockRows, &blockCols, h_result, &result, &mutex](size_t chunkElemPair) {
-
-//    for (size_t chunkElemPair = 0; chunkElemPair < chunkElemPairCount; ++chunkElemPair) {
+      // Global assembly
+      for (size_t chunkElemPair = 0; chunkElemPair < chunkElemPairCount; ++chunkElemPair) {
 
       const size_t offsetResultImag =
           trialDofCount * testDofCount * chunkElemPairCount;
@@ -181,8 +170,7 @@ void AssemblyTask(tbb::task_group &taskGroupDevice,
           const size_t index = trialLocalDofs[trialIndex][trialDof] * testDofCount * chunkElemPairCount
                                + testLocalDofs[testIndex][testDof] * chunkElemPairCount
                                + chunkElemPair;
-          MutexType::scoped_lock lock(mutex(blockRows[testIndex][testDof],
-                                            blockCols[trialIndex][trialDof]));
+
           result(blockRows[testIndex][testDof],
                  blockCols[trialIndex][trialDof]) +=
               conjugate(testLocalDofWeights[testIndex][testDof]) *
@@ -191,15 +179,10 @@ void AssemblyTask(tbb::task_group &taskGroupDevice,
               value(h_result, index, offsetResultImag);
         }
       }
-//    }
-    });
-    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-    if (chunk != 0 && !isLastChunk)
-      assemblyTimer += std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count();
-    if (false)
-      std::cout << "Time for global result assembly = "
-                << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()
-                << " ms" << std::endl;
+    };
+//    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+//    assemblyTimer += std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count();
+
   });
 }
 
@@ -220,26 +203,31 @@ CudaDefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
         : m_testDofCount(testShapeset.size()),
           m_trialDofCount(trialShapeset.size()) {
 
-  std::cout << "NOTE: Shapesets have to be identical within one space" << std::endl;
-  std::cout << "trialDofCount = " << m_trialDofCount << ", " << std::flush;
-  std::cout << "testDofCount = " << m_testDofCount << std::endl;
+  if (m_trialDofCount != 3 || m_testDofCount != 3)
+    throw std::invalid_argument(
+        "CudaDefaultLocalAssemblerForIntegralOperatorsOnSurfaces::CudaDefaultLocalAssemblerForIntegralOperatorsOnSurfaces(): "
+        "Only three local dofs per element supported on the device");
 
   // Get numerical quadrature points and weights
   const int trialQuadOrder = cudaOptions.quadOrder();
   const int testQuadOrder = cudaOptions.quadOrder();
+  if (trialQuadOrder != 4 || testQuadOrder != 4)
+    throw std::invalid_argument(
+        "CudaDefaultLocalAssemblerForIntegralOperatorsOnSurfaces::CudaDefaultLocalAssemblerForIntegralOperatorsOnSurfaces(): "
+        "Only six quadrature points per element supported on the device");
   Matrix<CoordinateType> localTrialQuadPoints, localTestQuadPoints;
   std::vector<CoordinateType> trialQuadWeights, testQuadWeights;
   fillSingleQuadraturePointsAndWeights(3, trialQuadOrder,
       localTrialQuadPoints, trialQuadWeights);
   fillSingleQuadraturePointsAndWeights(3, testQuadOrder,
       localTestQuadPoints, testQuadWeights);
-  //  std::cout << "trialQuadOrder = " << trialQuadOrder << ", " << std::flush;
-  //  std::cout << "testQuadOrder = " << testQuadOrder << std::endl;
+
 
   m_deviceIds = cudaOptions.devices();
   const unsigned int deviceCount = m_deviceIds.size();
 
   m_cudaIntegrators.resize(deviceCount);
+  m_buffer.resize(deviceCount);
 
   // Get maximum number of element pairs which can be treated on the device
   // simultaneously
@@ -271,6 +259,10 @@ CudaDefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
         testQuadWeights, trialQuadWeights,
         testShapeset, trialShapeset, testGrid, trialGrid,
         m_maxActiveElemPairCount, kernel, deviceId, cudaOptions);
+
+    m_buffer[device] = tbb::enumerable_thread_specific<
+        ::CudaHostDeviceBuffer<ResultType, CudaResultType> >(deviceId, m_maxActiveElemPairCount,
+            m_trialDofCount, m_testDofCount);
   }
 }
 
@@ -297,18 +289,25 @@ void CudaDefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
         const std::vector<std::vector<BasisFunctionType>> &trialLocalDofWeights,
         const std::vector<std::vector<int>> &blockRows,
         const std::vector<std::vector<int>> &blockCols,
-        Matrix<ResultType> &result, const unsigned int device) {
+        Matrix<ResultType> &result, const unsigned int device/*,
+        tbb::atomic<std::chrono::steady_clock::duration>& allocationTimer,
+        tbb::atomic<std::chrono::steady_clock::duration>& integrationTimer,
+        tbb::atomic<std::chrono::steady_clock::duration>& assemblyTimer*/) {
+
+  double localTotalTimer = 0., localAllocationTimer = 0., localIntegrationTimer = 0., localAssemblyTimer = 0.;
+//  std::chrono::steady_clock::time_point totalBegin = std::chrono::steady_clock::now();
 
   const int deviceId = m_deviceIds[device];
   cu_verify( cudaSetDevice(deviceId) );
 
   // Get the number of element pairs to be treated on the specified device
   const size_t elemPairCount = trialElementIndices.size() * testElementIndices.size();
-//  std::cout << "elemPairCount = " << elemPairCount << std::endl;
 
   // Get number of element pair chunks
   const unsigned int chunkCount = static_cast<unsigned int>(
       (elemPairCount-1) / m_maxActiveElemPairCount + 1);
+
+//  std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
   CudaResultType *h_resultEven, *h_resultOdd, *d_resultEven, *d_resultOdd;
   size_t resultArraySize;
@@ -319,8 +318,8 @@ void CudaDefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
     if (Bempp::ScalarTraits<ResultType>::isComplex) resultArraySize *= 2;
 
     // Allocate pageable host memory and memory on the device
-    h_resultEven = (CudaResultType*)malloc(resultArraySize);            // Host
-    cu_verify( cudaMalloc((void**)&(d_resultEven), resultArraySize) );  // Device
+    h_resultEven = (CudaResultType*)malloc(resultArraySize);
+    cu_verify( cudaMalloc((void**)&(d_resultEven), resultArraySize) );
 
   } else {
 
@@ -329,11 +328,15 @@ void CudaDefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
     if (Bempp::ScalarTraits<ResultType>::isComplex) resultArraySize *= 2;
 
     // Allocate pageable host memory and memory on the device
-    h_resultEven = (CudaResultType*)malloc(resultArraySize);            // Host
+    h_resultEven = (CudaResultType*)malloc(resultArraySize);
     h_resultOdd = (CudaResultType*)malloc(resultArraySize);
-    cu_verify( cudaMalloc((void**)&(d_resultEven), resultArraySize) );  // Device
+    cu_verify( cudaMalloc((void**)&(d_resultEven), resultArraySize) );
     cu_verify( cudaMalloc((void**)&(d_resultOdd), resultArraySize) );
   }
+
+//  std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+//  localAllocationTimer = std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count();
+//  std::cout << "Time for memory allocation = " << localAllocationTimer << " us" << std::endl;
 
   // Copy element indices to device memory
   thrust::device_vector<int> d_testElementIndices, d_trialElementIndices;
@@ -341,17 +344,10 @@ void CudaDefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
       testElementIndices, trialElementIndices,
       d_testElementIndices, d_trialElementIndices);
 
-  // Create a mutex matrix for parallel assembly
-  typedef tbb::spin_mutex MutexType;
-  Matrix<MutexType> mutex(result.rows(), result.cols());
-
   tbb::task_group taskGroupDevice;
-  float integrationTimer = 0., assemblyTimer = 0.;
 
   // Loop over chunks of element pairs
   for (size_t chunk = 0; chunk < chunkCount; ++chunk) {
-
-//    std::cout << "chunk = " << chunk << std::endl;
 
     const bool isLastChunk = (chunk == chunkCount - 1);
 
@@ -359,9 +355,13 @@ void CudaDefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
     if (chunk % 2 == 0) {
       h_result = h_resultEven;
       d_result = d_resultEven;
+//      h_result = m_buffer[device].local().h_resultEven;
+//      d_result = m_buffer[device].local().d_resultEven;
     } else {
       h_result = h_resultOdd;
       d_result = d_resultOdd;
+//      h_result = m_buffer[device].local().h_resultOdd;
+//      d_result = m_buffer[device].local().d_resultOdd;
     }
 
     size_t chunkElemPairCount;
@@ -371,22 +371,26 @@ void CudaDefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
       chunkElemPairCount = m_maxActiveElemPairCount;
 
     // Perfrom integration for current element pair chunk on the GPU
+
     IntegrationTask(taskGroupDevice,
         chunk, isLastChunk, elemPairCount, m_maxActiveElemPairCount,
         d_testElementIndices, d_trialElementIndices,
         m_cudaIntegrators[device], h_result, d_result, resultArraySize,
-        integrationTimer);
+        localIntegrationTimer);
 
     // Perfrom assembly for current element pair chunk on the CPU
     AssemblyTask<BasisFunctionType, ResultType, CudaResultType>(taskGroupDevice,
         chunk, isLastChunk, chunkElemPairCount, m_maxActiveElemPairCount,
         m_testDofCount, m_trialDofCount, testElementIndices, trialElementIndices,
         testLocalDofs, trialLocalDofs, testLocalDofWeights, trialLocalDofWeights,
-        blockRows, blockCols, h_result, result, mutex, assemblyTimer);
+        blockRows, blockCols, h_result, result, localAssemblyTimer);
   }
 
   // Wait until last chunk assembly has finished
   taskGroupDevice.wait();
+
+//  std::cout << "Time for integration = " << localIntegrationTimer << " us" << std::endl;
+//  std::cout << "Time for assembly = "    << localAssemblyTimer    << " us" << std::endl;
 
   // Free pageable host memory and memory on the device
   free(h_resultEven);
@@ -395,6 +399,101 @@ void CudaDefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
     free(h_resultOdd);
     cu_verify( cudaFree(d_resultOdd) );
   }
+
+//  std::chrono::steady_clock::time_point totalEnd = std::chrono::steady_clock::now();
+//  localTotalTimer = std::chrono::duration_cast<std::chrono::microseconds>(totalEnd - totalBegin).count();
+//  std::cout << "Time for total block computation = " << localTotalTimer << " us" << std::endl;
+}
+
+template <typename BasisFunctionType, typename KernelType, typename ResultType,
+typename CudaBasisFunctionType, typename CudaKernelType, typename CudaResultType>
+void CudaDefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
+    BasisFunctionType, KernelType, ResultType,
+    CudaBasisFunctionType, CudaKernelType, CudaResultType>::
+    evaluateLocalWeakForms(
+        const std::vector<std::vector<Bempp::LocalDof>> & testRawLocalDofs,
+        const std::vector<std::vector<Bempp::LocalDof>> &trialRawLocalDofs,
+        Matrix<ResultType> &result, const unsigned int device) {
+
+  double totalTimer = 0., allocationTimer = 0., integrationTimer = 0.;
+  std::chrono::steady_clock::time_point totalBegin = std::chrono::steady_clock::now();
+
+  const int deviceId = m_deviceIds[device];
+  cu_verify( cudaSetDevice(deviceId) );
+
+  // Allocate device memory
+  CudaResultType       *h_result              , *d_result;
+  Bempp::EntityIndex   *h_testElemIndices     , *d_testElemIndices;
+  Bempp::LocalDofIndex *h_testLocalDofIndices , *d_testLocalDofIndices;
+  Bempp::EntityIndex   *h_trialElemIndices    , *d_trialElemIndices;
+  Bempp::LocalDofIndex *h_trialLocalDofIndices, *d_trialLocalDofIndices;
+
+  const size_t maxElemsPerDof = 10; // TODO Check that!
+  size_t resultArraySize;
+  resultArraySize = testRawLocalDofs.size() * trialRawLocalDofs.size() * sizeof(CudaResultType);
+  if (Bempp::ScalarTraits<ResultType>::isComplex) resultArraySize *= 2;
+
+  typedef typename std::conditional<Bempp::ScalarTraits<ResultType>::isComplex,
+                           typename Bempp::ScalarTraits<CudaResultType>::ComplexType,
+                           CudaResultType>::type CudaComplexResultType;
+  Matrix<CudaComplexResultType> cudaComplexResult(result.rows(), result.cols());
+  h_result = reinterpret_cast<CudaResultType*>(cudaComplexResult.data());
+
+  std::chrono::steady_clock::time_point allocBegin = std::chrono::steady_clock::now();
+  cu_verify( cudaMalloc((void**)&(d_result), resultArraySize) );
+  cu_verify( cudaMalloc((void**)&(d_testElemIndices    ), testRawLocalDofs.size() * maxElemsPerDof * sizeof(Bempp::  EntityIndex)) );
+  cu_verify( cudaMalloc((void**)&(d_testLocalDofIndices), testRawLocalDofs.size() * maxElemsPerDof * sizeof(Bempp::LocalDofIndex)) );
+  h_testElemIndices     = (Bempp::  EntityIndex*)malloc(testRawLocalDofs.size() * maxElemsPerDof * sizeof(Bempp::  EntityIndex));
+  h_testLocalDofIndices = (Bempp::LocalDofIndex*)malloc(testRawLocalDofs.size() * maxElemsPerDof * sizeof(Bempp::LocalDofIndex));
+  cu_verify( cudaMalloc((void**)&(d_trialElemIndices    ), trialRawLocalDofs.size() * maxElemsPerDof * sizeof(Bempp::  EntityIndex)) );
+  cu_verify( cudaMalloc((void**)&(d_trialLocalDofIndices), trialRawLocalDofs.size() * maxElemsPerDof * sizeof(Bempp::LocalDofIndex)) );
+  h_trialElemIndices     = (Bempp::  EntityIndex*)malloc(trialRawLocalDofs.size() * maxElemsPerDof * sizeof(Bempp::  EntityIndex));
+  h_trialLocalDofIndices = (Bempp::LocalDofIndex*)malloc(trialRawLocalDofs.size() * maxElemsPerDof * sizeof(Bempp::LocalDofIndex));
+  std::chrono::steady_clock::time_point allocEnd = std::chrono::steady_clock::now();
+  allocationTimer = std::chrono::duration_cast<std::chrono::microseconds>(allocEnd - allocBegin).count();
+
+  // Copy gather dof information and copy to device
+  memset(h_testElemIndices, Bempp::EntityIndex(-1), testRawLocalDofs.size() * maxElemsPerDof * sizeof(Bempp::  EntityIndex));
+  for (int i = 0; i < testRawLocalDofs.size(); ++i) {
+    assert(testRawLocalDofs[i].size() < maxElemsPerDof);
+    for (int j = 0; j < testRawLocalDofs[i].size(); ++j) {
+      h_testElemIndices    [i * maxElemsPerDof + j] = testRawLocalDofs[i][j].entityIndex;
+      h_testLocalDofIndices[i * maxElemsPerDof + j] = testRawLocalDofs[i][j].dofIndex;
+    }
+  }
+  cu_verify( cudaMemcpyAsync((void*)d_testElemIndices    , (const void*)h_testElemIndices    , testRawLocalDofs.size() * maxElemsPerDof * sizeof(Bempp::  EntityIndex), cudaMemcpyHostToDevice, cudaStreamPerThread) );
+  cu_verify( cudaMemcpyAsync((void*)d_testLocalDofIndices, (const void*)h_testLocalDofIndices, testRawLocalDofs.size() * maxElemsPerDof * sizeof(Bempp::LocalDofIndex), cudaMemcpyHostToDevice, cudaStreamPerThread) );
+  memset(h_trialElemIndices, Bempp::EntityIndex(-1), trialRawLocalDofs.size() * maxElemsPerDof * sizeof(Bempp::  EntityIndex));
+  for (int i = 0; i < trialRawLocalDofs.size(); ++i) {
+    assert(trialRawLocalDofs[i].size() < maxElemsPerDof);
+    for (int j = 0; j < trialRawLocalDofs[i].size(); ++j) {
+      h_trialElemIndices    [i * maxElemsPerDof + j] = trialRawLocalDofs[i][j].entityIndex;
+      h_trialLocalDofIndices[i * maxElemsPerDof + j] = trialRawLocalDofs[i][j].dofIndex;
+    }
+  }
+  cu_verify( cudaMemcpyAsync((void*)d_trialElemIndices    , (const void*)h_trialElemIndices    , trialRawLocalDofs.size() * maxElemsPerDof * sizeof(Bempp::  EntityIndex), cudaMemcpyHostToDevice, cudaStreamPerThread) );
+  cu_verify( cudaMemcpyAsync((void*)d_trialLocalDofIndices, (const void*)h_trialLocalDofIndices, trialRawLocalDofs.size() * maxElemsPerDof * sizeof(Bempp::LocalDofIndex), cudaMemcpyHostToDevice, cudaStreamPerThread) );
+
+  // Evaluate coefficients from regular integrals for requested dofs
+  m_cudaIntegrators[device]->integrate(
+      d_testElemIndices,  d_testLocalDofIndices,  testRawLocalDofs.size(),
+      d_trialElemIndices, d_trialLocalDofIndices, trialRawLocalDofs.size(),
+      d_result);
+
+  // Copy results to host memory and cast to host data type
+  cu_verify( cudaMemcpyAsync(h_result, d_result, resultArraySize, cudaMemcpyDeviceToHost, cudaStreamPerThread) );
+  result = cudaComplexResult.template cast<ResultType>();
+
+  // Free memory on host and device
+  free(h_testElemIndices     ); cu_verify( cudaFree(d_testElemIndices     ) );
+  free(h_testLocalDofIndices ); cu_verify( cudaFree(d_testLocalDofIndices ) );
+  free(h_trialElemIndices    ); cu_verify( cudaFree(d_trialElemIndices    ) );
+  free(h_trialLocalDofIndices); cu_verify( cudaFree(d_trialLocalDofIndices) );
+
+  std::chrono::steady_clock::time_point totalEnd = std::chrono::steady_clock::now();
+  totalTimer = std::chrono::duration_cast<std::chrono::microseconds>(totalEnd - totalBegin).count();
+//  printf("Total block computation time = %8.1f us, time for memory allocation = %8.1f us.\n",
+//      totalTimer, allocationTimer);
 }
 
 } // namespace Fiber

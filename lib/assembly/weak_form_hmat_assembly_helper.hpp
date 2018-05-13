@@ -105,8 +105,9 @@ public:
   scale(const hmat::DefaultBlockClusterTreeNodeType &node) const override;
 
   void getStatistics(
-      size_t &cudaBlockCount, size_t &cpuBlockCount,
-      size_t &accessedCudaEntryCount, size_t &accessedCpuEntryCount) const;
+      std::vector<size_t> &cudaBlockCount, size_t &cpuBlockCount,
+      std::vector<size_t> &accessedCudaEntryCount, size_t &accessedCpuEntryCount,
+      double &allocationTimer, double &integrationTimer, double &assemblyTimer) const;
 
   // /** \brief Return the number of entries in the matrix that have been
   //  *  accessed so far. */
@@ -147,8 +148,10 @@ private:
   CudaLocalAssembler *m_cudaAssembler;
   mutable unsigned int m_nextDevice;
   mutable MutexType m_deviceMutex;
-  mutable tbb::atomic<size_t> m_cudaBlockCount, m_cpuBlockCount,
-      m_accessedCudaEntryCount, m_accessedCpuEntryCount;
+  mutable tbb::atomic<size_t> m_cpuBlockCount, m_accessedCpuEntryCount;
+  mutable std::vector< tbb::atomic<size_t> > m_cudaBlockCount, m_accessedCudaEntryCount;
+//  mutable tbb::atomic<std::chrono::steady_clock::duration>
+//      m_allocationTimer, m_integrationTimer, m_assemblyTimer;
   /** \endcond */
 };
 

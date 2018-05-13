@@ -85,6 +85,19 @@ LocalDofListsCache<BasisFunctionType>::get(int start, int indexCount) {
 }
 
 template <typename BasisFunctionType>
+std::vector<typename LocalDofLists<BasisFunctionType>::DofIndex>
+LocalDofListsCache<BasisFunctionType>::getOriginalIndices(
+    int start, int indexCount) {
+
+  std::vector<typename LocalDofLists<BasisFunctionType>::DofIndex> originalIndices;
+  originalIndices.resize(indexCount);
+  for (int i = 0; i < indexCount; ++i)
+    originalIndices[i] = m_p2o[start + i];
+
+  return originalIndices;
+}
+
+template <typename BasisFunctionType>
 void LocalDofListsCache<BasisFunctionType>::findLocalDofs(
     int start, int indexCount,
     std::vector<typename LocalDofLists<BasisFunctionType>::DofIndex>

@@ -52,10 +52,8 @@
 #include "../hmat/hmatrix_aca_compressor.hpp"
 #include "../hmat/hmatrix_dense_compressor.hpp"
 
-#include <fstream>
 #include <iostream>
 #include <stdexcept>
-#include <chrono>
 
 #include <boost/type_traits/is_complex.hpp>
 
@@ -159,8 +157,6 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
   // Create the operator's hierarchical matrix
   shared_ptr<hmat::DefaultHMatrixType<ResultType>> hMatrix;
 
-  std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-
   if (context.cudaOptions().precision() == "single") {
 
     typedef typename Fiber::ScalarTraits<typename Fiber::ScalarTraits<BasisFunctionType>::RealType>::SingleType CudaBasisFunctionType;
@@ -185,26 +181,20 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
       hMatrix.reset(
           new hmat::DefaultHMatrixType<ResultType>(blockClusterTree, compressor));
 
-//    } else if (compressionAlgorithm == "precond") {
-//
-//      hmat::HMatrixPrecondCompressor<ResultType, 2> compressor(helper);
-//      hMatrix.reset(
-//          new hmat::DefaultHMatrixType<ResultType>(blockClusterTree, compressor));
-
     } else
       throw std::runtime_error("HMatGlobalAssember::assembleDetachedWeakForm: "
                                "Unknown compression algorithm");
 
-    size_t cudaBlockCount, cpuBlockCount,
-        accessedCudaEntryCount, accessedCpuEntryCount;
-    helper.getStatistics(cudaBlockCount, cpuBlockCount,
-        accessedCudaEntryCount, accessedCpuEntryCount);
-    std::cout << cudaBlockCount << " blocks and "
-              << accessedCudaEntryCount << " matrix entries have been treated on the device,"
-              << std::endl;
-    std::cout << cpuBlockCount << " blocks and "
-              << accessedCpuEntryCount << " matrix entries have been treated on the CPU."
-              << std::endl;
+                size_t   cpuBlockCount,  accessedCpuEntryCount;
+    std::vector<size_t> cudaBlockCount, accessedCudaEntryCount;
+    double allocationTimer, integrationTimer, assemblyTimer;
+    helper.getStatistics(cudaBlockCount        , cpuBlockCount,
+                         accessedCudaEntryCount, accessedCpuEntryCount,
+                         allocationTimer, integrationTimer, assemblyTimer);
+    printf("%zu matrix entries in %zu blocks treated on GPU 0\n", accessedCudaEntryCount[0], cudaBlockCount[0]);
+    printf("%zu matrix entries in %zu blocks treated on GPU 1\n", accessedCudaEntryCount[1], cudaBlockCount[1]);
+    printf("%zu matrix entries in %zu blocks treated on CPU  \n",  accessedCpuEntryCount   ,  cpuBlockCount);
+
   } else {
 
     typedef typename Fiber::ScalarTraits<typename Fiber::ScalarTraits<BasisFunctionType>::RealType>::DoubleType CudaBasisFunctionType;
@@ -229,35 +219,20 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
       hMatrix.reset(
           new hmat::DefaultHMatrixType<ResultType>(blockClusterTree, compressor));
 
-//    } else if (compressionAlgorithm == "precond") {
-//
-//      hmat::HMatrixPrecondCompressor<ResultType, 2> compressor(helper);
-//      hMatrix.reset(
-//          new hmat::DefaultHMatrixType<ResultType>(blockClusterTree, compressor));
-
     } else
       throw std::runtime_error("HMatGlobalAssember::assembleDetachedWeakForm: "
                                "Unknown compression algorithm");
 
-    size_t cudaBlockCount, cpuBlockCount,
-        accessedCudaEntryCount, accessedCpuEntryCount;
-    helper.getStatistics(cudaBlockCount, cpuBlockCount,
-        accessedCudaEntryCount, accessedCpuEntryCount);
-    std::cout << cudaBlockCount << " blocks and "
-              << accessedCudaEntryCount << " matrix entries have been treated on the device,"
-              << std::endl;
-    std::cout << cpuBlockCount << " blocks and "
-              << accessedCpuEntryCount << " matrix entries have been treated on the CPU."
-              << std::endl;
+        size_t   cpuBlockCount,  accessedCpuEntryCount;
+    std::vector<size_t> cudaBlockCount, accessedCudaEntryCount;
+    double allocationTimer, integrationTimer, assemblyTimer;
+    helper.getStatistics(cudaBlockCount        , cpuBlockCount,
+                 accessedCudaEntryCount, accessedCpuEntryCount,
+                 allocationTimer, integrationTimer, assemblyTimer);
+    printf("%zu matrix entries in %zu blocks treated on GPU 0\n", accessedCudaEntryCount[0], cudaBlockCount[0]);
+    printf("%zu matrix entries in %zu blocks treated on GPU 1\n", accessedCudaEntryCount[1], cudaBlockCount[1]);
+    printf("%zu matrix entries in %zu blocks treated on CPU  \n",  accessedCpuEntryCount   ,  cpuBlockCount);
   }
-
-  std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-  std::cout << "Time for H-matrix assembly = "
-            << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()
-            << " ms" << std::endl;
-
-  std::ofstream file("hmat_assembly_timer.dat", std::ios::out | std::ios::app);
-  file << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << std::endl;
 
   return std::unique_ptr<DiscreteBoundaryOperator<ResultType>>(
       static_cast<DiscreteBoundaryOperator<ResultType> *>(

@@ -68,6 +68,9 @@ public:
   shared_ptr<const LocalDofLists<BasisFunctionType>> get(int start,
                                                          int indexCount);
 
+  std::vector<typename LocalDofLists<BasisFunctionType>::DofIndex> getOriginalIndices(
+      int start, int indexCount);
+
 private:
   void
   findLocalDofs(int start, int indexCount,

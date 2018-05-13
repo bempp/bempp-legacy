@@ -27,7 +27,7 @@ namespace Bempp {
 CudaOptions::CudaOptions()
     : m_precision("double"), m_elementDataCachingEnabled(true),
       m_kernelDataCachingEnabled(false), m_devices({0,1}), m_quadOrder(4),
-      m_blockSize(512), m_chunkElemPairCount(AUTO) {
+      m_blockSize(512), m_chunkElemPairCount(1e6) {
 }
 
 void CudaOptions::setPrecision(std::string precision) {

@@ -49,7 +49,7 @@ HMatrixAcaCompressor<ValueType, N>::computeCross(
     Matrix<ValueType> &origCol, Matrix<ValueType> &row, Matrix<ValueType> &col,
     std::vector<std::size_t> &rowApproxCounter,
     std::vector<std::size_t> &colApproxCounter, ModeType mode,
-    double zeroTol) const {
+    double zeroTol, double& computeMatrixBlockTimer) const {
 
   const auto &rowClusterRange =
       blockClusterTreeNode.data().rowClusterTreeNode->data().indexRange;
@@ -72,8 +72,13 @@ HMatrixAcaCompressor<ValueType, N>::computeCross(
 
     rowIndex = rowClusterRange[0] + nextPivot;
     rowIndexRange = {{rowIndex, rowIndex + 1}};
+
+    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
     m_dataAccessor.computeMatrixBlock(rowIndexRange, columnClusterRange,
                                       blockClusterTreeNode, origRow);
+    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+    computeMatrixBlockTimer += std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count();
+
     row = origRow;
     if (A.cols() > 0 && B.rows() > 0)
       row -= A.row(rowIndex - rowClusterRange[0]) * B;
@@ -86,8 +91,12 @@ HMatrixAcaCompressor<ValueType, N>::computeCross(
     columnIndex =
         boost::numeric_cast<std::size_t>(maxColInd) + columnClusterRange[0];
     columnIndexRange = {{columnIndex, columnIndex + 1}};
+
+    begin = std::chrono::steady_clock::now();
     m_dataAccessor.computeMatrixBlock(rowClusterRange, columnIndexRange,
                                       blockClusterTreeNode, origCol);
+    end = std::chrono::steady_clock::now();
+    computeMatrixBlockTimer += std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count();
 
     col = origCol;
     if (A.cols() > 0 && B.rows() > 0)
@@ -108,8 +117,13 @@ HMatrixAcaCompressor<ValueType, N>::computeCross(
   else {
     columnIndex = columnClusterRange[0] + nextPivot;
     columnIndexRange = {{columnIndex, columnIndex + 1}};
+
+    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
     m_dataAccessor.computeMatrixBlock(rowClusterRange, columnIndexRange,
                                       blockClusterTreeNode, origCol);
+    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+    computeMatrixBlockTimer += std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count();
+
     col = origCol;
     if (A.cols() > 0 && B.rows() > 0)
       col -= A * B.col(columnIndex - columnClusterRange[0]);
@@ -121,8 +135,12 @@ HMatrixAcaCompressor<ValueType, N>::computeCross(
     pivotValue = col(maxRowInd, 0);
     rowIndex = boost::numeric_cast<std::size_t>(maxRowInd) + rowClusterRange[0];
     rowIndexRange = {{rowIndex, rowIndex + 1}};
+
+    begin = std::chrono::steady_clock::now();
     m_dataAccessor.computeMatrixBlock(rowIndexRange, columnClusterRange,
                                       blockClusterTreeNode, origRow);
+    end = std::chrono::steady_clock::now();
+    computeMatrixBlockTimer += std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count();
 
     row = origRow;
     if (A.cols() > 0 && B.rows() > 0)
@@ -194,6 +212,8 @@ void HMatrixAcaCompressor<ValueType, N>::compressBlock(
     return;
   }
 
+  std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+
   IndexRangeType rowClusterRange;
   IndexRangeType columnClusterRange;
   std::size_t numberOfRows;
@@ -241,11 +261,12 @@ void HMatrixAcaCompressor<ValueType, N>::compressBlock(
   bool rowModeZeroTermination = false;
   bool columnModeZeroTermination = false;
 
+  double computeMatrixBlockTimer = double(0);
   while (!finished) {
     // First run the ACA
     acaStatus = aca(blockClusterTreeNode, nextPivot, A, B, maxIterations,
                     rowApproxCounter, colApproxCounter, origRow, origCol,
-                    blockNorm, m_eps, 1E-15, mode);
+                    blockNorm, m_eps, 1E-15, mode, computeMatrixBlockTimer);
     // Now test the status for different cases
     if (acaStatus == AcaStatusType::RANK_LIMIT_REACHED) {
       finished = true; // Approximation does not work. So just stop.
@@ -311,6 +332,12 @@ void HMatrixAcaCompressor<ValueType, N>::compressBlock(
   }
   static_cast<HMatrixLowRankData<ValueType> *>(hMatrixData.get())->A().swap(A);
   static_cast<HMatrixLowRankData<ValueType> *>(hMatrixData.get())->B().swap(B);
+
+  std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+//  std::cout << "Time for ACA block compression = "
+//            << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()
+//            << " ms, thereof " << computeMatrixBlockTimer << " ms spent in computeMatrixBlock()." << std::endl;
+
 }
 
 template <typename ValueType, int N>
@@ -321,7 +348,7 @@ HMatrixAcaCompressor<ValueType, N>::aca(
     std::vector<size_t> &rowApproxCounter,
     std::vector<size_t> &colApproxCounter, Matrix<ValueType> &origRow,
     Matrix<ValueType> &origCol, double &blockNorm, double eps, double zeroTol,
-    ModeType mode) const {
+    ModeType mode, double& computeMatrixBlockTimer) const {
 
   IndexRangeType rowClusterRange;
   IndexRangeType columnClusterRange;
@@ -342,7 +369,7 @@ HMatrixAcaCompressor<ValueType, N>::aca(
   while (maxIterations > 0) {
     crossStatus = computeCross(blockClusterTreeNode, A, B, nextPivot, origRow,
                                origCol, row, col, rowApproxCounter,
-                               colApproxCounter, mode, zeroTol);
+                               colApproxCounter, mode, zeroTol, computeMatrixBlockTimer);
     if (crossStatus == CrossStatusType::ZERO)
       return (iterationCount == 0)
                  ? AcaStatusType::ZERO_TERMINATION_WITHOUT_ITERATION

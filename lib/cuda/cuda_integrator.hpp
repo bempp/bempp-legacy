@@ -98,6 +98,14 @@ public:
                  const size_t elemPairIndexEnd,
                  CudaResultType *d_result);
 
+  void integrate(const int           *d_testElemIndices,
+                 const LocalDofIndex *d_testLocalDofIndices,
+                 const size_t         numberOfTestDofs,
+                 const int           *d_trialElemIndices,
+                 const LocalDofIndex *d_trialLocalDofIndices,
+                 const size_t         numberOfTrialDofs,
+                 CudaResultType      *d_result);
+
   void pushElementIndicesToDevice(const std::vector<int> &testIndices,
                                   const std::vector<int> &trialIndices,
                                   thrust::device_vector<int> &d_testIndices,

@@ -12,10 +12,12 @@
 #include <tbb/parallel_for_each.h>
 #include <tbb/spin_mutex.h>
 #include <tbb/task_group.h>
+#include <tbb/task_scheduler_init.h>
 
 #include <algorithm>
 #include <chrono>
 #include <cuda_profiler_api.h>
+#include <fstream>
 
 namespace hmat {
 
@@ -113,6 +115,8 @@ void HMatrix<ValueType, N>::initialize(
 
   std::size_t numberOfLeafs = m_myLeafs.size();
 
+  std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+
   cudaProfilerStart();
 
   tbb::parallel_for(tbb::blocked_range<std::size_t>(0, numberOfLeafs),
@@ -126,6 +130,14 @@ void HMatrix<ValueType, N>::initialize(
                     });
 
   cudaProfilerStop();
+
+  std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+  std::cout << "Time for H-matrix assembly = "
+            << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()
+            << " ms" << std::endl;
+
+  std::ofstream file("hmat_assembly_timer.dat", std::ios::out | std::ios::app);
+  file << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << std::endl;
 
   // Compute statistics
   for (auto &elem : m_hMatrixData) {

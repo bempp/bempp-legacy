@@ -45,7 +45,7 @@ private:
                Matrix<ValueType> &col,
                std::vector<std::size_t> &rowApproxCounter,
                std::vector<std::size_t> &colApproxCounter, ModeType mode,
-               double zeroTol) const;
+               double zeroTol, double& computeMatrixBlockTimer) const;
 
   bool selectMinPivot(const Matrix<ValueType> &vec,
                       const std::vector<std::size_t> &approximationCount,
@@ -66,7 +66,7 @@ private:
                     std::vector<size_t> &colApproxCounter,
                     Matrix<ValueType> &origRow, Matrix<ValueType> &origCol,
                     double &blockNorm, double eps, double zeroTol,
-                    ModeType mode) const;
+                    ModeType mode, double& computeMatrixBlockTimer) const;
 
   const DataAccessor<ValueType, N> &m_dataAccessor;
   double m_eps;

@@ -450,21 +450,14 @@ void ParallelDeviceLoop(
 
     const unsigned int trialDofCount = trialShapeset.size();
     const unsigned int testDofCount = testShapeset.size();
-  //  std::cout << "trialDofCount = " << trialDofCount << ", " << std::flush;
-  //  std::cout << "testDofCount = " << testDofCount << std::endl;
 
     const unsigned int trialPointCount = localTrialQuadPoints.cols();
     const unsigned int testPointCount = localTestQuadPoints.cols();
-//    std::cout << "trialPointCount = " << trialPointCount << ", " << std::flush;
-//    std::cout << "testPointCount = " << testPointCount << std::endl;
 
     const size_t trialIndexCount = trialIndices.size();
     const size_t testIndexCount = testIndices.size();
-  //  std::cout << "trialIndexCount = " << trialIndexCount
-  //            << ", testIndexCount = " << testIndexCount << std::endl;
 
     const size_t elemPairCountTotal = trialIndexCount * testIndexCount;
-  //  std::cout << "elemPairCountTotal = " << elemPairCountTotal << std::endl;
 
     // Note: This approach assumes identical device types
     const size_t maxElemPairCountPerDevice =
@@ -515,6 +508,7 @@ void ParallelDeviceLoop(
       // Allocate mapped pinned host memory
       cu_verify( cudaHostAlloc((void**)&h_regularResultEven, resultArraySize,
           cudaHostAllocMapped) );
+//      cu_verify( cudaMallocManaged((void**)&h_regularResultEven, resultArraySize, cudaMemAttachHost) );
 
     } else {
 
@@ -527,10 +521,12 @@ void ParallelDeviceLoop(
           cudaHostAllocMapped) );
       cu_verify( cudaHostAlloc((void**)&h_regularResultOdd, resultArraySize,
           cudaHostAllocMapped) );
+//      cu_verify( cudaMallocManaged((void**)&h_regularResultEven, resultArraySize, cudaMemAttachHost) );
+//      cu_verify( cudaMallocManaged((void**)&h_regularResultOdd , resultArraySize, cudaMemAttachHost) );
     }
 
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-//    std::cout << "Time for host vector allocation = "
+//    std::cout << "Time for host array allocation = "
 //              << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()
 //              << " ms" << std::endl;
 
@@ -555,7 +551,6 @@ void ParallelDeviceLoop(
 
     // Loop over chunks of element pairs
     for (size_t chunk = 0; chunk < chunkCount; ++chunk) {
-//      std::cout << "chunk = " << chunk << std::endl;
 
       const bool isLastChunk = (chunk == chunkCount - 1);
 
@@ -612,6 +607,12 @@ void ParallelDeviceLoop(
     // Free pinned host memory
     cu_verify( cudaFreeHost(h_regularResultEven) );
     cu_verify( cudaFreeHost(h_regularResultOdd) );
+//    if (chunkCount == 1) {
+//      cu_verify( cudaFree(h_regularResultEven) );
+//    } else {
+//      cu_verify( cudaFree(h_regularResultEven) );
+//      cu_verify( cudaFree(h_regularResultOdd) );
+//    }
   });
 }
 
@@ -645,9 +646,10 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::
   defaultAssembler.getShapesets(testShapesets, trialShapesets);
   const Shapeset &testShapeset = *(*testShapesets)[0];
   const Shapeset &trialShapeset = *(*trialShapesets)[0];
-  std::cout << "NOTE: Shapesets have to be identical within one space" << std::endl;
-  std::cout << "trialDofCount = " << trialShapeset.size() << ", " << std::flush;
-  std::cout << "testDofCount = " << testShapeset.size() << std::endl;
+  if (trialShapeset.size() != 3 || testShapeset.size() != 3)
+    throw std::invalid_argument(
+        "CudaDenseGlobalAssembler::assembleDetachedWeakForm(): "
+        "Only three local dofs per element supported on the device");
 
   // Get reference to singular integral cache and check if it's active
   const Cache &cache = defaultAssembler.cache();
@@ -700,7 +702,7 @@ CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::
             << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()
             << " ms" << std::endl;
 
-  std::ofstream file("cuda_dense_assembly_timer.dat", std::ios::out | std::ios::app);
+  std::ofstream file("gpu_dense_assembly_timer.dat", std::ios::out | std::ios::app);
   file << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << std::endl;
 
   // Return the discrete operator represented by the matrix that has just been
@@ -738,20 +740,20 @@ void CudaDenseGlobalAssembler<BasisFunctionType, ResultType>::
   typedef tbb::spin_mutex MutexType;
   Matrix<MutexType> mutex(testSpace.globalDofCount(),
                           trialSpace.globalDofCount());
-//  typedef tbb::speculative_spin_mutex MutexType;
-//  std::vector<MutexType> mutex(testSpace.globalDofCount());
 
   // Get numerical quadrature points and weights
   const int trialQuadOrder = cudaOptions.quadOrder();
   const int testQuadOrder = cudaOptions.quadOrder();
+  if (trialQuadOrder != 4 || testQuadOrder != 4)
+    throw std::invalid_argument(
+        "CudaDenseGlobalAssembler::assembleDetachedWeakFormImpl(): "
+        "Only six quadrature points per element supported on the device");
   Matrix<CoordinateType> localTrialQuadPoints, localTestQuadPoints;
   std::vector<CoordinateType> trialQuadWeights, testQuadWeights;
   Fiber::fillSingleQuadraturePointsAndWeights(3, trialQuadOrder,
       localTrialQuadPoints, trialQuadWeights);
   Fiber::fillSingleQuadraturePointsAndWeights(3, testQuadOrder,
       localTestQuadPoints, testQuadWeights);
-  //  std::cout << "trialQuadOrder = " << trialQuadOrder << ", " << std::flush;
-  //  std::cout << "testQuadOrder = " << testQuadOrder << std::endl;
 
   cudaProfilerStart();
 

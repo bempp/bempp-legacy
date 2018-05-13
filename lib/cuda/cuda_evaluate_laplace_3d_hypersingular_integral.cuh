@@ -96,7 +96,7 @@ CudaEvaluateLaplace3dHypersingularIntegralFunctorCached(
                                + testElemPosition];
         }
         Laplace3dSingleLayerPotentialKernel(testPointCoo, trialPointCoo,
-            kernelValue);
+            &kernelValue);
         kernelValues[trialPoint * testPointCount + testPoint] = kernelValue;
       }
     }

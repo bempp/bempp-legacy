@@ -24,6 +24,54 @@
 #include "../common/common.hpp"
 
 #include "cuda_integrator.hpp"
+#include "tbb/enumerable_thread_specific.h"
+#include "tbb/atomic.h"
+
+namespace {
+
+  template<typename ResultType, typename CudaResultType>
+  struct CudaHostDeviceBuffer {
+
+    CudaHostDeviceBuffer() {
+
+      throw std::invalid_argument(
+          "CudaHostDeviceBuffer::CudaHostDeviceBuffer(): "
+          "Default constructor called.");
+    }
+
+    CudaHostDeviceBuffer(const int deviceId, const size_t maxActiveElemPairCount,
+                         const unsigned int trialDofCount, const unsigned int testDofCount) {
+
+      size_t resultArraySize = maxActiveElemPairCount
+          * trialDofCount * testDofCount * sizeof(CudaResultType);
+      if (Bempp::ScalarTraits<ResultType>::isComplex) resultArraySize *= 2;
+
+      // Allocate pageable host memory and device memory
+      cudaSetDevice(deviceId);
+      h_resultEven = (CudaResultType*)malloc(resultArraySize);
+      h_resultOdd  = (CudaResultType*)malloc(resultArraySize);
+      cu_verify( cudaMalloc((void**)&(d_resultEven), resultArraySize) );
+      cu_verify( cudaMalloc((void**)&(d_resultOdd ), resultArraySize) );
+//      printf("Thread %d allocated memory on device %d.\n", tbb::this_tbb_thread::get_id(), deviceId);
+    }
+
+    ~CudaHostDeviceBuffer() {
+
+      // Free pageable host memory and device memory
+//      cudaSetDevice(0);
+      if (h_resultEven != nullptr) free(h_resultEven);
+      if (h_resultOdd  != nullptr) free(h_resultOdd );
+      if (d_resultEven != nullptr) cu_verify( cudaFree(d_resultEven) );
+      if (d_resultOdd  != nullptr) cu_verify( cudaFree(d_resultOdd ) );
+//      printf("Thread %d freed memory on the device.\n", tbb::this_tbb_thread::get_id());
+    }
+
+    CudaResultType* h_resultEven;
+    CudaResultType* d_resultEven;
+    CudaResultType* h_resultOdd;
+    CudaResultType* d_resultOdd;
+  };
+}
 
 namespace Fiber {
 
@@ -49,6 +97,8 @@ public:
 
   virtual ~CudaDefaultLocalAssemblerForIntegralOperatorsOnSurfaces();
 
+  // Old implementation with integration on GPU and assembly on CPU
+  // Each element pair is treated by one GPU thread.
   virtual void
   evaluateLocalWeakForms(
       const std::vector<int> &testElementIndices,
@@ -59,7 +109,25 @@ public:
       const std::vector<std::vector<BasisFunctionType>> &trialLocalDofWeights,
       const std::vector<std::vector<int>> &blockRows,
       const std::vector<std::vector<int>> &blockCols,
-      Matrix<ResultType> &result, const unsigned int device = 0);
+      Matrix<ResultType> &result, const unsigned int device/*,
+      tbb::atomic<std::chrono::steady_clock::duration>& allocationTimer,
+      tbb::atomic<std::chrono::steady_clock::duration>& integrationTimer,
+      tbb::atomic<std::chrono::steady_clock::duration>& assemblyTimer*/);
+
+  // New implementation with both integration and assembly on GPU
+  // Each global dof is treated by one GPU thread.
+  // - More input data loaded from global device memory
+  // - More kernel function evaluations
+  // - More input data copied to the device
+  // + Avoids computation of unutilized local dofs
+  // + Less output data written to global device memory
+  // + Avoids slow assembly on the CPU
+  // + Less host and device memory allocated
+  // + Less output data copied from the device
+  virtual void
+  evaluateLocalWeakForms(const std::vector<std::vector<Bempp::LocalDof>> & testRawLocalDofs,
+                         const std::vector<std::vector<Bempp::LocalDof>> &trialRawLocalDofs,
+                         Matrix<ResultType> &result, const unsigned int device);
 
 private:
   /** \cond PRIVATE */
@@ -68,6 +136,8 @@ private:
   size_t m_maxActiveElemPairCount;
   const unsigned int m_trialDofCount;
   const unsigned int m_testDofCount;
+  std::vector< tbb::enumerable_thread_specific<
+      ::CudaHostDeviceBuffer<ResultType, CudaResultType> > > m_buffer;
   /** \endcond */
 };
 

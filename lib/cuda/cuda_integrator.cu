@@ -303,6 +303,7 @@ CudaBasisFunctionType, CudaKernelType, CudaResultType>::
 
   // Get device pointer from pinned host memory
   cudaHostGetDevicePointer((void **)&d_result, (void *)h_result, 0);
+//  d_result = h_result;
 
   // TODO: cudaHostGetDevicePointer return non zero error code?
 //  cu_verify( cudaHostGetDevicePointer((void **)&d_result, (void *)h_result, 0) );
@@ -321,7 +322,6 @@ CudaBasisFunctionType, CudaKernelType, CudaResultType>::
               CudaResultType *d_result) {
 
   const size_t elemPairCount = elemPairIndexEnd - elemPairIndexBegin;
-//  std::cout << "elemPairCount = " << elemPairCount << std::endl;
 
   if (elemPairCount == 0)
     return;
@@ -334,7 +334,6 @@ CudaBasisFunctionType, CudaKernelType, CudaResultType>::
   const unsigned int blockCount =
       static_cast<unsigned int>((elemPairCount-1) / blockSize.x + 1);
   const dim3 gridSize(blockCount, 1, 1);
-//  std::cout << "gridSize = " << blockCount << std::endl;
 
   if (m_isElementDataCachingEnabled == true) {
 
@@ -588,110 +587,9 @@ CudaBasisFunctionType, CudaKernelType, CudaResultType>::
         const dim3 gridSize, const dim3 blockSize,
         CudaResultType *d_result) {
 
-  // Launch kernel
-  if (m_kernelName == "Laplace3dSingleLayerPotential") {
-
-    cu_verify_void((
-        CudaEvaluateLaplace3dSingleLayerPotentialKernelFunctorCached<
-        CudaBasisFunctionType, CudaKernelType, CudaResultType>
-        <<<gridSize, blockSize>>>(
-        elemPairIndexBegin, elemPairCount, d_testIndices.size(),
-        thrust::raw_pointer_cast(d_testIndices.data()),
-        thrust::raw_pointer_cast(d_trialIndices.data()),
-        m_testQuadData.pointCount, m_trialQuadData.pointCount,
-        m_testElemData.activeElemCount,
-        thrust::raw_pointer_cast(m_testElemData.geomData),
-        m_trialElemData.activeElemCount,
-        thrust::raw_pointer_cast(m_trialElemData.geomData),
-        thrust::raw_pointer_cast(m_d_kernelValues.data()))
-    ));
-
-  } else if (
-      (m_kernelName == "ModifiedHelmholtz3dSingleLayerPotential" ||
-       m_kernelName == "ModifiedHelmholtz3dSingleLayerPotentialInterpolated")
-      && fabs(m_waveNumberReal) < 1.0e-10 ) {
-
-    cu_verify_void((
-        CudaEvaluateHelmholtz3dSingleLayerPotentialKernelFunctorCached<
-        CudaBasisFunctionType, CudaKernelType, CudaResultType>
-        <<<gridSize, blockSize>>>(
-        elemPairIndexBegin, elemPairCount, d_testIndices.size(),
-        thrust::raw_pointer_cast(d_testIndices.data()),
-        thrust::raw_pointer_cast(d_trialIndices.data()),
-        m_testQuadData.pointCount, m_trialQuadData.pointCount,
-        m_testElemData.activeElemCount,
-        thrust::raw_pointer_cast(m_testElemData.geomData),
-        m_trialElemData.activeElemCount,
-        thrust::raw_pointer_cast(m_trialElemData.geomData),
-        m_waveNumberImag, thrust::raw_pointer_cast(m_d_kernelValues.data()))
-    ));
-
-  } else {
     throw std::runtime_error(
         "CudaIntegrator::launchCudaEvaluateIntegralFunctorKernelDataCached(): "
         "kernel not implemented on the device");
-  }
-  cudaDeviceSynchronize();
-
-  unsigned int newGridSze =
-      static_cast<unsigned int>(
-          (elemPairCount*m_trialBasisData.dofCount*m_testBasisData.dofCount-1)
-          / blockSize.x + 1);
-  dim3 newGridSize(newGridSze,1,1);
-
-  // Launch kernel
-  if (m_kernelName == "Laplace3dSingleLayerPotential") {
-
-    cu_verify_void((
-        CudaEvaluateLaplace3dSingleLayerPotentialIntegralFunctorKernelCached<
-        CudaBasisFunctionType, CudaKernelType, CudaResultType>
-        <<<newGridSize, blockSize>>>(
-        elemPairIndexBegin, elemPairCount, d_testIndices.size(),
-        thrust::raw_pointer_cast(d_testIndices.data()),
-        thrust::raw_pointer_cast(d_trialIndices.data()),
-        m_testQuadData.pointCount, m_trialQuadData.pointCount,
-        m_testBasisData.dofCount,
-        thrust::raw_pointer_cast(m_testBasisData.values),
-        m_trialBasisData.dofCount,
-        thrust::raw_pointer_cast(m_trialBasisData.values),
-        m_testElemData.activeElemCount,
-        thrust::raw_pointer_cast(m_testElemData.integrationElements),
-        m_trialElemData.activeElemCount,
-        thrust::raw_pointer_cast(m_trialElemData.integrationElements),
-        thrust::raw_pointer_cast(m_d_kernelValues.data()),
-        d_result)
-    ));
-
-  } else if (
-      (m_kernelName == "ModifiedHelmholtz3dSingleLayerPotential" ||
-       m_kernelName == "ModifiedHelmholtz3dSingleLayerPotentialInterpolated")
-      && fabs(m_waveNumberReal) < 1.0e-10 ) {
-
-    cu_verify_void((
-        CudaEvaluateHelmholtz3dSingleLayerPotentialIntegralFunctorKernelCached<
-        CudaBasisFunctionType, CudaKernelType, CudaResultType>
-        <<<newGridSize, blockSize>>>(
-        elemPairIndexBegin, elemPairCount, d_testIndices.size(),
-        thrust::raw_pointer_cast(d_testIndices.data()),
-        thrust::raw_pointer_cast(d_trialIndices.data()),
-        m_testQuadData.pointCount, m_trialQuadData.pointCount,
-        m_testBasisData.dofCount,
-        thrust::raw_pointer_cast(m_testBasisData.values),
-        m_trialBasisData.dofCount,
-        thrust::raw_pointer_cast(m_trialBasisData.values),
-        m_testElemData.activeElemCount,
-        thrust::raw_pointer_cast(m_testElemData.integrationElements),
-        m_trialElemData.activeElemCount,
-        thrust::raw_pointer_cast(m_trialElemData.integrationElements),
-        thrust::raw_pointer_cast(m_d_kernelValues.data()),
-        d_result)
-    ));
-
-  } else {
-    throw std::runtime_error(
-        "CudaIntegrator::launchCudaEvaluateIntegralFunctorKernelDataCached(): "
-        "kernel not implemented on the device");
-  }
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType,
@@ -710,53 +608,20 @@ CudaBasisFunctionType, CudaKernelType, CudaResultType>::
   // use SLP kernel
   if (m_kernelName == "Laplace3dSingleLayerPotential"/*false*/) {
 
-//    // Experimental: Get optimal block size in terms of occupancy
-//    int blockSizeOpt; // The launch configurator returned block size
-//    int minGridSize;  // The minimum grid size needed to achieve the
-//                      // maximum occupancy for a full device launch
-//    int gridSizeOpt;  // The actual grid size needed, based on input size
-//
-//    cudaOccupancyMaxPotentialBlockSize(&minGridSize, &blockSizeOpt,
-//        CudaEvaluateLaplace3dSingleLayerPotentialIntegralFunctorCached<
-//        CudaBasisFunctionType, CudaKernelType, CudaResultType>, 0, 0);
-//
-//    // Round up according to array size
-//    gridSizeOpt = (elemPairCount + blockSizeOpt - 1) / blockSizeOpt;
-//
-//    // Calculate theoretical occupancy
-//    int maxActiveBlocks;
-//    cudaOccupancyMaxActiveBlocksPerMultiprocessor(&maxActiveBlocks,
-//        CudaEvaluateLaplace3dSingleLayerPotentialIntegralFunctorCached<
-//        CudaBasisFunctionType, CudaKernelType, CudaResultType>,
-//        blockSizeOpt, 0);
-//
-//    int device;
-//    cudaDeviceProp props;
-//    cudaGetDevice(&device);
-//    cudaGetDeviceProperties(&props, device);
-//
-//    const double occupancy = (maxActiveBlocks * blockSizeOpt / props.warpSize) /
-//                             (double)(props.maxThreadsPerMultiProcessor /
-//                                      props.warpSize);
-//
-//    std::cout << "Launch blocks of size " << blockSizeOpt
-//              << ", Theoretical occupancy: " << occupancy << std::endl;
-
     cu_verify_void((
         CudaEvaluateLaplace3dSingleLayerPotentialIntegralFunctorCached<
-        CudaBasisFunctionType, CudaKernelType, CudaResultType>
+        CudaBasisFunctionType, CudaKernelType, CudaResultType,
+        int(/*m_testQuadData.pointCount*/6), int(/*m_trialQuadData.pointCount*/6),
+        int(/*m_testBasisData.dofCount*/3) , int(/*m_trialBasisData.dofCount*/3)>
         <<<gridSize, blockSize>>>(
         elemPairIndexBegin, elemPairCount, d_testIndices.size(),
-        thrust::raw_pointer_cast(d_testIndices.data()),
+        thrust::raw_pointer_cast( d_testIndices.data()),
         thrust::raw_pointer_cast(d_trialIndices.data()),
-        m_testQuadData.pointCount, m_trialQuadData.pointCount,
-        m_testBasisData.dofCount,
-        thrust::raw_pointer_cast(m_testBasisData.values),
-        m_trialBasisData.dofCount,
+        thrust::raw_pointer_cast( m_testBasisData.values),
         thrust::raw_pointer_cast(m_trialBasisData.values),
         m_testElemData.activeElemCount,
-        thrust::raw_pointer_cast(m_testElemData.geomData),
-        thrust::raw_pointer_cast(m_testElemData.integrationElements),
+        thrust::raw_pointer_cast( m_testElemData.geomData),
+        thrust::raw_pointer_cast( m_testElemData.integrationElements),
         m_trialElemData.activeElemCount,
         thrust::raw_pointer_cast(m_trialElemData.geomData),
         thrust::raw_pointer_cast(m_trialElemData.integrationElements),
@@ -970,61 +835,49 @@ CudaBasisFunctionType, CudaKernelType, CudaResultType>::
         const dim3 gridSize, const dim3 blockSize,
         CudaResultType *d_result) const {
 
-  // Launch kernel
-  if (m_kernelName == "Laplace3dSingleLayerPotential") {
-
-    cu_verify_void((
-        CudaEvaluateLaplace3dSingleLayerPotentialIntegralFunctorNonCached<
-        CudaBasisFunctionType, CudaKernelType, CudaResultType>
-        <<<gridSize, blockSize>>>(
-        elemPairIndexBegin, elemPairCount, d_testIndices.size(),
-        thrust::raw_pointer_cast(d_testIndices.data()),
-        thrust::raw_pointer_cast(d_trialIndices.data()),
-        m_testQuadData.pointCount, m_trialQuadData.pointCount,
-        m_testBasisData.dofCount,
-        thrust::raw_pointer_cast(m_testBasisData.values),
-        m_trialBasisData.dofCount,
-        thrust::raw_pointer_cast(m_trialBasisData.values),
-        m_testRawGeometryData.elemCount, m_testRawGeometryData.vtxCount,
-        thrust::raw_pointer_cast(m_testRawGeometryData.vertices),
-        thrust::raw_pointer_cast(m_testRawGeometryData.elementCorners),
-        m_trialRawGeometryData.elemCount, m_trialRawGeometryData.vtxCount,
-        thrust::raw_pointer_cast(m_trialRawGeometryData.vertices),
-        thrust::raw_pointer_cast(m_trialRawGeometryData.elementCorners),
-        d_result)
-    ));
-
-  } else if (
-      (m_kernelName == "ModifiedHelmholtz3dSingleLayerPotential" ||
-       m_kernelName == "ModifiedHelmholtz3dSingleLayerPotentialInterpolated")
-      && fabs(m_waveNumberReal) < 1.0e-10 ) {
-
-      cu_verify_void((
-          CudaEvaluateHelmholtz3dSingleLayerPotentialIntegralFunctorNonCached<
-          CudaBasisFunctionType, CudaKernelType, CudaResultType>
-          <<<gridSize, blockSize>>>(
-          elemPairIndexBegin, elemPairCount, d_testIndices.size(),
-          thrust::raw_pointer_cast(d_testIndices.data()),
-          thrust::raw_pointer_cast(d_trialIndices.data()),
-          m_testQuadData.pointCount, m_trialQuadData.pointCount,
-          m_testBasisData.dofCount,
-          thrust::raw_pointer_cast(m_testBasisData.values),
-          m_trialBasisData.dofCount,
-          thrust::raw_pointer_cast(m_trialBasisData.values),
-          m_testRawGeometryData.elemCount, m_testRawGeometryData.vtxCount,
-          thrust::raw_pointer_cast(m_testRawGeometryData.vertices),
-          thrust::raw_pointer_cast(m_testRawGeometryData.elementCorners),
-          m_trialRawGeometryData.elemCount, m_trialRawGeometryData.vtxCount,
-          thrust::raw_pointer_cast(m_trialRawGeometryData.vertices),
-          thrust::raw_pointer_cast(m_trialRawGeometryData.elementCorners),
-          m_waveNumberImag, d_result)
-      ));
-
-  } else {
     throw std::runtime_error(
         "CudaIntegrator::launchCudaEvaluateIntegralFunctorNoDataCached(): "
         "kernel not implemented on the device");
-  }
+}
+
+template <typename BasisFunctionType, typename KernelType, typename ResultType,
+typename CudaBasisFunctionType, typename CudaKernelType, typename CudaResultType>
+void CudaIntegrator<BasisFunctionType, KernelType, ResultType,
+CudaBasisFunctionType, CudaKernelType, CudaResultType>::
+    integrate(const int           *d_testElemIndices,
+              const LocalDofIndex *d_testLocalDofIndices,
+              const size_t         numberOfTestDofs,
+              const int           *d_trialElemIndices,
+              const LocalDofIndex *d_trialLocalDofIndices,
+              const size_t         numberOfTrialDofs,
+              CudaResultType      *d_result) {
+
+  cu_verify( cudaSetDevice(m_deviceId) );
+
+  // Set kernel launch parameters
+  const dim3 blockSize(m_cudaOptions.blockSize(), 1, 1);
+  const unsigned int blockCount =
+      static_cast<unsigned int>((numberOfTestDofs * numberOfTrialDofs - 1) / blockSize.x + 1);
+  const dim3  gridSize(blockCount, 1, 1);
+
+  cu_verify_void((
+      CudaEvaluateLaplace3dSingleLayerPotentialDofFunctor<
+      CudaBasisFunctionType, CudaKernelType, CudaResultType,
+      int(/*m_testQuadData.pointCount*/6), int(/*m_trialQuadData.pointCount*/6)>
+      <<<gridSize, blockSize, 0, cudaStreamPerThread>>>(
+      d_testElemIndices , d_testLocalDofIndices , numberOfTestDofs,
+      d_trialElemIndices, d_trialLocalDofIndices, numberOfTrialDofs,
+      thrust::raw_pointer_cast( m_testBasisData.values),
+      thrust::raw_pointer_cast(m_trialBasisData.values),
+      m_testElemData.activeElemCount,
+      thrust::raw_pointer_cast( m_testElemData.geomData),
+      thrust::raw_pointer_cast( m_testElemData.integrationElements),
+      m_trialElemData.activeElemCount,
+      thrust::raw_pointer_cast(m_trialElemData.geomData),
+      thrust::raw_pointer_cast(m_trialElemData.integrationElements),
+      d_result)
+  ));
+  cudaStreamSynchronize(cudaStreamPerThread);
 }
 
 // Explicit instantiations
