@@ -248,8 +248,6 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
     LocalAssemblerForIntegralOperators &localAssemblerForAdmissibleBlocks,
     const Context<BasisFunctionType, ResultType> &context, int symmetry) {
 
-  std::chrono::steady_clock::time_point beginTotal = std::chrono::steady_clock::now();
-
   typedef LocalAssemblerForIntegralOperators Assembler;
 
   std::vector<Assembler *> localAssemblers(1, &localAssembler);
@@ -276,15 +274,11 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
   const Shapeset &trialShapeset = *(*trialShapesets)[0];
 
   std::unique_ptr<DiscreteBoundaryOperator<ResultType>> result =
-      assembleDetachedWeakForm(testSpace, trialSpace, localAssemblers,
+      assembleDetachedWeakForm(testSpace, trialSpace, kernel, testShapeset,
+                               trialShapeset, localAssemblers,
                                localAssemblersForAdmissibleBlocks,
                                sparseTermsToAdd, denseTermsMultipliers,
                                sparseTermsMultipliers, context, symmetry);
-
-  std::chrono::steady_clock::time_point endTotal = std::chrono::steady_clock::now();
-  std::cout << "Time for classical H-matrix assembly = "
-            << std::chrono::duration_cast<std::chrono::milliseconds>(endTotal - beginTotal).count()
-            << " ms" << std::endl;
 
   return result;
 }
