@@ -193,9 +193,9 @@ CudaBasisFunctionType, CudaKernelType, CudaResultType>::
 
   // Copy element indices to device memory
   m_d_trialIndices.resize(trialIndices.size());
-  m_d_testIndices.resize(testIndices.size());
+  m_d_testIndices .resize(testIndices .size());
   m_d_trialIndices.assign(trialIndices.begin(), trialIndices.end());
-  m_d_testIndices.assign(testIndices.begin(), testIndices.end());
+  m_d_testIndices .assign(testIndices .begin(), testIndices .end());
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType,
@@ -870,13 +870,13 @@ template <typename BasisFunctionType, typename KernelType, typename ResultType,
 typename CudaBasisFunctionType, typename CudaKernelType, typename CudaResultType>
 void CudaIntegrator<BasisFunctionType, KernelType, ResultType,
 CudaBasisFunctionType, CudaKernelType, CudaResultType>::
-    integrate(const int           *d_testElemIndices,
-              const LocalDofIndex *d_testLocalDofIndices,
-              const size_t         numberOfTestDofs,
-              const int           *d_trialElemIndices,
-              const LocalDofIndex *d_trialLocalDofIndices,
-              const size_t         numberOfTrialDofs,
-              CudaResultType      *d_result) {
+    integrate(const int      *d_testElemIndices,
+              const char     *d_testLocalDofIndices,
+              const size_t    numberOfTestDofs,
+              const int      *d_trialElemIndices,
+              const char     *d_trialLocalDofIndices,
+              const size_t    numberOfTrialDofs,
+              CudaResultType *d_result) {
 
   cu_verify( cudaSetDevice(m_deviceId) );
 

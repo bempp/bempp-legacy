@@ -21,6 +21,9 @@
 #ifndef fiber_cuda_evaluate_laplace_3d_single_layer_potential_integral_cuh
 #define fiber_cuda_evaluate_laplace_3d_single_layer_potential_integral_cuh
 
+//#define CUDA_QUAD_WEIGHTS {1.11690794839005499983e-01, 5.49758718276609978370e-02, 1.11690794839005499983e-01, 1.11690794839005499983e-01, 5.49758718276609978370e-02, 5.49758718276609978370e-02}
+//#define CUDA_BASIS_VALUES {1.08103014528751373291e-01, 8.16847562789916992188e-01, 4.45948481559753417969e-01, 4.45948481559753417969e-01, 9.15762111544609069824e-02, 9.15762111544609069824e-02, 4.45948481559753417969e-01, 9.15762111544609069824e-02, 1.08103014528751373291e-01, 4.45948481559753417969e-01, 8.16847562789916992188e-01, 9.15762111544609069824e-02, 4.45948481559753417969e-01, 9.15762111544609069824e-02, 4.45948481559753417969e-01, 1.08103014528751373291e-01, 9.15762111544609069824e-02, 8.16847562789916992188e-01}
+
 #include "../common/scalar_traits.hpp"
 
 #include <device_launch_parameters.h>
@@ -83,6 +86,9 @@ CudaEvaluateLaplace3dSingleLayerPotentialIntegralFunctorCached(
   static constexpr int    TEST_DOF_COUNT =    testDofCount_;
   static constexpr int   TRIAL_DOF_COUNT =   trialDofCount_;
 
+//  constexpr ResultType        QUAD_WEIGHTS[  6] = CUDA_QUAD_WEIGHTS;
+//  constexpr BasisFunctionType BASIS_VALUES[3*6] = CUDA_BASIS_VALUES;
+
   const unsigned int i = blockIdx.x * blockDim.x + threadIdx.x;
 
   if (i < elemPairCount) {
@@ -131,11 +137,10 @@ CudaEvaluateLaplace3dSingleLayerPotentialIntegralFunctorCached(
           for (int testPoint = 0; testPoint < TEST_POINT_COUNT; ++testPoint) {
             const CoordinateType testWeight =
                 testIntegrationElement * constTestQuadWeights[testPoint];
-            partialSum +=
-                kernelValues[trialPoint * TEST_POINT_COUNT + testPoint]
-                *  testBasisValues[ testDof *  TEST_POINT_COUNT +  testPoint]
-                * trialBasisValues[trialDof * TRIAL_POINT_COUNT + trialPoint]
-                * testWeight;
+            partialSum += kernelValues[trialPoint *  TEST_POINT_COUNT +  testPoint]
+                    *  testBasisValues[   testDof *  TEST_POINT_COUNT +  testPoint]
+                    * trialBasisValues[  trialDof * TRIAL_POINT_COUNT + trialPoint]
+                    * testWeight;
           }
           sum += partialSum * trialWeight;
         }
@@ -154,12 +159,12 @@ template <typename BasisFunctionType, typename KernelType, typename ResultType,
           int testPointCount_, int trialPointCount_>
 __global__ void
 CudaEvaluateLaplace3dSingleLayerPotentialDofFunctor(
-    const int*           __restrict__ testElemIndices,
-    const LocalDofIndex* __restrict__ testLocalDofIndices ,
-    const size_t                      numberOfTestDofs,
-    const int*           __restrict__ trialElemIndices,
-    const LocalDofIndex* __restrict__ trialLocalDofIndices,
-    const size_t                      numberOfTrialDofs,
+    const int*  __restrict__ testElemIndices,
+    const char* __restrict__ testLocalDofIndices ,
+    const size_t             numberOfTestDofs,
+    const int*  __restrict__ trialElemIndices,
+    const char* __restrict__ trialLocalDofIndices,
+    const size_t             numberOfTrialDofs,
     const BasisFunctionType* __restrict__ testBasisValues,
     const BasisFunctionType* __restrict__ trialBasisValues,
     const unsigned int testElemCount,
