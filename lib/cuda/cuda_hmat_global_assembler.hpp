@@ -18,28 +18,31 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef bempp_cuda_dense_global_assembler_hpp
-#define bempp_cuda_dense_global_assembler_hpp
-
-/** \file . */
-
-#include "cuda_options.hpp"
+#ifndef bempp_cuda_hmat_global_assembler_hpp
+#define bempp_cuda_hmat_global_assembler_hpp
 
 #include "../common/common.hpp"
-#include "../common/eigen_support.hpp"
-#include "../common/scalar_traits.hpp"
 #include "../common/shared_ptr.hpp"
+#include "../common/eigen_support.hpp"
+#include "../common/types.hpp"
 
-#include "../fiber/_2d_array.hpp"
+#include "../fiber/scalar_traits.hpp"
 #include "../fiber/collection_of_kernels.hpp"
 
+#include "../hmat/hmatrix.hpp"
+
+#include <memory>
+#include <vector>
+
 namespace Fiber {
+
 /** \cond FORWARD_DECL */
 template <typename ResultType> class LocalAssemblerForIntegralOperators;
 template <typename BasisFunctionType, typename KernelType, typename ResultType,
 typename GeometryFactor> class DefaultLocalAssemblerForIntegralOperatorsOnSurfaces;
 template <typename BasisFunctionType> class Shapeset;
 /** \endcond */
+
 } // namespace Fiber
 
 namespace Bempp {
@@ -51,50 +54,42 @@ template <typename BasisFunctionType, typename ResultType> class Context;
 /** \endcond */
 
 /** \ingroup weak_form_assembly_internal
- * * \brief Dense-mode assembler with CUDA.
- * */
+ *  \brief CUDA HMAT-mode assembler.
+ */
 template <typename BasisFunctionType, typename ResultType>
-class CudaDenseGlobalAssembler {
+class CudaHMatGlobalAssembler {
 public:
-  typedef typename ScalarTraits<BasisFunctionType>::RealType CoordinateType;
 
   // TODO: How to determine the correct kernel type?
-//  typedef CoordinateType KernelType;         // Real kernel
-        typedef ResultType KernelType;             // Complex kernel
-
-  typedef typename thrust::complex<CoordinateType> CudaComplexType;
-  typedef typename std::conditional<
-      std::is_same<ResultType,CoordinateType>::value,
-      ResultType, CudaComplexType>::type
-      CudaResultType;
-  typedef typename std::conditional<
-      std::is_same<KernelType,CoordinateType>::value,
-      KernelType, CudaComplexType>::type
-      CudaKernelType;
+  typedef ResultType KernelType;
 
   typedef Fiber::Shapeset<BasisFunctionType> Shapeset;
-  typedef Fiber::_2dArray<std::pair<int, Matrix<ResultType>>> Cache;
-
+  typedef DiscreteBoundaryOperator<ResultType> DiscreteBoundaryOp;
   typedef Fiber::LocalAssemblerForIntegralOperators<ResultType>
-      LocalAssemblerForIntegralOperators;
+      LocalAssembler;
 
-  static std::unique_ptr<DiscreteBoundaryOperator<ResultType>>
-  assembleDetachedWeakForm(
+  static std::unique_ptr<DiscreteBoundaryOp> assembleDetachedWeakForm(
       const Space<BasisFunctionType> &testSpace,
       const Space<BasisFunctionType> &trialSpace,
-      LocalAssemblerForIntegralOperators &assembler,
-      const Context<BasisFunctionType, ResultType> &context);
+      LocalAssembler &localAssembler,
+      LocalAssembler &localAssemblerForAdmissibleBlocks,
+      const Context<BasisFunctionType, ResultType> &context,
+      int symmetry); // used to be "bool symmetric"; fortunately "true"
+                     // is converted to 1 == SYMMETRIC
 
 private:
-  template<typename CudaDataType>
-  static void assembleDetachedWeakFormImpl(
+  static void assembleDetachedWeakForm(
       const Space<BasisFunctionType> &testSpace,
       const Space<BasisFunctionType> &trialSpace,
       const shared_ptr<const Fiber::CollectionOfKernels<KernelType>> &kernel,
       const Shapeset &testShapeset, const Shapeset &trialShapeset,
-      const Cache &cache,
-      const CudaOptions &cudaOptions,
-      Matrix<ResultType> &result);
+      const std::vector<LocalAssembler*> &localAssemblers,
+      const std::vector<LocalAssembler*> &localAssemblersForAdmissibleBlocks,
+      const std::vector<const DiscreteBoundaryOp*> &sparseTermsToAdd,
+      const std::vector<ResultType> &denseTermMultipliers,
+      const std::vector<ResultType> &sparseTermMultipliers,
+      const Context<BasisFunctionType, ResultType> &context, int symmetry,
+      shared_ptr<hmat::DefaultHMatrixType<ResultType>> &hMatrix);
 };
 
 } // namespace Bempp

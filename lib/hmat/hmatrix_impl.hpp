@@ -40,6 +40,46 @@ HMatrix<ValueType, N>::HMatrix(
 }
 
 template <typename ValueType, int N>
+HMatrix<ValueType, N>::HMatrix(
+  ParallelDataContainer &hMatrixData,
+  const shared_ptr<BlockClusterTree<N>> &blockClusterTree,
+  bool coarsening, double coarsening_accuracy)
+  : m_hMatrixData(hMatrixData), m_blockClusterTree(blockClusterTree),
+    m_numberOfDenseBlocks(0), m_numberOfLowRankBlocks(0), m_memSizeKb(0.0) {
+
+  typedef decltype(m_blockClusterTree->root()) node_t;
+
+  std::function<void(const node_t &node)> coarsenFun =
+      [&](const node_t &node) {
+        if (!node->isLeaf()) {
+          tbb::task_group g;
+          g.run([&] { coarsenFun(node->child(0)); });
+          g.run([&] { coarsenFun(node->child(1)); });
+          g.run([&] { coarsenFun(node->child(2)); });
+          g.run_and_wait([&] { coarsenFun(node->child(3)); });
+
+          // Now do a coarsen step
+          coarsen_impl(node, coarsening_accuracy);
+        }
+      };
+
+  // Start the coarsening
+  if (coarsening)
+    coarsenFun(m_blockClusterTree->root());
+
+  // Compute statistics
+  for (auto &elem : m_hMatrixData) {
+    if (!elem.second)
+      continue;
+    if (elem.second->type() == DENSE)
+      m_numberOfDenseBlocks++;
+    else
+      m_numberOfLowRankBlocks++;
+    m_memSizeKb += elem.second->memSizeKb();
+  }
+}
+
+template <typename ValueType, int N>
 std::size_t HMatrix<ValueType, N>::rows() const {
   return m_blockClusterTree->rows();
 }

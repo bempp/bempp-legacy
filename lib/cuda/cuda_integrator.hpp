@@ -111,6 +111,14 @@ public:
                                   thrust::device_vector<int> &d_testIndices,
                                   thrust::device_vector<int> &d_trialIndices);
 
+  void integrate(const size_t elemPairCount,
+                 CudaResultType *result);
+
+  void pushElemPairIndicesToDevice(
+      const std::vector<int> &testElemPairIndices,
+      const std::vector<int> &trialElemPairIndices,
+      const size_t elemPairCount);
+
 private:
   /** \cond PRIVATE */
   void setupBasisData(const Shapeset<BasisFunctionType> &testShapeset,
