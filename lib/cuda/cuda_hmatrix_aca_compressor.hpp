@@ -70,7 +70,7 @@ public:
   void compressAllBlocks(ParallelDataContainer &hMatrixData);
 
   enum class ModeType { ROW, COL };
-  enum class CrossStatusType { SUCCESS, ZERO };
+  enum class CrossStatusType { SUCCESS, ZERO, NEUTRAL };
   enum class AcaStatusType {
     CONVERGED_AFTER_ITERATION,
     CONVERGED_WITHOUT_ITERATION,

@@ -31,6 +31,9 @@ public:
           const HMatrixCompressor<ValueType, N> &hMatrixCompressor,
           int applyParallelLevels = 3,
           bool coarsening = false, double coarsening_accuracy = 0);
+  HMatrix(ParallelDataContainer &hMatrixData,
+          const shared_ptr<BlockClusterTree<N>> &blockClusterTree,
+          bool coarsening = false, double coarsening_accuracy = 0);
 
   std::size_t rows() const;
   std::size_t columns() const;

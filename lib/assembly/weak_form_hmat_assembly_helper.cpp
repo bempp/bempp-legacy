@@ -129,6 +129,19 @@ void WeakFormHMatAssemblyHelper<BasisFunctionType, ResultType>::
   // Necessary elements
   const std::vector<int> &testElementIndices = testDofLists->elementIndices;
   const std::vector<int> &trialElementIndices = trialDofLists->elementIndices;
+
+//  if (blockClusterTreeNode.data().admissible) {
+//    std::cout << "assembleMatrixBlock" << std::endl;
+//    for (int i = 0; i < testElementIndices.size(); ++i) {
+//      std::cout << testElementIndices[i] << " " << std::flush;
+//    }
+//    std::cout << std::endl;
+//    for (int i = 0; i < trialElementIndices.size(); ++i) {
+//      std::cout << trialElementIndices[i] << " " << std::flush;
+//    }
+//    std::cout << std::endl;
+//  }
+
   // Necessary local dof indices in each element
   const std::vector<std::vector<LocalDofIndex>> &testLocalDofs =
       testDofLists->localDofIndices;
@@ -282,6 +295,11 @@ void WeakFormHMatAssemblyHelper<BasisFunctionType, ResultType>::
       }
     }
   }
+
+//  if (blockClusterTreeNode.data().admissible) {
+//    std::cout << "data = " << std::endl;
+//    std::cout << data << std::endl;
+//  }
 
   // Now, add the contributions of the sparse terms
   for (size_t nTerm = 0; nTerm < m_sparseTermsToAdd.size(); ++nTerm)

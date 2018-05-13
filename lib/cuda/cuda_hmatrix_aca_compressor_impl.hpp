@@ -239,7 +239,7 @@ compressAllBlocks(ParallelDataContainer &hMatrixData) {
   m_acaConverged.resize(admissibleLeafNodeCount, false);
   m_acaNextPivots.resize(admissibleLeafNodeCount, 0);
   m_acaIterationCounts.resize(admissibleLeafNodeCount, 0);
-  m_acaCrossStatuses.resize(admissibleLeafNodeCount);
+  m_acaCrossStatuses.resize(admissibleLeafNodeCount, CrossStatusType::NEUTRAL);
   m_rows.resize(admissibleLeafNodeCount);
   m_cols.resize(admissibleLeafNodeCount);
 
@@ -262,6 +262,7 @@ compressAllBlocks(ParallelDataContainer &hMatrixData) {
   // Run the algorithm until all admissible leaf nodes are finished
   size_t finishedAdmissibleNodeCount = 0;
 //  while (finishedAdmissibleNodeCount != admissibleLeafNodeCount) {
+  while (std::any_of(m_finished.begin(), m_finished.end(), [](bool i) { return !i; })) {
 
     std::cout << "PART 1" << std::endl;
 
@@ -283,6 +284,7 @@ compressAllBlocks(ParallelDataContainer &hMatrixData) {
           // Keep track of the nodes currently waiting for integral computation
           queuedLeafNodeList[m_queuedNodeCount] = node;
           m_queuedNodeCount++;
+//          std::cout << "Added node to list" << std::endl;
 
         } else {
 
@@ -321,6 +323,7 @@ compressAllBlocks(ParallelDataContainer &hMatrixData) {
         // Find out whether the node is of ZERO cross status type.
         if (m_acaCrossStatuses[nd] == CrossStatusType::ZERO) {
 
+          std::cout << "Node cross status is ZERO" << std::endl;
           checkAcaConvergence(node, nd, hMatrixData, finishedAdmissibleNodeCount);
 
         } else {
@@ -328,6 +331,7 @@ compressAllBlocks(ParallelDataContainer &hMatrixData) {
           // Keep track of the nodes currently waiting for integral computation
           queuedLeafNodeList[m_queuedNodeCount] = node;
           m_queuedNodeCount++;
+//          std::cout << "Added node to list" << std::endl;
         }
 
       } else {
@@ -343,7 +347,7 @@ compressAllBlocks(ParallelDataContainer &hMatrixData) {
     // Trigger integral computation one last time to empty the queue
     integrateAndAssembleQueuedMatrixBlocksPart2(admissibleLeafNodeList,
         queuedLeafNodeList, hMatrixData, finishedAdmissibleNodeCount);
-//  }
+  }
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType,
@@ -478,6 +482,8 @@ addMatrixBlockIntegrals(
       }
     }
 
+//    std::cout << "Added element pairs to list" << std::endl;
+
     triggerIntegralComputation = false;
     return triggerIntegralComputation;
 
@@ -585,7 +591,7 @@ assembleMatrixBlock(
 
           data(blockRows[testElem][testDof],
                blockCols[trialElem][trialDof]) +=
-//                m_denseTermsMultipliers[nTerm] *
+//              m_denseTermsMultipliers[nTerm] *
               Fiber::conjugate(activeTestLocalDofWeight) *
               trialLocalDofWeights[trialElem][trialDof] *
               static_cast<ResultType>(m_results[m_nextDevice][index]);
@@ -617,7 +623,9 @@ assembleComputedMatrixBlocksPart1(
     std::vector<node_t> &admissibleLeafNodeList,
     std::vector<node_t> &queuedLeafNodeList) {
 
-  for (size_t nd = 0; nd < m_queuedNodeCount; ++nd) {
+//  for (size_t nd = 0; nd < m_queuedNodeCount; ++nd) {
+  tbb::parallel_for(size_t(0), size_t(m_queuedNodeCount), [
+    &admissibleLeafNodeList, &queuedLeafNodeList, this](size_t nd) {
 
     const node_t &computedNode = queuedLeafNodeList[nd];
 
@@ -655,7 +663,7 @@ assembleComputedMatrixBlocksPart1(
       assembleMatrixBlock(rowClusterRange, columnIndexRange,
                           *computedNode, nd, m_origCols[index]);
     }
-  }
+  });
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType,
@@ -669,7 +677,10 @@ assembleComputedMatrixBlocksPart2(
     ParallelDataContainer &hMatrixData,
     size_t &finishedAdmissibleLeafNodeCount) {
 
-  for (size_t nd = 0; nd < m_queuedNodeCount; ++nd) {
+//  for (size_t nd = 0; nd < m_queuedNodeCount; ++nd) {
+  tbb::parallel_for(size_t(0), size_t(m_queuedNodeCount), [
+    &admissibleLeafNodeList, &queuedLeafNodeList, &hMatrixData,
+    &finishedAdmissibleLeafNodeCount, this](size_t nd) {
 
     const node_t &computedNode = queuedLeafNodeList[nd];
 
@@ -762,7 +773,7 @@ assembleComputedMatrixBlocksPart2(
     m_acaCrossStatuses[index] = CrossStatusType::SUCCESS;
 
     checkAcaConvergence(computedNode, index, hMatrixData, finishedAdmissibleLeafNodeCount);
-  }
+  });
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType,
@@ -773,6 +784,18 @@ CudaBasisFunctionType, CudaKernelType, CudaResultType, N>::
 integrateAndAssembleQueuedMatrixBlocksPart1(
     std::vector<node_t> &admissibleLeafNodeList,
     std::vector<node_t> &queuedLeafNodeList) {
+
+  if (m_queuedNodeCount == 0 && m_queuedElemPairCount == 0) return;
+
+  if (m_queuedNodeCount == 0 && m_queuedElemPairCount != 0)
+    throw std::invalid_argument(
+        "CudaHMatrixAcaCompressor::integrateAndAssembleQueuedMatrixBlocksPart1(): "
+        "number of queued nodes is 0 but number of queued element pairs is not");
+
+  if (m_queuedNodeCount != 0 && m_queuedElemPairCount == 0)
+    throw std::invalid_argument(
+        "CudaHMatrixAcaCompressor::integrateAndAssembleQueuedMatrixBlocksPart1(): "
+        "number of queued element pairs is 0 but number of queued nodes is not");
 
   std::cout << "Trigger integral computation with "
             << m_queuedNodeCount << " queued nodes and "
@@ -811,6 +834,18 @@ integrateAndAssembleQueuedMatrixBlocksPart2(
     std::vector<node_t> &queuedLeafNodeList,
     ParallelDataContainer &hMatrixData,
     size_t &finishedAdmissibleLeafNodeCount) {
+
+  if (m_queuedNodeCount == 0 && m_queuedElemPairCount == 0) return;
+
+  if (m_queuedNodeCount == 0 && m_queuedElemPairCount != 0)
+    throw std::invalid_argument(
+        "CudaHMatrixAcaCompressor::integrateAndAssembleQueuedMatrixBlocksPart2(): "
+        "number of queued nodes is 0 but number of queued element pairs is not");
+
+  if (m_queuedNodeCount != 0 && m_queuedElemPairCount == 0)
+    throw std::invalid_argument(
+        "CudaHMatrixAcaCompressor::integrateAndAssembleQueuedMatrixBlocksPart2(): "
+        "number of queued element pairs is 0 but number of queued nodes is not");
 
   std::cout << "Trigger integral computation with "
             << m_queuedNodeCount << " queued nodes and "
@@ -922,6 +957,7 @@ analyseAcaStatus(const size_t index, size_t &finishedAdmissibleLeafNodeCount) {
     m_finished[index] = true; // Approximation does not work. So just stop.
     finishedAdmissibleLeafNodeCount++;
   }
+
   // The next should only happen if we are in ROW_TRIAL or COLUMN_TRIAL mode
   if (m_acaStatuses[index] == AcaStatusType::CONVERGED_WITHOUT_ITERATION) {
     if (m_acaAlgorithmStates[index] == AcaAlgorithmStateType::START)
@@ -934,10 +970,12 @@ analyseAcaStatus(const size_t index, size_t &finishedAdmissibleLeafNodeCount) {
       m_acaAlgorithmStates[index] = AcaAlgorithmStateType::ROW_TRIAL;
     }
     // If both, the row trial and column trial are passed, finish.
-    if (m_rowTrialPassed[index] && m_columnTrialPassed[index])
+    if (m_rowTrialPassed[index] && m_columnTrialPassed[index]) {
       m_finished[index] = true;
-    finishedAdmissibleLeafNodeCount++;
+      finishedAdmissibleLeafNodeCount++;
+    }
   }
+
   // The next is the normal case after running ACA
   if (m_acaStatuses[index] == AcaStatusType::CONVERGED_AFTER_ITERATION ||
       m_acaStatuses[index] == AcaStatusType::ZERO_TERMINATION_AFTER_ITERATION) {
@@ -951,6 +989,7 @@ analyseAcaStatus(const size_t index, size_t &finishedAdmissibleLeafNodeCount) {
         ? AcaAlgorithmStateType::ROW_TRIAL
         : AcaAlgorithmStateType::COLUMN_TRIAL;
   }
+
   if (m_acaStatuses[index] == AcaStatusType::ZERO_TERMINATION_WITHOUT_ITERATION) {
     if (m_modes[index] == ModeType::ROW) {
       m_rowModeZeroTermination[index] = true;
@@ -959,9 +998,10 @@ analyseAcaStatus(const size_t index, size_t &finishedAdmissibleLeafNodeCount) {
       m_columnModeZeroTermination[index] = true;
       m_acaAlgorithmStates[index] = AcaAlgorithmStateType::COLUMN_TRIAL;
     }
-    if (m_rowModeZeroTermination[index] && m_columnModeZeroTermination[index])
+    if (m_rowModeZeroTermination[index] && m_columnModeZeroTermination[index]) {
       m_finished[index] = true;
       finishedAdmissibleLeafNodeCount++;
+    }
   }
 
   if (!m_finished[index] && m_acaAlgorithmStates[index] == AcaAlgorithmStateType::ROW_TRIAL) {
@@ -975,6 +1015,7 @@ analyseAcaStatus(const size_t index, size_t &finishedAdmissibleLeafNodeCount) {
       finishedAdmissibleLeafNodeCount++;
     }
   }
+
   if (!m_finished[index] && m_acaAlgorithmStates[index] == AcaAlgorithmStateType::COLUMN_TRIAL) {
     if ((m_columnTrialCounts[index] < m_MAX_COLUMN_TRIAL_COUNTS[index]) &&
         selectMinPivot(m_origCols[index], m_rowApproxCounters[index], m_nextPivots[index], ModeType::COL)) {
@@ -986,6 +1027,14 @@ analyseAcaStatus(const size_t index, size_t &finishedAdmissibleLeafNodeCount) {
       finishedAdmissibleLeafNodeCount++;
     }
   }
+
+  // Reset some varibles
+  m_acaConverged[index] = false;
+  m_acaNextPivots[index] = m_nextPivots[index];
+  m_acaIterationCounts[index] = 0;
+  m_acaCrossStatuses[index] = CrossStatusType::NEUTRAL;
+  m_rows[index].resize(0,0);
+  m_cols[index].resize(0,0);
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType,

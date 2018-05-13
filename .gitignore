@@ -22,3 +22,4 @@ pkg_install/
 py-*/
 pytest*/
 .cache
+.directory
