@@ -242,6 +242,7 @@ void HMatrixAcaCompressor<ValueType, N>::compressBlock(
   bool columnModeZeroTermination = false;
 
   while (!finished) {
+//  if(!finished) {
     // First run the ACA
     acaStatus = aca(blockClusterTreeNode, nextPivot, A, B, maxIterations,
                     rowApproxCounter, colApproxCounter, origRow, origCol,
@@ -340,6 +341,7 @@ HMatrixAcaCompressor<ValueType, N>::aca(
   Matrix<ValueType> row, col;
 
   while (maxIterations > 0) {
+//  if (maxIterations > 0) {
     crossStatus = computeCross(blockClusterTreeNode, A, B, nextPivot, origRow,
                                origCol, row, col, rowApproxCounter,
                                colApproxCounter, mode, zeroTol);

@@ -24,3 +24,4 @@ pytest*/
 /.idea*
 .cache
 *.old
+.directory

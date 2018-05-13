@@ -382,6 +382,32 @@ template <typename BasisFunctionType, typename KernelType, typename ResultType,
 typename CudaBasisFunctionType, typename CudaKernelType, typename CudaResultType>
 void CudaIntegrator<BasisFunctionType, KernelType, ResultType,
 CudaBasisFunctionType, CudaKernelType, CudaResultType>::
+    pushElemPairIndicesToDevice(
+        const std::vector<int> &testElemPairIndices,
+        const std::vector<int> &trialElemPairIndices,
+        const size_t elemPairCount) {
+
+  if (elemPairCount > trialElemPairIndices.size() ||
+      elemPairCount > testElemPairIndices.size())
+    throw std::invalid_argument(
+        "CudaIntegrator::integrate(): "
+        "number of element pairs does not match index vector size");
+
+  if (elemPairCount == 0)
+    return;
+
+  cu_verify( cudaSetDevice(m_deviceId) );
+
+  // Copy element pair indices to device memory
+  m_d_trialIndices.assign(trialElemPairIndices.begin(),
+      trialElemPairIndices.begin() + elemPairCount);
+  m_d_testIndices.assign(testElemPairIndices.begin(),
+      testElemPairIndices.begin() + elemPairCount);
+}
+template <typename BasisFunctionType, typename KernelType, typename ResultType,
+typename CudaBasisFunctionType, typename CudaKernelType, typename CudaResultType>
+void CudaIntegrator<BasisFunctionType, KernelType, ResultType,
+CudaBasisFunctionType, CudaKernelType, CudaResultType>::
     setupBasisData(const Shapeset<BasisFunctionType> &testShapeset,
                    const Shapeset<BasisFunctionType> &trialShapeset,
                    const Matrix<CoordinateType> &localTestQuadPoints,
