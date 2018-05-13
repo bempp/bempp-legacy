@@ -120,7 +120,7 @@ ParameterList GlobalParameters::parameterList() {
   parameters.put("options.hmat.compressionAlgorithm", std::string("aca"));
 
   // Specifies the minimum block size for blocks to be treated on the device
-  parameters.put("options.hmat.cudaMinBlockSize", static_cast<int>(100000));
+  parameters.put("options.hmat.cudaMinBlockSize", static_cast<int>(10000));
 
   // Cuda precision
   parameters.put("options.cuda.precision", std::string("double"));
@@ -141,7 +141,7 @@ ParameterList GlobalParameters::parameterList() {
   parameters.put("options.cuda.blockSize", static_cast<int>(512));
 
   // Cuda chunk size
-  parameters.put("options.cuda.chunkSize", static_cast<int>(-1));
+  parameters.put("options.cuda.chunkSize", static_cast<int>(1e6));
 
   return parameters;
 }

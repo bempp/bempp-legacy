@@ -199,12 +199,14 @@ HMatGlobalAssembler<BasisFunctionType, ResultType>::assembleDetachedWeakForm(
         accessedCudaEntryCount, accessedCpuEntryCount;
     helper.getStatistics(cudaBlockCount, cpuBlockCount,
         accessedCudaEntryCount, accessedCpuEntryCount);
-    std::cout << cudaBlockCount << " blocks and "
-              << accessedCudaEntryCount << " matrix entries have been treated on the device,"
-              << std::endl;
-    std::cout << cpuBlockCount << " blocks and "
-              << accessedCpuEntryCount << " matrix entries have been treated on the CPU."
-              << std::endl;
+    printf("%zu matrix entries in %zu blocks treated on GPU\n", accessedCudaEntryCount, cudaBlockCount);
+    printf("%zu matrix entries in %zu blocks treated on CPU\n", accessedCpuEntryCount, cpuBlockCount);
+//    std::cout << cudaBlockCount << " blocks and "
+//              << accessedCudaEntryCount << " matrix entries have been treated on the device,"
+//              << std::endl;
+//    std::cout << cpuBlockCount << " blocks and "
+//              << accessedCpuEntryCount << " matrix entries have been treated on the CPU."
+//              << std::endl;
   } else {
 
     typedef typename Fiber::ScalarTraits<typename Fiber::ScalarTraits<BasisFunctionType>::RealType>::DoubleType CudaBasisFunctionType;
