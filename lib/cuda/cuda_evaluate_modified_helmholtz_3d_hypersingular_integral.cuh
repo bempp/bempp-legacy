@@ -140,7 +140,7 @@ CudaEvaluateHelmholtz3dHypersingularIntegralFunctorCached(
         ResultType sumReal = 0., sumImag = 0.;
         for (size_t trialPoint = 0; trialPoint < trialPointCount; ++trialPoint) {
           const CoordinateType trialWeight =
-              trialIntegrationElement * constTrialQuadWeights[trialPoint];
+              trialIntegrationElement * constTrialQuadWeights[2][trialPoint];
           ResultType partialSumReal = 0., partialSumImag = 0.;
 #pragma unroll
 	  for (size_t coordIndex = 0; coordIndex < coordCount; ++coordIndex) {
@@ -152,7 +152,7 @@ CudaEvaluateHelmholtz3dHypersingularIntegralFunctorCached(
           } 
           for (size_t testPoint = 0; testPoint < testPointCount; ++testPoint) {
             const CoordinateType testWeight =
-                testIntegrationElement * constTestQuadWeights[testPoint];
+                testIntegrationElement * constTestQuadWeights[2][testPoint];
             const size_t indexKernelValues = trialPoint * testPointCount + testPoint;
             BasisFunctionType dotProduct0 = 0.;
             CoordinateType dotProduct1 = 0.;

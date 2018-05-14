@@ -23,8 +23,8 @@
 
 // Constant memory is typically 64 KB
 // Use double as most memory consuming possible data type to ensure enough space
-extern __constant__ double constTestQuadWeights[6];
-extern __constant__ double constTrialQuadWeights[6];
+extern __constant__ double constTestQuadWeights [3][6];
+extern __constant__ double constTrialQuadWeights[3][6];
 
 extern __constant__ double constTestGeomShapeFun0[6];
 extern __constant__ double constTestGeomShapeFun1[6];

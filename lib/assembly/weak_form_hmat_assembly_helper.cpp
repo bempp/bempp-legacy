@@ -93,7 +93,7 @@ WeakFormHMatAssemblyHelper<BasisFunctionType, KernelType, ResultType,
   if (m_isCudaEnabled) {
       m_cudaAssembler = new CudaLocalAssembler(
           testSpace, trialSpace, kernel, testShapeset, trialShapeset,
-          context.cudaOptions());
+          context);
   }
 }
 

@@ -73,10 +73,10 @@ public:
       const int deviceId, const Bempp::CudaOptions &cudaOptions);
 
   CudaIntegrator(
-      const Matrix<CoordinateType> &localTestQuadPoints,
-      const Matrix<CoordinateType> &localTrialQuadPoints,
-      const std::vector<CoordinateType> &testQuadWeights,
-      const std::vector<CoordinateType> &trialQuadWeights,
+      const std::vector<      Matrix<CoordinateType> > &localTestQuadPoints,
+      const std::vector<      Matrix<CoordinateType> > &localTrialQuadPoints,
+      const std::vector< std::vector<CoordinateType> > &testQuadWeights,
+      const std::vector< std::vector<CoordinateType> > &trialQuadWeights,
       const Shapeset<BasisFunctionType> &testShapeset,
       const Shapeset<BasisFunctionType> &trialShapeset,
       const shared_ptr<Bempp::CudaGrid<CudaCoordinateType>> &testGrid,

@@ -108,7 +108,7 @@ CudaEvaluateLaplace3dHypersingularIntegralFunctorCached(
         ResultType sum = 0.;
         for (size_t trialPoint = 0; trialPoint < trialPointCount; ++trialPoint) {
           const CoordinateType trialWeight =
-              trialIntegrationElement * constTrialQuadWeights[trialPoint];
+              trialIntegrationElement * constTrialQuadWeights[2][trialPoint];
           ResultType partialSum = 0.;
 #pragma unroll
 	  for (size_t coordIndex = 0; coordIndex < coordCount; ++coordIndex) {
@@ -120,7 +120,7 @@ CudaEvaluateLaplace3dHypersingularIntegralFunctorCached(
           }
           for (size_t testPoint = 0; testPoint < testPointCount; ++testPoint) {
             const CoordinateType testWeight =
-                testIntegrationElement * constTestQuadWeights[testPoint];
+                testIntegrationElement * constTestQuadWeights[2][testPoint];
             const size_t indexKernelValues = trialPoint * testPointCount + testPoint;
             BasisFunctionType dotProduct = 0.;
 #pragma unroll

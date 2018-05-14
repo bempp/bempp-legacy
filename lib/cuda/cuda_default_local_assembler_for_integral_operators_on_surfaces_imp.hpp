@@ -199,7 +199,7 @@ CudaDefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
         const shared_ptr<const Fiber::CollectionOfKernels<KernelType>> &kernel,
         const Fiber::Shapeset<BasisFunctionType> &testShapeset,
         const Fiber::Shapeset<BasisFunctionType> &trialShapeset,
-        const Bempp::CudaOptions &cudaOptions)
+        const Bempp::Context<BasisFunctionType, ResultType> &context)
         : m_testDofCount(testShapeset.size()),
           m_trialDofCount(trialShapeset.size()) {
 
@@ -209,21 +209,24 @@ CudaDefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
         "Only three local dofs per element supported on the device");
 
   // Get numerical quadrature points and weights
-  const int trialQuadOrder = cudaOptions.quadOrder();
-  const int testQuadOrder = cudaOptions.quadOrder();
-  if (trialQuadOrder != 4 || testQuadOrder != 4)
+  int quadOrder[3];
+  quadOrder[0] = context.globalParameterList().template get<int>("options.quadrature.near.doubleOrder");
+  quadOrder[1] = context.globalParameterList().template get<int>("options.quadrature.medium.doubleOrder");
+  quadOrder[2] = context.globalParameterList().template get<int>("options.quadrature.far.doubleOrder");
+  if (quadOrder[0] != 4)
     throw std::invalid_argument(
         "CudaDefaultLocalAssemblerForIntegralOperatorsOnSurfaces::CudaDefaultLocalAssemblerForIntegralOperatorsOnSurfaces(): "
-        "Only six quadrature points per element supported on the device");
-  Matrix<CoordinateType> localTrialQuadPoints, localTestQuadPoints;
-  std::vector<CoordinateType> trialQuadWeights, testQuadWeights;
-  fillSingleQuadraturePointsAndWeights(3, trialQuadOrder,
-      localTrialQuadPoints, trialQuadWeights);
-  fillSingleQuadraturePointsAndWeights(3, testQuadOrder,
-      localTestQuadPoints, testQuadWeights);
+        "Maximum of six quadrature points per element supported on the device");
+  std::vector<      Matrix<CoordinateType> > localTrialQuadPoints(3), localTestQuadPoints(3);
+  std::vector< std::vector<CoordinateType> >     trialQuadWeights(3),     testQuadWeights(3);
+  for (int q = 0; q < 3; ++q) {
+    fillSingleQuadraturePointsAndWeights(3, quadOrder[q],
+        localTrialQuadPoints[q], trialQuadWeights[q]);
+    fillSingleQuadraturePointsAndWeights(3, quadOrder[q],
+        localTestQuadPoints[q], testQuadWeights[q]);
+  }
 
-
-  m_deviceIds = cudaOptions.devices();
+  m_deviceIds = context.cudaOptions().devices();
   const unsigned int deviceCount = m_deviceIds.size();
 
   m_cudaIntegrators.resize(deviceCount);
@@ -231,7 +234,7 @@ CudaDefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
 
   // Get maximum number of element pairs which can be treated on the device
   // simultaneously
-  m_maxActiveElemPairCount = cudaOptions.chunkElemPairCount();
+  m_maxActiveElemPairCount = context.cudaOptions().chunkElemPairCount();
 
   // Let the chunk size be a multiple of the warp size
   cudaDeviceProp prop;
@@ -258,7 +261,7 @@ CudaDefaultLocalAssemblerForIntegralOperatorsOnSurfaces<
         localTestQuadPoints, localTrialQuadPoints,
         testQuadWeights, trialQuadWeights,
         testShapeset, trialShapeset, testGrid, trialGrid,
-        m_maxActiveElemPairCount, kernel, deviceId, cudaOptions);
+        m_maxActiveElemPairCount, kernel, deviceId, context.cudaOptions());
 
     m_buffer[device] = tbb::enumerable_thread_specific<
         ::CudaHostDeviceBuffer<ResultType, CudaResultType> >(deviceId, m_maxActiveElemPairCount,

@@ -93,7 +93,7 @@ public:
       const shared_ptr<const CollectionOfKernels<KernelType>> &kernel,
       const Shapeset<BasisFunctionType> &testShapeset,
       const Shapeset<BasisFunctionType> &trialShapeset,
-      const Bempp::CudaOptions &cudaOptions);
+      const Bempp::Context<BasisFunctionType, ResultType> &context);
 
   virtual ~CudaDefaultLocalAssemblerForIntegralOperatorsOnSurfaces();
 

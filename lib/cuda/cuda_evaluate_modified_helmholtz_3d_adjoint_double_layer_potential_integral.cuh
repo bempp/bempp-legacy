@@ -139,11 +139,11 @@ CudaEvaluateHelmholtz3dAdjointDoubleLayerPotentialIntegralFunctorCached(
         ResultType sumReal = 0., sumImag = 0.;
         for (size_t trialPoint = 0; trialPoint < trialPointCount; ++trialPoint) {
           const CoordinateType trialWeight =
-              trialIntegrationElement * constTrialQuadWeights[trialPoint];
+              trialIntegrationElement * constTrialQuadWeights[2][trialPoint];
           ResultType partialSumReal = 0., partialSumImag = 0.;
           for (size_t testPoint = 0; testPoint < testPointCount; ++testPoint) {
             const CoordinateType testWeight =
-                testIntegrationElement * constTestQuadWeights[testPoint];
+                testIntegrationElement * constTestQuadWeights[2][testPoint];
             ResultType factor = testBasisValues[testDof * testPointCount + testPoint]
                                 * trialBasisValues[trialDof * trialPointCount + trialPoint]
                                 * testWeight;

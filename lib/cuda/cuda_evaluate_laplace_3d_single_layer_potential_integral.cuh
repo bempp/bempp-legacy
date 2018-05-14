@@ -28,8 +28,8 @@
 
 #include <device_launch_parameters.h>
 
-__constant__ double constTestQuadWeights[6];
-__constant__ double constTrialQuadWeights[6];
+__constant__ double constTestQuadWeights[3][6];
+__constant__ double constTrialQuadWeights[3][6];
 
 __constant__ double constTestGeomShapeFun0[6];
 __constant__ double constTestGeomShapeFun1[6];
@@ -132,11 +132,11 @@ CudaEvaluateLaplace3dSingleLayerPotentialIntegralFunctorCached(
         ResultType sum = 0.;
         for (int trialPoint = 0; trialPoint < TRIAL_POINT_COUNT; ++trialPoint) {
           const CoordinateType trialWeight =
-              trialIntegrationElement * constTrialQuadWeights[trialPoint];
+              trialIntegrationElement * constTrialQuadWeights[0][trialPoint];
           ResultType partialSum = 0.;
           for (int testPoint = 0; testPoint < TEST_POINT_COUNT; ++testPoint) {
             const CoordinateType testWeight =
-                testIntegrationElement * constTestQuadWeights[testPoint];
+                testIntegrationElement * constTestQuadWeights[0][testPoint];
             partialSum += kernelValues[trialPoint *  TEST_POINT_COUNT +  testPoint]
                     *  testBasisValues[   testDof *  TEST_POINT_COUNT +  testPoint]
                     * trialBasisValues[  trialDof * TRIAL_POINT_COUNT + trialPoint]
@@ -232,11 +232,11 @@ CudaEvaluateLaplace3dSingleLayerPotentialDofFunctor(
         ResultType sum = ResultType(0);
         for (int trialPoint = 0; trialPoint < TRIAL_POINT_COUNT; ++trialPoint) {
           const CoordinateType trialWeight =
-              trialIntegrationElement * constTrialQuadWeights[trialPoint];
+              trialIntegrationElement * constTrialQuadWeights[0][trialPoint];
           ResultType partialSum = 0.;
           for (int testPoint = 0; testPoint < TEST_POINT_COUNT; ++testPoint) {
             const CoordinateType testWeight =
-                testIntegrationElement * constTestQuadWeights[testPoint];
+                testIntegrationElement * constTestQuadWeights[0][testPoint];
             partialSum +=
                 kernelValues[trialPoint * TEST_POINT_COUNT + testPoint]
                 *  testBasisValues[ testLocalDofIdx *  TEST_POINT_COUNT +  testPoint]

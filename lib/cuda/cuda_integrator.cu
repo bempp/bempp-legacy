@@ -185,9 +185,12 @@ CudaBasisFunctionType, CudaKernelType, CudaResultType>::
         const size_t maxActiveElemPairCount,
         const shared_ptr<const CollectionOfKernels<KernelType>> &kernel,
         const int deviceId, const Bempp::CudaOptions &cudaOptions)
-        : CudaIntegrator(localTestQuadPoints, localTrialQuadPoints,
-            testQuadWeights, trialQuadWeights, testShapeset, trialShapeset,
-            testGrid, trialGrid, maxActiveElemPairCount, kernel, deviceId, cudaOptions) {
+        : CudaIntegrator(std::vector<      Matrix<CoordinateType> > (3, localTestQuadPoints),
+                         std::vector<      Matrix<CoordinateType> > (3, localTrialQuadPoints),
+                         std::vector< std::vector<CoordinateType> > (3, testQuadWeights),
+                         std::vector< std::vector<CoordinateType> > (3, trialQuadWeights),
+                         testShapeset, trialShapeset, testGrid, trialGrid,
+                         maxActiveElemPairCount, kernel, deviceId, cudaOptions) {
 
   cu_verify( cudaSetDevice(m_deviceId) );
 
@@ -203,10 +206,10 @@ typename CudaBasisFunctionType, typename CudaKernelType, typename CudaResultType
 CudaIntegrator<BasisFunctionType, KernelType, ResultType,
 CudaBasisFunctionType, CudaKernelType, CudaResultType>::
     CudaIntegrator(
-        const Matrix<CoordinateType> &localTestQuadPoints,
-        const Matrix<CoordinateType> &localTrialQuadPoints,
-        const std::vector<CoordinateType> &testQuadWeights,
-        const std::vector<CoordinateType> &trialQuadWeights,
+        const std::vector<      Matrix<CoordinateType> > &localTestQuadPoints,
+        const std::vector<      Matrix<CoordinateType> > &localTrialQuadPoints,
+        const std::vector< std::vector<CoordinateType> > &testQuadWeights,
+        const std::vector< std::vector<CoordinateType> > &trialQuadWeights,
         const Shapeset<BasisFunctionType> &testShapeset,
         const Shapeset<BasisFunctionType> &trialShapeset,
         const shared_ptr<Bempp::CudaGrid<CudaCoordinateType>> &testGrid,
@@ -223,14 +226,14 @@ CudaBasisFunctionType, CudaKernelType, CudaResultType>::
   GetWaveNumberHelper<CudaKernelType, KernelType>::getWaveNumber(
       m_waveNumberReal, m_waveNumberImag, kernel);
 
-  const unsigned int trialPointCount = localTrialQuadPoints.cols();
-  const unsigned int testPointCount = localTestQuadPoints.cols();
+  const unsigned int trialPointCount = localTrialQuadPoints[0].cols();
+  const unsigned int  testPointCount =  localTestQuadPoints[0].cols();
 
-  if (trialPointCount != trialQuadWeights.size())
+  if (trialPointCount != trialQuadWeights[0].size())
     throw std::invalid_argument(
         "CudaIntegrator::CudaIntegrator(): "
         "numbers of trial points and weights do not match");
-  if (testPointCount != testQuadWeights.size())
+  if (testPointCount != testQuadWeights[0].size())
     throw std::invalid_argument(
         "CudaIntegrator::CudaIntegrator(): "
         "numbers of test points and weights do not match");
@@ -248,33 +251,17 @@ CudaBasisFunctionType, CudaKernelType, CudaResultType>::
 
   // Copy numerical quadrature weights to constant device memory
   m_trialQuadData.pointCount = trialPointCount;
-  m_testQuadData.pointCount = testPointCount;
-  cu_verify( cudaMemcpyToSymbol(constTrialQuadWeights, &trialQuadWeights[0],
-      trialPointCount * sizeof(CoordinateType)) );
-  cu_verify( cudaMemcpyToSymbol(constTestQuadWeights, &testQuadWeights[0],
-      testPointCount * sizeof(CoordinateType)) );
+   m_testQuadData.pointCount =  testPointCount;
+  cu_verify( cudaMemcpyToSymbol(constTrialQuadWeights, &trialQuadWeights[0][0],
+      3 * trialPointCount * sizeof(CoordinateType)) );
+  cu_verify( cudaMemcpyToSymbol(constTestQuadWeights, &testQuadWeights[0][0],
+      3 * testPointCount * sizeof(CoordinateType)) );
 
   // Evaluate shapesets and copy basis data to device memory
   setupBasisData(testShapeset, trialShapeset,
-      localTestQuadPoints, localTrialQuadPoints);
+      localTestQuadPoints[0], localTrialQuadPoints[0]);
 
-  if (m_isElementDataCachingEnabled == true) {
-
-    cacheElementData(localTestQuadPoints, localTrialQuadPoints);
-
-    if (m_isKernelDataCachingEnabled == true) {
-
-      // Allocate memory for kernel values
-      size_t kernelValueArraySize =
-          maxActiveElemPairCount * trialPointCount * testPointCount;
-      if (ScalarTraits<KernelType>::isComplex) kernelValueArraySize *= 2;
-      m_d_kernelValues.resize(kernelValueArraySize);
-    }
-
-  } else {
-
-    setupRawData(localTestQuadPoints, localTrialQuadPoints);
-  }
+  cacheElementData(localTestQuadPoints[0], localTrialQuadPoints[0]);
 }
 
 template <typename BasisFunctionType, typename KernelType, typename ResultType,

@@ -128,11 +128,11 @@ CudaEvaluateLaplace3dDoubleLayerPotentialIntegralFunctorCached(
         ResultType sum = 0.;
         for (size_t trialPoint = 0; trialPoint < trialPointCount; ++trialPoint) {
           const CoordinateType trialWeight =
-              trialIntegrationElement * constTrialQuadWeights[trialPoint];
+              trialIntegrationElement * constTrialQuadWeights[2][trialPoint];
           ResultType partialSum = 0.;
           for (size_t testPoint = 0; testPoint < testPointCount; ++testPoint) {
             const CoordinateType testWeight =
-                testIntegrationElement * constTestQuadWeights[testPoint];
+                testIntegrationElement * constTestQuadWeights[2][testPoint];
             partialSum +=
                 kernelValues[trialPoint * testPointCount + testPoint]
                 * testBasisValues[testDof * testPointCount + testPoint]
