@@ -360,29 +360,29 @@ def reentrant_cube(h=0.1, refinement_factor=0.2):
     return __generate_grid_from_geo_string(reentrant_cube_geometry)
 
 
-def cube(length=1, origin=(0, 0, 0), h=0.1):
+def cuboid(length=(1,1,1), origin=(0, 0, 0), h=0.1):
     """
-    Return a cube mesh.
+    Return a cuboid mesh.
 
     Parameters
     ----------
-    length : float
-        Side length of the cube.
+    length : tuple
+        Side lengths of the cube.
     origin : tuple
         Coordinates of the origin (bottom left corner)
     h : float
         Element size.
 
     """
-    cube_stub = """
+    cuboid_stub = """
     Point(1) = {orig0,orig1,orig2,cl};
-    Point(2) = {orig0+l,orig1,orig2,cl};
-    Point(3) = {orig0+l,orig1+l,orig2,cl};
-    Point(4) = {orig0,orig1+l,orig2,cl};
-    Point(5) = {orig0,orig1,orig2+l,cl};
-    Point(6) = {orig0+l,orig1,orig2+l,cl};
-    Point(7) = {orig0+l,orig1+l,orig2+l,cl};
-    Point(8) = {orig0,orig1+l,orig2+l,cl};
+    Point(2) = {orig0+l0,orig1,orig2,cl};
+    Point(3) = {orig0+l0,orig1+l1,orig2,cl};
+    Point(4) = {orig0,orig1+l1,orig2,cl};
+    Point(5) = {orig0,orig1,orig2+l2,cl};
+    Point(6) = {orig0+l0,orig1,orig2+l2,cl};
+    Point(7) = {orig0+l0,orig1+l1,orig2+l2,cl};
+    Point(8) = {orig0,orig1+l1,orig2+l2,cl};
 
     Line(1) = {1,2};
     Line(2) = {2,3};
@@ -425,14 +425,33 @@ def cube(length=1, origin=(0, 0, 0), h=0.1):
     Mesh.Algorithm = 6;
     """
 
-    cube_geometry = (
-        "l = " + str(length) + ";\n" +
+    cuboid_geometry = (
+        "l0 = " + str(length[0]) + ";\n" +
+        "l1 = " + str(length[1]) + ";\n" +
+        "l2 = " + str(length[2]) + ";\n" +
         "orig0 = " + str(origin[0]) + ";\n" +
         "orig1 = " + str(origin[1]) + ";\n" +
         "orig2 = " + str(origin[2]) + ";\n" +
-        "cl = " + str(h) + ";\n" + cube_stub)
+        "cl = " + str(h) + ";\n" + cuboid_stub)
 
-    return __generate_grid_from_geo_string(cube_geometry)
+    return __generate_grid_from_geo_string(cuboid_geometry)
+
+
+def cube(length=1, origin=(0, 0, 0), h=0.1):
+    """
+    Return a cube mesh.
+
+    Parameters
+    ----------
+    length : float
+        Side length of the cube.
+    origin : tuple
+        Coordinates of the origin (bottom left corner)
+    h : float
+        Element size.
+
+    """
+    return cuboid((length,length,length), origin, h)
 
 
 def almond(h=0.01):
