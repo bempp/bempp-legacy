@@ -192,8 +192,8 @@ def multitrace_operator_impl(
 
             blocked[0, 0] = -dlp
             blocked[0, 1] = slp
-            blocked[1, 0] = adlp
-            blocked[1, 1] = hyp
+            blocked[1, 0] = hyp
+            blocked[1, 1] = adlp
 
         elif spaces == 'dual':
 
@@ -214,8 +214,8 @@ def multitrace_operator_impl(
 
             blocked[0, 0] = -dlp
             blocked[0, 1] = slp
-            blocked[1, 0] = adlp
-            blocked[1, 1] = hyp
+            blocked[1, 0] = hyp
+            blocked[1, 1] = adlp
 
         else:
             raise ValueError("spaces must be one of 'linear' or 'dual'")
