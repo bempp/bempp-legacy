@@ -265,6 +265,7 @@ public:
         }
 
         barycentricElementCorners.conservativeResize(3, 6 * ent0Count);
+        barycentricDomainIndices.resize(6*ent0Count,0);
         Matrix<int> tempSonMap;
         tempSonMap.conservativeResize(6 * ent0Count, 2);
         for (std::unique_ptr<EntityIterator<0>> it = view->entityIterator<0>();
@@ -277,6 +278,8 @@ public:
               ent2Count + ent1Count + ent0Number;
           barycentricElementCorners(2, 6 * ent0Number) =
               ent2Count + index.subEntityIndex(entity, 1, 1);
+          for(int i=0;i<6;++i)
+            barycentricDomainIndices[6*ent0Number+i] = entity.domain();
 
           barycentricElementCorners(0, 6 * ent0Number + 1) =
               index.subEntityIndex(entity, 0, 2);
