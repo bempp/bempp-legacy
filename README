@@ -7,6 +7,15 @@ www.bempp.org
 
 History
 =======
+3.3.4 (02 Aug 2018)
+-------------------
+* Fixed bug in scalar multitrace operator when target keyword is used
+
+3.3.3 (23 Apr 2018)
+-------------------
+* Fixed grid refinement
+* Notebook plotting now via Plotly
+
 3.3.2 (20 Dec 2017)
 -------------------
 * Added experimental support for grid refinement.

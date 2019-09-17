@@ -1,6 +1,6 @@
-python-bempp (3.3.3-0ubuntu1~xenial) xenial; urgency=medium
+python-bempp (3.3.4-0ubuntu1~xenial) xenial; urgency=medium
 
-    * Fixed grid refinement
-    * Notebook plotting via plotly
+    * Fixed bug in scalar multitrace operator when target property is used.
 
- -- Timo Betcke <timo.betcke@gmail.com>  Wed, 23 Apr 2018 22:10:00 +0000
+ -- Timo Betcke <timo.betcke@gmail.com>  Wed,  2 Aug 2018 17:20:00 +0000
+

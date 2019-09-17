@@ -57,7 +57,7 @@ def __generate_grid_from_geo_string(geo_string):
         f.close()
 
         fnull = open(os.devnull, 'w')
-        cmd = gmsh_command + " -2 " + geo_name
+        cmd = gmsh_command + " -2 " + geo_name + " -format msh2"
         try:
             subprocess.check_call(
                 cmd, shell=True, stdout=fnull, stderr=fnull)
