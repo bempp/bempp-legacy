@@ -66,31 +66,56 @@ cdef extern from "bempp/space/piecewise_polynomial_discontinuous_scalar_space.hp
     cdef shared_ptr[c_Space[T]] adaptivePiecewisePolynomialDiscontinuousScalarSpace[T](const shared_ptr[c_Grid]& grid, int order, vector[int] domains, cbool closed, int dofMode)
 cdef extern from "bempp/space/raviart_thomas_0_vector_space.hpp" namespace "Bempp":
     cdef shared_ptr[c_Space[T]] adaptiveRaviartThomas0VectorSpace[T](const shared_ptr[c_Grid]& grid)
-    cdef shared_ptr[c_Space[T]] adaptiveRaviartThomas0VectorSpace[T](const shared_ptr[c_Grid]& grid, vector[int] domains, cbool closed)
+    cdef shared_ptr[c_Space[T]] adaptiveRaviartThomas0VectorSpace[T](const shared_ptr[c_Grid]& grid, vector[int] domains, cbool closed, cbool strictly_on_segment)
 cdef extern from "bempp/space/nedelec_0_vector_space.hpp" namespace "Bempp":
     cdef shared_ptr[c_Space[T]] adaptiveNedelec0VectorSpace[T](const shared_ptr[c_Grid]& grid)
-    cdef shared_ptr[c_Space[T]] adaptiveNedelec0VectorSpace[T](const shared_ptr[c_Grid]& grid, vector[int] domains, cbool closed)
+    cdef shared_ptr[c_Space[T]] adaptiveNedelec0VectorSpace[T](const shared_ptr[c_Grid]& grid, vector[int] domains, cbool closed, cbool strictly_on_segment)
 cdef extern from "bempp/space/scaled_nedelec_0_vector_space.hpp" namespace "Bempp":
     cdef shared_ptr[c_Space[T]] adaptiveScaledNedelec0VectorSpace[T](const shared_ptr[c_Grid]& grid)
-    cdef shared_ptr[c_Space[T]] adaptiveScaledNedelec0VectorSpace[T](const shared_ptr[c_Grid]& grid, vector[int] domains, cbool closed)
+    cdef shared_ptr[c_Space[T]] adaptiveScaledNedelec0VectorSpace[T](const shared_ptr[c_Grid]& grid, vector[int] domains, cbool closed, cbool strictly_on_segment)
 cdef extern from "bempp/space/raviart_thomas_0_vector_space_barycentric.hpp" namespace "Bempp":
     cdef shared_ptr[c_Space[T]] adaptiveRaviartThomas0VectorSpaceBarycentric[T](const shared_ptr[c_Grid]& grid)
+    cdef shared_ptr[c_Space[T]] adaptiveRaviartThomas0VectorSpaceBarycentric[T](const shared_ptr[c_Grid]& grid, vector[int] domains, cbool closed, cbool strictly_on_segment)
 cdef extern from "bempp/space/nedelec_0_vector_space_barycentric.hpp" namespace "Bempp":
     cdef shared_ptr[c_Space[T]] adaptiveNedelec0VectorSpaceBarycentric[T](const shared_ptr[c_Grid]& grid)
+    cdef shared_ptr[c_Space[T]] adaptiveNedelec0VectorSpaceBarycentric[T](const shared_ptr[c_Grid]& grid, vector[int] domains, cbool closed, cbool strictly_on_segment)
 cdef extern from "bempp/space/scaled_nedelec_0_vector_space_barycentric.hpp" namespace "Bempp":
     cdef shared_ptr[c_Space[T]] adaptiveScaledNedelec0VectorSpaceBarycentric[T](const shared_ptr[c_Grid]& grid)
+    cdef shared_ptr[c_Space[T]] adaptiveScaledNedelec0VectorSpaceBarycentric[T](const shared_ptr[c_Grid]& grid, vector[int] domains, cbool closed, cbool strictly_on_segment)
 cdef extern from "bempp/space/rwg_vector_space_barycentric.hpp" namespace "Bempp":
     cdef shared_ptr[c_Space[T]] adaptiveRWGVectorSpaceBarycentric[T](const shared_ptr[c_Grid]& grid)
+    cdef shared_ptr[c_Space[T]] adaptiveRWGVectorSpaceBarycentric[T](const shared_ptr[c_Grid]& grid, vector[int] domains, cbool closed, cbool strictly_on_segment)
 cdef extern from "bempp/space/buffa_christiansen_vector_space.hpp" namespace "Bempp":
     cdef shared_ptr[c_Space[T]] adaptiveBuffaChristiansenVectorSpace[T](const shared_ptr[c_Grid]& grid)
+    cdef shared_ptr[c_Space[T]] adaptiveBuffaChristiansenVectorSpace[T](const shared_ptr[c_Grid]& grid, vector[int] domains, cbool closed, cbool strictly_on_segment)
 cdef extern from "bempp/space/rotated_buffa_christiansen_vector_space.hpp" namespace "Bempp":
     cdef shared_ptr[c_Space[T]] adaptiveRotatedBuffaChristiansenVectorSpace[T](const shared_ptr[c_Grid]& grid)
+    cdef shared_ptr[c_Space[T]] adaptiveRotatedBuffaChristiansenVectorSpace[T](const shared_ptr[c_Grid]& grid, vector[int] domains, cbool closed, cbool strictly_on_segment)
 cdef extern from "bempp/space/rwg_vector_space.hpp" namespace "Bempp":
     cdef shared_ptr[c_Space[T]] adaptiveRWGVectorSpace[T](const shared_ptr[c_Grid]& grid)
-    cdef shared_ptr[c_Space[T]] adaptiveRWGVectorSpace[T](const shared_ptr[c_Grid]& grid, vector[int] domains, cbool closed)
+    cdef shared_ptr[c_Space[T]] adaptiveRWGVectorSpace[T](const shared_ptr[c_Grid]& grid, vector[int] domains, cbool closed, cbool strictly_on_segment)
 cdef extern from "bempp/space/piecewise_constant_dual_grid_scalar_space.hpp" namespace "Bempp":
     cdef shared_ptr[c_Space[T]] adaptivePiecewiseConstantDualGridScalarSpace[T](const shared_ptr[c_Grid]& grid)
+    cdef shared_ptr[c_Space[T]] adaptivePiecewiseConstantDualGridScalarSpace[T](const shared_ptr[c_Grid]& grid, vector[int] domains,
+                                                                                cbool closed, cbool strictly_on_segment)
 cdef extern from "bempp/space/piecewise_linear_continuous_scalar_space_barycentric.hpp" namespace "Bempp":
     cdef shared_ptr[c_Space[T]] adaptivePiecewiseLinearContinuousScalarSpaceBarycentric[T](const shared_ptr[c_Grid]& grid)
+    cdef shared_ptr[c_Space[T]] adaptivePiecewiseLinearContinuousScalarSpaceBarycentric[T](const shared_ptr[c_Grid]& grid, vector[int] domains,
+                                                                                cbool closed, cbool strictly_on_segment)
+cdef extern from "bempp/space/piecewise_constant_scalar_space_barycentric.hpp" namespace "Bempp":
+    cdef shared_ptr[c_Space[T]] adaptivePiecewiseConstantScalarSpaceBarycentric[T](const shared_ptr[c_Grid]& grid)
+    cdef shared_ptr[c_Space[T]] adaptivePiecewiseConstantScalarSpaceBarycentric[T](const shared_ptr[c_Grid]& grid, vector[int] domains)
+cdef extern from "bempp/space/piecewise_linear_dual_grid_continuous_scalar_space.hpp" namespace "Bempp":
+    cdef shared_ptr[c_Space[T]] adaptivePiecewiseLinearDualGridContinuousScalarSpace[T](const shared_ptr[c_Grid]& grid)
+    cdef shared_ptr[c_Space[T]] adaptivePiecewiseLinearDualGridContinuousScalarSpace[T](const shared_ptr[c_Grid]& grid, vector[int] domains,
+                                                                                cbool closed, cbool strictly_on_segment)
 cdef extern from "bempp/space/piecewise_linear_discontinuous_scalar_space_barycentric.hpp" namespace "Bempp":
     cdef shared_ptr[c_Space[T]] adaptivePiecewiseLinearDiscontinuousScalarSpaceBarycentric[T](const shared_ptr[c_Grid]& grid)
+    cdef shared_ptr[c_Space[T]] adaptivePiecewiseLinearDiscontinuousScalarSpaceBarycentric[T](const shared_ptr[c_Grid]& grid, vector[int] domains)
+
+cdef extern from "bempp/space/piecewise_constant_scalar_space_on_custom_segment.hpp" namespace "Bempp":
+    cdef shared_ptr[c_Space[T]] adaptivePiecewiseConstantScalarSpaceOnCustomSegment[T](const shared_ptr[c_Grid]& grid,
+                                                                                       vector[int] facesToInclude, vector[int] nodesToInclude)
+cdef extern from "bempp/space/piecewise_linear_space_on_custom_segment.hpp" namespace "Bempp":
+    cdef shared_ptr[c_Space[T]] adaptivePiecewiseLinearSpaceOnCustomSegment[T](const shared_ptr[c_Grid]& grid,
+                                                                               vector[int] facesToInclude, vector[int] nodesToInclude)

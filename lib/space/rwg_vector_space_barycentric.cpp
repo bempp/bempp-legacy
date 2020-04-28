@@ -48,16 +48,23 @@ namespace Bempp {
 namespace {
 
 template <typename BasisFunctionType>
-class RWGVectorSpaceBarycentricFactory
+class RWGSpaceBarycentricFactory
     : public SpaceFactory<BasisFunctionType> {
 public:
+  RWGSpaceBarycentricFactory(bool open, bool strictly)
+    : m_strictlyOnSegment(strictly),
+      m_putDofsOnBoundaries(open) {}
   shared_ptr<Space<BasisFunctionType>>
   create(const shared_ptr<const Grid> &grid,
          const GridSegment &segment) const override {
 
     return shared_ptr<Space<BasisFunctionType>>(
-        new RWGVectorSpaceBarycentric<BasisFunctionType>(grid, segment));
+        new RWGVectorSpaceBarycentric<BasisFunctionType>(grid,
+            segment, m_putDofsOnBoundaries, m_strictlyOnSegment));
   }
+private:
+  bool m_strictlyOnSegment;
+  bool m_putDofsOnBoundaries;
 };
 }
 
@@ -74,22 +81,26 @@ struct RWGVectorSpaceBarycentric<BasisFunctionType>::Impl {
 /** \endcond */
 
 template <typename BasisFunctionType>
-RWGVectorSpaceBarycentric<BasisFunctionType>::RWGVectorSpaceBarycentric(
-    const shared_ptr<const Grid> &grid, bool putDofsOnBoundaries)
+RWGVectorSpaceBarycentric<BasisFunctionType>::
+    RWGVectorSpaceBarycentric(const shared_ptr<const Grid> &grid,
+                                         bool putDofsOnBoundaries)
     : Base(grid->barycentricGrid()), m_impl(new Impl),
       m_segment(GridSegment::wholeGrid(*grid)),
       m_putDofsOnBoundaries(putDofsOnBoundaries), m_dofMode(EDGE_ON_SEGMENT),
+      m_strictlyOnSegment(false),
       m_RTBasisType1(Shapeset::TYPE1), m_RTBasisType2(Shapeset::TYPE2),
       m_originalGrid(grid), m_sonMap(grid->barycentricSonMap()) {
   initialize();
 }
 
 template <typename BasisFunctionType>
-RWGVectorSpaceBarycentric<BasisFunctionType>::RWGVectorSpaceBarycentric(
-    const shared_ptr<const Grid> &grid, const GridSegment &segment,
-    bool putDofsOnBoundaries, int dofMode)
+RWGVectorSpaceBarycentric<BasisFunctionType>::
+    RWGVectorSpaceBarycentric(const shared_ptr<const Grid> &grid,
+                                         const GridSegment &segment,
+                                         bool putDofsOnBoundaries, bool strictlyOnSegment, int dofMode)
     : Base(grid->barycentricGrid()), m_impl(new Impl), m_segment(segment),
       m_putDofsOnBoundaries(putDofsOnBoundaries), m_dofMode(dofMode),
+      m_strictlyOnSegment(strictlyOnSegment),
       m_RTBasisType1(Shapeset::TYPE1), m_RTBasisType2(Shapeset::TYPE2),
       m_originalGrid(grid), m_sonMap(grid->barycentricSonMap()) {
   if (!(dofMode & (EDGE_ON_SEGMENT | ELEMENT_ON_SEGMENT)))
@@ -112,15 +123,17 @@ bool RWGVectorSpaceBarycentric<BasisFunctionType>::spaceIsCompatible(
 template <typename BasisFunctionType>
 void RWGVectorSpaceBarycentric<BasisFunctionType>::initialize() {
   if (this->grid()->dim() != 2 || this->grid()->dimWorld() != 3)
-    throw std::invalid_argument("RWGVectorSpaceBarycentric::initialize(): "
-                                "grid must be 2-dimensional and embedded "
-                                "in 3-dimensional space");
+    throw std::invalid_argument(
+        "RWGVectorSpaceBarycentric::initialize(): "
+        "grid must be 2-dimensional and embedded "
+        "in 3-dimensional space");
   m_view = this->grid()->leafView();
   assignDofsImpl();
 }
 
 template <typename BasisFunctionType>
-RWGVectorSpaceBarycentric<BasisFunctionType>::~RWGVectorSpaceBarycentric() {}
+RWGVectorSpaceBarycentric<
+    BasisFunctionType>::~RWGVectorSpaceBarycentric() {}
 
 template <typename BasisFunctionType>
 shared_ptr<const Space<BasisFunctionType>>
@@ -137,29 +150,34 @@ RWGVectorSpaceBarycentric<BasisFunctionType>::discontinuousSpace(
 }
 
 template <typename BasisFunctionType>
-bool RWGVectorSpaceBarycentric<BasisFunctionType>::isDiscontinuous() const {
+bool RWGVectorSpaceBarycentric<BasisFunctionType>::isDiscontinuous()
+    const {
   return false;
 }
 
 template <typename BasisFunctionType>
 const typename RWGVectorSpaceBarycentric<
     BasisFunctionType>::CollectionOfShapesetTransformations &
-RWGVectorSpaceBarycentric<BasisFunctionType>::basisFunctionValue() const {
+RWGVectorSpaceBarycentric<BasisFunctionType>::basisFunctionValue()
+    const {
   return m_impl->transformations;
 }
 
 template <typename BasisFunctionType>
-int RWGVectorSpaceBarycentric<BasisFunctionType>::domainDimension() const {
+int RWGVectorSpaceBarycentric<BasisFunctionType>::domainDimension()
+    const {
   return 2;
 }
 
 template <typename BasisFunctionType>
-int RWGVectorSpaceBarycentric<BasisFunctionType>::codomainDimension() const {
+int RWGVectorSpaceBarycentric<BasisFunctionType>::codomainDimension()
+    const {
   return 3;
 }
 
 template <typename BasisFunctionType>
-ElementVariant RWGVectorSpaceBarycentric<BasisFunctionType>::elementVariant(
+ElementVariant
+RWGVectorSpaceBarycentric<BasisFunctionType>::elementVariant(
     const Entity<0> &element) const {
   GeometryType type = element.type();
   if (type.isTriangle())
@@ -197,8 +215,10 @@ void RWGVectorSpaceBarycentric<BasisFunctionType>::assignDofsImpl() {
   for (std::unique_ptr<EntityIterator<0>> it = coarseView->entityIterator<0>();
        !it->finished(); it->next()) {
     const Entity<0> &entity = it->entity();
-    for (int i = 0; i != 3; ++i)
-      ++faceCountNextToEdge[index.subEntityIndex(entity, i, 1)];
+    const int ent0Index = index.entityIndex(entity);
+    if (m_segment.contains(0,ent0Index))
+      for (int i = 0; i != 3; ++i)
+          ++faceCountNextToEdge[index.subEntityIndex(entity, i, 1)];
   }
 
   std::vector<int> globalDofsOfEdges;
@@ -206,7 +226,7 @@ void RWGVectorSpaceBarycentric<BasisFunctionType>::assignDofsImpl() {
   int globalDofCount_ = 0;
   for (int i = 0; i != edgeCountCoarseGrid; ++i) {
     int &globalDofOfEdge = acc(globalDofsOfEdges, i);
-    if (m_putDofsOnBoundaries || faceCountNextToEdge[i] == 2)
+    if ((m_putDofsOnBoundaries && faceCountNextToEdge[i] == 1) || faceCountNextToEdge[i] == 2)
       globalDofOfEdge = globalDofCount_++;
     else
       globalDofOfEdge = -1;
@@ -280,13 +300,14 @@ void RWGVectorSpaceBarycentric<BasisFunctionType>::assignDofsImpl() {
           bindex.entityIndex(subIt->entity());
     }
   }
-  auto edgeIt = coarseView->entityIterator<1>();
+
   std::vector<BasisFunctionType> edgeVolumes(edgeCountCoarseGrid);
-  while (!edgeIt->finished()) {
+  for(auto edgeIt = coarseView->entityIterator<1>();
+      !edgeIt->finished();
+      edgeIt->next()){
     auto &edge = edgeIt->entity();
     BasisFunctionType volume = edge.geometry().volume();
     edgeVolumes[index.entityIndex(edge)] = volume;
-    edgeIt->next();
   }
 
   for (std::unique_ptr<EntityIterator<0>> it = coarseView->entityIterator<0>();
@@ -294,6 +315,7 @@ void RWGVectorSpaceBarycentric<BasisFunctionType>::assignDofsImpl() {
     const Entity<0> &entity = it->entity();
     const Geometry &geo = entity.geometry();
     int ent0Number = index.entityIndex(entity);
+    const bool onSegment = m_strictlyOnSegment ? m_segment.contains(0,ent0Number) : true;
     geo.getCorners(vertices);
 
     std::vector<int> edges;
@@ -314,7 +336,7 @@ void RWGVectorSpaceBarycentric<BasisFunctionType>::assignDofsImpl() {
       for (int j = 0; j != 3; ++j) {
         const int edgeIndex = edges[element2Basis[i][j]];
         const int fineEdgeIndex = fineEdgeMap(sonIndex, j);
-        const int globalDofIndex = globalDofsOfEdges[edgeIndex];
+        const int globalDofIndex = onSegment ? globalDofsOfEdges[edgeIndex] : -1;
         if (acc(lowestIndicesOfElementsAdjacentToEdges, edgeIndex) ==
                 ent0Number &&
             i == 0) {
@@ -332,14 +354,14 @@ void RWGVectorSpaceBarycentric<BasisFunctionType>::assignDofsImpl() {
           }
         }
 
-        globalDof.push_back(globalDofIndex);
-        globalDofWeights.push_back(
-            acc(lowestIndicesOfElementsAdjacentToEdges, edgeIndex) == ent0Number
-                ? edgeVolumes[edgeIndex]
-                : -edgeVolumes[edgeIndex]);
-        if (globalDofIndex != -1) {
-          m_global2localDofs[globalDofIndex].push_back(LocalDof(sonIndex, j));
-          ++flatLocalDofCount;
+          globalDof.push_back(globalDofIndex);
+          globalDofWeights.push_back(
+              acc(lowestIndicesOfElementsAdjacentToEdges, edgeIndex) == ent0Number
+                  ? edgeVolumes[edgeIndex]
+                  : -edgeVolumes[edgeIndex]);
+          if (globalDofIndex != -1) {
+            m_global2localDofs[globalDofIndex].push_back(LocalDof(sonIndex, j));
+            ++flatLocalDofCount;
         }
       }
       if (i % 2 == 0) {
@@ -367,12 +389,15 @@ RWGVectorSpaceBarycentric<BasisFunctionType>::shapeset(
 }
 
 template <typename BasisFunctionType>
-size_t RWGVectorSpaceBarycentric<BasisFunctionType>::globalDofCount() const {
+size_t RWGVectorSpaceBarycentric<BasisFunctionType>::globalDofCount()
+    const {
   return m_global2localDofs.size();
 }
 
 template <typename BasisFunctionType>
-size_t RWGVectorSpaceBarycentric<BasisFunctionType>::flatLocalDofCount() const {
+size_t
+RWGVectorSpaceBarycentric<BasisFunctionType>::flatLocalDofCount()
+    const {
   return m_flatLocal2localDofs.size();
 }
 
@@ -406,52 +431,45 @@ void RWGVectorSpaceBarycentric<BasisFunctionType>::global2localDofs(
 }
 
 template <typename BasisFunctionType>
-void RWGVectorSpaceBarycentric<BasisFunctionType>::flatLocal2localDofs(
-    const std::vector<FlatLocalDofIndex> &flatLocalDofs,
-    std::vector<LocalDof> &localDofs) const {
+void RWGVectorSpaceBarycentric<BasisFunctionType>::
+    flatLocal2localDofs(const std::vector<FlatLocalDofIndex> &flatLocalDofs,
+                        std::vector<LocalDof> &localDofs) const {
   localDofs.resize(flatLocalDofs.size());
   for (size_t i = 0; i < flatLocalDofs.size(); ++i)
     acc(localDofs, i) = acc(m_flatLocal2localDofs, acc(flatLocalDofs, i));
 }
 
 template <typename BasisFunctionType>
-void RWGVectorSpaceBarycentric<BasisFunctionType>::getGlobalDofPositions(
-    std::vector<Point3D<CoordinateType>> &positions) const {
+void RWGVectorSpaceBarycentric<BasisFunctionType>::
+    getGlobalDofPositions(
+        std::vector<Point3D<CoordinateType>> &positions) const {
   positions.resize(m_globalDofBoundingBoxes.size());
   for (size_t i = 0; i < m_globalDofBoundingBoxes.size(); ++i)
     acc(positions, i) = acc(m_globalDofBoundingBoxes, i).reference;
-  // std::cout << "globalDofPosition(" << i << ")";
-  // std::cout << acc(positions, i).x << ",";
-  // std::cout << acc(positions, i).y << ",";
-  // std::cout << acc(positions, i).z;
-  // std::cout << std::endl;
 }
 
 template <typename BasisFunctionType>
-void RWGVectorSpaceBarycentric<BasisFunctionType>::getFlatLocalDofPositions(
-    std::vector<Point3D<CoordinateType>> &positions) const {
+void RWGVectorSpaceBarycentric<BasisFunctionType>::
+    getFlatLocalDofPositions(
+        std::vector<Point3D<CoordinateType>> &positions) const {
   std::vector<BoundingBox<CoordinateType>> bboxes;
   getFlatLocalDofBoundingBoxes(bboxes);
   positions.resize(bboxes.size());
   for (size_t i = 0; i < bboxes.size(); ++i)
     acc(positions, i) = acc(bboxes, i).reference;
-  // std::cout << "flatLocalDofPosition(" << i << ")";
-  // std::cout << acc(positions, i).x << ",";
-
-  // std::cout << acc(positions, i).y << ",";
-  // std::cout << acc(positions, i).z;
-  // std::cout << std::endl;}
 }
 
 template <typename BasisFunctionType>
-void RWGVectorSpaceBarycentric<BasisFunctionType>::getGlobalDofBoundingBoxes(
-    std::vector<BoundingBox<CoordinateType>> &bboxes) const {
+void RWGVectorSpaceBarycentric<BasisFunctionType>::
+    getGlobalDofBoundingBoxes(
+        std::vector<BoundingBox<CoordinateType>> &bboxes) const {
   bboxes = m_globalDofBoundingBoxes;
 }
 
 template <typename BasisFunctionType>
-void RWGVectorSpaceBarycentric<BasisFunctionType>::getFlatLocalDofBoundingBoxes(
-    std::vector<BoundingBox<CoordinateType>> &bboxes) const {
+void RWGVectorSpaceBarycentric<BasisFunctionType>::
+    getFlatLocalDofBoundingBoxes(
+        std::vector<BoundingBox<CoordinateType>> &bboxes) const {
   BoundingBox<CoordinateType> model;
   model.lbound.x = std::numeric_limits<CoordinateType>::max();
   model.lbound.y = std::numeric_limits<CoordinateType>::max();
@@ -473,7 +491,8 @@ void RWGVectorSpaceBarycentric<BasisFunctionType>::getFlatLocalDofBoundingBoxes(
     e.geometry().getCorners(acc(elementCorners, index));
     if (acc(elementCorners, index).cols() != 3)
       throw std::runtime_error(
-          "RWGVectorSpaceBarycentric::getFlatLocalDofBoundingBoxes(): "
+          "RWGVectorSpaceBarycentric::getFlatLocalDofBoundingBoxes()"
+          ": "
           "only triangular elements are supported at present");
     it->next();
   }
@@ -499,8 +518,8 @@ void RWGVectorSpaceBarycentric<BasisFunctionType>::getFlatLocalDofBoundingBoxes(
 }
 
 template <typename BasisFunctionType>
-void RWGVectorSpaceBarycentric<BasisFunctionType>::getGlobalDofNormals(
-    std::vector<Point3D<CoordinateType>> &normals) const {
+void RWGVectorSpaceBarycentric<BasisFunctionType>::
+    getGlobalDofNormals(std::vector<Point3D<CoordinateType>> &normals) const {
   const int gridDim = 2;
   const int worldDim = 3;
   const int globalDofCount_ = globalDofCount();
@@ -540,8 +559,9 @@ void RWGVectorSpaceBarycentric<BasisFunctionType>::getGlobalDofNormals(
 }
 
 template <typename BasisFunctionType>
-void RWGVectorSpaceBarycentric<BasisFunctionType>::getFlatLocalDofNormals(
-    std::vector<Point3D<CoordinateType>> &normals) const {
+void RWGVectorSpaceBarycentric<BasisFunctionType>::
+    getFlatLocalDofNormals(
+        std::vector<Point3D<CoordinateType>> &normals) const {
   const int gridDim = 2;
   const int worldDim = 3;
   normals.resize(flatLocalDofCount());
@@ -594,10 +614,11 @@ void RWGVectorSpaceBarycentric<BasisFunctionType>::dumpClusterIdsEx(
 
 template <typename BasisFunctionType>
 shared_ptr<Space<BasisFunctionType>>
-adaptiveRWGVectorSpaceBarycentric(const shared_ptr<const Grid> &grid) {
+adaptiveRWGVectorSpaceBarycentric(
+    const shared_ptr<const Grid> &grid) {
 
   shared_ptr<SpaceFactory<BasisFunctionType>> factory(
-      new RWGVectorSpaceBarycentricFactory<BasisFunctionType>());
+      new RWGSpaceBarycentricFactory<BasisFunctionType>(false, false));
   return shared_ptr<Space<BasisFunctionType>>(
       new AdaptiveSpace<BasisFunctionType>(factory, grid));
 }
@@ -605,10 +626,11 @@ adaptiveRWGVectorSpaceBarycentric(const shared_ptr<const Grid> &grid) {
 template <typename BasisFunctionType>
 shared_ptr<Space<BasisFunctionType>>
 adaptiveRWGVectorSpaceBarycentric(const shared_ptr<const Grid> &grid,
-                                  const std::vector<int> &domains, bool open) {
+                                             const std::vector<int> &domains,
+                                             bool open, bool strictly) {
 
   shared_ptr<SpaceFactory<BasisFunctionType>> factory(
-      new RWGVectorSpaceBarycentricFactory<BasisFunctionType>());
+      new RWGSpaceBarycentricFactory<BasisFunctionType>(open, strictly));
   return shared_ptr<Space<BasisFunctionType>>(
       new AdaptiveSpace<BasisFunctionType>(factory, grid, domains, open));
 }
@@ -616,74 +638,29 @@ adaptiveRWGVectorSpaceBarycentric(const shared_ptr<const Grid> &grid,
 template <typename BasisFunctionType>
 shared_ptr<Space<BasisFunctionType>>
 adaptiveRWGVectorSpaceBarycentric(const shared_ptr<const Grid> &grid,
-                                  int domain, bool open) {
+                                             int domain, bool open, bool strictly) {
 
   shared_ptr<SpaceFactory<BasisFunctionType>> factory(
-      new RWGVectorSpaceBarycentricFactory<BasisFunctionType>());
+      new RWGSpaceBarycentricFactory<BasisFunctionType>(open, strictly));
   return shared_ptr<Space<BasisFunctionType>>(
       new AdaptiveSpace<BasisFunctionType>(factory, grid,
                                            std::vector<int>({domain}), open));
 }
 
 #define INSTANTIATE_FREE_FUNCTIONS(BASIS)                                      \
-  template shared_ptr<Space<BASIS>> adaptiveRWGVectorSpaceBarycentric<BASIS>(  \
+  template shared_ptr<Space<BASIS>>                                            \
+  adaptiveRWGVectorSpaceBarycentric<BASIS>(                         \
       const shared_ptr<const Grid> &);                                         \
-  template shared_ptr<Space<BASIS>> adaptiveRWGVectorSpaceBarycentric<BASIS>(  \
-      const shared_ptr<const Grid> &, const std::vector<int> &, bool);         \
-  template shared_ptr<Space<BASIS>> adaptiveRWGVectorSpaceBarycentric<BASIS>(  \
-      const shared_ptr<const Grid> &, int, bool)
+  template shared_ptr<Space<BASIS>>                                            \
+  adaptiveRWGVectorSpaceBarycentric<BASIS>(                         \
+      const shared_ptr<const Grid> &, const std::vector<int> &, bool, bool);   \
+  template shared_ptr<Space<BASIS>>                                            \
+  adaptiveRWGVectorSpaceBarycentric<BASIS>(                         \
+      const shared_ptr<const Grid> &, int, bool, bool)
 
 FIBER_ITERATE_OVER_BASIS_TYPES(INSTANTIATE_FREE_FUNCTIONS);
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(RWGVectorSpaceBarycentric);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(
+    RWGVectorSpaceBarycentric);
 
 } // namespace Bempp
-
-/*template <typename BasisFunctionType>
-shared_ptr<Space<BasisFunctionType>>
-adaptiveRWGVectorSpaceBarycentric(const shared_ptr<const Grid> &grid) {
-
-  return shared_ptr<Space<BasisFunctionType>>(
-      new AdaptiveSpace<BasisFunctionType,
-                        RWGVectorSpaceBarycentric<BasisFunctionType>>(grid));
-}
-
-template <typename BasisFunctionType>
-shared_ptr<Space<BasisFunctionType>>
-adaptiveRWGVectorSpaceBarycentric(const shared_ptr<const Grid> &grid,
-                                     const std::vector<int> &domains,
-                                     bool open) {
-
-  return shared_ptr<Space<BasisFunctionType>>(
-      new AdaptiveSpace<BasisFunctionType,
-                        RWGVectorSpaceBarycentric<BasisFunctionType>>(
-          grid, domains, open));
-}
-
-template <typename BasisFunctionType>
-shared_ptr<Space<BasisFunctionType>>
-adaptiveRWGVectorSpaceBarycentric(const shared_ptr<const Grid> &grid,
-                                     int domain, bool open) {
-
-  return shared_ptr<Space<BasisFunctionType>>(
-      new AdaptiveSpace<BasisFunctionType,
-                        RWGVectorSpaceBarycentric<BasisFunctionType>>(
-          grid, std::vector<int>({domain}), open));
-}
-
-#define INSTANTIATE_FREE_FUNCTIONS(BASIS)                                      \
-  template shared_ptr<Space<BASIS>>                                            \
-  adaptiveRWGVectorSpaceBarycentric<BASIS>(const shared_ptr<const Grid> &); \
-  template shared_ptr<Space<BASIS>>                                            \
-  adaptiveRWGVectorSpaceBarycentric<BASIS>(const shared_ptr<const Grid> &,  \
-                                              const std::vector<int> &, bool); \
-  template shared_ptr<Space<BASIS>>                                            \
-  adaptiveRWGVectorSpaceBarycentric<BASIS>(const shared_ptr<const Grid> &,  \
-                                              int, bool)
-
-FIBER_ITERATE_OVER_BASIS_TYPES(INSTANTIATE_FREE_FUNCTIONS);
-
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(RWGVectorSpaceBarycentric);
-
-} // namespace Bempp
-*/

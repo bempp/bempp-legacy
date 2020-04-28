@@ -28,6 +28,7 @@
 #include "../common/types.hpp"
 #include "../fiber/constant_scalar_shapeset.hpp"
 #include "../grid/grid_segment.hpp"
+#include "../common/shared_ptr.hpp"
 
 #include <tbb/mutex.h>
 
@@ -66,8 +67,10 @@ public:
    *
    *  An exception is thrown if \p grid is a null pointer.
    */
-  PiecewiseConstantScalarSpaceBarycentric(const shared_ptr<const Grid> &grid,
-                                          const GridSegment &segment);
+  PiecewiseConstantScalarSpaceBarycentric(
+      const shared_ptr<const Grid> &grid, const GridSegment &segment,
+      bool strictlyOnSegment = false,
+      bool putDofsOnBoundaries = true);
 
   virtual shared_ptr<const Space<BasisFunctionType>> discontinuousSpace(
       const shared_ptr<const Space<BasisFunctionType>> &self) const;
@@ -140,7 +143,8 @@ public:
                    DofType dofType) const;
 
 private:
-  void assignDofsImpl(const GridSegment &segment);
+  void initialize();
+  void assignDofsImpl();
 
 private:
   Fiber::ConstantScalarShapeset<BasisFunctionType> m_shapeset;
@@ -148,11 +152,33 @@ private:
   std::vector<std::vector<LocalDof>> m_global2localDofs;
   std::vector<LocalDof> m_flatLocal2localDofs;
   GridSegment m_segment;
+  bool m_strictlyOnSegment;
+  bool m_putDofsOnBoundaries;
+  std::unique_ptr<GridView> m_view;
   shared_ptr<const Grid> m_originalGrid;
   mutable shared_ptr<Space<BasisFunctionType>> m_discontinuousSpace;
   mutable tbb::mutex m_discontinuousSpaceMutex;
   mutable Matrix<int> m_sonMap;
 };
+
+/** \brief Define a PiecewiseConstantScalarSpaceBarycentric that has an
+ * update method for grid refinement. */
+template <typename BasisFunctionType>
+shared_ptr<Space<BasisFunctionType>>
+adaptivePiecewiseConstantScalarSpaceBarycentric(
+    const shared_ptr<const Grid> &grid);
+
+template <typename BasisFunctionType>
+shared_ptr<Space<BasisFunctionType>>
+adaptivePiecewiseConstantScalarSpaceBarycentric(
+    const shared_ptr<const Grid> &grid,
+    const std::vector<int> &domains);
+
+template <typename BasisFunctionType>
+shared_ptr<Space<BasisFunctionType>>
+adaptivePiecewiseConstantScalarSpaceBarycentric(
+    const shared_ptr<const Grid> &grid,
+    int domain);
 
 } // namespace Bempp
 

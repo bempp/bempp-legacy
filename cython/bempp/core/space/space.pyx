@@ -212,7 +212,8 @@ cdef class Space:
             return eigen_matrix_to_np_float64(data)
 
 def function_space(Grid grid, kind, order, domains=None, cbool closed=True, cbool strictly_on_segment=False,
-        cbool reference_point_on_segment=True, cbool element_on_segment=False):
+        cbool reference_point_on_segment=True, cbool element_on_segment=False,
+        faces_to_include=None, nodes_to_include=None):
     """
     Return a space defined over a given grid.
 
@@ -238,9 +239,11 @@ def function_space(Grid grid, kind, order, domains=None, cbool closed=True, cboo
             "B-NC": Nedelec Vector spaces on barycentric grids.
             "B-SNC": Scaled Nedelec Vector spaces on barycentric grids.
 
-            "DUAL": Dual space on dual grid (only implemented for constants).
+            "DUAL": Dual space on dual grid (only implemented for constants and linears).
             "BC": Buffa-Christian Vector space.
             "RBC": Rotated Buffa-Christiansen Vector space.
+
+            "DP-CUSTOM" : Used internally
 
     order : int
         The order of the space, e.g. 0 for piecewise const, 1 for
@@ -321,6 +324,15 @@ def function_space(Grid grid, kind, order, domains=None, cbool closed=True, cboo
             else:
                 s.impl_.assign(reverse_const_pointer_cast(
                         shared_ptr[c_Space[double]](adaptivePiecewisePolynomialDiscontinuousScalarSpace[double](grid.impl_, order, domains, closed, dof_mode))))
+    elif kind=="DP-CUSTOM":
+        if order != 0 and order != 1:
+            raise ValueError("Order must be 0 or 1")
+        if order==0:
+            s.impl_.assign(reverse_const_pointer_cast(
+                    shared_ptr[c_Space[double]](adaptivePiecewiseConstantScalarSpaceOnCustomSegment[double](grid.impl_, faces_to_include, nodes_to_include))))
+        if order == 1:
+            s.impl_.assign(reverse_const_pointer_cast(
+                    shared_ptr[c_Space[double]](adaptivePiecewiseLinearSpaceOnCustomSegment[double](grid.impl_, faces_to_include, nodes_to_include))))
     elif kind=="RT":
         if order!=0:
             raise ValueError("Only 0 order Raviart-Thomas spaces are implemented.")
@@ -329,7 +341,7 @@ def function_space(Grid grid, kind, order, domains=None, cbool closed=True, cboo
                     shared_ptr[c_Space[double]](adaptiveRaviartThomas0VectorSpace[double](grid.impl_))))
         else:
             s.impl_.assign(reverse_const_pointer_cast(
-                    shared_ptr[c_Space[double]](adaptiveRaviartThomas0VectorSpace[double](grid.impl_, domains, closed))))
+                    shared_ptr[c_Space[double]](adaptiveRaviartThomas0VectorSpace[double](grid.impl_, domains, closed, strictly_on_segment))))
     elif kind=="NC":
         if order!=0:
             raise ValueError("Only 0 order Nedelec spaces are implemented.")
@@ -338,7 +350,7 @@ def function_space(Grid grid, kind, order, domains=None, cbool closed=True, cboo
                     shared_ptr[c_Space[double]](adaptiveNedelec0VectorSpace[double](grid.impl_))))
         else:
             s.impl_.assign(reverse_const_pointer_cast(
-                    shared_ptr[c_Space[double]](adaptiveNedelec0VectorSpace[double](grid.impl_, domains, closed))))
+                    shared_ptr[c_Space[double]](adaptiveNedelec0VectorSpace[double](grid.impl_, domains, closed, strictly_on_segment))))
     elif kind=="SNC":
         if order!=0:
             raise ValueError("Only 0 order Nedelec spaces are implemented.")
@@ -347,7 +359,7 @@ def function_space(Grid grid, kind, order, domains=None, cbool closed=True, cboo
                     shared_ptr[c_Space[double]](adaptiveScaledNedelec0VectorSpace[double](grid.impl_))))
         else:
             s.impl_.assign(reverse_const_pointer_cast(
-                    shared_ptr[c_Space[double]](adaptiveScaledNedelec0VectorSpace[double](grid.impl_, domains, closed))))
+                    shared_ptr[c_Space[double]](adaptiveScaledNedelec0VectorSpace[double](grid.impl_, domains, closed, strictly_on_segment))))
     elif kind=="RWG":
         if order!=0:
             raise ValueError("Only 0 order RWG spaces are implemented.")
@@ -356,77 +368,110 @@ def function_space(Grid grid, kind, order, domains=None, cbool closed=True, cboo
                     shared_ptr[c_Space[double]](adaptiveRWGVectorSpace[double](grid.impl_))))
         else:
             s.impl_.assign(reverse_const_pointer_cast(
-                    shared_ptr[c_Space[double]](adaptiveRWGVectorSpace[double](grid.impl_, domains, closed))))
+                    shared_ptr[c_Space[double]](adaptiveRWGVectorSpace[double](grid.impl_, domains, closed, strictly_on_segment))))
     elif kind=="DUAL":
-        if order != 0:
-            raise ValueError("Only 0 order dual grid spaces are implemented.")
-        if domains is not None:
-            raise ValueError("Spaces on subdomains are not supported on dual grids.")
-        s.impl_.assign(reverse_const_pointer_cast(
-            shared_ptr[c_Space[double]](adaptivePiecewiseConstantDualGridScalarSpace[double](grid.impl_))
-        ))
+        if order == 0:
+            if domains is None:
+                s.impl_.assign(reverse_const_pointer_cast(
+                    shared_ptr[c_Space[double]](adaptivePiecewiseConstantDualGridScalarSpace[double](grid.impl_))
+                ))
+            else:
+                s.impl_.assign(reverse_const_pointer_cast(
+                    shared_ptr[c_Space[double]](adaptivePiecewiseConstantDualGridScalarSpace[double](grid.impl_, domains, closed, strictly_on_segment))
+                ))
+        elif order == 1:
+            if domains is None:
+                s.impl_.assign(reverse_const_pointer_cast(
+                    shared_ptr[c_Space[double]](adaptivePiecewiseLinearDualGridContinuousScalarSpace[double](grid.impl_))
+                ))
+            else:
+                s.impl_.assign(reverse_const_pointer_cast(
+                    shared_ptr[c_Space[double]](adaptivePiecewiseLinearDualGridContinuousScalarSpace[double](grid.impl_, domains, closed, strictly_on_segment))
+                ))
+        else:
+            raise ValueError("Only order 0 and 1 dual grid spaces are implemented.")
+
     elif kind == "B-P":
         if order != 1:
             raise ValueError("Only linear spaces on barycentric grids are supported.")
-        if domains is not None:
-            raise ValueError("Spaces on subdomains are not supported on barycentric grids.")
-        s.impl_.assign(reverse_const_pointer_cast(
-            shared_ptr[c_Space[double]](adaptivePiecewiseLinearContinuousScalarSpaceBarycentric[double](grid.impl_))))
+        if domains is None:
+            s.impl_.assign(reverse_const_pointer_cast(
+                shared_ptr[c_Space[double]](adaptivePiecewiseLinearContinuousScalarSpaceBarycentric[double](grid.impl_))))
+        else:
+            s.impl_.assign(reverse_const_pointer_cast(
+                shared_ptr[c_Space[double]](adaptivePiecewiseLinearContinuousScalarSpaceBarycentric[double](grid.impl_, domains, closed, strictly_on_segment))))
     elif kind == "B-DP":
-        if order != 1:
-            raise ValueError("Only linear spaces on barycentric grids are supported.")
-        if domains is not None:
-            raise ValueError("Spaces on subdomains are not supported on barycentric grids.")
-        s.impl_.assign(reverse_const_pointer_cast(
-            shared_ptr[c_Space[double]](adaptivePiecewiseLinearDiscontinuousScalarSpaceBarycentric[double](grid.impl_))))
+        if order == 1:
+            if domains is None:
+                s.impl_.assign(reverse_const_pointer_cast(
+                    shared_ptr[c_Space[double]](adaptivePiecewiseLinearDiscontinuousScalarSpaceBarycentric[double](grid.impl_))))
+            else:
+                s.impl_.assign(reverse_const_pointer_cast(
+                    shared_ptr[c_Space[double]](adaptivePiecewiseLinearDiscontinuousScalarSpaceBarycentric[double](grid.impl_, domains))))
+        elif order == 0:
+            if domains is None:
+                s.impl_.assign(reverse_const_pointer_cast(
+                    shared_ptr[c_Space[double]](adaptivePiecewiseConstantScalarSpaceBarycentric[double](grid.impl_))))
+            else:
+                s.impl_.assign(reverse_const_pointer_cast(
+                    shared_ptr[c_Space[double]](adaptivePiecewiseConstantScalarSpaceBarycentric[double](grid.impl_, domains))))
+        else:
+            raise ValueError("Only constant and linear spaces on barycentric grids are supported.")
+
     elif kind=="B-RT":
         if order!=0:
             raise ValueError("Only 0 order Raviart-Thomas spaces on barycentric grids are supported.")
-        if domains is not None:
-            raise ValueError("Spaces on subdomains are not supported on barycentric grids.")
-        else:
+        if domains is None:
             s.impl_.assign(reverse_const_pointer_cast(
                     shared_ptr[c_Space[double]](adaptiveRaviartThomas0VectorSpaceBarycentric[double](grid.impl_))))
+        else:
+            s.impl_.assign(reverse_const_pointer_cast(
+                    shared_ptr[c_Space[double]](adaptiveRaviartThomas0VectorSpaceBarycentric[double](grid.impl_, domains, closed, strictly_on_segment))))
     elif kind=="B-NC":
         if order!=0:
             raise ValueError("Only 0 order Nedelec spaces on barycentric grids are supported.")
-        if domains is not None:
-            raise ValueError("Spaces on subdomains are not supported on barycentric grids.")
-        else:
+        if domains is None:
             s.impl_.assign(reverse_const_pointer_cast(
                     shared_ptr[c_Space[double]](adaptiveNedelec0VectorSpaceBarycentric[double](grid.impl_))))
+        else:
+            s.impl_.assign(reverse_const_pointer_cast(
+                    shared_ptr[c_Space[double]](adaptiveNedelec0VectorSpaceBarycentric[double](grid.impl_, domains, closed, strictly_on_segment))))
     elif kind=="B-SNC":
         if order!=0:
             raise ValueError("Only 0 order Nedelec spaces on barycentric grids are supported.")
-        if domains is not None:
-            raise ValueError("Spaces on subdomains are not supported on barycentric grids.")
-        else:
+        if domains is None:
             s.impl_.assign(reverse_const_pointer_cast(
                     shared_ptr[c_Space[double]](adaptiveScaledNedelec0VectorSpaceBarycentric[double](grid.impl_))))
+        else:
+            s.impl_.assign(reverse_const_pointer_cast(
+                    shared_ptr[c_Space[double]](adaptiveScaledNedelec0VectorSpaceBarycentric[double](grid.impl_, domains, closed, strictly_on_segment))))
     elif kind=="B-RWG":
         if order!=0:
             raise ValueError("Only 0 order RWG spaces on barycentric grids are supported.")
-        if domains is not None:
-            raise ValueError("Spaces on subdomains are not supported on barycentric grids.")
-        else:
+        if domains is None:
             s.impl_.assign(reverse_const_pointer_cast(
                     shared_ptr[c_Space[double]](adaptiveRWGVectorSpaceBarycentric[double](grid.impl_))))
+        else:
+            s.impl_.assign(reverse_const_pointer_cast(
+                    shared_ptr[c_Space[double]](adaptiveRWGVectorSpaceBarycentric[double](grid.impl_, domains, closed, strictly_on_segment))))
     elif kind=="BC":
         if order!=0:
             raise ValueError("Only order 0 Buffa-Christiansen spaces are implemented.")
-        if domains is not None:
-            raise ValueError("Spaces on subdomains are not supported for Buffa-Christiansen spaces.")
-        else:
+        if domains is None:
             s.impl_.assign(reverse_const_pointer_cast(
                     shared_ptr[c_Space[double]](adaptiveBuffaChristiansenVectorSpace[double](grid.impl_))))
+        else:
+            s.impl_.assign(reverse_const_pointer_cast(
+                    shared_ptr[c_Space[double]](adaptiveBuffaChristiansenVectorSpace[double](grid.impl_, domains, closed, strictly_on_segment))))
     elif kind=="RBC":
         if order!=0:
             raise ValueError("Only order 0 Buffa-Christiansen spaces are implemented.")
-        if domains is not None:
-            raise ValueError("Spaces on subdomains are not supported for Buffa-Christiansen spaces.")
-        else:
+        if domains is None:
             s.impl_.assign(reverse_const_pointer_cast(
                     shared_ptr[c_Space[double]](adaptiveRotatedBuffaChristiansenVectorSpace[double](grid.impl_))))
+        else:
+            s.impl_.assign(reverse_const_pointer_cast(
+                    shared_ptr[c_Space[double]](adaptiveRotatedBuffaChristiansenVectorSpace[double](grid.impl_, domains, closed, strictly_on_segment))))
     else:
         raise ValueError("Unknown kind")
 

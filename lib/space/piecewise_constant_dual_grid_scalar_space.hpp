@@ -61,7 +61,8 @@ public:
       const shared_ptr<const Grid> &grid);
 
   PiecewiseConstantDualGridScalarSpace(const shared_ptr<const Grid> &grid,
-                                       const GridSegment &segment);
+                                       const GridSegment &segment,
+                                       bool strictlyOnSegment = false);
 
   virtual ~PiecewiseConstantDualGridScalarSpace();
 
@@ -136,6 +137,8 @@ private:
 
 private:
   /** \cond PRIVATE */
+  GridSegment m_segment;
+  bool m_strictlyOnSegment;
   std::vector<std::vector<GlobalDofIndex>> m_local2globalDofs;
   std::vector<std::vector<LocalDof>> m_global2localDofs;
   std::vector<LocalDof> m_flatLocal2localDofs;
@@ -151,6 +154,22 @@ template <typename BasisFunctionType>
 shared_ptr<Space<BasisFunctionType>>
 adaptivePiecewiseConstantDualGridScalarSpace(
     const shared_ptr<const Grid> &grid);
+
+template <typename BasisFunctionType>
+shared_ptr<Space<BasisFunctionType>>
+adaptivePiecewiseConstantDualGridScalarSpace(
+    const shared_ptr<const Grid> &grid,
+    const std::vector<int> &domains,
+    bool open,
+    bool strictlyOnSegment = false);
+
+template <typename BasisFunctionType>
+shared_ptr<Space<BasisFunctionType>>
+adaptivePiecewiseConstantDualGridScalarSpace(
+    const shared_ptr<const Grid> &grid,
+    int domain,
+    bool open,
+    bool strictlyOnSegment = false);
 
 } // namespace Bempp
 

@@ -48,23 +48,30 @@ namespace Bempp {
 namespace {
 
 template <typename BasisFunctionType>
-class Nedelec0SpaceBarycentricFactory : public SpaceFactory<BasisFunctionType> {
+class Nedelec0SpaceBarycentricFactory
+    : public SpaceFactory<BasisFunctionType> {
 public:
+  Nedelec0SpaceBarycentricFactory(bool open, bool strictly)
+    : m_strictlyOnSegment(strictly),
+      m_putDofsOnBoundaries(open) {}
   shared_ptr<Space<BasisFunctionType>>
   create(const shared_ptr<const Grid> &grid,
          const GridSegment &segment) const override {
 
     return shared_ptr<Space<BasisFunctionType>>(
-        new Nedelec0VectorSpaceBarycentric<BasisFunctionType>(grid, segment));
+        new Nedelec0VectorSpaceBarycentric<BasisFunctionType>(grid,
+            segment, m_putDofsOnBoundaries, m_strictlyOnSegment));
   }
+private:
+  bool m_strictlyOnSegment;
+  bool m_putDofsOnBoundaries;
 };
 }
 
 /** \cond PRIVATE */
 template <typename BasisFunctionType>
 struct Nedelec0VectorSpaceBarycentric<BasisFunctionType>::Impl {
-  typedef Fiber::HcurlFunctionValueFunctor<CoordinateType>
-      TransformationFunctor;
+  typedef Fiber::HcurlFunctionValueFunctor<CoordinateType> TransformationFunctor;
 
   Impl() : transformations(TransformationFunctor()) {}
 
@@ -76,11 +83,12 @@ struct Nedelec0VectorSpaceBarycentric<BasisFunctionType>::Impl {
 template <typename BasisFunctionType>
 Nedelec0VectorSpaceBarycentric<BasisFunctionType>::
     Nedelec0VectorSpaceBarycentric(const shared_ptr<const Grid> &grid,
-                                   bool putDofsOnBoundaries)
+                                         bool putDofsOnBoundaries)
     : Base(grid->barycentricGrid()), m_impl(new Impl),
       m_segment(GridSegment::wholeGrid(*grid)),
       m_putDofsOnBoundaries(putDofsOnBoundaries), m_dofMode(EDGE_ON_SEGMENT),
-      m_NCBasisType1(Shapeset::TYPE1), m_NCBasisType2(Shapeset::TYPE2),
+      m_strictlyOnSegment(false),
+      m_RTBasisType1(Shapeset::TYPE1), m_RTBasisType2(Shapeset::TYPE2),
       m_originalGrid(grid), m_sonMap(grid->barycentricSonMap()) {
   initialize();
 }
@@ -88,11 +96,12 @@ Nedelec0VectorSpaceBarycentric<BasisFunctionType>::
 template <typename BasisFunctionType>
 Nedelec0VectorSpaceBarycentric<BasisFunctionType>::
     Nedelec0VectorSpaceBarycentric(const shared_ptr<const Grid> &grid,
-                                   const GridSegment &segment,
-                                   bool putDofsOnBoundaries, int dofMode)
+                                         const GridSegment &segment,
+                                         bool putDofsOnBoundaries, bool strictlyOnSegment, int dofMode)
     : Base(grid->barycentricGrid()), m_impl(new Impl), m_segment(segment),
       m_putDofsOnBoundaries(putDofsOnBoundaries), m_dofMode(dofMode),
-      m_NCBasisType1(Shapeset::TYPE1), m_NCBasisType2(Shapeset::TYPE2),
+      m_strictlyOnSegment(strictlyOnSegment),
+      m_RTBasisType1(Shapeset::TYPE1), m_RTBasisType2(Shapeset::TYPE2),
       m_originalGrid(grid), m_sonMap(grid->barycentricSonMap()) {
   if (!(dofMode & (EDGE_ON_SEGMENT | ELEMENT_ON_SEGMENT)))
     throw std::invalid_argument("Nedelec0VectorSpaceBarycentric::"
@@ -114,9 +123,10 @@ bool Nedelec0VectorSpaceBarycentric<BasisFunctionType>::spaceIsCompatible(
 template <typename BasisFunctionType>
 void Nedelec0VectorSpaceBarycentric<BasisFunctionType>::initialize() {
   if (this->grid()->dim() != 2 || this->grid()->dimWorld() != 3)
-    throw std::invalid_argument("Nedelec0VectorSpaceBarycentric::initialize(): "
-                                "grid must be 2-dimensional and embedded "
-                                "in 3-dimensional space");
+    throw std::invalid_argument(
+        "Nedelec0VectorSpaceBarycentric::initialize(): "
+        "grid must be 2-dimensional and embedded "
+        "in 3-dimensional space");
   m_view = this->grid()->leafView();
   assignDofsImpl();
 }
@@ -148,12 +158,14 @@ bool Nedelec0VectorSpaceBarycentric<BasisFunctionType>::isDiscontinuous()
 template <typename BasisFunctionType>
 const typename Nedelec0VectorSpaceBarycentric<
     BasisFunctionType>::CollectionOfShapesetTransformations &
-Nedelec0VectorSpaceBarycentric<BasisFunctionType>::basisFunctionValue() const {
+Nedelec0VectorSpaceBarycentric<BasisFunctionType>::basisFunctionValue()
+    const {
   return m_impl->transformations;
 }
 
 template <typename BasisFunctionType>
-int Nedelec0VectorSpaceBarycentric<BasisFunctionType>::domainDimension() const {
+int Nedelec0VectorSpaceBarycentric<BasisFunctionType>::domainDimension()
+    const {
   return 2;
 }
 
@@ -203,8 +215,10 @@ void Nedelec0VectorSpaceBarycentric<BasisFunctionType>::assignDofsImpl() {
   for (std::unique_ptr<EntityIterator<0>> it = coarseView->entityIterator<0>();
        !it->finished(); it->next()) {
     const Entity<0> &entity = it->entity();
-    for (int i = 0; i != 3; ++i)
-      ++faceCountNextToEdge[index.subEntityIndex(entity, i, 1)];
+    const int ent0Index = index.entityIndex(entity);
+    if (m_segment.contains(0,ent0Index))
+      for (int i = 0; i != 3; ++i)
+          ++faceCountNextToEdge[index.subEntityIndex(entity, i, 1)];
   }
 
   std::vector<int> globalDofsOfEdges;
@@ -212,7 +226,7 @@ void Nedelec0VectorSpaceBarycentric<BasisFunctionType>::assignDofsImpl() {
   int globalDofCount_ = 0;
   for (int i = 0; i != edgeCountCoarseGrid; ++i) {
     int &globalDofOfEdge = acc(globalDofsOfEdges, i);
-    if (m_putDofsOnBoundaries || faceCountNextToEdge[i] == 2)
+    if ((m_putDofsOnBoundaries && faceCountNextToEdge[i] == 1) || faceCountNextToEdge[i] == 2)
       globalDofOfEdge = globalDofCount_++;
     else
       globalDofOfEdge = -1;
@@ -292,6 +306,7 @@ void Nedelec0VectorSpaceBarycentric<BasisFunctionType>::assignDofsImpl() {
     const Entity<0> &entity = it->entity();
     const Geometry &geo = entity.geometry();
     int ent0Number = index.entityIndex(entity);
+    const bool onSegment = m_strictlyOnSegment ? m_segment.contains(0,ent0Number) : true;
     geo.getCorners(vertices);
 
     std::vector<int> edges;
@@ -312,7 +327,7 @@ void Nedelec0VectorSpaceBarycentric<BasisFunctionType>::assignDofsImpl() {
       for (int j = 0; j != 3; ++j) {
         const int edgeIndex = edges[element2Basis[i][j]];
         const int fineEdgeIndex = fineEdgeMap(sonIndex, j);
-        const int globalDofIndex = globalDofsOfEdges[edgeIndex];
+        const int globalDofIndex = onSegment ? globalDofsOfEdges[edgeIndex] : -1;
         if (acc(lowestIndicesOfElementsAdjacentToEdges, edgeIndex) ==
                 ent0Number &&
             i == 0) {
@@ -330,14 +345,14 @@ void Nedelec0VectorSpaceBarycentric<BasisFunctionType>::assignDofsImpl() {
           }
         }
 
-        globalDof.push_back(globalDofIndex);
-        globalDofWeights.push_back(
-            acc(lowestIndicesOfElementsAdjacentToEdges, edgeIndex) == ent0Number
-                ? 1.
-                : -1.);
-        if (globalDofIndex != -1) {
-          m_global2localDofs[globalDofIndex].push_back(LocalDof(sonIndex, j));
-          ++flatLocalDofCount;
+          globalDof.push_back(globalDofIndex);
+          globalDofWeights.push_back(
+              acc(lowestIndicesOfElementsAdjacentToEdges, edgeIndex) == ent0Number
+                  ? 1.
+                  : -1.);
+          if (globalDofIndex != -1) {
+            m_global2localDofs[globalDofIndex].push_back(LocalDof(sonIndex, j));
+            ++flatLocalDofCount;
         }
       }
       if (i % 2 == 0) {
@@ -359,20 +374,21 @@ Nedelec0VectorSpaceBarycentric<BasisFunctionType>::shapeset(
   const Mapper &elementMapper = view.elementMapper();
   int index = elementMapper.entityIndex(element);
   if (m_elementShapesets[index] == Shapeset::TYPE1)
-    return m_NCBasisType1;
+    return m_RTBasisType1;
   else
-    return m_NCBasisType2;
+    return m_RTBasisType2;
 }
 
 template <typename BasisFunctionType>
-size_t
-Nedelec0VectorSpaceBarycentric<BasisFunctionType>::globalDofCount() const {
+size_t Nedelec0VectorSpaceBarycentric<BasisFunctionType>::globalDofCount()
+    const {
   return m_global2localDofs.size();
 }
 
 template <typename BasisFunctionType>
 size_t
-Nedelec0VectorSpaceBarycentric<BasisFunctionType>::flatLocalDofCount() const {
+Nedelec0VectorSpaceBarycentric<BasisFunctionType>::flatLocalDofCount()
+    const {
   return m_flatLocal2localDofs.size();
 }
 
@@ -406,25 +422,21 @@ void Nedelec0VectorSpaceBarycentric<BasisFunctionType>::global2localDofs(
 }
 
 template <typename BasisFunctionType>
-void Nedelec0VectorSpaceBarycentric<BasisFunctionType>::flatLocal2localDofs(
-    const std::vector<FlatLocalDofIndex> &flatLocalDofs,
-    std::vector<LocalDof> &localDofs) const {
+void Nedelec0VectorSpaceBarycentric<BasisFunctionType>::
+    flatLocal2localDofs(const std::vector<FlatLocalDofIndex> &flatLocalDofs,
+                        std::vector<LocalDof> &localDofs) const {
   localDofs.resize(flatLocalDofs.size());
   for (size_t i = 0; i < flatLocalDofs.size(); ++i)
     acc(localDofs, i) = acc(m_flatLocal2localDofs, acc(flatLocalDofs, i));
 }
 
 template <typename BasisFunctionType>
-void Nedelec0VectorSpaceBarycentric<BasisFunctionType>::getGlobalDofPositions(
-    std::vector<Point3D<CoordinateType>> &positions) const {
+void Nedelec0VectorSpaceBarycentric<BasisFunctionType>::
+    getGlobalDofPositions(
+        std::vector<Point3D<CoordinateType>> &positions) const {
   positions.resize(m_globalDofBoundingBoxes.size());
   for (size_t i = 0; i < m_globalDofBoundingBoxes.size(); ++i)
     acc(positions, i) = acc(m_globalDofBoundingBoxes, i).reference;
-  // std::cout << "globalDofPosition(" << i << ")";
-  // std::cout << acc(positions, i).x << ",";
-  // std::cout << acc(positions, i).y << ",";
-  // std::cout << acc(positions, i).z;
-  // std::cout << std::endl;
 }
 
 template <typename BasisFunctionType>
@@ -436,12 +448,6 @@ void Nedelec0VectorSpaceBarycentric<BasisFunctionType>::
   positions.resize(bboxes.size());
   for (size_t i = 0; i < bboxes.size(); ++i)
     acc(positions, i) = acc(bboxes, i).reference;
-  // std::cout << "flatLocalDofPosition(" << i << ")";
-  // std::cout << acc(positions, i).x << ",";
-
-  // std::cout << acc(positions, i).y << ",";
-  // std::cout << acc(positions, i).z;
-  // std::cout << std::endl;}
 }
 
 template <typename BasisFunctionType>
@@ -476,7 +482,8 @@ void Nedelec0VectorSpaceBarycentric<BasisFunctionType>::
     e.geometry().getCorners(acc(elementCorners, index));
     if (acc(elementCorners, index).cols() != 3)
       throw std::runtime_error(
-          "Nedelec0VectorSpaceBarycentric::getFlatLocalDofBoundingBoxes(): "
+          "Nedelec0VectorSpaceBarycentric::getFlatLocalDofBoundingBoxes()"
+          ": "
           "only triangular elements are supported at present");
     it->next();
   }
@@ -502,8 +509,8 @@ void Nedelec0VectorSpaceBarycentric<BasisFunctionType>::
 }
 
 template <typename BasisFunctionType>
-void Nedelec0VectorSpaceBarycentric<BasisFunctionType>::getGlobalDofNormals(
-    std::vector<Point3D<CoordinateType>> &normals) const {
+void Nedelec0VectorSpaceBarycentric<BasisFunctionType>::
+    getGlobalDofNormals(std::vector<Point3D<CoordinateType>> &normals) const {
   const int gridDim = 2;
   const int worldDim = 3;
   const int globalDofCount_ = globalDofCount();
@@ -543,8 +550,9 @@ void Nedelec0VectorSpaceBarycentric<BasisFunctionType>::getGlobalDofNormals(
 }
 
 template <typename BasisFunctionType>
-void Nedelec0VectorSpaceBarycentric<BasisFunctionType>::getFlatLocalDofNormals(
-    std::vector<Point3D<CoordinateType>> &normals) const {
+void Nedelec0VectorSpaceBarycentric<BasisFunctionType>::
+    getFlatLocalDofNormals(
+        std::vector<Point3D<CoordinateType>> &normals) const {
   const int gridDim = 2;
   const int worldDim = 3;
   normals.resize(flatLocalDofCount());
@@ -597,10 +605,11 @@ void Nedelec0VectorSpaceBarycentric<BasisFunctionType>::dumpClusterIdsEx(
 
 template <typename BasisFunctionType>
 shared_ptr<Space<BasisFunctionType>>
-adaptiveNedelec0VectorSpaceBarycentric(const shared_ptr<const Grid> &grid) {
+adaptiveNedelec0VectorSpaceBarycentric(
+    const shared_ptr<const Grid> &grid) {
 
   shared_ptr<SpaceFactory<BasisFunctionType>> factory(
-      new Nedelec0SpaceBarycentricFactory<BasisFunctionType>());
+      new Nedelec0SpaceBarycentricFactory<BasisFunctionType>(false, false));
   return shared_ptr<Space<BasisFunctionType>>(
       new AdaptiveSpace<BasisFunctionType>(factory, grid));
 }
@@ -608,11 +617,11 @@ adaptiveNedelec0VectorSpaceBarycentric(const shared_ptr<const Grid> &grid) {
 template <typename BasisFunctionType>
 shared_ptr<Space<BasisFunctionType>>
 adaptiveNedelec0VectorSpaceBarycentric(const shared_ptr<const Grid> &grid,
-                                       const std::vector<int> &domains,
-                                       bool open) {
+                                             const std::vector<int> &domains,
+                                             bool open, bool strictly) {
 
   shared_ptr<SpaceFactory<BasisFunctionType>> factory(
-      new Nedelec0SpaceBarycentricFactory<BasisFunctionType>());
+      new Nedelec0SpaceBarycentricFactory<BasisFunctionType>(open, strictly));
   return shared_ptr<Space<BasisFunctionType>>(
       new AdaptiveSpace<BasisFunctionType>(factory, grid, domains, open));
 }
@@ -620,10 +629,10 @@ adaptiveNedelec0VectorSpaceBarycentric(const shared_ptr<const Grid> &grid,
 template <typename BasisFunctionType>
 shared_ptr<Space<BasisFunctionType>>
 adaptiveNedelec0VectorSpaceBarycentric(const shared_ptr<const Grid> &grid,
-                                       int domain, bool open) {
+                                             int domain, bool open, bool strictly) {
 
   shared_ptr<SpaceFactory<BasisFunctionType>> factory(
-      new Nedelec0SpaceBarycentricFactory<BasisFunctionType>());
+      new Nedelec0SpaceBarycentricFactory<BasisFunctionType>(open, strictly));
   return shared_ptr<Space<BasisFunctionType>>(
       new AdaptiveSpace<BasisFunctionType>(factory, grid,
                                            std::vector<int>({domain}), open));
@@ -631,69 +640,18 @@ adaptiveNedelec0VectorSpaceBarycentric(const shared_ptr<const Grid> &grid,
 
 #define INSTANTIATE_FREE_FUNCTIONS(BASIS)                                      \
   template shared_ptr<Space<BASIS>>                                            \
-  adaptiveNedelec0VectorSpaceBarycentric<BASIS>(                               \
+  adaptiveNedelec0VectorSpaceBarycentric<BASIS>(                         \
       const shared_ptr<const Grid> &);                                         \
   template shared_ptr<Space<BASIS>>                                            \
-  adaptiveNedelec0VectorSpaceBarycentric<BASIS>(                               \
-      const shared_ptr<const Grid> &, const std::vector<int> &, bool);         \
+  adaptiveNedelec0VectorSpaceBarycentric<BASIS>(                         \
+      const shared_ptr<const Grid> &, const std::vector<int> &, bool, bool);   \
   template shared_ptr<Space<BASIS>>                                            \
-  adaptiveNedelec0VectorSpaceBarycentric<BASIS>(                               \
-      const shared_ptr<const Grid> &, int, bool)
+  adaptiveNedelec0VectorSpaceBarycentric<BASIS>(                         \
+      const shared_ptr<const Grid> &, int, bool, bool)
 
 FIBER_ITERATE_OVER_BASIS_TYPES(INSTANTIATE_FREE_FUNCTIONS);
 
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(Nedelec0VectorSpaceBarycentric);
+FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(
+    Nedelec0VectorSpaceBarycentric);
 
 } // namespace Bempp
-
-/*template <typename BasisFunctionType>
-shared_ptr<Space<BasisFunctionType>>
-adaptiveNedelec0VectorSpaceBarycentric(const shared_ptr<const Grid> &grid) {
-
-  return shared_ptr<Space<BasisFunctionType>>(
-      new AdaptiveSpace<BasisFunctionType,
-                        Nedelec0VectorSpaceBarycentric<BasisFunctionType>>(grid));
-}
-
-template <typename BasisFunctionType>
-shared_ptr<Space<BasisFunctionType>>
-adaptiveNedelec0VectorSpaceBarycentric(const shared_ptr<const Grid> &grid,
-                                     const std::vector<int> &domains,
-                                     bool open) {
-
-  return shared_ptr<Space<BasisFunctionType>>(
-      new AdaptiveSpace<BasisFunctionType,
-                        Nedelec0VectorSpaceBarycentric<BasisFunctionType>>(
-          grid, domains, open));
-}
-
-template <typename BasisFunctionType>
-shared_ptr<Space<BasisFunctionType>>
-adaptiveNedelec0VectorSpaceBarycentric(const shared_ptr<const Grid> &grid,
-                                     int domain, bool open) {
-
-  return shared_ptr<Space<BasisFunctionType>>(
-      new AdaptiveSpace<BasisFunctionType,
-                        Nedelec0VectorSpaceBarycentric<BasisFunctionType>>(
-          grid, std::vector<int>({domain}), open));
-}
-
-#define INSTANTIATE_FREE_FUNCTIONS(BASIS)                                      \
-  template shared_ptr<Space<BASIS>>                                            \
-  adaptiveNedelec0VectorSpaceBarycentric<BASIS>(const shared_ptr<const Grid> &);
-\
-  template shared_ptr<Space<BASIS>>                                            \
-  adaptiveNedelec0VectorSpaceBarycentric<BASIS>(const shared_ptr<const Grid> &,
-\
-                                              const std::vector<int> &, bool); \
-  template shared_ptr<Space<BASIS>>                                            \
-  adaptiveNedelec0VectorSpaceBarycentric<BASIS>(const shared_ptr<const Grid> &,
-\
-                                              int, bool)
-
-FIBER_ITERATE_OVER_BASIS_TYPES(INSTANTIATE_FREE_FUNCTIONS);
-
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(Nedelec0VectorSpaceBarycentric);
-
-} // namespace Bempp
-*/

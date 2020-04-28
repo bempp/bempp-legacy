@@ -48,23 +48,28 @@ namespace Bempp {
 namespace {
 
 template <typename BasisFunctionType>
-class Nedelec0SpaceFactory : public SpaceFactory<BasisFunctionType> {
+class ScaledNedelec0SpaceFactory : public SpaceFactory<BasisFunctionType> {
 public:
+  ScaledNedelec0SpaceFactory(bool putDofsOnBoundaries, bool strictlyOnSegment)
+      : m_strictlyOnSegment(strictlyOnSegment),
+        m_putDofsOnBoundaries(putDofsOnBoundaries) {}
   shared_ptr<Space<BasisFunctionType>>
   create(const shared_ptr<const Grid> &grid,
          const GridSegment &segment) const override {
 
     return shared_ptr<Space<BasisFunctionType>>(
-        new ScaledNedelec0VectorSpace<BasisFunctionType>(grid, segment));
+        new ScaledNedelec0VectorSpace<BasisFunctionType>(grid, segment, m_putDofsOnBoundaries, m_strictlyOnSegment));
   }
+private:
+  bool m_strictlyOnSegment;
+  bool m_putDofsOnBoundaries;
 };
 }
 
 /** \cond PRIVATE */
 template <typename BasisFunctionType>
 struct ScaledNedelec0VectorSpace<BasisFunctionType>::Impl {
-  typedef Fiber::HcurlFunctionValueFunctor<CoordinateType>
-      TransformationFunctor;
+  typedef Fiber::HcurlFunctionValueFunctor<CoordinateType> TransformationFunctor;
 
   Impl() : transformations(TransformationFunctor()) {}
 
@@ -77,15 +82,17 @@ template <typename BasisFunctionType>
 ScaledNedelec0VectorSpace<BasisFunctionType>::ScaledNedelec0VectorSpace(
     const shared_ptr<const Grid> &grid, bool putDofsOnBoundaries)
     : Base(grid), m_impl(new Impl), m_segment(GridSegment::wholeGrid(*grid)),
-      m_putDofsOnBoundaries(putDofsOnBoundaries), m_dofMode(EDGE_ON_SEGMENT) {
+      m_putDofsOnBoundaries(putDofsOnBoundaries), m_dofMode(EDGE_ON_SEGMENT),
+      m_strictlyOnSegment(false) {
   initialize();
 }
 
 template <typename BasisFunctionType>
 ScaledNedelec0VectorSpace<BasisFunctionType>::ScaledNedelec0VectorSpace(
     const shared_ptr<const Grid> &grid, const GridSegment &segment,
-    bool putDofsOnBoundaries, int dofMode)
+    bool putDofsOnBoundaries, bool strictlyOnSegment, int dofMode)
     : Base(grid), m_impl(new Impl), m_segment(segment),
+      m_strictlyOnSegment(strictlyOnSegment),
       m_putDofsOnBoundaries(putDofsOnBoundaries), m_dofMode(dofMode) {
   if (!(dofMode & (EDGE_ON_SEGMENT | ELEMENT_ON_SEGMENT)))
     throw std::invalid_argument("ScaledNedelec0VectorSpace::"
@@ -210,9 +217,9 @@ void ScaledNedelec0VectorSpace<BasisFunctionType>::assignDofsImpl() {
   // number of element adjacent to each edge
   std::vector<int> elementsAdjacentToEdges(edgeCount, 0);
   std::vector<bool> noAdjacentElementsAreInSegment(edgeCount, true);
-  std::unique_ptr<EntityIterator<elementCodim>> it =
-      m_view->entityIterator<elementCodim>();
-  while (!it->finished()) {
+  for(std::unique_ptr<EntityIterator<elementCodim>> it = m_view->entityIterator<elementCodim>();
+      !it->finished();
+      it->next()) {
     const Entity<elementCodim> &element = it->entity();
     const int elementIndex = indexSet.entityIndex(element);
     const bool elementContained =
@@ -229,7 +236,6 @@ void ScaledNedelec0VectorSpace<BasisFunctionType>::assignDofsImpl() {
       int &lowestIndex = acc(lowestIndicesOfElementsAdjacentToEdges, edgeIndex);
       lowestIndex = std::min(lowestIndex, elementIndex);
     }
-    it->next();
   }
   int globalDofCount_ = 0;
   std::vector<int> globalDofsOfEdges;
@@ -267,17 +273,19 @@ void ScaledNedelec0VectorSpace<BasisFunctionType>::assignDofsImpl() {
   m_globalDofBoundingBoxes.resize(globalDofCount_, model);
 
   // Iterate over elements
-  it = m_view->entityIterator<elementCodim>();
   Matrix<CoordinateType> vertices;
   Vector<CoordinateType> dofPosition;
-  while (!it->finished()) {
+  for(std::unique_ptr<EntityIterator<elementCodim>> it = m_view->entityIterator<elementCodim>();
+      !it->finished();
+      it->next()) {
     const Entity<elementCodim> &element = it->entity();
     const Geometry &geo = element.geometry();
     EntityIndex elementIndex = elementMapper.entityIndex(element);
     bool elementContained = m_dofMode & ELEMENT_ON_SEGMENT
                                 ? m_segment.contains(elementCodim, elementIndex)
                                 : true;
-
+    if(m_strictlyOnSegment && !m_segment.contains(elementCodim, elementIndex))
+      elementContained = false;
     geo.getCorners(vertices);
     const int vertexCount = vertices.cols();
     const int edgeCount = vertexCount;
@@ -285,6 +293,13 @@ void ScaledNedelec0VectorSpace<BasisFunctionType>::assignDofsImpl() {
       throw std::runtime_error(
           "ScaledNedelec0VectorSpace::"
           "assignDofsImpl(): support for quadrilaterals not in place yet");
+
+    std::vector<BasisFunctionType> edgeVolumes;
+    edgeVolumes.reserve(3);
+    for(auto edgeIt = element.subEntityIterator<1>();
+           !edgeIt->finished();edgeIt->next())
+      edgeVolumes.push_back(edgeIt->entity().geometry().volume());
+
 
     // List of global DOF indices corresponding to the local DOFs of the
     // current element
@@ -295,14 +310,6 @@ void ScaledNedelec0VectorSpace<BasisFunctionType>::assignDofsImpl() {
         acc(m_local2globalDofWeights, elementIndex);
     globalDofs.reserve(edgeCount);
     globalDofWeights.reserve(edgeCount);
-    auto edgeIt = element.subEntityIterator<1>();
-    std::vector<BasisFunctionType> edgeVolumes;
-    edgeVolumes.reserve(3);
-    while (!edgeIt->finished()) {
-      edgeVolumes.push_back(edgeIt->entity().geometry().volume());
-      edgeIt->next();
-    }
-
     for (int i = 0; i < edgeCount; ++i) {
       int edgeIndex = indexSet.subEntityIndex(element, i, edgeCodim);
       GlobalDofIndex globalDofIndex =
@@ -334,7 +341,6 @@ void ScaledNedelec0VectorSpace<BasisFunctionType>::assignDofsImpl() {
 
       ++flatLocalDofCount;
     }
-    it->next();
   }
 
 #ifndef NDEBUG
@@ -353,75 +359,6 @@ void ScaledNedelec0VectorSpace<BasisFunctionType>::assignDofsImpl() {
   SpaceHelper<BasisFunctionType>::initializeLocal2FlatLocalDofMap(
       flatLocalDofCount, m_local2globalDofs, m_flatLocal2localDofs);
 
-  //    // Iterate over elements
-  //    std::unique_ptr<EntityIterator<elementCodim> > it =
-  //        m_view->entityIterator<elementCodim>();
-  //    m_flatLocalDofCount = 0;
-  //    while (!it->finished())
-  //    {
-  //        const Entity<elementCodim>& element = it->entity();
-  //        EntityIndex elementIndex = elementMapper.entityIndex(element);
-
-  //        const int vertexCount = element.template
-  // subEntityCount<vertexCodim>();
-  //        const int edgeCount = vertexCount;
-  //        m_flatLocalDofCount += edgeCount;
-
-  //        // List of global DOF indices corresponding to the local DOFs of the
-  //        // current element
-  //        std::vector<GlobalDofIndex>& globalDofs =
-  // m_local2globalDofs[elementIndex];
-  //        // List of weights of the local DOFs residing on the current element
-  //        std::vector<BasisFunctionType>& globalDofWeights =
-  //            m_local2globalDofWeights[elementIndex];
-  //        globalDofs.resize(edgeCount);
-  //        globalDofWeights.resize(edgeCount);
-  //        for (int i = 0; i < edgeCount; ++i)
-  //        {
-  //            GlobalDofIndex globalDofIndex =
-  //                indexSet.subEntityIndex(element, i, edgeCodim);
-  //            int vertex1Index, vertex2Index;
-  //            // Handle Dune's funny subentity indexing order
-  //            if (edgeCount == 3) {
-  //                if (i == 0) {
-  //                    vertex1Index = indexSet.subEntityIndex(element, 0,
-  // vertexCodim);
-  //                    vertex2Index = indexSet.subEntityIndex(element, 1,
-  // vertexCodim);
-  //                } else if (i == 1) {
-  //                    vertex1Index = indexSet.subEntityIndex(element, 2,
-  // vertexCodim);
-  //                    vertex2Index = indexSet.subEntityIndex(element, 0,
-  // vertexCodim);
-  //                } else { // i == 2
-  //                    vertex1Index = indexSet.subEntityIndex(element, 1,
-  // vertexCodim);
-  //                    vertex2Index = indexSet.subEntityIndex(element, 2,
-  // vertexCodim);
-  //                }
-  //            } else // edgeCount == 4
-  //                throw std::runtime_error(
-  //                    "ScaledNedelec0VectorSpace::"
-  //                    "assignDofsImpl(): support for quadrilaterals not in
-  // place yet");
-  //            BasisFunctionType weight = vertex1Index < vertex2Index ? 1. :
-  // -1.;
-  //            globalDofs[i] = globalDofIndex;
-  //            globalDofWeights[i] = weight;
-  //            m_global2localDofs[globalDofIndex].push_back(LocalDof(elementIndex,
-  // i));
-  //            m_global2localDofWeights[globalDofIndex].push_back(weight);
-  //        }
-  //        it->next();
-  //    }
-
-  //    // Initialize the container mapping the flat local dof indices to
-  //    // local dof indices
-  //    m_flatLocal2localDofs.clear();
-  //    m_flatLocal2localDofs.reserve(m_flatLocalDofCount);
-  //    for (size_t e = 0; e < m_local2globalDofs.size(); ++e)
-  //        for (size_t dof = 0; dof < m_local2globalDofs[e].size(); ++dof)
-  //            m_flatLocal2localDofs.push_back(LocalDof(e, dof));
 }
 
 template <typename BasisFunctionType>
@@ -646,7 +583,7 @@ shared_ptr<Space<BasisFunctionType>>
 adaptiveScaledNedelec0VectorSpace(const shared_ptr<const Grid> &grid) {
 
   shared_ptr<SpaceFactory<BasisFunctionType>> factory(
-      new Nedelec0SpaceFactory<BasisFunctionType>());
+      new ScaledNedelec0SpaceFactory<BasisFunctionType>(false,false));
   return shared_ptr<Space<BasisFunctionType>>(
       new AdaptiveSpace<BasisFunctionType>(factory, grid));
 }
@@ -654,10 +591,10 @@ adaptiveScaledNedelec0VectorSpace(const shared_ptr<const Grid> &grid) {
 template <typename BasisFunctionType>
 shared_ptr<Space<BasisFunctionType>>
 adaptiveScaledNedelec0VectorSpace(const shared_ptr<const Grid> &grid,
-                                  const std::vector<int> &domains, bool open) {
+                                  const std::vector<int> &domains, bool open, bool strictlyOnSegment) {
 
   shared_ptr<SpaceFactory<BasisFunctionType>> factory(
-      new Nedelec0SpaceFactory<BasisFunctionType>());
+      new ScaledNedelec0SpaceFactory<BasisFunctionType>(open, strictlyOnSegment));
   return shared_ptr<Space<BasisFunctionType>>(
       new AdaptiveSpace<BasisFunctionType>(factory, grid, domains, open));
 }
@@ -665,10 +602,10 @@ adaptiveScaledNedelec0VectorSpace(const shared_ptr<const Grid> &grid,
 template <typename BasisFunctionType>
 shared_ptr<Space<BasisFunctionType>>
 adaptiveScaledNedelec0VectorSpace(const shared_ptr<const Grid> &grid,
-                                  int domain, bool open) {
+                                  int domain, bool open, bool strictlyOnSegment) {
 
   shared_ptr<SpaceFactory<BasisFunctionType>> factory(
-      new Nedelec0SpaceFactory<BasisFunctionType>());
+      new ScaledNedelec0SpaceFactory<BasisFunctionType>(open, strictlyOnSegment));
   return shared_ptr<Space<BasisFunctionType>>(
       new AdaptiveSpace<BasisFunctionType>(factory, grid,
                                            std::vector<int>({domain}), open));
@@ -678,9 +615,9 @@ adaptiveScaledNedelec0VectorSpace(const shared_ptr<const Grid> &grid,
   template shared_ptr<Space<BASIS>> adaptiveScaledNedelec0VectorSpace<BASIS>(  \
       const shared_ptr<const Grid> &);                                         \
   template shared_ptr<Space<BASIS>> adaptiveScaledNedelec0VectorSpace<BASIS>(  \
-      const shared_ptr<const Grid> &, const std::vector<int> &, bool);         \
+      const shared_ptr<const Grid> &, const std::vector<int> &, bool, bool);   \
   template shared_ptr<Space<BASIS>> adaptiveScaledNedelec0VectorSpace<BASIS>(  \
-      const shared_ptr<const Grid> &, int, bool)
+      const shared_ptr<const Grid> &, int, bool, bool)
 
 FIBER_ITERATE_OVER_BASIS_TYPES(INSTANTIATE_FREE_FUNCTIONS);
 

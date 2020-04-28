@@ -30,7 +30,6 @@
 #include "../grid/grid_segment.hpp"
 #include "../grid/grid_view.hpp"
 #include "../common/types.hpp"
-//#include "../fiber/raviart_thomas_0_shapeset_barycentric.hpp"
 #include "../fiber/rotated_buffa_christiansen_shapeset.hpp"
 
 #include <boost/scoped_ptr.hpp>
@@ -59,12 +58,13 @@ public:
   typedef typename Base::CollectionOfBasisTransformations
       CollectionOfBasisTransformations;
 
-  explicit RotatedBuffaChristiansenVectorSpace(
-      const shared_ptr<const Grid> &grid, bool putDofsOnBoundaries = false);
+  explicit RotatedBuffaChristiansenVectorSpace(const shared_ptr<const Grid> &grid,
+                                        bool putDofsOnBoundaries = false);
   RotatedBuffaChristiansenVectorSpace(const shared_ptr<const Grid> &grid,
-                                      const GridSegment &segment,
-                                      bool putDofsOnBoundaries = false,
-                                      int dofMode = EDGE_ON_SEGMENT);
+                               const GridSegment &segment,
+                               bool putDofsOnBoundaries = false,
+                               bool strictlyOnSegment = false,
+                               int dofMode = EDGE_ON_SEGMENT);
   virtual ~RotatedBuffaChristiansenVectorSpace();
 
   virtual shared_ptr<const Space<BasisFunctionType>> discontinuousSpace(
@@ -138,18 +138,14 @@ private:
 
 private:
   /** \cond PRIVATE */
-  //  typedef Fiber::RaviartThomas0ShapesetBarycentric<BasisFunctionType>
-  //  Shapeset;
-  //  std::vector<typename Shapeset::BasisType> m_RelementShapesets;
-
   struct Impl;
   boost::scoped_ptr<Impl> m_impl;
   GridSegment m_segment;
+  bool m_strictlyOnSegment;
   typedef Fiber::RotatedBuffaChristiansenShapeset<BasisFunctionType> Shapeset;
   bool m_putDofsOnBoundaries;
   int m_dofMode;
   std::unique_ptr<GridView> m_view;
-  //  Fiber::RaviartThomas0Shapeset<3, BasisFunctionType> m_triangleShapeset;
   std::vector<std::vector<GlobalDofIndex>> m_local2globalDofs;
   std::vector<std::vector<BasisFunctionType>> m_local2globalDofWeights;
   std::vector<std::vector<LocalDof>> m_global2localDofs;
@@ -161,14 +157,11 @@ private:
   std::vector<Shapeset> m_elementShapesets;
   mutable Matrix<int> m_sonMap;
   mutable shared_ptr<const Grid> m_originalGrid;
-  //  Shapeset m_RTBasisType1;
-  //  Shapeset m_RTBasisType2;
-
   /** \endcond */
 };
 
-/** \brief Define a RotatedBuffaChristiansenVectorSpace that has an update
- * method for grid refinement. */
+/** \brief Define a RotatedBuffaChristiansenVectorSpace that has an update method for
+ * grid refinement. */
 template <typename BasisFunctionType>
 shared_ptr<Space<BasisFunctionType>>
 adaptiveRotatedBuffaChristiansenVectorSpace(const shared_ptr<const Grid> &grid);
@@ -179,14 +172,14 @@ adaptiveRotatedBuffaChristiansenVectorSpace(const shared_ptr<const Grid> &grid);
 template <typename BasisFunctionType>
 shared_ptr<Space<BasisFunctionType>>
 adaptiveRotatedBuffaChristiansenVectorSpace(const shared_ptr<const Grid> &grid,
-                                            const std::vector<int> &domains,
-                                            bool open);
+                                     const std::vector<int> &domains,
+                                     bool open, bool strictlyOnSegment=false);
 
-/** \brief Overlad. */
+/** \brief Overload. */
 template <typename BasisFunctionType>
 shared_ptr<Space<BasisFunctionType>>
 adaptiveRotatedBuffaChristiansenVectorSpace(const shared_ptr<const Grid> &grid,
-                                            int domain, bool open);
+                                     int domain, bool open, bool strictlyOnSegment=false);
 
 } // namespace Bempp
 

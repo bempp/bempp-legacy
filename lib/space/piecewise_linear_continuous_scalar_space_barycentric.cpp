@@ -50,14 +50,19 @@ template <typename BasisFunctionType>
 class LinearContinuousBarycentricSpaceFactory
     : public SpaceFactory<BasisFunctionType> {
 public:
+  LinearContinuousBarycentricSpaceFactory(bool strictlyOnSegment, bool closed)
+      : m_strictlyOnSegment(strictlyOnSegment), m_closed(closed) {}
   shared_ptr<Space<BasisFunctionType>>
   create(const shared_ptr<const Grid> &grid,
          const GridSegment &segment) const override {
 
     return shared_ptr<Space<BasisFunctionType>>(
         new PiecewiseLinearContinuousScalarSpaceBarycentric<BasisFunctionType>(
-            grid, segment));
+            grid, segment, m_strictlyOnSegment, m_closed));
   }
+private:
+  bool m_strictlyOnSegment;
+  bool m_closed;
 };
 }
 
@@ -67,6 +72,7 @@ PiecewiseLinearContinuousScalarSpaceBarycentric<BasisFunctionType>::
         const shared_ptr<const Grid> &grid)
     : PiecewiseLinearScalarSpace<BasisFunctionType>(grid->barycentricGrid()),
       m_segment(GridSegment::wholeGrid(*grid)), m_strictlyOnSegment(false),
+      m_putDofsOnBoundaries(true),
       m_originalGrid(grid), m_linearBasisType1(Shapeset::TYPE1),
       m_linearBasisType2(Shapeset::TYPE2), m_sonMap(grid->barycentricSonMap()) {
   initialize();
@@ -76,9 +82,10 @@ template <typename BasisFunctionType>
 PiecewiseLinearContinuousScalarSpaceBarycentric<BasisFunctionType>::
     PiecewiseLinearContinuousScalarSpaceBarycentric(
         const shared_ptr<const Grid> &grid, const GridSegment &segment,
-        bool strictlyOnSegment)
+        bool strictlyOnSegment, bool putDofsOnBoundaries)
     : PiecewiseLinearScalarSpace<BasisFunctionType>(grid->barycentricGrid()),
       m_segment(segment), m_strictlyOnSegment(strictlyOnSegment),
+      m_putDofsOnBoundaries(putDofsOnBoundaries),
       m_originalGrid(grid), m_linearBasisType1(Shapeset::TYPE1),
       m_linearBasisType2(Shapeset::TYPE2), m_sonMap(grid->barycentricSonMap()) {
   initialize();
@@ -171,6 +178,7 @@ void PiecewiseLinearContinuousScalarSpaceBarycentric<
   const int gridDim = this->domainDimension();
   std::unique_ptr<GridView> coarseView = m_originalGrid->leafView();
   const IndexSet &index = coarseView->indexSet();
+  const Mapper &elementMapper = coarseView->elementMapper();
   int elementCount = this->gridView().entityCount(0);
   //  int vertexCount = view.entityCount(gridDim);
   int vertexCountCoarseGrid = coarseView->entityCount(gridDim);
@@ -180,10 +188,29 @@ void PiecewiseLinearContinuousScalarSpaceBarycentric<
 
   // Assign gdofs to grid vertices (choosing only those that belong to
   // the selected grid segment)
-  std::vector<int> globalDofIndices(vertexCountCoarseGrid, 0);
+
+  std::vector<bool> putDofHere(vertexCountCoarseGrid, false);
+
+  for (std::unique_ptr<EntityIterator<0>> it = coarseView->entityIterator<0>();
+       !it->finished(); it->next()) {
+    const Entity<0> &entity = it->entity();
+    if(m_segment.contains(0, index.subEntityIndex(entity, 0, 0)))
+      for(int i=0;i<3;++i)
+        acc(putDofHere,index.subEntityIndex(entity, i, 2)) = true;
+  }
+  if(!m_putDofsOnBoundaries)
+    for (std::unique_ptr<EntityIterator<0>> it = coarseView->entityIterator<0>();
+         !it->finished(); it->next()) {
+      const Entity<0> &entity = it->entity();
+      if(!m_segment.contains(0, index.subEntityIndex(entity, 0, 0)))
+        for(int i=0;i<3;++i)
+          acc(putDofHere,index.subEntityIndex(entity, i, 2)) = false;
+    }
+  std::vector<int> globalDofIndices(vertexCountCoarseGrid, -1);
   int globalDofCount_ = 0;
-  for (int vertexIndex = 0; vertexIndex < vertexCountCoarseGrid; ++vertexIndex)
-    acc(globalDofIndices, vertexIndex) = globalDofCount_++;
+  for(int vertexN=0;vertexN<vertexCountCoarseGrid;++vertexN)
+    if(putDofHere[vertexN])
+      globalDofIndices[vertexN] = globalDofCount_++;
 
   int flatLocalDofCount_ = 0;
 
@@ -205,7 +232,7 @@ void PiecewiseLinearContinuousScalarSpaceBarycentric<
   for (std::unique_ptr<EntityIterator<0>> it = coarseView->entityIterator<0>();
        !it->finished(); it->next()) {
     const Entity<0> &entity = it->entity();
-    EntityIndex ent0Number = index.subEntityIndex(entity, 0, 0);
+    EntityIndex ent0Number = elementMapper.entityIndex(entity);
 
     // Iterate through refined elements
     for (int i = 0; i != 6; ++i) {
@@ -225,11 +252,15 @@ void PiecewiseLinearContinuousScalarSpaceBarycentric<
         int basisNumber = element2Basis[i][j];
         EntityIndex vertexIndex = index.subEntityIndex(entity, j, gridDim);
         int globalDofIndex = acc(globalDofIndices, vertexIndex);
+        if(!m_segment.contains(0, ent0Number) && m_strictlyOnSegment)
+          globalDofIndex = -1;
         acc(globalDofs, basisNumber) = globalDofIndex; /// THIS LINE
         //        acc(globalDofs, j) = globalDofIndex; /// THIS LINE
-        acc(m_global2localDofs, globalDofIndex)
-            .push_back(LocalDof(sonIndex, basisNumber)); // basisNumber
-        ++flatLocalDofCount_;
+        if(globalDofIndex != -1){
+          acc(m_global2localDofs, globalDofIndex)
+              .push_back(LocalDof(sonIndex, basisNumber)); // basisNumber
+          ++flatLocalDofCount_;
+        }
       }
     }
   }
@@ -562,16 +593,45 @@ adaptivePiecewiseLinearContinuousScalarSpaceBarycentric(
     const shared_ptr<const Grid> &grid) {
 
   shared_ptr<SpaceFactory<BasisFunctionType>> factory(
-      new LinearContinuousBarycentricSpaceFactory<BasisFunctionType>());
+      new LinearContinuousBarycentricSpaceFactory<BasisFunctionType>(false, true));
   return shared_ptr<Space<BasisFunctionType>>(
       new AdaptiveSpace<BasisFunctionType>(factory, grid));
+}
+
+template <typename BasisFunctionType>
+shared_ptr<Space<BasisFunctionType>>
+adaptivePiecewiseLinearContinuousScalarSpaceBarycentric(
+    const shared_ptr<const Grid> &grid, const std::vector<int> &domains,
+    bool open, bool strictlyOnSegment) {
+
+  shared_ptr<SpaceFactory<BasisFunctionType>> factory(
+      new LinearContinuousBarycentricSpaceFactory<BasisFunctionType>(strictlyOnSegment, open));
+  return shared_ptr<Space<BasisFunctionType>>(
+      new AdaptiveSpace<BasisFunctionType>(factory, grid, domains, open));
+}
+
+template <typename BasisFunctionType>
+shared_ptr<Space<BasisFunctionType>>
+adaptivePiecewiseLinearContinuousScalarSpaceBarycentric(
+    const shared_ptr<const Grid> &grid, int domain,
+    bool open, bool strictlyOnSegment) {
+
+  shared_ptr<SpaceFactory<BasisFunctionType>> factory(
+      new LinearContinuousBarycentricSpaceFactory<BasisFunctionType>(strictlyOnSegment, open));
+  return shared_ptr<Space<BasisFunctionType>>(
+      new AdaptiveSpace<BasisFunctionType>(factory, grid, std::vector<int>({domain}), open));
 }
 
 #define INSTANTIATE_FREE_FUNCTIONS(BASIS)                                      \
   template shared_ptr<Space<BASIS>>                                            \
   adaptivePiecewiseLinearContinuousScalarSpaceBarycentric<BASIS>(              \
-      const shared_ptr<const Grid> &)
-
+      const shared_ptr<const Grid> &);                                         \
+  template shared_ptr<Space<BASIS>>                                            \
+  adaptivePiecewiseLinearContinuousScalarSpaceBarycentric<BASIS>(              \
+      const shared_ptr<const Grid> &, const std::vector<int> &, bool, bool);   \
+  template shared_ptr<Space<BASIS>>                                            \
+  adaptivePiecewiseLinearContinuousScalarSpaceBarycentric<BASIS>(              \
+      const shared_ptr<const Grid> &, int, bool, bool)
 FIBER_ITERATE_OVER_BASIS_TYPES(INSTANTIATE_FREE_FUNCTIONS);
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(
     PiecewiseLinearContinuousScalarSpaceBarycentric);

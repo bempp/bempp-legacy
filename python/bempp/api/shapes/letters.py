@@ -130,7 +130,10 @@ def _b(x=0, y=0, l_s=0):
        Ruled Surface(ls+13) = {ls+9};
        Ruled Surface(ls+14) = {ls+12};
        Ruled Surface(ls+15) = {ls+13};
+
            """
+    for i in range(1,16):
+        out += "Physical Surface(ls+"+str(i)+") = {ls+"+str(i)+"};\n"
     return out
 
 _twelve = """Line(ls+1) = {ls+1,ls+2};

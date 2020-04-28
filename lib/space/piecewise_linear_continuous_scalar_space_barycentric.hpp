@@ -77,7 +77,8 @@ public:
    */
   PiecewiseLinearContinuousScalarSpaceBarycentric(
       const shared_ptr<const Grid> &grid, const GridSegment &segment,
-      bool strictlyOnSegment = false);
+      bool strictlyOnSegment = false,
+      bool putDofsOnBoundaries = true);
   virtual ~PiecewiseLinearContinuousScalarSpaceBarycentric();
 
   virtual shared_ptr<const Space<BasisFunctionType>> discontinuousSpace(
@@ -157,6 +158,7 @@ private:
 
   GridSegment m_segment;
   bool m_strictlyOnSegment;
+  bool m_putDofsOnBoundaries;
   std::unique_ptr<GridView> m_view;
   std::vector<std::vector<GlobalDofIndex>> m_local2globalDofs;
   std::vector<std::vector<LocalDof>> m_global2localDofs;
@@ -181,6 +183,22 @@ template <typename BasisFunctionType>
 shared_ptr<Space<BasisFunctionType>>
 adaptivePiecewiseLinearContinuousScalarSpaceBarycentric(
     const shared_ptr<const Grid> &grid);
+
+template <typename BasisFunctionType>
+shared_ptr<Space<BasisFunctionType>>
+adaptivePiecewiseLinearContinuousScalarSpaceBarycentric(
+    const shared_ptr<const Grid> &grid,
+    const std::vector<int> &domains,
+    bool open,
+    bool strictlyOnSegment = false);
+
+template <typename BasisFunctionType>
+shared_ptr<Space<BasisFunctionType>>
+adaptivePiecewiseLinearContinuousScalarSpaceBarycentric(
+    const shared_ptr<const Grid> &grid,
+    int domain,
+    bool open,
+    bool strictlyOnSegment = false);
 
 } // namespace Bempp
 

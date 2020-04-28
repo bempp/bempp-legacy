@@ -181,12 +181,14 @@ void PiecewiseLinearDiscontinuousScalarSpaceBarycentric<
 
   // Assign gdofs to grid vertices (choosing only those that belong to
   // the selected grid segment)
-  std::vector<int> globalDofIndices(3 * elementCountCoarseGrid, 0);
   int globalDofCount_ = 0;
-  for (int elementIndex = 0; elementIndex < 3 * elementCountCoarseGrid;
-       ++elementIndex)
-    acc(globalDofIndices, elementIndex) = globalDofCount_++;
-
+  for (std::unique_ptr<EntityIterator<0>> it = coarseView->entityIterator<0>();
+       !it->finished(); it->next()) {
+    const Entity<0> &entity = it->entity();
+    EntityIndex ent0Number = index.subEntityIndex(entity, 0, 0);
+    if(m_segment.contains(0,ent0Number))
+      globalDofCount_+=3;
+  }
   int flatLocalDofCount_ = 0;
 
   // (Re)initialise DOF maps
@@ -204,22 +206,24 @@ void PiecewiseLinearDiscontinuousScalarSpaceBarycentric<
                                                           // on element i.*/
 
   // Iterate over elements
-
   globalDofCount_ = 0;
   for (std::unique_ptr<EntityIterator<0>> it = coarseView->entityIterator<0>();
        !it->finished(); it->next()) {
     const Entity<0> &entity = it->entity();
     EntityIndex ent0Number = index.subEntityIndex(entity, 0, 0);
 
+    std::vector<int> globalDofIndices = {-1,-1,-1};
+    if(m_segment.contains(0,ent0Number))
+      for (int j = 0; j != 3; ++j)
+        globalDofIndices[j] = globalDofCount_++;
     // Iterate through refined elements
     for (int i = 0; i != 6; ++i) {
       int sonIndex = m_sonMap(ent0Number, i);
 
-      if (i % 2 == 0) {
+      if (i % 2 == 0)
         acc(m_elementIndex2Type, sonIndex) = Shapeset::TYPE1;
-      } else {
+      else
         acc(m_elementIndex2Type, sonIndex) = Shapeset::TYPE2;
-      }
 
       std::vector<GlobalDofIndex> &globalDofs =
           acc(m_local2globalDofs, sonIndex);
@@ -227,15 +231,14 @@ void PiecewiseLinearDiscontinuousScalarSpaceBarycentric<
 
       for (int j = 0; j != 3; ++j) {
         int basisNumber = element2Basis[i][j];
-        int globalDofIndex = acc(globalDofIndices, globalDofCount_ + j);
-        acc(globalDofs, basisNumber) = globalDofIndex; /// THIS LINE
-        //        acc(globalDofs, j) = globalDofIndex; /// THIS LINE
-        acc(m_global2localDofs, globalDofIndex)
-            .push_back(LocalDof(sonIndex, basisNumber)); // basisNumber
-        ++flatLocalDofCount_;
+        acc(globalDofs, basisNumber) = globalDofIndices[j];
+        if(globalDofIndices[j]!=-1){
+          acc(m_global2localDofs, globalDofIndices[j])
+              .push_back(LocalDof(sonIndex, basisNumber)); // basisNumber
+          ++flatLocalDofCount_;
+        }
       }
     }
-    globalDofCount_ += 3;
   }
 
   // Initialize the container mapping the flat local dof indices to
@@ -570,12 +573,37 @@ adaptivePiecewiseLinearDiscontinuousScalarSpaceBarycentric(
   return shared_ptr<Space<BasisFunctionType>>(
       new AdaptiveSpace<BasisFunctionType>(factory, grid));
 }
+template <typename BasisFunctionType>
+shared_ptr<Space<BasisFunctionType>>
+adaptivePiecewiseLinearDiscontinuousScalarSpaceBarycentric(
+    const shared_ptr<const Grid> &grid, const std::vector<int> &domains) {
+
+  shared_ptr<SpaceFactory<BasisFunctionType>> factory(
+      new LinearDiscontinuousBarycentricSpaceFactory<BasisFunctionType>());
+  return shared_ptr<Space<BasisFunctionType>>(
+      new AdaptiveSpace<BasisFunctionType>(factory, grid, domains, true));
+}
+template <typename BasisFunctionType>
+shared_ptr<Space<BasisFunctionType>>
+adaptivePiecewiseLinearDiscontinuousScalarSpaceBarycentric(
+    const shared_ptr<const Grid> &grid, int domain) {
+
+  shared_ptr<SpaceFactory<BasisFunctionType>> factory(
+      new LinearDiscontinuousBarycentricSpaceFactory<BasisFunctionType>());
+  return shared_ptr<Space<BasisFunctionType>>(
+      new AdaptiveSpace<BasisFunctionType>(factory, grid, std::vector<int>({domain}), true));
+}
 
 #define INSTANTIATE_FREE_FUNCTIONS(BASIS)                                      \
   template shared_ptr<Space<BASIS>>                                            \
   adaptivePiecewiseLinearDiscontinuousScalarSpaceBarycentric<BASIS>(           \
-      const shared_ptr<const Grid> &)
-
+      const shared_ptr<const Grid> &);                                         \
+  template shared_ptr<Space<BASIS>>                                            \
+  adaptivePiecewiseLinearDiscontinuousScalarSpaceBarycentric<BASIS>(           \
+      const shared_ptr<const Grid> &, const std::vector<int> &);               \
+  template shared_ptr<Space<BASIS>>                                            \
+  adaptivePiecewiseLinearDiscontinuousScalarSpaceBarycentric<BASIS>(           \
+      const shared_ptr<const Grid> &, int)
 FIBER_ITERATE_OVER_BASIS_TYPES(INSTANTIATE_FREE_FUNCTIONS);
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(
     PiecewiseLinearDiscontinuousScalarSpaceBarycentric);

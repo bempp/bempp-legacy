@@ -18,8 +18,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-#ifndef rwg_vector_space_barycentric_hpp
-#define rwg_vector_space_barycentric_hpp
+#ifndef bempp_rwg_vector_space_barycentric_hpp
+#define bempp_rwg_vector_space_barycentric_hpp
 
 #include "../common/common.hpp"
 
@@ -58,12 +58,13 @@ public:
   typedef typename Base::CollectionOfBasisTransformations
       CollectionOfBasisTransformations;
 
-  explicit RWGVectorSpaceBarycentric(const shared_ptr<const Grid> &grid,
-                                     bool putDofsOnBoundaries = false);
+  explicit RWGVectorSpaceBarycentric(
+      const shared_ptr<const Grid> &grid, bool putDofsOnBoundaries = false);
   RWGVectorSpaceBarycentric(const shared_ptr<const Grid> &grid,
-                            const GridSegment &segment,
-                            bool putDofsOnBoundaries = false,
-                            int dofMode = EDGE_ON_SEGMENT);
+                                       const GridSegment &segment,
+                                       bool putDofsOnBoundaries = false,
+                                       bool strictlyOnSegment=false,
+                                       int dofMode = EDGE_ON_SEGMENT);
   virtual ~RWGVectorSpaceBarycentric();
 
   virtual shared_ptr<const Space<BasisFunctionType>> discontinuousSpace(
@@ -142,6 +143,7 @@ private:
   GridSegment m_segment;
   typedef Fiber::RaviartThomas0ShapesetBarycentric<BasisFunctionType> Shapeset;
   bool m_putDofsOnBoundaries;
+  bool m_strictlyOnSegment;
   int m_dofMode;
   std::unique_ptr<GridView> m_view;
   Fiber::RaviartThomas0Shapeset<3, BasisFunctionType> m_triangleShapeset;
@@ -161,11 +163,12 @@ private:
   /** \endcond */
 };
 
-/** \brief Define a RWGVectorSpaceBarycentric that has an update method for grid
- * refinement. */
+/** \brief Define a RWGVectorSpaceBarycentric that has an update
+ * method for grid refinement. */
 template <typename BasisFunctionType>
 shared_ptr<Space<BasisFunctionType>>
-adaptiveRWGVectorSpaceBarycentric(const shared_ptr<const Grid> &grid);
+adaptiveRWGVectorSpaceBarycentric(
+    const shared_ptr<const Grid> &grid);
 
 /** \brief Overload to define a set of domains for the space and whether the
  space contains boundary entities
@@ -173,13 +176,14 @@ adaptiveRWGVectorSpaceBarycentric(const shared_ptr<const Grid> &grid);
 template <typename BasisFunctionType>
 shared_ptr<Space<BasisFunctionType>>
 adaptiveRWGVectorSpaceBarycentric(const shared_ptr<const Grid> &grid,
-                                  const std::vector<int> &domains, bool open);
+                                             const std::vector<int> &domains,
+                                             bool open, bool strictly);
 
-/** \brief Overlad. */
+/** \brief Overload. */
 template <typename BasisFunctionType>
 shared_ptr<Space<BasisFunctionType>>
 adaptiveRWGVectorSpaceBarycentric(const shared_ptr<const Grid> &grid,
-                                  int domain, bool open);
+                                             int domain, bool open, bool strictly);
 
 } // namespace Bempp
 

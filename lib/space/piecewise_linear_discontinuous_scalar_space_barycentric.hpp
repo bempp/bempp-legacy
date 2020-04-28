@@ -181,6 +181,14 @@ template <typename BasisFunctionType>
 shared_ptr<Space<BasisFunctionType>>
 adaptivePiecewiseLinearDiscontinuousScalarSpaceBarycentric(
     const shared_ptr<const Grid> &grid);
+template <typename BasisFunctionType>
+shared_ptr<Space<BasisFunctionType>>
+adaptivePiecewiseLinearDiscontinuousScalarSpaceBarycentric(
+    const shared_ptr<const Grid> &grid, const std::vector<int> &domains);
+template <typename BasisFunctionType>
+shared_ptr<Space<BasisFunctionType>>
+adaptivePiecewiseLinearDiscontinuousScalarSpaceBarycentric(
+    const shared_ptr<const Grid> &grid, int domain);
 
 } // namespace Bempp
 

@@ -21,6 +21,7 @@
 #include "piecewise_constant_scalar_space_barycentric.hpp"
 #include "piecewise_constant_scalar_space.hpp"
 
+#include "adaptive_space.hpp"
 #include "space_helper.hpp"
 
 #include "../common/acc.hpp"
@@ -38,23 +39,56 @@
 
 namespace Bempp {
 
+namespace {
+
+template <typename BasisFunctionType>
+class ConstantBarycentricSpaceFactory
+    : public SpaceFactory<BasisFunctionType> {
+public:
+  shared_ptr<Space<BasisFunctionType>>
+  create(const shared_ptr<const Grid> &grid,
+         const GridSegment &segment) const override {
+
+    return shared_ptr<Space<BasisFunctionType>>(
+        new PiecewiseConstantScalarSpaceBarycentric<BasisFunctionType>(
+            grid, segment));
+  }
+};
+}
+
+
 template <typename BasisFunctionType>
 PiecewiseConstantScalarSpaceBarycentric<BasisFunctionType>::
-    PiecewiseConstantScalarSpaceBarycentric(const shared_ptr<const Grid> &grid)
+    PiecewiseConstantScalarSpaceBarycentric(
+        const shared_ptr<const Grid> &grid)
     : ScalarSpace<BasisFunctionType>(grid->barycentricGrid()),
-      m_segment(GridSegment::wholeGrid(*grid)), m_originalGrid(grid),
-      m_sonMap(grid->barycentricSonMap()) {
-  assignDofsImpl(m_segment);
+      m_segment(GridSegment::wholeGrid(*grid)), m_strictlyOnSegment(false),
+      m_putDofsOnBoundaries(true),
+      m_originalGrid(grid), m_sonMap(grid->barycentricSonMap()) {
+  initialize();
 }
 
 template <typename BasisFunctionType>
 PiecewiseConstantScalarSpaceBarycentric<BasisFunctionType>::
-    PiecewiseConstantScalarSpaceBarycentric(const shared_ptr<const Grid> &grid,
-                                            const GridSegment &segment)
+    PiecewiseConstantScalarSpaceBarycentric(
+        const shared_ptr<const Grid> &grid, const GridSegment &segment,
+        bool strictlyOnSegment, bool putDofsOnBoundaries)
     : ScalarSpace<BasisFunctionType>(grid->barycentricGrid()),
-      m_segment(segment), m_originalGrid(grid),
-      m_sonMap(grid->barycentricSonMap()) {
-  assignDofsImpl(m_segment);
+      m_segment(segment), m_strictlyOnSegment(strictlyOnSegment),
+      m_putDofsOnBoundaries(putDofsOnBoundaries),
+      m_originalGrid(grid), m_sonMap(grid->barycentricSonMap()) {
+  initialize();
+}
+
+template <typename BasisFunctionType>
+void PiecewiseConstantScalarSpaceBarycentric<BasisFunctionType>::initialize() {
+  const int gridDim = this->grid()->dim();
+  if (gridDim != 1 && gridDim != 2)
+    throw std::invalid_argument(
+        "PiecewiseConstantScalarSpaceBarycentric::initialize(): "
+        "only 1- and 2-dimensional grids are supported");
+  m_view = this->grid()->leafView();
+  assignDofsImpl();
 }
 
 template <typename BasisFunctionType>
@@ -149,8 +183,7 @@ void PiecewiseConstantScalarSpaceBarycentric<
 }
 
 template <typename BasisFunctionType>
-void PiecewiseConstantScalarSpaceBarycentric<BasisFunctionType>::assignDofsImpl(
-    const GridSegment &segment) {
+void PiecewiseConstantScalarSpaceBarycentric<BasisFunctionType>::assignDofsImpl() {
   const int gridDim = this->domainDimension();
 
   std::unique_ptr<GridView> coarseView = m_originalGrid->leafView();
@@ -161,7 +194,10 @@ void PiecewiseConstantScalarSpaceBarycentric<BasisFunctionType>::assignDofsImpl(
   std::vector<int> globalDofIndices(faceCountCoarseGrid, 0);
   int globalDofCount_ = 0;
   for (int faceIndex = 0; faceIndex < faceCountCoarseGrid; ++faceIndex)
-    acc(globalDofIndices, faceIndex) = globalDofCount_++;
+    if(m_segment.contains(0,faceIndex))
+      acc(globalDofIndices, faceIndex) = globalDofCount_++;
+    else
+      acc(globalDofIndices, faceIndex) = -1;
   int flatLocalDofCount_ = 0;
 
   m_local2globalDofs.clear();
@@ -372,6 +408,50 @@ void PiecewiseConstantScalarSpaceBarycentric<BasisFunctionType>::
   vtkWriter->write(fileName);
 }
 
+template <typename BasisFunctionType>
+shared_ptr<Space<BasisFunctionType>>
+adaptivePiecewiseConstantScalarSpaceBarycentric(
+    const shared_ptr<const Grid> &grid) {
+
+  shared_ptr<SpaceFactory<BasisFunctionType>> factory(
+      new ConstantBarycentricSpaceFactory<BasisFunctionType>());
+  return shared_ptr<Space<BasisFunctionType>>(
+      new AdaptiveSpace<BasisFunctionType>(factory, grid));
+}
+
+template <typename BasisFunctionType>
+shared_ptr<Space<BasisFunctionType>>
+adaptivePiecewiseConstantScalarSpaceBarycentric(
+    const shared_ptr<const Grid> &grid, const std::vector<int> &domains) {
+
+  shared_ptr<SpaceFactory<BasisFunctionType>> factory(
+      new ConstantBarycentricSpaceFactory<BasisFunctionType>());
+  return shared_ptr<Space<BasisFunctionType>>(
+      new AdaptiveSpace<BasisFunctionType>(factory, grid, domains, false));
+}
+
+template <typename BasisFunctionType>
+shared_ptr<Space<BasisFunctionType>>
+adaptivePiecewiseConstantScalarSpaceBarycentric(
+    const shared_ptr<const Grid> &grid, int domain) {
+
+  shared_ptr<SpaceFactory<BasisFunctionType>> factory(
+      new ConstantBarycentricSpaceFactory<BasisFunctionType>());
+  return shared_ptr<Space<BasisFunctionType>>(
+      new AdaptiveSpace<BasisFunctionType>(factory, grid, std::vector<int>({domain}), false));
+}
+
+#define INSTANTIATE_FREE_FUNCTIONS(BASIS)                                      \
+  template shared_ptr<Space<BASIS>>                                            \
+  adaptivePiecewiseConstantScalarSpaceBarycentric<BASIS>(              \
+      const shared_ptr<const Grid> &);                                         \
+  template shared_ptr<Space<BASIS>>                                            \
+  adaptivePiecewiseConstantScalarSpaceBarycentric<BASIS>(              \
+      const shared_ptr<const Grid> &, const std::vector<int> &);   \
+  template shared_ptr<Space<BASIS>>                                            \
+  adaptivePiecewiseConstantScalarSpaceBarycentric<BASIS>(              \
+      const shared_ptr<const Grid> &, int)
+FIBER_ITERATE_OVER_BASIS_TYPES(INSTANTIATE_FREE_FUNCTIONS);
 FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(
     PiecewiseConstantScalarSpaceBarycentric);
 

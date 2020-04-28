@@ -58,10 +58,12 @@ public:
       CollectionOfBasisTransformations;
 
   explicit RWGVectorSpace(const shared_ptr<const Grid> &grid,
-                          bool putDofsOnBoundaries = false);
-  RWGVectorSpace(const shared_ptr<const Grid> &grid, const GridSegment &segment,
-                 bool putDofsOnBoundaries = false,
-                 int dofMode = EDGE_ON_SEGMENT);
+                                     bool putDofsOnBoundaries = false);
+  RWGVectorSpace(const shared_ptr<const Grid> &grid,
+                            const GridSegment &segment,
+                            bool putDofsOnBoundaries = false,
+                            bool strictlyOnSegment = false,
+                            int dofMode = EDGE_ON_SEGMENT);
   virtual ~RWGVectorSpace();
 
   virtual shared_ptr<const Space<BasisFunctionType>> discontinuousSpace(
@@ -77,7 +79,9 @@ public:
 
   virtual bool spaceIsCompatible(const Space<BasisFunctionType> &other) const;
 
-  virtual SpaceIdentifier spaceIdentifier() const { return RWG_VECTOR; }
+  virtual SpaceIdentifier spaceIdentifier() const {
+    return RWG_VECTOR;
+  }
 
   /** \brief Return the variant of element \p element.
    *
@@ -136,6 +140,7 @@ private:
   struct Impl;
   boost::scoped_ptr<Impl> m_impl;
   GridSegment m_segment;
+  bool m_strictlyOnSegment;
   bool m_putDofsOnBoundaries;
   int m_dofMode;
   std::unique_ptr<GridView> m_view;
@@ -162,13 +167,13 @@ adaptiveRWGVectorSpace(const shared_ptr<const Grid> &grid);
 template <typename BasisFunctionType>
 shared_ptr<Space<BasisFunctionType>>
 adaptiveRWGVectorSpace(const shared_ptr<const Grid> &grid,
-                       const std::vector<int> &domains, bool open);
+                                  const std::vector<int> &domains, bool open, bool strictlyOnSegment);
 
-/** \brief Overlad. */
+/** \brief Overload. */
 template <typename BasisFunctionType>
 shared_ptr<Space<BasisFunctionType>>
-adaptiveRWGVectorSpace(const shared_ptr<const Grid> &grid, int domain,
-                       bool open);
+adaptiveRWGVectorSpace(const shared_ptr<const Grid> &grid,
+                                  int domain, bool open, bool strictlyOnSegment);
 
 } // namespace Bempp
 

@@ -63,6 +63,7 @@ public:
   RaviartThomas0VectorSpaceBarycentric(const shared_ptr<const Grid> &grid,
                                        const GridSegment &segment,
                                        bool putDofsOnBoundaries = false,
+                                       bool strictlyOnSegment=false,
                                        int dofMode = EDGE_ON_SEGMENT);
   virtual ~RaviartThomas0VectorSpaceBarycentric();
 
@@ -142,6 +143,7 @@ private:
   GridSegment m_segment;
   typedef Fiber::RaviartThomas0ShapesetBarycentric<BasisFunctionType> Shapeset;
   bool m_putDofsOnBoundaries;
+  bool m_strictlyOnSegment;
   int m_dofMode;
   std::unique_ptr<GridView> m_view;
   Fiber::RaviartThomas0Shapeset<3, BasisFunctionType> m_triangleShapeset;
@@ -175,13 +177,13 @@ template <typename BasisFunctionType>
 shared_ptr<Space<BasisFunctionType>>
 adaptiveRaviartThomas0VectorSpaceBarycentric(const shared_ptr<const Grid> &grid,
                                              const std::vector<int> &domains,
-                                             bool open);
+                                             bool open, bool strictly);
 
-/** \brief Overlad. */
+/** \brief Overload. */
 template <typename BasisFunctionType>
 shared_ptr<Space<BasisFunctionType>>
 adaptiveRaviartThomas0VectorSpaceBarycentric(const shared_ptr<const Grid> &grid,
-                                             int domain, bool open);
+                                             int domain, bool open, bool strictly);
 
 } // namespace Bempp
 

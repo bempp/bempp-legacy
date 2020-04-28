@@ -1,8 +1,8 @@
 Introduction
 ============
 
-BEM++ is an open-source boundary element library. For details see
-www.bempp.org
+Bempp is an open-source boundary element library. For details see
+www.bempp.com
 
 
 History
@@ -328,13 +328,13 @@ The first official version of the library, including the following features:
 Installation
 ============
 
-See http://www.bempp.org/installation.html for up-to-date installation
+See https://bempp.com/download/ for up-to-date installation
 instructions.
 
 Contact
 =======
 
-If you run into problems with installation or usage of BEM++, please let us know
-by opening an issue at https://github.com/bempp/bempp/issues.
+If you run into problems with installation or usage of Bempp, please let us know
+by opening an issue at https://bitbucket.org/bemppsolutions/bempp/issues.
 
-The BEM++ Team
+The Bempp Team

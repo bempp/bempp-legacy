@@ -30,8 +30,8 @@
 #include "../grid/grid_segment.hpp"
 #include "../grid/grid_view.hpp"
 #include "../common/types.hpp"
-#include "../fiber/nedelec_0_shapeset_barycentric.hpp"
 #include "../fiber/nedelec_0_shapeset.hpp"
+#include "../fiber/nedelec_0_shapeset_barycentric.hpp"
 
 #include <boost/scoped_ptr.hpp>
 #include <map>
@@ -59,12 +59,13 @@ public:
   typedef typename Base::CollectionOfBasisTransformations
       CollectionOfBasisTransformations;
 
-  explicit Nedelec0VectorSpaceBarycentric(const shared_ptr<const Grid> &grid,
-                                          bool putDofsOnBoundaries = false);
+  explicit Nedelec0VectorSpaceBarycentric(
+      const shared_ptr<const Grid> &grid, bool putDofsOnBoundaries = false);
   Nedelec0VectorSpaceBarycentric(const shared_ptr<const Grid> &grid,
-                                 const GridSegment &segment,
-                                 bool putDofsOnBoundaries = false,
-                                 int dofMode = EDGE_ON_SEGMENT);
+                                       const GridSegment &segment,
+                                       bool putDofsOnBoundaries = false,
+                                       bool strictlyOnSegment=false,
+                                       int dofMode = EDGE_ON_SEGMENT);
   virtual ~Nedelec0VectorSpaceBarycentric();
 
   virtual shared_ptr<const Space<BasisFunctionType>> discontinuousSpace(
@@ -143,6 +144,7 @@ private:
   GridSegment m_segment;
   typedef Fiber::Nedelec0ShapesetBarycentric<BasisFunctionType> Shapeset;
   bool m_putDofsOnBoundaries;
+  bool m_strictlyOnSegment;
   int m_dofMode;
   std::unique_ptr<GridView> m_view;
   Fiber::Nedelec0Shapeset<3, BasisFunctionType> m_triangleShapeset;
@@ -156,17 +158,18 @@ private:
   std::vector<typename Shapeset::BasisType> m_elementShapesets;
   mutable Matrix<int> m_sonMap;
   mutable shared_ptr<const Grid> m_originalGrid;
-  Shapeset m_NCBasisType1;
-  Shapeset m_NCBasisType2;
+  Shapeset m_RTBasisType1;
+  Shapeset m_RTBasisType2;
 
   /** \endcond */
 };
 
-/** \brief Define a Nedelec0VectorSpaceBarycentric that has an update method for
- * grid refinement. */
+/** \brief Define a Nedelec0VectorSpaceBarycentric that has an update
+ * method for grid refinement. */
 template <typename BasisFunctionType>
 shared_ptr<Space<BasisFunctionType>>
-adaptiveNedelec0VectorSpaceBarycentric(const shared_ptr<const Grid> &grid);
+adaptiveNedelec0VectorSpaceBarycentric(
+    const shared_ptr<const Grid> &grid);
 
 /** \brief Overload to define a set of domains for the space and whether the
  space contains boundary entities
@@ -174,14 +177,14 @@ adaptiveNedelec0VectorSpaceBarycentric(const shared_ptr<const Grid> &grid);
 template <typename BasisFunctionType>
 shared_ptr<Space<BasisFunctionType>>
 adaptiveNedelec0VectorSpaceBarycentric(const shared_ptr<const Grid> &grid,
-                                       const std::vector<int> &domains,
-                                       bool open);
+                                             const std::vector<int> &domains,
+                                             bool open, bool strictly);
 
-/** \brief Overlad. */
+/** \brief Overload. */
 template <typename BasisFunctionType>
 shared_ptr<Space<BasisFunctionType>>
 adaptiveNedelec0VectorSpaceBarycentric(const shared_ptr<const Grid> &grid,
-                                       int domain, bool open);
+                                             int domain, bool open, bool strictly);
 
 } // namespace Bempp
 

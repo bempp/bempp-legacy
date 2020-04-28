@@ -48,25 +48,27 @@ namespace Bempp {
 namespace {
 
 template <typename BasisFunctionType>
-class RotatedBuffaChristiansenSpaceFactory
-    : public SpaceFactory<BasisFunctionType> {
+class RotatedBuffaChristiansenSpaceFactory : public SpaceFactory<BasisFunctionType> {
 public:
+  RotatedBuffaChristiansenSpaceFactory(bool open, bool strictlyOnSegment)
+    : m_strictlyOnSegment(strictlyOnSegment), m_open(open) {}
   shared_ptr<Space<BasisFunctionType>>
   create(const shared_ptr<const Grid> &grid,
          const GridSegment &segment) const override {
 
     return shared_ptr<Space<BasisFunctionType>>(
-        new RotatedBuffaChristiansenVectorSpace<BasisFunctionType>(grid,
-                                                                   segment));
+        new RotatedBuffaChristiansenVectorSpace<BasisFunctionType>(grid, segment, m_open, m_strictlyOnSegment));
   }
+private:
+  bool m_strictlyOnSegment;
+  bool m_open;
 };
 }
 
 /** \cond PRIVATE */
 template <typename BasisFunctionType>
 struct RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::Impl {
-  typedef Fiber::HcurlFunctionValueFunctor<CoordinateType>
-      TransformationFunctor;
+  typedef Fiber::HcurlFunctionValueFunctor<CoordinateType> TransformationFunctor;
 
   Impl() : transformations(TransformationFunctor()) {}
 
@@ -76,23 +78,23 @@ struct RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::Impl {
 /** \endcond */
 
 template <typename BasisFunctionType>
-RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::
-    RotatedBuffaChristiansenVectorSpace(const shared_ptr<const Grid> &grid,
-                                        bool putDofsOnBoundaries)
+RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::RotatedBuffaChristiansenVectorSpace(
+    const shared_ptr<const Grid> &grid, bool putDofsOnBoundaries)
     : Base(grid->barycentricGrid()), m_impl(new Impl),
       m_segment(GridSegment::wholeGrid(*grid)),
       m_putDofsOnBoundaries(putDofsOnBoundaries), m_dofMode(EDGE_ON_SEGMENT),
-      m_originalGrid(grid), m_sonMap(grid->barycentricSonMap()) {
+      m_originalGrid(grid), m_sonMap(grid->barycentricSonMap()),
+      m_strictlyOnSegment(false) {
   initialize();
 }
 
 template <typename BasisFunctionType>
-RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::
-    RotatedBuffaChristiansenVectorSpace(const shared_ptr<const Grid> &grid,
-                                        const GridSegment &segment,
-                                        bool putDofsOnBoundaries, int dofMode)
+RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::RotatedBuffaChristiansenVectorSpace(
+    const shared_ptr<const Grid> &grid, const GridSegment &segment,
+    bool putDofsOnBoundaries, bool strictlyOnSegment, int dofMode)
     : Base(grid->barycentricGrid()), m_impl(new Impl), m_segment(segment),
       m_putDofsOnBoundaries(putDofsOnBoundaries), m_dofMode(dofMode),
+      m_strictlyOnSegment(strictlyOnSegment),
       m_originalGrid(grid), m_sonMap(grid->barycentricSonMap()) {
   if (!(dofMode & (EDGE_ON_SEGMENT | ELEMENT_ON_SEGMENT)))
     throw std::invalid_argument("RotatedBuffaChristiansenVectorSpace::"
@@ -114,15 +116,14 @@ bool RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::spaceIsCompatible(
 template <typename BasisFunctionType>
 void RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::initialize() {
   if (this->grid()->dim() != 2 || this->grid()->dimWorld() != 3)
+    throw std::invalid_argument("RotatedBuffaChristiansenVectorSpace::initialize(): "
+                                "grid must be 2-dimensional and embedded "
+                                "in 3-dimensional space");
+  /*if (m_putDofsOnBoundaries)
     throw std::invalid_argument(
         "RotatedBuffaChristiansenVectorSpace::initialize(): "
-        "grid must be 2-dimensional and embedded "
-        "in 3-dimensional space");
-  if (m_putDofsOnBoundaries)
-    throw std::invalid_argument(
-        "RotatedBuffaChristiansenVectorSpace::initialize(): "
-        "Buffa-Christian spaces do not yet support DOFs "
-        "on boundaries");
+        "RotatedBuffa-Christian spaces do not yet support DOFs "
+        "on boundaries");*/
   m_view = this->grid()->leafView();
   assignDofsImpl();
 }
@@ -146,35 +147,30 @@ RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::discontinuousSpace(
 }
 
 template <typename BasisFunctionType>
-bool RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::isDiscontinuous()
-    const {
+bool RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::isDiscontinuous() const {
   return false;
 }
 
 template <typename BasisFunctionType>
 const typename RotatedBuffaChristiansenVectorSpace<
     BasisFunctionType>::CollectionOfShapesetTransformations &
-RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::basisFunctionValue()
-    const {
+RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::basisFunctionValue() const {
 
   return m_impl->transformations;
 }
 
 template <typename BasisFunctionType>
-int RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::domainDimension()
-    const {
+int RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::domainDimension() const {
   return 2;
 }
 
 template <typename BasisFunctionType>
-int RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::codomainDimension()
-    const {
+int RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::codomainDimension() const {
   return 3;
 }
 
 template <typename BasisFunctionType>
-ElementVariant
-RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::elementVariant(
+ElementVariant RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::elementVariant(
     const Entity<0> &element) const {
   GeometryType type = element.type();
   if (type.isTriangle())
@@ -262,6 +258,9 @@ void RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::assignDofsImpl() {
   std::vector<int> faceCountNextToFineEdge;
   faceCountNextToFineEdge.resize(edgeCountFineGrid, 0);
 
+  std::vector<bool> fineFaceInSegment;
+  fineFaceInSegment.resize(faceCountFineGrid, false);
+
   Matrix<int> facesAdjacentToCoarseEdges;
   facesAdjacentToCoarseEdges.conservativeResize(edgeCountCoarseGrid, 2);
 
@@ -270,6 +269,15 @@ void RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::assignDofsImpl() {
 
   Matrix<int> coarseVerticesonEdge;
   coarseVerticesonEdge.conservativeResize(edgeCountCoarseGrid, 2);
+
+  std::vector<bool> isAttachedToSegment;
+  isAttachedToSegment.resize(edgeCountCoarseGrid, false);
+
+  std::vector<bool> fullyInSegment;
+  fullyInSegment.resize(edgeCountCoarseGrid, true);
+
+  std::vector<bool> vertexFullyInSegment;
+  vertexFullyInSegment.resize(vertexCountCoarseGrid, true);
 
   for (std::unique_ptr<EntityIterator<0>> it = m_view->entityIterator<0>();
        !it->finished(); it->next()) {
@@ -282,10 +290,30 @@ void RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::assignDofsImpl() {
   for (std::unique_ptr<EntityIterator<0>> it = coarseView->entityIterator<0>();
        !it->finished(); it->next()) {
     const Entity<0> &entity = it->entity();
-    const int ent0Number = index.subEntityIndex(entity, 0, 0);
-    ++faceCountNextToCoarseEdge[index.subEntityIndex(entity, 0, 1)];
-    ++faceCountNextToCoarseEdge[index.subEntityIndex(entity, 1, 1)];
-    ++faceCountNextToCoarseEdge[index.subEntityIndex(entity, 2, 1)];
+    const int ent0Number = index.entityIndex(entity);
+    if(!m_segment.contains(0,ent0Number))
+      for(int i=0;i!=3;++i)
+        vertexFullyInSegment[index.subEntityIndex(entity, i, 2)] = false;
+  }
+  for (std::unique_ptr<EntityIterator<0>> it = coarseView->entityIterator<0>();
+       !it->finished(); it->next()) {
+    const Entity<0> &entity = it->entity();
+    const int ent0Number = index.entityIndex(entity);
+    for(int i=0;i!=6;++i)
+      fineFaceInSegment[m_sonMap(ent0Number, i)] = m_segment.contains(0, ent0Number);
+    for(int i=0;i!=3;++i){
+      if(m_segment.contains(2,index.subEntityIndex(entity, i, 2)))
+        for(int j=0;j!=3;++j)
+          if(j!=2-i)
+            isAttachedToSegment[index.subEntityIndex(entity, j, 1)] = true;
+      if(!vertexFullyInSegment[index.subEntityIndex(entity, i, 2)])
+        for(int j=0;j!=3;++j)
+          if(j!=2-i)
+            fullyInSegment[index.subEntityIndex(entity, j, 1)] = false;
+    }
+
+    for(int i=0;i!=3;++i)
+      ++faceCountNextToCoarseEdge[index.subEntityIndex(entity, i, 1)];
     for (int i = 0; i != 3; ++i) {
       int ent2Number = index.subEntityIndex(entity, i, 2);
       ++edgeCountNextToCoarseVertex[ent2Number];
@@ -332,6 +360,7 @@ void RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::assignDofsImpl() {
        !it->finished(); it->next()) {
     const Entity<1> &entity = it->entity();
     const int ent1Number = index.entityIndex(entity);
+
     if (faceCountNextToCoarseEdge[ent1Number] == 1)
       for (int j = 0; j != 2; ++j)
         if (!vertexOnBoundary[coarseVerticesonEdge(ent1Number, j)])
@@ -392,14 +421,14 @@ void RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::assignDofsImpl() {
   globalDofsOfEdges.resize(edgeCountCoarseGrid);
   int globalDofCount_ = 0;
   for (int i = 0; i != edgeCountCoarseGrid; ++i) {
-    // TODO: What happens here if m_putDofsOnBoundaries is true (answer:
-    // exception is thrown above in initialize()!
     int &globalDofOfEdge = acc(globalDofsOfEdges, i);
-    if (m_putDofsOnBoundaries || faceCountNextToCoarseEdge[i] == 1)
-      globalDofOfEdge = -1;
-    else
+
+    if(fullyInSegment[i])
       globalDofOfEdge = globalDofCount_++;
-    //       globalDofOfEdge = -1;
+    else if (m_putDofsOnBoundaries && isAttachedToSegment[i])
+      globalDofOfEdge = globalDofCount_++;
+    else
+      globalDofOfEdge = -1;
   }
 
   // (Re)initialise DOF maps
@@ -429,78 +458,57 @@ void RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::assignDofsImpl() {
        !it->finished(); it->next()) {
     const Entity<1> &entity = it->entity();
     const int ent1Number = index.entityIndex(entity);
-
     const int glDof = globalDofsOfEdges[ent1Number];
     if (glDof != -1) {
-      // Matrix<CoordinateType> vertices;
-      // const Geometry &geo = entity.geometry();
-      // geo.getCorners(vertices);
-      // BOUNDING BOXES ARE NOT RIGHT!
-      // extendBoundingBox(acc(m_globalDofBoundingBoxes, glDof), vertices);
-      // setBoundingBoxReference<CoordinateType>(acc(m_globalDofBoundingBoxes,
-      // glDof), 0.5 * (vertices.col(0)+vertices.col(1)));
 
       int faceNum = fineFacesonEdge(ent1Number, 0);
       int N = edgeCountNextToCoarseVertex[coarseVerticesonEdge(ent1Number, 0)];
 
       faceNum = nextFaceAnticlockwise[faceNum];
       bool pastBoundary = false;
-      { // First edge bottom
+      if(!m_strictlyOnSegment || fineFaceInSegment[faceNum]) { // First edge bottom
         Matrix<BasisFunctionType> &ffCoeff = m_fineFaceCoeffs[faceNum];
         ffCoeff.conservativeResize(3, ffCoeff.cols() + 1);
-        if (vertexOnBoundary[coarseVerticesonEdge(ent1Number, 0)])
-          ffCoeff(0, ffCoeff.cols() - 1) = -(N - 2.) / (2 * N);
-        else
-          ffCoeff(0, ffCoeff.cols() - 1) = 0;
+        ffCoeff(0, ffCoeff.cols() - 1) = vertexOnBoundary[coarseVerticesonEdge(ent1Number, 0)] ? -(N-2.)/(2*N) : 0;
         ffCoeff(1, ffCoeff.cols() - 1) = 0;
-        ffCoeff(2, ffCoeff.cols() - 1) = 1. / 2;
+        ffCoeff(2, ffCoeff.cols() - 1) = 1./2;
       }
       // Go around loop
       for (int i = N - 1; faceNum != fineFacesonEdge(ent1Number, 0); --i) {
-        { // Before
+        if (i < -N * 3) {
+          throw std::runtime_error("Error probably caused by a bad mesh. "
+                                   "Please check your normal orientations");
+        }
+        if(!m_strictlyOnSegment ||fineFaceInSegment[faceNum]){ // Before
           Matrix<BasisFunctionType> &ffCoeff = m_fineFaceCoeffs[faceNum];
-          if (vertexOnBoundary[coarseVerticesonEdge(ent1Number, 0)])
-            if (pastBoundary)
-              ffCoeff(1, ffCoeff.cols() - 1) = (N - 1.) / N;
-            else {
-              ffCoeff(1, ffCoeff.cols() - 1) = -1. / N;
-              if (anticlockwiseEdgesToFaces
-                      [anticlockwiseFacesToEdges[faceNum]] == -1)
-                pastBoundary = true;
-            }
-          else
-            ffCoeff(1, ffCoeff.cols() - 1) = -i * 1. / (2 * N);
+          ffCoeff(1, ffCoeff.cols() - 1) = vertexOnBoundary[coarseVerticesonEdge(ent1Number, 0)]
+                                           ? (pastBoundary ? (N-1.)/N : -1./N) : -i*1./(2*N);
           m_local2globalDofs[faceNum].push_back(glDof);
+          m_global2localDofs[glDof].push_back(LocalDof(faceNum, ffCoeff.cols()-1));
           m_local2globalDofWeights[faceNum].push_back(1.);
-          m_global2localDofs[glDof].push_back(
-              LocalDof(faceNum, ffCoeff.cols() - 1));
           ++flatLocalDofCount_;
         }
+        if (pastBoundary && anticlockwiseEdgesToFaces[anticlockwiseFacesToEdges[faceNum]] == -1)
+          pastBoundary = true;
 
         faceNum = nextFaceAnticlockwise[faceNum];
-        { // After
+        if(!m_strictlyOnSegment ||fineFaceInSegment[faceNum]){ // After
           Matrix<BasisFunctionType> &ffCoeff = m_fineFaceCoeffs[faceNum];
           ffCoeff.conservativeResize(3, ffCoeff.cols() + 1);
-          if (vertexOnBoundary[coarseVerticesonEdge(ent1Number, 0)])
-            if (pastBoundary)
-              ffCoeff(0, ffCoeff.cols() - 1) = -(N - 1.) / N;
-            else
-              ffCoeff(0, ffCoeff.cols() - 1) = 1. / N;
-          else
-            ffCoeff(0, ffCoeff.cols() - 1) = i * 1. / (2 * N);
+          ffCoeff(0, ffCoeff.cols() - 1) = vertexOnBoundary[coarseVerticesonEdge(ent1Number, 0)]
+                                           ? (pastBoundary ? -(N-1.)/N : 1./N) : i*1./(2*N);
           ffCoeff(1, ffCoeff.cols() - 1) = 0;
           ffCoeff(2, ffCoeff.cols() - 1) = 0;
         }
       }
-      { // First edge top
+      if(!m_strictlyOnSegment ||fineFaceInSegment[faceNum]){ // First edge top
         Matrix<BasisFunctionType> &ffCoeff = m_fineFaceCoeffs[faceNum];
         if (vertexOnBoundary[coarseVerticesonEdge(ent1Number, 0)])
-          ffCoeff(1, ffCoeff.cols() - 1) = (N - 2.) / (2 * N);
-        ffCoeff(2, ffCoeff.cols() - 1) = 1. / 2;
+          ffCoeff(1, ffCoeff.cols() - 1) = (N-2.)/(2*N);
+        ffCoeff(2, ffCoeff.cols() - 1) = 1./2;
         m_local2globalDofs[faceNum].push_back(glDof);
+        m_global2localDofs[glDof].push_back(LocalDof(faceNum, ffCoeff.cols()-1));
         m_local2globalDofWeights[faceNum].push_back(1.);
-        m_global2localDofs[glDof].push_back(
-            LocalDof(faceNum, ffCoeff.cols() - 1));
         ++flatLocalDofCount_;
       }
 
@@ -508,62 +516,49 @@ void RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::assignDofsImpl() {
       N = edgeCountNextToCoarseVertex[coarseVerticesonEdge(ent1Number, 1)];
       faceNum = nextFaceAnticlockwise[faceNum];
       pastBoundary = false;
-      { // Second edge bottom
+      if(!m_strictlyOnSegment ||fineFaceInSegment[faceNum]){ // Second edge bottom
         Matrix<BasisFunctionType> &ffCoeff = m_fineFaceCoeffs[faceNum];
         ffCoeff.conservativeResize(3, ffCoeff.cols() + 1);
-        if (vertexOnBoundary[coarseVerticesonEdge(ent1Number, 1)])
-          ffCoeff(0, ffCoeff.cols() - 1) = -(N - 2.) / (N * 2);
-        else
-          ffCoeff(0, ffCoeff.cols() - 1) = 0;
+        ffCoeff(0, ffCoeff.cols() - 1) = vertexOnBoundary[coarseVerticesonEdge(ent1Number, 1)] ? -(N-2.)/(N*2) : 0;
         ffCoeff(1, ffCoeff.cols() - 1) = 0;
-        ffCoeff(2, ffCoeff.cols() - 1) = 1. / 2;
+        ffCoeff(2, ffCoeff.cols() - 1) = 1./2;
       }
       // Go around loop
       for (int i = N - 1; faceNum != fineFacesonEdge(ent1Number, 1); --i) {
-        { // Before
+        if (i < -N * 3) {
+          throw std::runtime_error("Error probably caused by a bad mesh. "
+                                   "Please check your normal orientations");
+        }
+        if(!m_strictlyOnSegment ||fineFaceInSegment[faceNum]){ // Before
           Matrix<BasisFunctionType> &ffCoeff = m_fineFaceCoeffs[faceNum];
-          if (vertexOnBoundary[coarseVerticesonEdge(ent1Number, 1)])
-            if (pastBoundary)
-              ffCoeff(1, ffCoeff.cols() - 1) = (N - 1.) / N;
-            else {
-              ffCoeff(1, ffCoeff.cols() - 1) = -1. / N;
-              if (anticlockwiseEdgesToFaces
-                      [anticlockwiseFacesToEdges[faceNum]] == -1)
-                pastBoundary = true;
-            }
-          else
-            ffCoeff(1, ffCoeff.cols() - 1) = -i * 1. / (2 * N);
+          ffCoeff(1, ffCoeff.cols() - 1) = vertexOnBoundary[coarseVerticesonEdge(ent1Number, 1)]
+                                           ? (pastBoundary ? (N-1.)/N : -1./N) : -i*1./(2*N);
           m_local2globalDofs[faceNum].push_back(glDof);
+          m_global2localDofs[glDof].push_back(LocalDof(faceNum, ffCoeff.cols() - 1));
           m_local2globalDofWeights[faceNum].push_back(-1.);
-          m_global2localDofs[glDof].push_back(
-              LocalDof(faceNum, ffCoeff.cols() - 1));
           ++flatLocalDofCount_;
         }
+        if (pastBoundary && anticlockwiseEdgesToFaces[anticlockwiseFacesToEdges[faceNum]] == -1)
+          pastBoundary = true;
 
         faceNum = nextFaceAnticlockwise[faceNum];
-        { // After
+        if(!m_strictlyOnSegment ||fineFaceInSegment[faceNum]){ // After
           Matrix<BasisFunctionType> &ffCoeff = m_fineFaceCoeffs[faceNum];
           ffCoeff.conservativeResize(3, ffCoeff.cols() + 1);
-          if (vertexOnBoundary[coarseVerticesonEdge(ent1Number, 1)])
-            if (pastBoundary)
-              ffCoeff(0, ffCoeff.cols() - 1) = -(N - 1.) / N;
-            else
-              ffCoeff(0, ffCoeff.cols() - 1) = 1. / N;
-          else
-            ffCoeff(0, ffCoeff.cols() - 1) = i * 1. / (2 * N);
+          ffCoeff(0, ffCoeff.cols() - 1) = vertexOnBoundary[coarseVerticesonEdge(ent1Number, 1)]
+                                           ? (pastBoundary ? -(N-1.)/N : 1./N) : i*1./(2*N);
           ffCoeff(1, ffCoeff.cols() - 1) = 0;
           ffCoeff(2, ffCoeff.cols() - 1) = 0;
         }
       }
-      { // Second edge top
+      if(!m_strictlyOnSegment ||fineFaceInSegment[faceNum]){ // Second edge top
         Matrix<BasisFunctionType> &ffCoeff = m_fineFaceCoeffs[faceNum];
         if (vertexOnBoundary[coarseVerticesonEdge(ent1Number, 1)])
-          ffCoeff(1, ffCoeff.cols() - 1) = (N - 2.) / (N * 2);
-        ffCoeff(2, ffCoeff.cols() - 1) = 1. / 2;
+          ffCoeff(1, ffCoeff.cols() - 1) = (N-2.)/(N*2);
+        ffCoeff(2, ffCoeff.cols() - 1) = 1./2;
         m_local2globalDofs[faceNum].push_back(glDof);
         m_local2globalDofWeights[faceNum].push_back(-1.);
-        m_global2localDofs[glDof].push_back(
-            LocalDof(faceNum, ffCoeff.cols() - 1));
+        m_global2localDofs[glDof].push_back(LocalDof(faceNum, ffCoeff.cols() - 1));
         ++flatLocalDofCount_;
       }
     }
@@ -578,7 +573,7 @@ void RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::assignDofsImpl() {
     const Geometry &geo = entity.geometry();
     geo.getCorners(vertices);
 
-    for (int j = 0; j < m_local2globalDofs[ent0Number].size(); ++j) {
+    for (int j = 0; j != m_local2globalDofs[ent0Number].size(); ++j) {
       int glDof = m_local2globalDofs[ent0Number][j];
       extendBoundingBox(acc(m_globalDofBoundingBoxes, glDof), vertices);
       setBoundingBoxReference<CoordinateType>(
@@ -592,6 +587,8 @@ void RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::assignDofsImpl() {
     const Entity<0> &entity = it->entity();
     int ent0Number = bindex.entityIndex(entity);
     Matrix<BasisFunctionType> &ffCoeff = m_fineFaceCoeffs[ent0Number];
+    //if(m_strictlyOnSegment && !fineFaceInSegment[ent0Number])
+    //  continue;
     if (ffCoeff.cols() == 0) {
       m_local2globalDofs[ent0Number].push_back(-1);
       m_local2globalDofWeights[ent0Number].push_back(1.);
@@ -599,8 +596,10 @@ void RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::assignDofsImpl() {
       ffCoeff(0, 0) = 0;
       ffCoeff(1, 0) = 0;
       ffCoeff(2, 0) = 0;
+      m_elementShapesets[ent0Number] = Shapeset(ffCoeff);
+    } else {
+      m_elementShapesets[ent0Number] = Shapeset(ffCoeff);
     }
-    m_elementShapesets[ent0Number] = Shapeset(ffCoeff);
   }
   SpaceHelper<BasisFunctionType>::initializeLocal2FlatLocalDofMap(
       flatLocalDofCount_, m_local2globalDofs, m_flatLocal2localDofs);
@@ -616,15 +615,13 @@ RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::shapeset(
 }
 
 template <typename BasisFunctionType>
-size_t
-RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::globalDofCount() const {
+size_t RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::globalDofCount() const {
   return m_global2localDofs.size();
 }
 
 template <typename BasisFunctionType>
 size_t
-RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::flatLocalDofCount()
-    const {
+RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::flatLocalDofCount() const {
   return m_flatLocal2localDofs.size();
 }
 
@@ -658,27 +655,25 @@ void RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::global2localDofs(
 }
 
 template <typename BasisFunctionType>
-void RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::
-    flatLocal2localDofs(const std::vector<FlatLocalDofIndex> &flatLocalDofs,
-                        std::vector<LocalDof> &localDofs) const {
+void RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::flatLocal2localDofs(
+    const std::vector<FlatLocalDofIndex> &flatLocalDofs,
+    std::vector<LocalDof> &localDofs) const {
   localDofs.resize(flatLocalDofs.size());
   for (size_t i = 0; i < flatLocalDofs.size(); ++i)
     acc(localDofs, i) = acc(m_flatLocal2localDofs, acc(flatLocalDofs, i));
 }
 
 template <typename BasisFunctionType>
-void RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::
-    getGlobalDofPositions(
-        std::vector<Point3D<CoordinateType>> &positions) const {
+void RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::getGlobalDofPositions(
+    std::vector<Point3D<CoordinateType>> &positions) const {
   positions.resize(m_globalDofBoundingBoxes.size());
   for (size_t i = 0; i < m_globalDofBoundingBoxes.size(); ++i)
     acc(positions, i) = acc(m_globalDofBoundingBoxes, i).reference;
 }
 
 template <typename BasisFunctionType>
-void RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::
-    getFlatLocalDofPositions(
-        std::vector<Point3D<CoordinateType>> &positions) const {
+void RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::getFlatLocalDofPositions(
+    std::vector<Point3D<CoordinateType>> &positions) const {
   std::vector<BoundingBox<CoordinateType>> bboxes;
   getFlatLocalDofBoundingBoxes(bboxes);
   positions.resize(bboxes.size());
@@ -687,9 +682,8 @@ void RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::
 }
 
 template <typename BasisFunctionType>
-void RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::
-    getGlobalDofBoundingBoxes(
-        std::vector<BoundingBox<CoordinateType>> &bboxes) const {
+void RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::getGlobalDofBoundingBoxes(
+    std::vector<BoundingBox<CoordinateType>> &bboxes) const {
   bboxes = m_globalDofBoundingBoxes;
 }
 
@@ -718,8 +712,7 @@ void RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::
     e.geometry().getCorners(acc(elementCorners, index));
     if (acc(elementCorners, index).cols() != 3)
       throw std::runtime_error(
-          "RotatedBuffaChristiansenVectorSpace::getFlatLocalDofBoundingBoxes():"
-          " "
+          "RotatedBuffaChristiansenVectorSpace::getFlatLocalDofBoundingBoxes(): "
           "only triangular elements are supported at present");
     it->next();
   }
@@ -747,8 +740,8 @@ void RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::
 }
 
 template <typename BasisFunctionType>
-void RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::
-    getGlobalDofNormals(std::vector<Point3D<CoordinateType>> &normals) const {
+void RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::getGlobalDofNormals(
+    std::vector<Point3D<CoordinateType>> &normals) const {
   const int gridDim = 2;
   const int worldDim = 3;
   const int globalDofCount_ = globalDofCount();
@@ -788,9 +781,8 @@ void RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::
 }
 
 template <typename BasisFunctionType>
-void RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::
-    getFlatLocalDofNormals(
-        std::vector<Point3D<CoordinateType>> &normals) const {
+void RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::getFlatLocalDofNormals(
+    std::vector<Point3D<CoordinateType>> &normals) const {
   const int gridDim = 2;
   const int worldDim = 3;
   normals.resize(flatLocalDofCount());
@@ -843,11 +835,10 @@ void RotatedBuffaChristiansenVectorSpace<BasisFunctionType>::dumpClusterIdsEx(
 
 template <typename BasisFunctionType>
 shared_ptr<Space<BasisFunctionType>>
-adaptiveRotatedBuffaChristiansenVectorSpace(
-    const shared_ptr<const Grid> &grid) {
+adaptiveRotatedBuffaChristiansenVectorSpace(const shared_ptr<const Grid> &grid) {
 
   shared_ptr<SpaceFactory<BasisFunctionType>> factory(
-      new RotatedBuffaChristiansenSpaceFactory<BasisFunctionType>());
+      new RotatedBuffaChristiansenSpaceFactory<BasisFunctionType>(false,false));
   return shared_ptr<Space<BasisFunctionType>>(
       new AdaptiveSpace<BasisFunctionType>(factory, grid));
 }
@@ -855,11 +846,11 @@ adaptiveRotatedBuffaChristiansenVectorSpace(
 template <typename BasisFunctionType>
 shared_ptr<Space<BasisFunctionType>>
 adaptiveRotatedBuffaChristiansenVectorSpace(const shared_ptr<const Grid> &grid,
-                                            const std::vector<int> &domains,
-                                            bool open) {
+                                     const std::vector<int> &domains,
+                                     bool open, bool strictly) {
 
   shared_ptr<SpaceFactory<BasisFunctionType>> factory(
-      new RotatedBuffaChristiansenSpaceFactory<BasisFunctionType>());
+      new RotatedBuffaChristiansenSpaceFactory<BasisFunctionType>(open, strictly));
   return shared_ptr<Space<BasisFunctionType>>(
       new AdaptiveSpace<BasisFunctionType>(factory, grid, domains, open));
 }
@@ -867,10 +858,9 @@ adaptiveRotatedBuffaChristiansenVectorSpace(const shared_ptr<const Grid> &grid,
 template <typename BasisFunctionType>
 shared_ptr<Space<BasisFunctionType>>
 adaptiveRotatedBuffaChristiansenVectorSpace(const shared_ptr<const Grid> &grid,
-                                            int domain, bool open) {
-
+                                     int domain, bool open, bool strictly) {
   shared_ptr<SpaceFactory<BasisFunctionType>> factory(
-      new RotatedBuffaChristiansenSpaceFactory<BasisFunctionType>());
+      new RotatedBuffaChristiansenSpaceFactory<BasisFunctionType>(open, strictly));
   return shared_ptr<Space<BasisFunctionType>>(
       new AdaptiveSpace<BasisFunctionType>(factory, grid,
                                            std::vector<int>({domain}), open));
@@ -878,14 +868,14 @@ adaptiveRotatedBuffaChristiansenVectorSpace(const shared_ptr<const Grid> &grid,
 
 #define INSTANTIATE_FREE_FUNCTIONS(BASIS)                                      \
   template shared_ptr<Space<BASIS>>                                            \
-  adaptiveRotatedBuffaChristiansenVectorSpace<BASIS>(                          \
-      const shared_ptr<const Grid> &);                                         \
+  adaptiveRotatedBuffaChristiansenVectorSpace<BASIS>(const shared_ptr<const Grid> &); \
   template shared_ptr<Space<BASIS>>                                            \
-  adaptiveRotatedBuffaChristiansenVectorSpace<BASIS>(                          \
-      const shared_ptr<const Grid> &, const std::vector<int> &, bool);         \
+  adaptiveRotatedBuffaChristiansenVectorSpace<BASIS>(const shared_ptr<const Grid> &,  \
+                                              const std::vector<int> &, bool,  \
+                                              bool); \
   template shared_ptr<Space<BASIS>>                                            \
-  adaptiveRotatedBuffaChristiansenVectorSpace<BASIS>(                          \
-      const shared_ptr<const Grid> &, int, bool)
+  adaptiveRotatedBuffaChristiansenVectorSpace<BASIS>(const shared_ptr<const Grid> &,  \
+                                              int, bool, bool)
 
 FIBER_ITERATE_OVER_BASIS_TYPES(INSTANTIATE_FREE_FUNCTIONS);
 
@@ -893,56 +883,3 @@ FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(RotatedBuffaChristiansenVectorSpace);
 
 } // namespace Bempp
 
-/*template <typename BasisFunctionType>
-shared_ptr<Space<BasisFunctionType>>
-adaptiveRotatedBuffaChristiansenVectorSpace(const shared_ptr<const Grid> &grid)
-{
-
-  return shared_ptr<Space<BasisFunctionType>>(
-      new AdaptiveSpace<BasisFunctionType,
-                        RotatedBuffaChristiansenVectorSpace<BasisFunctionType>>(grid));
-}
-
-template <typename BasisFunctionType>
-shared_ptr<Space<BasisFunctionType>>
-adaptiveRotatedBuffaChristiansenVectorSpace(const shared_ptr<const Grid> &grid,
-                                     const std::vector<int> &domains,
-                                     bool open) {
-
-  return shared_ptr<Space<BasisFunctionType>>(
-      new AdaptiveSpace<BasisFunctionType,
-                        RotatedBuffaChristiansenVectorSpace<BasisFunctionType>>(
-          grid, domains, open));
-}
-
-template <typename BasisFunctionType>
-shared_ptr<Space<BasisFunctionType>>
-adaptiveRotatedBuffaChristiansenVectorSpace(const shared_ptr<const Grid> &grid,
-                                     int domain, bool open) {
-
-  return shared_ptr<Space<BasisFunctionType>>(
-      new AdaptiveSpace<BasisFunctionType,
-                        RotatedBuffaChristiansenVectorSpace<BasisFunctionType>>(
-          grid, std::vector<int>({domain}), open));
-}
-
-#define INSTANTIATE_FREE_FUNCTIONS(BASIS)                                      \
-  template shared_ptr<Space<BASIS>>                                            \
-  adaptiveRotatedBuffaChristiansenVectorSpace<BASIS>(const shared_ptr<const
-Grid> &); \
-  template shared_ptr<Space<BASIS>>                                            \
-  adaptiveRotatedBuffaChristiansenVectorSpace<BASIS>(const shared_ptr<const
-Grid> &,  \
-                                              const std::vector<int> &, bool); \
-  template shared_ptr<Space<BASIS>>                                            \
-  adaptiveRotatedBuffaChristiansenVectorSpace<BASIS>(const shared_ptr<const
-Grid> &,  \
-                                              int, bool)
-
-FIBER_ITERATE_OVER_BASIS_TYPES(INSTANTIATE_FREE_FUNCTIONS);
-
-FIBER_INSTANTIATE_CLASS_TEMPLATED_ON_BASIS(RotatedBuffaChristiansenVectorSpace);
-
-} // namespace Bempp
-
-*/
