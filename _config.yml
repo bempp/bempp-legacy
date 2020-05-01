@@ -1,1 +1,11 @@
 theme: jekyll-theme-slate
+site_favicon: favicon.ico
+title: Bempp
+description: Boundary element method Python package
+
+defaults:
+  -
+    scope:
+      path: "" # an empty string here means all files in the project
+    values:
+      layout: "default"

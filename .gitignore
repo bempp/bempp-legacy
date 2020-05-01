@@ -1,4 +1,6 @@
 _site/
 Gemfile
 Gemfile.lock
+Makefile
+
 .*.swp

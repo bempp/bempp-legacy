@@ -1,0 +1,41 @@
+/*
+COLOURS
+orange:     #FF7A1A
+light grey: #AAAAAA
+dark grey:  #555555
+*/
+
+.nav ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.nav li {
+  float: left;
+  font-variant:small-caps;
+}
+
+.nav li a {
+  display: block;
+  color: white;
+  text-align: center;
+  padding: 12px;
+  text-decoration: none;
+  background-color: #555555
+}
+
+.nav li a:hover {
+  background-color: #FF7A1A;
+}
+
+
+#header_wrap .inner {
+  padding-bottom:0px ! important;
+  background-color: #555555CC;
+}
+
+#header_wrap {background-image:url(/assets/background-wrap.png);background-size:contain}
+
+#project_tagline {margin-top:0px}
