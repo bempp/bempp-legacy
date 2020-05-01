@@ -7,4 +7,4 @@ Bempp is an open-source computational boundary element platform to solve electro
 + CPU and GPU parallelisation.
 + A comprehensive operator algebra that makes it easy to formulate complex product operator formulations such as operator preconditioning.
 
-
+We are currently in the middle of moving the Bempp website here. In the meantime, you can view the old Bempp website at [bempp.wordpress.com](http://bempp.wordpress.com)

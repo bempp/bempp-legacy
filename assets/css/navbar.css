@@ -67,4 +67,7 @@ body {
 
 .inner {max-width:720px}
 
-#footer_wrap p {margin:0px}
+#footer_wrap p {
+  margin:0px;
+  font-size:11px
+}
