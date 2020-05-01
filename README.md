@@ -1,1 +1,1 @@
-We are building here the new site for the Bempp boundary element library.
+This repository contains the source code of the [Bempp website](bempp.com).

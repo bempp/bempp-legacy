@@ -15,13 +15,23 @@ dark grey:  #555555
 .nav li {
   float: left;
   font-variant:small-caps;
+  font-weight:bold;
+  font-size:20px;
 }
 
+.nav li:first-of-type a {
+  border-radius: 15px 0px 0px 0px;
+}
+.nav li:last-of-type a {
+  border-radius: 0px 15px 0px 0px;
+}
 .nav li a {
+  padding: 12px;
+  padding-right: 16px;
+  padding-left: 16px;
   display: block;
   color: white;
   text-align: center;
-  padding: 12px;
   text-decoration: none;
   background-color: #555555
 }
@@ -36,6 +46,25 @@ dark grey:  #555555
   background-color: #555555CC;
 }
 
-#header_wrap {background-image:url(/assets/background-wrap.png);background-size:contain}
+#header_wrap {
+  background-image:url(/assets/background-wrap.png);
+  background-size:contain;
+  background-repeat: repeat-x;
+}
 
 #project_tagline {margin-top:0px}
+
+#footer_wrap {background-color:#555555}
+body {
+  background-color:#555555;
+  color: #000000
+}
+
+#main_content_wrap {
+  border:none;
+  background-color:#FFFFFF
+}
+
+.inner {max-width:720px}
+
+#footer_wrap p {margin:0px}
