@@ -1,0 +1,82 @@
+dist: trusty
+sudo: required
+
+language: python
+python:
+    - "2.7"
+
+virtualenv:
+    system_site_packages: true
+
+
+branches:
+    only:
+        - eg-travis
+    except:
+        - master
+
+
+before_install:
+    - sudo apt-get update -qq
+    - sudo apt-get install g++ -qq -y
+    - sudo apt-get install cmake git make -qq -y
+    - sudo apt-get install cython python-dev -qq -y
+#    - sudo apt-get install python-numpy python-scipy -qq -y
+## TravisCI uses virtualenv and APT does not work
+## instead fix with use this ugly hack using conda
+    - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh -q
+    - chmod +x miniconda.sh
+    - ./miniconda.sh -b -p $HOME/miniconda
+    - export PATH=$HOME/miniconda/bin:$PATH
+    - conda update conda -q -y
+    - conda install python=2.7 numpy scipy -q -y
+    - python -c 'import numpy'
+    - python -c 'import scipy'
+## same about cython ?
+    - conda install cython=0.23.4 -y -q
+
+
+before_script:
+    - git branch -avv
+
+script:
+
+# ###### step 1: build
+#    ## `travis_wait` avoids time out when downloading
+#    ## and building external dependencies
+
+    - mkdir -p build && cd build
+    - cmake .. -DCMAKE_INSTALL_PREFIX=$HOME/miniconda
+    - make TBB
+    - make Boost
+    - make Dune
+    - make
+
+# ###### step 2: install
+
+    - sudo make install
+
+# ###### step 3: test
+#    ## `travis_wait` has troubles with ""
+#    ## but travis_wait should be useful for intensive tests
+
+# ## Disable this test, because  it does not necessary pass.
+    - make test ARGS="-E python_tests"
+
+# ## Run test suite from python
+    - python -c "import bempp.api ; bempp.api.test()"
+
+# ## Re-Run with Gmsh installed
+    - sudo apt-get install gmsh -q -y
+    - python -c "import bempp.api ; bempp.api.test()"
+
+
+#
+# This after_* is not doing what I expect
+#
+
+after_success:
+    - echo "Done."
+
+after_failure:
+    - echo "Failed."
